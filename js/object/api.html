@@ -1,0 +1,650 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the js/object SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>JavaScript language constructs</title>
+</head>
+<body>
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="value">
+				<div class="name">globals</div>
+				<code>(boolean)</code> Whether to modify the global scope by supplying implementations of missing methods. If
+				<code>true</code>, this module, in addition to providing the exports below, supplies implementations of the
+				following JavaScript constructs if they are not supplied by the environment. These constructs do not currently
+				have any automated tests implemented and thus should be treated as suspect.
+				<!--	TODO	make the above statement untrue: use some sort of decent tests.	-->
+				<div>
+					<ul>
+						<li>Object
+							<ul>
+								<li>ECMA 262v5: Object.keys</li>
+							</ul>
+						</li>
+						<li>Array
+							<ul>
+								<li>JS 1.6: Array.prototype.indexOf</li>
+								<li>JS 1.6: Array.prototype.filter</li>
+								<li>JS 1.6: Array.prototype.forEach</li>
+								<li>JS 1.6: Array.prototype.map</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<script type="application/x.jsapi#scope">
+			var Functions = function() {
+				var calculator = function() {
+					arguments.callee.invocations++;
+					return 2*2;
+				}
+				calculator.invocations = 0;
+
+				var undefinedCalculator = function() {
+					arguments.callee.invocations++;
+					return;
+				}
+				undefinedCalculator.invocations = 0;
+
+				this.calculator = calculator;
+				this.undefinedCalculator = undefinedCalculator;
+			}
+		</script>
+		<ul>
+			<li class="value">
+				<div class="name">undefined</div>
+				<div>
+					The JavaScript <code>undefined</code> value.
+				</div>
+				<div>
+					If the underlying platform permits the creation of read-only properties, the value cannot be changed.
+				</div>
+				<script type="application/x.jsapi#tests">
+					scope.scenario(new function() {
+						this.name = "undefined";
+
+						this.execute = function(scope) {
+							scope.test( typeof(module.undefined) == "undefined" );
+							var a = {};
+							scope.test( a.a == module.undefined );
+							scope.test( a.a === module.undefined );
+							if ($platform.Object.setReadOnly) {
+								module.undefined = true;
+								scope.test( typeof(module.undefined) == "undefined" );
+							}
+						}
+					} );
+				</script>
+			</li>
+			<li class="function">
+				<div class="name">defined</div>
+				<div>
+					A function which returns the first of its arguments that is not <code>undefined</code>.
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					A variable-length list of arguments of any type.
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					The first argument that is not <code>undefined</code>, or <code>undefined</code> if all arguments are
+					undefined or there are no arguments.
+				</div>
+				<script type="application/x.jsapi#tests">
+					scope.scenario( new function() {
+						this.name = "defined";
+
+						this.execute = function(scope) {
+							var a = { b: "yes", d: "no", e: null };
+							scope.test( typeof(module.defined()) == "undefined" );
+							scope.test( module.defined(a.c, a.b) == "yes" );
+							scope.test( module.defined(a.b, a.e, a.d) == "yes" );
+							scope.test( module.defined(a.e, a.d) == null );
+						}
+					});
+				</script>
+			</li>
+			<li class="function">
+				<div class="name">constant</div>
+				<div>
+					Creates a function which caches the result of an underlying function.
+				</div>
+				<div>
+					It stores the result
+					before returning it, and returns the stored result for every succeeding invocation.
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li><code>(function)</code> A function to which the returned function will delegate the first time.</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					The created function.
+				</div>
+				<script type="application/x.jsapi#tests">
+					scope.scenario( new function() {
+						this.name = "constant";
+
+						this.execute = function(scope) {
+							var f = new Functions();
+
+							var constantCalculator = module.constant(f.calculator);
+							scope.test( f.calculator.invocations == 0 );
+							scope.test( constantCalculator() == 4 );
+							scope.test( f.calculator.invocations == 1 );
+							scope.test( constantCalculator() == 4 );
+							scope.test( f.calculator.invocations == 1 );
+
+							var undefinedConstantCalculator = module.constant(f.undefinedCalculator);
+							scope.test( f.undefinedCalculator.invocations == 0 );
+							scope.test( typeof(undefinedConstantCalculator()) == "undefined" );
+							scope.test( f.undefinedCalculator.invocations == 1 );
+							scope.test( typeof(undefinedConstantCalculator()) == "undefined" );
+							scope.test( f.undefinedCalculator.invocations == 1 );
+						}
+					} );
+				</script>
+			</li>
+			<li class="function">
+				<div class="name">lazy</div>
+				<div>
+					Defines a property on an object which is lazy-instantiated by a function the first time it is accessed.
+				</div>
+				<div>
+					The property is effectively constant.  The first time the property is accessed, the given
+					function will be invoked to define the value, which will be returned as the value (without invoking the
+					function) each time it is accessed.  The implementation uses <code>__defineGetter__</code> to attach a constant
+					version of the given function to the given named property.
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li><code>(object)</code> An object on which to define a property.</li>
+						<li><code>(string)</code> The name of the property to define.</li>
+						<li><code>(function)</code> The function that will be invoked to define the property's value, when/if
+							necessary.</li>
+					</ol>
+				</div>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					if ($platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
+						scope.scenario( new function() {
+							this.name = "lazy";
+
+							this.execute = function(scope) {
+								var f = new Functions();
+
+								var math = {};
+								module.lazy(math, "four", f.calculator);
+								scope.test( f.calculator.invocations == 0 );
+								scope.test( math.four == 4 );
+								scope.test( f.calculator.invocations == 1 );
+								scope.test( math.four == 4 );
+								scope.test( f.calculator.invocations == 1 );
+
+								module.lazy(math, "undefined", f.undefinedCalculator);
+								scope.test( f.undefinedCalculator.invocations == 0 );
+								scope.test( typeof(math.undefined) == "undefined" );
+								scope.test( f.undefinedCalculator.invocations == 1 );
+								scope.test( typeof(math.undefined) == "undefined" );
+								scope.test( f.undefinedCalculator.invocations == 1 );
+							}
+						} );
+					}
+				]]></script>
+			</li>
+			<li class="function">
+				<div class="name">toLiteral</div>
+				<div>Converts a JavaScript value to a string literal.</div>
+				<div>
+					The literal can be reconstituted into the original using <code>eval()</code>.
+					Converts only values of types <code>object</code>, <code>string</code>, <code>number</code>,
+					<code>boolean</code>, and <code>undefined</code>, only including properties of <code>object</code> values which
+					are one of those types.
+					<!--	TODO	Can toLiteral be broken by setting up two objects that refer to one another? Or an object that
+							refers to itself?	-->
+				</div>
+				<div>
+					Objects are represented by the values of their enumerable properties (or, if they have properties of an object
+					type, by the literal resulting from calling this function with the value of that property), with the exception
+					of <code>Array</code> and <code>Date</code> values, which are represented by calls to the <code>Array</code> and
+					<code>Date</code> constructors.
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li>A value of a permitted type to convert to a string literal.</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<div><code>(string)</code> A literal representation of the given value.</div>
+				</div>
+				<script type="application/x.jsapi#tests">
+					scope.scenario(new function() {
+						this.name = "toLiteral";
+
+						var thaw = function(v) {
+							var s = module.toLiteral(v);
+							var rv;
+							eval("rv = " + s);
+							return rv;
+						}
+
+						this.execute = function(scope) {
+							var toLiteral = module.toLiteral;
+
+							scope.test(toLiteral("David") == "\"David\"");
+							scope.test(toLiteral(2) == "2");
+							scope.test(toLiteral(true) == "true");
+
+							var o = {};
+							var u;
+							o.s = "s";
+							o.u = u;
+							var t = thaw(o);
+							scope.test("s" in t);
+							scope.test(typeof(t.s) != "undefined");
+							scope.test("u" in t);
+							scope.test(typeof(t.u) == "undefined");
+
+							var now = new Date();
+							o = {
+								a: true,
+								b: "David",
+								c: now
+							};
+							t = thaw(o);
+							scope.test(t.a === true);
+							scope.test(t.b == "David");
+							scope.test(t.c.getTime() == now.getTime());
+
+							o = [1, "David", true, { x: "y" }];
+							t = thaw(o);
+							scope.test(t.length == 4);
+							scope.test(t[0] == 1);
+							scope.test(t[1] == "David");
+							scope.test(t[2] === true);
+							scope.test(t[3].x == "y");
+						}
+					});
+				</script>
+			</li>
+			<li class="constructor">
+				<div class="name">ObjectTransformer</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<div>
+						An object capable of mapping one object type onto another.
+					</div>
+					<div>
+						The object invokes a series of operations to map an
+						input object to an output object.  These operations are specified by invoking the <code>add()</code>
+						and <code>addMapping()</code> methods to configure the object, before invoking the <code>transform</code>
+						method to map objects.  Each step receives a "current" object as input and emits a "next" object as output.
+						The "current" object for the first step is the object used as an argument to <code>transform()</code>, and
+						the <code>transform()</code> method returns the "next" object emitted from the last step.
+					</div>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">add</div>
+							<div>
+								Adds a function to the mapping chain which receives the current object as an argument and returns 
+								the next object.
+							</div>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li><code>(function)</code> A function which takes a value and returns a value.</li>
+								</ol>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">addMapping</div>
+							<div>
+								Adds a step to the mapping chain in which the current object is passed through the given mapping 
+								object, and each property of the current value is transformed as follows:
+								<ul>
+									<li>If the named property is not present in the mapping object, it is simply passed through to
+										the next step.</li>
+									<li>If the named property is <code>null</code> in the mapping object, it is not passed through 
+										to the next step (it is essentially deleted).</li>
+									<li>If the named property is a <code>function</code> in the mapping object, in the next step it 
+										will be set to the value the function returns.  The function will be invoked with two
+										arguments.  The first argument will be the current value of the property (or
+										<code>undefined</code> if the object in the current step does not have the given property),
+										and the second will be the current object.</li>
+								</ul>
+								Finally, if the mapping object contains a named property of type <code>function</code> not contained in the current
+								object, the value of this property will be assigned by invoking the given function with values of 
+								<code>undefined</code> and the current object.
+							</div>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li><code>(object)</code> An object which specifies the mapping to use for this step.</li>
+								</ol>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">transform</div>
+							<div>
+								Passes the given argument through the mapping chain, invoking each step in succession, and returning the
+								output of the last step.
+							</div>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li><code>(object)</code> An object to transform.</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<div><code>(object)</code> The output of the transformation.</div>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">toFunction</div>
+							<div>
+								Returns a function which wraps this object; the function takes one argument (an object) and returns 
+								the same result that would be returned by the <code>transform</code> method of this object.
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<div>A function which transforms objects using this ObjectTransformer.</div>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					scope.scenario(new function() {
+						this.name = "ObjectTransformer";
+
+						this.execute = function(scope) {
+							var xDoubler = function(o) {
+								return { x: o.x+o.x, y: 2, z: "David", a: true, b: true, c: true }
+							}
+
+							var hasher = {
+								a: function(v,o) {
+								},
+								b: function(v,o) {
+									return null;
+								},
+								y: null,
+								z: function(v,o) {
+									return v + v + o.x;
+								}
+							};
+
+							var input = { x: 1 };
+							var first = new module.ObjectTransformer();
+							first.add(xDoubler);
+							var output = first.transform(input);
+							scope.test(output.x == 2);
+							scope.test(output.y == 2);
+							scope.test(output.z == "David");
+
+							var second = new module.ObjectTransformer();
+							second.add(xDoubler);
+							second.addMapping(hasher);
+							output = second.transform(input);
+							scope.test(output.x == 2);
+							scope.test(!("y" in output));
+							scope.test(output.z == "DavidDavid2");
+							scope.test("a" in output && typeof(output.a) == "undefined");
+							scope.test("b" in output && output.b === null);
+							scope.test(output.c === true);
+
+							var secondFunction = second.toFunction();
+							var fOutput = secondFunction(input);
+							scope.test(fOutput.x == 2);
+							scope.test(fOutput.c === true);
+							scope.test(fOutput.z == "DavidDavid2");
+						}
+					})
+				]]></script>
+			</li>
+			<li class="object">
+				<div class="name">Filter</div>
+				<div>
+					A <i>Filter</i> is a function that implements a particular interface: it takes a single argument, and returns a
+					<code>boolean</code>.
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">property</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li>
+									<span class="type">string</span>
+									<span>A property name.</span>
+								</li>
+								<li>A Filter.</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">Filter</span>
+							A Filter that returns <code>true</code> if the value of its property for the given property
+							name is accepted by the given Filter, and <code>false</code> otherwise.
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">equals</div>
+						<span>
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li>A target value.</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">Filter</span>
+							<span>
+								A Filter that returns <code>true</code> if its argument equals the given target value, and
+								<code>false</code> otherwise.
+							</span>
+						</div>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests" jsapi:id="Filter">
+					var f = module.Filter.property("a", module.Filter.equals(3));
+					var array = [{ a: 3 }, {}, { a: 4 }];
+					var matches = array.filter(f);
+					scope.test(matches.length == 1);
+					scope.test(matches[0] == array[0]);
+				</script>
+			</li>
+			<li class="object">
+				<div class="name">Map</div>
+				<span>
+					A <i>Map</i> is a function that implements a particular interface: it takes a single argument, and returns
+					a value.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">property</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A property name.</span>
+								</li>
+								<li class="value">
+									<span class="type">Map</span>
+									<span>(optional) A Map</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">Map</span>
+							<span>
+								A Map which returns the named property of an object. If the optional Map argument is not provided,
+								the Map returns the named property of its argument. Otherwise, it first applies the Map argument to
+								its argument, and then returns the named property of the result.
+							</span>
+						</div>
+						<script type="application/x.jsapi#tests" jsapi:id="Map">
+							var one = module.Map.property("c");
+							var two = module.Map.property("a", module.Map.property("b"));
+							var x = {
+								b: { a: 3 },
+								c: 4
+							};
+							scope.test(one(x) == 4);
+							scope.test(two(x) == 3);
+							scope.test(one({}) != 5);
+						</script>
+					</li>
+				</ul>
+				<!--	TODO	decide whether Map.Categorizer is experimental; find a use of it: my guess is prop8	-->
+			</li>
+			<li class="object">
+				<div class="name">Order</div>
+				<span>
+					An <i>Order</i> implements a specific interface, intended for sorting: it takes two arguments and returns
+					a value less than zero if the first argument belongs before the second argument, and a value greater than zero
+					if the second argument belongs before the first argument. This is commensurate with the
+					<code>Array.prototype.sort</code> method.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">property</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A property name.</span>
+								</li>
+								<li class="value">
+									<span class="type">Order</span>
+									<span>An Order to use to compare values of the given named property.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">Order</span>
+							<span>
+								An Order that uses the given Order to compare the value of the named property for each of its
+								arguments and returns the result of that comparison.
+							</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">map</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">Map</span>
+									<span>A Map that transforms the arguments to this Order before they are compared.</span>
+								</li>
+								<li class="value">
+									<span class="type">Order</span>
+									<span>An Order to use to compare values produced by the given Map.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">Order</span>
+							<span>
+								An Order that uses the given Order to compare the value the given Map produces for each of its
+								arguments and returns the result of that comparison.
+							</span>
+						</div>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests" jsapi:id="Order">
+					var numerical = function(a,b) { return b - a; };
+					var ascending = function(a,b) { return a - b; };
+					var array = [ { s: "a", v: 2 }, { s: "b", v: 1 }, { s: "c", v: 3 } ];
+					var propertyOrder = module.Order.property("v", numerical);
+					var mapOrder = module.Order.map(module.Map.property("v"), ascending);
+					array.sort( propertyOrder );
+					scope.test(array[0].s == "c");
+					scope.test(array[1].s == "a");
+					scope.test(array[2].s == "b");
+					array.sort( mapOrder );
+					scope.test(array[0].s == "b");
+					scope.test(array[1].s == "a");
+					scope.test(array[2].s == "c");
+				</script>
+			</li>
+			<li class="object">
+				<div class="name">Array</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">choose</div>
+						<span>
+							Converts an array into a single element. First applies the given Filter, if one is given: the Filter
+							should be a filter that only accepts zero or one element of the array.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">Array</span>
+									<span>An array.</span>
+								</li>
+								<li class="value">
+									<span class="type">Filter</span>
+									<span>(optional) A Filter that is used to preprocess the array.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span>
+								The single element of the array (after applying the given Filter, if applicable), or
+								<code>null</code> if the array has zero elements. An error is thrown if more than one element
+								matches.
+							</span>
+						</div>
+						<script type="application/x.jsapi#tests" jsapi:id="Array.choose">
+							scope.test( module.Array.choose([ 3 ]) == 3 );
+							scope.test( module.Array.choose([]) === null );
+							scope.test( module.Array.choose([ 1, 2, 3 ], function(a) { return a == 3; } ) == 3 );
+						</script>
+					</li>
+				</ul>
+				<!--	TODO	decide whether Array.categorize is experimental	-->
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

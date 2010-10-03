@@ -1,0 +1,931 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Slime Loader and Module API</title>
+</head>
+<body>
+	<div jsapi:id="1">
+		Generally speaking, the loader is responsible for loading code into an application. The loader generally executes each
+		source file by supplying it with a <code>$context</code> object which provides whatever configuration information is
+		needed by the source file and an <code>$exports</code> object to which the code can assign properties which will be visible
+		to the application.
+	</div>
+	<div jsapi:id="2">
+		Scripts loaded by the loader also have access to the <code>$platform</code> and <code>$api</code> objects described below,
+		which provide information about the underlying platform and the ability for code to provide information about its own
+		API.
+	</div>
+	<div jsapi:id="3">
+		The loader can execute a single script using the <code>script</code> method, or can execute a module (which can consist
+		of multiple source files) using the <code>module</code> method.
+	</div>
+	<!--
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="object">
+				<div class="name">flag</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">warning</div>
+						<p>
+							A function that will be invoked when this package issues a warning because of a reference to a flagged
+							property.
+						</p>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li>
+											<div class="name">target</div>
+											The object with the flagged property.
+										</li>
+										<li>
+											<div class="name">name</div>
+											The name of the flagged property.
+										</li>
+										<li>
+											<div class="name">get</div>
+											The value of the flagged property if the access was an attempt to read its
+											value, or <code>undefined</code> otherwise.
+										</li>
+										<li>
+											<div class="name">set</div>
+											The value to which the caller attempted to set the flagged property if the
+											access was an attempt to set its value, or <code>undefined</code> otherwise.
+										</li>
+										<li>
+											<div class="name">call</div>
+											The arguments passed to the flagged function if the access was an attempt
+											to call it as a function, or <code>undefined</code> otherwise.
+										</li>
+										<li>
+											<div class="name">reason</div>
+											The function that was used to flag the property.
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	-->
+	<div>
+		<h1>$engine</h1>
+		<p>
+			The <code>$engine</code> object can be provided to the platform loader in order to provide additional capabilities the
+			JavaScript engine may have.
+		</p>
+		<ul>
+			<li class="object">
+				<div class="name">Object</div>
+				<span></span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">defineProperty</div>
+						<span></span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">setReadOnly</div>
+								<span>
+									Should implement the behavior defined by
+									<a href="#$platform.Object.defineProperty.setReadOnly"><code>$platform.Object.defineProperty.setReadOnly</code></a>.
+								</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li class="constructor">
+				<div class="name">MetaObject</div>
+				<span>
+					Should implement the behavior defined by
+					<a href="#$platform.MetaObject"><code>$platform.MetaObject</code></a>.
+				</span>
+			</li>
+		</ul>
+	</div>
+	<div jsapi:id="$platform">
+		<h1>$platform</h1>
+		<ul>
+			<li class="object">
+				<div class="name">Object</div>
+				<span>An object containing properties describing the platform's capabilities for objects.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">defineProperty</div>
+						<span>(optional) An object containing properties describing the platform's meta-object capabilities.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">accessor</div>
+								<span class="type">boolean</span>
+								<span>
+									(optional) If <code>true</code>, the platform supports <code>__defineGetter__</code> and
+									<code>__defineSetter__</code> as defined by Mozilla.
+								</span>
+							</li>
+							<li class="value">
+								<div class="name">ecma</div>
+								<span class="type">boolean</span>
+								<span>
+									(optional) If <code>true</code>, the platform supports the ECMA-262 version 5
+									<code>Object.defineProperty</code> method.
+								</span>
+							</li>
+							<li class="function">
+								<div class="name"><a name="$platform.Object.defineProperty.setReadOnly">setReadOnly</a></div>
+								<span>(optional) Sets whether a named property on an object is read-only.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">object</span>
+											<span>An object.</span>
+										</li>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The name of a property.</span>
+										</li>
+										<li class="value">
+											<span class="type">boolean</span>
+											<span>
+												Whether the property should be read-only (<code>true</code>) or writable
+												(<code>false</code>).
+											</span>
+										</li>
+									</ol>
+								</div>
+								<script type="application/x.jsapi#tests" jsapi:id="$platform.Object.defineProperty.setReadOnly"><![CDATA[
+									var o = {};
+									o.x = 3;
+									scope.test(o.x == 3);
+									o.x = 4;
+									scope.test(o.x == 4);
+									var setReadOnly = (function() {
+										if ($platform.Object.defineProperty && $platform.Object.defineProperty.setReadOnly) {
+											return $platform.Object.defineProperty.setReadOnly;
+										}
+									})();
+									if (setReadOnly) {
+										setReadOnly(o,"x",true);
+										o.x = 5;
+										scope.test(o.x == 4);
+										setReadOnly(o,"x",false);
+										o.x = 5;
+										scope.test(o.x == 5);
+									}
+								]]></script>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<span>(optional) An object with properties describing the platform's Java/LiveConnect capabilities.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">getClass</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A Java class name.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">JavaClass</span>
+							<span>
+								A <code>JavaClass</code> object representing the class with the given name, or <code>null</code>
+								if no class by that name can be loaded.
+							</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="constructor">
+				<div class="name"><a name="$platform.MetaObject">MetaObject</a></div>
+				<span>(optional) A metaobject implementation.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">delegate</div>
+									<span class="type">object</span>
+									<span>
+										A delegate object that will be used to supply implementations for properties in
+										preference to using the meta-object implementations.
+									</span>
+								</li>
+								<li class="function">
+									<div class="name">get</div>
+									<span>
+										A function that will be called when one of this object's properties that is not defined
+										by the delegate object is accessed. This object will be provided as the <code>this</code>
+										argument.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>A property name</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span>A value for the named property.</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">set</div>
+									<span>
+										A function that will be called when one of this object's properties that is not defined by
+										the delegate object is set. This object will be provided as the <code>this</code> argument.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>A property name.</span>
+											</li>
+											<li class="value">
+												<span>The value assigned to the named property.</span>
+											</li>
+										</ol>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">object</span>
+					<span>
+						Returns an object that uses the given delegate object to supply properties, but uses the given
+						getter and setter if the delegate is <code>null</code> or the delegate lacks the named property.
+					</span>
+				</div>
+				<script type="application/x.jsapi#scope">
+					var MetaObject = $platform.MetaObject;
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="$platform.MetaObject">
+					if ($platform.MetaObject) {
+						var doubler = function(name) {
+							if (isNaN(Number(name))) {
+								return name + name;
+							} else {
+								return Number(name) * 2;
+							}
+						}
+
+						var a = new MetaObject({ get: doubler });
+						scope.test( a[1] == 2 );
+						scope.test( a.name == "namename" );
+
+						var logger = new function() {
+							var log = [];
+
+							this.log = log;
+
+							this.setter = function(name,value) {
+								log.push({ target: this, name: name, value: value });
+
+								this[name] = value;
+							}
+						}
+
+						var $b = {};
+						var b = new MetaObject({ delegate: $b, get: null, set: logger.setter });
+						b.foo = "bar";
+						scope.test( logger.log[0].target == $b );
+						scope.test( logger.log[0].name == "foo" );
+						scope.test( logger.log[0].value == "bar" );
+					}
+				</script>
+			</li>
+		</ul>
+	</div>
+	<div jsapi:id="$api">
+		<h1>$api</h1>
+		<ul>
+			<li class="function">
+				<!--	TODO	explain effect of warning property of the function below	-->
+				<!--	TODO	review this file to see whether to incorporate $platform as well, perhaps having another category
+								'scope' or something and having properties $api and $platform listing the module API	-->
+				<div class="name"><a name="$api.deprecate">deprecate</a></div>
+				<span>
+					A function that can be used to mark a named property on an object as a deprecated API.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">object</span>
+							<span>A target object whose property will be marked.</span>
+						</li>
+						<li class="value">
+							<span class="type">string</span>
+							<span>The name of the property to mark.</span>
+						</li>
+					</ol>
+				</div>
+				<ul>
+					<li class="function">
+						<div class="name">warning</div>
+						<span>(optional) A callback function that will be invoked when a marked property is accessed.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>Represents a single usage of a marked API.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<!--
+										TODO	Single-argument form deprecating a function
+										<li class="value">
+											<div class="name">function</div>
+											<span class="type">function</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										-->
+										<li class="value">
+											<div class="name">target</div>
+											<span class="type">object</span>
+											<span>The object containing the marked property.</span>
+										</li>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>The name of the marked property.</span>
+										</li>
+										<li class="value">
+											<div class="name">call</div>
+											<span class="type">arguments</span>
+											<span>
+												(optional) The <code>arguments</code> object passed to the marked method, if this
+												usage was an invocation of a marked method.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">get</div>
+											<span>
+												(optional) The value of the marked property when it was accessed, if this usage was
+												a retrieval of the value of a marked property.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">set</div>
+											<span>
+												(optional) The value to which the deprecated property was set, if this usage was an
+												assignment to a marked property.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">reason</div>
+											<span class="type">function</span>
+											<span>
+												(optional) The reason that the API was marked: in the case of deprecation, a
+												reference to the <code>deprecate</code> function itself.
+											</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					scope.scenario( new function() {
+						this.name = "deprecate";
+						this.execute = function(scope) {
+							//	var deprecate = module.deprecate;
+							var deprecate = $api.deprecate;
+							
+							//	TODO	Add a test somewhere in here where we attempt to set a deprecated property, do not really
+							//			set it, and confirm that our callback receives the attempted (not actual) value
+							var expectWarn = function(b) {
+								var rv = function(content) {
+									if (content.reason != deprecate) throw "Not expected reason.";
+									arguments.callee.actual = true;
+								}
+								rv.actual = false;
+								rv.expect = b;
+								rv.test = function() {
+									return rv.actual == rv.expect;
+								}
+								rv.evaluate = function(message) {
+									if (!message) {
+										scope.test({
+											success: this.test(),
+											messages: {
+												success: "expectWarn PASS: expect=" + rv.expect + " actual=" + rv.actual,
+												failure: "expectWarn FAIL: expect=" + rv.expect + " actual=" + rv.actual
+											}
+										});
+									} else {
+										scope.test({
+											success: this.test(),
+											messages: {
+												success: message + " passed.",
+												failure: message + " FAILED."
+											}
+										})
+									}
+								}
+								$api.deprecate.warning = rv;
+								//$unit.context.setWarning(rv);
+								return rv;
+							}
+
+							//	Each test either uses the jsunit Tests object or uses a custom console output
+							//	Hook for execution environment to override console function
+							var Tests;
+							var test = function(f,message) {
+								scope.test(f);
+							}
+
+							//
+							//	Begin tests
+							//
+
+							var x = {
+								foo: "bar",
+								toString: function() {
+									return "x1";
+								}
+							}
+
+							deprecate(x,"foo");
+							var yes = expectWarn(true);
+							var z = x.foo;
+							yes.evaluate("get x.foo");
+							//test(warning.test);
+
+							//	Should FAIL
+							//expectWarn(true);
+							//test(warning.test);
+							//
+
+							//console("x1.foo = " + x.foo);
+							var accessor = $platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor;
+							if (accessor) {
+								var yes = expectWarn(true);
+								x.foo = "baz";
+								yes.evaluate();
+								scope.test({
+									success: x.foo == "baz",
+									messages: {
+										success: "Value correct",
+										failure: "Value " + x.foo
+									}
+								});
+							}
+
+							var yes = expectWarn(false);
+							x.bar = "baz";
+							yes.evaluate();
+
+							if (accessor) {
+								//console("x1.foo = " + x.foo);
+								var x2 = new function() {
+									this.foo = "bar";
+									this.__defineSetter__("foo", function(value) {
+										this.$foo = value;
+									} );
+
+									deprecate(this, "foo");
+								}
+
+								var yes = expectWarn(true);
+								var z = x2.foo;
+								yes.evaluate();
+
+								var yes = expectWarn(true);
+								x2.foo = "BAR";
+								yes.evaluate();
+								test(typeof(x2.foo) == "undefined", "Still undefined");
+
+								var x3 = new function() {
+									this.foo = 0;
+
+									var foo = 0;
+
+									this.__defineGetter__("foo", function() {
+										return ++foo;
+									} );
+
+									deprecate(this, "foo");
+								}
+
+								var yes = expectWarn(true);
+								var z = x3.foo;
+								yes.evaluate();
+								test(z > 0, "Getter-only value increasing.");
+								test(x3.foo > z, "Getter-only value increasing.");
+
+								var yes = expectWarn(true);
+								x3.foo = 11;
+								yes.evaluate();
+								test(x3.foo != 11, "Cannot re-set once getter defined.");
+
+								x3.__defineGetter__("foo", function() {
+									return 42;
+								});
+								var yes = expectWarn(false);
+								var z = x3.foo;
+								yes.evaluate();
+								test(x3.foo == 42, "Value is correct when getter redefined.");
+
+								var x4 = new function() {
+									var foo = 21;
+
+									this.__defineGetter__("foo", function() {
+										return foo;
+									} );
+
+									this.__defineSetter__("foo", function(value) {
+										return (foo = value);
+									} );
+
+									deprecate(this, "foo");
+								}
+
+								var yes = expectWarn(true);
+								var z = x4.foo;
+								yes.evaluate();
+								test(z == 21);
+								test(x4.foo == 21);
+
+								var yes = expectWarn(true);
+								x4.foo = 14;
+								yes.evaluate();
+								test(x4.foo == 14);
+							}
+
+							var x5 = new function() {
+								this.doIt = function() {
+								}
+
+								this.doItBetter = function() {
+								}
+
+								deprecate(this, "doIt");
+							}
+
+							var yes = expectWarn(true);
+							x5.doIt();
+							yes.evaluate();
+
+							var yes = expectWarn(false);
+							x5.doItBetter();
+							yes.evaluate();
+						}
+					});
+				]]></script>
+			</li>
+			<li class="function">
+				<div class="name">experimental</div>
+				<span>
+					A function that can be used to mark a named property on an object as an experimental API. Its interface is
+					exactly like that of <a href="#$api.deprecate"><code>deprecate</code></a>, including the presence of a
+					<code>warning</code> callback that can receive information when an experimental API is used.
+				</span>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="function" jsapi:id="module">
+				<div class="name">module</div>
+				<span jsapi:id="description">
+					Loads a module. The module's code is specified by the first argument, and the second argument specifies
+					objects to be supplied to the module when loading it.
+				</span>
+				<div jsapi:id="description2">
+					The module's main file will be executed with the following variables in scope:
+					<ul>
+						<li>the <code>$platform</code> and <code>$api</code> objects specified above,</li>
+						<li>the <code>$context</code> and <code>$exports</code> objects specified by the second argument,</li>
+						<li>a <code>$loader</code> object allowing other source files and submodules to be loaded.</li>
+					</ul>
+					The <code>$loader</code> object provides the following interface:
+					<ul>
+						<li class="function">
+							<div class="name">module</div>
+							<span>Loads a submodule from this module.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The path at which the submodule's main file is located within this module.</span>
+									</li>
+									<li class="value">
+										<span class="type">object</span>
+										<span>The <code>$context</code> to use when executing the submodule.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">object</span>
+								<span>An object containing the submodule's exports.</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">script</div>
+							<span>Executes a script from this module.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The path of the script to execute.</span>
+									</li>
+									<li class="value">
+										<span class="type">object</span>
+										<span>The <code>$context</code> to use when executing the script.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">object</span>
+								<span>
+									An object containing the exports of the script: the properties assigned to the
+									<code>$exports</code> object.
+								</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>An object specifying the format of the module and how to load it.</span>
+							<p>
+								Ordinarily, the loader loads the main file by calling the <code>getCode</code> method with the
+								string value of the <code>main</code> property, and then executing the resulting code with the
+								appropriate <code>$context</code> and <code>$exports</code>. However, the <code>instantiate</code>
+								method, if defined, can override the behavior of <code>getCode</code>. See the definition of
+								<code>instantiate</code> for details.
+							</p>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">main</div>
+									<span class="type">string</span>
+									<span>
+										The path of the module's main file: the file that is executed first, and loads the other
+										files (if any).
+									</span>
+								</li>
+								<li class="function">
+									<div class="name">getCode</div>
+									<span>Loads the source files of this module.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>A file name or path, delimited by slashes (<code>/</code>).</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">string</span>
+										<span>The JavaScript code located at the given path, as a string.</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">instantiate</div>
+									<span>
+										(optional) A method that allows a module to return a separate function to implement its own
+										execution, rather than relying on the default implementation.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>A path at which there is a script to execute.</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">function</span>
+										<div class="function">
+											<span>A function that can execute a script given the appropriate configuration.</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">object</span>
+														<span>The object to use as <code>$context</code>.</span>
+													</li>
+													<li class="value">
+														<span class="type">object</span>
+														<span>The object to use as <code>$exports</code>.</span>
+													</li>
+													<li class="value">
+														<span class="type">object</span>
+														<span>
+															An object to use as a scope object; its properties should be visible
+															to the script (as if the script were executed with a <code>with</code>
+															statement based on this argument).
+															<!--	TODO is the above clear language?	-->
+														</span>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">object</span>
+												<span>
+													An object containing the properties assigned to <code>$exports</code> by this
+													script.
+												</span>
+											</div>
+										</div>
+									</div>
+								</li>
+							</ul>
+						</li>
+						<li class="object" jsapi:id="arguments[1]">
+							<span>An object specifying objects for the module.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">$context</div>
+									<span class="type">object</span>
+									<span>
+										(optional) The <code>$context</code> object to supply to the module's main file. If not
+										provided, an empty object will be created and supplied.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">$exports</div>
+									<span class="type">object</span>
+									<span>
+										(optional) The <code>$exports</code> object to supply to the module's main file. If not
+										provided, an empty object will be created and supplied.
+									</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns">
+					<div class="label">Returns</div>
+					<span class="type">object</span>
+					<span>An object containing this module's exports.</span>
+				</div>
+			</li>
+			<li class="function" jsapi:id="script">
+				<div class="name">script</div>
+				<span jsapi:id="description">
+					Executes a script in a separate scope. The script will be provided with special objects named <code>$context</code>
+					and <code>$exports</code>. The <code>$context</code> object represents an application-specific context to provide
+					to the script; the <code>$exports</code> object represents an object to which the script can assign properties that
+					will be visible outside the script.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>JavaScript code to execute.</span>
+						</li>
+						<li class="value" jsapi:id="arguments[1]">
+							<span class="type">object</span>
+							<span>
+								An object to use as the <code>$context</code> object when executing the given code. If absent, an
+								empty object will be supplied.
+								<!--	TODO	What about if it is a number, string, or boolean?	-->
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns">
+					<div class="label">Returns</div>
+					<span class="type">object</span>
+					<span>An object which contains the properties the script assigned to the <code>$exports</code> object.</span>
+				</div>
+			</li>
+			<li class="function" jsapi:id="namespace">
+				<div class="name">namespace</div>
+				<!--
+				TODO	this documentation copied from older version; merge with below
+
+				Creates a <i>namespace</i>, a scope object that has a given position in the global scope. For example, a
+				namespace named "inonit.foo.bar" is the <code>bar</code> property of an object which is the <code>foo</code>
+				property of another object which is in turn the <code>inonit</code> property of the global object.
+				<div>
+					If some or all of the named properties exist, the existing ones will be used; they will not be created. Thus, if
+					the global object already has an <code>inonit</code> property, and that object has a <code>foo</code> property,
+					but the <code>inonit.foo</code> object does not have a <code>bar</code> property, a single object will be
+					created and assigned to the <code>bar</code> property of the existing <code>inonit.foo</code> object.
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li><span class="type">string</span> The name of the namespace to create (or return if it exists).</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">object</span> A namespace located at the given name.
+				</div>
+				-->
+				<span>
+					Creates a <i>namespace</i>. A namespace is an object which is globally visible because it is rooted to the
+					global object (e.g., <code>window</code> in the browser). So, in the browser, the namespace
+					<code>inonit.foo.bar</code> would be an object that is the <code>bar</code> property of an object that is the
+					<code>foo</code> property of an object that is the <code>inonit</code> property of <code>window</code>. It could
+					be referenced as <code>inonit.foo.bar</code> in JavaScript code, or alternatively as
+					<code>window.inonit.foo.bar</code> in the browser.
+				</span>
+				<p>
+					In the event portions of the sequence of rooting objects do not exist, they will be created. So, for example, in
+					the browser-based example above, if the <code>window.inonit</code> object exists, but the
+					<code>window.inonit</code> object does not have a property named <code>foo</code>, an object will be created
+					and assigned to the <code>foo</code> property of <code>window.inonit</code>, and then an object will be created
+					and assigned to that object's <code>bar</code> property.
+				</p>
+				<p>
+					If the full sequence of rooting objects exists, the object at the given location will be returned.
+				</p>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>The name/location of the namespace to create.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">object</span>
+					<span>
+						The object at the specified location. The object (and its parents) will be created if it does not
+						exist.
+					</span>
+				</div>
+			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<span>The same object as <code>$platform.java</code>.</span>
+			</li>
+			<li class="object">
+				<div class="name">$platform</div>
+				<span>The same object as <code>$platform</code>.</span>
+			</li>
+			<li class="object">
+				<div class="name">$api</div>
+				<span>The same object as <code>$api</code>.</span>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the rhino/shell SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Rhino-based interaction with shell</title>
+	<link rel="stylesheet" type="text/css" href="http://127.0.0.1/cygwin/home/inonit/src/end/jsh/code/current/jsh/unit/src/js/jsdoc.css" jsapi:link="local" />
+</head>
+<body>
+	<div>
+		<h1>Context</h1>
+		<script type="application/x.jsapi#context">
+			new function() {
+				this.api = {
+					java: $jsapi.module({}, "rhino/host")
+				}
+			}
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="function">
+				<div class="name">run</div>
+				<div>Launches a subprocess using the operating system.</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value"><code>(array of string)</code> The set of command tokens to pass to the underlying operating system.</li>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">stdin</div>
+									A native <code>java.io.InputStream</code>, which will be attached to the subprocess as its
+									standard input stream.
+								</li>
+								<li class="value">
+									<div class="name">stdout</div>
+									A native <code>java.io.OutputStream</code>, which will be attached to the subprocess as its
+									standard output stream.
+								</li>
+								<li class="value">
+									<div class="name">stderr</div>
+									A native <code>java.io.OutputStream</code>, which will be attached to the subprocess as its
+									standard error stream.
+								</li>
+								<li class="value">
+									<div class="name">environment</div>
+									A set of names and values that will be passed to the subprocess as its environment.
+									<!--	TODO	what if this is null or missing?	-->
+								</li>
+								<li class="value">
+									<div class="name">work</div>
+									Specifies the working directory to use for the subprocess; can be either a string specifying
+									the full path, or a native <code>java.io.File</code> object representing the directory.
+									<!--	TODO	what if it does not exist? -->
+									<!--	TODO	what if it is missing?	-->
+								</li>
+								<li class="function" jsapi:id="run.onExit">
+									<div class="name">onExit</div>
+									<div>
+										A function that will be invoked when the subprocess terminates, and will be provided with
+										information about the result.
+									</div>
+									<div>
+										If this property is omitted, a default will be used that throws an exception if the
+										exit status of the subprocess is not zero or the subprocess cannot be launched.
+									</div>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="object">
+												<div class="label">has properties:</div>
+												<ul>
+													<li>
+														<div class="name">status</div>
+														The exit status of the subprocess, if it was launched successfully.
+													</li>
+													<li>
+														<div class="name">error</div>
+														The <code>java.lang.Throwable</code> that was thrown by the Java
+														virtual machine when attempting to execute the subprocess, if it was not
+														successfully launched.
+													</li>
+													<li>
+														<div class="name">command</div>
+														The program that was run.
+													</li>
+													<li>
+														<div class="name">arguments</div>
+														The arguments that were passed to the program.
+													</li>
+												</ul>
+											</li>
+										</ol>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+			</li>
+			<li class="value" jsapi:id="environment">
+				<div class="name">environment</div>
+				<span class="type">object</span>
+				<span>
+					An object describing the operating system process environment under which this script was executed. Each
+					variable defined in the environment is represented as a property in this object, with its name being the name
+					of the property and its value being the value of that property. This object uses JavaScript semantics, and
+					thus this object uses case-sensitive names, even if the underlying operating system does not.
+				</span>
+			</li>
+			<li class="value" jsapi:id="properties">
+				<div class="name">properties</div>
+				<span>
+					<b>(experimental)</b>
+					An object that attempts to allow the use of JavaScript semantics to access Java system properties. For example,
+					the <code>java.home</code> system property is referenced as <code>properties.java.home</code>. This value can be
+					examined using <code>String(properties.java.home)</code> to obtain its value as a <code>string</code>.
+				</span>
+			</li>
+		</ul>
+	</div>
+	<script type="application/x.jsapi#tests">
+	scope.scenario( new function() {
+		this.name = "System environment";
+
+		this.execute = function(scope) {
+			var environment = module.environment;
+
+			scope.test( typeof(environment.PATH) != "undefined" );
+			scope.test( typeof(environment.ZZFF) == "undefined" );
+		}
+	} );
+	</script>
+	<script type="application/x.jsapi#tests">
+	scope.scenario( new function() {
+		this.name = "System properties";
+
+		var properties = module.properties;
+
+		this.initialize = function() {
+			properties.foo = "bar";
+			properties.foo.bar = "baz";
+
+			properties.composite = {
+				david: "caldwell",
+				katie: "alex",
+				home: "/home/inonit",
+			}
+		}
+
+		this.execute = function(scope) {
+			scope.test(properties.foo == "bar");
+			scope.test(properties.foo.bar == "baz");
+
+			scope.test( String(properties.java) == "null" );
+			scope.test( String(properties.java.version) != "null" );
+			scope.test( typeof(properties.java.version) == "object" );
+
+			scope.test( String(properties.composite.david) == "caldwell" );
+			scope.test( String(properties.composite.david).substring(1,4) == "ald" );
+
+			scope.test( String(properties.blah) == "undefined" );
+
+			var explore = function() {
+				var list = function(prefix,p) {
+					for (var x in p) {
+						if (p[x]) {
+							Packages.java.lang.System.err.println(prefix+x + "=" + p[x]);
+						}
+						list(prefix+x+".",p[x]);
+					}
+				}
+
+				Packages.java.lang.System.err.println("BEFORE:");
+				list("",properties);
+
+				Packages.java.lang.System.err.println("AFTER:");
+				delete properties.foo;
+				list("",properties);
+
+				Packages.java.lang.System.err.println("JAVA:");
+				list("",properties.java);
+			}
+			//	explore();
+		}
+	} );
+	</script>
+</body>
+</html>

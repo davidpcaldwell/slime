@@ -1,0 +1,125 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the SLIME loader for rhino.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Rhino loader</title>
+</head>
+<body>
+	<div>
+		<h1>$loader</h1>
+		<ul>
+			<li class="value">
+				<div class="name">code</div>
+				<span class="type">string</span>
+				<span>The code of the platform loader, as a string.</span>
+			</li>
+			<li class="function">
+				<div class="name">execute</div>
+				<span>Executes a JavaScript source file, overriding the default loader's implementation.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">object</span>
+							<span>A scope into which to execute the file.</span>
+						</li>
+						<li class="value">
+							<span class="type">string</span>
+							<span>
+								A name to use for the file, for the purposes of debugging information, stack traces, etc.
+							</span>
+						</li>
+						<li class="value">
+							<span class="type">JavaClass java.io.InputStream</span>
+							<span>An input stream from which the file can be read.</span>
+						</li>
+					</ol>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="function" jsapi:id="module">
+				<div class="name">module</div>
+				<span jsapi:id="description" jsapi:reference="doc['loader']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description')">Invokes the platform loader's <code>module</code> method.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">JavaClass inonit.script.rhino.Module</span>
+							<span>A module to load.</span>
+						</li>
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="doc['loader']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'arguments[1]')">
+							<span>The second argument to the platform loader's <code>module</code> method.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns" jsapi:reference="doc['loader']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'returns')">
+					<div class="label">Returns</div>
+					<span>The return value of the platform loader's <code>module</code> method.</span>
+				</div>
+			</li>
+			<li class="function" jsapi:id="script">
+				<div class="name">script</div>
+				<span jsapi:id="description" jsapi:reference="doc['loader']..*.(@jsapi::id == 'script').*.(@jsapi::id == 'description')">Invokes the platform loader's <code>script</code> method.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							Either the first argument to the platform loader's <code>script</code> method or an object describing
+							a code file.
+							<div>
+								The first argument to the platform loader's <code>script</code> method,
+							</div>
+							<div class="label">OR</div>
+							<div>
+								<span>An object describing a code file.</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">name</div>
+										<span class="type">string</span>
+										<span>A name to use for this file, for debugging, stack traces, etc.</span>
+									</li>
+									<li class="value">
+										<div class="name">$in</div>
+										<span class="type">JavaClass java.io.InputStream</span>
+										<span>An input stream from which the file can be read.</span>
+									</li>
+								</ul>
+							</div>
+						</li>
+						<li class="value"  jsapi:id="arguments[1]" jsapi:reference="doc['loader']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'arguments[1]')">
+							<span>The second argument to the platform loader's <code>script</code> method.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns" jsapi:reference="doc['loader']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'returns')">
+					<div class="label">Returns</div>
+					<span>The return value of the platform loader's <code>script</code> method.</span>
+				</div>
+			</li>
+			<li class="function" jsapi:id="namespace" jsapi:reference="doc['loader']..*.(@jsapi::id == 'namespace')">
+				<div class="name">namespace</div>
+				<span>Invokes the platform loader's <code>namespace</code> method.</span>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

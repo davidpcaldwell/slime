@@ -1,0 +1,177 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html>
+<head>
+	<title>api.html format</title>
+</head>
+<body>
+	<div>
+		<h1>Notation</h1>
+		<p>
+			For the purposes of this document, <code>p.type</code> may be read as "a <code>p</code> element with
+			<code>class="type"</code>."
+		</p>
+		<h1>Documentation</h1>
+		<p>
+			<strong>Context</strong> and <strong>Exports</strong> are objects. They should be contained in <code>div</code>
+			elements with an appropriate <code>h1</code> element containing the word "Context" or "Exports." After this
+			information, they can commence with the <code>ul</code> described below containing their properties.
+			<!--
+				<div>${cursor}__DESCRIPTION__</div>
+				<div>
+					<h1>Context</h1>
+					<ul>
+					</ul>
+				</div>
+				<div>
+					<h1>Exports</h1>
+					<ul>
+					</ul>
+				</div>
+			-->
+		</p>
+		<p>
+			An object is an unordered list (<code>ul</code>) of properties.
+		</p>
+		<p>
+			Each property is a <code>li</code> which can be a <code>li.object</code>, <code>li.function</code>,
+			<code>li.constructor</code>, or <code>li.value</code>. If a function can be called both as a function and a constructor,
+			it may appear twice in the list.
+		</p>
+		<p>
+			The type of a value (for example, the types of non-object properties, or function arguments or return values) can be
+			specified using a <code>span.type</code> at the beginning of their content.
+		</p>
+		<!--	TODO describe type declarations in a paragraph	-->
+		<!--
+			<div class="type">
+				<a class="type" name="types.__NAME__">__NAME__</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</div>
+		-->
+		<p>
+			These property <code>li</code> elements each contain a <code>div.name</code>. This is the name of
+			the property.
+		</p>
+		<!--
+			<li class="value">
+				<div class="name">${cursor}__NAME__</div>
+				<span class="type">__TYPE__</span>
+				<span>__DESCRIPTION__</span>
+			</li>
+		-->
+		<p>
+			<code>li.object</code> elements should contain a <code>div.label</code> containing
+			the text "has properties." This will cause the description of that object to display comprehensibly.
+			<!--
+				<li class="object">
+					<div class="name">${cursor}__NAME__</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</li>
+			-->
+		</p>
+		<div>
+			<h2>Function / Constructor</h2>
+			<p>
+				Can describe itself directly after the <code>div</code> containing its name.
+			</p>
+			<p>
+				Then may contain either or both of the following <code>div</code> elements.
+			</p>
+			<p>
+				<code>div.arguments</code>. Should begin with <code>div.label</code>
+				containing the word "Arguments." Then can contain HTML describing the arguments in a freeform way, or an
+				<code>ol</code> element containing <code>li</code> elements with the same semantics as object properties.
+			</p>
+			<p>
+				<code>div.returns</code> (function) OR <code>div.instances</code> (constructor). Should begin with 
+				<code>div.label</code> containing the word "Returns" or "Instances" as appropriate. Then can contain HTML
+				describing the return value(s) expected and the circumstances under which each value might be expected.
+			</p>
+			<!--
+				<li class="function">
+					<div class="name">${cursor}__NAME__</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			-->
+			<!--
+				<li class="constructor">
+					<div class="name">${cursor}__NAME__</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			-->
+			<p>
+				<!--	TODO	Add div.prototype?, "serves as extra stuff for new." I believe this meant that this would further
+								describe the use of this object as a constructor.	-->
+			</p>
+		</div>
+	</div>
+	<div>
+		<h1>Unit testing</h1>
+		<p>
+			Unit tests are implemented using special <code>&lt;script></code> elements with <code>type</code> attributes beginning
+			with <code>application/x.jsapi</code> and a qualifier indicating when they should be executed.
+		</p>
+		<p>
+			Anywhere in the document, one may declare one or more scripts with
+			<code>type="application/x.jsapi#scope"</code>; these will be executed before anything else in the scope in which tests
+			will be executed.
+		</p>
+		<p>
+			In the context div, we should have a script with <code>type="application/x.jsapi#context"</code> that contains the code
+			necessary to instantiate the context object to be used for unit testing.
+		</p>
+		<p>
+			Throughout the code we can have scripts with <code>type="application/x.jsapi#initialize"</code> that contain
+			initialization code; during the initialization phase of the tests, these will be run in sequence.
+		</p>
+		<p>
+			Throughout the code we can have scripts with <code>type="application/x.jsapi#tests"</code> that contain tests to be run,
+			with a variable named <code>scope</code> corresponding to the test scope (see <code>js/api/unit.before.js</code>). These
+			script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
+			<code>http://www.inonit.com/jsapi</code>) which will be used as the scenario label when executing the tests within the
+			element.
+		</p>
+	</div>
+</body>
+</html>

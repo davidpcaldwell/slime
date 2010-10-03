@@ -1,0 +1,82 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh loader</title>
+</head>
+<body>
+	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '1')"></div>
+	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '2')"></div>
+	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '3')"></div>
+	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '$platform')">
+	</div>
+	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '$api')">
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="function">
+				<div class="name">module</div>
+				<span jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description')">Invokes the Rhino loader's <code>module</code> method.</span>
+				<div jsapi:reference="doc['loader']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description2')"></div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">jsh.file.Pathname</span>
+							<span>
+								The location of the module. If the file is a directory, it is treated as the base of an unpacked
+								module. If the file is a plain file, then if its name ends in <code>.slime</code>, it is treated as
+								a packed module. Otherwise, the given file is treated as the main file of a module whose base is the
+								directory in which the file is located.
+							</span>
+						</li>
+						<li jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'arguments[1]')">The second argument to the Rhino loader's <code>module</code> method.</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'returns')">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>The return value of the Rhino loader's <code>module</code> method.</span>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">script</div>
+				<span jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'script').*.(@jsapi::id == 'description')">Invokes the Rhino loader's <code>script</code> method.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">jsh.file.Pathname</span>
+							<span>The <code>jsh.file.Pathname</code> at which the script is located.</span>
+						</li>
+						<li jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'arguments[1]')">The second argument to the Rhino loader's <code>script</code> method.</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'returns')">
+					<div class="label">Returns</div>
+					<span>The return value of the Rhino loader's <code>script</code> method.</span>
+				</div>
+			</li>
+			<li class="function" jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'namespace')">
+				<div class="name">namespace</div>
+				Invokes the Rhino loader's <code>namespace</code> method.
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

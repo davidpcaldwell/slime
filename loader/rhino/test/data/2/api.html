@@ -1,0 +1,17 @@
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<script type="application/x.jsapi#context">
+		new function() {
+			this.echo = function(message) {
+				Packages.java.lang.System.err.println(message);
+			}
+		}
+	</script>
+	<script type="application/x.jsapi#tests">
+		scope.test(module.multiply(2,3) == 6);
+	</script>
+</body>
+</html>

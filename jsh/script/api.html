@@ -1,0 +1,425 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh.script</title>
+	<style type="text/css">
+		#getopts { border-collapse: collapse; margin: 0em 0.5em; }
+		#getopts td { border: 1px solid; padding: 0.2em; }
+		#getopts th { padding: 0em 0.4em; }
+	</style>
+</head>
+<body>
+	<script type="application/x.jsapi#scope">
+		var file = $jsapi.module({
+			api: {
+				js: $jsapi.module({}, "js/object"),
+				java: $jsapi.module({
+					classLoader: $host.getClassLoader()
+				}, "rhino/host")
+			},
+			cygwin: {
+				root: String(jsh.shell.properties.cygwin.root),
+				paths: String(jsh.shell.properties.cygwin.paths)
+			},
+			$pwd: String(jsh.shell.properties.user.dir)
+		}, "rhino/file");
+		var $filesystem = file.filesystem;
+		var FILE = file;
+	</script>
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="object">
+				<div class="name">api</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">java</div>
+						<span>The rhino/host module.</span>
+					</li>
+					<li class="value">
+						<div class="name">file</div>
+						<span>The rhino/file module.</span>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">$host</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">script</div>
+						<span class="type">JavaClass java.io.File</span>
+						<span>The <code>java.io.File</code> object representing the main script file this shell is running.</span>
+					</li>
+					<li class="value">
+						<div class="name">arguments</div>
+						<span class="type">JavaClass java.lang.String[]</span>
+						<span>The arguments passed to the script.</span>
+					</li>
+					<li class="function">
+						<div class="name">addClasses</div>
+						<span>Adds a file to the classpath of this script.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">JavaClass java.io.File</span>
+									<span>A file to add to the classpath (either a directory or a .jar file)</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#context">
+			new function() {
+				this.api = new function() {
+					this.java = $jsapi.module({}, "rhino/host");
+					this.file = file;
+				};
+
+				this.$host = {
+					script: jsh.script.pathname.$peer.getHostFile(),
+					arguments: function() {
+						var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,3);
+						rv[0] = "a";
+						rv[1] = "bb";
+						rv[2] = "C";
+						return rv;
+					}()
+				};
+			}
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="value">
+				<div class="name">pathname</div>
+				<span class="type">jsh.file Pathname</span>
+				<span>The path of the main script.</span>
+			</li>
+			<li class="value">
+				<div class="name">file</div>
+				<span class="type">jsh.file File</span>
+				<span>The object representing the main script's file itself.</span>
+			</li>
+			<li class="value">
+				<div class="name">arguments</div>
+				<span class="type">Array of string</span>
+				<span>An array containing the arguments passed to the shell.</span>
+			</li>
+			<li class="function">
+				<div class="name">getRelativePath</div>
+				<span>Returns a pathname calculated relative to the path of the main script.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A relative path.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">jsh.file Pathname</span>
+					<span>
+						A path relative to the main script.  A convenience method for
+						<code>file.getRelativePath(...)</code>
+					</span>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">addClasses</div>
+				<span>Adds a <code>jsh.file.Pathname</code> to the script classpath.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">jsh.file.Pathname</span>
+							<span>
+								A pathname to add to the classpath. An error will be thrown if no file or directory is found
+								at the given pathname.
+							</span>
+						</li>
+					</ol>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">getopts</div>
+				<span>
+					Processes an array of strings as arguments, using an object which specifies how arguments are interpreted.
+				</span>
+				<div>
+					An "option" is an argument which is prefixed with a dash (<code>-</code>) character. The argument immediately
+					following the option is, depending on the option's type, interpreted as a value for that option.
+				</div>
+				<div>
+					For example, the following code:
+					<pre>var parameters = jsh.shell.getopts({
+	options: {
+		s: String,
+		n: Number,
+		num: 8,
+		b: false,
+		p: Boolean,
+		list: jsh.shell.getopts.ARRAY(String)
+	}
+}, [ "-s", "aString", "-n", 42, "-b", "-list", "a", "-list", "b" ]);</pre>
+					produces an object equivalent to:
+					<pre>var parameters = { options: { s: "aString", n: 42, num: 8, b: true, p: false, list: ["a", "b"] } };</pre>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">UNEXPECTED_OPTION_PARSER</div>
+						<span>A set of possibilities for handling unrecognized options.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">ERROR</div>
+								<span>An unexpected options handler that treats any unrecognized option as an error.</span>
+							</li>
+							<li class="value">
+								<div class="name">IGNORE</div>
+								<span>An unexpected options handler that discards any unrecognized options.</span>
+							</li>
+							<li class="value">
+								<div class="name">SKIP</div>
+								<span>
+									An unexpected options handler that preserves any unrecognized options in the
+									<code>arguments</code> member of the <code>getopts</code> return value.
+								</span>
+							</li>
+							<li class="value">
+								<div class="name">INTERPRET</div>
+								<span>
+									An unexpected options handler that attempts to handle unrecognized options.  If the argument
+									following the unrecognized option name is another option, the argument will be interpreted as a
+									<code>boolean</code> argument with value <code>true</code>.  Otherwise, the argument will be
+									interpreted as a <code>string</code> argument with its value specified by the next argument.
+								</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>An object describing how the arguments should be processed.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">options</div>
+									<span class="type">object</span>
+									<span>
+										Each named property of this object is the name of a recognized option. The value of
+										a property describes the possible values of the option.
+									</span>
+									<div>
+										
+									</div>
+								</li>
+								<li class="value">
+									<div class="name">unhandled</div>
+									<span>
+										(optional) One of the properties of the <code>UNEXPECTED_OPTION_PARSER</code>
+										object.
+									</span>
+								</li>
+							</ul>
+						</li>
+						<li class="value">
+							<span class="type">Array of string</span>
+							<span>
+								(optional) A list of arguments to be processed.  If omitted, the values in 
+								<code>jsh.script.arguments</code> will be processed.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span>An object containing the result of parsing the argument list.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">options</div>
+							<span class="type">object</span>
+							<span>
+								Each property of this object represents an option parsed; the name of the property indicates the
+								option's name and its value indicates the option's value.
+							</span>
+							<div>
+								Several option types are possible.
+								<table id="getopts">
+									<tr>
+										<th>Declaration</th>
+										<th>Type</th>
+										<th>Declaration with default value</th>
+										<th>Value if present</th>
+										<th>Value if not present and no default</th>
+									</tr>
+									<tr>
+										<td><code>Boolean</code></td>
+										<td><code>boolean</code></td>
+										<td><code>false</code> (<code>true</code> is illegal, as value would not be negatable)</td>
+										<td><code>true</code></td>
+										<td><code>false</code></td>
+									</tr>
+									<tr>
+										<td><code>String</code></td>
+										<td><code>string</code></td>
+										<td>A value of type <code>string</code></td>
+										<td>The value of the next argument</td>
+										<td><code>undefined</code></td>
+									</tr>
+									<tr>
+										<td><code>Number</code></td>
+										<td><code>number</code></td>
+										<td>A value of type <code>number</code></td>
+										<td>The value of the next argument, interpreted as a number</td>
+										<td><code>undefined</code></td>
+									</tr>
+									<tr>
+										<td><code>jsh.file.Pathname</code></td>
+										<td><code>jsh.file.Pathname</code></td>
+										<td>A value of type <code>jsh.file.Pathname</code></td>
+										<td>
+											The value of the next argument, interpreted as a <code>jsh.file.Pathname</code>. If the
+											next argument is an absolute path, the equivalent <code>jsh.file.Pathname</code> is
+											returned. Otherwise, the next argument is interpreted as a path relative to the current
+											working directory.
+										</td>
+										<td><code>undefined</code></td>
+									</tr>
+									<tr>
+										<td>
+											<code>getopts.ARRAY</code>(<i>type</i>) where <i>type</i> is <code>String</code>,
+											<code>Number</code> or <code>jsh.file.Pathname</code>)
+										</td>
+										<td><code>Array</code> of applicable type</td>
+										<td>(not applicable)</td>
+										<td>
+											The value of the next argument, interpreted as the applicable type. Arguments can be
+											specified multiple times on the same command line by repeating the option.
+										</td>
+										<td>A zero-length array.</td>
+									</tr>
+								</table>
+							</div>
+						</li>
+						<li class="value">
+							<div class="name">arguments</div>
+							<span class="type">Array of string</span>
+							<span>
+								The arguments that were not parsed, either because they were skipped, or because they were
+								"values" (arguments not beginning with a dash) that did not follow an "option" (an argument
+								beginning with a dash).
+							</span>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="jsh.script.getopts">
+					var getopts = module.getopts;
+					
+					var t_0 = getopts(
+						{
+							options: {
+								s: String
+							},
+						},
+						[ "-s", "brilliant" ]
+					);
+
+					scope.test( function() { return t_0.options.s == "brilliant" } );
+
+					var t_1 = getopts(
+						{
+							options: {
+								n: Number,
+								s: String,
+								b: Boolean
+							}
+						},
+						[ "-s", "hello", "-b", "-n", "8" ]
+					);
+
+					scope.test( function() { return t_1.options.n == 8; } );
+					scope.test( function() { return t_1.options.s == "hello"; } );
+					scope.test( function() { return t_1.options.b; } );
+
+					var t_array = getopts(
+						{
+							options: {
+								l: getopts.ARRAY( String ),
+								b: Boolean,
+								nob: Boolean,
+								n: 8,
+								s: "nodefault",
+							}
+						},
+						[ "-s", "sizzle", "-l", "hello", "-l", "world", "-b" ]
+					);
+
+					scope.test( function() { return t_array.options.l.length == 2; } );
+					scope.test( function() { return t_array.options.l[0] == "hello"; } );
+					scope.test( function() { return t_array.options.l[1] == "world"; } );
+					scope.test( function() { return t_array.options.s == "sizzle"; } );
+					scope.test( function() { return t_array.options.b; } );
+					scope.test( function() { return !t_array.options.nob; } );
+					scope.test( function() { return t_array.options.n == 8; } );
+
+					//
+					//	Deprecated usage
+					//
+
+					var t_d_1 = getopts(
+						{
+							options: {
+								s: String
+							},
+						},
+						[ "-s", "yes" ]
+					);
+
+					scope.test( function() { return t_d_1.options.s == "yes" } );
+
+					var PATHNAME_SEPARATOR = $filesystem.$unit.getPathnameSeparator();
+					var anAbsolute = PATHNAME_SEPARATOR + [ "hello", "world" ].join(PATHNAME_SEPARATOR);
+					var pathsOptions = getopts({
+							options: {
+								absolute: file.Pathname,
+								relative: file.Pathname
+							}
+						},
+						[ "-absolute", anAbsolute, "-relative", "hello" ]
+					);
+					scope.test( pathsOptions.options.absolute.toString().match(/([A-Z]\:)?(.*)/)[2] == anAbsolute );
+					scope.test( pathsOptions.options.relative.toString() == FILE.workingDirectory.toString() + PATHNAME_SEPARATOR + "hello" );
+
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

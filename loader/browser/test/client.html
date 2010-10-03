@@ -1,0 +1,480 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the SLIME loader for web browsers.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html>
+<head>
+	<title>Module Unit Tester</title>
+	<style type="text/css">
+		div#tree div div { margin: 0em 1em }
+	</style>
+	<script type="text/javascript">
+		var request = new function() {
+			this.query = function(mode) {
+				var rv = null;
+				if (window.location.search && window.location.search.length > 1) {
+					rv = {};
+					if (mode && mode.types) {
+						for (var x in mode.types) {
+							if (mode.types[x] == Array) {
+								rv[x] = [];
+							}
+						}
+					}
+					var query = window.location.search.substring(1).split("&");
+					for (var i=0; i<query.length; i++) {
+						var tokens = query[i].split("=");
+						var name = tokens[0];
+						var value = tokens[1];
+						//	Should we always unescape the value?
+						var type = (mode && mode.types && mode.types[name]) ? mode.types[name] : String;
+						if (type == String) {
+							if (!rv[name]) rv[name] = "";
+							rv[name] += value;
+						} else if (type == Array) {
+							rv[name].push(value);
+						}
+					}
+				}
+				return rv;
+			}
+		}
+	</script>
+	<script type="text/javascript">
+		var parameters = request.query({
+			types: {
+				module: Array
+			}
+		})
+		if (parameters.platform) parameters.platform = unescape(parameters.platform);
+		if (parameters.jsapi) parameters.jsapi = unescape(parameters.jsapi);
+		for (var i=0; i<parameters.module.length; i++) {
+			parameters.module[i] = unescape(parameters.module[i]);
+		}
+	</script>
+	<script type="text/javascript">
+		var debug = function(s) {
+			if (document.getElementById("debug")) {
+				var div = document.createElement("div"); document.getElementById("debug").appendChild(div);
+				var pre = document.createElement("pre"); div.appendChild(pre);
+				pre.appendChild(document.createTextNode(s));
+			} else {
+				arguments.callee.buffer.push(s);
+			}
+		}
+		debug.buffer = [];
+		debug.flush = function() {
+			for (var i=0; i<this.buffer.length; i++) {
+				this(this.buffer[i]);
+			}
+		}
+		var inonit = {
+			loader: {
+				debug: debug,
+				modes: {
+					module: parameters["modes.module"],
+					execute: parameters["modes.execute"]
+				},
+				url: (parameters && parameters.platform) ? parameters.platform : "../../../loader/"
+			}
+		};
+		var log = debug;
+	</script>
+	<script type="text/javascript" src="../client.js"></script>
+	<script type="text/javascript">
+		window.onload = function() {
+			html.initialize();
+			if (parameters) {
+				if (!parameters.jsapi) {
+					parameters.jsapi = document.getElementById("jsapi").value;
+				}
+				if (!parameters.platform) {
+					parameters.platform = document.getElementById("platform").value;
+				}
+				html.setModules(parameters.module);
+				document.getElementById("jsapi").value = parameters.jsapi;
+				document.getElementById("platform").value = parameters.platform;
+				document.getElementById("modes.module").value = parameters["modes.module"];
+				document.getElementById("modes.execute").value = parameters["modes.execute"];
+			} else {
+				document.getElementById("results").style.display = "none";
+				document.getElementById("debug").style.display = "none";
+			}
+			if (parameters) {
+				log.flush();
+				var jsapi = inonit.loader.script(parameters.jsapi+"unit.before.js", { test: "test" });
+				jsapi.Scenario.HALT_ON_EXCEPTION = false;
+				debug("Initializing platform...");
+				var scenario;
+
+				var toErrorMessage = function(e) {
+					if (e.message) return e.message + " at line " + e.lineNumber + " in " + e.fileName;
+					if (typeof(e) == "string") return e;
+					return "Unknown error type: " + e;
+				}
+				//	TODO	get rid of platform parameter
+//				try {
+//					inonit.loader.initialize(parameters.platform);
+//				} catch (e) {
+//					scenario = new jsapi.Scenario();
+//					scenario.name = "Unit Tests";
+//					scenario.execute = function(scope) {
+//						scope.test({
+//							success: false,
+//							messages: {
+//								failure: "Error while initializing platform: " + toErrorMessage(e)
+//							}
+//						});
+//					}
+//				}
+				if (inonit.loader.platform || true) {
+					var scopes = [];
+					for (var i=0; i<parameters.module.length; i++) {
+						var module = parameters.module[i];
+						var scope = {
+							$unit: {},
+							$doc: {
+								members: {},
+								types: {}
+							},
+							$Doc: {
+								Type: function() {
+								},
+								Function: function() {
+								}
+							},
+							module: {
+							}
+						};
+						scope.XMLList = function() {};
+						try {
+							var moduleName = module;
+							var location = (function() {
+								if (module.substring(module.length-1) == "/") {
+									return {
+										base: module
+									};
+								} else {
+									return {
+										base: module.split("/").slice(0,-1).join("/") + "/",
+										main: module.split("/").slice(-1)
+									};
+								}
+							})();
+							var unparsed = inonit.loader.$sdk.fetch(location.base+"api.html");
+							var div = document.createElement("div");
+							//	TODO	there may be a more complex, robust, standards-compliant way of doing this
+							//			maybe with DocumentObjectModel or whatever
+							div.innerHTML = unparsed;
+							(function() {
+								var MEDIA_TYPE = "application/x.jsapi";
+								var pres = (function() {
+									var all = div.getElementsByTagName("script");
+									var rv = [];
+									for (var i=0; i<all.length; i++) {
+										if (all[i].type.substring(0,MEDIA_TYPE.length) == MEDIA_TYPE) {
+											rv.push(all[i]);
+										}
+									}
+									return rv;
+								})();
+								//	TODO	review these scope variables to see whether they make sense
+								//	TODO	move the eval code, perhaps, so that these other variables are not polluting
+								//			the scope and/or leaking into it
+								var $unit = scope.$unit;
+								var $platform = inonit.loader.$sdk.platform;
+								var $api = inonit.loader.$sdk.api;
+								var module = scope.module;
+								var $jsapi = new function() {
+									this.module = function(context,path) {
+										return inonit.loader.module(
+											{ base: parameters.module[i] + arguments.callee.top + path + "/" },
+											{ context: context }
+										);
+									}
+								};
+								$jsapi.module.top = "";
+
+								var getCode = function(e) {
+									var rv = "";
+									var nodes = e.childNodes;
+									for (var i=0; i<nodes.length; i++) {
+										var data = nodes[i].data;
+										data = data.replace(/\&amp\;/g, "&").replace(/\&lt\;/g, "<");
+										rv += data;
+									}
+									if (/^\<\!\[CDATA\[/.test(rv)) {
+										rv = rv.substring("<[!CDATA[".length,rv.length-"]]>".length);
+									}
+									return rv;
+								}
+
+								for (var j=0; j<pres.length; j++) {
+									if (pres[j].type == MEDIA_TYPE + "#context") {
+										log("CONTEXT: " + pres[j].innerHTML);
+										$jsapi.module.top = pres[j].getAttribute("jsapi:top");
+										scope.$unit.context = eval(getCode(pres[j]));
+									}
+								}
+								for (var j=0; j<pres.length; j++) {
+									if (pres[j].type == MEDIA_TYPE + "#scope") {
+										log("SCOPE: " + pres[j].innerHTML);
+										eval(getCode(pres[j]));
+									}
+								}
+
+								var executePres = function(pres) {
+									return function(s) {
+										for (var j=0; j<pres.length; j++) {
+											if (pres[j].type == MEDIA_TYPE + "#tests") {
+												log("TESTS: " + getCode(pres[j]));
+												var name = pres[j].getAttribute("jsapi:id") ? pres[j].getAttribute("jsapi:id") : "<pre>";
+												var execute = function(scope) {
+													try {
+														eval(getCode(pres[j]));
+													} catch (e) {
+														debugger;
+														scope.test({
+															success: false,
+															messages: {
+																failure: moduleName + " threw: " + String(e) + " on " + getCode(pres[j])
+															}
+														});
+													}
+												}
+												s.scenario({
+													name: name,
+													execute: execute
+												});
+											}
+										}
+									}
+								}
+								var array = [];
+								for (var j=0; j<pres.length; j++) {
+									array.push(pres[j]);
+								}
+								scope.$unit.execute = executePres(array);
+							})();
+						} catch (e) {
+							debugger;
+							throw "Not found: API for " + module;
+						}
+						scope.name = module;
+						try {
+							inonit.loader.module(
+								location,
+								{ $context: scope.$unit.context, $exports: scope.module }
+							);
+
+							scope.execute = function(s) {
+								this.$unit.execute(s);
+							}
+						} catch (e) {
+							if (e.code == 404) {
+								//	TODO	should be better here: right now we assume that it is find that the module cannot be
+								//			loaded, which allows "standalone" tests like those used to test the browser/module
+								//			client.js. But that should be made explicit somehow when declaring the "module" in the
+								//			list of tests, perhaps, or something.
+								scope.execute = function(s) {
+									this.$unit.execute(s);
+								}
+							} else {
+								debugger;
+								scope.execute = function(s) {
+									debugger;
+									s.test({ success: false, messages: { failure: "Error: " + toErrorMessage(e) }});
+								}
+							}
+						}
+						scopes.push(scope);
+					}
+					scenario = new jsapi.Scenario();
+					scenario.name = "Unit Tests";
+					scenario.execute = function(scope) {
+						for (var i=0; i<scopes.length; i++) {
+							var s = new jsapi.Scenario(scopes[i]);
+							scope.scenario(s);
+						}
+					}
+				}
+				var console = new function() {
+					var log = function(message) {
+						var child = document.createElement("div");
+						child.appendChild(document.createTextNode(message));
+						document.getElementById("log").appendChild( child );
+					}
+
+					var current = document.getElementById("tree");
+
+					this.start = function(scenario) {
+						log("Running: " + scenario.name);
+						var now = document.createElement("div");
+						now.scenario = scenario;
+						now.appendChild(document.createTextNode("Running: " + scenario.name));
+						current.appendChild(now);
+						current = now;
+					}
+
+					this.end = function(scenario, success) {
+						var result = (success) ? "Passed" : "Failed";
+						current.appendChild(document.createTextNode(result + " " + scenario.name))
+						current = current.parentNode;
+						log("END Scenario: " + scenario.name);
+					}
+
+					this.test = function(test) {
+						if (test.success) {
+							log("Success: " + test + "; " + test.messages.success);
+						} else {
+							log("Failure: " + test);
+							log("Reason: " + test.messages.failure);
+						}
+						var div = document.createElement("div");
+						if (test.success) {
+							div.appendChild(document.createTextNode(test.messages.success));
+						} else {
+							div.appendChild(document.createTextNode(test.messages.failure));
+						}
+						current.appendChild(div);
+					}
+				};
+				var success = scenario.run(console);
+				if (!success) {
+					alert("Failed!");
+				} else {
+					alert("PASS");
+				}
+			}
+		}
+	</script>
+	<script type="text/javascript">
+		var html = new function() {
+			var addChildrenTo = function(rv,e,filter,recurse) {
+				for (var i=0; i<e.childNodes.length; i++) {
+					if (filter(e.childNodes[i])) {
+						rv.push(e.childNodes[i]);
+					}
+					if (recurse && e.childNodes[i]) {
+						addChildrenTo(rv,e.childNodes[i],filter,recurse);
+					}
+				}
+			}
+
+			var getChild = function(e,filter,recurse) {
+				var rv = [];
+				addChildrenTo(rv,e,filter,recurse);
+				if (rv.length == 0) return null;
+				if (rv.length > 1) throw "Multiple elements match filter";
+				return rv[0];
+			}
+
+			var isInputNamed = function(name) {
+				return function(node) {
+					return node.tagName && node.tagName.toLowerCase() == "input" && node.name == name;
+				}
+			}
+
+			var getChildren = function(e,filter,recurse) {
+				var rv = [];
+				addChildrenTo(rv,e,filter,recurse);
+				return rv;
+			}
+
+			var makeRemovable = function(moduleDiv) {
+				var button = getChild(moduleDiv,isInputNamed("remove"));
+				button.disabled = false;
+				button.onclick = function() {
+					button.parentNode.parentNode.removeChild(button.parentNode);
+				}
+			}
+
+			var addButton;
+
+			var addModule = function(path) {
+				var copy = document.getElementById("module").cloneNode(true);
+				copy.setAttribute("id", "");
+				getChild(copy, isInputNamed("module")).value = (path) ? path : "";
+				copy.value = (path) ? path : "";
+				makeRemovable(copy);
+				document.getElementById("modules").insertBefore(copy,addButton);
+			}
+
+			this.initialize = function() {
+				addButton = getChild(document.getElementById("modules"), isInputNamed("add"));
+				addButton.onclick = function() {
+					addModule("");
+				}
+			}
+			
+			this.setModules = function(modules) {
+				if (modules.length > 0) {
+					var pathInput = getChild(document.getElementById("module"), isInputNamed("module"));
+					pathInput.value = modules[0];
+
+					for (var i=1; i<modules.length; i++) {
+						addModule(modules[i]);
+					}
+				}
+			}
+		}
+	</script>
+</head>
+<body>
+	<div id="form">
+		<h1>Modules</h1>
+		<form action="">
+			<div id="modules">
+				<h2>Targets</h2>
+				<div id="module">
+					<input name="module" size="50" type="text" />
+					<input type="button" name="remove" value="Remove" disabled="disabled" />
+				</div>
+				<input type="button" name="add" value="Add" />
+			</div>
+			<div>
+				JSAPI module location: <input id="jsapi" name="jsapi" type="text" size="50" value="../../../loader/api/" />
+			</div>
+			<div>
+				Loader module location: <input id="platform" name="platform" type="text" size="50" value="../../../loader/" />
+			</div>
+			<div>
+				<h2>Modes</h2>
+				<select id="modes.module" name="modes.module">
+					<option value="evalScope">evalScope</option>
+					<option value="evalString">evalString</option>
+					<option value="scriptElement">scriptElement</option>
+				</select>
+				<select id="modes.execute" name="modes.execute">
+					<option value="call">call</option>
+					<option value="into">into</option>
+					<option value="with">with</option>
+				</select>
+			</div>
+			<input type="submit" name="submit" value="Run" />
+		</form>
+	</div>
+	<div id="results">
+		<h1>Test Results</h1>
+		<div id="tree">
+		</div>
+		<div id="log">
+		</div>
+	</div>
+	<div id="debug">
+		<h1>Debug Console</h1>
+	</div>
+</body>
+</html>

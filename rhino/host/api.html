@@ -1,0 +1,181 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the rhino/host SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Java host objects</title>
+</head>
+<body>
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="function">
+				<div class="name">warning</div>
+				<span>
+					(optional) A function that will be invoked when this module wishes to emit a warning. The default
+					implementation pops up the debugger if one is available and writes the given message to
+					<code>java.lang.System.err</code>.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li><span class="type">string</span> A warning message.</li>
+					</ol>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="function">
+				<div class="name">isJavaObject</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li>A JavaScript value</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">boolean</span> <code>true</code> if the given argument is a Java object, and <code>false</code> if it is
+					<code>undefined</code>, <code>null</code>, a JavaScript primitive
+					value, or a native JavaScript object.
+					<!--	TODO	What if it is JavaPackage? JavaClass?	-->
+				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="isJavaObject">
+					var isJavaObject = module.isJavaObject;
+					scope.test(isJavaObject(Packages.java.lang.Runtime.getRuntime()));
+					scope.test(isJavaObject(new Packages.java.lang.Object()));
+					scope.test(isJavaObject(new Packages.java.lang.String("hello world")));
+					scope.test(isJavaObject(new Packages.java.lang.Integer(4)));
+					scope.test(isJavaObject(new Packages.java.lang.Boolean(true)));
+					scope.test(!isJavaObject("hello world"));
+					scope.test(!isJavaObject(2));
+					scope.test(!isJavaObject(true));
+					scope.test(!isJavaObject(2.0));
+					var x = {};
+					scope.test(!isJavaObject(x.myUndefinedMember));
+					scope.test(!isJavaObject(null));
+					scope.test(!isJavaObject({}));
+					var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.Object, 4 );
+					scope.test(isJavaObject(javaArray));
+				</script>
+			</li>
+			<li class="function">
+				<div class="name">toJsArray</div>
+				<span>Converts a native Java array into an <code>Array</code>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li><span class="type">java.lang.Object[]</span> A Java array to be converted.</li>
+						<li><span class="type">function</span> A function to convert the Java values into script objects.</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">Array</span> An <code>Array</code> containing the elements produced by the function
+					argument given the elements in the Java array.
+				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="toJsArray"><![CDATA[
+					var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.String, 3 );
+					javaArray[0] = "Hello";
+					javaArray[1] = "World";
+					javaArray[2] = "David";
+
+					var isWord = function(s) { return s + " is a word."; }
+					var stringLength = function(s) { return s.length(); }
+
+					var words = module.toJsArray( javaArray, isWord );
+					var lengths = module.toJsArray( javaArray, stringLength );
+					var scriptStrings = module.toJsArray( javaArray, function(s) { return String(s); } );
+
+					scope.test( words[1] == "World is a word." );
+					scope.test( lengths[1] == 5 );
+					scope.test( typeof(scriptStrings[0]) == "string" && scriptStrings[0] == "Hello" );
+				]]></script>
+				<!--	TODO	-->
+			</li>
+			<!--
+				Experimental methods
+
+				fail(): no real specification, no unit tests
+
+				$doc.members.isJavaType = new $Doc.Function({
+					summary: "Determines whether a value is a Java host object representing the given type or not.",
+					asFunction: {
+						description: <>Creates a function which can determines whether a value is a Java object of the given type or not</>,
+						arguments: {
+							list: [
+								{ type: "JavaClass", comment: <>A Rhino <code>JavaClass</code> object, like <code>Packages.java.lang.Object</code></> }
+							]
+						},
+						returns: {
+							type: "function",
+							comment: <>Returns a function which takes a single argument and returns <code>true</code> if the given argument is an object of the given Java type and <code>false</code> if it is not.</>
+						}
+					}
+				});
+				$doc.members.isJavaType.$unit = function(scope) {
+					scope.scenario( new function() {
+						this.name = "isJavaType";
+
+						this.execute = function(scope) {
+							scope.test(module.isJavaType(Packages.java.lang.Object)(new Packages.java.lang.Object()));
+							scope.test(!module.isJavaType(Packages.java.lang.Integer)(new Packages.java.lang.Object()));
+							scope.test(module.isJavaType(Packages.java.lang.Object)(new Packages.java.lang.Integer(8)));
+							scope.test(module.isJavaType(Packages.java.lang.Runnable)(new Packages.java.lang.Thread()));
+						}
+					})
+				}
+
+				scope.scenario( new function() {
+					this.name = "Java types";
+
+					this.execute = function(scope) {
+						scope.test( module.isJavaType(Packages.java.io.OutputStream)(new Packages.java.io.ByteArrayOutputStream()) );
+						scope.test( module.isJavaType(Packages.java.io.OutputStream)(new Packages.java.io.ByteArrayOutputStream()) );
+						scope.test( !module.isJavaType(Packages.java.io.InputStream)("Hello") );
+					}
+				} );
+			-->
+			<!--
+				//	No unit tests!
+				$doc.members.toJavaArray = new $Doc.Function({
+					summary: <>Converts an ECMAScript array into a native Java array</>,
+					asFunction: {
+						description: <>Converts an ECMAScript array into a native Java array</>,
+						arguments: {
+							list: [
+								{ type: <><code>Array</code></>, comment: <>An array to be converted</> },
+								{
+									type: <>A Java class reference</>,
+									comment: <>A reference to a Java class, e.g., <code>Packages.java.lang.Object</code>, representing the type of
+										the array to create</>
+								}
+							]
+						},
+						returns: {
+							type: "A native Java array",
+							comment: <>A Java array containing the elements in the ECMAScript array.</>
+						}
+					}
+				});
+			-->
+		</ul>
+	</div>
+</body>
+</html>
