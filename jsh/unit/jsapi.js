@@ -80,7 +80,7 @@ $exports.tests = new function() {
 			}
 
 			this.loadWith = function(context) {
-				return jsh.loader.module((context) ? context : {}, modulepath);
+				return jsh.loader.module(modulepath, (context) ? context : {});
 			}
 		}
 	}
@@ -109,7 +109,7 @@ $exports.tests = new function() {
 					var MODULES = $context.MODULES;
 					if (MODULES[name+"/"]) name += "/";
 					if (!MODULES[name]) throw "Module referenced but not found: '" + name + "'";
-					return jsh.loader.module(context,MODULES[name]);
+					return jsh.loader.module(MODULES[name],context);
 				},
 				//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
 				environment: $context.ENVIRONMENT,

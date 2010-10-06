@@ -47,7 +47,7 @@
 			return rhinoLoader.module($host.getBootstrapModule(path), { $context: context });
 		}
 
-		this.module = function(context,pathname) {
+		this.module = function(pathname) {
 			var format = {};
 			if (pathname.directory) {
 				if (!pathname.directory.getFile("module.js")) {
@@ -64,7 +64,11 @@
 			} else {
 				return null;
 			}
-			return rhinoLoader.module($host.getModule(format.base,format.name,null), { $context: context });
+			var p = {};
+			if (arguments.length == 2) {
+				p.$context = arguments[1];
+			}
+			return rhinoLoader.module($host.getModule(format.base,format.name,null),p);
 		}
 
 		this.script = function(pathname,$context) {
