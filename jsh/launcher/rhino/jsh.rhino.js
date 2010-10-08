@@ -104,7 +104,7 @@ var os = function(pathname,path) {
 	return pathname;
 }
 
-if (env.JSH_DEBUG) {
+if (env.JSH_DEBUG || env.JSH_LAUNCHER_DEBUG) {
 	debug.on = true;
 	debug("debugging enabled");
 }
