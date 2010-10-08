@@ -102,8 +102,21 @@ public class Main {
 		try {
 			//	TODO	Right now we assume that JSH_RHINO_SCRIPT is in native OS format, but we should not assume that: under
 			//			Cygwin, it would be better to allow the use of a Cygwin path here. See above.
-			JSH_RHINO_JS = (System.getenv("JSH_RHINO_SCRIPT") != null) ? System.getenv("JSH_RHINO_SCRIPT") : (JSH_HOME.getCanonicalPath() + slash + "script" + slash + "launcher" + slash + "jsh.rhino.js");
-			RHINO_JS = new java.io.File(new java.io.File(JSH_RHINO_JS).getParentFile(), "api.rhino.js").getCanonicalPath();
+			if (System.getenv("JSH_RHINO_SCRIPT") != null) {
+				JSH_RHINO_JS = System.getenv("JSH_RHINO_SCRIPT");
+			} else {
+				if (JSH_HOME != null) {
+					JSH_RHINO_JS = JSH_HOME.getCanonicalPath() + slash + "script" + slash + "launcher" + slash + "jsh.rhino.js";
+				}
+			}
+			if (JSH_RHINO_JS != null) {
+				RHINO_JS = new java.io.File(new java.io.File(JSH_RHINO_JS).getParentFile(), "api.rhino.js").getCanonicalPath();				
+			}
+			if (JSH_RHINO_JS == null || !new java.io.File(JSH_RHINO_JS).exists() || !new java.io.File(RHINO_JS).exists()) {
+				throw new RuntimeException("Could not find jsh.rhino.js and api.rhino.js: JSH_RHINO_SCRIPT = "
+					+ System.getenv("JSH_RHINO_SCRIPT") + " JSH_HOME = " + JSH_HOME
+				);
+			}
 		} catch (java.io.IOException e) {
 		}
 		if (debug) System.err.println("JSH_RHINO_JS = " + JSH_RHINO_JS);
