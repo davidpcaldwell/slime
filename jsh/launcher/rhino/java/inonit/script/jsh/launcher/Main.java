@@ -58,33 +58,46 @@ public class Main {
 
 		final void initialize() throws java.io.IOException {
 			if (getRhinoClasspath() != null) {
-				System.setProperty("jsh.classpath.rhino", getRhinoClasspath());
+				System.setProperty("jsh.rhino.classpath", getRhinoClasspath());
 			} else {
 				throw new RuntimeException("No Rhino classpath in " + this
 					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
 				;
 			}
+			ArrayList<String> dummy = new ArrayList<String>();
+			addScriptArguments(dummy);
+			System.setProperty("jsh.launcher.rhino.script", dummy.get(1));
 		}
 
 		abstract String getRhinoClasspath() throws java.io.IOException;
 
-		final ClassLoader createClassLoader() throws java.io.IOException {
+		final Class getMainClass() throws java.io.IOException, ClassNotFoundException {
 			Invocation invocation = this;
 			ClassLoader loader;
 			String JSH_RHINO_CLASSPATH = invocation.getRhinoClasspath();
-			if (debug) System.err.println("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
+			debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
 			List<String> pathElements = new ArrayList<String>();
 			pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
 			java.net.URL[] urls = new java.net.URL[pathElements.size()];
 			for (int i=0; i<pathElements.size(); i++) {
-				if (debug) System.err.println("Path element = " + pathElements.get(i));
+				debug("Path element = " + pathElements.get(i));
 				try {
 					urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
 				} catch (java.net.MalformedURLException e) {
 				}
 			}
 			loader = new java.net.URLClassLoader(urls);
-			return loader;
+			try {
+				String mainClassName = (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+				return loader.loadClass(mainClassName);
+			} catch (ClassNotFoundException e) {
+				debug("ClassLoader path:");
+				for (int i=0; i<urls.length; i++) {
+					debug("Element: " + urls[i]);
+				}
+				debug("END ClassLoader path.");
+				throw e;
+			}
 		}
 
 		abstract String getRhinoScript() throws java.io.IOException;
@@ -102,10 +115,6 @@ public class Main {
 			}
 			strings.add(RHINO_JS);
 			strings.add(JSH_RHINO_JS);
-		}
-
-		final String getMainClassName() {
-			return (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
 		}
 	}
 
@@ -161,10 +170,8 @@ public class Main {
 	private void run(String[] args) throws java.io.IOException {
 		Invocation invocation = Invocation.create();
 		invocation.initialize();
-		ClassLoader loader = invocation.createClassLoader();
-
 		try {
-			Class shell = loader.loadClass(invocation.getMainClassName());
+			Class shell = invocation.getMainClass();
 			java.lang.reflect.Method main = shell.getMethod("main", new Class[] { String[].class });
 			invocation.debug("Rhino shell main = " + main);
 			List<String> arguments = new ArrayList();

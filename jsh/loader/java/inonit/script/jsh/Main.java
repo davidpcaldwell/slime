@@ -89,19 +89,12 @@ public class Main {
 	}
 	
 	private int run() throws CheckedException {
-		if (System.getProperty("jsh.js.debugger") != null) {
+		if (System.getProperty("jsh.script.debugger") != null) {
 			debug = true;
 		}
 
 		String scriptPath = (String)args.remove(0);
 
-		if (debug) {
-			System.err.println("JAVA_HOME = " + System.getenv("JAVA_HOME"));
-			System.err.println("java.home = " + System.getProperty("java.home"));
-			System.err.println("sun.boot.library.path = " + System.getProperty("sun.boot.library.path"));
-			System.err.println("java.library.path = " + System.getProperty("java.library.path"));
-		}
-		
 		ScriptHost host = ScriptHost.create(new ScriptHost.Configuration() {
 			private ScriptHost.Bootstrap loader = new ScriptHost.Bootstrap() {
 				public String toString() {
@@ -183,7 +176,7 @@ public class Main {
 			};
 				
 			Engine.Debugger getDebugger() {
-				String id = System.getProperty("jsh.js.debugger");
+				String id = System.getProperty("jsh.script.debugger");
 				if (id == null) return null;
 				if (id != null && id.equals("rhino")) {
 					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
