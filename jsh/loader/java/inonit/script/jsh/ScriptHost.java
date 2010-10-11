@@ -234,7 +234,7 @@ public class ScriptHost {
 	}
 
 	public void script(Scriptable scope, String name, InputStream code) throws IOException {
-		engine.include(scope, Engine.Source.create(name, new InputStreamReader(code)));
+		engine.script(scope, name, code);
 	}
 	
 	public void execute(Scriptable scope, Script script) throws IOException {

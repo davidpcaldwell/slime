@@ -30,7 +30,7 @@
 			var $loader = new function() {
 				this.code = code.platform;
 				this.global = jsh;
-				this.execute = function(scope,name,$in) {
+				this.script = function(scope,name,$in) {
 					$host.script(scope,name,$in);
 				}
 			};

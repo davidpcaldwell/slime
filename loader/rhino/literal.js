@@ -36,18 +36,22 @@ new function() {
 		return eval($loader.code);
 	})();
 
-	var instantiate = function(name,$in) {
-		return function() {
-			var scope = {};
-			scope.$platform = loader.$platform;
-			scope.$api = loader.$api;
-			scope.$context = (arguments[0]) ? arguments[0] : {};
-			scope.$exports = (arguments[1]) ? arguments[1] : {};
-			for (var x in arguments[2]) {
-				scope[x] = arguments[2][x];
+	var instantiate;
+
+	if ($loader.script) {
+		instantiate = function(name,$in) {
+			return function() {
+				var scope = {};
+				scope.$platform = loader.$platform;
+				scope.$api = loader.$api;
+				scope.$context = (arguments[0]) ? arguments[0] : {};
+				scope.$exports = (arguments[1]) ? arguments[1] : {};
+				for (var x in arguments[2]) {
+					scope[x] = arguments[2][x];
+				}
+				$loader.script(scope,name,$in);
+				return scope.$exports;
 			}
-			$loader.execute(scope,name,$in);
-			return scope.$exports;
 		}
 	}
 
@@ -57,7 +61,7 @@ new function() {
 
 			this.instantiate = function(path) {
 				//	TODO	maybe should only be with debugging on?
-				if ($loader.execute) {
+				if (instantiate) {
 					var $in = $engine_module.read(new Packages.java.lang.String(path));
 					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
 					return instantiate(String($engine_module) + ":" + path,$in);
@@ -80,7 +84,7 @@ new function() {
 
 	this.script = function(code,$context) {
 		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
-		if ($loader.execute && typeof(code) == "object" && code.name && code.$in) {
+		if (instantiate && typeof(code) == "object" && code.name && code.$in) {
 			return instantiate(code.name,code.$in)($context);
 		} else if (typeof(code) == "string") {
 			return loader.script(code,$context);
