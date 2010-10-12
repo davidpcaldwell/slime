@@ -32,7 +32,7 @@ var InputStream = function(peer) {
 	this.character = function(mode) {
 		if (!mode) mode = {};
 		if (!mode.charset) mode.charset = Packages.java.nio.charset.Charset.defaultCharset().name();
-		var separator = api.js.defined(mode.LINE_SEPARATOR);
+		var separator = mode.LINE_SEPARATOR;
 		//	TODO	No unit test for this method currently; does it work?
 		return new Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
 	}
