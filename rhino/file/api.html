@@ -916,6 +916,11 @@ END LICENSE
 							<span class="type"><a href="#types.boutput">byte output stream</a></span>, if the
 							argument was a native Java <code>java.io.OutputStream</code>.
 						</div>
+						<script type="application/x.jsapi#tests">
+							var $out = new Packages.java.io.ByteArrayOutputStream();
+							var out = module.java.adapt($out);
+							scope.test(out != null);
+						</script>
 					</li>
 				</ul>
 			</li>
