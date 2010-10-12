@@ -64,7 +64,8 @@ var $isJavaType = function(javaclass,object) {
 	var className = getJavaClassName(javaclass);
 	if (className == null) throw "Not a class: " + javaclass;
 	if (!object["class"]) return false;
-	return $context.classLoader.loadClass(className).isAssignableFrom(object["class"]);
+	var classLoader = ($context.classLoader) ? $context.classLoader : Packages.java.lang.Class.forName("java.lang.Object").getClassLoader();
+	return classLoader.loadClass(className).isAssignableFrom(object["class"]);
 }
 var isJavaType = function(javaclass) {
 	if (arguments.length == 2) {
