@@ -53,10 +53,11 @@ if (!parameters.options.jsapi) {
 }
 
 var modules = parameters.options.module.map( function(string) {
-	var match = /^(.*)\@(.*)\=(.*)$/.exec(string);
+	var match = /^(.*)\@(.*)\=(.*)\:(.*)$/.exec(string);
 	if (match == null) throw "No match: " + string;
 	var rv = { path: match[2], location: jsh.file.Pathname(match[3]) };
-	if (match[0]) rv.namespace = match[1];
+	if (match[1]) rv.namespace = match[1];
+	if (match[4]) rv.mode = match[4];
 	return rv;
 } );
 
@@ -102,7 +103,9 @@ var jsapi = jsh.loader.script(jsh.script.getRelativePath("jsapi.js"), {
 
 if (!parameters.options.notest) {
 	modules.forEach( function(module) {
-		jsapi.tests.add(module.namespace,module.location);
+		if (module.mode != "skip") {
+			jsapi.tests.add(module.namespace,module.location);
+		}
 	} );
 	var UNIT_TESTS_COMPLETED = function(success) {
 		if (!success) {
