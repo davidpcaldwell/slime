@@ -47,8 +47,29 @@ public class ScriptHost {
 		abstract String[] getArguments();
 		abstract Bootstrap getLoader();
 	}
+	
+	private static abstract class Classpath extends ClassLoader {
+		public abstract void append(URL url);
+		public abstract void append(Module module);
+	}
 
-	private static class Classpath extends ClassLoader {
+	private static class DelegationChain extends Classpath {
+		private ClassLoader current = ScriptHost.class.getClassLoader();
+
+		protected Class findClass(String name) throws ClassNotFoundException {
+			return current.loadClass(name);
+		}
+
+		public void append(URL url) {
+			current = new URLClassLoader(new URL[] { url }, current);
+		}
+
+		public void append(Module module) {
+			current = module.getClasses(current);
+		}
+	}
+
+	private static class ListClasspath extends Classpath {
 		private ArrayList loaders = new ArrayList();
 
 		protected Class findClass(String name) throws ClassNotFoundException {
@@ -65,14 +86,14 @@ public class ScriptHost {
 			loaders.add(new URLClassLoader(new URL[] { url }));
 		}
 
-		public void append(ClassLoader loader) {
-			loaders.add(loader);
+		public void append(Module module) {
+			loaders.add(module.getClasses(ScriptHost.class.getClassLoader()));
 		}
 	}
 	
 	static ScriptHost create(Configuration configuration) {
 		ContextFactoryImpl contexts = new ContextFactoryImpl();
-		Classpath classpath = new Classpath();
+		Classpath classpath = new DelegationChain();
 		contexts.initApplicationClassLoader(classpath);
 		contexts.setOptimization(configuration.getOptimizationLevel());
 		Engine engine = Engine.create(configuration.getDebugger(), contexts);
@@ -138,7 +159,7 @@ public class ScriptHost {
 
 	//	Still used by jsh.$module
 	public void addClasses(Module module) {
-		classpath.append(module.getClasses());
+		classpath.append(module);
 	}
 
 	public ClassLoader getClassLoader() {
@@ -206,14 +227,14 @@ public class ScriptHost {
 
 	public Module getBootstrapModule(String path) {
 		Module rv = engine.load(createModuleCode(loader.getModulePath(path),"module.js",null));
-		classpath.append(rv.getClasses());
+		classpath.append(rv);
 		return rv;
 	}
 
 	public Module getModule(File file, String main, File[] classes) {
 		Module.Code code = createModuleCode(file,main,classes);
 		Module rv = engine.load(code);
-		classpath.append(rv.getClasses());
+		classpath.append(rv);
 		return rv;
 	}
 
@@ -270,6 +291,11 @@ public class ScriptHost {
 				return new Streams().readString(in);
 			}
 		};
+	}
+
+	//	Method created for use by the httpd unit tester; may not be the best way to expose this ability
+	public Module loadModule(Module.Code code) {
+		return engine.load(code);
 	}
 	
 	void execute() {
