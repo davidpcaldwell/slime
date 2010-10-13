@@ -116,9 +116,9 @@ $exports.java = new function() {
 	this.adapt = function(object) {
 		if (false) {
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
-			return new scope.streams.InputStream(object);
+			return new streams.InputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new scope.streams.OutputStream(object);
+			return new streams.OutputStream(object);
 		} else {
 			throw "Unimplemented: " + object;
 		}
