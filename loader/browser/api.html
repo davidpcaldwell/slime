@@ -34,23 +34,63 @@ END LICENSE
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
-						<li class="object">
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">base</div>
-									<span class="type">string</span>
-									<span>The base path from which to load files associated with the module.</span>
-								</li>
-								<li class="value">
-									<div class="name">main</div>
-									<span class="type">string</span>
-									<span>The location of the module's main file.</span>
-								</li>
-							</ul>
+						<li>
+							<span>
+								An argument indicating where the module can be found. It can take one of two forms: a
+								<code>string</code> path to the module's main file, or an object with two properties: a base path
+								to the module and the name of the module's main file.
+							</span>
+							<div class="value">
+								<span class="type">string</span>
+								<span>
+									The path of the module's main file. Other files the main file may load will be loaded from the
+									base location of the main file.
+								</span>
+							</div>
+							OR
+							<div class="object">
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">base</div>
+										<span class="type">string</span>
+										<span>The base path from which to load files associated with the module.</span>
+									</li>
+									<li class="value">
+										<div class="name">main</div>
+										<span class="type">string</span>
+										<span>The location of the module's main file.</span>
+									</li>
+								</ul>
+							</div>
 						</li>
 						<li class="object">
-							The second argument to the platform loader's <code>module</code> method.
+							<span>
+								An argument providing configuration for the script. If the argument is an object with both a
+								<code>$context</code> and <code>$exports</code> property, it is interpreted as the second argument
+								to the platform loader's <code>module</code> method. Otherwise, it is interpreted as a
+								<code>$context</code> object.
+							</span>
+							<div class="object">
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">$context</div>
+										<span class="type">object</span>
+										<span>The object to supply to the module as its <code>$context</code>.</span>
+									</li>
+									<li class="value">
+										<div class="name">$exports</div>
+										<span class="type">object</span>
+										<span>The object to supply to the module to contain its <code>$exports</code>.</span>
+									</li>
+								</ul>
+							</div>
+							OR
+							<div class="value">
+								<span class="type">object</span>
+								<span>The object to supply to the module as its <code>$context</code>.</span>
+							</div>
 						</li>
 					</ol>
 				</div>
