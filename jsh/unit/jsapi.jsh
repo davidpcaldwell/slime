@@ -118,7 +118,7 @@ if (!parameters.options.notest) {
 if (parameters.options.doc) {
 	var list = [];
 	modules.forEach( function(item) {
-		list.push({ ns: item.namespace, path: item.path, directory: item.location.directory });
+		list.push({ ns: item.namespace, path: item.path, location: item.location });
 	} );
 	jsapi.doc(list,parameters.options.doc);
 }

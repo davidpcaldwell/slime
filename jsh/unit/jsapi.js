@@ -15,6 +15,21 @@
 
 var jsapi = new Namespace("http://www.inonit.com/jsapi");
 
+var getApiHtml = function(moduleMainPathname) {
+	if (moduleMainPathname.directory) {
+		return moduleMainPathname.directory.getFile("api.html");
+	} else if (moduleMainPathname.file) {
+		var basename = moduleMainPathname.file.pathname.basename;
+		var directory = moduleMainPathname.file.parent;
+		var jsName = /(.*)\.js$/.exec(basename);
+		if (jsName) {
+			return directory.getFile(jsName[1]+".api.html");
+		} else {
+			return directory.getFile(basename+".api.html");
+		}
+	}
+}
+
 $exports.tests = new function() {
 	var testGroups = [];
 
@@ -65,16 +80,10 @@ $exports.tests = new function() {
 			}
 
 			this.loadTestsInto = function(scope) {
-				var location;
-				if (modulepath.directory) {
-					location = modulepath.directory;
-				} else if (modulepath.file) {
-					location = modulepath.file.parent;
-				} else {
-					throw "Not found: " + modulepath;
-				}
-				if (location.getFile("api.html")) {
-					var xml = location.getFile("api.html").read(XML);
+				if (!modulepath.directory && !modulepath.file) throw "Not found: " + modulepath;
+				var api = getApiHtml(modulepath);
+				if (api) {
+					var xml = api.read(XML);
 					loadApiHtml(scope,xml);
 				}
 			}
@@ -190,14 +199,14 @@ $exports.doc = function(modules,to) {
 	var doc = {};
 
 	modules.forEach( function(item) {
-		var xhtml = item.directory.getFile("api.html").read(XML);
+		var xhtml = getApiHtml(item.location).read(XML);
 		doc[item.path] = xhtml;
 	});
 
 	modules.forEach( function(item) {
 		if (item.ns) {
-			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.directory + " ...");
-			var xhtml = item.directory.getFile("api.html").read(XML);
+			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
+			var xhtml = getApiHtml(item.location).read(XML);
 			xhtml.head.appendChild(<link rel="stylesheet" type="text/css" href="api.css" />);
 			xhtml.head.appendChild(<script type="text/javascript" src="api.js" />);
 
