@@ -173,7 +173,17 @@ END LICENSE
 									};
 								}
 							})();
-							var unparsed = inonit.loader.$sdk.fetch(location.base+"api.html");
+							var documentation = (function() {
+								if (!location.main) return location.base + "api.html";
+								var jsName = /(.*)\.js$/.exec(location.main);
+								if (jsName) {
+									return location.base + jsName[1] + ".api.html";
+								} else {
+									//	untested
+									return location.base + location.main + ".api.html";
+								}
+							})();
+							var unparsed = inonit.loader.$sdk.fetch(documentation);
 							var div = document.createElement("div");
 							//	TODO	there may be a more complex, robust, standards-compliant way of doing this
 							//			maybe with DocumentObjectModel or whatever
@@ -276,7 +286,7 @@ END LICENSE
 						try {
 							inonit.loader.module(
 								location,
-								{ $context: scope.$unit.context, $exports: scope.module }
+								{ $context: (scope.$unit.context) ? scope.$unit.context : {}, $exports: scope.module }
 							);
 
 							scope.execute = function(s) {
