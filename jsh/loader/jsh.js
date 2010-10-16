@@ -20,22 +20,16 @@
 
 	var loader = new function() {
 		var rhinoLoader = (function() {
-			var code = new function() {
-				var $delegate = $host.getRhinoLoaderBootstrap();
-
-				this.platform = String($delegate.getPlatformCode());
-				this.rhino = String($delegate.getRhinoCode());
-			}
+			var $delegate = $host.getRhinoLoaderBootstrap();
 
 			var $loader = new function() {
-				this.code = code.platform;
-				this.global = jsh;
-				this.execute = function(scope,name,$in) {
+				this.code = String($delegate.getPlatformCode());
+				this.script = function(scope,name,$in) {
 					$host.script(scope,name,$in);
 				}
 			};
 
-			return eval( String(code.rhino) );
+			return eval( String($delegate.getRhinoCode()) );
 		})();
 
 		var EVALUATE_SCRIPTS_AS_STRINGS = false;

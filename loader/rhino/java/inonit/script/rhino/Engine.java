@@ -434,6 +434,10 @@ public class Engine {
 		return (Scriptable)Context.getCurrentContext().evaluateString(scope, code, "<cmd>", 1, null);
 	}
 	
+	public void script(Scriptable scope, String name, InputStream code) throws IOException {
+		this.include(scope, Engine.Source.create(name, new InputStreamReader(code)));
+	}
+
 	public static abstract class Loader {
 		public abstract String getPlatformCode() throws IOException;
 		public abstract String getRhinoCode() throws IOException;
