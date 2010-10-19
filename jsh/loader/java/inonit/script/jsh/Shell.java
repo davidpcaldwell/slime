@@ -300,19 +300,9 @@ public class Shell {
 				return streams.readString(new FileInputStream(file));
 			}
 
-//<<<<<<< local
 			public void addClasses(File classes) throws java.net.MalformedURLException {
 				classpath.append(classes.toURI().toURL());
 			}
-//=======
-//	public void script(Scriptable scope, String name, InputStream code) throws IOException {
-//		engine.script(scope, name, code);
-//	}
-//
-//	public void execute(Scriptable scope, Script script) throws IOException {
-//		engine.include(scope, Engine.Source.create(script.getName(), script.getReader()));
-//	}
-//>>>>>>> other
 
 			public Invocation getInvocation() {
 				return invocation;
