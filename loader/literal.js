@@ -233,8 +233,8 @@ new function() {
 
 		this.load = function(configuration) {
 			return instantiate(format.main)(
-				configuration.$context,
-				configuration.$exports,
+				(configuration && configuration.$context) ? configuration.$context : {},
+				(configuration && configuration.$exports) ? configuration.$exports : {},
 				{
 					$loader: new function() {
 						this.script = function(path,scope) {

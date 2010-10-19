@@ -13,8 +13,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-var x = function() { var $exports = (arguments[1]) ? arguments[1] : {}; with( (arguments[0]) ? arguments[0] : {} ) { /*CODE*/ }
+var x = function() { var $exports = (arguments[1]) ? arguments[1] : {}; var $context = (arguments[0]) ? arguments[0] : {}; with ((arguments[2]) ? arguments[2] : {}) { /*CODE*/ }
 	return $exports;
 };
-inonit.loader.$sdk.debug.script(_PATH_,x);
+inonit.loader.$sdk.debug.script("_PATH_",x);
 

@@ -57,6 +57,14 @@
 	if (!modes.module) modes.module = "evalScope";
 	if (!modes.execute) modes.execute = "call";
 	
+	var Bootstrap = function(src) {
+		this.base = src.split("/").slice(0,-1).join("/") + "/";
+
+		this.getRelativePath = function(path) {
+			return this.base + path;
+		}
+	}
+
 	var getCurrentScript = function() {
 		var getCurrentScriptSrc = function() {
 			var scripts = document.getElementsByTagName("script");
@@ -68,14 +76,6 @@
 	}
 
 	var bootstrap = (function() {
-		var Bootstrap = function(src) {
-			this.base = src.split("/").slice(0,-1).join("/") + "/";
-
-			this.getRelativePath = function(path) {
-				return this.base + path;
-			}
-		}
-
 		return (inonit.loader && inonit.loader.url) ? new Bootstrap(inonit.loader.url) : getCurrentScript();
 	})();
 
@@ -139,14 +139,33 @@
 					this.main = (code.main) ? code.main : "module.js";
 
 					this.instantiate = function(path) {
-						if (instantiate[path]) {
-							return instantiate[path];
+						if (instantiate[code.base+path]) {
+							return instantiate[code.base+path];
 						}
 					}
 
 					this.getCode = function(path) {
 						//	TODO	assumes trailing slash when loading module
 						return fetcher.getCode(code.base+path);
+					}
+				}
+			}
+
+			if (typeof(code) == "string") {
+				if (/\/$/.test(code)) {
+					code = { base: code };
+				} else {
+					var tokens = code.split("/");
+					code = { base: tokens.slice(0,tokens.length-1).join("/"), main: tokens[tokens.length-1] };
+				}
+			}
+
+			if (typeof(args) == "object") {
+				if (args.$context && args.$exports) {
+				} else {
+					args = {
+						$context: args,
+						$exports: {}
 					}
 				}
 			}
