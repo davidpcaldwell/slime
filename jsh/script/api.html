@@ -58,34 +58,28 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
-			<li class="object">
-				<div class="name">$host</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">script</div>
-						<span class="type">JavaClass java.io.File</span>
-						<span>The <code>java.io.File</code> object representing the main script file this shell is running.</span>
-					</li>
-					<li class="value">
-						<div class="name">arguments</div>
-						<span class="type">JavaClass java.lang.String[]</span>
-						<span>The arguments passed to the script.</span>
-					</li>
-					<li class="function">
-						<div class="name">addClasses</div>
-						<span>Adds a file to the classpath of this script.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">JavaClass java.io.File</span>
-									<span>A file to add to the classpath (either a directory or a .jar file)</span>
-								</li>
-							</ol>
-						</div>
-					</li>
-				</ul>
+			<li class="value">
+				<div class="name">$script</div>
+				<span class="type">JavaClass java.io.File</span>
+				<span>The <code>java.io.File</code> object representing the main script file this shell is running.</span>
+			</li>
+			<li class="value">
+				<div class="name">$arguments</div>
+				<span class="type">JavaClass java.lang.String[]</span>
+				<span>The arguments passed to the script.</span>
+			</li>
+			<li class="function">
+				<div class="name">addClasses</div>
+				<span>Adds a file to the classpath of this script.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">JavaClass java.io.File</span>
+							<span>A file to add to the classpath (either a directory or a .jar file)</span>
+						</li>
+					</ol>
+				</div>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#context">
@@ -95,16 +89,14 @@ END LICENSE
 					this.file = file;
 				};
 
-				this.$host = {
-					script: jsh.script.pathname.$peer.getHostFile(),
-					arguments: function() {
-						var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,3);
-						rv[0] = "a";
-						rv[1] = "bb";
-						rv[2] = "C";
-						return rv;
-					}()
-				};
+				this.$script = jsh.script.pathname.$peer.getHostFile();
+				this.$arguments = function() {
+					var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,3);
+					rv[0] = "a";
+					rv[1] = "bb";
+					rv[2] = "C";
+					return rv;
+				}();
 			}
 		</script>
 	</div>

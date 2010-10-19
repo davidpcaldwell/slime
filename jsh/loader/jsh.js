@@ -150,18 +150,17 @@
 	}
 
 	jsh.script = (function() {
-		var context = {};
+		var context = {
+			$script: $host.getInvocation().getScript(),
+			$arguments: $host.getInvocation().getArguments(),
+			addClasses: function(pathname) {
+				$host.addClasses(pathname.$peer.getHostFile());
+			}
+		};
 		context.api = {
 			file: jsh.file,
 			java: jsh.java
 		};
-		context.$host = {
-			script: $host.getInvocation().getScript(),
-			arguments: $host.getInvocation().getArguments(),
-			addClasses: function($file) {
-				$host.addClasses($file);
-			}
-		}
 		
 		return loader.bootstrap(context,"jsh/script");
 	})();
