@@ -18,115 +18,164 @@ package inonit.script.jsh.launcher;
 import java.util.*;
 
 public class Main {
-	private String slash = java.io.File.separator;
-	private String colon = java.io.File.pathSeparator;
-
-	private boolean debug;
-
 	private Main() {
-		this.debug = (System.getenv("JSH_DEBUG") != null);
 	}
 
-	private void run(String[] args) {
-		java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
-		String codeUrlString = codeLocation.toExternalForm();
-		java.io.File JSH_HOME = null;
-		if (codeUrlString.startsWith("file:") && codeUrlString.endsWith("jsh.jar")) {
-			//	Assume we loaded this from JSH_HOME
-			if (codeUrlString.charAt(7) == ':') {
-				//	Windows
-				JSH_HOME = new java.io.File(codeUrlString.substring("file:/".length(), codeUrlString.length()-"jsh.jar".length()-1));
-			} else {
-				//	UNIX
-				JSH_HOME = new java.io.File(codeUrlString.substring("file:".length(), codeUrlString.length()-"jsh.jar".length()-1));
-			}
-		}
-		try {
-			if (debug) {
-				if (JSH_HOME != null) {
-					System.err.println("JSH_HOME = " + JSH_HOME.getCanonicalPath());
+	private static abstract class Invocation {
+		static Invocation create() throws java.io.IOException {
+			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
+			String codeUrlString = codeLocation.toExternalForm();
+			java.io.File JSH_HOME = null;
+			if (codeUrlString.startsWith("file:") && codeUrlString.endsWith("jsh.jar")) {
+				//	Assume we loaded this from JSH_HOME
+				if (codeUrlString.charAt(7) == ':') {
+					//	Windows
+					JSH_HOME = new java.io.File(codeUrlString.substring("file:/".length(), codeUrlString.length()-"jsh.jar".length()-1));
 				} else {
-					System.err.println("JSH_HOME = null");
+					//	UNIX
+					JSH_HOME = new java.io.File(codeUrlString.substring("file:".length(), codeUrlString.length()-"jsh.jar".length()-1));
 				}
 			}
+			Invocation rv = (JSH_HOME != null) ? new Built(JSH_HOME) : new Unbuilt();
+			rv.debug = (System.getenv("JSH_DEBUG") != null || System.getenv("JSH_LAUNCHER_DEBUG") != null);
 			if (JSH_HOME != null) {
-				System.setProperty("jsh.home", JSH_HOME.getCanonicalPath());
+				rv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
+			} else {
+				rv.debug("JSH_HOME = null");
 			}
-		} catch (java.io.IOException e) {
+			return rv;
 		}
 
-		String JSH_RHINO_CLASSPATH = null;
-		try {
-			//	TODO	Right now we assume that JSH_RHINO_CLASSPATH is in native OS format, but we should not assume that: under
-			//			Cygwin, it would be better to allow the use of a Cygwin path here.
-			//			In terms of solutions, it is not easy: how will this program detect Cygwin? It may be the best way to do it
-			//			is to use the cygpath command blindly and see what happens. Then we will know whether Cygwin is in the
-			//			PATH
-			if (System.getenv("JSH_RHINO_CLASSPATH") != null) {
-				JSH_RHINO_CLASSPATH = System.getenv("JSH_RHINO_CLASSPATH");
-				try {
-					JSH_RHINO_CLASSPATH = inonit.system.OperatingSystem.get().getCommandOutput("cygpath", new String[] { "-wp", System.getenv("JSH_RHINO_CLASSPATH") });
-					JSH_RHINO_CLASSPATH = JSH_RHINO_CLASSPATH.substring(0,JSH_RHINO_CLASSPATH.length()-1);
-				} catch (java.io.IOException e) {
-					//	Must not be Cygwin
-				}
-			} else if (JSH_HOME != null) {
-				JSH_RHINO_CLASSPATH = new java.io.File(JSH_HOME, "lib/js.jar").getCanonicalPath();
+		private String colon = java.io.File.pathSeparator;
+
+		private boolean debug;
+
+		final void debug(String message) {
+			if (debug) {
+				System.err.println(message);
 			}
-			if (JSH_RHINO_CLASSPATH != null) {
-				System.setProperty("jsh.classpath.rhino", JSH_RHINO_CLASSPATH);
+		}
+
+		final void initialize() throws java.io.IOException {
+			if (getRhinoClasspath() != null) {
+				System.setProperty("jsh.classpath.rhino", getRhinoClasspath());
 			} else {
-				throw new RuntimeException("No Rhino classpath: JSH_RHINO_CLASSPATH = "
-					+ System.getenv("JSH_RHINO_CLASSPATH")
-					+ " codeUrl=" + codeUrlString
+				throw new RuntimeException("No Rhino classpath in " + this
+					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
+				;
+			}
+		}
+
+		abstract String getRhinoClasspath() throws java.io.IOException;
+
+		final ClassLoader createClassLoader() throws java.io.IOException {
+			Invocation invocation = this;
+			ClassLoader loader;
+			String JSH_RHINO_CLASSPATH = invocation.getRhinoClasspath();
+			if (debug) System.err.println("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
+			List<String> pathElements = new ArrayList<String>();
+			pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
+			java.net.URL[] urls = new java.net.URL[pathElements.size()];
+			for (int i=0; i<pathElements.size(); i++) {
+				if (debug) System.err.println("Path element = " + pathElements.get(i));
+				try {
+					urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
+				} catch (java.net.MalformedURLException e) {
+				}
+			}
+			loader = new java.net.URLClassLoader(urls);
+			return loader;
+		}
+
+		abstract String getRhinoScript() throws java.io.IOException;
+
+		final void addScriptArguments(List<String> strings) throws java.io.IOException {
+			String JSH_RHINO_JS = getRhinoScript();
+			String RHINO_JS = null;
+			if (JSH_RHINO_JS != null) {
+				RHINO_JS = new java.io.File(new java.io.File(JSH_RHINO_JS).getParentFile(), "api.rhino.js").getCanonicalPath();
+			}
+			if (JSH_RHINO_JS == null || !new java.io.File(JSH_RHINO_JS).exists() || !new java.io.File(RHINO_JS).exists()) {
+				throw new RuntimeException("Could not find jsh.rhino.js and api.rhino.js in " + this + ": JSH_RHINO_SCRIPT = "
+					+ System.getenv("JSH_RHINO_SCRIPT")
 				);
 			}
-		} catch (java.io.IOException e) {
+			strings.add(RHINO_JS);
+			strings.add(JSH_RHINO_JS);
 		}
-		if (debug) System.err.println("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
-		List<String> pathElements = new ArrayList<String>();
-		pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
-//		pathElements.add(System.getProperty("sun.boot.library.path"));
-		java.net.URL[] urls = new java.net.URL[pathElements.size()];
-		for (int i=0; i<pathElements.size(); i++) {
-			if (debug) System.err.println("Path element = " + pathElements.get(i));
+
+		final String getMainClassName() {
+			return (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+		}
+	}
+
+	private static class Built extends Invocation {
+		private java.io.File HOME;
+		private Unbuilt defaults = new Unbuilt();
+
+		Built(java.io.File HOME) throws java.io.IOException {
+			this.HOME = HOME;
+			System.setProperty("jsh.home", HOME.getCanonicalPath());
+		}
+
+		String getRhinoClasspath() throws java.io.IOException {
+			if (defaults.getRhinoClasspath() != null) return defaults.getRhinoClasspath();
+			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
+		}
+
+		String getRhinoScript() throws java.io.IOException {
+			if (defaults.getRhinoScript() != null) return defaults.getRhinoScript();
+			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
+		}
+	}
+
+	private static class Unbuilt extends Invocation {
+		private String toCygwin(String flags, String value) {
 			try {
-				urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
-			} catch (java.net.MalformedURLException e) {
+				String rv = inonit.system.OperatingSystem.get().getCommandOutput(
+					"cygpath",
+					new String[] { flags, value }
+				);
+				//	Remove trailing newline
+				rv = rv.substring(0,rv.length()-1);
+				return rv;
+			} catch (java.io.IOException e) {
+				//	Must not be Cygwin
+				return value;
 			}
 		}
-		ClassLoader loader = new java.net.URLClassLoader(urls);
 
-		String JSH_RHINO_JS = null;
-		String RHINO_JS = null;
-		try {
-			//	TODO	Right now we assume that JSH_RHINO_SCRIPT is in native OS format, but we should not assume that: under
-			//			Cygwin, it would be better to allow the use of a Cygwin path here. See above.
-			JSH_RHINO_JS = (System.getenv("JSH_RHINO_SCRIPT") != null) ? System.getenv("JSH_RHINO_SCRIPT") : (JSH_HOME.getCanonicalPath() + slash + "script" + slash + "launcher" + slash + "jsh.rhino.js");
-			RHINO_JS = new java.io.File(new java.io.File(JSH_RHINO_JS).getParentFile(), "api.rhino.js").getCanonicalPath();
-		} catch (java.io.IOException e) {
+		String getRhinoClasspath() {
+			String rv = System.getenv("JSH_RHINO_CLASSPATH");
+			if (rv == null) return null;
+			return toCygwin("-wp", rv);
 		}
-		if (debug) System.err.println("JSH_RHINO_JS = " + JSH_RHINO_JS);
-		if (debug) System.err.println("RHINO_JS = " + RHINO_JS);
+
+		String getRhinoScript() {
+			String rv = System.getenv("JSH_RHINO_SCRIPT");
+			if (rv == null) return null;
+			return rv;
+		}
+	}
+
+	private void run(String[] args) throws java.io.IOException {
+		Invocation invocation = Invocation.create();
+		invocation.initialize();
+		ClassLoader loader = invocation.createClassLoader();
 
 		try {
-			String mainClassName = (System.getenv("JSH_DEBUG") != null) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
-			//	TODO	Allow launch of launcher in debugger?
-			Class shell = loader.loadClass(mainClassName);
+			Class shell = loader.loadClass(invocation.getMainClassName());
 			java.lang.reflect.Method main = shell.getMethod("main", new Class[] { String[].class });
-			if (debug) System.err.println("Rhino shell main = " + main);
-			List arguments = new ArrayList();
+			invocation.debug("Rhino shell main = " + main);
+			List<String> arguments = new ArrayList();
 			arguments.add("-opt");
 			arguments.add("-1");
 			arguments.add("-f");
-			arguments.add(RHINO_JS);
-			arguments.add(JSH_RHINO_JS);
+			invocation.addScriptArguments(arguments);
 			arguments.addAll(Arrays.asList(args));
-			if (debug) System.err.println("Rhino shell arguments:");
-			if (debug) {
-				for (int i=0; i<arguments.size(); i++) {
-					System.err.println("Rhino shell argument = " + arguments.get(i));
-				}
+			invocation.debug("Rhino shell arguments:");
+			for (int i=0; i<arguments.size(); i++) {
+				invocation.debug("Rhino shell argument = " + arguments.get(i));
 			}
 			main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
 		} catch (ClassNotFoundException e) {
@@ -137,12 +186,13 @@ public class Main {
 			e.printStackTrace();
 		} catch (java.lang.reflect.InvocationTargetException e) {
 			e.printStackTrace();
+		} finally {
+			//	Ensure the VM exits even if the debugger is displayed
+			System.exit(0);
 		}
-		//	Ensure the VM exits even if the debugger is displayed
-		System.exit(0);
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws java.io.IOException {
 		new Main().run(args);
 	}
 }

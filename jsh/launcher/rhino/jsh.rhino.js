@@ -104,7 +104,7 @@ var os = function(pathname,path) {
 	return pathname;
 }
 
-if (env.JSH_DEBUG) {
+if (env.JSH_DEBUG || env.JSH_LAUNCHER_DEBUG) {
 	debug.on = true;
 	debug("debugging enabled");
 }
@@ -136,13 +136,18 @@ try {
 	//		fi
 	//	fi
 
+	if (!env.JSH_SHELL_CLASSPATH && !JSH_HOME) throw "Missing jsh classes: specify environment variable JSH_SHELL_CLASSPATH";
 	var shellClasspath = (env.JSH_SHELL_CLASSPATH) ? new Searchpath(os(env.JSH_SHELL_CLASSPATH,true)) : new Searchpath(JSH_HOME.getFile("lib/jsh.jar").path);
 
 	var scriptClasspath = (env.JSH_SCRIPT_CLASSPATH) ? new Searchpath(os(env.JSH_SCRIPT_CLASSPATH,true)) : new Searchpath();
 
+	if (!env.JSH_LIBRARY_MODULES && !JSH_HOME) throw "Missing jsh modules: specify environment variable JSH_LIBRARY_MODULES";
 	var JSH_LIBRARY_MODULES = (env.JSH_LIBRARY_MODULES) ? new Directory(os(env.JSH_LIBRARY_MODULES)) : JSH_HOME.getDirectory("modules");
+	if (!env.JSH_LIBRARY_SCRIPTS_JS_PLATFORM && !JSH_HOME) throw "Missing platform loader: specify environment variable JSH_LIBRARY_SCRIPTS_JS_PLATFORM";
 	var JSH_LIBRARY_SCRIPTS_JS_PLATFORM = (env.JSH_LIBRARY_SCRIPTS_JS_PLATFORM) ? new Directory(os(env.JSH_LIBRARY_SCRIPTS_JS_PLATFORM)) : JSH_HOME.getDirectory("script/platform");
+	if (!env.JSH_LIBRARY_SCRIPTS_RHINO && !JSH_HOME) throw "Missing rhino loader: specify environment variable JSH_LIBRARY_SCRIPTS_RHINO";
 	var JSH_LIBRARY_SCRIPTS_RHINO = (env.JSH_LIBRARY_SCRIPTS_RHINO) ? new Directory(os(env.JSH_LIBRARY_SCRIPTS_RHINO)) : JSH_HOME.getDirectory("script/rhino");
+	if (!env.JSH_LIBRARY_SCRIPTS_JSH && !JSH_HOME) throw "Missing platform loader: specify environment variable JSH_LIBRARY_SCRIPTS_JSH";
 	var JSH_LIBRARY_SCRIPTS_JSH = (env.JSH_LIBRARY_SCRIPTS_JSH) ? new Directory(os(env.JSH_LIBRARY_SCRIPTS_JSH)) : JSH_HOME.getDirectory("script/jsh");
 
 	var JSH_TMPDIR = (env.JSH_TMPDIR) ? new Directory(os(env.JSH_TMPDIR)) : null;
@@ -160,7 +165,11 @@ try {
 			//	When running on Cygwin, use /tmp as default temporary directory rather than the Windows JDK/JRE default
 			if (!JSH_TMPDIR) JSH_TMPDIR = new Directory(os("/tmp"));
 
-			JSH_LIBRARY_NATIVE = (env.JSH_LIBRARY_NATIVE) ? new Directory(os(env.JSH_LIBRARY_NATIVE)) : JSH_HOME.getDirectory("bin");
+			if (!env.JSH_LIBRARY_NATIVE && !JSH_HOME) {
+				console("WARNING: could not find Cygwin paths helper. Use JSH_LIBRARY_NATIVE to specify location");
+			} else {
+				JSH_LIBRARY_NATIVE = (env.JSH_LIBRARY_NATIVE) ? new Directory(os(env.JSH_LIBRARY_NATIVE)) : JSH_HOME.getDirectory("bin");
+			}
 		}
 	})();
 
@@ -269,7 +278,9 @@ try {
 	}
 	if (platform.cygwin) {
 		command.add("-Dcygwin.root=" + platform.cygwin.cygpath.windows("/"));
-		command.add("-Dcygwin.paths=" + JSH_LIBRARY_NATIVE.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
+		if (JSH_LIBRARY_NATIVE) {
+			command.add("-Dcygwin.paths=" + JSH_LIBRARY_NATIVE.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
+		}
 	}
 	command.add("-classpath");
 	command.add(
@@ -298,6 +309,8 @@ try {
 	debug(e.fileName + ":" + e.lineNumber);
 	if (e.rhinoException) {
 		e.rhinoException.printStackTrace();
+	} else if (typeof(e) == "string") {
+		Packages.java.lang.System.err.println("[jsh] Launch failed: " + e);
 	}
 	var error = e;
 	debugger;
