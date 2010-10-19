@@ -52,6 +52,10 @@ END LICENSE
 					</ol>
 				</div>
 				<div class="returns" jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'returns')">
+					<!--
+						TODO	Document that this method returns null if the module cannot be found, and check whether that is also
+								true of the Rhino loader's module()
+					-->
 					<div class="label">Returns</div>
 					<span>The return value of the Rhino loader's <code>module</code> method.</span>
 				</div>
