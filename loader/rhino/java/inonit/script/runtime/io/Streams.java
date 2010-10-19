@@ -20,15 +20,25 @@ import java.util.*;
 
 public class Streams {
 	private Characters characters = new Characters();
+
+	public String readString(Reader in) throws java.io.IOException {
+		Reader reader = new BufferedReader(in);
+		try {
+			StringBuffer buffer = new StringBuffer();
+			int i;
+			while( (i = reader.read()) != -1) {
+				buffer.append( (char)i );
+			}
+			return buffer.toString();
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) {}
+		}
+	}
 	
 	public String readString(InputStream in) throws java.io.IOException {
-		Reader reader = new BufferedReader(new java.io.InputStreamReader(in));
-		StringBuffer buffer = new StringBuffer();
-		int i;
-		while( (i = reader.read()) != -1) {
-			buffer.append( (char)i );
-		}
-		return buffer.toString();
+		return readString(new java.io.InputStreamReader(in));
 	}
 	
 	public void writeString(String string, OutputStream out) throws java.io.IOException {
