@@ -120,6 +120,14 @@ public class Main {
 				}
 			},
 			new Shell.Host.Configuration() {
+				Engine.Log getLog() {
+					return new Engine.Log() {
+						public void println(String message) {
+							System.err.println(message);
+						}
+					};
+				}
+
 				Engine.Debugger getDebugger() {
 					String id = System.getProperty("jsh.js.debugger");
 					if (id == null) return null;

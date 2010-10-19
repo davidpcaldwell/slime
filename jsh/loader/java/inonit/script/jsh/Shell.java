@@ -67,12 +67,14 @@ public class Shell {
 
 		private Invocation invocation;
 
+		private Engine.Log log;
 		private Engine engine;
 		private Classpath classpath;
 
 		static abstract class Configuration {
 			abstract int getOptimizationLevel();
 			abstract Engine.Debugger getDebugger();
+			abstract Engine.Log getLog();
 		}
 
 		private static abstract class Classpath extends ClassLoader {
@@ -127,35 +129,10 @@ public class Shell {
 			Host rv = new Host();
 			rv.installation = installation;
 			rv.invocation = invocation;
+			rv.log = configuration.getLog();
 			rv.engine = Engine.create(configuration.getDebugger(), contexts);
 			rv.classpath = classpath;
 			return rv;
-		}
-
-		private void emitErrorMessage(java.io.PrintStream err, Engine.Errors.ScriptError e) {
-			err.println("[jsh] " + e.getSourceName() + ":" + e.getLineNumber() + ": " + e.getMessage());
-			String errCaret = "";
-			//	TODO	This appears to be null even when it should not be.
-			if (e.getLineSource() != null) {
-				for (int i=0; i<e.getLineSource().length(); i++) {
-					char c = e.getLineSource().charAt(i);
-					if (i < e.getColumn()-1) {
-						if (c == '\t') {
-							errCaret += "\t";
-						} else {
-							errCaret += " ";
-						}
-					} else if (i == e.getColumn()-1) {
-						errCaret += "^";
-					}
-				}
-				err.println("[jsh] " + e.getLineSource());
-				err.println("[jsh] " + errCaret);
-			}
-			if (e.getStackTrace() != null) {
-				err.println(e.getStackTrace());
-			}
-			err.println();
 		}
 
 		private static class ExitException extends Exception {
@@ -207,13 +184,7 @@ public class Shell {
 					}
 				}
 				if (!skip) {
-					System.err.println();
-					System.err.println("[jsh] Script halted because of " + errors.length + " errors.");
-					System.err.println();
-					status = 1;
-					for (int i=0; i<errors.length; i++) {
-						emitErrorMessage(System.err, errors[i]);
-					}
+					e.dump(log, "[jsh] ");
 				}
 			}
 			return status;
