@@ -137,37 +137,99 @@ public class ScriptHost {
 			this.invocation = invocation;
 		}
 
+		private Module.Code.Source createSource(File[] files) {
+			try {
+				java.net.URL[] urls = new java.net.URL[files.length];
+				for (int i=0; i<urls.length; i++) {
+					urls[i] = files[i].toURI().toURL();
+				}
+				ClassLoader loader = new java.net.URLClassLoader(urls, null);
+				return Module.Code.Source.create(loader);
+			} catch (java.io.IOException e) {
+				throw new RuntimeException("Unreachable", e);
+			}
+		}
+
+		private Module.Code createModuleCode(final File file, final String main, final File[] classpath) {
+			return new Module.Code() {
+				public String toString() {
+					try {
+						String rv = getClass().getName() + ": base=" + file.getCanonicalPath() + " main=" + main;
+						if (classpath != null) {
+							rv += " classpath=";
+							for (int i=0; i<classpath.length; i++) {
+								rv += classpath[i].getCanonicalPath();
+							}
+						}
+						return rv;
+					} catch (IOException e) {
+						return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
+					}
+				}
+
+				public Module.Code.Scripts getScripts() {
+					return Module.Code.Scripts.create(
+						createSource(new File[] { file }),
+						main
+					);
+				}
+
+				public Module.Code.Classes getClasses() {
+					return Module.Code.Classes.create(createSource(new File[] { file }), "$jvm/classes");
+				}
+			};
+		}
+
 		public Engine.Loader getRhinoLoaderBootstrap() {
-			return ScriptHost.this.getRhinoLoaderBootstrap();
+			return new Engine.Loader() {
+				public String getPlatformCode() throws IOException {
+					File file = loader.getPlatformLoader();
+					InputStream in = new FileInputStream(file);
+					return new Streams().readString(in);
+				}
+
+				public String getRhinoCode() throws IOException {
+					File file = loader.getRhinoLoader();
+					InputStream in = new FileInputStream(file);
+					return new Streams().readString(in);
+				}
+			};
 		}
 
 		public void script(Scriptable scope, String name, InputStream code) throws IOException {
-			ScriptHost.this.script(scope, name, code);
+			engine.script(scope, name, code);
 		}
 
 		public Module getBootstrapModule(String path) {
-			return ScriptHost.this.getBootstrapModule(path);
+			Module rv = engine.load(createModuleCode(loader.getModulePath(path),"module.js",null));
+			classpath.append(rv.getClasses());
+			return rv;
 		}
 
 		//	TODO	check to see whether third argument ever used
-		public Module getModule(File base, String name, File[] classes) {
-			return ScriptHost.this.getModule(base, name, classes);
+		public Module getModule(File base, String main) {
+			Module.Code code = createModuleCode(base,main,null);
+			Module rv = engine.load(code);
+			classpath.append(rv.getClasses());
+			return rv;
 		}
 
 		public String getScriptCode(File file) throws IOException {
-			return ScriptHost.this.getScriptCode(file);
+			if (!file.exists()) return null;
+			Streams streams = new Streams();
+			return streams.readString(new FileInputStream(file));
 		}
 
 		public ClassLoader getClassLoader() {
-			return ScriptHost.this.getClassLoader();
+			return classpath;
 		}
 
 		public void addClasses(File classes) throws java.net.MalformedURLException {
-			ScriptHost.this.addClasses(classes);
+			classpath.append(classes.toURI().toURL());
 		}
 
 		public void exit(int status) throws ExitException {
-			ScriptHost.this.exit(status);
+			throw new ExitException(status);
 		}
 
 		public Invocation getInvocation() {
@@ -175,138 +237,6 @@ public class ScriptHost {
 		}
 	}
 
-	public void addClasses(File source) throws MalformedURLException {
-		classpath.append(source.toURI().toURL());
-	}
-
-	//	Still used by jsh.$module
-	public void addClasses(Module module) {
-		classpath.append(module.getClasses());
-	}
-
-	public ClassLoader getClassLoader() {
-		return classpath;
-	}
-
-	public void exit(int status) throws ExitException {
-		throw new ExitException(status);
-	}
-	
-	private Module.Code.Source createSource(File[] files) {
-		try {
-			java.net.URL[] urls = new java.net.URL[files.length];
-			for (int i=0; i<urls.length; i++) {
-				urls[i] = files[i].toURI().toURL();
-			}
-			ClassLoader loader = new java.net.URLClassLoader(urls, null);
-			return Module.Code.Source.create(loader);
-		} catch (java.io.IOException e) {
-			throw new RuntimeException("Unreachable", e);
-		}
-	}
-
-	private Module.Code createModuleCode(final File file, final String main, final File[] classpath) {
-		return new Module.Code() {
-			public String toString() {
-				try {
-					String rv = getClass().getName() + ": base=" + file.getCanonicalPath() + " main=" + main;
-					if (classpath != null) {
-						rv += " classpath=";
-						for (int i=0; i<classpath.length; i++) {
-							rv += classpath[i].getCanonicalPath();
-						}
-					}
-					return rv;
-				} catch (IOException e) {
-					return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
-				}
-			}
-
-			public Module.Code.Scripts getScripts() {
-				return Module.Code.Scripts.create(
-					createSource(new File[] { file }),
-					main
-				);
-			}
-
-			public Module.Code.Classes getClasses() {
-				if (classpath == null) {
-					return Module.Code.Classes.create(createSource(new File[] { file }), "$jvm/classes");
-				} else {
-					return Module.Code.Classes.create(createSource(classpath), null);
-				}
-			}
-		};
-	}
-
-	public Module getBootstrapModule(String path) {
-		Module rv = engine.load(createModuleCode(loader.getModulePath(path),"module.js",null));
-		classpath.append(rv.getClasses());
-		return rv;
-	}
-
-	public Module getModule(File file, String main, File[] classes) {
-		Module.Code code = createModuleCode(file,main,classes);
-		Module rv = engine.load(code);
-		classpath.append(rv.getClasses());
-		return rv;
-	}
-
-	public String getScriptCode(File file) throws IOException {
-		if (!file.exists()) return null;
-		Streams streams = new Streams();
-		return streams.readString(new FileInputStream(file));
-	}
-
-	//	This method is used by jsh itself to load its component parts
-	public Scriptable load(Scriptable parent, Scriptable scope, String family, String name) throws IOException {
-		Script script = loader.load(family, name);
-		if (engine == null) throw new RuntimeException("'engine' is null");
-		if (script == null) throw new RuntimeException("'script' is null with family " + family + " and name " + name);
-		engine.include(scope, script.toSource());
-		scope.setParentScope(parent);
-		return scope;
-	}
-
-	public void script(Scriptable scope, String name, InputStream code) throws IOException {
-		engine.script(scope, name, code);
-	}
-	
-	public void execute(Scriptable scope, Script script) throws IOException {
-		engine.include(scope, Engine.Source.create(script.getName(), script.getReader()));
-	}
-
-	public boolean declared(Scriptable scope, String name) {
-		try {
-			Scriptable value = engine.evaluate(scope,"eval(\"" + name + "\")");
-			return true;
-		} catch (ClassCastException e) {
-			throw new RuntimeException(e);
-		} catch (org.mozilla.javascript.EcmaError e) {
-			if (e.getName().equals("ReferenceError")) {
-				return false;
-			} else {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	public Engine.Loader getRhinoLoaderBootstrap() {
-		return new Engine.Loader() {
-			public String getPlatformCode() throws IOException {
-				File file = loader.getPlatformLoader();
-				InputStream in = new FileInputStream(file);
-				return new Streams().readString(in);
-			}
-
-			public String getRhinoCode() throws IOException {
-				File file = loader.getRhinoLoader();
-				InputStream in = new FileInputStream(file);
-				return new Streams().readString(in);
-			}
-		};
-	}
-	
 	void execute() {
 		Object ignore = engine.execute(program);
 	}

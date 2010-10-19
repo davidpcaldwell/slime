@@ -62,7 +62,7 @@
 			if (arguments.length == 2) {
 				p.$context = arguments[1];
 			}
-			return rhinoLoader.module($host.getModule(format.base,format.name,null),p);
+			return rhinoLoader.module($host.getModule(format.base,format.name),p);
 		}
 
 		this.script = function(pathname,$context) {
