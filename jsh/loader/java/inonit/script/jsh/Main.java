@@ -66,10 +66,6 @@ public class Main {
 					}
 				}
 
-				public Shell.Installation.Script load(String prefix, String name) {
-					return Shell.Installation.Script.create( getFile(prefix, name) );
-				}
-
 				private File getModulePath(String path) {
 					String property = System.getProperty("jsh.library.modules");
 					File directory = new File(property + "/" + path);
@@ -92,6 +88,10 @@ public class Main {
 
 				public Script getRhinoLoader() {
 					return Script.create(getFile("rhino", "literal.js"));
+				}
+
+				public Script getJshLoader() {
+					return Script.create( getFile("jsh", "jsh.js") );
 				}
 			},
 			new Shell.Configuration() {

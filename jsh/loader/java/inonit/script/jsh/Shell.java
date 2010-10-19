@@ -73,9 +73,9 @@ public class Shell {
 		}
 
 		public abstract Module.Code getModuleCode(String path);
-		public abstract Script load(String prefix, String name);
 		public abstract Script getPlatformLoader();
 		public abstract Script getRhinoLoader();
+		public abstract Script getJshLoader();
 
 		Engine.Loader getRhinoLoaderBootstrap() {
 			return new Engine.Loader() {
@@ -195,7 +195,7 @@ public class Shell {
 				jsh.setDontenum(true);
 				program.set(jsh);
 
-				Installation.Script jshJs = installation.load("jsh", "jsh.js");
+				Installation.Script jshJs = installation.getJshLoader();
 				if (jshJs == null) {
 					throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
 				}
