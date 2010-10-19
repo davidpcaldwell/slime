@@ -21,6 +21,14 @@ import java.util.*;
 import org.mozilla.javascript.*;
 
 public class Engine {
+	public static abstract class Log {
+		public abstract void println(String message);
+
+		public final void println() {
+			println("");
+		}
+	}
+
 	public static abstract class Debugger {
 		abstract void initialize(ContextFactory contexts);
 		abstract void initialize(Scriptable scope, Engine engine, Program program);
@@ -279,6 +287,41 @@ public class Engine {
 		
 		ErrorReporterImpl getErrorReporter() {
 			return reporter;
+		}
+
+		private void emitErrorMessage(Log err, String prefix, ScriptError e) {
+			err.println(prefix + e.getSourceName() + ":" + e.getLineNumber() + ": " + e.getMessage());
+			String errCaret = "";
+			//	TODO	This appears to be null even when it should not be.
+			if (e.getLineSource() != null) {
+				for (int i=0; i<e.getLineSource().length(); i++) {
+					char c = e.getLineSource().charAt(i);
+					if (i < e.getColumn()-1) {
+						if (c == '\t') {
+							errCaret += "\t";
+						} else {
+							errCaret += " ";
+						}
+					} else if (i == e.getColumn()-1) {
+						errCaret += "^";
+					}
+				}
+				err.println(prefix + e.getLineSource());
+				err.println(prefix + errCaret);
+			}
+			if (e.getStackTrace() != null) {
+				err.println(e.getStackTrace());
+			}
+			err.println();
+		}
+
+		public void dump(Log err, String prefix) {
+			err.println();
+			err.println(prefix + "Script halted because of " + errors.size() + " errors.");
+			err.println();
+			for (int i=0; i<errors.size(); i++) {
+				emitErrorMessage(err, prefix, (ScriptError)errors.get(i));
+			}
 		}
 		
 		public void reset() {
