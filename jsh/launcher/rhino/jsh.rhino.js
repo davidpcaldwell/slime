@@ -119,13 +119,14 @@ if (getProperty("jsh.home")) {
 	debug("JSH_HOME = " + JSH_HOME.path);
 }
 try {
-	//	The jsh.classpath.rhino property was already processed by the Launcher class to be in OS-format, because it was used to create
-	//	the classloader inside which we are executing
+	//	The jsh.rhino.classpath property was already processed by the Launcher class to be in OS-format, because it was used to
+	//	create the classloader inside which we are executing
 	var rhinoClasspath = 
-		(getProperty("jsh.classpath.rhino"))
-		? new Searchpath(getProperty("jsh.classpath.rhino"))
+		(getProperty("jsh.rhino.classpath"))
+		? new Searchpath(getProperty("jsh.rhino.classpath"))
 		: new Searchpath(getProperty("java.class.path"))
 	;
+
 	//	TODO	Could contemplate including XMLBeans in rhinoClasspath if found:
 	//
 	//	if [ -z $JSH_RHINO_CLASSPATH ]; then
@@ -196,7 +197,7 @@ try {
 		if (path.indexOf("/") != -1 || path.indexOf("\\") != -1) {
 			if (!new Packages.java.io.File(path).exists()) {
 				Packages.java.lang.System.err.println("File not found: " + path);
-				debug("Working directory: " + env.PWD);
+				debug("Working directory: PWD=" + env.PWD);
 				console("Script not found: " + path)
 				Packages.java.lang.System.exit(1);
 			} else {
@@ -252,13 +253,10 @@ try {
 		}
 	} );
 	var command = new Command();
-	command.pushProperty = function(pname,ename) {
-		if (typeof(env[ename]) != "undefined") {
-			this.add("-D"+pname+"="+env[ename]);
-		}
-	}
 	command.jvmProperty = function(name,value) {
-		this.add("-D" + name + "=" + value);
+		if (typeof(value) != "undefined") {
+			this.add("-D" + name + "=" + value);
+		}
 	}
 	command.add(JAVA_HOME.getFile("bin/java"));
 	if (env.JSH_JAVA_DEBUGGER) {
@@ -266,20 +264,32 @@ try {
 	}
 	command.add(directives.jvmOptions);
 	//	TODO	Maybe the shell should just use these environment variables, rather than having this rigamarole
-	command.pushProperty("jsh.optimization","JSH_OPTIMIZATION");
-	command.pushProperty("jsh.js.debugger","JSH_JS_DEBUGGER");
+	command.jvmProperty("jsh.optimization",env.JSH_OPTIMIZATION);
+	command.jvmProperty("jsh.script.debugger",(function() {
+		if (env.JSH_SCRIPT_DEBUGGER) return env.JSH_SCRIPT_DEBUGGER;
+		if (env.JSH_DEBUG) return "rhino";
+	})());
 	command.jvmProperty("jsh.library.modules",JSH_LIBRARY_MODULES.path);
 	command.jvmProperty("jsh.library.scripts.loader",JSH_LIBRARY_SCRIPTS_JS_PLATFORM.path);
 	command.jvmProperty("jsh.library.scripts.rhino",JSH_LIBRARY_SCRIPTS_RHINO.path);
 	command.jvmProperty("jsh.library.scripts.jsh",JSH_LIBRARY_SCRIPTS_JSH.path);
-	command.add("-Djsh.os.env.unix=" + JSH_OS_ENV);
+	command.jvmProperty("jsh.os.env.unix",JSH_OS_ENV);
 	if (JSH_TMPDIR) {
 		command.jvmProperty("java.io.tmpdir",JSH_TMPDIR.path);
 	}
+
+	//	launcher properties that are only sent as informational (they can be used to launch subscripts)
+	command.jvmProperty("jsh.launcher.classpath", getProperty("java.class.path"));
+	command.jvmProperty("jsh.launcher.rhino.classpath", rhinoClasspath.toPath());
+	command.jvmProperty("jsh.launcher.rhino.script", getProperty("jsh.launcher.rhino.script"));
+	command.jvmProperty("jsh.launcher.shell.classpath", shellClasspath.toPath());
+	command.jvmProperty("jsh.launcher.script.classpath", scriptClasspath.toPath());
+
 	if (platform.cygwin) {
-		command.add("-Dcygwin.root=" + platform.cygwin.cygpath.windows("/"));
+		command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
 		if (JSH_LIBRARY_NATIVE) {
-			command.add("-Dcygwin.paths=" + JSH_LIBRARY_NATIVE.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
+			command.jvmProperty("jsh.launcher.library.native",JSH_LIBRARY_NATIVE.path);
+			command.jvmProperty("cygwin.paths",JSH_LIBRARY_NATIVE.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
 		}
 	}
 	command.add("-classpath");

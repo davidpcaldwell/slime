@@ -37,19 +37,12 @@ public class Main {
 	}
 	
 	private int run() throws CheckedException {
-		if (System.getProperty("jsh.js.debugger") != null) {
+		if (System.getProperty("jsh.script.debugger") != null) {
 			debug = true;
 		}
 
 		String scriptPath = (String)args.remove(0);
 
-		if (debug) {
-			System.err.println("JAVA_HOME = " + System.getenv("JAVA_HOME"));
-			System.err.println("java.home = " + System.getProperty("java.home"));
-			System.err.println("sun.boot.library.path = " + System.getProperty("sun.boot.library.path"));
-			System.err.println("java.library.path = " + System.getProperty("java.library.path"));
-		}
-		
 		final File mainScript = new File(scriptPath);
 		if (!mainScript.exists()) {
 			throw new CheckedException("File not found: " + scriptPath);
