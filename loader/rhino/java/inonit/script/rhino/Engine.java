@@ -162,83 +162,6 @@ public class Engine {
 		return rv;
 	}
 	
-	public static class ObjectName {
-		static final ObjectName NULL = new ObjectName(new String[0]);
-		
-		public static ObjectName create(String s) {
-			if (s == null) return NULL;
-			String[] tokens = s.split("\\.");
-			return new ObjectName(tokens);
-		}
-		
-		private String[] prefix;
-		private String name;
-		
-		private ObjectName(String[] tokens) {
-			if (tokens.length > 1) {
-				prefix = new String[tokens.length-1];
-				for (int i=0; i<tokens.length-1; i++) {
-					prefix[i] = tokens[i];
-				}
-			}
-			if (tokens.length > 0) {
-				name = tokens[tokens.length-1];
-			}
-		}
-		
-		Scriptable getParent(Context context, Scriptable global, boolean create) {
-			Scriptable target = global;
-			if (prefix != null) {
-				String[] tokens = prefix;
-				for (int i=0; i<tokens.length; i++) {
-					Object current = target.get(tokens[i], target);
-					if (current == Scriptable.NOT_FOUND) {
-						if (create) {
-							current = (Scriptable)context.newObject(target);
-							ScriptableObject.defineProperty(target, tokens[i], current, ScriptableObject.READONLY);
-						} else {
-							return null;
-						}
-					}
-					target = (Scriptable)current;
-				}
-			}
-			return target;
-		}
-		
-		Scriptable get(Context context, Scriptable global, boolean create) {
-			Scriptable parent = getParent(context, global, create);
-			if (parent == null) return null;
-			if (name != null) {
-				Object current = parent.get(name, parent);
-				if (current == Scriptable.NOT_FOUND) {
-					if (create) {
-						Scriptable rv = context.newObject(parent);
-						ScriptableObject.defineProperty(parent, name, rv, ScriptableObject.READONLY);
-						return rv;
-					} else {
-						return null;
-					}
-				} else {
-					return (Scriptable)current;
-				}
-			} else {
-				return parent;
-			}
-		}
-		
-		void set(Context context, Scriptable global, Engine.Program.Variable variable) {
-			//	When we are setting a variable that is in a namespace, we will create the namespace here.
-			Scriptable parent = getParent(context, global, true);
-			ScriptableObject.defineProperty(
-				parent,
-				variable.getName(),
-				variable.getValue(context, global),
-				variable.getRhinoAttributes()
-			);
-		}
-	}
-	
 	private Debugger debugger;
 	private ContextFactory contexts;
 	
@@ -604,6 +527,23 @@ public class Engine {
 		public void set(Variable variable) {
 			variables.add( variable );
 		}
+
+		private static class ObjectName {
+			static final ObjectName NULL = new ObjectName();
+
+			void set(Context context, Scriptable global, Variable variable) {
+				ScriptableObject.defineProperty(
+					global,
+					variable.getName(),
+					variable.getValue(context, global),
+					variable.getRhinoAttributes()
+				);
+			}
+
+			Scriptable get(Context context, Scriptable global, boolean create) {
+				return global;
+			}
+		}
 		
 		/**
 			Adds a script to this <code>Program</code> with an optional <code>ObjectName</code>.
@@ -614,6 +554,10 @@ public class Engine {
 		public void add(ObjectName scope, Source source) {
 			if (scope == null) scope = ObjectName.NULL;
 			units.add( new SourceUnit(scope, source) );
+		}
+
+		public void add(Source source) {
+			units.add( new SourceUnit(ObjectName.NULL, source) );
 		}
 		
 		public void add(Function function, Object[] arguments) {
@@ -707,13 +651,8 @@ public class Engine {
 		}
 		
 		public static class Variable {
-			public static Variable create(ObjectName scope, String name, Value value) {
-				return new Variable(scope, name, value, new Attributes());
-			}
-			
-			/** @deprecated */
 			public static Variable create(String name, Value value) {
-				return create(ObjectName.NULL, name, value);
+				return new Variable(ObjectName.NULL, name, value, new Attributes());
 			}
 			
 			private ObjectName scope;

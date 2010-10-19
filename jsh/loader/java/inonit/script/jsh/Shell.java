@@ -158,7 +158,6 @@ public class Shell {
 				Engine.Program program = new Engine.Program();
 
 				Engine.Program.Variable jsh = Engine.Program.Variable.create(
-					Engine.ObjectName.create("jsh"),
 					"$host",
 					Engine.Program.Variable.Value.create(new Interface())
 				);
@@ -171,8 +170,8 @@ public class Shell {
 				if (jshJs == null) {
 					throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
 				}
-				program.add(Engine.ObjectName.create("jsh"), jshJs.toSource());
-				program.add(null, Engine.Source.create(invocation.getScript()));
+				program.add(jshJs.toSource());
+				program.add(Engine.Source.create(invocation.getScript()));
 				Object ignore = engine.execute(program);
 			} catch (Engine.Errors e) {
 				Engine.Errors.ScriptError[] errors = e.getErrors();

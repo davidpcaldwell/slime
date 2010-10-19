@@ -15,7 +15,7 @@
 
 //	HOST VARIABLE: $host (Java class: inonit.script.jsh.ScriptHost)
 
-(function() {
+this.jsh = new function() {
 	var jsh = this;
 
 	var loader = new function() {
@@ -174,4 +174,4 @@
 		$platform: loader.$platform,
 		$api: loader.$api
 	}
-}).call(this);
+};
