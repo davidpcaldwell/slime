@@ -224,9 +224,9 @@ public class Engine {
 			Scriptable parent = getParent(context, global, true);
 			ScriptableObject.defineProperty(
 				parent,
-				variable.name, 
-				variable.value.get(context, global),
-				variable.attributes.toRhinoAttributes()
+				variable.getName(),
+				variable.getValue(context, global),
+				variable.getRhinoAttributes()
 			);
 		}
 	}
@@ -683,6 +683,18 @@ public class Engine {
 				this.name = name;
 				this.value = value;
 				this.attributes = attributes;
+			}
+
+			String getName() {
+				return name;
+			}
+
+			Object getValue(Context context, Scriptable scope) {
+				return value.get(context, scope);
+			}
+
+			int getRhinoAttributes() {
+				return attributes.toRhinoAttributes();
 			}
 			
 			void set(Context context, Scriptable global) {
