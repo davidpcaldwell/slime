@@ -66,40 +66,11 @@ public class Main {
 					}
 				}
 
-				class FileScript extends Shell.Installation.Script {
-					private File f;
-
-					FileScript(File f) {
-						this.f = f;
-					}
-
-					public String getName() {
-						try {
-							return f.getCanonicalPath();
-						} catch (java.io.IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-
-					public Reader getReader() {
-						try {
-							return new FileReader(f);
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-
 				public Shell.Installation.Script load(String prefix, String name) {
-					File file = getFile(prefix, name);
-					if (file.exists()) {
-						return new FileScript(file);
-					} else {
-						return null;
-					}
+					return Shell.Installation.Script.create( getFile(prefix, name) );
 				}
 
-				public File getModulePath(String path) {
+				private File getModulePath(String path) {
 					String property = System.getProperty("jsh.library.modules");
 					File directory = new File(property + "/" + path);
 					File file = new File(property + "/" + path.replace('/', '.') + ".slime");
@@ -111,12 +82,16 @@ public class Main {
 					throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
 				}
 
-				public File getPlatformLoader() {
-					return getFile("loader", "literal.js");
+				public Module.Code getModuleCode(String path) {
+					return Module.Code.slime(getModulePath(path), "module.js");
 				}
 
-				public File getRhinoLoader() {
-					return getFile("rhino", "literal.js");
+				public Script getPlatformLoader() {
+					return Script.create(getFile("loader", "literal.js"));
+				}
+
+				public Script getRhinoLoader() {
+					return Script.create(getFile("rhino", "literal.js"));
 				}
 			},
 			new Shell.Configuration() {

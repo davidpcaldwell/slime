@@ -31,6 +31,39 @@ public class Shell {
 
 	public static abstract class Installation {
 		public static abstract class Script {
+			public static Script create(final File f) {
+				if (!f.exists()) return null;
+				return new Script() {
+					public String getName() {
+						try {
+							return f.getCanonicalPath();
+						} catch (java.io.IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+
+					public Reader getReader() {
+						try {
+							return new FileReader(f);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				};
+			}
+
+			public static Script create(final String name, final Reader reader) {
+				return new Script() {
+					public String getName() {
+						return name;
+					}
+
+					public Reader getReader() {
+						return reader;
+					}
+				};
+			}
+
 			public abstract String getName();
 			public abstract Reader getReader();
 
@@ -39,23 +72,19 @@ public class Shell {
 			}
 		}
 
-		public abstract File getModulePath(String path);
+		public abstract Module.Code getModuleCode(String path);
 		public abstract Script load(String prefix, String name);
-		public abstract File getPlatformLoader();
-		public abstract File getRhinoLoader();
+		public abstract Script getPlatformLoader();
+		public abstract Script getRhinoLoader();
 
 		Engine.Loader getRhinoLoaderBootstrap() {
 			return new Engine.Loader() {
 				public String getPlatformCode() throws IOException {
-					File file = Installation.this.getPlatformLoader();
-					InputStream in = new FileInputStream(file);
-					return new Streams().readString(in);
+					return new Streams().readString(Installation.this.getPlatformLoader().getReader());
 				}
 
 				public String getRhinoCode() throws IOException {
-					File file = Installation.this.getRhinoLoader();
-					InputStream in = new FileInputStream(file);
-					return new Streams().readString(in);
+					return new Streams().readString(Installation.this.getRhinoLoader().getReader());
 				}
 			};
 		}
@@ -202,58 +231,20 @@ public class Shell {
 				engine.script(scope, name, code);
 			}
 
-			private Module.Code.Source createSource(File[] files) {
-				try {
-					java.net.URL[] urls = new java.net.URL[files.length];
-					for (int i=0; i<urls.length; i++) {
-						urls[i] = files[i].toURI().toURL();
-					}
-					ClassLoader loader = new java.net.URLClassLoader(urls, null);
-					return Module.Code.Source.create(loader);
-				} catch (java.io.IOException e) {
-					throw new RuntimeException("Unreachable", e);
-				}
-			}
-
-			private Module.Code createModuleCode(final File file, final String main, final File[] classpath) {
-				return new Module.Code() {
-					public String toString() {
-						try {
-							String rv = getClass().getName() + ": base=" + file.getCanonicalPath() + " main=" + main;
-							if (classpath != null) {
-								rv += " classpath=";
-								for (int i=0; i<classpath.length; i++) {
-									rv += classpath[i].getCanonicalPath();
-								}
-							}
-							return rv;
-						} catch (IOException e) {
-							return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
-						}
-					}
-
-					public Module.Code.Scripts getScripts() {
-						return Module.Code.Scripts.create(
-							createSource(new File[] { file }),
-							main
-						);
-					}
-
-					public Module.Code.Classes getClasses() {
-						return Module.Code.Classes.create(createSource(new File[] { file }), "$jvm/classes");
-					}
-				};
-			}
-
 			public Module getBootstrapModule(String path) {
-				Module rv = engine.load(createModuleCode(installation.getModulePath(path),"module.js",null));
+				Module rv = engine.load(installation.getModuleCode(path));
 				classpath.append(rv);
 				return rv;
 			}
 
-			public Module getModule(File base, String main) {
-				Module.Code code = createModuleCode(base,main,null);
-				Module rv = engine.load(code);
+			public Module getUnpackedModule(File base, String main) {
+				Module rv = engine.load(Module.Code.unpacked(base,main));
+				classpath.append(rv);
+				return rv;
+			}
+
+			public Module getPackedModule(File slime, String main) {
+				Module rv = engine.load(Module.Code.slime(slime,main));
 				classpath.append(rv);
 				return rv;
 			}

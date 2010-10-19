@@ -48,7 +48,7 @@ this.jsh = new function() {
 				format.base = pathname.$peer.getHostFile();
 				format.name = "module.js";
 			} else if (pathname.file && /\.slime$/.test(pathname.basename)) {
-				format.base = pathname.$peer.getHostFile();
+				format.slime = pathname.$peer.getHostFile();
 				format.name = "module.js";
 			} else if (pathname.file) {
 				format.base = pathname.parent.$peer.getHostFile();
@@ -60,7 +60,13 @@ this.jsh = new function() {
 			if (arguments.length == 2) {
 				p.$context = arguments[1];
 			}
-			return rhinoLoader.module($host.getModule(format.base,format.name),p);
+			if (format.slime) {
+				return rhinoLoader.module($host.getPackedModule(format.slime,format.name),p);
+			} else if (format.base) {
+				return rhinoLoader.module($host.getUnpackedModule(format.base,format.name),p);
+			} else {
+				throw "Unreachable code: format.slime and format.base null in jsh loader's module()";
+			}
 		}
 
 		this.script = function(pathname,$context) {

@@ -21,7 +21,78 @@ import org.mozilla.javascript.*;
 
 public class Module {
 	public static abstract class Code {
+		private static Source createSource(File[] files) {
+			try {
+				java.net.URL[] urls = new java.net.URL[files.length];
+				for (int i=0; i<urls.length; i++) {
+					urls[i] = files[i].toURI().toURL();
+				}
+				ClassLoader loader = new java.net.URLClassLoader(urls, null);
+				return Module.Code.Source.create(loader);
+			} catch (java.io.IOException e) {
+				throw new RuntimeException("Unreachable", e);
+			}
+		}
+
+		public static Code slime(final File file, final String main) {
+			return new Module.Code() {
+				public String toString() {
+					try {
+						String rv = getClass().getName() + ": base=" + file.getCanonicalPath() + " main=" + main;
+						return rv;
+					} catch (IOException e) {
+						return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
+					}
+				}
+
+				public Module.Code.Scripts getScripts() {
+					return Module.Code.Scripts.create(
+						createSource(new File[] { file }),
+						main
+					);
+				}
+
+				public Module.Code.Classes getClasses() {
+					return Module.Code.Classes.create(createSource(new File[] { file }), "$jvm/classes");
+				}
+			};
+		}
+
+		public static Code unpacked(final File base, final String main) {
+			return new Module.Code() {
+				public String toString() {
+					try {
+						String rv = getClass().getName() + ": base=" + base.getCanonicalPath() + " main=" + main;
+						return rv;
+					} catch (IOException e) {
+						return getClass().getName() + ": " + base.getAbsolutePath() + " [error getting canonical]";
+					}
+				}
+
+				public Module.Code.Scripts getScripts() {
+					return Module.Code.Scripts.create(
+						createSource(new File[] { base }),
+						main
+					);
+				}
+
+				public Module.Code.Classes getClasses() {
+					return new Classes() {
+						public InputStream getResourceAsStream(String path) {
+							return null;
+						}
+					};
+				}
+			};
+		}
+
 		public static abstract class Source {
+			public static Source NULL = new Source() {
+				public InputStream getResourceAsStream(String path) {
+					return null;
+				}
+			};
+
 			public static Source create(final ClassLoader loader) {
 				return new Source() {
 					public InputStream getResourceAsStream(String path) {
