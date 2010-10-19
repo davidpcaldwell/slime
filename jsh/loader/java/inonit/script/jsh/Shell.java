@@ -62,13 +62,6 @@ public class Shell {
 		public abstract String[] getArguments();
 	}
 	
-//	static abstract class Configuration {
-//		abstract int getOptimizationLevel();
-//		abstract Engine.Debugger getDebugger();
-//		abstract Installation getLoader();
-//		abstract Invocation getInvocation();
-//	}
-
 	public static class Host {
 		private Installation installation;
 
@@ -82,7 +75,28 @@ public class Shell {
 			abstract Engine.Debugger getDebugger();
 		}
 
-		private static class Classpath extends ClassLoader {
+		private static abstract class Classpath extends ClassLoader {
+			public abstract void append(URL url);
+			public abstract void append(Module module);
+		}
+
+		private static class DelegationChain extends Classpath {
+			private ClassLoader current = Shell.class.getClassLoader();
+
+			protected Class findClass(String name) throws ClassNotFoundException {
+				return current.loadClass(name);
+			}
+
+			public void append(URL url) {
+				current = new URLClassLoader(new URL[] { url }, current);
+			}
+
+			public void append(Module module) {
+				current = module.getClasses(current);
+			}
+		}
+
+		private static class ListClasspath extends Classpath {
 			private ArrayList loaders = new ArrayList();
 
 			protected Class findClass(String name) throws ClassNotFoundException {
@@ -99,14 +113,14 @@ public class Shell {
 				loaders.add(new URLClassLoader(new URL[] { url }));
 			}
 
-			public void append(ClassLoader loader) {
-				loaders.add(loader);
+			public void append(Module module) {
+				loaders.add(module.getClasses(Shell.class.getClassLoader()));
 			}
 		}
 
 		static Host create(Installation installation, Configuration configuration, Invocation invocation) {
 			ContextFactoryImpl contexts = new ContextFactoryImpl();
-			Classpath classpath = new Classpath();
+			Classpath classpath = new DelegationChain();
 			contexts.initApplicationClassLoader(classpath);
 			contexts.setOptimization(configuration.getOptimizationLevel());
 
@@ -259,14 +273,14 @@ public class Shell {
 
 			public Module getBootstrapModule(String path) {
 				Module rv = engine.load(createModuleCode(installation.getModulePath(path),"module.js",null));
-				classpath.append(rv.getClasses());
+				classpath.append(rv);
 				return rv;
 			}
 
 			public Module getModule(File base, String main) {
 				Module.Code code = createModuleCode(base,main,null);
 				Module rv = engine.load(code);
-				classpath.append(rv.getClasses());
+				classpath.append(rv);
 				return rv;
 			}
 
@@ -278,50 +292,13 @@ public class Shell {
 
 			public Engine.Loader getRhinoLoaderBootstrap() {
 				return installation.getRhinoLoaderBootstrap();
-	//			return new Engine.Loader() {
-	//				public String getPlatformCode() throws IOException {
-	//					File file = loader.getPlatformLoader();
-	//					InputStream in = new FileInputStream(file);
-	//					return new Streams().readString(in);
-	//				}
-	//
-	//				public String getRhinoCode() throws IOException {
-	//					File file = loader.getRhinoLoader();
-	//					InputStream in = new FileInputStream(file);
-	//					return new Streams().readString(in);
-	//				}
-	//			};
 			}
-
-	//		public void script(Scriptable scope, String name, InputStream code) throws IOException {
-	//			host.script(scope, name, code);
-	//		}
-	//
-	//		public Module getBootstrapModule(String path) {
-	//			return host.getBootstrapModule(path);
-	////			Module rv = engine.load(createModuleCode(loader.getModulePath(path),"module.js",null));
-	////			classpath.append(rv.getClasses());
-	////			return rv;
-	//		}
-	//
-	//		//	TODO	check to see whether third argument ever used
-	//		public Module getModule(File base, String main) {
-	//			return host.getModule(base, main);
-	////			Module.Code code = createModuleCode(base,main,null);
-	////			Module rv = engine.load(code);
-	////			classpath.append(rv.getClasses());
-	////			return rv;
-	//		}
 
 			public String getScriptCode(File file) throws IOException {
 				if (!file.exists()) return null;
 				Streams streams = new Streams();
 				return streams.readString(new FileInputStream(file));
 			}
-
-	//		public ClassLoader getClassLoader() {
-	//			return classpath;
-	//		}
 
 			public void addClasses(File classes) throws java.net.MalformedURLException {
 				classpath.append(classes.toURI().toURL());
@@ -333,10 +310,6 @@ public class Shell {
 		}
 	}
 
-//	void execute() {
-//		Object ignore = engine.execute(program);
-//	}
-	
 	public static abstract class ShellEnvironment {
 		private Integer status;
 		
@@ -355,7 +328,7 @@ public class Shell {
 		public abstract File getWorkingDirectory();
 	}
 	
-	static class ShellEnvironmentImpl extends Shell.ShellEnvironment {
+	static class ShellEnvironmentImpl extends ShellEnvironment {
 		private ByteArrayOutputStream out = new ByteArrayOutputStream();
 		private ByteArrayOutputStream err = new ByteArrayOutputStream();
 		

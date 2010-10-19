@@ -67,8 +67,8 @@ public class Module {
 		public abstract Scripts getScripts();
 		public abstract Classes getClasses();
 
-		public ClassLoader getClassLoader() {
-			return new ClassLoader() {
+		public ClassLoader getClassLoader(ClassLoader delegate) {
+			return new ClassLoader(delegate) {
 				protected Class findClass(String name) throws ClassNotFoundException {
 					try {
 						String path = name.replace('.', '/') + ".class";
@@ -108,8 +108,8 @@ public class Module {
 		return "Module: code=" + code;
 	}
 
-	public final ClassLoader getClasses() {
-		return code.getClassLoader();
+	public final ClassLoader getClasses(ClassLoader delegate) {
+		return code.getClassLoader(delegate);
 	}
 
 	//	Used by rhino loader 
