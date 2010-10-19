@@ -20,16 +20,14 @@ this.jsh = new function() {
 
 	var loader = new function() {
 		var rhinoLoader = (function() {
-			var $delegate = $host.getRhinoLoaderBootstrap();
-
 			var $loader = new function() {
-				this.code = String($delegate.getPlatformCode());
+				this.code = String($host.getRhinoLoaderBootstrap().getPlatformCode());
 				this.script = function(scope,name,$in) {
 					$host.script(scope,name,$in);
 				}
 			};
 
-			return eval( String($delegate.getRhinoCode()) );
+			return eval( String($host.getRhinoLoaderBootstrap().getRhinoCode()) );
 		})();
 
 		var EVALUATE_SCRIPTS_AS_STRINGS = false;
