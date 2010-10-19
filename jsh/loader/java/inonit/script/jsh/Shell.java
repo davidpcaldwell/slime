@@ -249,8 +249,6 @@ public class Shell {
 				return rv;
 			}
 
-			//	TODO	probably want to move classpath back into Interface and allow new Engine to be created each time so that new
-			//			classpath is created for scripts each time; this is most realistic embedding
 			public ClassLoader getClassLoader() {
 				return classpath;
 			}
