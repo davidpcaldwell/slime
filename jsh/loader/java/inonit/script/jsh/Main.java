@@ -50,7 +50,7 @@ public class Main {
 		if (mainScript.isDirectory()) {
 			throw new CheckedException("Filename: " + scriptPath + " is a directory");
 		}
-		Shell.Host host = Shell.Host.create(
+		return Shell.execute(
 			new Shell.Installation() {
 				File getFile(String prefix, String name) {
 					String propertyName = "jsh.library.scripts." + prefix.replace('/', '.');
@@ -119,8 +119,8 @@ public class Main {
 					return getFile("rhino", "literal.js");
 				}
 			},
-			new Shell.Host.Configuration() {
-				Engine.Log getLog() {
+			new Shell.Configuration() {
+				public Engine.Log getLog() {
 					return new Engine.Log() {
 						public void println(String message) {
 							System.err.println(message);
@@ -128,8 +128,8 @@ public class Main {
 					};
 				}
 
-				Engine.Debugger getDebugger() {
-					String id = System.getProperty("jsh.js.debugger");
+				public Engine.Debugger getDebugger() {
+					String id = System.getProperty("jsh.script.debugger");
 					if (id == null) return null;
 					if (id != null && id.equals("rhino")) {
 						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
@@ -138,7 +138,7 @@ public class Main {
 					return null;
 				}
 
-				int getOptimizationLevel() {
+				public int getOptimizationLevel() {
 					int optimization = -1;
 					if (System.getProperty("jsh.optimization") != null) {
 						//	TODO	validate this value
@@ -157,7 +157,6 @@ public class Main {
 				}
 			}
 		);
-		return host.execute();
 	}
 	
 	public static void main(String[] args) throws Throwable {

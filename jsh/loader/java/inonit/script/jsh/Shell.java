@@ -25,8 +25,12 @@ import inonit.script.rhino.*;
 import inonit.script.runtime.io.*;
 
 public class Shell {
-	static abstract class Installation {
-		static abstract class Script {
+	public static int execute(Installation installation, Configuration configuration, Invocation invocation) {
+		return Host.create(installation, configuration, invocation).execute();
+	}
+
+	public static abstract class Installation {
+		public static abstract class Script {
 			public abstract String getName();
 			public abstract Reader getReader();
 
@@ -35,10 +39,10 @@ public class Shell {
 			}
 		}
 
-		abstract File getModulePath(String path);
-		abstract Script load(String prefix, String name);
-		abstract File getPlatformLoader();
-		abstract File getRhinoLoader();
+		public abstract File getModulePath(String path);
+		public abstract Script load(String prefix, String name);
+		public abstract File getPlatformLoader();
+		public abstract File getRhinoLoader();
 
 		Engine.Loader getRhinoLoaderBootstrap() {
 			return new Engine.Loader() {
@@ -57,12 +61,18 @@ public class Shell {
 		}
 	}
 
+	public static abstract class Configuration {
+		public abstract int getOptimizationLevel();
+		public abstract Engine.Debugger getDebugger();
+		public abstract Engine.Log getLog();
+	}
+
 	public static abstract class Invocation {
 		public abstract File getScript();
 		public abstract String[] getArguments();
 	}
 	
-	public static class Host {
+	static class Host {
 		private Installation installation;
 
 		private Invocation invocation;
@@ -70,12 +80,6 @@ public class Shell {
 		private Engine.Log log;
 		private Engine engine;
 		private Classpath classpath;
-
-		static abstract class Configuration {
-			abstract int getOptimizationLevel();
-			abstract Engine.Debugger getDebugger();
-			abstract Engine.Log getLog();
-		}
 
 		private static abstract class Classpath extends ClassLoader {
 			public abstract void append(URL url);
@@ -278,77 +282,6 @@ public class Shell {
 			public Invocation getInvocation() {
 				return invocation;
 			}
-		}
-	}
-
-	public static abstract class ShellEnvironment {
-		private Integer status;
-		
-		void setStatus(int status) {
-			this.status = new Integer(status);
-		}
-		
-		public final Integer getExitStatus() {
-			return status;
-		}
-		
-		public abstract OutputStream getStandardOutput();
-		public abstract OutputStream getStandardError();
-		public abstract InputStream getStandardInput();
-		public abstract Map getSubprocessEnvironment();
-		public abstract File getWorkingDirectory();
-	}
-	
-	static class ShellEnvironmentImpl extends ShellEnvironment {
-		private ByteArrayOutputStream out = new ByteArrayOutputStream();
-		private ByteArrayOutputStream err = new ByteArrayOutputStream();
-		
-		private InputStream in = new ByteArrayInputStream(new byte[0]);
-		
-		private File working = null;
-		private Map environment = null;
-		
-		private String commandOutput;
-		
-		public File getWorkingDirectory() {
-			return working;
-		}
-		
-		public Map getSubprocessEnvironment() {
-			return environment;
-		}
-
-		public OutputStream getStandardOutput() {
-			return out;
-		}
-
-		public OutputStream getStandardError() {
-			return err;
-		}
-		
-		public InputStream getStandardInput() {
-			return in;
-		}
-		
-		public void setWorkingDirectory(File file) {
-			this.working = file;
-		}
-
-		public void setStandardInput(InputStream in) {
-			this.in = in;
-		}
-		
-		public String getCommandOutput() throws IOException {
-			if (commandOutput == null) {
-				Reader outputReader = new InputStreamReader(new ByteArrayInputStream(out.toByteArray()));
-				StringBuffer outputBuffer = new StringBuffer();
-				int charInt;
-				while( (charInt = outputReader.read()) != -1) {
-					outputBuffer.append( (char)charInt );
-				}
-				commandOutput = outputBuffer.toString();
-			}
-			return commandOutput;			
 		}
 	}
 }
