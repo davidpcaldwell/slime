@@ -102,8 +102,15 @@ public class Main {
 			System.err.println("java.library.path = " + System.getProperty("java.library.path"));
 		}
 		
+		final File mainScript = new File(scriptPath);
+		if (!mainScript.exists()) {
+			throw new CheckedException("File not found: " + scriptPath);
+		}
+		if (mainScript.isDirectory()) {
+			throw new CheckedException("Filename: " + scriptPath + " is a directory");
+		}
 		ScriptHost host = ScriptHost.create(new ScriptHost.Configuration() {
-			private ScriptHost.Bootstrap loader = new ScriptHost.Bootstrap() {
+			private ScriptHost.Installation loader = new ScriptHost.Installation() {
 				public String toString() {
 					return getClass().getName() 
 						+ " scripts=" + System.getProperty("jsh.library.scripts") 
@@ -191,9 +198,17 @@ public class Main {
 				//	TODO	emit some kind of error?
 				return null;
 			}
-			
-			String[] getArguments() {
-				return (String[])args.toArray(new String[0]);
+
+			ScriptHost.Invocation getInvocation() {
+				return new ScriptHost.Invocation() {
+					public File getScript() {
+						return mainScript;
+					}
+
+					public String[] getArguments() {
+						return (String[])args.toArray(new String[0]);
+					}
+				};
 			}
 			
 			int getOptimizationLevel() {
@@ -205,19 +220,11 @@ public class Main {
 				return optimization;
 			}
 			
-			ScriptHost.Bootstrap getLoader() {
+			ScriptHost.Installation getLoader() {
 				return loader;
 			}
 		});
 		
-		File mainScript = new File(scriptPath);
-		if (!mainScript.exists()) {
-			throw new CheckedException("File not found: " + scriptPath);
-		}
-		if (mainScript.isDirectory()) {
-			throw new CheckedException("Filename: " + scriptPath + " is a directory");
-		}
-		host.setMain(mainScript);
 		int status = 0;
 		try {
 			host.execute();

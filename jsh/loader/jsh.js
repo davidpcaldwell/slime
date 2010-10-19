@@ -156,8 +156,8 @@
 			java: jsh.java
 		};
 		context.$host = {
-			script: $host.getMainScriptFile(),
-			arguments: $host.getArguments(),
+			script: $host.getInvocation().getScript(),
+			arguments: $host.getInvocation().getArguments(),
 			addClasses: function($file) {
 				$host.addClasses($file);
 			}

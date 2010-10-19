@@ -34,18 +34,23 @@ public class ScriptHost {
 		}
 	}
 
-	static abstract class Bootstrap {
+	static abstract class Installation {
 		abstract File getModulePath(String path);
 		abstract Script load(String prefix, String name);
 		abstract File getPlatformLoader();
 		abstract File getRhinoLoader();
 	}
+
+	public static abstract class Invocation {
+		public abstract File getScript();
+		public abstract String[] getArguments();
+	}
 	
 	static abstract class Configuration {
 		abstract int getOptimizationLevel();
 		abstract Engine.Debugger getDebugger();
-		abstract String[] getArguments();
-		abstract Bootstrap getLoader();
+		abstract Installation getLoader();
+		abstract Invocation getInvocation();
 	}
 
 	private static class Classpath extends ClassLoader {
@@ -76,22 +81,22 @@ public class ScriptHost {
 		contexts.initApplicationClassLoader(classpath);
 		contexts.setOptimization(configuration.getOptimizationLevel());
 		Engine engine = Engine.create(configuration.getDebugger(), contexts);
-		return new ScriptHost(classpath, engine, configuration.getArguments(), configuration.getLoader());
+		return new ScriptHost(classpath, engine, configuration.getInvocation(), configuration.getLoader());
 	}
 
 	private Classpath classpath;
 	private Engine engine;
 	private File main;
-	private String[] arguments;
+	private Invocation invocation;
 	
-	private Bootstrap loader;
+	private Installation loader;
 	
 	private Engine.Program program;
 	
-	private ScriptHost(Classpath classpath, Engine engine, String[] arguments, Bootstrap loader) {
+	private ScriptHost(Classpath classpath, Engine engine, Invocation invocation, Installation loader) {
 		this.classpath = classpath;
 		this.engine = engine;
-		this.arguments = arguments;
+		this.invocation = invocation;
 		
 		this.loader = loader;
 		
@@ -112,14 +117,10 @@ public class ScriptHost {
 			throw new RuntimeException("Could not locate jsh.js bootstrap file using " + loader);
 		}
 		this.program.add(Engine.ObjectName.create("jsh"), jshJs.toSource());
+		this.program.add(null, Engine.Source.create(invocation.getScript()));
 		
 	}
 	
-	void setMain(File mainScript) {
-		this.main = mainScript;
-		program.add(null, Engine.Source.create(main));
-	}
-
 	static class ExitException extends Exception {
 		private int status;
 		
@@ -148,15 +149,11 @@ public class ScriptHost {
 	public void exit(int status) throws ExitException {
 		throw new ExitException(status);
 	}
-	
-	public File getMainScriptFile() {
-		return this.main;
-	}
-	
-	public String[] getArguments() {
-		return arguments;
-	}
 
+	public Invocation getInvocation() {
+		return invocation;
+	}
+	
 	private Module.Code.Source createSource(File[] files) {
 		try {
 			java.net.URL[] urls = new java.net.URL[files.length];
