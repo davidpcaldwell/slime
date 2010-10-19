@@ -36,58 +36,6 @@ public class Main {
 		}
 	}
 	
-	private String read(Reader reader) throws IOException {
-		ArrayList lines = new ArrayList();
-		BufferedReader r = new BufferedReader(reader);
-		String s;
-		while( (s = r.readLine()) != null ) {
-			if (s.startsWith("#")) {
-				//	ignore, but add line to get correct line numbers (at least for now)
-				lines.add( "" );
-			} else {
-				lines.add( s );
-			}
-		}
-		StringBuffer rv = new StringBuffer();
-		for (int i=0; i<lines.size(); i++) {
-			rv.append((String)lines.get(i));
-			rv.append("\n");
-		}
-		return rv.toString();
-	}
-	
-	private static class ScriptVariable extends Engine.Program.Variable.Value {
-		public Object get(Context context, Scriptable scope) {
-			return context.newObject(scope);
-		}
-	}
-	
-	private void emitErrorMessage(java.io.PrintStream err, Engine.Errors.ScriptError e) {
-		err.println("[jsh] " + e.getSourceName() + ":" + e.getLineNumber() + ": " + e.getMessage());
-		String errCaret = "";
-		//	TODO	This appears to be null even when it should not be.
-		if (e.getLineSource() != null) {
-			for (int i=0; i<e.getLineSource().length(); i++) {
-				char c = e.getLineSource().charAt(i);
-				if (i < e.getColumn()-1) {
-					if (c == '\t') {
-						errCaret += "\t";
-					} else {
-						errCaret += " ";
-					}
-				} else if (i == e.getColumn()-1) {
-					errCaret += "^";
-				}
-			}
-			err.println("[jsh] " + e.getLineSource());
-			err.println("[jsh] " + errCaret);
-		}
-		if (e.getStackTrace() != null) {
-			err.println(e.getStackTrace());
-		}
-		err.println();
-	}
-	
 	private int run() throws CheckedException {
 		if (System.getProperty("jsh.js.debugger") != null) {
 			debug = true;
@@ -109,18 +57,8 @@ public class Main {
 		if (mainScript.isDirectory()) {
 			throw new CheckedException("Filename: " + scriptPath + " is a directory");
 		}
-		ScriptHost host = ScriptHost.create(new ScriptHost.Configuration() {
-			private ScriptHost.Installation loader = new ScriptHost.Installation() {
-				public String toString() {
-					return getClass().getName() 
-						+ " scripts=" + System.getProperty("jsh.library.scripts") 
-						+ " scripts.loader=" + System.getProperty("jsh.library.scripts.loader")
-						+ " scripts.rhino=" + System.getProperty("jsh.library.scripts.rhino")
-						+ " scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
-						+ " modules=" + System.getProperty("jsh.library.modules")
-					;
-				}
-				
+		Shell.Host host = Shell.Host.create(
+			new Shell.Installation() {
 				File getFile(String prefix, String name) {
 					String propertyName = "jsh.library.scripts." + prefix.replace('/', '.');
 					if (System.getProperty(propertyName) != null) {
@@ -134,14 +72,14 @@ public class Main {
 						throw new RuntimeException("Script not found: " + prefix + "/" + name);
 					}
 				}
-				
-				class FileScript extends ScriptHost.Script {
+
+				class FileScript extends Shell.Installation.Script {
 					private File f;
-					
+
 					FileScript(File f) {
 						this.f = f;
 					}
-					
+
 					public String getName() {
 						try {
 							return f.getCanonicalPath();
@@ -149,7 +87,7 @@ public class Main {
 							throw new RuntimeException(e);
 						}
 					}
-					
+
 					public Reader getReader() {
 						try {
 							return new FileReader(f);
@@ -158,8 +96,8 @@ public class Main {
 						}
 					}
 				}
-				
-				public ScriptHost.Script load(String prefix, String name) {
+
+				public Shell.Installation.Script load(String prefix, String name) {
 					File file = getFile(prefix, name);
 					if (file.exists()) {
 						return new FileScript(file);
@@ -187,71 +125,38 @@ public class Main {
 				public File getRhinoLoader() {
 					return getFile("rhino", "literal.js");
 				}
-			};
-				
-			Engine.Debugger getDebugger() {
-				String id = System.getProperty("jsh.js.debugger");
-				if (id == null) return null;
-				if (id != null && id.equals("rhino")) {
-					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
+			},
+			new Shell.Host.Configuration() {
+				Engine.Debugger getDebugger() {
+					String id = System.getProperty("jsh.js.debugger");
+					if (id == null) return null;
+					if (id != null && id.equals("rhino")) {
+						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
+					}
+					//	TODO	emit some kind of error?
+					return null;
 				}
-				//	TODO	emit some kind of error?
-				return null;
-			}
 
-			ScriptHost.Invocation getInvocation() {
-				return new ScriptHost.Invocation() {
-					public File getScript() {
-						return mainScript;
+				int getOptimizationLevel() {
+					int optimization = -1;
+					if (System.getProperty("jsh.optimization") != null) {
+						//	TODO	validate this value
+						optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
 					}
+					return optimization;
+				}
+			},
+			new Shell.Invocation() {
+				public File getScript() {
+					return mainScript;
+				}
 
-					public String[] getArguments() {
-						return (String[])args.toArray(new String[0]);
-					}
-				};
-			}
-			
-			int getOptimizationLevel() {
-				int optimization = -1;
-				if (System.getProperty("jsh.optimization") != null) {
-					//	TODO	validate this value
-					optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
-				}
-				return optimization;
-			}
-			
-			ScriptHost.Installation getLoader() {
-				return loader;
-			}
-		});
-		
-		int status = 0;
-		try {
-			host.execute();
-		} catch (Engine.Errors e) {
-			Engine.Errors.ScriptError[] errors = e.getErrors();
-			boolean skip = false;
-			for (int i=0; i<errors.length; i++) {
-				Throwable t = errors[i].getThrowable();
-				if (t instanceof WrappedException) {
-					WrappedException wrapper = (WrappedException)t;
-					if (wrapper.getWrappedException() instanceof ScriptHost.ExitException) {
-						status = ((ScriptHost.ExitException)wrapper.getWrappedException()).getStatus();
-						skip = true;
-					}
+				public String[] getArguments() {
+					return (String[])args.toArray(new String[0]);
 				}
 			}
-			if (!skip) {
-				System.err.println();
-				System.err.println("[jsh] Script halted because of " + errors.length + " errors.");
-				System.err.println();
-				status = 1;
-				for (int i=0; i<errors.length; i++) {
-					emitErrorMessage(System.err, errors[i]);
-				}
-			}
-		}
-		return status;
+		);
+		return host.execute();
 	}
 	
 	public static void main(String[] args) throws Throwable {
