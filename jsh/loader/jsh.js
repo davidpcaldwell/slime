@@ -13,7 +13,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	HOST VARIABLE: $host (Java class: inonit.script.jsh.ScriptHost)
+//	HOST VARIABLE: $host (Java class: inonit.script.jsh.Shell.Host.Interface)
 
 this.jsh = new function() {
 	var jsh = this;
