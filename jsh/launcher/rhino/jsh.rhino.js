@@ -252,6 +252,13 @@ try {
 			//	unrecognized directive
 		}
 	} );
+
+	if (env.JSH_JVM_OPTIONS) {
+		env.JSH_JVM_OPTIONS.split(" ").forEach( function(option) {
+			directives.jvmOptions.push(option);
+		});
+	}
+
 	var command = new Command();
 	command.jvmProperty = function(name,value) {
 		if (typeof(value) != "undefined") {
