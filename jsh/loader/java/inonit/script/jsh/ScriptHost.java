@@ -86,8 +86,6 @@ public class ScriptHost {
 
 	private Classpath classpath;
 	private Engine engine;
-	private File main;
-	private Invocation invocation;
 	
 	private Installation loader;
 	
@@ -96,7 +94,6 @@ public class ScriptHost {
 	private ScriptHost(Classpath classpath, Engine engine, Invocation invocation, Installation loader) {
 		this.classpath = classpath;
 		this.engine = engine;
-		this.invocation = invocation;
 		
 		this.loader = loader;
 		
@@ -105,7 +102,7 @@ public class ScriptHost {
 		Engine.Program.Variable jsh = Engine.Program.Variable.create(
 			Engine.ObjectName.create("jsh"),
 			"$host",
-			Engine.Program.Variable.Value.create(this)
+			Engine.Program.Variable.Value.create(new Interface(invocation))
 		);
 		jsh.setReadonly(true);
 		jsh.setPermanent(true);
@@ -133,6 +130,51 @@ public class ScriptHost {
 		}
 	}
 
+	public class Interface {
+		private Invocation invocation;
+
+		Interface(Invocation invocation) {
+			this.invocation = invocation;
+		}
+
+		public Engine.Loader getRhinoLoaderBootstrap() {
+			return ScriptHost.this.getRhinoLoaderBootstrap();
+		}
+
+		public void script(Scriptable scope, String name, InputStream code) throws IOException {
+			ScriptHost.this.script(scope, name, code);
+		}
+
+		public Module getBootstrapModule(String path) {
+			return ScriptHost.this.getBootstrapModule(path);
+		}
+
+		//	TODO	check to see whether third argument ever used
+		public Module getModule(File base, String name, File[] classes) {
+			return ScriptHost.this.getModule(base, name, classes);
+		}
+
+		public String getScriptCode(File file) throws IOException {
+			return ScriptHost.this.getScriptCode(file);
+		}
+
+		public ClassLoader getClassLoader() {
+			return ScriptHost.this.getClassLoader();
+		}
+
+		public void addClasses(File classes) throws java.net.MalformedURLException {
+			ScriptHost.this.addClasses(classes);
+		}
+
+		public void exit(int status) throws ExitException {
+			ScriptHost.this.exit(status);
+		}
+
+		public Invocation getInvocation() {
+			return invocation;
+		}
+	}
+
 	public void addClasses(File source) throws MalformedURLException {
 		classpath.append(source.toURI().toURL());
 	}
@@ -148,10 +190,6 @@ public class ScriptHost {
 
 	public void exit(int status) throws ExitException {
 		throw new ExitException(status);
-	}
-
-	public Invocation getInvocation() {
-		return invocation;
 	}
 	
 	private Module.Code.Source createSource(File[] files) {
