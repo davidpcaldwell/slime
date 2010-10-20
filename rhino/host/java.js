@@ -25,10 +25,7 @@ var $export = function(name,value) {
 	}
 }
 
-var warning = ($context.warning) ? $context.warning : function(message) {
-	debugger;
-	Packages.java.lang.System.err.println(message);
-}
+var warning = $context.warning;
 
 var isJavaObject = function(object) {
 	if (typeof(object) == "undefined") return false;
@@ -48,39 +45,6 @@ $export("isJavaObject",isJavaObject);
 var getJavaClass = function(object) {
 	return Packages[object["class"].name];
 }
-
-//	TODO	See above
-var getJavaClassName = function(javaclass) {
-	var toString = "" + javaclass;
-	if (/\[JavaClass /.test(toString)) {
-		return toString.substring("[JavaClass ".length, toString.length-1);
-	} else {
-		return null;
-	}
-}
-
-//	TODO	See above
-var $isJavaType = function(javaclass,object) {
-	var className = getJavaClassName(javaclass);
-	if (className == null) throw "Not a class: " + javaclass;
-	if (!object["class"]) return false;
-	var classLoader = ($context.classLoader) ? $context.classLoader : Packages.java.lang.Class.forName("java.lang.Object").getClassLoader();
-	if (classLoader) {
-		return classLoader.loadClass(className).isAssignableFrom(object["class"]);
-	} else {
-		return Packages.java.lang.Class.forName(className).isAssignableFrom(object["class"]);
-	}
-}
-var isJavaType = function(javaclass) {
-	if (arguments.length == 2) {
-		warning("WARNING: Use of deprecated 2-argument form of isJavaType.");
-		return $isJavaType(javaclass,arguments[1]);
-	}
-	return function(object) {
-		return $isJavaType(javaclass,object);
-	}
-};
-$export("isJavaType",isJavaType);
 
 var toJsArray = function(javaArray,scriptValueFactory) {
 	if (typeof(javaArray) == "undefined" || javaArray == null) throw "Required: the Java array must not be null or undefined.";
