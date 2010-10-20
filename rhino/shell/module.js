@@ -15,10 +15,9 @@
 
 var scope = $loader.script("shell.js");
 $exports.run = scope.run;
-//	TODO	Document $context.environment
 $exports.environment = (function() {
-	if ($context.environment) return $context.environment;
-	var jenv = Packages.inonit.script.runtime.shell.Environment.create();
+	//	TODO	Document $context.$environment
+	var jenv = ($context.$environment) ? $context.$environment : Packages.inonit.script.runtime.shell.Environment.create();
 	var rv;
 	if (jenv) {
 		rv = {};

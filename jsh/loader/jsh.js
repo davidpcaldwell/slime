@@ -110,7 +110,9 @@ this.jsh = new function() {
 	var $shell = loader.bootstrap({
 		api: {
 			java: java
-		}
+		},
+		$environment: $host.getEnvironment(),
+		$properties: $host.getSystemProperties()
 	},"rhino/shell");
 
 	new function() {
@@ -119,21 +121,27 @@ this.jsh = new function() {
 			js: js,
 			java: java
 		}
-		if ($shell) {
-			//	TODO	Need to check for $shell existence when initializing under test.jsh.js, at least for now
-			if ( String($shell.properties.cygwin) != "undefined" ) {
-				var convert = function(value) {
-					if ( String(value) == "undefined" ) return function(){}();
-					if ( String(value) == "null" ) return null;
-					return String(value);
-				}
-				context.cygwin = {
-					root: convert( $shell.properties.cygwin.root ),
-					paths: convert( $shell.properties.cygwin.paths )
-				}
-			}
-			context.$pwd = String( $shell.properties.user.dir );
+
+		context.stdio = new function() {
+			this.$out = $host.getStandardOutput();
+			this.$in = $host.getStandardError();
+			this.$err = $host.getStandardError();
 		}
+
+		context.$pwd = String( $shell.properties.user.dir );
+
+		if ( String($shell.properties.cygwin) != "undefined" ) {
+			var convert = function(value) {
+				if ( String(value) == "undefined" ) return function(){}();
+				if ( String(value) == "null" ) return null;
+				return String(value);
+			}
+			context.cygwin = {
+				root: convert( $shell.properties.cygwin.root ),
+				paths: convert( $shell.properties.cygwin.paths )
+			}
+		}
+
 		jsh.file = loader.bootstrap(
 			context,
 			"rhino/file"
