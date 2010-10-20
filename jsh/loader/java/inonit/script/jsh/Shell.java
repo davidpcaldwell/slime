@@ -170,6 +170,7 @@ public class Shell {
 
 			Host rv = new Host();
 			rv.installation = installation;
+			rv.configuration = configuration;
 			rv.invocation = invocation;
 			rv.engine = Engine.create(configuration.getDebugger(), contexts);
 			rv.classpath = classpath;
