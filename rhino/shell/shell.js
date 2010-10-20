@@ -102,20 +102,3 @@ $exports.run = function(tokens,mode) {
 	runnable.run();
 	onExit(result);
 }
-
-$exports.environment = (function() {
-	var jenv = Packages.inonit.script.runtime.shell.Environment.create();
-	var rv;
-	if (jenv) {
-		rv = {};
-		var i = jenv.keySet().iterator();
-		while(i.hasNext()) {
-			var name = String( i.next() );
-			var value = String( jenv.get(name) );
-			rv[name] = value;
-		}
-	} else {
-		//	This version of JDK does not support getenv
-	}
-	return rv;
-})();
