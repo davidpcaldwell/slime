@@ -129,7 +129,7 @@ this.jsh = new function() {
 				}
 				context.cygwin = {
 					root: convert( $shell.properties.cygwin.root ),
-					paths: convert( $shell.properties.cygwin.paths ),
+					paths: convert( $shell.properties.cygwin.paths )
 				}
 			}
 			context.$pwd = String( $shell.properties.user.dir );
