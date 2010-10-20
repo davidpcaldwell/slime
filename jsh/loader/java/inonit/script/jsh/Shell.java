@@ -94,6 +94,16 @@ public class Shell {
 		public abstract int getOptimizationLevel();
 		public abstract Engine.Debugger getDebugger();
 		public abstract Engine.Log getLog();
+
+		public abstract Properties getSystemProperties();
+		public abstract Map getEnvironment();
+		public abstract Stdio getStdio();
+
+		public static abstract class Stdio {
+			public abstract InputStream getStandardInput();
+			public abstract OutputStream getStandardOutput();
+			public abstract OutputStream getStandardError();
+		}
 	}
 
 	public static abstract class Invocation {
@@ -103,10 +113,9 @@ public class Shell {
 	
 	static class Host {
 		private Installation installation;
-
+		private Configuration configuration;
 		private Invocation invocation;
 
-		private Engine.Log log;
 		private Engine engine;
 		private Classpath classpath;
 
@@ -162,7 +171,6 @@ public class Shell {
 			Host rv = new Host();
 			rv.installation = installation;
 			rv.invocation = invocation;
-			rv.log = configuration.getLog();
 			rv.engine = Engine.create(configuration.getDebugger(), contexts);
 			rv.classpath = classpath;
 			return rv;
@@ -212,7 +220,7 @@ public class Shell {
 						}
 					}
 				}
-				e.dump(log, "[jsh] ");
+				e.dump(configuration.getLog(), "[jsh] ");
 				return -1;
 			}
 		}
@@ -264,6 +272,26 @@ public class Shell {
 
 			public Invocation getInvocation() {
 				return invocation;
+			}
+
+			public Properties getSystemProperties() {
+				return configuration.getSystemProperties();
+			}
+
+			public Map getEnvironment() {
+				return configuration.getEnvironment();
+			}
+
+			public InputStream getStandardInput() {
+				return configuration.getStdio().getStandardInput();
+			}
+
+			public PrintStream getStandardOutput() {
+				return new PrintStream(configuration.getStdio().getStandardOutput());
+			}
+
+			public PrintStream getStandardError() {
+				return new PrintStream(configuration.getStdio().getStandardError());
 			}
 		}
 	}

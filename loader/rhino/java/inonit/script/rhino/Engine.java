@@ -22,6 +22,11 @@ import org.mozilla.javascript.*;
 
 public class Engine {
 	public static abstract class Log {
+		public static final Log NULL = new Log() {
+			public void println(String message) {
+			}
+		};
+
 		public abstract void println(String message);
 
 		public final void println() {
@@ -33,6 +38,11 @@ public class Engine {
 		abstract void initialize(ContextFactory contexts);
 		abstract void initialize(Scriptable scope, Engine engine, Program program);
 		abstract void setBreakpoint(Engine.Source source, int line);
+		abstract Log getLog();
+
+		final void log(String message) {
+			getLog().println(message);
+		}
 	}
 	
 	private static class NoDebugger extends Debugger {
@@ -43,7 +53,11 @@ public class Engine {
 		}
 		
 		void initialize(Scriptable scope, Engine engine, Program program) {
-		}		
+		}
+
+		Log getLog() {
+			return Log.NULL;
+		}
 	}
 	
 	public static class RhinoDebugger extends Debugger {
@@ -60,6 +74,8 @@ public class Engine {
 					System.exit(1);
 				}
 			};
+
+			private Log log = Log.NULL;
 			
 			public Configuration() {
 			}
@@ -72,6 +88,13 @@ public class Engine {
 					};
 				}
 				this.exit = exit;
+			}
+
+			public void setLog(Log log) {
+				if (log == null) {
+					log = Log.NULL;
+				}
+				this.log = log;
 			}
 		}
 		
@@ -128,7 +151,7 @@ public class Engine {
 			if (info != null) {
 				info.breakpoint(line, true);
 			} else {
-				System.err.println("Not setting breakpoint at " + line + " in " + source + ": no source info");
+				configuration.log.println("Not setting breakpoint at " + line + " in " + source + ": no source info");
 			}
 		}
 		
@@ -136,6 +159,10 @@ public class Engine {
 			dim.setScopeProvider( new ScopeWrapper(scope) );
 			gui.pack();
 			gui.setVisible(true);
+		}
+
+		Log getLog() {
+			return configuration.log;
 		}
 		
 		private static class ScopeWrapper implements org.mozilla.javascript.tools.debugger.ScopeProvider {
@@ -460,7 +487,7 @@ public class Engine {
 					try {
 						dim.setBreakpoint( this, line );
 					} catch (IllegalArgumentException e) {
-						System.err.println("Cannot set breakpoint at line " + line + " of " + getSourceName());
+						dim.log("Cannot set breakpoint at line " + line + " of " + getSourceName());
 					}
 				}
 			}			

@@ -175,7 +175,6 @@ public class Command {
 		try {
 			p = Runtime.getRuntime().exec( (String[])args.toArray(new String[0]), env, parameters.getWorkingDirectory() );
 		} catch (IOException e) {
-			System.err.println("Error creating process:");
 			e.printStackTrace();
 			listener.threw(e);
 		} catch (Throwable t) {

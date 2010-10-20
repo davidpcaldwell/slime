@@ -121,6 +121,30 @@ public class Main {
 					}
 					return optimization;
 				}
+
+				public Properties getSystemProperties() {
+					return System.getProperties();
+				}
+
+				public Map getEnvironment() {
+					return System.getenv();
+				}
+
+				public Stdio getStdio() {
+					return new Stdio() {
+						public InputStream getStandardInput() {
+							return System.in;
+						}
+
+						public OutputStream getStandardOutput() {
+							return System.out;
+						}
+
+						public OutputStream getStandardError() {
+							return System.err;
+						}
+					};
+				}
 			},
 			new Shell.Invocation() {
 				public File getScript() {
