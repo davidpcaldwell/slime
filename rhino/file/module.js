@@ -13,41 +13,17 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	document this
+var stdio = ($context.stdio) ? $context.stdio : {
+	$err: Packages.java.lang.System.err,
+	$out: Packages.java.lang.System.out
+}
+
 if (!$context.api) throw "Missing 'api' member of context";
 //	TODO	remove
-var $load = function(scope,path) {
-	return $loader.script(path,scope);
-}
-var streams = $load({
-	isJavaType: $context.api.java.isJavaType,
-	api: {
-		js: $context.api.js,
-		java: $context.api.java
-	},
-	deprecate: $context.api.js.deprecate,
-	$java: new Packages.inonit.script.runtime.io.Streams()
-}, "streams.js");
-$exports.Streams = streams.Streams;
-
-var context = {
-	deprecate: $api.deprecate,
-	experimental: $api.experimental,
-	defined: $context.api.js.defined,
-	fail: $context.api.java.fail,
-	warning: function(message) {
-		Packages.java.lang.System.err.println(message);
-		debugger;
-	},
-	constant: $context.api.js.constant,
-	isJavaType: $context.api.java.isJavaType,
-
-	$pwd: $context.$pwd,
-	cygwin: $context.cygwin,
-
-	streams: streams,
-	Streams: streams.Streams
-}
-
+var $load = function(context,path) {
+	return $loader.script(path,context);
+};
 var loadTo = function(to,context,name) {
 	var getter = function(name) {
 		return function() {
@@ -68,6 +44,37 @@ var loadTo = function(to,context,name) {
 			to[x] = loaded[x];
 		}
 	}
+};
+
+var streams = $loader.script("streams.js", {
+	stdio: stdio,
+	isJavaType: $context.api.java.isJavaType,
+	api: {
+		js: $context.api.js,
+		java: $context.api.java
+	},
+	deprecate: $context.api.js.deprecate,
+	$java: new Packages.inonit.script.runtime.io.Streams()
+});
+$exports.Streams = streams.Streams;
+
+var context = {
+	deprecate: $api.deprecate,
+	experimental: $api.experimental,
+	defined: $context.api.js.defined,
+	fail: $context.api.java.fail,
+	warning: function(message) {
+		stdio.$err.println(message);
+		debugger;
+	},
+	constant: $context.api.js.constant,
+	isJavaType: $context.api.java.isJavaType,
+
+	$pwd: $context.$pwd,
+	cygwin: $context.cygwin,
+
+	streams: streams,
+	Streams: streams.Streams
 }
 
 var scope = {};
@@ -131,7 +138,7 @@ $api.deprecate($exports,"$java");
 if (!$exports.warning) {
 	$exports.warning = function(message) {
 		debugger;
-		Packages.java.lang.System.err.println(message);
+		err.println(message);
 	}
 }
 $api.deprecate($exports,"warning");
