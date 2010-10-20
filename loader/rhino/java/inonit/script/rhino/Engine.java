@@ -545,17 +545,6 @@ public class Engine {
 			}
 		}
 		
-		/**
-			Adds a script to this <code>Program</code> with an optional <code>ObjectName</code>.
-		 
-			@param scope An object name to use in the global scope, or <code>null</code> for the global scope.
-			@param source The source for the script.
-		 */
-		public void add(ObjectName scope, Source source) {
-			if (scope == null) scope = ObjectName.NULL;
-			units.add( new SourceUnit(scope, source) );
-		}
-
 		public void add(Source source) {
 			units.add( new SourceUnit(ObjectName.NULL, source) );
 		}
