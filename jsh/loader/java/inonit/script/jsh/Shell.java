@@ -72,10 +72,10 @@ public class Shell {
 			}
 		}
 
-		public abstract Module.Code getModuleCode(String path);
 		public abstract Script getPlatformLoader();
 		public abstract Script getRhinoLoader();
 		public abstract Script getJshLoader();
+		public abstract Module.Code getModuleCode(String path);
 
 		Engine.Loader getRhinoLoaderBootstrap() {
 			return new Engine.Loader() {
@@ -181,8 +181,6 @@ public class Shell {
 		}
 
 		int execute() {
-			int status = 0;
-
 			try {
 				Engine.Program program = new Engine.Program();
 
@@ -202,24 +200,21 @@ public class Shell {
 				program.add(jshJs.toSource());
 				program.add(Engine.Source.create(invocation.getScript()));
 				Object ignore = engine.execute(program);
+				return 0;
 			} catch (Engine.Errors e) {
 				Engine.Errors.ScriptError[] errors = e.getErrors();
-				boolean skip = false;
 				for (int i=0; i<errors.length; i++) {
 					Throwable t = errors[i].getThrowable();
 					if (t instanceof WrappedException) {
 						WrappedException wrapper = (WrappedException)t;
 						if (wrapper.getWrappedException() instanceof ExitException) {
-							status = ((ExitException)wrapper.getWrappedException()).getStatus();
-							skip = true;
+							return ((ExitException)wrapper.getWrappedException()).getStatus();
 						}
 					}
 				}
-				if (!skip) {
-					e.dump(log, "[jsh] ");
-				}
+				e.dump(log, "[jsh] ");
+				return -1;
 			}
-			return status;
 		}
 
 		public class Interface {
