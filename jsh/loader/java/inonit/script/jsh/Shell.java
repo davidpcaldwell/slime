@@ -29,6 +29,10 @@ public class Shell {
 		return Host.create(installation, configuration, invocation).execute();
 	}
 
+	public static Scriptable load(Installation installation, Configuration configuration, Invocation invocation) {
+		return Host.create(installation, configuration, invocation).load();
+	}
+
 	public static abstract class Installation {
 		public static abstract class Script {
 			public static Script create(final File f) {
@@ -189,26 +193,30 @@ public class Shell {
 			}
 		}
 
+		private Engine.Program createProgram() {
+			Engine.Program program = new Engine.Program();
+
+			Engine.Program.Variable jsh = Engine.Program.Variable.create(
+				"$host",
+				Engine.Program.Variable.Value.create(new Interface())
+			);
+			jsh.setReadonly(true);
+			jsh.setPermanent(true);
+			jsh.setDontenum(true);
+			program.set(jsh);
+
+			Installation.Script jshJs = installation.getJshLoader();
+			if (jshJs == null) {
+				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
+			}
+			program.add(jshJs.toSource());
+			program.add(Engine.Source.create(invocation.getScript()));
+			return program;
+		}
+
 		int execute() {
 			try {
-				Engine.Program program = new Engine.Program();
-
-				Engine.Program.Variable jsh = Engine.Program.Variable.create(
-					"$host",
-					Engine.Program.Variable.Value.create(new Interface())
-				);
-				jsh.setReadonly(true);
-				jsh.setPermanent(true);
-				jsh.setDontenum(true);
-				program.set(jsh);
-
-				Installation.Script jshJs = installation.getJshLoader();
-				if (jshJs == null) {
-					throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
-				}
-				program.add(jshJs.toSource());
-				program.add(Engine.Source.create(invocation.getScript()));
-				Object ignore = engine.execute(program);
+				Object ignore = engine.execute(createProgram());
 				return 0;
 			} catch (Engine.Errors e) {
 				Engine.Errors.ScriptError[] errors = e.getErrors();
@@ -224,6 +232,10 @@ public class Shell {
 				e.dump(configuration.getLog(), "[jsh] ");
 				return -1;
 			}
+		}
+
+		Scriptable load() {
+			return engine.load(createProgram());
 		}
 
 		public class Interface {

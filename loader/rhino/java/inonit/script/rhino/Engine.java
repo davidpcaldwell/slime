@@ -411,6 +411,11 @@ public class Engine {
 		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
 		return outcome.castScopeTo(null, type);
 	}
+
+	public Scriptable load(Program program) {
+		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
+		return outcome.getGlobal();
+	}
 	
 	//	XXX	Would this work in a multithreaded environment in which scripts started their own threads?
 	/**
