@@ -25,19 +25,25 @@ END LICENSE
 </head>
 <body>
 	<script type="application/x.jsapi#scope">
-		var file = $jsapi.module({
+		var context = {
 			api: {
 				js: $jsapi.module({}, "js/object"),
 				java: $jsapi.module({
 					classLoader: $host.getClassLoader()
 				}, "rhino/host")
 			},
-			cygwin: {
-				root: String(jsh.shell.properties.cygwin.root),
-				paths: String(jsh.shell.properties.cygwin.paths)
-			},
 			$pwd: String(jsh.shell.properties.user.dir)
-		}, "rhino/file");
+		};
+		var System = Packages.java.lang.System;
+		if (System.getProperty("cygwin.root")) {
+			context.cygwin = {
+				root: String(System.getProperty("cygwin.root"))
+			};
+			if (System.getProperty("cygwin.paths")) {
+				context.cygwin.paths = String(System.getProperty("cygwin.paths"));
+			}
+		};
+		var file = $jsapi.module(context, "rhino/file");
 		var $filesystem = file.filesystem;
 		var FILE = file;
 	</script>

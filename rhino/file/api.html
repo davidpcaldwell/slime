@@ -954,9 +954,14 @@ END LICENSE
 				var System = Packages.java.lang.System;
 				if (System.getProperty("cygwin.root")) {
 					this.cygwin = {
-						root: String( System.getProperty("cygwin.root") ),
-						paths: String( System.getProperty("cygwin.paths") )
+						root: String( System.getProperty("cygwin.root") )
 					};
+					if (System.getProperty("cygwin.paths")) {
+						//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+						//	the SDK server
+						//	TODO	check this
+						this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+					}
 				}
 				this.$pwd = jsh.shell.properties.user.dir;
 			}
