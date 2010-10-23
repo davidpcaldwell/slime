@@ -30,16 +30,25 @@ var warning = ($context.warning) ? $context.warning : function(message) {
 	Packages.java.lang.System.err.println(message);
 }
 
+var getNamedJavaClass = function(className) {
+	var classLoader = ($context.classLoader) ? $context.classLoader : Packages.java.lang.Class.forName("java.lang.Object").getClassLoader();
+	if (classLoader) {
+		return classLoader.loadClass(className);
+	} else {
+		return Packages.java.lang.Class.forName(className);
+	}
+}
+
 var isJavaObject = function(object) {
 	if (typeof(object) == "undefined") return false;
 	if (typeof(object) == "string") return false;
 	if (typeof(object) == "number") return false;
 	if (typeof(object) == "boolean") return false;
 	if (object == null) return false;
+	//	TODO	Is the next line superfluous now?
 	if ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) ) return true;
-	if (!object["class"]) return false;
-	//	TODO	Could also test whether Class.isInstance(object) in addition to (probably not in lieu of) the below test
-	return object["class"] == Packages[object["class"].name];
+	//	TODO	is this really the best way to do this?
+	return (String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n");
 }
 $export("isJavaObject",isJavaObject);
 
@@ -63,13 +72,9 @@ var getJavaClassName = function(javaclass) {
 var $isJavaType = function(javaclass,object) {
 	var className = getJavaClassName(javaclass);
 	if (className == null) throw "Not a class: " + javaclass;
-	if (!object["class"]) return false;
-	var classLoader = ($context.classLoader) ? $context.classLoader : Packages.java.lang.Class.forName("java.lang.Object").getClassLoader();
-	if (classLoader) {
-		return classLoader.loadClass(className).isAssignableFrom(object["class"]);
-	} else {
-		return Packages.java.lang.Class.forName(className).isAssignableFrom(object["class"]);
-	}
+	if (!isJavaObject(object)) return false;
+	var loaded = getNamedJavaClass(className);
+	return loaded.isInstance(object);
 }
 var isJavaType = function(javaclass) {
 	if (arguments.length == 2) {

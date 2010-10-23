@@ -70,6 +70,7 @@ END LICENSE
 					scope.test(isJavaObject(new Packages.java.lang.String("hello world")));
 					scope.test(isJavaObject(new Packages.java.lang.Integer(4)));
 					scope.test(isJavaObject(new Packages.java.lang.Boolean(true)));
+					scope.test(isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK));
 					scope.test(!isJavaObject("hello world"));
 					scope.test(!isJavaObject(2));
 					scope.test(!isJavaObject(true));
