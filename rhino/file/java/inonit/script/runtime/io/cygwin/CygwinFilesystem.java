@@ -39,6 +39,14 @@ public class CygwinFilesystem extends Filesystem {
 	public CygwinFilesystem(String root) {
 		this.paths = new CygpathCommand(root);
 	}
+
+	public String toString() {
+		return getClass().getName() + " paths={" + paths + "}";
+	}
+
+	public final void finalize() {
+		paths.destroy();
+	}
 	
 	private CygwinFilesystem() {
 	}
@@ -46,6 +54,8 @@ public class CygwinFilesystem extends Filesystem {
 	private static abstract class Cygpath {
 		abstract String toUnixPath(String path) throws IOException;
 		abstract String toWindowsPath(String path) throws IOException;
+
+		abstract void destroy();
 	}
 	
 	private boolean shellCommandImpl(String path, String[] arguments) throws IOException {
@@ -57,6 +67,10 @@ public class CygwinFilesystem extends Filesystem {
 		
 		CygpathCommand(String root) {
 			this.root = root;
+		}
+
+		public String toString() {
+			return getClass().getName() + " root=" + root;
 		}
 		
 		private String getCygpathOutput(String[] arguments) throws IOException {
@@ -90,6 +104,9 @@ public class CygwinFilesystem extends Filesystem {
 		String toWindowsPath(String path) throws IOException {
 			return getCygpathOutput(new String[] { "-w", path });
 		}
+
+		void destroy() {
+		}
 	}
 	
 	private static class HelperProcess extends Cygpath {
@@ -111,6 +128,10 @@ public class CygwinFilesystem extends Filesystem {
 			} catch (InvocationTargetException e) {
 				throw new RuntimeException(e.getTargetException());
 			}
+		}
+
+		public String toString() {
+			return getClass().getName() + " subprocess=" + subprocess;
 		}
 		
 		HelperProcess(final String root, final String path) throws IOException {
@@ -190,6 +211,10 @@ public class CygwinFilesystem extends Filesystem {
 				rv += c;
 			}
 			return rv;
+		}
+
+		void destroy() {
+			subprocess.terminate();
 		}
 	}
 

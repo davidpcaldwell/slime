@@ -18,6 +18,17 @@
 this.jsh = new function() {
 	var jsh = this;
 
+	var addFinalizer = function(f) {
+		$host.addFinalizer(new JavaAdapter(
+			Packages.java.lang.Runnable,
+			{
+				run: function() {
+					f();
+				}
+			}
+		))
+	}
+
 	var loader = new function() {
 		var rhinoLoader = (function() {
 			var $loader = new function() {
@@ -92,6 +103,10 @@ this.jsh = new function() {
 		this.module = loader.module;
 		this.script = loader.script;
 		this.namespace = loader.namespace;
+
+		this.addFinalizer = function(f) {
+			addFinalizer(f);
+		}
 	};
 
 	//	TODO	Lazy-loading
@@ -129,6 +144,8 @@ this.jsh = new function() {
 		}
 
 		context.$pwd = String( $shell.properties.user.dir );
+
+		context.addFinalizer = addFinalizer;
 
 		if ( String($shell.properties.cygwin) != "undefined" ) {
 			var convert = function(value) {

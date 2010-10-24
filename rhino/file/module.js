@@ -72,6 +72,7 @@ var context = {
 
 	$pwd: $context.$pwd,
 	cygwin: $context.cygwin,
+	addFinalizer: $context.addFinalizer,
 
 	streams: streams,
 	Streams: streams.Streams

@@ -123,6 +123,8 @@ public class Shell {
 		private Engine engine;
 		private Classpath classpath;
 
+		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
+
 		private static abstract class Classpath extends ClassLoader {
 			public abstract void append(URL url);
 			public abstract void append(Module module);
@@ -231,6 +233,14 @@ public class Shell {
 				}
 				e.dump(configuration.getLog(), "[jsh] ");
 				return -1;
+			} finally {
+				for (int i=0; i<finalizers.size(); i++) {
+					try {
+						finalizers.get(i).run();
+					} catch (Throwable t) {
+						configuration.getLog().println("Error running finalizer: " + finalizers.get(i));
+					}
+				}
 			}
 		}
 
@@ -305,6 +315,10 @@ public class Shell {
 
 			public PrintStream getStandardError() {
 				return new PrintStream(configuration.getStdio().getStandardError());
+			}
+
+			public void addFinalizer(Runnable runnable) {
+				finalizers.add(runnable);
 			}
 		}
 	}

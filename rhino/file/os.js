@@ -319,14 +319,17 @@ var SystemFilesystem = function(peer) {
 var filesystems = {};
 filesystems.os = new SystemFilesystem( Packages.inonit.script.runtime.io.Filesystem.create() );
 if ( cygwin ) {
+	var $delegate;
 	if (cygwin.root && !cygwin.paths) {
-		filesystems.cygwin = new SystemFilesystem(
-			new Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem(cygwin.root)
-		);
+		$delegate = new Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem(cygwin.root)
 	} else {
-		filesystems.cygwin = new SystemFilesystem(
-			Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create(cygwin.root,cygwin.paths)
-		);
+		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create(cygwin.root,cygwin.paths)
+	}
+	filesystems.cygwin = new SystemFilesystem($delegate);
+	if ($context.addFinalizer) {
+		$context.addFinalizer(function() {
+			$delegate.finalize();
+		});
 	}
 }
 
