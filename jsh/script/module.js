@@ -13,17 +13,17 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.pathname = $context.api.file.filesystem.$jsh.Pathname($context.$host.script);
+$exports.pathname = $context.api.file.filesystem.$jsh.Pathname($context.$script);
 $exports.file = $exports.pathname.file;
-$exports.arguments = $context.api.java.toJsArray($context.$host.arguments, function(s) { return String(s); });
+$exports.arguments = $context.api.java.toJsArray($context.$arguments, function(s) { return String(s); });
 $exports.getRelativePath = function(path) {
 	return $exports.file.getRelativePath(path);
 }
 $exports.addClasses = function(pathname) {
-	if (!pathname.$peer.getHostFile().exists()) {
+	if (!pathname.directory && !pathname.file) {
 		throw "Classes not found: " + pathname;
 	}
-	$context.$host.addClasses(pathname.$peer.getHostFile());
+	$context.addClasses(pathname);
 }
 
 $exports.getopts = $loader.script("getopts.js", {

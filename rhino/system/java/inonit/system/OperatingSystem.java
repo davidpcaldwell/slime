@@ -29,14 +29,18 @@ public class OperatingSystem {
 	}
 
 	public boolean shellCommand(String path, String[] arguments) throws IOException {
-		return Command.packageShellCommand(path, arguments);
+		return Command.wasSuccessfulExecuting(path, arguments);
+	}
+
+	public Subprocess start(Command.Configuration configuration, Command.Context context) throws IOException {
+		return Command.create(configuration).start(context);
 	}
 	
 	public Runnable run(final Command.Context context, final Command.Configuration configuration, final Command.Listener listener) 
 	{
 		return new Runnable() {
 			public void run() {
-				new Command().execute(context, configuration, listener);				
+				Command.create(configuration).execute(context, listener);
 			}
 		};
 	}

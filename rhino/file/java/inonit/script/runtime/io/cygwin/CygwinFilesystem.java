@@ -24,46 +24,77 @@ import inonit.script.runtime.io.*;
 import inonit.system.*;
 
 public class CygwinFilesystem extends Filesystem {
-	private PathHelper paths;
+	private Cygpath paths;
 	
 	public static CygwinFilesystem create(String root, String helper) {
 		CygwinFilesystem rv = new CygwinFilesystem();
-		rv.paths = new Helper(root, helper);
+		try {
+			rv.paths = new HelperProcess(root, helper);
+		} catch (IOException e) {
+			rv.paths = new CygpathCommand(root);
+		}
 		return rv;
 	}
 	
 	public CygwinFilesystem(String root) {
-		this.paths = new Cygpath(root);
+		this.paths = new CygpathCommand(root);
+	}
+
+	public String toString() {
+		return getClass().getName() + " paths={" + paths + "}";
+	}
+
+	public final void finalize() {
+		paths.destroy();
 	}
 	
 	private CygwinFilesystem() {
 	}
 
-	private static abstract class PathHelper {
+	private static abstract class Cygpath {
 		abstract String toUnixPath(String path) throws IOException;
 		abstract String toWindowsPath(String path) throws IOException;
+
+		abstract void destroy();
 	}
 	
-	private String getCommandOutputImpl(String path, String[] arguments) throws IOException {
-		return OperatingSystem.get().getCommandOutput(path, arguments);
-	}
-
 	private boolean shellCommandImpl(String path, String[] arguments) throws IOException {
 		return OperatingSystem.get().shellCommand(path, arguments);
 	}
 	
-	private class Cygpath extends PathHelper {
+	private static class CygpathCommand extends Cygpath {
 		private String root;
 		
-		Cygpath(String root) {
+		CygpathCommand(String root) {
 			this.root = root;
+		}
+
+		public String toString() {
+			return getClass().getName() + " root=" + root;
 		}
 		
 		private String getCygpathOutput(String[] arguments) throws IOException {
-			String s = getCommandOutputImpl(new File(new File(this.root), "bin/cygpath").getCanonicalPath(), arguments);
-			//	Strip newline output by cygpath
-			s = s.substring(0, s.length() - 1);
-			return s;
+			int counter = 0;
+			while(counter < 10) {
+				String s = OperatingSystem.get().getCommandOutput(
+					new File(new File(this.root), "bin/cygpath").getCanonicalPath(),
+					arguments
+				);
+				if (s.length() > 0) {
+					//	Strip newline output by cygpath
+					s = s.substring(0, s.length() - 1);
+					return s;
+				} else {
+					counter++;
+				}
+			}
+			String message = "";
+			for (int i=0; i<arguments.length; i++) {
+				message += arguments[i];
+				if (i+1 != arguments.length)
+					message += "|";
+			}
+			throw new IOException("cygpath failed: arguments=" + message);
 		}
 		
 		String toUnixPath(String path) throws IOException {
@@ -73,11 +104,16 @@ public class CygwinFilesystem extends Filesystem {
 		String toWindowsPath(String path) throws IOException {
 			return getCygpathOutput(new String[] { "-w", path });
 		}
+
+		void destroy() {
+		}
 	}
 	
-	private static class Helper extends PathHelper {
+	private static class HelperProcess extends Cygpath {
 		private InputStream output;
 		private PrintWriter input;
+
+		private Subprocess subprocess;
 		
 		private Map getenv() {
 			try {
@@ -93,69 +129,64 @@ public class CygwinFilesystem extends Filesystem {
 				throw new RuntimeException(e.getTargetException());
 			}
 		}
+
+		public String toString() {
+			return getClass().getName() + " subprocess=" + subprocess;
+		}
 		
-		Helper(final String root, final String path) {
+		HelperProcess(final String root, final String path) throws IOException {
 			if (path == null) throw new IllegalArgumentException("'path' must not be null.");
+
 			final Streams.Bytes.Buffer stdin = new Streams.Bytes.Buffer();
 			final Streams.Bytes.Buffer stdout = new Streams.Bytes.Buffer();
-			Runnable subprocess = OperatingSystem.get().run(
-				new Command.Context() {
-					public File getWorkingDirectory() {
-						return new File(System.getProperty("user.dir"));
-					}
 
-					public Map getSubprocessEnvironment() {
-						Map toUse = new HashMap();
-						
-						Map existing = getenv();
-						if (existing != null) {
-							Iterator keys = existing.keySet().iterator();
-							while(keys.hasNext()) {
-								Object key = keys.next();
-								Object value = existing.get(key);
-								toUse.put(key, value);
-							}
-						}
-
-						//	TODO	Probably should prepend path here rather than overwriting
-						toUse.put("PATH", root + "/bin");
-						return toUse;
-					}
-
-					public OutputStream getStandardOutput() {
-						return stdout.getOutputStream();
-					}
-
-					public InputStream getStandardInput() {
-						return stdin.getInputStream();
-					}
-
-					public OutputStream getStandardError() {
-						return System.err;
-					}
-				},
-				new Command.Configuration() {
-					public String getCommand() {
-						return path;
-					}
-
-					public String[] getArguments() {
-						return new String[0];
-					}
-				},
-				new Command.Listener() {
-					public void finished() {
-						throw new RuntimeException("Cygwin helper exited.");
-					}
-
-					public void threw(IOException e) {
-						e.printStackTrace();
-						throw new RuntimeException("Cygwin helper threw " + e);
-					}
+			Command.Configuration configuration = new Command.Configuration() {
+				public String getCommand() {
+					return path;
 				}
-			);
-			new Thread(subprocess).start();
-			
+
+				public String[] getArguments() {
+					return new String[0];
+				}
+			};
+
+			Command.Context context = new Command.Context() {
+				public File getWorkingDirectory() {
+					return new File(System.getProperty("user.dir"));
+				}
+
+				public Map getSubprocessEnvironment() {
+					Map toUse = new HashMap();
+
+					Map existing = getenv();
+					if (existing != null) {
+						Iterator keys = existing.keySet().iterator();
+						while(keys.hasNext()) {
+							Object key = keys.next();
+							Object value = existing.get(key);
+							toUse.put(key, value);
+						}
+					}
+
+					//	TODO	Probably should prepend path here rather than overwriting
+					toUse.put("PATH", root + "/bin");
+					return toUse;
+				}
+
+				public OutputStream getStandardOutput() {
+					return stdout.getOutputStream();
+				}
+
+				public InputStream getStandardInput() {
+					return stdin.getInputStream();
+				}
+
+				public OutputStream getStandardError() {
+					return System.err;
+				}
+			};
+
+			this.subprocess = OperatingSystem.get().start(configuration, context);
 			this.output = stdout.getInputStream();
 			this.input = new PrintWriter(stdin.getOutputStream(), true);
 		}
@@ -181,6 +212,10 @@ public class CygwinFilesystem extends Filesystem {
 			}
 			return rv;
 		}
+
+		void destroy() {
+			subprocess.terminate();
+		}
 	}
 
 	//
@@ -188,7 +223,7 @@ public class CygwinFilesystem extends Filesystem {
 	//
 	
 	String getCommandOutput(String path, String[] arguments) throws IOException {
-		return getCommandOutputImpl(paths.toWindowsPath(path), arguments);
+		return OperatingSystem.get().getCommandOutput(paths.toWindowsPath(path), arguments);
 	}
 	
 	boolean shellCommand(String path, String[] arguments) throws IOException {

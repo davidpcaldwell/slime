@@ -257,6 +257,8 @@ new function() {
 							return loader.load({ $context: context });
 						}
 					}()
+					,$api: $api
+					,$platform: $platform
 				}
 			);
 		}

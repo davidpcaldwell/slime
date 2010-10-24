@@ -168,11 +168,11 @@ var Streams = new function() {
 
 	this.stderr = new function() {
 		this.$getOutputStream = function() {
-			return Packages.java.lang.System.err;
+			return $context.stdio.$err;
 		}
 
 		this.$getWriter = function() {
-			return new Packages.java.io.OutputStreamWriter(Packages.java.lang.System.err);
+			return new Packages.java.io.OutputStreamWriter($context.stdio.$err);
 		}
 
 		this.close = function() {}
@@ -180,11 +180,11 @@ var Streams = new function() {
 
 	this.stdout = new function() {
 		this.$getOutputStream = function() {
-			return Packages.java.lang.System.out;
+			return $context.stdio.$out;
 		}
 
 		this.$getWriter = function() {
-			return new Packages.java.io.OutputStreamWriter(Packages.java.lang.System.out);
+			return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
 		}
 
 		this.close = function() {}

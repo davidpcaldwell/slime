@@ -21,10 +21,28 @@ import java.util.*;
 import org.mozilla.javascript.*;
 
 public class Engine {
+	public static abstract class Log {
+		public static final Log NULL = new Log() {
+			public void println(String message) {
+			}
+		};
+
+		public abstract void println(String message);
+
+		public final void println() {
+			println("");
+		}
+	}
+
 	public static abstract class Debugger {
 		abstract void initialize(ContextFactory contexts);
 		abstract void initialize(Scriptable scope, Engine engine, Program program);
 		abstract void setBreakpoint(Engine.Source source, int line);
+		abstract Log getLog();
+
+		final void log(String message) {
+			getLog().println(message);
+		}
 	}
 	
 	private static class NoDebugger extends Debugger {
@@ -35,7 +53,11 @@ public class Engine {
 		}
 		
 		void initialize(Scriptable scope, Engine engine, Program program) {
-		}		
+		}
+
+		Log getLog() {
+			return Log.NULL;
+		}
 	}
 	
 	public static class RhinoDebugger extends Debugger {
@@ -52,6 +74,8 @@ public class Engine {
 					System.exit(1);
 				}
 			};
+
+			private Log log = Log.NULL;
 			
 			public Configuration() {
 			}
@@ -64,6 +88,13 @@ public class Engine {
 					};
 				}
 				this.exit = exit;
+			}
+
+			public void setLog(Log log) {
+				if (log == null) {
+					log = Log.NULL;
+				}
+				this.log = log;
 			}
 		}
 		
@@ -120,7 +151,7 @@ public class Engine {
 			if (info != null) {
 				info.breakpoint(line, true);
 			} else {
-				System.err.println("Not setting breakpoint at " + line + " in " + source + ": no source info");
+				configuration.log.println("Not setting breakpoint at " + line + " in " + source + ": no source info");
 			}
 		}
 		
@@ -128,6 +159,10 @@ public class Engine {
 			dim.setScopeProvider( new ScopeWrapper(scope) );
 			gui.pack();
 			gui.setVisible(true);
+		}
+
+		Log getLog() {
+			return configuration.log;
 		}
 		
 		private static class ScopeWrapper implements org.mozilla.javascript.tools.debugger.ScopeProvider {
@@ -152,83 +187,6 @@ public class Engine {
 		rv.contexts = contexts;
 		debugger.initialize(contexts);
 		return rv;
-	}
-	
-	public static class ObjectName {
-		static final ObjectName NULL = new ObjectName(new String[0]);
-		
-		public static ObjectName create(String s) {
-			if (s == null) return NULL;
-			String[] tokens = s.split("\\.");
-			return new ObjectName(tokens);
-		}
-		
-		private String[] prefix;
-		private String name;
-		
-		private ObjectName(String[] tokens) {
-			if (tokens.length > 1) {
-				prefix = new String[tokens.length-1];
-				for (int i=0; i<tokens.length-1; i++) {
-					prefix[i] = tokens[i];
-				}
-			}
-			if (tokens.length > 0) {
-				name = tokens[tokens.length-1];
-			}
-		}
-		
-		Scriptable getParent(Context context, Scriptable global, boolean create) {
-			Scriptable target = global;
-			if (prefix != null) {
-				String[] tokens = prefix;
-				for (int i=0; i<tokens.length; i++) {
-					Object current = target.get(tokens[i], target);
-					if (current == Scriptable.NOT_FOUND) {
-						if (create) {
-							current = (Scriptable)context.newObject(target);
-							ScriptableObject.defineProperty(target, tokens[i], current, ScriptableObject.READONLY);
-						} else {
-							return null;
-						}
-					}
-					target = (Scriptable)current;
-				}
-			}
-			return target;
-		}
-		
-		Scriptable get(Context context, Scriptable global, boolean create) {
-			Scriptable parent = getParent(context, global, create);
-			if (parent == null) return null;
-			if (name != null) {
-				Object current = parent.get(name, parent);
-				if (current == Scriptable.NOT_FOUND) {
-					if (create) {
-						Scriptable rv = context.newObject(parent);
-						ScriptableObject.defineProperty(parent, name, rv, ScriptableObject.READONLY);
-						return rv;
-					} else {
-						return null;
-					}
-				} else {
-					return (Scriptable)current;
-				}
-			} else {
-				return parent;
-			}
-		}
-		
-		void set(Context context, Scriptable global, Engine.Program.Variable variable) {
-			//	When we are setting a variable that is in a namespace, we will create the namespace here.
-			Scriptable parent = getParent(context, global, true);
-			ScriptableObject.defineProperty(
-				parent,
-				variable.name, 
-				variable.value.get(context, global),
-				variable.attributes.toRhinoAttributes()
-			);
-		}
 	}
 	
 	private Debugger debugger;
@@ -279,6 +237,41 @@ public class Engine {
 		
 		ErrorReporterImpl getErrorReporter() {
 			return reporter;
+		}
+
+		private void emitErrorMessage(Log err, String prefix, ScriptError e) {
+			err.println(prefix + e.getSourceName() + ":" + e.getLineNumber() + ": " + e.getMessage());
+			String errCaret = "";
+			//	TODO	This appears to be null even when it should not be.
+			if (e.getLineSource() != null) {
+				for (int i=0; i<e.getLineSource().length(); i++) {
+					char c = e.getLineSource().charAt(i);
+					if (i < e.getColumn()-1) {
+						if (c == '\t') {
+							errCaret += "\t";
+						} else {
+							errCaret += " ";
+						}
+					} else if (i == e.getColumn()-1) {
+						errCaret += "^";
+					}
+				}
+				err.println(prefix + e.getLineSource());
+				err.println(prefix + errCaret);
+			}
+			if (e.getStackTrace() != null) {
+				err.println(e.getStackTrace());
+			}
+			err.println();
+		}
+
+		public void dump(Log err, String prefix) {
+			err.println();
+			err.println(prefix + "Script halted because of " + errors.size() + " errors.");
+			err.println();
+			for (int i=0; i<errors.size(); i++) {
+				emitErrorMessage(err, prefix, (ScriptError)errors.get(i));
+			}
 		}
 		
 		public void reset() {
@@ -418,6 +411,11 @@ public class Engine {
 		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
 		return outcome.castScopeTo(null, type);
 	}
+
+	public Scriptable load(Program program) {
+		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
+		return outcome.getGlobal();
+	}
 	
 	//	XXX	Would this work in a multithreaded environment in which scripts started their own threads?
 	/**
@@ -494,7 +492,7 @@ public class Engine {
 					try {
 						dim.setBreakpoint( this, line );
 					} catch (IllegalArgumentException e) {
-						System.err.println("Cannot set breakpoint at line " + line + " of " + getSourceName());
+						dim.log("Cannot set breakpoint at line " + line + " of " + getSourceName());
 					}
 				}
 			}			
@@ -561,16 +559,26 @@ public class Engine {
 		public void set(Variable variable) {
 			variables.add( variable );
 		}
+
+		private static class ObjectName {
+			static final ObjectName NULL = new ObjectName();
+
+			void set(Context context, Scriptable global, Variable variable) {
+				ScriptableObject.defineProperty(
+					global,
+					variable.getName(),
+					variable.getValue(context, global),
+					variable.getRhinoAttributes()
+				);
+			}
+
+			Scriptable get(Context context, Scriptable global, boolean create) {
+				return global;
+			}
+		}
 		
-		/**
-			Adds a script to this <code>Program</code> with an optional <code>ObjectName</code>.
-		 
-			@param scope An object name to use in the global scope, or <code>null</code> for the global scope.
-			@param source The source for the script.
-		 */
-		public void add(ObjectName scope, Source source) {
-			if (scope == null) scope = ObjectName.NULL;
-			units.add( new SourceUnit(scope, source) );
+		public void add(Source source) {
+			units.add( new SourceUnit(ObjectName.NULL, source) );
 		}
 		
 		public void add(Function function, Object[] arguments) {
@@ -664,13 +672,8 @@ public class Engine {
 		}
 		
 		public static class Variable {
-			public static Variable create(ObjectName scope, String name, Value value) {
-				return new Variable(scope, name, value, new Attributes());
-			}
-			
-			/** @deprecated */
 			public static Variable create(String name, Value value) {
-				return create(ObjectName.NULL, name, value);
+				return new Variable(ObjectName.NULL, name, value, new Attributes());
 			}
 			
 			private ObjectName scope;
@@ -683,6 +686,18 @@ public class Engine {
 				this.name = name;
 				this.value = value;
 				this.attributes = attributes;
+			}
+
+			String getName() {
+				return name;
+			}
+
+			Object getValue(Context context, Scriptable scope) {
+				return value.get(context, scope);
+			}
+
+			int getRhinoAttributes() {
+				return attributes.toRhinoAttributes();
 			}
 			
 			void set(Context context, Scriptable global) {

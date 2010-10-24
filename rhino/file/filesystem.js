@@ -18,7 +18,7 @@ var defaults = $context.defaults;
 var constant = $context.constant;
 var deprecate = $context.deprecate;
 var fail = $context.fail;
-var warning = ($context.warning) ? $context.warning : function(message) { Packages.java.lang.System.err.println(message); };
+var warning = $context.warning;
 
 var Pathname = function(parameters) {
 	if (this.constructor != arguments.callee) {

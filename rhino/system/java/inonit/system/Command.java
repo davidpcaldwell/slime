@@ -19,20 +19,83 @@ import java.io.*;
 import java.util.*;
 
 public class Command {
+	static Command create(Configuration configuration) {
+		Command rv = new Command();
+		rv.configuration = configuration;
+		return rv;
+	}
+
+	public static abstract class Configuration {
+		public abstract String getCommand();
+		public abstract String[] getArguments();
+
+		final String[] cmdarray() {
+			ArrayList args = new ArrayList();
+			String program = getCommand();
+			String[] arguments = getArguments();
+			args.add(program);
+			for (int i=0; i<arguments.length; i++) {
+				args.add(arguments[i]);
+			}
+			return (String[])args.toArray(new String[0]);
+		}
+	}
+
+	public static abstract class Context {
+		public abstract OutputStream getStandardOutput();
+		public abstract OutputStream getStandardError();
+		public abstract InputStream getStandardInput();
+		public abstract Map getSubprocessEnvironment();
+		public abstract File getWorkingDirectory();
+
+		final String[] envp() {
+			String[] env = null;
+			Map envMap = getSubprocessEnvironment();
+			if (envMap != null) {
+				ArrayList list = new ArrayList();
+				Iterator i = envMap.keySet().iterator();
+				while(i.hasNext()) {
+					String name = (String)i.next();
+					list.add(name + "=" + (String)envMap.get(name));
+				}
+				env = (String[])list.toArray(new String[0]);
+			}
+			return env;
+		}
+	}
+
+	public static abstract class Listener {
+		private Integer status;
+
+		final void setStatus(int status) {
+			this.status = new Integer(status);
+			this.finished();
+		}
+
+		public final Integer getExitStatus() {
+			return status;
+		}
+
+		public abstract void finished();
+		public abstract void threw(IOException e);
+	}
+
 	static String getCommandOutput(String path, String[] arguments) throws IOException {
 		Command shell = new Command();
+		shell.configuration = new ConfigurationImpl(path,arguments);
 		ContextImpl context = new ContextImpl();
 		ListenerImpl listener = new ListenerImpl();
-		shell.execute(context, new ConfigurationImpl(path, arguments), listener);
-		if (listener.io != null) throw listener.io;
+		shell.execute(context, listener);
+		if (listener.threw() != null) throw listener.threw();
 		return context.getCommandOutput();
 	}
-	
-	static boolean packageShellCommand(String path, String[] arguments) throws IOException {
+
+	static boolean wasSuccessfulExecuting(String path, String[] arguments) throws IOException {
 		Command shell = new Command();
+		shell.configuration = new ConfigurationImpl(path, arguments);
 		ListenerImpl listener = new ListenerImpl();
-		shell.execute(new ContextImpl(), new ConfigurationImpl(path, arguments), listener);
-		if (listener.io != null) throw listener.io;
+		shell.execute(new ContextImpl(), listener);
+		if (listener.threw() != null) throw listener.threw();
 		Integer status = listener.getExitStatus();
 		return (status != null && status.intValue() == 0);
 	}
@@ -99,35 +162,10 @@ public class Command {
 		public void threw(IOException e) {
 			this.io = e;
 		}
-	}
-	
-	public static abstract class Context {
-		public abstract OutputStream getStandardOutput();
-		public abstract OutputStream getStandardError();
-		public abstract InputStream getStandardInput();
-		public abstract Map getSubprocessEnvironment();
-		public abstract File getWorkingDirectory();
-	}
-	
-	public static abstract class Configuration {
-		public abstract String getCommand();
-		public abstract String[] getArguments();
-	}
-	
-	public static abstract class Listener {
-		private Integer status;
-		
-		final void setStatus(int status) {
-			this.status = new Integer(status);
-			this.finished();
+
+		IOException threw() {
+			return this.io;
 		}
-		
-		public final Integer getExitStatus() {
-			return status;
-		}
-		
-		public abstract void finished();
-		public abstract void threw(IOException e);
 	}
 	
 	private static class ConfigurationImpl extends Configuration {
@@ -147,80 +185,58 @@ public class Command {
 			return arguments;
 		}
 	}
+
+	private Configuration configuration;
 	
 	Command() {
 	}
 	
-	void execute(Context parameters, Configuration configuration, Listener listener) {
-		ArrayList args = new ArrayList();
-		String program = configuration.getCommand();
-		String[] arguments = configuration.getArguments();
-		args.add(program);
-		for (int i=0; i<arguments.length; i++) {
-			args.add(arguments[i]);
-		}
-		String[] env = null;
-		Map envMap = parameters.getSubprocessEnvironment();
-		if (envMap != null) {
-			ArrayList list = new ArrayList();
-			Iterator i = envMap.keySet().iterator();
-			while(i.hasNext()) {
-				String name = (String)i.next();
-				list.add(name + "=" + (String)envMap.get(name));
-			}
-			env = (String[])list.toArray(new String[0]);
-		}
+	private Process launch(Context context) throws IOException {
+		Process p = Runtime.getRuntime().exec( configuration.cmdarray(), context.envp(), context.getWorkingDirectory() );
+		Spooler.start(p.getInputStream(), context.getStandardOutput(), false);
+		Spooler.start(p.getErrorStream(), context.getStandardError(), false);
+		Spooler.start(context.getStandardInput(), p.getOutputStream(), true);
+		return p;
+	}
 
-		Process p = null;
+	Subprocess start(Context context) throws IOException {
+		return new Subprocess(launch(context));
+	}
+
+	void execute(Context context, Listener listener) {
 		try {
-			p = Runtime.getRuntime().exec( (String[])args.toArray(new String[0]), env, parameters.getWorkingDirectory() );
-		} catch (IOException e) {
-			System.err.println("Error creating process:");
-			e.printStackTrace();
-			listener.threw(e);
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
-		if (p != null) {
-			InputStream out = p.getInputStream();
-			InputStream err = p.getErrorStream();
-			OutputStream in = p.getOutputStream();
-
-			OutputStream bOut = parameters.getStandardOutput();
-			OutputStream bErr = parameters.getStandardError();
-			Spooler sOut = new Spooler(out, bOut, false, "stdout");
-			Spooler sErr = new Spooler(err, bErr, false, "stderr");
-			Spooler sIn = new Spooler(parameters.getStandardInput(), in, true, "stdin");
-
-			new Thread(sOut).start();
-			new Thread(sErr).start();
-			new Thread(sIn).start();
+			Process p = launch(context);
 			try {
-				int status = p.waitFor();
-				listener.setStatus(status);
+				listener.setStatus(p.waitFor());
 			} catch (InterruptedException e) {
 				throw new RuntimeException("Subprocess thread interrupted.");
 			}
+		} catch (IOException e) {
+			listener.threw(e);
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
 		}
 	}
 	
-	private class Spooler implements Runnable {
+	private static class Spooler implements Runnable {
+		static void start(InputStream in, OutputStream out, boolean closeOnEnd) {
+			Spooler s = new Spooler(in, out, closeOnEnd);
+			new Thread(s).start();
+		}
+
 		private InputStream in;
 		private OutputStream out;
 		
 		private boolean closeOnEnd;
 		private boolean flush;
 		
-		private String id;
-
 		private IOException e;
 
-		Spooler(InputStream in, OutputStream out, boolean closeOnEnd, String id) {
+		Spooler(InputStream in, OutputStream out, boolean closeOnEnd) {
 			this.in = in;
 			this.out = out;
 			this.closeOnEnd = closeOnEnd;
-			this.flush = this.closeOnEnd;
-			this.id = id;
+			this.flush = closeOnEnd;
 		}
 
 		IOException failure() {
@@ -234,7 +250,7 @@ public class Command {
 					out.write(i);
 					//	TODO	This flush, which essentially turns off buffering, is necessary for at least some classes of
 					//			applications that are waiting on input in order to decide how to proceed.
-					if (this.closeOnEnd) {
+					if (flush) {
 						out.flush();
 					}
 				}

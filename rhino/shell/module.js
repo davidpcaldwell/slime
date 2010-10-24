@@ -13,9 +13,27 @@
 //	Contributor(s):
 //	END LICENSE
 
-var scope = $loader.script("shell.js", {});
+var scope = $loader.script("shell.js");
 $exports.run = scope.run;
-$exports.environment = scope.environment;
+$exports.environment = (function() {
+	//	TODO	Document $context.$environment
+	var jenv = ($context.$environment) ? $context.$environment : Packages.inonit.script.runtime.shell.Environment.create();
+	var rv;
+	if (jenv) {
+		rv = {};
+		var i = jenv.keySet().iterator();
+		while(i.hasNext()) {
+			var name = String( i.next() );
+			var value = String( jenv.get(name) );
+			rv[name] = value;
+		}
+	} else {
+		//	This version of JDK does not support getenv
+	}
+	return rv;
+})();
 
-$exports.properties = $context.api.java.Properties.adapt(Packages.java.lang.System.getProperties());
+//	TODO	Document $context.$properties
+var $properties = ($context.$properties) ? $context.$properties : Packages.java.lang.System.getProperties();
+$exports.properties = $context.api.java.Properties.adapt($properties);
 $api.experimental($exports,"properties");
