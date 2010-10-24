@@ -46,7 +46,8 @@ var Searchpath = function(p) {
 		//	empty path
 	} else if (typeof(p) == "object" && p instanceof Array) {
 		p.forEach( function(item) {
-			elements.push(item);
+			var element = (item.path) ? item.path : item;
+			elements.push(element);
 		});
 	}
 	
@@ -214,7 +215,7 @@ try {
 		}
 	})(arguments[0]);
 
-	var source = readFile(script);
+	var source = readFile(script.path);
 
 	var directives = source.split("\n").map( function(line) {
 		if (line.substring(0,line.length-1) == "\r") {
