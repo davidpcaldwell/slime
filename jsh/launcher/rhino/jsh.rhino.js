@@ -194,16 +194,10 @@ try {
 		if (platform.cygwin) {
 			path = platform.cygwin.cygpath.windows(arguments[0]);
 		}
-		if (path.indexOf("/") != -1 || path.indexOf("\\") != -1) {
-			if (!new Packages.java.io.File(path).exists()) {
-				Packages.java.lang.System.err.println("File not found: " + path);
-				debug("Working directory: PWD=" + env.PWD);
-				console("Script not found: " + path)
-				Packages.java.lang.System.exit(1);
-			} else {
-				return new File( String(Packages.java.io.File(path).getCanonicalPath()) );
-			}
-		} else {
+		if (new Packages.java.io.File(path).exists()) {
+			return new File( String(Packages.java.io.File(path).getCanonicalPath()) );
+		}
+		if (path.indexOf("/") == -1 || path.indexOf("\\") == -1) {
 			debug("PATH = " + env.PATH);
 			var search = env.PATH.split(colon);
 			for (var i=0; i<search.length; i++) {
@@ -212,6 +206,10 @@ try {
 				}
 			}
 			console("Not found in PATH: " + path);
+			Packages.java.lang.System.exit(1);
+		} else {
+			debug("Working directory: PWD=" + env.PWD);
+			console("Script not found: " + path)
 			Packages.java.lang.System.exit(1);
 		}
 	})(arguments[0]);
@@ -285,20 +283,23 @@ try {
 		command.jvmProperty("java.io.tmpdir",JSH_TMPDIR.path);
 	}
 
+	if (platform.cygwin) {
+		command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
+		if (JSH_LIBRARY_NATIVE) {
+			command.jvmProperty("cygwin.paths",JSH_LIBRARY_NATIVE.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
+		}
+	}
+
 	//	launcher properties that are only sent as informational (they can be used to launch subscripts)
 	command.jvmProperty("jsh.launcher.classpath", getProperty("java.class.path"));
 	command.jvmProperty("jsh.launcher.rhino.classpath", rhinoClasspath.toPath());
 	command.jvmProperty("jsh.launcher.rhino.script", getProperty("jsh.launcher.rhino.script"));
 	command.jvmProperty("jsh.launcher.shell.classpath", shellClasspath.toPath());
 	command.jvmProperty("jsh.launcher.script.classpath", scriptClasspath.toPath());
-
-	if (platform.cygwin) {
-		command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
-		if (JSH_LIBRARY_NATIVE) {
-			command.jvmProperty("jsh.launcher.library.native",JSH_LIBRARY_NATIVE.path);
-			command.jvmProperty("cygwin.paths",JSH_LIBRARY_NATIVE.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
-		}
+	if (JSH_LIBRARY_NATIVE) {
+		command.jvmProperty("jsh.launcher.library.native",JSH_LIBRARY_NATIVE.path);
 	}
+
 	command.add("-classpath");
 	command.add(
 		rhinoClasspath
