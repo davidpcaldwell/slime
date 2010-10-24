@@ -208,7 +208,7 @@ $exports.doc = function(modules,to) {
 			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
 			var xhtml = getApiHtml(item.location).read(XML);
 			xhtml.head.appendChild(<link rel="stylesheet" type="text/css" href="api.css" />);
-			xhtml.head.appendChild(<script type="text/javascript" src="api.js" />);
+			xhtml.head.appendChild(<script type="text/javascript" src="api.js">{"/**/"}</script>);
 
 			xhtml.body.insertChildAfter(null,<a href="index.html">Documentation Home</a>);
 
