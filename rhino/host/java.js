@@ -33,12 +33,12 @@ var isJavaObject = function(object) {
 	if (typeof(object) == "number") return false;
 	if (typeof(object) == "boolean") return false;
 	if (object == null) return false;
+	//	TODO	Is the next line superfluous now?
 	if ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) ) return true;
-	if (!object["class"]) return false;
-	//	TODO	Could also test whether Class.isInstance(object) in addition to (probably not in lieu of) the below test
-	return object["class"] == Packages[object["class"].name];
+	//	TODO	is this really the best way to do this?
+	return (String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n");
 }
-$export("isJavaObject",isJavaObject);
+$exports.isJavaObject = isJavaObject;
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
@@ -56,7 +56,7 @@ var toJsArray = function(javaArray,scriptValueFactory) {
 	}
 	return rv;
 }
-$export("toJsArray",toJsArray);
+$exports.toJsArray = toJsArray;
 
 var toJavaArray = function(jsArray,javaclass,adapter) {
 	if (!adapter) adapter = function(x) { return x; }
@@ -66,7 +66,7 @@ var toJavaArray = function(jsArray,javaclass,adapter) {
 	}
 	return rv;
 }
-$export("toJavaArray",toJavaArray);
+$exports.toJavaArray = toJavaArray;
 
 var deprecate;
 if (!deprecate) {
