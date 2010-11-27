@@ -120,7 +120,19 @@ $exports.java = new function() {
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
 			return new streams.OutputStream(object);
 		} else {
-			throw "Unimplemented: " + object;
+			var type = (function() {
+				if (object.getClass) {
+					return " (Java class: " + object.getClass().getName() + ")";
+				}
+				var rv = " typeof=" + typeof(object);
+				var props = [];
+				for (var x in object) {
+					props.push(x);
+				}
+				rv += " properties=" + props.join(",");
+				return rv;
+			})();
+			throw "Unimplemented java.adapt: " + type + object;
 		}
 	}
 }
