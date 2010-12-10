@@ -13,7 +13,16 @@
 //	Contributor(s):
 //	END LICENSE
 
-var items = $loader.script("java.js", $context);
+var items = $loader.script("java.js", {
+	classLoader: $context.classLoader,
+	warning: (function() {
+		if ($context.warning) return $context.warning;
+		return function(message) {
+			debugger;
+			Packages.java.lang.System.err.println(message);
+		}
+	})()
+});
 $exports.isJavaObject = items.isJavaObject;
 $exports.toJsArray = items.toJsArray;
 
@@ -40,5 +49,39 @@ var experimental = function(name) {
 	$api.experimental($exports, name);
 }
 
-experimental("isJavaType");
+var getJavaClassName = function(javaclass) {
+	var toString = "" + javaclass;
+	if (/\[JavaClass /.test(toString)) {
+		return toString.substring("[JavaClass ".length, toString.length-1);
+	} else {
+		return null;
+	}
+}
+
+var $isJavaType = function(javaclass,object) {
+	var getNamedJavaClass = function(className) {
+		var classLoader = ($context.classLoader) ? $context.classLoader : Packages.java.lang.Class.forName("java.lang.Object").getClassLoader();
+		if (classLoader) {
+			return classLoader.loadClass(className);
+		} else {
+			return Packages.java.lang.Class.forName(className);
+		}
+	};
+
+	var className = getJavaClassName(javaclass);
+	if (className == null) throw "Not a class: " + javaclass;
+	if (!items.isJavaObject(object)) return false;
+	var loaded = getNamedJavaClass(className);
+	return loaded.isInstance(object);
+}
+$exports.isJavaType = function(javaclass) {
+	if (arguments.length == 2) {
+		warning("WARNING: Use of deprecated 2-argument form of isJavaType.");
+		return $isJavaType(javaclass,arguments[1]);
+	}
+	return function(object) {
+		return $isJavaType(javaclass,object);
+	}
+};
+$api.experimental($exports,"isJavaType");
 experimental("toJavaArray");

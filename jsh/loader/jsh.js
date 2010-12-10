@@ -13,23 +13,32 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	HOST VARIABLE: $host (Java class: inonit.script.jsh.ScriptHost)
+//	HOST VARIABLE: $host (Java class: inonit.script.jsh.Shell.Host.Interface)
 
-(function() {
+this.jsh = new function() {
 	var jsh = this;
+
+	var addFinalizer = function(f) {
+		$host.addFinalizer(new JavaAdapter(
+			Packages.java.lang.Runnable,
+			{
+				run: function() {
+					f();
+				}
+			}
+		))
+	}
 
 	var loader = new function() {
 		var rhinoLoader = (function() {
-			var $delegate = $host.getRhinoLoaderBootstrap();
-
 			var $loader = new function() {
-				this.code = String($delegate.getPlatformCode());
+				this.code = String($host.getRhinoLoaderBootstrap().getPlatformCode());
 				this.script = function(scope,name,$in) {
 					$host.script(scope,name,$in);
 				}
 			};
 
-			return eval( String($delegate.getRhinoCode()) );
+			return eval( String($host.getRhinoLoaderBootstrap().getRhinoCode()) );
 		})();
 
 		var EVALUATE_SCRIPTS_AS_STRINGS = false;
@@ -50,7 +59,7 @@
 				format.base = pathname.$peer.getHostFile();
 				format.name = "module.js";
 			} else if (pathname.file && /\.slime$/.test(pathname.basename)) {
-				format.base = pathname.$peer.getHostFile();
+				format.slime = pathname.$peer.getHostFile();
 				format.name = "module.js";
 			} else if (pathname.file) {
 				format.base = pathname.parent.$peer.getHostFile();
@@ -62,7 +71,13 @@
 			if (arguments.length == 2) {
 				p.$context = arguments[1];
 			}
-			return rhinoLoader.module($host.getModule(format.base,format.name,null),p);
+			if (format.slime) {
+				return rhinoLoader.module($host.getPackedModule(format.slime,format.name),p);
+			} else if (format.base) {
+				return rhinoLoader.module($host.getUnpackedModule(format.base,format.name),p);
+			} else {
+				throw "Unreachable code: format.slime and format.base null in jsh loader's module()";
+			}
 		}
 
 		this.script = function(pathname,$context) {
@@ -88,6 +103,10 @@
 		this.module = loader.module;
 		this.script = loader.script;
 		this.namespace = loader.namespace;
+
+		this.addFinalizer = function(f) {
+			addFinalizer(f);
+		}
 	};
 
 	//	TODO	Lazy-loading
@@ -106,7 +125,9 @@
 	var $shell = loader.bootstrap({
 		api: {
 			java: java
-		}
+		},
+		$environment: $host.getEnvironment(),
+		$properties: $host.getSystemProperties()
 	},"rhino/shell");
 
 	new function() {
@@ -115,21 +136,29 @@
 			js: js,
 			java: java
 		}
-		if ($shell) {
-			//	TODO	Need to check for $shell existence when initializing under test.jsh.js, at least for now
-			if ( String($shell.properties.cygwin) != "undefined" ) {
-				var convert = function(value) {
-					if ( String(value) == "undefined" ) return function(){}();
-					if ( String(value) == "null" ) return null;
-					return String(value);
-				}
-				context.cygwin = {
-					root: convert( $shell.properties.cygwin.root ),
-					paths: convert( $shell.properties.cygwin.paths ),
-				}
-			}
-			context.$pwd = String( $shell.properties.user.dir );
+
+		context.stdio = new function() {
+			this.$out = $host.getStandardOutput();
+			this.$in = $host.getStandardError();
+			this.$err = $host.getStandardError();
 		}
+
+		context.$pwd = String( $shell.properties.user.dir );
+
+		context.addFinalizer = addFinalizer;
+
+		if ( String($shell.properties.cygwin) != "undefined" ) {
+			var convert = function(value) {
+				if ( String(value) == "undefined" ) return function(){}();
+				if ( String(value) == "null" ) return null;
+				return String(value);
+			}
+			context.cygwin = {
+				root: convert( $shell.properties.cygwin.root ),
+				paths: convert( $shell.properties.cygwin.paths )
+			}
+		}
+
 		jsh.file = loader.bootstrap(
 			context,
 			"rhino/file"
@@ -150,18 +179,17 @@
 	}
 
 	jsh.script = (function() {
-		var context = {};
+		var context = {
+			$script: $host.getInvocation().getScript(),
+			$arguments: $host.getInvocation().getArguments(),
+			addClasses: function(pathname) {
+				$host.addClasses(pathname.$peer.getHostFile());
+			}
+		};
 		context.api = {
 			file: jsh.file,
 			java: jsh.java
 		};
-		context.$host = {
-			script: $host.getMainScriptFile(),
-			arguments: $host.getArguments(),
-			addClasses: function($file) {
-				$host.addClasses($file);
-			}
-		}
 		
 		return loader.bootstrap(context,"jsh/script");
 	})();
@@ -175,4 +203,4 @@
 		$platform: loader.$platform,
 		$api: loader.$api
 	}
-}).call(this);
+};

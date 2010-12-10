@@ -25,19 +25,7 @@ var $export = function(name,value) {
 	}
 }
 
-var warning = ($context.warning) ? $context.warning : function(message) {
-	debugger;
-	Packages.java.lang.System.err.println(message);
-}
-
-var getNamedJavaClass = function(className) {
-	var classLoader = ($context.classLoader) ? $context.classLoader : Packages.java.lang.Class.forName("java.lang.Object").getClassLoader();
-	if (classLoader) {
-		return classLoader.loadClass(className);
-	} else {
-		return Packages.java.lang.Class.forName(className);
-	}
-}
+var warning = $context.warning;
 
 var isJavaObject = function(object) {
 	if (typeof(object) == "undefined") return false;
@@ -50,42 +38,13 @@ var isJavaObject = function(object) {
 	//	TODO	is this really the best way to do this?
 	return (String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n");
 }
-$export("isJavaObject",isJavaObject);
+$exports.isJavaObject = isJavaObject;
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
 var getJavaClass = function(object) {
 	return Packages[object["class"].name];
 }
-
-//	TODO	See above
-var getJavaClassName = function(javaclass) {
-	var toString = "" + javaclass;
-	if (/\[JavaClass /.test(toString)) {
-		return toString.substring("[JavaClass ".length, toString.length-1);
-	} else {
-		return null;
-	}
-}
-
-//	TODO	See above
-var $isJavaType = function(javaclass,object) {
-	var className = getJavaClassName(javaclass);
-	if (className == null) throw "Not a class: " + javaclass;
-	if (!isJavaObject(object)) return false;
-	var loaded = getNamedJavaClass(className);
-	return loaded.isInstance(object);
-}
-var isJavaType = function(javaclass) {
-	if (arguments.length == 2) {
-		warning("WARNING: Use of deprecated 2-argument form of isJavaType.");
-		return $isJavaType(javaclass,arguments[1]);
-	}
-	return function(object) {
-		return $isJavaType(javaclass,object);
-	}
-};
-$export("isJavaType",isJavaType);
 
 var toJsArray = function(javaArray,scriptValueFactory) {
 	if (typeof(javaArray) == "undefined" || javaArray == null) throw "Required: the Java array must not be null or undefined.";
@@ -97,7 +56,7 @@ var toJsArray = function(javaArray,scriptValueFactory) {
 	}
 	return rv;
 }
-$export("toJsArray",toJsArray);
+$exports.toJsArray = toJsArray;
 
 var toJavaArray = function(jsArray,javaclass,adapter) {
 	if (!adapter) adapter = function(x) { return x; }
@@ -107,7 +66,7 @@ var toJavaArray = function(jsArray,javaclass,adapter) {
 	}
 	return rv;
 }
-$export("toJavaArray",toJavaArray);
+$exports.toJavaArray = toJavaArray;
 
 var deprecate;
 if (!deprecate) {
