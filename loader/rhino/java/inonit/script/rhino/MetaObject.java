@@ -31,6 +31,8 @@ public class MetaObject implements Scriptable {
 	private Function getter;
 	private Function setter;
 
+	private java.util.HashSet<String> properties = new java.util.HashSet<String>();
+
 	private MetaObject(Scriptable delegate, Function getter, Function setter) {
 		this.delegate = delegate;
 		this.getter = getter;
@@ -63,6 +65,7 @@ public class MetaObject implements Scriptable {
 
 	public void delete(String arg0) {
 		delegate.delete(arg0);
+		properties.remove(arg0);
 	}
 
 	public String getClassName() {
@@ -80,11 +83,17 @@ public class MetaObject implements Scriptable {
 	}
 
 	public Object[] getIds() {
-		return delegate.getIds();
+		java.util.ArrayList<String> ids = new java.util.ArrayList<String>();
+		java.util.Iterator<String> i = properties.iterator();
+		while(i.hasNext()) {
+			ids.add(i.next());
+		}
+		String[] rv = ids.toArray(new String[0]);
+		return rv;
 	}
 
 	public boolean has(String arg0, Scriptable arg1) {
-		return delegate.has(arg0, arg1);
+		return properties.contains(arg0);
 	}
 
 	public boolean hasInstance(Scriptable arg0) {
@@ -95,6 +104,7 @@ public class MetaObject implements Scriptable {
 		setter.call(Context.getCurrentContext(), getScope(), delegate, new java.lang.Object[] {
 			arg0, arg2
 		});
+		properties.add(arg0);
 	}
 
 	//
