@@ -249,28 +249,30 @@ public class Shell {
 		}
 
 		public class Interface {
+			private Engine engine = new Engine();
+
 			public void exit(int status) throws ExitException {
 				throw new ExitException(status);
 			}
 
 			public void script(Scriptable scope, String name, InputStream code) throws IOException {
-				engine.script(scope, name, code);
+				Host.this.engine.script(scope, name, code);
 			}
 
 			public Module getBootstrapModule(String path) {
-				Module rv = engine.load(installation.getModuleCode(path));
+				Module rv = Host.this.engine.load(installation.getModuleCode(path));
 				classpath.append(rv);
 				return rv;
 			}
 
 			public Module getUnpackedModule(File base, String main) {
-				Module rv = engine.load(Module.Code.unpacked(base,main));
+				Module rv = Host.this.engine.load(Module.Code.unpacked(base,main));
 				classpath.append(rv);
 				return rv;
 			}
 
 			public Module getPackedModule(File slime, String main) {
-				Module rv = engine.load(Module.Code.slime(slime,main));
+				Module rv = Host.this.engine.load(Module.Code.slime(slime,main));
 				classpath.append(rv);
 				return rv;
 			}
@@ -279,7 +281,7 @@ public class Shell {
 				return classpath;
 			}
 
-			public Engine.Loader getRhinoLoaderBootstrap() {
+			public inonit.script.rhino.Engine.Loader getRhinoLoaderBootstrap() {
 				return installation.getRhinoLoaderBootstrap();
 			}
 
@@ -319,6 +321,20 @@ public class Shell {
 
 			public void addFinalizer(Runnable runnable) {
 				finalizers.add(runnable);
+			}
+
+			//
+			//	Not used by shell, but useful to specialized scripts that do various kinds of embedding
+			//
+
+			public Engine getEngine() {
+				return Interface.this.engine;
+			}
+
+			public class Engine {
+				public Module load(Module.Code code) {
+					return Host.this.engine.load(code);
+				}
 			}
 		}
 	}
