@@ -27,9 +27,9 @@ new function() {
 			}
 
 			$engine.MetaObject = function(p) {
-				var delegate = (p.delegate) ? p.delegate : null;
-				var get = (p.get) ? p.get : null;
-				var set = (p.set) ? p.set : null;
+				var delegate = (p.delegate) ? p.delegate : {};
+				var get = (p.get) ? p.get : function(){};
+				var set = (p.set) ? p.set : function(){};
 				return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
 			}
 		})();
