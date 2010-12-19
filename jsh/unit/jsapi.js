@@ -46,6 +46,7 @@ $exports.tests = new function() {
 						var $unit = api.$unit;
 						var $jsapi = api.$jsapi;
 						var $java = api.$java;
+						var $module = api.$module;
 						var $platform = jsh.$jsapi.$platform;
 						var $api = jsh.$jsapi.$api;
 
@@ -90,6 +91,12 @@ $exports.tests = new function() {
 
 			this.loadWith = function(context) {
 				return jsh.loader.module(modulepath, (context) ? context : {});
+			}
+
+			this.getResourcePathname = function(path) {
+				if (modulepath.directory) return modulepath.directory.getRelativePath(path);
+				if (modulepath.file) return modulepath.file.parent.getRelativePath(path);
+				throw "Unimplemented";
 			}
 		}
 	}
@@ -145,7 +152,12 @@ $exports.tests = new function() {
 			jsh.shell.echo("Processing: " + item.code + " " + item.test + " " + item.namespace);
 			var scope = {
 				$java: SCOPE.$java,
-				$jsapi: SCOPE.$jsapi
+				$jsapi: SCOPE.$jsapi,
+				$module: new function() {
+					this.getResourcePathname = function(path) {
+						return item.getResourcePathname(path);
+					}
+				}
 			};
 
 			scope.$unit = new function() {

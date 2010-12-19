@@ -21,16 +21,17 @@ public class MetaObject implements Scriptable {
 	//	TODO	there are a lot of untested cases; for example, there are many methods that will bomb if target is null
 	//	TODO	But see ES2.0 proposal, with get/set/has/delete/invoke
 	public static Scriptable create(Scriptable delegate, Function getter, Function setter) {
+		if (delegate == null) throw new NullPointerException("'delegate' must not be null.");
+		if (getter == null) throw new NullPointerException("'getter' must not be null.");
+		if (setter == null) throw new NullPointerException("'setter' must not be null.");
 		return new MetaObject(delegate, getter, setter);
 	}
 
-	//	TODO	Can this variable be null?  We check for it below in some places but not others
 	private Scriptable delegate;
 	private Function getter;
 	private Function setter;
 
-	private Scriptable scope;
-	private Scriptable prototype;
+	private java.util.HashSet<String> properties = new java.util.HashSet<String>();
 
 	private MetaObject(Scriptable delegate, Function getter, Function setter) {
 		this.delegate = delegate;
@@ -39,39 +40,22 @@ public class MetaObject implements Scriptable {
 	}
 
 	public void setParentScope(Scriptable arg0) {
-		if (delegate == null) {
-			scope = arg0;
-		} else {
-			delegate.setParentScope(arg0);
-		}
+		delegate.setParentScope(arg0);
 	}
 
 	public Scriptable getParentScope() {
-		if (delegate == null) {
-			return scope;
-		} else {
-			return delegate.getParentScope();
-		}
+		return delegate.getParentScope();
 	}
 
 	public void setPrototype(Scriptable arg0) {
-		if (delegate == null) {
-			prototype = arg0;
-		} else {
-			delegate.setPrototype(arg0);
-		}
+		delegate.setPrototype(arg0);
 	}
 
 	public Scriptable getPrototype() {
-		if (delegate == null) {
-			return prototype;
-		} else {
-			return delegate.getPrototype();
-		}
+		return delegate.getPrototype();
 	}
 
 	private Scriptable getScope() {
-		if (delegate == null) return scope;
 		return delegate.getParentScope();
 	}
 
@@ -81,38 +65,35 @@ public class MetaObject implements Scriptable {
 
 	public void delete(String arg0) {
 		delegate.delete(arg0);
+		properties.remove(arg0);
 	}
 
 	public String getClassName() {
 		return delegate.getClassName();
 	}
 
-	private Object delegateGet(String name, Scriptable start) {
-		if (delegate == null) return ScriptableObject.NOT_FOUND;
-		return delegate.get(name, start);
-	}
-
 	public Object get(String arg0, Scriptable arg1) {
-		Object rv = delegateGet(arg0, arg1);
-		if (rv == ScriptableObject.NOT_FOUND) {
-			if (getter != null) {
-				rv = getter.call(Context.getCurrentContext(), getScope(), delegate, new java.lang.Object[] {
-					arg0
-				});
-				if (rv instanceof org.mozilla.javascript.Undefined) {
-					rv = ScriptableObject.NOT_FOUND;
-				}
-			}
+		Object rv = getter.call(Context.getCurrentContext(), getScope(), delegate, new java.lang.Object[] {
+			arg0
+		});
+		if (rv instanceof org.mozilla.javascript.Undefined) {
+			rv = ScriptableObject.NOT_FOUND;
 		}
 		return rv;
 	}
 
 	public Object[] getIds() {
-		return delegate.getIds();
+		java.util.ArrayList<String> ids = new java.util.ArrayList<String>();
+		java.util.Iterator<String> i = properties.iterator();
+		while(i.hasNext()) {
+			ids.add(i.next());
+		}
+		String[] rv = ids.toArray(new String[0]);
+		return rv;
 	}
 
 	public boolean has(String arg0, Scriptable arg1) {
-		return delegate.has(arg0, arg1);
+		return properties.contains(arg0);
 	}
 
 	public boolean hasInstance(Scriptable arg0) {
@@ -120,13 +101,10 @@ public class MetaObject implements Scriptable {
 	}
 
 	public void put(String arg0, Scriptable arg1, Object arg2) {
-		if (setter != null) {
-			setter.call(Context.getCurrentContext(), getScope(), delegate, new java.lang.Object[] {
-				arg0, arg2
-			});
-		} else {
-			delegate.put(arg0, arg1, arg2);
-		}
+		setter.call(Context.getCurrentContext(), getScope(), delegate, new java.lang.Object[] {
+			arg0, arg2
+		});
+		properties.add(arg0);
 	}
 
 	//

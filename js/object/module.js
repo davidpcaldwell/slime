@@ -38,7 +38,7 @@ $exports.defined = function() {
 var constant = function(f) {
 	return function() {
 		if (typeof(arguments.callee.called) == "undefined") {
-			arguments.callee.result = f();
+			arguments.callee.result = f.call(this);
 			arguments.callee.called = true;
 		}
 		return arguments.callee.result;

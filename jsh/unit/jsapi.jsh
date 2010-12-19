@@ -78,7 +78,8 @@ var ENVIRONMENT = (function() {
 	parameters.options.environment.forEach( function(item) {
 		var tokens = item.split("=");
 		if (tokens.length == 2) {
-			rv[tokens[0]] = jsh.loader.script(jsh.file.Pathname(tokens[1]));
+			var target = jsh.file.Pathname(tokens[1]);
+			rv[tokens[0]] = jsh.loader.module(target);
 		} else if (tokens.length == 1) {
 			rv[item] = {};
 		} else {
