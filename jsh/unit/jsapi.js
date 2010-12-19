@@ -71,7 +71,7 @@ $exports.tests = new function() {
 
 			this.namespace = ns;
 
-			var loadApiHtml = function(api,html) {
+			var loadApiHtml = function(api,html,contextScript) {
 				//	Interpret unit tests from document
 				if (!parameters.options.notest) {
 					(function() {
@@ -87,10 +87,7 @@ $exports.tests = new function() {
 							eval(String(scopes[i]));
 						}
 
-						var contexts = html.scripts("context");
-						for (var i=0; i<contexts.length; i++) {
-							api.$unit.context = eval(String(contexts[i]));
-						}
+						api.$unit.context = eval(String(contextScript));
 
 						var initializes = html.scripts("initialize");
 						api.$unit.initialize = function(scope) {
@@ -116,9 +113,9 @@ $exports.tests = new function() {
 				}
 			}
 
-			this.loadTestsInto = function(scope) {
+			this.loadTestsInto = function(scope,contextScript) {
 				if (this.suite) {
-					loadApiHtml(scope,this.suite);
+					loadApiHtml(scope,this.suite,contextScript);
 				}
 			}
 
@@ -179,41 +176,45 @@ $exports.tests = new function() {
 		var $scenario = new $context.Scenario();
 		$scenario.name = "Unit tests";
 		$scenario.files = [];
-		$scenario.execute = function(scope) {
-			this.files.forEach( function(item) {
-				scope.scenario( item )
+		$scenario.execute = function(topscope) {
+			//	var item is expected to be $scope.$unit
+			this.files.forEach( function(suite) {
+				var scope = {
+					$java: SCOPE.$java,
+					$jsapi: SCOPE.$jsapi,
+					$module: new function() {
+						this.getResourcePathname = function(path) {
+							return suite.item.getResourcePathname(path);
+						}
+					}
+				};
+				scope.$unit = new function() {
+					this.name = suite.item.name + "-" + String(suite.index);
+				}
+				try {
+					suite.item.loadTestsInto(scope,suite.context);
+
+					scope.module = suite.item.loadWith(scope.$unit.context);
+				} catch (e) {
+					//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
+					scope.$unit.initialize = function() {
+					}
+					scope.$unit.execute = function(scope) {
+						throw e;
+					}
+				}
+				topscope.scenario( scope.$unit )
 			} );
 		}
 
 		testGroups.forEach( function(item) {
-			jsh.shell.echo("Processing: " + item.code + " " + item.test + " " + item.namespace);
-			var scope = {
-				$java: SCOPE.$java,
-				$jsapi: SCOPE.$jsapi,
-				$module: new function() {
-					this.getResourcePathname = function(path) {
-						return item.getResourcePathname(path);
-					}
-				}
-			};
-
-			scope.$unit = new function() {
-				this.name = item.name;
+			jsh.shell.echo("Processing: " + item.name + item.namespace);
+			var contexts = item.suite.scripts("context");
+			if (contexts.length == 0) {
+				contexts = [<script>{"{}"}</script>];
 			}
-			$scenario.files.push( scope.$unit );
-
-			//	This property will be set by jsapi.jsh if we load api.html: to the file object representing api.html
-			try {
-				item.loadTestsInto(scope);
-
-				scope.module = item.loadWith(scope.$unit.context);
-			} catch (e) {
-				//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
-				scope.$unit.initialize = function() {
-				}
-				scope.$unit.execute = function(scope) {
-					throw e;
-				}
+			for (var i=0; i<contexts.length; i++) {
+				$scenario.files.push( { item: item, context: contexts[i], index: i } );
 			}
 		} );
 
