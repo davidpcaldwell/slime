@@ -33,6 +33,32 @@ var getApiHtml = function(moduleMainPathname) {
 $exports.tests = new function() {
 	var testGroups = [];
 
+	var ApiHtml = function(html) {
+		var scripts = [];
+
+		for each (var item in html..script) {
+			var type = String(item.@type);
+			var prefix = "application/x.jsapi#";
+			if (type.substring(0,prefix.length) == prefix) {
+				scripts.push({ type: type.substring(prefix.length), element: item });
+			}
+		}
+
+		this.scripts = function(type) {
+			if (type) {
+				var rv = scripts;
+				rv = rv.filter(function(s) {
+					return s.type == type;
+				});
+				return rv.map( function(s) {
+					return s.element;
+				});
+			} else {
+				return scripts;
+			}
+		}
+	}
+
 	var moduleToItem = function(ns,modulepath) {
 		return new function() {
 			this.name = modulepath.toString();
@@ -50,30 +76,34 @@ $exports.tests = new function() {
 						var $platform = jsh.$jsapi.$platform;
 						var $api = jsh.$jsapi.$api;
 
-						for each (var item in html..script.(@type == "application/x.jsapi#scope")) {
-							eval(String(item));
+						var scopes = html.scripts("scope");
+						for (var i=0; i<scopes.length; i++) {
+							eval(String(scopes[i]));
 						}
 
-						for each (var item in html..script.(@type == "application/x.jsapi#context")) {
-							api.$unit.context = eval(String(item));
+						var contexts = html.scripts("context");
+						for (var i=0; i<contexts.length; i++) {
+							api.$unit.context = eval(String(contexts[i]));
 						}
 
+						var initializes = html.scripts("initialize");
 						api.$unit.initialize = function(scope) {
-							for each (var item in html..script.(@type == "application/x.jsapi#initialize")) {
-								eval(String(item));
+							for (var i=0; i<initializes.length; i++) {
+								eval(String(initializes[i]));
 							}
 						}
 
+						var tests = html.scripts("tests");
 						api.$unit.execute = function(scope) {
-							for each (var item in html..script.(@type == "application/x.jsapi#tests")) {
+							for (var i=0; i<tests.length; i++) {
 								var module = api.module;
 								scope.scenario(new function() {
-									this.name = (item.@jsapi::id.length()) ? String(item.@jsapi::id) : "<script>";
-									var code = String(item);
+									this.name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : "<script>";
 									this.execute = function(scope) {
-										eval(code);
+										eval(String(tests[i]));
 									}
 								});
+
 							}
 						}
 					})();
@@ -85,7 +115,8 @@ $exports.tests = new function() {
 				var api = getApiHtml(modulepath);
 				if (api) {
 					var xml = api.read(XML);
-					loadApiHtml(scope,xml);
+					var page = new ApiHtml(xml);
+					loadApiHtml(scope,page);
 				}
 			}
 
@@ -121,7 +152,11 @@ $exports.tests = new function() {
 			};
 
 			this.$jsapi = {
-				module: function(context,name) {
+				module: function(name,context) {
+					if (typeof(name) == "object" && typeof(context) == "string") {
+						jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
+						return arguments.callee.call(this,arguments[1],arguments[0]);
+					}
 					var MODULES = $context.MODULES;
 					if (MODULES[name+"/"]) name += "/";
 					if (!MODULES[name]) throw "Module referenced but not found: '" + name + "'";
