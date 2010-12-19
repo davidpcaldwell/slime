@@ -33,7 +33,7 @@ var getApiHtml = function(moduleMainPathname) {
 $exports.tests = new function() {
 	var testGroups = [];
 
-	var ApiHtml = function(html) {
+	var ApiHtmlTests = function(html) {
 		var scripts = [];
 
 		for each (var item in html..script) {
@@ -62,6 +62,12 @@ $exports.tests = new function() {
 	var moduleToItem = function(ns,modulepath) {
 		return new function() {
 			this.name = modulepath.toString();
+
+			if (!modulepath.directory && !modulepath.file) throw "Not found: " + modulepath;
+			var html = getApiHtml(modulepath);
+			if (html) {
+				this.suite = new ApiHtmlTests(html.read(XML));
+			}
 
 			this.namespace = ns;
 
@@ -111,12 +117,8 @@ $exports.tests = new function() {
 			}
 
 			this.loadTestsInto = function(scope) {
-				if (!modulepath.directory && !modulepath.file) throw "Not found: " + modulepath;
-				var api = getApiHtml(modulepath);
-				if (api) {
-					var xml = api.read(XML);
-					var page = new ApiHtml(xml);
-					loadApiHtml(scope,page);
+				if (this.suite) {
+					loadApiHtml(scope,this.suite);
 				}
 			}
 
