@@ -92,7 +92,7 @@ public class CygwinFilesystem extends Filesystem {
 			for (int i=0; i<arguments.length; i++) {
 				message += arguments[i];
 				if (i+1 != arguments.length)
-					message += "|";
+					message += ",";
 			}
 			throw new IOException("cygpath failed: arguments=" + message);
 		}

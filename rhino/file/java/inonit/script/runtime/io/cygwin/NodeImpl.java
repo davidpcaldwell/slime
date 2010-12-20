@@ -124,7 +124,16 @@ class NodeImpl extends Filesystem.Node {
 
 	public boolean exists() throws IOException {
 		if (exists == null) {
-			exists = new Boolean(getHostFile().exists());
+			try {
+				exists = new Boolean(getHostFile().exists());
+			} catch (IOException e) {
+				String[] tokens = scriptPath.substring(1).split("/");
+				if (tokens[0].equals("cygdrive") && tokens[1].endsWith(".exe")) {
+					exists = new Boolean(false);
+				} else {
+					throw e;
+				}
+			}
 		}
 		return exists.booleanValue();
 	}
