@@ -13,6 +13,11 @@
 //	Contributor(s):
 //	END LICENSE
 
+var warning = ($context.warning) ? $context.warning : function(s) {
+	debugger;
+	Packages.java.lang.System.err.println("rhino/host WARNING: " + s);
+};
+
 var items = $loader.script("java.js", {
 	classLoader: $context.classLoader,
 	warning: (function() {
