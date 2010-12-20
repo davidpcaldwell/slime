@@ -33,13 +33,45 @@ var getApiHtml = function(moduleMainPathname) {
 $exports.tests = new function() {
 	var testGroups = [];
 
+	var ApiHtmlTests = function(html) {
+		var scripts = [];
+
+		for each (var item in html..script) {
+			var type = String(item.@type);
+			var prefix = "application/x.jsapi#";
+			if (type.substring(0,prefix.length) == prefix) {
+				scripts.push({ type: type.substring(prefix.length), element: item });
+			}
+		}
+
+		this.scripts = function(type) {
+			if (type) {
+				var rv = scripts;
+				rv = rv.filter(function(s) {
+					return s.type == type;
+				});
+				return rv.map( function(s) {
+					return s.element;
+				});
+			} else {
+				return scripts;
+			}
+		}
+	}
+
 	var moduleToItem = function(ns,modulepath) {
 		return new function() {
 			this.name = modulepath.toString();
 
+			if (!modulepath.directory && !modulepath.file) throw "Not found: " + modulepath;
+			var html = getApiHtml(modulepath);
+			if (html) {
+				this.suite = new ApiHtmlTests(html.read(XML));
+			}
+
 			this.namespace = ns;
 
-			var loadApiHtml = function(api,html) {
+			var loadApiHtml = function(api,html,contextScript) {
 				//	Interpret unit tests from document
 				if (!parameters.options.notest) {
 					(function() {
@@ -50,42 +82,40 @@ $exports.tests = new function() {
 						var $platform = jsh.$jsapi.$platform;
 						var $api = jsh.$jsapi.$api;
 
-						for each (var item in html..script.(@type == "application/x.jsapi#scope")) {
-							eval(String(item));
+						var scopes = html.scripts("scope");
+						for (var i=0; i<scopes.length; i++) {
+							eval(String(scopes[i]));
 						}
 
-						for each (var item in html..script.(@type == "application/x.jsapi#context")) {
-							api.$unit.context = eval(String(item));
-						}
+						api.$unit.context = eval(String(contextScript));
 
+						var initializes = html.scripts("initialize");
 						api.$unit.initialize = function(scope) {
-							for each (var item in html..script.(@type == "application/x.jsapi#initialize")) {
-								eval(String(item));
+							for (var i=0; i<initializes.length; i++) {
+								eval(String(initializes[i]));
 							}
 						}
 
+						var tests = html.scripts("tests");
 						api.$unit.execute = function(scope) {
-							for each (var item in html..script.(@type == "application/x.jsapi#tests")) {
+							for (var i=0; i<tests.length; i++) {
 								var module = api.module;
 								scope.scenario(new function() {
-									this.name = (item.@jsapi::id.length()) ? String(item.@jsapi::id) : "<script>";
-									var code = String(item);
+									this.name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : "<script>";
 									this.execute = function(scope) {
-										eval(code);
+										eval(String(tests[i]));
 									}
 								});
+
 							}
 						}
 					})();
 				}
 			}
 
-			this.loadTestsInto = function(scope) {
-				if (!modulepath.directory && !modulepath.file) throw "Not found: " + modulepath;
-				var api = getApiHtml(modulepath);
-				if (api) {
-					var xml = api.read(XML);
-					loadApiHtml(scope,xml);
+			this.loadTestsInto = function(scope,contextScript) {
+				if (this.suite) {
+					loadApiHtml(scope,this.suite,contextScript);
 				}
 			}
 
@@ -121,7 +151,11 @@ $exports.tests = new function() {
 			};
 
 			this.$jsapi = {
-				module: function(context,name) {
+				module: function(name,context) {
+					if (typeof(name) == "object" && typeof(context) == "string") {
+						jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
+						return arguments.callee.call(this,arguments[1],arguments[0]);
+					}
 					var MODULES = $context.MODULES;
 					if (MODULES[name+"/"]) name += "/";
 					if (!MODULES[name]) throw "Module referenced but not found: '" + name + "'";
@@ -142,41 +176,45 @@ $exports.tests = new function() {
 		var $scenario = new $context.Scenario();
 		$scenario.name = "Unit tests";
 		$scenario.files = [];
-		$scenario.execute = function(scope) {
-			this.files.forEach( function(item) {
-				scope.scenario( item )
+		$scenario.execute = function(topscope) {
+			//	var item is expected to be $scope.$unit
+			this.files.forEach( function(suite) {
+				var scope = {
+					$java: SCOPE.$java,
+					$jsapi: SCOPE.$jsapi,
+					$module: new function() {
+						this.getResourcePathname = function(path) {
+							return suite.item.getResourcePathname(path);
+						}
+					}
+				};
+				scope.$unit = new function() {
+					this.name = suite.item.name + "-" + String(suite.index);
+				}
+				try {
+					suite.item.loadTestsInto(scope,suite.context);
+
+					scope.module = suite.item.loadWith(scope.$unit.context);
+				} catch (e) {
+					//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
+					scope.$unit.initialize = function() {
+					}
+					scope.$unit.execute = function(scope) {
+						throw e;
+					}
+				}
+				topscope.scenario( scope.$unit )
 			} );
 		}
 
 		testGroups.forEach( function(item) {
-			jsh.shell.echo("Processing: " + item.code + " " + item.test + " " + item.namespace);
-			var scope = {
-				$java: SCOPE.$java,
-				$jsapi: SCOPE.$jsapi,
-				$module: new function() {
-					this.getResourcePathname = function(path) {
-						return item.getResourcePathname(path);
-					}
-				}
-			};
-
-			scope.$unit = new function() {
-				this.name = item.name;
+			jsh.shell.echo("Processing: " + item.name + item.namespace);
+			var contexts = item.suite.scripts("context");
+			if (contexts.length == 0) {
+				contexts = [<script>{"{}"}</script>];
 			}
-			$scenario.files.push( scope.$unit );
-
-			//	This property will be set by jsapi.jsh if we load api.html: to the file object representing api.html
-			try {
-				item.loadTestsInto(scope);
-
-				scope.module = item.loadWith(scope.$unit.context);
-			} catch (e) {
-				//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
-				scope.$unit.initialize = function() {
-				}
-				scope.$unit.execute = function(scope) {
-					throw e;
-				}
+			for (var i=0; i<contexts.length; i++) {
+				$scenario.files.push( { item: item, context: contexts[i], index: i } );
 			}
 		} );
 
