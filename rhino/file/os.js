@@ -38,6 +38,8 @@ var isJavaType = $context.isJavaType;
 
 var Streams = streams.Streams;
 
+var defined = $context.defined;
+
 var Filesystem = function(implementation) {
 	this.Searchpath = function(array) {
 		return new $context.Searchpath({ filesystem: implementation, array: array });
