@@ -15,6 +15,7 @@
 
 package inonit.script.jsh.launcher;
 
+import java.io.*;
 import java.util.*;
 
 public class Main {
@@ -139,25 +140,19 @@ public class Main {
 	}
 
 	private static class Unbuilt extends Invocation {
-		private String toCygwin(String flags, String value) {
-			try {
-				String rv = inonit.system.OperatingSystem.get().getCommandOutput(
-					"cygpath",
-					new String[] { flags, value }
-				);
-				//	Remove trailing newline
-				rv = rv.substring(0,rv.length()-1);
-				return rv;
-			} catch (java.io.IOException e) {
-				//	Must not be Cygwin
+		private String toWindowsPath(String value) throws IOException {
+			inonit.system.cygwin.Cygwin cygwin = inonit.system.cygwin.Cygwin.locate();
+			if (cygwin != null) {
+				return cygwin.toWindowsPath(value,true);
+			} else {
 				return value;
 			}
 		}
 
-		String getRhinoClasspath() {
+		String getRhinoClasspath() throws IOException {
 			String rv = System.getenv("JSH_RHINO_CLASSPATH");
 			if (rv == null) return null;
-			return toCygwin("-wp", rv);
+			return toWindowsPath(rv);
 		}
 
 		String getRhinoScript() {
