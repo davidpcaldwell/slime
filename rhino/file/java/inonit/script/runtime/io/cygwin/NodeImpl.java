@@ -152,12 +152,9 @@ class NodeImpl extends Filesystem.Node {
 		return directory.booleanValue();
 	}
 
-	private boolean isSoftlink() throws IOException {
+	boolean isSoftlink() throws IOException {
 		if (softlink == null) {
-			String output = parent.getCommandOutput("/bin/ls", new String[] { "-d", "--file-type", getScriptPath() });
-			if (output.length() == 0) throw new RuntimeException("No output for ls " + getScriptPath());
-			output = output.substring(0, output.length() - 1);
-			softlink = new Boolean( output.endsWith("@") );
+			softlink = new Boolean( parent.isSoftlink(this) );
 		}
 		return softlink.booleanValue();
 	}
@@ -167,75 +164,22 @@ class NodeImpl extends Filesystem.Node {
 			return false;
 		} else {
 			uncache();
-			if (isSoftlink()) {
-				return parent.shellCommand( "/bin/rm", new String[] { getScriptPath() } );
-			} else if (isDirectory()) {
-				return parent.shellCommand( "/bin/rm", new String[] { "-Rf", getScriptPath() } );
-			} else {
-				return parent.shellCommand( "/bin/rm", new String[] { getScriptPath() } );
-			}
+			return parent.delete(this);
 		}
 	}
 
 	public boolean mkdir() throws IOException {
 		uncache();
-		return parent.shellCommand("/bin/mkdir", new String[] { getScriptPath() });
+		return parent.mkdir(this);
 	}
 
 	public boolean mkdirs() throws IOException {
 		uncache();
-		return parent.shellCommand("/bin/mkdir", new String[] { "-p", getScriptPath() });
+		return parent.mkdirs(this);
 	}
 
 	public Filesystem.Node[] list(FilenameFilter pattern) throws IOException {
-		String output = parent.getCommandOutput("/bin/ls", new String[] { "-A", "--file-type", getScriptPath() });
-		ArrayList names = new ArrayList();
-		String name = "";
-		for (int i=0; i<output.length(); i++) {
-			if (output.charAt(i) == '\n') {
-				names.add( name );
-				name = "";
-			} else {
-				name += output.charAt(i);
-			}
-		}
-		ArrayList unfiltered = new ArrayList();
-		for (int i=0; i<names.size(); i++) {
-			String filename = (String)names.get(i);
-			if (filename.endsWith("/")) {
-				//	directory
-				String leafName = filename.substring(0, filename.length() - 1);
-				NodeImpl node = NodeImpl.createDirectory(parent, host, scriptPath, leafName);
-				unfiltered.add(node);
-			} else if (filename.endsWith("@")) {
-				//	softlink; could be directory, may not be
-				String leafName = filename.substring(0, filename.length() - 1);
-				NodeImpl node = NodeImpl.createLink(parent, scriptPath, leafName);
-				unfiltered.add(node);
-			} else if (filename.endsWith("|") || filename.endsWith(">") || filename.endsWith("=")) {
-				//	Ignore (FIFO, "door", and AF_UNIX socket, respectively)
-			} else {
-				//	ordinary file
-				NodeImpl node = NodeImpl.createFile(parent, host, scriptPath, filename);
-				unfiltered.add(node);
-			}
-		}
-		if (pattern == null) {
-			pattern = new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return true;
-				}
-			};
-		}
-		ArrayList rv = new ArrayList();
-		for (int i=0; i<unfiltered.size(); i++) {
-			NodeImpl node = (NodeImpl)unfiltered.get(i);
-			if (pattern.accept(node.getHostFile().getParentFile(), node.getHostFile().getName())) {
-				rv.add(node);
-			}
-		}
-		
-		return (Filesystem.Node[])rv.toArray(new Filesystem.Node[0]);
+		return parent.list(this, pattern);
 	}
 
 	public final OutputStream writeBinary(boolean append) throws IOException {

@@ -323,7 +323,7 @@ filesystems.os = new SystemFilesystem( Packages.inonit.script.runtime.io.Filesys
 if ( cygwin ) {
 	var $delegate;
 	if (cygwin.root && !cygwin.paths) {
-		$delegate = new Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem(cygwin.root)
+		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create(cygwin.root)
 	} else {
 		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create(cygwin.root,cygwin.paths)
 	}

@@ -167,11 +167,13 @@ try {
 			//	When running on Cygwin, use /tmp as default temporary directory rather than the Windows JDK/JRE default
 			if (!JSH_TMPDIR) JSH_TMPDIR = new Directory(os("/tmp"));
 
-			if (!env.JSH_LIBRARY_NATIVE && !JSH_HOME) {
-				console("WARNING: could not find Cygwin paths helper. Use JSH_LIBRARY_NATIVE to specify location");
-			} else {
-				JSH_LIBRARY_NATIVE = (env.JSH_LIBRARY_NATIVE) ? new Directory(os(env.JSH_LIBRARY_NATIVE)) : JSH_HOME.getDirectory("bin");
-			}
+			JSH_LIBRARY_NATIVE = (function() {
+				if (env.JSH_LIBRARY_NATIVE) {
+					return new Directory(os(env.JSH_LIBRARY_NATIVE));
+				} else if (JSH_HOME) {
+					return JSH_HOME.getDirectory("bin");
+				}
+			})();
 		}
 	})();
 
@@ -286,7 +288,11 @@ try {
 
 	if (platform.cygwin) {
 		command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
-		if (JSH_LIBRARY_NATIVE) {
+		//	TODO	check for existence of the executable?
+		if (!JSH_LIBRARY_NATIVE) {
+			console("WARNING: could not start Cygwin paths helper; could not find Cygwin native library path.");
+			console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
+		} else {
 			command.jvmProperty("cygwin.paths",JSH_LIBRARY_NATIVE.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
 		}
 	}

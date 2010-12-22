@@ -21,9 +21,9 @@ public class Subprocess {
 		public abstract void finished(int status);
 	}
 
-	private Process p;
+	private Command.Process p;
 
-	Subprocess(Process p) {
+	Subprocess(Command.Process p) {
 		this.p = p;
 	}
 	
