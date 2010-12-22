@@ -22,22 +22,33 @@ import java.lang.reflect.*;
 
 import inonit.script.runtime.io.*;
 import inonit.system.*;
+import inonit.system.cygwin.*;
 
 public class CygwinFilesystem extends Filesystem {
-	private Cygpath paths;
-	
 	public static CygwinFilesystem create(String root, String helper) {
 		CygwinFilesystem rv = new CygwinFilesystem();
+		Cygwin cygwin = Cygwin.create(new File(root));
 		try {
 			rv.paths = new HelperProcess(root, helper);
 		} catch (IOException e) {
-			rv.paths = new CygpathCommand(root);
+			rv.paths = new Subprocesses(cygwin);
 		}
+		rv.paths.initialize(new CachedCommands(cygwin));
 		return rv;
 	}
-	
-	public CygwinFilesystem(String root) {
-		this.paths = new CygpathCommand(root);
+
+	public static CygwinFilesystem create(String root) {
+		CygwinFilesystem rv = new CygwinFilesystem();
+		Cygwin cygwin = Cygwin.create(new File(root));
+		rv.paths = new Subprocesses(cygwin);
+		rv.paths.initialize(new CachedCommands(cygwin));
+		return rv;
+	}
+
+	private Implementation paths;
+	private Commands commands;
+
+	private CygwinFilesystem() {
 	}
 
 	public String toString() {
@@ -48,68 +59,126 @@ public class CygwinFilesystem extends Filesystem {
 		paths.destroy();
 	}
 	
-	private CygwinFilesystem() {
+	private static abstract class Commands {
+		private OperatingSystem os = OperatingSystem.get();
+
+		abstract String getWindowsPath(String unix) throws IOException;
+
+		String getCommandOutput(String command, String[] arguments) throws IOException {
+			String rv = "";
+			for (int i=0; i<1; i++) {
+				rv = os.getCommandOutput(getWindowsPath(command),arguments);
+				if (rv.length() > 0) return rv;
+			}
+			return rv;
+		}
+
+		boolean shellCommand(String command, String[] arguments) throws IOException {
+			return os.shellCommand(getWindowsPath(command), arguments);
+		}
 	}
 
-	private static abstract class Cygpath {
+	private static class CachedCommands extends Commands {
+		private HashMap<String,String> cache = new HashMap<String,String>();
+
+		private Cygwin cygwin;
+
+		CachedCommands(Cygwin cygwin) {
+			this.cygwin = cygwin;
+		}
+
+		String getWindowsPath(String unix) throws IOException {
+			if (cache.get(unix) == null) {
+				cache.put(unix, cygwin.toWindowsPath(unix, false) );
+			}
+			return cache.get(unix);
+		}
+	}
+
+	private static abstract class Implementation {
+		private Commands commands;
+
+		final void initialize(Commands commands) {
+			this.commands = commands;
+		}
+
+		Commands commands() {
+			return commands;
+		}
+
 		abstract String toUnixPath(String path) throws IOException;
 		abstract String toWindowsPath(String path) throws IOException;
+		abstract String[] list(NodeImpl node) throws IOException;
+
+		boolean isSoftlink(NodeImpl node) throws IOException {
+			//	TODO	Implement retries
+			String path = node.getScriptPath();
+			String output = commands.getCommandOutput("/bin/ls", new String[] { "-d", "--file-type", path });
+			if (output.length() == 0) throw new RuntimeException("No output for ls " + path);
+			output = output.substring(0, output.length() - 1);
+			return output.endsWith("@");
+		}
+
+		boolean delete(NodeImpl node) throws IOException {
+			if (node.isSoftlink()) {
+				return commands.shellCommand( "/bin/rm", new String[] { node.getScriptPath() } );
+			} else if (node.isDirectory()) {
+				return commands.shellCommand( "/bin/rm", new String[] { "-Rf", node.getScriptPath() } );
+			} else {
+				return commands.shellCommand( "/bin/rm", new String[] { node.getScriptPath() } );
+			}
+		}
+
+		boolean mkdir(NodeImpl node) throws IOException {
+			return commands.shellCommand("/bin/mkdir", new String[] { node.getScriptPath() });
+		}
+
+		boolean mkdirs(NodeImpl node) throws IOException {
+			return commands.shellCommand("/bin/mkdir", new String[] { "-p", node.getScriptPath() });
+		}
 
 		abstract void destroy();
 	}
 	
-	private boolean shellCommandImpl(String path, String[] arguments) throws IOException {
-		return OperatingSystem.get().shellCommand(path, arguments);
-	}
-	
-	private static class CygpathCommand extends Cygpath {
-		private String root;
+	private static class Subprocesses extends Implementation {
+		private Cygwin cygwin;
 		
-		CygpathCommand(String root) {
-			this.root = root;
+		Subprocesses(Cygwin cygwin) {
+			this.cygwin = cygwin;
 		}
 
 		public String toString() {
-			return getClass().getName() + " root=" + root;
-		}
-		
-		private String getCygpathOutput(String[] arguments) throws IOException {
-			int counter = 0;
-			while(counter < 10) {
-				String s = OperatingSystem.get().getCommandOutput(
-					new File(new File(this.root), "bin/cygpath").getCanonicalPath(),
-					arguments
-				);
-				if (s.length() > 0) {
-					//	Strip newline output by cygpath
-					s = s.substring(0, s.length() - 1);
-					return s;
-				} else {
-					counter++;
-				}
-			}
-			String message = "";
-			for (int i=0; i<arguments.length; i++) {
-				message += arguments[i];
-				if (i+1 != arguments.length)
-					message += "|";
-			}
-			throw new IOException("cygpath failed: arguments=" + message);
+			return getClass().getName() + " cygwin=" + cygwin;
 		}
 		
 		String toUnixPath(String path) throws IOException {
-			return getCygpathOutput(new String[] { "-u", path });
+			return this.cygwin.toUnixPath(path,false);
 		}
 		
 		String toWindowsPath(String path) throws IOException {
-			return getCygpathOutput(new String[] { "-w", path });
+			return this.cygwin.toWindowsPath(path,false);
+		}
+
+		String[] list(NodeImpl node) throws IOException {
+			String output = commands().getCommandOutput("/bin/ls", new String[] { "-A", "--file-type", node.getScriptPath() });
+			ArrayList names = new ArrayList();
+			String name = "";
+			for (int i=0; i<output.length(); i++) {
+				if (output.charAt(i) == '\n') {
+					names.add( name );
+					name = "";
+				} else {
+					name += output.charAt(i);
+				}
+			}
+			return (String[])names.toArray(new String[0]);
 		}
 
 		void destroy() {
 		}
 	}
 	
-	private static class HelperProcess extends Cygpath {
+	private static class HelperProcess extends Implementation {
 		private InputStream output;
 		private PrintWriter input;
 
@@ -190,9 +259,9 @@ public class CygwinFilesystem extends Filesystem {
 			this.output = stdout.getInputStream();
 			this.input = new PrintWriter(stdin.getOutputStream(), true);
 		}
-		
-		synchronized String toUnixPath(String path) throws IOException {
-			input.print("u" + path + "\n");
+
+		synchronized String getResponse(String request) throws IOException {
+			input.print(request + "\n");
 			input.flush();
 			String rv = "";
 			char c;
@@ -202,15 +271,16 @@ public class CygwinFilesystem extends Filesystem {
 			return rv;
 		}
 		
+		synchronized String toUnixPath(String path) throws IOException {
+			return getResponse("u" + path);
+		}
+		
 		synchronized String toWindowsPath(String path) throws IOException {
-			input.print("w" + path + "\n");
-			input.flush();
-			String rv = "";
-			char c;
-			while((c = (char)output.read()) != '\n') {
-				rv += c;
-			}
-			return rv;
+			return getResponse("w" + path);
+		}
+
+		String[] list(NodeImpl directory) throws IOException {
+			return getResponse("l" + directory.getScriptPath()).split("\\|");
 		}
 
 		void destroy() {
@@ -222,12 +292,61 @@ public class CygwinFilesystem extends Filesystem {
 	//	Methods used by NodeImpl
 	//
 	
-	String getCommandOutput(String path, String[] arguments) throws IOException {
-		return OperatingSystem.get().getCommandOutput(paths.toWindowsPath(path), arguments);
+	boolean isSoftlink(NodeImpl node) throws IOException {
+		return paths.isSoftlink(node);
 	}
-	
-	boolean shellCommand(String path, String[] arguments) throws IOException {
-		return shellCommandImpl(paths.toWindowsPath(path), arguments);
+
+	boolean delete(NodeImpl node) throws IOException {
+		return paths.delete(node);
+	}
+
+	public boolean mkdir(NodeImpl node) throws IOException {
+		return paths.mkdir(node);
+	}
+
+	public boolean mkdirs(NodeImpl node) throws IOException {
+		return paths.mkdirs(node);
+	}
+
+	public Filesystem.Node[] list(NodeImpl node, FilenameFilter pattern) throws IOException {
+		String[] names = paths.list(node);
+		ArrayList unfiltered = new ArrayList();
+		for (int i=0; i<names.length; i++) {
+			String filename = (String)names[i];
+			if (filename.endsWith("/")) {
+				//	directory
+				String leafName = filename.substring(0, filename.length() - 1);
+				NodeImpl n = NodeImpl.createDirectory(this, node.getHostFile(), node.getScriptPath(), leafName);
+				unfiltered.add(n);
+			} else if (filename.endsWith("@")) {
+				//	softlink; could be directory, may not be
+				String leafName = filename.substring(0, filename.length() - 1);
+				NodeImpl n = NodeImpl.createLink(this, node.getScriptPath(), leafName);
+				unfiltered.add(n);
+			} else if (filename.endsWith("|") || filename.endsWith(">") || filename.endsWith("=")) {
+				//	Ignore (FIFO, "door", and AF_UNIX socket, respectively)
+			} else {
+				//	ordinary file
+				NodeImpl n = NodeImpl.createFile(this, node.getHostFile(), node.getScriptPath(), filename);
+				unfiltered.add(n);
+			}
+		}
+		if (pattern == null) {
+			pattern = new FilenameFilter() {
+				public boolean accept(File dir, String name) {
+					return true;
+				}
+			};
+		}
+		ArrayList rv = new ArrayList();
+		for (int i=0; i<unfiltered.size(); i++) {
+			NodeImpl n = (NodeImpl)unfiltered.get(i);
+			if (pattern.accept(n.getHostFile().getParentFile(), n.getHostFile().getName())) {
+				rv.add(n);
+			}
+		}
+
+		return (Filesystem.Node[])rv.toArray(new Filesystem.Node[0]);
 	}
 
 	File toHostFileImpl(String path) throws IOException {

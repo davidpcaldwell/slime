@@ -16,6 +16,9 @@
 #include <iostream>
 #include <windows.h>
 #include <sys/cygwin.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fts.h>
 
 int main() {
 	char buf[MAX_PATH+2];
@@ -36,6 +39,36 @@ int main() {
 				char ubuf[MAX_PATH+1];
 				cygwin_conv_to_posix_path(buf+1, ubuf);
 				std::cout << ubuf << "\n";
+				break;
+			case 'l':
+				char* paths[2];
+				paths[0] = buf+1;
+				paths[1] = NULL;
+				FTS* fts = fts_open(paths,FTS_LOGICAL,NULL);
+				fts_read(fts);
+				FTSENT* dir = fts_children(fts,NULL);
+				while(dir != NULL)
+				{
+					if (dir->fts_info == FTS_DP) {
+						continue;
+					}
+					std::cout << dir->fts_name;
+					if (dir->fts_info == FTS_SL)
+					{
+						std::cout << "@";
+					}
+					else if (dir->fts_info == FTS_D)
+					{
+						std::cout << "/";
+					}
+					dir = dir->fts_link;
+					if (dir != NULL)
+					{
+						std::cout << "|";
+					}
+				}
+				fts_close(fts);
+				std::cout << "\n";
 				break;
 			default:
 				std::cerr << "Illegal argument:" << buf << "\n";
