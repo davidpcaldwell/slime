@@ -13,12 +13,14 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.pathname = $context.api.file.filesystem.$jsh.Pathname($context.$script);
-$exports.file = $exports.pathname.file;
-$exports.arguments = $context.api.java.toJsArray($context.$arguments, function(s) { return String(s); });
-$exports.getRelativePath = function(path) {
-	return $exports.file.getRelativePath(path);
+if ($context.$script) {
+	$exports.pathname = $context.api.file.filesystem.$jsh.Pathname($context.$script);
+	$exports.file = $exports.pathname.file;
+	$exports.getRelativePath = function(path) {
+		return $exports.file.getRelativePath(path);
+	}
 }
+$exports.arguments = $context.api.java.toJsArray($context.$arguments, function(s) { return String(s); });
 $exports.addClasses = function(pathname) {
 	if (!pathname.directory && !pathname.file) {
 		throw "Classes not found: " + pathname;

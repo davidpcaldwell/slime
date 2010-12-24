@@ -34,6 +34,30 @@ public class Module {
 			}
 		}
 
+		public static Code create(final Source source, final String main) {
+			return new Module.Code() {
+//				public String toString() {
+//					try {
+//						String rv = getClass().getName() + ": base=" + file.getCanonicalPath() + " main=" + main;
+//						return rv;
+//					} catch (IOException e) {
+//						return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
+//					}
+//				}
+
+				public Module.Code.Scripts getScripts() {
+					return Module.Code.Scripts.create(
+						source,
+						main
+					);
+				}
+
+				public Module.Code.Classes getClasses() {
+					return Module.Code.Classes.create(source, "$jvm/classes");
+				}
+			};
+		}
+
 		public static Code slime(final File file, final String main) {
 			return new Module.Code() {
 				public String toString() {
@@ -97,6 +121,14 @@ public class Module {
 				return new Source() {
 					public InputStream getResourceAsStream(String path) {
 						return loader.getResourceAsStream(path);
+					}
+				};
+			}
+
+			public static Source create(final ClassLoader loader, final String prefix) {
+				return new Source() {
+					public InputStream getResourceAsStream(String path) {
+						return loader.getResourceAsStream(prefix + path);
 					}
 				};
 			}
