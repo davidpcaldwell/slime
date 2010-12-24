@@ -86,12 +86,7 @@ slime.build.jsh = function(from,build) {
 	});
 
 	toCopy.forEach( function(item) {
-		var topath = build.getRelativePath(item.path);
-		if (item.directory) {
-			topath.createDirectory();
-		} else {
-			topath.write(item.node.read(jsh.file.Streams.binary), { recursive: true });
-		}
+		build.getRelativePath(item.path).write(item.node.read(jsh.file.Streams.binary), { recursive: true });
 	} );
 
 	if (from.getSubdirectory("java")) {
