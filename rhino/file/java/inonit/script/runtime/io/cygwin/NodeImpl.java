@@ -102,6 +102,10 @@ class NodeImpl extends Filesystem.Node {
 	private Boolean softlink;
 	private Boolean exists;
 
+	public String toString() {
+		return getClass().getName() + " scriptPath = " + scriptPath + " host = " + host;
+	}
+
 	private File toHostFileImpl(String scriptPath) throws IOException {
 		return parent.toHostFileImpl(scriptPath);
 	}
