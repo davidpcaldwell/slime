@@ -346,6 +346,11 @@ var jsapi_jsh = function() {
 console("Running JSAPI ...");
 jsapi_jsh();
 
+console("Creating tools ...");
+var JSH_TOOLS = new File(JSH_HOME,"tools");
+JSH_TOOLS.mkdir();
+copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
+
 var bases = ["js","loader","rhino","jsh"];
 
 var JSH_SRC = new File(JSH_HOME,"src");
