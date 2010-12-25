@@ -326,7 +326,10 @@ var jsapi_jsh = function() {
 	if (platform.cygwin) {
 		JSAPI_DOC = platform.cygwin.cygpath.unix(JSAPI_DOC);
 	}
-	command.add("-doc",JSAPI_DOC);
+	if (getSetting("jsh.build.nodoc")) {		
+	} else {
+		command.add("-doc",JSAPI_DOC);
+	}
 
 	var subenv = getenv();
 	if (env.JSH_BUILD_DEBUG) {
@@ -343,8 +346,12 @@ var jsapi_jsh = function() {
 		throw "Failed: " + command.join(" ");
 	}
 }
-console("Running JSAPI ...");
-jsapi_jsh();
+
+if (getSetting("jsh.build.nounit") && getSetting("jsh.build.nodoc")) {
+} else {
+	console("Running JSAPI ...");
+	jsapi_jsh();
+}
 
 console("Creating tools ...");
 var JSH_TOOLS = new File(JSH_HOME,"tools");
