@@ -137,8 +137,15 @@ public class Main {
 		}
 
 		ClassLoader getMainClassLoader() {
-			ClassLoader loader = new java.net.URLClassLoader(new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") });
-			return loader;
+			//	In earlier versions of the launcher and packager, Rhino was packaged at the following location inside the packaged
+			//	JAR file. However, for some reason, loading Rhino using the below ClassLoader did not work. As a workaround, the
+			//	packager now unzips Rhino and we simply load it from the system class loader.
+			try {
+				Class.forName("org.mozilla.javascript.Context");
+				return ClassLoader.getSystemClassLoader();
+			} catch (ClassNotFoundException e) {
+				return new java.net.URLClassLoader(new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") });
+			}
 		}
 
 		void addScriptArguments(List<String> strings) {

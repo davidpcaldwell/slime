@@ -1,9 +1,13 @@
+var UNZIP_RHINO_WHEN_PACKAGING = true;
+
 var parameters = jsh.script.getopts({
 	options: {
 		jsh: jsh.file.Pathname
 		,script: jsh.file.Pathname
 		//	module format is name=pathname
 		,module: jsh.script.getopts.ARRAY(String)
+		,library: jsh.script.getopts.ARRAY(jsh.file.Pathname)
+		,directory: false
 		,to: jsh.file.Pathname
 	}
 });
@@ -19,13 +23,23 @@ var compile = function(args) {
 	);
 }
 
-var to = parameters.options.to.createDirectory({ ifExists: function(d) { d.remove(); return true; }, recursive: true });
-
-jsh.file.unzip({ zip: parameters.options.jsh.directory.getRelativePath("lib/jsh.jar").file, to: to });
-
-to.getRelativePath("main.jsh").write(parameters.options.script.file.read(jsh.file.Streams.binary));
+var to = (function() {
+	if (parameters.options.directory) return parameters.options.to.createDirectory({ ifExists: function(d) { d.remove(); return true; }, recursive: true });
+	return jsh.file.filesystems.os.Pathname(String(jsh.shell.properties.java.io.tmpdir)).directory.createTemporary({ directory: true });
+})();
 
 var JSH = parameters.options.jsh.directory;
+
+if (UNZIP_RHINO_WHEN_PACKAGING) {
+	jsh.file.unzip({ zip: JSH.getFile("lib/js.jar"), to: to });
+}
+to.getRelativePath("$jsh/rhino.jar").write(JSH.getFile("lib/js.jar").read(jsh.file.Streams.binary), { recursive: true });
+
+jsh.file.unzip({ zip: JSH.getFile("jsh.jar"), to: to });
+to.getRelativePath("$jsh/api.rhino.js").write(JSH.getFile("script/launcher/api.rhino.js").read(String), { recursive: true });
+to.getRelativePath("$jsh/jsh.rhino.js").write(JSH.getFile("script/launcher/jsh.rhino.js").read(String), { recursive: true });
+
+jsh.file.unzip({ zip: JSH.getFile("lib/jsh.jar"), to: to });
 
 to.getRelativePath("$jsh/loader.js").write(JSH.getFile("script/platform/literal.js").read(String), { recursive: true });
 to.getRelativePath("$jsh/rhino.js").write(JSH.getFile("script/rhino/literal.js").read(String), { recursive: true });
@@ -38,13 +52,25 @@ JSH.getSubdirectory("modules").list().forEach( function(module) {
 	jsh.file.unzip({ zip: module, to: destination });
 } );
 
+var libraries = [].concat(parameters.options.library);
+libraries.forEach( function(library,index) {
+	to.getRelativePath("$libraries/" + String(index) + ".jar").write( library.file.read(jsh.file.Streams.binary), { recursive: true });
+} );
+
 parameters.options.module.forEach( function(module) {
 	var tokens = module.split("=");
 	var name = tokens[0];
 	var pathname = jsh.file.Pathname(tokens[1]);
 	if (pathname.directory) {
-		slime.build.jsh(pathname.directory,to.getRelativePath("$modules/" + name).createDirectory({recursive: true}));
+		slime.build.jsh(pathname.directory,to.getRelativePath("$modules/" + name).createDirectory({recursive: true}
+));
 	} else {
 		throw "Unimplemented: bundle slime format module.";
 	}
 } );
+
+to.getRelativePath("main.jsh").write(parameters.options.script.file.read(jsh.file.Streams.binary));
+
+if (!parameters.options.directory) {
+	jsh.file.zip({ from: to.pathname, to: parameters.options.to });
+}
