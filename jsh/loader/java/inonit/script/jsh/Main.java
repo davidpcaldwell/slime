@@ -38,8 +38,11 @@ public class Main {
 		Shell.Installation installation = null;
 		Shell.Invocation invocation = null;
 		if (System.getProperty("jsh.packaged") != null) {
-
 			installation = new Shell.Installation() {
+				public String toString() {
+					return getClass().getName() + " [packaged]";
+				}
+
 				public Shell.Script getPlatformLoader() {
 					return Shell.Script.create("loader.js", ClassLoader.getSystemResourceAsStream("$jsh/loader.js"));
 				}
@@ -100,6 +103,13 @@ public class Main {
 				throw new CheckedException("Filename: " + scriptPath + " is a directory");
 			}
 			installation = new Shell.Installation() {
+				public String toString() {
+					return getClass().getName() 
+						+ " jsh.library.scripts=" + System.getProperty("jsh.library.scripts")
+						+ " jsh.library.scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
+					;
+				}
+
 				File getFile(String prefix, String name) {
 					String propertyName = "jsh.library.scripts." + prefix.replace('/', '.');
 					if (System.getProperty(propertyName) != null) {
