@@ -28,13 +28,9 @@ var $pwd = $context.$pwd;
 //	if it exists.
 var cygwin = $context.cygwin;
 
-//	TODO	Get rid of this
-var $script = {};
-
 var streams = $context.streams;
 var deprecate = $context.deprecate;
 var isJavaType = $context.isJavaType;
-//var Pathname = $context.Pathname;
 
 var Streams = streams.Streams;
 
@@ -335,21 +331,5 @@ if ( cygwin ) {
 	}
 }
 
-var defaults = {};
-//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through $script.setFilesystem
-defaults.filesystem = (filesystems.cygwin) ? filesystems.cygwin : filesystems.os;
-
-this.__defineGetter__("workingDirectory", function() {
-	if ($pwd) {
-		var osdir = filesystems.os.Pathname($pwd);
-		if (defaults.filesystem == filesystems.cygwin) {
-			osdir = filesystems.cygwin.toUnix(osdir);
-		}
-		return osdir.directory;
-	}
-} );
-
-$exports.Filesystem = Filesystem;
 $exports.filesystems = filesystems;
-$exports.defaults = defaults;
-$exports.__defineGetter__("workingDirectory", this.__lookupGetter__("workingDirectory"));
+$exports.Filesystem = Filesystem;

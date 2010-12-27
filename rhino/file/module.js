@@ -20,32 +20,6 @@ var stdio = ($context.stdio) ? $context.stdio : {
 }
 
 if (!$context.api) throw "Missing 'api' member of context";
-//	TODO	remove
-var $load = function(context,path) {
-	return $loader.script(path,context);
-};
-var loadTo = function(to,context,name) {
-	var getter = function(name) {
-		return function() {
-			return loaded[name];
-		}
-	};
-	var setter = function(name) {
-		return function(v) {
-			loaded[name] = v;
-		}
-	};
-	var loaded = $load(context,name);
-	for (var x in loaded) {
-		if (loaded.__lookupGetter__(x)) {
-			to.__defineGetter__(x, getter(x));
-			to.__defineSetter__(x, setter(x));
-		} else {
-			to[x] = loaded[x];
-		}
-	}
-};
-
 var streams = $loader.script("streams.js", {
 	stdio: stdio,
 	isJavaType: $context.api.java.isJavaType,
@@ -58,15 +32,17 @@ var streams = $loader.script("streams.js", {
 });
 $exports.Streams = streams.Streams;
 
+var warning = function(message) {
+	stdio.$err.println(message);
+	debugger;
+}
+
 var context = {
 	deprecate: $api.deprecate,
 	experimental: $api.experimental,
 	defined: $context.api.js.defined,
 	fail: $context.api.java.fail,
-	warning: function(message) {
-		stdio.$err.println(message);
-		debugger;
-	},
+	warning: warning,
 	constant: $context.api.js.constant,
 	isJavaType: $context.api.java.isJavaType,
 
@@ -78,47 +54,75 @@ var context = {
 	Streams: streams.Streams
 }
 
-var scope = {};
-loadTo(scope, context, "os.js");
-context.defaults = scope.defaults;
-loadTo(scope, context, "filesystem.js");
-context.Pathname = scope.Pathname;
-context.Searchpath = scope.Searchpath;
+var globals = {};
+var defaults = {};
 
-var zip = $load({
-	Streams: streams.Streams,
-	Pathname: scope.Pathname
-}, "zip.js");
+var os = $loader.script("os.js", new function() {
+	this.$pwd = $context.$pwd;
+	this.cygwin = $context.cygwin;
+	this.streams = streams;
+	this.deprecate = $api.deprecate;
+	this.isJavaType = $context.api.java.isJavaType;
+	this.defined = $context.api.js.defined;
 
-var exportProperty = function(name) {
-	$exports.__defineGetter__(name, function() {
-		return scope[name];
+	//	These next three methods are defined this way because of dependencies on filesystem.js: presumably these are
+	//	cross-dependencies
+	this.__defineGetter__("Searchpath", function() {
+		return globals.Searchpath;
 	});
-	$exports.__defineSetter__(name, function(v) {
-		scope[name] = v;
+	this.__defineGetter__("Pathname", function() {
+		return globals.Pathname;
 	});
-}
-exportProperty("cygwin");
-$api.deprecate($exports,"cygwin");
+	this.__defineGetter__("addFinalizer", function() {
+		return globals.addFinalizer;
+	});
+});
 
-exportProperty("filesystems");
+$exports.filesystems = os.filesystems;
+
+//	Possibly used for initial attempt to produce HTTP filesystem, for example
+$exports.Filesystem = os.Filesystem;
+$api.experimental($exports,"Filesystem");
+
+//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
+defaults.filesystem = (os.filesystems.cygwin) ? os.filesystems.cygwin : os.filesystems.os;
+
+var workingDirectory = function() {
+	if ($context.$pwd) {
+		var osdir = os.filesystems.os.Pathname($context.$pwd);
+		if (defaults.filesystem == os.filesystems.cygwin) {
+			osdir = os.filesystems.cygwin.toUnix(osdir);
+		}
+		return osdir.directory;
+	}
+};
+$exports.__defineGetter__("workingDirectory", workingDirectory);
+
+//	TODO	figure out how to make this work properly
 $exports.__defineGetter__("filesystem", function() {
-	return scope.defaults.filesystem;
+	return defaults.filesystem;
 });
 $exports.__defineSetter__("filesystem", function(v) {
-	scope.defaults.filesystem = v;
+	defaults.filesystem = v;
 });
 
-$exports.warning = scope.warning;
-$api.deprecate($exports, "warning");
+var filesystem = $loader.script("filesystem.js", {
+	defined: $context.api.js.defined,
+	defaults: defaults,
+	constant: $context.api.js.constant,
+	deprecate: $api.deprecate,
+	experimental: $api.experimental,
+	fail: $context.api.java.fail,
+	Streams: streams.Streams,
+	warning: warning
+});
 
-$exports.Pathname = scope.Pathname;
-$exports.Searchpath = scope.Searchpath;
-exportProperty("workingDirectory");
+globals.Pathname = filesystem.Pathname;
+globals.Searchpath = filesystem.Searchpath;
+globals.addFinalizer = filesystem.addFinalizer;
 
-$exports.Filesystem = scope.Filesystem;
-//	Possibly used for initial attempt to produce HTTP filesystem, for example
-$api.experimental($exports,"Filesystem");
+$exports.Pathname = filesystem.Pathname;
+$exports.Searchpath = filesystem.Searchpath;
 
 $exports.java = new function() {
 	this.adapt = function(object) {
@@ -145,34 +149,10 @@ $exports.java = new function() {
 	}
 }
 
-$exports.$java = $exports.java;
-$api.deprecate($exports,"$java");
-
-if (!$exports.warning) {
-	$exports.warning = function(message) {
-		debugger;
-		err.println(message);
-	}
-}
-$api.deprecate($exports,"warning");
+var zip = $loader.script("zip.js", {
+	Streams: streams.Streams,
+	Pathname: filesystem.Pathname
+});
 
 $exports.zip = zip.zip;
 $api.experimental($exports, "zip");
-
-$exports.$script = new function() {
-	this.setFilesystem = function(fs) {
-		scope.filesystem = fs;
-	}
-	$api.deprecate(this, "setFilesystem");
-	this.peers = new function() {
-		this.Reader = streams.Reader;
-		$api.deprecate(this, "Reader");
-		this.Writer = streams.Writer;
-		$api.deprecate(this, "Writer");
-	}
-	this.__defineGetter__("filesystem", function() {
-		return scope.filesystem;
-	});
-	$api.deprecate(this,"filesystem");
-}
-$api.deprecate($exports,"$script");
