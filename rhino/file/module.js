@@ -19,6 +19,14 @@ var stdio = ($context.stdio) ? $context.stdio : {
 	$out: Packages.java.lang.System.out
 }
 
+var warning = function(message) {
+	stdio.$err.println(message);
+	debugger;
+}
+
+var globals = {};
+var defaults = {};
+
 if (!$context.api) throw "Missing 'api' member of context";
 var streams = $loader.script("streams.js", {
 	stdio: stdio,
@@ -28,17 +36,9 @@ var streams = $loader.script("streams.js", {
 		java: $context.api.java
 	},
 	deprecate: $context.api.js.deprecate,
-	$java: new Packages.inonit.script.runtime.io.Streams()
+	$java: $context._streams
 });
 $exports.Streams = streams.Streams;
-
-var warning = function(message) {
-	stdio.$err.println(message);
-	debugger;
-}
-
-var globals = {};
-var defaults = {};
 
 var os = $loader.script("os.js", new function() {
 	this.$pwd = $context.$pwd;

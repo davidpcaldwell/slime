@@ -14,7 +14,7 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html>
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Filesystem API</title>
 </head>
@@ -23,6 +23,11 @@ END LICENSE
 	<div>
 		<h1>Context</h1>
 		<ul>
+			<li class="value">
+				<div class="name">_streams</div>
+				<span class="type">JavaClass inonit.script.rhino.runtime.io.Streams (from loader/rhino)</span>
+				<span></span>
+			</li>
 			<li class="object">
 				<div class="name">api</div>
 				<div class="label">has properties:</div>
@@ -65,6 +70,49 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
+		<script type="application/x.jsapi#context">
+			new function() {
+				this._streams = new Packages.inonit.script.runtime.io.Streams();
+				this.api = new function() {
+					var API = this;
+					this.js = $jsapi.module(new function() {
+						this.$flag = {};
+						this.$flag.warning = function(access) {
+							if (access.reason == API.js.deprecate) {
+								var message = "Attempt to access deprecated property " + access.name + " of " + access.target;
+								Packages.java.lang.System.err.println("WARNING: " + message);
+								debugger;
+							} else if (access.reason == API.js.experimental) {
+								var message = "Property " + access.name + " of " + access.target + " is experimental.";
+								Packages.java.lang.System.err.println("WARNING: " + message);
+								debugger;
+							} else {
+								var message = "Attempt to access property " + access.name + " of " + access.target;
+								Packages.java.lang.System.err.println("WARNING: " + message);
+								debugger;
+							}
+						}
+					}, "public/slime/js/object");
+					this.java = $jsapi.module({
+						classLoader: $host.getClassLoader()
+					}, "public/slime/rhino/host");
+				}
+				var System = Packages.java.lang.System;
+				if (System.getProperty("cygwin.root")) {
+					this.cygwin = {
+						root: String( System.getProperty("cygwin.root") )
+					};
+					if (System.getProperty("cygwin.paths")) {
+						//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+						//	the SDK server
+						//	TODO	check this
+						this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+					}
+				}
+				this.$pwd = jsh.shell.properties.user.dir;
+				this.addFinalizer = jsh.loader.addFinalizer;
+			}
+		</script>
 	</div>
 	<div>
 		<h1>Exports</h1>
@@ -115,6 +163,28 @@ END LICENSE
 												<span class="type">object</span> An object containing properties corresponding to the properties
 												in the Java properties file.
 											</div>
+											<script type="application/x.jsapi#tests" jsapi:id="Properties">
+												scope.scenario( new function() {
+													var buffer;
+
+													this.name = "java.util.Properties";
+													this.initialize = function() {
+														var p = new Packages.java.util.Properties();
+														buffer = new module.Streams.binary.Buffer();
+														p.put("yes", "i do");
+														p.put("laptop", "inonit");
+														p.put("laptop.manufacturer", "dell");
+														p.store(buffer.$getOutputStream(), "No comment!");
+														buffer.close();
+													}
+													this.execute = function(scope) {
+														var props = buffer.readBinary().asProperties();
+														scope.test( props.yes == "i do" );
+														scope.test( props.laptop == "inonit" );
+														scope.test( props.laptop.manufacturer == "dell" );
+													}
+												} );
+											</script>
 										</li>
 									</ul>
 								</div>
@@ -319,6 +389,31 @@ END LICENSE
 						<span>The standard error stream.</span>
 					</li>
 				</ul>
+				<script type="application/x.jsapi#scope">
+					var streamdir;
+				</script>
+				<script type="application/x.jsapi#initialize">
+					var hostdir = new Packages.java.io.File($java.io.newTemporaryDirectory(), "streamtests");
+					hostdir.mkdirs();
+					var fileA = new Packages.java.io.File(hostdir, "a");
+					var aWriter = new Packages.java.io.PrintWriter( new Packages.java.io.FileWriter( fileA ) );
+					aWriter.print("Hello, World\n");
+					aWriter.print("Hello, DOS World\r\n");
+					aWriter.print("Finished.");
+					aWriter.flush();
+					aWriter.close();
+					streamdir = module.filesystem.$unit.Pathname(toNode(hostdir)).directory;
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
+					var fileA = streamdir.getFile("a");
+					var text = fileA.read(module.Streams.text);
+					var lines = [];
+					text.readLines( function(line) {
+						lines.push(line);
+					}, { ending: "\n" } );
+					scope.test( lines.length == 3 );
+					scope.test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
+				</script>
 			</li>
 			<li class="object">
 				<div class="name">filesystems</div>
@@ -925,55 +1020,12 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#context">
-			new function() {
-				this.api = new function() {
-					var API = this;
-					this.js = $jsapi.module(new function() {
-						this.$flag = {};
-						this.$flag.warning = function(access) {
-							if (access.reason == API.js.deprecate) {
-								var message = "Attempt to access deprecated property " + access.name + " of " + access.target;
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							} else if (access.reason == API.js.experimental) {
-								var message = "Property " + access.name + " of " + access.target + " is experimental.";
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							} else {
-								var message = "Attempt to access property " + access.name + " of " + access.target;
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							}
-						}
-					}, "public/slime/js/object");
-					this.java = $jsapi.module({
-						classLoader: $host.getClassLoader()
-					}, "public/slime/rhino/host");
-				}
-				var System = Packages.java.lang.System;
-				if (System.getProperty("cygwin.root")) {
-					this.cygwin = {
-						root: String( System.getProperty("cygwin.root") )
-					};
-					if (System.getProperty("cygwin.paths")) {
-						//	Using the paths helper currently does not seem to work in the embedded situation when running inside
-						//	the SDK server
-						//	TODO	check this
-						this.cygwin.paths = String( System.getProperty("cygwin.paths") );
-					}
-				}
-				this.$pwd = jsh.shell.properties.user.dir;
-				this.addFinalizer = jsh.loader.addFinalizer;
-			}
-		</script>
 		<script type="application/x.jsapi#scope"><![CDATA[
-		]]></script>
-		<script type="application/x.jsapi#tests"><![CDATA[
 			var toNode = function(jfile) {
 				return module.filesystem.$unit.getNode(jfile);
 			}
-
+		]]></script>
+		<script type="application/x.jsapi#tests"><![CDATA[
 			var SCOPE = this;
 
 			var interfaceTests = function(scope,context) {
@@ -1425,56 +1477,6 @@ END LICENSE
 			if (filesystems.cygwin) {
 				createTests(scope,filesystems.cygwin);
 			}
-			scope.scenario( new function() {
-				this.name = "Stream tests";
-
-				var streamdir;
-
-				this.initialize = function() {
-					var hostdir = new Packages.java.io.File($java.io.newTemporaryDirectory(), "streamtests");
-					hostdir.mkdirs();
-					var fileA = new Packages.java.io.File(hostdir, "a");
-					var aWriter = new Packages.java.io.PrintWriter( new Packages.java.io.FileWriter( fileA ) );
-					aWriter.print("Hello, World\n");
-					aWriter.print("Hello, DOS World\r\n");
-					aWriter.print("Finished.");
-					aWriter.flush();
-					aWriter.close();
-					streamdir = module.filesystem.$unit.Pathname(toNode(hostdir)).directory;
-				}
-
-				this.execute = function(scope) {
-					var fileA = streamdir.getFile("a");
-					var text = fileA.read(module.Streams.text);
-					var lines = [];
-					text.readLines( function(line) {
-						lines.push(line);
-					}, { ending: "\n" } );
-					scope.test( lines.length == 3 );
-					scope.test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
-
-					scope.scenario( new function() {
-						var buffer;
-
-						this.name = "java.util.Properties";
-						this.initialize = function() {
-							var p = new Packages.java.util.Properties();
-							buffer = new module.Streams.binary.Buffer();
-							p.put("yes", "i do");
-							p.put("laptop", "inonit");
-							p.put("laptop.manufacturer", "dell");
-							p.store(buffer.$getOutputStream(), "No comment!");
-							buffer.close();
-						}
-						this.execute = function(scope) {
-							var props = buffer.readBinary().asProperties();
-							scope.test( props.yes == "i do" );
-							scope.test( props.laptop == "inonit" );
-							scope.test( props.laptop.manufacturer == "dell" );
-						}
-					} );
-				}
-			} );
 		]]></script>
 	</div>
 </body>

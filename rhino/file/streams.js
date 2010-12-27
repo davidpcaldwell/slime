@@ -17,6 +17,13 @@ var InputStream = function(peer) {
 	this.$getInputStream = function() {
 		return peer;
 	}
+	$api.deprecate(this,"$getInputStream");
+
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
+	};
 
 	this.close = function() {
 		peer.close();
@@ -39,7 +46,8 @@ var InputStream = function(peer) {
 
 	this.characters = this.character;
 	$context.deprecate(this, "characters");
-}
+};
+
 var OutputStream = function(peer) {
 	this.$getOutputStream = function() {
 		return peer;
@@ -48,7 +56,8 @@ var OutputStream = function(peer) {
 	this.close = function() {
 		peer.close();
 	}
-}
+};
+
 var Reader = function(peer) {
 	this.$getReader = function() {
 		return peer;

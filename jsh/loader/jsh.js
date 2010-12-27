@@ -132,6 +132,9 @@ this.jsh = new function() {
 
 	new function() {
 		var context = {};
+
+		context._streams = new Packages.inonit.script.runtime.io.Streams();
+
 		context.api = {
 			js: js,
 			java: java
