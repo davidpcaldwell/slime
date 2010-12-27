@@ -28,17 +28,9 @@ var globals = {};
 var defaults = {};
 
 if (!$context.api) throw "Missing 'api' member of context";
-var streams = $loader.script("streams.js", {
-	stdio: stdio,
-	isJavaType: $context.api.java.isJavaType,
-	api: {
-		js: $context.api.js,
-		java: $context.api.java
-	},
-	deprecate: $context.api.js.deprecate,
-	$java: $context._streams
-});
+var streams = $context.api.io;
 $exports.Streams = streams.Streams;
+$api.deprecate($exports,"Streams");
 
 var os = $loader.script("os.js", new function() {
 	this.$pwd = $context.$pwd;

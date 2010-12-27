@@ -3,40 +3,321 @@
 	<title></title>
 </head>
 <body>
-	<script type="application/x.jsapi#context">
-		new function() {
-			var java = $jsapi.module({
-				classLoader: $host.getClassLoader()
-			}, "public/slime/rhino/host");
+	<div>
+		<h1>Context</h1>
+		<script type="application/x.jsapi#context">
+			new function() {
+				var java = $jsapi.module({
+					classLoader: $host.getClassLoader()
+				}, "public/slime/rhino/host");
 
-			this.api = {
-				java: java
-			};
+				this.api = {
+					java: java
+				};
 
-			this.$java = new Packages.inonit.script.runtime.io.Streams();
-		}
-	</script>
-	<script type="application/x.jsapi#tests" jsapi:id="Properties">
-		scope.scenario( new function() {
-			var buffer;
-
-			this.name = "java.util.Properties";
-			this.initialize = function() {
-				var p = new Packages.java.util.Properties();
-				buffer = new module.Streams.binary.Buffer();
-				p.put("yes", "i do");
-				p.put("laptop", "inonit");
-				p.put("laptop.manufacturer", "dell");
-				p.store(buffer.$getOutputStream(), "No comment!");
-				buffer.close();
+				this.$java = new Packages.inonit.script.runtime.io.Streams();
 			}
-			this.execute = function(scope) {
-				var props = buffer.readBinary().asProperties();
-				scope.test( props.yes == "i do" );
-				scope.test( props.laptop == "inonit" );
-				scope.test( props.laptop.manufacturer == "dell" );
-			}
-		} );
-	</script>	
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="object">
+				<div class="name">Streams</div>
+				Provides operations for processing streams of input or output.
+				<ul>
+					<li class="object">
+						<div class="name">binary</div>
+						<span>Provides operations for processing byte streams.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">copy</div>
+								<span>Copies a byte input stream to a byte output stream.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type"><a href="#types.binput">byte input stream</a></span>
+											<span>A stream from which to copy bytes.</span>
+										</li>
+										<li class="value">
+											<span class="type"><a href="#types.boutput">byte output stream</a></span>
+											<span>A stream to which to copy bytes.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="type">
+									<a class="type" name="types.binput">byte input stream</a>
+									A stream from which bytes may be read.
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">close</div>
+											Closes the underlying stream.
+										</li>
+										<li class="function">
+											<div class="name">asProperties</div>
+											<span>Reads a Java properties file into a JavaScript object.</span>
+											<div>
+												Each Java property maps to a property of the returned object.  Properties are nested according to
+												the convention of delimiting property names with the dot (".") character.
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">object</span> An object containing properties corresponding to the properties
+												in the Java properties file.
+											</div>
+											<script type="application/x.jsapi#tests" jsapi:id="Properties">
+												scope.scenario( new function() {
+													var buffer;
+
+													this.name = "java.util.Properties";
+													this.initialize = function() {
+														var p = new Packages.java.util.Properties();
+														buffer = new module.Streams.binary.Buffer();
+														p.put("yes", "i do");
+														p.put("laptop", "inonit");
+														p.put("laptop.manufacturer", "dell");
+														p.store(buffer.$getOutputStream(), "No comment!");
+														buffer.close();
+													}
+													this.execute = function(scope) {
+														var props = buffer.readBinary().asProperties();
+														scope.test( props.yes == "i do" );
+														scope.test( props.laptop == "inonit" );
+														scope.test( props.laptop.manufacturer == "dell" );
+													}
+												} );
+											</script>
+										</li>
+									</ul>
+								</div>
+								<div class="type">
+									<a class="type" name="types.boutput">byte output stream</a>
+									<span>A stream to which bytes may be written.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">close</div>
+											<span>Closes the underlying stream.</span>
+										</li>
+									</ul>
+								</div>
+							</li>
+							<li class="constructor">
+								<div class="name">Buffer</div>
+								<span>Creates a buffer to which bytes can be written, and later read.</span>
+								<div class="instances">
+									<div class="label">Instances</div>
+									<span>
+										Instances support
+										<span class="type"><a href="#types.boutput">byte output stream</a></span>
+										as well as the specified API.
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">close</div>
+											<span>
+												Closes the buffer so that no additional bytes can be written to it.  Until the
+												buffer is closed, an attempt to read from it cannot reach the end of the stream, but
+												will instead block waiting for more input.
+											</span>
+										</li>
+										<li class="function">
+											<div class="name">readBinary</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.binput">byte input stream</a></span>
+												<span>A stream from which the bytes in this buffer may be read.</span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">readText</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.cinput">character input stream</a></span>
+												<span>A stream from which the characters in this buffer may be read.</span>
+											</div>
+										</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+					</li>
+					<li class="object">
+						<div class="name">text</div>
+						<span>Provides operations for processing character streams.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">copy</div>
+								<span>Copies a character input stream to a character output stream.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type"><a href="#types.cinput">character input stream</a></span>
+											<span>A stream from which to copy characters.</span>
+										</li>
+										<li class="value">
+											<span class="type"><a href="#types.coutput">character output stream</a></span>
+											<span>A stream to which to copy characters.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="type">
+									<a class="type" name="types.cinput">character input stream</a>
+									<span>A stream from which characters may be read.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">close</div>
+											<span>Closes the underlying stream.</span>
+										</li>
+										<li class="function">
+											<div class="name">readLines</div>
+											<span>
+												Iterates through the lines in this stream, sending each in succession to a callback function.
+											</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="function">
+														<span>
+															A callback function.
+														</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+																<li><span class="type">string</span> a line read from this stream.</li>
+															</ol>
+														</div>
+														<div class="returns">
+															<div class="label">Returns</div>
+															<span>If anything other than <code>undefined</code> is returned, <code>readLines</code>
+															will terminate reading the stream (and pass the value to <code>onEnd</code>; see the
+															second argument to <code>readLines</code>).</span>
+														</div>
+													</li>
+													<li class="object">
+														<span>(optional) An object representing the mode of operation of this method.</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">ending</div>
+																<span class="type">string</span>
+																<span>(optional) The line terminator to use when parsing the stream. The underlying
+																	platform line terminator will be used if not specified.</span>
+															</li>
+															<li class="function">
+																<div class="name">onEnd</div>
+																<span>
+																	(optional) A function that will be invoked when line processing terminates. The
+																	function will be invoked with this stream as <code>this</code>. The default
+																	implementation closes the stream.
+																</span>
+																<div class="arguments">
+																	<div class="label">Arguments</div>
+																	<ol>
+																		<li>
+																			(optional) The value returned from the line processing function, if
+																			processing terminated because that function returned a value (see
+																			the first argument of <code>readLines</code>).
+																		</li>
+																	</ol>
+																</div>
+															</li>
+														</ul>
+													</li>
+												</ol>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">asString</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">string</span>
+												<span>The entire content of this stream as a single <code>string</code>.</span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">asXml</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">XMLList</span>
+												<span>The entire content of this stream as a single <code>XMLList</code>.</span>
+											</div>
+										</li>
+									</ul>
+								</div>
+								<div class="type">
+									<a class="type" name="types.coutput">character output stream</a>
+									<span>A stream to which characters can be written.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">close</div>
+											<span>Closes the underlying stream.</span>
+										</li>
+										<li class="function">
+											<div class="name">write</div>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">string</span> <span>A string to write to the stream.</span>
+													</li>
+												</ol>
+											</div>
+										</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+					</li>
+					<li class="value">
+						<div class="name">stdout</div>
+						<span class="type">
+							<a href="#types.boutput">byte output stream</a>
+							<a href="#types.coutput">character output stream</a>
+						</span>
+						<span>The standard output stream.</span>
+					</li>
+					<li class="value">
+						<div class="name">stderr</div>
+						<span class="type">
+							<a href="#types.boutput">byte output stream</a>
+							<a href="#types.coutput">character output stream</a>
+						</span>
+						<span>The standard error stream.</span>
+					</li>
+				</ul>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#tests" jsapi:id="Properties">
+			scope.scenario( new function() {
+				var buffer;
+
+				this.name = "java.util.Properties";
+				this.initialize = function() {
+					var p = new Packages.java.util.Properties();
+					buffer = new module.Streams.binary.Buffer();
+					p.put("yes", "i do");
+					p.put("laptop", "inonit");
+					p.put("laptop.manufacturer", "dell");
+					p.store(buffer.$getOutputStream(), "No comment!");
+					buffer.close();
+				}
+				this.execute = function(scope) {
+					var props = buffer.readBinary().asProperties();
+					scope.test( props.yes == "i do" );
+					scope.test( props.laptop == "inonit" );
+					scope.test( props.laptop.manufacturer == "dell" );
+				}
+			} );
+		</script>
+	</div>
 </body>
 </html>
