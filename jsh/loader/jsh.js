@@ -162,6 +162,16 @@ this.jsh = new function() {
 			}
 		}
 
+		var io = loader.bootstrap({
+			$java: new Packages.inonit.script.runtime.io.Streams()
+			,stdio: context.stdio
+			,api: {
+				java: java
+			}
+		}, "rhino/io");
+
+		context.api.io = io;
+
 		jsh.file = loader.bootstrap(
 			context,
 			"rhino/file"

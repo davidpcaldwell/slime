@@ -1,0 +1,42 @@
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title></title>
+</head>
+<body>
+	<script type="application/x.jsapi#context">
+		new function() {
+			var java = $jsapi.module({
+				classLoader: $host.getClassLoader()
+			}, "public/slime/rhino/host");
+
+			this.api = {
+				java: java
+			};
+
+			this.$java = new Packages.inonit.script.runtime.io.Streams();
+		}
+	</script>
+	<script type="application/x.jsapi#tests" jsapi:id="Properties">
+		scope.scenario( new function() {
+			var buffer;
+
+			this.name = "java.util.Properties";
+			this.initialize = function() {
+				var p = new Packages.java.util.Properties();
+				buffer = new module.Streams.binary.Buffer();
+				p.put("yes", "i do");
+				p.put("laptop", "inonit");
+				p.put("laptop.manufacturer", "dell");
+				p.store(buffer.$getOutputStream(), "No comment!");
+				buffer.close();
+			}
+			this.execute = function(scope) {
+				var props = buffer.readBinary().asProperties();
+				scope.test( props.yes == "i do" );
+				scope.test( props.laptop == "inonit" );
+				scope.test( props.laptop.manufacturer == "dell" );
+			}
+		} );
+	</script>	
+</body>
+</html>

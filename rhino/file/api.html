@@ -93,9 +93,17 @@ END LICENSE
 							}
 						}
 					}, "public/slime/js/object");
-					this.java = $jsapi.module({
+					var java = $jsapi.module({
 						classLoader: $host.getClassLoader()
 					}, "public/slime/rhino/host");
+					this.java = java;
+					this.io = $jsapi.module("public/slime/rhino/io", {
+						$java: new Packages.inonit.script.runtime.io.Streams()
+//						,stdio: context.stdio
+						,api: {
+							java: java
+						}
+					});
 				}
 				var System = Packages.java.lang.System;
 				if (System.getProperty("cygwin.root")) {

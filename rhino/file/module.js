@@ -107,30 +107,8 @@ globals.addFinalizer = filesystem.addFinalizer;
 $exports.Pathname = filesystem.Pathname;
 $exports.Searchpath = filesystem.Searchpath;
 
-$exports.java = new function() {
-	this.adapt = function(object) {
-		if (false) {
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
-			return new streams.InputStream(object);
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new streams.OutputStream(object);
-		} else {
-			var type = (function() {
-				if (object.getClass) {
-					return " (Java class: " + object.getClass().getName() + ")";
-				}
-				var rv = " typeof=" + typeof(object);
-				var props = [];
-				for (var x in object) {
-					props.push(x);
-				}
-				rv += " properties=" + props.join(",");
-				return rv;
-			})();
-			throw "Unimplemented java.adapt: " + type + object;
-		}
-	}
-}
+$exports.java = $context.api.io.java;
+$api.deprecate($exports,"java");
 
 var zip = $loader.script("zip.js", {
 	Streams: streams.Streams,
