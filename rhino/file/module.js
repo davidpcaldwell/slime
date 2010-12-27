@@ -37,23 +37,6 @@ var warning = function(message) {
 	debugger;
 }
 
-var context = {
-	deprecate: $api.deprecate,
-	experimental: $api.experimental,
-	defined: $context.api.js.defined,
-	fail: $context.api.java.fail,
-	warning: warning,
-	constant: $context.api.js.constant,
-	isJavaType: $context.api.java.isJavaType,
-
-	$pwd: $context.$pwd,
-	cygwin: $context.cygwin,
-	addFinalizer: $context.addFinalizer,
-
-	streams: streams,
-	Streams: streams.Streams
-}
-
 var globals = {};
 var defaults = {};
 
