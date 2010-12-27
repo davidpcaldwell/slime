@@ -31,8 +31,8 @@ var InputStream = function(peer) {
 
 	this.asProperties = function() {
 		var properties = new Packages.java.util.Properties();
-		properties.load( this.$getInputStream() );
-		//	TODO	Do we need to close the stream?  Or does Java do this for us?
+		properties.load( peer );
+		peer.close();
 		return $context.api.java.Properties.adapt(properties);
 	}
 
