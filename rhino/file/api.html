@@ -723,11 +723,6 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#scope"><![CDATA[
-			var toNode = function(jfile) {
-				return module.filesystem.$unit.getNode(jfile);
-			}
-		]]></script>
 		<script type="application/x.jsapi#tests"><![CDATA[
 			var SCOPE = this;
 
@@ -941,7 +936,7 @@ END LICENSE
 			//			var $dir = $jsapi.newTemporaryDirectory();
 						var $dir = $java.io.newTemporaryDirectory();
 						$dir.mkdir();
-						return filesystem.$unit.Pathname(toNode($dir)).directory;
+						return filesystem.$unit.Pathname(module.filesystem.$unit.getNode($dir)).directory;
 					}
 
 					var createFile = function(file,length) {
@@ -1038,7 +1033,7 @@ END LICENSE
 
 								createFile(new Packages.java.io.File(hostdir, "target"), 1112);
 
-								dir = filesystem.$unit.Pathname(toNode(hostdir)).directory;
+								dir = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
 							}
 
 							this.execute = function(scope) {
@@ -1063,8 +1058,8 @@ END LICENSE
 										Packages.inonit.system.OperatingSystem.get().shellCommand( command, args );
 									}
 
-									var linkpathname = filesystem.$unit.Pathname(toNode(linkdir));
-									var hostpathname = filesystem.$unit.Pathname(toNode(hostdir));
+									var linkpathname = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(linkdir));
+									var hostpathname = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir));
 									var LN_PATH;
 									if (module.filesystems.cygwin) {
 										LN_PATH="c:/cygwin/bin/ln";
@@ -1196,7 +1191,7 @@ END LICENSE
 			aWriter.print("Finished.");
 			aWriter.flush();
 			aWriter.close();
-			streamdir = module.filesystem.$unit.Pathname(toNode(hostdir)).directory;
+			streamdir = module.filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
 		</script>
 		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
 			var fileA = streamdir.getFile("a");
