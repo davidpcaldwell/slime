@@ -132,6 +132,10 @@ public abstract class Filesystem {
 					throw new IOException(e.getMessage() + " path=[" + file.getPath() + "]", e);
 				}
 			}
+
+			public String toString() {
+				return getClass().getName() + " file= " + file;
+			}
 			
 			public boolean exists() {
 				return file.exists();
