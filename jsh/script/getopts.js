@@ -128,6 +128,8 @@ var getopts = function(settings,array) {
 			throw "Required: second argument to getopts containing array of arguments to process.";
 		}
 	}
+	//	Make this work with the arguments object
+	array = Array.prototype.slice.call(array,0);
 
 	var Parser = function(settings) {
 		if (!settings) settings = {};

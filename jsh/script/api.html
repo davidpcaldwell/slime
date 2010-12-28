@@ -25,12 +25,19 @@ END LICENSE
 </head>
 <body>
 	<script type="application/x.jsapi#scope">
+		var host = $jsapi.module("public/slime/rhino/host", {
+			classLoader: $host.getClassLoader()
+		});
 		var context = {
 			api: {
-				js: $jsapi.module({}, "js/object"),
-				java: $jsapi.module({
-					classLoader: $host.getClassLoader()
-				}, "rhino/host")
+				js: $jsapi.module("public/slime/js/object"),
+				java: host,
+				io: $jsapi.module("public/slime/rhino/io", {
+					$java: new Packages.inonit.script.runtime.io.Streams(),
+					api: {
+						java: host
+					}
+				})
 			},
 			$pwd: String(jsh.shell.properties.user.dir)
 		};
@@ -43,7 +50,7 @@ END LICENSE
 				context.cygwin.paths = String(System.getProperty("cygwin.paths"));
 			}
 		};
-		var file = $jsapi.module(context, "rhino/file");
+		var file = $jsapi.module("public/slime/rhino/file", context);
 		var $filesystem = file.filesystem;
 		var FILE = file;
 	</script>
@@ -91,7 +98,7 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				this.api = new function() {
-					this.java = $jsapi.module({}, "rhino/host");
+					this.java = $jsapi.module({}, "public/slime/rhino/host");
 					this.file = file;
 				};
 
@@ -387,6 +394,15 @@ END LICENSE
 					scope.test( function() { return !t_array.options.nob; } );
 					scope.test( function() { return t_array.options.n == 8; } );
 
+					var usingArgumentsObject = (function() {
+						return module.getopts({
+							options: {
+								a: String
+							}
+						}, arguments);
+					})("-a", "b");
+					scope.test(usingArgumentsObject.options.a == "b");
+
 					//
 					//	Deprecated usage
 					//
@@ -413,7 +429,7 @@ END LICENSE
 						[ "-absolute", anAbsolute, "-relative", "hello" ]
 					);
 					scope.test( pathsOptions.options.absolute.toString().match(/([A-Z]\:)?(.*)/)[2] == anAbsolute );
-					scope.test( pathsOptions.options.relative.toString() == FILE.workingDirectory.toString() + PATHNAME_SEPARATOR + "hello" );
+					scope.test( pathsOptions.options.relative.toString() == FILE.workingDirectory.toString() + "hello" );
 
 				</script>
 			</li>
