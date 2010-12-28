@@ -88,26 +88,22 @@ var SystemFilesystem = function(peer) {
 		var PARENT_PEER = peer;
 
 		//	TODO	Build this into each separate filesystem separately
-		var getAbsolute = function(string) {
-			var rv;
+		var isAbsolute = function(string) {
 			if (SELF.PATHNAME_SEPARATOR == "/") {
 				if (string.substring(0,1) != "/") {
-					throw "Not absolute: " + string;
+					return false;
 				} else {
-					rv = string;
+					return true;
 				}
 			} else if (SELF.PATHNAME_SEPARATOR == "\\") {
 				if (string[1] == ":" || string.substring(0,2) == "\\\\") {
-					//	ok, is absolute
-					rv = string;
+					return true;
 				} else {
-					throw "Not absolute: " + string;
+					return false;
 				}
 			} else {
 				throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
 			}
-			rv = Filesystem.Implementation.canonicalize(rv, SELF.PATHNAME_SEPARATOR);
-			return rv;
 		}
 
 		//	TODO	Build this into each separate filesystem separately
@@ -135,7 +131,12 @@ var SystemFilesystem = function(peer) {
 					path = path.substring(0,path.length-1);
 				}
 			}
-			return PARENT_PEER.getNode(getAbsolute(path));
+			if (isAbsolute(path)) {
+				path = Filesystem.Implementation.canonicalize(path, SELF.PATHNAME_SEPARATOR);
+				return PARENT_PEER.getNode(path);
+			} else {
+				return PARENT_PEER.getNode(new Packages.java.io.File(path));
+			}
 		}
 
 		this.newPathname = function(string) {
