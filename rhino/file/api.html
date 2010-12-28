@@ -65,28 +65,11 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#context">
-			new function() {
+		<script type="application/x.jsapi#scope"><![CDATA[
+			var $Context = function(p) {
 				this.api = new function() {
 					var API = this;
-					this.js = $jsapi.module(new function() {
-						this.$flag = {};
-						this.$flag.warning = function(access) {
-							if (access.reason == API.js.deprecate) {
-								var message = "Attempt to access deprecated property " + access.name + " of " + access.target;
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							} else if (access.reason == API.js.experimental) {
-								var message = "Property " + access.name + " of " + access.target + " is experimental.";
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							} else {
-								var message = "Attempt to access property " + access.name + " of " + access.target;
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							}
-						}
-					}, "public/slime/js/object");
+					this.js = $jsapi.module("public/slime/js/object");
 					var java = $jsapi.module({
 						classLoader: $host.getClassLoader()
 					}, "public/slime/rhino/host");
@@ -98,8 +81,12 @@ END LICENSE
 						}
 					});
 				}
-				var System = Packages.java.lang.System;
-				if (System.getProperty("cygwin.root")) {
+				this.$pwd = jsh.shell.properties.user.dir;
+				this.addFinalizer = jsh.loader.addFinalizer;
+
+				if (p && p.cygwin) {
+					//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+					var System = Packages.java.lang.System;
 					this.cygwin = {
 						root: String( System.getProperty("cygwin.root") )
 					};
@@ -110,9 +97,20 @@ END LICENSE
 						this.cygwin.paths = String( System.getProperty("cygwin.paths") );
 					}
 				}
-				this.$pwd = jsh.shell.properties.user.dir;
-				this.addFinalizer = jsh.loader.addFinalizer;
 			}
+		]]></script>
+		<!--	TODO	add round of tests using cygwin.root but not cygwin.paths?	-->
+		<script type="application/x.jsapi#context">
+			new $Context();
+		</script>
+		<script type="application/x.jsapi#context">
+			(function() {
+				if (Packages.java.lang.System.getProperty("cygwin.root")) {
+					return new $Context({ cygwin: true });
+				} else {
+					return null;
+				}
+			})();
 		</script>
 	</div>
 	<div>
@@ -1171,10 +1169,10 @@ END LICENSE
 				parent.scenario(scenario);
 			}
 
-			var filesystems = module.filesystems;
-			createTests(scope,filesystems.os);
-			if (filesystems.cygwin) {
-				createTests(scope,filesystems.cygwin);
+			if (module.filesystems.cygwin) {
+				createTests(scope,module.filesystems.cygwin);
+			} else {
+				createTests(scope,module.filesystems.os);
 			}
 		]]></script>
 		<script type="application/x.jsapi#scope">

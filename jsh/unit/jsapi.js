@@ -82,36 +82,45 @@ $exports.tests = new function() {
 						var $platform = jsh.$jsapi.$platform;
 						var $api = jsh.$jsapi.$api;
 
+						var scopes = html.scripts("scope");
+						for (var i=0; i<scopes.length; i++) {
+							eval(String(scopes[i]));
+						}
+
 						api.$unit.context = eval(String(contextScript));
 
-						api.$unit.create = function() {
-							var module = api.module;
-							
-							var scopes = html.scripts("scope");
-							for (var i=0; i<scopes.length; i++) {
-								eval(String(scopes[i]));
-							}
+						if (api.$unit.context) {
+							api.$unit.create = function() {
+								var module = api.module;
 
-							var initializes = html.scripts("initialize");
-							api.$unit.initialize = function(scope) {
-								for (var i=0; i<initializes.length; i++) {
-									eval(String(initializes[i]));
+								var initializes = html.scripts("initialize");
+								api.$unit.initialize = function(scope) {
+									for (var i=0; i<initializes.length; i++) {
+										eval(String(initializes[i]));
+									}
+								}
+
+								var tests = html.scripts("tests");
+								api.$unit.execute = function(scope) {
+									for (var i=0; i<tests.length; i++) {
+										scope.scenario(new function() {
+											this.name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : "<script>";
+											this.execute = function(scope) {
+												eval(String(tests[i]));
+											}
+										});
+									}
 								}
 							}
+						} else {
+							api.$unit.create = function() {
+								api.$unit.initialize = function(scope) {
+								}
 
-							var tests = html.scripts("tests");
-							api.$unit.execute = function(scope) {
-								for (var i=0; i<tests.length; i++) {
-									scope.scenario(new function() {
-										this.name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : "<script>";
-										this.execute = function(scope) {
-											eval(String(tests[i]));
-										}
-									});
+								api.$unit.execute = function(scope) {
 								}
 							}
 						}
-
 					})();
 				}
 			}
