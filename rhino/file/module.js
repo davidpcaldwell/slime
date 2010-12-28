@@ -81,7 +81,7 @@ $exports.__defineSetter__("filesystem", function(v) {
 	defaults.filesystem = v;
 });
 
-var filesystem = $loader.script("filesystem.js", {
+var file = $loader.script("file.js", {
 	defined: $context.api.js.defined,
 	defaults: defaults,
 	constant: $context.api.js.constant,
@@ -93,21 +93,20 @@ var filesystem = $loader.script("filesystem.js", {
 	Resource: streams.Resource
 });
 
-globals.Pathname = filesystem.Pathname;
-globals.Searchpath = filesystem.Searchpath;
-globals.addFinalizer = filesystem.addFinalizer;
+globals.Pathname = file.Pathname;
+globals.Searchpath = file.Searchpath;
+globals.addFinalizer = file.addFinalizer;
 
-$exports.Pathname = filesystem.Pathname;
-$exports.Searchpath = filesystem.Searchpath;
+$exports.Pathname = file.Pathname;
+$exports.Searchpath = file.Searchpath;
 
 $exports.java = $context.api.io.java;
 $api.deprecate($exports,"java");
 
 var zip = $loader.script("zip.js", {
 	Streams: streams.Streams,
-	Pathname: filesystem.Pathname
+	Pathname: file.Pathname
 });
 
 $exports.zip = zip.zip;
 $api.experimental($exports, "zip");
-debugger;
