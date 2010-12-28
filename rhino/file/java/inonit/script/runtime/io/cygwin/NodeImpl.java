@@ -50,9 +50,9 @@ class NodeImpl extends Filesystem.Node {
 		return rv;
 	}
 
-	static NodeImpl createDirectory(CygwinFilesystem parent, File directoryHost, String directoryScriptPath, 
-		String leafName) 
-	{
+	static NodeImpl createDirectory(CygwinFilesystem parent, NodeImpl directory, String leafName) throws IOException {
+		File directoryHost = directory.getHostFile();
+		String directoryScriptPath = directory.getScriptPath();
 		check(parent);
 		check(directoryScriptPath);
 		NodeImpl rv = new NodeImpl();
@@ -66,7 +66,9 @@ class NodeImpl extends Filesystem.Node {
 	}
 
 	//	ordinary file
-	static NodeImpl createFile(CygwinFilesystem parent, File directoryHost, String directoryScriptPath, String filename) {
+	static NodeImpl createFile(CygwinFilesystem parent, NodeImpl directory, String filename) throws IOException {
+		File directoryHost = directory.getHostFile();
+		String directoryScriptPath = directory.getScriptPath();
 		check(parent);
 		check(directoryScriptPath);
 		NodeImpl rv = new NodeImpl();
@@ -79,7 +81,8 @@ class NodeImpl extends Filesystem.Node {
 		return rv;
 	}
 
-	static NodeImpl createLink(CygwinFilesystem parent, String directoryScriptPath, String leafName) {
+	static NodeImpl createLink(CygwinFilesystem parent, NodeImpl directory, String leafName) throws IOException {
+		String directoryScriptPath = directory.getScriptPath();
 		check(parent);
 		check(directoryScriptPath);
 		NodeImpl rv = new NodeImpl();

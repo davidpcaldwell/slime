@@ -84,17 +84,63 @@ var SystemFilesystem = function(peer) {
 		this.PATHNAME_SEPARATOR = String( peer.getPathnameSeparator() );
 		this.SEARCHPATH_SEPARATOR = String( peer.getSearchpathSeparator() );
 
+		var SELF = this;
+		var PARENT_PEER = peer;
+
+		//	TODO	Build this into each separate filesystem separately
+		var getAbsolute = function(string) {
+			var rv;
+			if (SELF.PATHNAME_SEPARATOR == "/") {
+				if (string.substring(0,1) != "/") {
+					throw "Not absolute: " + string;
+				} else {
+					rv = string;
+				}
+			} else if (SELF.PATHNAME_SEPARATOR == "\\") {
+				if (string[1] == ":" || string.substring(0,2) == "\\\\") {
+					//	ok, is absolute
+					rv = string;
+				} else {
+					throw "Not absolute: " + string;
+				}
+			} else {
+				throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
+			}
+			rv = Filesystem.Implementation.canonicalize(rv, SELF.PATHNAME_SEPARATOR);
+			return rv;
+		}
+
+		//	TODO	Build this into each separate filesystem separately
+		var isRootPath = function(string) {
+			if (SELF.PATHNAME_SEPARATOR == "/") {
+				return ( string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
+			} else if (SELF.PATHNAME_SEPARATOR == "\\") {
+				if (string[1] == ":") {
+					return string.length == 3 && string[2] == "\\";
+				} else if (string.substring(0,2) == "\\\\") {
+					return string.substring(2).indexOf("\\") == -1;
+				} else {
+					throw "Unreachable: path is " + string;
+				}
+			} else {
+				throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
+			}
+		}
+
 		var newPeer = function(path) {
-			return PARENT_PEER.getNode(path);
+			if (path.substring(path.length-1) == SELF.PATHNAME_SEPARATOR) {
+				if (isRootPath(path)) {
+					//	ok then
+				} else {
+					path = path.substring(0,path.length-1);
+				}
+			}
+			return PARENT_PEER.getNode(getAbsolute(path));
 		}
 
 		this.newPathname = function(string) {
 			var newPathnameFromString = function(aString) {
-				var canonicalize = function(string) {
-					//	TODO Canonicalize drive letter and slashes in Windows
-					return Filesystem.Implementation.canonicalize(string, SELF.PATHNAME_SEPARATOR);
-				}
-				return new $context.Pathname({ filesystem: SELF, peer: newPeer(canonicalize(aString)) });
+				return new $context.Pathname({ filesystem: SELF, peer: newPeer(aString) });
 			}
 
 			return newPathnameFromString(string);
@@ -112,25 +158,7 @@ var SystemFilesystem = function(peer) {
 			return String( peer.getScriptPath() );
 		}
 
-		var SELF = this;
-		var PARENT_PEER = peer;
-
-		//	TODO	Build this into each separate filesystem separately
-		this.isRootPath = function(string) {
-			if (SELF.PATHNAME_SEPARATOR == "/") {
-				return ( string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
-			} else if (SELF.PATHNAME_SEPARATOR == "\\") {
-				if (string[1] == ":") {
-					return string.length == 3 && string[2] == "\\";
-				} else if (string.substring(0,2) == "\\\\") {
-					return string.substring(2).indexOf("\\") == -1;
-				} else {
-					throw "Unreachable: path is " + string;
-				}
-			} else {
-				throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
-			}
-		}
+		this.isRootPath = isRootPath;
 
 		this.getParent = function(peer) {
 			//	TODO	Skeptical of this implementation; had to make changes when implementing for HTTP filesystem
