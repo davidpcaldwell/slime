@@ -678,6 +678,35 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
+				<script type="application/x.jsapi#tests">
+					scope.scenario( new function() {
+						var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+						var dir = filesystem.$unit.temporary(null, { directory: true });
+						var Searchpath = filesystem.Searchpath;
+
+						this.name = "Searchpath";
+
+						var searchpath;
+
+						this.initialize = function() {
+							var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
+							if (typeof(pathelements[0]) == "undefined") throw "No/0";
+							if (typeof(pathelements[1]) == "undefined") throw "No/1";
+							searchpath = Searchpath(pathelements);
+						}
+
+						this.execute = function(scope) {
+							scope.test(
+								searchpath.toString()
+								== (
+									dir.getRelativePath("c").toString()
+									+ String( filesystem.$unit.getSearchpathSeparator() )
+									+ dir.getRelativePath("e").toString()
+								)
+							);
+						}
+					} );
+				</script>
 			</li>
 			<li class="value">
 				<div class="name">workingDirectory</div>
@@ -721,220 +750,199 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
+		<script type="application/x.jsapi#scope">
+			var newTemporaryDirectory = function(filesystem) {
+				var $dir = $java.io.newTemporaryDirectory();
+				$dir.mkdir();
+				return filesystem.$unit.Pathname(filesystem.$unit.getNode($dir)).directory;
+			}
+		</script>
+		<script type="application/x.jsapi#tests"><![CDATA[
+			var context = new function() {
+				this.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+				this.dir = newTemporaryDirectory(this.filesystem);
+				this.module = { Streams: module.Streams };
+			}
+			if (!context.dir) throw "Missing context.dir";
+			var filesystem = context.filesystem;
+			scope.scenario( new function() {
+				this.name = "File tests";
+
+				var createFile = function(base,name,length) {
+					var pathname = base.getRelativePath(name);
+					var $out = pathname.write(context.module.Streams.binary);
+					if (length) {
+						for (var i=0; i<length; i++) {
+							$out.$getOutputStream().write(0);
+						}
+					}
+					$out.close();
+					return pathname.file;
+				}
+
+				var createDirectory = function(base,name) {
+					return base.getRelativePath(name).createDirectory();
+				}
+
+				this.initialize = function() {
+				}
+
+				this.execute = function(scope) {
+					var dir = context.dir.getRelativePath("filetests").createDirectory();
+
+					var filea = createFile(dir,"a");
+					var fileb = createFile(dir,"b");
+					var filec = createDirectory(dir,"c");
+					var filed = createFile(filec,"d");
+					var filee = createDirectory(dir,"e");
+					var filef = createFile(filee,"f");
+
+					createFile(dir,"target",1112);
+
+					scope.test(filea.pathname.basename == "a");
+					scope.test(filec.pathname.basename == "c");
+					scope.test(filed.pathname.basename == "d");
+					scope.test(filec.getRelativePath("..").toString() == dir.pathname.toString());
+
+					scope.scenario( new function() {
+						this.name = "directory.list()";
+
+						this.execute = function(scope) {
+							scope.test(dir.list().length == 5);
+
+							scope.test( dir.list({ filter: /^.$/ }).length == 4 );
+							scope.test( dir.list({ filter: /../ }).length == 1 );
+							scope.test( dir.list({ filter: /a/ }).length == 2 );
+							scope.test( dir.list({ filter: /ar/ }).length == 1 );
+							scope.test( dir.list({ filter: /foobar/ }).length == 0 );
+
+							scope.test( dir.list({ recursive: true }).length == 7 );
+							scope.test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
+							scope.test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
+						}
+					} );
+
+					scope.test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
+					scope.test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
+
+					scope.test( !filea.directory );
+					scope.test( filec.directory );
+
+					scope.test( function() {
+						if (filed.parent == null) return false;
+						return filed.parent.pathname.toString() == filec.pathname.toString();
+					} );
+					scope.test( function() {
+							if (filec.parent == null) return false;
+							return filec.parent.pathname.toString() == dir.pathname.toString();
+					} );
+
+					scope.scenario( new function() {
+						this.name = "Deletion";
+						this.execute = function(scope) {
+							var toDelete = createFile(filec,"toDelete");
+							var toDeleteDir = createDirectory(dir,"toDelete.d");
+							var zz = createFile(toDeleteDir, "zz");
+
+							scope.test(filec.list().length == 2);
+							scope.test(filec.getFile("toDelete") != null);
+							var fileToDelete = filec.getFile("toDelete");
+							fileToDelete.remove();
+							scope.test(filec.getFile("toDelete") == null);
+							scope.test(filec.list().length == 1);
+
+							scope.test(dir.getRelativePath("toDelete.d").directory != null);
+							scope.test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
+							dir.getRelativePath("toDelete.d").directory.remove();
+							scope.test(dir.getRelativePath("toDelete.d").directory == null);
+						}
+					} );
+
+					scope.scenario( new function() {
+						this.name = "createDirectory";
+
+						this.execute = function(scope) {
+							var inPlace = function(ifExists) {
+								return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
+							}
+							var created = inPlace();
+							scope.test( created.parent.toString() == dir.toString() );
+							var timestamp = created.modified;
+
+							try {
+								var created = inPlace();
+								scope.test( false );
+							} catch (e) {
+								scope.test( true );
+							}
+
+							var created = inPlace( function() { return false; } );
+							scope.test( created.modified.getTime() == timestamp.getTime() );
+
+							var created = inPlace( function(existing) { existing.remove(); return true; } );
+							scope.test( created.modified != timestamp );
+
+							created.remove();
+						}
+					} );
+
+					scope.scenario( new function() {
+						this.name = "file.write()";
+
+						this.execute = function(scope) {
+							var mydir = createDirectory(dir, "write");
+							scope.test( (mydir != null) );
+
+							var a = mydir.getRelativePath("a");
+							var b = mydir.getRelativePath("b/c");
+
+							var checkError = function(f) {
+								try {
+									f();
+									return true;
+								} catch (e) {
+									return false;
+								}
+							}
+
+							var Streams = context.module.Streams;
+							scope.test( checkError( function() { a.write(Streams.binary).close(); } ) );
+							scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
+							scope.test( checkError( function() { b.write(Streams.binary, { recursive: true}).close(); } ) );
+							scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
+							scope.test( checkError( function() { b.write(Streams.binary, {append: false}).close(); } ) );
+
+							var writeAndClose = function(path,string,append) {
+								path.write(string, { append: append });
+							}
+
+							writeAndClose(a,"Hello",true);
+							scope.test( a.file.read(String) == "Hello" );
+							writeAndClose(a,"Hello",false);
+							scope.test( a.file.read(String) == "Hello" );
+							writeAndClose(a," World",true);
+							scope.test( a.file.read(String) == "Hello World" );
+						}
+					} );
+
+					var purpleRain = new Date( 1999, 0, 1 );
+					scope.test( purpleRain.getTime() != filea.modified.getTime() );
+					filea.modified = purpleRain;
+					scope.test(purpleRain.getTime() == filea.modified.getTime());
+				}
+			} );
+		]]></script>
 		<script type="application/x.jsapi#tests"><![CDATA[
 			var SCOPE = this;
-
-			var interfaceTests = function(scope,context) {
-				if (!context.dir) throw "Missing context.dir";
-				var filesystem = context.filesystem;
-				scope.scenario( new function() {
-					var dir = context.dir;
-					var Searchpath = filesystem.Searchpath;
-
-					this.name = "Searchpath";
-
-					var searchpath;
-
-					this.initialize = function() {
-						var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
-						if (typeof(pathelements[0]) == "undefined") throw "No/0";
-						if (typeof(pathelements[1]) == "undefined") throw "No/1";
-						searchpath = Searchpath(pathelements);
-					}
-
-					this.execute = function(scope) {
-						scope.test(
-							searchpath.toString()
-							== (
-								dir.getRelativePath("c").toString()
-								+ String( filesystem.$unit.getSearchpathSeparator() )
-								+ dir.getRelativePath("e").toString()
-							)
-						);
-					}
-				} );
-				scope.scenario( new function() {
-					this.name = "File tests";
-
-					var createFile = function(base,name,length) {
-						var pathname = base.getRelativePath(name);
-						var $out = pathname.write(context.module.Streams.binary);
-						if (length) {
-							for (var i=0; i<length; i++) {
-								$out.$getOutputStream().write(0);
-							}
-						}
-						$out.close();
-						return pathname.file;
-					}
-
-					var createDirectory = function(base,name) {
-						return base.getRelativePath(name).createDirectory();
-					}
-
-					this.initialize = function() {
-					}
-
-					this.execute = function(scope) {
-						var dir = context.dir.getRelativePath("filetests").createDirectory();
-
-						var filea = createFile(dir,"a");
-						var fileb = createFile(dir,"b");
-						var filec = createDirectory(dir,"c");
-						var filed = createFile(filec,"d");
-						var filee = createDirectory(dir,"e");
-						var filef = createFile(filee,"f");
-
-						createFile(dir,"target",1112);
-
-						scope.test(filea.pathname.basename == "a");
-						scope.test(filec.pathname.basename == "c");
-						scope.test(filed.pathname.basename == "d");
-						scope.test(filec.getRelativePath("..").toString() == dir.pathname.toString());
-
-						scope.scenario( new function() {
-							this.name = "directory.list()";
-
-							this.execute = function(scope) {
-								scope.test(dir.list().length == 5);
-
-								scope.test( dir.list({ filter: /^.$/ }).length == 4 );
-								scope.test( dir.list({ filter: /../ }).length == 1 );
-								scope.test( dir.list({ filter: /a/ }).length == 2 );
-								scope.test( dir.list({ filter: /ar/ }).length == 1 );
-								scope.test( dir.list({ filter: /foobar/ }).length == 0 );
-
-								scope.test( dir.list({ recursive: true }).length == 7 );
-								scope.test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
-								scope.test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
-							}
-						} );
-
-						scope.test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
-						scope.test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
-						scope.test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
-						scope.test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
-						scope.test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
-
-						scope.test( !filea.directory );
-						scope.test( filec.directory );
-
-						scope.test( function() {
-							if (filed.parent == null) return false;
-							return filed.parent.pathname.toString() == filec.pathname.toString();
-						} );
-						scope.test( function() {
-								if (filec.parent == null) return false;
-								return filec.parent.pathname.toString() == dir.pathname.toString();
-						} );
-
-						scope.scenario( new function() {
-							this.name = "Deletion";
-							this.execute = function(scope) {
-								var toDelete = createFile(filec,"toDelete");
-								var toDeleteDir = createDirectory(dir,"toDelete.d");
-								var zz = createFile(toDeleteDir, "zz");
-
-								scope.test(filec.list().length == 2);
-								scope.test(filec.getFile("toDelete") != null);
-								var fileToDelete = filec.getFile("toDelete");
-								fileToDelete.remove();
-								scope.test(filec.getFile("toDelete") == null);
-								scope.test(filec.list().length == 1);
-
-								scope.test(dir.getRelativePath("toDelete.d").directory != null);
-								scope.test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
-								dir.getRelativePath("toDelete.d").directory.remove();
-								scope.test(dir.getRelativePath("toDelete.d").directory == null);
-							}
-						} );
-
-						scope.scenario( new function() {
-							this.name = "createDirectory";
-
-							this.execute = function(scope) {
-								var inPlace = function(ifExists) {
-									return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
-								}
-								var created = inPlace();
-								scope.test( created.parent.toString() == dir.toString() );
-								var timestamp = created.modified;
-
-								try {
-									var created = inPlace();
-									scope.test( false );
-								} catch (e) {
-									scope.test( true );
-								}
-
-								var created = inPlace( function() { return false; } );
-								scope.test( created.modified.getTime() == timestamp.getTime() );
-
-								var created = inPlace( function(existing) { existing.remove(); return true; } );
-								scope.test( created.modified != timestamp );
-
-								created.remove();
-							}
-						} );
-
-						scope.scenario( new function() {
-							this.name = "file.write()";
-
-							this.execute = function(scope) {
-								var mydir = createDirectory(dir, "write");
-								scope.test( (mydir != null) );
-
-								var a = mydir.getRelativePath("a");
-								var b = mydir.getRelativePath("b/c");
-
-								var checkError = function(f) {
-									try {
-										f();
-										return true;
-									} catch (e) {
-										return false;
-									}
-								}
-
-								var Streams = context.module.Streams;
-								scope.test( checkError( function() { a.write(Streams.binary).close(); } ) );
-								scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
-								scope.test( checkError( function() { b.write(Streams.binary, { recursive: true}).close(); } ) );
-								scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
-								scope.test( checkError( function() { b.write(Streams.binary, {append: false}).close(); } ) );
-
-								var writeAndClose = function(path,string,append) {
-									path.write(string, { append: append });
-								}
-
-								writeAndClose(a,"Hello",true);
-								scope.test( a.file.read(String) == "Hello" );
-								writeAndClose(a,"Hello",false);
-								scope.test( a.file.read(String) == "Hello" );
-								writeAndClose(a," World",true);
-								scope.test( a.file.read(String) == "Hello World" );
-							}
-						} );
-
-						var purpleRain = new Date( 1999, 0, 1 );
-						scope.test( purpleRain.getTime() != filea.modified.getTime() );
-						filea.modified = purpleRain;
-						scope.test(purpleRain.getTime() == filea.modified.getTime());
-					}
-				} );
-			}
 
 			var createTests = function(parent,filesystem) {
 				var scenario = new function() {
 					var tmpdir;
 					var UNIX;
 					var hostdir;
-
-					var newTemporaryDirectory = function(filesystem) {
-						var $dir = $java.io.newTemporaryDirectory();
-						$dir.mkdir();
-						return filesystem.$unit.Pathname(module.filesystem.$unit.getNode($dir)).directory;
-					}
 
 					var createFile = function(file,length) {
 						var stream = new Packages.java.io.FileOutputStream(file);
@@ -959,20 +967,6 @@ END LICENSE
 					}
 
 					this.execute = function(scope) {
-						scope.scenario(new function() {
-							this.name = "Portable tests";
-
-							this.execute = function(scope) {
-								interfaceTests(scope, {
-									filesystem: filesystem,
-									dir: newTemporaryDirectory(filesystem),
-									module: {
-										Streams: module.Streams
-									}
-								});
-							}
-						});
-
 						scope.scenario( new function() {
 							this.name = "Path tests";
 

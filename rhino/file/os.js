@@ -53,6 +53,9 @@ var Filesystem = function(implementation) {
 		this.getPathnameSeparator = function() {
 			return implementation.PATHNAME_SEPARATOR;
 		}
+		this.temporary = function() {
+			return implementation.temporary.apply(implementation,arguments);
+		}
 	}
 }
 Filesystem.Implementation = function() {
@@ -236,7 +239,8 @@ var SystemFilesystem = function(peer) {
 			var prefix = defined(parameters.prefix, "jsh");
 			var suffix = defined(parameters.suffix, null);
 			var directory = defined(parameters.directory, false);
-			var jfile = Packages.java.io.File.createTempFile(prefix,suffix,peer.getHostFile());
+			var jdir = (peer) ? peer.getHostFile() : null;
+			var jfile = Packages.java.io.File.createTempFile(prefix,suffix,jdir);
 			//	If this was request for directory, delete the temp file and create directory with same name
 			if (directory) {
 				jfile["delete"]();
