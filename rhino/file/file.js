@@ -302,6 +302,8 @@ var Pathname = function(parameters) {
 			}
 		});
 
+		this.resource = resource;
+
 		this.read = function(mode) {
 			return resource.read(mode);
 		}
@@ -332,6 +334,8 @@ var Pathname = function(parameters) {
 			}
 		}
 
+		var self = this;
+
 		var list = function(mode) {
 			if (!mode) mode = {};
 			var filter = mode.filter;
@@ -340,7 +344,18 @@ var Pathname = function(parameters) {
 			}
 			if (!filter) filter = function() { return true; }
 
-			var type = (mode.type == arguments.callee.ENTRY) ? arguments.callee.ENTRY : arguments.callee.NODE;
+			var type = (mode.type == null) ? arguments.callee.NODE : mode.type;
+			var toReturn = function(rv) {
+				var map = function(node) {
+					return type.create(self,node);
+				};
+
+				if (type.filter) {
+					rv = rv.filter(type.filter);
+				}
+
+				return rv.map(map);
+			};
 
 			var rv;
 			if (mode.recursive) {
@@ -359,7 +374,7 @@ var Pathname = function(parameters) {
 
 				add(this);
 
-				return rv;
+				return toReturn(rv);
 			} else {
 				var createNodesFromPeers = function(peers) {
 					//	This function is written with this kind of for loop to allow accessing a Java array directly
@@ -380,7 +395,7 @@ var Pathname = function(parameters) {
 				var peers = $filesystem.list(peer);
 				rv = createNodesFromPeers(peers);
 				rv = rv.filter( filter );
-				return rv;
+				return toReturn(rv);
 			}
 		}
 
@@ -398,6 +413,17 @@ var Pathname = function(parameters) {
 				}
 			}
 		};
+		this.list.RESOURCE = {
+			filter: function(n) {
+				return !n.directory
+			},
+			create: function(d,n) {
+				return {
+					path: n.toString().substring(d.toString().length).replace(/\\/g, "/"),
+					resource: n.resource
+				}
+			}
+		}
 
 		if ($filesystem.temporary) {
 			this.createTemporary = function(parameters) {
