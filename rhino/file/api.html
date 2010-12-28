@@ -115,6 +115,44 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<script type="application/x.jsapi#scope"><![CDATA[
+			var helpers = new function() {
+				var module;
+
+				this.initialize = function() {
+					module = arguments[0];
+				}
+
+				this.newTemporaryDirectory = function(filesystem) {
+					var $dir = $java.io.newTemporaryDirectory();
+					$dir.mkdir();
+					return filesystem.$unit.Pathname(filesystem.$unit.getNode($dir)).directory;
+				}
+
+				this.createFile = function(base,name,length) {
+					var pathname = base.getRelativePath(name);
+					var $out = pathname.write(module.Streams.binary);
+					if (length) {
+						for (var i=0; i<length; i++) {
+							$out.$getOutputStream().write(0);
+						}
+					}
+					$out.close();
+					return pathname.file;
+				}
+
+				this.createDirectory = function(base,name) {
+					return base.getRelativePath(name).createDirectory();
+				}
+			}
+
+			var newTemporaryDirectory = helpers.newTemporaryDirectory;
+			var createFile = helpers.createFile;
+			var createDirectory = helpers.createDirectory;
+		]]></script>
+		<script type="application/x.jsapi#initialize"><![CDATA[
+			helpers.initialize(module);
+		]]></script>
 		<ul>
 			<li class="object">
 				<div class="name">filesystems</div>
@@ -613,6 +651,42 @@ END LICENSE
 								<div class="label">Returns</div>
 								<span class="type">Array of <a href="#types.node">node</a></span>
 							</div>
+							<script type="application/x.jsapi#tests"><![CDATA[
+								var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+								var dir = newTemporaryDirectory(filesystem);
+
+								var filea = createFile(dir,"a");
+								var fileb = createFile(dir,"b");
+								var filec = createDirectory(dir,"c");
+								var filed = createFile(filec,"d");
+								var filee = createDirectory(dir,"e");
+								var filef = createFile(filee,"f");
+
+								createFile(dir,"target",1112);
+
+								scope.test(filea.pathname.basename == "a");
+								scope.test(filec.pathname.basename == "c");
+								scope.test(filed.pathname.basename == "d");
+								scope.test(filec.getRelativePath("..").toString() == dir.pathname.toString());
+
+								scope.scenario( new function() {
+									this.name = "directory.list()";
+
+									this.execute = function(scope) {
+										scope.test(dir.list().length == 5);
+
+										scope.test( dir.list({ filter: /^.$/ }).length == 4 );
+										scope.test( dir.list({ filter: /../ }).length == 1 );
+										scope.test( dir.list({ filter: /a/ }).length == 2 );
+										scope.test( dir.list({ filter: /ar/ }).length == 1 );
+										scope.test( dir.list({ filter: /foobar/ }).length == 0 );
+
+										scope.test( dir.list({ recursive: true }).length == 7 );
+										scope.test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
+										scope.test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
+									}
+								} );
+							]]></script>
 						</li>
 					</ul>
 				</div>
@@ -750,13 +824,6 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#scope">
-			var newTemporaryDirectory = function(filesystem) {
-				var $dir = $java.io.newTemporaryDirectory();
-				$dir.mkdir();
-				return filesystem.$unit.Pathname(filesystem.$unit.getNode($dir)).directory;
-			}
-		</script>
 		<script type="application/x.jsapi#tests"><![CDATA[
 			var context = new function() {
 				this.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
@@ -767,22 +834,6 @@ END LICENSE
 			var filesystem = context.filesystem;
 			scope.scenario( new function() {
 				this.name = "File tests";
-
-				var createFile = function(base,name,length) {
-					var pathname = base.getRelativePath(name);
-					var $out = pathname.write(context.module.Streams.binary);
-					if (length) {
-						for (var i=0; i<length; i++) {
-							$out.$getOutputStream().write(0);
-						}
-					}
-					$out.close();
-					return pathname.file;
-				}
-
-				var createDirectory = function(base,name) {
-					return base.getRelativePath(name).createDirectory();
-				}
 
 				this.initialize = function() {
 				}
