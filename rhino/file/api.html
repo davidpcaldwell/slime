@@ -116,14 +116,17 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#scope"><![CDATA[
+			var filesystem;
+
 			var helpers = new function() {
 				var module;
 
 				this.initialize = function() {
 					module = arguments[0];
+					filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				}
 
-				this.newTemporaryDirectory = function(filesystem) {
+				this.newTemporaryDirectory = function() {
 					var $dir = $java.io.newTemporaryDirectory();
 					$dir.mkdir();
 					return filesystem.$unit.Pathname(filesystem.$unit.getNode($dir)).directory;
@@ -289,6 +292,41 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span class="type"><a href="#types.Pathname">Pathname</a></span> The pathname represented by the argument.
 				</div>
+				<script type="application/x.jsapi#tests">
+					var dir = newTemporaryDirectory();
+
+					var filea = createFile(dir,"a");
+					var fileb = createFile(dir,"b");
+					var filec = createDirectory(dir,"c");
+					var filed = createFile(filec,"d");
+					var filee = createDirectory(dir,"e");
+					var filef = createFile(filee,"f");
+
+					createFile(dir,"target",1112);
+
+					scope.test(filea.pathname.basename == "a");
+					scope.test(filec.pathname.basename == "c");
+					scope.test(filed.pathname.basename == "d");
+					scope.test(filec.getRelativePath("..").toString() == dir.pathname.toString());
+
+					scope.test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
+					scope.test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
+
+					scope.test( !filea.directory );
+					scope.test( filec.directory );
+
+					scope.test( function() {
+						if (filed.parent == null) return false;
+						return filed.parent.pathname.toString() == filec.pathname.toString();
+					} );
+					scope.test( function() {
+							if (filec.parent == null) return false;
+							return filec.parent.pathname.toString() == dir.pathname.toString();
+					} );
+				</script>
 				<div class="type">
 					<a class="type" name="types.Pathname">Pathname</a>
 					<div>An object representing a path in the local file system.</div>
@@ -610,7 +648,7 @@ END LICENSE
 											<li class="value">
 												<div class="name">filter</div>
 												<span class="type">function</span>
-												or
+												-OR-
 												<span class="type">RegExp</span>
 												(optional) Used to filter the results of listing this directory.
 												Nodes that the filter does not accept will not be returned (nor will their contents,
@@ -643,14 +681,51 @@ END LICENSE
 													not match will be excluded.
 												</div>
 											</li>
+											<li class="value">
+												<div class="name">type</div>
+												<span class="type">property of this function</span>
+												<span>
+													Specifies whether to return <a href="#types.node">node</a> objects from this
+													method, or to return objects describing the directory contents more fully
+													(see below).
+												</span>
+											</li>
 										</ul>
 									</li>
 								</ol>
 							</div>
 							<div class="returns">
 								<div class="label">Returns</div>
-								<span class="type">Array of <a href="#types.node">node</a></span>
+								<span class="type">Array of specified type: <a href="#types.node">node</a> or entry.</span>
 							</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">NODE</div>
+									<span>The method should return objects of type <a href="#types.node">node</a></span>
+								</li>
+								<li class="value">
+									<div class="name">ENTRY</div>
+									<span>The method should return objects of the following type:</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">string</span>
+											<span>The path, relative to this directory, at which this node can be found.</span>
+										</li>
+										<li class="value">
+											<div class="name">node</div>
+											<span class="type"><a href="#types.node">node</a></span>
+										</li>
+									</ul>
+								</li>
+								<!--
+										TODO	add RESOURCE that returns an array of path/resource? easy descriptor, would
+												probably then exclude directories explicitly and this could be used as easy input
+												to lots of things logically representing trees.
+								-->
+							</ul>
 							<script type="application/x.jsapi#tests"><![CDATA[
 								var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 								var dir = newTemporaryDirectory(filesystem);
@@ -663,11 +738,6 @@ END LICENSE
 								var filef = createFile(filee,"f");
 
 								createFile(dir,"target",1112);
-
-								scope.test(filea.pathname.basename == "a");
-								scope.test(filec.pathname.basename == "c");
-								scope.test(filed.pathname.basename == "d");
-								scope.test(filec.getRelativePath("..").toString() == dir.pathname.toString());
 
 								scope.scenario( new function() {
 									this.name = "directory.list()";
@@ -849,47 +919,6 @@ END LICENSE
 					var filef = createFile(filee,"f");
 
 					createFile(dir,"target",1112);
-
-					scope.test(filea.pathname.basename == "a");
-					scope.test(filec.pathname.basename == "c");
-					scope.test(filed.pathname.basename == "d");
-					scope.test(filec.getRelativePath("..").toString() == dir.pathname.toString());
-
-					scope.scenario( new function() {
-						this.name = "directory.list()";
-
-						this.execute = function(scope) {
-							scope.test(dir.list().length == 5);
-
-							scope.test( dir.list({ filter: /^.$/ }).length == 4 );
-							scope.test( dir.list({ filter: /../ }).length == 1 );
-							scope.test( dir.list({ filter: /a/ }).length == 2 );
-							scope.test( dir.list({ filter: /ar/ }).length == 1 );
-							scope.test( dir.list({ filter: /foobar/ }).length == 0 );
-
-							scope.test( dir.list({ recursive: true }).length == 7 );
-							scope.test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
-							scope.test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
-						}
-					} );
-
-					scope.test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
-					scope.test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
-					scope.test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
-					scope.test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
-					scope.test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
-
-					scope.test( !filea.directory );
-					scope.test( filec.directory );
-
-					scope.test( function() {
-						if (filed.parent == null) return false;
-						return filed.parent.pathname.toString() == filec.pathname.toString();
-					} );
-					scope.test( function() {
-							if (filec.parent == null) return false;
-							return filec.parent.pathname.toString() == dir.pathname.toString();
-					} );
 
 					scope.scenario( new function() {
 						this.name = "Deletion";
