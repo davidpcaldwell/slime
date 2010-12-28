@@ -933,7 +933,6 @@ END LICENSE
 					var hostdir;
 
 					var newTemporaryDirectory = function(filesystem) {
-			//			var $dir = $jsapi.newTemporaryDirectory();
 						var $dir = $java.io.newTemporaryDirectory();
 						$dir.mkdir();
 						return filesystem.$unit.Pathname(module.filesystem.$unit.getNode($dir)).directory;
