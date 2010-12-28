@@ -25,14 +25,14 @@ END LICENSE
 </head>
 <body>
 	<script type="application/x.jsapi#scope">
-		var host = $jsapi.module("public/slime/rhino/host", {
+		var host = $jsapi.module("rhino/host", {
 			classLoader: $host.getClassLoader()
 		});
 		var context = {
 			api: {
-				js: $jsapi.module("public/slime/js/object"),
+				js: $jsapi.module("js/object"),
 				java: host,
-				io: $jsapi.module("public/slime/rhino/io", {
+				io: $jsapi.module("rhino/io", {
 					$java: new Packages.inonit.script.runtime.io.Streams(),
 					api: {
 						java: host
@@ -50,7 +50,7 @@ END LICENSE
 				context.cygwin.paths = String(System.getProperty("cygwin.paths"));
 			}
 		};
-		var file = $jsapi.module("public/slime/rhino/file", context);
+		var file = $jsapi.module("rhino/file", context);
 		var $filesystem = file.filesystem;
 		var FILE = file;
 	</script>
@@ -98,7 +98,7 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				this.api = new function() {
-					this.java = $jsapi.module({}, "public/slime/rhino/host");
+					this.java = $jsapi.module({}, "rhino/host");
 					this.file = file;
 				};
 

@@ -285,7 +285,6 @@ $exports.doc = function(modules,to) {
 
 			//	TODO	document and enhance this ability to import documentation from other files
 			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
-				debugger;
 				var x = e;
 				while(x.@jsapi::reference.length() > 0) {
 					x = eval(String(x.@jsapi::reference));

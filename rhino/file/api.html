@@ -69,12 +69,12 @@ END LICENSE
 			var $Context = function(p) {
 				this.api = new function() {
 					var API = this;
-					this.js = $jsapi.module("public/slime/js/object");
+					this.js = $jsapi.module("js/object");
 					var java = $jsapi.module({
 						classLoader: $host.getClassLoader()
-					}, "public/slime/rhino/host");
+					}, "rhino/host");
 					this.java = java;
-					this.io = $jsapi.module("public/slime/rhino/io", {
+					this.io = $jsapi.module("rhino/io", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
 						,api: {
 							java: java

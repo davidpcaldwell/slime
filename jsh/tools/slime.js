@@ -75,32 +75,29 @@ slime.build.rhino = function(from,build,api,javac) {
 
 //	Build using jsh shell; used by slime.jsh
 slime.build.jsh = function(from,build) {
-	var toCopy = from.list({ recursive: true }).map(function(node) {
-		return {
-			path: node.pathname.toString().substring(from.pathname.toString().length+1),
-			node: node
+	var toCopy = from
+		.list({ recursive: true, type: from.list.RESOURCE })
+		.filter(function(item) {
+			//	TODO	This explicitly depends on UNIX-style paths; should use file separator but OK for now because jsh depends on bash
+			return item.path.substring(0,"java/".length) != "java/";
 		}
-	}).filter(function(entry) {
-		//	TODO	This explicitly depends on UNIX-style paths; should use file separator but OK for now because jsh depends on bash
-		return !entry.node.directory && entry.path.substring(0,"java/".length) != "java/";
-	});
+	);
 
 	toCopy.forEach( function(item) {
 		var topath = build.getRelativePath(item.path);
 		if (item.directory) {
 			topath.createDirectory();
 		} else {
-			topath.write(item.node.read(jsh.file.Streams.binary), { recursive: true });
+			topath.write(item.resource.read(jsh.file.Streams.binary), { recursive: true });
 		}
 	} );
 
 	if (from.getSubdirectory("java")) {
-		var toCompile = from.getSubdirectory("java").list({ recursive: true }).filter( function(node) {
-			if (node.directory) return false;
-			if (!/\.java$/.test(node.pathname.toString())) return false;
+		var toCompile = from.getSubdirectory("java").list({ recursive: true, type: from.list.ENTRY }).filter( function(item) {
+			if (!/\.java$/.test(item.path)) return false;
 			return true;
-		} ).map( function(node) {
-			var rv = node.pathname;
+		} ).map( function(item) {
+			var rv = item.node.pathname;
 			if (jsh.file.filesystems.cygwin) {
 				rv = jsh.file.filesystems.cygwin.toWindows(rv);
 			}
