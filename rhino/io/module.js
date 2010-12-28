@@ -116,11 +116,11 @@ var Streams = new function() {
 	this.binary = new function() {
 		this.copy = function(from,to) {
 			var $r = (function() {
-				if ($context.isJavaType(Packages.java.io.InputStream)(from)) return from;
+				if ($context.api.java.isJavaType(Packages.java.io.InputStream)(from)) return from;
 				if (from.$getInputStream) return from.$getInputStream();
 			})();
 			var $w = (function() {
-				if ($context.isJavaType(Packages.java.io.OutputStream)(to)) return to;
+				if ($context.api.java.isJavaType(Packages.java.io.OutputStream)(to)) return to;
 				if (to.$getOutputStream) return to.$getOutputStream();
 			})();
 			$context.$java.copy($r,$w)
