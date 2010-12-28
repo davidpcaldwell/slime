@@ -69,6 +69,9 @@ var Pathname = function(parameters) {
 	var getBasename = constant(function() {
 		var path = toString();
 		if ($filesystem.isRootPath(path)) return path;
+		if (path.substring(path.length-1) == $filesystem.PATHNAME_SEPARATOR) {
+			path = path.substring(0,path.length-1);
+		}
 		var tokens = path.split($filesystem.PATHNAME_SEPARATOR);
 		return tokens.pop();
 	});
@@ -89,7 +92,8 @@ var Pathname = function(parameters) {
 	var getDirectory = function() {
 		if (!$filesystem.exists(peer)) return null;
 		if (!$filesystem.isDirectory(peer)) return null;
-		return new Directory(new Pathname({ filesystem: $filesystem, peer: peer, directory: true }),peer);
+		var pathname = new Pathname({ filesystem: $filesystem, peer: peer, directory: true });
+		return new Directory(pathname,peer);
 	}
 	this.__defineGetter__("directory", getDirectory);
 
@@ -283,6 +287,8 @@ var Pathname = function(parameters) {
 	}
 
 	var File = function(pathname,peer) {
+		Node.call(this,pathname,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+
 		this.directory = false;
 
 		var resource = new $context.Resource({
@@ -304,9 +310,11 @@ var Pathname = function(parameters) {
 			return resource.read.lines.apply(resource,arguments);
 		}
 	}
-	File.prototype = new Node(this,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+//	File.prototype = new Node(this,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
 
 	var Directory = function(pathname,peer) {
+		Node.call(this,pathname,"");
+
 		this.directory = true;
 
 		this.getFile = function(name) {
@@ -332,7 +340,7 @@ var Pathname = function(parameters) {
 			}
 			if (!filter) filter = function() { return true; }
 
-			var style = (mode.style == arguments.callee.ENTRY) ? arguments.callee.ENTRY : arguments.callee.NODE;
+			var type = (mode.type == arguments.callee.ENTRY) ? arguments.callee.ENTRY : arguments.callee.NODE;
 
 			var rv;
 			if (mode.recursive) {
@@ -398,7 +406,7 @@ var Pathname = function(parameters) {
 			$context.experimental(this,"createTemporary");
 		}
 	}
-	Directory.prototype = new Node(this,"");
+//	Directory.prototype = new Node(this,"");
 }
 
 var Searchpath = function(parameters) {

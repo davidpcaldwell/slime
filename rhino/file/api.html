@@ -304,10 +304,19 @@ END LICENSE
 
 					createFile(dir,"target",1112);
 
+					scope.test(
+						filea.pathname.toString().substring(filea.pathname.toString().length-1)
+						!= filesystem.$unit.getPathnameSeparator()
+					);
+					scope.test(
+						filec.pathname.toString().substring(filec.pathname.toString().length-1)
+						== filesystem.$unit.getPathnameSeparator()
+					);
+
 					scope.test(filea.pathname.basename == "a");
 					scope.test(filec.pathname.basename == "c");
 					scope.test(filed.pathname.basename == "d");
-					scope.test(filec.getRelativePath("..").toString() == dir.pathname.toString());
+					scope.test(filec.getRelativePath("..").directory.toString() == dir.toString());
 
 					scope.test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
 					scope.test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
@@ -1174,8 +1183,7 @@ END LICENSE
 										"file is of correct size."
 									);
 									scope.test( function() {
-											var parentpath = filelink.pathname.parent;
-											return parentpath.toString() == linkdir.pathname.toString();
+											return filelink.parent.toString() == linkdir.toString();
 										},
 										"Softlink parent works correctly."
 									);
