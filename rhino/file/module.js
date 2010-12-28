@@ -89,7 +89,8 @@ var filesystem = $loader.script("filesystem.js", {
 	experimental: $api.experimental,
 	fail: $context.api.java.fail,
 	Streams: streams.Streams,
-	warning: warning
+	warning: warning,
+	Resource: streams.Resource
 });
 
 globals.Pathname = filesystem.Pathname;
@@ -109,3 +110,4 @@ var zip = $loader.script("zip.js", {
 
 $exports.zip = zip.zip;
 $api.experimental($exports, "zip");
+debugger;

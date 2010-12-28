@@ -993,6 +993,7 @@ END LICENSE
 									scope.test( Pathname("/foo").parent.toString() == "/" );
 									scope.test( Pathname("/foo/bar").parent.toString() == "/foo" );
 									scope.test( Pathname("/").parent == null );
+									scope.test( Pathname("/").directory.list()[0].pathname.toString().substring(0,2) != "//" );
 								} else {
 									scope.test( Pathname("C:\\cygwin").parent.toString() == "C:\\" );
 									scope.test( Pathname("C:\\cygwin\\tmp").parent.toString() == "C:\\cygwin" );

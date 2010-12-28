@@ -59,7 +59,7 @@ class NodeImpl extends Filesystem.Node {
 		rv.parent = parent;
 		rv.directory = new Boolean(true);
 		rv.host = new File(directoryHost, leafName);
-		rv.scriptPath = directoryScriptPath + "/" + leafName;
+		rv.scriptPath = directoryScriptPath + (directoryScriptPath.endsWith("/") ? "" : "/") + leafName;
 		rv.softlink = new Boolean(false);
 		rv.exists = new Boolean(true);
 		return rv;
@@ -73,7 +73,7 @@ class NodeImpl extends Filesystem.Node {
 		rv.parent = parent;
 		rv.directory = new Boolean(false);
 		rv.host = new File(directoryHost, filename);
-		rv.scriptPath = directoryScriptPath + "/" + filename;
+		rv.scriptPath = directoryScriptPath + (directoryScriptPath.endsWith("/") ? "" : "/") + filename;
 		rv.softlink = new Boolean(false);
 		rv.exists = new Boolean(true);
 		return rv;

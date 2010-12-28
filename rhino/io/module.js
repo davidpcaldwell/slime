@@ -190,6 +190,38 @@ $exports.Writer = Writer;
 $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
+$exports.Resource = function(p) {
+	var binary = function() {
+		if (p.read && p.read.binary) {
+			return p.read.binary();
+		}		
+	}
+	
+	var text = function() {
+		if (p.read && p.read.text) {
+			return p.read.text();
+		}
+		if (p.read && p.read.binary) {
+			return p.read.binary().character();
+		}
+	}
+
+	this.read = function(mode) {
+		if (p.read && p.read.binary) {
+			if (mode == Streams.binary) return binary();
+			if (mode == Streams.text) return text();
+			if (mode == XML) return text().asXml();
+			if (mode == String) return text().asString();
+			throw "No read() mode specified: argument was " + mode;
+		}
+	}
+
+	this.read.lines = function() {
+		var text = text();
+		return text.readLines.apply(text,arguments);
+	}
+}
+
 $exports.java = new function() {
 	this.adapt = function(object) {
 		if (false) {
