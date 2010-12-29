@@ -49,7 +49,7 @@ int main() {
 				paths[1] = NULL;
 				FTS* fts = fts_open(paths,FTS_LOGICAL,NULL);
 				fts_read(fts);
-				FTSENT* dir = fts_children(fts,NULL);
+				FTSENT* dir = fts_children(fts,0);
 				while(dir != NULL)
 				{
 					if (dir->fts_info == FTS_DP) {
