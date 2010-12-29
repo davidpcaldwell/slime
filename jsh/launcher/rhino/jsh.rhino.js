@@ -18,6 +18,13 @@ if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.package
 	exit(1);
 }
 
+platform.io.copyStream = function(i,o) {
+	if (!arguments.callee.delegate) {
+		arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
+	}
+	arguments.callee.delegate.copy(i,o);
+}
+
 var File = function(path) {
 	this.path = path;
 
