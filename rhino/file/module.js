@@ -104,8 +104,11 @@ $exports.java = $context.api.io.java;
 $api.deprecate($exports,"java");
 
 var zip = $loader.script("zip.js", {
-	Streams: streams.Streams,
-	Pathname: file.Pathname
+	Streams: streams.Streams
+	,Pathname: file.Pathname
+	,InputStream: function(_in) {
+		return $context.api.io.java.adapt(_in)
+	}
 });
 
 $exports.zip = zip.zip;

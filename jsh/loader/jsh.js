@@ -198,6 +198,8 @@ this.jsh = new function() {
 
 		context.api.io = io;
 
+		jsh.io = io;
+
 		jsh.file = loader.bootstrap(
 			context,
 			"rhino/file"
