@@ -95,7 +95,7 @@ var Reader = function(peer) {
 		peer.close();
 	}
 }
-var Writer = function(peer,filesystem) {
+var Writer = function(peer) {
 	this.$getWriter = function() {
 		return peer;
 	}
@@ -229,6 +229,10 @@ $exports.java = new function() {
 			return new InputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
 			return new OutputStream(object);
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
+			return new Reader(object);
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
+			return new Writer(object);
 		} else {
 			var type = (function() {
 				if (object.getClass) {
