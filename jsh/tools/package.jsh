@@ -62,8 +62,7 @@ parameters.options.module.forEach( function(module) {
 	var name = tokens[0];
 	var pathname = jsh.file.Pathname(tokens[1]);
 	if (pathname.directory) {
-		slime.build.jsh(pathname.directory,to.getRelativePath("$modules/" + name).createDirectory({recursive: true}
-));
+		slime.build.jsh(pathname.directory,to.getRelativePath("$modules/" + name).createDirectory({recursive: true}));
 	} else {
 		throw "Unimplemented: bundle slime format module.";
 	}
@@ -72,5 +71,6 @@ parameters.options.module.forEach( function(module) {
 to.getRelativePath("main.jsh").write(parameters.options.script.file.read(jsh.file.Streams.binary));
 
 if (!parameters.options.directory) {
+	parameters.options.to.parent.createDirectory({ ifExists: function(d) { return false; }});
 	jsh.file.zip({ from: to.pathname, to: parameters.options.to });
 }
