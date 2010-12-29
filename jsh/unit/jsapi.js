@@ -89,24 +89,36 @@ $exports.tests = new function() {
 
 						api.$unit.context = eval(String(contextScript));
 
-						var initializes = html.scripts("initialize");
-						api.$unit.initialize = function(scope) {
-							for (var i=0; i<initializes.length; i++) {
-								eval(String(initializes[i]));
-							}
-						}
-
-						var tests = html.scripts("tests");
-						api.$unit.execute = function(scope) {
-							for (var i=0; i<tests.length; i++) {
+						if (api.$unit.context) {
+							api.$unit.create = function() {
 								var module = api.module;
-								scope.scenario(new function() {
-									this.name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : "<script>";
-									this.execute = function(scope) {
-										eval(String(tests[i]));
-									}
-								});
 
+								var initializes = html.scripts("initialize");
+								api.$unit.initialize = function(scope) {
+									for (var i=0; i<initializes.length; i++) {
+										eval(String(initializes[i]));
+									}
+								}
+
+								var tests = html.scripts("tests");
+								api.$unit.execute = function(scope) {
+									for (var i=0; i<tests.length; i++) {
+										scope.scenario(new function() {
+											this.name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : "<script>";
+											this.execute = function(scope) {
+												eval(String(tests[i]));
+											}
+										});
+									}
+								}
+							}
+						} else {
+							api.$unit.create = function() {
+								api.$unit.initialize = function(scope) {
+								}
+
+								api.$unit.execute = function(scope) {
+								}
 							}
 						}
 					})();
@@ -195,6 +207,8 @@ $exports.tests = new function() {
 					suite.item.loadTestsInto(scope,suite.context);
 
 					scope.module = suite.item.loadWith(scope.$unit.context);
+
+					scope.$unit.create();
 				} catch (e) {
 					//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
 					scope.$unit.initialize = function() {
@@ -271,7 +285,6 @@ $exports.doc = function(modules,to) {
 
 			//	TODO	document and enhance this ability to import documentation from other files
 			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
-				debugger;
 				var x = e;
 				while(x.@jsapi::reference.length() > 0) {
 					x = eval(String(x.@jsapi::reference));

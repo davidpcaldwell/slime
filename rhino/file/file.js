@@ -57,7 +57,11 @@ var Pathname = function(parameters) {
 	})();
 
 	var toString = constant(function() {
-		return $filesystem.peerToString(peer);
+		var rv = $filesystem.peerToString(peer);
+		if (parameters.directory) {
+			rv += $filesystem.PATHNAME_SEPARATOR;
+		}
+		return rv;
 	});
 
 	this.toString = toString;
@@ -65,6 +69,9 @@ var Pathname = function(parameters) {
 	var getBasename = constant(function() {
 		var path = toString();
 		if ($filesystem.isRootPath(path)) return path;
+		if (path.substring(path.length-1) == $filesystem.PATHNAME_SEPARATOR) {
+			path = path.substring(0,path.length-1);
+		}
 		var tokens = path.split($filesystem.PATHNAME_SEPARATOR);
 		return tokens.pop();
 	});
@@ -85,7 +92,8 @@ var Pathname = function(parameters) {
 	var getDirectory = function() {
 		if (!$filesystem.exists(peer)) return null;
 		if (!$filesystem.isDirectory(peer)) return null;
-		return new Directory(this,peer);
+		var pathname = new Pathname({ filesystem: $filesystem, peer: peer, directory: true });
+		return new Directory(pathname,peer);
 	}
 	this.__defineGetter__("directory", getDirectory);
 
@@ -279,37 +287,36 @@ var Pathname = function(parameters) {
 	}
 
 	var File = function(pathname,peer) {
+		Node.call(this,pathname,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+
 		this.directory = false;
 
-		this.read = function(mode) {
-			var text = function() {
-				return $filesystem.read.character(peer);
+		var resource = new $context.Resource({
+			read: {
+				binary: function() {
+					return $filesystem.read.binary(peer);
+				},
+				text: function() {
+					return $filesystem.read.character(peer);
+				}
 			}
+		});
 
-			if (mode == $context.Streams.binary) return $filesystem.read.binary(peer);
-			if (mode == $context.Streams.text) return text();
-			if (mode == XML) return text().asXml();
-			if (mode == String) return text().asString();
-			throw "No read() mode specified: argument was " + mode;
+		this.resource = resource;
+
+		this.read = function(mode) {
+			return resource.read(mode);
 		}
 
 		this.readLines = function() {
-			var text = this.read(Streams.text);
-			return text.readLines.apply(text,arguments);
+			return resource.read.lines.apply(resource,arguments);
 		}
-
-		this.readBinary = function() {
-			return this.read(Streams.binary);
-		}
-		this.readText = function() {
-			return this.read(Streams.text);
-		}
-		$context.deprecate(this, "readBinary");
-		$context.deprecate(this, "readText");
 	}
-	File.prototype = new Node(this,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+//	File.prototype = new Node(this,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
 
 	var Directory = function(pathname,peer) {
+		Node.call(this,pathname,"");
+
 		this.directory = true;
 
 		this.getFile = function(name) {
@@ -327,13 +334,9 @@ var Pathname = function(parameters) {
 			}
 		}
 
+		var self = this;
+
 		var list = function(mode) {
-			if (mode instanceof RegExp) {
-				warning("DEPRECATED: single-argument version of directory list() that takes a RegExp");
-				mode = {
-					filter: mode
-				};
-			}
 			if (!mode) mode = {};
 			var filter = mode.filter;
 			if (filter instanceof RegExp) {
@@ -341,9 +344,22 @@ var Pathname = function(parameters) {
 			}
 			if (!filter) filter = function() { return true; }
 
-			if (mode.recursive) {
-				var rv = [];
+			var type = (mode.type == null) ? arguments.callee.NODE : mode.type;
+			var toReturn = function(rv) {
+				var map = function(node) {
+					return type.create(self,node);
+				};
 
+				if (type.filter) {
+					rv = rv.filter(type.filter);
+				}
+
+				return rv.map(map);
+			};
+
+			var rv;
+			if (mode.recursive) {
+				rv = [];
 				var add = function(dir) {
 					var items = dir.list();
 					items.forEach( function(item) {
@@ -358,12 +374,12 @@ var Pathname = function(parameters) {
 
 				add(this);
 
-				return rv;
+				return toReturn(rv);
 			} else {
 				var createNodesFromPeers = function(peers) {
 					//	This function is written with this kind of for loop to allow accessing a Java array directly
-					//	It also uses an optimization, using the peer's directory property if it has one, which a peer would not be required to
-					//	have
+					//	It also uses an optimization, using the peer's directory property if it has one, which a peer would not be
+					//	required to have
 					var rv = [];
 					for (var i=0; i<peers.length; i++) {
 						var pathname = new Pathname( { filesystem: $filesystem, peer: peers[i] } );
@@ -377,18 +393,37 @@ var Pathname = function(parameters) {
 					return rv;
 				}
 				var peers = $filesystem.list(peer);
-				var rv = createNodesFromPeers(peers);
+				rv = createNodesFromPeers(peers);
 				rv = rv.filter( filter );
-				return rv;
+				return toReturn(rv);
 			}
 		}
 
 		this.list = list;
-
-		this.listPattern = function(pattern) {
-			return list({ filter: pattern });
+		this.list.NODE = {
+			create: function(d,n) {
+				return n;
+			}
+		};
+		this.list.ENTRY = {
+			create: function(d,n) {
+				return {
+					path: n.toString().substring(d.toString().length),
+					node: n
+				}
+			}
+		};
+		this.list.RESOURCE = {
+			filter: function(n) {
+				return !n.directory
+			},
+			create: function(d,n) {
+				return {
+					path: n.toString().substring(d.toString().length).replace(/\\/g, "/"),
+					resource: n.resource
+				}
+			}
 		}
-		$context.deprecate(this, "listPattern");
 
 		if ($filesystem.temporary) {
 			this.createTemporary = function(parameters) {
@@ -397,7 +432,7 @@ var Pathname = function(parameters) {
 			$context.experimental(this,"createTemporary");
 		}
 	}
-	Directory.prototype = new Node(this,"");
+//	Directory.prototype = new Node(this,"");
 }
 
 var Searchpath = function(parameters) {

@@ -28,7 +28,15 @@ public abstract class Filesystem {
 	protected abstract String getPathnameSeparatorImpl();
 	protected abstract String getSearchpathSeparatorImpl();
 	protected abstract String getLineSeparatorImpl();
-	
+
+	/**
+	 *	Returns a node corresponding to the given path in this filesystem.
+	 *
+	 *	@param path A string representing a path in this filesystem; will be an absolute path (see os.js newPeer(), which uses
+	 *		the getNode(java.io.File) method if the path is relative)
+	 *	@return A Node corresponding to that path.
+	 *	@throws IOException
+	 */
 	public final Node getNode(String path) throws IOException {
 		return createNode(path);
 	}
@@ -123,6 +131,10 @@ public abstract class Filesystem {
 				} catch (IOException e) {
 					throw new IOException(e.getMessage() + " path=[" + file.getPath() + "]", e);
 				}
+			}
+
+			public String toString() {
+				return getClass().getName() + " file= " + file;
 			}
 			
 			public boolean exists() {
