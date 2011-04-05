@@ -59,14 +59,14 @@ class NodeImpl extends Filesystem.Node {
 		rv.parent = parent;
 		rv.directory = new Boolean(true);
 		rv.host = new File(directoryHost, leafName);
-		rv.scriptPath = directoryScriptPath + (directoryScriptPath.endsWith("/") ? "" : "/") + leafName;
+		rv.scriptPath = directoryScriptPath + ( (directoryScriptPath.endsWith("/")) ? "" : "/" ) + leafName;
 		rv.softlink = new Boolean(false);
 		rv.exists = new Boolean(true);
 		return rv;
 	}
 
 	//	ordinary file
-	static NodeImpl createFile(CygwinFilesystem parent, NodeImpl directory, String filename) throws IOException {
+	static NodeImpl createFile(CygwinFilesystem parent, NodeImpl directory, String leafName) throws IOException {
 		File directoryHost = directory.getHostFile();
 		String directoryScriptPath = directory.getScriptPath();
 		check(parent);
@@ -74,8 +74,8 @@ class NodeImpl extends Filesystem.Node {
 		NodeImpl rv = new NodeImpl();
 		rv.parent = parent;
 		rv.directory = new Boolean(false);
-		rv.host = new File(directoryHost, filename);
-		rv.scriptPath = directoryScriptPath + (directoryScriptPath.endsWith("/") ? "" : "/") + filename;
+		rv.host = new File(directoryHost, leafName);
+		rv.scriptPath = directoryScriptPath + ( (directoryScriptPath.endsWith("/")) ? "" : "/" ) + leafName;
 		rv.softlink = new Boolean(false);
 		rv.exists = new Boolean(true);
 		return rv;
@@ -89,7 +89,7 @@ class NodeImpl extends Filesystem.Node {
 		rv.parent = parent;
 		rv.directory = null;
 		rv.host = null;
-		rv.scriptPath = directoryScriptPath + "/" + leafName;
+		rv.scriptPath = directoryScriptPath + ( (directoryScriptPath.endsWith("/")) ? "" : "/" ) + leafName;
 		rv.softlink = new Boolean(true);
 		//	Softlink may point to non-existent file
 		rv.exists = null;

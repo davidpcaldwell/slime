@@ -46,6 +46,7 @@ var Pathname = function(parameters) {
 		if (parameters.$peer) warning("DEPRECATED: new Pathname() parameter '$peer'");
 		if (parameters.path) warning("DEPRECATED: new Pathname() parameter 'path'");
 		var path = defined(parameters.path,parameters.$path);
+		//	TODO	below line appears to invoke nonexistent method
 		if (path) return $filesystem.getPeer(path);
 		var peer = defined(parameters.peer,parameters.$peer);
 		if (peer) return peer;
@@ -58,7 +59,7 @@ var Pathname = function(parameters) {
 
 	var toString = constant(function() {
 		var rv = $filesystem.peerToString(peer);
-		if (parameters.directory) {
+		if (parameters.directory && (rv.substring(-1) != $filesystem.PATHNAME_SEPARATOR)) {
 			rv += $filesystem.PATHNAME_SEPARATOR;
 		}
 		return rv;
