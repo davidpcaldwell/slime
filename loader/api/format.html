@@ -56,16 +56,6 @@ END LICENSE
 			The type of a value (for example, the types of non-object properties, or function arguments or return values) can be
 			specified using a <code>span.type</code> at the beginning of their content.
 		</p>
-		<!--	TODO describe type declarations in a paragraph	-->
-		<!--
-			<div class="type">
-				<a class="type" name="types.__NAME__">__NAME__</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-				</ul>
-			</div>
-		-->
 		<p>
 			These property <code>li</code> elements each contain a <code>div.name</code>. This is the name of
 			the property.
@@ -145,6 +135,25 @@ END LICENSE
 								describe the use of this object as a constructor.	-->
 			</p>
 		</div>
+		<div>
+			<h2>Types</h2>
+			<p>
+				Types can be declared anywhere using a <code>div.type</code>. They should contain an <code>a.type</code> that
+				contains the name of the type (a logical name for display) and also provides a <code>name</code> attribute so that
+				the type can be hyperlinked (convention is to use <code>types.<i>name</i></code>). Types then contain a
+				description <code>span</code> and a <code>ul</code> of properties (preceded by a <code>div.label</code> with the
+				text "has properties:"). Other code can then link to types using links to <code>#types.<i>name</i></code>.
+			</p>
+			<!--
+				<div class="type">
+					<a class="type" name="types.__NAME__">__NAME__</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</div>
+			-->
+		</div>
 	</div>
 	<div>
 		<h1>Unit testing</h1>
@@ -155,19 +164,23 @@ END LICENSE
 		<p>
 			Anywhere in the document, one may declare one or more scripts with
 			<code>type="application/x.jsapi#scope"</code>; these will be executed before anything else in the scope in which tests
-			will be executed.
+			will be executed. They will be executed before the <code>module</code> object is created.
 		</p>
 		<p>
-			In the context div, we should have a script with <code>type="application/x.jsapi#context"</code> that contains the code
-			necessary to instantiate the context object to be used for unit testing.
+			In the context div, we should have one or more scripts with <code>type="application/x.jsapi#context"</code> that
+			contains a potential module context as a literal. The tests will be executed once for each context provided. If the
+			literal embedded in any of these scripts evaluates to <code>null</code>, the context will be ignored.
 		</p>
 		<p>
 			Throughout the code we can have scripts with <code>type="application/x.jsapi#initialize"</code> that contain
-			initialization code; during the initialization phase of the tests, these will be run in sequence.
+			initialization code; during the initialization phase of the tests, these will be run in sequence. They will have access
+			to the <code>module</code> object instantiated for the current context.
 		</p>
 		<p>
-			Throughout the code we can have scripts with <code>type="application/x.jsapi#tests"</code> that contain tests to be run,
-			with a variable named <code>scope</code> corresponding to the test scope (see <code>js/api/unit.before.js</code>). These
+			Throughout the code we can have scripts with <code>type="application/x.jsapi#tests"</code> that contain tests to be run.
+			These scripts also will have access to the <code>module</code> object, representing the module being tested. Further,
+			they are supplied with
+			a variable named <code>scope</code> corresponding to the test scope (see <code>js/api/unit.before.js</code>). These
 			script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
 			<code>http://www.inonit.com/jsapi</code>) which will be used as the scenario label when executing the tests within the
 			element.

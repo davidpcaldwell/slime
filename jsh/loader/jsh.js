@@ -158,6 +158,9 @@ this.jsh = new function() {
 
 	new function() {
 		var context = {};
+
+		context._streams = new Packages.inonit.script.runtime.io.Streams();
+
 		context.api = {
 			js: js,
 			java: java
@@ -184,6 +187,18 @@ this.jsh = new function() {
 				paths: convert( $shell.properties.cygwin.paths )
 			}
 		}
+
+		var io = loader.bootstrap({
+			$java: new Packages.inonit.script.runtime.io.Streams()
+			,stdio: context.stdio
+			,api: {
+				java: java
+			}
+		}, "rhino/io");
+
+		context.api.io = io;
+
+		jsh.io = io;
 
 		jsh.file = loader.bootstrap(
 			context,

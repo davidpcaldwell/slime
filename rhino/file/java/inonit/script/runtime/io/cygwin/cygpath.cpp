@@ -22,6 +22,7 @@
 
 int main() {
 	char buf[MAX_PATH+2];
+	ssize_t size;
 	int more = 1;
 	while(more) {
 		std::cin.getline(buf,MAX_PATH+1);
@@ -32,12 +33,14 @@ int main() {
 				break;
 			case 'w':
 				char wbuf[MAX_PATH+1];
-				cygwin_conv_to_win32_path(buf+1, wbuf);
+				size = cygwin_conv_path(CCP_POSIX_TO_WIN_A, buf+1, NULL, 0);
+				cygwin_conv_path(CCP_POSIX_TO_WIN_A, buf+1, wbuf, size);
 				std::cout << wbuf << "\n";
 				break;
 			case 'u':
 				char ubuf[MAX_PATH+1];
-				cygwin_conv_to_posix_path(buf+1, ubuf);
+				size = cygwin_conv_path(CCP_WIN_A_TO_POSIX, buf+1, NULL, 0);
+				cygwin_conv_path(CCP_WIN_A_TO_POSIX, buf+1, ubuf, size);
 				std::cout << ubuf << "\n";
 				break;
 			case 'l':
@@ -46,7 +49,7 @@ int main() {
 				paths[1] = NULL;
 				FTS* fts = fts_open(paths,FTS_LOGICAL,NULL);
 				fts_read(fts);
-				FTSENT* dir = fts_children(fts,NULL);
+				FTSENT* dir = fts_children(fts,0);
 				while(dir != NULL)
 				{
 					if (dir->fts_info == FTS_DP) {

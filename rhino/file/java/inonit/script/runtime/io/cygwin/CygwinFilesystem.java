@@ -302,15 +302,23 @@ public class CygwinFilesystem extends Filesystem {
 		return paths.delete(node);
 	}
 
-	public boolean mkdir(NodeImpl node) throws IOException {
+	File toHostFileImpl(String path) throws IOException {
+		return new java.io.File(paths.toWindowsPath(path));
+	}
+
+	String toScriptPath(String file) throws IOException {
+		return paths.toUnixPath(file);
+	}
+
+	boolean mkdir(NodeImpl node) throws IOException {
 		return paths.mkdir(node);
 	}
 
-	public boolean mkdirs(NodeImpl node) throws IOException {
+	boolean mkdirs(NodeImpl node) throws IOException {
 		return paths.mkdirs(node);
 	}
 
-	public Filesystem.Node[] list(NodeImpl node, FilenameFilter pattern) throws IOException {
+	Filesystem.Node[] list(NodeImpl node, FilenameFilter pattern) throws IOException {
 		String[] names = paths.list(node);
 		ArrayList unfiltered = new ArrayList();
 		for (int i=0; i<names.length; i++) {
@@ -318,18 +326,18 @@ public class CygwinFilesystem extends Filesystem {
 			if (filename.endsWith("/")) {
 				//	directory
 				String leafName = filename.substring(0, filename.length() - 1);
-				NodeImpl n = NodeImpl.createDirectory(this, node.getHostFile(), node.getScriptPath(), leafName);
+				NodeImpl n = NodeImpl.createDirectory(this, node, leafName);
 				unfiltered.add(n);
 			} else if (filename.endsWith("@")) {
 				//	softlink; could be directory, may not be
 				String leafName = filename.substring(0, filename.length() - 1);
-				NodeImpl n = NodeImpl.createLink(this, node.getScriptPath(), leafName);
+				NodeImpl n = NodeImpl.createLink(this, node, leafName);
 				unfiltered.add(n);
 			} else if (filename.endsWith("|") || filename.endsWith(">") || filename.endsWith("=")) {
 				//	Ignore (FIFO, "door", and AF_UNIX socket, respectively)
 			} else {
 				//	ordinary file
-				NodeImpl n = NodeImpl.createFile(this, node.getHostFile(), node.getScriptPath(), filename);
+				NodeImpl n = NodeImpl.createFile(this, node, filename);
 				unfiltered.add(n);
 			}
 		}
@@ -349,14 +357,6 @@ public class CygwinFilesystem extends Filesystem {
 		}
 
 		return (Filesystem.Node[])rv.toArray(new Filesystem.Node[0]);
-	}
-
-	File toHostFileImpl(String path) throws IOException {
-		return new java.io.File(paths.toWindowsPath(path));
-	}
-
-	String toScriptPath(String file) throws IOException {
-		return paths.toUnixPath(file);
 	}
 	
 	//

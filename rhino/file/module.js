@@ -19,163 +19,99 @@ var stdio = ($context.stdio) ? $context.stdio : {
 	$out: Packages.java.lang.System.out
 }
 
+var warning = function(message) {
+	stdio.$err.println(message);
+	debugger;
+}
+
+var globals = {};
+var defaults = {};
+
 if (!$context.api) throw "Missing 'api' member of context";
-//	TODO	remove
-var $load = function(context,path) {
-	return $loader.script(path,context);
-};
-var loadTo = function(to,context,name) {
-	var getter = function(name) {
-		return function() {
-			return loaded[name];
-		}
-	};
-	var setter = function(name) {
-		return function(v) {
-			loaded[name] = v;
-		}
-	};
-	var loaded = $load(context,name);
-	for (var x in loaded) {
-		if (loaded.__lookupGetter__(x)) {
-			to.__defineGetter__(x, getter(x));
-			to.__defineSetter__(x, setter(x));
-		} else {
-			to[x] = loaded[x];
-		}
-	}
-};
-
-var streams = $loader.script("streams.js", {
-	stdio: stdio,
-	isJavaType: $context.api.java.isJavaType,
-	api: {
-		js: $context.api.js,
-		java: $context.api.java
-	},
-	deprecate: $context.api.js.deprecate,
-	$java: new Packages.inonit.script.runtime.io.Streams()
-});
+var streams = $context.api.io;
 $exports.Streams = streams.Streams;
+$api.deprecate($exports,"Streams");
 
-var context = {
-	deprecate: $api.deprecate,
-	experimental: $api.experimental,
-	defined: $context.api.js.defined,
-	fail: $context.api.java.fail,
-	warning: function(message) {
-		stdio.$err.println(message);
-		debugger;
-	},
-	constant: $context.api.js.constant,
-	isJavaType: $context.api.java.isJavaType,
+var os = $loader.script("os.js", new function() {
+	this.$pwd = $context.$pwd;
+	this.cygwin = $context.cygwin;
+	this.streams = streams;
+	this.deprecate = $api.deprecate;
+	this.isJavaType = $context.api.java.isJavaType;
+	this.defined = $context.api.js.defined;
 
-	$pwd: $context.$pwd,
-	cygwin: $context.cygwin,
-	addFinalizer: $context.addFinalizer,
-
-	streams: streams,
-	Streams: streams.Streams
-}
-
-var scope = {};
-loadTo(scope, context, "os.js");
-context.defaults = scope.defaults;
-loadTo(scope, context, "filesystem.js");
-context.Pathname = scope.Pathname;
-context.Searchpath = scope.Searchpath;
-
-var zip = $load({
-	Streams: streams.Streams
-	,Pathname: scope.Pathname
-	,InputStream: streams.InputStream
-}, "zip.js");
-
-var exportProperty = function(name) {
-	$exports.__defineGetter__(name, function() {
-		return scope[name];
+	//	These next three methods are defined this way because of dependencies on filesystem.js: presumably these are
+	//	cross-dependencies
+	this.__defineGetter__("Searchpath", function() {
+		return globals.Searchpath;
 	});
-	$exports.__defineSetter__(name, function(v) {
-		scope[name] = v;
+	this.__defineGetter__("Pathname", function() {
+		return globals.Pathname;
 	});
-}
-exportProperty("cygwin");
-$api.deprecate($exports,"cygwin");
-
-exportProperty("filesystems");
-$exports.__defineGetter__("filesystem", function() {
-	return scope.defaults.filesystem;
-});
-$exports.__defineSetter__("filesystem", function(v) {
-	scope.defaults.filesystem = v;
+	this.__defineGetter__("addFinalizer", function() {
+		return globals.addFinalizer;
+	});
 });
 
-$exports.warning = scope.warning;
-$api.deprecate($exports, "warning");
+$exports.filesystems = os.filesystems;
 
-$exports.Pathname = scope.Pathname;
-$exports.Searchpath = scope.Searchpath;
-exportProperty("workingDirectory");
-
-$exports.Filesystem = scope.Filesystem;
 //	Possibly used for initial attempt to produce HTTP filesystem, for example
+$exports.Filesystem = os.Filesystem;
 $api.experimental($exports,"Filesystem");
 
-$exports.java = new function() {
-	this.adapt = function(object) {
-		if (false) {
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
-			return new streams.InputStream(object);
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new streams.OutputStream(object);
-		} else {
-			var type = (function() {
-				if (object.getClass) {
-					return " (Java class: " + object.getClass().getName() + ")";
-				}
-				var rv = " typeof=" + typeof(object);
-				var props = [];
-				for (var x in object) {
-					props.push(x);
-				}
-				rv += " properties=" + props.join(",");
-				return rv;
-			})();
-			throw "Unimplemented java.adapt: " + type + object;
+//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
+defaults.filesystem = (os.filesystems.cygwin) ? os.filesystems.cygwin : os.filesystems.os;
+
+var workingDirectory = function() {
+	if ($context.$pwd) {
+		var osdir = os.filesystems.os.Pathname($context.$pwd);
+		if (defaults.filesystem == os.filesystems.cygwin) {
+			osdir = os.filesystems.cygwin.toUnix(osdir);
 		}
+		return osdir.directory;
 	}
-}
+};
+$exports.__defineGetter__("workingDirectory", workingDirectory);
 
-$exports.$java = $exports.java;
-$api.deprecate($exports,"$java");
+//	TODO	figure out how to make this work properly
+$exports.__defineGetter__("filesystem", function() {
+	return defaults.filesystem;
+});
+$exports.__defineSetter__("filesystem", function(v) {
+	defaults.filesystem = v;
+});
 
-if (!$exports.warning) {
-	$exports.warning = function(message) {
-		debugger;
-		err.println(message);
+var file = $loader.script("file.js", {
+	defined: $context.api.js.defined,
+	defaults: defaults,
+	constant: $context.api.js.constant,
+	deprecate: $api.deprecate,
+	experimental: $api.experimental,
+	fail: $context.api.java.fail,
+	Streams: streams.Streams,
+	warning: warning,
+	Resource: streams.Resource
+});
+
+globals.Pathname = file.Pathname;
+globals.Searchpath = file.Searchpath;
+globals.addFinalizer = file.addFinalizer;
+
+$exports.Pathname = file.Pathname;
+$exports.Searchpath = file.Searchpath;
+
+$exports.java = $context.api.io.java;
+$api.deprecate($exports,"java");
+
+var zip = $loader.script("zip.js", {
+	Streams: streams.Streams
+	,Pathname: file.Pathname
+	,InputStream: function(_in) {
+		return $context.api.io.java.adapt(_in)
 	}
-}
-$api.deprecate($exports,"warning");
+});
 
 $exports.zip = zip.zip;
 $exports.unzip = zip.unzip;
 $api.experimental($exports, "zip");
 $api.experimental($exports, "unzip");
-
-$exports.$script = new function() {
-	this.setFilesystem = function(fs) {
-		scope.filesystem = fs;
-	}
-	$api.deprecate(this, "setFilesystem");
-	this.peers = new function() {
-		this.Reader = streams.Reader;
-		$api.deprecate(this, "Reader");
-		this.Writer = streams.Writer;
-		$api.deprecate(this, "Writer");
-	}
-	this.__defineGetter__("filesystem", function() {
-		return scope.filesystem;
-	});
-	$api.deprecate(this,"filesystem");
-}
-$api.deprecate($exports,"$script");

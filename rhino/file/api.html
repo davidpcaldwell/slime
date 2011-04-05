@@ -14,7 +14,7 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html>
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Filesystem API</title>
 </head>
@@ -65,261 +65,98 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
+		<script type="application/x.jsapi#scope"><![CDATA[
+			var $Context = function(p) {
+				this.api = new function() {
+					var API = this;
+					this.js = $jsapi.module("js/object");
+					var java = $jsapi.module({
+						classLoader: $host.getClassLoader()
+					}, "rhino/host");
+					this.java = java;
+					this.io = $jsapi.module("rhino/io", {
+						$java: new Packages.inonit.script.runtime.io.Streams()
+						,api: {
+							java: java
+						}
+					});
+				}
+				this.$pwd = jsh.shell.properties.user.dir;
+				this.addFinalizer = jsh.loader.addFinalizer;
+
+				if (p && p.cygwin) {
+					//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+					var System = Packages.java.lang.System;
+					this.cygwin = {
+						root: String( System.getProperty("cygwin.root") )
+					};
+					if (System.getProperty("cygwin.paths")) {
+						//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+						//	the SDK server
+						//	TODO	check this
+						this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+					}
+				}
+			}
+		]]></script>
+		<!--	TODO	add round of tests using cygwin.root but not cygwin.paths?	-->
+		<script type="application/x.jsapi#context">
+			new $Context();
+		</script>
+		<script type="application/x.jsapi#context">
+			(function() {
+				if (Packages.java.lang.System.getProperty("cygwin.root")) {
+					return new $Context({ cygwin: true });
+				} else {
+					return null;
+				}
+			})();
+		</script>
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<script type="application/x.jsapi#scope"><![CDATA[
+			var filesystem;
+
+			var helpers = new function() {
+				var module;
+
+				this.initialize = function() {
+					module = arguments[0];
+					filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+				}
+
+				this.newTemporaryDirectory = function() {
+					var $dir = $java.io.newTemporaryDirectory();
+					$dir.mkdir();
+					return filesystem.$unit.Pathname(filesystem.$unit.getNode($dir)).directory;
+				}
+
+				this.createFile = function(base,name,length) {
+					var pathname = base.getRelativePath(name);
+					var $out = pathname.write(module.Streams.binary);
+					if (length) {
+						for (var i=0; i<length; i++) {
+							$out.$getOutputStream().write(0);
+						}
+					}
+					$out.close();
+					return pathname.file;
+				}
+
+				this.createDirectory = function(base,name) {
+					return base.getRelativePath(name).createDirectory();
+				}
+			}
+
+			var newTemporaryDirectory = helpers.newTemporaryDirectory;
+			var createFile = helpers.createFile;
+			var createDirectory = helpers.createDirectory;
+		]]></script>
+		<script type="application/x.jsapi#initialize"><![CDATA[
+			helpers.initialize(module);
+		]]></script>
 		<ul>
-			<li class="object">
-				<div class="name">Streams</div>
-				Provides operations for processing streams of input or output.
-				<ul>
-					<li class="object">
-						<div class="name">binary</div>
-						<span>Provides operations for processing byte streams.</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">copy</div>
-								<span>Copies a byte input stream to a byte output stream.</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type"><a href="#types.binput">byte input stream</a></span>
-											<span>A stream from which to copy bytes.</span>
-										</li>
-										<li class="value">
-											<span class="type"><a href="#types.boutput">byte output stream</a></span>
-											<span>A stream to which to copy bytes.</span>
-										</li>
-									</ol>
-								</div>
-								<div class="type">
-									<a class="type" name="types.binput">byte input stream</a>
-									A stream from which bytes may be read.
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											Closes the underlying stream.
-										</li>
-										<li class="function">
-											<div class="name">asProperties</div>
-											<span>Reads a Java properties file into a JavaScript object.</span>
-											<div>
-												Each Java property maps to a property of the returned object.  Properties are nested according to
-												the convention of delimiting property names with the dot (".") character.
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">object</span> An object containing properties corresponding to the properties
-												in the Java properties file.
-											</div>
-										</li>
-									</ul>
-								</div>
-								<div class="type">
-									<a class="type" name="types.boutput">byte output stream</a>
-									<span>A stream to which bytes may be written.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											<span>Closes the underlying stream.</span>
-										</li>
-									</ul>
-								</div>
-							</li>
-							<li class="constructor">
-								<div class="name">Buffer</div>
-								<span>Creates a buffer to which bytes can be written, and later read.</span>
-								<div class="instances">
-									<div class="label">Instances</div>
-									<span>
-										Instances support
-										<span class="type"><a href="#types.boutput">byte output stream</a></span>
-										as well as the specified API.
-									</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											<span>
-												Closes the buffer so that no additional bytes can be written to it.  Until the
-												buffer is closed, an attempt to read from it cannot reach the end of the stream, but
-												will instead block waiting for more input.
-											</span>
-										</li>
-										<li class="function">
-											<div class="name">readBinary</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.binput">byte input stream</a></span>
-												<span>A stream from which the bytes in this buffer may be read.</span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">readText</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.cinput">character input stream</a></span>
-												<span>A stream from which the characters in this buffer may be read.</span>
-											</div>
-										</li>
-									</ul>
-								</div>
-							</li>
-						</ul>
-					</li>
-					<li class="object">
-						<div class="name">text</div>
-						<span>Provides operations for processing character streams.</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">copy</div>
-								<span>Copies a character input stream to a character output stream.</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type"><a href="#types.cinput">character input stream</a></span>
-											<span>A stream from which to copy characters.</span>
-										</li>
-										<li class="value">
-											<span class="type"><a href="#types.coutput">character output stream</a></span>
-											<span>A stream to which to copy characters.</span>
-										</li>
-									</ol>
-								</div>
-								<div class="type">
-									<a class="type" name="types.cinput">character input stream</a>
-									<span>A stream from which characters may be read.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											<span>Closes the underlying stream.</span>
-										</li>
-										<li class="function">
-											<div class="name">readLines</div>
-											<span>
-												Iterates through the lines in this stream, sending each in succession to a callback function.
-											</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="function">
-														<span>
-															A callback function.
-														</span>
-														<div class="arguments">
-															<div class="label">Arguments</div>
-															<ol>
-																<li><span class="type">string</span> a line read from this stream.</li>
-															</ol>
-														</div>
-														<div class="returns">
-															<div class="label">Returns</div>
-															<span>If anything other than <code>undefined</code> is returned, <code>readLines</code>
-															will terminate reading the stream (and pass the value to <code>onEnd</code>; see the
-															second argument to <code>readLines</code>).</span>
-														</div>
-													</li>
-													<li class="object">
-														<span>(optional) An object representing the mode of operation of this method.</span>
-														<div class="label">has properties:</div>
-														<ul>
-															<li class="value">
-																<div class="name">ending</div>
-																<span class="type">string</span>
-																<span>(optional) The line terminator to use when parsing the stream. The underlying
-																	platform line terminator will be used if not specified.</span>
-															</li>
-															<li class="function">
-																<div class="name">onEnd</div>
-																<span>
-																	(optional) A function that will be invoked when line processing terminates. The
-																	function will be invoked with this stream as <code>this</code>. The default
-																	implementation closes the stream.
-																</span>
-																<div class="arguments">
-																	<div class="label">Arguments</div>
-																	<ol>
-																		<li>
-																			(optional) The value returned from the line processing function, if
-																			processing terminated because that function returned a value (see
-																			the first argument of <code>readLines</code>).
-																		</li>
-																	</ol>
-																</div>
-															</li>
-														</ul>
-													</li>
-												</ol>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">asString</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">string</span>
-												<span>The entire content of this stream as a single <code>string</code>.</span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">asXml</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">XMLList</span>
-												<span>The entire content of this stream as a single <code>XMLList</code>.</span>
-											</div>
-										</li>
-									</ul>
-								</div>
-								<div class="type">
-									<a class="type" name="types.coutput">character output stream</a>
-									<span>A stream to which characters can be written.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											<span>Closes the underlying stream.</span>
-										</li>
-										<li class="function">
-											<div class="name">write</div>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">string</span> <span>A string to write to the stream.</span>
-													</li>
-												</ol>
-											</div>
-										</li>
-									</ul>
-								</div>
-							</li>
-						</ul>
-					</li>
-					<li class="value">
-						<div class="name">stdout</div>
-						<span class="type">
-							<a href="#types.boutput">byte output stream</a>
-							<a href="#types.coutput">character output stream</a>
-						</span>
-						<span>The standard output stream.</span>
-					</li>
-					<li class="value">
-						<div class="name">stderr</div>
-						<span class="type">
-							<a href="#types.boutput">byte output stream</a>
-							<a href="#types.coutput">character output stream</a>
-						</span>
-						<span>The standard error stream.</span>
-					</li>
-				</ul>
-			</li>
 			<li class="object">
 				<div class="name">filesystems</div>
 				Implementations of an abstract filesystem API that are available to scripts.
@@ -455,6 +292,50 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span class="type"><a href="#types.Pathname">Pathname</a></span> The pathname represented by the argument.
 				</div>
+				<script type="application/x.jsapi#tests">
+					var dir = newTemporaryDirectory();
+
+					var filea = createFile(dir,"a");
+					var fileb = createFile(dir,"b");
+					var filec = createDirectory(dir,"c");
+					var filed = createFile(filec,"d");
+					var filee = createDirectory(dir,"e");
+					var filef = createFile(filee,"f");
+
+					createFile(dir,"target",1112);
+
+					scope.test(
+						filea.pathname.toString().substring(filea.pathname.toString().length-1)
+						!= filesystem.$unit.getPathnameSeparator()
+					);
+					scope.test(
+						filec.pathname.toString().substring(filec.pathname.toString().length-1)
+						== filesystem.$unit.getPathnameSeparator()
+					);
+
+					scope.test(filea.pathname.basename == "a");
+					scope.test(filec.pathname.basename == "c");
+					scope.test(filed.pathname.basename == "d");
+					scope.test(filec.getRelativePath("..").directory.toString() == dir.toString());
+
+					scope.test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
+					scope.test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
+					scope.test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
+
+					scope.test( !filea.directory );
+					scope.test( filec.directory );
+
+					scope.test( function() {
+						if (filed.parent == null) return false;
+						return filed.parent.pathname.toString() == filec.pathname.toString();
+					} );
+					scope.test( function() {
+							if (filec.parent == null) return false;
+							return filec.parent.pathname.toString() == dir.pathname.toString();
+					} );
+				</script>
 				<div class="type">
 					<a class="type" name="types.Pathname">Pathname</a>
 					<div>An object representing a path in the local file system.</div>
@@ -776,7 +657,7 @@ END LICENSE
 											<li class="value">
 												<div class="name">filter</div>
 												<span class="type">function</span>
-												or
+												-OR-
 												<span class="type">RegExp</span>
 												(optional) Used to filter the results of listing this directory.
 												Nodes that the filter does not accept will not be returned (nor will their contents,
@@ -809,14 +690,120 @@ END LICENSE
 													not match will be excluded.
 												</div>
 											</li>
+											<li class="value">
+												<div class="name">type</div>
+												<span class="type">property of this function</span>
+												<span>
+													Specifies whether to return <a href="#types.node">node</a> objects from this
+													method, or to return objects describing the directory contents more fully
+													(see below).
+												</span>
+											</li>
 										</ul>
 									</li>
 								</ol>
 							</div>
 							<div class="returns">
 								<div class="label">Returns</div>
-								<span class="type">Array of <a href="#types.node">node</a></span>
+								<span class="type">Array of specified type: <a href="#types.node">node</a> or entry.</span>
 							</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">NODE</div>
+									<span>The method should return objects of type <a href="#types.node">node</a>.</span>
+								</li>
+								<li class="value">
+									<div class="name">ENTRY</div>
+									<span>The method should return objects of the following type:</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">string</span>
+											<span>The path, relative to this directory, at which this node can be found.</span>
+										</li>
+										<li class="value">
+											<div class="name">node</div>
+											<span class="type"><a href="#types.node">node</a></span>
+										</li>
+									</ul>
+								</li>
+								<li class="value">
+									<div class="name">RESOURCE</div>
+									<span>The method should return objects of the following type:</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">string</span>
+											<span>
+												The path, relative to this directory, at which this node can be found, delimited
+												by forward slashes regardless of the underlying filesystem.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">resource</div>
+											<span class="type">rhino/io Resource</span>
+										</li>
+									</ul>
+								</li>
+								<!--
+										TODO	add RESOURCE that returns an array of path/resource? easy descriptor, would
+												probably then exclude directories explicitly and this could be used as easy input
+												to lots of things logically representing trees.
+								-->
+							</ul>
+							<script type="application/x.jsapi#tests"><![CDATA[
+								var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+								var dir = newTemporaryDirectory(filesystem);
+
+								var filea = createFile(dir,"a");
+								var fileb = createFile(dir,"b");
+								var filec = createDirectory(dir,"c");
+								var filed = createFile(filec,"d");
+								var filee = createDirectory(dir,"e");
+								var filef = createFile(filee,"f");
+
+								createFile(dir,"target",1112);
+
+								var NODE = dir.list.NODE;
+								var ENTRY = dir.list.ENTRY;
+								var RESOURCE = dir.list.RESOURCE;
+
+								scope.test(dir.list().length == 5);
+
+								scope.test( dir.list({ filter: /^.$/ }).length == 4 );
+								scope.test( dir.list({ filter: /../ }).length == 1 );
+								scope.test( dir.list({ filter: /a/ }).length == 2 );
+								scope.test( dir.list({ filter: /ar/ }).length == 1 );
+								scope.test( dir.list({ filter: /foobar/ }).length == 0 );
+
+								scope.test( dir.list({ recursive: true }).length == 7 );
+								scope.test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
+								scope.test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
+
+								var e_entries = filee.list({ type: ENTRY });
+								scope.test(e_entries.length == 1);
+								scope.test(e_entries[0].node.pathname.basename == "f");
+								scope.test(e_entries[0].path == "f");
+
+								var entries = dir.list({ type: ENTRY, recursive: true });
+								var entryf = entries.filter( function(entry) {
+									return entry.path == ["e","f"].join(filesystem.$unit.getPathnameSeparator());
+								} );
+								scope.test(entryf.length == 1);
+								entryf = entryf[0];
+								scope.test(entryf.node.pathname.basename == "f");
+
+								var resources = dir.list({ type: RESOURCE, recursive: true });
+								var resourcef = resources.filter( function(resource) {
+									return resource.path == "e/f";
+								} );
+								scope.test(resourcef.length == 1);
+								resourcef = resourcef[0];
+								scope.test(resourcef.resource.read(String) == "");
+							]]></script>
 						</li>
 					</ul>
 				</div>
@@ -882,6 +869,35 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
+				<script type="application/x.jsapi#tests">
+					scope.scenario( new function() {
+						var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+						var dir = filesystem.$unit.temporary(null, { directory: true });
+						var Searchpath = filesystem.Searchpath;
+
+						this.name = "Searchpath";
+
+						var searchpath;
+
+						this.initialize = function() {
+							var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
+							if (typeof(pathelements[0]) == "undefined") throw "No/0";
+							if (typeof(pathelements[1]) == "undefined") throw "No/1";
+							searchpath = Searchpath(pathelements);
+						}
+
+						this.execute = function(scope) {
+							scope.test(
+								searchpath.toString()
+								== (
+									dir.getRelativePath("c").toString()
+									+ String( filesystem.$unit.getSearchpathSeparator() )
+									+ dir.getRelativePath("e").toString()
+								)
+							);
+						}
+					} );
+				</script>
 			</li>
 			<li class="value">
 				<div class="name">workingDirectory</div>
@@ -925,269 +941,135 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#context">
-			new function() {
-				this.api = new function() {
-					var API = this;
-					this.js = $jsapi.module(new function() {
-						this.$flag = {};
-						this.$flag.warning = function(access) {
-							if (access.reason == API.js.deprecate) {
-								var message = "Attempt to access deprecated property " + access.name + " of " + access.target;
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							} else if (access.reason == API.js.experimental) {
-								var message = "Property " + access.name + " of " + access.target + " is experimental.";
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							} else {
-								var message = "Attempt to access property " + access.name + " of " + access.target;
-								Packages.java.lang.System.err.println("WARNING: " + message);
-								debugger;
-							}
-						}
-					}, "js/object");
-					this.java = $jsapi.module({
-						classLoader: $host.getClassLoader()
-					}, "rhino/host");
-				}
-				var System = Packages.java.lang.System;
-				if (System.getProperty("cygwin.root")) {
-					this.cygwin = {
-						root: String( System.getProperty("cygwin.root") )
-					};
-					if (System.getProperty("cygwin.paths")) {
-						//	Using the paths helper currently does not seem to work in the embedded situation when running inside
-						//	the SDK server
-						//	TODO	check this
-						this.cygwin.paths = String( System.getProperty("cygwin.paths") );
-					}
-				}
-				this.$pwd = jsh.shell.properties.user.dir;
-				this.addFinalizer = jsh.loader.addFinalizer;
+		<script type="application/x.jsapi#tests"><![CDATA[
+			var context = new function() {
+				this.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+				this.dir = newTemporaryDirectory(this.filesystem);
+				this.module = { Streams: module.Streams };
 			}
-		</script>
-		<script type="application/x.jsapi#scope"><![CDATA[
+			if (!context.dir) throw "Missing context.dir";
+			var filesystem = context.filesystem;
+			scope.scenario( new function() {
+				this.name = "File tests";
+
+				this.initialize = function() {
+				}
+
+				this.execute = function(scope) {
+					var dir = context.dir.getRelativePath("filetests").createDirectory();
+
+					var filea = createFile(dir,"a");
+					var fileb = createFile(dir,"b");
+					var filec = createDirectory(dir,"c");
+					var filed = createFile(filec,"d");
+					var filee = createDirectory(dir,"e");
+					var filef = createFile(filee,"f");
+
+					createFile(dir,"target",1112);
+
+					scope.scenario( new function() {
+						this.name = "Deletion";
+						this.execute = function(scope) {
+							var toDelete = createFile(filec,"toDelete");
+							var toDeleteDir = createDirectory(dir,"toDelete.d");
+							var zz = createFile(toDeleteDir, "zz");
+
+							scope.test(filec.list().length == 2);
+							scope.test(filec.getFile("toDelete") != null);
+							var fileToDelete = filec.getFile("toDelete");
+							fileToDelete.remove();
+							scope.test(filec.getFile("toDelete") == null);
+							scope.test(filec.list().length == 1);
+
+							scope.test(dir.getRelativePath("toDelete.d").directory != null);
+							scope.test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
+							dir.getRelativePath("toDelete.d").directory.remove();
+							scope.test(dir.getRelativePath("toDelete.d").directory == null);
+						}
+					} );
+
+					scope.scenario( new function() {
+						this.name = "createDirectory";
+
+						this.execute = function(scope) {
+							var inPlace = function(ifExists) {
+								return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
+							}
+							var created = inPlace();
+							scope.test( created.parent.toString() == dir.toString() );
+							var timestamp = created.modified;
+
+							try {
+								var created = inPlace();
+								scope.test( false );
+							} catch (e) {
+								scope.test( true );
+							}
+
+							var created = inPlace( function() { return false; } );
+							scope.test( created.modified.getTime() == timestamp.getTime() );
+
+							var created = inPlace( function(existing) { existing.remove(); return true; } );
+							scope.test( created.modified != timestamp );
+
+							created.remove();
+						}
+					} );
+
+					scope.scenario( new function() {
+						this.name = "file.write()";
+
+						this.execute = function(scope) {
+							var mydir = createDirectory(dir, "write");
+							scope.test( (mydir != null) );
+
+							var a = mydir.getRelativePath("a");
+							var b = mydir.getRelativePath("b/c");
+
+							var checkError = function(f) {
+								try {
+									f();
+									return true;
+								} catch (e) {
+									return false;
+								}
+							}
+
+							var Streams = context.module.Streams;
+							scope.test( checkError( function() { a.write(Streams.binary).close(); } ) );
+							scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
+							scope.test( checkError( function() { b.write(Streams.binary, { recursive: true}).close(); } ) );
+							scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
+							scope.test( checkError( function() { b.write(Streams.binary, {append: false}).close(); } ) );
+
+							var writeAndClose = function(path,string,append) {
+								path.write(string, { append: append });
+							}
+
+							writeAndClose(a,"Hello",true);
+							scope.test( a.file.read(String) == "Hello" );
+							writeAndClose(a,"Hello",false);
+							scope.test( a.file.read(String) == "Hello" );
+							writeAndClose(a," World",true);
+							scope.test( a.file.read(String) == "Hello World" );
+						}
+					} );
+
+					var purpleRain = new Date( 1999, 0, 1 );
+					scope.test( purpleRain.getTime() != filea.modified.getTime() );
+					filea.modified = purpleRain;
+					scope.test(purpleRain.getTime() == filea.modified.getTime());
+				}
+			} );
 		]]></script>
 		<script type="application/x.jsapi#tests"><![CDATA[
-			var toNode = function(jfile) {
-				return module.filesystem.$unit.getNode(jfile);
-			}
-
 			var SCOPE = this;
-
-			var interfaceTests = function(scope,context) {
-				if (!context.dir) throw "Missing context.dir";
-				var filesystem = context.filesystem;
-				scope.scenario( new function() {
-					var dir = context.dir;
-					var Searchpath = filesystem.Searchpath;
-
-					this.name = "Searchpath";
-
-					var searchpath;
-
-					this.initialize = function() {
-						var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
-						if (typeof(pathelements[0]) == "undefined") throw "No/0";
-						if (typeof(pathelements[1]) == "undefined") throw "No/1";
-						searchpath = Searchpath(pathelements);
-					}
-
-					this.execute = function(scope) {
-						scope.test(
-							searchpath.toString()
-							== (
-								dir.getRelativePath("c").toString()
-								+ String( filesystem.$unit.getSearchpathSeparator() )
-								+ dir.getRelativePath("e").toString()
-							)
-						);
-					}
-				} );
-				scope.scenario( new function() {
-					this.name = "File tests";
-
-					var createFile = function(base,name,length) {
-						var pathname = base.getRelativePath(name);
-						var $out = pathname.write(context.module.Streams.binary);
-						if (length) {
-							for (var i=0; i<length; i++) {
-								$out.$getOutputStream().write(0);
-							}
-						}
-						$out.close();
-						return pathname.file;
-					}
-
-					var createDirectory = function(base,name) {
-						return base.getRelativePath(name).createDirectory();
-					}
-
-					this.initialize = function() {
-					}
-
-					this.execute = function(scope) {
-						var dir = context.dir.getRelativePath("filetests").createDirectory();
-
-						var filea = createFile(dir,"a");
-						var fileb = createFile(dir,"b");
-						var filec = createDirectory(dir,"c");
-						var filed = createFile(filec,"d");
-						var filee = createDirectory(dir,"e");
-						var filef = createFile(filee,"f");
-
-						createFile(dir,"target",1112);
-
-						scope.test(filea.pathname.basename == "a");
-						scope.test(filec.pathname.basename == "c");
-						scope.test(filed.pathname.basename == "d");
-						scope.test(filec.getRelativePath("..").toString() == dir.pathname.toString());
-
-						scope.scenario( new function() {
-							this.name = "directory.list()";
-
-							this.execute = function(scope) {
-								scope.test(dir.list().length == 5);
-
-								scope.test( dir.list({ filter: /^.$/ }).length == 4 );
-								scope.test( dir.list({ filter: /../ }).length == 1 );
-								scope.test( dir.list({ filter: /a/ }).length == 2 );
-								scope.test( dir.list({ filter: /ar/ }).length == 1 );
-								scope.test( dir.list({ filter: /foobar/ }).length == 0 );
-
-								scope.test( dir.list({ recursive: true }).length == 7 );
-								scope.test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
-								scope.test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
-							}
-						} );
-
-						scope.test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
-						scope.test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
-						scope.test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
-						scope.test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
-						scope.test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
-
-						scope.test( !filea.directory );
-						scope.test( filec.directory );
-
-						scope.test( function() {
-							if (filed.parent == null) return false;
-							return filed.parent.pathname.toString() == filec.pathname.toString();
-						} );
-						scope.test( function() {
-								if (filec.parent == null) return false;
-								return filec.parent.pathname.toString() == dir.pathname.toString();
-						} );
-
-						scope.scenario( new function() {
-							this.name = "Deletion";
-							this.execute = function(scope) {
-								var toDelete = createFile(filec,"toDelete");
-								var toDeleteDir = createDirectory(dir,"toDelete.d");
-								var zz = createFile(toDeleteDir, "zz");
-
-								scope.test(filec.list().length == 2);
-								scope.test(filec.getFile("toDelete") != null);
-								var fileToDelete = filec.getFile("toDelete");
-								fileToDelete.remove();
-								scope.test(filec.getFile("toDelete") == null);
-								scope.test(filec.list().length == 1);
-
-								scope.test(dir.getRelativePath("toDelete.d").directory != null);
-								scope.test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
-								dir.getRelativePath("toDelete.d").directory.remove();
-								scope.test(dir.getRelativePath("toDelete.d").directory == null);
-							}
-						} );
-
-						scope.scenario( new function() {
-							this.name = "createDirectory";
-
-							this.execute = function(scope) {
-								var inPlace = function(ifExists) {
-									return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
-								}
-								var created = inPlace();
-								scope.test( created.parent.toString() == dir.toString() );
-								var timestamp = created.modified;
-
-								try {
-									var created = inPlace();
-									scope.test( false );
-								} catch (e) {
-									scope.test( true );
-								}
-
-								var created = inPlace( function() { return false; } );
-								scope.test( created.modified.getTime() == timestamp.getTime() );
-
-								var created = inPlace( function(existing) { existing.remove(); return true; } );
-								scope.test( created.modified != timestamp );
-
-								created.remove();
-							}
-						} );
-
-						scope.scenario( new function() {
-							this.name = "file.write()";
-
-							this.execute = function(scope) {
-								var mydir = createDirectory(dir, "write");
-								scope.test( (mydir != null) );
-
-								var a = mydir.getRelativePath("a");
-								var b = mydir.getRelativePath("b/c");
-
-								var checkError = function(f) {
-									try {
-										f();
-										return true;
-									} catch (e) {
-										return false;
-									}
-								}
-
-								var Streams = context.module.Streams;
-								scope.test( checkError( function() { a.write(Streams.binary).close(); } ) );
-								scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
-								scope.test( checkError( function() { b.write(Streams.binary, { recursive: true}).close(); } ) );
-								scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
-								scope.test( checkError( function() { b.write(Streams.binary, {append: false}).close(); } ) );
-
-								var writeAndClose = function(path,string,append) {
-									path.write(string, { append: append });
-								}
-
-								writeAndClose(a,"Hello",true);
-								scope.test( a.file.read(String) == "Hello" );
-								writeAndClose(a,"Hello",false);
-								scope.test( a.file.read(String) == "Hello" );
-								writeAndClose(a," World",true);
-								scope.test( a.file.read(String) == "Hello World" );
-							}
-						} );
-
-						var purpleRain = new Date( 1999, 0, 1 );
-						scope.test( purpleRain.getTime() != filea.modified.getTime() );
-						filea.modified = purpleRain;
-						scope.test(purpleRain.getTime() == filea.modified.getTime());
-					}
-				} );
-			}
 
 			var createTests = function(parent,filesystem) {
 				var scenario = new function() {
 					var tmpdir;
 					var UNIX;
 					var hostdir;
-
-					var newTemporaryDirectory = function(filesystem) {
-			//			var $dir = $jsapi.newTemporaryDirectory();
-						var $dir = $java.io.newTemporaryDirectory();
-						$dir.mkdir();
-						return filesystem.$unit.Pathname(toNode($dir)).directory;
-					}
 
 					var createFile = function(file,length) {
 						var stream = new Packages.java.io.FileOutputStream(file);
@@ -1212,20 +1094,6 @@ END LICENSE
 					}
 
 					this.execute = function(scope) {
-						scope.scenario(new function() {
-							this.name = "Portable tests";
-
-							this.execute = function(scope) {
-								interfaceTests(scope, {
-									filesystem: filesystem,
-									dir: newTemporaryDirectory(filesystem),
-									module: {
-										Streams: module.Streams
-									}
-								});
-							}
-						});
-
 						scope.scenario( new function() {
 							this.name = "Path tests";
 
@@ -1238,6 +1106,8 @@ END LICENSE
 									scope.test( Pathname("/foo").parent.toString() == "/" );
 									scope.test( Pathname("/foo/bar").parent.toString() == "/foo" );
 									scope.test( Pathname("/").parent == null );
+									scope.test( Pathname("/").directory.list()[0].pathname.toString().substring(0,2) != "//" );
+									scope.test( Pathname("a").toString().length != 1 );
 								} else {
 									scope.test( Pathname("C:\\cygwin").parent.toString() == "C:\\" );
 									scope.test( Pathname("C:\\cygwin\\tmp").parent.toString() == "C:\\cygwin" );
@@ -1281,7 +1151,7 @@ END LICENSE
 
 								createFile(new Packages.java.io.File(hostdir, "target"), 1112);
 
-								dir = filesystem.$unit.Pathname(toNode(hostdir)).directory;
+								dir = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
 							}
 
 							this.execute = function(scope) {
@@ -1306,8 +1176,8 @@ END LICENSE
 										Packages.inonit.system.OperatingSystem.get().shellCommand( command, args );
 									}
 
-									var linkpathname = filesystem.$unit.Pathname(toNode(linkdir));
-									var hostpathname = filesystem.$unit.Pathname(toNode(hostdir));
+									var linkpathname = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(linkdir));
+									var hostpathname = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir));
 									var LN_PATH;
 									if (module.filesystems.cygwin) {
 										LN_PATH="c:/cygwin/bin/ln";
@@ -1351,8 +1221,7 @@ END LICENSE
 										"file is of correct size."
 									);
 									scope.test( function() {
-											var parentpath = filelink.pathname.parent;
-											return parentpath.toString() == linkdir.pathname.toString();
+											return filelink.parent.toString() == linkdir.toString();
 										},
 										"Softlink parent works correctly."
 									);
@@ -1420,62 +1289,37 @@ END LICENSE
 				parent.scenario(scenario);
 			}
 
-			var filesystems = module.filesystems;
-			createTests(scope,filesystems.os);
-			if (filesystems.cygwin) {
-				createTests(scope,filesystems.cygwin);
+			if (module.filesystems.cygwin) {
+				createTests(scope,module.filesystems.cygwin);
+			} else {
+				createTests(scope,module.filesystems.os);
 			}
-			scope.scenario( new function() {
-				this.name = "Stream tests";
-
-				var streamdir;
-
-				this.initialize = function() {
-					var hostdir = new Packages.java.io.File($java.io.newTemporaryDirectory(), "streamtests");
-					hostdir.mkdirs();
-					var fileA = new Packages.java.io.File(hostdir, "a");
-					var aWriter = new Packages.java.io.PrintWriter( new Packages.java.io.FileWriter( fileA ) );
-					aWriter.print("Hello, World\n");
-					aWriter.print("Hello, DOS World\r\n");
-					aWriter.print("Finished.");
-					aWriter.flush();
-					aWriter.close();
-					streamdir = module.filesystem.$unit.Pathname(toNode(hostdir)).directory;
-				}
-
-				this.execute = function(scope) {
-					var fileA = streamdir.getFile("a");
-					var text = fileA.read(module.Streams.text);
-					var lines = [];
-					text.readLines( function(line) {
-						lines.push(line);
-					}, { ending: "\n" } );
-					scope.test( lines.length == 3 );
-					scope.test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
-
-					scope.scenario( new function() {
-						var buffer;
-
-						this.name = "java.util.Properties";
-						this.initialize = function() {
-							var p = new Packages.java.util.Properties();
-							buffer = new module.Streams.binary.Buffer();
-							p.put("yes", "i do");
-							p.put("laptop", "inonit");
-							p.put("laptop.manufacturer", "dell");
-							p.store(buffer.$getOutputStream(), "No comment!");
-							buffer.close();
-						}
-						this.execute = function(scope) {
-							var props = buffer.readBinary().asProperties();
-							scope.test( props.yes == "i do" );
-							scope.test( props.laptop == "inonit" );
-							scope.test( props.laptop.manufacturer == "dell" );
-						}
-					} );
-				}
-			} );
 		]]></script>
+		<script type="application/x.jsapi#scope">
+			var streamdir;
+		</script>
+		<script type="application/x.jsapi#initialize">
+			var hostdir = new Packages.java.io.File($java.io.newTemporaryDirectory(), "streamtests");
+			hostdir.mkdirs();
+			var fileA = new Packages.java.io.File(hostdir, "a");
+			var aWriter = new Packages.java.io.PrintWriter( new Packages.java.io.FileWriter( fileA ) );
+			aWriter.print("Hello, World\n");
+			aWriter.print("Hello, DOS World\r\n");
+			aWriter.print("Finished.");
+			aWriter.flush();
+			aWriter.close();
+			streamdir = module.filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
+		</script>
+		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
+			var fileA = streamdir.getFile("a");
+			var text = fileA.read(module.Streams.text);
+			var lines = [];
+			text.readLines( function(line) {
+				lines.push(line);
+			}, { ending: "\n" } );
+			scope.test( lines.length == 3 );
+			scope.test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
+		</script>
 	</div>
 </body>
 </html>
