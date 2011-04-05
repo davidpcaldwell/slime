@@ -54,7 +54,8 @@ public class Streams {
 		while((i = in.read()) != -1) {
 			out.write(i);
 		}
-		out.flush();	
+		out.flush();
+		in.close();
 	}
 	
 	public void copy(Reader in, Writer out) throws IOException {
@@ -65,6 +66,7 @@ public class Streams {
 			out.write(i);
 		}
 		out.flush();
+		in.close();
 	}
 	
 	public String readLine(java.io.Reader reader, String lineTerminator) throws java.io.IOException {
