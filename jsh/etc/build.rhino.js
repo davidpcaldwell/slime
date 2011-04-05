@@ -193,11 +193,11 @@ console("Building jsh application ...");
 addJavaFiles(new File(BASE,"loader/rhino/java"));
 addJavaFiles(new File(BASE,"rhino/system/java"));
 addJavaFiles(new File(BASE,"jsh/loader/java"));
-var javacArguments = [
-	"-nowarn",
+var compileOptions = ["-g", "-nowarn"]
+var javacArguments = compileOptions.concat([
 	"-d", tmpClasses.getCanonicalPath(),
 	"-classpath", RHINO_LIBRARIES.map(function(file) { return String(file.getCanonicalPath()); }).join(colon)
-].concat(javaSources);
+]).concat(javaSources);
 debug("Compiling: " + javacArguments.join(" "));
 platform.jdk.compile(javacArguments);
 zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
@@ -205,14 +205,13 @@ zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
 console("Building launcher ...");
 var tmpLauncher = new File(tmp,"launcher");
 tmpLauncher.mkdir();
-platform.jdk.compile([
-	"-nowarn",
+platform.jdk.compile(compileOptions.concat([
 	"-d", tmpLauncher.getCanonicalPath(),
 	"-sourcepath", [
 		String(new File(BASE,"rhino/system/java").getCanonicalPath())
 	].join(colon),
 	String(new File(BASE,"jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java").getCanonicalPath())
-]);
+]));
 var metainf = new File(tmpLauncher,"META-INF");
 metainf.mkdir();
 platform.io.write(new File(metainf, "MANIFEST.MF"), function(writer) {
@@ -326,7 +325,10 @@ var jsapi_jsh = function() {
 	if (platform.cygwin) {
 		JSAPI_DOC = platform.cygwin.cygpath.unix(JSAPI_DOC);
 	}
-	command.add("-doc",JSAPI_DOC);
+	if (getSetting("jsh.build.nodoc")) {		
+	} else {
+		command.add("-doc",JSAPI_DOC);
+	}
 
 	var subenv = getenv();
 	if (env.JSH_BUILD_DEBUG) {
@@ -343,8 +345,17 @@ var jsapi_jsh = function() {
 		throw "Failed: " + command.join(" ");
 	}
 }
-console("Running JSAPI ...");
-jsapi_jsh();
+
+if (getSetting("jsh.build.nounit") && getSetting("jsh.build.nodoc")) {
+} else {
+	console("Running JSAPI ...");
+	jsapi_jsh();
+}
+
+console("Creating tools ...");
+var JSH_TOOLS = new File(JSH_HOME,"tools");
+JSH_TOOLS.mkdir();
+copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
 
 var bases = ["js","loader","rhino","jsh"];
 

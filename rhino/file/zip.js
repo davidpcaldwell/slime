@@ -106,3 +106,16 @@ $exports.zip = function(p) {
 	}
 	zipOutputStream.close();
 }
+
+$exports.unzip = function(p) {
+	var _zipstream = new Packages.java.util.zip.ZipInputStream(p.zip.read($context.Streams.binary).$getInputStream());
+	var entry;
+	while( (entry = _zipstream.getNextEntry()) != null ) {
+		var name = String(entry.getName());
+		if (name.substring(name.length-1) == "/") {
+			p.to.getRelativePath(name.substring(name.length-1)).createDirectory({ ifExists: function(d) { return false; }});
+		} else {
+			p.to.getRelativePath(entry.getName()).write(new $context.InputStream(_zipstream), { append: false, recursive: true });
+		}
+	}
+}

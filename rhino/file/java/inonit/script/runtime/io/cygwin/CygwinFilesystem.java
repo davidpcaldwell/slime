@@ -280,7 +280,9 @@ public class CygwinFilesystem extends Filesystem {
 		}
 
 		String[] list(NodeImpl directory) throws IOException {
-			return getResponse("l" + directory.getScriptPath()).split("\\|");
+			String response = getResponse("l" + directory.getScriptPath());
+			if (response.length() == 0) return new String[0];
+			return response.split("\\|");
 		}
 
 		void destroy() {

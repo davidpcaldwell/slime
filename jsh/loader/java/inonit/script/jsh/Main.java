@@ -23,8 +23,6 @@ import org.mozilla.javascript.*;
 import inonit.script.rhino.*;
 
 public class Main {
-	private boolean debug;
-
 	private List args;
 	
 	private Main() {
@@ -37,21 +35,81 @@ public class Main {
 	}
 	
 	private int run() throws CheckedException {
-		if (System.getProperty("jsh.script.debugger") != null) {
-			debug = true;
-		}
+		Shell.Installation installation = null;
+		Shell.Invocation invocation = null;
+		if (System.getProperty("jsh.packaged") != null) {
+			installation = new Shell.Installation() {
+				public String toString() {
+					return getClass().getName() + " [packaged]";
+				}
 
-		String scriptPath = (String)args.remove(0);
+				public Shell.Script getPlatformLoader() {
+					return Shell.Script.create("loader.js", ClassLoader.getSystemResourceAsStream("$jsh/loader.js"));
+				}
 
-		final File mainScript = new File(scriptPath);
-		if (!mainScript.exists()) {
-			throw new CheckedException("File not found: " + scriptPath);
-		}
-		if (mainScript.isDirectory()) {
-			throw new CheckedException("Filename: " + scriptPath + " is a directory");
-		}
-		return Shell.execute(
-			new Shell.Installation() {
+				public Shell.Script getRhinoLoader() {
+					return Shell.Script.create("rhino.js", ClassLoader.getSystemResourceAsStream("$jsh/rhino.js"));
+				}
+
+				public Shell.Script getJshLoader() {
+					return Shell.Script.create("jsh.js", ClassLoader.getSystemResourceAsStream("$jsh/jsh.js"));
+				}
+
+				public Module.Code getShellModuleCode(String path) {
+					return Module.Code.create(
+						Module.Code.Source.create(
+							ClassLoader.getSystemClassLoader(),
+							"$jsh/modules/" + path + "/"
+						),
+						"module.js"
+					);
+				}
+
+				public Modules getApplicationModules() {
+					return new Modules() {
+						public Module.Code getCode(String path, String name) {
+							return Module.Code.create(
+								Module.Code.Source.create(
+									ClassLoader.getSystemClassLoader(), "$modules/" + path + "/"
+								),
+								name
+							);
+						}
+					};
+				}
+			};
+
+			invocation = new Shell.Invocation() {
+				public File getScriptFile() {
+					return null;
+				}
+
+				public Shell.Script getScript() {
+					return Shell.Script.create("main.jsh", ClassLoader.getSystemResourceAsStream("main.jsh"));
+				}
+
+				public String[] getArguments() {
+					return (String[])args.toArray(new String[0]);
+				}
+			};
+		} else {
+			String scriptPath = (String)args.remove(0);
+
+			final File mainScript = new File(scriptPath);
+			if (!mainScript.exists()) {
+				throw new CheckedException("File not found: " + scriptPath);
+			}
+			if (mainScript.isDirectory()) {
+				throw new CheckedException("Filename: " + scriptPath + " is a directory");
+			}
+			installation = new Shell.Installation() {
+				public String toString() {
+					return getClass().getName() 
+						+ " jsh.library.scripts=" + System.getProperty("jsh.library.scripts")
+						+ " jsh.library.scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
+					;
+				}
+
 				File getFile(String prefix, String name) {
 					String propertyName = "jsh.library.scripts." + prefix.replace('/', '.');
 					if (System.getProperty(propertyName) != null) {
@@ -78,22 +136,43 @@ public class Main {
 					throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
 				}
 
-				public Module.Code getModuleCode(String path) {
+				public Shell.Script getPlatformLoader() {
+					return Shell.Script.create(getFile("loader", "literal.js"));
+				}
+
+				public Shell.Script getRhinoLoader() {
+					return Shell.Script.create(getFile("rhino", "literal.js"));
+				}
+
+				public Shell.Script getJshLoader() {
+					return Shell.Script.create(getFile("jsh", "jsh.js"));
+				}
+
+				public Module.Code getShellModuleCode(String path) {
 					return Module.Code.slime(getModulePath(path), "module.js");
 				}
 
-				public Script getPlatformLoader() {
-					return Script.create(getFile("loader", "literal.js"));
+				public Modules getApplicationModules() {
+					return null;
+				}
+			};
+
+			invocation = new Shell.Invocation() {
+				public File getScriptFile() {
+					return mainScript;
 				}
 
-				public Script getRhinoLoader() {
-					return Script.create(getFile("rhino", "literal.js"));
+				public Shell.Script getScript() {
+					return Shell.Script.create(mainScript);
 				}
 
-				public Script getJshLoader() {
-					return Script.create( getFile("jsh", "jsh.js") );
+				public String[] getArguments() {
+					return (String[])args.toArray(new String[0]);
 				}
-			},
+			};
+		}
+		return Shell.execute(
+			installation,
 			new Shell.Configuration() {
 				public Engine.Log getLog() {
 					return new Engine.Log() {
@@ -146,15 +225,7 @@ public class Main {
 					};
 				}
 			},
-			new Shell.Invocation() {
-				public File getScript() {
-					return mainScript;
-				}
-
-				public String[] getArguments() {
-					return (String[])args.toArray(new String[0]);
-				}
-			}
+			invocation
 		);
 	}
 	

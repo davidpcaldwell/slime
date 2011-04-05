@@ -86,8 +86,9 @@ context.Pathname = scope.Pathname;
 context.Searchpath = scope.Searchpath;
 
 var zip = $load({
-	Streams: streams.Streams,
-	Pathname: scope.Pathname
+	Streams: streams.Streams
+	,Pathname: scope.Pathname
+	,InputStream: streams.InputStream
 }, "zip.js");
 
 var exportProperty = function(name) {
@@ -157,7 +158,9 @@ if (!$exports.warning) {
 $api.deprecate($exports,"warning");
 
 $exports.zip = zip.zip;
+$exports.unzip = zip.unzip;
 $api.experimental($exports, "zip");
+$api.experimental($exports, "unzip");
 
 $exports.$script = new function() {
 	this.setFilesystem = function(fs) {

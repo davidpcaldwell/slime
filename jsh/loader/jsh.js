@@ -97,12 +97,38 @@ this.jsh = new function() {
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
+
+		if ($host.getBundledModules()) {
+			this.bundled = new function() {
+				this.module = function(path) {
+					if (path.substring(path.length-1) == "/") {
+						path += "module.js";
+					}
+					var tokens = path.split("/");
+					var p = {};
+					if (arguments.length == 2) {
+						p.$context = arguments[1];
+					}
+					return rhinoLoader.module(
+						$host.getBundledModules().load(
+							tokens.slice(0,tokens.length-1).join("/")
+							,tokens[tokens.length-1]
+						),
+						p
+					);
+				}
+			}
+		}
 	}
 
 	this.loader = new function() {
 		this.module = loader.module;
 		this.script = loader.script;
 		this.namespace = loader.namespace;
+
+		if (loader.bundled) {
+			this.bundled = loader.bundled;
+		}
 
 		this.addFinalizer = function(f) {
 			addFinalizer(f);
@@ -180,7 +206,7 @@ this.jsh = new function() {
 
 	jsh.script = (function() {
 		var context = {
-			$script: $host.getInvocation().getScript(),
+			$script: $host.getInvocation().getScriptFile(),
 			$arguments: $host.getInvocation().getArguments(),
 			addClasses: function(pathname) {
 				$host.addClasses(pathname.$peer.getHostFile());

@@ -23,7 +23,10 @@ public class Main {
 	}
 
 	private static abstract class Invocation {
-		static Invocation create() throws java.io.IOException {
+		static Invocation create() throws IOException {
+			if (ClassLoader.getSystemResource("main.jsh") != null) {
+				return new Packaged();
+			}
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
 			java.io.File JSH_HOME = null;
@@ -47,9 +50,20 @@ public class Main {
 			return rv;
 		}
 
-		private String colon = java.io.File.pathSeparator;
-
 		private boolean debug;
+
+		//	TODO	sets jsh.rhino.classpath and jsh.launcher.rhino.script: why? Just for SDK embedding?
+		abstract void initializeSystemProperties() throws IOException;
+
+		abstract ClassLoader getMainClassLoader() throws IOException;
+
+		final Class getMainClass() throws IOException, ClassNotFoundException {
+			ClassLoader loader = getMainClassLoader();
+			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+			return loader.loadClass(mainClassName);
+		}
+
+		abstract void addScriptArguments(List<String> strings) throws IOException;
 
 		final void debug(String message) {
 			if (debug) {
@@ -57,7 +71,15 @@ public class Main {
 			}
 		}
 
-		final void initialize() throws java.io.IOException {
+		final boolean debug() {
+			return debug;
+		}
+	}
+
+	private static abstract class FileInvocation extends Invocation {
+		private String colon = java.io.File.pathSeparator;
+
+		final void initializeSystemProperties() throws java.io.IOException {
 			if (getRhinoClasspath() != null) {
 				System.setProperty("jsh.rhino.classpath", getRhinoClasspath());
 			} else {
@@ -67,13 +89,13 @@ public class Main {
 			}
 			ArrayList<String> dummy = new ArrayList<String>();
 			addScriptArguments(dummy);
-			System.setProperty("jsh.launcher.rhino.script", dummy.get(1));
+			System.setProperty("jsh.launcher.rhino.script", dummy.get(2));
 		}
 
 		abstract String getRhinoClasspath() throws java.io.IOException;
 
-		final Class getMainClass() throws java.io.IOException, ClassNotFoundException {
-			Invocation invocation = this;
+		final ClassLoader getMainClassLoader() throws IOException {
+			FileInvocation invocation = this;
 			ClassLoader loader;
 			String JSH_RHINO_CLASSPATH = invocation.getRhinoClasspath();
 			debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
@@ -87,23 +109,12 @@ public class Main {
 				} catch (java.net.MalformedURLException e) {
 				}
 			}
-			loader = new java.net.URLClassLoader(urls);
-			try {
-				String mainClassName = (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
-				return loader.loadClass(mainClassName);
-			} catch (ClassNotFoundException e) {
-				debug("ClassLoader path:");
-				for (int i=0; i<urls.length; i++) {
-					debug("Element: " + urls[i]);
-				}
-				debug("END ClassLoader path.");
-				throw e;
-			}
+			return new java.net.URLClassLoader(urls);
 		}
 
 		abstract String getRhinoScript() throws java.io.IOException;
 
-		final void addScriptArguments(List<String> strings) throws java.io.IOException {
+		final void addScriptArguments(List<String> strings) throws IOException {
 			String JSH_RHINO_JS = getRhinoScript();
 			String RHINO_JS = null;
 			if (JSH_RHINO_JS != null) {
@@ -114,14 +125,39 @@ public class Main {
 					+ System.getenv("JSH_RHINO_SCRIPT")
 				);
 			}
+			strings.add("-f");
 			strings.add(RHINO_JS);
 			strings.add(JSH_RHINO_JS);
 		}
 	}
 
-	private static class Built extends Invocation {
+	private static class Packaged extends Invocation {
+		void initializeSystemProperties() {
+			System.setProperty("jsh.packaged", "true");
+		}
+
+		ClassLoader getMainClassLoader() {
+			//	In earlier versions of the launcher and packager, Rhino was packaged at the following location inside the packaged
+			//	JAR file. However, for some reason, loading Rhino using the below ClassLoader did not work. As a workaround, the
+			//	packager now unzips Rhino and we simply load it from the system class loader.
+			try {
+				Class.forName("org.mozilla.javascript.Context");
+				return ClassLoader.getSystemClassLoader();
+			} catch (ClassNotFoundException e) {
+				return new java.net.URLClassLoader(new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") });
+			}
+		}
+
+		void addScriptArguments(List<String> strings) {
+			strings.add("-f");
+			strings.add(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
+			strings.add(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
+		}
+	}
+
+	private static class Built extends FileInvocation {
 		private java.io.File HOME;
-		private Unbuilt defaults = new Unbuilt();
+		private Unbuilt explicit = new Unbuilt();
 
 		Built(java.io.File HOME) throws java.io.IOException {
 			this.HOME = HOME;
@@ -129,17 +165,17 @@ public class Main {
 		}
 
 		String getRhinoClasspath() throws java.io.IOException {
-			if (defaults.getRhinoClasspath() != null) return defaults.getRhinoClasspath();
+			if (explicit.getRhinoClasspath() != null) return explicit.getRhinoClasspath();
 			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
 		}
 
 		String getRhinoScript() throws java.io.IOException {
-			if (defaults.getRhinoScript() != null) return defaults.getRhinoScript();
+			if (explicit.getRhinoScript() != null) return explicit.getRhinoScript();
 			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
 		}
 	}
 
-	private static class Unbuilt extends Invocation {
+	private static class Unbuilt extends FileInvocation {
 		private String toWindowsPath(String value) throws IOException {
 			inonit.system.cygwin.Cygwin cygwin = inonit.system.cygwin.Cygwin.locate();
 			if (cygwin != null) {
@@ -164,7 +200,7 @@ public class Main {
 
 	private void run(String[] args) throws java.io.IOException {
 		Invocation invocation = Invocation.create();
-		invocation.initialize();
+		invocation.initializeSystemProperties();
 		try {
 			Class shell = invocation.getMainClass();
 			java.lang.reflect.Method main = shell.getMethod("main", new Class[] { String[].class });
@@ -172,7 +208,6 @@ public class Main {
 			List<String> arguments = new ArrayList();
 			arguments.add("-opt");
 			arguments.add("-1");
-			arguments.add("-f");
 			invocation.addScriptArguments(arguments);
 			arguments.addAll(Arrays.asList(args));
 			invocation.debug("Rhino shell arguments:");
