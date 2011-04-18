@@ -269,6 +269,10 @@ public class Shell {
 			private Engine engine = new Engine();
 			private Modules modules = new Modules();
 
+			public String toString() {
+				return getClass().getName() + " engine=" + engine + " modules=" + modules + " $installation=" + installation;
+			}
+
 			public void exit(int status) throws ExitException {
 				throw new ExitException(status);
 			}
