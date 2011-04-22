@@ -25,14 +25,14 @@ $exports.console = new function() {
 	}
 
 	var log = function(message) {
-		Packages.java.lang.System.out.println(indent() + message);
+		$context.console.println(indent() + message);
 	}
 
 	var dots = false;
 
 	this.start = function(scenario) {
 		if (dots) {
-			Packages.java.lang.System.out.println();
+			$context.console.println();
 			dots = false;
 		}
 		log("Running: " + scenario.name);
@@ -45,29 +45,27 @@ $exports.console = new function() {
 	this.test = function(test) {
 		if (!test.success) {
 			if (!dots) {
-				Packages.java.lang.System.out.print(indent());
+				$context.console.print(indent());
 				dots = true;
 			}
 			var code = (test.success == null) ? "*" : "X";
-			Packages.java.lang.System.out.print(code);
-			Packages.java.lang.System.out.flush();
+			$context.console.print(code);
 			if (test.success == null && $context.verbose) {
-				Packages.java.lang.System.out.println("Error = " + test.messages.failure);
+				$context.console.println("Error = " + test.messages.failure);
 			}
 			stack[stack.length-1].success = false;
 		} else {
 			if (!dots) {
-				Packages.java.lang.System.out.print(indent());
+				$context.console.print(indent());
 				dots = true;
 			}
-			Packages.java.lang.System.out.print(".");
-			Packages.java.lang.System.out.flush();
+			$context.console.print(".");
 		}
 	}
 
 	this.end = function(scenario) {
 		if (dots) {
-			Packages.java.lang.System.out.println();
+			$context.console.println();
 			dots = false;
 		}
 		var item = stack.pop();

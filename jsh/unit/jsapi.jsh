@@ -97,7 +97,22 @@ var jsapi = jsh.loader.script(jsh.script.getRelativePath("jsapi.js"), {
 		}
 	},
 	Scenario: jsh.loader.script( parameters.options.jsapi.directory.getRelativePath("unit.before.js") ).Scenario,
-	console: jsh.loader.script( jsh.script.getRelativePath("jsunit.after.js"), { verbose: true } ).console,
+	console: jsh.loader.script( jsh.script.getRelativePath("jsunit.after.js"), {
+		console: {
+			println: function(s) {
+				if (arguments.length == 0) {
+					Packages.java.lang.System.out.println();
+				} else {
+					Packages.java.lang.System.out.println(s);
+				}
+			},
+			print: function(s) {
+				Packages.java.lang.System.out.print(s);
+				Packages.java.lang.System.out.flush();
+			}
+		},
+		verbose: true
+	} ).console,
 	MODULES: MODULES,
 	ENVIRONMENT: ENVIRONMENT
 });
