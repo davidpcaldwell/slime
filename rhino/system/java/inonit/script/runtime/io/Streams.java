@@ -20,32 +20,6 @@ import java.util.*;
 
 public class Streams {
 	private Characters characters = new Characters();
-
-	public String readString(Reader in) throws java.io.IOException {
-		Reader reader = new BufferedReader(in);
-		try {
-			StringBuffer buffer = new StringBuffer();
-			int i;
-			while( (i = reader.read()) != -1) {
-				buffer.append( (char)i );
-			}
-			return buffer.toString();
-		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) {}
-		}
-	}
-	
-	public String readString(InputStream in) throws java.io.IOException {
-		return readString(new java.io.InputStreamReader(in));
-	}
-	
-	public void writeString(String string, OutputStream out) throws java.io.IOException {
-		Writer writer = new BufferedWriter( new OutputStreamWriter( out ) );
-		writer.write(string);
-		writer.flush();
-	}
 	
 	public void copy(InputStream in, OutputStream out) throws IOException {
 		in = new BufferedInputStream(in);
@@ -67,6 +41,28 @@ public class Streams {
 		}
 		out.flush();
 		in.close();
+	}
+	
+	public byte[] readBytes(InputStream in) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		copy(in, out);
+		return out.toByteArray();
+	}
+
+	public String readString(Reader in) throws IOException {
+		StringWriter writer = new StringWriter();
+		copy(in,writer);
+		return writer.toString();
+	}
+	
+	public String readString(InputStream in) throws IOException {
+		return readString(new java.io.InputStreamReader(in));
+	}
+	
+	public void writeString(String string, OutputStream out) throws IOException {
+		Writer writer = new BufferedWriter( new OutputStreamWriter( out ) );
+		writer.write(string);
+		writer.flush();
 	}
 	
 	public String readLine(java.io.Reader reader, String lineTerminator) throws java.io.IOException {
