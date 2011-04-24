@@ -107,6 +107,7 @@ public class Shell {
 		public abstract int getOptimizationLevel();
 		public abstract Engine.Debugger getDebugger();
 		public abstract Engine.Log getLog();
+		public abstract ClassLoader getClassLoader();
 
 		public abstract Properties getSystemProperties();
 		public abstract Map getEnvironment();
@@ -143,12 +144,28 @@ public class Shell {
 		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
 
 		private static abstract class Classpath extends ClassLoader {
+			static Classpath create(ClassLoader delegate) {
+				return new ModulesClasspath(delegate);
+			}
+			
+			Classpath(ClassLoader delegate) {
+				super(delegate);
+			}
+			
 			public abstract void append(URL url);
 			public abstract void append(Module module);
 		}
 
 		private static class DelegationChain extends Classpath {
 			private ClassLoader current = Shell.class.getClassLoader();
+			
+			DelegationChain(ClassLoader delegate) {
+				super(delegate);
+			}
+			
+			public String toString() {
+				return getClass().getName() + " current=" + current;
+			}
 
 			protected Class findClass(String name) throws ClassNotFoundException {
 				return current.loadClass(name);
@@ -165,6 +182,10 @@ public class Shell {
 
 		private static class ListClasspath extends Classpath {
 			private ArrayList loaders = new ArrayList();
+			
+			ListClasspath(ClassLoader delegate) {
+				super(delegate);
+			}
 
 			protected Class findClass(String name) throws ClassNotFoundException {
 				for (int i=0; i<loaders.size(); i++) {
@@ -184,10 +205,53 @@ public class Shell {
 				loaders.add(module.getClasses(Shell.class.getClassLoader()));
 			}
 		}
+		
+		private static class ModulesClasspath extends Classpath {
+			private ArrayList items = new ArrayList();
+			
+			ModulesClasspath(ClassLoader delegate) {
+				super(delegate);
+			}
+			
+			public String toString() {
+				String rv = getClass().getName() + " ";
+				for (int i=0; i<items.size(); i++) {
+					rv += items.get(i);
+					if (i+1 != items.size()) {
+						rv += ",";
+					}
+				}
+				return rv;
+			}
+			
+			protected Class findClass(String name) throws ClassNotFoundException {
+				String path = name.replace('.', '/') + ".class";
+				for (int i=0; i<items.size(); i++) {
+					Module.Code.Classes classes = ((Module.Code.Classes)items.get(i));
+					try {
+						InputStream stream = classes.getResourceAsStream(path);
+						if (stream != null) {
+							byte[] b = new Streams().readBytes(stream);
+							return defineClass(name, b, 0, b.length);
+						}
+					} catch (IOException e) {
+					}
+				}
+				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
+			}
+			
+			public void append(Module module) {
+				items.add(module.getClasses());
+			}
+			
+			public void append(URL url) {
+				items.add(Module.Code.Classes.create(url));
+			}
+		}
 
 		static Host create(Installation installation, Configuration configuration, Invocation invocation) {
 			ContextFactoryImpl contexts = new ContextFactoryImpl();
-			Classpath classpath = new DelegationChain();
+			Classpath classpath = Classpath.create(configuration.getClassLoader());
 			contexts.initApplicationClassLoader(classpath);
 			contexts.setOptimization(configuration.getOptimizationLevel());
 

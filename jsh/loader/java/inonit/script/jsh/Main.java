@@ -200,6 +200,10 @@ public class Main {
 					}
 					return optimization;
 				}
+				
+				public ClassLoader getClassLoader() {
+					return ClassLoader.getSystemClassLoader();
+				}
 
 				public Properties getSystemProperties() {
 					return System.getProperties();

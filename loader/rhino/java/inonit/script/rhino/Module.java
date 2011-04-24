@@ -57,6 +57,18 @@ public class Module {
 				}
 			};
 		}
+		
+		public static Code create(final Source js, final String main, final Source classes) {
+			return new Module.Code() {
+				public Module.Code.Scripts getScripts() {
+					return Module.Code.Scripts.create(js, main);
+				}
+				
+				public Module.Code.Classes getClasses() {
+					return Module.Code.Classes.create(classes);
+				}
+			};
+		}
 
 		public static Code slime(final File file, final String main) {
 			return new Module.Code() {
@@ -149,33 +161,59 @@ public class Module {
 				};
 			}
 
+			//	TODO	Switch this method to return Source
 			public abstract InputStream getResourceAsStream(String path) throws IOException;
 			public abstract String getMain();
 		}
 
 		public static abstract class Classes {
-			public static Classes create(final Source source, String prefix) {
+			public static Classes create(final Source source, final String prefix) {
 				final String prepend = (prefix != null) ? (prefix + "/") : "";
 
 				return new Classes() {
+					public String toString() {
+						return Classes.class.getName() + " source=" + source + " prefix=" + prefix;
+					}
+					
 					public InputStream getResourceAsStream(String path) throws IOException {
 						return source.getResourceAsStream(prepend + path);
 					}
 				};
 			}
+			
+			public static Classes create(Source source) {
+				return create(source, null);
+			}
+			
+			public static Classes create(final java.net.URL url) {
+				return new Classes() {
+					private java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[] { url });
+					
+					public InputStream getResourceAsStream(String path) {
+						return loader.getResourceAsStream(path);
+					}
+				};
+			}
 
+			//	TODO	Switch this method to return Source
 			public abstract InputStream getResourceAsStream(String path) throws IOException;
 		}
 
 		public abstract Scripts getScripts();
 		public abstract Classes getClasses();
 
-		public ClassLoader getClassLoader(ClassLoader delegate) {
+		public ClassLoader getClassLoader(final ClassLoader delegate) {
 			return new ClassLoader(delegate) {
+				private Classes classes = Code.this.getClasses();
+				
+				public String toString() {
+					return Code.class.getName() + " classes=" + classes + " delegate=" + delegate; 
+				}
+				
 				protected Class findClass(String name) throws ClassNotFoundException {
 					try {
 						String path = name.replace('.', '/') + ".class";
-						InputStream in = Code.this.getClasses().getResourceAsStream(path);
+						InputStream in = classes.getResourceAsStream(path);
 						if (in == null) throw new ClassNotFoundException(name);
 						int i;
 						ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -213,6 +251,10 @@ public class Module {
 
 	public final ClassLoader getClasses(ClassLoader delegate) {
 		return code.getClassLoader(delegate);
+	}
+	
+	public final Module.Code.Classes getClasses() {
+		return code.getClasses();
 	}
 
 	//	Used by rhino loader 
