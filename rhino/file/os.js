@@ -301,8 +301,6 @@ var SystemFilesystem = function(peer) {
 	}
 
 	//	Only known use of this property is by toWindows method of Cygwin filesystem
-	//	TODO	Doesn't isJavaType return a function? So isn't the second half of the test below always true? Probably should take
-	//			peer as an argument
 	if (cygwin && isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem)(peer)) {
 		this.$peer = peer;
 		deprecate(this,"$peer");
