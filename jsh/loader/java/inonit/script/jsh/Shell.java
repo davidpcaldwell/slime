@@ -245,7 +245,7 @@ public class Shell {
 			}
 			
 			public void append(URL url) {
-				items.add(Module.Code.Classes.create(url));
+				items.add(Module.Code.Classes.create(Module.Code.Source.create(url)));
 			}
 		}
 
