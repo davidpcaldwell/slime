@@ -20,7 +20,7 @@ var InputStream = function(peer) {
 		peer.close();
 		return $context.api.java.Properties.adapt(properties);
 	}
-
+	
 	this.character = function(mode) {
 		if (!mode) mode = {};
 		if (!mode.charset) mode.charset = Packages.java.nio.charset.Charset.defaultCharset().name();
@@ -31,6 +31,18 @@ var InputStream = function(peer) {
 
 	this.characters = this.character;
 	$api.deprecate(this, "characters");
+	
+	this.cache = function() {
+		var $streams = new Packages.inonit.script.runtime.io.Streams();
+		var $bytes = $streams.readBytes(peer);
+		return new Resource(new function() {
+			this.read = new function() {
+				this.binary = function() {
+					return new InputStream(Packages.java.io.ByteArrayInputStream($bytes));
+				}
+			}
+		});
+	}
 };
 
 var OutputStream = function(peer) {
@@ -40,6 +52,10 @@ var OutputStream = function(peer) {
 
 	this.close = function() {
 		peer.close();
+	}
+	
+	this.character = function() {
+		return new Writer(new Packages.java.io.OutputStreamWriter(peer));
 	}
 };
 
@@ -107,8 +123,10 @@ var Writer = function(peer) {
 	this.write = function(string) {
 		if (typeof(string) == "xml") {
 			peer.write( string.toXMLString() );
+			peer.flush();
 		} else {
 			peer.write( string );
+			peer.flush();
 		}
 	}
 }
@@ -140,7 +158,15 @@ var Streams = new function() {
 			this.close = function() {
 				peer.getOutputStream().close();
 			}
-
+			
+			this.writeBinary = function() {
+				return new OutputStream(peer.getOutputStream());
+			}
+			
+			this.writeText = function() {
+				return this.writeBinary().character();
+			}
+			
 			this.readBinary = function() {
 				return new InputStream(peer.getInputStream());
 			}
@@ -185,12 +211,37 @@ var Streams = new function() {
 	}
 }
 $exports.Streams = Streams;
-$exports.Reader = Reader;
-$exports.Writer = Writer;
-$exports.InputStream = InputStream;
-$exports.OutputStream = OutputStream;
 
-$exports.Resource = function(p) {
+$exports.java = new function() {
+	this.adapt = function(object) {
+		if (false) {
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
+			return new InputStream(object);
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
+			return new OutputStream(object);
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
+			return new Reader(object);
+		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
+			return new Writer(object);
+		} else {
+			var type = (function() {
+				if (object.getClass) {
+					return " (Java class: " + object.getClass().getName() + ")";
+				}
+				var rv = " typeof=" + typeof(object);
+				var props = [];
+				for (var x in object) {
+					props.push(x);
+				}
+				rv += " properties=" + props.join(",");
+				return rv;
+			})();
+			throw "Unimplemented java.adapt: " + type + object;
+		}
+	}
+}
+
+var Resource = function(p) {
 	var binary = function() {
 		if (p.read && p.read.binary) {
 			return p.read.binary();
@@ -221,32 +272,11 @@ $exports.Resource = function(p) {
 		return text.readLines.apply(text,arguments);
 	}
 }
+$exports.Resource = Resource;
 
-$exports.java = new function() {
-	this.adapt = function(object) {
-		if (false) {
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
-			return new InputStream(object);
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new OutputStream(object);
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
-			return new Reader(object);
-		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
-			return new Writer(object);
-		} else {
-			var type = (function() {
-				if (object.getClass) {
-					return " (Java class: " + object.getClass().getName() + ")";
-				}
-				var rv = " typeof=" + typeof(object);
-				var props = [];
-				for (var x in object) {
-					props.push(x);
-				}
-				rv += " properties=" + props.join(",");
-				return rv;
-			})();
-			throw "Unimplemented java.adapt: " + type + object;
-		}
-	}
-}
+//	TODO	It may be that the following exports are not necessary and can actually all be accessed through java.adapt, below
+$exports.Reader = Reader;
+$exports.Writer = Writer;
+$exports.InputStream = InputStream;
+$exports.OutputStream = OutputStream;
+

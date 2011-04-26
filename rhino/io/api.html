@@ -143,6 +143,16 @@
 										</li>
 									</ul>
 								</div>
+								<script type="application/x.jsapi#tests" jsapi:id="Buffer">
+									var buffer = new module.Streams.binary.Buffer();
+									var writer = buffer.writeText();
+									debugger;
+									writer.write("string!");
+									buffer.close();
+									var resource = buffer.readBinary().cache();
+									scope.test(resource.read(String) == "string!");
+									scope.test(resource.read(String) == "string!");
+								</script>
 							</li>
 						</ul>
 					</li>
