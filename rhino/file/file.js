@@ -131,6 +131,7 @@ var Pathname = function(parameters) {
 
 		var append = Boolean(mode.append);
 
+		//	TODO	adapt to use rhino/io Resource write method
 		if (dataOrType == $context.Streams.binary) {
 			return $filesystem.write.binary(peer,append);
 		} else if (dataOrType == $context.Streams.text) {

@@ -33,6 +33,7 @@ var InputStream = function(peer) {
 	$api.deprecate(this, "characters");
 	
 	this.cache = function() {
+		//	TODO	is this $context.$java?
 		var $streams = new Packages.inonit.script.runtime.io.Streams();
 		var $bytes = $streams.readBytes(peer);
 		return new Resource(new function() {
@@ -172,7 +173,7 @@ var Streams = new function() {
 			}
 
 			this.readText = function() {
-				return new Reader( new Packages.java.io.InputStreamReader(peer.getInputStream()) );
+				return this.readBinary().character();
 			}
 		}
 	}
@@ -271,10 +272,39 @@ var Resource = function(p) {
 		var text = text();
 		return text.readLines.apply(text,arguments);
 	}
+	
+	if (p.write) {
+		var writeText = function(mode) {
+			if (p.write.text) {
+				return p.write.text(mode);
+			} else if (p.write.binary) {
+				return p.write.binary(mode).character();
+			}
+		}
+		
+		this.write = function(dataOrType,mode) {
+			if (!mode) mode = {};
+			if (dataOrType == Streams.binary) {
+				return p.write.binary(mode);
+			} else if (dataOrType == Streams.text) {
+				return writeText(mode);
+			} else if (typeof(dataOrType) == "string") {
+				var writer = writeText(mode);
+				writer.write(dataOrType);
+				writer.close();
+			} else if (typeof(dataOrType) == "xml") {
+				var writer = writeText(mode);
+				writer.write(dataOrType.toXMLString());
+				writer.close();
+			} else {
+				fail("Unimplemented: write " + dataOrType);
+			}
+		}
+	}
 }
 $exports.Resource = Resource;
 
-//	TODO	It may be that the following exports are not necessary and can actually all be accessed through java.adapt, below
+//	TODO	It may be that the following exports are not necessary and can actually all be accessed through java.adapt
 $exports.Reader = Reader;
 $exports.Writer = Writer;
 $exports.InputStream = InputStream;
