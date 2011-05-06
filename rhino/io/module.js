@@ -50,6 +50,13 @@ var OutputStream = function(peer) {
 	this.$getOutputStream = function() {
 		return peer;
 	}
+	$api.deprecate(this,"$getOutputStream");
+	
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
+	}
 
 	this.close = function() {
 		peer.close();
