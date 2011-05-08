@@ -90,3 +90,10 @@ $exports.isJavaType = function(javaclass) {
 };
 $api.experimental($exports,"isJavaType");
 experimental("toJavaArray");
+
+$exports.Thread = {};
+$exports.Thread.thisSynchronize = function(f) {
+	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
+	//			synchronize()
+	return new Packages.org.mozilla.javascript.Synchronizer(f);
+}
