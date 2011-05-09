@@ -89,9 +89,9 @@ var Reader = function(peer) {
 			}
 		}
 		if (typeof(result) == "undefined") {
-			mode.onEnd.apply(this, []);
+			mode.onEnd.call(this);
 		} else {
-			mode.onEnd.apply(this, [ result ]);
+			mode.onEnd.call(this,result);
 		}
 		return result;
 	}
