@@ -155,6 +155,7 @@ public class Streams {
 				public void close() {
 					synchronized(Buffer.this) {
 						closed = true;
+						Buffer.this.notifyAll();
 					}
 				}
 			}
