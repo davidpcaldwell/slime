@@ -116,6 +116,10 @@ $exports.Thread = function(f) {
 		runnable.initialize(callbacks);
 		thread.start();
 	}
+	
+	this.join = function() {
+		thread.join();
+	}
 };
 $exports.Thread.thisSynchronize = function(f) {
 	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called

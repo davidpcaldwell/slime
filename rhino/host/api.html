@@ -121,102 +121,186 @@ END LICENSE
 				]]></script>
 				<!--	TODO	-->
 			</li>
-			<li class="object">
+			<li class="constructor">
 				<div class="name">Thread</div>
 				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">thisSynchronize</div>
-						<span>
-							Creates a function whose execution synchronizes on the <code>this</code> object of its invocation.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">function</span>
-									<span>A function which the returned function should execute.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
 							<span class="type">function</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">start</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">returned</div>
+												<span>__DESCRIPTION__</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type">__TYPE__</span>
+													<span>__DESCRIPTION__</span>
+												</div>
+											</li>
+											<li class="function">
+												<div class="name">threw</div>
+												<span>__DESCRIPTION__</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type">__TYPE__</span>
+													<span>__DESCRIPTION__</span>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">join</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<div>
+					<ul>
+						<li class="function">
+							<div class="name">thisSynchronize</div>
 							<span>
-								A function that obtains the lock to its <code>this</code> object, executes the given function, and 
-								then releases the lock.
+								Creates a function whose execution synchronizes on the <code>this</code> object of its invocation.
 							</span>
-						</div>
-						<script type="application/x.jsapi#tests" jsapi:id="synchronize"><![CDATA[
-							var f = function(x) {
-								return 2*x;
-							};
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">function</span>
+										<span>A function which the returned function should execute.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">function</span>
+								<span>
+									A function that obtains the lock to its <code>this</code> object, executes the given function, and 
+									then releases the lock.
+								</span>
+							</div>
+							<script type="application/x.jsapi#tests" jsapi:id="synchronize"><![CDATA[
+								var f = function(x) {
+									return 2*x;
+								};
 
-							var s = module.Thread.thisSynchronize(f);
+								var s = module.Thread.thisSynchronize(f);
 
-							//	TODO	actually test synchronization
+								//	TODO	actually test synchronization
 
-							scope.test(s(2) == 4);
-							scope.test(s(4) == 8);
+								scope.test(s(2) == 4);
+								scope.test(s(4) == 8);
 
-							var lock = new Packages.java.lang.Object();
-
-							var finished = 0;
-
-							var inner = function() {
-								inner.count++;
-								Packages.java.lang.Thread.sleep(100);
-								inner.count--;
-								finished++;
-								this.notifyAll();
-							}
-							inner.count = 0;
-
-							var nested = module.Thread.thisSynchronize(inner);
-
-							var outer = function() {
-								outer.count++;
-								nested.call(lock);
-								outer.count--;
-							}
-							outer.count = 0;
-
-							var getCount = module.Thread.thisSynchronize(function() {
-								return inner.count;
-							});
-
-							var runInThread = function(f,callbacks) {
-								var thread = new module.Thread(f);
-								thread.start(callbacks);
-							}
-
-							for (var i=0; i<10; i++) {
-								runInThread(outer, new function() {
-									this.returned = function(rv) {
-										scope.test(getCount.call(lock) == 0);
-										//Packages.java.lang.System.err.println("outer = " + outer.count);
-									}
-
-									this.threw = function(e) {
-										Packages.java.lang.System.err.println("threw = " + e);
-										throw e;
-									}
-								});
-							}
-
-							var waiter = module.Thread.thisSynchronize(function() {
-								while(finished < 10) {
-									//Packages.java.lang.System.err.println("finished < 10: " + finished);
-									this.wait();
+								var debug = function(s) {
+	//								Packages.java.lang.System.err.println(s);
 								}
-								//Packages.java.lang.System.err.println("finished == 10");
-							});
 
-							module.Thread.thisSynchronize(waiter).call(lock);
-						]]></script>
-					</li>
-				</ul>
+								var lock = new Packages.java.lang.Object();
+
+								var finished = 0;
+
+								var inner = function() {
+									inner.count++;
+									Packages.java.lang.Thread.sleep(100);
+									inner.count--;
+									finished++;
+									this.notifyAll();
+								}
+								inner.count = 0;
+
+								var nested = module.Thread.thisSynchronize(inner);
+
+								var outer = function() {
+									outer.count++;
+									nested.call(lock);
+									outer.count--;
+								}
+								outer.count = 0;
+
+								var getCount = module.Thread.thisSynchronize(function() {
+									return inner.count;
+								});
+
+								var runInThread = function(f,callbacks) {
+									var thread = new module.Thread(f);
+									thread.start(callbacks);
+									return thread;
+								}
+
+								var threads = [];
+								for (var i=0; i<10; i++) {
+									threads.push(runInThread(outer, new function() {
+										this.returned = function(rv) {
+											debug("outer = " + outer.count);
+											scope.test(getCount.call(lock) == 0);
+										}
+
+										this.threw = function(e) {
+											debug("threw = " + e);
+											throw e;
+										}
+									}));
+								}
+
+								threads.forEach( function(thread) {
+									thread.join();
+								});
+
+								scope.test(finished == 10);
+							]]></script>
+						</li>
+					</ul>
+				</div>				
 			</li>
 			<!--
 				Experimental methods
