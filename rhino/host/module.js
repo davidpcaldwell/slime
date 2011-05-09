@@ -102,9 +102,13 @@ $exports.Thread = function(f) {
 		this.run = function() {
 			try {
 				var rv = f();
-				_callbacks.returned(rv);
+				if (_callbacks && _callbacks.returned) {
+					_callbacks.returned(rv);
+				}
 			} catch (e) {
-				_callbacks.threw(e);
+				if (_callbacks && _callbacks.threw) {
+					_callbacks.threw(e);
+				}
 			}
 		}
 	}
