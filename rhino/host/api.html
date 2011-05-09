@@ -187,20 +187,8 @@ END LICENSE
 							});
 
 							var runInThread = function(f,callbacks) {
-								var runnable = new JavaAdapter(
-									Packages.java.lang.Runnable,
-									new function() {
-										this.run = function() {
-											try {
-												var rv = f();
-												callbacks.returned(rv);
-											} catch (e) {
-												callbacks.threw(e);
-											}
-										}
-									}
-								);
-								new Packages.java.lang.Thread(runnable).start();
+								var thread = new module.Thread(f);
+								thread.start(callbacks);
 							}
 
 							for (var i=0; i<10; i++) {

@@ -91,9 +91,34 @@ $exports.isJavaType = function(javaclass) {
 $api.experimental($exports,"isJavaType");
 experimental("toJavaArray");
 
-$exports.Thread = {};
+$exports.Thread = function(f) {
+	var runnable = new function() {
+		var _callbacks;
+		
+		this.initialize = function(callbacks) {
+			_callbacks = callbacks;
+		}
+		
+		this.run = function() {
+			try {
+				var rv = f();
+				_callbacks.returned(rv);
+			} catch (e) {
+				_callbacks.threw(e);
+			}
+		}
+	}
+
+	
+	var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable,runnable));
+	
+	this.start = function(callbacks) {
+		runnable.initialize(callbacks);
+		thread.start();
+	}
+};
 $exports.Thread.thisSynchronize = function(f) {
 	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
 	//			synchronize()
 	return new Packages.org.mozilla.javascript.Synchronizer(f);
-}
+};
