@@ -265,7 +265,7 @@ public class Command {
 			this.closeOnEnd = closeOnEnd;
 			this.flush = closeOnEnd;
 		}
-
+		
 		IOException failure() {
 			return e;
 		}
