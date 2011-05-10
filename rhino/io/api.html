@@ -7,9 +7,9 @@
 		<h1>Context</h1>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var java = $jsapi.module({
+				var java = $jsapi.module("rhino/host", {
 					classLoader: $host.getClassLoader()
-				}, "rhino/host");
+				});
 
 				this.api = {
 					java: java
@@ -147,11 +147,27 @@
 									var buffer = new module.Streams.binary.Buffer();
 									var writer = buffer.writeText();
 									debugger;
-									writer.write("string!");
+									writer.write("Buffer");
 									buffer.close();
 									var resource = buffer.readBinary().cache();
-									scope.test(resource.read(String) == "string!");
-									scope.test(resource.read(String) == "string!");
+									scope.test(resource.read(String) == "Buffer");
+									scope.test(resource.read(String) == "Buffer");
+								</script>
+								<script type="application/x.jsapi#tests" jsapi:id="Buffer readLines">
+									var buffer = new module.Streams.binary.Buffer();
+									var writer = buffer.writeText();
+									writer.write("Buffer readLines\n");
+									
+									var lines = [];
+
+									buffer.readText().readLines(function(s) {
+										lines.push(s);
+										return lines;
+									}, { ending: "\n" });
+									
+									scope.test(lines.length == 1);
+									
+									buffer.close();
 								</script>
 							</li>
 						</ul>

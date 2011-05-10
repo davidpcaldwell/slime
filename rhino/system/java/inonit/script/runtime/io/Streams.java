@@ -110,12 +110,20 @@ public class Streams {
 			private MyInputStream in = new MyInputStream();
 			private MyOutputStream out = new MyOutputStream();
 			
+			public String toString() {
+				return super.toString() + " in=" + in + " out=" + out;
+			}
+			
 			public InputStream getInputStream() {
 				return in;
 			}
 			
 			public OutputStream getOutputStream() {
 				return out;
+			}
+			
+			private synchronized int available() {
+				return bytes.size();
 			}
 			
 			private synchronized int read() {
@@ -128,7 +136,7 @@ public class Streams {
 				}
 				if (bytes.size() == 0 && closed) return -1;
 				Byte bObject = (Byte)bytes.removeFirst();
-				byte b = bObject.byteValue();
+				int b = bObject.byteValue();
 				if (b < 0) {
 					b += 256;
 				}
@@ -140,10 +148,32 @@ public class Streams {
 				notifyAll();
 			}
 			
+			private synchronized void close() {
+				closed = true;
+				Buffer.this.notifyAll();				
+			}
+			
 			private class MyInputStream extends InputStream {
 				public int read() {
-					int rv = Buffer.this.read();
-					return rv;
+					return Buffer.this.read();
+				}
+				
+				public int read(byte[] b, int off, int len) {
+					int i = this.read();
+					if (i == -1) {
+						return 0;
+					} else {
+						b[off] = (byte)i;
+						return 1;
+					}
+				}
+				
+				public int read(byte[] b) {
+					return read(b,0,1);
+				}
+				
+				public int available() {
+					return Buffer.this.available();
 				}
 			}
 			
@@ -153,10 +183,7 @@ public class Streams {
 				}
 				
 				public void close() {
-					synchronized(Buffer.this) {
-						closed = true;
-						Buffer.this.notifyAll();
-					}
+					Buffer.this.close();
 				}
 			}
 		}
