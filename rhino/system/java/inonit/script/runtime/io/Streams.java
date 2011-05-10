@@ -143,6 +143,16 @@ public class Streams {
 				return b;
 			}
 			
+			private synchronized int read(byte[] b, int off, int len) {
+				int i = this.read();
+				if (i == -1) {
+					return -1;
+				} else {
+					b[off] = (byte)i;
+					return 1;
+				}				
+			}
+			
 			private synchronized void write(int i) {
 				bytes.addLast( new Byte( (byte)i ) );
 				notifyAll();
@@ -159,13 +169,7 @@ public class Streams {
 				}
 				
 				public int read(byte[] b, int off, int len) {
-					int i = this.read();
-					if (i == -1) {
-						return -1;
-					} else {
-						b[off] = (byte)i;
-						return 1;
-					}
+					return Buffer.this.read(b,off,len);
 				}
 				
 				public int read(byte[] b) {
