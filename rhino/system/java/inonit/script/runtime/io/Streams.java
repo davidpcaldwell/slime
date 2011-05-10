@@ -161,7 +161,7 @@ public class Streams {
 				public int read(byte[] b, int off, int len) {
 					int i = this.read();
 					if (i == -1) {
-						return 0;
+						return -1;
 					} else {
 						b[off] = (byte)i;
 						return 1;
