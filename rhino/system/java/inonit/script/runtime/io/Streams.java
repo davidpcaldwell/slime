@@ -173,7 +173,7 @@ public class Streams {
 				}
 				
 				public int read(byte[] b) {
-					return read(b,0,1);
+					return this.read(b,0,1);
 				}
 				
 				public int available() {
