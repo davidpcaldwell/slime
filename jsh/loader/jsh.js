@@ -136,7 +136,7 @@ this.jsh = new function() {
 	};
 
 	//	TODO	Lazy-loading
-	var js = loader.bootstrap({},"js/object");
+	var js = loader.bootstrap({ globals: true },"js/object");
 	jsh.js = js;
 
 	var java = loader.bootstrap(
