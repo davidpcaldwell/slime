@@ -106,7 +106,11 @@ $exports.tests = new function() {
 										scope.scenario(new function() {
 											this.name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : "<script>";
 											this.execute = function(scope) {
-												eval(String(tests[i]));
+												try {
+													eval(String(tests[i]));
+												} catch (e) {
+													throw "Error evaluating: " + String(tests[i]) + ": " + e;
+												}
 											}
 										});
 									}
