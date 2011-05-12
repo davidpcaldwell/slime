@@ -143,6 +143,7 @@ this.jsh = new function() {
 		new function() {
 			this.experimental = function() {};
 			this.classLoader = $host.getClassLoader();
+			this.globals = true;
 		},
 		"rhino/host"
 	);

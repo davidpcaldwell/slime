@@ -38,16 +38,94 @@ $exports.Properties = new function() {
 }
 $api.experimental($exports,"Properties");
 
-$exports.fail = function(message) {
-	//	TODO	Bundle this with the module rather than the shell as a whole
-	if (typeof(Packages.inonit.script.runtime.Throwables.INSTANCE.fail) == "function") {
-		Packages.inonit.script.runtime.Throwables.INSTANCE.fail(message);
-	} else {
-		throw message;
+var errors = new function() {
+	var instance = new Packages.inonit.script.runtime.Throwables();
+	
+	this.fail = function(message) {
+		instance.fail(message);
 	}
+	
+	this.decorate = function(implementation) {
+		var prototype = implementation.prototype;
+		var rv = function() {
+			//	TODO	what if called as function?
+			var literals = Array.prototype.map.call(arguments,function(a,i) {
+				return "arguments["+i+"]";
+			}).join(",");
+			//	TODO	is this parameterized call already in js/object?
+			var created = eval("new implementation(" + literals + ")");
+			var tracer;
+			try {
+				instance.throwException(created.toString());
+			} catch (e) {
+				tracer = e;
+			}
+			var sw = new Packages.java.io.StringWriter();
+			var pw = new Packages.java.io.PrintWriter(sw);
+			tracer.rhinoException.printStackTrace(pw);
+			pw.flush();
+			var stack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
+			//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
+			//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
+			//			to this file
+			//	TODO	get full stack traces if possible, rather than the limited version being provided now (which has ...more)
+			//			however, could be impossible (getStackTrace may not be overridden while printStackTrace is).
+			created.stack = stack;
+			return created;
+		}
+		rv.prototype = prototype;
+		return rv;
+	};
 }
 
+$exports.fail = function(message) {
+	errors.fail(message);
+};
 $api.experimental($exports,"fail");
+
+if ($context.globals) {
+	var global = (function() {
+		var rv = this;
+		while(rv.__parent__) {
+			rv = rv.__parent__;
+		}
+		return rv;
+	})();
+
+	var errorNames = (function() {
+		if (false) {
+			//	Does not work; these properties are not enumerable, apparently
+			var rv = [];
+			for (var x in global) {
+				if (global[x].prototype.__proto__ == global[x].prototype) {
+					rv.push(x);
+				}
+			}
+			return rv;
+		} else {
+			return [
+				"Error","ConversionError","EvalError","InternalError","RangeError","ReferenceError","SyntaxError","TypeError"
+				,"URIError"
+			];
+		}
+	})();
+	
+	errorNames.forEach( function(name) {
+		global[name] = errors.decorate(global[name]);
+	});
+}
+
+var createErrorType = function(p) {
+	var rv = function(message) {
+		this.message = message;
+		this.name = p.name;
+	};
+	rv.prototype = new Error();
+	rv = errors.decorate(rv);
+	return rv;
+}
+$exports.ErrorType = createErrorType;
+$api.experimental($exports,"ErrorType");
 
 var experimental = function(name) {
 	$exports[name] = items[name];
