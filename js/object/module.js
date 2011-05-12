@@ -377,4 +377,3 @@ $exports.Array = new function() {
 
 $exports.deprecate = deprecate;
 $api.deprecate($exports,"deprecate");
-
