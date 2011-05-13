@@ -73,19 +73,23 @@ END LICENSE
 	</ul>
 	<h1>$java</h1>
 	<ul>
-		<li class="function">
-			<div class="name">newTemporaryDirectory</div>
+		<li class="object">
+			<div class="name">io</div>
 			<span>__DESCRIPTION__</span>
-			<div class="arguments">
-				<div class="label">Arguments</div>
-				<ol>
-				</ol>
-			</div>
-			<div class="returns">
-				<div class="label">Returns</div>
-				<span class="type">JavaClass java.io.File</span>
-				<span>__DESCRIPTION__</span>
-			</div>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">newTemporaryDirectory</div>
+					<span>
+						Returns a <code>java.io.File</code> representing a new, empty directory.
+					</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">JavaClass java.io.File</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
 		</li>
 	</ul>
 	<h1>$jsapi</h1>
@@ -98,7 +102,10 @@ END LICENSE
 				<ol>
 					<li class="value">
 						<span class="type">string</span>
-						<span>The "name" of the module, essentially the path to the module from the source root.</span>
+						<span>
+							The "path" (or logical name) of the module, as provided on the command line when jsapi.jsh.js was
+							launched.
+						</span>
 					</li>
 					<li class="value">
 						<span class="type">object</span>
@@ -114,16 +121,10 @@ END LICENSE
 		</li>
 		<li class="function">
 			<div class="name">newTemporaryDirectory</div>
-			<span>__DESCRIPTION__</span>
-			<div class="arguments">
-				<div class="label">Arguments</div>
-				<ol>
-				</ol>
-			</div>
+			<span>Returns a new, empty directory.</span>
 			<div class="returns">
 				<div class="label">Returns</div>
 				<span class="type">jsh.file directory</span>
-				<span>__DESCRIPTION__</span>
 			</div>
 		</li>
 	</ul>

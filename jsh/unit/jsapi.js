@@ -157,6 +157,7 @@ $exports.tests = new function() {
 				var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
 				var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
 				var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
+				dir.mkdirs();
 				return dir;
 			}
 
@@ -181,7 +182,6 @@ $exports.tests = new function() {
 				environment: $context.ENVIRONMENT,
 				newTemporaryDirectory: function() {
 					var $path = $newTemporaryDirectory();
-					$path.mkdirs();
 					var pathstring = String($path.getCanonicalPath());
 					var os = jsh.file.filesystems.os.Pathname(pathstring);
 					return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
