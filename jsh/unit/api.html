@@ -19,6 +19,51 @@ END LICENSE
 	<title>jsapi</title>
 </head>
 <body>
+	<div>
+		<h1>jsapi.jsh</h1>
+		Command-line arguments
+		<ul>
+			<!--	TODO	use styles rather than italics to implement the below; perhaps a class commandarg or something	-->
+			<li><code>-jsapi [<i>pathname</i>]</code> Location of <code>loader/api</code> directory</li>
+			<li><code>-doc</code> Pathname at which to create a directory to which to emit documentation; if option is missing, no 
+				documentation is emitted. If directory exists, it is deleted and re-created.
+			</li>
+			<li><code>-notest</code> Skip unit tests</li>
+			<li><code>-classpath [<i>pathname</i>]</code> (Multiple allowed) Add pathname to the script classpath.</li>
+			<li>
+				<code>-environment [arg]</code>
+				Adds a value to the <code>$jsapi.environment</code> value provided to tests.
+				<code>arg</code> can have one of two formats:
+				<ul>
+					<li>
+						<code><i>name</i>=<i>pathname</i></code>: The variable <code>$jsapi.environment[<i>name</i>]</code> is set
+						to a module object loaded from <code><i>pathname</i></code>.
+					</li>
+					<li>
+						<code><i>name</i></code>: The variable <code>$jsapi.environment[<i>name</i>]</code> is set to
+						<code>new Object()</code>.
+					</li>
+				</ul>
+			</li>
+			<li>
+				<code>-module <i>[namespace]</i>@<i>path</i>=<i>location</i>:<i>[mode]</i></code>
+				Adds a module to the list of modules to be documented and/or tested.
+				<ul>
+					<li>
+						<code><i>namespace</i></code> The namespace to use when emitting documentation. If no namespace is given,
+						the module will not be documented.
+					</li>
+					<li>
+						<code><i>path</i></code> The logical name of the module; this is the name by which it can be accessed by
+						other modules when running tests, or when implementing cross-file documentation references.
+						<!--	TODO	document cross-file documentation references	-->
+					</li>
+					<li><code><i>location</i></code> The location from which the module can be loaded.</li>
+					<li><code><i>mode</i></code> If <code>skip</code>, tests will not be run on this module.</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
 	<h1>api.html</h1>
 	<ul>
 		<li>application/x.jsapi#scope</li>
@@ -52,12 +97,12 @@ END LICENSE
 				<div class="label">Arguments</div>
 				<ol>
 					<li class="value">
-						<span class="type">object</span>
-						<span>The <code>$context</code> with which to load the module.</span>
-					</li>
-					<li class="value">
 						<span class="type">string</span>
 						<span>The "name" of the module, essentially the path to the module from the source root.</span>
+					</li>
+					<li class="value">
+						<span class="type">object</span>
+						<span>The <code>$context</code> with which to load the module.</span>
 					</li>
 				</ol>
 			</div>
