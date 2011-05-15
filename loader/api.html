@@ -788,59 +788,8 @@ END LICENSE
 									</div>
 									<div class="returns">
 										<div class="label">Returns</div>
-										<span class="type">string</span>
-										<span>The JavaScript code located at the given path, as a string.</span>
-									</div>
-								</li>
-								<li class="function">
-									<div class="name">instantiate</div>
-									<span>
-										(optional) A method that allows a module to return a separate function to implement its own
-										execution, rather than relying on the default implementation.
-									</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">string</span>
-												<span>A path at which there is a script to execute.</span>
-											</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">function</span>
-										<div class="function">
-											<span>
-												A function that can load the script at the given path and execute the code given 
-												a scope object.
-											</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">object</span>
-														<span>
-															An object to use as a scope object when executing the code of the
-															script; the implementation should make the properties of this object
-															visible visible
-															to the script (as if the script were executed with a 
-															<code>with</code>
-															statement based on this argument).
-															<!--	TODO is the above clear language?	-->
-														</span>
-													</li>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">object</span>
-												<span>
-													An object containing the properties assigned to <code>$exports</code> by this
-													script.
-												</span>
-											</div>
-										</div>
+										<span class="type"><a href="#types.code">code</a></span>
+										<span>The code located at the given location in this module.</span>
 									</div>
 								</li>
 							</ul>

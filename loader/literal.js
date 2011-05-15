@@ -240,12 +240,12 @@ new function() {
 
 		var Callee = arguments.callee;
 
-		this.load = function(configuration) {
+		this.load = function(scope) {
 			return runInScope(
 				format.getCode(format.main),
 				{
-					$context: (configuration && configuration.$context) ? configuration.$context : {},
-					$exports: (configuration && configuration.$exports) ? configuration.$exports : {},
+					$context: (scope && scope.$context) ? scope.$context : {},
+					$exports: (scope && scope.$exports) ? scope.$exports : {},
 					$loader: new function() {
 						this.script = function(path,context) {
 							return runInScope(format.getCode(path),{ $context: context });
