@@ -192,7 +192,7 @@ new function() {
 	this.$api = $api;
 
 	var runners = new function() {
-		this.run = function(/*code,$context,$exports,scope*/) {
+		this.run = function(/*code,scope*/) {
 			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
 			//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
 			//			loaded by the new loader, and should go away when all modules are converted
@@ -221,8 +221,8 @@ new function() {
 
 	var ModuleLoader = function(format) {
 		//	format.getCode: function(path), returns string containing the code contained at that path
-		//	format.instantiate: function(path), returns function(context,exports,scope) that somehow has supplied its own code
-		//		using path and uses the other three arguments to replace runners.script(code,context,scope,exports)
+		//	format.instantiate: function(path), returns function(scope) that somehow has supplied its own code
+		//		using path and uses the scope argument to replace runners.script(code,scope)
 		//	format.main: string, path to module file
 
 		var Callee = arguments.callee;
@@ -274,7 +274,14 @@ new function() {
 	};
 
 	this.script = function(code,$context) {
-		return runners.run(code,runScope($context));
+		if (typeof(code) == "function") {
+			//	assume it is a function that can execute the code given a scope
+			return code(runScope($context));
+		} else if (typeof(code) == "string") {
+			return runners.run(code,runScope($context));			
+		} else {
+			throw "Unimplemented: typeof(code) = " + typeof(code);
+		}
 	};
 	
 	this.scope = function(context) {
