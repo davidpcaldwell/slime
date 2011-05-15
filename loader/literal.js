@@ -268,15 +268,26 @@ new function() {
 		}
 	}
 
+	this.run = function(code,scope) {
+		runInScope(code,scope);
+	};
+	
+	this.file = function(code,$context) {
+		var scope = {
+			$exports: {}
+		};
+		if ($context) {
+			scope.$context = $context;
+		}
+		this.run(code,scope);
+		return scope.$exports;
+	};
+	
 	this.module = function(format,scope) {
 		var loader = new ModuleLoader(format);
 		return loader.load(scope);
 	};
 
-	this.run = function(code,scope) {
-		runInScope(code,scope);
-	};
-	
 	this.namespace = function(string) {
 		//	This construct returns the top-level global object, e.g., window in the browser
 		var global = function() {

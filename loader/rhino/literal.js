@@ -35,6 +35,25 @@ new function() {
 		})();
 		return eval($loader.code);
 	})();
+	
+	var getCode = function(code) {
+		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
+		if ($loader.script && typeof(code) == "object" && code.name && code.$in) {
+			return function() { $loader.script(arguments[0],code.name,code.$in); };
+		} else if (typeof(code) == "string") {
+			return code;
+		} else {
+			throw "Unimplemented: code = " + code;
+		}
+	}
+
+	this.run = function(code,scope) {
+		loader.run(getCode(code),scope);
+	}
+	
+	this.file = function(code,$context) {
+		return loader.file(getCode(code),$context);
+	}
 
 	var engineModuleCodeLoader = function($engine_module) {
 		return new function() {
@@ -59,17 +78,6 @@ new function() {
 
 	this.module = function($module,p) {
 		return loader.module(engineModuleCodeLoader($module),p);
-	}
-
-	this.run = function(code,scope) {
-		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
-		if ($loader.script && typeof(code) == "object" && code.name && code.$in) {
-			loader.run(function() { $loader.script(arguments[0],code.name,code.$in); },scope);
-		} else if (typeof(code) == "string") {
-			loader.run(code,scope);
-		} else {
-			throw "Unimplemented: code = " + code;
-		}
 	}
 
 	this.namespace = function(name) {
