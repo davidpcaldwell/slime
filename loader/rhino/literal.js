@@ -41,16 +41,8 @@ new function() {
 	if ($loader.script) {
 		instantiate = function(name,$in) {
 			return function() {
-				var scope = {};
-				scope.$platform = loader.$platform;
-				scope.$api = loader.$api;
-				scope.$context = (arguments[0]) ? arguments[0] : {};
-				scope.$exports = (arguments[1]) ? arguments[1] : {};
-				for (var x in arguments[2]) {
-					scope[x] = arguments[2][x];
-				}
-				$loader.script(scope,name,$in);
-				return scope.$exports;
+				$loader.script(arguments[0],name,$in);
+				return arguments[0].$exports;
 			}
 		}
 	}
@@ -85,7 +77,7 @@ new function() {
 	this.script = function(code,$context) {
 		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
 		if (instantiate && typeof(code) == "object" && code.name && code.$in) {
-			return instantiate(code.name,code.$in)($context);
+			return instantiate(code.name,code.$in)(loader.scope($context));
 		} else if (typeof(code) == "string") {
 			return loader.script(code,$context);
 		} else {

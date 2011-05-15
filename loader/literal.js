@@ -182,11 +182,13 @@ new function() {
 		return $exports;
 	})();
 
-	//	TODO	used by literal.js from rhino
+	//	TODO	The following properties must be exposed to the Rhino loader so that its alternate implementation can supply them
+	//			to executing scripts and modules
+
 	//	TODO	also used by client.html unit tests
 	this.$platform = $platform;
 
-	//	TODO	used by client.html unit tests
+	//	TODO	also used by client.html unit tests
 	this.$api = $api;
 
 	var runners = new function() {
@@ -207,6 +209,8 @@ new function() {
 	
 	var runScope = function(context,exports,other) {
 		var rv = {};
+		rv.$platform = $platform;
+		rv.$api = $api;
 		rv.$context = (context) ? context : {};
 		rv.$exports = (exports) ? exports : {};
 		for (var x in other) {
@@ -227,23 +231,20 @@ new function() {
 			if (format.instantiate && format.instantiate(path)) {
 				return format.instantiate(path);
 			} else {
-				return function(context,exports,scope) {
-					return runners.run(
-						format.getCode(path),
-						runScope(context,exports,scope)
-					)
+				return function(scope) {
+					return runners.run(format.getCode(path),scope)
 				};
 			}
 		}
 
 		this.load = function(configuration) {
-			return instantiate(format.main)(
+			return instantiate(format.main)(runScope(
 				(configuration && configuration.$context) ? configuration.$context : {},
 				(configuration && configuration.$exports) ? configuration.$exports : {},
 				{
 					$loader: new function() {
 						this.script = function(path,scope) {
-							return instantiate(path)(scope);
+							return instantiate(path)(runScope(scope));
 						}
 
 						this.module = function(path,context) {
@@ -263,18 +264,22 @@ new function() {
 						}
 					}()
 				}
-			);
+			));
 		}
 	}
 
 	this.module = function(format,configuration) {
 		var loader = new ModuleLoader(format);
 		return loader.load(configuration);
-	}
+	};
 
 	this.script = function(code,$context) {
 		return runners.run(code,runScope($context));
 	};
+	
+	this.scope = function(context) {
+		return runScope(context);
+	}
 
 	this.namespace = function(string) {
 		//	This construct returns the top-level global object, e.g., window in the browser
