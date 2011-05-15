@@ -245,7 +245,9 @@ new function() {
 				{
 					$loader: new function() {
 						this.script = function(path,scope) {
-							return instantiate(path)(runScope(scope));
+							var scope = runScope(scope);
+							instantiate(path)(scope);
+							return scope.$exports;
 						}
 
 						this.module = function(path,context) {
@@ -277,7 +279,9 @@ new function() {
 	this.script = function(code,$context) {
 		if (typeof(code) == "function") {
 			//	assume it is a function that can execute the code given a scope
-			return code(runScope($context));
+			var scope = runScope($context);
+			code(scope);
+			return scope.$exports;
 		} else if (typeof(code) == "string") {
 			return runners.run(code,runScope($context));			
 		} else {

@@ -42,6 +42,7 @@ new function() {
 		instantiate = function(name,$in) {
 			return function() {
 				$loader.script(arguments[0],name,$in);
+				//	TODO	get rid of the below through refactoring
 				return arguments[0].$exports;
 			}
 		}
