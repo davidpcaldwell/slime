@@ -58,17 +58,17 @@ new function() {
 	}
 
 	this.module = function($module,p) {
-		return loader.module(engineModuleCodeLoader($module), p);
+		return loader.module(engineModuleCodeLoader($module),p);
 	}
 
 	this.script = function(code,scope) {
 		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
 		if ($loader.script && typeof(code) == "object" && code.name && code.$in) {
-			return loader.script(function() { $loader.script(arguments[0],code.name,code.$in); },scope);
+			loader.script(function() { $loader.script(arguments[0],code.name,code.$in); },scope);
 		} else if (typeof(code) == "string") {
-			return loader.script(code,scope);
+			loader.script(code,scope);
 		} else {
-			throw "Unimplemented: arguments = " + Array.prototype.join.call(arguments,",");
+			throw "Unimplemented: code = " + code;
 		}
 	}
 

@@ -216,8 +216,6 @@ new function() {
 			for (var x in initial) {
 				rv[x] = initial[x];
 			}
-			if (!rv.$context) rv.$context = {};
-			if (!rv.$exports) rv.$exports = {};
 			return rv;
 		}
 		
@@ -230,8 +228,7 @@ new function() {
 			runners.run(code,fixed);			
 		} else {
 			throw "Unimplemented: typeof(code) = " + typeof(code);
-		}		
-		return fixed.$exports;
+		}
 	}
 	
 	var ModuleLoader = function(format) {
@@ -240,32 +237,34 @@ new function() {
 
 		var Callee = arguments.callee;
 
-		this.load = function(scope) {
-			return runInScope(
-				format.getCode(format.main),
-				{
-					$context: (scope && scope.$context) ? scope.$context : {},
-					$exports: (scope && scope.$exports) ? scope.$exports : {},
-					$loader: new function() {
-						this.script = function(path,context) {
-							return runInScope(format.getCode(path),{ $context: context });
-						}
+		this.load = function(p) {
+			var scope = {
+				$context: (p && p.$context) ? p.$context : {},
+				$exports: (p && p.$exports) ? p.$exports : {},
+				$loader: new function() {
+					this.script = function(path,context) {
+						var scope = { $context: context, $exports: {} };
+						runInScope(format.getCode(path),scope);
+						return scope.$exports;
+					}
 
-						this.module = function(path,context) {
-							var tokens = path.split("/");
-							var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-							var main = tokens[tokens.length-1];
-							var loader = new Callee({
-								main: main,
-								getCode: function(path) {
-									return format.getCode(prefix+path);
-								}
-							});
-							return loader.load({ $context: context });
-						}
-					}()
-				}
-			);
+					this.module = function(path,context) {
+						var tokens = path.split("/");
+						var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+						var main = tokens[tokens.length-1];
+						var loader = new Callee({
+							main: main,
+							getCode: function(path) {
+								return format.getCode(prefix+path);
+							}
+						});
+						return loader.load({ $context: context });
+					}
+				}()
+			};
+
+			runInScope(format.getCode(format.main),scope);
+			return scope.$exports;
 		}
 	}
 
@@ -275,7 +274,7 @@ new function() {
 	};
 
 	this.script = function(code,scope) {
-		return runInScope(code,scope);
+		runInScope(code,scope);
 	};
 	
 	this.namespace = function(string) {

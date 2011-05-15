@@ -79,10 +79,12 @@ this.jsh = new function() {
 		}
 
 		this.script = function(pathname,$context) {
-			return rhinoLoader.script({
+			var scope = { $context: $context, $exports: {} };
+			rhinoLoader.script({
 				name: pathname.toString(),
 				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
-			}, { $context: $context });
+			}, scope);
+			return scope.$exports;
 		}
 
 		this.namespace = function(name) {

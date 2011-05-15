@@ -174,7 +174,14 @@
 		}
 		
 		this.script = function(path,$context) {
-			return platform.script(fetcher.getCode(path),{ $context: $context });
+			var scope = {
+				$exports: {}
+			};
+			if ($context) {
+				scope.$context = $context;
+			}
+			platform.script(fetcher.getCode(path),scope);
+			return scope.$exports;
 		};
 
 		this.namespace = function(name) {
