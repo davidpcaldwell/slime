@@ -82,7 +82,7 @@ this.jsh = new function() {
 			return rhinoLoader.script({
 				name: pathname.toString(),
 				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
-			}, $context);
+			}, { $context: $context });
 		}
 
 		this.namespace = function(name) {
