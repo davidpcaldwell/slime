@@ -755,23 +755,21 @@ END LICENSE
 										<div class="label">Returns</div>
 										<span class="type">function</span>
 										<div class="function">
-											<span>A function that can execute a script given the appropriate configuration.</span>
+											<span>
+												A function that can load the script at the given path and execute the code given 
+												a scope object.
+											</span>
 											<div class="arguments">
 												<div class="label">Arguments</div>
 												<ol>
 													<li class="value">
 														<span class="type">object</span>
-														<span>The object to use as <code>$context</code>.</span>
-													</li>
-													<li class="value">
-														<span class="type">object</span>
-														<span>The object to use as <code>$exports</code>.</span>
-													</li>
-													<li class="value">
-														<span class="type">object</span>
 														<span>
-															An object to use as a scope object; its properties should be visible
-															to the script (as if the script were executed with a <code>with</code>
+															An object to use as a scope object when executing the code of the
+															script; the implementation should make the properties of this object
+															visible visible
+															to the script (as if the script were executed with a 
+															<code>with</code>
 															statement based on this argument).
 															<!--	TODO is the above clear language?	-->
 														</span>

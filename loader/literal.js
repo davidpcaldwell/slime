@@ -169,7 +169,9 @@ new function() {
 		//	$exports.deprecate = function() {
 		//		if (arguments.length == 1 && typeof(arguments[0]) == "function") {
 		//			return deprecate.apply(this,arguments);
-		//		} else if (arguments.length == 2 && typeof(arguments[0]) == "object" && typeof(arguments[1]) == "string" && typeof(arguments[0][arguments[1]]) == "function") {
+		//		} else if (arguments.length == 2 && typeof(arguments[0]) == "object" && typeof(arguments[1]) == "string" 
+		//			&& typeof(arguments[0][arguments[1]]) == "function") 
+		//		{
 		//			return deprecate.apply(this,arguments);
 		//		}
 		//		return function(){}();
@@ -182,9 +184,8 @@ new function() {
 		return $exports;
 	})();
 
-	//	TODO	The following properties must be exposed to the Rhino loader so that its alternate implementation can supply them
-	//			to executing scripts and modules
-
+	//	TODO	The following properties must be exposed to the Rhino loader so that it can supply them to jsh/unit jsapi via jsh.js
+	
 	//	TODO	also used by client.html unit tests
 	this.$platform = $platform;
 
@@ -284,10 +285,6 @@ new function() {
 		}
 	};
 	
-	this.scope = function(context) {
-		return runScope(context);
-	}
-
 	this.namespace = function(string) {
 		//	This construct returns the top-level global object, e.g., window in the browser
 		var global = function() {
