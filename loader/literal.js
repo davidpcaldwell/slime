@@ -190,27 +190,34 @@ new function() {
 	this.$api = $api;
 
 	var runners = new function() {
-		this.script = function(/*code,$context,$exports,scope*/) {
-			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? ModuleLoader?
+		this.run = function(/*code,$context,$exports,scope*/) {
+			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
 			//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
 			//			loaded by the new loader, and should go away when all modules are converted
 			return (function() {
 				//	$platform is in scope because of the above
 				//	$api is also in scope
-				var $context = (arguments[1]) ? arguments[1] : {};
-				var $exports = (arguments[2]) ? arguments[2] : {};
-				//	arguments[3] is scope; this object provides the $loader implementation for modules
-				with( (arguments[3]) ? arguments[3] : {} ) {
+				with( arguments[1] ) {
 					eval(arguments[0]);
 				}
-				return $exports;
+				return arguments[1].$exports;
 			}).apply({ $exports: true },arguments);
 		}
+	}
+	
+	var runScope = function(context,exports,other) {
+		var rv = {};
+		rv.$context = (context) ? context : {};
+		rv.$exports = (exports) ? exports : {};
+		for (var x in other) {
+			rv[x] = other[x];
+		}
+		return rv;
 	}
 
 	var ModuleLoader = function(format) {
 		//	format.getCode: function(path), returns string containing the code contained at that path
-		//	format.instantiate: function(path), returns function(context,scope,exports) that somehow has supplied its own code
+		//	format.instantiate: function(path), returns function(context,exports,scope) that somehow has supplied its own code
 		//		using path and uses the other three arguments to replace runners.script(code,context,scope,exports)
 		//	format.main: string, path to module file
 
@@ -221,11 +228,9 @@ new function() {
 				return format.instantiate(path);
 			} else {
 				return function(context,exports,scope) {
-					return runners.script(
+					return runners.run(
 						format.getCode(path),
-						context,
-						exports,
-						scope
+						runScope(context,exports,scope)
 					)
 				};
 			}
@@ -257,8 +262,6 @@ new function() {
 							return loader.load({ $context: context });
 						}
 					}()
-					,$api: $api
-					,$platform: $platform
 				}
 			);
 		}
@@ -270,7 +273,7 @@ new function() {
 	}
 
 	this.script = function(code,$context) {
-		return runners.script(code,$context);
+		return runners.run(code,runScope($context));
 	};
 
 	this.namespace = function(string) {
