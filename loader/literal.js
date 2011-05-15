@@ -273,7 +273,7 @@ new function() {
 		return loader.load(scope);
 	};
 
-	this.script = function(code,scope) {
+	this.run = function(code,scope) {
 		runInScope(code,scope);
 	};
 	

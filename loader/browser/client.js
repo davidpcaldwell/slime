@@ -180,7 +180,7 @@
 			if ($context) {
 				scope.$context = $context;
 			}
-			platform.script(fetcher.getCode(path),scope);
+			platform.run(fetcher.getCode(path),scope);
 			return scope.$exports;
 		};
 

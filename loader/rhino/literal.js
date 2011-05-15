@@ -61,12 +61,12 @@ new function() {
 		return loader.module(engineModuleCodeLoader($module),p);
 	}
 
-	this.script = function(code,scope) {
+	this.run = function(code,scope) {
 		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
 		if ($loader.script && typeof(code) == "object" && code.name && code.$in) {
-			loader.script(function() { $loader.script(arguments[0],code.name,code.$in); },scope);
+			loader.run(function() { $loader.script(arguments[0],code.name,code.$in); },scope);
 		} else if (typeof(code) == "string") {
-			loader.script(code,scope);
+			loader.run(code,scope);
 		} else {
 			throw "Unimplemented: code = " + code;
 		}

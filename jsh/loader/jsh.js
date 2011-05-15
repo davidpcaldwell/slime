@@ -80,7 +80,7 @@ this.jsh = new function() {
 
 		this.script = function(pathname,$context) {
 			var scope = { $context: $context, $exports: {} };
-			rhinoLoader.script({
+			rhinoLoader.run({
 				name: pathname.toString(),
 				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
 			}, scope);
