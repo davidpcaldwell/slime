@@ -234,10 +234,6 @@ new function() {
 		return fixed.$exports;
 	}
 	
-	var runWithContext = function(code,$context) {
-		return runInScope(code,{ $context: $context });
-	}
-	
 	var ModuleLoader = function(format) {
 		//	format.getCode: function(path), returns string containing the code contained at that path
 		//	format.main: string, path to module file
@@ -252,7 +248,7 @@ new function() {
 					$exports: (configuration && configuration.$exports) ? configuration.$exports : {},
 					$loader: new function() {
 						this.script = function(path,context) {
-							return runWithContext(format.getCode(path),context);
+							return runInScope(format.getCode(path),{ $context: context });
 						}
 
 						this.module = function(path,context) {
