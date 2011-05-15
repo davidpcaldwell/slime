@@ -220,54 +220,56 @@ new function() {
 		return rv;
 	}
 
+	var runInScope = function(code,scope) {
+		if (typeof(code) == "function") {
+			//	assume it is a function that can execute the code given a scope
+			code(scope);
+		} else if (typeof(code) == "string") {
+			runners.run(code,scope);			
+		} else {
+			throw "Unimplemented: typeof(code) = " + typeof(code);
+		}		
+		return scope.$exports;
+	}
+	
+	var runWithContext = function(code,$context) {
+		return runInScope(code,runScope($context));
+	}
+	
 	var ModuleLoader = function(format) {
 		//	format.getCode: function(path), returns string containing the code contained at that path
-		//	format.instantiate: function(path), returns function(scope) that somehow has supplied its own code
-		//		using path and uses the scope argument to replace runners.script(code,scope)
 		//	format.main: string, path to module file
 
 		var Callee = arguments.callee;
 
-		var instantiate = function(path) {
-			if (format.instantiate && format.instantiate(path)) {
-				return format.instantiate(path);
-			} else {
-				return function(scope) {
-					return runners.run(format.getCode(path),scope)
-				};
-			}
-		}
-
 		this.load = function(configuration) {
-			return instantiate(format.main)(runScope(
-				(configuration && configuration.$context) ? configuration.$context : {},
-				(configuration && configuration.$exports) ? configuration.$exports : {},
-				{
-					$loader: new function() {
-						this.script = function(path,scope) {
-							var scope = runScope(scope);
-							instantiate(path)(scope);
-							return scope.$exports;
-						}
+			return runInScope(
+				format.getCode(format.main),
+				runScope(
+					(configuration && configuration.$context) ? configuration.$context : {},
+					(configuration && configuration.$exports) ? configuration.$exports : {},
+					{
+						$loader: new function() {
+							this.script = function(path,context) {
+								return runWithContext(format.getCode(path),context);
+							}
 
-						this.module = function(path,context) {
-							var tokens = path.split("/");
-							var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-							var main = tokens[tokens.length-1];
-							var loader = new Callee({
-								main: main,
-								instantiate: (format.instantiate) ? function(path) {
-									return format.instantiate(prefix+path);
-								} : function(){}(),
-								getCode: function(path) {
-									return format.getCode(prefix+path);
-								}
-							});
-							return loader.load({ $context: context });
-						}
-					}()
-				}
-			));
+							this.module = function(path,context) {
+								var tokens = path.split("/");
+								var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+								var main = tokens[tokens.length-1];
+								var loader = new Callee({
+									main: main,
+									getCode: function(path) {
+										return format.getCode(prefix+path);
+									}
+								});
+								return loader.load({ $context: context });
+							}
+						}()
+					}
+				)
+			);
 		}
 	}
 
@@ -277,16 +279,7 @@ new function() {
 	};
 
 	this.script = function(code,$context) {
-		if (typeof(code) == "function") {
-			//	assume it is a function that can execute the code given a scope
-			var scope = runScope($context);
-			code(scope);
-			return scope.$exports;
-		} else if (typeof(code) == "string") {
-			return runners.run(code,runScope($context));			
-		} else {
-			throw "Unimplemented: typeof(code) = " + typeof(code);
-		}
+		return runWithContext(code,$context);
 	};
 	
 	this.namespace = function(string) {

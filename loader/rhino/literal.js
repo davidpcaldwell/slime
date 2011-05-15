@@ -52,21 +52,19 @@ new function() {
 		return new function() {
 			this.main = String($engine_module.getMainScriptPath());
 
-			this.instantiate = function(path) {
+			this.getCode = function(path) {
 				//	TODO	maybe should only be with debugging on?
 				if (instantiate) {
 					var $in = $engine_module.read(new Packages.java.lang.String(path));
 					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
 					return instantiate(String($engine_module) + ":" + path,$in);
+				} else {
+					var $in = $engine_module.read(new Packages.java.lang.String(path));
+					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
+					return String(
+						new Packages.inonit.script.runtime.io.Streams().readString($in)
+					);
 				}
-			}
-
-			this.getCode = function(path) {
-				var $in = $engine_module.read(new Packages.java.lang.String(path));
-				if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
-				return String(
-					new Packages.inonit.script.runtime.io.Streams().readString($in)
-				);
 			};
 		}
 	}
