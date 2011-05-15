@@ -36,28 +36,16 @@ new function() {
 		return eval($loader.code);
 	})();
 
-	var instantiate;
-
-	if ($loader.script) {
-		instantiate = function(name,$in) {
-			return function() {
-				$loader.script(arguments[0],name,$in);
-				//	TODO	get rid of the below through refactoring
-				return arguments[0].$exports;
-			}
-		}
-	}
-
 	var engineModuleCodeLoader = function($engine_module) {
 		return new function() {
 			this.main = String($engine_module.getMainScriptPath());
 
 			this.getCode = function(path) {
 				//	TODO	maybe should only be with debugging on?
-				if (instantiate) {
+				if ($loader.script) {
 					var $in = $engine_module.read(new Packages.java.lang.String(path));
 					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
-					return instantiate(String($engine_module) + ":" + path,$in);
+					return function() { $loader.script(arguments[0],String($engine_module) + ":" + path,$in) };
 				} else {
 					var $in = $engine_module.read(new Packages.java.lang.String(path));
 					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
@@ -75,8 +63,8 @@ new function() {
 
 	this.script = function(code,$context) {
 		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
-		if (instantiate && typeof(code) == "object" && code.name && code.$in) {
-			return loader.script(instantiate(code.name,code.$in),$context);
+		if ($loader.script && typeof(code) == "object" && code.name && code.$in) {
+			return loader.script(function() { $loader.script(arguments[0],code.name,code.$in); },$context);
 		} else if (typeof(code) == "string") {
 			return loader.script(code,$context);
 		} else {
