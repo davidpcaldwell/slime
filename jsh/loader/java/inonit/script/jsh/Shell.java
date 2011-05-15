@@ -384,12 +384,6 @@ public class Shell {
 				return installation.getRhinoLoaderBootstrap();
 			}
 
-			public String getScriptCode(File file) throws IOException {
-				if (!file.exists()) return null;
-				Streams streams = new Streams();
-				return streams.readString(new FileInputStream(file));
-			}
-
 			public void addClasses(File classes) throws java.net.MalformedURLException {
 				classpath.append(classes.toURI().toURL());
 			}

@@ -41,8 +41,6 @@ this.jsh = new function() {
 			return eval( String($host.getRhinoLoaderBootstrap().getRhinoCode()) );
 		})();
 
-		var EVALUATE_SCRIPTS_AS_STRINGS = false;
-
 		this.$platform = rhinoLoader.$platform;
 		this.$api = rhinoLoader.$api;
 
@@ -81,17 +79,10 @@ this.jsh = new function() {
 		}
 
 		this.script = function(pathname,$context) {
-			if (EVALUATE_SCRIPTS_AS_STRINGS) {
-				//	load as string
-				var code = $host.getScriptCode(pathname.$peer.getHostFile());
-				if (code == null) throw "Script not found: " + pathname;
-				return rhinoLoader.script(String(code),$context);
-			} else {
-				return rhinoLoader.script({
-					name: pathname.toString(),
-					$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
-				}, $context);
-			}
+			return rhinoLoader.script({
+				name: pathname.toString(),
+				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
+			}, $context);
 		}
 
 		this.namespace = function(name) {
