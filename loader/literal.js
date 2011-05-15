@@ -199,7 +199,7 @@ new function() {
 			//			loaded by the new loader, and should go away when all modules are converted
 			return (function() {
 				//	$platform is in scope because of the above
-				//	$api is also in scope
+				//	$api is also in scope				
 				with( arguments[1] ) {
 					eval(arguments[0]);
 				}
@@ -208,32 +208,34 @@ new function() {
 		}
 	}
 	
-	var runScope = function(context,exports,other) {
-		var rv = {};
-		rv.$platform = $platform;
-		rv.$api = $api;
-		rv.$context = (context) ? context : {};
-		rv.$exports = (exports) ? exports : {};
-		for (var x in other) {
-			rv[x] = other[x];
-		}
-		return rv;
-	}
-
 	var runInScope = function(code,scope) {
+		var runScope = function(initial) {
+			var rv = {};
+			rv.$platform = $platform;
+			rv.$api = $api;
+			for (var x in initial) {
+				rv[x] = initial[x];
+			}
+			if (!rv.$context) rv.$context = {};
+			if (!rv.$exports) rv.$exports = {};
+			return rv;
+		}
+		
+		var fixed = runScope(scope);
+
 		if (typeof(code) == "function") {
 			//	assume it is a function that can execute the code given a scope
-			code(scope);
+			code(fixed);
 		} else if (typeof(code) == "string") {
-			runners.run(code,scope);			
+			runners.run(code,fixed);			
 		} else {
 			throw "Unimplemented: typeof(code) = " + typeof(code);
 		}		
-		return scope.$exports;
+		return fixed.$exports;
 	}
 	
 	var runWithContext = function(code,$context) {
-		return runInScope(code,runScope($context));
+		return runInScope(code,{ $context: $context });
 	}
 	
 	var ModuleLoader = function(format) {
@@ -245,30 +247,28 @@ new function() {
 		this.load = function(configuration) {
 			return runInScope(
 				format.getCode(format.main),
-				runScope(
-					(configuration && configuration.$context) ? configuration.$context : {},
-					(configuration && configuration.$exports) ? configuration.$exports : {},
-					{
-						$loader: new function() {
-							this.script = function(path,context) {
-								return runWithContext(format.getCode(path),context);
-							}
+				{
+					$context: (configuration && configuration.$context) ? configuration.$context : {},
+					$exports: (configuration && configuration.$exports) ? configuration.$exports : {},
+					$loader: new function() {
+						this.script = function(path,context) {
+							return runWithContext(format.getCode(path),context);
+						}
 
-							this.module = function(path,context) {
-								var tokens = path.split("/");
-								var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-								var main = tokens[tokens.length-1];
-								var loader = new Callee({
-									main: main,
-									getCode: function(path) {
-										return format.getCode(prefix+path);
-									}
-								});
-								return loader.load({ $context: context });
-							}
-						}()
-					}
-				)
+						this.module = function(path,context) {
+							var tokens = path.split("/");
+							var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+							var main = tokens[tokens.length-1];
+							var loader = new Callee({
+								main: main,
+								getCode: function(path) {
+									return format.getCode(prefix+path);
+								}
+							});
+							return loader.load({ $context: context });
+						}
+					}()
+				}
 			);
 		}
 	}
