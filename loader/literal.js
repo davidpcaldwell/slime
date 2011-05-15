@@ -193,7 +193,7 @@ new function() {
 	this.$api = $api;
 
 	var runners = new function() {
-		this.run = function(/*code,scope*/) {
+		this.run = function(/*code,scope,this*/) {
 			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
 			//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
 			//			loaded by the new loader, and should go away when all modules are converted
@@ -204,11 +204,11 @@ new function() {
 					eval(arguments[0]);
 				}
 				return arguments[1].$exports;
-			}).apply({ $exports: true },arguments);
+			}).apply((arguments[2]) ? arguments[2] : { $exports: true },arguments);
 		}
 	}
 	
-	var runInScope = function(code,scope) {
+	var runInScope = function(code,scope,target) {
 		var runScope = function(initial) {
 			var rv = {};
 			rv.$platform = $platform;
@@ -223,12 +223,23 @@ new function() {
 
 		if (typeof(code) == "function") {
 			//	assume it is a function that can execute the code given a scope
-			code(fixed);
+			code(fixed,target);
 		} else if (typeof(code) == "string") {
-			runners.run(code,fixed);			
+			runners.run(code,fixed,target);			
 		} else {
 			throw "Unimplemented: typeof(code) = " + typeof(code);
 		}
+	}
+	
+	var file = function(code,$context) {
+		var scope = {
+			$exports: {}
+		};
+		if ($context) {
+			scope.$context = $context;
+		}
+		runInScope(code,scope,{});
+		return scope.$exports;		
 	}
 	
 	var ModuleLoader = function(format) {
@@ -242,10 +253,12 @@ new function() {
 				$context: (p && p.$context) ? p.$context : {},
 				$exports: (p && p.$exports) ? p.$exports : {},
 				$loader: new function() {
+					this.run = function(path,scope,target) {
+						runInScope(format.getCode(path),scope,target);
+					}
+					
 					this.script = function(path,context) {
-						var scope = { $context: context, $exports: {} };
-						runInScope(format.getCode(path),scope);
-						return scope.$exports;
+						return file(format.getCode(path),context);
 					}
 
 					this.module = function(path,context) {
@@ -268,19 +281,12 @@ new function() {
 		}
 	}
 
-	this.run = function(code,scope) {
-		runInScope(code,scope);
+	this.run = function(code,scope,target) {
+		runInScope(code,scope,target);
 	};
 	
 	this.file = function(code,$context) {
-		var scope = {
-			$exports: {}
-		};
-		if ($context) {
-			scope.$context = $context;
-		}
-		this.run(code,scope);
-		return scope.$exports;
+		return file(code,$context);
 	};
 	
 	this.module = function(format,scope) {

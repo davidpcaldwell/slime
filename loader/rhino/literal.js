@@ -47,8 +47,8 @@ new function() {
 		}
 	}
 
-	this.run = function(code,scope) {
-		loader.run(getCode(code),scope);
+	this.run = function(code,scope,target) {
+		loader.run(getCode(code),scope,target);
 	}
 	
 	this.file = function(code,$context) {
