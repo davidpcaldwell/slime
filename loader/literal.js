@@ -273,13 +273,13 @@ new function() {
 		}
 	}
 
-	this.module = function(format,configuration) {
+	this.module = function(format,scope) {
 		var loader = new ModuleLoader(format);
-		return loader.load(configuration);
+		return loader.load(scope);
 	};
 
-	this.script = function(code,$context) {
-		return runWithContext(code,$context);
+	this.script = function(code,scope) {
+		return runInScope(code,scope);
 	};
 	
 	this.namespace = function(string) {

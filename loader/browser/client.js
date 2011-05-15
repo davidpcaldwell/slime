@@ -174,7 +174,7 @@
 		}
 		
 		this.script = function(path,$context) {
-			return platform.script(fetcher.getCode(path),$context);
+			return platform.script(fetcher.getCode(path),{ $context: $context });
 		};
 
 		this.namespace = function(name) {

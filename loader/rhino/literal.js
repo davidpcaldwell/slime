@@ -63,10 +63,11 @@ new function() {
 
 	this.script = function(code,$context) {
 		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
+		var scope = { $context: $context };
 		if ($loader.script && typeof(code) == "object" && code.name && code.$in) {
-			return loader.script(function() { $loader.script(arguments[0],code.name,code.$in); },$context);
+			return loader.script(function() { $loader.script(arguments[0],code.name,code.$in); },scope);
 		} else if (typeof(code) == "string") {
-			return loader.script(code,$context);
+			return loader.script(code,scope);
 		} else {
 			throw "Unimplemented: arguments = " + Array.prototype.join.call(arguments,",");
 		}
