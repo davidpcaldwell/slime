@@ -38,12 +38,14 @@ new function() {
 	
 	var getCode = function(code) {
 		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
-		if ($loader.script && typeof(code) == "object" && code.name && code.$in && false) {
-			return function() { $loader.script(arguments[0],code.name,code.$in); };
-		} else if (typeof(code) == "object" && code.name && code.$in) {
-			return String(
-				new Packages.inonit.script.runtime.io.Streams().readString(code.$in)
-			);
+		if (typeof(code) == "object" && code.name && code.$in) {
+			if ($loader.script) {
+				return function() { $loader.script(code.name,code.$in,arguments[0],arguments[1]); };
+			} else {
+				return String(
+					new Packages.inonit.script.runtime.io.Streams().readString(code.$in)
+				);
+			}
 		} else if (typeof(code) == "string") {
 			return code;
 		} else {

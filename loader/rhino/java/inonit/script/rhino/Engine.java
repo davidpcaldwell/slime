@@ -435,6 +435,11 @@ public class Engine {
 	public void script(Scriptable scope, String name, InputStream code) throws IOException {
 		this.include(scope, Engine.Source.create(name, new InputStreamReader(code)));
 	}
+	
+	public void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
+		Source source = Engine.Source.create(name,new InputStreamReader(code));
+		source.evaluate(debugger, Context.getCurrentContext(), scope, target);
+	}
 
 	public static abstract class Loader {
 		public abstract String getPlatformCode() throws IOException;
@@ -501,6 +506,16 @@ public class Engine {
 		final Object evaluate(Debugger dim, Context context, Scriptable scope) throws java.io.IOException {
 			Script script = compile(dim, context);
 			return script.exec(context, scope);
+		}
+		
+		final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws java.io.IOException {
+			Script script = compile(dim, context);
+			if (target != null) {
+				target.setParentScope(scope);
+			} else {
+				target = scope;
+			}
+			return script.exec(context, target);
 		}
 		
 		private static class ReaderSource extends Source {

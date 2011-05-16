@@ -33,8 +33,9 @@ this.jsh = new function() {
 		var rhinoLoader = (function() {
 			var $loader = new function() {
 				this.code = String($host.getRhinoLoaderBootstrap().getPlatformCode());
-				this.script = function(scope,name,$in) {
-					$host.script(scope,name,$in);
+				this.script = function(name,$in,scope,target) {
+					if (!target) target = null;
+					$host.script(name,$in,scope,target);
 				}
 			};
 

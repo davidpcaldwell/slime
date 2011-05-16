@@ -341,8 +341,8 @@ public class Shell {
 				throw new ExitException(status);
 			}
 
-			public void script(Scriptable scope, String name, InputStream code) throws IOException {
-				Host.this.engine.script(scope, name, code);
+			public void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
+				Host.this.engine.script(name, code, scope, target);
 			}
 
 			public Module getBootstrapModule(String path) {
