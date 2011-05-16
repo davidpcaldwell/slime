@@ -425,7 +425,7 @@ public class Engine {
 	 */
 	public void include(Scriptable jsThis, Engine.Source source) throws IOException {
 		Context context = Context.getCurrentContext();
-		source.evaluate(debugger, context, jsThis);
+		source.evaluate(debugger, context, null, jsThis);
 	}
 
 	public Scriptable evaluate(Scriptable scope, String code) {
@@ -503,15 +503,12 @@ public class Engine {
 			}			
 		}
 		
-		final Object evaluate(Debugger dim, Context context, Scriptable scope) throws java.io.IOException {
-			Script script = compile(dim, context);
-			return script.exec(context, scope);
-		}
-		
 		final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws java.io.IOException {
 			Script script = compile(dim, context);
 			if (target != null) {
-				target.setParentScope(scope);
+				if (scope != null) {
+					target.setParentScope(scope);
+				}
 			} else {
 				target = scope;
 			}
