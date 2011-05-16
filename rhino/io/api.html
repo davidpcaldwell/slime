@@ -1,15 +1,15 @@
 <html xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title></title>
+	<title>Rhino Input/Output</title>
 </head>
 <body>
 	<div>
 		<h1>Context</h1>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var java = $jsapi.module({
+				var java = $jsapi.module("rhino/host", {
 					classLoader: $host.getClassLoader()
-				}, "rhino/host");
+				});
 
 				this.api = {
 					java: java
@@ -22,6 +22,70 @@
 	<div>
 		<h1>Exports</h1>
 		<ul>
+			<li class="constructor">
+				<div class="name">Buffer</div>
+				<span>Creates a buffer to which bytes can be written, and later read.</span>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span>
+						Instances support
+						<span class="type"><a href="#types.boutput">byte output stream</a></span>
+						as well as the specified API.
+					</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">close</div>
+							<span>
+								Closes the buffer so that no additional bytes can be written to it.  Until the
+								buffer is closed, an attempt to read from it cannot reach the end of the stream, but
+								will instead block waiting for more input.
+							</span>
+						</li>
+						<li class="function">
+							<div class="name">readBinary</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.binput">byte input stream</a></span>
+								<span>A stream from which the bytes in this buffer may be read.</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">readText</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.cinput">character input stream</a></span>
+								<span>A stream from which the characters in this buffer may be read.</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="Buffer">
+					var buffer = new module.Buffer();
+					var writer = buffer.writeText();
+					writer.write("Buffer");
+					buffer.close();
+					var resource = buffer.readBinary().cache();
+					scope.test(resource.read(String) == "Buffer");
+					scope.test(resource.read(String) == "Buffer");
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="Buffer readLines">
+					var buffer = new module.Buffer();
+					var writer = buffer.writeText();
+					writer.write("Buffer readLines\n");
+
+					var lines = [];
+
+					buffer.readText().readLines(function(s) {
+						lines.push(s);
+						return lines;
+					}, { ending: "\n" });
+
+					scope.test(lines.length == 1);
+
+					buffer.close();
+				</script>
+			</li>
 			<li class="object">
 				<div class="name">Streams</div>
 				Provides operations for processing streams of input or output.
@@ -75,7 +139,7 @@
 													this.name = "java.util.Properties";
 													this.initialize = function() {
 														var p = new Packages.java.util.Properties();
-														buffer = new module.Streams.binary.Buffer();
+														buffer = new module.Buffer();
 														p.put("yes", "i do");
 														p.put("laptop", "inonit");
 														p.put("laptop.manufacturer", "dell");
@@ -104,55 +168,6 @@
 										</li>
 									</ul>
 								</div>
-							</li>
-							<li class="constructor">
-								<div class="name">Buffer</div>
-								<span>Creates a buffer to which bytes can be written, and later read.</span>
-								<div class="instances">
-									<div class="label">Instances</div>
-									<span>
-										Instances support
-										<span class="type"><a href="#types.boutput">byte output stream</a></span>
-										as well as the specified API.
-									</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											<span>
-												Closes the buffer so that no additional bytes can be written to it.  Until the
-												buffer is closed, an attempt to read from it cannot reach the end of the stream, but
-												will instead block waiting for more input.
-											</span>
-										</li>
-										<li class="function">
-											<div class="name">readBinary</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.binput">byte input stream</a></span>
-												<span>A stream from which the bytes in this buffer may be read.</span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">readText</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.cinput">character input stream</a></span>
-												<span>A stream from which the characters in this buffer may be read.</span>
-											</div>
-										</li>
-									</ul>
-								</div>
-								<script type="application/x.jsapi#tests" jsapi:id="Buffer">
-									var buffer = new module.Streams.binary.Buffer();
-									var writer = buffer.writeText();
-									debugger;
-									writer.write("string!");
-									buffer.close();
-									var resource = buffer.readBinary().cache();
-									scope.test(resource.read(String) == "string!");
-									scope.test(resource.read(String) == "string!");
-								</script>
 							</li>
 						</ul>
 					</li>
@@ -306,28 +321,6 @@
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#tests" jsapi:id="Properties">
-			scope.scenario( new function() {
-				var buffer;
-
-				this.name = "java.util.Properties";
-				this.initialize = function() {
-					var p = new Packages.java.util.Properties();
-					buffer = new module.Streams.binary.Buffer();
-					p.put("yes", "i do");
-					p.put("laptop", "inonit");
-					p.put("laptop.manufacturer", "dell");
-					p.store(buffer.$getOutputStream(), "No comment!");
-					buffer.close();
-				}
-				this.execute = function(scope) {
-					var props = buffer.readBinary().asProperties();
-					scope.test( props.yes == "i do" );
-					scope.test( props.laptop == "inonit" );
-					scope.test( props.laptop.manufacturer == "dell" );
-				}
-			} );
-		</script>
 	</div>
 </body>
 </html>

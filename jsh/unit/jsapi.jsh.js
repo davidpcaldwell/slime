@@ -15,33 +15,14 @@
 
 var parameters = jsh.shell.getopts({
 	options: {
-		//	location of js/api project
+		//	See api.html for documentation of these options
 		jsapi: jsh.file.Pathname,
-
-		//	Directory to which we want to emit documentation; if missing, no documentation is emitted
 		doc: jsh.file.Pathname,
-
-		//	If true, do not run unit tests.
 		notest: false,
-
-		//	Add these pathnames to the script classpath
 		classpath: jsh.shell.getopts.ARRAY( jsh.file.Pathname ),
-
-		//	Set of name-value pairs separated by '='; name is a property name, value is a pathname to a file containing code.
-		//	The code is executed into a scope and provided to the module APIs as $jsapi.environment[name]
-		//	Alternately, a very simple version can be used without the '=': in this case, the entire argument will be interpreted
-		//	as a name and $jsapi.environment[name] will be set to new Object().
 		environment: jsh.shell.getopts.ARRAY( String ),
-
-		//	TODO	documentation is out of date below; format is more complex now, involving namespace, path and location
-		//	Sets of name-value pairs separated by '='; values are pathnames to modules.  Semantics of name differ between -use and
-		//	-module; for -use, name is some sort of logical "path" that refers to the module; this path can be used by module APIs
-		//	to execute modules they need to function.  For -module, name is a namespace in which the module is made available to the
-		//	application environment for which we are generating the documentation.  It is optional; the module will be tested but
-		//	not added to the documentation if it is absent.
 		module: jsh.shell.getopts.ARRAY( String )
 	}
-	//	After options, also can include arguments in form of namespace=modulepath and they will be interpreted accordingly
 });
 
 if (!parameters.options.jsapi) {

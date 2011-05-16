@@ -89,9 +89,9 @@ var Reader = function(peer) {
 			}
 		}
 		if (typeof(result) == "undefined") {
-			mode.onEnd.apply(this, []);
+			mode.onEnd.call(this);
 		} else {
-			mode.onEnd.apply(this, [ result ]);
+			mode.onEnd.call(this,result);
 		}
 		return result;
 	}
@@ -139,7 +139,41 @@ var Writer = function(peer) {
 			peer.flush();
 		}
 	}
-}
+};
+
+var Buffer = function() {
+	var peer = new Packages.inonit.script.runtime.io.Streams.Bytes.Buffer();
+
+	this.$getOutputStream = function() {
+		return peer.getOutputStream();
+	}
+
+	this.$getInputStream = function() {
+		return peer.getInputStream();
+	}
+
+	this.close = function() {
+		peer.getOutputStream().close();
+	}
+
+	this.writeBinary = function() {
+		return new OutputStream(peer.getOutputStream());
+	}
+
+	this.writeText = function() {
+		return this.writeBinary().character();
+	}
+
+	this.readBinary = function() {
+		return new InputStream(peer.getInputStream());
+	}
+
+	this.readText = function() {
+		return this.readBinary().character();
+	}
+};
+$exports.Buffer = Buffer;
+
 var Streams = new function() {
 	this.binary = new function() {
 		this.copy = function(from,to) {
@@ -155,34 +189,12 @@ var Streams = new function() {
 		}
 
 		this.Buffer = function() {
-			var peer = new Packages.inonit.script.runtime.io.Streams.Bytes.Buffer();
-
-			this.$getOutputStream = function() {
-				return peer.getOutputStream();
-			}
-
-			this.$getInputStream = function() {
-				return peer.getInputStream();
-			}
-
-			this.close = function() {
-				peer.getOutputStream().close();
-			}
-			
-			this.writeBinary = function() {
-				return new OutputStream(peer.getOutputStream());
-			}
-			
-			this.writeText = function() {
-				return this.writeBinary().character();
-			}
-			
-			this.readBinary = function() {
-				return new InputStream(peer.getInputStream());
-			}
-
-			this.readText = function() {
-				return this.readBinary().character();
+			if (this.constructor == arguments.callee) {
+				//	deprecated
+				debugger;
+				return new Buffer();
+			} else {
+				throw "Unimplemented: Buffer called as function.";
 			}
 		}
 	}

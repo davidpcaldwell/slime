@@ -169,7 +169,9 @@ new function() {
 		//	$exports.deprecate = function() {
 		//		if (arguments.length == 1 && typeof(arguments[0]) == "function") {
 		//			return deprecate.apply(this,arguments);
-		//		} else if (arguments.length == 2 && typeof(arguments[0]) == "object" && typeof(arguments[1]) == "string" && typeof(arguments[0][arguments[1]]) == "function") {
+		//		} else if (arguments.length == 2 && typeof(arguments[0]) == "object" && typeof(arguments[1]) == "string" 
+		//			&& typeof(arguments[0][arguments[1]]) == "function") 
+		//		{
 		//			return deprecate.apply(this,arguments);
 		//		}
 		//		return function(){}();
@@ -182,95 +184,114 @@ new function() {
 		return $exports;
 	})();
 
-	//	TODO	used by literal.js from rhino
+	//	TODO	The following properties must be exposed to the Rhino loader so that it can supply them to jsh/unit jsapi via jsh.js
+	
 	//	TODO	also used by client.html unit tests
 	this.$platform = $platform;
 
-	//	TODO	used by client.html unit tests
+	//	TODO	also used by client.html unit tests
 	this.$api = $api;
 
 	var runners = new function() {
-		this.script = function(/*code,$context,$exports,scope*/) {
-			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? ModuleLoader?
+		this.run = function(/*code,scope,this*/) {
+			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
 			//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
 			//			loaded by the new loader, and should go away when all modules are converted
 			return (function() {
 				//	$platform is in scope because of the above
-				//	$api is also in scope
-				var $context = (arguments[1]) ? arguments[1] : {};
-				var $exports = (arguments[2]) ? arguments[2] : {};
-				//	arguments[3] is scope; this object provides the $loader implementation for modules
-				with( (arguments[3]) ? arguments[3] : {} ) {
+				//	$api is also in scope				
+				with( arguments[1] ) {
 					eval(arguments[0]);
 				}
-				return $exports;
-			}).apply({ $exports: true },arguments);
+				return arguments[1].$exports;
+			}).apply((arguments[2]) ? arguments[2] : { $exports: true },arguments);
 		}
 	}
+	
+	var runInScope = function(code,scope,target) {
+		var runScope = function(initial) {
+			var rv = {};
+			rv.$platform = $platform;
+			rv.$api = $api;
+			for (var x in initial) {
+				rv[x] = initial[x];
+			}
+			return rv;
+		}
+		
+		var fixed = runScope(scope);
 
+		if (typeof(code) == "function") {
+			//	assume it is a function that can execute the code given a scope
+			code(fixed,target);
+		} else if (typeof(code) == "string") {
+			runners.run(code,fixed,target);			
+		} else {
+			throw "Unimplemented: typeof(code) = " + typeof(code);
+		}
+	}
+	
+	var file = function(code,$context) {
+		var scope = {
+			$exports: {}
+		};
+		if ($context) {
+			scope.$context = $context;
+		}
+		runInScope(code,scope,{});
+		return scope.$exports;		
+	}
+	
 	var ModuleLoader = function(format) {
 		//	format.getCode: function(path), returns string containing the code contained at that path
-		//	format.instantiate: function(path), returns function(context,scope,exports) that somehow has supplied its own code
-		//		using path and uses the other three arguments to replace runners.script(code,context,scope,exports)
 		//	format.main: string, path to module file
 
 		var Callee = arguments.callee;
 
-		var instantiate = function(path) {
-			if (format.instantiate && format.instantiate(path)) {
-				return format.instantiate(path);
-			} else {
-				return function(context,exports,scope) {
-					return runners.script(
-						format.getCode(path),
-						context,
-						exports,
-						scope
-					)
-				};
-			}
-		}
+		this.load = function(p) {
+			var scope = {
+				$context: (p && p.$context) ? p.$context : {},
+				$exports: (p && p.$exports) ? p.$exports : {},
+				$loader: new function() {
+					this.run = function(path,scope,target) {
+						runInScope(format.getCode(path),scope,target);
+					}
+					
+					this.script = function(path,context) {
+						return file(format.getCode(path),context);
+					}
 
-		this.load = function(configuration) {
-			return instantiate(format.main)(
-				(configuration && configuration.$context) ? configuration.$context : {},
-				(configuration && configuration.$exports) ? configuration.$exports : {},
-				{
-					$loader: new function() {
-						this.script = function(path,scope) {
-							return instantiate(path)(scope);
-						}
+					this.module = function(path,context) {
+						var tokens = path.split("/");
+						var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+						var main = tokens[tokens.length-1];
+						var loader = new Callee({
+							main: main,
+							getCode: function(path) {
+								return format.getCode(prefix+path);
+							}
+						});
+						return loader.load({ $context: context });
+					}
+				}()
+			};
 
-						this.module = function(path,context) {
-							var tokens = path.split("/");
-							var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-							var main = tokens[tokens.length-1];
-							var loader = new Callee({
-								main: main,
-								instantiate: (format.instantiate) ? function(path) {
-									return format.instantiate(prefix+path);
-								} : function(){}(),
-								getCode: function(path) {
-									return format.getCode(prefix+path);
-								}
-							});
-							return loader.load({ $context: context });
-						}
-					}()
-					,$api: $api
-					,$platform: $platform
-				}
-			);
+			runInScope(format.getCode(format.main),scope);
+			return scope.$exports;
 		}
 	}
 
-	this.module = function(format,configuration) {
+	this.run = function(code,scope,target) {
+		runInScope(code,scope,target);
+	};
+	
+	this.file = function(code,$context) {
+		return file(code,$context);
+	};
+	
+	this.module = function(format,scope) {
 		var loader = new ModuleLoader(format);
-		return loader.load(configuration);
-	}
-
-	this.script = function(code,$context) {
-		return runners.script(code,$context);
+		return loader.load(scope);
 	};
 
 	this.namespace = function(string) {

@@ -111,7 +111,7 @@ slime.build.jsh = function(from,build) {
 			Packages.java.lang.System["in"],
 			Packages.java.lang.System.out,
 			Packages.java.lang.System.err,
-			jsh.java.toJavaArray( args, Packages.java.lang.String, function(x) { return new java.lang.String(x) } )
+			jsh.java.toJavaArray( args, Packages.java.lang.String, function(x) { return new Packages.java.lang.String(x) } )
 		);
 	}
 }

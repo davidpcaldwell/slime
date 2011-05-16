@@ -35,62 +35,48 @@ new function() {
 		})();
 		return eval($loader.code);
 	})();
-
-	var instantiate;
-
-	if ($loader.script) {
-		instantiate = function(name,$in) {
-			return function() {
-				var scope = {};
-				scope.$platform = loader.$platform;
-				scope.$api = loader.$api;
-				scope.$context = (arguments[0]) ? arguments[0] : {};
-				scope.$exports = (arguments[1]) ? arguments[1] : {};
-				for (var x in arguments[2]) {
-					scope[x] = arguments[2][x];
-				}
-				$loader.script(scope,name,$in);
-				return scope.$exports;
-			}
+	
+	var getCode = function(code) {
+		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
+		if ($loader.script && typeof(code) == "object" && code.name && code.$in && false) {
+			return function() { $loader.script(arguments[0],code.name,code.$in); };
+		} else if (typeof(code) == "object" && code.name && code.$in) {
+			return String(
+				new Packages.inonit.script.runtime.io.Streams().readString(code.$in)
+			);
+		} else if (typeof(code) == "string") {
+			return code;
+		} else {
+			throw "Unimplemented: code = " + code;
 		}
+	}
+
+	this.run = function(code,scope,target) {
+		loader.run(getCode(code),scope,target);
+	}
+	
+	this.file = function(code,$context) {
+		return loader.file(getCode(code),$context);
 	}
 
 	var engineModuleCodeLoader = function($engine_module) {
 		return new function() {
 			this.main = String($engine_module.getMainScriptPath());
 
-			this.instantiate = function(path) {
-				//	TODO	maybe should only be with debugging on?
-				if (instantiate) {
-					var $in = $engine_module.read(new Packages.java.lang.String(path));
-					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
-					return instantiate(String($engine_module) + ":" + path,$in);
-				}
-			}
-
 			this.getCode = function(path) {
+				//	TODO	maybe should only be with debugging on?
 				var $in = $engine_module.read(new Packages.java.lang.String(path));
 				if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
-				return String(
-					new Packages.inonit.script.runtime.io.Streams().readString($in)
-				);
+				return getCode({
+					name: String($engine_module) + ":" + path,
+					$in: $in
+				});
 			};
 		}
 	}
 
 	this.module = function($module,p) {
-		return loader.module(engineModuleCodeLoader($module), p);
-	}
-
-	this.script = function(code,$context) {
-		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
-		if (instantiate && typeof(code) == "object" && code.name && code.$in) {
-			return instantiate(code.name,code.$in)($context);
-		} else if (typeof(code) == "string") {
-			return loader.script(code,$context);
-		} else {
-			throw "Unimplemented: arguments = " + Array.prototype.join.call(arguments,",");
-		}
+		return loader.module(engineModuleCodeLoader($module),p);
 	}
 
 	this.namespace = function(name) {

@@ -16,18 +16,23 @@
 package inonit.script.runtime;
 
 public class Throwables {
-	public static final Throwables INSTANCE = new Throwables();
-
-	private Throwables() {
+	private static class Exception extends java.lang.RuntimeException {
+		Exception(String message) {
+			super(message);
+		}
 	}
-
+	
 	private static class Failure extends java.lang.RuntimeException {
 		Failure(String message) {
 			super(message);
 		}
 	}
-
+	
 	public void fail(String message) {
 		throw new Failure(message);
+	}
+
+	public void throwException(String message) {
+		throw new Exception(message);
 	}
 }

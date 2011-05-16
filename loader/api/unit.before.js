@@ -99,6 +99,7 @@ $exports.Scenario = function(properties) {
 				if (this.initialize) this.initialize();
 				this.execute(scope);
 			} catch (e) {
+				debugger;
 				scope.test({
 					success: null,
 					messages: new function() {

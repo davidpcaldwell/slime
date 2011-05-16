@@ -292,7 +292,7 @@ var jsapi_jsh = function() {
 			this.push(arguments[i]);
 		}
 	}
-	command.add("jsh/unit/jsapi.jsh");
+	command.add("jsh/unit/jsapi.jsh.js");
 	var JSH_JSAPI_BASE = String(BASE.getCanonicalPath());
 	if (platform.cygwin) {
 		JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
@@ -340,7 +340,7 @@ var jsapi_jsh = function() {
 		env: subenv
 	});
 
-	debug("jsapi.jsh command: " + command.join(" "));
+	debug("jsapi.jsh.js command: " + command.join(" "));
 	var status = runCommand.apply(this,command);
 	if (status) {
 		throw "Failed: " + command.join(" ");

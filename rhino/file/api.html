@@ -126,9 +126,9 @@ END LICENSE
 					filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				}
 
+				//	TODO	can this helper be replaced by $jsapi.newTemporaryDirectory() ?
 				this.newTemporaryDirectory = function() {
 					var $dir = $java.io.newTemporaryDirectory();
-					$dir.mkdir();
 					return filesystem.$unit.Pathname(filesystem.$unit.getNode($dir)).directory;
 				}
 

@@ -20,9 +20,28 @@ if (typeof($context.d) == "undefined") {
 
 var file = $loader.script("file.js", {$debug: $context.debug, b: 4});
 
+var runScope = new function() {
+	this.e = 2;
+	
+	var result;
+
+	this.set = function(x) {
+		result = x;
+	}
+	
+	this.result = function() {
+		return result;
+	}
+};
+
+var runThis = {};
+
 debugger;
+$loader.run("run.js",runScope,runThis);
 
 $exports.a = file.a;
 $exports.b = file.b;
 $exports.c = file.c;
 $exports.d = $context.d;
+$exports.e = runScope.result();
+$exports.f = runThis.f;

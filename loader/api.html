@@ -632,6 +632,62 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<ul>
+			<div class="type">
+				<a class="type" name="types.code">code</a>
+				<div>
+					<div>
+						<span class="type">string</span> 
+						<span>JavaScript code to execute.</span>
+					</div>
+					-OR-
+					<div>
+						<span class="type">function</span>
+						<span>A function that can load the code and execute it inside a particular scope.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">object</span>
+									<span>
+										The scope object inside which to execute the code, as if the code were executed
+										with <code>with(arguments[0])</code>.
+									</span>
+								</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</div>
+			<li class="function" jsapi:id="script">
+				<div class="name">script</div>
+				<span jsapi:id="description">
+					Executes a script in a separate scope. The script will be provided with special objects named <code>$context</code>
+					and <code>$exports</code>. The <code>$context</code> object represents an application-specific context to provide
+					to the script; the <code>$exports</code> object represents an object to which the script can assign properties that
+					will be visible outside the script.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="#types.code">code</a></span> The code to execute.
+						</li>
+						<li class="value" jsapi:id="arguments[1]">
+							<span class="type">object</span>
+							<span>
+								An object to use as the <code>$context</code> object when executing the given code. If absent, an
+								empty object will be supplied.
+								<!--	TODO	What about if it is a number, string, or boolean?	-->
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns">
+					<div class="label">Returns</div>
+					<span class="type">object</span>
+					<span>An object which contains the properties the script assigned to the <code>$exports</code> object.</span>
+				</div>
+			</li>
 			<li class="function" jsapi:id="module">
 				<div class="name">module</div>
 				<span jsapi:id="description">
@@ -732,61 +788,8 @@ END LICENSE
 									</div>
 									<div class="returns">
 										<div class="label">Returns</div>
-										<span class="type">string</span>
-										<span>The JavaScript code located at the given path, as a string.</span>
-									</div>
-								</li>
-								<li class="function">
-									<div class="name">instantiate</div>
-									<span>
-										(optional) A method that allows a module to return a separate function to implement its own
-										execution, rather than relying on the default implementation.
-									</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">string</span>
-												<span>A path at which there is a script to execute.</span>
-											</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">function</span>
-										<div class="function">
-											<span>A function that can execute a script given the appropriate configuration.</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">object</span>
-														<span>The object to use as <code>$context</code>.</span>
-													</li>
-													<li class="value">
-														<span class="type">object</span>
-														<span>The object to use as <code>$exports</code>.</span>
-													</li>
-													<li class="value">
-														<span class="type">object</span>
-														<span>
-															An object to use as a scope object; its properties should be visible
-															to the script (as if the script were executed with a <code>with</code>
-															statement based on this argument).
-															<!--	TODO is the above clear language?	-->
-														</span>
-													</li>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">object</span>
-												<span>
-													An object containing the properties assigned to <code>$exports</code> by this
-													script.
-												</span>
-											</div>
-										</div>
+										<span class="type"><a href="#types.code">code</a></span>
+										<span>The code located at the given location in this module.</span>
 									</div>
 								</li>
 							</ul>
@@ -822,37 +825,6 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span class="type">object</span>
 					<span>An object containing this module's exports.</span>
-				</div>
-			</li>
-			<li class="function" jsapi:id="script">
-				<div class="name">script</div>
-				<span jsapi:id="description">
-					Executes a script in a separate scope. The script will be provided with special objects named <code>$context</code>
-					and <code>$exports</code>. The <code>$context</code> object represents an application-specific context to provide
-					to the script; the <code>$exports</code> object represents an object to which the script can assign properties that
-					will be visible outside the script.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>JavaScript code to execute.</span>
-						</li>
-						<li class="value" jsapi:id="arguments[1]">
-							<span class="type">object</span>
-							<span>
-								An object to use as the <code>$context</code> object when executing the given code. If absent, an
-								empty object will be supplied.
-								<!--	TODO	What about if it is a number, string, or boolean?	-->
-							</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns" jsapi:id="returns">
-					<div class="label">Returns</div>
-					<span class="type">object</span>
-					<span>An object which contains the properties the script assigned to the <code>$exports</code> object.</span>
 				</div>
 			</li>
 			<li class="function" jsapi:id="namespace">
