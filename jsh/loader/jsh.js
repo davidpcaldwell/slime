@@ -48,6 +48,20 @@ this.jsh = new function() {
 		this.bootstrap = function(context,path) {
 			return rhinoLoader.module($host.getBootstrapModule(path), { $context: context });
 		}
+		
+		this.run = function(pathname,scope,target) {
+			return rhinoLoader.run({
+				name: pathname.toString(),
+				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
+			},scope,target);
+		}
+
+		this.file = function(pathname,$context) {
+			return rhinoLoader.file({
+				name: pathname.toString(),
+				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
+			}, $context);
+		}
 
 		this.module = function(pathname) {
 			var format = {};
@@ -79,13 +93,6 @@ this.jsh = new function() {
 			}
 		}
 
-		this.script = function(pathname,$context) {
-			return rhinoLoader.file({
-				name: pathname.toString(),
-				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
-			}, $context);
-		}
-
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
@@ -114,8 +121,9 @@ this.jsh = new function() {
 	}
 
 	this.loader = new function() {
+		this.run = loader.run;
+		this.file = loader.file;
 		this.module = loader.module;
-		this.script = loader.script;
 		this.namespace = loader.namespace;
 
 		if (loader.bundled) {
@@ -124,6 +132,12 @@ this.jsh = new function() {
 
 		this.addFinalizer = function(f) {
 			addFinalizer(f);
+		}
+		
+		this.script = function() {
+			//	deprecated
+			debugger;
+			return loader.file.apply(this,arguments);
 		}
 	};
 
