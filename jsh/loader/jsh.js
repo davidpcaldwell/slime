@@ -42,6 +42,10 @@ this.jsh = new function() {
 			return eval( String($host.getRhinoLoaderBootstrap().getRhinoCode()) );
 		})();
 
+		rhinoLoader.$api.deprecate.warning = function(o) {
+			debugger;
+		}
+
 		this.$platform = rhinoLoader.$platform;
 		this.$api = rhinoLoader.$api;
 
@@ -52,14 +56,14 @@ this.jsh = new function() {
 		this.run = function(pathname,scope,target) {
 			return rhinoLoader.run({
 				name: pathname.toString(),
-				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
+				$in: new Packages.java.io.FileInputStream(pathname.java.adapt())
 			},scope,target);
 		}
 
 		this.file = function(pathname,$context) {
 			return rhinoLoader.file({
 				name: pathname.toString(),
-				$in: new Packages.java.io.FileInputStream(pathname.$peer.getHostFile())
+				$in: new Packages.java.io.FileInputStream(pathname.java.adapt())
 			}, $context);
 		}
 
@@ -69,13 +73,13 @@ this.jsh = new function() {
 				if (!pathname.directory.getFile("module.js")) {
 					return null;
 				}
-				format.base = pathname.$peer.getHostFile();
+				format.base = pathname.java.adapt();
 				format.name = "module.js";
 			} else if (pathname.file && /\.slime$/.test(pathname.basename)) {
-				format.slime = pathname.$peer.getHostFile();
+				format.slime = pathname.java.adapt();
 				format.name = "module.js";
 			} else if (pathname.file) {
-				format.base = pathname.parent.$peer.getHostFile();
+				format.base = pathname.parent.java.adapt();
 				format.name = pathname.basename;
 			} else {
 				return null;

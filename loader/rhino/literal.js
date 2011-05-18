@@ -87,5 +87,8 @@ new function() {
 
 	//	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
 	this.$platform = loader.$platform;
+	
+	//	currently used to set deprecation warning in jsh.js
+	//	currently used by jsapi in jsh/unit via jsh.js
 	this.$api = loader.$api;
 }

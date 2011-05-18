@@ -190,6 +190,7 @@ new function() {
 	this.$platform = $platform;
 
 	//	TODO	also used by client.html unit tests
+	//	used to allow setting warnings for deprecate and experimental
 	this.$api = $api;
 
 	var runners = new function() {
