@@ -185,6 +185,12 @@ var Pathname = function(parameters) {
 		return getDirectory();
 	}
 
+	this.java = new function() {
+		this.adapt = function() {
+			return peer.getHostFile();
+		}
+	}
+
 	this.getBasename = getBasename;
 	$context.deprecate(this, "getBasename");
 
@@ -234,7 +240,7 @@ var Pathname = function(parameters) {
 	$context.deprecate(this, "$getPeer");
 	$context.deprecate(this, "$getFilesystem");
 	$context.deprecate(this, "$inFilesystem");
-
+	
 	var Node = function(pathname,prefix) {
 		this.toString = function() {
 			return pathname.toString();
