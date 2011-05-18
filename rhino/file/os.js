@@ -312,7 +312,7 @@ var SystemFilesystem = function(peer) {
 	if (isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
 		this.toUnix = function(item) {
 			if (item instanceof $context.Pathname) {
-				return new $context.Pathname({ filesystem: system, peer: peer.getNode( item.$peer.getHostFile() ) });
+				return new $context.Pathname({ filesystem: system, peer: peer.getNode( item.java.adapt() ) });
 			}
 			if (item instanceof $context.Searchpath) {
 				return new $context.Searchpath({ filesystem: system, array: item.pathnames });
