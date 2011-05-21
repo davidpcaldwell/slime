@@ -41,7 +41,7 @@ public class Main {
 				}
 			}
 			Invocation rv = (JSH_HOME != null) ? new Built(JSH_HOME) : new Unbuilt();
-			rv.debug = (System.getenv("JSH_DEBUG") != null || System.getenv("JSH_LAUNCHER_DEBUG") != null);
+			rv.debug = (System.getenv("JSH_LAUNCHER_DEBUG") != null);
 			if (JSH_HOME != null) {
 				rv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 			} else {

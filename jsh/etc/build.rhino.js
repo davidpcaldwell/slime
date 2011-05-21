@@ -336,8 +336,8 @@ var jsapi_jsh = function() {
 		subenv[x] = env[x];
 	}
 	if (env.JSH_BUILD_DEBUG) {
-		subenv.JSH_DEBUG = "true";
-		subenv.JSH_JS_DEBUGGER = "rhino";
+		subenv.JSH_LAUNCHER_DEBUG = "true";
+		subenv.JSH_SCRIPT_DEBUGGER = "rhino";
 	}
 	command.add({
 		env: subenv

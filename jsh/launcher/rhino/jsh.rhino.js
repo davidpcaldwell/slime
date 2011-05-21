@@ -120,7 +120,7 @@ var os = function(pathname,path) {
 var UNDEFINED = function(){}();
 var ARGUMENTS = arguments;
 
-if (env.JSH_DEBUG || env.JSH_LAUNCHER_DEBUG) {
+if (env.JSH_LAUNCHER_DEBUG) {
 	debug.on = true;
 	debug("debugging enabled");
 }
@@ -392,10 +392,7 @@ try {
 	
 	//	TODO	Maybe the shell should just use these environment variables, rather than having this rigamarole
 	command.jvmProperty("jsh.optimization",env.JSH_OPTIMIZATION);
-	command.jvmProperty("jsh.script.debugger",(function() {
-		if (env.JSH_SCRIPT_DEBUGGER) return env.JSH_SCRIPT_DEBUGGER;
-		if (env.JSH_DEBUG) return "rhino";
-	})());
+	command.jvmProperty("jsh.script.debugger",env.JSH_SCRIPT_DEBUGGER);
 	command.jvmProperty("jsh.library.modules",settings.get("JSH_LIBRARY_MODULES"));
 	command.jvmProperty("jsh.library.scripts.loader",settings.get("JSH_LIBRARY_SCRIPTS_LOADER"));
 	command.jvmProperty("jsh.library.scripts.rhino",settings.get("JSH_LIBRARY_SCRIPTS_RHINO"));

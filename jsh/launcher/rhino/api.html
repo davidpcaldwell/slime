@@ -17,7 +17,7 @@
 			<h2>Environment variables used</h2>
 			<ul>
 				<li>
-					JSH_DEBUG, JSH_LAUNCHER_DEBUG: If one is set, launcher script will run inside debugger, and additional debugging
+					JSH_LAUNCHER_DEBUG: If set, launcher script will run inside debugger, and additional debugging
 					information will be output to console.
 				</li>
 				<li>
@@ -50,9 +50,7 @@
 				Environment variables used:
 				<ul>
 					<li>
-						JSH_DEBUG, JSH_LAUNCHER_DEBUG: If one is set, launcher emits additional debugging information to console.
-						If JSH_DEBUG is set, property <code>jsh.script.debugger</code> is also set to <code>rhino</code> in the
-						VM executing the jsh loader.
+						JSH_LAUNCHER_DEBUG: If set, launcher emits additional debugging information to console.
 					</li>
 					<li>
 						JSH_JAVA_HOME: If set, this value is used for locating JDK libraries specified by the script, and also is

@@ -13,7 +13,7 @@
 #	Contributor(s):
 #	END LICENSE
 
-if [ -n "$JSH_DEBUG" ]; then
+if [ -n "$JSH_LAUNCHER_DEBUG" ]; then
 	set -x
 fi
 
