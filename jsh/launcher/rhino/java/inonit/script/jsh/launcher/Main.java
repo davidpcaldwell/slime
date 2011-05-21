@@ -96,7 +96,6 @@ public class Main {
 
 		final ClassLoader getMainClassLoader() throws IOException {
 			FileInvocation invocation = this;
-			ClassLoader loader;
 			String JSH_RHINO_CLASSPATH = invocation.getRhinoClasspath();
 			debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
 			List<String> pathElements = new ArrayList<String>();
