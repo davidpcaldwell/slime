@@ -59,7 +59,7 @@ public class Main {
 
 		final Class getMainClass() throws IOException, ClassNotFoundException {
 			ClassLoader loader = getMainClassLoader();
-			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+			String mainClassName = (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
 			return loader.loadClass(mainClassName);
 		}
 
@@ -69,10 +69,6 @@ public class Main {
 			if (debug) {
 				System.err.println(message);
 			}
-		}
-
-		final boolean debug() {
-			return debug;
 		}
 	}
 
