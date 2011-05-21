@@ -28,7 +28,7 @@ var exit = function(code) {
 var slash = String(Packages.java.io.File.separator);
 var colon = String(Packages.java.io.File.pathSeparator);
 
-var getenv = function() {
+var env = (function() {
 	var caseInsensitive = (Packages.java.lang.System.getenv("path") == Packages.java.lang.System.getenv("PATH"));
 	var rv = {};
 
@@ -42,8 +42,7 @@ var getenv = function() {
 		rv[name] = String(entry.getValue());
 	}
 	return rv;
-}
-var env = getenv();
+})();
 
 var JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 

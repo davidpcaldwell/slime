@@ -331,7 +331,10 @@ var jsapi_jsh = function() {
 		command.add("-doc",JSAPI_DOC);
 	}
 
-	var subenv = getenv();
+	var subenv = {};
+	for (var x in env) {
+		subenv[x] = env[x];
+	}
 	if (env.JSH_BUILD_DEBUG) {
 		subenv.JSH_DEBUG = "true";
 		subenv.JSH_JS_DEBUGGER = "rhino";
