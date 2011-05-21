@@ -20,8 +20,8 @@
 //
 //	System properties that affect the build (environment variable name in parentheses):
 //
-//	jsh.base (JSH_BASE): specifies directory where jsh source distribution can be found; otherwise the current working directory is
-//	assumed to be the location of the source distribution
+//	jsh.build.base (JSH_BUILD_BASE): specifies directory where jsh source distribution can be found; otherwise the current working
+//	directory is assumed to be the location of the source distribution
 //
 //	jsh.build.debug (JSH_BUILD_DEBUG): if set, additional debugging information is emitted to System.err, and the subshell that
 //	generates and runs unit tests is run in the debugger
@@ -42,7 +42,7 @@ var getSetting = function(systemPropertyName) {
 	}
 }
 
-var BASE = (getSetting("jsh.base")) ? new File(getSetting("jsh.base")) : new File(System.getProperty("user.dir"));
+var BASE = (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));
 if (new File(BASE,"jsh/etc/build.rhino.js").exists() && new File(BASE,"jsh/launcher/rhino/api.rhino.js").exists()) {
 	load(new File(BASE,"jsh/launcher/rhino/api.rhino.js").getCanonicalPath());
 } else {
@@ -53,13 +53,13 @@ if (new File(BASE,"jsh/etc/build.rhino.js").exists() && new File(BASE,"jsh/launc
 	System.err.println("ERROR: Could not locate source code at: " + BASE.getCanonicalPath());
 	System.err.println();
 	System.err.println("Either execute this script from the top-level directory of the SLIME source distribution, or specify where");
-	System.err.println("the source distribution can be found by setting the jsh.base system property. For example:");
+	System.err.println("the source distribution can be found by setting the jsh.build.base system property. For example:");
 	System.err.println();
 	System.err.println("cd /path/to/slime/source; java -jar /path/to/rhino/js.jar jsh/etc/build.rhino.js");
 	System.err.println();
 	System.err.println("or");
 	System.err.println();
-	System.err.println("java -Djsh.base=/path/to/slime/source -jar /path/to/rhino/js.jar /path/to/slime/source/jsh/etc/build.rhino.js");
+	System.err.println("java -Djsh.build.base=/path/to/slime/source -jar /path/to/rhino/js.jar /path/to/slime/source/jsh/etc/build.rhino.js");
 	System.exit(1);
 }
 
