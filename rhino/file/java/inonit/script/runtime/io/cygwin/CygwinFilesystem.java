@@ -227,6 +227,7 @@ public class CygwinFilesystem extends Filesystem {
 				public Map getSubprocessEnvironment() {
 					Map toUse = new HashMap();
 
+					//	TODO	do we really have to copy the environment? The PATH below should be sufficient, maybe ...
 					Map existing = getenv();
 					if (existing != null) {
 						Iterator keys = existing.keySet().iterator();
