@@ -18,6 +18,7 @@ if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.package
 	exit(1);
 }
 
+//	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.rhino.js
 platform.io.copyStream = function(i,o) {
 	if (!arguments.callee.delegate) {
 		arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
