@@ -139,7 +139,7 @@ settings.defaults = new function() {
 	}
 	if (platform.unix) {
 		//	TODO	allow this to be overridden by environment variable
-		this.JSH_OS_ENV = os("/usr/bin/env");
+		this.JSH_OS_ENV_UNIX = os("/usr/bin/env");
 	}
 
 	//	The jsh.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
@@ -199,7 +199,7 @@ if (getProperty("jsh.home")) {
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
 		this.JSH_LIBRARY_MODULES = JSH_HOME.getDirectory("modules");
-		this.JSH_LIBRARY_SCRIPTS_JS_PLATFORM = JSH_HOME.getDirectory("script/platform");
+		this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_HOME.getDirectory("script/platform");
 		this.JSH_LIBRARY_SCRIPTS_RHINO = JSH_HOME.getDirectory("script/rhino");
 		this.JSH_LIBRARY_SCRIPTS_JSH = JSH_HOME.getDirectory("script/jsh");
 
@@ -216,7 +216,7 @@ settings.explicit = new function() {
 
 	var self = this;
 	[
-		"JSH_LIBRARY_MODULES","JSH_LIBRARY_SCRIPTS_JS_PLATFORM","JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH","JSH_TMPDIR",
+		"JSH_LIBRARY_MODULES","JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH","JSH_TMPDIR",
 		"JSH_LIBRARY_NATIVE"
 	].forEach( function(name) {
 		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
@@ -388,18 +388,19 @@ try {
 	}
 	command.add(settings.combine("jvmOptions"));
 
+	command.jvmProperty("jsh.packaged", settings.get("packaged"));
+	
 	//	TODO	Maybe the shell should just use these environment variables, rather than having this rigamarole
 	command.jvmProperty("jsh.optimization",env.JSH_OPTIMIZATION);
 	command.jvmProperty("jsh.script.debugger",(function() {
 		if (env.JSH_SCRIPT_DEBUGGER) return env.JSH_SCRIPT_DEBUGGER;
 		if (env.JSH_DEBUG) return "rhino";
 	})());
-	command.jvmProperty("jsh.packaged", settings.get("packaged"));
 	command.jvmProperty("jsh.library.modules",settings.get("JSH_LIBRARY_MODULES"));
-	command.jvmProperty("jsh.library.scripts.loader",settings.get("JSH_LIBRARY_SCRIPTS_JS_PLATFORM"));
+	command.jvmProperty("jsh.library.scripts.loader",settings.get("JSH_LIBRARY_SCRIPTS_LOADER"));
 	command.jvmProperty("jsh.library.scripts.rhino",settings.get("JSH_LIBRARY_SCRIPTS_RHINO"));
 	command.jvmProperty("jsh.library.scripts.jsh",settings.get("JSH_LIBRARY_SCRIPTS_JSH"));
-	command.jvmProperty("jsh.os.env.unix",settings.get("JSH_OS_ENV"));
+	command.jvmProperty("jsh.os.env.unix",settings.get("JSH_OS_ENV_UNIX"));
 	if (settings.get("JSH_TMPDIR")) {
 		command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
 	}

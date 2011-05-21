@@ -4,15 +4,106 @@
 </head>
 <body>
 	<div>
+		<h1>Java launcher (inonit.script.jsh.launcher.Main)</h1>
+		<div>
+			<h2>Resources used</h2>
+			<ul>
+				<li>main.jsh: If present in classpath, this is a packaged application.</li>
+				<li>
+					jsh.jar: If <code>inonit.script.jsh.launcher.Main</code> loaded from a file named <code>jsh.jar</code>, we
+					assume we can find js.jar and jsh.rhino.js at their typical relative locations (unless otherwise specified).
+				</li>
+			</ul>
+			<h2>Environment variables used</h2>
+			<ul>
+				<li>
+					JSH_DEBUG, JSH_LAUNCHER_DEBUG: If one is set, launcher script will run inside debugger, and additional debugging
+					information will be output to console.
+				</li>
+				<li>
+					JSH_RHINO_CLASSPATH: if present, specifies location of js.jar; otherwise, if running inside
+					shell, location is inferred from location of jsh.jar. In packaged application, location of js.jar does not
+					apply. If Cygwin is present, assumed to be in Cygwin format.
+				</li>
+				<li>
+					JSH_RHINO_SCRIPT: specifies location of jsh.rhino.js (location of api.rhino.js is inferred from this).
+					Otherwise, location is inferred from location of jsh.jar.
+				</li>
+			</ul>
+			<h2>System properties set</h2>
+			<ul>
+				<li>(if run from shell) jsh.rhino.classpath: location of Rhino js.jar <!-- TODO	why? --></li>
+				<li>(if run from shell) jsh.launcher.rhino.script: location of jsh.rhino.js <!-- TODO	why? --></li>
+				<li>(if run from packaged application) jsh.packaged: <code>true</code></li>
+				<li>(if run from built shell) jsh.home: location of jsh home directory <!-- TODO	why?	--></li>
+			</ul>
+		</div>
 		<h1>Rhino script</h1>
 		<h2>api.rhino.js</h2>
 		<p>
 			Also used by jsh/etc/build.rhino.js
 		</p>
-		<h2>jsh.rhino.js</h2>
-		<p>
+		<h2>jsh.rhino.js (and api.rhino.js)</h2>
+		<div>
 			Required in classpath: rhino/system/java
-		</p>
+			<div>
+				Environment variables used:
+				<ul>
+					<li>
+						JSH_DEBUG, JSH_LAUNCHER_DEBUG: If one is set, launcher emits additional debugging information to console.
+						If JSH_DEBUG is set, property <code>jsh.script.debugger</code> is also set to <code>rhino</code> in the
+						VM executing the jsh loader.
+					</li>
+					<li>
+						JSH_JAVA_HOME: If set, this value is used for locating JDK libraries specified by the script, and also is
+						used to execute the jsh loader main class. Otherwise, the Java installation executing the launcher is
+						used.
+					</li>
+					<li>
+						JSH_SHELL_CLASSPATH: If set, this path is used to supply the jsh loader with the classes normally contained
+						in lib/jsh.jar.
+					</li>
+					<li>
+						JSH_SCRIPT_CLASSPATH: If set, this path is used to supply the jsh loader with additional Java libraries on 
+						the classpath.
+					</li>
+					<li>
+						PATH: Is used to locate the target script if only a file name is supplied.
+					</li>
+					<li>
+						JSH_JVM_OPTIONS: If present, is used as space-delimited set of options to supply to the jsh loader.
+					</li>
+					<li>
+						JSH_JAVA_DEBUGGER: If present, the JVM process executing the jsh loader main class is run in a debugger.
+					</li>
+					<li>
+						JSH_OPTIMIZATION: If present, value is passed to jsh loader as property <code>jsh.optimization</code>.
+					</li>
+					<li>
+						JSH_SCRIPT_DEBUGGER: If present, value is passed to jsh loader as property <code>jsh.script.debugger</code>.
+					</li>
+					<li>
+						JSH_LIBRARY_MODULES, JSH_LIBRARY_SCRIPTS_LOADER, JSH_LIBRARY_SCRIPTS_RHINO, JSH_LIBRARY_SCRIPTS_JSH, 
+						JSH_TMPDIR, JSH_LIBRARY_NATIVE: 
+					</li>					
+					<li>
+						JSH_OS_ENV_UNIX: If present, value is passed to jsh loader as property <code>jsh.os.env.unix</code>.
+					</li>
+				</ul>
+			</div>
+			<div>
+				System properties used:
+				<ul>
+					
+				</ul>
+			</div>
+			<div>
+				Properties passed to loader:
+				<ul>
+					<li>jsh.launcher.rhino.classpath: classpath from which Rhino js.jar can be loaded.</li>
+				</ul>
+			</div>
+		</div>
 	</div>
 </body>
 </html>
