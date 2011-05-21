@@ -27,6 +27,7 @@ public class Environment {
 	}
 	
 	private Map jdk() {
+		//	Use reflection to invoke JDK 1.5+ method, in case we are running on 1.4
 		try {
 			Method getenv = System.class.getMethod("getenv", new Class[0]);
 			return (Map)getenv.invoke(null, new Object[0]);
