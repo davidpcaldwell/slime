@@ -247,7 +247,7 @@ settings.explicit = new function() {
 			if (new Packages.java.io.File(path).exists()) {
 				return new File( String(Packages.java.io.File(path).getCanonicalPath()) );
 			}
-			if (path.indexOf("/") == -1 || path.indexOf("\\") == -1) {
+			if (path.indexOf(slash) == -1) {
 				debug("PATH = " + env.PATH);
 				var search = env.PATH.split(colon);
 				for (var i=0; i<search.length; i++) {
