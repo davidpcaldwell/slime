@@ -32,10 +32,13 @@
 			</ul>
 			<h2>System properties set</h2>
 			<ul>
+				<li>(if run from shell) jsh.launcher.classpath: location of Java classes; assist subshells</li>
 				<li>(if run from shell) jsh.launcher.rhino.classpath: location of Rhino js.jar</li>
 				<li>(if run from shell) jsh.launcher.rhino.script: location of jsh.rhino.js</li>
-				<li>(if run from shell) jsh.launcher.classpath: location of Java classes; assist subshells</li>
-				<li>(if run from built shell) jsh.launcher.home: location of jsh home directory <!-- TODO	why?	--></li>
+				<li>
+					(if run from built shell) jsh.launcher.home: location of jsh home directory; used by jsh.rhino.js to infer
+					location of other files.
+				</li>
 				<li>(if run from packaged application) jsh.launcher.packaged: <code>true</code></li>
 			</ul>
 		</div>

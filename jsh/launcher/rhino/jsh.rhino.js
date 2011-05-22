@@ -415,32 +415,24 @@ try {
 		}
 	}
 
-	var rhinoClasspath = settings.get("rhinoClasspath");
-	var shellClasspath = settings.get("shellClasspath");
-	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
-
+	[
+		"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
+	].forEach( function(property) {
+		if (getProperty(property)) {
+			command.jvmProperty(property, getProperty(property));
+		}
+	} );
 	for (var x in env) {
 		if (x.substring(0,4) == "JSH_" || x == "PATH") {
 			command.jvmProperty("jsh.launcher.environment." + x, env[x]);
 		}
 	}
-	
-	//	launcher properties that are only sent as informational (they can be used to launch subscripts)
-	command.jvmProperty("jsh.launcher.packaged", settings.get("packaged"));
-	command.jvmProperty("jsh.launcher.classpath", getProperty("jsh.launcher.classpath"));
-	command.jvmProperty("jsh.launcher.rhino.classpath", getProperty("jsh.launcher.rhino.classpath"));
-	command.jvmProperty("jsh.launcher.rhino.script", getProperty("jsh.launcher.rhino.script"));
-	command.jvmProperty("jsh.launcher.shell.classpath", shellClasspath.toPath());
-	command.jvmProperty("jsh.launcher.script.classpath", scriptClasspath.toPath());
-	if (settings.get("JSH_LIBRARY_NATIVE")) {
-		command.jvmProperty("jsh.launcher.library.native",settings.get("JSH_LIBRARY_NATIVE").path);
-	}
 
 	command.add("-classpath");
 	command.add(
-		rhinoClasspath
-		.append(shellClasspath)
-		.append(scriptClasspath)
+		settings.get("rhinoClasspath")
+		.append(settings.get("shellClasspath"))
+		.append(new Searchpath(settings.combine("scriptClasspath")))
 		.toPath()
 	);
 	command.add("inonit.script.jsh.Main");
