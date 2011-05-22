@@ -142,11 +142,11 @@ settings.defaults = new function() {
 		this.JSH_OS_ENV_UNIX = os("/usr/bin/env");
 	}
 
-	//	The jsh.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
+	//	The jsh.launcher.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
 	//	create the classloader inside which we are executing
 	this.rhinoClasspath =
-		(getProperty("jsh.rhino.classpath"))
-		? new Searchpath(getProperty("jsh.rhino.classpath"))
+		(getProperty("jsh.launcher.rhino.classpath"))
+		? new Searchpath(getProperty("jsh.launcher.rhino.classpath"))
 		: new Searchpath(getProperty("java.class.path"))
 	;
 }
@@ -221,6 +221,10 @@ settings.explicit = new function() {
 	].forEach( function(name) {
 		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
 	});
+	
+	["JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
+		this[name] = env[name];
+	}, this);
 
 	if (!settings.packaged) {
 		this.script = (function(path) {
@@ -390,14 +394,14 @@ try {
 
 	command.jvmProperty("jsh.packaged", settings.get("packaged"));
 	
-	//	TODO	Maybe the shell should just use these environment variables, rather than having this rigamarole
-	command.jvmProperty("jsh.optimization",env.JSH_OPTIMIZATION);
-	command.jvmProperty("jsh.script.debugger",env.JSH_SCRIPT_DEBUGGER);
-	command.jvmProperty("jsh.library.modules",settings.get("JSH_LIBRARY_MODULES"));
-	command.jvmProperty("jsh.library.scripts.loader",settings.get("JSH_LIBRARY_SCRIPTS_LOADER"));
-	command.jvmProperty("jsh.library.scripts.rhino",settings.get("JSH_LIBRARY_SCRIPTS_RHINO"));
-	command.jvmProperty("jsh.library.scripts.jsh",settings.get("JSH_LIBRARY_SCRIPTS_JSH"));
-	command.jvmProperty("jsh.os.env.unix",settings.get("JSH_OS_ENV_UNIX"));
+	[
+		"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER", "JSH_LIBRARY_MODULES", "JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_RHINO"
+		,"JSH_LIBRARY_SCRIPTS_JSH","JSH_OS_ENV_UNIX"
+	].forEach(function(name) {
+		var property = name.toLowerCase().split("_").join(".");
+		command.jvmProperty(property,settings.get(name));
+	});
+	
 	if (settings.get("JSH_TMPDIR")) {
 		command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
 	}
@@ -416,6 +420,13 @@ try {
 	var rhinoClasspath = settings.get("rhinoClasspath");
 	var shellClasspath = settings.get("shellClasspath");
 	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
+
+	for (var x in env) {
+		if (x.substring(0,4) == "JSH_" || x == "PATH") {
+			command.jvmProperty("jsh.launcher.environment." + x, env[x]);
+		}
+	}
+	
 	//	launcher properties that are only sent as informational (they can be used to launch subscripts)
 	command.jvmProperty("jsh.launcher.classpath", getProperty("java.class.path"));
 	command.jvmProperty("jsh.launcher.rhino.classpath", rhinoClasspath.toPath());

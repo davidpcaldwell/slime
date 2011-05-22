@@ -30,18 +30,24 @@ public class Main {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
 			java.io.File JSH_HOME = null;
-			if (codeUrlString.startsWith("file:") && codeUrlString.endsWith("jsh.jar")) {
-				//	Assume we loaded this from JSH_HOME
+			String launcherClasspath = null;
+			if (codeUrlString.startsWith("file:")) {
 				if (codeUrlString.charAt(7) == ':') {
 					//	Windows
-					JSH_HOME = new java.io.File(codeUrlString.substring("file:/".length(), codeUrlString.length()-"jsh.jar".length()-1));
+					launcherClasspath = codeUrlString.substring("file:/".length());
 				} else {
 					//	UNIX
-					JSH_HOME = new java.io.File(codeUrlString.substring("file:".length(), codeUrlString.length()-"jsh.jar".length()-1));
+					launcherClasspath = codeUrlString.substring("file:".length());
 				}
+				if (launcherClasspath.endsWith("jsh.jar")) {
+					JSH_HOME = new java.io.File(launcherClasspath.substring(0, launcherClasspath.length()-"jsh.jar".length()-1));
+				}
+			} else {
+				throw new RuntimeException("Unreachable: code source = " + codeUrlString);
 			}
-			Invocation rv = (JSH_HOME != null) ? new Built(JSH_HOME) : new Unbuilt();
-			rv.debug = (System.getenv("JSH_LAUNCHER_DEBUG") != null);
+			FileInvocation rv = (JSH_HOME != null) ? new Built(JSH_HOME) : new Unbuilt();
+			rv.setLauncherClasspath(launcherClasspath);
+			((Invocation)rv).debug = (System.getenv("JSH_LAUNCHER_DEBUG") != null);
 			if (JSH_HOME != null) {
 				rv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 			} else {
@@ -52,7 +58,8 @@ public class Main {
 
 		private boolean debug;
 
-		//	TODO	sets jsh.rhino.classpath and jsh.launcher.rhino.script: why? Just for SDK embedding?
+		//	sets jsh.launcher.rhino.classpath and jsh.launcher.rhino.script to assist jsh.rhino.js
+		//	sets jsh.packaged if applicable to assist jsh.rhino.js
 		abstract void initializeSystemProperties() throws IOException;
 
 		abstract ClassLoader getMainClassLoader() throws IOException;
@@ -74,10 +81,15 @@ public class Main {
 
 	private static abstract class FileInvocation extends Invocation {
 		private String colon = java.io.File.pathSeparator;
+		private String launcherClasspath;
+		
+		final void setLauncherClasspath(String launcherClasspath) {
+			this.launcherClasspath = launcherClasspath;
+		}
 
 		final void initializeSystemProperties() throws java.io.IOException {
 			if (getRhinoClasspath() != null) {
-				System.setProperty("jsh.rhino.classpath", getRhinoClasspath());
+				System.setProperty("jsh.launcher.rhino.classpath", getRhinoClasspath());
 			} else {
 				throw new RuntimeException("No Rhino classpath in " + this
 					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
@@ -86,7 +98,13 @@ public class Main {
 			ArrayList<String> dummy = new ArrayList<String>();
 			addScriptArguments(dummy);
 			System.setProperty("jsh.launcher.rhino.script", dummy.get(2));
+			if (getJshHome() != null) {
+				System.setProperty("jsh.home", getJshHome().getCanonicalPath());
+			}
+			System.setProperty("jsh.launcher.classpath", launcherClasspath);
 		}
+		
+		abstract File getJshHome() throws java.io.IOException;
 
 		abstract String getRhinoClasspath() throws java.io.IOException;
 
@@ -156,9 +174,12 @@ public class Main {
 
 		Built(java.io.File HOME) throws java.io.IOException {
 			this.HOME = HOME;
-			System.setProperty("jsh.home", HOME.getCanonicalPath());
 		}
-
+		
+		File getJshHome() {
+			return HOME;
+		}
+		
 		String getRhinoClasspath() throws java.io.IOException {
 			if (explicit.getRhinoClasspath() != null) return explicit.getRhinoClasspath();
 			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
@@ -178,6 +199,10 @@ public class Main {
 			} else {
 				return value;
 			}
+		}
+		
+		File getJshHome() {
+			return null;
 		}
 
 		String getRhinoClasspath() throws IOException {
