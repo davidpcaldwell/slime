@@ -35,8 +35,8 @@
 				<li>(if run from shell) jsh.launcher.rhino.classpath: location of Rhino js.jar</li>
 				<li>(if run from shell) jsh.launcher.rhino.script: location of jsh.rhino.js</li>
 				<li>(if run from shell) jsh.launcher.classpath: location of Java classes; assist subshells</li>
-				<li>(if run from built shell) jsh.home: location of jsh home directory <!-- TODO	why?	--></li>
-				<li>(if run from packaged application) jsh.packaged: <code>true</code></li>
+				<li>(if run from built shell) jsh.launcher.home: location of jsh home directory <!-- TODO	why?	--></li>
+				<li>(if run from packaged application) jsh.launcher.packaged: <code>true</code></li>
 			</ul>
 		</div>
 		<h1>Rhino script</h1>
@@ -99,6 +99,7 @@
 			<div>
 				Properties passed to loader:
 				<ul>
+					<li>jsh.launcher.packaged: whether launcher was a packaged application.</li> 
 					<li>jsh.launcher.rhino.classpath: classpath from which Rhino js.jar can be loaded.</li>
 				</ul>
 			</div>

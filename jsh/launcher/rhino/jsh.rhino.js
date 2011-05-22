@@ -13,7 +13,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.packaged")) {
+if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	console("Usage: jsh.rhino.js <script-path> [arguments]");
 	exit(1);
 }
@@ -150,8 +150,8 @@ settings.defaults = new function() {
 		: new Searchpath(getProperty("java.class.path"))
 	;
 }
-debug("jsh.packaged = " + getProperty("jsh.packaged"));
-if (getProperty("jsh.packaged") != null) {
+debug("jsh.launcher.packaged = " + getProperty("jsh.launcher.packaged"));
+if (getProperty("jsh.launcher.packaged") != null) {
 	settings.packaged = new function() {
 		this.packaged = true;
 
@@ -191,9 +191,9 @@ if (getProperty("jsh.packaged") != null) {
 	}
 }
 
-if (getProperty("jsh.home")) {
+if (getProperty("jsh.launcher.home")) {
 	settings.built = new function() {
-		var JSH_HOME = new Directory( getProperty("jsh.home") );
+		var JSH_HOME = new Directory( getProperty("jsh.launcher.home") );
 		debug("JSH_HOME = " + JSH_HOME.path);
 
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
@@ -392,8 +392,6 @@ try {
 	}
 	command.add(settings.combine("jvmOptions"));
 
-	command.jvmProperty("jsh.packaged", settings.get("packaged"));
-	
 	[
 		"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER", "JSH_LIBRARY_MODULES", "JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_RHINO"
 		,"JSH_LIBRARY_SCRIPTS_JSH","JSH_OS_ENV_UNIX"
@@ -428,8 +426,9 @@ try {
 	}
 	
 	//	launcher properties that are only sent as informational (they can be used to launch subscripts)
-	command.jvmProperty("jsh.launcher.classpath", getProperty("java.class.path"));
-	command.jvmProperty("jsh.launcher.rhino.classpath", rhinoClasspath.toPath());
+	command.jvmProperty("jsh.launcher.packaged", settings.get("packaged"));
+	command.jvmProperty("jsh.launcher.classpath", getProperty("jsh.launcher.classpath"));
+	command.jvmProperty("jsh.launcher.rhino.classpath", getProperty("jsh.launcher.rhino.classpath"));
 	command.jvmProperty("jsh.launcher.rhino.script", getProperty("jsh.launcher.rhino.script"));
 	command.jvmProperty("jsh.launcher.shell.classpath", shellClasspath.toPath());
 	command.jvmProperty("jsh.launcher.script.classpath", scriptClasspath.toPath());

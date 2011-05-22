@@ -37,7 +37,7 @@ public class Main {
 	private int run() throws CheckedException {
 		Shell.Installation installation = null;
 		Shell.Invocation invocation = null;
-		if (System.getProperty("jsh.packaged") != null) {
+		if (System.getProperty("jsh.launcher.packaged") != null) {
 			installation = new Shell.Installation() {
 				public String toString() {
 					return getClass().getName() + " [packaged]";

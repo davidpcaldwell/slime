@@ -58,8 +58,6 @@ public class Main {
 
 		private boolean debug;
 
-		//	sets jsh.launcher.rhino.classpath and jsh.launcher.rhino.script to assist jsh.rhino.js
-		//	sets jsh.packaged if applicable to assist jsh.rhino.js
 		abstract void initializeSystemProperties() throws IOException;
 
 		abstract ClassLoader getMainClassLoader() throws IOException;
@@ -99,7 +97,7 @@ public class Main {
 			addScriptArguments(dummy);
 			System.setProperty("jsh.launcher.rhino.script", dummy.get(2));
 			if (getJshHome() != null) {
-				System.setProperty("jsh.home", getJshHome().getCanonicalPath());
+				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());
 			}
 			System.setProperty("jsh.launcher.classpath", launcherClasspath);
 		}
@@ -146,7 +144,7 @@ public class Main {
 
 	private static class Packaged extends Invocation {
 		void initializeSystemProperties() {
-			System.setProperty("jsh.packaged", "true");
+			System.setProperty("jsh.launcher.packaged", "true");
 		}
 
 		ClassLoader getMainClassLoader() {
