@@ -32,7 +32,7 @@
 			</ul>
 			<h2>System properties set</h2>
 			<ul>
-				<li>(if run from shell) jsh.launcher.classpath: location of Java classes; assist subshells</li>
+				<li>(if run from shell) jsh.launcher.classpath: location of launcher Java classes</li>
 				<li>(if run from shell) jsh.launcher.rhino.classpath: location of Rhino js.jar</li>
 				<li>(if run from shell) jsh.launcher.rhino.script: location of jsh.rhino.js</li>
 				<li>
@@ -52,6 +52,10 @@
 			Required in classpath: rhino/system/java
 			<div>
 				Environment variables used:
+				<p>
+					All environment variables beginning with <code>JSH_</code>, along with the <code>PATH</code> variable, are also
+					used to pass to the loader as-is, as system properties named <code>jsh.launcher.environment.<i>name</i></code>.
+				</p>
 				<ul>
 					<li>
 						JSH_LAUNCHER_DEBUG: If set, launcher emits additional debugging information to console.
@@ -70,13 +74,17 @@
 						the classpath.
 					</li>
 					<li>
-						PATH: Is used to locate the target script if only a file name is supplied.
+						JSH_LIBRARY_MODULES, JSH_LIBRARY_SCRIPTS_LOADER, JSH_LIBRARY_SCRIPTS_RHINO, JSH_LIBRARY_SCRIPTS_JSH: if
+						present, values are passed to jsh loader as properties: a property is created by converting the name of the
+						environment variable to lowercase and replacing underscores with periods to create a name, and the value is
+						set to the value of the environment variable.
 					</li>
 					<li>
-						JSH_JVM_OPTIONS: If present, is used as space-delimited set of options to supply to the jsh loader.
+						JSH_TMPDIR: if present, value is supplied as the <code>java.io.tmpdir</code> property to the loader.
 					</li>
 					<li>
-						JSH_JAVA_DEBUGGER: If present, the JVM process executing the jsh loader main class is run in a debugger.
+						JSH_LIBRARY_NATIVE: if running on Cygwin, the value is used to locate the Cygwin paths helper application,
+						and the location of that application is passed to the jsh loader as property <code>cygwin.paths</code>.
 					</li>
 					<li>
 						JSH_OPTIMIZATION: If present, value is passed to jsh loader as property <code>jsh.optimization</code>.
@@ -85,25 +93,47 @@
 						JSH_SCRIPT_DEBUGGER: If present, value is passed to jsh loader as property <code>jsh.script.debugger</code>.
 					</li>
 					<li>
-						JSH_LIBRARY_MODULES, JSH_LIBRARY_SCRIPTS_LOADER, JSH_LIBRARY_SCRIPTS_RHINO, JSH_LIBRARY_SCRIPTS_JSH, 
-						JSH_TMPDIR, JSH_LIBRARY_NATIVE: 
-					</li>					
+						PATH: Is used to locate the target script if only a file name is supplied.
+					</li>
 					<li>
-						JSH_OS_ENV_UNIX: If present, value is passed to jsh loader as property <code>jsh.os.env.unix</code>.
+						JSH_JVM_OPTIONS: If present, is used as space-delimited set of options to supply to the jsh loader.
+					</li>
+					<li>
+						JSH_JAVA_DEBUGGER: If present, the JVM process executing the jsh loader main class is run in a debugger.
 					</li>
 				</ul>
 			</div>
 			<div>
 				System properties used:
+				<p>
+					All properties beginning with <code>jsh.launcher.</code> are also passed as-is to subprocesses.
+				</p>
 				<ul>
-					
-				</ul>
-			</div>
-			<div>
-				Properties passed to loader:
-				<ul>
-					<li>jsh.launcher.packaged: whether launcher was a packaged application.</li> 
-					<li>jsh.launcher.rhino.classpath: classpath from which Rhino js.jar can be loaded.</li>
+					<li>
+						<code>jsh.launcher.packaged</code>: If present, indicates that the shell is running within a packaged
+						application.
+					</li>
+					<li>
+						<code>jsh.launcher.rhino.classpath</code>: Indicates the location of the Rhino interpreter to be used to
+						execute the jsh loader.
+					</li>
+					<li>
+						<code>jsh.launcher.home</code>: If present, used to locate the platform modules, SLIME loader, Rhino SLIME 
+						loader, jsh SLIME loader, and native libraries directory (assuming the locations of these are not specified
+						using environment variables).
+					</li>
+					<li>
+						<code>jsh.launcher.classpath</code>: classpath from which jsh launcher was loaded, to pass to loader.
+					</li>
+					<li><code>jsh.launcher.rhino.script</code>: location of jsh.rhino.js, to pass to loader.</li>
+					<li>
+						<code>java.home</code>: if JSH_JAVA_HOME is not specified, used to execute the jsh loader.
+					</li>
+					<li>
+						<code>java.class.path</code>: Supplied to the jsh loader to provide the Rhino interpreter if
+						<code>jsh.launcher.rhino.classpath</code> is not present. Also provides the jsh loader classes if this
+						application is a packaged application.
+					</li>
 				</ul>
 			</div>
 		</div>
