@@ -30,23 +30,24 @@ public class Main {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
 			java.io.File JSH_HOME = null;
-			String launcherClasspath = null;
 			if (codeUrlString.startsWith("file:")) {
+				String launcherLocation = null;
 				if (codeUrlString.charAt(7) == ':') {
 					//	Windows
-					launcherClasspath = codeUrlString.substring("file:/".length());
+					launcherLocation = codeUrlString.substring("file:/".length());
 				} else {
 					//	UNIX
-					launcherClasspath = codeUrlString.substring("file:".length());
+					launcherLocation = codeUrlString.substring("file:".length());
 				}
-				if (launcherClasspath.endsWith("jsh.jar")) {
-					JSH_HOME = new java.io.File(launcherClasspath.substring(0, launcherClasspath.length()-"jsh.jar".length()-1));
+				if (launcherLocation.endsWith("jsh.jar")) {
+					JSH_HOME = new java.io.File(launcherLocation.substring(0, launcherLocation.length()-"jsh.jar".length()-1));
 				}
 			} else {
 				throw new RuntimeException("Unreachable: code source = " + codeUrlString);
 			}
 			FileInvocation rv = (JSH_HOME != null) ? new Built(JSH_HOME) : new Unbuilt();
-			rv.setLauncherClasspath(launcherClasspath);
+			//	TODO	This might miss some exotic situations, like loading this class in its own classloader
+			rv.setLauncherClasspath(System.getProperty("java.class.path"));
 			((Invocation)rv).debug = (System.getenv("JSH_LAUNCHER_DEBUG") != null);
 			if (JSH_HOME != null) {
 				rv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
