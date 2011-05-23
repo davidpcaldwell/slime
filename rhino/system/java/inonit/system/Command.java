@@ -55,8 +55,16 @@ public class Command {
 				ArrayList list = new ArrayList();
 				Iterator i = envMap.keySet().iterator();
 				while(i.hasNext()) {
-					String name = (String)i.next();
-					list.add(name + "=" + (String)envMap.get(name));
+					Object next = i.next();
+					if (!(next instanceof String)) {
+						throw new RuntimeException("Environment variable name is not a string, but " + next);
+					}
+					String name = (String)next;
+					Object value = envMap.get(name);
+					if (!(value instanceof String)) {
+						throw new RuntimeException("Environment variable value for " + name + " is not a string, but " + value);
+					}
+					list.add(name + "=" + value);
 				}
 				env = (String[])list.toArray(new String[0]);
 			}
