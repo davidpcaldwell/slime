@@ -61,14 +61,14 @@ public class Properties {
 		public void setPrototype(Scriptable prototype) {
 			this.prototype = prototype;
 		}
-
-		public Object[] getIds() {
+		
+		private String[] getPropertiesStartingWith(String prefix) {
 			Iterator i = jdk.keySet().iterator();
 			ArrayList rv = new ArrayList();
 			while(i.hasNext()) {
 				String name = (String)i.next();
-				if (name.startsWith(this.prefix())) {
-					String propertyName = name.substring(this.prefix().length());
+				if (name.startsWith(prefix)) {
+					String propertyName = name.substring(prefix.length());
 					String propertyFamily = propertyName;
 					if (propertyName.indexOf(".") != -1) {
 						propertyFamily = propertyName.substring(0,propertyName.indexOf("."));
@@ -77,11 +77,16 @@ public class Properties {
 						rv.add(propertyFamily);
 					}
 				}
-			}
-			return rv.toArray(new String[0]);
+			}			
+			return (String[])rv.toArray(new String[0]);
+		}
+
+		public Object[] getIds() {
+			return getPropertiesStartingWith(prefix());
 		}
 
 		private Property getChild(String name) {
+			if (name.equals("__iterator__")) return null;
 			Property rv = new Property();
 			rv.jdk = jdk;
 			rv.name = prefix() + name;
@@ -91,7 +96,9 @@ public class Properties {
 		}
 
 		public Object get(String string, Scriptable scriptable) {
-			return getChild(string);
+			Object rv = getChild(string);
+			if (rv == null) return Scriptable.NOT_FOUND;
+			return rv;
 		}
 
 		public Object get(int i, Scriptable scriptable) {
@@ -99,7 +106,7 @@ public class Properties {
 		}
 
 		public boolean has(String string, Scriptable scriptable) {
-			return get(string,scriptable) != null;
+			return get(string,scriptable) != null && get(string,scriptable) != Scriptable.NOT_FOUND;
 		}
 
 		public boolean has(int i, Scriptable scriptable) {

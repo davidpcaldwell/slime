@@ -121,6 +121,23 @@ END LICENSE
 				]]></script>
 				<!--	TODO	-->
 			</li>
+			<script type="application/x.jsapi#tests" jsapi:id="Properties"><![CDATA[
+				var $p = new Packages.java.util.Properties();
+				$p.setProperty("a.a", "a");
+				$p.setProperty("a.b", "b");
+				$p.setProperty("a.c", "c");
+				var p = new module.Properties($p);
+				var count = 0;
+				try {
+					for (var x in p.a) {
+						count++;
+					}
+				} catch (e) {
+					var error = e;
+					debugger;
+				}
+				scope.test(count == 3);
+			]]></script>
 			<li class="constructor">
 				<div class="name">Thread</div>
 				<span>__DESCRIPTION__</span>

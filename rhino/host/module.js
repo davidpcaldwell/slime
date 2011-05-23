@@ -31,12 +31,13 @@ var items = $loader.script("java.js", {
 $exports.isJavaObject = items.isJavaObject;
 $exports.toJsArray = items.toJsArray;
 
-$exports.Properties = new function() {
-	this.adapt = function($properties) {
-		return Packages.inonit.script.runtime.Properties.create($properties);
-	}
+$exports.Properties = function($properties) {
+	return Packages.inonit.script.runtime.Properties.create($properties);
 }
 $api.experimental($exports,"Properties");
+$exports.Properties.adapt = function($properties) {
+	return new $exports.Properties($properties);
+}
 
 var errors = new function() {
 	var instance = new Packages.inonit.script.runtime.Throwables();
