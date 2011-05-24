@@ -245,12 +245,28 @@ public class Main {
 			System.exit(1);
 		} catch (Throwable t) {
 			Throwable target = t;
+			System.err.println("Error executing " + Main.class.getName());
+			String argsString = "";
+			for (int i=0; i<args.length; i++) {
+				argsString += args[i];
+				if (i+1 != args.length) {
+					argsString += ",";
+				}
+			}
+			System.err.println("Arguments " + argsString);
+			System.err.println("System properties " + System.getProperties().toString());
+			System.err.println("Heap size: max = " + Runtime.getRuntime().maxMemory());
+			System.err.println("Heap size: free = " + Runtime.getRuntime().freeMemory());
+			System.err.println("Stack trace of error:");
 			while(target != null) {
+				if (target != t) {
+					System.err.println("Caused by:");
+				}
 				System.err.println(target.getClass().getName() + ": " + target.getMessage());
 				StackTraceElement[] elements = target.getStackTrace();
 				for (int i=0; i<elements.length; i++) {
 					StackTraceElement e = elements[i];
-					System.err.println(e);
+					System.err.println("\tat " + e);
 				}
 				target = target.getCause();
 			}
