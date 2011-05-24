@@ -30,17 +30,6 @@
 					Otherwise, location is inferred from location of jsh.jar.
 				</li>
 			</ul>
-			<h2>System properties set</h2>
-			<ul>
-				<li>(if run from shell) jsh.launcher.classpath: location of launcher Java classes</li>
-				<li>(if run from shell) jsh.launcher.rhino.classpath: location of Rhino js.jar</li>
-				<li>(if run from shell) jsh.launcher.rhino.script: location of jsh.rhino.js</li>
-				<li>
-					(if run from built shell) jsh.launcher.home: location of jsh home directory; used by jsh.rhino.js to infer
-					location of other files.
-				</li>
-				<li>(if run from packaged application) jsh.launcher.packaged: <code>true</code></li>
-			</ul>
 		</div>
 		<h1>Rhino script</h1>
 		<h2>api.rhino.js</h2>
@@ -104,7 +93,7 @@
 				</ul>
 			</div>
 			<div>
-				System properties used:
+				System properties used by Main.java to communicate with jsh.rhino.js:
 				<p>
 					All properties beginning with <code>jsh.launcher.</code> are also passed as-is to subprocesses.
 				</p>
@@ -126,6 +115,11 @@
 						<code>jsh.launcher.classpath</code>: classpath from which jsh launcher was loaded, to pass to loader.
 					</li>
 					<li><code>jsh.launcher.rhino.script</code>: location of jsh.rhino.js, to pass to loader.</li>
+				</ul>
+			</div>
+			<div>
+				System properties used:
+				<ul>
 					<li>
 						<code>java.home</code>: if JSH_JAVA_HOME is not specified, used to execute the jsh loader.
 					</li>
