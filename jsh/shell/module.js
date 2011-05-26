@@ -114,3 +114,46 @@ $exports.shell = function(command,args,mode) {
 	
 	$run(tokens,rMode);
 }
+
+$exports.jsh = function(script,args,mode) {
+	var getProperty = function(name) {
+		var value = eval("$context.api.shell.properties." + name);
+		if (String(value) == "undefined") return function(){}();
+		if (value == null) return null;
+		return String(value);
+	}
+	
+	var jdk = jsh.file.filesystems.os.Pathname(getProperty("java.home")).directory;
+	var executable = jdk.getRelativePath("bin/java").toString();
+	//	Set defaults from this shell
+	var LAUNCHER_CLASSPATH = getProperty("jsh.launcher.classpath");
+	
+	var jargs = [];
+	jargs.push("-classpath");
+	jargs.push(LAUNCHER_CLASSPATH);
+	jargs.push("inonit.script.jsh.launcher.Main");
+
+	jargs.push(script);
+	args.forEach( function(arg) {
+		jargs.push(arg);
+	});
+
+	if (!mode) mode = {};
+	if (!mode.environment) mode.environment = {};
+	for (var x in $context.api.shell.properties.jsh.launcher.environment) {
+		if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
+			if (typeof(mode.environment[x]) == "undefined") {
+				mode.environment[x] = String($context.api.shell.properties.jsh.launcher.environment[x]);
+			}
+		}
+	}
+	for (var x in $context.api.shell.environment) {
+		if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
+			if (typeof(mode.environment[x]) == "undefined") {
+				mode.environment[x] = $context.api.shell.environment[x];
+			}
+		}
+	}
+
+	$exports.shell(executable,jargs,mode);
+}
