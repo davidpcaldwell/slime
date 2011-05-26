@@ -70,9 +70,9 @@ END LICENSE
 				this.api = new function() {
 					var API = this;
 					this.js = $jsapi.module("js/object");
-					var java = $jsapi.module({
+					var java = $jsapi.module("rhino/host", {
 						classLoader: $host.getClassLoader()
-					}, "rhino/host");
+					});
 					this.java = java;
 					this.io = $jsapi.module("rhino/io", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
@@ -840,24 +840,6 @@ END LICENSE
 						</li>
 						<li class="function">
 							<div class="name">toString</div>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="object">
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="value">
-												<div class="name">filesystem</div>
-												<span class="type"><a href="#types.filesystem">filesystem</a></span>
-												<span>
-													The filesystem to use in converting this <code>Searchpath</code> to a
-													string.
-												</span>
-											</li>
-										</ul>
-									</li>
-								</ol>
-							</div>
 							<div class="returns">
 								<div class="label">Returns</div>
 								<span class="type">string</span>
@@ -873,20 +855,15 @@ END LICENSE
 					scope.scenario( new function() {
 						var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 						var dir = filesystem.$unit.temporary(null, { directory: true });
-						var Searchpath = filesystem.Searchpath;
+						var Searchpath = module.Searchpath;
 
 						this.name = "Searchpath";
 
-						var searchpath;
-
-						this.initialize = function() {
+						this.execute = function(scope) {
 							var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
 							if (typeof(pathelements[0]) == "undefined") throw "No/0";
 							if (typeof(pathelements[1]) == "undefined") throw "No/1";
-							searchpath = Searchpath(pathelements);
-						}
-
-						this.execute = function(scope) {
+							var searchpath = Searchpath(pathelements);
 							scope.test(
 								searchpath.toString()
 								== (
@@ -895,6 +872,21 @@ END LICENSE
 									+ dir.getRelativePath("e").toString()
 								)
 							);
+							if (module.filesystems.cygwin) {
+								scope.scenario( new function() {
+									this.name = "Mixed paths";
+									this.execute = function(scope) {
+										var a = module.filesystems.os.Pathname("C:\\cygwin\\etc");
+										var b = module.filesystems.cygwin.Pathname("/usr/local/bin");
+										var searchpath = module.Searchpath([a,b]);
+										var upath = module.filesystems.cygwin.toUnix(searchpath);
+										var wpath = module.filesystems.cygwin.toWindows(searchpath);
+										scope.test( upath.toString() == "/etc:/usr/local/bin" );
+										scope.test( wpath.toString() == "C:\\cygwin\\etc;C:\\cygwin\\usr\\local\\bin" );
+										scope.test( searchpath.toString() == upath.toString() );
+									}
+								} );
+							}
 						}
 					} );
 				</script>
@@ -1263,27 +1255,6 @@ END LICENSE
 							} );
 
 						}
-						scope.scenario( new function() {
-							this.name = "Searchpath";
-
-							this.execute = function(scope) {
-								if (filesystem == module.filesystems.cygwin) {
-									scope.scenario( new function() {
-										this.name = "Mixed paths";
-										this.execute = function(scope) {
-											var a = module.filesystems.os.Pathname("C:\\cygwin\\etc");
-											var b = module.filesystems.cygwin.Pathname("/usr/local/bin");
-											var searchpath = module.Searchpath([a,b]);
-											var upath = module.filesystems.cygwin.toUnix(searchpath);
-											var wpath = module.filesystems.cygwin.toWindows(searchpath);
-											scope.test( upath.toString() == "/etc:/usr/local/bin" );
-											scope.test( wpath.toString() == "C:\\cygwin\\etc;C:\\cygwin\\usr\\local\\bin" );
-											scope.test( searchpath.toString() == upath.toString() );
-										}
-									} );
-								}
-							}
-						} );
 					}
 				}
 				parent.scenario(scenario);

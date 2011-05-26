@@ -192,16 +192,16 @@ var Pathname = function(parameters) {
 	}
 
 	this.getBasename = getBasename;
-	$context.deprecate(this, "getBasename");
+	$api.deprecate(this, "getBasename");
 
 	this.getParent = getParent;
-	$context.deprecate(this, "getParent");
+	$api.deprecate(this, "getParent");
 	
 	this.getFile = getFile;
-	$context.deprecate(this, "getFile");
+	$api.deprecate(this, "getFile");
 	
 	this.getDirectory = getDirectory;
-	$context.deprecate(this, "getDirectory");
+	$api.deprecate(this, "getDirectory");
 
 	this.writeBinary = function() {
 		var args = [Streams.binary];
@@ -217,8 +217,8 @@ var Pathname = function(parameters) {
 		}
 		return write.apply(null,args);
 	};
-	$context.deprecate(this, "writeBinary");
-	$context.deprecate(this, "writeText");
+	$api.deprecate(this, "writeBinary");
+	$api.deprecate(this, "writeText");
 
 	this.__defineGetter__("$peer", function() {
 		return peer;
@@ -235,11 +235,11 @@ var Pathname = function(parameters) {
 	this.$inFilesystem = function(filesystem) {
 		return filesystem.$system.$inFilesystem(this);
 	}
-	$context.deprecate(this, "$peer");
-	$context.deprecate(this, "$filesystem");
-	$context.deprecate(this, "$getPeer");
-	$context.deprecate(this, "$getFilesystem");
-	$context.deprecate(this, "$inFilesystem");
+	$api.deprecate(this, "$peer");
+	$api.deprecate(this, "$filesystem");
+	$api.deprecate(this, "$getPeer");
+	$api.deprecate(this, "$getFilesystem");
+	$api.deprecate(this, "$inFilesystem");
 	
 	var Node = function(pathname,prefix) {
 		this.toString = function() {
@@ -285,13 +285,13 @@ var Pathname = function(parameters) {
 		}
 
 		this.getPathname = getPathname;
-		$context.deprecate(this, "getPathname");
+		$api.deprecate(this, "getPathname");
 		this.getParent = getParent;
-		$context.deprecate(this, "getParent");
+		$api.deprecate(this, "getParent");
 		this.setLastModified = setLastModified;
 		this.getLastModified = getLastModified;
-		$context.deprecate(this, "getLastModified");
-		$context.deprecate(this, "setLastModified");
+		$api.deprecate(this, "getLastModified");
+		$api.deprecate(this, "setLastModified");
 	}
 
 	var File = function(pathname,peer) {
@@ -465,7 +465,7 @@ var Searchpath = function(parameters) {
 		//	TODO	Check to make sure pathname filesystem matches filesystem?
 		array.push(pathname);
 	}
-	deprecate(this, "append");
+	$api.deprecate(this, "append");
 
 	var getPathnames = function() {
 		if (filesystem.$Searchpath && filesystem.$Searchpath.mapPathname) {
@@ -474,11 +474,11 @@ var Searchpath = function(parameters) {
 		return array;
 	}
 	this.__defineGetter__("pathnames", getPathnames);
+	
 	this.getPathnames = getPathnames;
-	deprecate(this, "getPathnames");
+	$api.deprecate(this, "getPathnames");
 
-	this.toString = function(mode) {
-		if (!mode) mode = {};
+	this.toString = function() {
 		return getPathnames().map( function(pathname) {
 			return pathname.toString();
 		} ).join(filesystem.SEARCHPATH_SEPARATOR);
