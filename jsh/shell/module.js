@@ -126,7 +126,7 @@ $exports.jsh = function(script,args,mode) {
 	var jdk = jsh.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 	var executable = jdk.getRelativePath("bin/java").toString();
 	//	Set defaults from this shell
-	var LAUNCHER_CLASSPATH = getProperty("jsh.launcher.classpath");
+	var LAUNCHER_CLASSPATH = (mode.classpath) ? mode.classpath : getProperty("jsh.launcher.classpath");
 	
 	var jargs = [];
 	jargs.push("-classpath");
