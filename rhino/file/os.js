@@ -310,8 +310,12 @@ var SystemFilesystem = function(peer) {
 	}
 
 	if (isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
+		var isPathname = function(item) {
+			return item && item.java && item.java.adapt() && isJavaType(Packages.java.io.File);
+		}
+		
 		this.toUnix = function(item) {
-			if (item instanceof $context.Pathname) {
+			if (isPathname(item)) {
 				return new $context.Pathname({ filesystem: system, peer: peer.getNode( item.java.adapt() ) });
 			}
 			if (item instanceof $context.Searchpath) {
@@ -321,14 +325,14 @@ var SystemFilesystem = function(peer) {
 		}
 
 		this.toWindows = function(item) {
-			if (item instanceof $context.Pathname) {
+			if (isPathname(item)) {
 				//	Unbelievably horrendous workaround, but seems to work
 				//	When creating a softlink to an exe in Windows, the softlink gets the .exe suffix added to it even if it is not on the
 				//	command line.
 				if (item.file == null && $context.Pathname( item.toString() + ".exe" ).file != null ) {
 					item = $context.Pathname( item.toString() + ".exe" );
 				}
-				return new $context.Pathname({ filesystem: filesystems.os.$system, peer: filesystems.os.$peer.getNode( item.$peer.getHostFile() ) });
+				return new $context.Pathname({ filesystem: filesystems.os.$system, peer: filesystems.os.$peer.getNode( item.java.adapt() ) });
 			}
 			if (item instanceof $context.Searchpath) {
 				return new $context.Searchpath({ filesystem: filesystems.os.$system, array: item.pathnames });
