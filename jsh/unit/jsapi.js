@@ -193,6 +193,7 @@ $exports.tests = new function() {
 		$scenario.name = "Unit tests";
 		$scenario.files = [];
 		$scenario.execute = function(topscope) {
+			jsh.shell.echo("Environments present: " + Object.keys($context.ENVIRONMENT));
 			//	var item is expected to be $scope.$unit
 			this.files.forEach( function(suite) {
 				var scope = {
@@ -226,7 +227,7 @@ $exports.tests = new function() {
 		}
 
 		testGroups.forEach( function(item) {
-			jsh.shell.echo("Processing: " + item.name + item.namespace);
+			jsh.shell.echo("Processing: " + item.name + ((item.namespace) ? (" " + item.namespace) : ""));
 			var contexts = item.suite.scripts("context");
 			if (contexts.length == 0) {
 				contexts = [<script>{"{}"}</script>];
