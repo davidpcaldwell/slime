@@ -235,7 +235,7 @@ this.jsh = new function() {
 			$script: $host.getInvocation().getScriptFile(),
 			$arguments: $host.getInvocation().getArguments(),
 			addClasses: function(pathname) {
-				$host.addClasses(pathname.$peer.getHostFile());
+				$host.addClasses(pathname.java.adapt());
 			}
 		};
 		context.api = {
