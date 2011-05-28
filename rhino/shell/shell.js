@@ -85,6 +85,12 @@ $exports.run = function(tokens,mode) {
 		command: program,
 		arguments: tokens
 	};
+	if (mode.environment) {
+		result.environment = mode.environment;
+	}
+	if (work) {
+		result.workingDirectory = work;
+	}
 
 	var listener = new JavaAdapter(
 		Command.Listener,
