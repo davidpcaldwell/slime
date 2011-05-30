@@ -76,217 +76,221 @@ Filesystem.Implementation.canonicalize = function(string,separator) {
 	return rv.join(separator);
 }
 
-var SystemFilesystem = function(peer) {
+var System = function(peer,PARENT) {
+	this.PATHNAME_SEPARATOR = String( peer.getPathnameSeparator() );
+	this.SEARCHPATH_SEPARATOR = String( peer.getSearchpathSeparator() );
+
+	var SELF = this;
+	var PARENT_PEER = peer;
+
+	//	TODO	Build this into each separate filesystem separately
+	var isAbsolute = function(string) {
+		if (SELF.PATHNAME_SEPARATOR == "/") {
+			if (string.substring(0,1) != "/") {
+				return false;
+			} else {
+				return true;
+			}
+		} else if (SELF.PATHNAME_SEPARATOR == "\\") {
+			if (string[1] == ":" || string.substring(0,2) == "\\\\") {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
+		}
+	}
+
+	//	TODO	Build this into each separate filesystem separately
+	var isRootPath = function(string) {
+		if (SELF.PATHNAME_SEPARATOR == "/") {
+			return ( string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
+		} else if (SELF.PATHNAME_SEPARATOR == "\\") {
+			if (string[1] == ":") {
+				return string.length == 3 && string[2] == "\\";
+			} else if (string.substring(0,2) == "\\\\") {
+				return string.substring(2).indexOf("\\") == -1;
+			} else {
+				throw "Unreachable: path is " + string;
+			}
+		} else {
+			throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
+		}
+	}
+
+	var newPeer = function(path) {
+		if (path.substring(path.length-1) == SELF.PATHNAME_SEPARATOR) {
+			if (isRootPath(path)) {
+				//	ok then
+			} else {
+				path = path.substring(0,path.length-1);
+			}
+		}
+		if (isAbsolute(path)) {
+			path = Filesystem.Implementation.canonicalize(path, SELF.PATHNAME_SEPARATOR);
+			return PARENT_PEER.getNode(path);
+		} else {
+			return PARENT_PEER.getNode(new Packages.java.io.File(path));
+		}
+	}
+
+	this.newPathname = function(string) {
+		return new $context.Pathname({ filesystem: this, peer: newPeer(string) });
+	}
+
+	this.importPathname = function(pathname) {
+		return new $context.Pathname({ filesystem: this, peer: peer.getNode( pathname.java.adapt() ) });			
+	}
+
+	this.exists = function(peer) {
+		return peer.exists();
+	}
+
+	this.isDirectory = function(peer) {
+		return peer.isDirectory();
+	}
+
+	this.peerToString = function(peer) {
+		return String( peer.getScriptPath() );
+	}
+
+	this.isRootPath = isRootPath;
+
+	this.getParent = function(peer) {
+		//	TODO	Skeptical of this implementation; had to make changes when implementing for HTTP filesystem
+		var path = String( peer.getScriptPath() );
+		if (this.isRootPath(path)) {
+			return null;
+		} else {
+			//	TODO	Factor these implementations out by filesystem
+			var newpath = function() {
+				var tokens = path.split(SELF.PATHNAME_SEPARATOR);
+				tokens.pop();
+				if (tokens.length == 1) {
+					if (SELF.PATHNAME_SEPARATOR == "/") {
+						return "/";
+					} else {
+						return tokens[0] + SELF.PATHNAME_SEPARATOR;
+					}
+				} else {
+					return tokens.join(SELF.PATHNAME_SEPARATOR);
+				}
+			}
+			return this.newPathname(newpath());
+		}
+	}
+
+	this.createDirectoryAt = function(peer) {
+		return peer.mkdirs();
+	}
+
+	this.read = new function() {
+		this.binary = function(peer) {
+			return new streams.InputStream(peer.readBinary());
+		}
+
+		this.character = function(peer) {
+			return new streams.Reader(peer.readText(), {LINE_SEPARATOR: String(PARENT_PEER.getLineSeparator())});
+		}
+	}
+
+	this.write = new function() {
+		this.binary = function(peer,append) {
+			return new streams.OutputStream(peer.writeBinary(append));
+		}
+
+		this.character = function(peer,append) {
+			return new streams.Writer(peer.writeText(append));
+		}
+
+		this.string = function(peer,append,string) {
+			var stream = new streams.Writer(peer.writeText(append));
+			stream.write(string);
+			stream.close();
+		}
+	}
+
+	this.getLastModified = function(peer) {
+		return new Date( peer.getHostFile().lastModified() );
+	}
+
+	this.setLastModified = function(peer,date) {
+		peer.getHostFile().setLastModified( date.getTime() );
+	}
+
+	this.remove = function(peer) {
+		peer["delete"]();
+	}
+
+	this.list = function(peer) {
+		return peer.list(null);
+	}
+
+	this.temporary = function(peer,parameters) {
+		if (!parameters) parameters = {};
+		var prefix = defined(parameters.prefix, "jsh");
+		var suffix = defined(parameters.suffix, null);
+		var directory = defined(parameters.directory, false);
+		var jdir = (peer) ? peer.getHostFile() : null;
+		var jfile = Packages.java.io.File.createTempFile(prefix,suffix,jdir);
+		//	If this was request for directory, delete the temp file and create directory with same name
+		if (directory) {
+			jfile["delete"]();
+			jfile.mkdir();
+		}
+		var path = new $context.Pathname({ filesystem: SELF, peer: PARENT_PEER.getNode(jfile) });
+		if (directory) {
+			return path.directory;
+		} else {
+			return path.file;
+		}
+	}
+	
+	var mapPathnameFunction = function(filesystem) {
+		return function(pathname) {
+			var pathnameType;
+			if (isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem.NodeImpl)(pathname.$peer)) {
+				pathnameType = "os";
+			} else if (isJavaType(Packages.inonit.script.runtime.io.cygwin.NodeImpl)(pathname.$peer)) {
+				pathnameType = "cygwin";
+			}
+			if (pathnameType == "cygwin" && filesystem == filesystems.os) {
+				return filesystems.cygwin.toWindows(pathname);
+			} else if (pathnameType == "os" && filesystem == filesystems.cygwin) {
+				return filesystems.cygwin.toUnix(pathname);
+			} else {
+				return pathname;
+			}
+		};
+	}
+
+	//	TODO	If not getting rid of this, merge with mapPathnameFunction?
+	this.$inFilesystem = function(pathname) {
+		if (pathname.$filesystem == filesystems.cygwin && PARENT == filesystems.os) {
+			return filesystems.cygwin.toWindows(this);
+		} else if (pathname.$filesystem == filesystems.os && PARENT == filesystems.cygwin) {
+			return filesystems.cygwin.toUnix(this);
+		} else {
+			return pathname;
+		}
+	}
+	deprecate(this,"$inFilesystem");
+
+	this.$Searchpath = {
+		mapPathname: mapPathnameFunction(PARENT)
+	}	
+}
+
+var SystemFilesystem = function(peer,os) {
 	this.toString = function() {
 		return "SystemFilesystem: peer=" + peer;
 	}
 
-	var PARENT = this;
-
-	var system = new function() {
-		this.PATHNAME_SEPARATOR = String( peer.getPathnameSeparator() );
-		this.SEARCHPATH_SEPARATOR = String( peer.getSearchpathSeparator() );
-
-		var SELF = this;
-		var PARENT_PEER = peer;
-
-		//	TODO	Build this into each separate filesystem separately
-		var isAbsolute = function(string) {
-			if (SELF.PATHNAME_SEPARATOR == "/") {
-				if (string.substring(0,1) != "/") {
-					return false;
-				} else {
-					return true;
-				}
-			} else if (SELF.PATHNAME_SEPARATOR == "\\") {
-				if (string[1] == ":" || string.substring(0,2) == "\\\\") {
-					return true;
-				} else {
-					return false;
-				}
-			} else {
-				throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
-			}
-		}
-
-		//	TODO	Build this into each separate filesystem separately
-		var isRootPath = function(string) {
-			if (SELF.PATHNAME_SEPARATOR == "/") {
-				return ( string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
-			} else if (SELF.PATHNAME_SEPARATOR == "\\") {
-				if (string[1] == ":") {
-					return string.length == 3 && string[2] == "\\";
-				} else if (string.substring(0,2) == "\\\\") {
-					return string.substring(2).indexOf("\\") == -1;
-				} else {
-					throw "Unreachable: path is " + string;
-				}
-			} else {
-				throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
-			}
-		}
-
-		var newPeer = function(path) {
-			if (path.substring(path.length-1) == SELF.PATHNAME_SEPARATOR) {
-				if (isRootPath(path)) {
-					//	ok then
-				} else {
-					path = path.substring(0,path.length-1);
-				}
-			}
-			if (isAbsolute(path)) {
-				path = Filesystem.Implementation.canonicalize(path, SELF.PATHNAME_SEPARATOR);
-				return PARENT_PEER.getNode(path);
-			} else {
-				return PARENT_PEER.getNode(new Packages.java.io.File(path));
-			}
-		}
-
-		this.newPathname = function(string) {
-			var newPathnameFromString = function(aString) {
-				return new $context.Pathname({ filesystem: SELF, peer: newPeer(aString) });
-			}
-
-			return newPathnameFromString(string);
-		}
-
-		this.exists = function(peer) {
-			return peer.exists();
-		}
-
-		this.isDirectory = function(peer) {
-			return peer.isDirectory();
-		}
-
-		this.peerToString = function(peer) {
-			return String( peer.getScriptPath() );
-		}
-
-		this.isRootPath = isRootPath;
-
-		this.getParent = function(peer) {
-			//	TODO	Skeptical of this implementation; had to make changes when implementing for HTTP filesystem
-			var path = String( peer.getScriptPath() );
-			if (this.isRootPath(path)) {
-				return null;
-			} else {
-				//	TODO	Factor these implementations out by filesystem
-				var newpath = function() {
-					var tokens = path.split(SELF.PATHNAME_SEPARATOR);
-					tokens.pop();
-					if (tokens.length == 1) {
-						if (SELF.PATHNAME_SEPARATOR == "/") {
-							return "/";
-						} else {
-							return tokens[0] + SELF.PATHNAME_SEPARATOR;
-						}
-					} else {
-						return tokens.join(SELF.PATHNAME_SEPARATOR);
-					}
-				}
-				return this.newPathname(newpath());
-			}
-		}
-
-		this.createDirectoryAt = function(peer) {
-			return peer.mkdirs();
-		}
-
-		this.read = new function() {
-			this.binary = function(peer) {
-				return new streams.InputStream(peer.readBinary());
-			}
-
-			this.character = function(peer) {
-				return new streams.Reader(peer.readText(), {LINE_SEPARATOR: String(PARENT_PEER.getLineSeparator())});
-			}
-		}
-
-		this.write = new function() {
-			this.binary = function(peer,append) {
-				return new streams.OutputStream(peer.writeBinary(append));
-			}
-
-			this.character = function(peer,append) {
-				return new streams.Writer(peer.writeText(append));
-			}
-
-			this.string = function(peer,append,string) {
-				var stream = new streams.Writer(peer.writeText(append));
-				stream.write(string);
-				stream.close();
-			}
-		}
-
-		this.getLastModified = function(peer) {
-			return new Date( peer.getHostFile().lastModified() );
-		}
-
-		this.setLastModified = function(peer,date) {
-			peer.getHostFile().setLastModified( date.getTime() );
-		}
-
-		this.remove = function(peer) {
-			peer["delete"]();
-		}
-
-		this.list = function(peer) {
-			return peer.list(null);
-		}
-
-		this.temporary = function(peer,parameters) {
-			if (!parameters) parameters = {};
-			var prefix = defined(parameters.prefix, "jsh");
-			var suffix = defined(parameters.suffix, null);
-			var directory = defined(parameters.directory, false);
-			var jdir = (peer) ? peer.getHostFile() : null;
-			var jfile = Packages.java.io.File.createTempFile(prefix,suffix,jdir);
-			//	If this was request for directory, delete the temp file and create directory with same name
-			if (directory) {
-				jfile["delete"]();
-				jfile.mkdir();
-			}
-			var path = new $context.Pathname({ filesystem: SELF, peer: PARENT_PEER.getNode(jfile) });
-			if (directory) {
-				return path.directory;
-			} else {
-				return path.file;
-			}
-		}
-
-		var mapPathnameFunction = function(filesystem) {
-			return function(pathname) {
-				var pathnameType;
-				if (isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem.NodeImpl)(pathname.$peer)) {
-					pathnameType = "os";
-				} else if (isJavaType(Packages.inonit.script.runtime.io.cygwin.NodeImpl)(pathname.$peer)) {
-					pathnameType = "cygwin";
-				}
-				if (pathnameType == "cygwin" && filesystem == filesystems.os) {
-					return filesystems.cygwin.toWindows(pathname);
-				} else if (pathnameType == "os" && filesystem == filesystems.cygwin) {
-					return filesystems.cygwin.toUnix(pathname);
-				} else {
-					return pathname;
-				}
-			};
-		}
-
-		//	TODO	If not getting rid of this, merge with mapPathnameFunction?
-		this.$inFilesystem = function(pathname) {
-			if (pathname.$filesystem == filesystems.cygwin && PARENT == filesystems.os) {
-				return filesystems.cygwin.toWindows(this);
-			} else if (pathname.$filesystem == filesystems.os && PARENT == filesystems.cygwin) {
-				return filesystems.cygwin.toUnix(this);
-			} else {
-				return pathname;
-			}
-		}
-		deprecate(this,"$inFilesystem");
-
-		this.$Searchpath = {
-			mapPathname: mapPathnameFunction(PARENT)
-		}
+	var system = new System(peer,this);
+	
+	if (os) {
+		System.os = system;
 	}
 
 	Filesystem.call(this,system);
@@ -332,10 +336,11 @@ var SystemFilesystem = function(peer) {
 				if (item.file == null && $context.Pathname( item.toString() + ".exe" ).file != null ) {
 					item = $context.Pathname( item.toString() + ".exe" );
 				}
-				return new $context.Pathname({ filesystem: filesystems.os.$system, peer: filesystems.os.$peer.getNode( item.java.adapt() ) });
+				return System.os.importPathname( item );
 			}
 			if (item instanceof $context.Searchpath) {
-				return new $context.Searchpath({ filesystem: filesystems.os.$system, array: item.pathnames });
+				//	TODO	convert underlying pathnames
+				return new $context.Searchpath({ filesystem: System.os, array: item.pathnames });
 			}
 			return item;
 		}
@@ -350,7 +355,7 @@ var SystemFilesystem = function(peer) {
 }
 
 var filesystems = {};
-filesystems.os = new SystemFilesystem( Packages.inonit.script.runtime.io.Filesystem.create() );
+filesystems.os = new SystemFilesystem( Packages.inonit.script.runtime.io.Filesystem.create(), true );
 if ( cygwin ) {
 	var $delegate;
 	if (cygwin.root && !cygwin.paths) {
