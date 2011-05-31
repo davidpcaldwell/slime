@@ -217,18 +217,19 @@ this.jsh = new function() {
 		);
 	}
 
-	new function() {
+	jsh.shell = (function() {
 		var context = {};
 		context.api = {
 			java: java,
 			shell: $shell,
+			io: jsh.io,
 			file: jsh.file
 		}
 		context.exit = function(code) {
 			$host.exit(code);
 		}
-		jsh.shell = loader.bootstrap(context,"jsh/shell");
-	}
+		return loader.bootstrap(context,"jsh/shell");
+	})();
 
 	jsh.script = (function() {
 		var context = {

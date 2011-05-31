@@ -34,7 +34,7 @@ $exports.echo = function(message,mode) {
 	} else if (mode.stream) {
 		console = streamToConsole(mode.stream);
 	} else {
-		console = streamToConsole($context.api.file.Streams.stdout);
+		console = streamToConsole($context.api.io.Streams.stdout);
 	}
 
 	if (typeof(message) == "string") {
@@ -54,7 +54,7 @@ $exports.echo = function(message,mode) {
 }
 
 $exports.shell = function(command,args,mode) {
-	var Streams = $context.api.file.Streams;
+	var Streams = $context.api.io.Streams;
 	var isJavaType = $context.api.java.isJavaType;
 	var $run = $context.api.shell.run;
 	var $filesystems = $context.api.file.filesystems;
@@ -123,7 +123,7 @@ $exports.jsh = function(script,args,mode) {
 		return String(value);
 	}
 	
-	var jdk = jsh.file.filesystems.os.Pathname(getProperty("java.home")).directory;
+	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 	var executable = jdk.getRelativePath("bin/java").toString();
 	//	Set defaults from this shell
 	var LAUNCHER_CLASSPATH = (mode.classpath) ? mode.classpath : getProperty("jsh.launcher.classpath");
