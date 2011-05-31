@@ -206,7 +206,8 @@ $exports.tests = new function() {
 					}
 				};
 				scope.$unit = new function() {
-					this.name = suite.item.name + "-" + String(suite.index);
+					var contextId = (suite.context.@jsapi::id.length() > 0) ? " (" + suite.context.@jsapi::id + ")" : "";
+					this.name = suite.item.name + "-" + String(suite.index) + contextId;
 				}
 				try {
 					suite.item.loadTestsInto(scope,suite.context);
