@@ -70,15 +70,15 @@ var ENVIRONMENT = (function() {
 	return rv;
 })();
 
-var jsapi = jsh.loader.script(jsh.script.getRelativePath("jsapi.js"), {
+var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,
 	jsapi: {
 		getFile: function(path) {
 			return jsh.script.getRelativePath(path).file;
 		}
 	},
-	Scenario: jsh.loader.script( parameters.options.jsapi.directory.getRelativePath("unit.before.js") ).Scenario,
-	console: jsh.loader.script( jsh.script.getRelativePath("jsunit.after.js"), {
+	Scenario: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.before.js") ).Scenario,
+	console: jsh.loader.file( jsh.script.getRelativePath("jsunit.after.js"), {
 		console: {
 			println: function(s) {
 				if (arguments.length == 0) {
