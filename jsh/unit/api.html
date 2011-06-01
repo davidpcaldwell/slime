@@ -67,7 +67,12 @@ END LICENSE
 	<h1>api.html</h1>
 	<ul>
 		<li>application/x.jsapi#scope</li>
-		<li>application/x.jsapi#context</li>
+		<li>
+			<code>script</code> element with <code>type</code> attribute <code>application/x.jsapi#context</code>: For each
+			element of this type, the script content will be interpreted as a literal and its value will be used as the
+			<code>$context</code> for running a round of tests on the module. If no scripts of this type are included, a single
+			empty one will be generated with <code>new Object()</code>.
+		</li>
 		<li>application/x.jsapi#initialize</li>
 		<li>application/x.jsapi#tests</li>
 	</ul>
@@ -126,6 +131,14 @@ END LICENSE
 				<div class="label">Returns</div>
 				<span class="type">jsh.file directory</span>
 			</div>
+		</li>
+	</ul>
+	<h1>$unit</h1>
+	<ul>
+		<li class="value">
+			<div class="name">context</div>
+			<span class="type">object</span>
+			<span>The <code>$context</code> that was used when instantiating the module to run the current set of tests.</span>
 		</li>
 	</ul>
 	<h1>$module</h1>
