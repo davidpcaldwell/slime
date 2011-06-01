@@ -203,39 +203,41 @@ $exports.tests = new function() {
 						this.getResourcePathname = function(path) {
 							return suite.item.getResourcePathname(path);
 						}
-					}
+					},
+					$platform: jsh.$jsapi.$platform,
+					$api: jsh.$jsapi.$api
 				};
-				scope.$unit = new function() {
-					var contextId = (suite.context.@jsapi::id.length() > 0) ? " (" + suite.context.@jsapi::id + ")" : "";
-					this.name = suite.item.name + "-" + String(suite.index) + contextId;
+				var contexts = suite.item.suite.scripts("context");
+				if (contexts.length == 0) {
+					contexts = [<script>{"{}"}</script>];
 				}
-				try {
-					suite.item.loadTestsInto(scope,suite.context);
-					
-					scope.module = suite.item.loadWith(scope.$unit.context);
+				for (var i=0; i<contexts.length; i++) {
+					scope.$unit = new function() {
+						var contextId = (contexts[i].@jsapi::id.length() > 0) ? " (" + contexts[i].@jsapi::id + ")" : "";
+						this.name = suite.item.name + "-" + String(i) + contextId;
+					}
+					try {
+						suite.item.loadTestsInto(scope,contexts[i]);
 
-					scope.$unit.create();
-				} catch (e) {
-					//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
-					scope.$unit.initialize = function() {
+						scope.module = suite.item.loadWith(scope.$unit.context);
+
+						scope.$unit.create();
+					} catch (e) {
+						//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
+						scope.$unit.initialize = function() {
+						}
+						scope.$unit.execute = function(scope) {
+							throw e;
+						}
 					}
-					scope.$unit.execute = function(scope) {
-						throw e;
-					}
+					topscope.scenario( scope.$unit )
 				}
-				topscope.scenario( scope.$unit )
 			} );
 		}
 
 		testGroups.forEach( function(item) {
 			jsh.shell.echo("Processing: " + item.name + ((item.namespace) ? (" " + item.namespace) : ""));
-			var contexts = item.suite.scripts("context");
-			if (contexts.length == 0) {
-				contexts = [<script>{"{}"}</script>];
-			}
-			for (var i=0; i<contexts.length; i++) {
-				$scenario.suites.push( { item: item, context: contexts[i], index: i } );
-			}
+			$scenario.suites.push({ item: item });
 		} );
 
 		successWas($scenario.run( $context.console ));
