@@ -191,11 +191,11 @@ $exports.tests = new function() {
 
 		var $scenario = new $context.Scenario();
 		$scenario.name = "Unit tests";
-		$scenario.files = [];
+		$scenario.suites = [];
 		$scenario.execute = function(topscope) {
 			jsh.shell.echo("Environments present: " + Object.keys($context.ENVIRONMENT));
 			//	var item is expected to be $scope.$unit
-			this.files.forEach( function(suite) {
+			this.suites.forEach( function(suite) {
 				var scope = {
 					$java: SCOPE.$java,
 					$jsapi: SCOPE.$jsapi,
@@ -211,7 +211,7 @@ $exports.tests = new function() {
 				}
 				try {
 					suite.item.loadTestsInto(scope,suite.context);
-
+					
 					scope.module = suite.item.loadWith(scope.$unit.context);
 
 					scope.$unit.create();
@@ -234,7 +234,7 @@ $exports.tests = new function() {
 				contexts = [<script>{"{}"}</script>];
 			}
 			for (var i=0; i<contexts.length; i++) {
-				$scenario.files.push( { item: item, context: contexts[i], index: i } );
+				$scenario.suites.push( { item: item, context: contexts[i], index: i } );
 			}
 		} );
 
