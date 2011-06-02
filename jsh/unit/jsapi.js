@@ -175,7 +175,7 @@ $exports.tests = new function() {
 					}
 					var MODULES = $context.MODULES;
 					if (MODULES[name+"/"]) name += "/";
-					if (!MODULES[name]) throw "Module referenced but not found: '" + name + "'";
+					if (!MODULES[name]) return null;
 					return jsh.loader.module(MODULES[name],context);
 				},
 				//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
