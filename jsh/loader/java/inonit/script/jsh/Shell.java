@@ -338,6 +338,7 @@ public class Shell {
 			}
 
 			public void exit(int status) throws ExitException {
+				Host.this.engine.getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
 			}
 
@@ -414,6 +415,10 @@ public class Shell {
 
 			public void addFinalizer(Runnable runnable) {
 				finalizers.add(runnable);
+			}
+			
+			public inonit.script.rhino.Engine.Debugger getDebugger() {
+				return Host.this.engine.getDebugger();
 			}
 			
 			//

@@ -43,6 +43,9 @@ public class Engine {
 		final void log(String message) {
 			getLog().println(message);
 		}
+		
+		public abstract boolean isBreakOnExceptions();
+		public abstract void setBreakOnExceptions(boolean breakOnExceptions);
 	}
 	
 	private static class NoDebugger extends Debugger {
@@ -54,9 +57,16 @@ public class Engine {
 		
 		void initialize(Scriptable scope, Engine engine, Program program) {
 		}
-
+		
 		Log getLog() {
 			return Log.NULL;
+		}
+		
+		public boolean isBreakOnExceptions() {
+			return false;
+		}
+		
+		public void setBreakOnExceptions(boolean breakOnExceptions) {
 		}
 	}
 	
@@ -105,6 +115,7 @@ public class Engine {
 		}
 		
 		private Configuration configuration;
+		private boolean breakOnExceptions = false;
 		
 		private org.mozilla.javascript.tools.debugger.Dim dim;
 		private org.mozilla.javascript.tools.debugger.SwingGui gui;
@@ -137,8 +148,10 @@ public class Engine {
 			if (configuration.startWithBreak) {
 				dim.setBreak();
 			}
+			breakOnExceptions = configuration.breakOnExceptions;
 			if (configuration.breakOnExceptions) {
 				dim.setBreakOnExceptions(true);
+				breakOnExceptions = true;
 			}
 			
 			this.gui = new org.mozilla.javascript.tools.debugger.SwingGui(dim, title);
@@ -163,6 +176,15 @@ public class Engine {
 
 		Log getLog() {
 			return configuration.log;
+		}
+		
+		public boolean isBreakOnExceptions() {
+			return breakOnExceptions;
+		}
+		
+		public void setBreakOnExceptions(boolean breakOnExceptions) {
+			this.breakOnExceptions = breakOnExceptions;
+			this.dim.setBreakOnExceptions(breakOnExceptions);
 		}
 		
 		private static class ScopeWrapper implements org.mozilla.javascript.tools.debugger.ScopeProvider {
@@ -820,6 +842,10 @@ public class Engine {
 				throw new RuntimeException(e);
 			}
 		}
+	}
+	
+	public Debugger getDebugger() {
+		return this.debugger;
 	}
 	
 	public Module load(Module.Code source) {
