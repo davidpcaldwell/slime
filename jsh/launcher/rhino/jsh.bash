@@ -22,33 +22,17 @@ if [ -z "$JSH_JAVA_HOME" ]; then
 	exit 1
 fi
 
-JSH_JAR=$(dirname $0)/jsh.jar
-if [ -f "$JSH_JAR" ]; then
-	JSH_LAUNCHER=$JSH_JAR
-elif [ -n "$JSH_LAUNCHER_CLASSPATH" ]; then
-	echo "DEPRECATED: launching via JSH_LAUNCHER_CLASSPATH: $JSH_LAUNCHER_CLASSPATH"
-	true
-else
-	echo "Missing $JSH_JAR and \$JSH_LAUNCHER_CLASSPATH"
+JSH_LAUNCHER=$(dirname $0)/jsh.jar
+if [ ! -f "$JSH_LAUNCHER" ]; then
+	echo "Missing jsh launcher at $JSH_LAUNCHER"
 	exit 1
 fi
 
 case "`uname`" in
 	CYGWIN*)
-		if [ -n "$JSH_LAUNCHER" ]; then
-			JSH_LAUNCHER=$(cygpath -wp $JSH_LAUNCHER)
-		fi
-		if [ -n "$JSH_LAUNCHER_CLASSPATH" ]; then
-			JSH_LAUNCHER_CLASSPATH=$(cygpath -wp $JSH_LAUNCHER_CLASSPATH)
-		fi
+		JSH_LAUNCHER=$(cygpath -wp $JSH_LAUNCHER)
 	;;
 esac
 
-if [ -z "$JSH_LAUNCHER_CLASSPATH" ]; then
-	LAUNCHER_ARGS="-jar $JSH_LAUNCHER"
-else
-	LAUNCHER_ARGS="-classpath $JSH_LAUNCHER_CLASSPATH inonit.script.jsh.launcher.Main"
-fi
-
-$JSH_JAVA_HOME/bin/java $LAUNCHER_ARGS "$@"
+$JSH_JAVA_HOME/bin/java -jar $JSH_LAUNCHER "$@"
 exit $?
