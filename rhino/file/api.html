@@ -985,9 +985,9 @@ END LICENSE
 						this.name = "createDirectory";
 
 						this.execute = function(scope) {
-							var inPlace = function(ifExists) {
+							var inPlace = $jsapi.disableBreakOnExceptions(function(ifExists) {
 								return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
-							}
+							});
 							var created = inPlace();
 							scope.test( created.parent.toString() == dir.toString() );
 							var timestamp = created.modified;

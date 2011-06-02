@@ -185,6 +185,15 @@ $exports.tests = new function() {
 					var pathstring = String($path.getCanonicalPath());
 					var os = jsh.file.filesystems.os.Pathname(pathstring);
 					return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
+				},
+				disableBreakOnExceptions: function(f) {
+					return function() {
+						var isBreak = $host.getDebugger().isBreakOnExceptions();
+						$host.getDebugger().setBreakOnExceptions(false);
+						var rv = f.apply(this,arguments);
+						$host.getDebugger().setBreakOnExceptions(isBreak);
+						return rv;
+					}
 				}
 			};
 		};
