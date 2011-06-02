@@ -23,7 +23,6 @@ if (!Array.prototype.indexOf) {
 		return -1;
 	}
 }
-//	TODO	JS 1.6: Array.prototype.lastIndexOf()
 
 if (!Array.prototype.filter) {
 	Array.prototype.filter = function(f) {
@@ -43,7 +42,6 @@ if (!Array.prototype.forEach) {
 		}
 	}
 }
-//	TODO	JS 1.6: Array.prototype.every()
 if (!Array.prototype.map) {
 	Array.prototype.map = function(f) {
 		var rv = [];
@@ -53,8 +51,3 @@ if (!Array.prototype.map) {
 		return rv;
 	}
 }
-//	TODO	JS 1.6: Array.prototype.some()
-
-//	TODO	JS 1.8: Array.prototype.reduce()
-//	TODO	JS 1.8: Array.prototype.reduceRight()
-//	TODO	JS 1.8.5: isArray()
