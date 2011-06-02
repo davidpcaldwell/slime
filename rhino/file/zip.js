@@ -24,7 +24,7 @@ $exports.zip = function(p) {
 			if (item.node.directory) return { directory: item.path };
 			return {
 				path: item.path.replace(/\\/g, "/"),
-				$stream: item.node.read($context.Streams.binary).$getInputStream()
+				$stream: item.node.read($context.Streams.binary).java.adapt()
 			};
 		});
 	} else if (p.from instanceof $context.Pathname && p.from.file) {
@@ -41,7 +41,9 @@ $exports.zip = function(p) {
 	var $to;
 
 	if (p.to instanceof $context.Pathname) {
-		$to = p.to.write($context.Streams.binary, { append: false }).$getOutputStream();
+		$to = p.to.write($context.Streams.binary, { append: false }).java.adapt();
+	} else if (p.java && p.java.adapt) {
+		$to = p.java.adapt();
 	} else if (p.to.$getOutputStream) {
 		$to = p.to.$getOutputStream();
 	} else {

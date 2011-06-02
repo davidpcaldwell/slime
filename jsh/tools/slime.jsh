@@ -36,7 +36,7 @@ var build = (function() {
 	}
 })();
 
-jsh.loader.script(jsh.script.getRelativePath("slime.js")).slime.build.jsh(from,build);
+jsh.loader.file(jsh.script.getRelativePath("slime.js")).slime.build.jsh(from,build);
 
 if (format == "zip") {
 	jsh.file.zip({ from: build.pathname, to: parameters.options.to });

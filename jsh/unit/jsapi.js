@@ -254,7 +254,7 @@ $exports.doc = function(modules,to) {
 	});
 
 	["api.css","api.js"].forEach( function(name) {
-		destination.getRelativePath(name).write($context.api.getFile(name).read(jsh.file.Streams.binary));
+		destination.getRelativePath(name).write($context.api.getFile(name).read(jsh.io.Streams.binary));
 	});
 
 	XML.ignoreWhitespace = false;
@@ -308,7 +308,7 @@ $exports.doc = function(modules,to) {
 	});
 
 	destination.getRelativePath("index.css").write(
-		$context.jsapi.getFile("index.css").read(jsh.file.Streams.binary),
+		$context.jsapi.getFile("index.css").read(jsh.io.Streams.binary),
 		{ append: false }
 	);
 	destination.getRelativePath("index.html").write(index.toXMLString());

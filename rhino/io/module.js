@@ -192,10 +192,12 @@ var Streams = new function() {
 		this.copy = function(from,to) {
 			var $r = (function() {
 				if ($context.api.java.isJavaType(Packages.java.io.InputStream)(from)) return from;
+				if (from.java && from.java.adapt) return from.java.adapt();
 				if (from.$getInputStream) return from.$getInputStream();
 			})();
 			var $w = (function() {
 				if ($context.api.java.isJavaType(Packages.java.io.OutputStream)(to)) return to;
+				if (to.java && to.java.adapt) return to.java.adapt();
 				if (to.$getOutputStream) return to.$getOutputStream();
 			})();
 			$context.$java.copy($r,$w)

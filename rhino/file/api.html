@@ -67,20 +67,7 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#scope"><![CDATA[
 			var $Context = function(p) {
-				this.api = new function() {
-					var API = this;
-					this.js = $jsapi.module("js/object");
-					var java = $jsapi.module("rhino/host", {
-						classLoader: $host.getClassLoader()
-					});
-					this.java = java;
-					this.io = $jsapi.module("rhino/io", {
-						$java: new Packages.inonit.script.runtime.io.Streams()
-						,api: {
-							java: java
-						}
-					});
-				}
+				this.api = arguments.callee.api;
 				this.$pwd = jsh.shell.properties.user.dir;
 				this.addFinalizer = jsh.loader.addFinalizer;
 
@@ -98,23 +85,21 @@ END LICENSE
 					}
 				}
 			}
+			$Context.api = new function() {
+				this.js = $jsapi.module("js/object");
+				var java = $jsapi.module("rhino/host", {
+					classLoader: $host.getClassLoader()
+				});
+				this.java = java;
+				this.io = $jsapi.module("rhino/io", {
+					$java: new Packages.inonit.script.runtime.io.Streams()
+					,api: {
+						java: java
+					}
+				});
+			}
+
 		]]></script>
-		<!--	TODO	add round of tests using cygwin.root but not cygwin.paths?	-->
-		<script type="application/x.jsapi#context">
-			new $Context();
-		</script>
-		<script type="application/x.jsapi#context">
-			(function() {
-				if (Packages.java.lang.System.getProperty("cygwin.root")) {
-					return new $Context({ cygwin: true });
-				} else {
-					return null;
-				}
-			})();
-		</script>
-	</div>
-	<div>
-		<h1>Exports</h1>
 		<script type="application/x.jsapi#scope"><![CDATA[
 			var filesystem;
 
@@ -134,13 +119,13 @@ END LICENSE
 
 				this.createFile = function(base,name,length) {
 					var pathname = base.getRelativePath(name);
-					var $out = pathname.write(module.Streams.binary);
+					var out = pathname.write($Context.api.io.Streams.binary);
 					if (length) {
 						for (var i=0; i<length; i++) {
-							$out.$getOutputStream().write(0);
+							out.java.adapt().write(0);
 						}
 					}
-					$out.close();
+					out.close();
 					return pathname.file;
 				}
 
@@ -153,6 +138,22 @@ END LICENSE
 			var createFile = helpers.createFile;
 			var createDirectory = helpers.createDirectory;
 		]]></script>
+		<!--	TODO	add round of tests using cygwin.root but not cygwin.paths?	-->
+		<script type="application/x.jsapi#context">
+			new $Context();
+		</script>
+		<script type="application/x.jsapi#context">
+			(function() {
+				if (Packages.java.lang.System.getProperty("cygwin.root")) {
+					return new $Context({ cygwin: true });
+				} else {
+					return null;
+				}
+			})();
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			helpers.initialize(module);
 		]]></script>
@@ -926,7 +927,7 @@ END LICENSE
 						</div>
 						<script type="application/x.jsapi#tests">
 							var $out = new Packages.java.io.ByteArrayOutputStream();
-							var out = module.java.adapt($out);
+							var out = $Context.api.io.java.adapt($out);
 							scope.test(out != null);
 						</script>
 					</li>
@@ -937,7 +938,7 @@ END LICENSE
 			var context = new function() {
 				this.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				this.dir = newTemporaryDirectory(this.filesystem);
-				this.module = { Streams: module.Streams };
+				this.module = { Streams: $Context.api.io.Streams };
 			}
 			if (!context.dir) throw "Missing context.dir";
 			var filesystem = context.filesystem;
@@ -1201,8 +1202,8 @@ END LICENSE
 									scope.test( linkdir.getRelativePath("to_target").file != null );
 
 									scope.test( function() {
-											var reader = filelink.read(module.Streams.binary);
-											var instream = reader.$getInputStream();
+											var reader = filelink.read($Context.api.io.Streams.binary);
+											var instream = reader.java.adapt();
 											var len = 0;
 											while( instream.read() != -1 ) {
 												len++;
@@ -1283,7 +1284,7 @@ END LICENSE
 		</script>
 		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
 			var fileA = streamdir.getFile("a");
-			var text = fileA.read(module.Streams.text);
+			var text = fileA.read($Context.api.io.Streams.text);
 			var lines = [];
 			text.readLines( function(line) {
 				lines.push(line);

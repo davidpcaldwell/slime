@@ -186,6 +186,11 @@ var Pathname = function(parameters) {
 	}
 
 	this.java = new function() {
+		//	Undocumented; used only by mapPathname, which is used only by Searchpath, all of which are dubious
+		this.getPeer = function() {
+			return peer;
+		}
+		
 		this.adapt = function() {
 			return peer.getHostFile();
 		}
@@ -468,9 +473,6 @@ var Searchpath = function(parameters) {
 	$api.deprecate(this, "append");
 
 	var getPathnames = function() {
-		if (filesystem.$Searchpath && filesystem.$Searchpath.mapPathname) {
-			array = array.map(filesystem.$Searchpath.mapPathname);
-		}
 		return array;
 	}
 	this.__defineGetter__("pathnames", getPathnames);
@@ -480,6 +482,9 @@ var Searchpath = function(parameters) {
 
 	this.toString = function() {
 		return getPathnames().map( function(pathname) {
+			if (filesystem.$Searchpath && filesystem.$Searchpath.mapPathname) {
+				pathname = filesystem.$Searchpath.mapPathname(pathname);
+			}
 			return pathname.toString();
 		} ).join(filesystem.SEARCHPATH_SEPARATOR);
 	}

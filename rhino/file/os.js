@@ -250,9 +250,9 @@ var System = function(peer,PARENT) {
 	var mapPathnameFunction = function(filesystem) {
 		return function(pathname) {
 			var pathnameType;
-			if (isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem.NodeImpl)(pathname.$peer)) {
+			if (isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem.NodeImpl)(pathname.java.getPeer())) {
 				pathnameType = "os";
-			} else if (isJavaType(Packages.inonit.script.runtime.io.cygwin.NodeImpl)(pathname.$peer)) {
+			} else if (isJavaType(Packages.inonit.script.runtime.io.cygwin.NodeImpl)(pathname.java.getPeer())) {
 				pathnameType = "cygwin";
 			}
 			if (pathnameType == "cygwin" && filesystem == filesystems.os) {

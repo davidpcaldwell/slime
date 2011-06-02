@@ -88,7 +88,7 @@ slime.build.jsh = function(from,build) {
 		if (item.directory) {
 			topath.createDirectory();
 		} else {
-			topath.write(item.resource.read(jsh.file.Streams.binary), { recursive: true });
+			topath.write(item.resource.read(jsh.io.Streams.binary), { recursive: true });
 		}
 	} );
 

@@ -102,7 +102,7 @@ END LICENSE
 					this.file = file;
 				};
 
-				this.$script = jsh.script.pathname.$peer.getHostFile();
+				this.$script = jsh.script.pathname.java.adapt();
 				this.$arguments = function() {
 					var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,3);
 					rv[0] = "a";
