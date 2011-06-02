@@ -67,20 +67,7 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#scope"><![CDATA[
 			var $Context = function(p) {
-				this.api = new function() {
-					var API = this;
-					this.js = $jsapi.module("js/object");
-					var java = $jsapi.module("rhino/host", {
-						classLoader: $host.getClassLoader()
-					});
-					this.java = java;
-					this.io = $jsapi.module("rhino/io", {
-						$java: new Packages.inonit.script.runtime.io.Streams()
-						,api: {
-							java: java
-						}
-					});
-				}
+				this.api = arguments.callee.api;
 				this.$pwd = jsh.shell.properties.user.dir;
 				this.addFinalizer = jsh.loader.addFinalizer;
 
@@ -98,23 +85,21 @@ END LICENSE
 					}
 				}
 			}
+			$Context.api = new function() {
+				this.js = $jsapi.module("js/object");
+				var java = $jsapi.module("rhino/host", {
+					classLoader: $host.getClassLoader()
+				});
+				this.java = java;
+				this.io = $jsapi.module("rhino/io", {
+					$java: new Packages.inonit.script.runtime.io.Streams()
+					,api: {
+						java: java
+					}
+				});
+			}
+
 		]]></script>
-		<!--	TODO	add round of tests using cygwin.root but not cygwin.paths?	-->
-		<script type="application/x.jsapi#context">
-			new $Context();
-		</script>
-		<script type="application/x.jsapi#context">
-			(function() {
-				if (Packages.java.lang.System.getProperty("cygwin.root")) {
-					return new $Context({ cygwin: true });
-				} else {
-					return null;
-				}
-			})();
-		</script>
-	</div>
-	<div>
-		<h1>Exports</h1>
 		<script type="application/x.jsapi#scope"><![CDATA[
 			var filesystem;
 
@@ -134,7 +119,7 @@ END LICENSE
 
 				this.createFile = function(base,name,length) {
 					var pathname = base.getRelativePath(name);
-					var $out = pathname.write(module.Streams.binary);
+					var $out = pathname.write($Context.api.io.Streams.binary);
 					if (length) {
 						for (var i=0; i<length; i++) {
 							$out.$getOutputStream().write(0);
@@ -153,6 +138,22 @@ END LICENSE
 			var createFile = helpers.createFile;
 			var createDirectory = helpers.createDirectory;
 		]]></script>
+		<!--	TODO	add round of tests using cygwin.root but not cygwin.paths?	-->
+		<script type="application/x.jsapi#context">
+			new $Context();
+		</script>
+		<script type="application/x.jsapi#context">
+			(function() {
+				if (Packages.java.lang.System.getProperty("cygwin.root")) {
+					return new $Context({ cygwin: true });
+				} else {
+					return null;
+				}
+			})();
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			helpers.initialize(module);
 		]]></script>
