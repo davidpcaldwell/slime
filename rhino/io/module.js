@@ -75,10 +75,8 @@ var Reader = function(peer) {
 	this.readLines = function(callback,mode) {
 
 		if (!mode) mode = {};
-		//	TODO	Does equivalent of "default" filesystem still exist?
-		//	if (!filesystem) filesystem = $script.filesystem;
-//		if (!mode.ending) mode.ending = filesystem.LINE_SEPARATOR;
-		if (!mode.ending) throw "Required: mode with 'ending' property";
+		//	TODO	should we retrieve properties from the rhino/host module, or is this sufficient?
+		if (!mode.ending) mode.ending = String(Packages.java.lang.System.getProperty("line.separator"));
 		if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
 		var line;
 		var result;
