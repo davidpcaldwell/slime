@@ -108,8 +108,10 @@ var Reader = function(peer) {
 		return String( buffer.toString() );
 	}
 
-	//	TODO	Figure out how to get rid of prologue, etc.?
 	this.asXml = function() {
+		//	TODO	Figure out how to get rid of prologue, etc.?
+		//	Below line copied from http client
+		//	string = string.replace(/\<\?xml.*\?\>/, "");
 		//	First, read the string into a variable so that we still have it in case of error (stream may not be re-readable).
 		var string = this.asString();
 		return XMLList( string );
