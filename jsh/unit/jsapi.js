@@ -71,7 +71,7 @@ $exports.tests = new function() {
 
 			this.namespace = ns;
 
-			var loadApiHtml = function(api,html,contextScript) {
+			var loadApiHtml = function(api,html,contextScript,unit) {
 				//	Interpret unit tests from document
 				if (!parameters.options.notest) {
 					(function() {
@@ -103,8 +103,10 @@ $exports.tests = new function() {
 								var tests = html.scripts("tests");
 								api.$unit.execute = function(scope) {
 									for (var i=0; i<tests.length; i++) {
+										var name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : null;
+										if (unit && (name != unit)) continue;
 										scope.scenario(new function() {
-											this.name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : "<script>";
+											this.name = (name) ? name : "<script>";
 											this.execute = function(scope) {
 												try {
 													eval(String(tests[i]));
@@ -129,9 +131,9 @@ $exports.tests = new function() {
 				}
 			}
 
-			this.loadTestsInto = function(scope,contextScript) {
+			this.loadTestsInto = function(scope,contextScript,unit) {
 				if (this.suite) {
-					loadApiHtml(scope,this.suite,contextScript);
+					loadApiHtml(scope,this.suite,contextScript,unit);
 				}
 			}
 
@@ -151,7 +153,7 @@ $exports.tests = new function() {
 		testGroups.push(moduleToItem(ns,modulepathname));
 	}
 
-	this.run = function(successWas) {
+	this.run = function(successWas,unit) {
 		var SCOPE = new function() {
 			var $newTemporaryDirectory = function() {
 				var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
@@ -226,7 +228,7 @@ $exports.tests = new function() {
 						this.name = suite.item.name + "-" + String(i) + contextId;
 					}
 					try {
-						suite.item.loadTestsInto(scope,contexts[i]);
+						suite.item.loadTestsInto(scope,contexts[i],unit);
 
 						scope.module = suite.item.loadWith(scope.$unit.context);
 

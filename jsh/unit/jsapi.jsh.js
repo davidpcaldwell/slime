@@ -21,7 +21,8 @@ var parameters = jsh.shell.getopts({
 		notest: false,
 		classpath: jsh.shell.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.shell.getopts.ARRAY( String ),
-		module: jsh.shell.getopts.ARRAY( String )
+		module: jsh.shell.getopts.ARRAY( String ),
+		unit: String
 	}
 });
 
@@ -109,7 +110,7 @@ if (!parameters.options.notest) {
 			jsh.shell.exit(1);
 		}
 	}
-	jsapi.tests.run(UNIT_TESTS_COMPLETED);
+	jsapi.tests.run(UNIT_TESTS_COMPLETED,parameters.options.unit);
 }
 
 if (parameters.options.doc) {
