@@ -256,4 +256,20 @@ this.jsh = new function() {
 		$platform: loader.$platform,
 		$api: loader.$api
 	}
+	
+	jsh.debug = new function() {
+		this.disableBreakOnExceptionsFor = function(f) {
+			return function() {
+				var enabled = $host.getDebugger().isBreakOnExceptions();
+				if (enabled) {
+					$host.getDebugger().setBreakOnExceptions(false);
+				}
+				var rv = f.apply(this,arguments);
+				if (enabled) {
+					$host.getDebugger().setBreakOnExceptions(true);
+				}
+				return rv;
+			}
+		}
+	}
 };
