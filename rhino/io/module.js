@@ -123,10 +123,10 @@ var Reader = function(peer) {
 		return String( buffer.toString() );
 	}
 
-	//	TODO	Figure out how to get rid of prologue, etc.?
 	this.asXml = function() {
 		//	First, read the string into a variable so that we still have it in case of error (stream may not be re-readable).
 		var string = this.asString();
+		string = string.replace(/\<\?xml.*\?\>/, "");
 		return XMLList( string );
 	}
 
@@ -147,9 +147,11 @@ var Writer = function(peer) {
 		if (typeof(string) == "xml") {
 			peer.write( string.toXMLString() );
 			peer.flush();
-		} else {
+		} else if (typeof(string) == "string") {
 			peer.write( string );
 			peer.flush();
+		} else {
+			throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);
 		}
 	}
 };
