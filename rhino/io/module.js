@@ -13,6 +13,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+var $java = ($context.$java) ? $context.$java : new Packages.inonit.script.runtime.io.Streams();
+
 var InputStream = function(peer) {
 	this.$getInputStream = function() {
 		return peer;
@@ -48,9 +50,7 @@ var InputStream = function(peer) {
 	$api.deprecate(this, "characters");
 	
 	this.cache = function() {
-		//	TODO	is this $context.$java?
-		var $streams = new Packages.inonit.script.runtime.io.Streams();
-		var $bytes = $streams.readBytes(peer);
+		var $bytes = $java.readBytes(peer);
 		return new Resource(new function() {
 			this.read = new function() {
 				this.binary = function() {
@@ -95,7 +95,7 @@ var Reader = function(peer) {
 		if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
 		var line;
 		var result;
-		while( (line = $context.$java.readLine(peer,mode.ending)) != null ) {
+		while( (line = $java.readLine(peer,mode.ending)) != null ) {
 			result = callback( String( line ) );
 			if (typeof(result) != "undefined") {
 				break;
@@ -116,7 +116,7 @@ var Reader = function(peer) {
 
 	this.asString = function() {
 		var buffer = new Packages.java.io.StringWriter();
-		$context.$java.copy(
+		$java.copy(
 			this.$getReader(),
 			buffer
 		);
@@ -202,7 +202,7 @@ var Streams = new function() {
 				if (to.java && to.java.adapt) return to.java.adapt();
 				if (to.$getOutputStream) return to.$getOutputStream();
 			})();
-			$context.$java.copy($r,$w)
+			$java.copy($r,$w)
 		}
 
 		this.Buffer = function() {
@@ -218,7 +218,7 @@ var Streams = new function() {
 
 	this.text = new function() {
 		this.copy = function(from,to) {
-			$context.$java.copy(
+			$java.copy(
 				from.$getReader(),
 				to.$getWriter()
 			);
