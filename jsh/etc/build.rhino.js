@@ -305,7 +305,7 @@ var jsapi_jsh = function() {
 	var modules = [];
 	modules.add = function(path,ns) {
 		var namespace = (ns) ? ns : "";
-		this.push(namespace+"@"+path+"="+JSH_JSAPI_BASE+"/"+path+":");
+		this.push(namespace+"@"+path+"="+JSH_JSAPI_BASE+"/"+path);
 	}
 	modules.add("jsh/loader","jsh.loader");
 	modules.add("loader");

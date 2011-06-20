@@ -22,7 +22,7 @@ var parameters = jsh.shell.getopts({
 		classpath: jsh.shell.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.shell.getopts.ARRAY( String ),
 		module: jsh.shell.getopts.ARRAY( String ),
-		unit: String
+		test: jsh.shell.getopts.ARRAY( String )
 	}
 });
 
@@ -35,18 +35,17 @@ if (!parameters.options.jsapi) {
 }
 
 var modules = parameters.options.module.map( function(string) {
-	var match = /^(.*)\@(.*)\=(.*)\:(.*)$/.exec(string);
+	var match = /^(.*)\@(.*)\=(.*)$/.exec(string);
 	if (match == null) throw "No match: " + string;
 	var rv = { path: match[2], location: jsh.file.Pathname(match[3]) };
 	if (match[1]) rv.namespace = match[1];
-	if (match[4]) rv.mode = match[4];
 	return rv;
 } );
 
 var MODULES = (function() {
 	var rv = {};
 	modules.forEach(function(module) {
-		rv[module.path] = module.location;
+		rv[module.path] = module;
 	} );
 	return rv;
 })();
@@ -100,17 +99,26 @@ var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 });
 
 if (!parameters.options.notest) {
-	modules.forEach( function(module) {
-		if (module.mode != "skip") {
-			jsapi.tests.add(module.namespace,module.location);
-		}
-	} );
+	if (parameters.options.test.length) {
+		parameters.options.test.forEach( function(test) {
+			var tokens = test.split(".");
+			if (tokens.length == 1) {
+				jsapi.tests.add(MODULES[test]);
+			} else {
+				jsapi.tests.add(MODULES[tokens[0]],tokens.slice(1).join("."));
+			}
+		});
+	} else {
+		modules.forEach( function(module) {
+			jsapi.tests.add(module);
+		});
+	}
 	var UNIT_TESTS_COMPLETED = function(success) {
 		if (!success) {
 			jsh.shell.exit(1);
 		}
 	}
-	jsapi.tests.run(UNIT_TESTS_COMPLETED,parameters.options.unit);
+	jsapi.tests.run(UNIT_TESTS_COMPLETED);
 }
 
 if (parameters.options.doc) {

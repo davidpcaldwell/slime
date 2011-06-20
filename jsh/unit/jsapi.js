@@ -59,8 +59,9 @@ $exports.tests = new function() {
 		}
 	}
 
-	var moduleToItem = function(ns,modulepath) {
+	var moduleToItem = function(moduleDescriptor,unit) {
 		return new function() {
+			var modulepath = moduleDescriptor.location;
 			this.name = modulepath.toString();
 
 			if (!modulepath.directory && !modulepath.file) throw "Not found: " + modulepath;
@@ -69,9 +70,9 @@ $exports.tests = new function() {
 				this.suite = new ApiHtmlTests(html.read(XML));
 			}
 
-			this.namespace = ns;
+			this.namespace = moduleDescriptor.namespace;
 
-			var loadApiHtml = function(api,html,contextScript,unit) {
+			var loadApiHtml = function(api,html,contextScript) {
 				//	Interpret unit tests from document
 				if (!parameters.options.notest) {
 					(function() {
@@ -131,9 +132,9 @@ $exports.tests = new function() {
 				}
 			}
 
-			this.loadTestsInto = function(scope,contextScript,unit) {
+			this.loadTestsInto = function(scope,contextScript) {
 				if (this.suite) {
-					loadApiHtml(scope,this.suite,contextScript,unit);
+					loadApiHtml(scope,this.suite,contextScript);
 				}
 			}
 
@@ -149,11 +150,11 @@ $exports.tests = new function() {
 		}
 	}
 
-	this.add = function(ns,modulepathname) {
-		testGroups.push(moduleToItem(ns,modulepathname));
+	this.add = function(module,unit) {
+		testGroups.push(moduleToItem(module,unit));
 	}
 
-	this.run = function(successWas,unit) {
+	this.run = function(successWas) {
 		var SCOPE = new function() {
 			var $newTemporaryDirectory = function() {
 				var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
@@ -176,9 +177,13 @@ $exports.tests = new function() {
 						return arguments.callee.call(this,arguments[1],arguments[0]);
 					}
 					var MODULES = $context.MODULES;
-					if (MODULES[name+"/"]) name += "/";
+					if (MODULES[name+"/"]) {
+						//	Forgot trailing slash; fix; this ability may later be removed
+						debugger;
+						name += "/";
+					}
 					if (!MODULES[name]) return null;
-					return jsh.loader.module(MODULES[name],context);
+					return jsh.loader.module(MODULES[name].location,context);
 				},
 				//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
 				environment: $context.ENVIRONMENT,
@@ -228,7 +233,7 @@ $exports.tests = new function() {
 						this.name = suite.item.name + "-" + String(i) + contextId;
 					}
 					try {
-						suite.item.loadTestsInto(scope,contexts[i],unit);
+						suite.item.loadTestsInto(scope,contexts[i]);
 
 						scope.module = suite.item.loadWith(scope.$unit.context);
 
