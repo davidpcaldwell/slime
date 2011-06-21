@@ -101,11 +101,18 @@ var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 if (!parameters.options.notest) {
 	if (parameters.options.test.length) {
 		parameters.options.test.forEach( function(test) {
+			var getModule = function(path) {
+				if (MODULES[path+"/"]) return MODULES[path+"/"];
+				if (!MODULES[path]) throw new Error("Module not found: " + path + " (available: " + Object.keys(MODULES) + ")");
+				return MODULES[path];
+			}
+			
+			
 			var tokens = test.split(".");
 			if (tokens.length == 1) {
-				jsapi.tests.add(MODULES[test]);
+				jsapi.tests.add(getModule(test));
 			} else {
-				jsapi.tests.add(MODULES[tokens[0]],tokens.slice(1).join("."));
+				jsapi.tests.add(getModule(tokens[0]),tokens.slice(1).join("."));
 			}
 		});
 	} else {
