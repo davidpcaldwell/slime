@@ -104,9 +104,6 @@ $exports.Scenario = function(properties) {
 					success: null,
 					messages: new function() {
 						this.failure = "Exception thrown: " + e;
-						if (e.rhinoException) {
-							e.rhinoException.printStackTrace();
-						}
 					}
 				});
 			}
