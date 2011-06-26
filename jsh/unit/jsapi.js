@@ -43,6 +43,10 @@ $exports.tests = new function() {
 				scripts.push({ type: type.substring(prefix.length), element: item });
 			}
 		}
+		
+		this.getUnit = function(id) {
+			return new ApiHtmlTests(html..*.(@jsapi::id == id));
+		}
 
 		this.scripts = function(type) {
 			if (type) {
@@ -91,21 +95,22 @@ $exports.tests = new function() {
 						api.$unit.context = eval(String(contextScript));
 
 						if (api.$unit.context) {
+							var target = (unit) ? html.getUnit(unit) : html;
+							
 							api.$unit.create = function() {
 								var module = api.module;
 
-								var initializes = html.scripts("initialize");
+								var initializes = target.scripts("initialize");
 								api.$unit.initialize = function() {
 									for (var i=0; i<initializes.length; i++) {
 										eval(String(initializes[i]));
 									}
 								}
 
-								var tests = html.scripts("tests");
+								var tests = target.scripts("tests");
 								api.$unit.execute = function(scope) {
 									for (var i=0; i<tests.length; i++) {
 										var name = (tests[i].@jsapi::id.length()) ? String(tests[i].@jsapi::id) : null;
-										if (unit && (name != unit)) continue;
 										scope.scenario(new function() {
 											this.name = (name) ? name : "<script>";
 											this.execute = function(scope) {
