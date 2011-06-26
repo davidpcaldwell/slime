@@ -95,7 +95,7 @@ $exports.tests = new function() {
 								var module = api.module;
 
 								var initializes = html.scripts("initialize");
-								api.$unit.initialize = function(scope) {
+								api.$unit.initialize = function() {
 									for (var i=0; i<initializes.length; i++) {
 										eval(String(initializes[i]));
 									}
