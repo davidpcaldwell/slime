@@ -69,22 +69,22 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#tests" jsapi:id="isJavaObject">
 					var isJavaObject = module.isJavaObject;
-					scope.test(isJavaObject(Packages.java.lang.Runtime.getRuntime()));
-					scope.test(isJavaObject(new Packages.java.lang.Object()));
-					scope.test(isJavaObject(new Packages.java.lang.String("hello world")));
-					scope.test(isJavaObject(new Packages.java.lang.Integer(4)));
-					scope.test(isJavaObject(new Packages.java.lang.Boolean(true)));
-					scope.test(isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK));
-					scope.test(!isJavaObject("hello world"));
-					scope.test(!isJavaObject(2));
-					scope.test(!isJavaObject(true));
-					scope.test(!isJavaObject(2.0));
+					test(isJavaObject(Packages.java.lang.Runtime.getRuntime()));
+					test(isJavaObject(new Packages.java.lang.Object()));
+					test(isJavaObject(new Packages.java.lang.String("hello world")));
+					test(isJavaObject(new Packages.java.lang.Integer(4)));
+					test(isJavaObject(new Packages.java.lang.Boolean(true)));
+					test(isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK));
+					test(!isJavaObject("hello world"));
+					test(!isJavaObject(2));
+					test(!isJavaObject(true));
+					test(!isJavaObject(2.0));
 					var x = {};
-					scope.test(!isJavaObject(x.myUndefinedMember));
-					scope.test(!isJavaObject(null));
-					scope.test(!isJavaObject({}));
+					test(!isJavaObject(x.myUndefinedMember));
+					test(!isJavaObject(null));
+					test(!isJavaObject({}));
 					var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.Object, 4 );
-					scope.test(isJavaObject(javaArray));
+					test(isJavaObject(javaArray));
 				</script>
 			</li>
 			<li class="function">
@@ -115,9 +115,9 @@ END LICENSE
 					var lengths = module.toJsArray( javaArray, stringLength );
 					var scriptStrings = module.toJsArray( javaArray, function(s) { return String(s); } );
 
-					scope.test( words[1] == "World is a word." );
-					scope.test( lengths[1] == 5 );
-					scope.test( typeof(scriptStrings[0]) == "string" && scriptStrings[0] == "Hello" );
+					test( words[1] == "World is a word." );
+					test( lengths[1] == 5 );
+					test( typeof(scriptStrings[0]) == "string" && scriptStrings[0] == "Hello" );
 				]]></script>
 				<!--	TODO	-->
 			</li>
@@ -136,7 +136,7 @@ END LICENSE
 					var error = e;
 					debugger;
 				}
-				scope.test(count == 3);
+				test(count == 3);
 			]]></script>
 			<li class="constructor">
 				<div class="name">Thread</div>
@@ -255,8 +255,8 @@ END LICENSE
 
 								//	TODO	actually test synchronization
 
-								scope.test(s(2) == 4);
-								scope.test(s(4) == 8);
+								test(s(2) == 4);
+								test(s(4) == 8);
 
 								var debug = function(s) {
 	//								Packages.java.lang.System.err.println(s);
@@ -299,7 +299,7 @@ END LICENSE
 									threads.push(runInThread(outer, new function() {
 										this.returned = function(rv) {
 											debug("outer = " + outer.count);
-											scope.test(getCount.call(lock) == 0);
+											test(getCount.call(lock) == 0);
 										}
 
 										this.threw = function(e) {
@@ -313,7 +313,7 @@ END LICENSE
 									thread.join();
 								});
 
-								scope.test(finished == 10);
+								test(finished == 10);
 							]]></script>
 						</li>
 					</ul>

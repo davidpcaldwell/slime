@@ -19,8 +19,8 @@ END LICENSE
 	<title>Rhino runtime tests</title>
 </head>
 <body>
-	<script type="application/x.jsapi#scope">
-		var Streams = Packages.inonit.script.runtime.io.Streams;
+	<script type="application/x.jsapi#initialize">
+		scope.Streams = Packages.inonit.script.runtime.io.Streams;
 	</script>
 	<script type="application/x.jsapi#tests" jsapi:id="inonit.script.runtime.io.Streams">
 		new function() {
@@ -37,10 +37,13 @@ END LICENSE
 			var from = [];
 			var b;
 			while( (b = read.read()) != -1) {
+				if (b > 127) {
+					b -= 256;
+				}
 				from.push(b);
 			}
 
-			scope.test( function() { return data.join(",") == from.join(","); } );
+			test( function() { return data.join(",") == from.join(","); } );
 		}
 
 		new function() {
@@ -59,12 +62,12 @@ END LICENSE
 			}
 
 			var lines = split(s1,"\n");
-			scope.test( function() { return lines[0] == "fff"; } );
-			scope.test( function() { return lines[1] == "ggg"; } );
-			scope.test( function() { return lines[2] == "hhh"; } );
+			test( function() { return lines[0] == "fff"; } );
+			test( function() { return lines[1] == "ggg"; } );
+			test( function() { return lines[2] == "hhh"; } );
 
 			var lines2 = split(s1, "\r\n");
-			scope.test( function() { return lines2[0] == s1; } );
+			test( function() { return lines2[0] == s1; } );
 		}
 	</script>
 </body>

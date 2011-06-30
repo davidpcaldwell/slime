@@ -36,7 +36,6 @@ var runScope = new function() {
 
 var runThis = {};
 
-debugger;
 $loader.run("run.js",runScope,runThis);
 
 $exports.a = file.a;

@@ -33,19 +33,35 @@ var getApiHtml = function(moduleMainPathname) {
 $exports.tests = new function() {
 	var testGroups = [];
 
-	var ApiHtmlTests = function(html) {
+	var ApiHtmlTests = function(descriptor) {
+		var Constructor = arguments.callee;
+		
+		var html = (function() {
+			var file = getApiHtml(descriptor.location);
+			return file.read(XML);
+		})();
+		if (html.length() > 1) {
+			html = (function(list) {
+				for (var i=0; i<list.length(); i++) {
+					if (list[i].localName()) {
+						return list[i];
+					}
+				}
+			})(html);
+		}
+		var SCRIPT_TYPE_PREFIX = "application/x.jsapi#";
+		
 		var scripts = [];
 
 		for each (var item in html..script) {
 			var type = String(item.@type);
-			var prefix = "application/x.jsapi#";
-			if (type.substring(0,prefix.length) == prefix) {
-				scripts.push({ type: type.substring(prefix.length), element: item });
+			if (type.substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX) {
+				scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: item });
 			}
 		}
 		
 		this.getUnit = function(id) {
-			return new ApiHtmlTests(html..*.(@jsapi::id == id));
+			return new Constructor(html..*.(@jsapi::id == id));
 		}
 
 		this.scripts = function(type) {
@@ -61,6 +77,77 @@ $exports.tests = new function() {
 				return scripts;
 			}
 		}
+		
+		var getScenario = function(scope,element) {
+			var getScripts = function(type) {
+				return element.script.(@type == SCRIPT_TYPE_PREFIX + type);
+			}
+			
+			var p = {};
+			if (element == html) {
+				p.name = descriptor.path;
+			} else if (element.@jsapi::id.length()) {
+				p.name = String(element.@jsapi::id);
+			} else {
+				if (element.div.(@["class"] == "name").length()) {
+					p.name = String(element.div.(@["class"] == "name"));
+				} else {
+					p.name = "<" + element.localName() + ">";
+				}
+			}
+			
+			p.initialize = function() {
+				var initializes = getScripts("initialize");
+				for (var i=0; i<initializes.length(); i++) {
+					with(scope) {
+						eval(String(initializes[i]));
+					}
+				}
+			};
+			
+			p.execute = function(unit) {
+				var children = element.elements();
+				for (var i=0; i<children.length(); i++) {
+					if (children[i].localName() == "script" && String(children[i].@type) == (SCRIPT_TYPE_PREFIX + "tests")) {
+						with(scope) {
+							with(unit) {
+								eval(String(children[i]));
+							}
+						}
+					} else if (children[i].localName() == "script") {
+						//	do nothing
+					} else {
+						var areTests = function(script) {
+							return Boolean(script.(@type == (SCRIPT_TYPE_PREFIX + "initialize")).length())
+								|| Boolean(script.(@type == (SCRIPT_TYPE_PREFIX + "tests")).length())
+								|| Boolean(script.(@type == (SCRIPT_TYPE_PREFIX + "destroy")).length())
+							;
+						}
+						
+						if (areTests(children[i].script) || areTests(children[i]..script)) {
+							unit.scenario(getScenario(scope,children[i]));
+						}
+					}
+				}
+			};
+			
+			p.destroy = function() {
+				var destroys = getScripts("destroy");
+				for (var i=0; i<destroys.length(); i++) {
+					with(scope) {
+						eval(String(destroys[i]));
+					}
+				}
+			};
+			
+			return p;
+		}
+		
+		this.getScenario = function(scope,unit) {
+			var element = (unit) ? html..*.(@jsapi::id == unit) : html;
+			if (!element) throw new Error("Unit test not found: " + unit);
+			return getScenario(scope,element);
+		}
 	}
 
 	var moduleToItem = function(moduleDescriptor,unit) {
@@ -68,10 +155,11 @@ $exports.tests = new function() {
 			var modulepath = moduleDescriptor.location;
 			this.name = modulepath.toString();
 
-			if (!modulepath.directory && !modulepath.file) throw "Not found: " + modulepath;
-			var html = getApiHtml(modulepath);
-			if (html) {
-				this.suite = new ApiHtmlTests(html.read(XML));
+			if (!moduleDescriptor.location.directory && !moduleDescriptor.location.file) {
+				throw new Error("Not found: " + moduleDescriptor.location);
+			}
+			if (getApiHtml(moduleDescriptor.location)) {
+				this.suite = new ApiHtmlTests(moduleDescriptor);
 			}
 
 			this.namespace = moduleDescriptor.namespace;
@@ -117,7 +205,9 @@ $exports.tests = new function() {
 												try {
 													eval(String(tests[i]));
 												} catch (e) {
-													throw "Error evaluating: " + String(tests[i]) + ": " + e;
+													var error = new EvalError("Error evaluating: " + String(tests[i]) + ": " + e);
+													error.error = e;
+													throw error;
 												}
 											}
 										});
@@ -141,6 +231,10 @@ $exports.tests = new function() {
 				if (this.suite) {
 					loadApiHtml(scope,this.suite,contextScript);
 				}
+			}
+			
+			this.getScenario = function(scope) {
+				return this.suite.getScenario(scope,unit);
 			}
 
 			this.loadWith = function(context) {
@@ -210,13 +304,13 @@ $exports.tests = new function() {
 			};
 		};
 
-		var $scenario = new $context.Scenario();
+		var $scenario = {};
 		$scenario.name = "Unit tests";
-		$scenario.suites = [];
+		var suites = [];
 		$scenario.execute = function(topscope) {
 			jsh.shell.echo("Environments present: " + Object.keys($context.ENVIRONMENT));
 			//	var item is expected to be $scope.$unit
-			this.suites.forEach( function(suite) {
+			suites.forEach( function(suite) {
 				var scope = {
 					$java: SCOPE.$java,
 					$jsapi: SCOPE.$jsapi,
@@ -228,21 +322,42 @@ $exports.tests = new function() {
 					$platform: jsh.$jsapi.$platform,
 					$api: jsh.$jsapi.$api
 				};
-				var contexts = suite.item.suite.scripts("context");
-				if (contexts.length == 0) {
-					contexts = [<script>{"{}"}</script>];
+				
+				var contextScripts = suite.item.suite.scripts("context");
+				if (contextScripts.length == 0) {
+					contextScripts = [<script>{"{}"}</script>];
 				}
+				
+				var contexts = [];
+				for (var i=0; i<contextScripts.length; i++) {
+					var id = (contextScripts[i].@jsapi::id.length() > 0) ? String(contextScripts[i].@jsapi::id) : "";
+					with(scope) {
+						var value = eval("(" + String(contextScripts[i]) + ")");
+					}
+					if (value.length) {
+						value.forEach( function(context,index) {
+							context.id = id + "[" + index + "]";
+						});
+						contexts = contexts.concat(value);
+					} else {
+						value.id = id;
+						contexts.push(value);
+					}
+				}
+				
 				for (var i=0; i<contexts.length; i++) {
 					scope.$unit = new function() {
-						var contextId = (contexts[i].@jsapi::id.length() > 0) ? " (" + contexts[i].@jsapi::id + ")" : "";
+						var contextId = contexts[i].id;
 						this.name = suite.item.name + "-" + String(i) + contextId;
 					}
 					try {
-						suite.item.loadTestsInto(scope,contexts[i]);
+						//suite.item.loadTestsInto(scope,contexts[i]);
 
-						scope.module = suite.item.loadWith(scope.$unit.context);
+//						scope.module = suite.item.loadWith(scope.$unit.context);
+						scope.module = suite.item.loadWith(contexts[i]);
+						scope.context = contexts[i];
 
-						scope.$unit.create();
+//						scope.$unit.create();
 					} catch (e) {
 						//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
 						scope.$unit.initialize = function() {
@@ -251,17 +366,19 @@ $exports.tests = new function() {
 							throw e;
 						}
 					}
-					topscope.scenario( scope.$unit )
+					//topscope.scenario( scope.$unit )
+					topscope.scenario( suite.item.getScenario(scope) );
 				}
 			} );
 		}
 
 		testGroups.forEach( function(item) {
 			jsh.shell.echo("Processing: " + item.name + ((item.namespace) ? (" " + item.namespace) : ""));
-			$scenario.suites.push({ item: item });
+			suites.push({ item: item });
 		} );
 
-		successWas($scenario.run( $context.console ));
+		var SCENARIO = new $context.Scenario($scenario);
+		successWas(SCENARIO.run( $context.console ));
 	}
 }
 

@@ -19,39 +19,39 @@ END LICENSE
 	<title></title>
 </head>
 <body>
-	<script type="application/x.jsapi#scope">
-		var jsh;
-		var debug = function() {
-		}
-
-		var evalValue = function(code) {
-			try {
-				var x = eval(code);
-				return x;
-			} catch (e) {
-				return function(){}();
-			}
-		}
-
-		if (typeof(evalValue("jsh")) != "undefined") {
-			debug = jsh.shell.echo;
-		} else if (typeof(evalValue("window")) != "undefined") {
-			debug = alert;
-		}
-	</script>
 	<script type="application/x.jsapi#context">
-		new function() {
-			this.debug = debug;
-			this.d = 1970;
-		}
+		(function() {
+			var jsh;
+			var debug = function() {
+			}
+
+			var evalValue = $jsapi.disableBreakOnExceptions(function(code) {
+				try {
+					var x = eval(code);
+					return x;
+				} catch (e) {
+					return function(){}();
+				}
+			});
+
+			if (typeof(evalValue("jsh")) != "undefined") {
+				debug = jsh.shell.echo;
+			} else if (typeof(evalValue("window")) != "undefined") {
+				debug = alert;
+			}
+			return new function() {
+				this.debug = debug;
+				this.d = 1970;
+			}
+		})()
 	</script>
 	<script type="application/x.jsapi#tests">
-		scope.test(module.a == 3);
-		scope.test(module.b == 4);
-		scope.test(module.c == 5);
-		scope.test(module.d == 1970);
-		scope.test(module.e == 4);
-		scope.test(module.f == 6);
+		test(module.a == 3);
+		test(module.b == 4);
+		test(module.c == 5);
+		test(module.d == 1970);
+		test(module.e == 4);
+		test(module.f == 6);
 	</script>
 </body>
 </html>

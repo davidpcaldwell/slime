@@ -29,9 +29,9 @@ END LICENSE
 			}
 		})();
 		if ($java) {
-			scope.test(module.data == "From Java");
+			test(module.data == "From Java");
 		} else {
-			scope.test(module.data == "No Java");
+			test(module.data == "No Java");
 		}
 	</script>
 </body>

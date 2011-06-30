@@ -69,50 +69,13 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#scope"><![CDATA[
-			var $Context = function(p) {
-				this.api = arguments.callee.api;
-				this.$pwd = jsh.shell.properties.user.dir;
-				this.addFinalizer = jsh.loader.addFinalizer;
-
-				if (p && p.cygwin) {
-					//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
-					var System = Packages.java.lang.System;
-					this.cygwin = {
-						root: String( System.getProperty("cygwin.root") )
-					};
-					if (System.getProperty("cygwin.paths")) {
-						//	Using the paths helper currently does not seem to work in the embedded situation when running inside
-						//	the SDK server
-						//	TODO	check this
-						this.cygwin.paths = String( System.getProperty("cygwin.paths") );
-					}
-				}
-			}
-			$Context.api = new function() {
-				this.js = $jsapi.module("js/object");
-				var java = $jsapi.module("rhino/host", {
-					classLoader: $host.getClassLoader()
-				});
-				this.java = java;
-				this.io = $jsapi.module("rhino/io", {
-					$java: new Packages.inonit.script.runtime.io.Streams()
-					,api: {
-						java: java
-					}
-				});
-			}
-
-		]]></script>
-		<script type="application/x.jsapi#scope"><![CDATA[
-			var filesystem;
-
-			var helpers = new function() {
+		<script type="application/x.jsapi#initialize"><![CDATA[
+			scope.helpers = new function() {
 				var module;
 
 				this.initialize = function() {
 					module = arguments[0];
-					filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				}
 
 				//	TODO	can this helper be replaced by $jsapi.newTemporaryDirectory() ?
@@ -123,7 +86,7 @@ END LICENSE
 
 				this.createFile = function(base,name,length) {
 					var pathname = base.getRelativePath(name);
-					var out = pathname.write($Context.api.io.Streams.binary);
+					var out = pathname.write(context.$Context.api.io.Streams.binary);
 					if (length) {
 						for (var i=0; i<length; i++) {
 							out.java.adapt().write(0);
@@ -138,23 +101,55 @@ END LICENSE
 				}
 			}
 
-			var newTemporaryDirectory = helpers.newTemporaryDirectory;
-			var createFile = helpers.createFile;
-			var createDirectory = helpers.createDirectory;
+			scope.newTemporaryDirectory = scope.helpers.newTemporaryDirectory;
+			scope.createFile = scope.helpers.createFile;
+			scope.createDirectory = scope.helpers.createDirectory;
 		]]></script>
 		<!--	TODO	add round of tests using cygwin.root but not cygwin.paths?	-->
-		<script type="application/x.jsapi#context">
-			new $Context();
-		</script>
-		<script type="application/x.jsapi#context">
+		<script type="application/x.jsapi#context"><![CDATA[
 			(function() {
-				if (Packages.java.lang.System.getProperty("cygwin.root")) {
-					return new $Context({ cygwin: true });
-				} else {
-					return null;
+				var $Context = function(p) {
+					this.api = arguments.callee.api;
+					this.$pwd = jsh.shell.properties.user.dir;
+					this.addFinalizer = jsh.loader.addFinalizer;
+
+					if (p && p.cygwin) {
+						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+						var System = Packages.java.lang.System;
+						this.cygwin = {
+							root: String( System.getProperty("cygwin.root") )
+						};
+						if (System.getProperty("cygwin.paths")) {
+							//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+							//	the SDK server
+							//	TODO	check this
+							this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+						}
+					}
+					
+					this.$Context = arguments.callee;
 				}
-			})();
-		</script>
+				$Context.api = new function() {
+					this.js = $jsapi.module("js/object/");
+					var java = $jsapi.module("rhino/host/", {
+						classLoader: $host.getClassLoader()
+					});
+					this.java = java;
+					this.io = $jsapi.module("rhino/io/", {
+						$java: new Packages.inonit.script.runtime.io.Streams()
+						,api: {
+							java: java
+						}
+					});
+				}
+
+				var rv = [ new $Context() ];
+				if (Packages.java.lang.System.getProperty("cygwin.root")) {
+					rv.push(new $Context({ cygwin: true }));
+				}
+				return rv;
+			})()
+		]]></script>
 	</div>
 	<div>
 		<h1>Exports</h1>
@@ -309,34 +304,34 @@ END LICENSE
 
 					createFile(dir,"target",1112);
 
-					scope.test(
+					test(
 						filea.pathname.toString().substring(filea.pathname.toString().length-1)
 						!= filesystem.$unit.getPathnameSeparator()
 					);
-					scope.test(
+					test(
 						filec.pathname.toString().substring(filec.pathname.toString().length-1)
 						== filesystem.$unit.getPathnameSeparator()
 					);
 
-					scope.test(filea.pathname.basename == "a");
-					scope.test(filec.pathname.basename == "c");
-					scope.test(filed.pathname.basename == "d");
-					scope.test(filec.getRelativePath("..").directory.toString() == dir.toString());
+					test(filea.pathname.basename == "a");
+					test(filec.pathname.basename == "c");
+					test(filed.pathname.basename == "d");
+					test(filec.getRelativePath("..").directory.toString() == dir.toString());
 
-					scope.test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
-					scope.test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
-					scope.test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
-					scope.test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
-					scope.test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
+					test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
+					test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
+					test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
+					test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
+					test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
 
-					scope.test( !filea.directory );
-					scope.test( filec.directory );
+					test( !filea.directory );
+					test( filec.directory );
 
-					scope.test( function() {
+					test( function() {
 						if (filed.parent == null) return false;
 						return filed.parent.pathname.toString() == filec.pathname.toString();
 					} );
-					scope.test( function() {
+					test( function() {
 							if (filec.parent == null) return false;
 							return filec.parent.pathname.toString() == dir.pathname.toString();
 					} );
@@ -776,38 +771,38 @@ END LICENSE
 								var ENTRY = dir.list.ENTRY;
 								var RESOURCE = dir.list.RESOURCE;
 
-								scope.test(dir.list().length == 5);
+								test(dir.list().length == 5);
 
-								scope.test( dir.list({ filter: /^.$/ }).length == 4 );
-								scope.test( dir.list({ filter: /../ }).length == 1 );
-								scope.test( dir.list({ filter: /a/ }).length == 2 );
-								scope.test( dir.list({ filter: /ar/ }).length == 1 );
-								scope.test( dir.list({ filter: /foobar/ }).length == 0 );
+								test( dir.list({ filter: /^.$/ }).length == 4 );
+								test( dir.list({ filter: /../ }).length == 1 );
+								test( dir.list({ filter: /a/ }).length == 2 );
+								test( dir.list({ filter: /ar/ }).length == 1 );
+								test( dir.list({ filter: /foobar/ }).length == 0 );
 
-								scope.test( dir.list({ recursive: true }).length == 7 );
-								scope.test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
-								scope.test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
+								test( dir.list({ recursive: true }).length == 7 );
+								test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
+								test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
 
 								var e_entries = filee.list({ type: ENTRY });
-								scope.test(e_entries.length == 1);
-								scope.test(e_entries[0].node.pathname.basename == "f");
-								scope.test(e_entries[0].path == "f");
+								test(e_entries.length == 1);
+								test(e_entries[0].node.pathname.basename == "f");
+								test(e_entries[0].path == "f");
 
 								var entries = dir.list({ type: ENTRY, recursive: true });
 								var entryf = entries.filter( function(entry) {
 									return entry.path == ["e","f"].join(filesystem.$unit.getPathnameSeparator());
 								} );
-								scope.test(entryf.length == 1);
+								test(entryf.length == 1);
 								entryf = entryf[0];
-								scope.test(entryf.node.pathname.basename == "f");
+								test(entryf.node.pathname.basename == "f");
 
 								var resources = dir.list({ type: RESOURCE, recursive: true });
 								var resourcef = resources.filter( function(resource) {
 									return resource.path == "e/f";
 								} );
-								scope.test(resourcef.length == 1);
+								test(resourcef.length == 1);
 								resourcef = resourcef[0];
-								scope.test(resourcef.resource.read(String) == "");
+								test(resourcef.resource.read(String) == "");
 							]]></script>
 						</li>
 					</ul>
@@ -857,7 +852,7 @@ END LICENSE
 					</ul>
 				</div>
 				<script type="application/x.jsapi#tests">
-					scope.scenario( new function() {
+					scenario( new function() {
 						var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 						var dir = filesystem.$unit.temporary(null, { directory: true });
 						var Searchpath = module.Searchpath;
@@ -931,29 +926,29 @@ END LICENSE
 						</div>
 						<script type="application/x.jsapi#tests">
 							var $out = new Packages.java.io.ByteArrayOutputStream();
-							var out = $Context.api.io.java.adapt($out);
-							scope.test(out != null);
+							var out = context.$Context.api.io.java.adapt($out);
+							test(out != null);
 						</script>
 					</li>
 				</ul>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#tests"><![CDATA[
-			var context = new function() {
+			var _context = new function() {
 				this.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				this.dir = newTemporaryDirectory(this.filesystem);
-				this.module = { Streams: $Context.api.io.Streams };
+				this.module = { Streams: context.$Context.api.io.Streams };
 			}
-			if (!context.dir) throw "Missing context.dir";
-			var filesystem = context.filesystem;
-			scope.scenario( new function() {
+			if (!_context.dir) throw "Missing context.dir";
+			var filesystem = _context.filesystem;
+			scenario( new function() {
 				this.name = "File tests";
 
 				this.initialize = function() {
 				}
 
 				this.execute = function(scope) {
-					var dir = context.dir.getRelativePath("filetests").createDirectory();
+					var dir = _context.dir.getRelativePath("filetests").createDirectory();
 
 					var filea = createFile(dir,"a");
 					var fileb = createFile(dir,"b");
@@ -1032,7 +1027,7 @@ END LICENSE
 								}
 							}
 
-							var Streams = context.module.Streams;
+							var Streams = _context.module.Streams;
 							scope.test( checkError( function() { a.write(Streams.binary).close(); } ) );
 							scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
 							scope.test( checkError( function() { b.write(Streams.binary, { recursive: true}).close(); } ) );
@@ -1062,8 +1057,8 @@ END LICENSE
 		<script type="application/x.jsapi#tests"><![CDATA[
 			var SCOPE = this;
 
-			var createTests = function(parent,filesystem) {
-				var scenario = new function() {
+			var createTests = function(filesystem) {
+				var _scenario = new function() {
 					var tmpdir;
 					var UNIX;
 					var hostdir;
@@ -1206,7 +1201,7 @@ END LICENSE
 									scope.test( linkdir.getRelativePath("to_target").file != null );
 
 									scope.test( function() {
-											var reader = filelink.read($Context.api.io.Streams.binary);
+											var reader = filelink.read(context.$Context.api.io.Streams.binary);
 											var instream = reader.java.adapt();
 											var len = 0;
 											while( instream.read() != -1 ) {
@@ -1262,13 +1257,13 @@ END LICENSE
 						}
 					}
 				}
-				parent.scenario(scenario);
+				scenario(_scenario);
 			}
 
 			if (module.filesystems.cygwin) {
-				createTests(scope,module.filesystems.cygwin);
+				createTests(module.filesystems.cygwin);
 			} else {
-				createTests(scope,module.filesystems.os);
+				createTests(module.filesystems.os);
 			}
 		]]></script>
 		<script type="application/x.jsapi#scope">
@@ -1288,13 +1283,13 @@ END LICENSE
 		</script>
 		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
 			var fileA = streamdir.getFile("a");
-			var text = fileA.read($Context.api.io.Streams.text);
+			var text = fileA.read(context.$Context.api.io.Streams.text);
 			var lines = [];
 			text.readLines( function(line) {
 				lines.push(line);
 			}, { ending: "\n" } );
-			scope.test( lines.length == 3 );
-			scope.test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
+			test( lines.length == 3 );
+			test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
 		</script>
 	</div>
 </body>

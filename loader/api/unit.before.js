@@ -14,19 +14,15 @@
 //	END LICENSE
 
 $exports.Scenario = function(properties) {
-	var Scenario = arguments.callee;
-	if (properties) {
-		for (var x in properties) {
-			this[x] = properties[x];
-		}
+	if (!properties) {
+		throw new TypeError("'properties' argument must be present.");
 	}
-
-	var Self = arguments.callee;
+	var Scenario = arguments.callee;
 	var scenario = this;
 	
+	this.name = properties.name;
+	
 	this.run = function(console) {
-		var debug = (console.debug) ? console.debug : function(message) {};
-
 		var Scope = function() {
 			var self = this;
 			if (Object.prototype.__defineGetter__) {
@@ -77,6 +73,10 @@ $exports.Scenario = function(properties) {
 				}
 				if (console.test) console.test(assertion);
 			}
+			
+			this.start = function(console) {
+				if (console.start) console.start(scenario);
+			}
 
 			this.end = function(console) {
 				if (console.end) console.end(scenario, this.success);
@@ -90,16 +90,19 @@ $exports.Scenario = function(properties) {
 		//	to the callee as __parent__.test but not as test
 		//	this.__parent__ = scope;
 		//	this.test = scope.test;
-		if (console.start) console.start(this);
-		if (Self.HALT_ON_EXCEPTION) {
-			if (this.initialize) this.initialize();
-			this.execute(scope);
+		scope.start(console);
+		
+		var initializeAndExecute = function(scope) {
+			if (properties.initialize) properties.initialize.call(this);
+			properties.execute.call(this,scope);			
+		}
+		
+		if (Scenario.HALT_ON_EXCEPTION) {
+			initializeAndExecute.call(this,scope);
 		} else {
 			try {
-				if (this.initialize) this.initialize();
-				this.execute(scope);
+				initializeAndExecute.call(this,scope);
 			} catch (e) {
-				debugger;
 				scope.test({
 					success: null,
 					messages: new function() {
@@ -108,8 +111,8 @@ $exports.Scenario = function(properties) {
 				});
 			}
 		}
-		if (this.destroy) {
-			this.destroy();
+		if (properties.destroy) {
+			properties.destroy.call(this);
 		}
 		scope.end(console);
 		return scope.success;

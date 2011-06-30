@@ -55,8 +55,8 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
-		<script type="application/x.jsapi#scope">
-			var Functions = function() {
+		<script type="application/x.jsapi#initialize">
+			scope.Functions = function() {
 				var calculator = function() {
 					arguments.callee.invocations++;
 					return 2*2;
@@ -83,17 +83,17 @@ END LICENSE
 					If the underlying platform permits the creation of read-only properties, the value cannot be changed.
 				</div>
 				<script type="application/x.jsapi#tests">
-					scope.scenario(new function() {
+					scenario(new function() {
 						this.name = "undefined";
 
-						this.execute = function(scope) {
-							scope.test( typeof(module.undefined) == "undefined" );
+						this.execute = function(s) {
+							s.test( typeof(module.undefined) == "undefined" );
 							var a = {};
-							scope.test( a.a == module.undefined );
-							scope.test( a.a === module.undefined );
+							s.test( a.a == module.undefined );
+							s.test( a.a === module.undefined );
 							if ($platform.Object.setReadOnly) {
 								module.undefined = true;
-								scope.test( typeof(module.undefined) == "undefined" );
+								s.test( typeof(module.undefined) == "undefined" );
 							}
 						}
 					} );
@@ -114,15 +114,15 @@ END LICENSE
 					undefined or there are no arguments.
 				</div>
 				<script type="application/x.jsapi#tests">
-					scope.scenario( new function() {
+					scenario( new function() {
 						this.name = "defined";
 
-						this.execute = function(scope) {
+						this.execute = function(s) {
 							var a = { b: "yes", d: "no", e: null };
-							scope.test( typeof(module.defined()) == "undefined" );
-							scope.test( module.defined(a.c, a.b) == "yes" );
-							scope.test( module.defined(a.b, a.e, a.d) == "yes" );
-							scope.test( module.defined(a.e, a.d) == null );
+							s.test( typeof(module.defined()) == "undefined" );
+							s.test( module.defined(a.c, a.b) == "yes" );
+							s.test( module.defined(a.b, a.e, a.d) == "yes" );
+							s.test( module.defined(a.e, a.d) == null );
 						}
 					});
 				</script>
@@ -147,25 +147,25 @@ END LICENSE
 					The created function.
 				</div>
 				<script type="application/x.jsapi#tests">
-					scope.scenario( new function() {
+					scenario( new function() {
 						this.name = "constant";
 
-						this.execute = function(scope) {
+						this.execute = function(s) {
 							var f = new Functions();
 
 							var constantCalculator = module.constant(f.calculator);
-							scope.test( f.calculator.invocations == 0 );
-							scope.test( constantCalculator() == 4 );
-							scope.test( f.calculator.invocations == 1 );
-							scope.test( constantCalculator() == 4 );
-							scope.test( f.calculator.invocations == 1 );
+							s.test( f.calculator.invocations == 0 );
+							s.test( constantCalculator() == 4 );
+							s.test( f.calculator.invocations == 1 );
+							s.test( constantCalculator() == 4 );
+							s.test( f.calculator.invocations == 1 );
 
 							var undefinedConstantCalculator = module.constant(f.undefinedCalculator);
-							scope.test( f.undefinedCalculator.invocations == 0 );
-							scope.test( typeof(undefinedConstantCalculator()) == "undefined" );
-							scope.test( f.undefinedCalculator.invocations == 1 );
-							scope.test( typeof(undefinedConstantCalculator()) == "undefined" );
-							scope.test( f.undefinedCalculator.invocations == 1 );
+							s.test( f.undefinedCalculator.invocations == 0 );
+							s.test( typeof(undefinedConstantCalculator()) == "undefined" );
+							s.test( f.undefinedCalculator.invocations == 1 );
+							s.test( typeof(undefinedConstantCalculator()) == "undefined" );
+							s.test( f.undefinedCalculator.invocations == 1 );
 						}
 					} );
 				</script>
@@ -192,26 +192,26 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					if ($platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
-						scope.scenario( new function() {
+						scenario( new function() {
 							this.name = "lazy";
 
-							this.execute = function(scope) {
+							this.execute = function(s) {
 								var f = new Functions();
 
 								var math = {};
 								module.lazy(math, "four", f.calculator);
-								scope.test( f.calculator.invocations == 0 );
-								scope.test( math.four == 4 );
-								scope.test( f.calculator.invocations == 1 );
-								scope.test( math.four == 4 );
-								scope.test( f.calculator.invocations == 1 );
+								s.test( f.calculator.invocations == 0 );
+								s.test( math.four == 4 );
+								s.test( f.calculator.invocations == 1 );
+								s.test( math.four == 4 );
+								s.test( f.calculator.invocations == 1 );
 
 								module.lazy(math, "undefined", f.undefinedCalculator);
-								scope.test( f.undefinedCalculator.invocations == 0 );
-								scope.test( typeof(math.undefined) == "undefined" );
-								scope.test( f.undefinedCalculator.invocations == 1 );
-								scope.test( typeof(math.undefined) == "undefined" );
-								scope.test( f.undefinedCalculator.invocations == 1 );
+								s.test( f.undefinedCalculator.invocations == 0 );
+								s.test( typeof(math.undefined) == "undefined" );
+								s.test( f.undefinedCalculator.invocations == 1 );
+								s.test( typeof(math.undefined) == "undefined" );
+								s.test( f.undefinedCalculator.invocations == 1 );
 							}
 						} );
 					}
@@ -245,7 +245,7 @@ END LICENSE
 					<div><code>(string)</code> A literal representation of the given value.</div>
 				</div>
 				<script type="application/x.jsapi#tests">
-					scope.scenario(new function() {
+					scenario(new function() {
 						this.name = "toLiteral";
 
 						var thaw = function(v) {
@@ -255,22 +255,22 @@ END LICENSE
 							return rv;
 						}
 
-						this.execute = function(scope) {
+						this.execute = function(s) {
 							var toLiteral = module.toLiteral;
 
-							scope.test(toLiteral("David") == "\"David\"");
-							scope.test(toLiteral(2) == "2");
-							scope.test(toLiteral(true) == "true");
+							s.test(toLiteral("David") == "\"David\"");
+							s.test(toLiteral(2) == "2");
+							s.test(toLiteral(true) == "true");
 
 							var o = {};
 							var u;
 							o.s = "s";
 							o.u = u;
 							var t = thaw(o);
-							scope.test("s" in t);
-							scope.test(typeof(t.s) != "undefined");
-							scope.test("u" in t);
-							scope.test(typeof(t.u) == "undefined");
+							s.test("s" in t);
+							s.test(typeof(t.s) != "undefined");
+							s.test("u" in t);
+							s.test(typeof(t.u) == "undefined");
 
 							var now = new Date();
 							o = {
@@ -279,22 +279,22 @@ END LICENSE
 								c: now
 							};
 							t = thaw(o);
-							scope.test(t.a === true);
-							scope.test(t.b == "David");
-							scope.test(t.c.getTime() == now.getTime());
+							s.test(t.a === true);
+							s.test(t.b == "David");
+							s.test(t.c.getTime() == now.getTime());
 
 							o = [1, "David", true, { x: "y" }];
 							t = thaw(o);
-							scope.test(t.length == 4);
-							scope.test(t[0] == 1);
-							scope.test(t[1] == "David");
-							scope.test(t[2] === true);
-							scope.test(t[3].x == "y");
+							s.test(t.length == 4);
+							s.test(t[0] == 1);
+							s.test(t[1] == "David");
+							s.test(t[2] === true);
+							s.test(t[3].x == "y");
 						}
 					});
 				</script>
 			</li>
-			<li class="constructor">
+			<li class="constructor" jsapi:id="ObjectTransformer">
 				<div class="name">ObjectTransformer</div>
 				<div class="returns">
 					<div class="label">Returns</div>
@@ -382,52 +382,46 @@ END LICENSE
 					</ul>
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
-					scope.scenario(new function() {
-						this.name = "ObjectTransformer";
+					var xDoubler = function(o) {
+						return { x: o.x+o.x, y: 2, z: "David", a: true, b: true, c: true }
+					}
 
-						this.execute = function(scope) {
-							var xDoubler = function(o) {
-								return { x: o.x+o.x, y: 2, z: "David", a: true, b: true, c: true }
-							}
-
-							var hasher = {
-								a: function(v,o) {
-								},
-								b: function(v,o) {
-									return null;
-								},
-								y: null,
-								z: function(v,o) {
-									return v + v + o.x;
-								}
-							};
-
-							var input = { x: 1 };
-							var first = new module.ObjectTransformer();
-							first.add(xDoubler);
-							var output = first.transform(input);
-							scope.test(output.x == 2);
-							scope.test(output.y == 2);
-							scope.test(output.z == "David");
-
-							var second = new module.ObjectTransformer();
-							second.add(xDoubler);
-							second.addMapping(hasher);
-							output = second.transform(input);
-							scope.test(output.x == 2);
-							scope.test(!("y" in output));
-							scope.test(output.z == "DavidDavid2");
-							scope.test("a" in output && typeof(output.a) == "undefined");
-							scope.test("b" in output && output.b === null);
-							scope.test(output.c === true);
-
-							var secondFunction = second.toFunction();
-							var fOutput = secondFunction(input);
-							scope.test(fOutput.x == 2);
-							scope.test(fOutput.c === true);
-							scope.test(fOutput.z == "DavidDavid2");
+					var hasher = {
+						a: function(v,o) {
+						},
+						b: function(v,o) {
+							return null;
+						},
+						y: null,
+						z: function(v,o) {
+							return v + v + o.x;
 						}
-					})
+					};
+
+					var input = { x: 1 };
+					var first = new module.ObjectTransformer();
+					first.add(xDoubler);
+					var output = first.transform(input);
+					test(output.x == 2);
+					test(output.y == 2);
+					test(output.z == "David");
+
+					var second = new module.ObjectTransformer();
+					second.add(xDoubler);
+					second.addMapping(hasher);
+					output = second.transform(input);
+					test(output.x == 2);
+					test(!("y" in output));
+					test(output.z == "DavidDavid2");
+					test("a" in output && typeof(output.a) == "undefined");
+					test("b" in output && output.b === null);
+					test(output.c === true);
+
+					var secondFunction = second.toFunction();
+					var fOutput = secondFunction(input);
+					test(fOutput.x == 2);
+					test(fOutput.c === true);
+					test(fOutput.z == "DavidDavid2");
 				]]></script>
 			</li>
 			<li class="object">
@@ -477,12 +471,12 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
-				<script type="application/x.jsapi#tests" jsapi:id="Filter">
+				<script type="application/x.jsapi#tests">
 					var f = module.Filter.property("a", module.Filter.equals(3));
 					var array = [{ a: 3 }, {}, { a: 4 }];
 					var matches = array.filter(f);
-					scope.test(matches.length == 1);
-					scope.test(matches[0] == array[0]);
+					test(matches.length == 1);
+					test(matches[0] == array[0]);
 				</script>
 			</li>
 			<li class="object">
@@ -525,9 +519,9 @@ END LICENSE
 								b: { a: 3 },
 								c: 4
 							};
-							scope.test(one(x) == 4);
-							scope.test(two(x) == 3);
-							scope.test(one({}) != 5);
+							test(one(x) == 4);
+							test(two(x) == 3);
+							test(one({}) != 5);
 						</script>
 					</li>
 				</ul>
@@ -599,13 +593,13 @@ END LICENSE
 					var propertyOrder = module.Order.property("v", numerical);
 					var mapOrder = module.Order.map(module.Map.property("v"), ascending);
 					array.sort( propertyOrder );
-					scope.test(array[0].s == "c");
-					scope.test(array[1].s == "a");
-					scope.test(array[2].s == "b");
+					test(array[0].s == "c");
+					test(array[1].s == "a");
+					test(array[2].s == "b");
 					array.sort( mapOrder );
-					scope.test(array[0].s == "b");
-					scope.test(array[1].s == "a");
-					scope.test(array[2].s == "c");
+					test(array[0].s == "b");
+					test(array[1].s == "a");
+					test(array[2].s == "c");
 				</script>
 			</li>
 			<li class="object">
@@ -640,9 +634,9 @@ END LICENSE
 							</span>
 						</div>
 						<script type="application/x.jsapi#tests" jsapi:id="Array.choose">
-							scope.test( module.Array.choose([ 3 ]) == 3 );
-							scope.test( module.Array.choose([]) === null );
-							scope.test( module.Array.choose([ 1, 2, 3 ], function(a) { return a == 3; } ) == 3 );
+							test( module.Array.choose([ 3 ]) == 3 );
+							test( module.Array.choose([]) === null );
+							test( module.Array.choose([ 1, 2, 3 ], function(a) { return a == 3; } ) == 3 );
 						</script>
 					</li>
 				</ul>

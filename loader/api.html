@@ -157,7 +157,7 @@ END LICENSE
 									<code>Object.defineProperty</code> method.
 								</span>
 							</li>
-							<li class="function">
+							<li class="function" jsapi:id="$platform.Object.defineProperty.setReadOnly">
 								<div class="name"><a name="$platform.Object.defineProperty.setReadOnly">setReadOnly</a></div>
 								<span>(optional) Sets whether a named property on an object is read-only.</span>
 								<div class="arguments">
@@ -180,12 +180,12 @@ END LICENSE
 										</li>
 									</ol>
 								</div>
-								<script type="application/x.jsapi#tests" jsapi:id="$platform.Object.defineProperty.setReadOnly"><![CDATA[
+								<script type="application/x.jsapi#tests"><![CDATA[
 									var o = {};
 									o.x = 3;
-									scope.test(o.x == 3);
+									test(o.x == 3);
 									o.x = 4;
-									scope.test(o.x == 4);
+									test(o.x == 4);
 									var setReadOnly = (function() {
 										if ($platform.Object.defineProperty && $platform.Object.defineProperty.setReadOnly) {
 											return $platform.Object.defineProperty.setReadOnly;
@@ -194,10 +194,10 @@ END LICENSE
 									if (setReadOnly) {
 										setReadOnly(o,"x",true);
 										o.x = 5;
-										scope.test(o.x == 4);
+										test(o.x == 4);
 										setReadOnly(o,"x",false);
 										o.x = 5;
-										scope.test(o.x == 5);
+										test(o.x == 5);
 									}
 								]]></script>
 							</li>
@@ -301,8 +301,8 @@ END LICENSE
 						getter and setter if the delegate is <code>null</code> or the delegate lacks the named property.
 					</span>
 				</div>
-				<script type="application/x.jsapi#scope">
-					var MetaObject = $platform.MetaObject;
+				<script type="application/x.jsapi#initialize">
+					scope.MetaObject = $platform.MetaObject;
 				</script>
 				<script type="application/x.jsapi#tests" jsapi:id="$platform.MetaObject">
 					if ($platform.MetaObject) {
@@ -315,8 +315,8 @@ END LICENSE
 						}
 
 						var a = new MetaObject({ get: doubler });
-						scope.test( a[1] == 2 );
-						scope.test( a.name == "namename" );
+						test( a[1] == 2 );
+						test( a.name == "namename" );
 
 						var logger = new function() {
 							var log = [];
@@ -333,9 +333,9 @@ END LICENSE
 						var $b = {};
 						var b = new MetaObject({ delegate: $b, get: null, set: logger.setter });
 						b.foo = "bar";
-						scope.test( logger.log[0].target == $b );
-						scope.test( logger.log[0].name == "foo" );
-						scope.test( logger.log[0].value == "bar" );
+						test( logger.log[0].target == $b );
+						test( logger.log[0].name == "foo" );
+						test( logger.log[0].value == "bar" );
 					}
 				</script>
 			</li>
@@ -431,7 +431,7 @@ END LICENSE
 					</li>
 				</ul>
 				<script type="application/x.jsapi#tests"><![CDATA[
-					scope.scenario( new function() {
+					scenario( new function() {
 						this.name = "deprecate";
 						this.execute = function(scope) {
 							//	var deprecate = module.deprecate;

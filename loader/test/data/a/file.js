@@ -17,8 +17,6 @@ var a = 3;
 
 var c = 5;
 
-debugger;
-
 $exports.a = a;
 $exports.b = $context.b;
 $exports.c = c;

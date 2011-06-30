@@ -42,7 +42,7 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var java = $jsapi.module("rhino/host", {
+				var java = $jsapi.module("rhino/host/", {
 					classLoader: $host.getClassLoader()
 				});
 
@@ -101,8 +101,8 @@ END LICENSE
 					writer.write("Buffer");
 					buffer.close();
 					var resource = buffer.readBinary().cache();
-					scope.test(resource.read(String) == "Buffer");
-					scope.test(resource.read(String) == "Buffer");
+					test(resource.read(String) == "Buffer");
+					test(resource.read(String) == "Buffer");
 				</script>
 				<script type="application/x.jsapi#tests" jsapi:id="Buffer readLines">
 					var buffer = new module.Buffer();
@@ -116,7 +116,7 @@ END LICENSE
 						return lines;
 					}, { ending: "\n" });
 
-					scope.test(lines.length == 1);
+					test(lines.length == 1);
 
 					buffer.close();
 				</script>
@@ -168,7 +168,7 @@ END LICENSE
 												in the Java properties file.
 											</div>
 											<script type="application/x.jsapi#tests" jsapi:id="Properties">
-												scope.scenario( new function() {
+												scenario( new function() {
 													var buffer;
 
 													this.name = "java.util.Properties";

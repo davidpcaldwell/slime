@@ -25,7 +25,7 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				this.api = {
-					java: $jsapi.module({}, "rhino/host")
+					java: $jsapi.module("rhino/host/")
 				}
 			}
 		</script>
@@ -170,7 +170,7 @@ END LICENSE
 		</ul>
 	</div>
 	<script type="application/x.jsapi#tests">
-	scope.scenario( new function() {
+	scenario( new function() {
 		this.name = "System environment";
 
 		this.execute = function(scope) {
@@ -182,7 +182,7 @@ END LICENSE
 	} );
 	</script>
 	<script type="application/x.jsapi#tests">
-	scope.scenario( new function() {
+	scenario( new function() {
 		this.name = "System properties";
 
 		var properties = module.properties;
