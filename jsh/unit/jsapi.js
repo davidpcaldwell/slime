@@ -88,10 +88,6 @@ var E4X = function(html) {
 	
 	this.top = new Element(html);
 	
-	this.getScriptDescendants = function(type) {
-		return this.top.getDescendantScripts(type);
-	}
-	
 	this.getElementByJsapiId = function(id) {
 		return map(html..*.(@jsapi::id == id));
 	}

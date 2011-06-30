@@ -5,7 +5,7 @@ $exports.ApiHtmlTests = function(html,name) {
 
 	var scripts = [];
 
-	html.getScriptDescendants().forEach( function(node) {
+	html.top.getDescendantScripts().forEach( function(node) {
 		var type = node.getScriptType();
 		if (type.substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX) {
 			scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: node });
