@@ -130,9 +130,36 @@ $exports.tests = new function() {
 			}			
 		});
 
-		this.scripts = function(type) {
-//			//	TODO	currently used only for context; 
-			return e4x.top.getDescendantScripts(type);
+//		this.scripts = function(type) {
+////			//	TODO	currently used only for context; 
+//			return e4x.top.getDescendantScripts(type);
+//		}
+		
+		this.getContexts = function(scope) {
+			var contextScripts = e4x.top.getDescendantScripts("context");
+
+			var contexts = [];
+			for (var i=0; i<contextScripts.length; i++) {
+				var id = (contextScripts[i].getJsapiId()) ? contextScripts[i].getJsapiId() : "";
+				with(scope) {
+					var value = eval("(" + contextScripts[i].getContentString() + ")");
+				}
+				if (value.length) {
+					value.forEach( function(context,index) {
+						context.id = id + "[" + index + "]";
+					});
+					contexts = contexts.concat(value);
+				} else {
+					value.id = id;
+					contexts.push(value);
+				}
+			}
+
+			if (contexts.length == 0) {
+				contexts.push({});
+			}
+			
+			return contexts;
 		}
 		
 		var getScenario = function(scope,element) {
@@ -209,20 +236,19 @@ $exports.tests = new function() {
 
 	var moduleToItem = function(moduleDescriptor,unit) {
 		return new function() {
-//			var modulepath = moduleDescriptor.location;
 			this.name = moduleDescriptor.location.toString();
 
 			if (!moduleDescriptor.location.directory && !moduleDescriptor.location.file) {
 				throw new Error("Not found: " + moduleDescriptor.location);
 			}
 			if (getApiHtml(moduleDescriptor.location)) {
-				this.suite = new ApiHtmlTests(moduleDescriptor);
+				this.html = new ApiHtmlTests(moduleDescriptor);
 			}
 
 			this.namespace = moduleDescriptor.namespace;
 
 			this.getScenario = function(scope) {
-				return this.suite.getScenario(scope,unit);
+				return this.html.getScenario(scope,unit);
 			}
 
 			this.loadWith = function(context) {
@@ -307,41 +333,20 @@ $exports.tests = new function() {
 					$jsapi: SCOPE.$jsapi,
 					$module: new function() {
 						this.getResourcePathname = function(path) {
-							return suite.item.getResourcePathname(path);
+							return suite.getResourcePathname(path);
 						}
 					},
 					$platform: jsh.$jsapi.$platform,
 					$api: jsh.$jsapi.$api
 				};
 				
-				var contextScripts = suite.item.suite.scripts("context");
-				
-				var contexts = [];
-				for (var i=0; i<contextScripts.length; i++) {
-					var id = (contextScripts[i].getJsapiId()) ? contextScripts[i].getJsapiId() : "";
-					with(scope) {
-						var value = eval("(" + contextScripts[i].getContentString() + ")");
-					}
-					if (value.length) {
-						value.forEach( function(context,index) {
-							context.id = id + "[" + index + "]";
-						});
-						contexts = contexts.concat(value);
-					} else {
-						value.id = id;
-						contexts.push(value);
-					}
-				}
-				
-				if (contexts.length == 0) {
-					contexts.push({});
-				}
+				var contexts = suite.html.getContexts(scope);
 				
 				for (var i=0; i<contexts.length; i++) {
 					try {
-						scope.module = suite.item.loadWith(contexts[i]);
+						scope.module = suite.loadWith(contexts[i]);
 						scope.context = contexts[i];
-						topscope.scenario( suite.item.getScenario(scope) );
+						topscope.scenario( suite.getScenario(scope) );
 					} catch (e) {
 						//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
 						topscope.scenario(new function() {
@@ -356,7 +361,7 @@ $exports.tests = new function() {
 
 		testGroups.forEach( function(item) {
 			jsh.shell.echo("Processing: " + item.name + ((item.namespace) ? (" " + item.namespace) : ""));
-			suites.push({ item: item });
+			suites.push(item);
 		} );
 
 		var SCENARIO = new $context.Scenario($scenario);
