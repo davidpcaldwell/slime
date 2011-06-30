@@ -30,6 +30,74 @@ var getApiHtml = function(moduleMainPathname) {
 	}
 }
 
+var E4X = function(html) {
+	var map = function(query) {
+		var rv = [];
+		for (var i=0; i<query.length(); i++) {
+			rv[i] = new Element(query[i]);
+		}
+		return rv;		
+	}
+	
+	var Element = function(xml) {
+		this.localName = xml.localName();
+		
+		this.toString = function() {
+			return xml.toXMLString();
+		}
+		
+		this.getContentString = function() {
+			return String(xml);
+		}
+		
+		this.getScripts = function(type) {
+			if (type == "initialize") {
+				if (xml.script.length()) {
+					debugger;
+				}
+			}
+			return map(xml.script.(@type == ($context.html.MEDIA_TYPE + "#" + type)));
+		}
+		
+		this.getDescendantScripts = function() {
+			return map(xml..script);
+		}
+			
+		this.getChildElements = function() {
+			return map(xml.elements());
+		}
+		
+		this.getScriptType = function() {
+			return String(xml.@type);
+		}
+		
+		this.isTop = function() {
+			return xml == html;
+		}
+		
+		this.getJsapiId = function() {
+			if (xml.@jsapi::id.length()) return String(xml.@jsapi::id);
+			return null;
+		}
+		
+		this.getNameDiv = function() {
+			var rv = xml.div.(@["class"] == "name");
+			if (rv.length()) return rv.toXMLString();
+			return null;
+		}
+	}
+	
+	this.top = new Element(html);
+	
+	this.getScriptDescendants = function() {
+		return map(html..script);
+	}
+	
+	this.getElementByJsapiId = function(id) {
+		return map(html..*.(@jsapi::id == id));
+	}
+}
+
 $exports.tests = new function() {
 	var testGroups = [];
 
@@ -49,20 +117,29 @@ $exports.tests = new function() {
 				}
 			})(html);
 		}
+		
+		var e4x = new E4X(html);
+		
 		var SCRIPT_TYPE_PREFIX = $context.html.MEDIA_TYPE + "#";
 		
 		var scripts = [];
 
-		for each (var item in html..script) {
-			var type = String(item.@type);
+		e4x.getScriptDescendants().forEach( function(node) {
+			var type = node.getScriptType();
 			if (type.substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX) {
-				scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: item });
-			}
-		}
+				scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: node });
+			}			
+		})
+//		for each (var item in html..script) {
+//			var type = String(item.@type);
+//			if (type.substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX) {
+//				scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: item });
+//			}
+//		}
 		
-		this.getUnit = function(id) {
-			return new Constructor(html..*.(@jsapi::id == id));
-		}
+//		this.getUnit = function(id) {
+//			return new Constructor(html..*.(@jsapi::id == id));
+//		}
 
 		this.scripts = function(type) {
 			if (type) {
@@ -79,63 +156,63 @@ $exports.tests = new function() {
 		}
 		
 		var getScenario = function(scope,element) {
-			var getScripts = function(type) {
-				return element.script.(@type == SCRIPT_TYPE_PREFIX + type);
-			}
-			
 			var p = {};
-			if (element == html) {
+			if (element.isTop()) {
 				p.name = descriptor.path;
-			} else if (element.@jsapi::id.length()) {
-				p.name = String(element.@jsapi::id);
+			} else if (element.getJsapiId()) {
+				p.name = element.getJsapiId();
 			} else {
-				if (element.div.(@["class"] == "name").length()) {
-					p.name = String(element.div.(@["class"] == "name"));
+				if (element.getNameDiv()) {
+					p.name = element.getNameDiv();
 				} else {
-					p.name = "<" + element.localName() + ">";
+					p.name = "<" + element.localName + ">";
 				}
 			}
 			
 			p.initialize = function() {
-				var initializes = getScripts("initialize");
-				for (var i=0; i<initializes.length(); i++) {
+				var initializes = element.getScripts("initialize");
+				for (var i=0; i<initializes.length; i++) {
 					with(scope) {
-						eval(String(initializes[i]));
+						eval(initializes[i].getContentString());
 					}
 				}
 			};
 			
 			p.execute = function(unit) {
-				var children = element.elements();
-				for (var i=0; i<children.length(); i++) {
-					if (children[i].localName() == "script" && String(children[i].@type) == (SCRIPT_TYPE_PREFIX + "tests")) {
+				var children = element.getChildElements();
+				for (var i=0; i<children.length; i++) {
+					if (children[i].localName == "script" && children[i].getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
 						with(scope) {
 							with(unit) {
-								eval(String(children[i]));
+								eval(children[i].getContentString());
 							}
 						}
-					} else if (children[i].localName() == "script") {
+					} else if (children[i].localName == "script") {
 						//	do nothing
 					} else {
 						var areTests = function(script) {
-							return Boolean(script.(@type == (SCRIPT_TYPE_PREFIX + "initialize")).length())
-								|| Boolean(script.(@type == (SCRIPT_TYPE_PREFIX + "tests")).length())
-								|| Boolean(script.(@type == (SCRIPT_TYPE_PREFIX + "destroy")).length())
+							return script.getScriptType() == (SCRIPT_TYPE_PREFIX + "initialize")
+								|| script.getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")
+								|| script.getScriptType() == (SCRIPT_TYPE_PREFIX + "destroy")
 							;
 						}
 						
-						if (areTests(children[i].script) || areTests(children[i]..script)) {
-							unit.scenario(getScenario(scope,children[i]));
+						if (
+							children[i].getDescendantScripts().some(function(script) {
+								return areTests(script);
+							})
+						) {
+							unit.scenario(getScenario(scope,children[i]));	
 						}
 					}
 				}
 			};
 			
 			p.destroy = function() {
-				var destroys = getScripts("destroy");
-				for (var i=0; i<destroys.length(); i++) {
+				var destroys = element.getScripts("destroy");
+				for (var i=0; i<destroys.length; i++) {
 					with(scope) {
-						eval(String(destroys[i]));
+						eval(destroys[i].getContentString());
 					}
 				}
 			};
@@ -144,7 +221,7 @@ $exports.tests = new function() {
 		}
 		
 		this.getScenario = function(scope,unit) {
-			var element = (unit) ? html..*.(@jsapi::id == unit) : html;
+			var element = (unit) ? e4x.getElementByJsapiId(unit) : e4x.top;
 			if (!element) throw new Error("Unit test not found: " + unit);
 			return getScenario(scope,element);
 		}
@@ -327,15 +404,12 @@ $exports.tests = new function() {
 				};
 				
 				var contextScripts = suite.item.suite.scripts("context");
-				if (contextScripts.length == 0) {
-					contextScripts = [<script>{"{}"}</script>];
-				}
 				
 				var contexts = [];
 				for (var i=0; i<contextScripts.length; i++) {
-					var id = (contextScripts[i].@jsapi::id.length() > 0) ? String(contextScripts[i].@jsapi::id) : "";
+					var id = (contextScripts[i].getJsapiId()) ? contextScripts[i].getJsapiId() : "";
 					with(scope) {
-						var value = eval("(" + String(contextScripts[i]) + ")");
+						var value = eval("(" + contextScripts[i].getContentString() + ")");
 					}
 					if (value.length) {
 						value.forEach( function(context,index) {
@@ -346,6 +420,10 @@ $exports.tests = new function() {
 						value.id = id;
 						contexts.push(value);
 					}
+				}
+				
+				if (contexts.length == 0) {
+					contexts.push({});
 				}
 				
 				for (var i=0; i<contexts.length; i++) {
