@@ -154,59 +154,6 @@ $exports.tests = new function() {
 	}
 
 	this.run = function(successWas) {
-		var SCOPE = new function() {
-			var $newTemporaryDirectory = function() {
-				var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
-				var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
-				var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
-				dir.mkdirs();
-				return dir;
-			}
-
-			this.$java = {
-				io: {
-					newTemporaryDirectory: $newTemporaryDirectory
-				}
-			};
-
-			this.$jsapi = {
-				module: function(name,context) {
-					if (typeof(name) == "object" && typeof(context) == "string") {
-						jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
-						return arguments.callee.call(this,arguments[1],arguments[0]);
-					}
-					var MODULES = $context.MODULES;
-					if (MODULES[name+"/"]) {
-						//	Forgot trailing slash; fix; this ability may later be removed
-						debugger;
-						name += "/";
-					}
-					if (!MODULES[name]) {
-						debugger;
-						return null;
-					}
-					return jsh.loader.module(MODULES[name].location,context);
-				},
-				//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
-				environment: $context.ENVIRONMENT,
-				newTemporaryDirectory: function() {
-					var $path = $newTemporaryDirectory();
-					var pathstring = String($path.getCanonicalPath());
-					var os = jsh.file.filesystems.os.Pathname(pathstring);
-					return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
-				},
-				disableBreakOnExceptions: function(f) {
-					return function() {
-						var isBreak = $host.getDebugger().isBreakOnExceptions();
-						$host.getDebugger().setBreakOnExceptions(false);
-						var rv = f.apply(this,arguments);
-						$host.getDebugger().setBreakOnExceptions(isBreak);
-						return rv;
-					}
-				}
-			};
-		};
-
 		var $scenario = {};
 		$scenario.name = "Unit tests";
 		var suites = [];
@@ -214,9 +161,56 @@ $exports.tests = new function() {
 			jsh.shell.echo("Environments present: " + Object.keys($context.ENVIRONMENT));
 			//	var item is expected to be $scope.$unit
 			suites.forEach( function(suite) {
+				var $newTemporaryDirectory = function() {
+					var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
+					var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
+					var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
+					dir.mkdirs();
+					return dir;
+				}
+
 				var scope = {
-					$java: SCOPE.$java,
-					$jsapi: SCOPE.$jsapi,
+					$jsapi: {
+						module: function(name,context) {
+							if (typeof(name) == "object" && typeof(context) == "string") {
+								jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
+								return arguments.callee.call(this,arguments[1],arguments[0]);
+							}
+							var MODULES = $context.MODULES;
+							if (MODULES[name+"/"]) {
+								//	Forgot trailing slash; fix; this ability may later be removed
+								debugger;
+								name += "/";
+							}
+							if (!MODULES[name]) {
+								debugger;
+								return null;
+							}
+							return jsh.loader.module(MODULES[name].location,context);
+						},
+						//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
+						environment: $context.ENVIRONMENT,
+						newTemporaryDirectory: function() {
+							var $path = $newTemporaryDirectory();
+							var pathstring = String($path.getCanonicalPath());
+							var os = jsh.file.filesystems.os.Pathname(pathstring);
+							return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
+						},
+						disableBreakOnExceptions: function(f) {
+							return function() {
+								var isBreak = $host.getDebugger().isBreakOnExceptions();
+								$host.getDebugger().setBreakOnExceptions(false);
+								var rv = f.apply(this,arguments);
+								$host.getDebugger().setBreakOnExceptions(isBreak);
+								return rv;
+							}
+						}
+					},
+					$java: {
+						io: {
+							newTemporaryDirectory: $newTemporaryDirectory
+						}
+					},
 					$module: new function() {
 						this.getResourcePathname = function(path) {
 							return suite.getResourcePathname(path);
