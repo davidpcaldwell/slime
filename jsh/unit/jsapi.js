@@ -281,7 +281,10 @@ $exports.tests = new function() {
 						debugger;
 						name += "/";
 					}
-					if (!MODULES[name]) return null;
+					if (!MODULES[name]) {
+						debugger;
+						return null;
+					}
 					return jsh.loader.module(MODULES[name].location,context);
 				},
 				//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
@@ -433,7 +436,17 @@ $exports.doc = function(modules,to) {
 			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
 				var x = e;
 				while(x.@jsapi::reference.length() > 0) {
-					x = eval(String(x.@jsapi::reference));
+					try {
+						x = eval(String(x.@jsapi::reference));
+					} catch (e) {
+						var error = new EvalError("Error evaluating reference: " + x.@jsapi::reference);
+						var string = String(x.@jsapi::reference);
+						error.string = string;
+						error.toString = function() {
+							return this.message + "\n" + this.string;
+						}
+						throw error;
+					}
 				}
 				e.setChildren(x.children());
 			}

@@ -307,16 +307,16 @@ var jsapi_jsh = function() {
 		var namespace = (ns) ? ns : "";
 		this.push(namespace+"@"+path+"="+JSH_JSAPI_BASE+"/"+path);
 	}
-	modules.add("jsh/loader","jsh.loader");
-	modules.add("loader");
-	modules.add("loader/rhino");
-	modules.add("js/object","jsh.js");
-	modules.add("rhino/host","jsh.java");
-	modules.add("rhino/io");
-	modules.add("rhino/file","jsh.file");
-	modules.add("rhino/shell");
-	modules.add("jsh/shell","jsh.shell");
-	modules.add("jsh/script","jsh.script");
+	modules.add("jsh/loader/","jsh.loader");
+	modules.add("loader/");
+	modules.add("loader/rhino/");
+	modules.add("js/object/","jsh.js");
+	modules.add("rhino/host/","jsh.java");
+	modules.add("rhino/io/");
+	modules.add("rhino/file/","jsh.file");
+	modules.add("rhino/shell/");
+	modules.add("jsh/shell/","jsh.shell");
+	modules.add("jsh/script/","jsh.script");
 
 	modules.forEach( function(module) {
 		command.add("-module",module);

@@ -19,20 +19,20 @@ END LICENSE
 	<title>jsh loader</title>
 </head>
 <body>
-	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '1')"></div>
-	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '2')"></div>
-	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '3')"></div>
-	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '$platform')">
+	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '1')"></div>
+	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '2')"></div>
+	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '3')"></div>
+	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '$platform')">
 	</div>
-	<div jsapi:reference="doc['loader']..*.(@jsapi::id == '$api')">
+	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '$api')">
 	</div>
 	<div>
 		<h1>Exports</h1>
 		<ul>
 			<li class="function">
 				<div class="name">module</div>
-				<span jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description')">Invokes the Rhino loader's <code>module</code> method.</span>
-				<div jsapi:reference="doc['loader']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description2')"></div>
+				<span jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description')">Invokes the Rhino loader's <code>module</code> method.</span>
+				<div jsapi:reference="doc['loader/']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description2')"></div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -51,7 +51,7 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'returns')">
+				<div class="returns" jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'returns')">
 					<!--
 						TODO	Document that this method returns null if the module cannot be found, and check whether that is also
 								true of the Rhino loader's module()
@@ -62,7 +62,7 @@ END LICENSE
 			</li>
 			<li class="function">
 				<div class="name">script</div>
-				<span jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'script').*.(@jsapi::id == 'description')">Invokes the Rhino loader's <code>script</code> method.</span>
+				<span jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'script').*.(@jsapi::id == 'description')">Invokes the Rhino loader's <code>script</code> method.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -70,15 +70,15 @@ END LICENSE
 							<span class="type">jsh.file.Pathname</span>
 							<span>The <code>jsh.file.Pathname</code> at which the script is located.</span>
 						</li>
-						<li jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'arguments[1]')">The second argument to the Rhino loader's <code>script</code> method.</li>
+						<li jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'arguments[1]')">The second argument to the Rhino loader's <code>script</code> method.</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'returns')">
+				<div class="returns" jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'returns')">
 					<div class="label">Returns</div>
 					<span>The return value of the Rhino loader's <code>script</code> method.</span>
 				</div>
 			</li>
-			<li class="function" jsapi:reference="doc['loader/rhino']..*.(@jsapi::id == 'namespace')">
+			<li class="function" jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'namespace')">
 				<div class="name">namespace</div>
 				Invokes the Rhino loader's <code>namespace</code> method.
 			</li>

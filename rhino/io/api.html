@@ -45,6 +45,7 @@ END LICENSE
 				var java = $jsapi.module("rhino/host/", {
 					classLoader: $host.getClassLoader()
 				});
+				if (!java) throw new Error("Not found: rhino/host/");
 
 				this.api = {
 					java: java
