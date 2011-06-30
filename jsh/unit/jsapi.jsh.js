@@ -72,6 +72,7 @@ var ENVIRONMENT = (function() {
 
 var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,
+	html: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("api.html.js") ),
 	jsapi: {
 		getFile: function(path) {
 			return jsh.script.getRelativePath(path).file;

@@ -49,7 +49,7 @@ $exports.tests = new function() {
 				}
 			})(html);
 		}
-		var SCRIPT_TYPE_PREFIX = "application/x.jsapi#";
+		var SCRIPT_TYPE_PREFIX = $context.html.MEDIA_TYPE + "#";
 		
 		var scripts = [];
 
