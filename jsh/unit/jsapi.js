@@ -81,7 +81,7 @@ var E4X = function(html) {
 		
 		this.getNameDiv = function() {
 			var rv = xml.div.(@["class"] == "name");
-			if (rv.length()) return rv.toXMLString();
+			if (rv.length()) return String(rv);
 			return null;
 		}
 	}
@@ -100,140 +100,6 @@ var E4X = function(html) {
 $exports.tests = new function() {
 	var testGroups = [];
 
-	var ApiHtmlTests = function(descriptor) {
-		var Constructor = arguments.callee;
-		
-		var html = (function() {
-			var file = getApiHtml(descriptor.location);
-			return file.read(XML);
-		})();
-		if (html.length() > 1) {
-			html = (function(list) {
-				for (var i=0; i<list.length(); i++) {
-					if (list[i].localName()) {
-						return list[i];
-					}
-				}
-			})(html);
-		}
-		
-		var e4x = new E4X(html);
-		
-		var SCRIPT_TYPE_PREFIX = $context.html.MEDIA_TYPE + "#";
-		
-		var scripts = [];
-
-		e4x.getScriptDescendants().forEach( function(node) {
-			var type = node.getScriptType();
-			if (type.substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX) {
-				scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: node });
-			}			
-		});
-
-//		this.scripts = function(type) {
-////			//	TODO	currently used only for context; 
-//			return e4x.top.getDescendantScripts(type);
-//		}
-		
-		this.getContexts = function(scope) {
-			var contextScripts = e4x.top.getDescendantScripts("context");
-
-			var contexts = [];
-			for (var i=0; i<contextScripts.length; i++) {
-				var id = (contextScripts[i].getJsapiId()) ? contextScripts[i].getJsapiId() : "";
-				with(scope) {
-					var value = eval("(" + contextScripts[i].getContentString() + ")");
-				}
-				if (value.length) {
-					value.forEach( function(context,index) {
-						context.id = id + "[" + index + "]";
-					});
-					contexts = contexts.concat(value);
-				} else {
-					value.id = id;
-					contexts.push(value);
-				}
-			}
-
-			if (contexts.length == 0) {
-				contexts.push({});
-			}
-			
-			return contexts;
-		}
-		
-		var getScenario = function(scope,element) {
-			var p = {};
-			if (element.isTop()) {
-				p.name = descriptor.path;
-			} else if (element.getJsapiId()) {
-				p.name = element.getJsapiId();
-			} else {
-				if (element.getNameDiv()) {
-					p.name = element.getNameDiv();
-				} else {
-					p.name = "<" + element.localName + ">";
-				}
-			}
-			
-			p.initialize = function() {
-				var initializes = element.getScripts("initialize");
-				for (var i=0; i<initializes.length; i++) {
-					with(scope) {
-						eval(initializes[i].getContentString());
-					}
-				}
-			};
-			
-			p.execute = function(unit) {
-				var children = element.getChildElements();
-				for (var i=0; i<children.length; i++) {
-					if (children[i].localName == "script" && children[i].getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
-						with(scope) {
-							with(unit) {
-								eval(children[i].getContentString());
-							}
-						}
-					} else if (children[i].localName == "script") {
-						//	do nothing
-					} else {
-						var areTests = function(script) {
-							return script.getScriptType() == (SCRIPT_TYPE_PREFIX + "initialize")
-								|| script.getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")
-								|| script.getScriptType() == (SCRIPT_TYPE_PREFIX + "destroy")
-							;
-						}
-						
-						if (
-							children[i].getDescendantScripts().some(function(script) {
-								return areTests(script);
-							})
-						) {
-							unit.scenario(getScenario(scope,children[i]));	
-						}
-					}
-				}
-			};
-			
-			p.destroy = function() {
-				var destroys = element.getScripts("destroy");
-				for (var i=0; i<destroys.length; i++) {
-					with(scope) {
-						eval(destroys[i].getContentString());
-					}
-				}
-			};
-			
-			return p;
-		}
-		
-		this.getScenario = function(scope,unit) {
-			var element = (unit) ? e4x.getElementByJsapiId(unit) : e4x.top;
-			if (!element) throw new Error("Unit test not found: " + unit);
-			return getScenario(scope,element);
-		}
-	}
-
 	var moduleToItem = function(moduleDescriptor,unit) {
 		return new function() {
 			this.name = moduleDescriptor.location.toString();
@@ -242,7 +108,27 @@ $exports.tests = new function() {
 				throw new Error("Not found: " + moduleDescriptor.location);
 			}
 			if (getApiHtml(moduleDescriptor.location)) {
-				this.html = new ApiHtmlTests(moduleDescriptor);
+				var html = (function() {
+					var file = getApiHtml(moduleDescriptor.location);
+					return file.read(XML);
+				})();
+				if (html.length() > 1) {
+					html = (function(list) {
+						for (var i=0; i<list.length(); i++) {
+							if (list[i].localName()) {
+								return list[i];
+							}
+						}
+					})(html);
+				}
+
+				var e4x = new E4X(html);
+
+				var name = moduleDescriptor.path;
+				if (unit) {
+					name += "." + unit;
+				}
+				this.html = new $context.html.ApiHtmlTests(e4x,name);
 			}
 
 			this.namespace = moduleDescriptor.namespace;
