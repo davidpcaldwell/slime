@@ -42,6 +42,10 @@ var E4X = function(html) {
 	var Element = function(xml) {
 		this.localName = xml.localName();
 		
+		if (xml != html) {
+			this.parent = new Element(xml.parent());
+		}
+		
 		this.toString = function() {
 			return xml.toXMLString();
 		}
@@ -89,7 +93,9 @@ var E4X = function(html) {
 	this.top = new Element(html);
 	
 	this.getElementByJsapiId = function(id) {
-		return map(html..*.(@jsapi::id == id));
+		var list = map(html..*.(@jsapi::id == id));
+		if (list.length == 0) return null;
+		return list[0];
 	}
 }
 

@@ -219,6 +219,10 @@ END LICENSE
 							var Element = function(node) {
 								this.localName = node.tagName.toLowerCase();
 								
+								if (node != html) {
+									this.parent = new arguments.callee(node.parentNode);
+								}
+								
 								this.toString = function() {
 									return node.toString();
 								}

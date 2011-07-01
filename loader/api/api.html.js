@@ -39,7 +39,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		return contexts;
 	}
 
-	var getScenario = function(scope,element) {
+	var getScenario = function(scope,element,container) {
 		var p = {};
 		if (element.isTop()) {
 			p.name = name;
@@ -54,6 +54,13 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 
 		p.initialize = function() {
+			if (container) {
+				for (var i=0; i<container.initializes.length; i++) {
+					with (scope) {
+						eval(container.initializes[i].getContentString());
+					}
+				}
+			}
 			var initializes = element.getScripts("initialize");
 			for (var i=0; i<initializes.length; i++) {
 				with(scope) {
@@ -99,6 +106,13 @@ $exports.ApiHtmlTests = function(html,name) {
 					eval(destroys[i].getContentString());
 				}
 			}
+			if (container) {
+				for (var i=0; i<container.destroys.length; i++) {
+					with(scope) {
+						eval(destroys[i].getContentString());
+					}
+				}
+			}
 		};
 
 		return p;
@@ -106,8 +120,20 @@ $exports.ApiHtmlTests = function(html,name) {
 
 	this.getScenario = function(scope,unit) {
 		var element = (unit) ? html.getElementByJsapiId(unit) : html.top;
+		var container = {
+			initializes: [],
+			destroys: []
+		}
+		if (unit) {
+			var ancestor = element;
+			while(ancestor.parent) {
+				container.initializes.unshift.apply(container.initializes,ancestor.parent.getScripts("initialize"));
+				container.destroys.push.apply(container.destroys,ancestor.parent.getScripts("destroy"));
+				ancestor = ancestor.parent;
+			}
+		}
 		if (!element) throw new Error("Unit test not found: " + unit);
-		return getScenario(scope,element);
+		return getScenario(scope,element,container);
 	}
 }
 
