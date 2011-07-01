@@ -19,6 +19,7 @@ END LICENSE
 	<title>Module Unit Tester</title>
 	<style type="text/css">
 		div#tree div div { margin: 0em 1em }
+		div#log { padding: 1em 0em; background: #c0c0c0 }
 	</style>
 	<script type="text/javascript">
 		var request = new function() {
@@ -93,6 +94,34 @@ END LICENSE
 		var log = debug;
 	</script>
 	<script type="text/javascript" src="../client.js"></script>
+	<script type="text/javascript">
+		var dom = new function() {
+			var addChildrenTo = function(rv,e,filter,recurse) {
+				for (var i=0; i<e.childNodes.length; i++) {
+					if (filter(e.childNodes[i])) {
+						rv.push(e.childNodes[i]);
+					}
+					if (recurse && e.childNodes[i]) {
+						addChildrenTo(rv,e.childNodes[i],filter,recurse);
+					}
+				}
+			}
+
+			this.getChild = function(e,filter,recurse) {
+				var rv = [];
+				addChildrenTo(rv,e,filter,recurse);
+				if (rv.length == 0) return null;
+				if (rv.length > 1) throw "Multiple elements match filter";
+				return rv[0];
+			}
+
+			this.getChildren = function(e,filter,recurse) {
+				var rv = [];
+				addChildrenTo(rv,e,filter,recurse);
+				return rv;
+			}			
+		}
+	</script>
 	<script type="text/javascript">
 		window.onload = function() {
 			html.initialize();
@@ -187,15 +216,15 @@ END LICENSE
 						}
 
 						var DOM = function(html) {
-							var Element = function(dom) {
-								this.localName = dom.tagName.toLowerCase();
+							var Element = function(node) {
+								this.localName = node.tagName.toLowerCase();
 								
 								this.toString = function() {
-									return dom.toString();
+									return node.toString();
 								}
 
 								this.getContentString = function() {
-									return getCode(dom);
+									return getCode(node);
 								}
 
 								var getScriptFilter = function(type) {
@@ -210,67 +239,40 @@ END LICENSE
 									}										
 								}
 
-								var addIfMatch = function(rv,node,filter) {
-									if (filter(node)) {
-										rv.push(node);
-									}
-								}
-
-								var addDescendantNodes = function(rv,top,filter) {
-									if (top.childNodes) {
-										for (var i=0; i<top.childNodes.length; i++) {
-											addIfMatch(rv,top.childNodes[i],filter);
-											arguments.callee(rv,top.childNodes[i],filter);
-										}
-									}
-								}
-
-								var getChildNodes = function(filter) {
-									var rv = [];
-									for (var i=0; i<dom.childNodes.length; i++) {
-										if (filter(dom.childNodes[i])) {
-											rv.push(dom.childNodes[i]);
-										}
-									}
-									return rv;
-								}
-								
 								var wrap = function(node) {
 									return new Element(node);
 								}
 
 								this.getScripts = function(type) {
-									return getChildNodes(getScriptFilter(type)).map(wrap);
+									return dom.getChildren(node,getScriptFilter(type)).map(wrap);
 								}
 
 								this.getDescendantScripts = function(type) {
-									var rv = [];
-									addDescendantNodes(rv,dom,getScriptFilter(type));										
-									return rv.map(wrap);
+									return dom.getChildren(node,getScriptFilter(type),true).map(wrap);
 								}
 
 								this.getChildElements = function() {
-									return getChildNodes(function(node) {
+									return dom.getChildren(node,function(node) {
 										return node.nodeType == node.ELEMENT_NODE;
 									}).map(wrap);
 								}
 
 								this.getScriptType = function() {
-									return dom.type;
+									return node.type;
 								}
 
 								this.isTop = function() {
-									return dom == html;
+									return node == html;
 								}
 
 								this.getJsapiId = function() {
-									return dom.getAttribute("jsapi:id");
+									return node.getAttribute("jsapi:id");
 								}
 
 								this.getNameDiv = function() {
-									var target = getChildNodes(function(node) {
+									var target = dom.getChildren(node,function(node) {
 										return node.tagName && node.tagName.toLowerCase() == "div" && node.getAttribute("class") == "name";
-									});
+									}).map(wrap);
 									if (target.length == 0) return null;
 									return target[0].innerHTML;
 								}
@@ -375,39 +377,14 @@ END LICENSE
 	</script>
 	<script type="text/javascript">
 		var html = new function() {
-			var addChildrenTo = function(rv,e,filter,recurse) {
-				for (var i=0; i<e.childNodes.length; i++) {
-					if (filter(e.childNodes[i])) {
-						rv.push(e.childNodes[i]);
-					}
-					if (recurse && e.childNodes[i]) {
-						addChildrenTo(rv,e.childNodes[i],filter,recurse);
-					}
-				}
-			}
-
-			var getChild = function(e,filter,recurse) {
-				var rv = [];
-				addChildrenTo(rv,e,filter,recurse);
-				if (rv.length == 0) return null;
-				if (rv.length > 1) throw "Multiple elements match filter";
-				return rv[0];
-			}
-
 			var isInputNamed = function(name) {
 				return function(node) {
 					return node.tagName && node.tagName.toLowerCase() == "input" && node.name == name;
 				}
 			}
 
-			var getChildren = function(e,filter,recurse) {
-				var rv = [];
-				addChildrenTo(rv,e,filter,recurse);
-				return rv;
-			}
-
 			var makeRemovable = function(moduleDiv) {
-				var button = getChild(moduleDiv,isInputNamed("remove"));
+				var button = dom.getChild(moduleDiv,isInputNamed("remove"));
 				button.disabled = false;
 				button.onclick = function() {
 					button.parentNode.parentNode.removeChild(button.parentNode);
@@ -419,14 +396,14 @@ END LICENSE
 			var addModule = function(path) {
 				var copy = document.getElementById("module").cloneNode(true);
 				copy.setAttribute("id", "");
-				getChild(copy, isInputNamed("module")).value = (path) ? path : "";
+				dom.getChild(copy, isInputNamed("module")).value = (path) ? path : "";
 				copy.value = (path) ? path : "";
 				makeRemovable(copy);
 				document.getElementById("modules").insertBefore(copy,addButton);
 			}
 
 			this.initialize = function() {
-				addButton = getChild(document.getElementById("modules"), isInputNamed("add"));
+				addButton = dom.getChild(document.getElementById("modules"), isInputNamed("add"));
 				addButton.onclick = function() {
 					addModule("");
 				}
@@ -434,7 +411,7 @@ END LICENSE
 			
 			this.setModules = function(modules) {
 				if (modules.length > 0) {
-					var pathInput = getChild(document.getElementById("module"), isInputNamed("module"));
+					var pathInput = dom.getChild(document.getElementById("module"), isInputNamed("module"));
 					pathInput.value = modules[0];
 
 					for (var i=1; i<modules.length; i++) {
@@ -484,6 +461,7 @@ END LICENSE
 		<div id="tree">
 		</div>
 		<div id="log">
+			<h2>Raw log</h2>
 		</div>
 	</div>
 	<div id="debug">
