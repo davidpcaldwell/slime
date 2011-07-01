@@ -117,38 +117,16 @@ END LICENSE
 				var jsapi = inonit.loader.script(parameters.jsapi+"unit.before.js", { test: "test" });
 				var apiHtmlScript = inonit.loader.script(parameters.jsapi+"api.html.js");
 				jsapi.Scenario.HALT_ON_EXCEPTION = false;
-				debug("Initializing platform...");
-				var scenario;
-
+				
 				var toErrorMessage = function(e) {
 					if (e.message) return e.message + " at line " + e.lineNumber + " in " + e.fileName;
 					if (typeof(e) == "string") return e;
 					return "Unknown error type: " + e;
 				}
-				//	TODO	get rid of platform parameter
-//				try {
-//					inonit.loader.initialize(parameters.platform);
-//				} catch (e) {
-//					scenario = new jsapi.Scenario();
-//					scenario.name = "Unit Tests";
-//					scenario.execute = function(scope) {
-//						scope.test({
-//							success: false,
-//							messages: {
-//								failure: "Error while initializing platform: " + toErrorMessage(e)
-//							}
-//						});
-//					}
-//				}
-				var scopes = [];
+				
 				var scenarios = [];
 				for (var i=0; i<parameters.module.length; i++) {
 					var module = parameters.module[i];
-//					var scope = {
-//						XMLList: function(){},
-//						module: {}
-//					};
-//						var moduleName = module;
 					var location = (function() {
 						if (module.substring(module.length-1) == "/") {
 							return {
@@ -177,46 +155,7 @@ END LICENSE
 					//			maybe with DocumentObjectModel or whatever
 					div.innerHTML = unparsed;
 
-//						var areTests = function(element) {
-//							if (element.tagName != "script") return false;
-//							return (element.type == (MEDIA_TYPE + "#initialize"))
-//								|| (element.type == (MEDIA_TYPE + "#tests"))
-//								|| (element.type == (MEDIA_TYPE + "#destroy"))
-//							;
-//						}
-//							
-//						var getScriptChildren = function(root) {
-//							var rv = [];
-//							
-//							for (var i=0; i<root.childNodes.length; i++) {
-//								if (areTests(root.childNodes[i])) {
-//									rv.push(root.childNodes[i]);
-//								}
-//							}
-//							return rv;
-//						}
-//						
-//						var getScriptDescendants = function(root) {
-//							var rv = [];
-//							
-//							var all = 
-//						}
-						
 					(function() {
-//							var MEDIA_TYPE = "application/x.jsapi";
-//							var pres = (function() {
-//								var all = div.getElementsByTagName("script");
-//								var rv = [];
-//								for (var i=0; i<all.length; i++) {
-//									if (all[i].type.substring(0,MEDIA_TYPE.length) == MEDIA_TYPE) {
-//										rv.push(all[i]);
-//									}
-//								}
-//								return rv;
-//							})();
-						//	TODO	review these scope variables to see whether they make sense
-						//	TODO	move the eval code, perhaps, so that these other variables are not polluting
-						//			the scope and/or leaking into it
 						var Scope = function() {
 							this.$jsapi = new function() {
 								this.module = function(context,path) {
@@ -363,6 +302,7 @@ END LICENSE
 								);
 								scope.module = object;
 							} catch (e) {
+								//	error loading module, which is OK: sometimes tests do not pertain directly to a module
 								debugger;
 							}
 							scope.context = contexts[i];
@@ -370,95 +310,17 @@ END LICENSE
 							moduleScenario.name = module;
 							scenarios.push(moduleScenario);
 						}
-
-//							var contexts = [];
-//							for (var j=0; j<pres.length; j++) {
-//								if (pres[j].type == MEDIA_TYPE + "#context") {
-//									log("CONTEXT: " + pres[j].innerHTML);
-//									scope.$jsapi.module.top = pres[j].getAttribute("jsapi:top");
-//									var value = eval(getCode(pres[j]));
-//									if (value.length) {
-//										contexts = contexts.concat(value);
-//									} else {
-//										contexts.push(value);
-//									}
-//								}
-//							}
-
-//							var executePres = function(pres) {
-//								return function(s) {
-//									for (var j=0; j<pres.length; j++) {
-//										if (pres[j].type == MEDIA_TYPE + "#tests") {
-//											log("TESTS: " + getCode(pres[j]));
-//											var name = pres[j].getAttribute("jsapi:id") ? pres[j].getAttribute("jsapi:id") : "<pre>";
-//											var execute = function(scope) {
-//												try {
-//													eval(getCode(pres[j]));
-//												} catch (e) {
-//													debugger;
-//													scope.test({
-//														success: false,
-//														messages: {
-//															failure: moduleName + " threw: " + String(e) + " on " + getCode(pres[j])
-//														}
-//													});
-//												}
-//											}
-//											s.scenario({
-//												name: name,
-//												execute: execute
-//											});
-//										}
-//									}
-//								}
-//							}
-//							var array = [];
-//							for (var j=0; j<pres.length; j++) {
-//								array.push(pres[j]);
-//							}
-//							scope.$unit.execute = executePres(array);
 					})();
-//					scope.name = module;
-//					try {
-//						inonit.loader.module(
-//							location,
-//							{ $context: (scope.$unit.context) ? scope.$unit.context : {}, $exports: scope.module }
-//						);
-//
-//						scope.execute = function(s) {
-//							scope.$unit.execute(s);
-//						}
-//					} catch (e) {
-//						if (e.code == 404) {
-//							//	TODO	should be better here: right now we assume that it is find that the module cannot be
-//							//			loaded, which allows "standalone" tests like those used to test the browser/module
-//							//			client.js. But that should be made explicit somehow when declaring the "module" in the
-//							//			list of tests, perhaps, or something.
-//							scope.execute = function(s) {
-//								scope.$unit.execute(s);
-//							}
-//						} else {
-//							debugger;
-//							scope.execute = function(s) {
-//								debugger;
-//								s.test({ success: false, messages: { failure: "Error: " + toErrorMessage(e) }});
-//							}
-//						}
-//					}
-//					scopes.push(scope);
 				}
 
 				var _scenario = {};
 				_scenario.name = "Unit Tests";
 				_scenario.execute = function(scope) {
-					debugger;
 					for (var i=0; i<scenarios.length; i++) {
-						//var s = new jsapi.Scenario(scenarios[i]);
-						debugger;
 						scope.scenario(scenarios[i]);
 					}
 				}
-				scenario = new jsapi.Scenario(_scenario);
+				var scenario = new jsapi.Scenario(_scenario);
 				var console = new function() {
 					var log = function(message) {
 						var child = document.createElement("div");

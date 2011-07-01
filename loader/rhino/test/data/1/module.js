@@ -16,6 +16,5 @@
 if ($platform.java && $platform.java.getClass("slime.Data")) {
 	$exports.data = String(new Packages.slime.Data().getData());
 } else {
-	debugger;
 	$exports.data = "No Java";
 }
