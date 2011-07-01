@@ -115,6 +115,7 @@ END LICENSE
 			if (parameters) {
 				log.flush();
 				var jsapi = inonit.loader.script(parameters.jsapi+"unit.before.js", { test: "test" });
+				var apiHtmlScript = inonit.loader.script(parameters.jsapi+"api.html.js");
 				jsapi.Scenario.HALT_ON_EXCEPTION = false;
 				debug("Initializing platform...");
 				var scenario;
@@ -139,187 +140,325 @@ END LICENSE
 //						});
 //					}
 //				}
-				if (inonit.loader.platform || true) {
-					var scopes = [];
-					for (var i=0; i<parameters.module.length; i++) {
-						var module = parameters.module[i];
-						var scope = {
-							$unit: {},
-							$doc: {
-								members: {},
-								types: {}
-							},
-							$Doc: {
-								Type: function() {
-								},
-								Function: function() {
+				var scopes = [];
+				var scenarios = [];
+				for (var i=0; i<parameters.module.length; i++) {
+					var module = parameters.module[i];
+//					var scope = {
+//						XMLList: function(){},
+//						module: {}
+//					};
+//						var moduleName = module;
+					var location = (function() {
+						if (module.substring(module.length-1) == "/") {
+							return {
+								base: module
+							};
+						} else {
+							return {
+								base: module.split("/").slice(0,-1).join("/") + "/",
+								main: module.split("/").slice(-1)
+							};
+						}
+					})();
+					var documentation = (function() {
+						if (!location.main) return location.base + "api.html";
+						var jsName = /(.*)\.js$/.exec(location.main);
+						if (jsName) {
+							return location.base + jsName[1] + ".api.html";
+						} else {
+							//	untested
+							return location.base + location.main + ".api.html";
+						}
+					})();
+					var unparsed = inonit.loader.$sdk.fetch(documentation);
+					var div = document.createElement("div");
+					//	TODO	there may be a more complex, robust, standards-compliant way of doing this
+					//			maybe with DocumentObjectModel or whatever
+					div.innerHTML = unparsed;
+
+//						var areTests = function(element) {
+//							if (element.tagName != "script") return false;
+//							return (element.type == (MEDIA_TYPE + "#initialize"))
+//								|| (element.type == (MEDIA_TYPE + "#tests"))
+//								|| (element.type == (MEDIA_TYPE + "#destroy"))
+//							;
+//						}
+//							
+//						var getScriptChildren = function(root) {
+//							var rv = [];
+//							
+//							for (var i=0; i<root.childNodes.length; i++) {
+//								if (areTests(root.childNodes[i])) {
+//									rv.push(root.childNodes[i]);
+//								}
+//							}
+//							return rv;
+//						}
+//						
+//						var getScriptDescendants = function(root) {
+//							var rv = [];
+//							
+//							var all = 
+//						}
+						
+					(function() {
+//							var MEDIA_TYPE = "application/x.jsapi";
+//							var pres = (function() {
+//								var all = div.getElementsByTagName("script");
+//								var rv = [];
+//								for (var i=0; i<all.length; i++) {
+//									if (all[i].type.substring(0,MEDIA_TYPE.length) == MEDIA_TYPE) {
+//										rv.push(all[i]);
+//									}
+//								}
+//								return rv;
+//							})();
+						//	TODO	review these scope variables to see whether they make sense
+						//	TODO	move the eval code, perhaps, so that these other variables are not polluting
+						//			the scope and/or leaking into it
+						var Scope = function() {
+							this.$jsapi = new function() {
+								this.module = function(context,path) {
+									return inonit.loader.module(
+										{ base: parameters.module[i] + arguments.callee.top + path + "/" },
+										{ context: context }
+									);
 								}
-							},
-							module: {
+								//	set a default which is overwritten below when reading context elements
+								this.module.top = "";
+							};
+
+							this.$platform = inonit.loader.$sdk.platform;
+							this.$api = inonit.loader.$sdk.api;
+						}
+
+						var getCode = function(e) {
+							var rv = "";
+							var nodes = e.childNodes;
+							for (var i=0; i<nodes.length; i++) {
+								var data = nodes[i].data;
+								data = data.replace(/\&amp\;/g, "&").replace(/\&lt\;/g, "<");
+								rv += data;
 							}
-						};
-						scope.XMLList = function() {};
-						try {
-							var moduleName = module;
-							var location = (function() {
-								if (module.substring(module.length-1) == "/") {
-									return {
-										base: module
-									};
-								} else {
-									return {
-										base: module.split("/").slice(0,-1).join("/") + "/",
-										main: module.split("/").slice(-1)
-									};
+							if (/^\<\!\[CDATA\[/.test(rv)) {
+								rv = rv.substring("<[!CDATA[".length,rv.length-"]]>".length);
+							}
+							return rv;
+						}
+
+						var DOM = function(html) {
+							var Element = function(dom) {
+								this.toString = function() {
+									return dom.toString();
 								}
-							})();
-							var documentation = (function() {
-								if (!location.main) return location.base + "api.html";
-								var jsName = /(.*)\.js$/.exec(location.main);
-								if (jsName) {
-									return location.base + jsName[1] + ".api.html";
-								} else {
-									//	untested
-									return location.base + location.main + ".api.html";
+
+								this.getContentString = function() {
+									return getCode(dom);
 								}
-							})();
-							var unparsed = inonit.loader.$sdk.fetch(documentation);
-							var div = document.createElement("div");
-							//	TODO	there may be a more complex, robust, standards-compliant way of doing this
-							//			maybe with DocumentObjectModel or whatever
-							div.innerHTML = unparsed;
-							(function() {
-								var MEDIA_TYPE = "application/x.jsapi";
-								var pres = (function() {
-									var all = div.getElementsByTagName("script");
+
+								var getScriptFilter = function(type) {
+									if (!type) {
+										return function(node) {
+											return node.tagName && node.tagName.toLowerCase() == "script";
+										};
+									} else {
+										return function(node) {
+											return node.tagName && node.tagName.toLowerCase() == "script" && node.type == (apiHtmlScript.MEDIA_TYPE + "#" + type);
+										};
+									}										
+								}
+
+								var addIfMatch = function(rv,node,filter) {
+									if (filter(node)) {
+										rv.push(node);
+									}
+								}
+
+								var addDescendantNodes = function(rv,top,filter) {
+									if (top.childNodes) {
+										for (var i=0; i<top.childNodes.length; i++) {
+											addIfMatch(rv,top.childNodes[i],filter);
+											arguments.callee(rv,top.childNodes[i],filter);
+										}
+									}
+								}
+
+								var getChildNodes = function(filter) {
 									var rv = [];
-									for (var i=0; i<all.length; i++) {
-										if (all[i].type.substring(0,MEDIA_TYPE.length) == MEDIA_TYPE) {
-											rv.push(all[i]);
+									for (var i=0; i<dom.childNodes.length; i++) {
+										if (filter(dom.childNodes[i])) {
+											rv.push(dom.childNodes[i]);
 										}
 									}
 									return rv;
-								})();
-								//	TODO	review these scope variables to see whether they make sense
-								//	TODO	move the eval code, perhaps, so that these other variables are not polluting
-								//			the scope and/or leaking into it
-								var $unit = scope.$unit;
-								var $platform = inonit.loader.$sdk.platform;
-								var $api = inonit.loader.$sdk.api;
-								var module = scope.module;
-								var $jsapi = new function() {
-									this.module = function(context,path) {
-										return inonit.loader.module(
-											{ base: parameters.module[i] + arguments.callee.top + path + "/" },
-											{ context: context }
-										);
-									}
-								};
-								$jsapi.module.top = "";
-
-								var getCode = function(e) {
-									var rv = "";
-									var nodes = e.childNodes;
-									for (var i=0; i<nodes.length; i++) {
-										var data = nodes[i].data;
-										data = data.replace(/\&amp\;/g, "&").replace(/\&lt\;/g, "<");
-										rv += data;
-									}
-									if (/^\<\!\[CDATA\[/.test(rv)) {
-										rv = rv.substring("<[!CDATA[".length,rv.length-"]]>".length);
-									}
-									return rv;
+								}
+								
+								var wrap = function(node) {
+									return new Element(node);
 								}
 
-								for (var j=0; j<pres.length; j++) {
-									if (pres[j].type == MEDIA_TYPE + "#context") {
-										log("CONTEXT: " + pres[j].innerHTML);
-										$jsapi.module.top = pres[j].getAttribute("jsapi:top");
-										scope.$unit.context = eval(getCode(pres[j]));
-									}
-								}
-								for (var j=0; j<pres.length; j++) {
-									if (pres[j].type == MEDIA_TYPE + "#scope") {
-										log("SCOPE: " + pres[j].innerHTML);
-										eval(getCode(pres[j]));
-									}
+								this.getScripts = function(type) {
+									return getChildNodes(getScriptFilter(type)).map(wrap);
 								}
 
-								var executePres = function(pres) {
-									return function(s) {
-										for (var j=0; j<pres.length; j++) {
-											if (pres[j].type == MEDIA_TYPE + "#tests") {
-												log("TESTS: " + getCode(pres[j]));
-												var name = pres[j].getAttribute("jsapi:id") ? pres[j].getAttribute("jsapi:id") : "<pre>";
-												var execute = function(scope) {
-													try {
-														eval(getCode(pres[j]));
-													} catch (e) {
-														debugger;
-														scope.test({
-															success: false,
-															messages: {
-																failure: moduleName + " threw: " + String(e) + " on " + getCode(pres[j])
-															}
-														});
-													}
-												}
-												s.scenario({
-													name: name,
-													execute: execute
-												});
-											}
-										}
-									}
+								this.getDescendantScripts = function(type) {
+									var rv = [];
+									addDescendantNodes(rv,dom,getScriptFilter(type));										
+									return rv.map(wrap);
 								}
-								var array = [];
-								for (var j=0; j<pres.length; j++) {
-									array.push(pres[j]);
-								}
-								scope.$unit.execute = executePres(array);
-							})();
-						} catch (e) {
-							debugger;
-							throw "Not found: API for " + module;
-						}
-						scope.name = module;
-						try {
-							inonit.loader.module(
-								location,
-								{ $context: (scope.$unit.context) ? scope.$unit.context : {}, $exports: scope.module }
-							);
 
-							scope.execute = function(s) {
-								this.$unit.execute(s);
+								this.getChildElements = function() {
+									return getChildNodes(function(node) {
+										return node.nodeType == node.ELEMENT_NODE;
+									}).map(wrap);
+								}
+
+								this.getScriptType = function() {
+									return dom.type;
+								}
+
+								this.isTop = function() {
+									return dom == html;
+								}
+
+								this.getJsapiId = function() {
+									return dom.getAttribute("jsapi:id");
+								}
+
+								this.getNameDiv = function() {
+									var target = getChildNodes(function(node) {
+										return node.tagName && node.tagName.toLowerCase() == "div" && node.getAttribute("class") == "name";
+									});
+									if (target.length == 0) return null;
+									return target[0].innerHTML;
+								}
 							}
-						} catch (e) {
-							if (e.code == 404) {
-								//	TODO	should be better here: right now we assume that it is find that the module cannot be
-								//			loaded, which allows "standalone" tests like those used to test the browser/module
-								//			client.js. But that should be made explicit somehow when declaring the "module" in the
-								//			list of tests, perhaps, or something.
-								scope.execute = function(s) {
-									this.$unit.execute(s);
+
+							this.top = new Element(html);
+
+							this.getElementByJsapiId = function(id) {
+								throw new Error("Unimplemented");
+							}
+						}
+
+						var root = (function() {
+							for (var i=0; i<div.childNodes.length; i++) {
+								if (div.childNodes[i].tagName == "html") {
+									return div.childNodes[i];
 								}
-							} else {
+							}
+							//	browser does not preserve html element under div, at least in Chrome, rather putting title
+							//	and other body content under div
+							return div;
+						})();
+						var apiHtml = new apiHtmlScript.ApiHtmlTests(new DOM(root),module);
+						var scope = new Scope();
+						var contexts = apiHtml.getContexts(scope);
+						for (var i=0; i<contexts.length; i++) {
+							try {
+								var object = inonit.loader.module(
+									location,
+									contexts[i]
+								);
+								scope.module = object;
+							} catch (e) {
 								debugger;
-								scope.execute = function(s) {
-									debugger;
-									s.test({ success: false, messages: { failure: "Error: " + toErrorMessage(e) }});
-								}
 							}
+							scope.context = contexts[i];
+							var moduleScenario = apiHtml.getScenario(scope);
+							moduleScenario.name = module;
+							scenarios.push(moduleScenario);
 						}
-						scopes.push(scope);
-					}
-					scenario = new jsapi.Scenario();
-					scenario.name = "Unit Tests";
-					scenario.execute = function(scope) {
-						for (var i=0; i<scopes.length; i++) {
-							var s = new jsapi.Scenario(scopes[i]);
-							scope.scenario(s);
-						}
+
+//							var contexts = [];
+//							for (var j=0; j<pres.length; j++) {
+//								if (pres[j].type == MEDIA_TYPE + "#context") {
+//									log("CONTEXT: " + pres[j].innerHTML);
+//									scope.$jsapi.module.top = pres[j].getAttribute("jsapi:top");
+//									var value = eval(getCode(pres[j]));
+//									if (value.length) {
+//										contexts = contexts.concat(value);
+//									} else {
+//										contexts.push(value);
+//									}
+//								}
+//							}
+
+//							var executePres = function(pres) {
+//								return function(s) {
+//									for (var j=0; j<pres.length; j++) {
+//										if (pres[j].type == MEDIA_TYPE + "#tests") {
+//											log("TESTS: " + getCode(pres[j]));
+//											var name = pres[j].getAttribute("jsapi:id") ? pres[j].getAttribute("jsapi:id") : "<pre>";
+//											var execute = function(scope) {
+//												try {
+//													eval(getCode(pres[j]));
+//												} catch (e) {
+//													debugger;
+//													scope.test({
+//														success: false,
+//														messages: {
+//															failure: moduleName + " threw: " + String(e) + " on " + getCode(pres[j])
+//														}
+//													});
+//												}
+//											}
+//											s.scenario({
+//												name: name,
+//												execute: execute
+//											});
+//										}
+//									}
+//								}
+//							}
+//							var array = [];
+//							for (var j=0; j<pres.length; j++) {
+//								array.push(pres[j]);
+//							}
+//							scope.$unit.execute = executePres(array);
+					})();
+//					scope.name = module;
+//					try {
+//						inonit.loader.module(
+//							location,
+//							{ $context: (scope.$unit.context) ? scope.$unit.context : {}, $exports: scope.module }
+//						);
+//
+//						scope.execute = function(s) {
+//							scope.$unit.execute(s);
+//						}
+//					} catch (e) {
+//						if (e.code == 404) {
+//							//	TODO	should be better here: right now we assume that it is find that the module cannot be
+//							//			loaded, which allows "standalone" tests like those used to test the browser/module
+//							//			client.js. But that should be made explicit somehow when declaring the "module" in the
+//							//			list of tests, perhaps, or something.
+//							scope.execute = function(s) {
+//								scope.$unit.execute(s);
+//							}
+//						} else {
+//							debugger;
+//							scope.execute = function(s) {
+//								debugger;
+//								s.test({ success: false, messages: { failure: "Error: " + toErrorMessage(e) }});
+//							}
+//						}
+//					}
+//					scopes.push(scope);
+				}
+
+				var _scenario = {};
+				_scenario.name = "Unit Tests";
+				_scenario.execute = function(scope) {
+					debugger;
+					for (var i=0; i<scenarios.length; i++) {
+						//var s = new jsapi.Scenario(scenarios[i]);
+						debugger;
+						scope.scenario(scenarios[i]);
 					}
 				}
+				scenario = new jsapi.Scenario(_scenario);
 				var console = new function() {
 					var log = function(message) {
 						var child = document.createElement("div");
