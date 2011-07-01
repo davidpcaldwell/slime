@@ -121,9 +121,9 @@ END LICENSE
 				<div class="name">namespace</div>
 				<span>Invokes the platform loader's <code>namespace</code> method.</span>
 				<script type="application/x.jsapi#tests">
-					scope.test(typeof(window.foo) == "undefined");
+					test(typeof(window.foo) == "undefined");
 					var ns = inonit.loader.namespace("foo.bar.baz");
-					scope.test(ns == window.foo.bar.baz);
+					test(ns == window.foo.bar.baz);
 				</script>
 				<script type="application/x.jsapi#tests" jsapi:id="top-level scope">
 					var f = function() {
@@ -134,8 +134,8 @@ END LICENSE
 						this.f = f;
 					}
 
-					scope.test(f() == window);
-					scope.test(x.f() != window);
+					test(f() == window);
+					test(x.f() != window);
 				</script>
 			</li>
 			<li class="value">
