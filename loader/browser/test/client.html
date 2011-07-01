@@ -188,6 +188,8 @@ END LICENSE
 
 						var DOM = function(html) {
 							var Element = function(dom) {
+								this.localName = dom.tagName.toLowerCase();
+								
 								this.toString = function() {
 									return dom.toString();
 								}
