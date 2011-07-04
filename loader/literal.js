@@ -28,6 +28,7 @@ new function() {
 		(function() {
 			var getJavaClass = function(name) {
 				try {
+					if (typeof(Packages) == "undefined") return null;
 					var rv = Packages[name];
 					if (typeof(rv) == "function") return rv;
 					return null;
@@ -45,14 +46,18 @@ new function() {
 			}
 
 			try {
-				this.Object.defineProperty.setReadOnly = $engine.Object.defineProperty.setReadOnly;
+				if (typeof($engine) != "undefined") {
+					this.Object.defineProperty.setReadOnly = $engine.Object.defineProperty.setReadOnly;
+				}
 			} catch (e) {
 			}
 		}).call($exports);
 
 		try {
-			if ($engine.MetaObject) {
-				$exports.MetaObject = $engine.MetaObject;
+			if (typeof($engine) != "undefined") {
+				if ($engine.MetaObject) {
+					$exports.MetaObject = $engine.MetaObject;
+				}
 			}
 		} catch (e) {
 		}
