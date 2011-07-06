@@ -105,6 +105,7 @@ $exports.Scenario = function(properties) {
 			} catch (e) {
 				scope.test({
 					success: null,
+					error: e,
 					messages: new function() {
 						this.failure = "Exception thrown: " + e;
 					}

@@ -50,8 +50,11 @@ $exports.console = new function() {
 			}
 			var code = (test.success == null) ? "*" : "X";
 			$context.console.print(code);
-			if (test.success == null && $context.verbose) {
-				$context.console.println("Error = " + test.messages.failure);
+			if (test.success == null) {
+				$context.console.println(test.error);
+				if (test.error.stack) {
+					$context.console.println(test.error.stack.join("\n"));
+				}
 			}
 			stack[stack.length-1].success = false;
 		} else {
