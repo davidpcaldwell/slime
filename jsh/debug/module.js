@@ -33,9 +33,9 @@ var Profile = function() {
 		var children = [];
 		var calls = 0;
 
-		var getNodeFor = function(f) {
+		var getNodeFor = function(key) {
 			for (var i=0; i<children.length; i++) {
-				if (children[i].f == f) {
+				if (children[i].key == key) {
 					return children[i].node;
 				}
 			}
@@ -43,10 +43,11 @@ var Profile = function() {
 		}
 
 		this.getNodeFor = function(f) {
-			var rv = getNodeFor(f);
+			var key = String(f);
+			var rv = getNodeFor(key);
 			if (rv == null) {
 				rv = new Node(f,this);
-				children.push({ f: f, node: rv });
+				children.push({ f: f, key: String(f), node: rv });
 			}
 			return rv;
 		}
