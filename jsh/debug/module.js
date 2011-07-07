@@ -21,7 +21,7 @@ var Stopwatch = function() {
 	}
 }
 
-$exports.Profile = function(o) {
+$exports.Profile = function() {
 	//	TODO	Does not really work with threading
 	
 	var Node = function(p,parent) {
@@ -84,7 +84,7 @@ $exports.Profile = function(o) {
 		}
 	}
 
-	var top = new Node(o);
+	var top = new Node();
 	
 	var current = top;
 	
@@ -116,7 +116,9 @@ $exports.Profile = function(o) {
 		}
 	}
 	
-	decorate(o);
+	for (var i=0; i<arguments.length; i++) {
+		decorate(arguments[i]);
+	}
 	
 	this.getData = function() {
 		return top.getData(new Date());
