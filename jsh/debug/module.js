@@ -3,13 +3,17 @@ var Stopwatch = function() {
 	var started;
 
 	this.start = function() {
-		started = new Date();
+		if (!started) {
+			started = new Date();
+		}
 	}
 
 	this.stop = function() {
-		var stopped = new Date();
-		elapsed += (stopped.getTime() - started.getTime());
-		started = null;
+		if (started) {
+			var stopped = new Date();
+			elapsed += (stopped.getTime() - started.getTime());
+			started = null;
+		}
 	}
 
 	this.getElapsed = function(date) {
@@ -21,7 +25,7 @@ var Stopwatch = function() {
 	}
 }
 
-$exports.Profile = function() {
+var Profile = function() {
 	//	TODO	Does not really work with threading
 	
 	var Node = function(p,parent) {
@@ -55,8 +59,10 @@ $exports.Profile = function() {
 			}
 
 			this.stop = function() {
-				stopwatch.stop();
-				current = parent;
+				if (current == this) {
+					stopwatch.stop();
+					current = parent;
+				}
 			}
 
 			this.getElapsed = function(date) {
@@ -80,6 +86,18 @@ $exports.Profile = function() {
 			rv.children = children.map(function(child) {
 				return child.node.getData(date);
 			});
+			if (calls > 0 && children.length > 0) {
+				var childTime = 0;
+				rv.children.forEach(function(child) {
+					childTime += child.elapsed;
+				});
+				rv.children.push(new function() {
+					this.node = null;
+					this.calls = calls;
+					this.elapsed = rv.elapsed - childTime;
+					this.children = null;
+				});
+			}
 			return rv;
 		}
 	}
@@ -88,6 +106,8 @@ $exports.Profile = function() {
 	
 	var current = top;
 	
+	var decorated = [];
+	
 	var decorate = function(p) {
 		if (typeof(p) == "function") {
 			var f = p;
@@ -95,8 +115,21 @@ $exports.Profile = function() {
 				var next = current.getNodeFor(f);
 				next.start();
 				try {
-					//	TODO	next: decorate return values
-					return f.apply(this,arguments);
+					var rv;
+					if (this.constructor == f) {
+						//	is constructor
+						rv = eval("new f(" + Array.prototype.map.call(arguments,function(arg,index) { return "arguments[" + index + "]"} ).join(",") + ")");
+					} else {
+						rv = f.apply(this,arguments);
+					}
+					next.stop();
+					if (typeof(rv) == "object" && rv != null) {
+						if (decorated.indexOf(rv) == -1) {
+							decorate(rv);
+							decorated.push(rv);
+						}
+					}
+					return rv;
 				} finally {
 					next.stop();
 				}
@@ -116,11 +149,35 @@ $exports.Profile = function() {
 		}
 	}
 	
-	for (var i=0; i<arguments.length; i++) {
-		decorate(arguments[i]);
+	this.add = function(o) {
+		return decorate(o);
 	}
 	
 	this.getData = function() {
 		return top.getData(new Date());
+	}
+}
+
+$exports.profile = new function() {
+	var cpu;
+	
+	this.cpu = function() {
+		if (!cpu) {
+			cpu = new Profile();
+		}
+		for (var i=0; i<arguments.length; i++) {
+			cpu.add(arguments[i]);
+		}
+		return cpu;
+	}
+	
+	this.add = function(f) {
+		if (cpu) {
+			debugger;
+			return cpu.add(f);
+		} else {
+			debugger;
+			return f;
+		}
 	}
 }
