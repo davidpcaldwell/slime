@@ -281,7 +281,7 @@ var module = function(path) {
 };
 
 //	TODO	loader is just to support the old platform module used by the deprecated bootstrap loader
-["js/object","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script"].forEach( function(item) {
+["js/object","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","jsh/debug"].forEach( function(item) {
 	module(item);
 });
 
