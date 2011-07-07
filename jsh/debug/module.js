@@ -174,10 +174,8 @@ $exports.profile = new function() {
 	
 	this.add = function(f) {
 		if (cpu) {
-			debugger;
 			return cpu.add(f);
 		} else {
-			debugger;
 			return f;
 		}
 	}
