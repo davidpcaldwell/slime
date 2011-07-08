@@ -62,11 +62,22 @@ var errors = new function() {
 			} catch (e) {
 				tracer = e;
 			}
-			var sw = new Packages.java.io.StringWriter();
-			var pw = new Packages.java.io.PrintWriter(sw);
-			tracer.rhinoException.printStackTrace(pw);
-			pw.flush();
-			var stack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
+			var t = tracer.rhinoException;
+			var stack = [];
+			while(t != null) {
+				var sw = new Packages.java.io.StringWriter();
+				var pw = new Packages.java.io.PrintWriter(sw);
+				t.printStackTrace(pw);
+				pw.flush();
+				var tstack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
+				for (var i=0; i<tstack.length; i++) {
+					if (/^Caused by\:/.test(tstack[i])) {
+						break;
+					}
+					stack.push(tstack[i]);
+				}
+				t = t.getCause();
+			}
 			//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
 			//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
 			//			to this file
