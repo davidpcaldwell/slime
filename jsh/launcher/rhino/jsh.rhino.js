@@ -281,6 +281,7 @@ settings.explicit = new function() {
 }
 
 settings.directives = function(source) {
+	var directivePattern = /^(?:\/\/)?\#(.*)$/;
 	var directives = source.split("\n").map( function(line) {
 		if (line.substring(0,line.length-1) == "\r") {
 			return line.substring(0,line.length-1);
@@ -288,9 +289,9 @@ settings.directives = function(source) {
 			return line;
 		}
 	}).filter( function(line) {
-		return /^\#/.test(line);
+		return directivePattern.test(line);
 	}).map( function(line) {
-		return line.substring(1);
+		return directivePattern.exec(line)[1];
 	});
 	directives.jvmOptions = [];
 	directives.classpath = [];
