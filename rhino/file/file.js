@@ -286,7 +286,10 @@ var Pathname = function(parameters) {
 		this.remove = function() {
 			//	TODO	Should probably invalidate this object somehow
 			//	TODO	Should this return a value of some kind?
-			$filesystem.remove(peer);
+			var success = $filesystem.remove(peer);
+			if (!success) {
+				throw new Error("Failed to delete: " + this.pathname);
+			}
 		}
 
 		this.getPathname = getPathname;

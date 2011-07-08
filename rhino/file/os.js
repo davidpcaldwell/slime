@@ -220,7 +220,7 @@ var System = function(peer,PARENT) {
 	}
 
 	this.remove = function(peer) {
-		peer["delete"]();
+		return peer["delete"]();
 	}
 
 	this.list = function(peer) {
