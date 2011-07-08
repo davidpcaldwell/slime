@@ -157,6 +157,45 @@ var Profile = function() {
 	this.getData = function() {
 		return top.getData(new Date());
 	}
+	
+	var dump = function(data,indent,mode) {
+		if (!indent) indent = "";
+		var recurse = arguments.callee;
+		var title = (function() {
+			if (typeof(data.node) == "undefined") {
+				return "(top)";
+			} else if (data.node == null) {
+				return "(self)";
+			} else if (typeof(data.node == "function")) {
+				var code = String(data.node);
+				code = code.split("\n").map(function(line) {
+					return indent + line;
+				}).slice(0,-1).join("\n")
+				return code;
+			} else {
+				throw new Error("Unknown node type: " + data.node);
+			}
+		})();
+		if (data.calls > 0) {
+			mode.log(indent + "Calls: " + data.calls + " elapsed: " + String( (data.elapsed / 1000).toFixed(3) )
+				+ " average: " + String( (data.elapsed / data.calls / 1000).toFixed(6) ) + " " + title
+			);
+		} else {
+			mode.log(indent + "Calls: " + data.calls + " " + title);
+		}
+		if (data.children) {
+			data.children.sort(function(a,b) {
+				return b.elapsed - a.elapsed;
+			});
+			data.children.forEach( function(child) {
+				recurse(child,indent+mode.indent,mode);
+			});
+		}
+	}
+
+	this.dump = function(mode) {
+		dump(this.getData(),"",mode);
+	}
 }
 
 $exports.profile = new function() {
