@@ -36,6 +36,7 @@ this.jsh = new function() {
 				this.script = function(name,$in,scope,target) {
 					if (!target) target = null;
 					$host.script(name,$in,scope,target);
+					$in.close();
 				}
 			};
 
