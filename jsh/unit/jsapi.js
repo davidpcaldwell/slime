@@ -131,13 +131,12 @@ $exports.tests = new function() {
 					name += "." + unit;
 				}
 				this.html = new $context.html.ApiHtmlTests(e4x,name);
+				this.getScenario = function(scope) {
+					return this.html.getScenario(scope,unit);
+				}
 			}
 
 			this.namespace = moduleDescriptor.namespace;
-
-			this.getScenario = function(scope) {
-				return this.html.getScenario(scope,unit);
-			}
 
 			this.loadWith = function(context) {
 				return jsh.loader.module(moduleDescriptor.location, (context) ? context : {});
@@ -222,13 +221,28 @@ $exports.tests = new function() {
 					$api: jsh.$jsapi.$api
 				};
 				
-				var contexts = suite.html.getContexts(scope);
+				var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
 				
 				for (var i=0; i<contexts.length; i++) {
 					try {
-						scope.module = suite.loadWith(contexts[i]);
-						scope.context = contexts[i];
-						topscope.scenario( suite.getScenario(scope) );
+						if (suite.getScenario) {
+							scope.module = suite.loadWith(contexts[i]);
+							scope.context = contexts[i];
+							topscope.scenario( suite.getScenario(scope) );							
+						} else {
+							topscope.scenario(new function() {
+								this.name = suite.name + " (NO TESTS)";
+								
+								this.execute = function(scope) {
+									scope.test({
+										success: false,
+										messages: {
+											failure: suite.name + " has no api.html file containing tests." 
+										}
+									});
+								}
+							})
+						}
 					} catch (e) {
 						//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
 						topscope.scenario(new function() {
