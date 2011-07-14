@@ -268,12 +268,13 @@ this.jsh = new function() {
 			if (enabled) {
 				$host.getDebugger().setBreakOnExceptions(false);
 			}
-			var rv = f.apply(this,arguments);
-			if (enabled) {
-				$host.getDebugger().setBreakOnExceptions(true);
+			try {
+				return f.apply(this,arguments);
+			} finally {
+				if (enabled) {
+					$host.getDebugger().setBreakOnExceptions(true);
+				}				
 			}
-			return rv;
 		}
 	}
-//	}
 };
