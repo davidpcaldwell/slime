@@ -115,12 +115,12 @@ var Pathname = function(parameters) {
 				if (append == true) {
 				} else if (append == false) {				
 				} else {
-					throw "Cannot create file at " + toString() + "; already exists (use append to override)";
+					throw new Error("Cannot create file at " + toString() + "; already exists (use append to override)");
 				}
 			}
 			if (!getParent().directory) {
 				if (!mode.recursive) {
-					throw "Cannot create file at " + toString() + "; parent directory does not exist (use recursive to override)";
+					throw new Error("Cannot create file at " + toString() + "; parent directory does not exist (use recursive to override)");
 				} else {
 					getParent().createDirectory({ recursive: true });
 				}
@@ -156,7 +156,7 @@ var Pathname = function(parameters) {
 	this.createDirectory = function(mode) {
 		if (!mode) mode = {};
 		if (!mode.ifExists) {
-			mode.ifExists = function() { fail("Cannot create directory; already exists: " + toString()); }
+			mode.ifExists = function() { throw new Error("Cannot create directory; already exists: " + toString()); }
 		}
 		if ($filesystem.exists(peer)) {
 			var getNode = function() {
@@ -175,12 +175,12 @@ var Pathname = function(parameters) {
 			success = $filesystem.createDirectoryAt(peer);
 		} else {
 			if (!getParent().directory) {
-				throw "Could not create: " + toString() + "; parent directory does not exist.";
+				throw new Error("Could not create: " + toString() + "; parent directory does not exist.");
 			}
 			success = $filesystem.createDirectoryAt(peer);
 		}
 		if (!success) {
-			throw "Could not create: " + toString();
+			throw new Error("Could not create: " + toString());
 		}
 		return getDirectory();
 	}
@@ -340,7 +340,7 @@ var Pathname = function(parameters) {
 		}
 
 		this.getSubdirectory = function(name) {
-			if (!name) throw "Missing: subdirectory name.";
+			if (!name) throw new TypeError("Missing: subdirectory name.");
 			return $filesystem.newPathname( this.getRelativePath(name).toString() ).directory;
 		}
 
@@ -458,12 +458,12 @@ var Searchpath = function(parameters) {
 		if (parameters instanceof Array) {
 			return defaults.filesystem.Searchpath(parameters);
 		} else {
-			throw "Illegal argument to Searchpath(): " + parameters;
+			throw new TypeError("Illegal argument to Searchpath(): " + parameters);
 		}
 	}
 
 	if (!parameters || !parameters.array) {
-		throw "Illegal argument to new Searchpath(): " + parameters;
+		throw new TypeError("Illegal argument to new Searchpath(): " + parameters);
 	}
 
 	var array = parameters.array.slice(0);
