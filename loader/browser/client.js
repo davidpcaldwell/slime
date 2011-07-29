@@ -60,6 +60,8 @@
 	var Bootstrap = function(src) {
 		this.base = src.split("/").slice(0,-1).join("/") + "/";
 
+		this.src = src;
+		
 		this.getRelativePath = function(path) {
 			return this.base + path;
 		}
