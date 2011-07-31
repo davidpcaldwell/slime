@@ -279,6 +279,10 @@ new function() {
 						});
 						return loader.load({ $context: context });
 					}
+					
+					if (format.decorateLoader) {
+						format.decorateLoader(this);
+					}
 				}()
 			};
 

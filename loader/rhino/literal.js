@@ -74,6 +74,15 @@ new function() {
 					$in: $in
 				});
 			};
+			
+
+			this.decorateLoader = function($loader) {
+				$loader.java = new function() {
+					this.read = function(path) {
+						return $engine_module.read(new Packages.java.lang.String(path));
+					}
+				}
+			}
 		}
 	}
 
