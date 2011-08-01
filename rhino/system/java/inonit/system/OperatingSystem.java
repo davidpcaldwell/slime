@@ -28,8 +28,13 @@ public class OperatingSystem {
 		return Command.getCommandOutput(path, arguments);
 	}
 
+	//	TODO	eliminate; return Result object
 	public boolean shellCommand(String path, String[] arguments) throws IOException {
-		return Command.wasSuccessfulExecuting(path, arguments);
+		return Command.execute(path, arguments).isSuccess();
+	}
+	
+	public Command.Result execute(String path, String[] arguments) {
+		return Command.execute(path, arguments);
 	}
 
 	public Subprocess start(Command.Configuration configuration, Command.Context context) throws IOException {

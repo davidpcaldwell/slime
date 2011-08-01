@@ -19,6 +19,7 @@ import java.io.*;
 import java.util.*;
 
 import inonit.script.runtime.io.*;
+import inonit.system.*;
 
 class NodeImpl extends Filesystem.Node {
 	private static void check(CygwinFilesystem parent) {
@@ -50,9 +51,9 @@ class NodeImpl extends Filesystem.Node {
 		return rv;
 	}
 
-	static NodeImpl createDirectory(CygwinFilesystem parent, NodeImpl directory, String leafName) throws IOException {
-		File directoryHost = directory.getHostFile();
-		String directoryScriptPath = directory.getScriptPath();
+	static NodeImpl createDirectory(CygwinFilesystem parent, NodeImpl directory, String leafName) throws CygwinFilesystem.CygpathException {
+		File directoryHost = directory.getCygwinHostFile();
+		String directoryScriptPath = directory.getCygwinScriptPath();
 		check(parent);
 		check(directoryScriptPath);
 		NodeImpl rv = new NodeImpl();
@@ -66,9 +67,9 @@ class NodeImpl extends Filesystem.Node {
 	}
 
 	//	ordinary file
-	static NodeImpl createFile(CygwinFilesystem parent, NodeImpl directory, String leafName) throws IOException {
-		File directoryHost = directory.getHostFile();
-		String directoryScriptPath = directory.getScriptPath();
+	static NodeImpl createFile(CygwinFilesystem parent, NodeImpl directory, String leafName) throws CygwinFilesystem.CygpathException {
+		File directoryHost = directory.getCygwinHostFile();
+		String directoryScriptPath = directory.getCygwinScriptPath();
 		check(parent);
 		check(directoryScriptPath);
 		NodeImpl rv = new NodeImpl();
@@ -81,8 +82,8 @@ class NodeImpl extends Filesystem.Node {
 		return rv;
 	}
 
-	static NodeImpl createLink(CygwinFilesystem parent, NodeImpl directory, String leafName) throws IOException {
-		String directoryScriptPath = directory.getScriptPath();
+	static NodeImpl createLink(CygwinFilesystem parent, NodeImpl directory, String leafName) throws CygwinFilesystem.CygpathException {
+		String directoryScriptPath = directory.getCygwinScriptPath();
 		check(parent);
 		check(directoryScriptPath);
 		NodeImpl rv = new NodeImpl();
@@ -109,15 +110,23 @@ class NodeImpl extends Filesystem.Node {
 		return getClass().getName() + " scriptPath = " + scriptPath + " host = " + host;
 	}
 
-	private File toHostFileImpl(String scriptPath) throws IOException {
+	private File toHostFileImpl(String scriptPath) throws CygwinFilesystem.CygpathException {
 		return parent.toHostFileImpl(scriptPath);
 	}
-
-	public File getHostFile() throws IOException {
+	
+	File getCygwinHostFile() throws CygwinFilesystem.CygpathException {
 		if (host == null) {
 			host = toHostFileImpl(scriptPath);
 		}
 		return host;
+	}
+
+	public File getHostFile() throws IOException {
+		try {
+			return getCygwinHostFile();
+		} catch (CygwinFilesystem.CygpathException e) {
+			throw new IOException(e);
+		}
 	}
 
 	private void uncache() {
@@ -144,12 +153,32 @@ class NodeImpl extends Filesystem.Node {
 		}
 		return exists.booleanValue();
 	}
-
-	public String getScriptPath() throws IOException {
+	
+	private String getCanonicalPath() throws CygwinFilesystem.CygpathException {
+		try {
+			return getCygwinHostFile().getCanonicalPath();
+		} catch (IOException e) {
+			throw new CygwinFilesystem.CanonicalPathException(e);
+		}
+	}
+	
+	String getCygwinScriptPath() throws CygwinFilesystem.CygpathException {
 		if (scriptPath == null) {
-			scriptPath = parent.toScriptPath(host.getCanonicalPath());
+			scriptPath = parent.toScriptPath(getCanonicalPath());
 		}
 		return scriptPath;
+	}
+
+	public String getScriptPath() throws IOException {
+		try {
+			return getCygwinScriptPath();
+		} catch (CygwinFilesystem.CygpathException e) {
+			throw new IOException(e);
+		}
+	}
+	
+	boolean isCygwinDirectory() throws CygwinFilesystem.CygpathException {
+		return getCygwinHostFile().isDirectory();
 	}
 
 	public boolean isDirectory() throws IOException {
@@ -159,34 +188,69 @@ class NodeImpl extends Filesystem.Node {
 		return directory.booleanValue();
 	}
 
-	boolean isSoftlink() throws IOException {
+	boolean isSoftlink() throws CygwinFilesystem.CygpathException, Command.Result.Failure {
 		if (softlink == null) {
 			softlink = new Boolean( parent.isSoftlink(this) );
 		}
 		return softlink.booleanValue();
 	}
-
-	public boolean delete() throws IOException {
-		if (!exists()) {
-			return false;
-		} else {
-			uncache();
-			return parent.delete(this);
+	
+	private void process(Command.Result result) throws IOException {
+		if (!result.isSuccess()) {
+			if (result.getLaunchException() != null) {
+				throw new IOException(result.getLaunchException());
+			} else if (result.getErrorStream() != null) {
+				throw new IOException(new Streams().readString(result.getErrorStream()));
+			}
 		}
 	}
 
-	public boolean mkdir() throws IOException {
-		uncache();
-		return parent.mkdir(this);
+	public void delete() throws IOException {
+		if (!exists()) {
+			throw new IOException("Does not exist: " + this);
+		} else {
+			uncache();
+			try {
+				process(parent.delete(this));
+			} catch (CygwinFilesystem.CygpathException e) {
+				throw new IOException(e);
+			} catch (Command.Result.Failure e) {
+				process(e.getResult());
+			}
+		}
 	}
 
-	public boolean mkdirs() throws IOException {
+	public void mkdir() throws IOException {
 		uncache();
-		return parent.mkdirs(this);
+		try {
+			process(parent.mkdir(this));
+		} catch (CygwinFilesystem.CygpathException e) {
+			throw new IOException(e);
+		} catch (Command.Result.Failure e) {
+			process(e.getResult());
+		}
+	}
+
+	public void mkdirs() throws IOException {
+		uncache();
+		try {
+			process(parent.mkdirs(this));
+		} catch (CygwinFilesystem.CygpathException e) {
+			throw new IOException(e);
+		} catch (Command.Result.Failure e) {
+			process(e.getResult());
+		}
 	}
 
 	public Filesystem.Node[] list(FilenameFilter pattern) throws IOException {
-		return parent.list(this, pattern);
+		try {
+			return parent.list(this, pattern);
+		} catch (CygwinFilesystem.CygpathException e) {
+			throw new IOException(e);
+		} catch (Command.Result.Failure e) {
+			process(e.getResult());
+			throw new RuntimeException("Unreachable; above line should always throw exception.");
+		}
 	}
 
 	public final OutputStream writeBinary(boolean append) throws IOException {

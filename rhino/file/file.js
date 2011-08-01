@@ -172,15 +172,12 @@ var Pathname = function(parameters) {
 
 		var success;
 		if (mode.recursive) {
-			success = $filesystem.createDirectoryAt(peer);
+			$filesystem.createDirectoryAt(peer);
 		} else {
 			if (!getParent().directory) {
 				throw new Error("Could not create: " + toString() + "; parent directory does not exist.");
 			}
-			success = $filesystem.createDirectoryAt(peer);
-		}
-		if (!success) {
-			throw new Error("Could not create: " + toString());
+			$filesystem.createDirectoryAt(peer);
 		}
 		return getDirectory();
 	}
@@ -286,10 +283,7 @@ var Pathname = function(parameters) {
 		this.remove = function() {
 			//	TODO	Should probably invalidate this object somehow
 			//	TODO	Should this return a value of some kind?
-			var success = $filesystem.remove(peer);
-			if (!success) {
-				throw new Error("Failed to delete: " + this.pathname);
-			}
+			$filesystem.remove(peer);
 		}
 
 		this.getPathname = getPathname;
