@@ -302,7 +302,7 @@ var Resource = function(p) {
 			if (mode == Streams.text) return text();
 			if (mode == XML) return text().asXml();
 			if (mode == String) return text().asString();
-			throw "No read() mode specified: argument was " + mode;
+			throw new TypeError("No read() mode specified: argument was " + mode);
 		}
 	}
 
