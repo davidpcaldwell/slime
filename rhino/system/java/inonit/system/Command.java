@@ -75,7 +75,7 @@ public class Command {
 	public static abstract class Listener {
 		private Integer status;
 
-		final void setStatus(int status) {
+		final void finished(int status) {
 			this.status = new Integer(status);
 			this.finished();
 		}
@@ -83,9 +83,68 @@ public class Command {
 		public final Integer getExitStatus() {
 			return status;
 		}
-
+		
 		public abstract void finished();
 		public abstract void threw(IOException e);
+	}
+	
+	public static class Result {
+		private Integer status;
+		private IOException exception;
+		private byte[] output;
+		private byte[] error;
+		
+		final void finished(int status, byte[] output, byte[] error) {
+			this.status = new Integer(status);
+			this.output = output;
+			this.error = error;
+		}
+		
+		final void threw(IOException e) {
+			this.exception = e;
+		}
+		
+		public final Integer getExitStatus() {
+			return status;
+		}
+		
+		public final InputStream getOutputStream() {
+			if (output == null) return null;
+			return new ByteArrayInputStream(output);
+		}
+		
+		public final InputStream getErrorStream() {
+			if (error == null) return null;
+			return new ByteArrayInputStream(error);
+		}
+		
+		public final IOException getLaunchException() {
+			return exception;
+		}
+		
+		public final boolean isSuccess() {
+			return this.status != null && this.status.intValue() == 0;
+		}
+		
+		public static class Failure extends Exception {
+			private Result result;
+			
+			Failure(Result result) {
+				this.result = result;
+			}
+			
+			public Result getResult() {
+				return this.result;
+			}
+		}
+		
+		public final Result evaluate() throws Failure {
+			if (this.isSuccess()) {
+				return this;
+			} else {
+				throw new Failure(this);
+			}
+		}
 	}
 
 	static String getCommandOutput(String path, String[] arguments) throws IOException {
@@ -98,14 +157,13 @@ public class Command {
 		return context.getCommandOutput();
 	}
 
-	static boolean wasSuccessfulExecuting(String path, String[] arguments) throws IOException {
+	static Result execute(String path, String[] arguments) {
 		Command shell = new Command();
+		ContextImpl context = new ContextImpl();
 		shell.configuration = new ConfigurationImpl(path, arguments);
-		ListenerImpl listener = new ListenerImpl();
-		shell.execute(new ContextImpl(), listener);
-		if (listener.threw() != null) throw listener.threw();
-		Integer status = listener.getExitStatus();
-		return (status != null && status.intValue() == 0);
+		Result result = new Result();
+		shell.execute(context, result);
+		return result;
 	}
 
 	private static class ContextImpl extends Context {
@@ -117,8 +175,6 @@ public class Command {
 		private File working = null;
 		private Map environment = null;
 		
-		private String commandOutput;
-		
 		public File getWorkingDirectory() {
 			return working;
 		}
@@ -127,11 +183,11 @@ public class Command {
 			return environment;
 		}
 
-		public OutputStream getStandardOutput() {
+		public ByteArrayOutputStream getStandardOutput() {
 			return out;
 		}
 
-		public OutputStream getStandardError() {
+		public ByteArrayOutputStream getStandardError() {
 			return err;
 		}
 		
@@ -146,6 +202,8 @@ public class Command {
 		void setStandardInput(InputStream in) {
 			this.in = in;
 		}
+		
+		private String commandOutput;
 		
 		public String getCommandOutput() throws IOException {
 			if (commandOutput == null) {
@@ -235,12 +293,28 @@ public class Command {
 	Subprocess start(Context context) throws IOException {
 		return new Subprocess(launch(context));
 	}
+	
+	void execute(ContextImpl context, Result result) {
+		try {
+			Process p = launch(context);
+			try {
+				int status = p.waitFor();
+				result.finished(status, context.getStandardOutput().toByteArray(), context.getStandardError().toByteArray());
+			} catch (InterruptedException e) {
+				throw new RuntimeException("Subprocess thread interrupted.");
+			}
+		} catch (IOException e) {
+			result.threw(e);
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
+	}
 
 	void execute(Context context, Listener listener) {
 		try {
 			Process p = launch(context);
 			try {
-				listener.setStatus(p.waitFor());
+				listener.finished(p.waitFor());
 			} catch (InterruptedException e) {
 				throw new RuntimeException("Subprocess thread interrupted.");
 			}

@@ -18,6 +18,8 @@ package inonit.script.jsh.launcher;
 import java.io.*;
 import java.util.*;
 
+import inonit.system.cygwin.*;
+
 public class Main {
 	private Main() {
 	}
@@ -194,7 +196,11 @@ public class Main {
 		private String toWindowsPath(String value) throws IOException {
 			inonit.system.cygwin.Cygwin cygwin = inonit.system.cygwin.Cygwin.locate();
 			if (cygwin != null) {
-				return cygwin.toWindowsPath(value,true);
+				try {
+					return cygwin.toWindowsPath(value,true);
+				} catch (Cygwin.CygpathException e) {
+					throw new IOException(e);
+				}
 			} else {
 				return value;
 			}

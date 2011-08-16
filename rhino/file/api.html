@@ -69,42 +69,6 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#initialize"><![CDATA[
-			scope.helpers = new function() {
-				var module;
-
-				this.initialize = function() {
-					module = arguments[0];
-					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
-				}
-
-				//	TODO	can this helper be replaced by $jsapi.newTemporaryDirectory() ?
-				this.newTemporaryDirectory = function() {
-					var $dir = $java.io.newTemporaryDirectory();
-					return filesystem.$unit.Pathname(filesystem.$unit.getNode($dir)).directory;
-				}
-
-				this.createFile = function(base,name,length) {
-					var pathname = base.getRelativePath(name);
-					var out = pathname.write(context.$Context.api.io.Streams.binary);
-					if (length) {
-						for (var i=0; i<length; i++) {
-							out.java.adapt().write(0);
-						}
-					}
-					out.close();
-					return pathname.file;
-				}
-
-				this.createDirectory = function(base,name) {
-					return base.getRelativePath(name).createDirectory();
-				}
-			}
-
-			scope.newTemporaryDirectory = scope.helpers.newTemporaryDirectory;
-			scope.createFile = scope.helpers.createFile;
-			scope.createDirectory = scope.helpers.createDirectory;
-		]]></script>
 		<!--	TODO	add round of tests using cygwin.root but not cygwin.paths?	-->
 		<script type="application/x.jsapi#context"><![CDATA[
 			(function() {
@@ -153,6 +117,42 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<script type="application/x.jsapi#initialize"><![CDATA[
+			scope.helpers = new function() {
+				var module;
+
+				this.initialize = function() {
+					module = arguments[0];
+					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+				}
+
+				//	TODO	can this helper be replaced by $jsapi.newTemporaryDirectory() ?
+				this.newTemporaryDirectory = function() {
+					var $dir = $java.io.newTemporaryDirectory();
+					return scope.filesystem.$unit.Pathname(scope.filesystem.$unit.getNode($dir)).directory;
+				}
+
+				this.createFile = function(base,name,length) {
+					var pathname = base.getRelativePath(name);
+					var out = pathname.write(context.$Context.api.io.Streams.binary);
+					if (length) {
+						for (var i=0; i<length; i++) {
+							out.java.adapt().write(0);
+						}
+					}
+					out.close();
+					return pathname.file;
+				}
+
+				this.createDirectory = function(base,name) {
+					return base.getRelativePath(name).createDirectory();
+				}
+			}
+
+			scope.newTemporaryDirectory = scope.helpers.newTemporaryDirectory;
+			scope.createFile = scope.helpers.createFile;
+			scope.createDirectory = scope.helpers.createDirectory;
+		]]></script>
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			helpers.initialize(module);
 		]]></script>

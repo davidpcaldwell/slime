@@ -245,8 +245,23 @@ var properties = new function() {
 }
 $exports.properties = properties;
 if ($platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
-	experimental($exports,"properties");
+	$api.experimental($exports,"properties");
 }
+
+$exports.Object = new function() {
+	this.keys = function(o) {
+		return properties.names(o);
+	};
+	
+	this.values = function(o) {
+		return properties.values(o);
+	};
+	
+	this.pairs = function(o) {
+		return properties.pairs(o);
+	}
+}
+$api.experimental($exports.Object);
 
 if ($context.globals) {
 	if (!Object.keys) {

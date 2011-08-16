@@ -72,7 +72,27 @@ var ENVIRONMENT = (function() {
 
 var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,
-	html: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("api.html.js") ),
+	html: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("api.html.js"), new function() {
+		var seq = 0;
+		
+		this.run = function(code,scope) {
+			if (typeof(code) == "string") {
+				code = {
+					name: "<eval>:" + String(++seq),
+					$in: (function() {
+						var out = new Packages.java.io.ByteArrayOutputStream();
+						var writer = new Packages.java.io.OutputStreamWriter(out);
+						writer.write(code);
+						writer.flush();
+						writer.close();
+						return new Packages.java.io.ByteArrayInputStream(out.toByteArray());
+					})()
+				}
+			}
+			scope.scope = scope;
+			jsh.loader.run(code,scope);
+		}
+	} ),
 	jsapi: {
 		getFile: function(path) {
 			return jsh.script.getRelativePath(path).file;

@@ -17,17 +17,45 @@ package inonit.system.cygwin;
 
 import java.io.*;
 
+import inonit.script.runtime.io.*;
 import inonit.system.*;
 
 public class Cygwin {
-	private static String cygpath(String cygpath, String[] args) throws IOException {
+	public static class CygpathException extends Exception {
+		CygpathException(String message) {
+			super(message);
+		}
+	}
+
+	private static class CygpathCanonicalPathException extends RuntimeException {
+		CygpathCanonicalPathException(IOException e) {
+			super(e);
+		}
+	}
+	
+	private static String getCanonicalPath(File file) {
+		try {
+			return file.getCanonicalPath();
+		} catch (IOException e) {
+			throw new CygpathCanonicalPathException(e);
+		}
+	}
+	
+	private static String cygpath(String cygpath, String[] args) throws CygpathException {
+		int TRIES = 10;
 		String rv = "";
 		int i = 0;
-		while (rv.length() == 0 && i < 10) {
-			rv = OperatingSystem.get().getCommandOutput(
-				cygpath,
-				args
-			);
+		while (rv.length() == 0 && i < TRIES) {
+			Command.Result result = OperatingSystem.get().execute(cygpath, args);
+			try {
+				InputStream stream = result.evaluate().getOutputStream();
+				Streams streams = new Streams();
+				rv = streams.readString(stream);
+			} catch (IOException e) {
+				//	we are going to retry unless this is the TRIESth failure
+			} catch (Command.Result.Failure e) {
+				//	we are going to retry unless this is the TRIESth failure				
+			}
 			if (rv.length() > 0) {
 				rv = rv.substring(0,rv.length()-1);
 			} else {
@@ -41,7 +69,7 @@ public class Cygwin {
 				if (j+1 != args.length)
 					message += ",";
 			}
-			throw new IOException("cygpath failed: cygpath=" + cygpath + " arguments=" + message);
+			throw new CygpathException("cygpath failed: cygpath=" + cygpath + " arguments=" + message);
 		}
 		return rv;
 	}
@@ -49,7 +77,7 @@ public class Cygwin {
 	public static Cygwin locate() {
 		try {
 			return new Cygwin(new File(cygpath("cygpath", new String[] { "-w", "/" })));
-		} catch (IOException e) {
+		} catch (CygpathException e) {
 			return null;
 		}
 	}
@@ -64,19 +92,15 @@ public class Cygwin {
 		this.root = root;
 	}
 
-	private String cygpath(String flags, String path) throws IOException {
-		return cygpath(new File(root, "bin/cygpath.exe").getCanonicalPath(), new String[] { flags, path });
+	private String cygpath(String flags, String path) throws CygpathException {
+		return cygpath(getCanonicalPath(new File(root, "bin/cygpath.exe")), new String[] { flags, path });
 	}
 
-	private String toWindowsPath(String path) throws IOException {
-		return this.cygpath("-w",path);
-	}
-
-	public String toWindowsPath(String name, boolean path) throws IOException {
+	public String toWindowsPath(String name, boolean path) throws CygpathException {
 		return cygpath((path) ? "-wp" : "-w", name);
 	}
 
-	public String toUnixPath(String name, boolean path) throws IOException {
+	public String toUnixPath(String name, boolean path) throws CygpathException {
 		return cygpath((path) ? "-up" : "-u", name);
 	}
 }

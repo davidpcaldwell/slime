@@ -77,9 +77,9 @@ public abstract class Filesystem {
 		public abstract boolean isDirectory() throws IOException;
 		
 		public abstract Node[] list(FilenameFilter pattern) throws IOException;
-		public abstract boolean delete() throws IOException;
-		public abstract boolean mkdir() throws IOException;
-		public abstract boolean mkdirs() throws IOException;
+		public abstract void delete() throws IOException;
+		public abstract void mkdir() throws IOException;
+		public abstract void mkdirs() throws IOException;
 		
 		public abstract OutputStream writeBinary(boolean append) throws IOException;
 		public abstract Writer writeText(boolean append) throws IOException;
@@ -176,16 +176,19 @@ public abstract class Filesystem {
 				return file.delete();				
 			}
 			
-			public boolean delete() {
-				return delete(this.file);
+			public void delete() throws IOException {
+				boolean success = delete(this.file);
+				if (!success) throw new IOException("Failed to delete: " + this.file);
 			}
 			
-			public boolean mkdir() {
-				return this.file.mkdir();
+			public void mkdir() throws IOException {
+				boolean success = this.file.mkdir();
+				if (!success) throw new IOException("Failed to create: " + this.file);
 			}
 			
-			public boolean mkdirs() {
-				return this.file.mkdirs();
+			public void mkdirs() throws IOException {
+				boolean success = this.file.mkdirs();
+				if (!success) throw new IOException("Failed to create: " + this.file);
 			}
 		
 			public final OutputStream writeBinary(boolean append) throws IOException {

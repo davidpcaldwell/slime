@@ -52,30 +52,52 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
-
+		
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
-					with (scope) {
-						eval(container.initializes[i].getContentString());
+					if ($context.run) {
+						$context.run(container.initializes[i].getContentString(),scope);
+					} else {
+						with (scope) {
+							eval(container.initializes[i].getContentString());
+						}
 					}
 				}
 			}
 			var initializes = element.getScripts("initialize");
 			for (var i=0; i<initializes.length; i++) {
-				with(scope) {
-					eval(initializes[i].getContentString());
+				if ($context.run) {
+					$context.run(initializes[i].getContentString(),scope);
+				} else {
+					with(scope) {
+						eval(initializes[i].getContentString());
+					}
 				}
 			}
 		};
 
 		p.execute = function(unit) {
+			var createTestScope = function() {
+				var rv = {};
+				for (var i=0; i<arguments.length; i++) {
+					for (var x in arguments[i]) {
+						rv[x] = arguments[i][x];
+					}
+				}
+				return rv;
+			}
+
 			var children = element.getChildElements();
 			for (var i=0; i<children.length; i++) {
 				if (children[i].localName == "script" && children[i].getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
-					with(scope) {
-						with(unit) {
-							eval(children[i].getContentString());
+					if ($context.run) {
+						$context.run(children[i].getContentString(),createTestScope(scope,unit));
+					} else {
+						with(scope) {
+							with(unit) {
+								eval(children[i].getContentString());
+							}
 						}
 					}
 				} else if (children[i].localName == "script") {
@@ -102,14 +124,22 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.destroy = function() {
 			var destroys = element.getScripts("destroy");
 			for (var i=0; i<destroys.length; i++) {
-				with(scope) {
-					eval(destroys[i].getContentString());
+				if ($context.run) {
+					$context.run(destroys[i].getContentString(),scope);
+				} else {
+					with(scope) {
+						eval(destroys[i].getContentString());
+					}
 				}
 			}
 			if (container) {
 				for (var i=0; i<container.destroys.length; i++) {
-					with(scope) {
-						eval(destroys[i].getContentString());
+					if ($context.run) {
+						$context.run(container.destroys[i].getContentString(),scope);
+					} else {
+						with(scope) {
+							eval(container.destroys[i].getContentString());
+						}
 					}
 				}
 			}

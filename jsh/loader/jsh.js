@@ -54,11 +54,16 @@ this.jsh = new function() {
 			return rhinoLoader.module($host.getBootstrapModule(path), { $context: context });
 		}
 		
-		this.run = function(pathname,scope,target) {
-			return rhinoLoader.run({
-				name: pathname.toString(),
-				$in: new Packages.java.io.FileInputStream(pathname.java.adapt())
-			},scope,target);
+		this.run = function(code,scope,target) {
+			if (code.java && code.java.adapt() && code.java.adapt().getClass().getName() == "java.io.File") {
+				code = {
+					name: code.toString(),
+					$in: new Packages.java.io.FileInputStream(code.java.adapt())
+				};				
+			} else if (code.name && code.$in) {
+				//	fine as is
+			}
+			return rhinoLoader.run(code,scope,target);
 		}
 
 		this.file = function(pathname,$context) {
