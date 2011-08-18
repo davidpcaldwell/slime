@@ -25,6 +25,10 @@ var InputStream = function(peer) {
 		this.adapt = function() {
 			return peer;
 		}
+		
+		this.array = function() {
+			return $java.readBytes(peer);
+		}
 	};
 
 	this.close = function() {
