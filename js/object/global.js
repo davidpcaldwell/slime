@@ -25,10 +25,10 @@ if (!Array.prototype.indexOf) {
 }
 
 if (!Array.prototype.filter) {
-	Array.prototype.filter = function(f) {
+	Array.prototype.filter = function(f,target) {
 		var rv = [];
 		for (var i=0; i<this.length; i++) {
-			if (f(this[i])) {
+			if (f.call(target,this[i])) {
 				rv.push(this[i]);
 			}
 		}
@@ -36,17 +36,17 @@ if (!Array.prototype.filter) {
 	}
 }
 if (!Array.prototype.forEach) {
-	Array.prototype.forEach = function(f) {
+	Array.prototype.forEach = function(f,target) {
 		for (var i=0; i<this.length; i++) {
-			f(this[i], i, this);
+			f.call(target,this[i],i,this);
 		}
 	}
 }
 if (!Array.prototype.map) {
-	Array.prototype.map = function(f) {
+	Array.prototype.map = function(f,target) {
 		var rv = [];
 		for (var i=0; i<this.length; i++) {
-			rv[i] = f(this[i], i, this);
+			rv[i] = f.call(target,this[i],i,this);
 		}
 		return rv;
 	}
