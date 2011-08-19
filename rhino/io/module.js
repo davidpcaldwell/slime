@@ -245,6 +245,10 @@ var Streams = new function() {
 			return new Packages.java.io.OutputStreamWriter($context.stdio.$err);
 		}
 
+		this.split = function(other) {
+			return new OutputStream($context.stdio.$err).split(other);
+		}
+
 		this.close = function() {}
 	}
 
@@ -255,6 +259,10 @@ var Streams = new function() {
 
 		this.$getWriter = function() {
 			return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
+		}
+		
+		this.split = function(other) {
+			return new OutputStream($context.stdio.$out).split(other);
 		}
 
 		this.close = function() {}
