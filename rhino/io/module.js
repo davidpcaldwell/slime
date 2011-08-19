@@ -309,6 +309,12 @@ var Resource = function(p) {
 			throw new TypeError("No read() mode specified: argument was " + mode);
 		}
 	}
+	
+	if (p.read.binary) {
+		this.read.binary = function() {
+			return binary();
+		}
+	}
 
 	this.read.lines = function() {
 		var text = text();
