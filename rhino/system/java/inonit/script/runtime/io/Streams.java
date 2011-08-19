@@ -43,6 +43,10 @@ public class Streams {
 		in.close();
 	}
 	
+	public OutputStream split(OutputStream one, OutputStream two) {
+		return Bytes.Splitter.create(one, two);
+	}
+	
 	public byte[] readBytes(InputStream in) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		copy(in, out);
@@ -189,6 +193,25 @@ public class Streams {
 				public void close() {
 					Buffer.this.close();
 				}
+			}
+		}
+		
+		public static class Splitter extends OutputStream {
+			public static Splitter create(final OutputStream a, final OutputStream b) {
+				return new Splitter(a,b);
+			}
+			
+			private OutputStream a;
+			private OutputStream b;
+			
+			Splitter(OutputStream a, OutputStream b) {
+				this.a = a;
+				this.b = b;
+			}
+			
+			public void write(int i) throws IOException {
+				a.write(i);
+				b.write(i);
 			}
 		}
 	}

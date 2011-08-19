@@ -80,6 +80,17 @@ var OutputStream = function(peer) {
 	this.character = function() {
 		return new Writer(new Packages.java.io.OutputStreamWriter(peer));
 	}
+	
+	this.split = function(other) {
+		var otherPeer = other.java.adapt();
+		
+		//	Handle Buffer special case
+		if (!otherPeer && other.$getOutputStream) {
+			otherPeer = other.$getOutputStream();
+		}
+		
+		return new OutputStream($java.split(peer,otherPeer))
+	}
 };
 
 var Reader = function(peer) {
