@@ -59,7 +59,9 @@ $exports.Scenario = function(properties) {
 					this.test( assertion() );
 					return;
 				} else if (typeof(assertion) == "undefined") {
-					throw "Assertion is undefined.";
+					throw new TypeError("Assertion is undefined.");
+				} else if (typeof(assertion) != "object") {
+					throw new TypeError("Assertion is " + typeof(assertion));
 				}
 				if (!assertion.messages) assertion.messages = {};
 				if (!assertion.messages.success) {
