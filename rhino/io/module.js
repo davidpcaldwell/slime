@@ -25,6 +25,10 @@ var InputStream = function(peer) {
 		this.adapt = function() {
 			return peer;
 		}
+		
+		this.array = function() {
+			return $java.readBytes(peer);
+		}
 	};
 
 	this.close = function() {
@@ -322,6 +326,12 @@ var Resource = function(p) {
 			if (mode == XML) return text().asXml();
 			if (mode == String) return text().asString();
 			throw new TypeError("No read() mode specified: argument was " + mode);
+		}
+	}
+	
+	if (p.read.binary) {
+		this.read.binary = function() {
+			return binary();
 		}
 	}
 
