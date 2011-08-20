@@ -56,7 +56,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
-					if ($context.run) {
+					if (typeof($context) == "object" && $context.run) {
 						$context.run(container.initializes[i].getContentString(),scope);
 					} else {
 						with (scope) {
@@ -67,7 +67,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			}
 			var initializes = element.getScripts("initialize");
 			for (var i=0; i<initializes.length; i++) {
-				if ($context.run) {
+				if (typeof($context) == "object"  && $context.run) {
 					$context.run(initializes[i].getContentString(),scope);
 				} else {
 					with(scope) {
@@ -91,7 +91,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			var children = element.getChildElements();
 			for (var i=0; i<children.length; i++) {
 				if (children[i].localName == "script" && children[i].getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
-					if ($context.run) {
+					if (typeof($context) == "object"  && $context.run) {
 						$context.run(children[i].getContentString(),createTestScope(scope,unit));
 					} else {
 						with(scope) {
@@ -124,7 +124,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.destroy = function() {
 			var destroys = element.getScripts("destroy");
 			for (var i=0; i<destroys.length; i++) {
-				if ($context.run) {
+				if (typeof($context) == "object"  && $context.run) {
 					$context.run(destroys[i].getContentString(),scope);
 				} else {
 					with(scope) {
@@ -134,7 +134,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			}
 			if (container) {
 				for (var i=0; i<container.destroys.length; i++) {
-					if ($context.run) {
+					if (typeof($context) == "object"  && $context.run) {
 						$context.run(container.destroys[i].getContentString(),scope);
 					} else {
 						with(scope) {
