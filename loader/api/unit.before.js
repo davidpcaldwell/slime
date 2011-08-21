@@ -59,7 +59,13 @@ $exports.Scenario = function(properties) {
 				if (!result) {
 					fail();
 				}
-				if (next) next();
+				if (next) {
+					if ($context.asynchronous && $context.asynchronous.scenario) {
+						$context.asynchronous.scenario(next);
+					} else {
+						next();
+					}
+				}
 			}
 		}
 
@@ -103,7 +109,13 @@ $exports.Scenario = function(properties) {
 				fail();
 			}
 			if (console.test) console.test(result);
-			if (next) next();
+			if (next) {
+				if ($context.asynchronous && $context.asynchronous.test) {
+					$context.asynchronous.test(next);
+				} else {
+					next();
+				}
+			}
 		}
 
 		this.test = function(assertion) {
