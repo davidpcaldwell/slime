@@ -22,7 +22,7 @@ $exports.Scenario = function(properties) {
 	
 	this.name = properties.name;
 	
-	var Scope = function(console) {
+	var Scope = function(console,callback) {
 		var self = this;
 		if (Object.prototype.__defineGetter__) {
 			var success = true;
@@ -53,32 +53,42 @@ $exports.Scenario = function(properties) {
 			runScenario(object);
 		}
 		
-		var test = function(assertion) {
+		var runTest = function(assertion) {
 			if (typeof(assertion) == "boolean") {
-				assertion = {
-					success: assertion
-				}
-			} else if (typeof(assertion) == "function") {
-				this.test( assertion() );
-				return;
+				assertion = (function(b) {
+					return function() {
+						if (callback) {
+							//	warning: test probably will not work as expected asynchronously
+							debugger;
+						}
+						return { 
+							success: b,
+							messages: {
+								success: "Success.",
+								failure: "FAILED!"
+							}
+						};
+					}
+				})(assertion);
 			} else if (typeof(assertion) == "undefined") {
 				throw "Assertion is undefined.";
 			}
-			if (!assertion.messages) assertion.messages = {};
-			if (!assertion.messages.success) {
-				assertion.messages.success = function() { return "Success." };
+			var result = assertion();
+			if (!result.messages) result.messages = {};
+			if (!result.messages.success) {
+				result.messages.success = "Success.";
 			}
-			if (!assertion.messages.failure) {
-				assertion.messages.failure = function() { return "FAILED!"; }
+			if (!result.messages.failure) {
+				result.messages.failure = "FAILED!";
 			}
-			if (!assertion.success) {
+			if (!result.success) {
 				fail();
 			}
-			if (console.test) console.test(assertion);			
+			if (console.test) console.test(result);			
 		}
 
 		this.test = function(assertion) {
-			test(assertion);
+			runTest(assertion);
 		}
 
 		this.start = function(console) {
@@ -87,11 +97,14 @@ $exports.Scenario = function(properties) {
 
 		this.end = function(console) {
 			if (console.end) console.end(scenario, this.success);
+			if (callback) {
+				callback.success(this.success);
+			}
 		}
 	}
 	
 	var run = function(console,callback) {
-		var scope = new Scope(console);
+		var scope = new Scope(console,callback);
 		
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
@@ -124,10 +137,9 @@ $exports.Scenario = function(properties) {
 			properties.destroy.call(this);
 		}
 		scope.end(console);
-		if (callback) {
-			callback.success(scope.success);
+		if (!callback) {
+			return scope.success;
 		}
-		return scope.success;
 	}
 	
 	this.start = function(console,callback) {
