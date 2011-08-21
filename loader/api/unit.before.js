@@ -45,13 +45,22 @@ $exports.Scenario = function(properties) {
 		
 		var runScenario = function(object,next) {
 			var child = new Scenario(object);
+			
+			var runNext = function(next) {
+				if ($context.asynchronous && $context.asynchronous.scenario) {
+					$context.asynchronous.scenario(next);
+				} else {
+					next();
+				}
+			}
+			
 			if (callback) {
 				child.start(console,{
 					success: function(b) {
 						if (!b) {
 							fail();
 						}
-						if (next) next();
+						if (next) runNext(next);
 					}
 				})
 			} else {
@@ -59,13 +68,7 @@ $exports.Scenario = function(properties) {
 				if (!result) {
 					fail();
 				}
-				if (next) {
-					if ($context.asynchronous && $context.asynchronous.scenario) {
-						$context.asynchronous.scenario(next);
-					} else {
-						next();
-					}
-				}
+				if (next) runNext(next);
 			}
 		}
 
