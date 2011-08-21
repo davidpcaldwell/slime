@@ -43,12 +43,13 @@ $exports.Scenario = function(properties) {
 		
 		var units = [];
 		
-		var runScenario = function(object) {
+		var runScenario = function(object,next) {
 			var child = new Scenario(object);
 			var result = child.run(console);
 			if (!result) {
 				fail();
-			}			
+			}
+			if (next) next();
 		}
 
 		this.scenario = function(object) {
@@ -59,7 +60,7 @@ $exports.Scenario = function(properties) {
 			}
 		}
 		
-		var runTest = function(assertion) {
+		var runTest = function(assertion,next) {
 			if (typeof(assertion) == "boolean") {
 				assertion = (function(b) {
 					return function() {
@@ -90,7 +91,8 @@ $exports.Scenario = function(properties) {
 			if (!result.success) {
 				fail();
 			}
-			if (console.test) console.test(result);			
+			if (console.test) console.test(result);
+			if (next) next();
 		}
 
 		this.test = function(assertion) {
@@ -107,17 +109,29 @@ $exports.Scenario = function(properties) {
 
 		this.end = function(console) {
 			if (callback) {
-				for (var i=0; i<units.length; i++) {
-					if (units[i].scenario) {
-						runScenario(units[i].scenario);
-					} else if (units[i].test) {
-						runTest(units[i].test);
+				var self = this;
+				var runUnit = function(units,index) {
+					var recurse = arguments.callee;
+					if (index == units.length) {
+						if (console.end) console.end(scenario,self.success);
+						callback.success(self.success);
+					} else {
+						var next = function() {
+							recurse(units,index+1)
+						};
+						if (units[index].scenario) {
+							runScenario(units[index].scenario,next);
+						} else if (units[index].test) {
+							runTest(units[index].test,next);
+						} else {
+							throw new Error("Unreachable");
+						}
 					}
 				}
-			}
-			if (console.end) console.end(scenario, this.success);
-			if (callback) {
-				callback.success(this.success);
+
+				runUnit(units,0);
+			} else {
+				if (console.end) console.end(scenario, this.success);
 			}
 		}
 	}
