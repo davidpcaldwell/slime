@@ -111,6 +111,11 @@ $exports.Scenario = function(properties) {
 				throw error;
 			}
 			var result = assertion();
+			if (typeof(result) == "boolean") {
+				//	not sure this should be supported
+				runTest(result,next);
+				return;
+			}
 			if (!result.messages) result.messages = {};
 			if (!result.messages.success) {
 				result.messages.success = "Success.";
