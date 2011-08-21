@@ -186,15 +186,15 @@ END LICENSE
 
 					(function() {
 						var Scope = function() {
+							var self = this;
+							
 							this.$jsapi = new function() {
-								this.module = function(context,path) {
+								this.module = function(path,context) {
 									return inonit.loader.module(
-										{ base: parameters.module[i] + arguments.callee.top + path + "/" },
+										{ base: module + self.top + path },
 										{ context: context }
 									);
 								}
-								//	set a default which is overwritten below when reading context elements
-								this.module.top = "";
 							};
 
 							this.$platform = inonit.loader.$sdk.platform;
@@ -301,6 +301,21 @@ END LICENSE
 						})();
 						var apiHtml = new apiHtmlScript.ApiHtmlTests(new DOM(root),module);
 						var scope = new Scope();
+						scope.top = (function() {
+							var find = function(element) {
+								var recurse = arguments.callee;
+								if (element.tagName && element.tagName.toLowerCase() == "jsapi:top") return element;
+								for (var i=0; i<element.childNodes.length; i++) {
+									if (recurse(element.childNodes[i])) {
+										return element.childNodes[i];
+									}
+								}
+							};
+							
+							var declaration = find(root);
+							if (declaration) return declaration.getAttribute("path");
+							return "";
+						})();
 						var contexts = apiHtml.getContexts(scope);
 						for (var i=0; i<contexts.length; i++) {
 							try {
