@@ -144,14 +144,15 @@ END LICENSE
 			if (parameters) {
 				log.flush();
 				var jsapi = inonit.loader.script(parameters.jsapi+"unit.before.js", {
-					asynchronous: {
-						scenario: function(next) {
-							window.setTimeout(next,100);
-						}
-						,test: function(next) {
-							window.setTimeout(next,20);
-						}
-					}
+					//	TODO	use parameters to create these functions, in the event there are long-running tests
+//					asynchronous: {
+//						scenario: function(next) {
+//							window.setTimeout(next,1);
+//						}
+//						,test: function(next) {
+//							window.setTimeout(next,1);
+//						}
+//					}
 				});
 				var apiHtmlScript = inonit.loader.script(parameters.jsapi+"api.html.js");
 				jsapi.Scenario.HALT_ON_EXCEPTION = false;
