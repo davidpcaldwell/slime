@@ -385,12 +385,15 @@ END LICENSE
 						current.appendChild(div);
 					}
 				};
-				var success = scenario.run(console);
-				if (!success) {
-					alert("Failed!");
-				} else {
-					alert("PASS");
-				}
+				scenario.start(console,{
+					success: function(success) {
+						if (!success) {
+							alert("Failed!");
+						} else {
+							alert("PASS");
+						}						
+					}
+				});
 			}
 		}
 	</script>

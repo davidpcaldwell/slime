@@ -22,67 +22,67 @@ $exports.Scenario = function(properties) {
 	
 	this.name = properties.name;
 	
-	this.run = function(console) {
-		var Scope = function() {
-			var self = this;
-			if (Object.prototype.__defineGetter__) {
-				var success = true;
-				this.__defineGetter__("success", function() {
-					return success;
-				});
-				var fail = function() {
-					debugger;
-					success = false;
-				}
-			} else {
-				this.success = true;
-				var fail = function() {
-					debugger;
-					self.success = false;
-				}
+	var Scope = function() {
+		var self = this;
+		if (Object.prototype.__defineGetter__) {
+			var success = true;
+			this.__defineGetter__("success", function() {
+				return success;
+			});
+			var fail = function() {
+				debugger;
+				success = false;
 			}
-
-			this.scenario = function(object) {
-				var child = new Scenario(object);
-				var result = child.run(console);
-				if (!result) {
-					fail();
-				}
-			}
-
-			this.test = function(assertion) {
-				if (typeof(assertion) == "boolean") {
-					assertion = {
-						success: assertion
-					}
-				} else if (typeof(assertion) == "function") {
-					this.test( assertion() );
-					return;
-				} else if (typeof(assertion) == "undefined") {
-					throw "Assertion is undefined.";
-				}
-				if (!assertion.messages) assertion.messages = {};
-				if (!assertion.messages.success) {
-					assertion.messages.success = function() { return "Success." };
-				}
-				if (!assertion.messages.failure) {
-					assertion.messages.failure = function() { return "FAILED!"; }
-				}
-				if (!assertion.success) {
-					fail();
-				}
-				if (console.test) console.test(assertion);
-			}
-			
-			this.start = function(console) {
-				if (console.start) console.start(scenario);
-			}
-
-			this.end = function(console) {
-				if (console.end) console.end(scenario, this.success);
+		} else {
+			this.success = true;
+			var fail = function() {
+				debugger;
+				self.success = false;
 			}
 		}
 
+		this.scenario = function(object) {
+			var child = new Scenario(object);
+			var result = child.run(console);
+			if (!result) {
+				fail();
+			}
+		}
+
+		this.test = function(assertion) {
+			if (typeof(assertion) == "boolean") {
+				assertion = {
+					success: assertion
+				}
+			} else if (typeof(assertion) == "function") {
+				this.test( assertion() );
+				return;
+			} else if (typeof(assertion) == "undefined") {
+				throw "Assertion is undefined.";
+			}
+			if (!assertion.messages) assertion.messages = {};
+			if (!assertion.messages.success) {
+				assertion.messages.success = function() { return "Success." };
+			}
+			if (!assertion.messages.failure) {
+				assertion.messages.failure = function() { return "FAILED!"; }
+			}
+			if (!assertion.success) {
+				fail();
+			}
+			if (console.test) console.test(assertion);
+		}
+
+		this.start = function(console) {
+			if (console.start) console.start(scenario);
+		}
+
+		this.end = function(console) {
+			if (console.end) console.end(scenario, this.success);
+		}
+	}
+	
+	var run = function(console,callback) {
 		var scope = new Scope();
 		
 		//	Could we use this to make syntax even terser?
@@ -116,7 +116,18 @@ $exports.Scenario = function(properties) {
 			properties.destroy.call(this);
 		}
 		scope.end(console);
+		if (callback) {
+			callback.success(scope.success);
+		}
 		return scope.success;
+	}
+	
+	this.start = function(console,callback) {
+		run(console,callback);
+	}
+
+	this.run = function(console) {
+		return run(console);
 	}
 
 	this.toString = function() {
