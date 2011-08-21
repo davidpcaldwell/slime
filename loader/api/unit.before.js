@@ -45,11 +45,22 @@ $exports.Scenario = function(properties) {
 		
 		var runScenario = function(object,next) {
 			var child = new Scenario(object);
-			var result = child.run(console);
-			if (!result) {
-				fail();
+			if (callback) {
+				child.start(console,{
+					success: function(b) {
+						if (!b) {
+							fail();
+						}
+						if (next) next();
+					}
+				})
+			} else {
+				var result = child.run(console);
+				if (!result) {
+					fail();
+				}
+				if (next) next();
 			}
-			if (next) next();
 		}
 
 		this.scenario = function(object) {
@@ -66,7 +77,7 @@ $exports.Scenario = function(properties) {
 					return function() {
 						if (callback) {
 							//	warning: test probably did not work as expected asynchronously
-							debugger;
+							//	debugger;
 						}
 						return { 
 							success: b,
