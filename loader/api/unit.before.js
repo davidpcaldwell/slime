@@ -99,6 +99,16 @@ $exports.Scenario = function(properties) {
 				})(assertion);
 			} else if (typeof(assertion) == "undefined") {
 				throw "Assertion is undefined.";
+			} else if (typeof(assertion) == "object" && typeof(assertion.success) == "boolean") {
+				assertion = (function(object) {
+					return function() {
+						return object;
+					}
+				})(assertion);
+			} else if (typeof(assertion) != "function") {
+				var error = new Error("Assertion is not valid format");
+				error.assertion = assertion;
+				throw error;
 			}
 			var result = assertion();
 			if (!result.messages) result.messages = {};
