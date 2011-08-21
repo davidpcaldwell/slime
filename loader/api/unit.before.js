@@ -41,6 +41,8 @@ $exports.Scenario = function(properties) {
 			}
 		}
 		
+		var units = [];
+		
 		var runScenario = function(object) {
 			var child = new Scenario(object);
 			var result = child.run(console);
@@ -50,7 +52,11 @@ $exports.Scenario = function(properties) {
 		}
 
 		this.scenario = function(object) {
-			runScenario(object);
+			if (!callback) {
+				runScenario(object);
+			} else {
+				units.push({ scenario: object });
+			}
 		}
 		
 		var runTest = function(assertion) {
@@ -58,7 +64,7 @@ $exports.Scenario = function(properties) {
 				assertion = (function(b) {
 					return function() {
 						if (callback) {
-							//	warning: test probably will not work as expected asynchronously
+							//	warning: test probably did not work as expected asynchronously
 							debugger;
 						}
 						return { 
@@ -88,7 +94,11 @@ $exports.Scenario = function(properties) {
 		}
 
 		this.test = function(assertion) {
-			runTest(assertion);
+			if (!callback) {
+				runTest(assertion);
+			} else {
+				units.push({ test: assertion });
+			}
 		}
 
 		this.start = function(console) {
@@ -96,6 +106,15 @@ $exports.Scenario = function(properties) {
 		}
 
 		this.end = function(console) {
+			if (callback) {
+				for (var i=0; i<units.length; i++) {
+					if (units[i].scenario) {
+						runScenario(units[i].scenario);
+					} else if (units[i].test) {
+						runTest(units[i].test);
+					}
+				}
+			}
 			if (console.end) console.end(scenario, this.success);
 			if (callback) {
 				callback.success(this.success);
