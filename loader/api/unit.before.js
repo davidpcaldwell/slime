@@ -22,7 +22,7 @@ $exports.Scenario = function(properties) {
 	
 	this.name = properties.name;
 	
-	var Scope = function() {
+	var Scope = function(console) {
 		var self = this;
 		if (Object.prototype.__defineGetter__) {
 			var success = true;
@@ -40,16 +40,20 @@ $exports.Scenario = function(properties) {
 				self.success = false;
 			}
 		}
-
-		this.scenario = function(object) {
+		
+		var runScenario = function(object) {
 			var child = new Scenario(object);
 			var result = child.run(console);
 			if (!result) {
 				fail();
-			}
+			}			
 		}
 
-		this.test = function(assertion) {
+		this.scenario = function(object) {
+			runScenario(object);
+		}
+		
+		var test = function(assertion) {
 			if (typeof(assertion) == "boolean") {
 				assertion = {
 					success: assertion
@@ -70,7 +74,11 @@ $exports.Scenario = function(properties) {
 			if (!assertion.success) {
 				fail();
 			}
-			if (console.test) console.test(assertion);
+			if (console.test) console.test(assertion);			
+		}
+
+		this.test = function(assertion) {
+			test(assertion);
 		}
 
 		this.start = function(console) {
@@ -83,7 +91,7 @@ $exports.Scenario = function(properties) {
 	}
 	
 	var run = function(console,callback) {
-		var scope = new Scope();
+		var scope = new Scope(console);
 		
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
