@@ -60,6 +60,8 @@
 	var Bootstrap = function(src) {
 		this.base = src.split("/").slice(0,-1).join("/") + "/";
 
+		this.src = src;
+		
 		this.getRelativePath = function(path) {
 			return this.base + path;
 		}
@@ -138,15 +140,15 @@
 				return new function() {
 					this.main = (code.main) ? code.main : "module.js";
 
-					this.instantiate = function(path) {
-						if (instantiate[code.base+path]) {
-							return instantiate[code.base+path];
-						}
-					}
-
 					this.getCode = function(path) {
-						//	TODO	assumes trailing slash when loading module
-						return fetcher.getCode(code.base+path);
+						if (instantiate[code.base+path]) {
+							return function(scope,target) {
+								instantiate[code.base+path](scope);
+							}
+						} else {
+							//	TODO	assumes trailing slash when loading module
+							return fetcher.getCode(code.base+path);
+						}
 					}
 				}
 			}

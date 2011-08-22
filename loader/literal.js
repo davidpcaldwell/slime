@@ -263,9 +263,11 @@ new function() {
 						runInScope(format.getCode(path),scope,target);
 					}
 					
-					this.script = function(path,context) {
+					this.file = function(path,context) {
 						return file(format.getCode(path),context);
 					}
+					
+					this.script = $api.deprecate(this.file);
 
 					this.module = function(path,context) {
 						var tokens = path.split("/");
@@ -278,6 +280,10 @@ new function() {
 							}
 						});
 						return loader.load({ $context: context });
+					}
+					
+					if (format.decorateLoader) {
+						format.decorateLoader(this);
 					}
 				}()
 			};

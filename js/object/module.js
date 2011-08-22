@@ -101,7 +101,7 @@ var toLiteral = function(value) {
 			var isAnArray = function(object) {
 				//	return object.constructor && (object.constructor.prototype == Array.prototype)
 				//	return object instanceof Array
-				return typeof(object.slice) == "function" && typeof(object.indexOf) == "function";
+				return typeof(object.slice) == "function" && typeof(object.indexOf) == "function" && typeof(object.splice) == "function";
 			}
 
 			if (isAnArray(value)) {
