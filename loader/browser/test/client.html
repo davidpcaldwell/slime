@@ -137,6 +137,16 @@ END LICENSE
 				document.getElementById("platform").value = parameters.platform;
 				document.getElementById("modes.module").value = parameters["modes.module"];
 				document.getElementById("modes.execute").value = parameters["modes.execute"];
+				if (parameters.nocatch) {
+					document.getElementById("nocatch").checked = true;
+				} else {
+					document.getElementById("nocatch").checked = false;
+				}
+				if (parameters.asynchronous) {
+					document.getElementById("asynchronous").checked = true;
+				} else {
+					document.getElementById("asynchronous").checked = false;
+				}
 			} else {
 				document.getElementById("results").style.display = "none";
 				document.getElementById("debug").style.display = "none";
@@ -145,17 +155,17 @@ END LICENSE
 				log.flush();
 				var jsapi = inonit.loader.script(parameters.jsapi+"unit.before.js", {
 					//	TODO	use parameters to create these functions, in the event there are long-running tests
-//					asynchronous: {
-//						scenario: function(next) {
-//							window.setTimeout(next,1);
-//						}
-//						,test: function(next) {
-//							window.setTimeout(next,1);
-//						}
-//					}
+					asynchronous: {
+						scenario: function(next) {
+							window.setTimeout(next,1);
+						}
+						,test: function(next) {
+							window.setTimeout(next,1);
+						}
+					}
 				});
 				var apiHtmlScript = inonit.loader.script(parameters.jsapi+"api.html.js");
-				jsapi.Scenario.HALT_ON_EXCEPTION = false;
+				jsapi.Scenario.HALT_ON_EXCEPTION = Boolean(parameters.nocatch);
 				
 				var toErrorMessage = function(e) {
 					if (e.message) return e.message + " at line " + e.lineNumber + " in " + e.fileName;
@@ -202,7 +212,7 @@ END LICENSE
 								this.module = function(path,context) {
 									return inonit.loader.module(
 										{ base: module + self.top + path },
-										{ context: context }
+										context
 									);
 								}
 							};
@@ -213,7 +223,8 @@ END LICENSE
 
 						var getCode = function(e) {
 							var rv = "";
-							var nodes = e.childNodes;
+							//	IE
+							var nodes = (e.childNodes.length) ? e.childNodes : [ { data: e.text } ];
 							for (var i=0; i<nodes.length; i++) {
 								var data = nodes[i].data;
 								data = data.replace(/\&amp\;/g, "&").replace(/\&lt\;/g, "<");
@@ -256,19 +267,42 @@ END LICENSE
 								var wrap = function(node) {
 									return new Element(node);
 								}
-
+								
 								this.getScripts = function(type) {
-									return dom.getChildren(node,getScriptFilter(type)).map(wrap);
+									var rv = [];
+									var children = dom.getChildren(node,getScriptFilter(type));
+									for (var i=0; i<children.length; i++) {
+										rv[i] = wrap(children[i]);
+									}
+									return rv;
 								}
 
 								this.getDescendantScripts = function(type) {
-									return dom.getChildren(node,getScriptFilter(type),true).map(wrap);
+									var rv = [];
+									var children = dom.getChildren(node,getScriptFilter(type),true);
+									for (var i=0; i<children.length; i++) {
+										rv[i] = wrap(children[i]);
+									}
+									return rv;
 								}
 
 								this.getChildElements = function() {
-									return dom.getChildren(node,function(node) {
-										return node.nodeType == node.ELEMENT_NODE;
-									}).map(wrap);
+									var rv = [];
+									var children = dom.getChildren(node,function(node) {
+										return node.nodeType == node.ELEMENT_NODE || node.nodeType == 1;
+									});
+									for (var i=0; i<children.length; i++) {
+										rv[i] = wrap(children[i]);
+									}
+									return rv;
+								}
+								
+								var wrapArray = function(array) {
+									var rv = [];
+									for (var i=0; i<array.length; i++) {
+										rv[i] = wrap(array[i]);
+									}
+									return rv;
 								}
 
 								this.getScriptType = function() {
@@ -280,13 +314,15 @@ END LICENSE
 								}
 
 								this.getJsapiId = function() {
+									//	Would not work in IE
 									return node.getAttribute("jsapi:id");
 								}
 
 								this.getNameDiv = function() {
-									var target = dom.getChildren(node,function(node) {
+									var children = dom.getChildren(node,function(node) {
 										return node.tagName && node.tagName.toLowerCase() == "div" && node.getAttribute("class") == "name";
-									}).map(wrap);
+									});
+									var target = wrapArray(children);
 									if (target.length == 0) return null;
 									return target[0].innerHTML;
 								}
@@ -315,6 +351,8 @@ END LICENSE
 							var find = function(element) {
 								var recurse = arguments.callee;
 								if (element.tagName && element.tagName.toLowerCase() == "jsapi:top") return element;
+								//	IE
+								if (element.tagName && element.tagName.toLowerCase() == "top" && element.tagUrn == "http://www.inonit.com/jsapi") return element;
 								for (var i=0; i<element.childNodes.length; i++) {
 									if (recurse(element.childNodes[i])) {
 										return element.childNodes[i];
@@ -395,15 +433,25 @@ END LICENSE
 						current.appendChild(div);
 					}
 				};
-				scenario.start(console,{
-					success: function(success) {
-						if (!success) {
-							alert("Failed!");
-						} else {
-							alert("PASS");
-						}						
+				var ASYNCHRONOUS = Boolean(parameters.asynchronous);
+				
+				var onResult = function(success) {
+					if (!success) {
+						alert("Failed!");
+					} else {
+						alert("PASS");
 					}
-				});
+				}
+				if (ASYNCHRONOUS) {
+					scenario.start(console,{
+						success: function(success) {
+							onResult(success);
+						}
+					});
+				} else {
+					var result = scenario.run(console);
+					onResult(result);
+				}
 			}
 		}
 	</script>
@@ -485,6 +533,8 @@ END LICENSE
 					<option value="with">with</option>
 				</select>
 			</div>
+			<input id="nocatch" type="checkbox" name="nocatch"/> Halt on Exceptions
+			<input id="asynchronous" type="checkbox" name="asynchronous"/> Asynchronous
 			<input type="submit" name="submit" value="Run" />
 		</form>
 	</div>
