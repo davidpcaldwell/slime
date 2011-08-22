@@ -3,14 +3,17 @@ $exports.MEDIA_TYPE = "application/x.jsapi";
 $exports.ApiHtmlTests = function(html,name) {
 	var SCRIPT_TYPE_PREFIX = $exports.MEDIA_TYPE + "#";
 
-	var scripts = [];
-
-	html.top.getDescendantScripts().forEach( function(node) {
-		var type = node.getScriptType();
-		if (type.substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX) {
-			scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: node });
-		}			
-	});
+	var scripts = (function() {
+		var scripts = [];
+		var descendants = html.top.getDescendantScripts();
+		for (var i=0; i<descendants.length; i++) {
+			var node = descendants[i];
+			var type = node.getScriptType();
+			if (type.substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX) {
+				scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: node });
+			}
+		}
+	})();
 
 	this.getContexts = function(scope) {
 		var contextScripts = html.top.getDescendantScripts("context");
@@ -110,11 +113,17 @@ $exports.ApiHtmlTests = function(html,name) {
 						;
 					}
 
-					if (
-						children[i].getDescendantScripts().some(function(script) {
-							return areTests(script);
-						})
-					) {
+					var someAreTests = (function() {
+						for (var j=0; j<children[i].getDescendantScripts().length; j++) {
+							var script = children[i].getDescendantScripts()[j];
+							if (areTests(script)) {
+								return true;
+							}
+						}
+						return false;
+					})();
+					
+					if (someAreTests) {
 						unit.scenario(getScenario(scope,children[i]));	
 					}
 				}
