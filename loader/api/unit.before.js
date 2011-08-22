@@ -99,7 +99,10 @@ $exports.Scenario = function(properties) {
 				})(assertion);
 			} else if (typeof(assertion) == "undefined") {
 				throw "Assertion is undefined.";
-			} else if (typeof(assertion) == "object" && typeof(assertion.success) == "boolean") {
+			} else if (
+					(typeof(assertion) == "object" && typeof(assertion.success) == "boolean")
+					|| (typeof(assertion) == "object" && assertion.success === null)
+				) {
 				assertion = (function(object) {
 					return function() {
 						return object;
@@ -160,9 +163,9 @@ $exports.Scenario = function(properties) {
 						var next = function() {
 							recurse(units,index+1)
 						};
-						if (units[index].scenario) {
+						if (typeof(units[index].scenario) != "undefined") {
 							runScenario(units[index].scenario,next);
-						} else if (units[index].test) {
+						} else if (typeof(units[index].test) != "undefined") {
 							runTest(units[index].test,next);
 						} else {
 							throw new Error("Unreachable");
