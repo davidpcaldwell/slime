@@ -491,10 +491,13 @@ END LICENSE
 								}
 							}
 
-							deprecate(x,"foo");
-							var yes = expectWarn(true);
-							var z = x.foo;
-							yes.evaluate("get x.foo");
+							var accessor = $platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor;
+							if (accessor) {
+								deprecate(x,"foo");
+								var yes = expectWarn(true);
+								var z = x.foo;
+								yes.evaluate("get x.foo");
+							}
 							//test(warning.test);
 
 							//	Should FAIL
@@ -503,7 +506,6 @@ END LICENSE
 							//
 
 							//console("x1.foo = " + x.foo);
-							var accessor = $platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor;
 							if (accessor) {
 								var yes = expectWarn(true);
 								x.foo = "baz";
