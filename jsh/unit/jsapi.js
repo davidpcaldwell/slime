@@ -16,6 +16,8 @@
 var jsapi = new Namespace("http://www.inonit.com/jsapi");
 
 var getApiHtml = function(moduleMainPathname) {
+	//	TODO	logic for this is largely duplicated in loader/api/api.html.js getApiHtmlPath method, which is string based while
+	//			this is pathname- and directory- and file- based
 	if (moduleMainPathname.directory) {
 		return moduleMainPathname.directory.getFile("api.html");
 	} else if (moduleMainPathname.file) {
