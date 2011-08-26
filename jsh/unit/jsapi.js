@@ -31,6 +31,8 @@ var getApiHtml = function(moduleMainPathname) {
 }
 
 var E4X = function(html) {
+	default xml namespace = html.namespace();
+	
 	var map = function(query) {
 		var rv = [];
 		for (var i=0; i<query.length(); i++) {
