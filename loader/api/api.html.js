@@ -1,5 +1,32 @@
 $exports.MEDIA_TYPE = "application/x.jsapi";
 
+$exports.getApiHtmlPath = function(path) {
+	if (/\/$/.test(path)) {
+		return path + "api.html";
+	} else {
+		var parsed = (function() {
+			var tokens = path.split("/");
+			if (tokens.length > 1) {
+				return {
+					dirname: tokens.slice(0,-1).join("/") + "/",
+					basename: tokens[tokens.length-1]
+				}
+			} else {
+				return {
+					dirname: "",
+					basename: path
+				}
+			}
+		})();
+		var jsName = /(.*)\.js$/.exec(parsed.basename);
+		if (jsName) {
+			return parsed.dirname + jsName[1] + ".api.html";
+		} else {
+			return parsed.dirname + parsed.basename +".api.html";
+		}
+	}	
+}
+
 $exports.ApiHtmlTests = function(html,name) {
 	var SCRIPT_TYPE_PREFIX = $exports.MEDIA_TYPE + "#";
 
