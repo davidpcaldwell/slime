@@ -129,7 +129,7 @@ if (!parameters.options.notest) {
 			}
 			
 			
-			var tokens = test.split(".");
+			var tokens = test.split(":");
 			if (tokens.length == 1) {
 				jsapi.tests.add(getModule(test));
 			} else {
