@@ -109,7 +109,7 @@ $exports.Scenario = function(properties) {
 					}
 				})(assertion);
 			} else if (typeof(assertion) != "function") {
-				var error = new Error("Assertion is not valid format");
+				var error = new Error("Assertion is not valid format; assertion property of this error contains value");
 				error.assertion = assertion;
 				throw error;
 			}
