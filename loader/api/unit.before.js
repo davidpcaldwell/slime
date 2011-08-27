@@ -99,9 +99,19 @@ $exports.Scenario = function(properties) {
 				})(assertion);
 			} else if (typeof(assertion) == "undefined") {
 				throw "Assertion is undefined.";
+			} else if (assertion === null) {
+				assertion = function() {
+					return {
+						success: null,
+						messages: {
+							success: "Success.",
+							failure: "FAILED"
+						}
+					}
+				};
 			} else if (
-					(typeof(assertion) == "object" && typeof(assertion.success) == "boolean")
-					|| (typeof(assertion) == "object" && assertion.success === null)
+					(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
+					|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
 				) {
 				assertion = (function(object) {
 					return function() {
