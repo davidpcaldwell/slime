@@ -54,8 +54,7 @@ if ($platform && $platform.Object.defineProperty && $platform.Object.definePrope
 }
 
 var toLiteral = function(value) {
-	var extensions = arguments.callee.extensions;
-	var sourceify = function(value) {
+	var sourceify = function(value,references) {
 		var UNDEFINED = "(function() {})()";
 
 		var escape = function(string) {
@@ -69,7 +68,7 @@ var toLiteral = function(value) {
 
 		var literal = function(it) {
 			if (typeof(it) == "object") {
-				return sourceify(it);
+				return sourceify(it,references);
 			} else if (typeof(it) == "boolean" || typeof(it) == "number") {
 				return String(it);
 			} else if (typeof(it) == "string") {
@@ -98,6 +97,13 @@ var toLiteral = function(value) {
 		} else if (typeof(value) == "xml") {
 			return null;
 		} else if (typeof(value) == "object") {
+			if (references.indexOf(value) == -1) {				
+				references.push(value);
+			} else {
+				debugger;
+				throw new Error("Recursion in toLiteral()");
+			}
+			
 			var isAnArray = function(object) {
 				//	return object.constructor && (object.constructor.prototype == Array.prototype)
 				//	return object instanceof Array
@@ -121,7 +127,7 @@ var toLiteral = function(value) {
 //				}
 				var properties = [];
 				for (var x in value) {
-					var source = sourceify(value[x]);
+					var source = sourceify(value[x],references);
 					if (source) {
 						properties.push( "'" + x + "':" + source);
 					}
@@ -133,21 +139,8 @@ var toLiteral = function(value) {
 			return null;
 		}
 	}
-	return sourceify(value);
+	return sourceify(value,[]);
 }
-/*
-toLiteral.extensions = [];
-toLiteral.extensions.encode = function(object) {
-	for (var i=0; i<this.length; i++) {
-		var code = this[i](object);
-		if (code) return code;
-	}
-	return null;
-}
-toLiteral.extend = function(extension) {
-	extensions.push(extension);
-}
-*/
 $exports.toLiteral = toLiteral;
 
 var ObjectTransformer = function() {
