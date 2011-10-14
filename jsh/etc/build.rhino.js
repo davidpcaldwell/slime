@@ -317,7 +317,7 @@ var jsapi_jsh = function() {
 	modules.add("loader/rhino/");
 	modules.add("js/object/","jsh.js");
 	modules.add("rhino/host/","jsh.java");
-	modules.add("rhino/io/");
+	modules.add("rhino/io/", "jsh.io");
 	modules.add("rhino/file/","jsh.file");
 	modules.add("rhino/shell/");
 	modules.add("jsh/shell/","jsh.shell");
