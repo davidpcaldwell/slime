@@ -75,6 +75,10 @@ public class Module {
 				return new Source() {
 					private java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[] { url });
 					
+					public String toString() {
+						return Source.class.getName() + " url=" + url;
+					}
+					
 					public InputStream getResourceAsStream(String path) {
 						return loader.getResourceAsStream(path);
 					}
@@ -188,6 +192,10 @@ public class Module {
 						return source;
 					}
 				};
+			}
+			
+			public String toString() {
+				return Classes.class.getName() + " source=" + getSource();
 			}
 			
 //			/** @deprecated */
