@@ -27,6 +27,8 @@
 //	generates and runs unit tests is run in the debugger
 //
 //	jsh.build.nounit (JSH_BUILD_NOUNIT): if set, unit tests are not run as part of the build process
+//
+//	jsh.build.nodoc (JSH_BUILD_NODOC): if set, no documentation is emitted as part of the build process
 
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
