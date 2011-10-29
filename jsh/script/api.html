@@ -101,6 +101,7 @@ END LICENSE
 					this.api = new function() {
 						this.java = $jsapi.module("rhino/host/");
 						this.file = file;
+						this.addClasses = jsh.loader.addClasses;
 					};
 
 					this.$script = jsh.script.pathname.java.adapt();

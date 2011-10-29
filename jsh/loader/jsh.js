@@ -149,6 +149,13 @@ this.jsh = new function() {
 			debugger;
 			return loader.file.apply(this,arguments);
 		}
+		
+		this.addClasses = function(pathname) {
+			if (!pathname.directory && !pathname.file) {
+				throw "Classes not found: " + pathname;
+			}
+			$host.addClasses(pathname.java.adapt());
+		}
 	};
 
 	//	TODO	Lazy-loading
@@ -240,14 +247,12 @@ this.jsh = new function() {
 	jsh.script = (function() {
 		var context = {
 			$script: $host.getInvocation().getScriptFile(),
-			$arguments: $host.getInvocation().getArguments(),
-			addClasses: function(pathname) {
-				$host.addClasses(pathname.java.adapt());
-			}
+			$arguments: $host.getInvocation().getArguments()
 		};
 		context.api = {
 			file: jsh.file,
-			java: jsh.java
+			java: jsh.java,
+			addClasses: jsh.loader.addClasses
 		};
 		
 		return loader.bootstrap(context,"jsh/script");

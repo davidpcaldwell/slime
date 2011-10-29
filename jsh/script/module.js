@@ -21,12 +21,7 @@ if ($context.$script) {
 	}
 }
 $exports.arguments = $context.api.java.toJsArray($context.$arguments, function(s) { return String(s); });
-$exports.addClasses = function(pathname) {
-	if (!pathname.directory && !pathname.file) {
-		throw "Classes not found: " + pathname;
-	}
-	$context.addClasses(pathname);
-}
+$exports.addClasses = $api.deprecate($context.api.addClasses);
 
 $exports.getopts = $loader.script("getopts.js", {
 	$arguments: $exports.arguments,

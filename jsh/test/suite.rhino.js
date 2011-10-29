@@ -29,4 +29,27 @@ run(LAUNCHER_COMMAND.concat(
 		String(new File(BASE,"jsh/test/2.jsh.js").getCanonicalPath())
 		, { env: { MODULES: tmp.getCanonicalPath() }} 
 	]
-))
+));
+
+var classes = createTemporaryDirectory();
+classes.mkdirs();
+
+console("Compiling AddClasses to: " + classes);
+platform.jdk.compile(compileOptions.concat([
+	"-d", classes.getCanonicalPath(),
+	"-sourcepath", [
+		String(new File(BASE,"jsh/test/addClasses/java").getCanonicalPath())
+	].join(colon),
+	String(new File(BASE,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
+]));
+
+var classpath = String(classes.getCanonicalPath());
+if (platform.cygwin) {
+	classpath = platform.cygwin.cygpath.unix(classpath);
+}
+run(LAUNCHER_COMMAND.concat(
+	[
+		String(new File(BASE,"jsh/test/addClasses/addClasses.jsh.js").getCanonicalPath())
+		,"-classes",classpath
+	]
+));
