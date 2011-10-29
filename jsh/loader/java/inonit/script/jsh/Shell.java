@@ -334,7 +334,12 @@ public class Shell {
 			private Modules modules = new Modules();
 
 			public String toString() {
-				return getClass().getName() + " engine=" + engine + " modules=" + modules + " $installation=" + installation;
+				return getClass().getName() 
+					+ " engine=" + engine 
+					+ " modules=" + modules 
+					+ " installation=" + installation
+					+ " classpath=" + classpath
+				;
 			}
 
 			public void exit(int status) throws ExitException {
