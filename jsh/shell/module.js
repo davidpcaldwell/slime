@@ -22,9 +22,9 @@ $exports.echo = function(message,mode) {
 	if (arguments.length == 0) message = "";
 	if (!mode) mode = {};
 
-	var streamToConsole = function(stream) {
+	var streamToConsole = function(stream,toString) {
 		return function(message) {
-			new Packages.java.io.PrintWriter(stream.$getWriter(), true).println(message);
+			new Packages.java.io.PrintWriter(stream.$getWriter(), true).println(toString(message));
 		}
 	}
 
@@ -32,26 +32,41 @@ $exports.echo = function(message,mode) {
 	if (mode.console) {
 		console = mode.console;
 	} else if (mode.stream) {
-		console = streamToConsole(mode.stream);
+		console = streamToConsole(mode.stream,arguments.callee.toString);
 	} else {
-		console = streamToConsole($context.api.io.Streams.stdout);
+		console = streamToConsole($context.api.io.Streams.stdout,arguments.callee.toString);
 	}
 
-	if (typeof(message) == "string") {
-	} else if (typeof(message) == "number") {
-		message = String(message);
-	} else if (typeof(message) == "object") {
-		message = message.toString();
-	} else if (message == null) {
-		message = null;
-	} else if (typeof(message) == "undefined") {
-		message = "undefined";
-	} else {
-		//	TODO Think this through more
-		throw "Unhandled type: " + message + " (type: " + typeof(message) + ")";
-	}
 	console(message);
 }
+$exports.echo.toString = function(message) {
+	if (typeof(message) == "string") {
+		return message;
+	} else if (typeof(message) == "number") {
+		return String(message);
+	} else if (typeof(message) == "boolean") {
+		return String(message);
+	} else if (typeof(message) == "function") {
+		return message.toString();
+	} else if (typeof(message) == "xml") {
+		return message.toXMLString();
+	} else if (message === null) {
+		return arguments.callee["null"];
+	} else if (typeof(message) == "object") {
+		return message.toString();
+	} else if (typeof(message) == "undefined") {
+		return arguments.callee["undefined"];
+	} else {
+		if (typeof(message.toString == "function")) {
+			return message.toString();
+		} else {
+			return "Host object: typeof = " + typeof(message);
+		}
+	}
+	return message;
+}
+$exports.echo.toString["undefined"] = "(undefined)";
+$exports.echo.toString["null"] = "(null)";
 
 $exports.shell = function(command,args,mode) {
 	var Streams = $context.api.io.Streams;

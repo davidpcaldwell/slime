@@ -1,0 +1,1 @@
+jsh.shell.echo(true);

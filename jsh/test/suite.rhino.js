@@ -43,6 +43,26 @@ platform.jdk.compile(compileOptions.concat([
 	String(new File(BASE,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
 ]));
 
+(function() {
+	var command = [
+		String(new File(BASE,"jsh/test/jsh.shell.echo.jsh.js").getCanonicalPath())
+	];
+	var options = {
+		output: ""
+	};
+
+	var status = runCommand.apply(this,LAUNCHER_COMMAND.concat(command).concat([options]));
+	if (status != 0) throw new Error("Failed with exit status " + status);
+	var messages = [
+		"true",
+		""
+	];
+	if (options.output != messages.join(String(Packages.java.lang.System.getProperty("line.separator")))) throw new Error("Output wrong: it is [" + options.output + "]");
+	console("");
+	console("Passed: " + command.join(" "));
+	console("");
+})();
+
 var getJshPathname = function(file) {
 	var rv = String(file.getCanonicalPath());
 	if (platform.cygwin) {
