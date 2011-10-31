@@ -73,7 +73,7 @@ slime.build.rhino = function(from,build,api,javac) {
 	}
 }
 
-//	Build using jsh shell; used by slime.jsh
+//	Build using jsh shell; used by slime.jsh.js
 slime.build.jsh = function(from,build) {
 	var toCopy = from
 		.list({ recursive: true, type: from.list.RESOURCE })
@@ -115,7 +115,7 @@ slime.build.jsh = function(from,build) {
 		);
 	}
 }
-//	Need to export the slime symbol when loading from slime.jsh, but there will be no "$exports" variable when loading from the
+//	Need to export the slime symbol when loading from slime.jsh.js, but there will be no "$exports" variable when loading from the
 //	rhino shell during the build process
 try {
 	$exports.slime = slime;

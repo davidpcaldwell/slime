@@ -107,7 +107,7 @@ this.jsh = new function() {
 			return rhinoLoader.namespace(name);
 		}
 
-		if ($host.getBundledModules()) {
+		if ($host.getPackagedModules()) {
 			this.bundled = new function() {
 				this.module = function(path) {
 					if (path.substring(path.length-1) == "/") {
@@ -119,7 +119,7 @@ this.jsh = new function() {
 						p.$context = arguments[1];
 					}
 					return rhinoLoader.module(
-						$host.getBundledModules().load(
+						$host.getPackagedModules().load(
 							tokens.slice(0,tokens.length-1).join("/")
 							,tokens[tokens.length-1]
 						),

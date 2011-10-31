@@ -83,8 +83,22 @@ public class Shell {
 		public abstract Script getPlatformLoader();
 		public abstract Script getRhinoLoader();
 		public abstract Script getJshLoader();
+		
+		/**
+		 *	Specifies where code for "shell modules" -- modules included with jsh itself -- can be found.
+		 *
+		 *	@param path A logical path to the module; e.g., js/object for the jsh.js module.
+		 *
+		 *	@return An object that can load the specified module.
+		 */
 		public abstract Module.Code getShellModuleCode(String path);
-		public abstract Modules getApplicationModules();
+
+		/**
+		 *	
+		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
+		 *	<code>null</code> if it is not.
+		 */
+		public abstract Modules getPackagedModules();
 
 		public static abstract class Modules {
 			public abstract Module.Code getCode(String path, String name);
@@ -369,14 +383,14 @@ public class Shell {
 				return rv;
 			}
 
-			public Modules getBundledModules() {
-				if (installation.getApplicationModules() == null) return null;
+			public Modules getPackagedModules() {
+				if (installation.getPackagedModules() == null) return null;
 				return modules;
 			}
 
 			public class Modules {
 				public Module load(String path, String name) {
-					Module rv = Host.this.engine.load(installation.getApplicationModules().getCode(path, name));
+					Module rv = Host.this.engine.load(installation.getPackagedModules().getCode(path, name));
 					classpath.append(rv);
 					return rv;
 				}

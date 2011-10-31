@@ -18,8 +18,6 @@ package inonit.script.jsh;
 import java.io.*;
 import java.util.*;
 
-import org.mozilla.javascript.*;
-
 import inonit.script.rhino.*;
 
 public class Main {
@@ -65,7 +63,7 @@ public class Main {
 					);
 				}
 
-				public Modules getApplicationModules() {
+				public Modules getPackagedModules() {
 					return new Modules() {
 						public Module.Code getCode(String path, String name) {
 							return Module.Code.create(
@@ -85,7 +83,7 @@ public class Main {
 				}
 
 				public Shell.Script getScript() {
-					return Shell.Script.create("main.jsh", ClassLoader.getSystemResourceAsStream("main.jsh"));
+					return Shell.Script.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js"));
 				}
 
 				public String[] getArguments() {
@@ -152,7 +150,7 @@ public class Main {
 					return Module.Code.slime(getModulePath(path), "module.js");
 				}
 
-				public Modules getApplicationModules() {
+				public Modules getPackagedModules() {
 					return null;
 				}
 			};

@@ -158,7 +158,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		var ClassLoader = Packages.java.lang.ClassLoader;
 
 		this.__defineGetter__("source", function() {
-			return readUrl( ClassLoader.getSystemResource("main.jsh") );
+			return readUrl( ClassLoader.getSystemResource("main.jsh.js") );
 		});
 
 		debug("Copying rhino ...");

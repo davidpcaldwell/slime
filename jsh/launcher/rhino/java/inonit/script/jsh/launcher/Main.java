@@ -26,7 +26,7 @@ public class Main {
 
 	private static abstract class Invocation {
 		static Invocation create() throws IOException {
-			if (ClassLoader.getSystemResource("main.jsh") != null) {
+			if (ClassLoader.getSystemResource("main.jsh.js") != null) {
 				return new Packaged();
 			}
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();

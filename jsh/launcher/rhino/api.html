@@ -25,7 +25,9 @@ END LICENSE
 		<div>
 			<h2>Resources used</h2>
 			<ul>
-				<li>main.jsh: If present in classpath, this is a packaged application.</li>
+				<li>
+					main.jsh.js: If present in classpath, this is a packaged application.
+				</li>
 				<li>
 					jsh.jar: If <code>inonit.script.jsh.launcher.Main</code> loaded from a file named <code>jsh.jar</code>, we
 					assume we can find js.jar and jsh.rhino.js at their typical relative locations (unless otherwise specified).
@@ -112,7 +114,8 @@ END LICENSE
 			<div>
 				System properties used by Main.java to communicate with jsh.rhino.js:
 				<p>
-					All properties beginning with <code>jsh.launcher.</code> are also passed as-is to subprocesses.
+					All of the below properties except <code>jsh.launcher.home</code> are also passed as-is to the loader
+					subprocess.
 				</p>
 				<ul>
 					<li>

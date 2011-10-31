@@ -357,25 +357,26 @@ var jsapi_jsh = function() {
 	}
 }
 	
-var integrationTests = function() {
-	var script = new File(BASE,"jsh/test/suite.rhino.js");
-	console("Running integration tests at " + script.getCanonicalPath() + " ...");
-	load(script.getCanonicalPath());
-}
-
 if (getSetting("jsh.build.nounit") && getSetting("jsh.build.nodoc")) {
 } else {
 	console("Running JSAPI ...");
 	jsapi_jsh();
-	if (!getSetting("jsh.build.nounit")) {
-		integrationTests();
-	}
 }
 
 console("Creating tools ...");
 var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
 copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
+
+if (!getSetting("jsh.build.nounit")) {
+	var integrationTests = function() {
+		var script = new File(BASE,"jsh/test/suite.rhino.js");
+		console("Running integration tests at " + script.getCanonicalPath() + " ...");
+		load(script.getCanonicalPath());
+	}
+
+	integrationTests();
+}
 
 var bases = ["js","loader","rhino","jsh"];
 

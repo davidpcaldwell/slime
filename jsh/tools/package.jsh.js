@@ -83,7 +83,7 @@ parameters.options.module.forEach( function(module) {
 	}
 } );
 
-to.getRelativePath("main.jsh").write(parameters.options.script.file.read(jsh.file.Streams.binary));
+to.getRelativePath("main.jsh.js").write(parameters.options.script.file.read(jsh.file.Streams.binary));
 
 if (!parameters.options.directory) {
 	parameters.options.to.parent.createDirectory({ ifExists: function(d) { return false; }});

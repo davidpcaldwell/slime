@@ -21,7 +21,7 @@ import java.util.*;
 public class Streams {
 	private Characters characters = new Characters();
 	
-	public void copy(InputStream in, OutputStream out) throws IOException {
+	public void copy(InputStream in, OutputStream out, boolean closeInputStream) throws IOException {
 		in = new BufferedInputStream(in);
 		out = new BufferedOutputStream(out);
 		int i;
@@ -29,7 +29,13 @@ public class Streams {
 			out.write(i);
 		}
 		out.flush();
-		in.close();
+		if (closeInputStream) {
+			in.close();
+		}
+	}
+	
+	public void copy(InputStream in, OutputStream out) throws IOException {
+		copy(in,out,true);
 	}
 	
 	public void copy(Reader in, Writer out) throws IOException {
