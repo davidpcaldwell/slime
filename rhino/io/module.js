@@ -142,6 +142,7 @@ var Reader = function(peer) {
 		//	First, read the string into a variable so that we still have it in case of error (stream may not be re-readable).
 		var string = this.asString();
 		string = string.replace(/\<\?xml.*\?\>/, "");
+		string = string.replace(/\<\!DOCTYPE.*?\>/, "");
 		return XMLList( string );
 	}
 
