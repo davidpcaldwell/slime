@@ -47,7 +47,7 @@ int main() {
 				char* paths[2];
 				paths[0] = buf+1;
 				paths[1] = NULL;
-				FTS* fts = fts_open(paths,FTS_PHYSICAL,NULL);
+				FTS* fts = fts_open(paths,FTS_PHYSICAL||FTS_COMFOLLOW,NULL);
 				fts_read(fts);
 				FTSENT* dir = fts_children(fts,0);
 				while(dir != NULL)
