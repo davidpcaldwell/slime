@@ -28,7 +28,7 @@ $exports.addClasses = function(pathname) {
 	$context.addClasses(pathname);
 }
 
-$exports.getopts = $loader.script("getopts.js", {
+$exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
 	$filesystem: $context.api.file.filesystem,
 	$workingDirectory: $context.api.file.workingDirectory,

@@ -32,7 +32,7 @@ var streams = $context.api.io;
 $exports.Streams = streams.Streams;
 $api.deprecate($exports,"Streams");
 
-var os = $loader.script("os.js", new function() {
+var os = $loader.file("os.js", new function() {
 	this.$pwd = $context.$pwd;
 	this.cygwin = $context.cygwin;
 	this.streams = streams;
@@ -81,7 +81,7 @@ $exports.__defineSetter__("filesystem", function(v) {
 	defaults.filesystem = v;
 });
 
-var file = $loader.script("file.js", {
+var file = $loader.file("file.js", {
 	defined: $context.api.js.defined,
 	defaults: defaults,
 	constant: $context.api.js.constant,
@@ -103,7 +103,7 @@ $exports.Searchpath = file.Searchpath;
 $exports.java = $context.api.io.java;
 $api.deprecate($exports,"java");
 
-var zip = $loader.script("zip.js", {
+var zip = $loader.file("zip.js", {
 	Streams: streams.Streams
 	,Pathname: file.Pathname
 	,InputStream: function(_in) {
