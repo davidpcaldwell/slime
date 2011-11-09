@@ -1267,7 +1267,6 @@ END LICENSE
 			}
 		]]></script>
 		<script type="application/x.jsapi#scope">
-			var streamdir;
 		</script>
 		<script type="application/x.jsapi#initialize">
 			var hostdir = new Packages.java.io.File($java.io.newTemporaryDirectory(), "streamtests");
@@ -1279,7 +1278,7 @@ END LICENSE
 			aWriter.print("Finished.");
 			aWriter.flush();
 			aWriter.close();
-			streamdir = module.filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
+			scope.streamdir = module.filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
 		</script>
 		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
 			var fileA = streamdir.getFile("a");
