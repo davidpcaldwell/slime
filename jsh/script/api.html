@@ -94,7 +94,7 @@ END LICENSE
 						context.cygwin.paths = String(System.getProperty("cygwin.paths"));
 					}
 				};
-				file = $jsapi.module("rhino/file/", context);
+				var file = $jsapi.module("rhino/file/", context);
 				var $filesystem = file.filesystem;
 				var FILE = file;
 				return new function() {
