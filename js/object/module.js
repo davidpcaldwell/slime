@@ -14,7 +14,7 @@
 //	END LICENSE
 
 if ($context.globals) {
-	$loader.script("global.js");
+	$loader.file("global.js");
 }
 
 var deprecate = $api.deprecate;

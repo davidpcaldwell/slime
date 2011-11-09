@@ -23,7 +23,7 @@ if ($context.$script) {
 $exports.arguments = $context.api.java.toJsArray($context.$arguments, function(s) { return String(s); });
 $exports.addClasses = $api.deprecate($context.api.addClasses);
 
-$exports.getopts = $loader.script("getopts.js", {
+$exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
 	$filesystem: $context.api.file.filesystem,
 	$workingDirectory: $context.api.file.workingDirectory,

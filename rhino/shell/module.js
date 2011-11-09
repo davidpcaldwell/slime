@@ -13,7 +13,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var scope = $loader.script("shell.js");
+var scope = $loader.file("shell.js");
 $exports.run = scope.run;
 $exports.environment = (function() {
 	//	TODO	Document $context.$environment

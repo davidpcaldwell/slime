@@ -427,8 +427,8 @@ END LICENSE
 					var anAbsolute = PATHNAME_SEPARATOR + [ "hello", "world" ].join(PATHNAME_SEPARATOR);
 					var pathsOptions = getopts({
 							options: {
-								absolute: file.Pathname,
-								relative: file.Pathname
+								absolute: context.FILE.Pathname,
+								relative: context.FILE.Pathname
 							}
 						},
 						[ "-absolute", anAbsolute, "-relative", "hello" ]

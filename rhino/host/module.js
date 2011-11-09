@@ -18,7 +18,7 @@ var warning = ($context.warning) ? $context.warning : function(s) {
 	Packages.java.lang.System.err.println("rhino/host WARNING: " + s);
 };
 
-var items = $loader.script("java.js", {
+var items = $loader.file("java.js", {
 	classLoader: $context.classLoader,
 	warning: (function() {
 		if ($context.warning) return $context.warning;
