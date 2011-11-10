@@ -130,14 +130,25 @@ $exports.shell = function(command,args,mode) {
 	$run(tokens,rMode);
 }
 
-$exports.jsh = function(script,args,mode) {
-	var getProperty = function(name) {
-		var value = eval("$context.api.shell.properties." + name);
-		if (String(value) == "undefined") return function(){}();
-		if (value == null) return null;
-		return String(value);
+var getProperty = function(name) {
+	var value = eval("$context.api.shell.properties." + name);
+	if (String(value) == "undefined") return function(){}();
+	if (value == null) return null;
+	return String(value);
+}
+	
+$exports.java = new function() {
+	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
+	
+	//	TODO	find more robust way to do this
+	if ($context.api.file.filesystems.cygwin) {
+		jdk = $context.api.file.filesystems.cygwin.toUnix(jdk.pathname).directory;
 	}
 	
+	this.home = jdk;
+}
+
+$exports.jsh = function(script,args,mode) {
 	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 	var executable = jdk.getRelativePath("bin/java").toString();
 	//	Set defaults from this shell
@@ -172,3 +183,4 @@ $exports.jsh = function(script,args,mode) {
 
 	$exports.shell(executable,jargs,mode);
 }
+

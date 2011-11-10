@@ -48,10 +48,15 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
+				var host = $jsapi.module("rhino/host/");
 				this.api = {
-					java: {},
-					shell: {},
-					file: {},
+					java: host,
+					shell: $jsapi.module("rhino/shell/", {
+						api: {
+							java: host
+						}
+					}),
+					file: jsh.file
 				};
 
 				this.exit = function() {
@@ -240,6 +245,21 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<span>A description of the Java environment for this shell.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">home</div>
+						<span class="type">jsh.file directory</span>
+						<span>The home directory of the Java installation used to run this shell.</span>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					test(Boolean(module.java.home));
+				</script>
 			</li>
 		</ul>
 	</div>
