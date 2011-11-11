@@ -170,7 +170,6 @@ var Pathname = function(parameters) {
 			}
 		}
 
-		var success;
 		if (mode.recursive) {
 			$filesystem.createDirectoryAt(peer);
 		} else {
