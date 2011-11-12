@@ -58,6 +58,10 @@ END LICENSE
 					}),
 					file: jsh.file
 				};
+				
+				this.getSystemProperty = function(name) {
+					return String(Packages.java.lang.System.getProperty(name));
+				}
 
 				this.exit = function() {
 				}
