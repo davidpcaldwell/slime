@@ -196,7 +196,7 @@ this.jsh = new function() {
 			this.$err = $host.getStandardError();
 		}
 
-		context.$pwd = String( $shell.properties.user.dir );
+		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
 
 		context.addFinalizer = addFinalizer;
 
