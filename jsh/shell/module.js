@@ -136,9 +136,18 @@ var getProperty = function(name) {
 	if (value == null) return null;
 	return String(value);
 }
-	
+
+var getDirectoryProperty = function(name) {
+	var rv = $context.api.file.filesystems.os.Pathname($context.getSystemProperty(name)).directory;
+	//	TODO	find more robust way to do this
+	if ($context.api.file.filesystems.cygwin) {
+		rv = $context.api.file.filesystems.cygwin.toUnix(rv.pathname).directory;
+	}
+	return rv;
+}
+
 $exports.java = new function() {
-	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
+	var jdk = getDirectoryProperty("java.home");
 	
 	//	TODO	find more robust way to do this
 	if ($context.api.file.filesystems.cygwin) {
@@ -147,6 +156,9 @@ $exports.java = new function() {
 	
 	this.home = jdk;
 }
+
+$exports.TMP = getDirectoryProperty("java.io.tmpdir");
+$exports.HOME = getDirectoryProperty("user.home");
 
 $exports.jsh = function(script,args,mode) {
 	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;

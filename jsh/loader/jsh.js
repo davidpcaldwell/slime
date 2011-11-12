@@ -238,6 +238,11 @@ this.jsh = new function() {
 			io: jsh.io,
 			file: jsh.file
 		}
+		context.getSystemProperty = function(name) {
+			var rv = $host.getSystemProperties().getProperty(name);
+			if (rv == null) return null;
+			return String(rv);
+		}
 		context.exit = function(code) {
 			$host.exit(code);
 		}
