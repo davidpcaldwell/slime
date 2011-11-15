@@ -21,7 +21,7 @@ $exports.zip = function(p) {
 	} else if (p.from instanceof $context.Pathname && p.from.directory) {
 		//	TODO	Should really allow p.from to *be* a directory
 		from = p.from.directory.list({ recursive: true, type: p.from.directory.list.ENTRY }).map( function(item) {
-			if (item.node.directory) return { directory: item.path };
+			if (item.node.directory) return { directory: item.path.substring(0,item.path.length-1) };
 			return {
 				path: item.path.replace(/\\/g, "/"),
 				$stream: item.node.read($context.Streams.binary).java.adapt()
