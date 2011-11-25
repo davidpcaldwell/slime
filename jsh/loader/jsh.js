@@ -161,7 +161,7 @@ this.jsh = new function() {
 
 		if (loader.bundled) {
 			this.bundled = loader.bundled;
-			$api.deprecate(this,"bundled");
+			loader.$api.deprecate(this,"bundled");
 		}
 
 		this.addFinalizer = function(f) {
