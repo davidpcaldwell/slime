@@ -259,9 +259,7 @@ new function() {
 		var scope = {
 			$exports: {}
 		};
-		if ($context) {
-			scope.$context = $context;
-		}
+		scope.$context = ($context) ? $context : {};
 		runInScope(code,scope,{});
 		return scope.$exports;		
 	}
