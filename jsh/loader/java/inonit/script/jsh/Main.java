@@ -63,17 +63,11 @@ public class Main {
 					);
 				}
 
-				public Modules getPackagedModules() {
-					return new Modules() {
-						public Module.Code getCode(String path, String name) {
-							return Module.Code.create(
-								Module.Code.Source.create(
-									ClassLoader.getSystemClassLoader(), "$modules/" + path + "/"
-								),
-								name
-							);
-						}
-					};
+				public Module.Code.Source getPackagedCode() {
+					return Module.Code.Source.create(
+						ClassLoader.getSystemClassLoader(),
+						"$packaged/"
+					);
 				}
 			};
 
@@ -150,7 +144,7 @@ public class Main {
 					return Module.Code.slime(getModulePath(path), "module.js");
 				}
 
-				public Modules getPackagedModules() {
+				public Module.Code.Source getPackagedCode() {
 					return null;
 				}
 			};

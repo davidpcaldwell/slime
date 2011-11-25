@@ -98,11 +98,7 @@ public class Shell {
 		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
 		 *	<code>null</code> if it is not.
 		 */
-		public abstract Modules getPackagedModules();
-
-		public static abstract class Modules {
-			public abstract Module.Code getCode(String path, String name);
-		}
+		public abstract Module.Code.Source getPackagedCode();
 
 		Engine.Loader getRhinoLoaderBootstrap() {
 			return new Engine.Loader() {
@@ -345,12 +341,10 @@ public class Shell {
 
 		public class Interface {
 			private Engine engine = new Engine();
-			private Modules modules = new Modules();
 
 			public String toString() {
 				return getClass().getName() 
 					+ " engine=" + engine 
-					+ " modules=" + modules 
 					+ " installation=" + installation
 					+ " classpath=" + classpath
 				;
@@ -382,18 +376,9 @@ public class Shell {
 				classpath.append(rv);
 				return rv;
 			}
-
-			public Modules getPackagedModules() {
-				if (installation.getPackagedModules() == null) return null;
-				return modules;
-			}
-
-			public class Modules {
-				public Module load(String path, String name) {
-					Module rv = Host.this.engine.load(installation.getPackagedModules().getCode(path, name));
-					classpath.append(rv);
-					return rv;
-				}
+			
+			public Module.Code.Source getPackagedCode() {
+				return installation.getPackagedCode();
 			}
 
 			public ClassLoader getClassLoader() {

@@ -106,25 +106,48 @@ this.jsh = new function() {
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
-
-		if ($host.getPackagedModules()) {
+		
+		if ($host.getPackagedCode()) {
 			this.bundled = new function() {
-				this.module = function(path) {
-					if (path.substring(path.length-1) == "/") {
-						path += "module.js";
+				var getCode = function(path) {
+					var _in = $host.getPackagedCode().getResourceAsStream(path);
+					if (_in) {
+						return {
+							name: "packaged:" + path,
+							$in: _in
+						}
+					} else {
+						return null;
 					}
-					var tokens = path.split("/");
+				}
+				
+				this.run = function(path,scope,target) {
+					return rhinoLoader.run(getCode(path),scope,target);
+				}
+				
+				this.file = function(path,$context) {
+					return rhinoLoader.file(getCode(path),$context);
+				}
+				
+				this.module = function(path) {
+					var m = new function() {
+						this.toString = function() {
+							return "packaged:module:" + path
+						}
+						
+						this.read = function(relative) {
+							return $host.getPackagedCode().getResourceAsStream(path+relative);
+						}
+						
+						this.getMainScriptPath = function() {
+							return "module.js";
+						}
+					};
 					var p = {};
 					if (arguments.length == 2) {
 						p.$context = arguments[1];
 					}
-					return rhinoLoader.module(
-						$host.getPackagedModules().load(
-							tokens.slice(0,tokens.length-1).join("/")
-							,tokens[tokens.length-1]
-						),
-						p
-					);
+					return rhinoLoader.module(m,p);
 				}
 			}
 		}
@@ -138,6 +161,7 @@ this.jsh = new function() {
 
 		if (loader.bundled) {
 			this.bundled = loader.bundled;
+			$api.deprecate(this,"bundled");
 		}
 
 		this.addFinalizer = function(f) {
@@ -262,6 +286,10 @@ this.jsh = new function() {
 		
 		return loader.bootstrap(context,"jsh/script");
 	})();
+	
+	if (jsh.script && loader.bundled) {
+		jsh.script.loader = loader.bundled;
+	}
 
 	if (jsh.script) {
 		jsh.shell.getopts = jsh.script.getopts;
