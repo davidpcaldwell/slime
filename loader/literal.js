@@ -112,12 +112,16 @@ new function() {
 				//			technique
 				if (typeof(object[property]) == "function") {
 					var deprecateMethod = function(f) {
-						return function() {
+						var rv = function() {
 							warning({ target: object, name: property, call: arguments, reason: reason });
 							//	TODO	Add regression to cover previous mistake of not returning this value (but invoking and then
 							//			returning undefined)
 							return f.apply(this,arguments);
+						};
+						for (var x in f) {
+							rv[x] = f[x];
 						}
+						return rv;
 					}
 					object[property] = deprecateMethod(object[property]);
 					return function(){}();
