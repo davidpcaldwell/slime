@@ -29,6 +29,11 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (!parameters.options.to) {
+	jsh.shell.echo("Required: -to <pathname>");
+	jsh.shell.exit(1);
+}
+
 var slime = jsh.loader.script(jsh.script.getRelativePath("slime.js")).slime;
 
 var compile = function(args) {
