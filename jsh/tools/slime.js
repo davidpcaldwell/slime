@@ -105,7 +105,13 @@ slime.build.jsh = function(from,build) {
 		} );
 
 		var destination = build.getRelativePath("$jvm/classes").createDirectory({ recursive: true });
-		var args = [ "-d", destination.pathname.toString() ];
+		//	TODO	it would be nice to remove the below explicit Cygwin reference
+		var d = destination.pathname;
+		if (jsh.file.filesystems.cygwin) {
+			d = jsh.file.filesystems.cygwin.toWindows(d);
+		}
+		jsh.shell.echo("Compiling to " + d.toString());
+		var args = [ "-d", d.toString() ];
 		var args = args.concat( toCompile.map( function(item) { return item.toString() } ) );
 		Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
 			Packages.java.lang.System["in"],
