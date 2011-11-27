@@ -50,7 +50,11 @@ public class Main {
 				}
 
 				public Shell.Script getJshLoader() {
-					return Shell.Script.create("jsh.js", ClassLoader.getSystemResourceAsStream("$jsh/jsh.js"));
+					InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/jsh.js");
+					if (in == null) {
+						throw new RuntimeException("Not found in system class loader: $jsh/jsh.js" + "; system class path is " + System.getProperty("java.class.path"));
+					}
+					return Shell.Script.create("jsh.js", in);
 				}
 
 				public Module.Code getShellModuleCode(String path) {
