@@ -93,7 +93,15 @@ var jshPackage = function() {
 console("Packaging addClasses/addClasses.jsh.js");
 var packagedAddClasses = jshPackage();
 console("Running " + packagedAddClasses + " ...");
+var mode = {};
+mode.env = {};
+for (var x in env) {
+	if (!/^JSH_/.test(x)) {
+		mode.env[x] = env[x];
+	}
+}
 run(LAUNCHER_COMMAND.slice(0,2).concat([
 	packagedAddClasses.getCanonicalPath(),
-	"-classes",getJshPathname(classes)
+	"-classes",getJshPathname(classes),
+	mode
 ]));
