@@ -636,7 +636,7 @@ END LICENSE
 								</span>
 							</div>
 						</li>
-						<li class="function">
+						<li class="function" jsapi:id="directory.list">
 							<div class="name">list</div>
 							<div class="arguments">
 								<div class="label">Arguments</div>
@@ -803,6 +803,58 @@ END LICENSE
 								test(resourcef.length == 1);
 								resourcef = resourcef[0];
 								test(resourcef.resource.read(String) == "");
+								
+								if (context.cygwin) {
+									debugger;
+									var link = function(target,link) {
+										jsh.shell.shell(
+											jsh.file.Pathname("/bin/ln"),
+											[
+												"-s",
+												target.toString(),
+												link.toString()
+											],
+											{
+											}
+										);
+									};
+									
+									var dir = $jsapi.newTemporaryDirectory();
+									
+									var newFile = function(path) {
+										dir.getRelativePath(path).write(path, { append: false });
+										return dir.getFile(path);
+									}
+									
+									var newDir = function(path) {
+										return dir.getRelativePath(path).createDirectory();
+									}
+
+									var dirtarget = newDir("dirtarget");
+									var filetarget = newFile("filetarget");
+									
+									var list = newDir("list");
+									link(dirtarget.pathname,list.getRelativePath("softdir"));
+									link(filetarget.pathname,list.getRelativePath("softfile"));
+									var hardfile = newFile("list/hardfile");
+									var harddir = newDir("list/harddir");
+									
+									test(list.list().length == 4);
+									var nodes = list.list();
+									nodes.sort(function(a,b) {
+										if (a.pathname.basename < b.pathname.basename) return -1;
+										if (b.pathname.basename < a.pathname.basename) return 1;
+										return 0;
+									});
+									var getWindowsTargetName = function(node) {
+										var winpath = module.filesystems.cygwin.toWindows(node.pathname);
+										return winpath.toString().split("\\").slice(-1)[0];
+									}
+									test(getWindowsTargetName(nodes[0]) == "harddir");
+									test(getWindowsTargetName(nodes[1]) == "hardfile");
+									test(getWindowsTargetName(nodes[2]) == "dirtarget");
+									test(getWindowsTargetName(nodes[3]) == "filetarget");
+								}
 							]]></script>
 						</li>
 					</ul>
@@ -1267,7 +1319,6 @@ END LICENSE
 			}
 		]]></script>
 		<script type="application/x.jsapi#scope">
-			var streamdir;
 		</script>
 		<script type="application/x.jsapi#initialize">
 			var hostdir = new Packages.java.io.File($java.io.newTemporaryDirectory(), "streamtests");
@@ -1279,7 +1330,7 @@ END LICENSE
 			aWriter.print("Finished.");
 			aWriter.flush();
 			aWriter.close();
-			streamdir = module.filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
+			scope.streamdir = module.filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
 		</script>
 		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
 			var fileA = streamdir.getFile("a");

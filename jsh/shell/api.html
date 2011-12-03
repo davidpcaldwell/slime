@@ -14,6 +14,7 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>jsh.shell</title>
@@ -47,11 +48,20 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
+				var host = $jsapi.module("rhino/host/");
 				this.api = {
-					java: {},
-					shell: {},
-					file: {},
+					java: host,
+					shell: $jsapi.module("rhino/shell/", {
+						api: {
+							java: host
+						}
+					}),
+					file: jsh.file
 				};
+				
+				this.getSystemProperty = function(name) {
+					return String(Packages.java.lang.System.getProperty(name));
+				}
 
 				this.exit = function() {
 				}
@@ -240,21 +250,34 @@ END LICENSE
 					</ol>
 				</div>
 			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<span>A description of the Java environment for this shell.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">home</div>
+						<span class="type">jsh.file directory</span>
+						<span>The home directory of the Java installation used to run this shell.</span>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					test(Boolean(module.java.home));
+				</script>
+			</li>
+			<li class="value">
+				<div class="name">TMP</div>
+				<span class="type">jsh.file directory</span>
+				<span>A temporary directory that may be used by this shell.</span>
+			</li>
+			<li class="value">
+				<div class="name">HOME</div>
+				<span class="type">jsh.file directory</span>
+				<span>The home directory of the user executing this shell.</span>
+			</li>
 		</ul>
 	</div>
 <!--
-$doc.members.exit = new $Doc.Function({
-	summary: "Exits the script with a given status.",
-	asFunction: {
-		description: <>Exits the script with a given status code.</>,
-		arguments: {
-			list: [
-				{ type: "number", comment: <>An integer status to be returned as the result of this script.</> }
-			]
-		}
-	}
-});
-
 $doc.members.echo = new $Doc.Function({
 	summary: "Prints information to a console.",
 	asFunction: {

@@ -254,7 +254,7 @@ $exports.Object = new function() {
 		return properties.pairs(o);
 	}
 }
-$api.experimental($exports.Object);
+$api.experimental($exports,"Object");
 
 if ($context.globals) {
 	if (!Object.keys) {

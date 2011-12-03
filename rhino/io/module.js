@@ -142,6 +142,7 @@ var Reader = function(peer) {
 		//	First, read the string into a variable so that we still have it in case of error (stream may not be re-readable).
 		var string = this.asString();
 		string = string.replace(/\<\?xml.*\?\>/, "");
+		string = string.replace(/\<\!DOCTYPE.*?\>/, "");
 		return XMLList( string );
 	}
 
@@ -206,7 +207,7 @@ $exports.Buffer = Buffer;
 
 var Streams = new function() {
 	this.binary = new function() {
-		this.copy = function(from,to) {
+		this.copy = function(from,to,mode) {
 			var $r = (function() {
 				if ($context.api.java.isJavaType(Packages.java.io.InputStream)(from)) return from;
 				if (from.java && from.java.adapt) return from.java.adapt();
@@ -217,7 +218,14 @@ var Streams = new function() {
 				if (to.java && to.java.adapt) return to.java.adapt();
 				if (to.$getOutputStream) return to.$getOutputStream();
 			})();
-			$java.copy($r,$w)
+			if (mode) {
+				$java.copy($r,$w,false);
+				if (mode.onFinish) {
+					mode.onFinish($r,$w);
+				}
+			} else {
+				$java.copy($r,$w);
+			}
 		}
 
 		this.Buffer = function() {

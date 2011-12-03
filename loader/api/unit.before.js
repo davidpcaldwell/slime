@@ -211,6 +211,10 @@ $exports.Scenario = function(properties) {
 			try {
 				initializeAndExecute.call(this,scope);
 			} catch (e) {
+				//	The next line works around a bug in the Rhino debugger (as of 1.7R2) that does not put 'e' in the local scope
+				//	so that it cannot be examined. Assigning it to the variable error allows the 'error' variable to be evaluated
+				//	and viewed in the debugger when running in Rhino.
+				var error = e;
 				scope.test({
 					success: null,
 					error: e,

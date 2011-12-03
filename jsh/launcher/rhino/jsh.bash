@@ -18,8 +18,15 @@ if [ -n "$JSH_LAUNCHER_DEBUG" ]; then
 fi
 
 if [ -z "$JSH_JAVA_HOME" ]; then
-	echo "JSH_JAVA_HOME not defined; should point to Java 2 SDK."
-	exit 1
+	JSH_JAVA_LAUNCHER=$(which java 2>/dev/null)
+	if [ "0" = "$?" ]; then
+		true
+	else
+		echo "JSH_JAVA_HOME not defined; should point to Java 2 SDK."
+		exit 1
+	fi
+else
+	JSH_JAVA_LAUNCHER=$JSH_JAVA_HOME/bin/java
 fi
 
 JSH_LAUNCHER=$(dirname $0)/jsh.jar
@@ -34,5 +41,5 @@ case "`uname`" in
 	;;
 esac
 
-$JSH_JAVA_HOME/bin/java -jar $JSH_LAUNCHER "$@"
+"$JSH_JAVA_LAUNCHER" -jar $JSH_LAUNCHER "$@"
 exit $?

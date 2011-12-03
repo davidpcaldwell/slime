@@ -70,6 +70,24 @@ new function() {
 
 		var flag = function() {
 			var rv = function(object,property) {
+				if ( (typeof(object) == "object" || typeof(object) == "function") && typeof(property) == "string" ) {
+				} else if (typeof(object) == "function" && typeof(property) == "undefined") {
+				} else {
+					if (reason.warning) {
+						reason.warning({ flag: arguments });
+					} else {
+						debugger;
+					}
+					if (arguments.length == 1) {
+						//	assume first argument is supposed to be function
+						return function() {
+							throw new TypeError("Attempt to invoke deprecated non-existent function.");
+						}
+					} else {
+						return function(){}();
+					}
+				}
+
 				var reason = arguments.callee;
 				//	TODO	If we allowed arguments.callee.warning to be used, we could do different reasons for different problems
 				//	var warning = ($context.flag && $context.flag.warning) ? $context.flag.warning : function() {};
@@ -78,7 +96,7 @@ new function() {
 						reason.warning(o);
 					}
 				}
-
+				
 				//	TODO	This is experimental: document it if it stays
 				if (typeof(object) == "function" && arguments.length == 1) {
 					var deprecateFunction = function(f) {
@@ -94,12 +112,16 @@ new function() {
 				//			technique
 				if (typeof(object[property]) == "function") {
 					var deprecateMethod = function(f) {
-						return function() {
+						var rv = function() {
 							warning({ target: object, name: property, call: arguments, reason: reason });
 							//	TODO	Add regression to cover previous mistake of not returning this value (but invoking and then
 							//			returning undefined)
 							return f.apply(this,arguments);
+						};
+						for (var x in f) {
+							rv[x] = f[x];
 						}
+						return rv;
 					}
 					object[property] = deprecateMethod(object[property]);
 					return function(){}();
@@ -241,9 +263,7 @@ new function() {
 		var scope = {
 			$exports: {}
 		};
-		if ($context) {
-			scope.$context = $context;
-		}
+		scope.$context = ($context) ? $context : {};
 		runInScope(code,scope,{});
 		return scope.$exports;		
 	}

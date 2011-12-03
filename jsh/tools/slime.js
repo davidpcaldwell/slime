@@ -73,7 +73,7 @@ slime.build.rhino = function(from,build,api,javac) {
 	}
 }
 
-//	Build using jsh shell; used by slime.jsh
+//	Build using jsh shell; used by slime.jsh.js
 slime.build.jsh = function(from,build) {
 	var toCopy = from
 		.list({ recursive: true, type: from.list.RESOURCE })
@@ -105,7 +105,13 @@ slime.build.jsh = function(from,build) {
 		} );
 
 		var destination = build.getRelativePath("$jvm/classes").createDirectory({ recursive: true });
-		var args = [ "-d", destination.pathname.toString() ];
+		//	TODO	it would be nice to remove the below explicit Cygwin reference
+		var d = destination.pathname;
+		if (jsh.file.filesystems.cygwin) {
+			d = jsh.file.filesystems.cygwin.toWindows(d);
+		}
+		jsh.shell.echo("Compiling to " + d.toString());
+		var args = [ "-d", d.toString() ];
 		var args = args.concat( toCompile.map( function(item) { return item.toString() } ) );
 		Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
 			Packages.java.lang.System["in"],
@@ -115,7 +121,7 @@ slime.build.jsh = function(from,build) {
 		);
 	}
 }
-//	Need to export the slime symbol when loading from slime.jsh, but there will be no "$exports" variable when loading from the
+//	Need to export the slime symbol when loading from slime.jsh.js, but there will be no "$exports" variable when loading from the
 //	rhino shell during the build process
 try {
 	$exports.slime = slime;

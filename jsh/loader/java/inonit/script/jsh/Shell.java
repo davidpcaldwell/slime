@@ -83,12 +83,22 @@ public class Shell {
 		public abstract Script getPlatformLoader();
 		public abstract Script getRhinoLoader();
 		public abstract Script getJshLoader();
+		
+		/**
+		 *	Specifies where code for "shell modules" -- modules included with jsh itself -- can be found.
+		 *
+		 *	@param path A logical path to the module; e.g., js/object for the jsh.js module.
+		 *
+		 *	@return An object that can load the specified module.
+		 */
 		public abstract Module.Code getShellModuleCode(String path);
-		public abstract Modules getApplicationModules();
 
-		public static abstract class Modules {
-			public abstract Module.Code getCode(String path, String name);
-		}
+		/**
+		 *	
+		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
+		 *	<code>null</code> if it is not.
+		 */
+		public abstract Module.Code.Source getPackagedCode();
 
 		Engine.Loader getRhinoLoaderBootstrap() {
 			return new Engine.Loader() {
@@ -331,10 +341,13 @@ public class Shell {
 
 		public class Interface {
 			private Engine engine = new Engine();
-			private Modules modules = new Modules();
 
 			public String toString() {
-				return getClass().getName() + " engine=" + engine + " modules=" + modules + " $installation=" + installation;
+				return getClass().getName() 
+					+ " engine=" + engine 
+					+ " installation=" + installation
+					+ " classpath=" + classpath
+				;
 			}
 
 			public void exit(int status) throws ExitException {
@@ -363,18 +376,9 @@ public class Shell {
 				classpath.append(rv);
 				return rv;
 			}
-
-			public Modules getBundledModules() {
-				if (installation.getApplicationModules() == null) return null;
-				return modules;
-			}
-
-			public class Modules {
-				public Module load(String path, String name) {
-					Module rv = Host.this.engine.load(installation.getApplicationModules().getCode(path, name));
-					classpath.append(rv);
-					return rv;
-				}
+			
+			public Module.Code.Source getPackagedCode() {
+				return installation.getPackagedCode();
 			}
 
 			public ClassLoader getClassLoader() {

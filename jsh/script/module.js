@@ -21,14 +21,43 @@ if ($context.$script) {
 	}
 }
 $exports.arguments = $context.api.java.toJsArray($context.$arguments, function(s) { return String(s); });
-$exports.addClasses = function(pathname) {
-	if (!pathname.directory && !pathname.file) {
-		throw "Classes not found: " + pathname;
-	}
-	$context.addClasses(pathname);
-}
+$exports.addClasses = $api.deprecate($context.api.addClasses);
 
-$exports.getopts = $loader.script("getopts.js", {
+$exports.Loader = function(paths) {
+	//	TODO	do we also need the analog of loader.run()?	
+	this.file = function(path) {
+		var args = [ paths.file(path) ];
+		for (var i=1; i<arguments.length; i++) {
+			args[i] = arguments[i];
+		}
+		return jsh.loader.file.apply(jsh.loader,args);
+	}
+
+	this.module = function(path) {
+		var args = [ paths.module(path) ];
+		for (var i=1; i<arguments.length; i++) {
+			args[i] = arguments[i];
+		}
+		return jsh.loader.module.apply(jsh.loader,args);				
+	}
+}
+$exports.Loader.Paths = function(base) {
+	this.file = function(path) {
+		return base.getRelativePath(path);
+	}
+
+	this.module = function(path) {
+		return base.getRelativePath(path);
+	}	
+}
+$exports.Loader.SlimeDirectory = function(dir) {
+	return function(path) {
+		return dir.getRelativePath(path.substring(0,path.length-1).replace(/\//g,".") + ".slime")
+	}
+}
+$api.experimental($exports,"Loader");
+		
+$exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
 	$filesystem: $context.api.file.filesystem,
 	$workingDirectory: $context.api.file.workingDirectory,

@@ -27,6 +27,8 @@
 //	generates and runs unit tests is run in the debugger
 //
 //	jsh.build.nounit (JSH_BUILD_NOUNIT): if set, unit tests are not run as part of the build process
+//
+//	jsh.build.nodoc (JSH_BUILD_NODOC): if set, no documentation is emitted as part of the build process
 
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
@@ -285,8 +287,13 @@ var module = function(path) {
 	module(item);
 });
 
+var LAUNCHER_COMMAND = [
+	String(new File(JAVA_HOME,"bin/java").getCanonicalPath()),
+	"-jar",String(new File(JSH_HOME,"jsh.jar").getCanonicalPath())
+];
+
 var jsapi_jsh = function() {
-	var command = [String(new File(JAVA_HOME,"bin/java").getCanonicalPath()),"-jar",String(new File(JSH_HOME,"jsh.jar").getCanonicalPath())];
+	var command = LAUNCHER_COMMAND.slice(0,LAUNCHER_COMMAND.length);
 	command.add = function() {
 		for (var i=0; i<arguments.length; i++) {
 			this.push(arguments[i]);
@@ -312,7 +319,7 @@ var jsapi_jsh = function() {
 	modules.add("loader/rhino/");
 	modules.add("js/object/","jsh.js");
 	modules.add("rhino/host/","jsh.java");
-	modules.add("rhino/io/");
+	modules.add("rhino/io/", "jsh.io");
 	modules.add("rhino/file/","jsh.file");
 	modules.add("rhino/shell/");
 	modules.add("jsh/shell/","jsh.shell");
@@ -349,7 +356,7 @@ var jsapi_jsh = function() {
 		throw "Failed: " + command.join(" ");
 	}
 }
-
+	
 if (getSetting("jsh.build.nounit") && getSetting("jsh.build.nodoc")) {
 } else {
 	console("Running JSAPI ...");
@@ -360,6 +367,16 @@ console("Creating tools ...");
 var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
 copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
+
+if (!getSetting("jsh.build.nounit")) {
+	var integrationTests = function() {
+		var script = new File(BASE,"jsh/test/suite.rhino.js");
+		console("Running integration tests at " + script.getCanonicalPath() + " ...");
+		load(script.getCanonicalPath());
+	}
+
+	integrationTests();
+}
 
 var bases = ["js","loader","rhino","jsh"];
 

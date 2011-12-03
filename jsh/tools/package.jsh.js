@@ -21,11 +21,18 @@ var parameters = jsh.script.getopts({
 		,script: jsh.file.Pathname
 		//	module format is name=pathname
 		,module: jsh.script.getopts.ARRAY(String)
+		//	file format is topath=pathname
+		,file: jsh.script.getopts.ARRAY(String)
 		,library: jsh.script.getopts.ARRAY(jsh.file.Pathname)
 		,directory: false
 		,to: jsh.file.Pathname
 	}
 });
+
+if (!parameters.options.to) {
+	jsh.shell.echo("Required: -to <pathname>");
+	jsh.shell.exit(1);
+}
 
 var slime = jsh.loader.script(jsh.script.getRelativePath("slime.js")).slime;
 
@@ -77,13 +84,20 @@ parameters.options.module.forEach( function(module) {
 	var name = tokens[0];
 	var pathname = jsh.file.Pathname(tokens[1]);
 	if (pathname.directory) {
-		slime.build.jsh(pathname.directory,to.getRelativePath("$modules/" + name).createDirectory({recursive: true}));
+		slime.build.jsh(pathname.directory,to.getRelativePath("$packaged/" + name).createDirectory({recursive: true}));
 	} else {
 		throw "Unimplemented: bundle slime format module.";
 	}
 } );
 
-to.getRelativePath("main.jsh").write(parameters.options.script.file.read(jsh.file.Streams.binary));
+parameters.options.file.forEach( function(file) {
+	var tokens = file.split("=");
+	var topath = tokens[0];
+	var pathname = jsh.file.Pathname(tokens[1]);
+	to.getRelativePath("$packaged/" + topath).write(pathname.file.read(jsh.io.Streams.binary), { append: false, recursive: true });
+});
+
+to.getRelativePath("main.jsh.js").write(parameters.options.script.file.read(jsh.io.Streams.binary));
 
 if (!parameters.options.directory) {
 	parameters.options.to.parent.createDirectory({ ifExists: function(d) { return false; }});

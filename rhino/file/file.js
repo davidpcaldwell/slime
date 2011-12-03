@@ -59,7 +59,7 @@ var Pathname = function(parameters) {
 
 	var toString = constant(function() {
 		var rv = $filesystem.peerToString(peer);
-		if (parameters.directory && (rv.substring(-1) != $filesystem.PATHNAME_SEPARATOR)) {
+		if (parameters.directory && (rv.substring(rv.length-$filesystem.PATHNAME_SEPARATOR.length) != $filesystem.PATHNAME_SEPARATOR)) {
 			rv += $filesystem.PATHNAME_SEPARATOR;
 		}
 		return rv;
@@ -170,7 +170,6 @@ var Pathname = function(parameters) {
 			}
 		}
 
-		var success;
 		if (mode.recursive) {
 			$filesystem.createDirectoryAt(peer);
 		} else {

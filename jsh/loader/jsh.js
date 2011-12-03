@@ -106,25 +106,48 @@ this.jsh = new function() {
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
-
-		if ($host.getBundledModules()) {
+		
+		if ($host.getPackagedCode()) {
 			this.bundled = new function() {
-				this.module = function(path) {
-					if (path.substring(path.length-1) == "/") {
-						path += "module.js";
+				var getCode = function(path) {
+					var _in = $host.getPackagedCode().getResourceAsStream(path);
+					if (_in) {
+						return {
+							name: "packaged:" + path,
+							$in: _in
+						}
+					} else {
+						return null;
 					}
-					var tokens = path.split("/");
+				}
+				
+				this.run = function(path,scope,target) {
+					return rhinoLoader.run(getCode(path),scope,target);
+				}
+				
+				this.file = function(path,$context) {
+					return rhinoLoader.file(getCode(path),$context);
+				}
+				
+				this.module = function(path) {
+					var m = new function() {
+						this.toString = function() {
+							return "packaged:module:" + path
+						}
+						
+						this.read = function(relative) {
+							return $host.getPackagedCode().getResourceAsStream(path+relative);
+						}
+						
+						this.getMainScriptPath = function() {
+							return "module.js";
+						}
+					};
 					var p = {};
 					if (arguments.length == 2) {
 						p.$context = arguments[1];
 					}
-					return rhinoLoader.module(
-						$host.getBundledModules().load(
-							tokens.slice(0,tokens.length-1).join("/")
-							,tokens[tokens.length-1]
-						),
-						p
-					);
+					return rhinoLoader.module(m,p);
 				}
 			}
 		}
@@ -138,6 +161,7 @@ this.jsh = new function() {
 
 		if (loader.bundled) {
 			this.bundled = loader.bundled;
+			loader.$api.deprecate(this,"bundled");
 		}
 
 		this.addFinalizer = function(f) {
@@ -148,6 +172,13 @@ this.jsh = new function() {
 			//	deprecated
 			debugger;
 			return loader.file.apply(this,arguments);
+		}
+		
+		this.addClasses = function(pathname) {
+			if (!pathname.directory && !pathname.file) {
+				throw "Classes not found: " + pathname;
+			}
+			$host.addClasses(pathname.java.adapt());
 		}
 	};
 
@@ -189,7 +220,7 @@ this.jsh = new function() {
 			this.$err = $host.getStandardError();
 		}
 
-		context.$pwd = String( $shell.properties.user.dir );
+		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
 
 		context.addFinalizer = addFinalizer;
 
@@ -231,6 +262,11 @@ this.jsh = new function() {
 			io: jsh.io,
 			file: jsh.file
 		}
+		context.getSystemProperty = function(name) {
+			var rv = $host.getSystemProperties().getProperty(name);
+			if (rv == null) return null;
+			return String(rv);
+		}
 		context.exit = function(code) {
 			$host.exit(code);
 		}
@@ -240,18 +276,20 @@ this.jsh = new function() {
 	jsh.script = (function() {
 		var context = {
 			$script: $host.getInvocation().getScriptFile(),
-			$arguments: $host.getInvocation().getArguments(),
-			addClasses: function(pathname) {
-				$host.addClasses(pathname.java.adapt());
-			}
+			$arguments: $host.getInvocation().getArguments()
 		};
 		context.api = {
 			file: jsh.file,
-			java: jsh.java
+			java: jsh.java,
+			addClasses: jsh.loader.addClasses
 		};
 		
 		return loader.bootstrap(context,"jsh/script");
 	})();
+	
+	if (jsh.script && loader.bundled) {
+		jsh.script.loader = loader.bundled;
+	}
 
 	if (jsh.script) {
 		jsh.shell.getopts = jsh.script.getopts;

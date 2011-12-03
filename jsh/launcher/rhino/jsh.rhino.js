@@ -158,7 +158,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		var ClassLoader = Packages.java.lang.ClassLoader;
 
 		this.__defineGetter__("source", function() {
-			return readUrl( ClassLoader.getSystemResource("main.jsh") );
+			return readUrl( ClassLoader.getSystemResource("main.jsh.js") );
 		});
 
 		debug("Copying rhino ...");
@@ -334,8 +334,11 @@ if (settings.packaged) {
 	if (settings.built) {
 		settings.use.push(settings.built);
 	}
-	settings.use.push(settings.explicit);
 }
+//	TODO	probably need more thought into which explicit preferences should really apply to packaged applications
+//			classpaths are a candidate for things that should not apply
+settings.use.push(settings.explicit);
+
 settings.get = function(id) {
 	var rv;
 	for (var i=0; i<this.use.length; i++) {

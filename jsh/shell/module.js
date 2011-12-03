@@ -22,9 +22,9 @@ $exports.echo = function(message,mode) {
 	if (arguments.length == 0) message = "";
 	if (!mode) mode = {};
 
-	var streamToConsole = function(stream) {
+	var streamToConsole = function(stream,toString) {
 		return function(message) {
-			new Packages.java.io.PrintWriter(stream.$getWriter(), true).println(message);
+			new Packages.java.io.PrintWriter(stream.$getWriter(), true).println(toString(message));
 		}
 	}
 
@@ -32,26 +32,41 @@ $exports.echo = function(message,mode) {
 	if (mode.console) {
 		console = mode.console;
 	} else if (mode.stream) {
-		console = streamToConsole(mode.stream);
+		console = streamToConsole(mode.stream,arguments.callee.toString);
 	} else {
-		console = streamToConsole($context.api.io.Streams.stdout);
+		console = streamToConsole($context.api.io.Streams.stdout,arguments.callee.toString);
 	}
 
-	if (typeof(message) == "string") {
-	} else if (typeof(message) == "number") {
-		message = String(message);
-	} else if (typeof(message) == "object") {
-		message = message.toString();
-	} else if (message == null) {
-		message = null;
-	} else if (typeof(message) == "undefined") {
-		message = "undefined";
-	} else {
-		//	TODO Think this through more
-		throw "Unhandled type: " + message + " (type: " + typeof(message) + ")";
-	}
 	console(message);
 }
+$exports.echo.toString = function(message) {
+	if (typeof(message) == "string") {
+		return message;
+	} else if (typeof(message) == "number") {
+		return String(message);
+	} else if (typeof(message) == "boolean") {
+		return String(message);
+	} else if (typeof(message) == "function") {
+		return message.toString();
+	} else if (typeof(message) == "xml") {
+		return message.toXMLString();
+	} else if (message === null) {
+		return arguments.callee["null"];
+	} else if (typeof(message) == "object") {
+		return message.toString();
+	} else if (typeof(message) == "undefined") {
+		return arguments.callee["undefined"];
+	} else {
+		if (typeof(message.toString == "function")) {
+			return message.toString();
+		} else {
+			return "Host object: typeof = " + typeof(message);
+		}
+	}
+	return message;
+}
+$exports.echo.toString["undefined"] = "(undefined)";
+$exports.echo.toString["null"] = "(null)";
 
 $exports.shell = function(command,args,mode) {
 	var Streams = $context.api.io.Streams;
@@ -115,14 +130,37 @@ $exports.shell = function(command,args,mode) {
 	$run(tokens,rMode);
 }
 
-$exports.jsh = function(script,args,mode) {
-	var getProperty = function(name) {
-		var value = eval("$context.api.shell.properties." + name);
-		if (String(value) == "undefined") return function(){}();
-		if (value == null) return null;
-		return String(value);
+var getProperty = function(name) {
+	var value = eval("$context.api.shell.properties." + name);
+	if (String(value) == "undefined") return function(){}();
+	if (value == null) return null;
+	return String(value);
+}
+
+var getDirectoryProperty = function(name) {
+	var rv = $context.api.file.filesystems.os.Pathname($context.getSystemProperty(name)).directory;
+	//	TODO	find more robust way to do this
+	if ($context.api.file.filesystems.cygwin) {
+		rv = $context.api.file.filesystems.cygwin.toUnix(rv.pathname).directory;
+	}
+	return rv;
+}
+
+$exports.java = new function() {
+	var jdk = getDirectoryProperty("java.home");
+	
+	//	TODO	find more robust way to do this
+	if ($context.api.file.filesystems.cygwin) {
+		jdk = $context.api.file.filesystems.cygwin.toUnix(jdk.pathname).directory;
 	}
 	
+	this.home = jdk;
+}
+
+$exports.TMP = getDirectoryProperty("java.io.tmpdir");
+$exports.HOME = getDirectoryProperty("user.home");
+
+$exports.jsh = function(script,args,mode) {
 	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 	var executable = jdk.getRelativePath("bin/java").toString();
 	//	Set defaults from this shell
@@ -157,3 +195,4 @@ $exports.jsh = function(script,args,mode) {
 
 	$exports.shell(executable,jargs,mode);
 }
+

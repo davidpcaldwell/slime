@@ -21,7 +21,7 @@ $exports.zip = function(p) {
 	} else if (p.from instanceof $context.Pathname && p.from.directory) {
 		//	TODO	Should really allow p.from to *be* a directory
 		from = p.from.directory.list({ recursive: true, type: p.from.directory.list.ENTRY }).map( function(item) {
-			if (item.node.directory) return { directory: item.path };
+			if (item.node.directory) return { directory: item.path.substring(0,item.path.length-1) };
 			return {
 				path: item.path.replace(/\\/g, "/"),
 				$stream: item.node.read($context.Streams.binary).java.adapt()
@@ -101,7 +101,7 @@ $exports.zip = function(p) {
 
 	for (var i=0; i<from.length; i++) {
 		//	TODO	Clean this up; this API is not right, just convenient to use for the two use cases in admin project and
-		//			slime.jsh for now
+		//			slime.jsh.js for now
 		if (!from[i].directory) {
 			zipOutputStream.addEntry(from[i].path,$getInputStream(from[i]));
 		} else {
@@ -119,7 +119,15 @@ $exports.unzip = function(p) {
 		if (name.substring(name.length-1) == "/") {
 			p.to.getRelativePath(name.substring(name.length-1)).createDirectory({ ifExists: function(d) { return false; }});
 		} else {
-			p.to.getRelativePath(entry.getName()).write(new $context.InputStream(_zipstream), { append: false, recursive: true });
+			$context.Streams.binary.copy(
+				new $context.InputStream(_zipstream),
+				p.to.getRelativePath(entry.getName()).write($context.Streams.binary, { append: false, recursive: true }),
+				{
+					onFinish: function(_r,_w) {
+						_w.close();
+					}
+				}
+			);
 		}
 	}
 }
