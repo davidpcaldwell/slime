@@ -132,6 +132,12 @@
 		var platform = (function() {
 			return eval(fetcher.getCode(bootstrap.getRelativePath("literal.js")));
 		})();
+		platform.$api.deprecate.warning = function(access) {
+			debugger;
+		}
+		platform.$api.experimental.warning = function(access) {
+			debugger;
+		}
 
 		var instantiate = {};
 
@@ -175,9 +181,11 @@
 			return platform.module(createModuleLoader(code),args);
 		}
 		
-		this.script = function(path,$context) {
+		this.file = function(path,$context) {
 			return platform.file(fetcher.getCode(path),$context);
 		};
+
+		this.script = platform.$api.deprecate(this.file);
 
 		this.namespace = function(name) {
 			return platform.namespace(name);
