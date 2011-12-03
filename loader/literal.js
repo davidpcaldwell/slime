@@ -70,6 +70,8 @@ new function() {
 
 		var flag = function() {
 			var rv = function(object,property) {
+				var reason = arguments.callee;
+
 				if ( (typeof(object) == "object" || typeof(object) == "function") && typeof(property) == "string" ) {
 				} else if (typeof(object) == "function" && typeof(property) == "undefined") {
 				} else {
@@ -88,7 +90,6 @@ new function() {
 					}
 				}
 
-				var reason = arguments.callee;
 				//	TODO	If we allowed arguments.callee.warning to be used, we could do different reasons for different problems
 				//	var warning = ($context.flag && $context.flag.warning) ? $context.flag.warning : function() {};
 				var warning = function(o) {
