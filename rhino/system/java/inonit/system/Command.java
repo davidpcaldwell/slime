@@ -264,11 +264,15 @@ public class Command {
 		private Thread err;
 		private Thread out;
 
-		Process(java.lang.Process delegate, Context context) {
+		private InputStream stdin;
+
+		Process(java.lang.Process delegate, Context context, Configuration configuration) {
 			this.delegate = delegate;
-			this.in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false);
-			this.err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false);
-			this.out = Spooler.start(context.getStandardInput(), delegate.getOutputStream(), true);
+			String spoolName = configuration.getCommand();
+			this.in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, "stdout: " + spoolName);
+			this.err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
+			this.stdin = context.getStandardInput();
+			this.out = Spooler.start(this.stdin, delegate.getOutputStream(), true, "stdin from " + this.stdin + ": " + spoolName);
 		}
 
 		int waitFor() throws InterruptedException {
@@ -279,6 +283,11 @@ public class Command {
 		}
 
 		void destroy() {
+			try {
+				this.stdin.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			delegate.destroy();
 		}
 	}
@@ -287,6 +296,7 @@ public class Command {
 		return new Process(
 			Runtime.getRuntime().exec( configuration.cmdarray(), context.envp(), context.getWorkingDirectory() )
 			,context
+			,configuration
 		);
 	}
 
@@ -326,9 +336,10 @@ public class Command {
 	}
 	
 	private static class Spooler implements Runnable {
-		static Thread start(InputStream in, OutputStream out, boolean closeOnEnd) {
+		static Thread start(InputStream in, OutputStream out, boolean closeOnEnd, String name) {
 			Spooler s = new Spooler(in, out, closeOnEnd);
 			Thread t = new Thread(s);
+			t.setName(t.getName() + ":" + name);
 			t.start();
 			return t;
 		}

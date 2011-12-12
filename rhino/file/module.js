@@ -48,9 +48,7 @@ var os = $loader.file("os.js", new function() {
 	this.__defineGetter__("Pathname", function() {
 		return globals.Pathname;
 	});
-	this.__defineGetter__("addFinalizer", function() {
-		return globals.addFinalizer;
-	});
+	this.addFinalizer = $context.addFinalizer;
 });
 
 $exports.filesystems = os.filesystems;
@@ -95,7 +93,6 @@ var file = $loader.file("file.js", {
 
 globals.Pathname = file.Pathname;
 globals.Searchpath = file.Searchpath;
-globals.addFinalizer = file.addFinalizer;
 
 $exports.Pathname = file.Pathname;
 $exports.Searchpath = file.Searchpath;

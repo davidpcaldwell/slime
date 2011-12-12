@@ -189,6 +189,10 @@ public class Streams {
 				public int available() {
 					return Buffer.this.available();
 				}
+
+				public void close() {
+					Buffer.this.close();
+				}
 			}
 			
 			private class MyOutputStream extends OutputStream {
