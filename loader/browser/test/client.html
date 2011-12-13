@@ -175,7 +175,16 @@ END LICENSE
 				
 				var scenarios = [];
 				for (var i=0; i<parameters.module.length; i++) {
-					var module = parameters.module[i];
+					var test = (function() {
+						var string = parameters.module[i];
+						if (string.indexOf(":") == -1) {
+							return { module: string };
+						} else {
+							var tokens = string.split(":");
+							return { module: tokens[0], path: tokens[1] };
+						}
+					})();
+					var module = test.module;
 					var location = (function() {
 						if (module.substring(module.length-1) == "/") {
 							return {
@@ -329,10 +338,6 @@ END LICENSE
 							}
 
 							this.top = new Element(html);
-
-							this.getElementByJsapiId = function(id) {
-								throw new Error("Unimplemented");
-							}
 						}
 
 						var root = (function() {
@@ -377,8 +382,8 @@ END LICENSE
 								debugger;
 							}
 							scope.context = contexts[i];
-							var moduleScenario = apiHtml.getScenario(scope);
-							moduleScenario.name = module;
+							var moduleScenario = apiHtml.getScenario(scope,test.path);
+							moduleScenario.name = (test.path) ? (module + ":" + test.path) : module;
 							scenarios.push(moduleScenario);
 						}
 					})();

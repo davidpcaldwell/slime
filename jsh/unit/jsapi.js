@@ -95,12 +95,6 @@ var E4X = function(html) {
 	}
 	
 	this.top = new Element(html);
-	
-	this.getElementByJsapiId = function(id) {
-		var list = map(html..*.(@jsapi::id == id));
-		if (list.length == 0) return null;
-		return list[0];
-	}
 }
 
 $exports.tests = new function() {

@@ -118,7 +118,13 @@ $exports.ApiHtmlTests = function(html,name) {
 				return rv;
 			}
 
-			var children = element.getChildElements();
+			var children = (function() {
+				if (element.localName == "script" && element.getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
+					return [ element ];
+				} else {
+					return element.getChildElements();
+				}
+			})();
 			for (var i=0; i<children.length; i++) {
 				if (children[i].localName == "script" && children[i].getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
 					if (typeof($context) == "object"  && $context.run) {
@@ -185,7 +191,34 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	this.getScenario = function(scope,unit) {
-		var element = (unit) ? html.getElementByJsapiId(unit) : html.top;
+		var element = (function() {
+			if (unit) {
+				var getJsapiChild = function(target,id) {
+					var elements = target.getChildElements();
+					for (var i=0; i<elements.length; i++) {
+						if (elements[i].getJsapiId() == id) {
+							return elements[i];
+						} else if (elements[i].getJsapiId() == null) {
+							var childSearch = getJsapiChild(elements[i],id);
+							if (childSearch != null) return childSearch;
+						}
+					}
+					return null;
+				}
+
+				var tokens = unit.split("/");
+				var target = html.top;
+				for (var i=0; i<tokens.length; i++) {
+					target = getJsapiChild(target,tokens[i]);
+					if (target == null) {
+						throw new Error("Element not found: " + tokens.slice(0,i+1).join("/"));
+					}
+				}
+				return target;
+			} else {
+				return html.top;
+			}
+		})();
 		var container = {
 			initializes: [],
 			destroys: []
