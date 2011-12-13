@@ -62,6 +62,17 @@ END LICENSE
 					<li><code><i>mode</i></code> If <code>skip</code>, tests will not be run on this module.</li>
 				</ul>
 			</li>
+			<li>
+				<code>-test <i>&lt;module&gt;</i>:<i>&lt;test&gt;</i></code>
+				<p>
+					Adds a test to the list of tests to be run. If no <code>-test</code> options are specified, the entire set of
+					modules passed to the program will have all of their tests run. If at least one <code>-test</code> is specified,
+					then only tests specified by <code>-test</code> will be run.
+				</p>
+				<p>
+					The argument consists of a module path, and, optionally, a test ID.
+				</p>
+			</li>
 		</ul>
 	</div>
 	<h1>api.html</h1>
