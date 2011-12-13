@@ -290,6 +290,11 @@ $exports.Filter = new function() {
 		}
 	}
 }
+$exports.Filter.not = function(filter) {
+	return function() {
+		return !Boolean(filter.apply(this,arguments));
+	}
+}
 
 var Map = new function() {
 	this.property = function(name,map) {
