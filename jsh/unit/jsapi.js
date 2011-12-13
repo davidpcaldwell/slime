@@ -298,12 +298,23 @@ $exports.doc = function(modules,to) {
 		if (item.ns) {
 			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
 			var xhtml = getApiHtml(item.location).read(XML);
-			xhtml.head.appendChild(<link rel="stylesheet" type="text/css" href="api.css" />);
-			xhtml.head.appendChild(<script type="text/javascript" src="api.js">{"/**/"}</script>);
+			var ns = (function() {
+				if (xhtml.length() > 1) {
+					return (function() {
+						for (var i=0; i<xhtml.length(); i++) {
+							if (xhtml[i].nodeKind() == "element") return xhtml[i].namespace();
+						}
+					})();
+				} else {
+					return xhtml.namespace();
+				}
+			})();
+			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href="api.css" />);
+			xhtml.ns::head.appendChild(<script type="text/javascript" src="api.js">{"/**/"}</script>);
 
-			xhtml.body.insertChildAfter(null,<a href="index.html">Documentation Home</a>);
+			xhtml.ns::body.insertChildAfter(null,<a href="index.html">Documentation Home</a>);
 
-			var contextDiv = xhtml..div.(h1 == "Context");
+			var contextDiv = xhtml..ns::div.(ns::h1 == "Context");
 			if (contextDiv.length()) {
 				contextDiv.parent().replace(contextDiv.childIndex(),<></>);
 				//	Why does the below not work?
@@ -332,7 +343,7 @@ $exports.doc = function(modules,to) {
 			var pagename = "ns." + item.ns + ".html";
 			destination.getRelativePath(pagename).write(xhtml.toXMLString());
 
-			index.body.table.tbody.appendChild(<tr><td><a href={pagename}>{item.ns}</a></td><td>{String(xhtml.head.title)}</td></tr>)
+			index.body.table.tbody.appendChild(<tr><td><a href={pagename}>{item.ns}</a></td><td>{String(xhtml.ns::head.ns::title)}</td></tr>)
 		}
 	});
 
