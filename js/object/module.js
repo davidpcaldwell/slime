@@ -253,6 +253,15 @@ $exports.Object = new function() {
 	this.pairs = function(o) {
 		return properties.pairs(o);
 	}
+
+	this.set = function(o) {
+		for (var i=1; i<arguments.length; i++) {
+			for (var x in arguments[i]) {
+				o[x] = arguments[i][x];
+			}
+		}
+		return o;
+	}
 }
 $api.experimental($exports,"Object");
 
