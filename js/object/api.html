@@ -470,6 +470,28 @@ END LICENSE
 							</span>
 						</div>
 					</li>
+					<li class="function">
+						<div class="name">not</div>
+						<!--	TODO	Add tests for Filter.not	-->
+						<span>An object that returns a <code>Filter</code> that is the inverse of a given <code>Filter</code>.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">Filter</span>
+									<span>A filter to reverse.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">Filter</span>
+							<span>
+								A <code>Filter</code> that returns <code>true</code> when the given <code>Filter</code> returns
+								<code>false</code>, and vice-versa.
+							</span>
+						</div>
+					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
 					var f = module.Filter.property("a", module.Filter.equals(3));
