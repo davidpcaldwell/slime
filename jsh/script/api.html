@@ -184,14 +184,14 @@ END LICENSE
 				</div>
 				<div>
 					For example, the following code:
-					<pre>var parameters = jsh.shell.getopts({
+					<pre>var parameters = jsh.script.getopts({
 	options: {
 		s: String,
 		n: Number,
 		num: 8,
 		b: false,
 		p: Boolean,
-		list: jsh.shell.getopts.ARRAY(String)
+		list: jsh.script.getopts.ARRAY(String)
 	}
 }, [ "-s", "aString", "-n", 42, "-b", "-list", "a", "-list", "b" ]);</pre>
 					produces an object equivalent to:
