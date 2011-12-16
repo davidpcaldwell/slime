@@ -58,23 +58,23 @@ public class CygwinFilesystem extends Filesystem {
 	public final void finalize() {
 		paths.destroy();
 	}
-	
+
 	static class CygpathException extends Exception {
 		CygpathException(IOException e) {
 			super(e);
 		}
-		
+	
 		CygpathException(Cygwin.CygpathException e) {
 			super(e);
 		}
 	}
-		
+	
 	static class CanonicalPathException extends RuntimeException {
 		CanonicalPathException(IOException e) {
 			super(e);
 		}
 	}
-	
+
 	private static abstract class Commands {
 		private OperatingSystem os = OperatingSystem.get();
 
@@ -96,7 +96,7 @@ public class CygwinFilesystem extends Filesystem {
 //			}
 //			return rv;
 		}
-		
+	
 		Command.Result shellCommand(String command, String[] arguments) throws CygpathException {
 			String windows = getWindowsPath(command);
 			return os.execute(windows, arguments);
@@ -174,10 +174,10 @@ public class CygwinFilesystem extends Filesystem {
 
 		abstract void destroy();
 	}
-	
+
 	private static class Subprocesses extends Implementation {
 		private Cygwin cygwin;
-		
+	
 		Subprocesses(Cygwin cygwin) {
 			this.cygwin = cygwin;
 		}
@@ -185,7 +185,7 @@ public class CygwinFilesystem extends Filesystem {
 		public String toString() {
 			return getClass().getName() + " cygwin=" + cygwin;
 		}
-		
+	
 		String toUnixPath(String path) throws CygpathException {
 			try {
 				return this.cygwin.toUnixPath(path,false);
@@ -193,7 +193,7 @@ public class CygwinFilesystem extends Filesystem {
 				throw new CygpathException(e);
 			}
 		}
-		
+	
 		String toWindowsPath(String path) throws CygpathException {
 			try {
 				return this.cygwin.toWindowsPath(path,false);
@@ -220,13 +220,13 @@ public class CygwinFilesystem extends Filesystem {
 		void destroy() {
 		}
 	}
-	
+
 	private static class HelperProcess extends Implementation {
 		private InputStream output;
 		private PrintWriter input;
 
 		private Subprocess subprocess;
-		
+	
 		private Map getenv() {
 			try {
 				Method systemGetenv = System.class.getMethod("getenv", new Class[0]);
@@ -245,7 +245,7 @@ public class CygwinFilesystem extends Filesystem {
 		public String toString() {
 			return getClass().getName() + " subprocess=" + subprocess;
 		}
-		
+	
 		HelperProcess(final String root, final String path) throws IOException {
 			if (path == null) throw new IllegalArgumentException("'path' must not be null.");
 
@@ -314,7 +314,7 @@ public class CygwinFilesystem extends Filesystem {
 			}
 			return rv;
 		}
-		
+	
 		synchronized String toUnixPath(String path) throws CygpathException {
 			try {
 				return getResponse("u" + path);
@@ -322,7 +322,7 @@ public class CygwinFilesystem extends Filesystem {
 				throw new CygpathException(e);
 			}
 		}
-		
+	
 		synchronized String toWindowsPath(String path) throws CygpathException {
 			try {
 				return getResponse("w" + path);
@@ -349,7 +349,7 @@ public class CygwinFilesystem extends Filesystem {
 	//
 	//	Methods used by NodeImpl
 	//
-	
+
 	boolean isSoftlink(NodeImpl node) throws CygpathException, Command.Result.Failure {
 		return paths.isSoftlink(node);
 	}
@@ -414,7 +414,7 @@ public class CygwinFilesystem extends Filesystem {
 
 		return (Filesystem.Node[])rv.toArray(new Filesystem.Node[0]);
 	}
-	
+
 	//
 	//	Methods implementing Filesystem
 	//
@@ -426,7 +426,7 @@ public class CygwinFilesystem extends Filesystem {
 	protected String getSearchpathSeparatorImpl() {
 		return ":";
 	}
-	
+
 	protected String getLineSeparatorImpl() {
 		return "\n";
 	}

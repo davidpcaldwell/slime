@@ -53,13 +53,13 @@ this.jsh = new function() {
 		this.bootstrap = function(context,path) {
 			return rhinoLoader.module($host.getBootstrapModule(path), { $context: context });
 		}
-		
+	
 		this.run = function(code,scope,target) {
 			if (code.java && code.java.adapt() && code.java.adapt().getClass().getName() == "java.io.File") {
 				code = {
 					name: code.toString(),
 					$in: new Packages.java.io.FileInputStream(code.java.adapt())
-				};				
+				};			
 			} else if (code.name && code.$in) {
 				//	fine as is
 			}
@@ -106,7 +106,7 @@ this.jsh = new function() {
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
-		
+	
 		if ($host.getPackagedCode()) {
 			this.bundled = new function() {
 				var getCode = function(path) {
@@ -120,25 +120,25 @@ this.jsh = new function() {
 						return null;
 					}
 				}
-				
+			
 				this.run = function(path,scope,target) {
 					return rhinoLoader.run(getCode(path),scope,target);
 				}
-				
+			
 				this.file = function(path,$context) {
 					return rhinoLoader.file(getCode(path),$context);
 				}
-				
+			
 				this.module = function(path) {
 					var m = new function() {
 						this.toString = function() {
 							return "packaged:module:" + path
 						}
-						
+					
 						this.read = function(relative) {
 							return $host.getPackagedCode().getResourceAsStream(path+relative);
 						}
-						
+					
 						this.getMainScriptPath = function() {
 							return "module.js";
 						}
@@ -167,13 +167,13 @@ this.jsh = new function() {
 		this.addFinalizer = function(f) {
 			addFinalizer(f);
 		}
-		
+	
 		this.script = function() {
 			//	deprecated
 			debugger;
 			return loader.file.apply(this,arguments);
 		}
-		
+	
 		this.addClasses = function(pathname) {
 			if (!pathname.directory && !pathname.file) {
 				throw "Classes not found: " + pathname;
@@ -283,10 +283,10 @@ this.jsh = new function() {
 			java: jsh.java,
 			addClasses: jsh.loader.addClasses
 		};
-		
+	
 		return loader.bootstrap(context,"jsh/script");
 	})();
-	
+
 	if (jsh.script && loader.bundled) {
 		jsh.script.loader = loader.bundled;
 	}
@@ -300,11 +300,11 @@ this.jsh = new function() {
 		$platform: loader.$platform,
 		$api: loader.$api
 	}
-	
+
 	jsh.debug = (function() {
 		return loader.bootstrap({},"jsh/debug");
 	})();
-	
+
 	jsh.debug.disableBreakOnExceptionsFor = function(f) {
 		return function() {
 			var enabled = $host.getDebugger().isBreakOnExceptions();
@@ -316,7 +316,7 @@ this.jsh = new function() {
 			} finally {
 				if (enabled) {
 					$host.getDebugger().setBreakOnExceptions(true);
-				}				
+				}			
 			}
 		}
 	}

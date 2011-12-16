@@ -35,7 +35,7 @@ new function() {
 		})();
 		return eval($loader.code);
 	})();
-	
+
 	var getCode = function(code) {
 		//	TODO	maybe should only be with debugging on? Although this way name will be used in stack traces
 		if (typeof(code) == "object" && code.name && code.$in) {
@@ -56,7 +56,7 @@ new function() {
 	this.run = function(code,scope,target) {
 		loader.run(getCode(code),scope,target);
 	}
-	
+
 	this.file = function(code,$context) {
 		return loader.file(getCode(code),$context);
 	}
@@ -74,7 +74,7 @@ new function() {
 					$in: $in
 				});
 			};
-			
+		
 
 			this.decorateLoader = function($loader) {
 				$loader.java = new function() {
@@ -96,7 +96,7 @@ new function() {
 
 	//	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
 	this.$platform = loader.$platform;
-	
+
 	//	currently used to set deprecation warning in jsh.js
 	//	currently used by jsapi in jsh/unit via jsh.js
 	this.$api = loader.$api;

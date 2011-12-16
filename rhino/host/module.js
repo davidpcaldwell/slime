@@ -41,11 +41,11 @@ $exports.Properties.adapt = function($properties) {
 
 var errors = new function() {
 	var instance = new Packages.inonit.script.runtime.Throwables();
-	
+
 	this.fail = function(message) {
 		instance.fail(message);
 	}
-	
+
 	this.decorate = function(implementation) {
 		var prototype = implementation.prototype;
 		var rv = function() {
@@ -55,7 +55,7 @@ var errors = new function() {
 			}).join(",");
 			//	TODO	is this parameterized call already in js/object?
 			var created = eval("new implementation(" + literals + ")");
-			
+		
 			var tracer;
 			try {
 				instance.throwException(created.toString());
@@ -132,7 +132,7 @@ if ($context.globals) {
 			];
 		}
 	})();
-	
+
 	errorNames.forEach( function(name) {
 		global[name] = errors.decorate(global[name]);
 	});
@@ -195,11 +195,11 @@ experimental("toJavaArray");
 $exports.Thread = function(f) {
 	var runnable = new function() {
 		var _callbacks;
-		
+	
 		this.initialize = function(callbacks) {
 			_callbacks = callbacks;
 		}
-		
+	
 		this.run = function() {
 			try {
 				var rv = f();
@@ -214,14 +214,14 @@ $exports.Thread = function(f) {
 		}
 	}
 
-	
+
 	var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable,runnable));
-	
+
 	this.start = function(callbacks) {
 		runnable.initialize(callbacks);
 		thread.start();
 	}
-	
+
 	this.join = function() {
 		thread.join();
 	}

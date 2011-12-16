@@ -83,61 +83,61 @@ public class Command {
 		public final Integer getExitStatus() {
 			return status;
 		}
-		
+	
 		public abstract void finished();
 		public abstract void threw(IOException e);
 	}
-	
+
 	public static class Result {
 		private Integer status;
 		private IOException exception;
 		private byte[] output;
 		private byte[] error;
-		
+	
 		final void finished(int status, byte[] output, byte[] error) {
 			this.status = new Integer(status);
 			this.output = output;
 			this.error = error;
 		}
-		
+	
 		final void threw(IOException e) {
 			this.exception = e;
 		}
-		
+	
 		public final Integer getExitStatus() {
 			return status;
 		}
-		
+	
 		public final InputStream getOutputStream() {
 			if (output == null) return null;
 			return new ByteArrayInputStream(output);
 		}
-		
+	
 		public final InputStream getErrorStream() {
 			if (error == null) return null;
 			return new ByteArrayInputStream(error);
 		}
-		
+	
 		public final IOException getLaunchException() {
 			return exception;
 		}
-		
+	
 		public final boolean isSuccess() {
 			return this.status != null && this.status.intValue() == 0;
 		}
-		
+	
 		public static class Failure extends Exception {
 			private Result result;
-			
+		
 			Failure(Result result) {
 				this.result = result;
 			}
-			
+		
 			public Result getResult() {
 				return this.result;
 			}
 		}
-		
+	
 		public final Result evaluate() throws Failure {
 			if (this.isSuccess()) {
 				return this;
@@ -169,16 +169,16 @@ public class Command {
 	private static class ContextImpl extends Context {
 		private ByteArrayOutputStream out = new ByteArrayOutputStream();
 		private ByteArrayOutputStream err = new ByteArrayOutputStream();
-		
+	
 		private InputStream in = new ByteArrayInputStream(new byte[0]);
-		
+	
 		private File working = null;
 		private Map environment = null;
-		
+	
 		public File getWorkingDirectory() {
 			return working;
 		}
-		
+	
 		public Map getSubprocessEnvironment() {
 			return environment;
 		}
@@ -190,11 +190,11 @@ public class Command {
 		public ByteArrayOutputStream getStandardError() {
 			return err;
 		}
-		
+	
 		public InputStream getStandardInput() {
 			return in;
 		}
-		
+	
 		void setWorkingDirectory(File file) {
 			this.working = file;
 		}
@@ -202,9 +202,9 @@ public class Command {
 		void setStandardInput(InputStream in) {
 			this.in = in;
 		}
-		
+	
 		private String commandOutput;
-		
+	
 		public String getCommandOutput() throws IOException {
 			if (commandOutput == null) {
 				Reader outputReader = new InputStreamReader(new ByteArrayInputStream(out.toByteArray()));
@@ -215,16 +215,16 @@ public class Command {
 				}
 				commandOutput = outputBuffer.toString();
 			}
-			return commandOutput;			
+			return commandOutput;		
 		}
 	}
-	
+
 	private static class ListenerImpl extends Listener {
 		private IOException io;
-		
+	
 		public void finished() {
 		}
-		
+	
 		public void threw(IOException e) {
 			this.io = e;
 		}
@@ -233,27 +233,27 @@ public class Command {
 			return this.io;
 		}
 	}
-	
+
 	private static class ConfigurationImpl extends Configuration {
 		private String command;
 		private String[] arguments;
-		
+	
 		ConfigurationImpl(String command, String[] arguments) {
 			this.command = command;
 			this.arguments = arguments;
 		}
-		
+	
 		public final String getCommand() {
 			return command;
 		}
-		
+	
 		public final String[] getArguments() {
 			return arguments;
 		}
 	}
 
 	private Configuration configuration;
-	
+
 	Command() {
 	}
 
@@ -291,7 +291,7 @@ public class Command {
 			delegate.destroy();
 		}
 	}
-	
+
 	private Process launch(Context context) throws IOException {
 		return new Process(
 			Runtime.getRuntime().exec( configuration.cmdarray(), context.envp(), context.getWorkingDirectory() )
@@ -303,7 +303,7 @@ public class Command {
 	Subprocess start(Context context) throws IOException {
 		return new Subprocess(launch(context));
 	}
-	
+
 	void execute(ContextImpl context, Result result) {
 		try {
 			Process p = launch(context);
@@ -334,7 +334,7 @@ public class Command {
 			throw new RuntimeException(t);
 		}
 	}
-	
+
 	private static class Spooler implements Runnable {
 		static Thread start(InputStream in, OutputStream out, boolean closeOnEnd, String name) {
 			Spooler s = new Spooler(in, out, closeOnEnd);
@@ -346,10 +346,10 @@ public class Command {
 
 		private InputStream in;
 		private OutputStream out;
-		
+	
 		private boolean closeOnEnd;
 		private boolean flush;
-		
+	
 		private IOException e;
 
 		Spooler(InputStream in, OutputStream out, boolean closeOnEnd) {
@@ -358,7 +358,7 @@ public class Command {
 			this.closeOnEnd = closeOnEnd;
 			this.flush = closeOnEnd;
 		}
-		
+	
 		IOException failure() {
 			return e;
 		}

@@ -126,7 +126,7 @@ $exports.shell = function(command,args,mode) {
 		this.stdout = stream("stdout");
 		this.stderr = stream("stderr");
 	};
-	
+
 	$run(tokens,rMode);
 }
 
@@ -148,12 +148,12 @@ var getDirectoryProperty = function(name) {
 
 $exports.java = new function() {
 	var jdk = getDirectoryProperty("java.home");
-	
+
 	//	TODO	find more robust way to do this
 	if ($context.api.file.filesystems.cygwin) {
 		jdk = $context.api.file.filesystems.cygwin.toUnix(jdk.pathname).directory;
 	}
-	
+
 	this.home = jdk;
 }
 
@@ -165,7 +165,7 @@ $exports.jsh = function(script,args,mode) {
 	var executable = jdk.getRelativePath("bin/java").toString();
 	//	Set defaults from this shell
 	var LAUNCHER_CLASSPATH = (mode.classpath) ? mode.classpath : getProperty("jsh.launcher.classpath");
-	
+
 	var jargs = [];
 	jargs.push("-classpath");
 	jargs.push(LAUNCHER_CLASSPATH);
@@ -195,4 +195,3 @@ $exports.jsh = function(script,args,mode) {
 
 	$exports.shell(executable,jargs,mode);
 }
-

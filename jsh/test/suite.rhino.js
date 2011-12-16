@@ -25,9 +25,9 @@ run(LAUNCHER_COMMAND.concat([
 ]));
 
 run(LAUNCHER_COMMAND.concat(
-	[ 
+	[
 		String(new File(BASE,"jsh/test/2.jsh.js").getCanonicalPath())
-		, { env: { MODULES: tmp.getCanonicalPath() }} 
+		, { env: { MODULES: tmp.getCanonicalPath() }}
 	]
 ));
 

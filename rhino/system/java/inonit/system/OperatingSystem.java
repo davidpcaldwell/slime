@@ -19,11 +19,11 @@ import java.io.*;
 
 public class OperatingSystem {
 	private static OperatingSystem singleton = new OperatingSystem();
-	
+
 	public static OperatingSystem get() {
 		return singleton;
 	}
-	
+
 	public String getCommandOutput(String path, String[] arguments) throws IOException {
 		return Command.getCommandOutput(path, arguments);
 	}
@@ -32,7 +32,7 @@ public class OperatingSystem {
 	public boolean shellCommand(String path, String[] arguments) throws IOException {
 		return Command.execute(path, arguments).isSuccess();
 	}
-	
+
 	public Command.Result execute(String path, String[] arguments) {
 		return Command.execute(path, arguments);
 	}
@@ -40,8 +40,8 @@ public class OperatingSystem {
 	public Subprocess start(Command.Configuration configuration, Command.Context context) throws IOException {
 		return Command.create(configuration).start(context);
 	}
-	
-	public Runnable run(final Command.Context context, final Command.Configuration configuration, final Command.Listener listener) 
+
+	public Runnable run(final Command.Context context, final Command.Configuration configuration, final Command.Listener listener)
 	{
 		return new Runnable() {
 			public void run() {

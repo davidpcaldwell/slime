@@ -113,7 +113,7 @@ var Pathname = function(parameters) {
 					}
 				}
 				if (append == true) {
-				} else if (append == false) {				
+				} else if (append == false) {			
 				} else {
 					throw new Error("Cannot create file at " + toString() + "; already exists (use append to override)");
 				}
@@ -186,7 +186,7 @@ var Pathname = function(parameters) {
 		this.getPeer = function() {
 			return peer;
 		}
-		
+	
 		this.adapt = function() {
 			return peer.getHostFile();
 		}
@@ -197,10 +197,10 @@ var Pathname = function(parameters) {
 
 	this.getParent = getParent;
 	$api.deprecate(this, "getParent");
-	
+
 	this.getFile = getFile;
 	$api.deprecate(this, "getFile");
-	
+
 	this.getDirectory = getDirectory;
 	$api.deprecate(this, "getDirectory");
 
@@ -241,7 +241,7 @@ var Pathname = function(parameters) {
 	$api.deprecate(this, "$getPeer");
 	$api.deprecate(this, "$getFilesystem");
 	$api.deprecate(this, "$inFilesystem");
-	
+
 	var Node = function(pathname,prefix) {
 		this.toString = function() {
 			return pathname.toString();
@@ -472,7 +472,7 @@ var Searchpath = function(parameters) {
 		return array;
 	}
 	this.__defineGetter__("pathnames", getPathnames);
-	
+
 	this.getPathnames = getPathnames;
 	$api.deprecate(this, "getPathnames");
 

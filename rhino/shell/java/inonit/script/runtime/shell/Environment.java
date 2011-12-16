@@ -25,7 +25,7 @@ public class Environment {
 	public static Map create() {
 		return new Environment().get();
 	}
-	
+
 	private Map jdk() {
 		//	Use reflection to invoke JDK 1.5+ method, in case we are running on 1.4
 		try {
@@ -39,7 +39,7 @@ public class Environment {
 			return null;
 		}
 	}
-	
+
 	public Map get() {
 		Map jdk = jdk();
 		if (jdk != null) return jdk;

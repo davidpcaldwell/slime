@@ -113,7 +113,7 @@ class NodeImpl extends Filesystem.Node {
 	private File toHostFileImpl(String scriptPath) throws CygwinFilesystem.CygpathException {
 		return parent.toHostFileImpl(scriptPath);
 	}
-	
+
 	File getCygwinHostFile() throws CygwinFilesystem.CygpathException {
 		if (host == null) {
 			host = toHostFileImpl(scriptPath);
@@ -153,7 +153,7 @@ class NodeImpl extends Filesystem.Node {
 		}
 		return exists.booleanValue();
 	}
-	
+
 	private String getCanonicalPath() throws CygwinFilesystem.CygpathException {
 		try {
 			return getCygwinHostFile().getCanonicalPath();
@@ -161,7 +161,7 @@ class NodeImpl extends Filesystem.Node {
 			throw new CygwinFilesystem.CanonicalPathException(e);
 		}
 	}
-	
+
 	String getCygwinScriptPath() throws CygwinFilesystem.CygpathException {
 		if (scriptPath == null) {
 			scriptPath = parent.toScriptPath(getCanonicalPath());
@@ -176,7 +176,7 @@ class NodeImpl extends Filesystem.Node {
 			throw new IOException(e);
 		}
 	}
-	
+
 	boolean isCygwinDirectory() throws CygwinFilesystem.CygpathException {
 		return getCygwinHostFile().isDirectory();
 	}
@@ -194,7 +194,7 @@ class NodeImpl extends Filesystem.Node {
 		}
 		return softlink.booleanValue();
 	}
-	
+
 	private void process(Command.Result result) throws IOException {
 		if (!result.isSuccess()) {
 			if (result.getLaunchException() != null) {

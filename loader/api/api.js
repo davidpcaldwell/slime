@@ -41,7 +41,7 @@ window.onload = function() {
 					//	element
 				}
 			}
-			if (first 
+			if (first
 				&& (first.tagName.toLowerCase() == "div")
 				&& first.className == "label" && first.innerHTML == heading
 			) {

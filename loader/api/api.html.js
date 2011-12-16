@@ -24,7 +24,7 @@ $exports.getApiHtmlPath = function(path) {
 		} else {
 			return parsed.dirname + parsed.basename +".api.html";
 		}
-	}	
+	}
 }
 
 $exports.ApiHtmlTests = function(html,name) {
@@ -82,7 +82,7 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
-		
+	
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
@@ -155,9 +155,9 @@ $exports.ApiHtmlTests = function(html,name) {
 						}
 						return false;
 					})();
-					
+				
 					if (someAreTests) {
-						unit.scenario(getScenario(scope,children[i]));	
+						unit.scenario(getScenario(scope,children[i]));
 					}
 				}
 			}
@@ -235,4 +235,3 @@ $exports.ApiHtmlTests = function(html,name) {
 		return getScenario(scope,element,container);
 	}
 }
-

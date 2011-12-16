@@ -25,7 +25,7 @@ var InputStream = function(peer) {
 		this.adapt = function() {
 			return peer;
 		}
-		
+	
 		this.array = function() {
 			return $java.readBytes(peer);
 		}
@@ -41,7 +41,7 @@ var InputStream = function(peer) {
 		peer.close();
 		return $context.api.java.Properties.adapt(properties);
 	}
-	
+
 	this.character = function(mode) {
 		if (!mode) mode = {};
 		if (!mode.charset) mode.charset = Packages.java.nio.charset.Charset.defaultCharset().name();
@@ -52,7 +52,7 @@ var InputStream = function(peer) {
 
 	this.characters = this.character;
 	$api.deprecate(this, "characters");
-	
+
 	this.cache = function() {
 		var $bytes = $java.readBytes(peer);
 		return new Resource(new function() {
@@ -70,7 +70,7 @@ var OutputStream = function(peer) {
 		return peer;
 	}
 	$api.deprecate(this,"$getOutputStream");
-	
+
 	this.java = new function() {
 		this.adapt = function() {
 			return peer;
@@ -80,19 +80,19 @@ var OutputStream = function(peer) {
 	this.close = function() {
 		peer.close();
 	}
-	
+
 	this.character = function() {
 		return new Writer(new Packages.java.io.OutputStreamWriter(peer));
 	}
-	
+
 	this.split = function(other) {
 		var otherPeer = other.java.adapt();
-		
+	
 		//	Handle Buffer special case
 		if (!otherPeer && other.$getOutputStream) {
 			otherPeer = other.$getOutputStream();
 		}
-		
+	
 		return new OutputStream($java.split(peer,otherPeer))
 	}
 };
@@ -272,7 +272,7 @@ var Streams = new function() {
 		this.$getWriter = function() {
 			return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
 		}
-		
+	
 		this.split = function(other) {
 			return new OutputStream($context.stdio.$out).split(other);
 		}
@@ -315,9 +315,9 @@ var Resource = function(p) {
 	var binary = function() {
 		if (p.read && p.read.binary) {
 			return p.read.binary();
-		}		
+		}	
 	}
-	
+
 	var text = function() {
 		if (p.read && p.read.text) {
 			return p.read.text();
@@ -336,7 +336,7 @@ var Resource = function(p) {
 			throw new TypeError("No read() mode specified: argument was " + mode);
 		}
 	}
-	
+
 	if (p.read.binary) {
 		this.read.binary = function() {
 			return binary();
@@ -347,7 +347,7 @@ var Resource = function(p) {
 		var text = text();
 		return text.readLines.apply(text,arguments);
 	}
-	
+
 	if (p.write) {
 		var writeText = function(mode) {
 			if (p.write.text) {
@@ -356,7 +356,7 @@ var Resource = function(p) {
 				return p.write.binary(mode).character();
 			}
 		}
-		
+	
 		this.write = function(dataOrType,mode) {
 			if (!mode) mode = {};
 			if (dataOrType == Streams.binary) {
@@ -384,4 +384,3 @@ $exports.Reader = Reader;
 $exports.Writer = Writer;
 $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
-

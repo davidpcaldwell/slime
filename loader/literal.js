@@ -97,7 +97,7 @@ new function() {
 						reason.warning(o);
 					}
 				}
-				
+			
 				//	TODO	This is experimental: document it if it stays
 				if (typeof(object) == "function" && arguments.length == 1) {
 					var deprecateFunction = function(f) {
@@ -197,8 +197,8 @@ new function() {
 		//	$exports.deprecate = function() {
 		//		if (arguments.length == 1 && typeof(arguments[0]) == "function") {
 		//			return deprecate.apply(this,arguments);
-		//		} else if (arguments.length == 2 && typeof(arguments[0]) == "object" && typeof(arguments[1]) == "string" 
-		//			&& typeof(arguments[0][arguments[1]]) == "function") 
+		//		} else if (arguments.length == 2 && typeof(arguments[0]) == "object" && typeof(arguments[1]) == "string"
+		//			&& typeof(arguments[0][arguments[1]]) == "function")
 		//		{
 		//			return deprecate.apply(this,arguments);
 		//		}
@@ -213,7 +213,7 @@ new function() {
 	})();
 
 	//	TODO	The following properties must be exposed to the Rhino loader so that it can supply them to jsh/unit jsapi via jsh.js
-	
+
 	//	TODO	also used by client.html unit tests
 	this.$platform = $platform;
 
@@ -228,7 +228,7 @@ new function() {
 			//			loaded by the new loader, and should go away when all modules are converted
 			return (function() {
 				//	$platform is in scope because of the above
-				//	$api is also in scope				
+				//	$api is also in scope			
 				with( arguments[1] ) {
 					eval(arguments[0]);
 				}
@@ -236,7 +236,7 @@ new function() {
 			}).apply((arguments[2]) ? arguments[2] : { $exports: true },arguments);
 		}
 	}
-	
+
 	var runInScope = function(code,scope,target) {
 		var runScope = function(initial) {
 			var rv = {};
@@ -247,28 +247,28 @@ new function() {
 			}
 			return rv;
 		}
-		
+	
 		var fixed = runScope(scope);
 
 		if (typeof(code) == "function") {
 			//	assume it is a function that can execute the code given a scope
 			code(fixed,target);
 		} else if (typeof(code) == "string") {
-			runners.run(code,fixed,target);			
+			runners.run(code,fixed,target);		
 		} else {
 			throw "Unimplemented: typeof(code) = " + typeof(code);
 		}
 	}
-	
+
 	var file = function(code,$context) {
 		var scope = {
 			$exports: {}
 		};
 		scope.$context = ($context) ? $context : {};
 		runInScope(code,scope,{});
-		return scope.$exports;		
+		return scope.$exports;	
 	}
-	
+
 	var ModuleLoader = function(format) {
 		//	format.getCode: function(path), returns string containing the code contained at that path
 		//	format.main: string, path to module file
@@ -283,11 +283,11 @@ new function() {
 					this.run = function(path,scope,target) {
 						runInScope(format.getCode(path),scope,target);
 					}
-					
+				
 					this.file = function(path,context) {
 						return file(format.getCode(path),context);
 					}
-					
+				
 					this.script = $api.deprecate(this.file);
 
 					this.module = function(path,context) {
@@ -302,7 +302,7 @@ new function() {
 						});
 						return loader.load({ $context: context });
 					}
-					
+				
 					if (format.decorateLoader) {
 						format.decorateLoader(this);
 					}
@@ -317,11 +317,11 @@ new function() {
 	this.run = function(code,scope,target) {
 		runInScope(code,scope,target);
 	};
-	
+
 	this.file = function(code,$context) {
 		return file(code,$context);
 	};
-	
+
 	this.module = function(format,scope) {
 		var loader = new ModuleLoader(format);
 		return loader.load(scope);

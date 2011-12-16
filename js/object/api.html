@@ -314,7 +314,7 @@ END LICENSE
 						<li class="function">
 							<div class="name">add</div>
 							<div>
-								Adds a function to the mapping chain which receives the current object as an argument and returns 
+								Adds a function to the mapping chain which receives the current object as an argument and returns
 								the next object.
 							</div>
 							<div class="arguments">
@@ -327,21 +327,21 @@ END LICENSE
 						<li class="function">
 							<div class="name">addMapping</div>
 							<div>
-								Adds a step to the mapping chain in which the current object is passed through the given mapping 
+								Adds a step to the mapping chain in which the current object is passed through the given mapping
 								object, and each property of the current value is transformed as follows:
 								<ul>
 									<li>If the named property is not present in the mapping object, it is simply passed through to
 										the next step.</li>
-									<li>If the named property is <code>null</code> in the mapping object, it is not passed through 
+									<li>If the named property is <code>null</code> in the mapping object, it is not passed through
 										to the next step (it is essentially deleted).</li>
-									<li>If the named property is a <code>function</code> in the mapping object, in the next step it 
+									<li>If the named property is a <code>function</code> in the mapping object, in the next step it
 										will be set to the value the function returns.  The function will be invoked with two
 										arguments.  The first argument will be the current value of the property (or
 										<code>undefined</code> if the object in the current step does not have the given property),
 										and the second will be the current object.</li>
 								</ul>
 								Finally, if the mapping object contains a named property of type <code>function</code> not contained in the current
-								object, the value of this property will be assigned by invoking the given function with values of 
+								object, the value of this property will be assigned by invoking the given function with values of
 								<code>undefined</code> and the current object.
 							</div>
 							<div class="arguments">
@@ -371,7 +371,7 @@ END LICENSE
 						<li class="function">
 							<div class="name">toFunction</div>
 							<div>
-								Returns a function which wraps this object; the function takes one argument (an object) and returns 
+								Returns a function which wraps this object; the function takes one argument (an object) and returns
 								the same result that would be returned by the <code>transform</code> method of this object.
 							</div>
 							<div class="returns">

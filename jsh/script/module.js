@@ -24,7 +24,7 @@ $exports.arguments = $context.api.java.toJsArray($context.$arguments, function(s
 $exports.addClasses = $api.deprecate($context.api.addClasses);
 
 $exports.Loader = function(paths) {
-	//	TODO	do we also need the analog of loader.run()?	
+	//	TODO	do we also need the analog of loader.run()?
 	this.file = function(path) {
 		var args = [ paths.file(path) ];
 		for (var i=1; i<arguments.length; i++) {
@@ -38,7 +38,7 @@ $exports.Loader = function(paths) {
 		for (var i=1; i<arguments.length; i++) {
 			args[i] = arguments[i];
 		}
-		return jsh.loader.module.apply(jsh.loader,args);				
+		return jsh.loader.module.apply(jsh.loader,args);			
 	}
 }
 $exports.Loader.Paths = function(base) {
@@ -48,7 +48,7 @@ $exports.Loader.Paths = function(base) {
 
 	this.module = function(path) {
 		return base.getRelativePath(path);
-	}	
+	}
 }
 $exports.Loader.SlimeDirectory = function(dir) {
 	return function(path) {
@@ -56,7 +56,7 @@ $exports.Loader.SlimeDirectory = function(dir) {
 	}
 }
 $api.experimental($exports,"Loader");
-		
+	
 $exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
 	$filesystem: $context.api.file.filesystem,

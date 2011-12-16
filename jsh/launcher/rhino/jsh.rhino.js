@@ -62,7 +62,7 @@ var Searchpath = function(p) {
 			elements.push(element);
 		});
 	}
-	
+
 	this.elements = elements;
 
 	this.append = function(searchpath) {
@@ -221,7 +221,7 @@ settings.explicit = new function() {
 	].forEach( function(name) {
 		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
 	});
-	
+
 	["JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
 		this[name] = env[name];
 	}, this);
@@ -403,7 +403,7 @@ try {
 		var property = name.toLowerCase().split("_").join(".");
 		command.jvmProperty(property,settings.get(name));
 	});
-	
+
 	if (settings.get("JSH_TMPDIR")) {
 		command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
 	}

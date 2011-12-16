@@ -22,13 +22,13 @@ var file = $loader.script("file.js", {$debug: $context.debug, b: 4});
 
 var runScope = new function() {
 	this.e = 2;
-	
+
 	var result;
 
 	this.set = function(x) {
 		result = x;
 	}
-	
+
 	this.result = function() {
 		return result;
 	}

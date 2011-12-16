@@ -74,7 +74,7 @@ var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,
 	html: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("api.html.js"), new function() {
 		var seq = 0;
-		
+	
 		this.run = function(code,scope) {
 			if (typeof(code) == "string") {
 				code = {
@@ -127,8 +127,8 @@ if (!parameters.options.notest) {
 				if (!MODULES[path]) throw new Error("Module not found: " + path + " (available: " + Object.keys(MODULES) + ")");
 				return MODULES[path];
 			}
-			
-			
+		
+		
 			var tokens = test.split(":");
 			if (tokens.length == 1) {
 				jsapi.tests.add(getModule(test));

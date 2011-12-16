@@ -44,7 +44,7 @@ li.value>div.name { background: #c0ffc0; }
 */
 li.function, li.constructor { border: 1px solid; padding: 0.2em; }
 
-/*	
+/*
 	In rhino/file, there is an argument property which can be a function or a RegExp; this improves readability in that instance
 	but it's not clear it's general enough to justify.
 */

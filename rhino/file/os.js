@@ -140,7 +140,7 @@ var System = function(peer,PARENT) {
 	}
 
 	this.importPathname = function(pathname) {
-		return new $context.Pathname({ filesystem: this, peer: peer.getNode( pathname.java.adapt() ) });			
+		return new $context.Pathname({ filesystem: this, peer: peer.getNode( pathname.java.adapt() ) });		
 	}
 
 	this.exists = function(peer) {
@@ -246,7 +246,7 @@ var System = function(peer,PARENT) {
 			return path.file;
 		}
 	}
-	
+
 	var mapPathnameFunction = function(filesystem) {
 		return function(pathname) {
 			var pathnameType;
@@ -279,7 +279,7 @@ var System = function(peer,PARENT) {
 
 	this.$Searchpath = {
 		mapPathname: mapPathnameFunction(PARENT)
-	}	
+	}
 }
 
 var SystemFilesystem = function(peer,os) {
@@ -288,7 +288,7 @@ var SystemFilesystem = function(peer,os) {
 	}
 
 	var system = new System(peer,this);
-	
+
 	if (os) {
 		System.os = system;
 	}
@@ -317,7 +317,7 @@ var SystemFilesystem = function(peer,os) {
 		var isPathname = function(item) {
 			return item && item.java && item.java.adapt() && isJavaType(Packages.java.io.File);
 		}
-		
+	
 		this.toUnix = function(item) {
 			if (isPathname(item)) {
 				return new $context.Pathname({ filesystem: system, peer: peer.getNode( item.java.adapt() ) });
