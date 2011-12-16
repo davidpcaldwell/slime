@@ -26,7 +26,7 @@ this.jsh = new function() {
 					f();
 				}
 			}
-		))
+		));
 	}
 
 	var loader = new function() {

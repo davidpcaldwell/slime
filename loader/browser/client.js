@@ -136,7 +136,9 @@
 			debugger;
 		}
 		platform.$api.experimental.warning = function(access) {
-			debugger;
+			//	TODO	should configure this via property of inonit.loader
+			//	Can set breakpoint here to pop into debugger on experimental accesses
+			var breakpoint = null;
 		}
 
 		var instantiate = {};
