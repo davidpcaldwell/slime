@@ -253,6 +253,13 @@ $exports.Object = new function() {
 	this.pairs = function(o) {
 		return properties.pairs(o);
 	}
+	this.pairs.create = function(array) {
+		var rv = {};
+		array.forEach(function(item) {
+			rv[item.name] = item.value;
+		});
+		return rv;
+	}
 
 	this.set = function(o) {
 		for (var i=1; i<arguments.length; i++) {
