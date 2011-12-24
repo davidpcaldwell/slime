@@ -49,16 +49,19 @@ $exports.ApiHtmlTests = function(html,name) {
 		for (var i=0; i<contextScripts.length; i++) {
 			var id = (contextScripts[i].getJsapiId()) ? contextScripts[i].getJsapiId() : "";
 			with(scope) {
-					var value = eval("(" + contextScripts[i].getContentString() + ")");
+				var value = eval("(" + contextScripts[i].getContentString() + ")");
+			}
+			//	If the value produced is null or undefined, this context is not used
+			if (value) {
+				if (value.length) {
+					value.forEach( function(context,index) {
+						context.id = id + "[" + index + "]";
+					});
+					contexts = contexts.concat(value);
+				} else {
+					value.id = id;
+					contexts.push(value);
 				}
-			if (value.length) {
-				value.forEach( function(context,index) {
-					context.id = id + "[" + index + "]";
-				});
-				contexts = contexts.concat(value);
-			} else {
-				value.id = id;
-				contexts.push(value);
 			}
 		}
 
