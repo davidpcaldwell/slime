@@ -67,6 +67,8 @@ this.jsh = new function() {
 		}
 
 		this.file = function(pathname,$context) {
+			if (typeof(pathname) == "undefined") throw new RangeError("'pathname' must not be undefined.");
+			if (pathname === null) throw new RangeError("'pathname' must not be null.");
 			return rhinoLoader.file({
 				name: pathname.toString(),
 				$in: new Packages.java.io.FileInputStream(pathname.java.adapt())
