@@ -153,7 +153,7 @@ END LICENSE
 			}
 			if (parameters) {
 				log.flush();
-				var jsapi = inonit.loader.script(parameters.jsapi+"unit.before.js", {
+				var jsapi = inonit.loader.file(parameters.jsapi+"unit.before.js", {
 					//	TODO	use parameters to create these functions, in the event there are long-running tests
 					asynchronous: {
 						scenario: function(next) {
@@ -164,7 +164,7 @@ END LICENSE
 						}
 					}
 				});
-				var apiHtmlScript = inonit.loader.script(parameters.jsapi+"api.html.js");
+				var apiHtmlScript = inonit.loader.file(parameters.jsapi+"api.html.js");
 				jsapi.Scenario.HALT_ON_EXCEPTION = Boolean(parameters.nocatch);
 			
 				var toErrorMessage = function(e) {
