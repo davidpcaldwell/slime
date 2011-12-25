@@ -226,7 +226,9 @@ $exports.tests = new function() {
 						if (suite.getScenario) {
 							scope.module = suite.loadWith(contexts[i]);
 							scope.context = contexts[i];
-							topscope.scenario( suite.getScenario(scope) );						
+							var scenario = suite.getScenario(scope);
+							scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
+							topscope.scenario( scenario );
 						} else {
 							topscope.scenario(new function() {
 								this.name = suite.name + " (NO TESTS)";
