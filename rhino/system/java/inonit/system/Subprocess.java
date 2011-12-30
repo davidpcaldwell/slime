@@ -26,7 +26,7 @@ public class Subprocess {
 	Subprocess(Command.Process p) {
 		this.p = p;
 	}
-	
+
 	public void wait(Listener listener) {
 		try {
 			int status = p.waitFor();

@@ -119,7 +119,7 @@ END LICENSE
 				var rv = [];
 				addChildrenTo(rv,e,filter,recurse);
 				return rv;
-			}			
+			}		
 		}
 	</script>
 	<script type="text/javascript">
@@ -153,7 +153,7 @@ END LICENSE
 			}
 			if (parameters) {
 				log.flush();
-				var jsapi = inonit.loader.script(parameters.jsapi+"unit.before.js", {
+				var jsapi = inonit.loader.file(parameters.jsapi+"unit.before.js", {
 					//	TODO	use parameters to create these functions, in the event there are long-running tests
 					asynchronous: {
 						scenario: function(next) {
@@ -164,18 +164,27 @@ END LICENSE
 						}
 					}
 				});
-				var apiHtmlScript = inonit.loader.script(parameters.jsapi+"api.html.js");
+				var apiHtmlScript = inonit.loader.file(parameters.jsapi+"api.html.js");
 				jsapi.Scenario.HALT_ON_EXCEPTION = Boolean(parameters.nocatch);
-				
+			
 				var toErrorMessage = function(e) {
 					if (e.message) return e.message + " at line " + e.lineNumber + " in " + e.fileName;
 					if (typeof(e) == "string") return e;
 					return "Unknown error type: " + e;
 				}
-				
+			
 				var scenarios = [];
 				for (var i=0; i<parameters.module.length; i++) {
-					var module = parameters.module[i];
+					var test = (function() {
+						var string = parameters.module[i];
+						if (string.indexOf(":") == -1) {
+							return { module: string };
+						} else {
+							var tokens = string.split(":");
+							return { module: tokens[0], path: tokens[1] };
+						}
+					})();
+					var module = test.module;
 					var location = (function() {
 						if (module.substring(module.length-1) == "/") {
 							return {
@@ -207,7 +216,7 @@ END LICENSE
 					(function() {
 						var Scope = function() {
 							var self = this;
-							
+						
 							this.$jsapi = new function() {
 								this.module = function(path,context) {
 									return inonit.loader.module(
@@ -239,11 +248,11 @@ END LICENSE
 						var DOM = function(html) {
 							var Element = function(node) {
 								this.localName = node.tagName.toLowerCase();
-								
+							
 								if (node != html) {
 									this.parent = new arguments.callee(node.parentNode);
 								}
-								
+							
 								this.toString = function() {
 									return node.toString();
 								}
@@ -261,13 +270,13 @@ END LICENSE
 										return function(node) {
 											return node.tagName && node.tagName.toLowerCase() == "script" && node.type == (apiHtmlScript.MEDIA_TYPE + "#" + type);
 										};
-									}										
+									}									
 								}
 
 								var wrap = function(node) {
 									return new Element(node);
 								}
-								
+							
 								this.getScripts = function(type) {
 									var rv = [];
 									var children = dom.getChildren(node,getScriptFilter(type));
@@ -296,7 +305,7 @@ END LICENSE
 									}
 									return rv;
 								}
-								
+							
 								var wrapArray = function(array) {
 									var rv = [];
 									for (var i=0; i<array.length; i++) {
@@ -329,10 +338,6 @@ END LICENSE
 							}
 
 							this.top = new Element(html);
-
-							this.getElementByJsapiId = function(id) {
-								throw new Error("Unimplemented");
-							}
 						}
 
 						var root = (function() {
@@ -359,7 +364,7 @@ END LICENSE
 									}
 								}
 							};
-							
+						
 							var declaration = find(root);
 							if (declaration) return declaration.getAttribute("path");
 							return "";
@@ -377,8 +382,8 @@ END LICENSE
 								debugger;
 							}
 							scope.context = contexts[i];
-							var moduleScenario = apiHtml.getScenario(scope);
-							moduleScenario.name = module;
+							var moduleScenario = apiHtml.getScenario(scope,test.path);
+							moduleScenario.name = (test.path) ? (module + ":" + test.path) : module;
 							scenarios.push(moduleScenario);
 						}
 					})();
@@ -434,7 +439,7 @@ END LICENSE
 					}
 				};
 				var ASYNCHRONOUS = Boolean(parameters.asynchronous);
-				
+			
 				var onResult = function(success) {
 					if (!success) {
 						alert("Failed!");
@@ -488,7 +493,7 @@ END LICENSE
 					addModule("");
 				}
 			}
-			
+		
 			this.setModules = function(modules) {
 				if (modules.length > 0) {
 					var pathInput = dom.getChild(document.getElementById("module"), isInputNamed("module"));

@@ -41,11 +41,11 @@ $exports.Properties.adapt = function($properties) {
 
 var errors = new function() {
 	var instance = new Packages.inonit.script.runtime.Throwables();
-	
+
 	this.fail = function(message) {
 		instance.fail(message);
 	}
-	
+
 	this.decorate = function(implementation) {
 		var prototype = implementation.prototype;
 		var rv = function() {
@@ -55,7 +55,7 @@ var errors = new function() {
 			}).join(",");
 			//	TODO	is this parameterized call already in js/object?
 			var created = eval("new implementation(" + literals + ")");
-			
+		
 			var tracer;
 			try {
 				instance.throwException(created.toString());
@@ -67,9 +67,16 @@ var errors = new function() {
 			while(t != null) {
 				var sw = new Packages.java.io.StringWriter();
 				var pw = new Packages.java.io.PrintWriter(sw);
-				t.printStackTrace(pw);
+				if (t == tracer.rhinoException) {
+					sw.write(t.getScriptStackTrace());
+				} else {
+					t.printStackTrace(pw);
+				}
 				pw.flush();
 				var tstack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
+				if (t == tracer.rhinoException) {
+					tstack = tstack.slice(1,tstack.length);
+				}
 				for (var i=0; i<tstack.length; i++) {
 					if (/^Caused by\:/.test(tstack[i])) {
 						break;
@@ -77,6 +84,9 @@ var errors = new function() {
 					stack.push(tstack[i]);
 				}
 				t = t.getCause();
+				if (t != null && String(t.getClass().getName()) == "inonit.script.runtime.Throwables$Exception") {
+					t = null;
+				}
 			}
 			//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
 			//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
@@ -122,7 +132,7 @@ if ($context.globals) {
 			];
 		}
 	})();
-	
+
 	errorNames.forEach( function(name) {
 		global[name] = errors.decorate(global[name]);
 	});
@@ -185,11 +195,11 @@ experimental("toJavaArray");
 $exports.Thread = function(f) {
 	var runnable = new function() {
 		var _callbacks;
-		
+	
 		this.initialize = function(callbacks) {
 			_callbacks = callbacks;
 		}
-		
+	
 		this.run = function() {
 			try {
 				var rv = f();
@@ -204,14 +214,14 @@ $exports.Thread = function(f) {
 		}
 	}
 
-	
+
 	var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable,runnable));
-	
+
 	this.start = function(callbacks) {
 		runnable.initialize(callbacks);
 		thread.start();
 	}
-	
+
 	this.join = function() {
 		thread.join();
 	}

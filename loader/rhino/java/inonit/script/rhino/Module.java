@@ -64,21 +64,21 @@ public class Module {
 					public String toString() {
 						return Classes.class.getName() + " source=" + source + " prefix=" + prefix;
 					}
-					
+				
 					public InputStream getResourceAsStream(String path) throws IOException {
 						return source.getResourceAsStream(prepend + path);
 					}
 				};
 			}
-			
+		
 			public static Source create(final java.net.URL url) {
 				return new Source() {
 					private java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[] { url });
-					
+				
 					public String toString() {
 						return Source.class.getName() + " url=" + url;
 					}
-					
+				
 					public InputStream getResourceAsStream(String path) {
 						return loader.getResourceAsStream(path);
 					}
@@ -99,13 +99,13 @@ public class Module {
 				}
 			};
 		}
-		
+	
 		public static Code create(final Source js, final String main, final Source classes) {
 			return new Module.Code() {
 				public Module.Code.Scripts getScripts() {
 					return Module.Code.Scripts.create(js, main);
 				}
-				
+			
 				public Module.Code.Classes getClasses() {
 					return Module.Code.Classes.create(classes);
 				}
@@ -122,7 +122,7 @@ public class Module {
 						return getClass().getName() + ": " + file.getAbsolutePath() + " [error getting canonical]";
 					}
 				}
-				
+			
 				private Source source = createSource(new File[] { file });
 
 				public Module.Code.Scripts getScripts() {
@@ -177,12 +177,12 @@ public class Module {
 
 			//	TODO	Switch this method to return Source
 			public abstract Source getSource();
-			
+		
 			public abstract String getMain();
-			
+		
 			public final InputStream getResourceAsStream(String path) throws IOException {
 				return getSource().getResourceAsStream(path);
-			}			
+			}		
 		}
 
 		public static abstract class Classes {
@@ -193,26 +193,26 @@ public class Module {
 					}
 				};
 			}
-			
+		
 			public String toString() {
 				return Classes.class.getName() + " source=" + getSource();
 			}
-			
+		
 //			/** @deprecated */
 //			public static Classes create(final Source source, final String prefix) {
 //				return create(Source.create(source, prefix));
 //			}
-//			
+//		
 //			/** @deprecated */
 //			public static Classes create(final java.net.URL url) {
 //				return Classes.create(Source.create(url));
 //			}
 
 			public abstract Source getSource();
-			
+		
 			public final InputStream getResourceAsStream(String path) throws IOException {
 				return getSource().getResourceAsStream(path);
-			}			
+			}		
 		}
 
 		public abstract Scripts getScripts();
@@ -221,11 +221,11 @@ public class Module {
 		public ClassLoader getClassLoader(final ClassLoader delegate) {
 			return new ClassLoader(delegate) {
 				private Classes classes = Code.this.getClasses();
-				
+			
 				public String toString() {
-					return Code.class.getName() + " classes=" + classes + " delegate=" + delegate; 
+					return Code.class.getName() + " classes=" + classes + " delegate=" + delegate;
 				}
-				
+			
 				protected Class findClass(String name) throws ClassNotFoundException {
 					try {
 						String path = name.replace('.', '/') + ".class";
@@ -268,12 +268,12 @@ public class Module {
 	public final ClassLoader getClasses(ClassLoader delegate) {
 		return code.getClassLoader(delegate);
 	}
-	
+
 	public final Module.Code.Classes getClasses() {
 		return code.getClasses();
 	}
 
-	//	Used by rhino loader 
+	//	Used by rhino loader
 	public String getMainScriptPath() {
 		return code.getScripts().getMain();
 	}

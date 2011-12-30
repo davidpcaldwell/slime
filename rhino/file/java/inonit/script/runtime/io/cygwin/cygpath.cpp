@@ -27,9 +27,9 @@ int main() {
 	while(more) {
 		std::cin.getline(buf,MAX_PATH+1);
 		switch(buf[0]) {
-			case '\0': 
+			case '\0':
 				std::cout << "EOF";
-				more = 0; 
+				more = 0;
 				break;
 			case 'w':
 				char wbuf[MAX_PATH+1];

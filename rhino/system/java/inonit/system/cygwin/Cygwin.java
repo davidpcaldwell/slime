@@ -32,7 +32,7 @@ public class Cygwin {
 			super(e);
 		}
 	}
-	
+
 	private static String getCanonicalPath(File file) {
 		try {
 			return file.getCanonicalPath();
@@ -40,7 +40,7 @@ public class Cygwin {
 			throw new CygpathCanonicalPathException(e);
 		}
 	}
-	
+
 	private static String cygpath(String cygpath, String[] args) throws CygpathException {
 		int TRIES = 10;
 		String rv = "";
@@ -54,7 +54,7 @@ public class Cygwin {
 			} catch (IOException e) {
 				//	we are going to retry unless this is the TRIESth failure
 			} catch (Command.Result.Failure e) {
-				//	we are going to retry unless this is the TRIESth failure				
+				//	we are going to retry unless this is the TRIESth failure			
 			}
 			if (rv.length() > 0) {
 				rv = rv.substring(0,rv.length()-1);

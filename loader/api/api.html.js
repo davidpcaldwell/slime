@@ -24,7 +24,7 @@ $exports.getApiHtmlPath = function(path) {
 		} else {
 			return parsed.dirname + parsed.basename +".api.html";
 		}
-	}	
+	}
 }
 
 $exports.ApiHtmlTests = function(html,name) {
@@ -49,16 +49,19 @@ $exports.ApiHtmlTests = function(html,name) {
 		for (var i=0; i<contextScripts.length; i++) {
 			var id = (contextScripts[i].getJsapiId()) ? contextScripts[i].getJsapiId() : "";
 			with(scope) {
-					var value = eval("(" + contextScripts[i].getContentString() + ")");
+				var value = eval("(" + contextScripts[i].getContentString() + ")");
+			}
+			//	If the value produced is null or undefined, this context is not used
+			if (value) {
+				if (value.length) {
+					value.forEach( function(context,index) {
+						context.id = id + "[" + index + "]";
+					});
+					contexts = contexts.concat(value);
+				} else {
+					value.id = id;
+					contexts.push(value);
 				}
-			if (value.length) {
-				value.forEach( function(context,index) {
-					context.id = id + "[" + index + "]";
-				});
-				contexts = contexts.concat(value);
-			} else {
-				value.id = id;
-				contexts.push(value);
 			}
 		}
 
@@ -82,7 +85,7 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
-		
+	
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
@@ -118,7 +121,13 @@ $exports.ApiHtmlTests = function(html,name) {
 				return rv;
 			}
 
-			var children = element.getChildElements();
+			var children = (function() {
+				if (element.localName == "script" && element.getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
+					return [ element ];
+				} else {
+					return element.getChildElements();
+				}
+			})();
 			for (var i=0; i<children.length; i++) {
 				if (children[i].localName == "script" && children[i].getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
 					if (typeof($context) == "object"  && $context.run) {
@@ -149,9 +158,9 @@ $exports.ApiHtmlTests = function(html,name) {
 						}
 						return false;
 					})();
-					
+				
 					if (someAreTests) {
-						unit.scenario(getScenario(scope,children[i]));	
+						unit.scenario(getScenario(scope,children[i]));
 					}
 				}
 			}
@@ -185,7 +194,34 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	this.getScenario = function(scope,unit) {
-		var element = (unit) ? html.getElementByJsapiId(unit) : html.top;
+		var element = (function() {
+			if (unit) {
+				var getJsapiChild = function(target,id) {
+					var elements = target.getChildElements();
+					for (var i=0; i<elements.length; i++) {
+						if (elements[i].getJsapiId() == id) {
+							return elements[i];
+						} else if (elements[i].getJsapiId() == null) {
+							var childSearch = getJsapiChild(elements[i],id);
+							if (childSearch != null) return childSearch;
+						}
+					}
+					return null;
+				}
+
+				var tokens = unit.split("/");
+				var target = html.top;
+				for (var i=0; i<tokens.length; i++) {
+					target = getJsapiChild(target,tokens[i]);
+					if (target == null) {
+						throw new Error("Element not found: " + tokens.slice(0,i+1).join("/"));
+					}
+				}
+				return target;
+			} else {
+				return html.top;
+			}
+		})();
 		var container = {
 			initializes: [],
 			destroys: []
@@ -202,4 +238,3 @@ $exports.ApiHtmlTests = function(html,name) {
 		return getScenario(scope,element,container);
 	}
 }
-

@@ -14,7 +14,7 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>JavaScript language constructs</title>
 </head>
@@ -314,7 +314,7 @@ END LICENSE
 						<li class="function">
 							<div class="name">add</div>
 							<div>
-								Adds a function to the mapping chain which receives the current object as an argument and returns 
+								Adds a function to the mapping chain which receives the current object as an argument and returns
 								the next object.
 							</div>
 							<div class="arguments">
@@ -327,21 +327,21 @@ END LICENSE
 						<li class="function">
 							<div class="name">addMapping</div>
 							<div>
-								Adds a step to the mapping chain in which the current object is passed through the given mapping 
+								Adds a step to the mapping chain in which the current object is passed through the given mapping
 								object, and each property of the current value is transformed as follows:
 								<ul>
 									<li>If the named property is not present in the mapping object, it is simply passed through to
 										the next step.</li>
-									<li>If the named property is <code>null</code> in the mapping object, it is not passed through 
+									<li>If the named property is <code>null</code> in the mapping object, it is not passed through
 										to the next step (it is essentially deleted).</li>
-									<li>If the named property is a <code>function</code> in the mapping object, in the next step it 
+									<li>If the named property is a <code>function</code> in the mapping object, in the next step it
 										will be set to the value the function returns.  The function will be invoked with two
 										arguments.  The first argument will be the current value of the property (or
 										<code>undefined</code> if the object in the current step does not have the given property),
 										and the second will be the current object.</li>
 								</ul>
 								Finally, if the mapping object contains a named property of type <code>function</code> not contained in the current
-								object, the value of this property will be assigned by invoking the given function with values of 
+								object, the value of this property will be assigned by invoking the given function with values of
 								<code>undefined</code> and the current object.
 							</div>
 							<div class="arguments">
@@ -371,7 +371,7 @@ END LICENSE
 						<li class="function">
 							<div class="name">toFunction</div>
 							<div>
-								Returns a function which wraps this object; the function takes one argument (an object) and returns 
+								Returns a function which wraps this object; the function takes one argument (an object) and returns
 								the same result that would be returned by the <code>transform</code> method of this object.
 							</div>
 							<div class="returns">
@@ -424,7 +424,7 @@ END LICENSE
 					test(fOutput.z == "DavidDavid2");
 				]]></script>
 			</li>
-			<li class="object">
+			<li class="object" jsapi:id="Filter">
 				<div class="name">Filter</div>
 				<div>
 					A <i>Filter</i> is a function that implements a particular interface: it takes a single argument, and returns a
@@ -432,7 +432,7 @@ END LICENSE
 				</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="function">
+					<li class="function" jsapi:id="property">
 						<div class="name">property</div>
 						<div class="arguments">
 							<div class="label">Arguments</div>
@@ -441,7 +441,10 @@ END LICENSE
 									<span class="type">string</span>
 									<span>A property name.</span>
 								</li>
-								<li>A Filter.</li>
+								<li class="value">
+									<span class="type">Filter</span>
+									<span>A Filter to apply to the given property.</span>
+								</li>
 							</ol>
 						</div>
 						<div class="returns">
@@ -450,6 +453,19 @@ END LICENSE
 							A Filter that returns <code>true</code> if the value of its property for the given property
 							name is accepted by the given Filter, and <code>false</code> otherwise.
 						</div>
+						<script type="application/x.jsapi#tests" jsapi:id="1">
+							var isUpperCase = function(value) {
+								return value.toUpperCase() == value;
+							}
+
+							var filter = module.Filter.property("a",isUpperCase);
+
+							var a = { a: "A" };
+							var b = { a: "a" };
+
+							test([a,b].filter(filter).length == 1);
+							test([a,b].filter(filter)[0] == a);
+						</script>
 					</li>
 					<li class="function">
 						<div class="name">equals</div>

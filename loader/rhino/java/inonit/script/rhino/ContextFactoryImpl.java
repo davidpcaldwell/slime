@@ -19,11 +19,11 @@ import org.mozilla.javascript.*;
 
 public class ContextFactoryImpl extends ContextFactory {
 	private int optimization = -1;
-	
+
 	public final void setOptimization(int optimization) {
 		this.optimization = optimization;
 	}
-	
+
 	protected Context makeContext() {
 		Context rv = super.makeContext();
 		rv.setErrorReporter(new Engine.Errors().getErrorReporter());

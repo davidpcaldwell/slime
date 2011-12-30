@@ -20,7 +20,7 @@ import org.mozilla.javascript.*;
 public class Objects {
 	/** @deprecated */
 	public static final Objects INSTANCE = new Objects();
-	
+
 	private void setAttribute(Scriptable object, String name, int mask, boolean value) {
 		if (!(object instanceof ScriptableObject)) {
 			return;
@@ -33,15 +33,15 @@ public class Objects {
 		}
 		((ScriptableObject)object).setAttributes(name, now);
 	}
-	
+
 	public void setDontEnum(Scriptable object, String name, boolean value) {
 		setAttribute(object, name, ScriptableObject.DONTENUM, value);
 	}
-	
+
 	public void setPermanent(Scriptable object, String name, boolean value) {
 		setAttribute(object, name, ScriptableObject.PERMANENT, value);
 	}
-	
+
 	public void setReadOnly(Scriptable object, String name, boolean value) {
 		setAttribute(object, name, ScriptableObject.READONLY, value);
 	}

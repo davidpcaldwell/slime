@@ -22,16 +22,16 @@ import inonit.script.rhino.*;
 
 public class Main {
 	private List args;
-	
+
 	private Main() {
 	}
-	
+
 	private static class CheckedException extends Exception {
 		CheckedException(String message) {
 			super(message);
 		}
 	}
-	
+
 	private int run() throws CheckedException {
 		Shell.Installation installation = null;
 		Shell.Invocation invocation = null;
@@ -100,7 +100,7 @@ public class Main {
 			}
 			installation = new Shell.Installation() {
 				public String toString() {
-					return getClass().getName() 
+					return getClass().getName()
 						+ " jsh.library.scripts=" + System.getProperty("jsh.library.scripts")
 						+ " jsh.library.scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
 					;
@@ -196,7 +196,7 @@ public class Main {
 					}
 					return optimization;
 				}
-				
+			
 				public ClassLoader getClassLoader() {
 					return ClassLoader.getSystemClassLoader();
 				}
@@ -228,7 +228,7 @@ public class Main {
 			invocation
 		);
 	}
-	
+
 	public static void main(String[] args) throws Throwable {
 		Main main = new Main();
 		main.args = new ArrayList();

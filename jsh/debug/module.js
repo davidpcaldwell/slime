@@ -27,7 +27,7 @@ var Stopwatch = function() {
 
 var Profile = function() {
 	//	TODO	Does not really work with threading
-	
+
 	var Node = function(p,parent) {
 		var stopwatch = new Stopwatch();
 		var children = [];
@@ -104,11 +104,11 @@ var Profile = function() {
 	}
 
 	var top = new Node();
-	
+
 	var current = top;
-	
+
 	var decorated = [];
-	
+
 	var decorate = function(p) {
 		if (typeof(p) == "function") {
 			var f = p;
@@ -149,15 +149,15 @@ var Profile = function() {
 			}
 		}
 	}
-	
+
 	this.add = function(o) {
 		return decorate(o);
 	}
-	
+
 	this.getData = function() {
 		return top.getData(new Date());
 	}
-	
+
 	var dump = function(data,indent,mode) {
 		if (!indent) indent = "";
 		var recurse = arguments.callee;
@@ -200,7 +200,7 @@ var Profile = function() {
 
 $exports.profile = new function() {
 	var cpu;
-	
+
 	this.cpu = function() {
 		if (!cpu) {
 			cpu = new Profile();
@@ -210,7 +210,7 @@ $exports.profile = new function() {
 		}
 		return cpu;
 	}
-	
+
 	this.add = function(f) {
 		if (cpu) {
 			return cpu.add(f);

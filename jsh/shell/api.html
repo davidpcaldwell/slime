@@ -58,7 +58,7 @@ END LICENSE
 					}),
 					file: jsh.file
 				};
-				
+			
 				this.getSystemProperty = function(name) {
 					return String(Packages.java.lang.System.getProperty(name));
 				}
@@ -174,7 +174,7 @@ END LICENSE
 									<span class="type">JavaClass java.io.InputStream</span>
 									or <span class="type">jsh.file byte input stream</span>
 									<span>
-										(optional) The stream to use as the standard input stream of the subprocess. If 
+										(optional) The stream to use as the standard input stream of the subprocess. If
 										<code>null</code>, an empty stream will be used.
 										<!--	TODO	add ability to use Streams.stdin if undefined here, which requires defining
 														Streams.stdin	-->

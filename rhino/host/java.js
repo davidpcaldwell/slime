@@ -48,7 +48,7 @@ var getJavaClass = function(object) {
 
 var toJsArray = function(javaArray,scriptValueFactory) {
 	if (typeof(javaArray) == "undefined" || javaArray == null) throw "Required: the Java array must not be null or undefined.";
-	if (typeof(scriptValueFactory) == "undefined" || scriptValueFactory == null) 
+	if (typeof(scriptValueFactory) == "undefined" || scriptValueFactory == null)
 		throw "Required: the function to convert Java objects to ECMAScript objects must not be null or undefined.";
 	var rv = new Array(javaArray.length);
 	for (var i=0; i<javaArray.length; i++) {
@@ -70,7 +70,7 @@ $exports.toJavaArray = toJavaArray;
 
 var deprecate;
 if (!deprecate) {
-	//	TODO	We need a default implementation for the moment because jsunit needs one; the jsunit scripts should provide one, 
+	//	TODO	We need a default implementation for the moment because jsunit needs one; the jsunit scripts should provide one,
 	//			though, and this should be removed.
 	deprecate = function() {
 	}
@@ -124,4 +124,3 @@ deprecate(Array.prototype, "toJava");
 //		throw "Compilation errors in " + pathname;
 //	}
 //}
-

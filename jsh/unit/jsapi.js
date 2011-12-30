@@ -34,34 +34,34 @@ var getApiHtml = function(moduleMainPathname) {
 
 var E4X = function(html) {
 	default xml namespace = html.namespace();
-	
+
 	var map = function(query) {
 		var rv = [];
 		for (var i=0; i<query.length(); i++) {
 			rv[i] = new Element(query[i]);
 		}
-		return rv;		
+		return rv;	
 	}
-	
+
 	var Element = function(xml) {
 		this.localName = xml.localName();
-		
+	
 		if (xml != html) {
 			this.parent = new Element(xml.parent());
 		}
-		
+	
 		this.toString = function() {
 			return xml.toXMLString();
 		}
-		
+	
 		this.getContentString = function() {
 			return String(xml);
 		}
-		
+	
 		this.getScripts = function(type) {
 			return map(xml.script.(@type == ($context.html.MEDIA_TYPE + "#" + type)));
 		}
-		
+	
 		this.getDescendantScripts = function(type) {
 			if (type) {
 				return map(xml..script.(@type == ($context.html.MEDIA_TYPE + "#" + type)));
@@ -69,38 +69,32 @@ var E4X = function(html) {
 				return map(xml..script);
 			}
 		}
-			
+		
 		this.getChildElements = function() {
 			return map(xml.elements());
 		}
-		
+	
 		this.getScriptType = function() {
 			return String(xml.@type);
 		}
-		
+	
 		this.isTop = function() {
 			return xml == html;
 		}
-		
+	
 		this.getJsapiId = function() {
 			if (xml.@jsapi::id.length()) return String(xml.@jsapi::id);
 			return null;
 		}
-		
+	
 		this.getNameDiv = function() {
 			var rv = xml.div.(@["class"] == "name");
 			if (rv.length()) return String(rv);
 			return null;
 		}
 	}
-	
+
 	this.top = new Element(html);
-	
-	this.getElementByJsapiId = function(id) {
-		var list = map(html..*.(@jsapi::id == id));
-		if (list.length == 0) return null;
-		return list[0];
-	}
 }
 
 $exports.tests = new function() {
@@ -224,24 +218,26 @@ $exports.tests = new function() {
 					$platform: jsh.$jsapi.$platform,
 					$api: jsh.$jsapi.$api
 				};
-				
+			
 				var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
-				
+			
 				for (var i=0; i<contexts.length; i++) {
 					try {
 						if (suite.getScenario) {
 							scope.module = suite.loadWith(contexts[i]);
 							scope.context = contexts[i];
-							topscope.scenario( suite.getScenario(scope) );							
+							var scenario = suite.getScenario(scope);
+							scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
+							topscope.scenario( scenario );
 						} else {
 							topscope.scenario(new function() {
 								this.name = suite.name + " (NO TESTS)";
-								
+							
 								this.execute = function(scope) {
 									scope.test({
 										success: false,
 										messages: {
-											failure: suite.name + " has no api.html file containing tests." 
+											failure: suite.name + " has no api.html file containing tests."
 										}
 									});
 								}
@@ -304,12 +300,23 @@ $exports.doc = function(modules,to) {
 		if (item.ns) {
 			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
 			var xhtml = getApiHtml(item.location).read(XML);
-			xhtml.head.appendChild(<link rel="stylesheet" type="text/css" href="api.css" />);
-			xhtml.head.appendChild(<script type="text/javascript" src="api.js">{"/**/"}</script>);
+			var ns = (function() {
+				if (xhtml.length() > 1) {
+					return (function() {
+						for (var i=0; i<xhtml.length(); i++) {
+							if (xhtml[i].nodeKind() == "element") return xhtml[i].namespace();
+						}
+					})();
+				} else {
+					return xhtml.namespace();
+				}
+			})();
+			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href="api.css" />);
+			xhtml.ns::head.appendChild(<script type="text/javascript" src="api.js">{"/**/"}</script>);
 
-			xhtml.body.insertChildAfter(null,<a href="index.html">Documentation Home</a>);
+			xhtml.ns::body.insertChildAfter(null,<a href="index.html">Documentation Home</a>);
 
-			var contextDiv = xhtml..div.(h1 == "Context");
+			var contextDiv = xhtml..ns::div.(ns::h1 == "Context");
 			if (contextDiv.length()) {
 				contextDiv.parent().replace(contextDiv.childIndex(),<></>);
 				//	Why does the below not work?
@@ -338,7 +345,7 @@ $exports.doc = function(modules,to) {
 			var pagename = "ns." + item.ns + ".html";
 			destination.getRelativePath(pagename).write(xhtml.toXMLString());
 
-			index.body.table.tbody.appendChild(<tr><td><a href={pagename}>{item.ns}</a></td><td>{String(xhtml.head.title)}</td></tr>)
+			index.body.table.tbody.appendChild(<tr><td><a href={pagename}>{item.ns}</a></td><td>{String(xhtml.ns::head.ns::title)}</td></tr>)
 		}
 	});
 

@@ -21,13 +21,13 @@ public class Throwables {
 			super(message);
 		}
 	}
-	
+
 	private static class Failure extends java.lang.RuntimeException {
 		Failure(String message) {
 			super(message);
 		}
 	}
-	
+
 	public void fail(String message) {
 		throw new Failure(message);
 	}

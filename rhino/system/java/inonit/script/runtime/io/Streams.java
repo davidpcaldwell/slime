@@ -20,7 +20,7 @@ import java.util.*;
 
 public class Streams {
 	private Characters characters = new Characters();
-	
+
 	public void copy(InputStream in, OutputStream out, boolean closeInputStream) throws IOException {
 		in = new BufferedInputStream(in);
 		out = new BufferedOutputStream(out);
@@ -33,11 +33,11 @@ public class Streams {
 			in.close();
 		}
 	}
-	
+
 	public void copy(InputStream in, OutputStream out) throws IOException {
 		copy(in,out,true);
 	}
-	
+
 	public void copy(Reader in, Writer out) throws IOException {
 		in = new BufferedReader(in);
 		out = new BufferedWriter(out);
@@ -48,11 +48,11 @@ public class Streams {
 		out.flush();
 		in.close();
 	}
-	
+
 	public OutputStream split(OutputStream one, OutputStream two) {
 		return Bytes.Splitter.create(one, two);
 	}
-	
+
 	public byte[] readBytes(InputStream in) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		copy(in, out);
@@ -64,28 +64,28 @@ public class Streams {
 		copy(in,writer);
 		return writer.toString();
 	}
-	
+
 	public String readString(InputStream in) throws IOException {
 		return readString(new java.io.InputStreamReader(in));
 	}
-	
+
 	public void writeString(String string, OutputStream out) throws IOException {
 		Writer writer = new BufferedWriter( new OutputStreamWriter( out ) );
 		writer.write(string);
 		writer.flush();
 	}
-	
+
 	public String readLine(java.io.Reader reader, String lineTerminator) throws java.io.IOException {
 		return characters.readLine(reader, lineTerminator);
 	}
-	
+
 	public static class Null {
 		public static final InputStream INPUT_STREAM = new InputStream() {
 			public int read() {
 				return -1;
 			}
 		};
-		
+	
 		public static final Reader READER = new Reader() {
 			public void close() throws IOException {
 			}
@@ -94,12 +94,12 @@ public class Streams {
 				return -1;
 			}
 		};
-		
+	
 		public static final OutputStream OUTPUT_STREAM = new OutputStream() {
 			public void write(int i) {
 			}
 		};
-		
+	
 		public static final Writer WRITER = new Writer() {
 			public void flush() {
 			}
@@ -111,31 +111,31 @@ public class Streams {
 			}
 		};
 	}
-	
+
 	public static class Bytes {
 		public static class Buffer {
 			private LinkedList bytes = new LinkedList();
 			private boolean closed;
-			
+		
 			private MyInputStream in = new MyInputStream();
 			private MyOutputStream out = new MyOutputStream();
-			
+		
 			public String toString() {
 				return super.toString() + " in=" + in + " out=" + out;
 			}
-			
+		
 			public InputStream getInputStream() {
 				return in;
 			}
-			
+		
 			public OutputStream getOutputStream() {
 				return out;
 			}
-			
+		
 			private synchronized int available() {
 				return bytes.size();
 			}
-			
+		
 			private synchronized int read() {
 				while (bytes.size() == 0 && !closed) {
 					try {
@@ -152,7 +152,7 @@ public class Streams {
 				}
 				return b;
 			}
-			
+		
 			private synchronized int read(byte[] b, int off, int len) {
 				int i = this.read();
 				if (i == -1) {
@@ -160,32 +160,32 @@ public class Streams {
 				} else {
 					b[off] = (byte)i;
 					return 1;
-				}				
+				}			
 			}
-			
+		
 			private synchronized void write(int i) {
 				bytes.addLast( new Byte( (byte)i ) );
 				notifyAll();
 			}
-			
+		
 			private synchronized void close() {
 				closed = true;
-				Buffer.this.notifyAll();				
+				Buffer.this.notifyAll();			
 			}
-			
+		
 			private class MyInputStream extends InputStream {
 				public int read() {
 					return Buffer.this.read();
 				}
-				
+			
 				public int read(byte[] b, int off, int len) {
 					return Buffer.this.read(b,off,len);
 				}
-				
+			
 				public int read(byte[] b) {
 					return this.read(b,0,1);
 				}
-				
+			
 				public int available() {
 					return Buffer.this.available();
 				}
@@ -194,38 +194,38 @@ public class Streams {
 					Buffer.this.close();
 				}
 			}
-			
+		
 			private class MyOutputStream extends OutputStream {
 				public void write(int i) {
 					Buffer.this.write(i);
 				}
-				
+			
 				public void close() {
 					Buffer.this.close();
 				}
 			}
 		}
-		
+	
 		public static class Splitter extends OutputStream {
 			public static Splitter create(final OutputStream a, final OutputStream b) {
 				return new Splitter(a,b);
 			}
-			
+		
 			private OutputStream a;
 			private OutputStream b;
-			
+		
 			Splitter(OutputStream a, OutputStream b) {
 				this.a = a;
 				this.b = b;
 			}
-			
+		
 			public void write(int i) throws IOException {
 				a.write(i);
 				b.write(i);
 			}
 		}
 	}
-	
+
 	public static class Characters {
 		public String readLine(Reader reader, String lineTerminator) throws IOException {
 			String rv = "";

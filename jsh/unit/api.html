@@ -25,7 +25,7 @@ END LICENSE
 		<ul>
 			<!--	TODO	use styles rather than italics to implement the below; perhaps a class commandarg or something	-->
 			<li><code>-jsapi <i>pathname</i></code> Location of <code>loader/api</code> directory</li>
-			<li><code>-doc</code> Pathname at which to create a directory to which to emit documentation; if option is missing, no 
+			<li><code>-doc</code> Pathname at which to create a directory to which to emit documentation; if option is missing, no
 				documentation is emitted. If directory exists, it is deleted and re-created.
 			</li>
 			<li><code>-notest</code> Skip unit tests</li>
@@ -61,6 +61,17 @@ END LICENSE
 					<li><code><i>location</i></code> The location from which the module can be loaded.</li>
 					<li><code><i>mode</i></code> If <code>skip</code>, tests will not be run on this module.</li>
 				</ul>
+			</li>
+			<li>
+				<code>-test <i>&lt;module&gt;</i>:<i>&lt;test&gt;</i></code>
+				<p>
+					Adds a test to the list of tests to be run. If no <code>-test</code> options are specified, the entire set of
+					modules passed to the program will have all of their tests run. If at least one <code>-test</code> is specified,
+					then only tests specified by <code>-test</code> will be run.
+				</p>
+				<p>
+					The argument consists of a module path, and, optionally, a test ID.
+				</p>
 			</li>
 		</ul>
 	</div>

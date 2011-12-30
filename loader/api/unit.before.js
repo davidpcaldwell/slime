@@ -19,9 +19,9 @@ $exports.Scenario = function(properties) {
 	}
 	var Scenario = arguments.callee;
 	var scenario = this;
-	
+
 	this.name = properties.name;
-	
+
 	var Scope = function(console,callback) {
 		var self = this;
 		if (Object.prototype.__defineGetter__) {
@@ -40,12 +40,12 @@ $exports.Scenario = function(properties) {
 				self.success = false;
 			}
 		}
-		
+	
 		var units = [];
-		
+	
 		var runScenario = function(object,next) {
 			var child = new Scenario(object);
-			
+		
 			var runNext = function(next) {
 				if ($context.asynchronous && $context.asynchronous.scenario) {
 					$context.asynchronous.scenario(next);
@@ -53,7 +53,7 @@ $exports.Scenario = function(properties) {
 					next();
 				}
 			}
-			
+		
 			if (callback) {
 				child.start(console,{
 					success: function(b) {
@@ -79,7 +79,7 @@ $exports.Scenario = function(properties) {
 				units.push({ scenario: object });
 			}
 		}
-		
+	
 		var runTest = function(assertion,next) {
 			if (typeof(assertion) == "boolean") {
 				assertion = (function(b) {
@@ -88,7 +88,7 @@ $exports.Scenario = function(properties) {
 							//	warning: test probably did not work as expected asynchronously
 							//	debugger;
 						}
-						return { 
+						return {
 							success: b,
 							messages: {
 								success: "Success.",
@@ -189,22 +189,22 @@ $exports.Scenario = function(properties) {
 			}
 		}
 	}
-	
+
 	var run = function(console,callback) {
 		var scope = new Scope(console,callback);
-		
+	
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
 		//	to the callee as __parent__.test but not as test
 		//	this.__parent__ = scope;
 		//	this.test = scope.test;
 		scope.start(console);
-		
+	
 		var initializeAndExecute = function(scope) {
 			if (properties.initialize) properties.initialize.call(this);
-			properties.execute.call(this,scope);			
+			properties.execute.call(this,scope);		
 		}
-		
+	
 		if (Scenario.HALT_ON_EXCEPTION) {
 			initializeAndExecute.call(this,scope);
 		} else {
@@ -232,7 +232,7 @@ $exports.Scenario = function(properties) {
 			return scope.success;
 		}
 	}
-	
+
 	this.start = function(console,callback) {
 		run(console,callback);
 	}
