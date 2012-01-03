@@ -269,6 +269,39 @@ $exports.Object = new function() {
 		}
 		return o;
 	}
+
+	this.expando = new function() {
+		var find = function(o,n,create) {
+			var target = o;
+			var tokens = n.split(".");
+			for (var i=0; i<tokens.length-1; i++) {
+				if (typeof(target[tokens[i]]) == "undefined") {
+					if (create) {
+						target[tokens[i]] = {};
+					} else {
+						return {};
+					}
+				}
+				target = target[tokens[i]];
+			}
+			return {
+				target: target,
+				name: tokens[tokens.length-1]
+			};
+		}
+
+		this.get = function(o,n) {
+			var location = find(o,n);
+			if (location.target) {
+				return location.target[location.name];
+			}
+		}
+
+		this.set = function(o,n,v) {
+			var location = find(o,n,true);
+			location.target[location.name] = v;
+		}
+	}
 }
 $api.experimental($exports,"Object");
 

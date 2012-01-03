@@ -59,10 +59,9 @@ var ENVIRONMENT = (function() {
 	parameters.options.environment.forEach( function(item) {
 		var tokens = item.split("=");
 		if (tokens.length == 2) {
-			var target = jsh.file.Pathname(tokens[1]);
-			rv[tokens[0]] = jsh.loader.module(target);
+			jsh.js.Object.expando.set(rv,tokens[0],jsh.loader.module(jsh.file.Pathname(tokens[1])));
 		} else if (tokens.length == 1) {
-			rv[item] = {};
+			jsh.js.Object.expando.set(rv,item,{});
 		} else {
 			throw "Bad -environment: " + item;
 		}
