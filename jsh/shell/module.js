@@ -69,6 +69,10 @@ $exports.echo.toString["undefined"] = "(undefined)";
 $exports.echo.toString["null"] = "(null)";
 
 $exports.shell = function(command,args,mode) {
+	if (arguments.length < 3) {
+		mode = {};
+	}
+	
 	var Streams = $context.api.io.Streams;
 	var isJavaType = $context.api.java.isJavaType;
 	var $run = $context.api.shell.run;
