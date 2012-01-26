@@ -579,9 +579,19 @@ public class Engine {
 					b.append( toParser + "\n" );
 				}
 				String code = b.toString();
-				Script rv = context.compileString(code, id, 1, null);
-				setBreakpoints(dim);
-				return rv;
+				try {
+					Script rv = context.compileString(code, id, 1, null);
+					setBreakpoints(dim);
+					return rv;
+				} finally {
+					try {
+						lines.close();
+					} catch (IOException e) {
+						//	TODO	do some sort of reasonable logging or notification or something
+						System.err.println("Error closing: " + reader);
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
