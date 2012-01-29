@@ -85,7 +85,7 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
-	
+
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
@@ -158,7 +158,7 @@ $exports.ApiHtmlTests = function(html,name) {
 						}
 						return false;
 					})();
-				
+			
 					if (someAreTests) {
 						unit.scenario(getScenario(scope,children[i]));
 					}

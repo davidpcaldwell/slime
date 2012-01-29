@@ -54,7 +54,7 @@ public class Cygwin {
 			} catch (IOException e) {
 				//	we are going to retry unless this is the TRIESth failure
 			} catch (Command.Result.Failure e) {
-				//	we are going to retry unless this is the TRIESth failure			
+				//	we are going to retry unless this is the TRIESth failure		
 			}
 			if (rv.length() > 0) {
 				rv = rv.substring(0,rv.length()-1);

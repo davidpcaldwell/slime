@@ -97,13 +97,13 @@ var toLiteral = function(value) {
 		} else if (typeof(value) == "xml") {
 			return null;
 		} else if (typeof(value) == "object") {
-			if (references.indexOf(value) == -1) {			
+			if (references.indexOf(value) == -1) {		
 				references.push(value);
 			} else {
 				debugger;
 				throw new Error("Recursion in toLiteral()");
 			}
-		
+	
 			var isAnArray = function(object) {
 				//	return object.constructor && (object.constructor.prototype == Array.prototype)
 				//	return object instanceof Array

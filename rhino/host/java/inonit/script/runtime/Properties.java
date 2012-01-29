@@ -61,7 +61,7 @@ public class Properties {
 		public void setPrototype(Scriptable prototype) {
 			this.prototype = prototype;
 		}
-	
+
 		private String[] getPropertiesStartingWith(String prefix) {
 			Iterator i = jdk.keySet().iterator();
 			ArrayList rv = new ArrayList();
@@ -77,7 +77,7 @@ public class Properties {
 						rv.add(propertyFamily);
 					}
 				}
-			}		
+			}	
 			return (String[])rv.toArray(new String[0]);
 		}
 

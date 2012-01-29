@@ -74,7 +74,7 @@ new function() {
 					$in: $in
 				});
 			};
-		
+	
 
 			this.decorateLoader = function($loader) {
 				$loader.java = new function() {

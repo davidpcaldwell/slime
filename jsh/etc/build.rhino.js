@@ -333,7 +333,7 @@ var jsapi_jsh = function() {
 	if (platform.cygwin) {
 		JSAPI_DOC = platform.cygwin.cygpath.unix(JSAPI_DOC);
 	}
-	if (getSetting("jsh.build.nodoc")) {	
+	if (getSetting("jsh.build.nodoc")) {
 	} else {
 		command.add("-doc",JSAPI_DOC);
 	}

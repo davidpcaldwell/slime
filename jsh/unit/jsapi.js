@@ -40,28 +40,28 @@ var E4X = function(html) {
 		for (var i=0; i<query.length(); i++) {
 			rv[i] = new Element(query[i]);
 		}
-		return rv;	
+		return rv;
 	}
 
 	var Element = function(xml) {
 		this.localName = xml.localName();
-	
+
 		if (xml != html) {
 			this.parent = new Element(xml.parent());
 		}
-	
+
 		this.toString = function() {
 			return xml.toXMLString();
 		}
-	
+
 		this.getContentString = function() {
 			return String(xml);
 		}
-	
+
 		this.getScripts = function(type) {
 			return map(xml.script.(@type == ($context.html.MEDIA_TYPE + "#" + type)));
 		}
-	
+
 		this.getDescendantScripts = function(type) {
 			if (type) {
 				return map(xml..script.(@type == ($context.html.MEDIA_TYPE + "#" + type)));
@@ -69,24 +69,24 @@ var E4X = function(html) {
 				return map(xml..script);
 			}
 		}
-		
+	
 		this.getChildElements = function() {
 			return map(xml.elements());
 		}
-	
+
 		this.getScriptType = function() {
 			return String(xml.@type);
 		}
-	
+
 		this.isTop = function() {
 			return xml == html;
 		}
-	
+
 		this.getJsapiId = function() {
 			if (xml.@jsapi::id.length()) return String(xml.@jsapi::id);
 			return null;
 		}
-	
+
 		this.getNameDiv = function() {
 			var rv = xml.div.(@["class"] == "name");
 			if (rv.length()) return String(rv);
@@ -218,9 +218,9 @@ $exports.tests = new function() {
 					$platform: jsh.$jsapi.$platform,
 					$api: jsh.$jsapi.$api
 				};
-			
+		
 				var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
-			
+		
 				for (var i=0; i<contexts.length; i++) {
 					try {
 						if (suite.getScenario) {
@@ -232,7 +232,7 @@ $exports.tests = new function() {
 						} else {
 							topscope.scenario(new function() {
 								this.name = suite.name + " (NO TESTS)";
-							
+						
 								this.execute = function(scope) {
 									scope.test({
 										success: false,

@@ -38,7 +38,7 @@ $exports.Loader = function(paths) {
 		for (var i=1; i<arguments.length; i++) {
 			args[i] = arguments[i];
 		}
-		return jsh.loader.module.apply(jsh.loader,args);			
+		return jsh.loader.module.apply(jsh.loader,args);		
 	}
 }
 $exports.Loader.Paths = function(base) {
@@ -56,7 +56,7 @@ $exports.Loader.SlimeDirectory = function(dir) {
 	}
 }
 $api.experimental($exports,"Loader");
-	
+
 $exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
 	$filesystem: $context.api.file.filesystem,

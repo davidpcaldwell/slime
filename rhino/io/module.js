@@ -25,7 +25,7 @@ var InputStream = function(peer) {
 		this.adapt = function() {
 			return peer;
 		}
-	
+
 		this.array = function() {
 			return $java.readBytes(peer);
 		}
@@ -87,12 +87,12 @@ var OutputStream = function(peer) {
 
 	this.split = function(other) {
 		var otherPeer = other.java.adapt();
-	
+
 		//	Handle Buffer special case
 		if (!otherPeer && other.$getOutputStream) {
 			otherPeer = other.$getOutputStream();
 		}
-	
+
 		return new OutputStream($java.split(peer,otherPeer))
 	}
 };
@@ -272,7 +272,7 @@ var Streams = new function() {
 		this.$getWriter = function() {
 			return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
 		}
-	
+
 		this.split = function(other) {
 			return new OutputStream($context.stdio.$out).split(other);
 		}
@@ -315,7 +315,7 @@ var Resource = function(p) {
 	var binary = function() {
 		if (p.read && p.read.binary) {
 			return p.read.binary();
-		}	
+		}
 	}
 
 	var text = function() {
@@ -356,7 +356,7 @@ var Resource = function(p) {
 				return p.write.binary(mode).character();
 			}
 		}
-	
+
 		this.write = function(dataOrType,mode) {
 			if (!mode) mode = {};
 			if (dataOrType == Streams.binary) {

@@ -55,7 +55,7 @@ var errors = new function() {
 			}).join(",");
 			//	TODO	is this parameterized call already in js/object?
 			var created = eval("new implementation(" + literals + ")");
-		
+	
 			var tracer;
 			try {
 				instance.throwException(created.toString());
@@ -195,11 +195,11 @@ experimental("toJavaArray");
 $exports.Thread = function(f) {
 	var runnable = new function() {
 		var _callbacks;
-	
+
 		this.initialize = function(callbacks) {
 			_callbacks = callbacks;
 		}
-	
+
 		this.run = function() {
 			try {
 				var rv = f();

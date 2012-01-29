@@ -86,7 +86,7 @@ public class Main {
 	private static abstract class FileInvocation extends Invocation {
 		private String colon = java.io.File.pathSeparator;
 		private String launcherClasspath;
-	
+
 		final void setLauncherClasspath(String launcherClasspath) {
 			this.launcherClasspath = launcherClasspath;
 		}
@@ -107,7 +107,7 @@ public class Main {
 			}
 			System.setProperty("jsh.launcher.classpath", launcherClasspath);
 		}
-	
+
 		abstract File getJshHome() throws java.io.IOException;
 
 		abstract String getRhinoClasspath() throws java.io.IOException;
@@ -179,11 +179,11 @@ public class Main {
 		Built(java.io.File HOME) throws java.io.IOException {
 			this.HOME = HOME;
 		}
-	
+
 		File getJshHome() {
 			return HOME;
 		}
-	
+
 		String getRhinoClasspath() throws java.io.IOException {
 			if (explicit.getRhinoClasspath() != null) return explicit.getRhinoClasspath();
 			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
@@ -208,7 +208,7 @@ public class Main {
 				return value;
 			}
 		}
-	
+
 		File getJshHome() {
 			return null;
 		}

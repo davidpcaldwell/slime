@@ -113,7 +113,7 @@ var Pathname = function(parameters) {
 					}
 				}
 				if (append == true) {
-				} else if (append == false) {			
+				} else if (append == false) {		
 				} else {
 					throw new Error("Cannot create file at " + toString() + "; already exists (use append to override)");
 				}
@@ -186,7 +186,7 @@ var Pathname = function(parameters) {
 		this.getPeer = function() {
 			return peer;
 		}
-	
+
 		this.adapt = function() {
 			return peer.getHostFile();
 		}

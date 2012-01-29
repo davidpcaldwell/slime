@@ -63,12 +63,12 @@ public class CygwinFilesystem extends Filesystem {
 		CygpathException(IOException e) {
 			super(e);
 		}
-	
+
 		CygpathException(Cygwin.CygpathException e) {
 			super(e);
 		}
 	}
-	
+
 	static class CanonicalPathException extends RuntimeException {
 		CanonicalPathException(IOException e) {
 			super(e);
@@ -96,7 +96,7 @@ public class CygwinFilesystem extends Filesystem {
 //			}
 //			return rv;
 		}
-	
+
 		Command.Result shellCommand(String command, String[] arguments) throws CygpathException {
 			String windows = getWindowsPath(command);
 			return os.execute(windows, arguments);
@@ -177,7 +177,7 @@ public class CygwinFilesystem extends Filesystem {
 
 	private static class Subprocesses extends Implementation {
 		private Cygwin cygwin;
-	
+
 		Subprocesses(Cygwin cygwin) {
 			this.cygwin = cygwin;
 		}
@@ -185,7 +185,7 @@ public class CygwinFilesystem extends Filesystem {
 		public String toString() {
 			return getClass().getName() + " cygwin=" + cygwin;
 		}
-	
+
 		String toUnixPath(String path) throws CygpathException {
 			try {
 				return this.cygwin.toUnixPath(path,false);
@@ -193,7 +193,7 @@ public class CygwinFilesystem extends Filesystem {
 				throw new CygpathException(e);
 			}
 		}
-	
+
 		String toWindowsPath(String path) throws CygpathException {
 			try {
 				return this.cygwin.toWindowsPath(path,false);
@@ -226,7 +226,7 @@ public class CygwinFilesystem extends Filesystem {
 		private PrintWriter input;
 
 		private Subprocess subprocess;
-	
+
 		private Map getenv() {
 			try {
 				Method systemGetenv = System.class.getMethod("getenv", new Class[0]);
@@ -245,7 +245,7 @@ public class CygwinFilesystem extends Filesystem {
 		public String toString() {
 			return getClass().getName() + " subprocess=" + subprocess;
 		}
-	
+
 		HelperProcess(final String root, final String path) throws IOException {
 			if (path == null) throw new IllegalArgumentException("'path' must not be null.");
 
@@ -314,7 +314,7 @@ public class CygwinFilesystem extends Filesystem {
 			}
 			return rv;
 		}
-	
+
 		synchronized String toUnixPath(String path) throws CygpathException {
 			try {
 				return getResponse("u" + path);
@@ -322,7 +322,7 @@ public class CygwinFilesystem extends Filesystem {
 				throw new CygpathException(e);
 			}
 		}
-	
+
 		synchronized String toWindowsPath(String path) throws CygpathException {
 			try {
 				return getResponse("w" + path);

@@ -43,7 +43,7 @@ public class Engine {
 		final void log(String message) {
 			getLog().println(message);
 		}
-	
+
 		public abstract boolean isBreakOnExceptions();
 		public abstract void setBreakOnExceptions(boolean breakOnExceptions);
 	}
@@ -51,21 +51,21 @@ public class Engine {
 	private static class NoDebugger extends Debugger {
 		void initialize(ContextFactory contexts) {
 		}
-	
+
 		void setBreakpoint(Engine.Source source, int line) {
 		}
-	
+
 		void initialize(Scriptable scope, Engine engine, Program program) {
 		}
-	
+
 		Log getLog() {
 			return Log.NULL;
 		}
-	
+
 		public boolean isBreakOnExceptions() {
 			return false;
 		}
-	
+
 		public void setBreakOnExceptions(boolean breakOnExceptions) {
 		}
 	}
@@ -75,7 +75,7 @@ public class Engine {
 			//	If true, we stop executing before we start, on the first line, and allow breakpoints to be set, etc.  If false,
 			//	we stop at the first specified breakpoint.
 			private boolean startWithBreak = true;
-		
+	
 			//	If true, we stop executing when an exception is thrown.
 			private boolean breakOnExceptions = true;
 
@@ -86,14 +86,14 @@ public class Engine {
 			};
 
 			private Log log = Log.NULL;
-		
+	
 			public Configuration() {
 			}
-		
+	
 			public void setExit(Runnable exit) {
 				if (exit == null) {
 					exit = new Runnable() {
-						public void run() {						
+						public void run() {					
 						}
 					};
 				}
@@ -107,32 +107,32 @@ public class Engine {
 				this.log = log;
 			}
 		}
-	
+
 		public static RhinoDebugger create(Configuration configuration) {
 			RhinoDebugger rv = new RhinoDebugger();
 			rv.configuration = configuration;
 			return rv;
 		}
-	
+
 		private Configuration configuration;
 		private boolean breakOnExceptions = false;
-	
+
 		private org.mozilla.javascript.tools.debugger.Dim dim;
 		private org.mozilla.javascript.tools.debugger.SwingGui gui;
-	
+
 		private org.mozilla.javascript.tools.debugger.Dim.SourceInfo getSourceInfo(String id) {
 			return dim.sourceInfo(id);
 		}
-	
+
 		private static class ExitAction implements Runnable {
 			private org.mozilla.javascript.tools.debugger.Dim dim;
 			private Runnable configurationExit;
-		
+	
 			ExitAction(org.mozilla.javascript.tools.debugger.Dim dim, Runnable configurationExit) {
 				this.dim = dim;
 				this.configurationExit = configurationExit;
 			}
-		
+	
 			public void run() {
 				configurationExit.run();
 				dim.detach();
@@ -144,7 +144,7 @@ public class Engine {
 			this.dim = new org.mozilla.javascript.tools.debugger.Dim();
 			dim.attachTo(contexts);
 			String title = "Script Debugger";
-		
+	
 			if (configuration.startWithBreak) {
 				dim.setBreak();
 			}
@@ -153,12 +153,12 @@ public class Engine {
 				dim.setBreakOnExceptions(true);
 				breakOnExceptions = true;
 			}
-		
+	
 			this.gui = new org.mozilla.javascript.tools.debugger.SwingGui(dim, title);
 			gui.setExitAction(new ExitAction(this.dim, configuration.exit));
 			dim.attachTo(contexts);
 		}
-	
+
 		void setBreakpoint(Engine.Source source, int line) {
 			org.mozilla.javascript.tools.debugger.Dim.SourceInfo info = getSourceInfo(source.getSourceName());
 			if (info != null) {
@@ -167,7 +167,7 @@ public class Engine {
 				configuration.log.println("Not setting breakpoint at " + line + " in " + source + ": no source info");
 			}
 		}
-	
+
 		void initialize(Scriptable scope, Engine engine, Program program) {
 			dim.setScopeProvider( new ScopeWrapper(scope) );
 			gui.pack();
@@ -177,23 +177,23 @@ public class Engine {
 		Log getLog() {
 			return configuration.log;
 		}
-	
+
 		public boolean isBreakOnExceptions() {
 			return breakOnExceptions;
 		}
-	
+
 		public void setBreakOnExceptions(boolean breakOnExceptions) {
 			this.breakOnExceptions = breakOnExceptions;
 			this.dim.setBreakOnExceptions(breakOnExceptions);
 		}
-	
+
 		private static class ScopeWrapper implements org.mozilla.javascript.tools.debugger.ScopeProvider {
 			private Scriptable scope;
-		
+	
 			ScopeWrapper(Scriptable scope) {
 				this.scope = scope;
 			}
-		
+	
 			public Scriptable getScope() {
 				return scope;
 			}
@@ -236,7 +236,7 @@ public class Engine {
 
 		private ArrayList errors = new ArrayList();
 		private ErrorReporterImpl reporter = new ErrorReporterImpl();
-	
+
 		class ErrorReporterImpl implements ErrorReporter {
 			public void warning(String string, String string0, int i, String string1, int i0) {
 				errors.add(new ScriptError(ScriptError.Type.WARNING, string, string0, i, string1, i0, null));
@@ -251,12 +251,12 @@ public class Engine {
 			public void error(String string, String string0, int i, String string1, int i0) {
 				errors.add(new ScriptError(ScriptError.Type.ERROR, string, string0, i, string1, i0, null));
 			}
-		
+	
 			Errors getErrors() {
 				return Errors.this;
 			}
 		}
-	
+
 		ErrorReporterImpl getErrorReporter() {
 			return reporter;
 		}
@@ -295,27 +295,27 @@ public class Engine {
 				emitErrorMessage(err, prefix, (ScriptError)errors.get(i));
 			}
 		}
-	
+
 		public void reset() {
 			this.errors = new ArrayList();
 		}
-	
+
 		public ScriptError[] getErrors() {
 			return (ScriptError[])this.errors.toArray(new ScriptError[0]);
 		}
-	
+
 		private void addRhino(RhinoException e) {
 			errors.add(new ScriptError(ScriptError.Type.RUNTIME, e.getMessage(), e.sourceName(), e.lineNumber(), e.lineSource(), e.columnNumber(), e));
 		}
-	
+
 		public void add(EcmaError e) {
 			addRhino(e);
 		}
-	
+
 		public void add(EvaluatorException e) {
 			addRhino(e);
 		}
-	
+
 		public void add(JavaScriptException e) {
 			//	Thought about writing a separate method to construct ScriptError with no Throwable, under the theory that perhaps
 			//	we would not want to dump a stack trace in this case (JavaScript throw keyword).  But decided in the end that
@@ -323,17 +323,17 @@ public class Engine {
 			//	qualify, too.
 			addRhino(e);
 		}
-	
+
 		public static class ScriptError {
 			public static class Type {
 				public static final Type RUNTIME = new Type();
 				public static final Type ERROR = new Type();
 				public static final Type WARNING = new Type();
-			
+		
 				private Type() {
 				}
 			}
-		
+	
 			private Type type;
 			private String message;
 			private String sourceName;
@@ -341,7 +341,7 @@ public class Engine {
 			private String lineSource;
 			private int offset;
 			private Throwable t;
-		
+	
 			ScriptError(Type type, String message, String sourceName, int line, String lineSource, int offset, Throwable t) {
 				this.type = type;
 				this.message = message;
@@ -351,35 +351,35 @@ public class Engine {
 				this.offset = offset;
 				this.t = t;
 			}
-		
+	
 			public String toString() {
 				return getClass().getName() + " message=" + message + " sourceName=" + sourceName + " line=" + line;
 			}
-		
+	
 			public boolean is(Type type) {
 				return this.type == type;
 			}
-		
+	
 			public String getSourceName() {
 				return sourceName;
 			}
-		
+	
 			public int getLineNumber() {
 				return line;
 			}
-		
+	
 			public String getLineSource() {
 				return lineSource;
 			}
-		
+	
 			public int getColumn()  {
 				return offset;
 			}
-		
+	
 			public String getMessage() {
 				return message;
 			}
-		
+	
 			public String getStackTrace() {
 				//	TODO	This implementation would be much easier with programmatic access to Rhino stack traces...
 				if (t == null) return null;
@@ -412,10 +412,10 @@ public class Engine {
 					return s.toString();
 				}
 			}
-		
+	
 			public Throwable getThrowable() {
 				return t;
-			}		
+			}	
 		}
 	}
 
@@ -473,14 +473,14 @@ public class Engine {
 			if (reader == null) throw new RuntimeException("'reader' must not be null.");
 			return new ReaderSource(sourceName, reader);
 		}
-	
+
 		public static Source create(String sourceName, String s) {
 			return new ReaderSource(sourceName, new StringReader(s));
 		}
-	
+
 		/**
 			Creates a new <code>Source</code> using the contents of the given file.
-		
+	
 			@param file A file containing a script.  Must exist.
 		 */
 		public static Source create(java.io.File file) {
@@ -492,26 +492,26 @@ public class Engine {
 				throw new RuntimeException("Cannot get canonical path of " + file);
 			}
 		}
-	
+
 		private boolean debug = true;
-	
+
 		final boolean debug() {
 			return debug;
 		}
-	
+
 		abstract String getSourceName();
 		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
-	
+
 		public final void setDebug(boolean debug) {
 			this.debug = debug;
 		}
-	
+
 		private ArrayList breakpoints = new ArrayList();
-	
+
 		final void addBreakpoint(int line) {
 			breakpoints.add( new Integer(line) );
 		}
-	
+
 		final void setBreakpoints(Debugger dim) {
 			if (dim != null) {
 				for (int j=0; j<breakpoints.size(); j++) {
@@ -522,9 +522,9 @@ public class Engine {
 						dim.log("Cannot set breakpoint at line " + line + " of " + getSourceName());
 					}
 				}
-			}		
+			}	
 		}
-	
+
 		final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws java.io.IOException {
 			Script script = compile(dim, context);
 			if (target != null) {
@@ -536,20 +536,20 @@ public class Engine {
 			}
 			return script.exec(context, target);
 		}
-	
+
 		private static class ReaderSource extends Source {
 			private String id;
 			private java.io.Reader reader;
-		
+	
 			ReaderSource(String id, java.io.Reader reader) {
 				this.id = id;
 				this.reader = reader;
 			}
-		
+	
 			final String getSourceName() {
 				return id;
 			}
-		
+	
 			final Script compile(Debugger dim, Context context) throws java.io.IOException {
 				int i;
 				StringBuffer b = new StringBuffer();
@@ -599,7 +599,7 @@ public class Engine {
 	public static class Program {
 		private ArrayList variables = new ArrayList();
 		private ArrayList units = new ArrayList();
-	
+
 		public void set(Variable variable) {
 			variables.add( variable );
 		}
@@ -620,47 +620,47 @@ public class Engine {
 				return global;
 			}
 		}
-	
+
 		public void add(Source source) {
 			units.add( new SourceUnit(ObjectName.NULL, source) );
 		}
-	
+
 		public void add(Function function, Object[] arguments) {
 			units.add( new FunctionUnit(function, arguments) );
 		}
-	
+
 		public void add(Unit unit) {
 			units.add(unit);
 		}
-	
+
 		static class Outcome {
 			private Scriptable global;
 			private Object result;
-		
+	
 			Outcome(Scriptable global, Object result) {
 				this.global = global;
 				this.result = result;
 			}
-		
+	
 			Scriptable getGlobal() {
 				return global;
 			}
-		
+	
 			Object getResult() {
 				return result;
 			}
-		
+	
 			Object castScopeTo(String name, Class type) {
 				if (name == null) return Context.jsToJava( global, type );
 				return Context.jsToJava( ScriptableObject.getProperty(global, name), type);
 			}
 		}
-	
+
 		void setVariablesInGlobalScope(Context context, Scriptable global) {
 			for (int i=0; i<variables.size(); i++) {
 				Variable v = (Variable)variables.get(i);
 				Object value = v.value.get(context, global);
-			
+		
 				//	Deal with dumb Rhino restriction that we use object arrays only
 				if (value instanceof Object[]) {
 					Object[] array = (Object[])value;
@@ -670,11 +670,11 @@ public class Engine {
 					}
 					value = context.newArray( global, objects );
 				}
-			
+		
 				v.set(context, global);
-			}		
+			}	
 		}
-	
+
 		private Outcome execute(Debugger dim, Context context, Scriptable global) throws IOException {
 			if (context == null) {
 				throw new RuntimeException("'context' is null");
@@ -707,24 +707,24 @@ public class Engine {
 			}
 			return new Outcome(global, ignore);
 		}
-	
+
 		Outcome interpret(Debugger dim, Context context, Scriptable global) throws IOException {
 			if (context == null) {
 				throw new RuntimeException("'context' is null");
 			}
 			return execute(dim, context, global);
 		}
-	
+
 		public static class Variable {
 			public static Variable create(String name, Value value) {
 				return new Variable(ObjectName.NULL, name, value, new Attributes());
 			}
-		
+	
 			private ObjectName scope;
 			private String name;
 			private Value value;
 			private Attributes attributes;
-		
+	
 			Variable(ObjectName scope, String name, Value value, Attributes attributes) {
 				this.scope = scope;
 				this.name = name;
@@ -743,11 +743,11 @@ public class Engine {
 			int getRhinoAttributes() {
 				return attributes.toRhinoAttributes();
 			}
-		
+	
 			void set(Context context, Scriptable global) {
 				scope.set(context, global, this);
 			}
-		
+	
 			public void setPermanent(boolean permanent) {
 				attributes.permanent = permanent;
 			}
@@ -759,7 +759,7 @@ public class Engine {
 			public void setDontenum(boolean dontenum) {
 				attributes.dontenum = dontenum;
 			}
-		
+	
 			public static abstract class Value {
 				public static Value create(final Object o) {
 					return new Value() {
@@ -768,45 +768,45 @@ public class Engine {
 						}
 					};
 				}
-			
+		
 				public abstract Object get(Context context, Scriptable scope);
 			}
-			
+		
 			public static class Attributes {
 				public static Attributes create() {
 					return new Attributes();
 				}
-			
+		
 				private boolean permanent;
 				private boolean readonly;
 				private boolean dontenum;
-			
+		
 				private Attributes() {
 				}
-			
+		
 				int toRhinoAttributes() {
 					int rv = ScriptableObject.EMPTY;
 					if (permanent) rv |= ScriptableObject.PERMANENT;
 					if (readonly) rv |= ScriptableObject.READONLY;
 					if (dontenum) rv |= ScriptableObject.DONTENUM;
 					return rv;
-				}			
+				}		
 			}
 		}
-	
+
 		public static abstract class Unit {
 			protected abstract Object execute(Debugger dim, Context context, Scriptable global) throws IOException;
 		}
-	
+
 		private static class SourceUnit extends Unit {
 			private ObjectName scope;
 			private Source source;
-		
+	
 			SourceUnit(ObjectName scope, Source source) {
 				this.scope = scope;
 				this.source = source;
 			}
-		
+	
 			protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
 				Script script = source.compile(dim, context);
 				Scriptable executionScope = scope.get(context, global, true);
@@ -814,16 +814,16 @@ public class Engine {
 				return rv;
 			}
 		}
-	
+
 		private static class FunctionUnit extends Unit {
 			private Function function;
 			private Object[] arguments;
-		
+	
 			FunctionUnit(Function function, Object[] arguments) {
 				this.function = function;
 				this.arguments = arguments;
 			}
-		
+	
 			protected Object execute(Debugger dim, Context context, Scriptable global) {
 				return function.call(context, global, global, arguments);
 			}
@@ -834,13 +834,13 @@ public class Engine {
 		private Engine engine;
 		private Program program;
 		private Debugger debugger;
-	
+
 		ProgramAction(Engine engine, Program program, Debugger debugger) {
 			this.engine = engine;
 			this.program = program;
 			this.debugger = debugger;
 		}
-	
+
 		public Object run(Context context) {
 			try {
 				Scriptable global = engine.getGlobalScope(context);
