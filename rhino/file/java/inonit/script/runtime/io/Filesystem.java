@@ -173,7 +173,7 @@ public abstract class Filesystem {
 					}
 					//	delete contents
 				}
-				return file.delete();	
+				return file.delete();
 			}
 
 			public void delete() throws IOException {

@@ -97,7 +97,7 @@ new function() {
 						reason.warning(o);
 					}
 				}
-	
+
 				//	TODO	This is experimental: document it if it stays
 				if (typeof(object) == "function" && arguments.length == 1) {
 					var deprecateFunction = function(f) {
@@ -228,7 +228,7 @@ new function() {
 			//			loaded by the new loader, and should go away when all modules are converted
 			return (function() {
 				//	$platform is in scope because of the above
-				//	$api is also in scope	
+				//	$api is also in scope
 				with( arguments[1] ) {
 					eval(arguments[0]);
 				}
@@ -283,11 +283,11 @@ new function() {
 					this.run = function(path,scope,target) {
 						runInScope(format.getCode(path),scope,target);
 					}
-		
+	
 					this.file = function(path,context) {
 						return file(format.getCode(path),context);
 					}
-		
+	
 					this.script = $api.deprecate(this.file);
 
 					this.module = function(path,context) {
@@ -302,7 +302,7 @@ new function() {
 						});
 						return loader.load({ $context: context });
 					}
-		
+	
 					if (format.decorateLoader) {
 						format.decorateLoader(this);
 					}

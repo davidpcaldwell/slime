@@ -97,7 +97,7 @@ var toLiteral = function(value) {
 		} else if (typeof(value) == "xml") {
 			return null;
 		} else if (typeof(value) == "object") {
-			if (references.indexOf(value) == -1) {	
+			if (references.indexOf(value) == -1) {
 				references.push(value);
 			} else {
 				debugger;

@@ -160,7 +160,7 @@ public class Streams {
 				} else {
 					b[off] = (byte)i;
 					return 1;
-				}	
+				}
 			}
 
 			private synchronized void write(int i) {
@@ -170,22 +170,22 @@ public class Streams {
 
 			private synchronized void close() {
 				closed = true;
-				Buffer.this.notifyAll();	
+				Buffer.this.notifyAll();
 			}
 
 			private class MyInputStream extends InputStream {
 				public int read() {
 					return Buffer.this.read();
 				}
-	
+
 				public int read(byte[] b, int off, int len) {
 					return Buffer.this.read(b,off,len);
 				}
-	
+
 				public int read(byte[] b) {
 					return this.read(b,0,1);
 				}
-	
+
 				public int available() {
 					return Buffer.this.available();
 				}
@@ -199,7 +199,7 @@ public class Streams {
 				public void write(int i) {
 					Buffer.this.write(i);
 				}
-	
+
 				public void close() {
 					Buffer.this.close();
 				}

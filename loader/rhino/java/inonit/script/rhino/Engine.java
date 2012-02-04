@@ -93,7 +93,7 @@ public class Engine {
 			public void setExit(Runnable exit) {
 				if (exit == null) {
 					exit = new Runnable() {
-						public void run() {				
+						public void run() {			
 						}
 					};
 				}
@@ -329,7 +329,7 @@ public class Engine {
 				public static final Type RUNTIME = new Type();
 				public static final Type ERROR = new Type();
 				public static final Type WARNING = new Type();
-	
+
 				private Type() {
 				}
 			}
@@ -660,7 +660,7 @@ public class Engine {
 			for (int i=0; i<variables.size(); i++) {
 				Variable v = (Variable)variables.get(i);
 				Object value = v.value.get(context, global);
-	
+
 				//	Deal with dumb Rhino restriction that we use object arrays only
 				if (value instanceof Object[]) {
 					Object[] array = (Object[])value;
@@ -670,7 +670,7 @@ public class Engine {
 					}
 					value = context.newArray( global, objects );
 				}
-	
+
 				v.set(context, global);
 			}
 		}
@@ -768,29 +768,29 @@ public class Engine {
 						}
 					};
 				}
-	
+
 				public abstract Object get(Context context, Scriptable scope);
 			}
-	
+
 			public static class Attributes {
 				public static Attributes create() {
 					return new Attributes();
 				}
-	
+
 				private boolean permanent;
 				private boolean readonly;
 				private boolean dontenum;
-	
+
 				private Attributes() {
 				}
-	
+
 				int toRhinoAttributes() {
 					int rv = ScriptableObject.EMPTY;
 					if (permanent) rv |= ScriptableObject.PERMANENT;
 					if (readonly) rv |= ScriptableObject.READONLY;
 					if (dontenum) rv |= ScriptableObject.DONTENUM;
 					return rv;
-				}	
+				}
 			}
 		}
 

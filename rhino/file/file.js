@@ -113,7 +113,7 @@ var Pathname = function(parameters) {
 					}
 				}
 				if (append == true) {
-				} else if (append == false) {	
+				} else if (append == false) {
 				} else {
 					throw new Error("Cannot create file at " + toString() + "; already exists (use append to override)");
 				}
