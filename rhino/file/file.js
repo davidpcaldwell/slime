@@ -372,10 +372,19 @@ var Pathname = function(parameters) {
 				var add = function(dir) {
 					var items = dir.list();
 					items.forEach( function(item) {
-						if (filter(item)) {
-							rv.push(item);
-							if (item.directory) {
-								add(item.pathname.directory);
+						var include = filter(item);
+						if (include) {
+							if (!item.directory) {
+								rv.push(item);
+							} else {
+								var includeContents = (include === true) || (include && include.contents);
+								var includeDir = (include === true);
+								if (includeDir) {
+									rv.push(item);
+								}
+								if (includeContents) {
+									add(item.pathname.directory);
+								}
 							}
 						}
 					} );
@@ -409,6 +418,9 @@ var Pathname = function(parameters) {
 		}
 
 		this.list = list;
+		this.list.CONTENTS = {
+			contents: true
+		};
 		this.list.NODE = {
 			create: function(d,n) {
 				return n;

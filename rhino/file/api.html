@@ -661,7 +661,7 @@ END LICENSE
 												<span class="type">RegExp</span>
 												(optional) Used to filter the results of listing this directory.
 												Nodes that the filter does not accept will not be returned (nor will their contents,
-												if they are directories).
+												if they are directories; but see the special <code>CONTENTS</code> return value).
 												<div class="function">
 													If this property is a <code>function</code>, it will be invoked for each node
 													found:
@@ -677,9 +677,13 @@ END LICENSE
 													<div class="returns">
 														<div class="label">Returns</div>
 														<span class="type">boolean</span>
+														-OR-
+														<span class="type"><code>CONTENTS</code> property of this function</span>
 														<span>
 															<code>true</code> to accept this node, <code>false</code> to exclude
-															it.
+															it. The CONTENTS property indicates that the filter should exclude
+															a directory but evaluate its contents for inclusion.
+															<!--	TODO	define CONTENTS with respect to files	-->
 														</span>
 													</div>
 												</div>
@@ -748,6 +752,13 @@ END LICENSE
 										</li>
 									</ul>
 								</li>
+								<li class="value">
+									<div class="name">CONTENTS</div>
+									<span>
+										A value for the <code>filter</code> return value indicating that a directory should be
+										excluded from the results but its contents should be evaluated for inclusion.
+									</span>
+								</li>
 								<!--
 										TODO	add RESOURCE that returns an array of path/resource? easy descriptor, would
 												probably then exclude directories explicitly and this could be used as easy input
@@ -782,6 +793,18 @@ END LICENSE
 								test( dir.list({ recursive: true }).length == 7 );
 								test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
 								test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
+
+								var filter = function(node) {
+									var basename = node.pathname.basename;
+									if (basename == "a") return true;
+									if (basename == "b") return true;
+									if (basename == "c") return dir.list.CONTENTS;
+									if (basename == "d") return true;
+									if (basename == "e") return false;
+									if (basename == "f") return true;
+									if (basename == "target") return false;
+								};
+								test(dir.list({ recursive: true, filter: filter }).length == 3);
 
 								var e_entries = filee.list({ type: ENTRY });
 								test(e_entries.length == 1);
