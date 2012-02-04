@@ -826,7 +826,7 @@ END LICENSE
 								test(resourcef.length == 1);
 								resourcef = resourcef[0];
 								test(resourcef.resource.read(String) == "");
-	
+
 								if (context.cygwin) {
 									debugger;
 									var link = function(target,link) {
@@ -841,27 +841,27 @@ END LICENSE
 											}
 										);
 									};
-		
+	
 									var dir = $jsapi.newTemporaryDirectory();
-		
+	
 									var newFile = function(path) {
 										dir.getRelativePath(path).write(path, { append: false });
 										return dir.getFile(path);
 									}
-		
+	
 									var newDir = function(path) {
 										return dir.getRelativePath(path).createDirectory();
 									}
 
 									var dirtarget = newDir("dirtarget");
 									var filetarget = newFile("filetarget");
-		
+	
 									var list = newDir("list");
 									link(dirtarget.pathname,list.getRelativePath("softdir"));
 									link(filetarget.pathname,list.getRelativePath("softfile"));
 									var hardfile = newFile("list/hardfile");
 									var harddir = newDir("list/harddir");
-		
+	
 									test(list.list().length == 4);
 									var nodes = list.list();
 									nodes.sort(function(a,b) {
