@@ -93,7 +93,7 @@ public class Engine {
 			public void setExit(Runnable exit) {
 				if (exit == null) {
 					exit = new Runnable() {
-						public void run() {		
+						public void run() {
 						}
 					};
 				}
