@@ -316,6 +316,25 @@ if ($context.globals) {
 	}
 }
 
+$exports.Function = new function() {
+	//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
+	//	undefined
+	this.evaluator = function() {
+		var components = arguments;
+		return function() {
+			var rv;
+			for (var i=0; i<components.length; i++) {
+				rv = components[i].apply(this,arguments);
+				if (typeof(rv) != "undefined") {
+					return rv;
+				}
+			}
+			return rv;
+		}
+	}
+}
+$api.experimental($exports,"Function");
+
 $exports.Filter = new function() {
 	this.property = function(name,filter) {
 		if (typeof(filter) != "function") {
