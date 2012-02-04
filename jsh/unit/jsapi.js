@@ -232,7 +232,7 @@ $exports.tests = new function() {
 						} else {
 							topscope.scenario(new function() {
 								this.name = suite.name + " (NO TESTS)";
-				
+			
 								this.execute = function(scope) {
 									scope.test({
 										success: false,

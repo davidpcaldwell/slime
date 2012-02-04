@@ -64,7 +64,7 @@ public class Module {
 					public String toString() {
 						return Classes.class.getName() + " source=" + source + " prefix=" + prefix;
 					}
-	
+
 					public InputStream getResourceAsStream(String path) throws IOException {
 						return source.getResourceAsStream(prepend + path);
 					}
@@ -74,11 +74,11 @@ public class Module {
 			public static Source create(final java.net.URL url) {
 				return new Source() {
 					private java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[] { url });
-	
+
 					public String toString() {
 						return Source.class.getName() + " url=" + url;
 					}
-	
+
 					public InputStream getResourceAsStream(String path) {
 						return loader.getResourceAsStream(path);
 					}

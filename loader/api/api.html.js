@@ -173,7 +173,7 @@ $exports.ApiHtmlTests = function(html,name) {
 						}
 						return false;
 					})();
-	
+
 					if (someAreTests) {
 						unit.scenario(getScenario(scope,children[i]));
 					}

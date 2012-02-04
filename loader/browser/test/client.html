@@ -216,7 +216,7 @@ END LICENSE
 					(function() {
 						var Scope = function() {
 							var self = this;
-			
+		
 							this.$jsapi = new function() {
 								this.module = function(path,context) {
 									return inonit.loader.module(
@@ -248,11 +248,11 @@ END LICENSE
 						var DOM = function(html) {
 							var Element = function(node) {
 								this.localName = node.tagName.toLowerCase();
-				
+			
 								if (node != html) {
 									this.parent = new arguments.callee(node.parentNode);
 								}
-				
+			
 								this.toString = function() {
 									return node.toString();
 								}
@@ -270,13 +270,13 @@ END LICENSE
 										return function(node) {
 											return node.tagName && node.tagName.toLowerCase() == "script" && node.type == (apiHtmlScript.MEDIA_TYPE + "#" + type);
 										};
-									}						
+									}					
 								}
 
 								var wrap = function(node) {
 									return new Element(node);
 								}
-				
+			
 								this.getScripts = function(type) {
 									var rv = [];
 									var children = dom.getChildren(node,getScriptFilter(type));
@@ -305,7 +305,7 @@ END LICENSE
 									}
 									return rv;
 								}
-				
+			
 								var wrapArray = function(array) {
 									var rv = [];
 									for (var i=0; i<array.length; i++) {
@@ -364,7 +364,7 @@ END LICENSE
 									}
 								}
 							};
-			
+		
 							var declaration = find(root);
 							if (declaration) return declaration.getAttribute("path");
 							return "";

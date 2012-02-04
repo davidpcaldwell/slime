@@ -283,11 +283,11 @@ new function() {
 					this.run = function(path,scope,target) {
 						runInScope(format.getCode(path),scope,target);
 					}
-	
+
 					this.file = function(path,context) {
 						return file(format.getCode(path),context);
 					}
-	
+
 					this.script = $api.deprecate(this.file);
 
 					this.module = function(path,context) {
@@ -302,7 +302,7 @@ new function() {
 						});
 						return loader.load({ $context: context });
 					}
-	
+
 					if (format.decorateLoader) {
 						format.decorateLoader(this);
 					}

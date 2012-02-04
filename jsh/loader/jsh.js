@@ -136,11 +136,11 @@ this.jsh = new function() {
 						this.toString = function() {
 							return "packaged:module:" + path
 						}
-		
+	
 						this.read = function(relative) {
 							return $host.getPackagedCode().getResourceAsStream(path+relative);
 						}
-		
+	
 						this.getMainScriptPath = function() {
 							return "module.js";
 						}
