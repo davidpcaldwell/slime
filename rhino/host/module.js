@@ -55,7 +55,7 @@ var errors = new function() {
 			}).join(",");
 			//	TODO	is this parameterized call already in js/object?
 			var created = eval("new implementation(" + literals + ")");
-	
+
 			var tracer;
 			try {
 				instance.throwException(created.toString());

@@ -157,22 +157,22 @@ public class Shell {
 			static Classpath create(ClassLoader delegate) {
 				return new ModulesClasspath(delegate);
 			}
-	
+
 			Classpath(ClassLoader delegate) {
 				super(delegate);
 			}
-	
+
 			public abstract void append(URL url);
 			public abstract void append(Module module);
 		}
 
 		private static class DelegationChain extends Classpath {
 			private ClassLoader current = Shell.class.getClassLoader();
-	
+
 			DelegationChain(ClassLoader delegate) {
 				super(delegate);
 			}
-	
+
 			public String toString() {
 				return getClass().getName() + " current=" + current;
 			}
@@ -192,7 +192,7 @@ public class Shell {
 
 		private static class ListClasspath extends Classpath {
 			private ArrayList loaders = new ArrayList();
-	
+
 			ListClasspath(ClassLoader delegate) {
 				super(delegate);
 			}
@@ -218,11 +218,11 @@ public class Shell {
 
 		private static class ModulesClasspath extends Classpath {
 			private ArrayList items = new ArrayList();
-	
+
 			ModulesClasspath(ClassLoader delegate) {
 				super(delegate);
 			}
-	
+
 			public String toString() {
 				String rv = getClass().getName() + " ";
 				for (int i=0; i<items.size(); i++) {
@@ -233,7 +233,7 @@ public class Shell {
 				}
 				return rv;
 			}
-	
+
 			protected Class findClass(String name) throws ClassNotFoundException {
 				String path = name.replace('.', '/') + ".class";
 				for (int i=0; i<items.size(); i++) {
@@ -249,11 +249,11 @@ public class Shell {
 				}
 				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
 			}
-	
+
 			public void append(Module module) {
 				items.add(module.getClasses());
 			}
-	
+
 			public void append(URL url) {
 				items.add(Module.Code.Classes.create(Module.Code.Source.create(url)));
 			}
@@ -376,7 +376,7 @@ public class Shell {
 				classpath.append(rv);
 				return rv;
 			}
-	
+
 			public Module.Code.Source getPackagedCode() {
 				return installation.getPackagedCode();
 			}
@@ -420,11 +420,11 @@ public class Shell {
 			public void addFinalizer(Runnable runnable) {
 				finalizers.add(runnable);
 			}
-	
+
 			public inonit.script.rhino.Engine.Debugger getDebugger() {
 				return Host.this.engine.getDebugger();
 			}
-	
+
 			//
 			//	Not used by shell, but useful to specialized scripts that do various kinds of embedding
 			//

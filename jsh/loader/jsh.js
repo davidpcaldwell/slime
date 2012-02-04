@@ -59,7 +59,7 @@ this.jsh = new function() {
 				code = {
 					name: code.toString(),
 					$in: new Packages.java.io.FileInputStream(code.java.adapt())
-				};		
+				};	
 			} else if (code.name && code.$in) {
 				//	fine as is
 			}
@@ -122,25 +122,25 @@ this.jsh = new function() {
 						return null;
 					}
 				}
-		
+	
 				this.run = function(path,scope,target) {
 					return rhinoLoader.run(getCode(path),scope,target);
 				}
-		
+	
 				this.file = function(path,$context) {
 					return rhinoLoader.file(getCode(path),$context);
 				}
-		
+	
 				this.module = function(path) {
 					var m = new function() {
 						this.toString = function() {
 							return "packaged:module:" + path
 						}
-				
+			
 						this.read = function(relative) {
 							return $host.getPackagedCode().getResourceAsStream(path+relative);
 						}
-				
+			
 						this.getMainScriptPath = function() {
 							return "module.js";
 						}
@@ -318,7 +318,7 @@ this.jsh = new function() {
 			} finally {
 				if (enabled) {
 					$host.getDebugger().setBreakOnExceptions(true);
-				}		
+				}	
 			}
 		}
 	}

@@ -124,7 +124,7 @@ public abstract class Filesystem {
 
 		private static class NodeImpl extends Node {
 			private File file;
-	
+
 			NodeImpl(File file) throws IOException {
 				try {
 					this.file = file.getCanonicalFile();
@@ -136,23 +136,23 @@ public abstract class Filesystem {
 			public String toString() {
 				return getClass().getName() + " file= " + file;
 			}
-	
+
 			public boolean exists() {
 				return file.exists();
 			}
-	
+
 			public boolean isDirectory() {
 				return file.isDirectory();
 			}
-	
+
 			public File getHostFile() {
 				return file;
 			}
-	
+
 			public String getScriptPath() {
 				return file.getPath();
 			}
-	
+
 			public Node[] list(FilenameFilter pattern) throws IOException {
 				File[] files = this.file.listFiles(pattern);
 				Node[] rv = new Node[files.length];
@@ -161,7 +161,7 @@ public abstract class Filesystem {
 				}
 				return rv;
 			}
-	
+
 			private boolean delete(File file) {
 				if (file.isDirectory()) {
 					File[] contents = file.listFiles();
@@ -173,19 +173,19 @@ public abstract class Filesystem {
 					}
 					//	delete contents
 				}
-				return file.delete();		
+				return file.delete();	
 			}
-	
+
 			public void delete() throws IOException {
 				boolean success = delete(this.file);
 				if (!success) throw new IOException("Failed to delete: " + this.file);
 			}
-	
+
 			public void mkdir() throws IOException {
 				boolean success = this.file.mkdir();
 				if (!success) throw new IOException("Failed to create: " + this.file);
 			}
-	
+
 			public void mkdirs() throws IOException {
 				boolean success = this.file.mkdirs();
 				if (!success) throw new IOException("Failed to create: " + this.file);

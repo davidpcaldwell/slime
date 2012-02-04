@@ -69,7 +69,7 @@ var E4X = function(html) {
 				return map(xml..script);
 			}
 		}
-	
+
 		this.getChildElements = function() {
 			return map(xml.elements());
 		}
@@ -218,9 +218,9 @@ $exports.tests = new function() {
 					$platform: jsh.$jsapi.$platform,
 					$api: jsh.$jsapi.$api
 				};
-		
+	
 				var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
-		
+	
 				for (var i=0; i<contexts.length; i++) {
 					try {
 						if (suite.getScenario) {
@@ -232,7 +232,7 @@ $exports.tests = new function() {
 						} else {
 							topscope.scenario(new function() {
 								this.name = suite.name + " (NO TESTS)";
-						
+					
 								this.execute = function(scope) {
 									scope.test({
 										success: false,

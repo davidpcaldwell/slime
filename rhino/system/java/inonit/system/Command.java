@@ -128,11 +128,11 @@ public class Command {
 
 		public static class Failure extends Exception {
 			private Result result;
-	
+
 			Failure(Result result) {
 				this.result = result;
 			}
-	
+
 			public Result getResult() {
 				return this.result;
 			}
@@ -215,7 +215,7 @@ public class Command {
 				}
 				commandOutput = outputBuffer.toString();
 			}
-			return commandOutput;	
+			return commandOutput;
 		}
 	}
 

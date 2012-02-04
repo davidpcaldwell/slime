@@ -126,8 +126,8 @@ if (!parameters.options.notest) {
 				if (!MODULES[path]) throw new Error("Module not found: " + path + " (available: " + Object.keys(MODULES) + ")");
 				return MODULES[path];
 			}
-	
-	
+
+
 			var tokens = test.split(":");
 			if (tokens.length == 1) {
 				jsapi.tests.add(getModule(test));

@@ -140,7 +140,7 @@ var System = function(peer,PARENT) {
 	}
 
 	this.importPathname = function(pathname) {
-		return new $context.Pathname({ filesystem: this, peer: peer.getNode( pathname.java.adapt() ) });	
+		return new $context.Pathname({ filesystem: this, peer: peer.getNode( pathname.java.adapt() ) });
 	}
 
 	this.exists = function(peer) {

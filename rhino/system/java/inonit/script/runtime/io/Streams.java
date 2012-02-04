@@ -116,26 +116,26 @@ public class Streams {
 		public static class Buffer {
 			private LinkedList bytes = new LinkedList();
 			private boolean closed;
-	
+
 			private MyInputStream in = new MyInputStream();
 			private MyOutputStream out = new MyOutputStream();
-	
+
 			public String toString() {
 				return super.toString() + " in=" + in + " out=" + out;
 			}
-	
+
 			public InputStream getInputStream() {
 				return in;
 			}
-	
+
 			public OutputStream getOutputStream() {
 				return out;
 			}
-	
+
 			private synchronized int available() {
 				return bytes.size();
 			}
-	
+
 			private synchronized int read() {
 				while (bytes.size() == 0 && !closed) {
 					try {
@@ -152,7 +152,7 @@ public class Streams {
 				}
 				return b;
 			}
-	
+
 			private synchronized int read(byte[] b, int off, int len) {
 				int i = this.read();
 				if (i == -1) {
@@ -160,32 +160,32 @@ public class Streams {
 				} else {
 					b[off] = (byte)i;
 					return 1;
-				}		
+				}	
 			}
-	
+
 			private synchronized void write(int i) {
 				bytes.addLast( new Byte( (byte)i ) );
 				notifyAll();
 			}
-	
+
 			private synchronized void close() {
 				closed = true;
-				Buffer.this.notifyAll();		
+				Buffer.this.notifyAll();	
 			}
-	
+
 			private class MyInputStream extends InputStream {
 				public int read() {
 					return Buffer.this.read();
 				}
-		
+	
 				public int read(byte[] b, int off, int len) {
 					return Buffer.this.read(b,off,len);
 				}
-		
+	
 				public int read(byte[] b) {
 					return this.read(b,0,1);
 				}
-		
+	
 				public int available() {
 					return Buffer.this.available();
 				}
@@ -194,12 +194,12 @@ public class Streams {
 					Buffer.this.close();
 				}
 			}
-	
+
 			private class MyOutputStream extends OutputStream {
 				public void write(int i) {
 					Buffer.this.write(i);
 				}
-		
+	
 				public void close() {
 					Buffer.this.close();
 				}
@@ -210,15 +210,15 @@ public class Streams {
 			public static Splitter create(final OutputStream a, final OutputStream b) {
 				return new Splitter(a,b);
 			}
-	
+
 			private OutputStream a;
 			private OutputStream b;
-	
+
 			Splitter(OutputStream a, OutputStream b) {
 				this.a = a;
 				this.b = b;
 			}
-	
+
 			public void write(int i) throws IOException {
 				a.write(i);
 				b.write(i);

@@ -45,7 +45,7 @@ $exports.Scenario = function(properties) {
 
 		var runScenario = function(object,next) {
 			var child = new Scenario(object);
-	
+
 			var runNext = function(next) {
 				if ($context.asynchronous && $context.asynchronous.scenario) {
 					$context.asynchronous.scenario(next);
@@ -53,7 +53,7 @@ $exports.Scenario = function(properties) {
 					next();
 				}
 			}
-	
+
 			if (callback) {
 				child.start(console,{
 					success: function(b) {
@@ -202,7 +202,7 @@ $exports.Scenario = function(properties) {
 
 		var initializeAndExecute = function(scope) {
 			if (properties.initialize) properties.initialize.call(this);
-			properties.execute.call(this,scope);	
+			properties.execute.call(this,scope);
 		}
 
 		if (Scenario.HALT_ON_EXCEPTION) {

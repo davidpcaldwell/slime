@@ -77,7 +77,7 @@ public class Properties {
 						rv.add(propertyFamily);
 					}
 				}
-			}	
+			}
 			return (String[])rv.toArray(new String[0]);
 		}
 

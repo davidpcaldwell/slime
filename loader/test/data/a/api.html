@@ -28,13 +28,13 @@ END LICENSE
 			var disableBreakOnExceptions = function(f) {
 				return f;
 			};
-	
+
 			if ($jsapi.disableBreakOnExceptions) {
 				disableBreakOnExceptions = function(f) {
 					return $jsapi.disableBreakOnExceptions(f);
 				}
 			}
-	
+
 			var evalValue = disableBreakOnExceptions(function(code) {
 				try {
 					var x = eval(code);
