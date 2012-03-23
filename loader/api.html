@@ -14,7 +14,7 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Slime Loader and Module API</title>
 </head>
@@ -633,40 +633,72 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
-		<ul>
-			<div class="type">
-				<a class="type" name="types.code">code</a>
+		<div class="type">
+			<a class="type" name="types.code">code</a>
+			<div>
 				<div>
-					<div>
-						<span class="type">string</span>
-						<span>JavaScript code to execute.</span>
-					</div>
-					-OR-
-					<div>
-						<span class="type">function</span>
-						<span>A function that can load the code and execute it inside a particular scope.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">object</span>
-									<span>
-										The scope object inside which to execute the code, as if the code were executed
-										with <code>with(arguments[0])</code>.
-									</span>
-								</li>
-							</ol>
-						</div>
+					<span class="type">string</span>
+					<span>JavaScript code to execute.</span>
+				</div>
+				-OR-
+				<div>
+					<span class="type">function</span>
+					<span>
+						A function that can load the code and execute it inside a particular scope with a particular
+						<code>this</code> object.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">object</span>
+								<span>
+									The scope object inside which to execute the code, as if the code were executed
+									with <code>with(arguments[0])</code>.
+								</span>
+							</li>
+							<li class="value">
+								<span class="type">object</span>
+								<span>The object to use as <code>this</code> when executing the code.</span>
+							</li>
+						</ol>
 					</div>
 				</div>
 			</div>
-			<li class="function" jsapi:id="script">
-				<div class="name">script</div>
+		</div>
+		<ul>
+			<li class="function">
+				<div class="name">run</div>
+				<span>
+					Executes code in a particular scope with a particular <code>this</code> value. The code will automatically
+					contain the <code>$platform</code> and <code>$api</code> objects described above in its scope.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="#types.code">code</a></span>
+							<span>The code to execute.</span>
+						</li>
+						<li class="value">
+							<span class="type">object</span>
+							<span>The scope in which to execute the code.</span>
+						</li>
+						<li class="value">
+							<span class="type">object</span>
+							<span>The object to use as the <code>this</code> value when executing the code.</span>
+						</li>
+					</ol>
+				</div>
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name">file</div>
 				<span jsapi:id="description">
-					Executes a script in a separate scope. The script will be provided with special objects named <code>$context</code>
-					and <code>$exports</code>. The <code>$context</code> object represents an application-specific context to provide
-					to the script; the <code>$exports</code> object represents an object to which the script can assign properties that
-					will be visible outside the script.
+					Executes a script in a separate scope. The scope will contain the <code>$platform</code> and <code>$api</code>
+					objects described above. In addition, the script will be provided with special objects named
+					<code>$context</code> and <code>$exports</code>. The <code>$context</code> object represents an
+					application-specific context to provide to the script; the <code>$exports</code> object represents an object to
+					which the script can assign properties that will be visible outside the script.
 				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
@@ -706,6 +738,57 @@ END LICENSE
 					The <code>$loader</code> object provides the following interface:
 					<ul>
 						<li class="function">
+							<div class="name">run</div>
+							<span>Runs a script from this module. Analogous to <code>run()</code> above.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The path within this module from which to load the script to execute.</span>
+									</li>
+									<li class="value">
+										<span class="type">object</span>
+										<span>See the second argument to <code>run()</code>.</span>
+									</li>
+									<li class="value">
+										<span class="type">object</span>
+										<span>See the third argument to <code>run()</code>.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">file</div>
+							<span>Runs a script from this module. Analogous to <code>file()</code> above.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The path within this module from which to load the script to execute.</span>
+									</li>
+									<li class="value">
+										<span class="type">object</span>
+										<span>See the second argument to <code>file()</code>.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">object</span>
+								<span>
+									An object containing the exports of the script: the properties assigned to the
+									<code>$exports</code> object.
+								</span>
+							</div>
+						</li>
+						<li class="function">
 							<div class="name">module</div>
 							<span>Loads a submodule from this module.</span>
 							<div class="arguments">
@@ -713,7 +796,7 @@ END LICENSE
 								<ol>
 									<li class="value">
 										<span class="type">string</span>
-										<span>The path at which the submodule's main file is located within this module.</span>
+										<span>The path within this module from which to load the submodule's main file.</span>
 									</li>
 									<li class="value">
 										<span class="type">object</span>
@@ -727,31 +810,6 @@ END LICENSE
 								<span>An object containing the submodule's exports.</span>
 							</div>
 						</li>
-						<li class="function">
-							<div class="name">script</div>
-							<span>Executes a script from this module.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>The path of the script to execute.</span>
-									</li>
-									<li class="value">
-										<span class="type">object</span>
-										<span>The <code>$context</code> to use when executing the script.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">object</span>
-								<span>
-									An object containing the exports of the script: the properties assigned to the
-									<code>$exports</code> object.
-								</span>
-							</div>
-						</li>
 					</ul>
 				</div>
 				<div class="arguments">
@@ -762,9 +820,13 @@ END LICENSE
 							<p>
 								Ordinarily, the loader loads the main file by calling the <code>getCode</code> method with the
 								string value of the <code>main</code> property, and then executing the resulting code with the
-								appropriate <code>$context</code> and <code>$exports</code>. However, the <code>instantiate</code>
+								appropriate <code>$context</code> and <code>$exports</code>.
+								<!--
+									Below outdated; may now be part of decorateLoader
+								However, the <code>instantiate</code>
 								method, if defined, can override the behavior of <code>getCode</code>. See the definition of
 								<code>instantiate</code> for details.
+								-->
 							</p>
 							<div class="label">has properties:</div>
 							<ul>
@@ -792,6 +854,22 @@ END LICENSE
 										<div class="label">Returns</div>
 										<span class="type"><a href="#types.code">code</a></span>
 										<span>The code located at the given location in this module.</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">decorateLoader</div>
+									<span>
+										An object that can be used by a loader implementation to alter the <code>$loader</code>
+										object provided to modules.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">object</span>
+												<span>The default <code>$loader</code> implementation.</span>
+											</li>
+										</ol>
 									</div>
 								</li>
 							</ul>

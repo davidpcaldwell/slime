@@ -128,17 +128,12 @@ new function() {
 					return function(){}();
 				}
 
-				if ($platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
-				} else {
-					return function(){}();
-				}
-
-				//	If object has neither getter nor setter, we create both with versions that cooperate with one another
-				//	If object has custom getter and/or custom setter, we overwrite both with versions that wrap them with warnings
-
+				//	We only execute the rest of this method if the accessor form of defineProperty is present
 				//	TODO	Make compatible with ECMA method of get/set
 				if (!$platform.Object.defineProperty || !$platform.Object.defineProperty.accessor) return function(){}();
 
+				//	If object has neither getter nor setter, we create both with versions that cooperate with one another
+				//	If object has custom getter and/or custom setter, we overwrite both with versions that wrap them with warnings
 				if (!object.__lookupGetter__(property) && !object.__lookupSetter__(property)) {
 					var values = new function() {
 						var value = object[property];
@@ -187,42 +182,14 @@ new function() {
 		var deprecate = flag();
 		var experimental = flag();
 
-		//	TODO	Examine the below, copied-and-pasted from js/object where it was also commented out
-
-		//if ($platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
-		//	//	TODO	This likely now fails tests in Internet Explorer because it will attempt to run them even though deprecation
-		//	//			has no effect
-		//	$exports.deprecate = deprecate;
-		//} else {
-		//	$exports.deprecate = function() {
-		//		if (arguments.length == 1 && typeof(arguments[0]) == "function") {
-		//			return deprecate.apply(this,arguments);
-		//		} else if (arguments.length == 2 && typeof(arguments[0]) == "object" && typeof(arguments[1]) == "string"
-		//			&& typeof(arguments[0][arguments[1]]) == "function")
-		//		{
-		//			return deprecate.apply(this,arguments);
-		//		}
-		//		return function(){}();
-		//	};
-		//}
-
 		$exports.deprecate = deprecate;
 		$exports.experimental = experimental;
 
 		return $exports;
 	})();
 
-	//	TODO	The following properties must be exposed to the Rhino loader so that it can supply them to jsh/unit jsapi via jsh.js
-
-	//	TODO	also used by client.html unit tests
-	this.$platform = $platform;
-
-	//	TODO	also used by client.html unit tests
-	//	used to allow setting warnings for deprecate and experimental
-	this.$api = $api;
-
-	var runners = new function() {
-		this.run = function(/*code,scope,this*/) {
+	var runInScope = function(code,scope,target) {
+		var run = function(/*code,scope,this*/) {
 			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
 			//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
 			//			loaded by the new loader, and should go away when all modules are converted
@@ -232,12 +199,12 @@ new function() {
 				with( arguments[1] ) {
 					eval(arguments[0]);
 				}
-				return arguments[1].$exports;
-			}).apply((arguments[2]) ? arguments[2] : { $exports: true },arguments);
-		}
-	}
-
-	var runInScope = function(code,scope,target) {
+			}).apply(
+				(arguments[2]) ? arguments[2] : {},
+				arguments
+			);
+		};
+		
 		var runScope = function(initial) {
 			var rv = {};
 			rv.$platform = $platform;
@@ -251,10 +218,10 @@ new function() {
 		var fixed = runScope(scope);
 
 		if (typeof(code) == "function") {
-			//	assume it is a function that can execute the code given a scope
+			//	it is a function that can execute the code given a scope and target object
 			code(fixed,target);
 		} else if (typeof(code) == "string") {
-			runners.run(code,fixed,target);
+			run(code,fixed,target);
 		} else {
 			throw "Unimplemented: typeof(code) = " + typeof(code);
 		}
@@ -303,6 +270,7 @@ new function() {
 						return loader.load({ $context: context });
 					}
 
+					//	TODO	should this return a value and allow wholesale replacement?
 					if (format.decorateLoader) {
 						format.decorateLoader(this);
 					}
@@ -317,6 +285,8 @@ new function() {
 	this.run = function(code,scope,target) {
 		runInScope(code,scope,target);
 	};
+
+	//	TODO	For file and module, what should we do about 'this' and why?
 
 	this.file = function(code,$context) {
 		return file(code,$context);
@@ -349,4 +319,13 @@ new function() {
 	if ($platform.java) {
 		this.java = $platform.java;
 	}
+
+	//	TODO	The following properties must be exposed to the Rhino loader so that it can supply them to jsh/unit jsapi via jsh.js
+
+	//	TODO	also used by client.html unit tests
+	this.$platform = $platform;
+
+	//	TODO	also used by client.html unit tests
+	//	used to allow setting warnings for deprecate and experimental
+	this.$api = $api;
 }
