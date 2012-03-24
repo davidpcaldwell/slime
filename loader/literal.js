@@ -30,7 +30,23 @@ new function() {
 				try {
 					if (typeof(Packages) == "undefined") return null;
 					var rv = Packages[name];
-					if (typeof(rv) == "function") return rv;
+					if (typeof(rv) == "function") {
+						//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
+						//	following format for their String values
+						try {
+							var prefix = "[Java Package";
+							if (String(rv).substring(0, prefix.length) == prefix) {
+								return null;
+							}
+						} catch (e) {
+							//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
+							//	below) if you attempt to evaluate it.
+							if (e == "java.lang.NullPointerException") {
+								return rv;
+							}
+						}
+						return rv;
+					}
 					return null;
 				} catch (e) {
 					return null;
