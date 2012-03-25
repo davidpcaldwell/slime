@@ -23,7 +23,7 @@ if ($context.globals) {
 			}
 		}
 	};
-	
+
 	copyGlobals(globals.Array,Array);
 	copyGlobals(globals.String,String);
 }
