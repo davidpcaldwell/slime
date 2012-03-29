@@ -60,6 +60,14 @@ $api.experimental($exports,"Filesystem");
 //	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
 defaults.filesystem = (os.filesystems.cygwin) ? os.filesystems.cygwin : os.filesystems.os;
 
+//	TODO	figure out how to make this work properly
+$exports.__defineGetter__("filesystem", function() {
+	return defaults.filesystem;
+});
+$exports.__defineSetter__("filesystem", function(v) {
+	defaults.filesystem = v;
+});
+
 var workingDirectory = function() {
 	if ($context.$pwd) {
 		var osdir = os.filesystems.os.Pathname($context.$pwd);
@@ -70,14 +78,6 @@ var workingDirectory = function() {
 	}
 };
 $exports.__defineGetter__("workingDirectory", workingDirectory);
-
-//	TODO	figure out how to make this work properly
-$exports.__defineGetter__("filesystem", function() {
-	return defaults.filesystem;
-});
-$exports.__defineSetter__("filesystem", function(v) {
-	defaults.filesystem = v;
-});
 
 var file = $loader.file("file.js", {
 	defined: $context.api.js.defined,
