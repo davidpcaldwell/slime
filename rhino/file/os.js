@@ -40,6 +40,16 @@ var Filesystem = function(implementation) {
 	this.Searchpath = function(array) {
 		return new $context.Searchpath({ filesystem: implementation, array: array });
 	}
+	this.Searchpath.parse = function(string) {
+		if (!string) {
+			throw new Error("No string to parse in Searchpath.parse");
+		}
+		var elements = string.split(implementation.SEARCHPATH_SEPARATOR);
+		var array = elements.map(function(element) {
+			return implementation.newPathname(element);
+		});
+		return new $context.Searchpath({ filesystem: implementation, array: array });
+	}
 
 	this.Pathname = function(string) {
 		return implementation.newPathname(string);
@@ -295,27 +305,31 @@ var SystemFilesystem = function(peer,os) {
 
 	Filesystem.call(this,system);
 
+	var self = this;
+
 	this.$jsh = new function() {
-		//	Currently used by getopts for Pathname
+		//	Currently used by jsh.shell.getopts for Pathname
 		this.PATHNAME_SEPARATOR = system.PATHNAME_SEPARATOR;
 
 		this.Pathname = function($jfile) {
 			return new $context.Pathname({ filesystem: system, peer: peer.getNode($jfile) });
 		}
-	}
 
-	//	Only known use of this property is by toWindows method of Cygwin filesystem
-	if (cygwin && isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem)(peer)) {
-		this.$peer = peer;
-		deprecate(this,"$peer");
-
-		this.$system = system;
-		deprecate(this,"$system");
+		//	Interprets a native OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
+		if (os) {
+			this.os = function(pathname) {
+				return pathname;
+			}
+		} else if (isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
+			this.os = function(pathname) {
+				return self.toUnix(pathname);
+			}
+		}
 	}
 
 	if (isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
 		var isPathname = function(item) {
-			return item && item.java && item.java.adapt() && isJavaType(Packages.java.io.File);
+			return item && item.java && item.java.adapt() && isJavaType(Packages.java.io.File)(item.java.adapt());
 		}
 
 		this.toUnix = function(item) {

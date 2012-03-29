@@ -42,7 +42,7 @@ run(LAUNCHER_COMMAND.concat([
 run(LAUNCHER_COMMAND.concat(
 	[
 		String(new File(BASE,"jsh/test/2.jsh.js").getCanonicalPath())
-		, { env: { MODULES: tmp.getCanonicalPath() }}
+		, { env: { MODULES: tmp.getCanonicalPath(), PATH: String(Packages.java.lang.System.getenv("PATH")) }}
 	]
 ));
 
@@ -58,9 +58,9 @@ platform.jdk.compile(compileOptions.concat([
 	String(new File(BASE,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
 ]));
 
-(function() {
+var testCommandOutput = function(path,tester) {
 	var command = [
-		String(new File(BASE,"jsh/test/jsh.shell.echo.jsh.js").getCanonicalPath())
+		String(new File(BASE,"jsh/test/" + path).getCanonicalPath())
 	];
 	var options = {
 		output: ""
@@ -68,15 +68,37 @@ platform.jdk.compile(compileOptions.concat([
 
 	var status = runCommand.apply(this,LAUNCHER_COMMAND.concat(command).concat([options]));
 	if (status != 0) throw new Error("Failed with exit status " + status);
-	var messages = [
-		"true",
-		""
-	];
-	if (options.output != messages.join(String(Packages.java.lang.System.getProperty("line.separator")))) throw new Error("Output wrong: it is [" + options.output + "]");
+	tester(options);
 	console("");
 	console("Passed: " + command.join(" "));
 	console("");
-})();
+};
+
+testCommandOutput(
+	"jsh.shell.echo.jsh.js",
+	function(options) {
+		var messages = [
+			"true",
+			""
+		];
+		if (options.output != messages.join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+			throw new Error("Output wrong: it is [" + options.output + "]");
+		}
+	}
+);
+
+testCommandOutput(
+	"jsh.shell.PATH.jsh.js",
+	function(options) {
+		var messages = [
+			"Passed.",
+			""
+		];
+		if (options.output != messages.join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+			throw new Error("Output wrong: it is [" + options.output + "]");
+		}
+	}
+);
 
 var getJshPathname = function(file) {
 	var rv = String(file.getCanonicalPath());

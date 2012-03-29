@@ -163,6 +163,18 @@ $exports.java = new function() {
 
 $exports.TMP = getDirectoryProperty("java.io.tmpdir");
 $exports.HOME = getDirectoryProperty("user.home");
+if ($context.api.shell.environment.PATH) {
+	$exports.PATH = (function() {
+		var value = $context.api.shell.environment.PATH;
+		var searchpath = $context.api.file.filesystems.os.Searchpath.parse(value);
+		var rv = searchpath.pathnames.map(function(pathname) {
+			return $context.api.file.filesystem.$jsh.os(pathname);
+		});
+		return $context.api.file.Searchpath(rv);
+	})();
+} else {
+	$exports.PATH = $context.api.file.Searchpath.createEmpty();
+}
 
 $exports.jsh = function(script,args,mode) {
 	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
