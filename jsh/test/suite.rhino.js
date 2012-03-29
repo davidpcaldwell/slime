@@ -88,7 +88,7 @@ testCommandOutput(
 );
 
 testCommandOutput(
-	"jsh.shell.PATH.jsh.js",
+	"jsh.shell-properties.jsh.js",
 	function(options) {
 		var messages = [
 			"Passed.",

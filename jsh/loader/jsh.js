@@ -184,6 +184,9 @@ this.jsh = new function() {
 		}
 	};
 
+	//	TODO	should separate everything above/below into two files; above is loader implementation, below is
+	//			startup/configuration
+
 	//	TODO	Lazy-loading
 	var js = loader.bootstrap({ globals: true },"js/object");
 	jsh.js = js;

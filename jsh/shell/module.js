@@ -141,42 +141,101 @@ var getProperty = function(name) {
 	return String(value);
 }
 
-var getDirectoryProperty = function(name) {
-	var rv = $context.api.file.filesystems.os.Pathname($context.getSystemProperty(name)).directory;
-	//	TODO	find more robust way to do this
-	if ($context.api.file.filesystems.cygwin) {
-		rv = $context.api.file.filesystems.cygwin.toUnix(rv.pathname).directory;
+var getMandatoryStringProperty = function(name) {
+	var rv = $context.getSystemProperty(name);
+	if (!rv) {
+		throw new Error("Missing mandatory system property " + name);
 	}
 	return rv;
+};
+
+var getDirectoryProperty = function(name) {
+	var rv = $context.api.file.filesystems.os.Pathname($context.getSystemProperty(name));
+	rv = $context.api.file.filesystem.$jsh.os(rv);
+	return rv.directory;
 }
 
-$exports.java = new function() {
-	var jdk = getDirectoryProperty("java.home");
-
-	//	TODO	find more robust way to do this
-	if ($context.api.file.filesystems.cygwin) {
-		jdk = $context.api.file.filesystems.cygwin.toUnix(jdk.pathname).directory;
-	}
-
-	this.home = jdk;
+//	converts OS string into jsh.file.Searchpath object in default filesystem
+var getSearchpath = function(value) {
+	var searchpath = $context.api.file.filesystems.os.Searchpath.parse(value);
+	var rv = searchpath.pathnames.map(function(pathname) {
+		return $context.api.file.filesystem.$jsh.os(pathname);
+	});
+	return $context.api.file.Searchpath(rv);
 }
 
 $exports.TMP = getDirectoryProperty("java.io.tmpdir");
+$exports.USER = getMandatoryStringProperty("user.name");
 $exports.HOME = getDirectoryProperty("user.home");
+$exports.PWD = getDirectoryProperty("user.dir");
 if ($context.api.shell.environment.PATH) {
-	$exports.PATH = (function() {
-		var value = $context.api.shell.environment.PATH;
-		var searchpath = $context.api.file.filesystems.os.Searchpath.parse(value);
-		var rv = searchpath.pathnames.map(function(pathname) {
-			return $context.api.file.filesystem.$jsh.os(pathname);
-		});
-		return $context.api.file.Searchpath(rv);
-	})();
+	$exports.PATH = getSearchpath($context.api.shell.environment.PATH);
 } else {
 	$exports.PATH = $context.api.file.Searchpath.createEmpty();
 }
 
+$exports.os = new function() {
+	this.name = getMandatoryStringProperty("os.name");
+	this.arch = getMandatoryStringProperty("os.arch");
+	this.version = getMandatoryStringProperty("os.version");
+}
+$exports.java = new function() {
+	this.version = getMandatoryStringProperty("java.version");
+	this.vendor = new function() {
+		this.toString = function() {
+			return getMandatoryStringProperty("java.vendor");
+		}
+
+		this.url = getMandatoryStringProperty("java.vendor.url");
+	}
+	this.home = getDirectoryProperty("java.home");
+
+	var Vvn = function(prefix) {
+		this.version = getMandatoryStringProperty(prefix + "version");
+		this.vendor = getMandatoryStringProperty(prefix + "vendor");
+		this.name = getMandatoryStringProperty(prefix + "name");
+	}
+
+	this.vm = new Vvn("java.vm.");
+	this.vm.specification = new Vvn("java.vm.specification.");
+	this.specification = new Vvn("java.specification.");
+
+	this["class"] = new function() {
+		this.version = getMandatoryStringProperty("java.class.version");
+		this.path = getSearchpath(getMandatoryStringProperty("java.class.path"));
+	}
+
+	//	Convenience alias that omits keyword
+	this.CLASSPATH = this["class"].path;
+
+	this.library = new function() {
+		this.path = getSearchpath(getMandatoryStringProperty("java.library.path"));
+	}
+
+	//	java.io.tmpdir really part of filesystem; see TMP above
+
+	//	Javadoc claims this to be always present but it is sometimes null; we leave it as undefined in that case, although this
+	//	behavior is undocumented
+	var compiler = $context.getSystemProperty("java.compiler");
+	if (compiler) {
+		this.compiler = compiler;
+	}
+
+	this.ext = new function() {
+		this.dirs = getSearchpath(getMandatoryStringProperty("java.ext.dirs"));
+	}
+
+	//	os.name, os.arch, os.version handled by $exports.os
+
+	//	file.separator, path.separator, line.separator handled by filesystems in jsh.file
+
+	//	user.name is $exports.USER
+	//	user.home is $exports.HOME
+	//	user.dir is $exports.PWD
+}
+
 $exports.jsh = function(script,args,mode) {
+	//	TODO	can we use $exports.java.home here?
 	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 	var executable = jdk.getRelativePath("bin/java").toString();
 	//	Set defaults from this shell

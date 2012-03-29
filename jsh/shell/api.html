@@ -41,6 +41,24 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
+			<li class="function">
+				<div class="name">getSystemProperty</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>The name of a system property.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">string</span>
+					<span>The value of that system property, or <code>null</code>.</span>
+				</div>
+			</li>
 			<li class="value">
 				<div class="name">exit</div>
 				<span>An implementation of <a href="#$exports.exit"><code>$exports.exit</code></a>.</span>
@@ -148,7 +166,7 @@ END LICENSE
 								</li>
 								<li class="value">
 									<div class="name">stream</div>
-									<span class="type">jsh.file character output stream</span>
+									<span class="type">jsh.io character output stream</span>
 									<span>(optional) A destination stream for messages.</span>
 								</li>
 
