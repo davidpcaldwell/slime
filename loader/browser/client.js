@@ -172,10 +172,14 @@
 					code = { base: tokens.slice(0,tokens.length-1).join("/"), main: tokens[tokens.length-1] };
 				}
 			} else if (typeof(code) == "object" && code.base && code.main) {
-				throw new RangeError("Attempt to use removed API by invoking with base/main properties; concatenate them.");
+				throw new RangeError(
+					"Attempt to use removed inonit.loader.module API by invoking with first argument having base/main properties."
+					+ " base=" + code.base + " main=" + code.main
+					+ " Resolve the properties to a single location and invoke using that."
+				);
 			} else {
 				throw new RangeError(
-					"Non-string passed to inonit.loader.module. Trying to use base/main properties? Concatenate them."
+					"Non-string passed to inonit.loader.module: " + code
 				);
 			}
 
