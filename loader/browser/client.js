@@ -161,13 +161,20 @@
 				}
 			}
 
-			if (typeof(code) == "string") {
+			if (!code) {
+				//	TODO	probably want better message for zero-length string
+				throw new RangeError("Missing argument 0 specifying location of module.");
+			} else if (typeof(code) == "string") {
 				if (/\/$/.test(code)) {
 					code = { base: code };
 				} else {
 					var tokens = code.split("/");
 					code = { base: tokens.slice(0,tokens.length-1).join("/"), main: tokens[tokens.length-1] };
 				}
+			} else {
+				throw new RangeError(
+					"Non-string passed to inonit.loader.module. Trying to use base/main properties? Concatenate them."
+				);
 			}
 
 			if (typeof(args) == "object") {

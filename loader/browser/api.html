@@ -35,32 +35,12 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li>
-							<span>
-								An argument indicating where the module can be found. It can take one of two forms: a
-								<code>string</code> path to the module's base (or to its main file), or an object with properties.
-							</span>
 							<div class="value">
 								<span class="type">string</span>
 								<span>
 									The path of the module's main file. Other files the main file may load will be loaded from the
 									base location of the main file.
 								</span>
-							</div>
-							OR
-							<div class="object">
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">base</div>
-										<span class="type">string</span>
-										<span>The base path from which to load files associated with the module.</span>
-									</li>
-									<li class="value">
-										<div class="name">main</div>
-										<span class="type">string</span>
-										<span>(optional) The location of the module's main file.</span>
-									</li>
-								</ul>
 							</div>
 						</li>
 						<li class="object">
