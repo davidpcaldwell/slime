@@ -15,17 +15,6 @@
 
 if (!$context.api) throw "Missing 'api' member of context";
 
-//	TODO	document this
-var stdio = ($context.stdio) ? $context.stdio : {
-	$err: Packages.java.lang.System.err,
-	$out: Packages.java.lang.System.out
-}
-
-var warning = function(message) {
-	stdio.$err.println(message);
-	debugger;
-}
-
 var defaults = {};
 
 var file = $loader.file("file.js", {
@@ -36,7 +25,6 @@ var file = $loader.file("file.js", {
 	experimental: $api.experimental,
 	fail: $context.api.java.fail,
 	Streams: $context.api.io.Streams,
-	warning: warning,
 	Resource: $context.api.io.Resource
 });
 

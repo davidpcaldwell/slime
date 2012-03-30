@@ -18,7 +18,6 @@ var defaults = $context.defaults;
 var constant = $context.constant;
 var deprecate = $context.deprecate;
 var fail = $context.fail;
-var warning = $context.warning;
 
 var Pathname = function(parameters) {
 	if (this.constructor != arguments.callee) {
@@ -37,19 +36,20 @@ var Pathname = function(parameters) {
 		fail("Missing argument to new Pathname()");
 	}
 
-	if (parameters.$filesystem) warning("DEPRECATED: new Pathname() parameter '$filesystem'");
+	$api.deprecate(parameters,"$filesystem");
+	$api.deprecate(parameters,"$path");
+	$api.deprecate(parameters,"$peer");
+	$api.deprecate(parameters,"path");
+
 	var $filesystem = defined(parameters.filesystem,parameters.$filesystem,defaults.filesystem);
 	if (!$filesystem.peerToString) fail("Internal error; Pathname constructed incorrectly: " + parameters.toSource());
 
 	var peer = (function() {
-		if (parameters.$path) warning("DEPRECATED: new Pathname() parameter '$path'");
-		if (parameters.$peer) warning("DEPRECATED: new Pathname() parameter '$peer'");
-		if (parameters.path) warning("DEPRECATED: new Pathname() parameter 'path'");
+		var peer = defined(parameters.peer,parameters.$peer);
+		if (peer) return peer;
 		var path = defined(parameters.path,parameters.$path);
 		//	TODO	below line appears to invoke nonexistent method
 		if (path) return $filesystem.getPeer(path);
-		var peer = defined(parameters.peer,parameters.$peer);
-		if (peer) return peer;
 		if (parameters.toSource) {
 			fail("Missing new Pathname() arguments: " + parameters.toSource());
 		} else {
@@ -102,13 +102,13 @@ var Pathname = function(parameters) {
 		if (!mode) mode = {};
 
 		var prepareWrite = function(mode) {
+			$api.deprecate(mode,"overwrite");
 			//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
 			//			create it, but not one where we are willing to create its directory but not parent directories.  Is that OK?
 			if ($filesystem.exists(peer)) {
 				var append = mode.append;
 				if (typeof(append) == "undefined") {
 					if (mode.overwrite) {
-						warning("DEPRECATED: writeXXX() mode property overwrite; use mode property append");
 						append = false;
 					}
 				}
