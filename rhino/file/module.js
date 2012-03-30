@@ -33,14 +33,15 @@ $exports.Streams = streams.Streams;
 $api.deprecate($exports,"Streams");
 
 var os = $loader.file("os.js", new function() {
-	this.$pwd = $context.$pwd;
 	this.cygwin = $context.cygwin;
-	this.streams = streams;
-	this.deprecate = $api.deprecate;
-	this.isJavaType = $context.api.java.isJavaType;
-	this.defined = $context.api.js.defined;
 
-	//	These next three methods are defined this way because of dependencies on filesystem.js: presumably these are
+	this.api = new function() {
+		this.io = $context.api.io;
+		this.isJavaType = $context.api.java.isJavaType;
+		this.defined = $context.api.js.defined;
+	};
+
+	//	These next two methods are defined this way because of dependencies on filesystem.js: presumably these are
 	//	cross-dependencies
 	this.__defineGetter__("Searchpath", function() {
 		return globals.Searchpath;
@@ -48,6 +49,7 @@ var os = $loader.file("os.js", new function() {
 	this.__defineGetter__("Pathname", function() {
 		return globals.Pathname;
 	});
+
 	this.addFinalizer = $context.addFinalizer;
 });
 

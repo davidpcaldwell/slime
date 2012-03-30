@@ -21,21 +21,6 @@
 //	warning: function which handles single-argument (string) warning
 //	constant: function which takes a function and returns the same value every time (after being invoked the first time).
 
-//	This is the current working directory, in the OS filesystem, apparently as a string
-var $pwd = $context.$pwd;
-
-//	This variable contains information about the Cygwin filesystem, and will cause a filesystems.cygwin object to be created
-//	if it exists.
-var cygwin = $context.cygwin;
-
-var streams = $context.streams;
-var deprecate = $context.deprecate;
-var isJavaType = $context.isJavaType;
-
-var Streams = streams.Streams;
-
-var defined = $context.defined;
-
 var Filesystem = function(implementation) {
 	this.Searchpath = function(array) {
 		return new $context.Searchpath({ filesystem: implementation, array: array });
@@ -197,25 +182,25 @@ var System = function(peer,PARENT) {
 
 	this.read = new function() {
 		this.binary = function(peer) {
-			return new streams.InputStream(peer.readBinary());
+			return new $context.api.io.InputStream(peer.readBinary());
 		}
 
 		this.character = function(peer) {
-			return new streams.Reader(peer.readText(), {LINE_SEPARATOR: String(PARENT_PEER.getLineSeparator())});
+			return new $context.api.io.Reader(peer.readText(), {LINE_SEPARATOR: String(PARENT_PEER.getLineSeparator())});
 		}
 	}
 
 	this.write = new function() {
 		this.binary = function(peer,append) {
-			return new streams.OutputStream(peer.writeBinary(append));
+			return new $context.api.io.OutputStream(peer.writeBinary(append));
 		}
 
 		this.character = function(peer,append) {
-			return new streams.Writer(peer.writeText(append));
+			return new $context.api.io.Writer(peer.writeText(append));
 		}
 
 		this.string = function(peer,append,string) {
-			var stream = new streams.Writer(peer.writeText(append));
+			var stream = new $context.api.io.Writer(peer.writeText(append));
 			stream.write(string);
 			stream.close();
 		}
@@ -239,9 +224,9 @@ var System = function(peer,PARENT) {
 
 	this.temporary = function(peer,parameters) {
 		if (!parameters) parameters = {};
-		var prefix = defined(parameters.prefix, "jsh");
-		var suffix = defined(parameters.suffix, null);
-		var directory = defined(parameters.directory, false);
+		var prefix = $context.api.defined(parameters.prefix, "jsh");
+		var suffix = $context.api.defined(parameters.suffix, null);
+		var directory = $context.api.defined(parameters.directory, false);
 		var jdir = (peer) ? peer.getHostFile() : null;
 		var jfile = Packages.java.io.File.createTempFile(prefix,suffix,jdir);
 		//	If this was request for directory, delete the temp file and create directory with same name
@@ -260,9 +245,9 @@ var System = function(peer,PARENT) {
 	var mapPathnameFunction = function(filesystem) {
 		return function(pathname) {
 			var pathnameType;
-			if (isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem.NodeImpl)(pathname.java.getPeer())) {
+			if ($context.api.isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem.NodeImpl)(pathname.java.getPeer())) {
 				pathnameType = "os";
-			} else if (isJavaType(Packages.inonit.script.runtime.io.cygwin.NodeImpl)(pathname.java.getPeer())) {
+			} else if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.NodeImpl)(pathname.java.getPeer())) {
 				pathnameType = "cygwin";
 			}
 			if (pathnameType == "cygwin" && filesystem == filesystems.os) {
@@ -285,7 +270,7 @@ var System = function(peer,PARENT) {
 			return pathname;
 		}
 	}
-	deprecate(this,"$inFilesystem");
+	$api.deprecate(this,"$inFilesystem");
 
 	this.$Searchpath = {
 		mapPathname: mapPathnameFunction(PARENT)
@@ -320,16 +305,16 @@ var SystemFilesystem = function(peer,os) {
 			this.os = function(pathname) {
 				return pathname;
 			}
-		} else if (isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
+		} else if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
 			this.os = function(pathname) {
 				return self.toUnix(pathname);
 			}
 		}
 	}
 
-	if (isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
+	if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
 		var isPathname = function(item) {
-			return item && item.java && item.java.adapt() && isJavaType(Packages.java.io.File)(item.java.adapt());
+			return item && item.java && item.java.adapt() && $context.api.isJavaType(Packages.java.io.File)(item.java.adapt());
 		}
 
 		this.toUnix = function(item) {
@@ -370,12 +355,12 @@ var SystemFilesystem = function(peer,os) {
 
 var filesystems = {};
 filesystems.os = new SystemFilesystem( Packages.inonit.script.runtime.io.Filesystem.create(), true );
-if ( cygwin ) {
+if ( $context.cygwin ) {
 	var $delegate;
-	if (cygwin.root && !cygwin.paths) {
-		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create(cygwin.root)
+	if ($context.cygwin.root && !$context.cygwin.paths) {
+		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root)
 	} else {
-		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create(cygwin.root,cygwin.paths)
+		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root,$context.cygwin.paths)
 	}
 	filesystems.cygwin = new SystemFilesystem($delegate);
 	if ($context.addFinalizer) {
