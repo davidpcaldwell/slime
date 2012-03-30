@@ -13,6 +13,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!$context.api) throw "Missing 'api' member of context";
+
 //	TODO	document this
 var stdio = ($context.stdio) ? $context.stdio : {
 	$err: Packages.java.lang.System.err,
@@ -24,13 +26,19 @@ var warning = function(message) {
 	debugger;
 }
 
-var globals = {};
 var defaults = {};
 
-if (!$context.api) throw "Missing 'api' member of context";
-var streams = $context.api.io;
-$exports.Streams = streams.Streams;
-$api.deprecate($exports,"Streams");
+var file = $loader.file("file.js", {
+	defined: $context.api.js.defined,
+	defaults: defaults,
+	constant: $context.api.js.constant,
+	deprecate: $api.deprecate,
+	experimental: $api.experimental,
+	fail: $context.api.java.fail,
+	Streams: $context.api.io.Streams,
+	warning: warning,
+	Resource: $context.api.io.Resource
+});
 
 var os = $loader.file("os.js", new function() {
 	this.cygwin = $context.cygwin;
@@ -41,23 +49,17 @@ var os = $loader.file("os.js", new function() {
 		this.defined = $context.api.js.defined;
 	};
 
-	//	These next two methods are defined this way because of dependencies on filesystem.js: presumably these are
+	//	These next two methods are defined this way because of dependencies on file.js: presumably these are
 	//	cross-dependencies
 	this.__defineGetter__("Searchpath", function() {
-		return globals.Searchpath;
+		return file.Searchpath;
 	});
 	this.__defineGetter__("Pathname", function() {
-		return globals.Pathname;
+		return file.Pathname;
 	});
 
 	this.addFinalizer = $context.addFinalizer;
 });
-
-$exports.filesystems = os.filesystems;
-
-//	Possibly used for initial attempt to produce HTTP filesystem, for example
-$exports.Filesystem = os.Filesystem;
-$api.experimental($exports,"Filesystem");
 
 //	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
 defaults.filesystem = (os.filesystems.cygwin) ? os.filesystems.cygwin : os.filesystems.os;
@@ -70,7 +72,15 @@ $exports.__defineSetter__("filesystem", function(v) {
 	defaults.filesystem = v;
 });
 
+$exports.filesystems = os.filesystems;
+
+//	Possibly used for initial attempt to produce HTTP filesystem, for example
+$exports.Filesystem = os.Filesystem;
+$api.experimental($exports,"Filesystem");
+
+//	TODO	probably does not need to use __defineGetter__ but can use function literal?
 var workingDirectory = function() {
+	//	TODO	the call used by jsh.shell to translate native paths to paths from this package can probably be used here
 	if ($context.$pwd) {
 		var osdir = os.filesystems.os.Pathname($context.$pwd);
 		if (defaults.filesystem == os.filesystems.cygwin) {
@@ -81,29 +91,12 @@ var workingDirectory = function() {
 };
 $exports.__defineGetter__("workingDirectory", workingDirectory);
 
-var file = $loader.file("file.js", {
-	defined: $context.api.js.defined,
-	defaults: defaults,
-	constant: $context.api.js.constant,
-	deprecate: $api.deprecate,
-	experimental: $api.experimental,
-	fail: $context.api.java.fail,
-	Streams: streams.Streams,
-	warning: warning,
-	Resource: streams.Resource
-});
-
-globals.Pathname = file.Pathname;
-globals.Searchpath = file.Searchpath;
-
+//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
 $exports.Pathname = file.Pathname;
 $exports.Searchpath = file.Searchpath;
 
-$exports.java = $context.api.io.java;
-$api.deprecate($exports,"java");
-
 var zip = $loader.file("zip.js", {
-	Streams: streams.Streams
+	Streams: $context.api.io.Streams
 	,Pathname: file.Pathname
 	,InputStream: function(_in) {
 		return $context.api.io.java.adapt(_in)
@@ -114,3 +107,8 @@ $exports.zip = zip.zip;
 $exports.unzip = zip.unzip;
 $api.experimental($exports, "zip");
 $api.experimental($exports, "unzip");
+
+$exports.Streams = $context.api.io.Streams;
+$api.deprecate($exports,"Streams");
+$exports.java = $context.api.io.java;
+$api.deprecate($exports,"java");
