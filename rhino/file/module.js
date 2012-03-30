@@ -21,8 +21,6 @@ var file = $loader.file("file.js", {
 	defined: $context.api.js.defined,
 	defaults: defaults,
 	constant: $context.api.js.constant,
-	deprecate: $api.deprecate,
-	experimental: $api.experimental,
 	fail: $context.api.java.fail,
 	Streams: $context.api.io.Streams,
 	Resource: $context.api.io.Resource

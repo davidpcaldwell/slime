@@ -16,7 +16,6 @@
 var defined = $context.defined;
 var defaults = $context.defaults;
 var constant = $context.constant;
-var deprecate = $context.deprecate;
 var fail = $context.fail;
 
 var Pathname = function(parameters) {
@@ -450,7 +449,7 @@ var Pathname = function(parameters) {
 			this.createTemporary = function(parameters) {
 				return $filesystem.temporary(peer,parameters);
 			}
-			$context.experimental(this,"createTemporary");
+			$api.experimental(this,"createTemporary");
 		}
 	}
 //	Directory.prototype = new Node(this,"");
