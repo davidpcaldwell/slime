@@ -13,14 +13,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	Required in scope (combined for filesystem.js and this file):
-//	defined: js/object defined
-//	deprecate: js/object deprecate
-//	experimental: js/object experimental
-//	fail: rhino/host fail
-//	warning: function which handles single-argument (string) warning
-//	constant: function which takes a function and returns the same value every time (after being invoked the first time).
-
 var Filesystem = function(implementation) {
 	this.Searchpath = function(array) {
 		return new $context.Searchpath({ filesystem: implementation, array: array });
