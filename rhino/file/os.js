@@ -324,8 +324,8 @@ var SystemFilesystem = function(peer,os) {
 				//	Unbelievably horrendous workaround, but seems to work
 				//	When creating a softlink to an exe in Windows, the softlink gets the .exe suffix added to it even if it is not on the
 				//	command line.
-				if (item.file == null && $context.Pathname( item.toString() + ".exe" ).file != null ) {
-					item = $context.Pathname( item.toString() + ".exe" );
+				if (item.file == null && this.Pathname( item.toString() + ".exe" ).file != null ) {
+					item = this.Pathname( item.toString() + ".exe" );
 				}
 				return System.os.importPathname( item );
 			}

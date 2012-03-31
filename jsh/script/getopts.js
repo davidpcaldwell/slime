@@ -155,7 +155,7 @@ var getopts = function(settings,array) {
 					defaults[x] = v["default"];
 				} else if (typeof(settings.options[x]) == "boolean" && settings.options[x]) {
 					throw "A boolean option declared to be true cannot be negated.";
-				} else if (settings.options[x] instanceof $Pathname) {
+				} else if (settings.options[x].constructor == $Pathname) {
 					var v = PATHNAME(settings.options[x]);
 					switches[x] = v.parser;
 					defaults[x] = v["default"];

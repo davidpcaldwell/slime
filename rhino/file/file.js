@@ -19,18 +19,6 @@ var constant = $context.constant;
 var fail = $context.fail;
 
 var Pathname = function(parameters) {
-	if (this.constructor != arguments.callee) {
-		//	not called as constructor but as function
-		//	perform a "cast"
-		if (typeof(parameters) == "string") {
-			return defaults.filesystem.Pathname(parameters);
-		} else if (typeof(parameters) == "object" && parameters instanceof String) {
-			return defaults.filesystem.Pathname(parameters.toString());
-		} else {
-			fail("Illegal argument to Pathname(): " + parameters);
-		}
-	}
-
 	if (!parameters) {
 		fail("Missing argument to new Pathname()");
 	}
