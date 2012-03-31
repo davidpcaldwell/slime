@@ -372,7 +372,9 @@ if (!getSetting("jsh.build.nounit")) {
 	var integrationTests = function() {
 		var script = new File(BASE,"jsh/test/suite.rhino.js");
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");
-		load(script.getCanonicalPath());
+		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
+		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
+		eval(readFile(script.getCanonicalPath()));
 	}
 
 	integrationTests();

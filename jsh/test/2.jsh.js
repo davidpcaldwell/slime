@@ -26,6 +26,10 @@ jsh.shell.jsh(jsh.script.getRelativePath("1.jsh"), [], {
 	onExit: function(result) {
 		buffer.close();
 		jsh.shell.echo("output = " + buffer.readText().asString());
+		if (result.status != 0) {
+			jsh.shell.echo("Failure in jsh.shell.jsh!");
+			jsh.shell.exit(result.status);
+		}
 	}
 });
 jsh.shell.echo("Success!");

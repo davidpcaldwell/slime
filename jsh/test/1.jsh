@@ -17,11 +17,21 @@
 #CLASSPATH		/foo/bar/baz
 #JDK_LIBRARY	lib/tools.jar
 
-var parameters = jsh.shell.getopts({
+var parameters = jsh.script.getopts({
 	options: {
 		modules: (jsh.shell.environment.MODULES) ? jsh.file.Pathname(jsh.shell.environment.MODULES) : jsh.file.Pathname
 	}
 });
+
+if (!parameters.options.modules) {
+	jsh.shell.echo("jsh.shell.environment.MODULES = " + jsh.shell.environment.MODULES);
+	for (var x in jsh.shell.environment) {
+		jsh.shell.echo(x + " = [" + jsh.shell.environment[x] + "]");
+	}
+	jsh.shell.echo("jsh.file.Pathname(jsh.shell.environment.MODULES) = " + jsh.file.Pathname(jsh.shell.environment.MODULES));
+	jsh.shell.echo("jsh.file.filesystems.os.Pathname(jsh.shell.environment.MODULES) = " + jsh.file.filesystems.os.Pathname(jsh.shell.environment.MODULES));
+	jsh.shell.exit(1);
+}
 
 var slime = jsh.loader.module(parameters.options.modules.directory.getRelativePath("1.slime"));
 jsh.shell.echo(slime.data);
