@@ -329,6 +329,8 @@ var SystemFilesystem = function(peer,os) {
 				}
 				return System.os.importPathname( item );
 			}
+			//	Searchpath currently sets the constructor property to this module-level function; would this make this instanceof
+			//	work?
 			if (item instanceof $context.Searchpath) {
 				//	TODO	convert underlying pathnames
 				return new $context.Searchpath({ filesystem: System.os, array: item.pathnames });

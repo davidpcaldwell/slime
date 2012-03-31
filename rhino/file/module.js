@@ -15,11 +15,8 @@
 
 if (!$context.api) throw "Missing 'api' member of context";
 
-var defaults = {};
-
 var file = $loader.file("file.js", {
 	defined: $context.api.js.defined,
-	defaults: defaults,
 	constant: $context.api.js.constant,
 	fail: $context.api.java.fail,
 	Streams: $context.api.io.Streams,
@@ -43,15 +40,7 @@ var os = $loader.file("os.js", new function() {
 });
 
 //	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
-defaults.filesystem = (os.filesystems.cygwin) ? os.filesystems.cygwin : os.filesystems.os;
-
-//	TODO	figure out how to make this work properly
-$exports.__defineGetter__("filesystem", function() {
-	return defaults.filesystem;
-});
-$exports.__defineSetter__("filesystem", function(v) {
-	defaults.filesystem = v;
-});
+$exports.filesystem = (os.filesystems.cygwin) ? os.filesystems.cygwin : os.filesystems.os;
 
 $exports.filesystems = os.filesystems;
 
@@ -68,9 +57,9 @@ $exports.Pathname = function(parameters) {
 		//	not called as constructor but as function
 		//	perform a "cast"
 		if (typeof(parameters) == "string") {
-			return decorator(defaults.filesystem.Pathname(parameters));
+			return decorator($exports.filesystem.Pathname(parameters));
 		} else if (typeof(parameters) == "object" && parameters instanceof String) {
-			return decorator(defaults.filesystem.Pathname(parameters.toString()));
+			return decorator($exports.filesystem.Pathname(parameters.toString()));
 		} else {
 			$context.api.java.fail("Illegal argument to Pathname(): " + parameters);
 		}
@@ -78,7 +67,26 @@ $exports.Pathname = function(parameters) {
 		$context.api.java.fail("Cannot invoke Pathname as constructor.");
 	}
 };
-$exports.Searchpath = file.Searchpath;
+$exports.Searchpath = function(parameters) {
+	if (this.constructor != arguments.callee) {
+		var ctor = arguments.callee;
+
+		var decorator = function(rv) {
+			rv.constructor = ctor;
+			return rv;
+		}
+
+		//	not called as constructor but as function
+		//	perform a "cast"
+		if (parameters instanceof Array) {
+			return decorator($exports.filesystem.Searchpath(parameters));
+		} else {
+			throw new TypeError("Illegal argument to Searchpath(): " + parameters);
+		}
+	} else {
+		$context.api.java.fail("Cannot invoke Searchpath as constructor.");
+	}
+};
 
 //	Possibly used for initial attempt to produce HTTP filesystem, for example
 $exports.Filesystem = os.Filesystem;
@@ -98,11 +106,12 @@ $api.experimental($exports, "zip");
 $api.experimental($exports, "unzip");
 
 //	TODO	probably does not need to use __defineGetter__ but can use function literal?
+//	TODO	should deprecate and put this property in jsh.shell
 var workingDirectory = function() {
 	//	TODO	the call used by jsh.shell to translate native paths to paths from this package can probably be used here
 	if ($context.$pwd) {
 		var osdir = os.filesystems.os.Pathname($context.$pwd);
-		if (defaults.filesystem == os.filesystems.cygwin) {
+		if ($exports.filesystem == os.filesystems.cygwin) {
 			osdir = os.filesystems.cygwin.toUnix(osdir);
 		}
 		return osdir.directory;

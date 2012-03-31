@@ -14,7 +14,6 @@
 //	END LICENSE
 
 var defined = $context.defined;
-var defaults = $context.defaults;
 var constant = $context.constant;
 var fail = $context.fail;
 
@@ -28,7 +27,7 @@ var Pathname = function(parameters) {
 	$api.deprecate(parameters,"$peer");
 	$api.deprecate(parameters,"path");
 
-	var $filesystem = defined(parameters.filesystem,parameters.$filesystem,defaults.filesystem);
+	var $filesystem = defined(parameters.filesystem,parameters.$filesystem);
 	if (!$filesystem.peerToString) fail("Internal error; Pathname constructed incorrectly: " + parameters.toSource());
 
 	var peer = (function() {
@@ -444,16 +443,6 @@ var Pathname = function(parameters) {
 }
 
 var Searchpath = function(parameters) {
-	if (this.constructor != arguments.callee) {
-		//	not called as constructor but as function
-		//	perform a "cast"
-		if (parameters instanceof Array) {
-			return defaults.filesystem.Searchpath(parameters);
-		} else {
-			throw new TypeError("Illegal argument to Searchpath(): " + parameters);
-		}
-	}
-
 	if (!parameters || !parameters.array) {
 		throw new TypeError("Illegal argument to new Searchpath(): " + parameters);
 	}
