@@ -75,7 +75,7 @@ END LICENSE
 			(function() {
 				var $Context = function(p) {
 					this.api = arguments.callee.api;
-					this.$pwd = jsh.shell.properties.user.dir;
+					this.$pwd = String(jsh.shell.properties.user.dir);
 					this.addFinalizer = jsh.loader.addFinalizer;
 
 					if (p && p.cygwin) {

@@ -13,7 +13,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (!$context.api) throw "Missing 'api' member of context";
+if (!$context.api) throw new Error("Missing 'api' member of context");
+if ($context.$pwd && typeof($context.$pwd) != "string") {
+	throw new Error("$pwd is object.");
+}
 
 var file = $loader.file("file.js", {
 	defined: $context.api.js.defined,
