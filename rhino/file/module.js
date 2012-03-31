@@ -106,7 +106,6 @@ $api.experimental($exports, "zip");
 $api.experimental($exports, "unzip");
 
 //	TODO	probably does not need to use __defineGetter__ but can use function literal?
-//	TODO	should deprecate and put this property in jsh.shell
 var workingDirectory = function() {
 	//	TODO	the call used by jsh.shell to translate native paths to paths from this package can probably be used here
 	if ($context.$pwd) {
@@ -118,6 +117,9 @@ var workingDirectory = function() {
 	}
 };
 $exports.__defineGetter__("workingDirectory", workingDirectory);
+//	Property only makes sense in context of an execution environment, so moving to jsh.shell (other environments can provide their
+//	own mechanisms)
+$api.deprecate($exports,"workingDirectory");
 
 $exports.Streams = $context.api.io.Streams;
 $api.deprecate($exports,"Streams");
