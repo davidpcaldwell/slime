@@ -107,7 +107,7 @@ $exports.ApiHtmlTests = function(html,name) {
 					if (typeof($context) == "object" && $context.run) {
 						$context.run(container.initializes[i].getContentString(),scope);
 					} else {
-						with (scope) {
+						with(scope) {
 							eval(container.initializes[i].getContentString());
 						}
 					}
