@@ -42,14 +42,6 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
-			<li class="value">
-				<div class="name">$pwd</div>
-				<span class="type">string</span>
-				<span>
-					(optional) The current working directory, if applicable to this context, as a string representing a native
-					operating system path.
-				</span>
-			</li>
 			<li class="object">
 				<div class="name">cygwin</div>
 				<span>
@@ -127,7 +119,8 @@ END LICENSE
 					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				}
 
-				//	TODO	can this helper be replaced by $jsapi.newTemporaryDirectory() ?
+				//	Although this is equivalent to $jsapi.newTemporaryDirectory(), we use a separate copy here because we want the
+				//	calls to go to the module being tested, not the module executing the test environment
 				this.newTemporaryDirectory = function() {
 					var $dir = $java.io.newTemporaryDirectory();
 					return scope.filesystem.$unit.Pathname(scope.filesystem.$unit.getNode($dir)).directory;
@@ -157,6 +150,65 @@ END LICENSE
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			helpers.initialize(module);
 		]]></script>
+		<div class="type">
+			<a class="type" name="types.filesystem">filesystem</a>
+			<div>A filesystem implementation from which files may be read and listed and to which files may be written.</div>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">Pathname</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li><span class="type">string</span> A path name that is valid in this filesystem.</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.Pathname">Pathname</a></span> A Pathname in this filesystem corresponding
+						to the given string.
+					</div>
+				</li>
+				<!--
+					$doc.types.filesystem = new $Doc.Type({
+						name: "(filesystem)",
+						summary: <>A filesystem implementation from which files may be read and listed and to which files may be written.</>,
+						members: {
+							PATHNAME_SEPARATOR: {
+								type: "string",
+								summary: <>The string used to separate components of a path name in this filesystem; for example, / in Unix-like
+									operating systems.
+								</>
+							},
+							SEARCHPATH_SEPARATOR: {
+								type: "string",
+								summary: <>The string used to separate components of a search path in this filesystem; for example, : in Unix-like
+									operating systems.
+								</>
+							},
+							LINE_SEPARATOR: {
+								type: "string",
+								summary: <>The string used to separate components of a search path in this filesystem; for example, "\n" in Unix-like
+									operating systems.
+								</>
+							},
+							Pathname: {
+								type: $Doc.Method,
+								arguments: {
+									list: [
+										{ name: "path", type: "string", comment: <>A path name that is valid in this filesystem.</> },
+									]
+								},
+								returns: {
+									type: $doc.types.Pathname,
+									comment: <>A Pathname in this filesystem corresponding to the given string.</>
+								}
+							}
+						}
+					});
+				-->
+			</ul>
+		</div>
 		<ul>
 			<li class="object">
 				<div class="name">filesystems</div>
@@ -167,68 +219,10 @@ END LICENSE
 						<div class="name">os</div>
 						<span class="type"><a href="#types.filesystem">filesystem</a></span> The underlying operating system's
 						filesystem.
-						<div class="type">
-							<a class="type" name="types.filesystem">filesystem</a>
-							<div>A filesystem implementation from which files may be read and listed and to which files may be written.</div>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="function">
-									<div class="name">Pathname</div>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li><span class="type">string</span> A path name that is valid in this filesystem.</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.Pathname">Pathname</a></span> A Pathname in this filesystem corresponding
-										to the given string.
-									</div>
-								</li>
-								<!--
-									$doc.types.filesystem = new $Doc.Type({
-										name: "(filesystem)",
-										summary: <>A filesystem implementation from which files may be read and listed and to which files may be written.</>,
-										members: {
-											PATHNAME_SEPARATOR: {
-												type: "string",
-												summary: <>The string used to separate components of a path name in this filesystem; for example, / in Unix-like
-													operating systems.
-												</>
-											},
-											SEARCHPATH_SEPARATOR: {
-												type: "string",
-												summary: <>The string used to separate components of a search path in this filesystem; for example, : in Unix-like
-													operating systems.
-												</>
-											},
-											LINE_SEPARATOR: {
-												type: "string",
-												summary: <>The string used to separate components of a search path in this filesystem; for example, "\n" in Unix-like
-													operating systems.
-												</>
-											},
-											Pathname: {
-												type: $Doc.Method,
-												arguments: {
-													list: [
-														{ name: "path", type: "string", comment: <>A path name that is valid in this filesystem.</> },
-													]
-												},
-												returns: {
-													type: $doc.types.Pathname,
-													comment: <>A Pathname in this filesystem corresponding to the given string.</>
-												}
-											}
-										}
-									});
-								-->
-							</ul>
-						</div>
 					</li>
 					<li class="object">
 						<div class="name">cygwin</div>
+						<span>(if $context.cygwin was specified)</span>
 						<span class="type"><a href="#types.filesystem">filesystem</a></span> A Cygwin file system that interoperates
 						with an underlying Windows file system. Along with the normal filesystem API, it supports the
 						following methods:
@@ -587,6 +581,118 @@ END LICENSE
 							<span>Convenience for <code>read(Streams.text).readLines()</code>.</span>
 						</li>
 						-->
+						<li class="function" jsapi:id="copy">
+							<div class="name">copy</div>
+							<!--	Inspiration: http://unixhelp.ed.ac.uk/CGI/man-cgi?cp -->
+							<span>Copies the file represented by this object to another location.</span>
+							<script type="application/x.jsapi#initialize">
+								var top = scope.newTemporaryDirectory();
+								scope.d1 = top.getRelativePath("d1").createDirectory();
+								top.getRelativePath("f1").write("f1", { append: false });
+								top.getRelativePath("f2").write("f2", { append: false });
+								scope.f1 = top.getFile("f1");
+								scope.f2 = top.getFile("f2");
+								scope.d2 = top.getRelativePath("d2").createDirectory();
+								scope.d3 = top.getRelativePath("d3").createDirectory();
+								scope.p1 = top.getRelativePath("p1");
+								scope.p_overwrite = top.getRelativePath("p2");
+								scope.p_recursive = top.getRelativePath("p3/sub");
+							</script>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span>__DESCRIPTION__</span>
+										<span class="type"><a href="#types.pathname">Pathname</a></span>
+										or <span class="type"><a href="#types.directory">directory</a></span>
+										<span>
+											A location to which to copy this file. If the given location is a
+											<a href="#types.directory">directory</a>, the file will be copied into that directory
+											with this file's basename. If the given location is a
+											<a href="#types.Pathname">Pathname</a>,
+											then if a directory exists at that <code>Pathname</code>, the file will be copied to
+											that directory with this file's basename. Otherwise, the file will be copied to the
+											given <code>Pathname</code>.
+										</span>
+										<script type="application/x.jsapi#tests">
+											test(d1.getFile("f1") == null);
+											f1.copy(d1);
+											test(d1.getFile("f1") != null);
+
+											test(d2.getFile("f1") == null);
+											f1.copy(d2.pathname);
+											test(d2.getFile("f1") != null);
+
+											test(p1.file == null);
+											f1.copy(p1);
+											test(p1.file != null);
+										</script>
+									</li>
+									<li class="object">
+										<span>(optional) __DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">overwrite</div>
+												<span class="type">boolean</span>
+												<span>
+													If <code>true</code> and if a file exists at the location to which this file
+													would be copied, the existing file will be overwritten. Otherwise, an exception
+													will be thrown.
+												</span>
+												<script type="application/x.jsapi#tests">
+													f1.copy(p_overwrite);
+													try {
+														f2.copy(p_overwrite);
+														test(false);
+													} catch (e) {
+														test(true);
+														test(p_overwrite.file.read(String) == "f1");
+													}
+													try {
+														f2.copy(p_overwrite, { overwrite: true });
+														test(true);
+														test(p_overwrite.file.read(String) == "f2");
+													} catch (e) {
+														test(false);
+													}
+												</script>
+											</li>
+											<li class="value">
+												<div class="name">recursive</div>
+												<span class="type">boolean</span>
+												<span>
+													If <code>true</code>, then if the parent directory or directories to which this
+													file would be copied do not exist, they will be created. Otherwise, if they do
+													not exist, an exception will be thrown.
+												</span>
+												<script type="application/x.jsapi#tests">
+													debugger;
+													try {
+														f1.copy(p_recursive);
+														test(false);
+													} catch (e) {
+														test(true);
+													}
+													try {
+														f1.copy(p_recursive, { recursive: true });
+														test(true);
+														test(p_recursive.file.read(String) == "f1");
+													} catch (e) {
+														test(false);
+													}
+												</script>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
 					</ul>
 				</div>
 				<div class="type">
@@ -966,40 +1072,6 @@ END LICENSE
 						}
 					} );
 				</script>
-			</li>
-			<li class="object">
-				<div class="name">java</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">adapt</div>
-						<span>Converts a native Java object to a corresponding type from this package.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">JavaClass java.io.InputStream</span>
-									or
-									<span class="type">JavaClass java.io.OutputStream</span>
-									<span>A native Java object to convert.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.binput">byte input stream</a></span>,
-							if the argument was a native Java <code>java.io.InputStream</code>,
-							or
-							<span class="type"><a href="#types.boutput">byte output stream</a></span>, if the
-							argument was a native Java <code>java.io.OutputStream</code>.
-						</div>
-						<script type="application/x.jsapi#tests">
-							var $out = new Packages.java.io.ByteArrayOutputStream();
-							var out = context.$Context.api.io.java.adapt($out);
-							test(out != null);
-						</script>
-					</li>
-				</ul>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#tests"><![CDATA[

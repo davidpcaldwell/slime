@@ -306,6 +306,39 @@ var Pathname = function(parameters) {
 		this.readLines = function() {
 			return resource.read.lines.apply(resource,arguments);
 		}
+
+		this.copy = function(target,mode) {
+			var to = (function() {
+				if (target.pathname && $context.isPathname(target.pathname)) {
+					//	Assume target is itself a directory
+					if (target.pathname.directory) {
+						return target.pathname.directory.getRelativePath(pathname.basename);
+					} else {
+						throw new Error();
+					}
+				} else if ($context.isPathname(target)) {
+					if (target.directory) {
+						return target.directory.getRelativePath(pathname.basename);
+					} else {
+						return target;
+					}
+				} else {
+					throw new Error();
+				}
+			})();
+			if (!mode) mode = {};
+			if (!to.parent.directory) {
+				if (mode.recursive) {
+					to.parent.createDirectory({ recursive: true });
+				} else {
+					throw new Error();
+				}
+			}
+			if (to.file && !mode.overwrite) {
+				throw new Error();
+			}
+			to.write( resource.read($context.Streams.binary), { append: false } );
+		};
 	}
 //	File.prototype = new Node(this,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
 

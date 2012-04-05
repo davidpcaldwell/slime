@@ -18,7 +18,12 @@ if ($context.$pwd && typeof($context.$pwd) != "string") {
 	throw new Error("$pwd is object.");
 }
 
+var isPathname = function(item) {
+	return item && item.java && item.java.adapt() && $context.api.java.isJavaType(Packages.java.io.File)(item.java.adapt());
+}
+
 var file = $loader.file("file.js", {
+	isPathname: isPathname,
 	defined: $context.api.js.defined,
 	constant: $context.api.js.constant,
 	fail: $context.api.java.fail,
@@ -38,6 +43,7 @@ var os = $loader.file("os.js", new function() {
 
 	this.Searchpath = file.Searchpath;
 	this.Pathname = file.Pathname;
+	this.isPathname = isPathname;
 
 	this.addFinalizer = $context.addFinalizer;
 });

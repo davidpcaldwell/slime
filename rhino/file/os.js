@@ -305,9 +305,7 @@ var SystemFilesystem = function(peer,os) {
 	}
 
 	if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
-		var isPathname = function(item) {
-			return item && item.java && item.java.adapt() && $context.api.isJavaType(Packages.java.io.File)(item.java.adapt());
-		}
+		var isPathname = $context.isPathname;
 
 		this.toUnix = function(item) {
 			if (isPathname(item)) {
