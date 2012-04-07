@@ -279,33 +279,6 @@ var Pathname = function(parameters) {
 		this.getLastModified = getLastModified;
 		$api.deprecate(this, "getLastModified");
 		$api.deprecate(this, "setLastModified");
-	}
-
-	var File = function(pathname,peer) {
-		Node.call(this,pathname,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
-
-		this.directory = false;
-
-		var resource = new $context.Resource({
-			read: {
-				binary: function() {
-					return $filesystem.read.binary(peer);
-				},
-				text: function() {
-					return $filesystem.read.character(peer);
-				}
-			}
-		});
-
-		this.resource = resource;
-
-		this.read = function(mode) {
-			return resource.read(mode);
-		}
-
-		this.readLines = function() {
-			return resource.read.lines.apply(resource,arguments);
-		}
 
 		this.copy = function(target,mode) {
 			var to = (function() {
@@ -334,11 +307,95 @@ var Pathname = function(parameters) {
 					throw new Error();
 				}
 			}
-			if (to.file && !mode.overwrite) {
-				throw new Error();
+
+			var filter = (mode.filter) ? mode.filter : function(p) {
+				if (p.exists) throw new Error(
+					"Cannot copy " + p.entry.node
+					+ "; node already exists at " + p.exists.pathname.toString()
+				);
+				return true;
+			};
+
+			var getNode = function(pathname) {
+				if (pathname.file) return pathname.file;
+				if (pathname.directory) return pathname.directory;
 			}
-			to.write( resource.read($context.Streams.binary), { append: false } );
+			
+			var processFile = function(path,file,topathname) {
+				var b = filter({
+					entry: {
+						path: path,
+						node: file
+					},
+					exists: getNode(topathname)
+				});
+				if (b) {
+					topathname.write( file.resource.read($context.Streams.binary), { append: false } );
+					return topathname.file;
+				}
+			}
+
+			var processDirectory = function(path,directory,topathname) {
+				var b = filter({
+					entry: {
+						path: path,
+						node: directory
+					},
+					exists: getNode(topathname)
+				});
+				if (b) {
+					var rv = topathname.createDirectory();
+					directory.list({
+						type: directory.list.ENTRY
+					}).forEach(function(entry) {
+						if (!entry.node.directory) {
+							processFile(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
+						} else {
+							processDirectory(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
+						}
+					});
+					return rv;
+				}
+			}
+
+			if (!this.directory) {
+				return processFile("", this, to);
+			} else {
+				return processDirectory("", this, to);
+			}
 		};
+		this.copy.filter = {
+			OVERWRITE: function(p) {
+				return true;
+			}
+		}
+	}
+
+	var File = function(pathname,peer) {
+		Node.call(this,pathname,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+
+		this.directory = false;
+
+		var resource = new $context.Resource({
+			read: {
+				binary: function() {
+					return $filesystem.read.binary(peer);
+				},
+				text: function() {
+					return $filesystem.read.character(peer);
+				}
+			}
+		});
+
+		this.resource = resource;
+
+		this.read = function(mode) {
+			return resource.read(mode);
+		}
+
+		this.readLines = function() {
+			return resource.read.lines.apply(resource,arguments);
+		}
 	}
 //	File.prototype = new Node(this,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
 
