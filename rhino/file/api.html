@@ -574,12 +574,15 @@ END LICENSE
 								scope.p_recursive = top.getRelativePath("p_recursive/sub");
 								scope.p_recursive2 = top.getRelativePath("p_recursive2/sub");
 
+								scope.top = top;
+
 								scope.expectError = function(test,f,expect) {
 									if (typeof(expect) == "undefined") {
 										expect = true;
 									}
 									try {
-										f();
+										var invoke = (expect) ? jsh.debug.disableBreakOnExceptionsFor(f) : f;
+										invoke();
 										test(!expect);
 									} catch (e) {
 										test(expect);
@@ -590,7 +593,6 @@ END LICENSE
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="value">
-										<span>The destination to which to copy this node.</span>
 										<span class="type"><a href="#types.pathname">Pathname</a></span>
 										or <span class="type"><a href="#types.directory">directory</a></span>
 										<span>
@@ -598,8 +600,7 @@ END LICENSE
 											<a href="#types.directory">directory</a>, the node will be copied into that directory
 											with this node's basename. If the given location is a
 											<a href="#types.Pathname">Pathname</a>,
-											then if a directory exists at that <code>Pathname</code>, the node will be copied to
-											that directory with this file's basename. Otherwise, the node will be copied to the
+											the node will be copied to the
 											given <code>Pathname</code>.
 										</span>
 										<script type="application/x.jsapi#tests">
@@ -607,9 +608,9 @@ END LICENSE
 											f1.copy(d1);
 											test(d1.getFile("f1") != null);
 
-											test(d2.getFile("f1") == null);
-											f1.copy(d2.pathname);
-											test(d2.getFile("f1") != null);
+											expectError(test, function() {
+												f1.copy(d2.pathname)
+											});
 
 											test(p1.file == null);
 											f1.copy(p1);
@@ -625,7 +626,7 @@ END LICENSE
 											test(d4_copy.getFile("d5/f4").read(String) == "f4");
 
 											test(d2.getSubdirectory("d4") == null);
-											var d4_copy2 = d4.copy(d2.pathname);
+											var d4_copy2 = d4.copy(d2);
 											test(d2.getSubdirectory("d4") != null);
 											test(d2.getFile("d4/f3") != null);
 											test(d2.getFile("d4/f3").read(String) == "f3");
@@ -644,7 +645,10 @@ END LICENSE
 										</script>
 									</li>
 									<li class="object">
-										<span>(optional) __DESCRIPTION__</span>
+										<span>
+											A mode argument with properties describing the operation of this method.
+										</span>
+										<span>(optional) An object whose properties specify the operation of this method.</span>
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="value" jsapi:id="recursive">
@@ -671,7 +675,6 @@ END LICENSE
 														test(false);
 													}
 
-													//	Implement for directories
 													expectError(test, function() {
 														d4.copy(p_recursive2);
 													});
@@ -698,16 +701,13 @@ END LICENSE
 													<ol>
 														<li class="object">
 															<span>
-																An argument with properties describing the putative copy
-																operation.
+																An argument with properties describing a node to copy.
 															</span>
 															<div class="label">has properties:</div>
 															<ul>
 																<li class="value">
 																	<div class="name">entry</div>
-																	<span class="type">
-																		<a href="#types.node.entry">node.entry</a>
-																	</span>
+																	<span class="type"><a href="#types.node.entry">node.entry</a></span>
 																	<span>
 																		The entry to copy, relative to the node on which the
 																		<code>copy()</code> method was invoked.
@@ -715,9 +715,7 @@ END LICENSE
 																</li>
 																<li class="value">
 																	<div class="name">exists</div>
-																	<span class="type">
-																		<a href="#types.node">node</a>
-																	</span>
+																	<span class="type"><a href="#types.node">node</a></span>
 																	<span>
 																		The node, if any, that already exists at the destination to
 																		which this node will be copied.
@@ -730,29 +728,94 @@ END LICENSE
 												<div class="returns">
 													<div class="label">Returns</div>
 													<span class="type">boolean</span>
-													<span>true to copy the file, false to do nothing.</span>
+													<div>
+														If <code>true</code> is returned, then if this node is an ordinary file, it
+														will be copied, overwriting the file at the given location. If it is a
+														directory, then the directory will be created; if it already exists, no
+														action will be taken.
+													</div>
+													<div>
+														If <code>false</code> is returned, then for ordinary files; no action will
+														be taken. For directories, not only will no action be taken, but the
+														contents of the given directory will not be processed.
+													</div>
 												</div>
 												<script type="application/x.jsapi#tests">
+													var d_filter = top.getRelativePath("d_filter").createDirectory();
+													d_filter.getRelativePath("a").write("a", { append: false });
+													d_filter.getRelativePath("d/b").write("b", { append: false, recursive: true });
+													var d_filter2 = top.getRelativePath("d_filter2").createDirectory();
+													d_filter2.getRelativePath("a").write("a2", { append: false });
+													var p_filter = top.getRelativePath("p_filter");
+													var p_filter2 = top.getRelativePath("p_filter2");
+													var p_filter3 = top.getRelativePath("p_filter3");
+													var p_filter4 = top.getRelativePath("p_filter4");
+
 													f1.copy(p_overwrite);
-													try {
+													expectError(test, function() {
 														f2.copy(p_overwrite);
-														test(false);
-													} catch (e) {
-														test(true);
-														test(p_overwrite.file.read(String) == "f1");
-													}
-													try {
+													});
+													test(p_overwrite.file.read(String) == "f1");
+
+													expectError(test, function() {
 														var copied = f2.copy(p_overwrite, { filter: f2.copy.filter.OVERWRITE });
-														test(true);
 														test(p_overwrite.file.read(String) == "f2");
 														test(copied.read(String) == "f2");
-													} catch (e) {
-														test(false);
-													}
+													}, false);
 
 													//	Implement for directories
-													//	TODO	definition should be consolidated with list()
-													//	test(1 == 2);
+													//	TODO	definition should be consolidated with list() if possible
+													var copied = d_filter.copy(p_filter);
+													test(copied.getFile("a") != null);
+													test(copied.getFile("a").read(String) == "a");
+													test(copied.getFile("d/b") != null);
+													test(copied.getFile("d/b").read(String) == "b");
+
+													var filtered2 = d_filter.copy(p_filter2, {
+														filter: function(p) {
+															if (p.entry.path == "") return true;
+															if (p.entry.path == ("d" + filesystem.$unit.getPathnameSeparator())) return true;
+														}
+													});
+													test(filtered2.getFile("a") == null);
+													test(filtered2.getSubdirectory("d") != null);
+													test(filtered2.getFile("d/b") == null);
+
+													var filtered3 = d_filter.copy(p_filter3, {
+														filter: function(p) {
+															if (p.entry.path == "") return true;
+															if (p.entry.path == "a") return true;
+														}
+													});
+													test(filtered3.getFile("a") != null);
+													test(filtered3.getSubdirectory("d") == null);
+													test(filtered3.getFile("d/b") == null);
+
+													var filtered4 = d_filter.copy(p_filter4, {
+														filter: function(p) {
+															if (p.entry.path == "") return true;
+															if (p.entry.path == "d/b") return true;
+														}
+													});
+													test(filtered4.getFile("a") == null);
+													test(filtered4.getSubdirectory("d") == null);
+													test(filtered4.getFile("d/b") == null);
+
+													var filtered5 = d_filter2.copy(p_filter, {
+														filter: function(p) {
+															if (p.entry.path == "") return true;
+															if (p.exists) return false;
+															return true;
+														}
+													});
+													test(filtered5.getFile("a").read(String) == "a");
+
+													var filtered6 = d_filter2.copy(p_filter, {
+														filter: function(p) {
+															return true;
+														}
+													});
+													test(filtered6.getFile("a").read(String) == "a2");
 												</script>
 											</li>
 										</ul>
@@ -768,7 +831,10 @@ END LICENSE
 							<ul>
 								<li class="object">
 									<div class="name">filter</div>
-									<span>__DESCRIPTION__</span>
+									<span>
+										An object whose properties supply implementations suitable for use as the
+										<code>filter</code> property of the mode argument of <code>copy</code>.
+									</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">

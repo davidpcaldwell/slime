@@ -290,11 +290,7 @@ var Pathname = function(parameters) {
 						throw new Error();
 					}
 				} else if ($context.isPathname(target)) {
-					if (target.directory) {
-						return target.directory.getRelativePath(pathname.basename);
-					} else {
-						return target;
-					}
+					return target;
 				} else {
 					throw new Error();
 				}
@@ -344,7 +340,7 @@ var Pathname = function(parameters) {
 					exists: getNode(topathname)
 				});
 				if (b) {
-					var rv = topathname.createDirectory();
+					var rv = (topathname.directory) ? topathname.directory : topathname.createDirectory();
 					directory.list({
 						type: directory.list.ENTRY
 					}).forEach(function(entry) {
