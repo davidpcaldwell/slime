@@ -284,8 +284,9 @@ $exports.doc = function(modules,to) {
 	var index = $context.jsapi.getFile("index.html").read(XML);
 
 	//	TODO	parameterize the below rather than hard-coding
-	index.head.title = "API Documentation";
-	index.body.h1 = "API Documentation";
+	//	TODO	apparent Rhino 1.7R3 bug which requires the given subscripting; should be able to do index.head.title = "..."
+	index.head.title[0] = "API Documentation";
+	index.body.h1[0] = "API Documentation";
 
 	delete index.body.table.tbody.tr[0];
 

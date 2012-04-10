@@ -13,9 +13,18 @@
 //	Contributor(s):
 //	END LICENSE
 
-var run = function(command) {
+var mode = {};
+mode.env = {};
+for (var x in env) {
+	if (!/^JSH_/.test(x)) {
+		mode.env[x] = env[x];
+	}
+}
+
+var run = function(command,mymode) {
+	if (!mymode) mymode = mode;
 	console(command.join(" "));
-	var status = runCommand.apply(this,command);
+	var status = runCommand.apply(this,command.concat(mymode));
 	if (status != 0) {
 		throw new Error("Failed with status: " + status + ": " + command.join(" "));
 	} else {
@@ -39,12 +48,19 @@ run(LAUNCHER_COMMAND.concat([
 	"-to", getPath(tmp,"1.slime")
 ]));
 
+var mymode = {
+	env: {}
+};
+for (var x in mode.env) {
+	mymode.env[x] = mode.env[x];
+}
+mymode.env.MODULES = tmp.getCanonicalPath();
+mymode.env.PATH = String(Packages.java.lang.System.getenv("PATH"));
 run(LAUNCHER_COMMAND.concat(
 	[
 		String(new File(BASE,"jsh/test/2.jsh.js").getCanonicalPath())
-		, { env: { MODULES: tmp.getCanonicalPath(), PATH: String(Packages.java.lang.System.getenv("PATH")) }}
 	]
-));
+), mymode);
 
 var classes = createTemporaryDirectory();
 classes.mkdirs();
@@ -63,7 +79,8 @@ var testCommandOutput = function(path,tester) {
 		String(new File(BASE,"jsh/test/" + path).getCanonicalPath())
 	];
 	var options = {
-		output: ""
+		output: "",
+		env: mode.env
 	};
 
 	var status = runCommand.apply(this,LAUNCHER_COMMAND.concat(command).concat([options]));
@@ -130,13 +147,6 @@ var jshPackage = function() {
 console("Packaging addClasses/addClasses.jsh.js");
 var packagedAddClasses = jshPackage();
 console("Running " + packagedAddClasses + " ...");
-var mode = {};
-mode.env = {};
-for (var x in env) {
-	if (!/^JSH_/.test(x)) {
-		mode.env[x] = env[x];
-	}
-}
 run(LAUNCHER_COMMAND.slice(0,2).concat([
 	packagedAddClasses.getCanonicalPath(),
 	"-classes",getJshPathname(classes),

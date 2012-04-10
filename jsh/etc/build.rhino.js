@@ -294,6 +294,7 @@ var LAUNCHER_COMMAND = [
 
 var jsapi_jsh = function() {
 	var command = LAUNCHER_COMMAND.slice(0,LAUNCHER_COMMAND.length);
+	debug("Launcher command: " + command);
 	command.add = function() {
 		for (var i=0; i<arguments.length; i++) {
 			this.push(arguments[i]);
@@ -340,7 +341,9 @@ var jsapi_jsh = function() {
 
 	var subenv = {};
 	for (var x in env) {
-		subenv[x] = env[x];
+		if (!/^JSH_/.test(x)) {
+			subenv[x] = env[x];
+		}
 	}
 	if (env.JSH_BUILD_DEBUG) {
 		subenv.JSH_LAUNCHER_DEBUG = "true";
