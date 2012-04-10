@@ -351,7 +351,7 @@ var Pathname = function(parameters) {
 				if (pathname.file) return pathname.file;
 				if (pathname.directory) return pathname.directory;
 			}
-			
+
 			var processFile = function(path,file,topathname) {
 				var b = filter({
 					entry: {

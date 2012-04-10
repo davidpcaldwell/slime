@@ -599,7 +599,7 @@ END LICENSE
 											var d1 = top.getRelativePath("d1").createDirectory();
 											var d2 = top.getRelativePath("d2").createDirectory();
 											d2.getRelativePath("f").write("d2/f", { append: false });
-											
+
 											top.getRelativePath("f1").write("f1", { append: false });
 											var f1 = top.getFile("f1");
 											top.getRelativePath("f2").write("f2", { append: false });
@@ -633,7 +633,7 @@ END LICENSE
 											d2.move(p1, { overwrite: true });
 											test(p1.directory != null);
 											test(p1.directory.getFile("f") != null);
-											
+
 											test(p2.file != null);
 											expectError(test, function() {
 												f2.move(p2);
