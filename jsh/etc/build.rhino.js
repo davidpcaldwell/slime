@@ -30,6 +30,9 @@
 //
 //	jsh.build.nodoc (JSH_BUILD_NODOC): if set, no documentation is emitted as part of the build process
 
+//	Policy decision to support 1.6 and up
+var JAVA_VERSION = "1.6";
+
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
 
@@ -195,7 +198,8 @@ console("Building jsh application ...");
 addJavaFiles(new File(BASE,"loader/rhino/java"));
 addJavaFiles(new File(BASE,"rhino/system/java"));
 addJavaFiles(new File(BASE,"jsh/loader/java"));
-var compileOptions = ["-g", "-nowarn"]
+//	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
+var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
 var javacArguments = compileOptions.concat([
 	"-d", tmpClasses.getCanonicalPath(),
 	"-classpath", RHINO_LIBRARIES.map(function(file) { return String(file.getCanonicalPath()); }).join(colon)
@@ -273,6 +277,8 @@ var module = function(path) {
 		copyFile: copyFile,
 		compile: platform.jdk.compile
 	}, {
+		source: JAVA_VERSION,
+		target: JAVA_VERSION,
 		classpath: new File(RHINO_HOME, "js.jar").getCanonicalPath() + colon + new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath(),
 		nowarn: true
 	});

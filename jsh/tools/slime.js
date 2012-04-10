@@ -66,6 +66,12 @@ slime.build.rhino = function(from,build,api,javac) {
 		if (javac && javac.nowarn) {
 			args = args.concat(["-nowarn"]);
 		}
+		if (javac && javac.source) {
+			args = args.concat(["-source",javac.source]);
+		}
+		if (javac && javac.target) {
+			args = args.concat(["-target",javac.target]);
+		}
 		args = args.concat(list.map(function(file) {
 			return String(file.getCanonicalPath());
 		}));
