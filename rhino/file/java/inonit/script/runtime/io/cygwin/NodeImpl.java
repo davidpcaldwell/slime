@@ -220,6 +220,18 @@ class NodeImpl extends Filesystem.Node {
 		}
 	}
 
+	public void move(Filesystem.Node to) throws IOException {
+		uncache();
+		try {
+			NodeImpl other = (NodeImpl)to;
+			process(parent.move(this, other));
+		} catch (CygwinFilesystem.CygpathException e) {
+			throw new IOException(e);
+		} catch (Command.Result.Failure e) {
+			process(e.getResult());
+		}
+	}
+
 	public void mkdir() throws IOException {
 		uncache();
 		try {
@@ -261,5 +273,11 @@ class NodeImpl extends Filesystem.Node {
 	public final Writer writeText(boolean append) throws IOException {
 		uncache();
 		return new java.io.FileWriter(getHostFile(), append);
+	}
+
+	//	Optional method used only in move operations as of this writing; allows script to "invalidate" a Pathname (causing it to
+	//	forget the cached information) in anticipation of the data changing. If caching were eliminated, could get rid of this.
+	public void invalidate() {
+		uncache();
 	}
 }

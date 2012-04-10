@@ -210,6 +210,15 @@ var System = function(peer,PARENT) {
 		return peer["delete"]();
 	}
 
+	this.move = function(fromPeer,toPathname) {
+		if (toPathname.java.invalidate) {
+			debugger;
+			toPathname.java.invalidate();
+		}
+		var toPeer = peer.getNode(toPathname.java.adapt());
+		fromPeer.move(toPeer);
+	}
+
 	this.list = function(peer) {
 		return peer.list(null);
 	}

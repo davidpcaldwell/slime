@@ -146,6 +146,19 @@ END LICENSE
 			scope.newTemporaryDirectory = scope.helpers.newTemporaryDirectory;
 			scope.createFile = scope.helpers.createFile;
 			scope.createDirectory = scope.helpers.createDirectory;
+
+			scope.expectError = function(test,f,expect) {
+				if (typeof(expect) == "undefined") {
+					expect = true;
+				}
+				try {
+					var invoke = (expect) ? jsh.debug.disableBreakOnExceptionsFor(f) : f;
+					invoke();
+					test(!expect);
+				} catch (e) {
+					test(expect);
+				}
+			}
 		]]></script>
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			helpers.initialize(module);
@@ -544,6 +557,120 @@ END LICENSE
 							<div class="name">remove</div>
 							<span>Removes this node, recursively removing any children if it is a directory.</span>
 						</li>
+						<li class="function" jsapi:id="move">
+							<div class="name">move</div>
+							<span>Moves (or renames) this node to a different location.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type"><a href="#types.pathname">pathname</a></span>
+										-or- <span class="type"><a href="#types.directory">directory</a></span>
+										<span>
+											The location to which to move this node; if it is a directory, the node
+											will be moved into that directory with its current basename; if it is a
+											pathname, the node will be moved to that pathname.
+										</span>
+									</li>
+									<li class="object">
+										<span>A mode argument that configures the operation of this method.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">overwrite</div>
+												<span class="type">boolean</span>
+												<span>
+													Whether to overwrite an existing node at the destination location if one is
+													found.
+												</span>
+											</li>
+											<li class="value">
+												<div class="name">recursive</div>
+												<span class="type">boolean</span>
+												<span>
+													Whether to create the necessary parent directories if the parent directories
+													of the destination location do not exist.
+												</span>
+											</li>
+										</ul>
+										<script type="application/x.jsapi#tests">
+											var top = scope.newTemporaryDirectory();
+
+											var d1 = top.getRelativePath("d1").createDirectory();
+											var d2 = top.getRelativePath("d2").createDirectory();
+											d2.getRelativePath("f").write("d2/f", { append: false });
+											
+											top.getRelativePath("f1").write("f1", { append: false });
+											var f1 = top.getFile("f1");
+											top.getRelativePath("f2").write("f2", { append: false });
+											var f2 = top.getFile("f2");
+											var p1 = top.getRelativePath("p1");
+											var p2 = top.getRelativePath("p2");
+											var p3 = top.getRelativePath("p3/sub");
+											var p4 = top.getRelativePath("p4/file");
+
+											test(p1.directory == null);
+											debugger;
+											var d1_moved = d1.move(p1);
+											//	TODO	what is state of d1 object now?
+											test(p1.directory != null);
+											test(d1_moved.pathname.toString() == p1.directory.pathname.toString());
+
+											test(p2.file == null);
+											f1.move(p2);
+											//	TODO	what is state of f1 object now?
+											test(p2.file != null);
+											test(p2.file.read(String) == "f1");
+
+											//	Test overwrite property
+											debugger;
+											expectError(test, function() {
+												d2.move(p1);
+											});
+											test(p1.directory != null);
+											test(p1.directory.getFile("f") == null);
+
+											d2.move(p1, { overwrite: true });
+											test(p1.directory != null);
+											test(p1.directory.getFile("f") != null);
+											
+											test(p2.file != null);
+											expectError(test, function() {
+												f2.move(p2);
+											});
+											test(p2.file.read(String) == "f1");
+
+											test(p2.file != null);
+											expectError(test, function() {
+												f2.move(p2, { overwrite: true });
+											}, false);
+											test(p2.file.read(String) == "f2");
+
+											//	Test recursive property
+											expectError(test, function() {
+												p1.directory.move(p3);
+											});
+											test(p3.directory == null);
+											p1.directory.move(p3, { recursive: true });
+											test(p3.directory != null);
+
+											expectError(test, function() {
+												p2.file.move(p4);
+											});
+											test(p4.file == null);
+											p2.file.move(p4, { recursive: true });
+											test(p4.file != null);
+											test(p4.file.read(String) == "f2");
+										</script>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.node">node</a></span>
+								<span>The node at the new location.</span>
+							</div>
+						</li>
 						<li class="function" jsapi:id="copy">
 							<div class="name">copy</div>
 							<!--	Inspiration: http://unixhelp.ed.ac.uk/CGI/man-cgi?cp -->
@@ -576,19 +703,6 @@ END LICENSE
 								scope.p_recursive2 = top.getRelativePath("p_recursive2/sub");
 
 								scope.top = top;
-
-								scope.expectError = function(test,f,expect) {
-									if (typeof(expect) == "undefined") {
-										expect = true;
-									}
-									try {
-										var invoke = (expect) ? jsh.debug.disableBreakOnExceptionsFor(f) : f;
-										invoke();
-										test(!expect);
-									} catch (e) {
-										test(expect);
-									}
-								}
 							</script>
 							<div class="arguments">
 								<div class="label">Arguments</div>

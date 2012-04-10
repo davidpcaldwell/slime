@@ -176,6 +176,13 @@ var Pathname = function(parameters) {
 		this.adapt = function() {
 			return peer.getHostFile();
 		}
+
+		if (peer.invalidate) {
+			debugger;
+			this.invalidate = function() {
+				peer.invalidate();
+			}
+		}
 	}
 
 	this.getBasename = getBasename;
@@ -269,6 +276,34 @@ var Pathname = function(parameters) {
 			//	TODO	Should probably invalidate this object somehow
 			//	TODO	Should this return a value of some kind?
 			$filesystem.remove(peer);
+		}
+
+		this.move = function(toPathname,mode) {
+			if (!mode) mode = {};
+			if (toPathname.file || toPathname.directory) {
+				if (mode.overwrite) {
+					if (toPathname.file) {
+						toPathname.file.remove();
+					} else {
+						toPathname.directory.remove();
+					}
+				} else {
+					throw new Error("Cannot move " + this + " to " + toPathname + "; " + toPathname + " already exists.");
+				}
+			}
+			if (!toPathname.parent.directory) {
+				if (mode.recursive) {
+					toPathname.parent.createDirectory({ recursive: true });
+				}
+			}
+			$filesystem.move(peer,toPathname);
+			if (toPathname.file) {
+				return toPathname.file;
+			} else if (toPathname.directory) {
+				return toPathname.directory;
+			} else {
+				throw new Error("Unreachable: moving node that is neither file nor directory.");
+			}
 		}
 
 		this.getPathname = getPathname;

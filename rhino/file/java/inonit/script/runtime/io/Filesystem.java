@@ -78,6 +78,7 @@ public abstract class Filesystem {
 
 		public abstract Node[] list(FilenameFilter pattern) throws IOException;
 		public abstract void delete() throws IOException;
+		public abstract void move(Node to) throws IOException;
 		public abstract void mkdir() throws IOException;
 		public abstract void mkdirs() throws IOException;
 
@@ -90,6 +91,13 @@ public abstract class Filesystem {
 
 		public final Reader readText() throws IOException {
 			return new FileReader( getHostFile() );
+		}
+
+		//	Need this method to be public because Cygwin NodeImpl is nonpublic type, and script code refers to this method to
+		//	forget Cygwin information when a pathname is the destination for a move operation. Perhaps the CygwinFilesystem itself
+		//	needs a cache by pathname so that we do not have to call the method on the pathname directly (using weak references,
+		//	perhaps).
+		public void invalidate() {
 		}
 	}
 
@@ -179,6 +187,12 @@ public abstract class Filesystem {
 			public void delete() throws IOException {
 				boolean success = delete(this.file);
 				if (!success) throw new IOException("Failed to delete: " + this.file);
+			}
+
+			public void move(Node to) throws IOException {
+				NodeImpl toNode = (NodeImpl)to;
+				boolean success = file.renameTo(toNode.file);
+				if (!success) throw new IOException("Failed to move: " + this.file + " to " + toNode.file);
 			}
 
 			public void mkdir() throws IOException {

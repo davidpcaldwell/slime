@@ -156,20 +156,32 @@ public class CygwinFilesystem extends Filesystem {
 				throw new CygpathException(e);
 			}
 			if (node.isSoftlink()) {
-				return commands.shellCommand( "/bin/rm", new String[] { scriptPath } );
+				return commands.shellCommand( "/bin/rm", new String[] { scriptPath } ).evaluate();
 			} else if (node.isCygwinDirectory()) {
-				return commands.shellCommand( "/bin/rm", new String[] { "-Rf", scriptPath } );
+				return commands.shellCommand( "/bin/rm", new String[] { "-Rf", scriptPath } ).evaluate();
 			} else {
-				return commands.shellCommand( "/bin/rm", new String[] { scriptPath } );
+				return commands.shellCommand( "/bin/rm", new String[] { scriptPath } ).evaluate();
 			}
 		}
 
-		Command.Result mkdir(NodeImpl node) throws CygpathException {
-			return commands.shellCommand("/bin/mkdir", new String[] { node.getCygwinScriptPath() });
+		Command.Result move(NodeImpl from, NodeImpl to) throws CygpathException, Command.Result.Failure {
+			String f = null;
+			String t = null;
+			try {
+				f = from.getScriptPath();
+				t = to.getScriptPath();
+				return commands.shellCommand("/bin/mv", new String[] { f, t }).evaluate();
+			} catch (IOException e) {
+				throw new CygpathException(e);
+			}
 		}
 
-		Command.Result mkdirs(NodeImpl node) throws CygpathException {
-			return commands.shellCommand("/bin/mkdir", new String[] { "-p", node.getCygwinScriptPath() });
+		Command.Result mkdir(NodeImpl node) throws CygpathException, Command.Result.Failure {
+			return commands.shellCommand("/bin/mkdir", new String[] { node.getCygwinScriptPath() }).evaluate();
+		}
+
+		Command.Result mkdirs(NodeImpl node) throws CygpathException, Command.Result.Failure {
+			return commands.shellCommand("/bin/mkdir", new String[] { "-p", node.getCygwinScriptPath() }).evaluate();
 		}
 
 		abstract void destroy();
@@ -358,6 +370,10 @@ public class CygwinFilesystem extends Filesystem {
 		return paths.delete(node);
 	}
 
+	Command.Result move(NodeImpl from, NodeImpl to) throws CygpathException, Command.Result.Failure {
+		return paths.move(from, to);
+	}
+
 	File toHostFileImpl(String path) throws CygpathException {
 		return new java.io.File(paths.toWindowsPath(path));
 	}
@@ -366,11 +382,11 @@ public class CygwinFilesystem extends Filesystem {
 		return paths.toUnixPath(file);
 	}
 
-	Command.Result  mkdir(NodeImpl node) throws CygpathException, Command.Result.Failure {
+	Command.Result mkdir(NodeImpl node) throws CygpathException, Command.Result.Failure {
 		return paths.mkdir(node);
 	}
 
-	Command.Result  mkdirs(NodeImpl node) throws CygpathException, Command.Result.Failure {
+	Command.Result mkdirs(NodeImpl node) throws CygpathException, Command.Result.Failure {
 		return paths.mkdirs(node);
 	}
 
