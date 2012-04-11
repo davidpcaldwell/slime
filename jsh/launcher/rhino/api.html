@@ -105,7 +105,8 @@ END LICENSE
 						PATH: Is used to locate the target script if only a file name is supplied.
 					</li>
 					<li>
-						JSH_JVM_OPTIONS: If present, is used as space-delimited set of options to supply to the jsh loader.
+						JSH_JVM_OPTIONS: If present, is used as space-delimited set of options to supply to the Java virtual machine
+						running the jsh loader.
 					</li>
 					<li>
 						JSH_JAVA_DEBUGGER: If present, the JVM process executing the jsh loader main class is run in a debugger.
@@ -133,9 +134,9 @@ END LICENSE
 						using environment variables).
 					</li>
 					<li>
-						<code>jsh.launcher.classpath</code>: classpath from which jsh launcher was loaded, to pass to loader.
+						<code>jsh.launcher.classpath</code>: classpath from which jsh launcher was loaded, made available to loader.
 					</li>
-					<li><code>jsh.launcher.rhino.script</code>: location of jsh.rhino.js, to pass to loader.</li>
+					<li><code>jsh.launcher.rhino.script</code>: location of jsh.rhino.js, made available to loader.</li>
 				</ul>
 			</div>
 			<div>
