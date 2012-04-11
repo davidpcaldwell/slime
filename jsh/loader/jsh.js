@@ -170,11 +170,7 @@ this.jsh = new function() {
 			addFinalizer(f);
 		}
 
-		this.script = function() {
-			//	deprecated
-			debugger;
-			return loader.file.apply(this,arguments);
-		}
+		this.script = loader.$api.deprecate(loader.file);
 
 		this.addClasses = function(pathname) {
 			if (!pathname.directory && !pathname.file) {
@@ -297,8 +293,7 @@ this.jsh = new function() {
 	}
 
 	if (jsh.script) {
-		jsh.shell.getopts = jsh.script.getopts;
-		loader.$api.deprecate(jsh.shell,"deprecate");
+		jsh.shell.getopts = loader.$api.deprecate(jsh.script.getopts);
 	}
 
 	jsh.$jsapi = {
