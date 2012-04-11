@@ -293,7 +293,10 @@ this.jsh = new function() {
 	}
 
 	if (jsh.script) {
-		jsh.shell.getopts = loader.$api.deprecate(jsh.script.getopts);
+		//	Need to do this rather than jsh.shell.getopts = deprecate(jsh.script.getopts) because of not copying function properties
+		//	(issue 13)
+		jsh.shell.getopts = jsh.script.getopts;
+		loader.$api.deprecate(jsh.shell, "getopts");
 	}
 
 	jsh.$jsapi = {
