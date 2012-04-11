@@ -245,6 +245,8 @@ public class Shell {
 							return defineClass(name, b, 0, b.length);
 						}
 					} catch (IOException e) {
+						//	Treat an exception reading as not found
+						//	TODO	dubious decision
 					}
 				}
 				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
