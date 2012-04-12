@@ -38,6 +38,7 @@ this.jsh = new function() {
 					$host.script(name,$in,scope,target);
 					$in.close();
 				}
+				this.classpath = $host.getClasspath();
 			};
 
 			return eval( String($host.getRhinoLoaderBootstrap().getRhinoCode()) );
@@ -51,7 +52,7 @@ this.jsh = new function() {
 		this.$api = rhinoLoader.$api;
 
 		this.bootstrap = function(context,path) {
-			return rhinoLoader.module($host.getBootstrapModule(path), { $context: context });
+			return rhinoLoader.module($host.getLoader().bootstrap(path), { $context: context });
 		}
 
 		this.run = function(code,scope,target) {
@@ -97,9 +98,9 @@ this.jsh = new function() {
 				p.$context = arguments[1];
 			}
 			if (format.slime) {
-				return rhinoLoader.module($host.getPackedModule(format.slime,format.name),p);
+				return rhinoLoader.module($host.getLoader().packed(format.slime,format.name),p);
 			} else if (format.base) {
-				return rhinoLoader.module($host.getUnpackedModule(format.base,format.name),p);
+				return rhinoLoader.module($host.getLoader().unpacked(format.base,format.name),p);
 			} else {
 				throw "Unreachable code: format.slime and format.base null in jsh loader's module()";
 			}

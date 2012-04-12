@@ -175,7 +175,6 @@ public class Module {
 				};
 			}
 
-			//	TODO	Switch this method to return Source
 			public abstract Source getSource();
 
 			public abstract String getMain();

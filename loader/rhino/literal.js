@@ -63,10 +63,10 @@
 
 		var engineModuleCodeLoader = function($engine_module) {
 			return new function() {
-				this.main = String($engine_module.getMainScriptPath());
+				this.main = String($engine_module.getScripts().getMain());
 
 				this.getCode = function(path) {
-					var $in = $engine_module.read(new Packages.java.lang.String(path));
+					var $in = $engine_module.getScripts().getSource().getResourceAsStream(new Packages.java.lang.String(path));
 					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
 					return getCode({
 						name: String($engine_module) + ":" + path,
@@ -78,15 +78,21 @@
 				this.decorateLoader = function($loader) {
 					$loader.java = new function() {
 						this.read = function(path) {
-							return $engine_module.read(new Packages.java.lang.String(path));
+							return $engine_module.getScripts().getSource().getResourceAsStream(new Packages.java.lang.String(path));
 						}
 					}
 				}
 			}
 		}
 
-		this.module = function($module,p) {
-			return loader.module(engineModuleCodeLoader($module),p);
+		//	Only modules may currently contain Java classes, which causes the API to be somewhat different
+		//	Module.Code currently encompasses Scripts and Classes
+		//	Scripts have a Source and a main file
+		//	Classes have only a Source
+		//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
+		this.module = function(_Module_Code,p) {
+			$loader.classpath.append(_Module_Code);
+			return loader.module(engineModuleCodeLoader(_Module_Code),p);
 		}
 
 		this.namespace = function(name) {

@@ -163,57 +163,7 @@ public class Shell {
 			}
 
 			public abstract void append(URL url);
-			public abstract void append(Module module);
-		}
-
-		private static class DelegationChain extends Classpath {
-			private ClassLoader current = Shell.class.getClassLoader();
-
-			DelegationChain(ClassLoader delegate) {
-				super(delegate);
-			}
-
-			public String toString() {
-				return getClass().getName() + " current=" + current;
-			}
-
-			protected Class findClass(String name) throws ClassNotFoundException {
-				return current.loadClass(name);
-			}
-
-			public void append(URL url) {
-				current = new URLClassLoader(new URL[] { url }, current);
-			}
-
-			public void append(Module module) {
-				current = module.getClasses(current);
-			}
-		}
-
-		private static class ListClasspath extends Classpath {
-			private ArrayList loaders = new ArrayList();
-
-			ListClasspath(ClassLoader delegate) {
-				super(delegate);
-			}
-
-			protected Class findClass(String name) throws ClassNotFoundException {
-				for (int i=0; i<loaders.size(); i++) {
-					try {
-						return ((ClassLoader)loaders.get(i)).loadClass(name);
-					} catch (ClassNotFoundException e) {
-					}
-				}
-				throw new ClassNotFoundException();
-			}
-
-			public void append(URL url) {
-				loaders.add(new URLClassLoader(new URL[] { url }));
-			}
-
-			public void append(Module module) {
-				loaders.add(module.getClasses(Shell.class.getClassLoader()));
-			}
+			public abstract void append(Module.Code module);
 		}
 
 		private static class ModulesClasspath extends Classpath {
@@ -252,7 +202,7 @@ public class Shell {
 				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
 			}
 
-			public void append(Module module) {
+			public void append(Module.Code module) {
 				items.add(module.getClasses());
 			}
 
@@ -361,22 +311,33 @@ public class Shell {
 				Host.this.engine.script(name, code, scope, target);
 			}
 
-			public Module getBootstrapModule(String path) {
-				Module rv = Host.this.engine.load(installation.getShellModuleCode(path));
-				classpath.append(rv);
-				return rv;
+			public class Loader {
+				public Module.Code bootstrap(String path) {
+					return installation.getShellModuleCode(path);
+				}
+
+				public Module.Code unpacked(File base, String main) {
+					return Module.Code.unpacked(base, main);
+				}
+
+				public Module.Code packed(File slime, String main) {
+					return Module.Code.slime(slime, main);
+				}
 			}
 
-			public Module getUnpackedModule(File base, String main) {
-				Module rv = Host.this.engine.load(Module.Code.unpacked(base,main));
-				classpath.append(rv);
-				return rv;
+			public Loader getLoader() {
+				return new Loader();
 			}
 
-			public Module getPackedModule(File slime, String main) {
-				Module rv = Host.this.engine.load(Module.Code.slime(slime,main));
-				classpath.append(rv);
-				return rv;
+
+			public class RhinoClasspath {
+				public void append(Module.Code code) {
+					classpath.append(code);
+				}
+			}
+
+			public RhinoClasspath getClasspath() {
+				return new RhinoClasspath();
 			}
 
 			public Module.Code.Source getPackagedCode() {
