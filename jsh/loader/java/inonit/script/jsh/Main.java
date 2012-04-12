@@ -57,9 +57,9 @@ public class Main {
 					return Shell.Script.create("jsh.js", in);
 				}
 
-				public Module.Code getShellModuleCode(String path) {
-					return Module.Code.create(
-						Module.Code.Source.create(
+				public Code getShellModuleCode(String path) {
+					return Code.create(
+						Code.Source.create(
 							ClassLoader.getSystemClassLoader(),
 							"$jsh/modules/" + path + "/"
 						),
@@ -67,8 +67,8 @@ public class Main {
 					);
 				}
 
-				public Module.Code.Source getPackagedCode() {
-					return Module.Code.Source.create(
+				public Code.Source getPackagedCode() {
+					return Code.Source.create(
 						ClassLoader.getSystemClassLoader(),
 						"$packaged/"
 					);
@@ -144,11 +144,11 @@ public class Main {
 					return Shell.Script.create(getFile("jsh", "jsh.js"));
 				}
 
-				public Module.Code getShellModuleCode(String path) {
-					return Module.Code.slime(getModulePath(path), "module.js");
+				public Code getShellModuleCode(String path) {
+					return Code.slime(getModulePath(path), "module.js");
 				}
 
-				public Module.Code.Source getPackagedCode() {
+				public Code.Source getPackagedCode() {
 					return null;
 				}
 			};

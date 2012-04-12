@@ -91,14 +91,14 @@ public class Shell {
 		 *
 		 *	@return An object that can load the specified module.
 		 */
-		public abstract Module.Code getShellModuleCode(String path);
+		public abstract Code getShellModuleCode(String path);
 
 		/**
 		 *
 		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
 		 *	<code>null</code> if it is not.
 		 */
-		public abstract Module.Code.Source getPackagedCode();
+		public abstract Code.Source getPackagedCode();
 
 		Engine.Loader getRhinoLoaderBootstrap() {
 			return new Engine.Loader() {
@@ -163,7 +163,7 @@ public class Shell {
 			}
 
 			public abstract void append(URL url);
-			public abstract void append(Module.Code module);
+			public abstract void append(Code module);
 		}
 
 		private static class ModulesClasspath extends Classpath {
@@ -187,7 +187,7 @@ public class Shell {
 			protected Class findClass(String name) throws ClassNotFoundException {
 				String path = name.replace('.', '/') + ".class";
 				for (int i=0; i<items.size(); i++) {
-					Module.Code.Classes classes = ((Module.Code.Classes)items.get(i));
+					Code.Classes classes = ((Code.Classes)items.get(i));
 					try {
 						InputStream stream = classes.getResourceAsStream(path);
 						if (stream != null) {
@@ -202,12 +202,12 @@ public class Shell {
 				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
 			}
 
-			public void append(Module.Code module) {
+			public void append(Code module) {
 				items.add(module.getClasses());
 			}
 
 			public void append(URL url) {
-				items.add(Module.Code.Classes.create(Module.Code.Source.create(url)));
+				items.add(Code.Classes.create(Code.Source.create(url)));
 			}
 		}
 
@@ -292,8 +292,6 @@ public class Shell {
 		}
 
 		public class Interface {
-			private Engine engine = new Engine();
-
 			public String toString() {
 				return getClass().getName()
 					+ " engine=" + engine
@@ -312,16 +310,16 @@ public class Shell {
 			}
 
 			public class Loader {
-				public Module.Code bootstrap(String path) {
+				public Code bootstrap(String path) {
 					return installation.getShellModuleCode(path);
 				}
 
-				public Module.Code unpacked(File base, String main) {
-					return Module.Code.unpacked(base, main);
+				public Code unpacked(File base, String main) {
+					return Code.unpacked(base, main);
 				}
 
-				public Module.Code packed(File slime, String main) {
-					return Module.Code.slime(slime, main);
+				public Code packed(File slime, String main) {
+					return Code.slime(slime, main);
 				}
 			}
 
@@ -331,7 +329,7 @@ public class Shell {
 
 
 			public class RhinoClasspath {
-				public void append(Module.Code code) {
+				public void append(Code code) {
 					classpath.append(code);
 				}
 			}
@@ -340,7 +338,7 @@ public class Shell {
 				return new RhinoClasspath();
 			}
 
-			public Module.Code.Source getPackagedCode() {
+			public Code.Source getPackagedCode() {
 				return installation.getPackagedCode();
 			}
 
@@ -388,19 +386,19 @@ public class Shell {
 				return Host.this.engine.getDebugger();
 			}
 
-			//
-			//	Not used by shell, but useful to specialized scripts that do various kinds of embedding
-			//
-
-			public Engine getEngine() {
-				return Interface.this.engine;
-			}
-
-			public class Engine {
-				public Module load(Module.Code code) {
-					return Host.this.engine.load(code);
-				}
-			}
+//			//
+//			//	Not used by shell, but useful to specialized scripts that do various kinds of embedding
+//			//
+//
+//			public Engine getEngine() {
+//				return Interface.this.engine;
+//			}
+//
+//			public class Engine {
+//				public Module load(Code code) {
+//					return Host.this.engine.load(code);
+//				}
+//			}
 		}
 	}
 }

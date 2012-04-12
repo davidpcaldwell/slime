@@ -857,9 +857,4 @@ public class Engine {
 	public Debugger getDebugger() {
 		return this.debugger;
 	}
-
-	public Module load(Module.Code source) {
-		if (source == null) throw new NullPointerException("'source' must not be null.");
-		return new Module(this, source);
-	}
 }
