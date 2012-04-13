@@ -30,10 +30,11 @@ this.jsh = new function() {
 	}
 
 	var loader = new function() {
-		var rhinoLoader = (function() {
-			var $bootstrap = $host.getRhinoLoaderBootstrap();
-			return eval( String($bootstrap.getRhinoCode()) );
-		})();
+		var rhinoLoader = $host.getRhinoLoader();
+//		var rhinoLoader = (function() {
+//			var $bootstrap = $host.getRhinoLoaderBootstrap();
+//			return eval( String($bootstrap.getRhinoCode()) );
+//		})();
 
 		rhinoLoader.$api.deprecate.warning = function(o) {
 			debugger;

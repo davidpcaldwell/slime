@@ -290,8 +290,8 @@ public class Shell {
 				;
 			}
 
-			public Loader getRhinoLoaderBootstrap() {
-				return new Loader() {
+			public Scriptable getRhinoLoader() throws IOException {
+				Loader loader = new Loader() {
 					@Override
 					public String getPlatformCode() throws IOException {
 						return new Streams().readString(installation.getPlatformLoader().getReader());
@@ -317,6 +317,7 @@ public class Shell {
 						return Host.this.engine;
 					}
 				};
+				return loader.initialize(engine);
 			}
 
 			public void exit(int status) throws ExitException {
