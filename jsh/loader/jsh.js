@@ -31,17 +31,18 @@ this.jsh = new function() {
 
 	var loader = new function() {
 		var rhinoLoader = (function() {
+			var bootstrap = $host.getRhinoLoaderBootstrap();
 			var $loader = new function() {
-				this.code = String($host.getRhinoLoaderBootstrap().getPlatformCode());
+				this.code = String(bootstrap.getPlatformCode());
 				this.script = function(name,$in,scope,target) {
 					if (!target) target = null;
-					$host.script(name,$in,scope,target);
+					bootstrap.script(name,$in,scope,target);
 					$in.close();
 				}
-				this.classpath = $host.getClasspath();
+				this.classpath = bootstrap.getClasspath();
 			};
 
-			return eval( String($host.getRhinoLoaderBootstrap().getRhinoCode()) );
+			return eval( String(bootstrap.getRhinoCode()) );
 		})();
 
 		rhinoLoader.$api.deprecate.warning = function(o) {
@@ -52,7 +53,7 @@ this.jsh = new function() {
 		this.$api = rhinoLoader.$api;
 
 		this.bootstrap = function(context,path) {
-			return rhinoLoader.module($host.getLoader().bootstrap(path), { $context: context });
+			return rhinoLoader.module($host.getModules().bootstrap(path), { $context: context });
 		}
 
 		this.run = function(code,scope,target) {

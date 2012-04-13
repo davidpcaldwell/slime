@@ -463,11 +463,6 @@ public class Engine {
 		source.evaluate(debugger, Context.getCurrentContext(), scope, target);
 	}
 
-	public static abstract class Loader {
-		public abstract String getPlatformCode() throws IOException;
-		public abstract String getRhinoCode() throws IOException;
-	}
-
 	public static abstract class Source {
 		public static Source create(String sourceName, java.io.Reader reader) {
 			if (reader == null) throw new RuntimeException("'reader' must not be null.");

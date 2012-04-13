@@ -101,18 +101,6 @@ public class Shell {
 		 *	<code>null</code> if it is not.
 		 */
 		public abstract Code.Source getPackagedCode();
-
-		Engine.Loader getRhinoLoaderBootstrap() {
-			return new Engine.Loader() {
-				public String getPlatformCode() throws IOException {
-					return new Streams().readString(Installation.this.getPlatformLoader().getReader());
-				}
-
-				public String getRhinoCode() throws IOException {
-					return new Streams().readString(Installation.this.getRhinoLoader().getReader());
-				}
-			};
-		}
 	}
 
 	public static abstract class Configuration {
@@ -302,33 +290,48 @@ public class Shell {
 				;
 			}
 
+			public Loader getRhinoLoaderBootstrap() {
+				return new Loader() {
+					@Override
+					public String getPlatformCode() throws IOException {
+						return new Streams().readString(installation.getPlatformLoader().getReader());
+					}
+
+					@Override
+					public String getRhinoCode() throws IOException {
+						return new Streams().readString(installation.getRhinoLoader().getReader());
+					}
+
+					@Override
+					public Loader.Classpath getClasspath() {
+						return new Loader.Classpath() {
+							@Override
+							public void append(Code code) {
+								classpath.append(code);
+							}
+						};
+					}
+
+					@Override
+					protected Engine getEngine() {
+						return Host.this.engine;
+					}
+				};
+			}
+
 			public void exit(int status) throws ExitException {
 				Host.this.engine.getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
 			}
 
-			public void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
-				Host.this.engine.script(name, code, scope, target);
-			}
-
-			public class Loader {
+			public class Modules {
 				public Code bootstrap(String path) {
 					return installation.getShellModuleCode(path);
 				}
 			}
 
-			public Loader getLoader() {
-				return new Loader();
-			}
-
-			public class RhinoClasspath {
-				public void append(Code code) {
-					classpath.append(code);
-				}
-			}
-
-			public RhinoClasspath getClasspath() {
-				return new RhinoClasspath();
+			public Modules getModules() {
+				return new Modules();
 			}
 
 			public Code.Source getPackagedCode() {
@@ -337,10 +340,6 @@ public class Shell {
 
 			public ClassLoader getClassLoader() {
 				return classpath;
-			}
-
-			public Engine.Loader getRhinoLoaderBootstrap() {
-				return installation.getRhinoLoaderBootstrap();
 			}
 
 			public void addClasses(File classes) throws java.net.MalformedURLException {
