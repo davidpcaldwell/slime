@@ -31,18 +31,8 @@ this.jsh = new function() {
 
 	var loader = new function() {
 		var rhinoLoader = (function() {
-			var bootstrap = $host.getRhinoLoaderBootstrap();
-			var $loader = new function() {
-				this.code = String(bootstrap.getPlatformCode());
-				this.script = function(name,$in,scope,target) {
-					if (!target) target = null;
-					bootstrap.script(name,$in,scope,target);
-					$in.close();
-				}
-				this.classpath = bootstrap.getClasspath();
-			};
-
-			return eval( String(bootstrap.getRhinoCode()) );
+			var $bootstrap = $host.getRhinoLoaderBootstrap();
+			return eval( String($bootstrap.getRhinoCode()) );
 		})();
 
 		rhinoLoader.$api.deprecate.warning = function(o) {

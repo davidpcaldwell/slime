@@ -15,6 +15,16 @@
 
 (function() {
 	return new function() {
+		var $loader = new function() {
+			this.code = String($bootstrap.getPlatformCode());
+			this.script = function(name,$in,scope,target) {
+				if (!target) target = null;
+				$bootstrap.script(name,$in,scope,target);
+				$in.close();
+			}
+			this.classpath = $bootstrap.getClasspath();
+		};
+
 		var loader = (function() {
 			var $engine = {
 				Object: {
