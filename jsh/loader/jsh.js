@@ -98,9 +98,9 @@ this.jsh = new function() {
 				p.$context = arguments[1];
 			}
 			if (format.slime) {
-				return rhinoLoader.module($host.getLoader().packed(format.slime,format.name),p);
+				return rhinoLoader.module(rhinoLoader.Module.packed(format.slime,format.name),p);
 			} else if (format.base) {
-				return rhinoLoader.module($host.getLoader().unpacked(format.base,format.name),p);
+				return rhinoLoader.module(rhinoLoader.Module.unpacked(format.base,format.name),p);
 			} else {
 				throw "Unreachable code: format.slime and format.base null in jsh loader's module()";
 			}

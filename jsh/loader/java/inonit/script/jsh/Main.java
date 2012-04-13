@@ -21,6 +21,8 @@ import java.util.*;
 import inonit.script.rhino.*;
 
 public class Main {
+	//	TODO	try to remove dependencies on inonit.script.rhino.*;
+
 	private List args;
 
 	private Main() {

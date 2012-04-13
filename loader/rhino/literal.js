@@ -85,14 +85,28 @@
 			}
 		}
 
+		this.Module = new function() {
+			var Code = Packages.inonit.script.rhino.Code;
+
+			//	java.io.File, string
+			this.unpacked = function(_base,main) {
+				return Code.unpacked(_base, main);
+			}
+
+			//	java.io.File, string
+			this.packed = function(_slime,main) {
+				return Code.slime(_slime, main);
+			}
+		};
+
 		//	Only modules may currently contain Java classes, which causes the API to be somewhat different
 		//	Module.Code currently encompasses Scripts and Classes
 		//	Scripts have a Source and a main file
 		//	Classes have only a Source
 		//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
-		this.module = function(_Module_Code,p) {
-			$loader.classpath.append(_Module_Code);
-			return loader.module(engineModuleCodeLoader(_Module_Code),p);
+		this.module = function(_code,p) {
+			$loader.classpath.append(_code);
+			return loader.module(engineModuleCodeLoader(_code),p);
 		}
 
 		this.namespace = function(name) {

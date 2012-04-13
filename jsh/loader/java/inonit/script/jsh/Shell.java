@@ -25,6 +25,8 @@ import inonit.script.rhino.*;
 import inonit.script.runtime.io.*;
 
 public class Shell {
+	//	TODO	try to remove dependencies on inonit.script.rhino.*;
+
 	public static int execute(Installation installation, Configuration configuration, Invocation invocation) {
 		return Host.create(installation, configuration, invocation).execute();
 	}
@@ -313,20 +315,11 @@ public class Shell {
 				public Code bootstrap(String path) {
 					return installation.getShellModuleCode(path);
 				}
-
-				public Code unpacked(File base, String main) {
-					return Code.unpacked(base, main);
-				}
-
-				public Code packed(File slime, String main) {
-					return Code.slime(slime, main);
-				}
 			}
 
 			public Loader getLoader() {
 				return new Loader();
 			}
-
 
 			public class RhinoClasspath {
 				public void append(Code code) {
@@ -346,7 +339,7 @@ public class Shell {
 				return classpath;
 			}
 
-			public inonit.script.rhino.Engine.Loader getRhinoLoaderBootstrap() {
+			public Engine.Loader getRhinoLoaderBootstrap() {
 				return installation.getRhinoLoaderBootstrap();
 			}
 
@@ -382,7 +375,7 @@ public class Shell {
 				finalizers.add(runnable);
 			}
 
-			public inonit.script.rhino.Engine.Debugger getDebugger() {
+			public Engine.Debugger getDebugger() {
 				return Host.this.engine.getDebugger();
 			}
 
