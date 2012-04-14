@@ -414,10 +414,23 @@ public class Shell {
 				return new Stdio();
 			}
 
-			public Engine.Debugger getDebugger() {
-				return Host.this.configuration.getEngine().getDebugger();
+			public class Debugger {
+				private Engine.Debugger implementation = Host.this.configuration.getEngine().getDebugger();
+
+				public boolean isBreakOnExceptions() {
+					return implementation.isBreakOnExceptions();
+				}
+
+				public void setBreakOnExceptions(boolean b) {
+					implementation.setBreakOnExceptions(b);
+				}
 			}
 
+			public Debugger getDebugger() {
+				return new Debugger();
+			}
+
+			//	Contains information used by jsh.script, like arguments and the base file invoked
 			public Invocation getInvocation() {
 				return invocation;
 			}
