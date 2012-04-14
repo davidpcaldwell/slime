@@ -42,7 +42,7 @@ this.jsh = new function() {
 		this.bootstrap = function(context,path) {
 			return rhinoLoader.module(
 				{ 
-					_code: $host.getModules().bootstrap(path),
+					_code: $host.getBootstrapModule(path),
 					main: "module.js"
 				},
 				{ $context: context }
@@ -272,8 +272,7 @@ this.jsh = new function() {
 
 	jsh.script = (function() {
 		var context = {
-			$script: $host.getInvocationScriptFile(),
-			$arguments: $host.getInvocationScriptArguments()
+			_invocation: $host.getInvocation()
 		};
 		context.api = {
 			file: jsh.file,

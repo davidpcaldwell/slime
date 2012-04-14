@@ -77,12 +77,8 @@ public class Main {
 			};
 
 			invocation = new Shell.Invocation() {
-				public File getScriptFile() {
-					return null;
-				}
-
-				public Shell.Script getScript() {
-					return Shell.Script.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js"));
+				public Script getScript() {
+					return Script.create(Shell.Script.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
 				}
 
 				public String[] getArguments() {
@@ -155,12 +151,8 @@ public class Main {
 			};
 
 			invocation = new Shell.Invocation() {
-				public File getScriptFile() {
-					return mainScript;
-				}
-
-				public Shell.Script getScript() {
-					return Shell.Script.create(mainScript);
+				public Script getScript() {
+					return Script.create(mainScript);
 				}
 
 				public String[] getArguments() {

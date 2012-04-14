@@ -107,14 +107,24 @@ END LICENSE
 						this.addClasses = jsh.loader.addClasses;
 					};
 
-					this.$script = jsh.script.pathname.java.adapt();
-					this.$arguments = function() {
-						var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,3);
-						rv[0] = "a";
-						rv[1] = "bb";
-						rv[2] = "C";
-						return rv;
-					}();
+					this._invocation = new function() {
+						this.getScript = function() {
+							return new function() {
+								//	getName, getReader unused currently
+								this.getFile = function() {
+									return jsh.script.pathname.java.adapt();
+								}
+							}
+						}
+
+						this.getArguments = function() {
+							var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,3);
+							rv[0] = "a";
+							rv[1] = "bb";
+							rv[2] = "C";
+							return rv;
+						}
+					}
 					this.$filesystem = $filesystem;
 					this.FILE = file;
 				}

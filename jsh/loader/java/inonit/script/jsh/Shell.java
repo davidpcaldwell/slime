@@ -113,37 +113,7 @@ public class Shell {
 		public abstract Map getEnvironment();
 		public abstract Stdio getStdio();
 
-		public static abstract class Stdio {
-			public abstract InputStream getStandardInput();
-			public abstract OutputStream getStandardOutput();
-			public abstract OutputStream getStandardError();
-		}
-	}
-
-	public static abstract class Invocation {
-		/**
-		 * Returns the <code>java.io.File</code> object corresponding to the main script.
-		 *
-		 * @return The <code>java.io.File</code> object corresponding to the main script, or <code>null</code> if there is no such
-		 *		file; e.g., the script has been packaged into a JAR file.
-		 */
-		public abstract File getScriptFile();
-
-		public abstract Script getScript();
-		public abstract String[] getArguments();
-	}
-
-	static class Host {
-		private Installation installation;
-		private Configuration configuration;
-		private Invocation invocation;
-
-		private Engine engine;
-		private Classpath classpath;
-
-		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
-
-		private static abstract class Classpath extends ClassLoader {
+		static abstract class Classpath extends ClassLoader {
 			static Classpath create(ClassLoader delegate) {
 				return new ModulesClasspath(delegate);
 			}
@@ -200,18 +170,94 @@ public class Shell {
 			}
 		}
 
-		static Host create(Installation installation, Configuration configuration, Invocation invocation) {
+		private Engine engine;
+		private Classpath classpath;
+
+		final void initialize() {
+			final Configuration configuration = this;
 			ContextFactoryImpl contexts = new ContextFactoryImpl();
-			Classpath classpath = Classpath.create(configuration.getClassLoader());
+			this.classpath = Classpath.create(configuration.getClassLoader());
 			contexts.initApplicationClassLoader(classpath);
 			contexts.setOptimization(configuration.getOptimizationLevel());
+			this.engine = Engine.create(configuration.getDebugger(), contexts);
+		}
 
+		Engine getEngine() {
+			return engine;
+		}
+
+		Classpath getClasspath() {
+			return classpath;
+		}
+
+		public static abstract class Stdio {
+			public abstract InputStream getStandardInput();
+			public abstract OutputStream getStandardOutput();
+			public abstract OutputStream getStandardError();
+		}
+	}
+
+	public static abstract class Invocation {
+		public static abstract class Script {
+			private static Script create(final Shell.Script delegate, final File file) {
+				return new Script() {
+					@Override
+					public File getFile() {
+						return file;
+					}
+
+					@Override
+					public String getName() {
+						return delegate.getName();
+					}
+
+					@Override
+					public Reader getReader() {
+						return delegate.getReader();
+					}
+				};
+			}
+
+			static Script create(File file) {
+				return create(Shell.Script.create(file), file);
+			}
+
+			static Script create(final Shell.Script delegate) {
+				return create(delegate, null);
+			}
+
+			public abstract String getName();
+			/**
+				Returns the <code>java.io.File</code> object corresponding to the main script.
+
+				@return The <code>java.io.File</code> object corresponding to the main script, or <code>null</code> if there is no
+					such file; e.g., the script has been packaged into a JAR file.
+			*/
+			public abstract File getFile();
+			public abstract Reader getReader();
+		}
+
+		public abstract Script getScript();
+
+		public abstract String[] getArguments();
+	}
+
+	static class Host {
+		private Installation installation;
+		private Configuration configuration;
+		private Invocation invocation;
+
+//		private Engine engine;
+
+		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
+
+		static Host create(Installation installation, Configuration configuration, Invocation invocation) {
 			Host rv = new Host();
 			rv.installation = installation;
 			rv.configuration = configuration;
 			rv.invocation = invocation;
-			rv.engine = Engine.create(configuration.getDebugger(), contexts);
-			rv.classpath = classpath;
+			configuration.initialize();
+//			rv.engine = configuration.getEngine();
 			return rv;
 		}
 
@@ -250,7 +296,7 @@ public class Shell {
 
 		int execute() {
 			try {
-				Object ignore = engine.execute(createProgram());
+				Object ignore = configuration.getEngine().execute(createProgram());
 				return 0;
 			} catch (Engine.Errors e) {
 				Engine.Errors.ScriptError[] errors = e.getErrors();
@@ -270,6 +316,7 @@ public class Shell {
 					try {
 						finalizers.get(i).run();
 					} catch (Throwable t) {
+						//	TODO	log something about the exception
 						configuration.getLog().println("Error running finalizer: " + finalizers.get(i));
 					}
 				}
@@ -277,15 +324,15 @@ public class Shell {
 		}
 
 		Scriptable load() {
-			return engine.load(createProgram());
+			return configuration.getEngine().load(createProgram());
 		}
 
 		public class Interface {
 			public String toString() {
 				return getClass().getName()
-					+ " engine=" + engine
+					+ " engine=" + configuration.getEngine()
 					+ " installation=" + installation
-					+ " classpath=" + classpath
+					+ " classpath=" + configuration.getClasspath()
 				;
 			}
 
@@ -303,41 +350,23 @@ public class Shell {
 
 					@Override
 					public Loader.Classpath getClasspath() {
-						return classpath.toLoaderClasspath();
+						return configuration.getClasspath().toLoaderClasspath();
 					}
 
 					@Override
 					protected Engine getEngine() {
-						return Host.this.engine;
+						return Host.this.configuration.getEngine();
 					}
 				};
-				return loader.initialize(engine);
+				return loader.initialize(configuration.getEngine());
 			}
 
-			public class Modules {
-				public Code bootstrap(String path) {
-					return installation.getShellModuleCode(path);
-				}
-			}
-
-			public Modules getModules() {
-				return new Modules();
+			public Code getBootstrapModule(String path) {
+				return installation.getShellModuleCode(path);
 			}
 
 			public Code.Source getPackagedCode() {
 				return installation.getPackagedCode();
-			}
-
-			public Class loadClass(String name) throws ClassNotFoundException {
-				return classpath.loadClass(name);
-			}
-
-			public File getInvocationScriptFile() {
-				return invocation.getScriptFile();
-			}
-
-			public String[] getInvocationScriptArguments() {
-				return invocation.getArguments();
 			}
 
 			public Properties getSystemProperties() {
@@ -366,16 +395,24 @@ public class Shell {
 				return new Stdio();
 			}
 
+			public Engine.Debugger getDebugger() {
+				return Host.this.configuration.getEngine().getDebugger();
+			}
+
+			public Class loadClass(String name) throws ClassNotFoundException {
+				return configuration.getClasspath().loadClass(name);
+			}
+
+			public Invocation getInvocation() {
+				return invocation;
+			}
+
 			public void addFinalizer(Runnable runnable) {
 				finalizers.add(runnable);
 			}
 
-			public Engine.Debugger getDebugger() {
-				return Host.this.engine.getDebugger();
-			}
-
 			public void exit(int status) throws ExitException {
-				Host.this.engine.getDebugger().setBreakOnExceptions(false);
+				Host.this.configuration.getEngine().getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
 			}
 

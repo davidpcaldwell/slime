@@ -13,14 +13,17 @@
 //	Contributor(s):
 //	END LICENSE
 
-if ($context.$script) {
-	$exports.pathname = $context.api.file.filesystem.$jsh.Pathname($context.$script);
+if ($context._invocation.getScript().getFile()) {
+	//	push the below call back up into the loader
+	$exports.pathname = $context.api.file.filesystem.$jsh.Pathname($context._invocation.getScript().getFile());
 	$exports.file = $exports.pathname.file;
 	$exports.getRelativePath = function(path) {
 		return $exports.file.getRelativePath(path);
 	}
+} else {
+	debugger;
 }
-$exports.arguments = $context.api.java.toJsArray($context.$arguments, function(s) { return String(s); });
+$exports.arguments = $context.api.java.toJsArray($context._invocation.getArguments(), function(s) { return String(s); });
 $exports.addClasses = $api.deprecate($context.api.addClasses);
 
 $exports.Loader = function(paths) {
