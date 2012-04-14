@@ -374,6 +374,10 @@ public class Shell {
 					return configuration.getClasspath().loadClass(name);
 				}
 
+				public void addFinalizer(Runnable runnable) {
+					finalizers.add(runnable);
+				}
+
 				//	Probably will need to define a default base for the non-packaged jsh.script.loader
 //				public Invocation getInvocation() {
 //					return invocation;
@@ -414,16 +418,8 @@ public class Shell {
 				return Host.this.configuration.getEngine().getDebugger();
 			}
 
-			public Class loadClass(String name) throws ClassNotFoundException {
-				return configuration.getClasspath().loadClass(name);
-			}
-
 			public Invocation getInvocation() {
 				return invocation;
-			}
-
-			public void addFinalizer(Runnable runnable) {
-				finalizers.add(runnable);
 			}
 
 			public void exit(int status) throws ExitException {

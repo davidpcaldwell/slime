@@ -19,7 +19,7 @@ this.jsh = new function() {
 	var jsh = this;
 
 	var addFinalizer = function(f) {
-		$host.addFinalizer(new JavaAdapter(
+		$host.getLoader().addFinalizer(new JavaAdapter(
 			Packages.java.lang.Runnable,
 			{
 				run: function() {
