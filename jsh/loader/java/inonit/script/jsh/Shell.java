@@ -337,7 +337,7 @@ public class Shell {
 			}
 
 			public Scriptable getRhinoLoader() throws IOException {
-				Loader loader = new Loader() {
+				inonit.script.rhino.Loader loader = new inonit.script.rhino.Loader() {
 					@Override
 					public String getPlatformCode() throws IOException {
 						return new Streams().readString(installation.getPlatformLoader().getReader());
@@ -349,7 +349,7 @@ public class Shell {
 					}
 
 					@Override
-					public Loader.Classpath getClasspath() {
+					public inonit.script.rhino.Loader.Classpath getClasspath() {
 						return configuration.getClasspath().toLoaderClasspath();
 					}
 
@@ -361,12 +361,27 @@ public class Shell {
 				return loader.initialize(configuration.getEngine());
 			}
 
-			public Code getBootstrapModule(String path) {
-				return installation.getShellModuleCode(path);
+			public class Loader {
+				public Code getBootstrapModule(String path) {
+					return installation.getShellModuleCode(path);
+				}
+
+				public Code.Source getPackagedCode() {
+					return installation.getPackagedCode();
+				}
+
+				public Class getJavaClass(String name) throws ClassNotFoundException {
+					return configuration.getClasspath().loadClass(name);
+				}
+
+				//	Probably will need to define a default base for the non-packaged jsh.script.loader
+//				public Invocation getInvocation() {
+//					return invocation;
+//				}
 			}
 
-			public Code.Source getPackagedCode() {
-				return installation.getPackagedCode();
+			public Loader getLoader() {
+				return new Loader();
 			}
 
 			public Properties getSystemProperties() {

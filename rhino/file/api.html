@@ -90,7 +90,7 @@ END LICENSE
 					this.js = $jsapi.module("js/object/");
 					var java = $jsapi.module("rhino/host/", {
 						loadClass: function(name) {
-							return $host.loadClass(name)
+							return $host.getLoader().getJavaClass(name)
 						}
 					});
 					this.java = java;

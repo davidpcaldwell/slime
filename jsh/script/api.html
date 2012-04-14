@@ -72,7 +72,7 @@ END LICENSE
 			(function() {
 				var host = $jsapi.module("rhino/host/", {
 					loadClass: function(name) {
-						return $host.loadClass(name)
+						return $host.getLoader().getJavaClass(name)
 					}
 				});
 				var context = {
