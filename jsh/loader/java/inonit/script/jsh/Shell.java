@@ -177,7 +177,7 @@ public class Shell {
 			protected Class findClass(String name) throws ClassNotFoundException {
 				String path = name.replace('.', '/') + ".class";
 				for (int i=0; i<items.size(); i++) {
-					Code.Classes classes = ((Code.Classes)items.get(i));
+					Code.Source classes = ((Code.Source)items.get(i));
 					try {
 						InputStream stream = classes.getResourceAsStream(path);
 						if (stream != null) {
@@ -197,7 +197,7 @@ public class Shell {
 			}
 
 			public void append(URL url) {
-				items.add(Code.Classes.create(Code.Source.create(url)));
+				items.add(Code.Source.create(url));
 			}
 		}
 

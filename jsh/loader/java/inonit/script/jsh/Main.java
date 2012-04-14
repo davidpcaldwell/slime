@@ -64,8 +64,7 @@ public class Main {
 						Code.Source.create(
 							ClassLoader.getSystemClassLoader(),
 							"$jsh/modules/" + path + "/"
-						),
-						"module.js"
+						)
 					);
 				}
 
@@ -147,7 +146,7 @@ public class Main {
 				}
 
 				public Code getShellModuleCode(String path) {
-					return Code.slime(getModulePath(path), "module.js");
+					return Code.slime(getModulePath(path));
 				}
 
 				public Code.Source getPackagedCode() {

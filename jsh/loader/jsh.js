@@ -31,10 +31,6 @@ this.jsh = new function() {
 
 	var loader = new function() {
 		var rhinoLoader = $host.getRhinoLoader();
-//		var rhinoLoader = (function() {
-//			var $bootstrap = $host.getRhinoLoaderBootstrap();
-//			return eval( String($bootstrap.getRhinoCode()) );
-//		})();
 
 		rhinoLoader.$api.deprecate.warning = function(o) {
 			debugger;
@@ -44,7 +40,13 @@ this.jsh = new function() {
 		this.$api = rhinoLoader.$api;
 
 		this.bootstrap = function(context,path) {
-			return rhinoLoader.module($host.getModules().bootstrap(path), { $context: context });
+			return rhinoLoader.module(
+				{ 
+					_code: $host.getModules().bootstrap(path),
+					main: "module.js"
+				},
+				{ $context: context }
+			);
 		}
 
 		this.run = function(code,scope,target) {
@@ -125,18 +127,12 @@ this.jsh = new function() {
 				}
 
 				this.module = function(path) {
-					var m = new function() {
-						this.toString = function() {
-							return "packaged:module:" + path
-						}
-
-						this.read = function(relative) {
-							return $host.getPackagedCode().getResourceAsStream(path+relative);
-						}
-
-						this.getMainScriptPath = function() {
-							return "module.js";
-						}
+					var m = {
+						_code: Packages.inonit.script.rhino.Code.Source.create(
+							$host.getPackagedCode(),
+							path
+						),
+						main: "module.js"
 					};
 					var p = {};
 					if (arguments.length == 2) {
@@ -165,6 +161,7 @@ this.jsh = new function() {
 
 		this.script = loader.$api.deprecate(loader.file);
 
+		//	Should be able to push portions of this into loader/rhino
 		this.addClasses = function(pathname) {
 			if (!pathname.directory && !pathname.file) {
 				throw "Classes not found: " + pathname;

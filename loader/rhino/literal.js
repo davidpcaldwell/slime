@@ -71,12 +71,12 @@
 			return loader.file(getCode(code),$context);
 		}
 
-		var engineModuleCodeLoader = function($engine_module) {
+		var engineModuleCodeLoader = function($engine_module,main) {
 			return new function() {
-				this.main = String($engine_module.getScripts().getMain());
+				this.main = main;
 
 				this.getCode = function(path) {
-					var $in = $engine_module.getScripts().getSource().getResourceAsStream(new Packages.java.lang.String(path));
+					var $in = $engine_module.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
 					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
 					return getCode({
 						name: String($engine_module) + ":" + path,
@@ -88,7 +88,7 @@
 				this.decorateLoader = function($loader) {
 					$loader.java = new function() {
 						this.read = function(path) {
-							return $engine_module.getScripts().getSource().getResourceAsStream(new Packages.java.lang.String(path));
+							return $engine_module.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
 						}
 					}
 				}
@@ -100,23 +100,25 @@
 
 			//	java.io.File, string
 			this.unpacked = function(_base,main) {
-				return Code.unpacked(_base, main);
+				return { _code: Code.unpacked(_base), main: main };
 			}
 
 			//	java.io.File, string
 			this.packed = function(_slime,main) {
-				return Code.slime(_slime, main);
+				return { _code: Code.slime(_slime), main: main };
 			}
 		};
 
 		//	Only modules may currently contain Java classes, which causes the API to be somewhat different
-		//	Module.Code currently encompasses Scripts and Classes
-		//	Scripts have a Source and a main file
-		//	Classes have only a Source
+		//	Code currently contains a Code.Source for scripts and a Code.Source for classes
 		//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
-		this.module = function(_code,p) {
-			$loader.classpath.append(_code);
-			return loader.module(engineModuleCodeLoader(_code),p);
+		this.module = function(format,p) {
+			if (format._code) {
+				$loader.classpath.append(format._code);
+				return loader.module(engineModuleCodeLoader(format._code, format.main),p);
+			} else {
+				return loader.module.apply(loader, arguments);
+			}
 		}
 
 		this.namespace = function(name) {
