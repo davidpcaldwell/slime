@@ -37,7 +37,7 @@ var verify = function(b,message) {
 
 var getClass = function(name) {
 	try {
-		return $host.getClassLoader().loadClass(name);
+		return $host.loadClass(name);
 	} catch (e) {
 		return null;
 	}

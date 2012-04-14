@@ -71,7 +71,9 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			(function() {
 				var host = $jsapi.module("rhino/host/", {
-					classLoader: $host.getClassLoader()
+					loadClass: function(name) {
+						return $host.loadClass(name)
+					}
 				});
 				var context = {
 					api: {

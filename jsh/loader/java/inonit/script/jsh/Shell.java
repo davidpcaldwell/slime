@@ -152,9 +152,7 @@ public class Shell {
 				super(delegate);
 			}
 
-			public abstract void append(URL url);
-			public abstract void append(Code module);
-			public abstract void append(Code.Source classes);
+			abstract Loader.Classpath toLoaderClasspath();
 		}
 
 		private static class ModulesClasspath extends Classpath {
@@ -193,16 +191,12 @@ public class Shell {
 				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
 			}
 
-			public void append(Code.Source classes) {
-				items.add(classes);
-			}
-
-			public void append(Code module) {
-				items.add(module.getClasses());
-			}
-
-			public void append(URL url) {
-				items.add(Code.Source.create(url));
+			public Loader.Classpath toLoaderClasspath() {
+				return new Loader.Classpath() {
+					@Override public void append(Code.Source classes) {
+						items.add(classes);
+					}
+				};
 			}
 		}
 
@@ -309,12 +303,7 @@ public class Shell {
 
 					@Override
 					public Loader.Classpath getClasspath() {
-						return new Loader.Classpath() {
-							@Override
-							public void append(Code.Source code) {
-								classpath.append(code);
-							}
-						};
+						return classpath.toLoaderClasspath();
 					}
 
 					@Override
@@ -323,11 +312,6 @@ public class Shell {
 					}
 				};
 				return loader.initialize(engine);
-			}
-
-			public void exit(int status) throws ExitException {
-				Host.this.engine.getDebugger().setBreakOnExceptions(false);
-				throw new ExitException(status);
 			}
 
 			public class Modules {
@@ -344,16 +328,16 @@ public class Shell {
 				return installation.getPackagedCode();
 			}
 
-			public ClassLoader getClassLoader() {
-				return classpath;
+			public Class loadClass(String name) throws ClassNotFoundException {
+				return classpath.loadClass(name);
 			}
 
-//			public void addClasses(File classes) throws java.net.MalformedURLException {
-//				classpath.append(classes.toURI().toURL());
-//			}
+			public File getInvocationScriptFile() {
+				return invocation.getScriptFile();
+			}
 
-			public Invocation getInvocation() {
-				return invocation;
+			public String[] getInvocationScriptArguments() {
+				return invocation.getArguments();
 			}
 
 			public Properties getSystemProperties() {
@@ -364,16 +348,22 @@ public class Shell {
 				return configuration.getEnvironment();
 			}
 
-			public InputStream getStandardInput() {
-				return configuration.getStdio().getStandardInput();
+			public class Stdio {
+				public InputStream getStandardInput() {
+					return configuration.getStdio().getStandardInput();
+				}
+
+				public PrintStream getStandardOutput() {
+					return new PrintStream(configuration.getStdio().getStandardOutput());
+				}
+
+				public PrintStream getStandardError() {
+					return new PrintStream(configuration.getStdio().getStandardError());
+				}
 			}
 
-			public PrintStream getStandardOutput() {
-				return new PrintStream(configuration.getStdio().getStandardOutput());
-			}
-
-			public PrintStream getStandardError() {
-				return new PrintStream(configuration.getStdio().getStandardError());
+			public Stdio getStdio() {
+				return new Stdio();
 			}
 
 			public void addFinalizer(Runnable runnable) {
@@ -382,6 +372,11 @@ public class Shell {
 
 			public Engine.Debugger getDebugger() {
 				return Host.this.engine.getDebugger();
+			}
+
+			public void exit(int status) throws ExitException {
+				Host.this.engine.getDebugger().setBreakOnExceptions(false);
+				throw new ExitException(status);
 			}
 
 //			//

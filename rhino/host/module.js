@@ -13,13 +13,14 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	replace 'warning' with standard tools like $api.deprecate
 var warning = ($context.warning) ? $context.warning : function(s) {
 	debugger;
 	Packages.java.lang.System.err.println("rhino/host WARNING: " + s);
 };
 
 var items = $loader.file("java.js", {
-	classLoader: $context.classLoader,
+	//	TODO	replace 'warning' with standard tools like $api.deprecate
 	warning: (function() {
 		if ($context.warning) return $context.warning;
 		return function(message) {
@@ -165,12 +166,15 @@ var getJavaClassName = function(javaclass) {
 }
 
 var $isJavaType = function(javaclass,object) {
-	var getNamedJavaClass = function(className) {
-		var classLoader = ($context.classLoader) ? $context.classLoader : Packages.java.lang.Class.forName("java.lang.Object").getClassLoader();
-		if (classLoader) {
-			return classLoader.loadClass(className);
+	var getNamedJavaClass = function(name) {
+		if ($context.loadClass) {
+			return $context.loadClass(name);
 		} else {
-			return Packages.java.lang.Class.forName(className);
+			if (Packages.java.lang.Class.forName("java.lang.Object").getClassLoader()) {
+				return Packages.java.lang.Class.forName("java.lang.Object").getClassLoader().loadClass(name);
+			} else {
+				return Packages.java.lang.Class.forName(name);
+			}
 		}
 	};
 

@@ -184,7 +184,9 @@ this.jsh = new function() {
 	var java = loader.bootstrap(
 		new function() {
 			this.experimental = function() {};
-			this.classLoader = $host.getClassLoader();
+			this.loadClass = function(name) {
+				return $host.loadClass(name);
+			}
 			this.globals = true;
 		},
 		"rhino/host"
@@ -210,9 +212,9 @@ this.jsh = new function() {
 		}
 
 		context.stdio = new function() {
-			this.$out = $host.getStandardOutput();
-			this.$in = $host.getStandardError();
-			this.$err = $host.getStandardError();
+			this.$out = $host.getStdio().getStandardOutput();
+			this.$in = $host.getStdio().getStandardError();
+			this.$err = $host.getStdio().getStandardError();
 		}
 
 		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
@@ -270,8 +272,8 @@ this.jsh = new function() {
 
 	jsh.script = (function() {
 		var context = {
-			$script: $host.getInvocation().getScriptFile(),
-			$arguments: $host.getInvocation().getArguments()
+			$script: $host.getInvocationScriptFile(),
+			$arguments: $host.getInvocationScriptArguments()
 		};
 		context.api = {
 			file: jsh.file,
