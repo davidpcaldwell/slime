@@ -9,7 +9,11 @@ public abstract class Loader {
 	public abstract String getRhinoCode() throws IOException;
 
 	public static abstract class Classpath {
-		public abstract void append(Code code);
+		public abstract void append(Code.Source code);
+
+		public final void append(Code code) {
+			append(code.getClasses());
+		}
 	}
 
 	public abstract Classpath getClasspath();

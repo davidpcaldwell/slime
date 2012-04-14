@@ -66,6 +66,10 @@ public abstract class Code {
 			};
 		}
 
+		public static Source create(File file) throws java.net.MalformedURLException {
+			return create(file.toURI().toURL());
+		}
+
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
 	}
 

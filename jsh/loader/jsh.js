@@ -100,6 +100,10 @@ this.jsh = new function() {
 			}
 		}
 
+		this.addClasses = function(file) {
+			rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(file));
+		}
+
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
@@ -166,7 +170,7 @@ this.jsh = new function() {
 			if (!pathname.directory && !pathname.file) {
 				throw "Classes not found: " + pathname;
 			}
-			$host.addClasses(pathname.java.adapt());
+			loader.addClasses(pathname.java.adapt());
 		}
 	};
 

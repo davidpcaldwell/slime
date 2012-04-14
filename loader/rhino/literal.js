@@ -121,6 +121,12 @@
 			}
 		}
 
+		this.classpath = new function() {
+			this.add = function(_source) {
+				$loader.classpath.append(_source);
+			}
+		}
+
 		this.namespace = function(name) {
 			return loader.namespace(name);
 		}

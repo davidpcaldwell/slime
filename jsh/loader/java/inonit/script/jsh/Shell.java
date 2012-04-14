@@ -154,6 +154,7 @@ public class Shell {
 
 			public abstract void append(URL url);
 			public abstract void append(Code module);
+			public abstract void append(Code.Source classes);
 		}
 
 		private static class ModulesClasspath extends Classpath {
@@ -190,6 +191,10 @@ public class Shell {
 					}
 				}
 				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
+			}
+
+			public void append(Code.Source classes) {
+				items.add(classes);
 			}
 
 			public void append(Code module) {
@@ -306,7 +311,7 @@ public class Shell {
 					public Loader.Classpath getClasspath() {
 						return new Loader.Classpath() {
 							@Override
-							public void append(Code code) {
+							public void append(Code.Source code) {
 								classpath.append(code);
 							}
 						};
@@ -343,9 +348,9 @@ public class Shell {
 				return classpath;
 			}
 
-			public void addClasses(File classes) throws java.net.MalformedURLException {
-				classpath.append(classes.toURI().toURL());
-			}
+//			public void addClasses(File classes) throws java.net.MalformedURLException {
+//				classpath.append(classes.toURI().toURL());
+//			}
 
 			public Invocation getInvocation() {
 				return invocation;
