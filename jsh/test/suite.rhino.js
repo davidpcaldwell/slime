@@ -145,12 +145,20 @@ var jshPackage = function(p) {
 	invocation.push("-script",getJshPathname(new File(BASE,"jsh/test/" + p.script)));
 	if (p.modules) {
 		p.modules.forEach(function(module) {
-			invocation.push("-module", module + "=" + getJshPathname(new File(BASE,"jsh/test/" + module)));
+			if (typeof(module) == "string") {
+				invocation.push("-module", module + "=" + getJshPathname(new File(BASE,"jsh/test/" + module)));
+			} else if (module.from && module.to) {
+				invocation.push("-module", module.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + module.from)));
+			}
 		});
 	}
 	if (p.files) {
 		p.files.forEach(function(file) {
-			invocation.push("-file", file + "=" + getJshPathname(new File(BASE,"jsh/test/" + file)));
+			if (typeof(file) == "string") {
+				invocation.push("-file", file + "=" + getJshPathname(new File(BASE,"jsh/test/" + file)));
+			} else if (file.from && file.to) {
+				invocation.push("-file", file.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + file.from)));
+			}
 		});
 	}
 	var packaged = createTemporaryDirectory();
@@ -181,6 +189,7 @@ var packagedPackaged = jshPackage({
 console("Running " + packagedPackaged + " ...");
 run(LAUNCHER_COMMAND.slice(0,2).concat([
 	packagedPackaged.getCanonicalPath(),
+	//	TODO	remove, I believe
 	"-classes",getJshPathname(classes),
 	mode
 ]));
@@ -188,4 +197,21 @@ run(LAUNCHER_COMMAND.slice(0,2).concat([
 console("Running unpackaged packaged.jsh.js");
 testCommandOutput("packaged.jsh.js", function(options) {
 	checkOutput(options,["Loaded both.", ""]);
+});
+
+console("Packaging packaged-path.jsh.js");
+var packagedPackaged2 = jshPackage({
+	script: "packaged-path.jsh.js",
+	modules: [ { from: "packaged-path/path/", to: "path" } ],
+	files: [ { from: "packaged-path/file.js", to: "file.js" }]
+});
+console("Running " + packagedPackaged2 + " ...");
+run(LAUNCHER_COMMAND.slice(0,2).concat([
+	packagedPackaged.getCanonicalPath(),
+	mode
+]));
+
+console("Running unpackaged packaged-path.jsh.js");
+testCommandOutput("packaged-path.jsh.js", function(options) {
+	checkOutput(options,["Success: packaged-path.jsh.js",""]);
 });

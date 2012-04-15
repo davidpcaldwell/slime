@@ -151,16 +151,40 @@ this.jsh = new function() {
 			}
 		}
 
-		this.Loader = Loader;
+		var self = this;
+		this.Loader = function(directory) {
+			if (!directory.directory) {
+				throw new Error("No directory at " + directory);
+			}
+			var args = function() {
+				var toArray = function() {
+					var rv = [];
+					for (var i=0; i<arguments.length; i++) {
+						rv[i] = arguments[i];
+					}
+					return rv;
+				}
+			
+				var rv = toArray.apply(null, arguments);
+				rv[0] = directory.directory.getRelativePath(arguments[0]);
+				return rv;
+			}
+
+			this.run = function(path) {
+				return self.run.apply(null, args.apply(null, arguments));
+			}
+
+			this.file = function(path) {
+				return self.file.apply(null, args.apply(null, arguments));
+			}
+
+			this.module = function(path) {
+				return self.module.apply(null, args.apply(null, arguments));
+			}
+		}
 		
 		if ($host.getLoader().getPackagedCode()) {
 			this.bundled = new Loader($host.getLoader().getPackagedCode());
-		} else if ($host.getInvocation().getScript().getFile()) {
-			this.bundled = new Loader(
-				Packages.inonit.script.rhino.Code.Source.create(
-					$host.getInvocation().getScript().getFile().getParentFile()
-				)
-			);
 		}
 	}
 
@@ -298,18 +322,12 @@ this.jsh = new function() {
 		return loader.bootstrap(context,"jsh/script");
 	})();
 
+	//	TODO	maybe some sort of path structure?
+	jsh.script.Loader = loader.Loader;
 	if (jsh.script && loader.bundled) {
 		jsh.script.loader = loader.bundled;
-	}
-	jsh.script.Loader = function(pathname) {
-		//	TODO	maybe some sort of path structure?
-		//	TODO	this implementation is untested
-		if (!pathname.directory) {
-			throw new Error("Only jsh.script.Loader based on directory is supported.");
-		}
-		return new loader.Loader(
-			inonit.script.rhino.Code.Source.create(pathname.java.adapt())
-		);
+	} else if (jsh.script.pathname) {
+		jsh.script.loader = new jsh.script.Loader(jsh.script.pathname.parent);
 	}
 
 	if (jsh.script) {

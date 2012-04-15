@@ -86,7 +86,7 @@ parameters.options.module.forEach( function(module) {
 	if (pathname.directory) {
 		slime.build.jsh(pathname.directory,to.getRelativePath("$packaged/" + name).createDirectory({recursive: true}));
 	} else {
-		throw "Unimplemented: bundle slime format module.";
+		throw new Error("Did not find module at " + pathname);
 	}
 } );
 
