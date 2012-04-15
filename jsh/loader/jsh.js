@@ -49,25 +49,34 @@ this.jsh = new function() {
 			);
 		}
 
-		this.run = function(code,scope,target) {
-			if (code.java && code.java.adapt() && code.java.adapt().getClass().getName() == "java.io.File") {
-				code = {
+		var getCode = function(code) {
+			if (typeof(code) == "undefined") throw new RangeError("'code' must not be undefined.");
+			if (code === null) throw new RangeError("'code' must not be null.");
+			if (code.java && code.java.adapt() && rhinoLoader.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
+				return {
 					name: code.toString(),
-					$in: new Packages.java.io.FileInputStream(code.java.adapt())
+					_in: new Packages.java.io.FileInputStream(code.java.adapt())
 				};
-			} else if (code.name && code.$in) {
+			} else if (code.name && code._in) {
 				//	fine as is
+				return code;
+			} else if (code.name && code.$in) {
+				//	TODO	deprecate
+				return {
+					name: code.name,
+					_in: code.$in
+				}
+			} else {
+				return code;
 			}
-			return rhinoLoader.run(code,scope,target);
 		}
 
-		this.file = function(pathname,$context) {
-			if (typeof(pathname) == "undefined") throw new RangeError("'pathname' must not be undefined.");
-			if (pathname === null) throw new RangeError("'pathname' must not be null.");
-			return rhinoLoader.file({
-				name: pathname.toString(),
-				$in: new Packages.java.io.FileInputStream(pathname.java.adapt())
-			}, $context);
+		this.run = function(code,scope,target) {
+			return rhinoLoader.run(getCode(code),scope,target);
+		}
+
+		this.file = function(code,$context) {
+			return rhinoLoader.file(getCode(code), $context);
 		}
 
 		this.module = function(pathname) {
@@ -166,7 +175,6 @@ this.jsh = new function() {
 
 		this.script = loader.$api.deprecate(loader.file);
 
-		//	Should be able to push portions of this into loader/rhino
 		this.addClasses = function(pathname) {
 			if (!pathname.directory && !pathname.file) {
 				throw "Classes not found: " + pathname;
@@ -174,6 +182,7 @@ this.jsh = new function() {
 			loader.addClasses(pathname.java.adapt());
 		}
 	};
+	loader.$api.deprecate(this,"loader");
 
 	//	TODO	should separate everything above/below into two files; above is loader implementation, below is
 	//			startup/configuration

@@ -166,6 +166,14 @@ public class Shell {
 					@Override public void append(Code.Source classes) {
 						items.add(classes);
 					}
+
+					@Override public Class getClass(String name) {
+						try {
+							return ModulesClasspath.this.loadClass(name);
+						} catch (ClassNotFoundException e) {
+							return null;
+						}
+					}
 				};
 			}
 		}

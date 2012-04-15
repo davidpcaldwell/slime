@@ -48,18 +48,18 @@
 		})();
 
 		var getCode = function(code) {
-			if (typeof(code) == "object" && code.name && code.$in) {
+			if (typeof(code) == "object" && code.name && code._in) {
 				if ($loader.script) {
-					return function() { $loader.script(code.name,code.$in,arguments[0],arguments[1]); };
+					return function() { $loader.script(code.name,code._in,arguments[0],arguments[1]); };
 				} else {
 					return String(
-						new Packages.inonit.script.runtime.io.Streams().readString(code.$in)
+						new Packages.inonit.script.runtime.io.Streams().readString(code._in)
 					);
 				}
 			} else if (typeof(code) == "string") {
 				return code;
 			} else {
-				throw "Unimplemented: code = " + code;
+				throw new Error("Unimplemented: code = " + code);
 			}
 		}
 
@@ -80,7 +80,7 @@
 					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
 					return getCode({
 						name: String($engine_module) + ":" + path,
-						$in: $in
+						_in: $in
 					});
 				};
 
@@ -124,6 +124,10 @@
 		this.classpath = new function() {
 			this.add = function(_source) {
 				$loader.classpath.append(_source);
+			}
+
+			this.getClass = function(name) {
+				return $loader.classpath.getClass(name);
 			}
 		}
 

@@ -10,6 +10,7 @@ public abstract class Loader {
 
 	public static abstract class Classpath {
 		public abstract void append(Code.Source code);
+		public abstract Class getClass(String name);
 
 		public final void append(Code code) {
 			append(code.getClasses());
