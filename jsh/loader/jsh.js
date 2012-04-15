@@ -136,12 +136,13 @@ this.jsh = new function() {
 				}
 
 				this.module = function(path) {
+					var Code = Packages.inonit.script.rhino.Code;
 					//	TODO	replace with a _source path main API
 					var m = {
-						_code: Packages.inonit.script.rhino.Code.Source.create(
+						_code: Code.create(Code.Source.create(
 							$host.getLoader().getPackagedCode(),
 							path
-						),
+						)),
 						main: "module.js"
 					};
 					var p = {};
@@ -178,7 +179,6 @@ this.jsh = new function() {
 			loader.addClasses(pathname.java.adapt());
 		}
 	};
-	loader.$api.deprecate(this,"loader");
 
 	//	TODO	should separate everything above/below into two files; above is loader implementation, below is
 	//			startup/configuration

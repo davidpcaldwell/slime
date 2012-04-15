@@ -132,23 +132,48 @@ run(LAUNCHER_COMMAND.concat(
 	]
 ));
 
-var jshPackage = function() {
+var jshPackage = function(p) {
 	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
 	invocation.push("-jsh",getJshPathname(JSH_HOME));
-	invocation.push("-script",getJshPathname(new File(BASE,"jsh/test/addClasses/addClasses.jsh.js")));
+	invocation.push("-script",getJshPathname(new File(BASE,"jsh/test/" + p.script)));
+	if (p.modules) {
+		p.modules.forEach(function(module) {
+			invocation.push("-module", module + "=" + getJshPathname(new File(BASE,"jsh/test/" + module)));
+		});
+	}
+	if (p.files) {
+		p.files.forEach(function(file) {
+			invocation.push("-file", file + "=" + getJshPathname(new File(BASE,"jsh/test/" + file)));
+		});
+	}
 	var packaged = createTemporaryDirectory();
 	packaged.mkdirs();
-	var to = new File(packaged,"addClasses.jsh.jar");
+	var to = new File(packaged,"packaged.jsh.jar");
 	invocation.push("-to",getJshPathname(to));
 	run(LAUNCHER_COMMAND.concat(invocation));
 	return to;
 }
 
 console("Packaging addClasses/addClasses.jsh.js");
-var packagedAddClasses = jshPackage();
+var packagedAddClasses = jshPackage({
+	script: "addClasses/addClasses.jsh.js"
+});
 console("Running " + packagedAddClasses + " ...");
 run(LAUNCHER_COMMAND.slice(0,2).concat([
 	packagedAddClasses.getCanonicalPath(),
+	"-classes",getJshPathname(classes),
+	mode
+]));
+
+console("Packaging packaged.jsh.js");
+var packagedPackaged = jshPackage({
+	script: "packaged.jsh.js",
+	modules: [ "packaged/" ],
+	files: ["packaged.file.js"]
+});
+console("Running " + packagedPackaged + " ...");
+run(LAUNCHER_COMMAND.slice(0,2).concat([
+	packagedPackaged.getCanonicalPath(),
 	"-classes",getJshPathname(classes),
 	mode
 ]));

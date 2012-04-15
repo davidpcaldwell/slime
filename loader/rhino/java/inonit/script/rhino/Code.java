@@ -40,9 +40,10 @@ public abstract class Code {
 		}
 
 		public static Source create(final Source source, final String prefix) {
+			//	TODO	should figure out /; maybe should only add it if we don't already end in it
 			final String prepend = (prefix != null) ? (prefix + "/") : "";
 			return new Source() {
-				public String toString() {
+				@Override public String toString() {
 					return Source.class.getName() + " source=" + source + " prefix=" + prefix;
 				}
 
@@ -75,6 +76,10 @@ public abstract class Code {
 
 	public static Code create(final Source source) {
 		return new Code() {
+			@Override public String toString() {
+				return getClass().getName() + " source=" + source;
+			}
+
 			public Source getScripts() {
 				return source;
 			}

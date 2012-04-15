@@ -27,6 +27,7 @@
 //	generates and runs unit tests is run in the debugger
 //
 //	jsh.build.nounit (JSH_BUILD_NOUNIT): if set, unit tests are not run as part of the build process
+//	jsh.build.notest (JSH_BUILD_NOTEST): if set, unit and integration tests are not run as part of the build process
 //
 //	jsh.build.nodoc (JSH_BUILD_NODOC): if set, no documentation is emitted as part of the build process
 
@@ -366,7 +367,7 @@ var jsapi_jsh = function() {
 	}
 }
 
-if (getSetting("jsh.build.nounit") && getSetting("jsh.build.nodoc")) {
+if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSetting("jsh.build.nodoc")) {
 } else {
 	console("Running JSAPI ...");
 	jsapi_jsh();
@@ -377,7 +378,7 @@ var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
 copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
 
-if (!getSetting("jsh.build.nounit")) {
+if (!getSetting("jsh.build.notest")) {
 	var integrationTests = function() {
 		var script = new File(BASE,"jsh/test/suite.rhino.js");
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");
