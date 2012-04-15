@@ -56,6 +56,11 @@
 						new Packages.inonit.script.runtime.io.Streams().readString(code._in)
 					);
 				}
+			} else if (typeof(code) == "object" && code._source && code.path) {
+				return arguments.callee({
+					name: code._source.toString(),
+					_in: code._source.getResourceAsStream(code.path)
+				});
 			} else if (typeof(code) == "string") {
 				return code;
 			} else {

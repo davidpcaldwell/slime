@@ -121,15 +121,10 @@ this.jsh = new function() {
 			this.bundled = new function() {
 				//	TODO	the getCode(...) with run/file seems redundant; rhino loader could have API that loads from Code.Source
 				var getCode = function(path) {
-					var _in = $host.getLoader().getPackagedCode().getResourceAsStream(path);
-					if (_in) {
-						return {
-							name: "packaged:" + path,
-							$in: _in
-						}
-					} else {
-						return null;
-					}
+					return {
+						_source: $host.getLoader().getPackagedCode(),
+						path: path
+					};
 				}
 
 				this.run = function(path,scope,target) {
@@ -141,6 +136,7 @@ this.jsh = new function() {
 				}
 
 				this.module = function(path) {
+					//	TODO	replace with a _source path main API
 					var m = {
 						_code: Packages.inonit.script.rhino.Code.Source.create(
 							$host.getLoader().getPackagedCode(),
