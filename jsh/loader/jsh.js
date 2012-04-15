@@ -117,41 +117,50 @@ this.jsh = new function() {
 			return rhinoLoader.namespace(name);
 		}
 
-		if ($host.getLoader().getPackagedCode()) {
-			this.bundled = new function() {
-				//	TODO	the getCode(...) with run/file seems redundant; rhino loader could have API that loads from Code.Source
-				var getCode = function(path) {
-					return {
-						_source: $host.getLoader().getPackagedCode(),
-						path: path
-					};
-				}
-
-				this.run = function(path,scope,target) {
-					return rhinoLoader.run(getCode(path),scope,target);
-				}
-
-				this.file = function(path,$context) {
-					return rhinoLoader.file(getCode(path),$context);
-				}
-
-				this.module = function(path) {
-					var Code = Packages.inonit.script.rhino.Code;
-					//	TODO	replace with a _source path main API
-					var m = {
-						_code: Code.create(Code.Source.create(
-							$host.getLoader().getPackagedCode(),
-							path
-						)),
-						main: "module.js"
-					};
-					var p = {};
-					if (arguments.length == 2) {
-						p.$context = arguments[1];
-					}
-					return rhinoLoader.module(m,p);
-				}
+		var Loader = function(_source) {
+			var getCode = function(path) {
+				return {
+					_source: _source,
+					path: path
+				};
 			}
+
+			this.run = function(path,scope,target) {
+				return rhinoLoader.run(getCode(path),scope,target);
+			}
+
+			this.file = function(path,$context) {
+				return rhinoLoader.file(getCode(path),$context);
+			}
+
+			this.module = function(path) {
+				var Code = Packages.inonit.script.rhino.Code;
+				//	TODO	replace with a _source path main API
+				var m = {
+					_code: Code.create(Code.Source.create(
+						_source,
+						path
+					)),
+					main: "module.js"
+				};
+				var p = {};
+				if (arguments.length == 2) {
+					p.$context = arguments[1];
+				}
+				return rhinoLoader.module(m,p);
+			}
+		}
+
+		this.Loader = Loader;
+		
+		if ($host.getLoader().getPackagedCode()) {
+			this.bundled = new Loader($host.getLoader().getPackagedCode());
+		} else if ($host.getInvocation().getScript().getFile()) {
+			this.bundled = new Loader(
+				Packages.inonit.script.rhino.Code.Source.create(
+					$host.getInvocation().getScript().getFile().getParentFile()
+				)
+			);
 		}
 	}
 
@@ -291,6 +300,16 @@ this.jsh = new function() {
 
 	if (jsh.script && loader.bundled) {
 		jsh.script.loader = loader.bundled;
+	}
+	jsh.script.Loader = function(pathname) {
+		//	TODO	maybe some sort of path structure?
+		//	TODO	this implementation is untested
+		if (!pathname.directory) {
+			throw new Error("Only jsh.script.Loader based on directory is supported.");
+		}
+		return new loader.Loader(
+			inonit.script.rhino.Code.Source.create(pathname.java.adapt())
+		);
 	}
 
 	if (jsh.script) {

@@ -74,6 +74,13 @@ platform.jdk.compile(compileOptions.concat([
 	String(new File(BASE,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
 ]));
 
+var checkOutput = function(options,messages) {
+	var expected = messages.join(String(Packages.java.lang.System.getProperty("line.separator")));
+	if (options.output != expected) {
+		throw new Error("Output wrong: it is [" + options.output + "] when expected was [" + expected + "]");
+	}
+}
+
 var testCommandOutput = function(path,tester) {
 	var command = [
 		String(new File(BASE,"jsh/test/" + path).getCanonicalPath())
@@ -177,3 +184,8 @@ run(LAUNCHER_COMMAND.slice(0,2).concat([
 	"-classes",getJshPathname(classes),
 	mode
 ]));
+
+console("Running unpackaged packaged.jsh.js");
+testCommandOutput("packaged.jsh.js", function(options) {
+	checkOutput(options,["Loaded both.", ""]);
+});
