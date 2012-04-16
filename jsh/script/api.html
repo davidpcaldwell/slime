@@ -44,28 +44,60 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
+			<!--	TODO	update; outdated	-->
 			<li class="value">
-				<div class="name">$script</div>
-				<span class="type">JavaClass java.io.File</span>
-				<span>The <code>java.io.File</code> object representing the main script file this shell is running.</span>
+				<div class="name">script</div>
+				<span class="type">rhino/file file</span>
+				<span>The object representing the main script file this shell is running.</span>
 			</li>
 			<li class="value">
-				<div class="name">$arguments</div>
-				<span class="type">JavaClass java.lang.String[]</span>
+				<div class="name">arguments</div>
+				<span class="type">Array of string</span>
 				<span>The arguments passed to the script.</span>
 			</li>
-			<li class="function">
-				<div class="name">addClasses</div>
-				<span>Adds a file to the classpath of this script.</span>
+			<li class="constructor">
+				<div class="name">Loader</div>
+				<span>__DESCRIPTION__</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
-						<li class="value">
-							<span class="type">jsh.file Pathname</span>
-							<span>A file to add to the classpath (either a directory or a .jar file)</span>
-						</li>
 					</ol>
 				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="value">
+				<div class="name">loader</div>
+				<span class="type">__TYPE__</span>
+				<span>__DESCRIPTION__</span>
+			</li>
+			<li class="object">
+				<div class="name">api</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">file</div>
+						<span class="type">rhino/file module</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="function">
+						<div class="name">addClasses</div>
+						<span>Adds a file to the classpath of this script.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">jsh.file Pathname</span>
+									<span>A file to add to the classpath (either a directory or a .jar file)</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#context">
@@ -102,29 +134,17 @@ END LICENSE
 				var FILE = file;
 				return new function() {
 					this.api = new function() {
-						this.java = $jsapi.module("rhino/host/");
 						this.file = file;
 						this.addClasses = jsh.loader.addClasses;
 					};
 
-					this._invocation = new function() {
-						this.getScript = function() {
-							return new function() {
-								//	getName, getReader unused currently
-								this.getFile = function() {
-									return jsh.script.pathname.java.adapt();
-								}
-							}
-						}
+					this.script = jsh.script.file;
+					this.arguments = ["a","bb","C"];
 
-						this.getArguments = function() {
-							var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,3);
-							rv[0] = "a";
-							rv[1] = "bb";
-							rv[2] = "C";
-							return rv;
-						}
-					}
+					this.Loader = jsh.script.Loader;
+					//	loader
+
+					//	TODO	what are the next two for?
 					this.$filesystem = $filesystem;
 					this.FILE = file;
 				}

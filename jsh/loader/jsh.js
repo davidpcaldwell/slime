@@ -182,6 +182,40 @@ this.jsh = new function() {
 				return self.module.apply(null, args.apply(null, arguments));
 			}
 		}
+		//	Below code was in earlier version from jsh/script; worth reviewing, especially SlimeDirectory
+//$exports.Loader = function(paths) {
+//	//	TODO	do we also need the analog of loader.run()?
+//	this.file = function(path) {
+//		var args = [ paths.file(path) ];
+//		for (var i=1; i<arguments.length; i++) {
+//			args[i] = arguments[i];
+//		}
+//		return jsh.loader.file.apply(jsh.loader,args);
+//	}
+//
+//	this.module = function(path) {
+//		var args = [ paths.module(path) ];
+//		for (var i=1; i<arguments.length; i++) {
+//			args[i] = arguments[i];
+//		}
+//		return jsh.loader.module.apply(jsh.loader,args);
+//	}
+//}
+//$exports.Loader.Paths = function(base) {
+//	this.file = function(path) {
+//		return base.getRelativePath(path);
+//	}
+//
+//	this.module = function(path) {
+//		return base.getRelativePath(path);
+//	}
+//}
+//$exports.Loader.SlimeDirectory = function(dir) {
+//	return function(path) {
+//		return dir.getRelativePath(path.substring(0,path.length-1).replace(/\//g,".") + ".slime")
+//	}
+//}
+//$api.experimental($exports,"Loader");
 		
 		if ($host.getLoader().getPackagedCode()) {
 			this.bundled = new Loader($host.getLoader().getPackagedCode());
@@ -240,7 +274,7 @@ this.jsh = new function() {
 		$properties: $host.getSystemProperties()
 	},"rhino/shell");
 
-	new function() {
+	(function() {
 		var context = {};
 
 		context._streams = new Packages.inonit.script.runtime.io.Streams();
@@ -288,7 +322,7 @@ this.jsh = new function() {
 			context,
 			"rhino/file"
 		);
-	}
+	})();
 
 	jsh.shell = (function() {
 		var context = {};
@@ -310,25 +344,23 @@ this.jsh = new function() {
 	})();
 
 	jsh.script = (function() {
+		var script = null;
+		if ($host.getInvocation().getScript().getFile()) {
+			script = jsh.file.filesystem.$jsh.Pathname($host.getInvocation().getScript().getFile()).file;
+		}
 		var context = {
-			_invocation: $host.getInvocation()
+			script: script,
+			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
+			Loader: loader.Loader,
+			loader: loader.bundled
 		};
 		context.api = {
 			file: jsh.file,
-			java: jsh.java,
 			addClasses: jsh.loader.addClasses
 		};
 
 		return loader.bootstrap(context,"jsh/script");
 	})();
-
-	//	TODO	maybe some sort of path structure?
-	jsh.script.Loader = loader.Loader;
-	if (jsh.script && loader.bundled) {
-		jsh.script.loader = loader.bundled;
-	} else if (jsh.script.pathname) {
-		jsh.script.loader = new jsh.script.Loader(jsh.script.pathname.parent);
-	}
 
 	if (jsh.script) {
 		//	Need to do this rather than jsh.shell.getopts = deprecate(jsh.script.getopts) because of not copying function properties

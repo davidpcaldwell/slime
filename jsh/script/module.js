@@ -13,52 +13,26 @@
 //	Contributor(s):
 //	END LICENSE
 
-if ($context._invocation.getScript().getFile()) {
-	//	push the below call back up into the loader
-	$exports.pathname = $context.api.file.filesystem.$jsh.Pathname($context._invocation.getScript().getFile());
-	$exports.file = $exports.pathname.file;
+if ($context.script) {
+	$exports.pathname = $context.script.pathname;
+	$exports.file = $context.script;
 	$exports.getRelativePath = function(path) {
 		return $exports.file.getRelativePath(path);
 	}
 } else {
 	debugger;
 }
-$exports.arguments = $context.api.java.toJsArray($context._invocation.getArguments(), function(s) { return String(s); });
+$exports.arguments = $context.arguments;
 $exports.addClasses = $api.deprecate($context.api.addClasses);
 
-//$exports.Loader = function(paths) {
-//	//	TODO	do we also need the analog of loader.run()?
-//	this.file = function(path) {
-//		var args = [ paths.file(path) ];
-//		for (var i=1; i<arguments.length; i++) {
-//			args[i] = arguments[i];
-//		}
-//		return jsh.loader.file.apply(jsh.loader,args);
-//	}
-//
-//	this.module = function(path) {
-//		var args = [ paths.module(path) ];
-//		for (var i=1; i<arguments.length; i++) {
-//			args[i] = arguments[i];
-//		}
-//		return jsh.loader.module.apply(jsh.loader,args);
-//	}
-//}
-//$exports.Loader.Paths = function(base) {
-//	this.file = function(path) {
-//		return base.getRelativePath(path);
-//	}
-//
-//	this.module = function(path) {
-//		return base.getRelativePath(path);
-//	}
-//}
-//$exports.Loader.SlimeDirectory = function(dir) {
-//	return function(path) {
-//		return dir.getRelativePath(path.substring(0,path.length-1).replace(/\//g,".") + ".slime")
-//	}
-//}
-//$api.experimental($exports,"Loader");
+	//	TODO	should jsh.script.loader support some sort of path structure?
+$exports.Loader = $context.Loader;
+
+if ($context.loader) {
+	$exports.loader = $context.loader;
+} else if ($context.script) {
+	$exports.loader = new $exports.Loader($exports.pathname.parent);
+}
 
 $exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
