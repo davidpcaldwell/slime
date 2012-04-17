@@ -302,6 +302,8 @@ $exports.doc = function(modules,to) {
 
 	delete index.body.table.tbody.tr[0];
 
+	//	TODO	find a way to deprecate this object, which is being used in eval() using hard-coded "absolute" paths in
+	//			jsapi:reference expressions
 	var doc = {};
 
 	modules.forEach( function(item) {
@@ -313,9 +315,34 @@ $exports.doc = function(modules,to) {
 		var root = p.file.read(XML);
 
 		this.getApi = function(path) {
+			var pathname = p.file.getRelativePath(path);
 			return new ApiHtml({
-				file: p.file.getRelativePath(path).file
+				file: getApiHtml(pathname)
 			});
+		}
+
+		var getElement = function(e,declaration) {
+			if (e.@jsapi::reference.length() > 0) {
+				try {
+					var getApi = function(path) {
+						return declaration.getApi(path);
+					}
+					return eval(String(e.@jsapi::reference));
+				} catch (e) {
+					var error = new EvalError("Error evaluating reference: " + e.@jsapi::reference);
+					var string = String(e.@jsapi::reference);
+					error.string = string;
+					error.toString = function() {
+						return this.message + "\n" + this.string;
+					}
+					if (false) {
+						throw error;
+					} else {
+						return <x/>;
+					}
+				}
+			}
+			return e;
 		}
 
 		this.getElement = function(path) {
@@ -325,7 +352,11 @@ $exports.doc = function(modules,to) {
 			for (var i=0; i<tokens.length; i++) {
 				rv = rv..*.(@jsapi::id == tokens[i])[0];
 			}
-			return rv;
+			return getElement(rv,this);
+		}
+
+		this.resolve = function(element) {
+			return getElement(element,this);
 		}
 	}
 
@@ -359,28 +390,7 @@ $exports.doc = function(modules,to) {
 			//	TODO	document and enhance this ability to import documentation from other files
 			var declaration = new ApiHtml({ file: getApiHtml(item.location) });
 			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
-				var x = e;
-				while(x.@jsapi::reference.length() > 0) {
-					try {
-						var getApi = function(path) {
-							return declaration.getApi(path);
-						}
-						x = eval(String(x.@jsapi::reference));
-					} catch (e) {
-						var error = new EvalError("Error evaluating reference: " + x.@jsapi::reference);
-						var string = String(x.@jsapi::reference);
-						error.string = string;
-						error.toString = function() {
-							return this.message + "\n" + this.string;
-						}
-						if (false) {
-							throw error;
-						} else {
-							x = <x/>;
-						}
-					}
-				}
-				e.setChildren(x.children());
+				e.setChildren(declaration.resolve(e).children());
 			}
 
 			var pagename = "ns." + item.ns + ".html";
