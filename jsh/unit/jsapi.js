@@ -140,6 +140,10 @@ $exports.tests = new function() {
 				return jsh.loader.module(moduleDescriptor.location, (context) ? context : {});
 			}
 
+			this.getRelativePath = function(path) {
+				return getApiHtml(moduleDescriptor.location).getRelativePath(path);
+			}
+
 			this.getResourcePathname = function(path) {
 				if (moduleDescriptor.location.directory) return moduleDescriptor.location.directory.getRelativePath(path);
 				if (moduleDescriptor.location.file) return moduleDescriptor.location.file.parent.getRelativePath(path);
@@ -175,17 +179,21 @@ $exports.tests = new function() {
 								jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
 								return arguments.callee.call(this,arguments[1],arguments[0]);
 							}
-							var MODULES = $context.MODULES;
-							if (MODULES[name+"/"]) {
-								//	Forgot trailing slash; fix; this ability may later be removed
-								debugger;
-								name += "/";
+							if (false) {
+								var MODULES = $context.MODULES;
+								if (MODULES[name+"/"]) {
+									//	Forgot trailing slash; fix; this ability may later be removed
+									debugger;
+									name += "/";
+								}
+								if (!MODULES[name]) {
+									debugger;
+									return null;
+								}
+								return jsh.loader.module(MODULES[name].location,context);
+							} else {
+								return jsh.loader.module(suite.getRelativePath(name),context);
 							}
-							if (!MODULES[name]) {
-								debugger;
-								return null;
-							}
-							return jsh.loader.module(MODULES[name].location,context);
 						},
 						//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
 						environment: $context.ENVIRONMENT,
@@ -246,6 +254,8 @@ $exports.tests = new function() {
 					} catch (e) {
 						//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
 						topscope.scenario(new function() {
+							this.name = suite.name;
+
 							this.execute = function(scope) {
 								throw e;
 							}
@@ -324,6 +334,9 @@ $exports.doc = function(modules,to) {
 				//delete contextDiv.parent()[contextDiv.childIndex()];
 			}
 
+			for each (var e in xhtml..*.(@jsapi::location.length() > 0)) {
+			}
+
 			//	TODO	document and enhance this ability to import documentation from other files
 			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
 				var x = e;
@@ -337,7 +350,11 @@ $exports.doc = function(modules,to) {
 						error.toString = function() {
 							return this.message + "\n" + this.string;
 						}
-						throw error;
+						if (false) {
+							throw error;
+						} else {
+							x = <x/>;
+						}
 					}
 				}
 				e.setChildren(x.children());

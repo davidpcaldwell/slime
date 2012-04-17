@@ -21,6 +21,7 @@ var parameters = jsh.shell.getopts({
 		notest: false,
 		classpath: jsh.shell.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.shell.getopts.ARRAY( String ),
+		base: jsh.file.Pathname,
 		module: jsh.shell.getopts.ARRAY( String ),
 		test: jsh.shell.getopts.ARRAY( String )
 	}
@@ -35,9 +36,9 @@ if (!parameters.options.jsapi) {
 }
 
 var modules = parameters.options.module.map( function(string) {
-	var match = /^(.*)\@(.*)\=(.*)$/.exec(string);
-	if (match == null) throw "No match: " + string;
-	var rv = { path: match[2], location: jsh.file.Pathname(match[3]) };
+	var match = /^(.*)\@(.*)$/.exec(string);
+	if (match == null) throw new Error("No match: " + string);
+	var rv = { path: match[2], location: parameters.options.base.directory.getRelativePath(match[2]) };
 	if (match[1]) rv.namespace = match[1];
 	return rv;
 } );

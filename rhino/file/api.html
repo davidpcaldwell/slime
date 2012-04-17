@@ -87,14 +87,14 @@ END LICENSE
 					this.$Context = arguments.callee;
 				}
 				$Context.api = new function() {
-					this.js = $jsapi.module("js/object/");
-					var java = $jsapi.module("rhino/host/", {
+					this.js = $jsapi.module("../../js/object/");
+					var java = $jsapi.module("../../rhino/host/", {
 						loadClass: function(name) {
 							return $host.getLoader().getJavaClass(name)
 						}
 					});
 					this.java = java;
-					this.io = $jsapi.module("rhino/io/", {
+					this.io = $jsapi.module("../../rhino/io/", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
 						,api: {
 							java: java

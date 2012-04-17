@@ -158,16 +158,16 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			(function() {
-				var host = $jsapi.module("rhino/host/", {
+				var host = $jsapi.module("../../rhino/host/", {
 					loadClass: function(name) {
 						return $host.getLoader().getJavaClass(name)
 					}
 				});
 				var context = {
 					api: {
-						js: $jsapi.module("js/object/"),
+						js: $jsapi.module("../../js/object/"),
 						java: host,
-						io: $jsapi.module("rhino/io/", {
+						io: $jsapi.module("../../rhino/io/", {
 							$java: new Packages.inonit.script.runtime.io.Streams(),
 							api: {
 								java: host
@@ -185,7 +185,7 @@ END LICENSE
 						context.cygwin.paths = String(System.getProperty("cygwin.paths"));
 					}
 				};
-				var file = $jsapi.module("rhino/file/", context);
+				var file = $jsapi.module("../../rhino/file/", context);
 				var $filesystem = file.filesystem;
 				var FILE = file;
 				return new function() {

@@ -43,7 +43,7 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var java = $jsapi.module("rhino/host/", {
+				var java = $jsapi.module("../../rhino/host/", {
 					loadClass: function(name) {
 						return $host.getLoader().getJavaClass(name)
 					}
