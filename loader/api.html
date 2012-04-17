@@ -665,9 +665,9 @@ END LICENSE
 			</div>
 		</div>
 		<ul>
-			<li class="function">
+			<li class="function" jsapi:id="run">
 				<div class="name">run</div>
-				<span>
+				<span jsapi:id="description">
 					Executes code in a particular scope with a particular <code>this</code> value. The code will automatically
 					contain the <code>$platform</code> and <code>$api</code> objects described above in its scope.
 				</span>
@@ -678,11 +678,11 @@ END LICENSE
 							<span class="type"><a href="#types.code">code</a></span>
 							<span>The code to execute.</span>
 						</li>
-						<li class="value">
+						<li class="value" jsapi:id="arguments[1]">
 							<span class="type">object</span>
 							<span>The scope in which to execute the code.</span>
 						</li>
-						<li class="value">
+						<li class="value" jsapi:id="arguments[2]">
 							<span class="type">object</span>
 							<span>The object to use as the <code>this</code> value when executing the code.</span>
 						</li>
@@ -754,11 +754,6 @@ END LICENSE
 										<span>See the third argument to <code>run()</code>.</span>
 									</li>
 								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
 							</div>
 						</li>
 						<li class="function">

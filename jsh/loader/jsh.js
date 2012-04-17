@@ -52,20 +52,16 @@ this.jsh = new function() {
 		var getCode = function(code) {
 			if (typeof(code) == "undefined") throw new RangeError("'code' must not be undefined.");
 			if (code === null) throw new RangeError("'code' must not be null.");
+			//	This check determines whether the object is a Pathname; is there a way to do that in the rhino/file module itself?
+			//	TODO	presumably the run/file methods should only support file objects, not directories or pathnames not
+			//			corresponding to files ... or else what should they do if the file is not found? Maybe file could return
+			//			null or something ... but run would probably have to fail silently, which is not good unless it is
+			//			explicitly specified
 			if (code.java && code.java.adapt() && rhinoLoader.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
 				return {
 					name: code.toString(),
 					_in: new Packages.java.io.FileInputStream(code.java.adapt())
 				};
-			} else if (code.name && code._in) {
-				//	fine as is
-				return code;
-			} else if (code.name && code.$in) {
-				//	TODO	deprecate
-				return {
-					name: code.name,
-					_in: code.$in
-				}
 			} else {
 				return code;
 			}

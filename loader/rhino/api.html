@@ -84,26 +84,35 @@ END LICENSE
 		<ul>
 			<li class="function" jsapi:id="run">
 				<div class="name">run</div>
-				<span jsapi:id="description"
-					jsapi:reference="doc['loader/']..*.(@jsapi::id == 'run').*.(@jsapi::id == 'description')">
+				<span jsapi:id="description" jsapi:reference="getApi('..').getElement('run/description')">
 					Invokes the platform loader's <code>run</code> method.
 				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
+						<li class="value">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('..').getElement('run/arguments[1]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value" jsapi:id="arguments[2]" jsapi:reference="getApi('..').getElement('run/arguments[2]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
 					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
 				</div>
 			</li>
 			<li class="function" jsapi:id="file">
 				<!--	TODO	generate these anchor elements?	-->
 				<div class="name"><a id="exports.file">file</a></div>
 				<span jsapi:id="description" 
-					jsapi:reference="doc['loader/']..*.(@jsapi::id == 'file').*.(@jsapi::id == 'description')"
+					jsapi:reference="getApi('..').getElement('file/description')"
 				>Invokes the platform loader's <code>file</code> method.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
@@ -119,7 +128,7 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="doc['loader/']..*.(@jsapi::id == 'file')..*.(@jsapi::id == 'returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('..').getElement('file/returns')">
 					<div class="label">Returns</div>
 					<span>The return value of the platform loader's <code>file</code> method.</span>
 				</div>
@@ -127,6 +136,7 @@ END LICENSE
 			<li class="function" jsapi:id="module">
 				<div class="name">module</div>
 				<span jsapi:id="description" jsapi:reference="doc['loader/']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description')">Invokes the platform loader's <code>module</code> method.</span>
+				<div jsapi:id="description2" jsapi:reference="getApi('..').getElement('module/description2')"></div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>

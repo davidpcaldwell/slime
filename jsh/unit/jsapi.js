@@ -348,9 +348,11 @@ $exports.doc = function(modules,to) {
 		this.getElement = function(path) {
 			var tokens = path.split("/");
 			var rv = root;
-			debugger;
 			for (var i=0; i<tokens.length; i++) {
 				rv = rv..*.(@jsapi::id == tokens[i])[0];
+				if (typeof(rv) == "undefined") {
+					return null;
+				}
 			}
 			return getElement(rv,this);
 		}
@@ -363,7 +365,17 @@ $exports.doc = function(modules,to) {
 	modules.forEach( function(item) {
 		if (item.ns) {
 			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
-			var xhtml = getApiHtml(item.location).read(XML);
+			var file = getApiHtml(item.location);
+			var path = (function() {
+				var rv = file.pathname.basename;
+				var dir = file.pathname.parent.directory;
+				while(dir.pathname.toString() != item.base.pathname.toString()) {
+					rv = dir.pathname.basename + "/" + rv;
+					dir = dir.pathname.parent.directory;
+				}
+				return rv;
+			})();
+			var xhtml = file.read(XML);
 			var ns = (function() {
 				if (xhtml.length() > 1) {
 					return (function() {
@@ -375,10 +387,20 @@ $exports.doc = function(modules,to) {
 					return xhtml.namespace();
 				}
 			})();
-			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href="api.css" />);
-			xhtml.ns::head.appendChild(<script type="text/javascript" src="api.js">{"/**/"}</script>);
+			var top = (function() {
+				//	below could be simplified with join and map but we leave it this way until we make sure all cases work; e.g.,
+				//	path ending with /, path ending with filename
+				var tokens = item.path.split("/");
+				var rv = "";
+				for (var i=0; i<tokens.length-1; i++) {
+					rv += "../";
+				}
+				return rv;
+			})();
+			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href={ top + "api.css" } />);
+			xhtml.ns::head.appendChild(<script type="text/javascript" src={ top + "api.js" }>{"/**/"}</script>);
 
-			xhtml.ns::body.insertChildAfter(null,<a href="index.html">Documentation Home</a>);
+			xhtml.ns::body.insertChildAfter(null,<a href={ top + "index.html" }>Documentation Home</a>);
 
 			var contextDiv = xhtml..ns::div.(ns::h1 == "Context");
 			if (contextDiv.length()) {
@@ -390,13 +412,19 @@ $exports.doc = function(modules,to) {
 			//	TODO	document and enhance this ability to import documentation from other files
 			var declaration = new ApiHtml({ file: getApiHtml(item.location) });
 			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
-				e.setChildren(declaration.resolve(e).children());
+				var resolved = declaration.resolve(e);
+				if (resolved) {
+					e.setChildren(resolved.children());
+				} else {
+					throw new Error("Could not resolve: " + e.@jsapi::reference.toXMLString());
+				}
 			}
 
-			var pagename = "ns." + item.ns + ".html";
-			destination.getRelativePath(pagename).write(xhtml.toXMLString());
+			destination.getRelativePath(path).write(xhtml.toXMLString(), { recursive: true });
 
-			index.body.table.tbody.appendChild(<tr><td><a href={pagename}>{item.ns}</a></td><td>{String(xhtml.ns::head.ns::title)}</td></tr>)
+			index.body.table.tbody.appendChild(<tr>
+				<td><a href={path}>{item.ns}</a></td><td>{String(xhtml.ns::head.ns::title)}</td>
+			</tr>);
 		}
 	});
 
