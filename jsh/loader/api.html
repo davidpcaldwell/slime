@@ -39,8 +39,8 @@ END LICENSE
 			</div>
 		</div>
 		<ul>
-			<li class="function">
-				<div class="name">run</div>
+			<li class="function" jsapi:id="run">
+				<div class="name"><a id="exports.run">run</a></div>
 				<span jsapi:reference="getApi('../../loader/rhino/').getElement('run/description')">__DESCRIPTION__</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
@@ -49,12 +49,12 @@ END LICENSE
 							<span class="type"><a href="#types.code">code</a></span>
 							<span>The code to execute.</span>
 						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/rhino/').getElement('run/arguments[1]')">
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/rhino/').getElement('run/arguments[1]')">
 							<div class="name">__NAME__</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/rhino/').getElement('run/arguments[2]')">
+						<li class="value" jsapi:id="arguments[2]" jsapi:reference="getApi('../../loader/rhino/').getElement('run/arguments[2]')">
 							<div class="name">__NAME__</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
@@ -62,8 +62,8 @@ END LICENSE
 					</ol>
 				</div>
 			</li>
-			<li class="function">
-				<div class="name">file</div>
+			<li class="function" jsapi:id="file">
+				<div class="name"><a id="exports.file">file</a></div>
 				<span jsapi:reference="getApi('../../loader/rhino/').getElement('file/description')">__DESCRIPTION__</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
@@ -72,21 +72,21 @@ END LICENSE
 							<span class="type"><a href="#types.code">code</a></span>
 							<span>The code to execute.</span>
 						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/rhino/').getElement('file/arguments[1]')">
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/rhino/').getElement('file/arguments[1]')">
 							<div class="name">__NAME__</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:reference="getApi('../../loader/rhino/').getElement('file/returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/rhino/').getElement('file/returns')">
 					<div class="label">Returns</div>
 					<span class="type">__TYPE__</span>
 					<span>__DESCRIPTION__</span>
 				</div>
 			</li>
-			<li class="function">
-				<div class="name">module</div>
+			<li class="function" jsapi:id="module">
+				<div class="name"><a id="exports.module">module</a></div>
 				<span jsapi:reference="getApi('../../loader/rhino').getElement('module/description')">
 					Invokes the Rhino loader's <code>module</code> method.
 				</span>
@@ -103,7 +103,7 @@ END LICENSE
 								directory in which the file is located.
 							</span>
 						</li>
-						<li class="value">
+						<li class="value" jsapi:id="arguments[1]">
 							<span class="type">object</span>
 							<!--	TODO	what if this is omitted? Does the module receive null context, or empty?	-->
 							<span>
@@ -113,7 +113,7 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/rhino').getElement('module/returns')">
 					<!--
 						TODO	Document that this method returns null if the module cannot be found, and check whether that is also
 								true of the Rhino loader's module()

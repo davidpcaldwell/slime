@@ -34,7 +34,10 @@ END LICENSE
 		<ul>
 			<li class="function">
 				<div class="name">run</div>
-				<span>__DESCRIPTION__</span>
+				<span>
+					Analogous to the jsh.loader method of the same name; see 
+					<code><a href="../../jsh/loader/api.html#exports.run">jsh.loader.run</a></code> for details.
+				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -42,22 +45,25 @@ END LICENSE
 							<span class="type">string</span>
 							<span>A logical path to a code file to run.</span>
 						</li>
-						<li class="value">
+						<li class="value" jsapi:reference="getApi('../../jsh/loader/').getElement('run/arguments[1]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value" jsapi:reference="getApi('../../jsh/loader/').getElement('run/arguments[2]')">
 							<div class="name">__NAME__</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</li>
 					</ol>
 				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</div>
 			</li>
 			<li class="function">
 				<div class="name">file</div>
-				<span>__DESCRIPTION__</span>
+				<span>
+					Analogous to the jsh.loader method of the same name; see
+					<code><a href="../../jsh/loader/api.html#exports.file">jsh.loader.file</a></code> for details.
+				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -65,15 +71,15 @@ END LICENSE
 							<span class="type">string</span>
 							<span>A logical path to a code file to run.</span>
 						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('file/arguments[1]')">
+						<li class="value" jsapi:reference="getApi('../../jsh/loader/api.html').getElement('file/arguments[1]')">
 							The second argument to the Rhino loader 
-							<a href="../../loader/rhino/api.html#exports.file">file</a> method.
+							<a href="../../jsh/loader/api.html#exports.file">file</a> method.
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</li>
 					</ol>
 				</div>
-				<div class="returns">
+				<div class="returns" jsapi:reference="getApi('../../jsh/loader/').getElement('file/returns')">
 					<div class="label">Returns</div>
 					<span class="type">__TYPE__</span>
 					<span>__DESCRIPTION__</span>
@@ -81,13 +87,25 @@ END LICENSE
 			</li>
 			<li class="function">
 				<div class="name">module</div>
-				<span>__DESCRIPTION__</span>
+				<span>
+					Analogous to the jsh.loader method of the same name; see
+					<code><a href="../../jsh/loader/api.html#exports.module">jsh.loader.module</a></code> for details.
+				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A logical path to a module to load.</span>
+						</li>
+						<li class="value" jsapi:reference="getApi('../../jsh/loader/').getElement('module/arguments[1]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
 					</ol>
 				</div>
-				<div class="returns">
+				<div class="returns" jsapi:reference="getApi('../../jsh/loader/').getElement('module/returns')">
 					<div class="label">Returns</div>
 					<span class="type">__TYPE__</span>
 					<span>__DESCRIPTION__</span>
