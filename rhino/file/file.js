@@ -178,7 +178,6 @@ var Pathname = function(parameters) {
 		}
 
 		if (peer.invalidate) {
-			debugger;
 			this.invalidate = function() {
 				peer.invalidate();
 			}
