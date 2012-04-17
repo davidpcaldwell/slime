@@ -24,7 +24,9 @@ var getApiHtml = function(moduleMainPathname) {
 		var basename = moduleMainPathname.file.pathname.basename;
 		var directory = moduleMainPathname.file.parent;
 		var jsName = /(.*)\.js$/.exec(basename);
-		if (jsName) {
+		if (/api\.html$/.test(basename)) {
+			return moduleMainPathname.file;
+		} else if (jsName) {
 			return directory.getFile(jsName[1]+".api.html");
 		} else {
 			return directory.getFile(basename+".api.html");
@@ -307,6 +309,26 @@ $exports.doc = function(modules,to) {
 		doc[item.path] = xhtml;
 	});
 
+	var ApiHtml = function(p) {
+		var root = p.file.read(XML);
+
+		this.getApi = function(path) {
+			return new ApiHtml({
+				file: p.file.getRelativePath(path).file
+			});
+		}
+
+		this.getElement = function(path) {
+			var tokens = path.split("/");
+			var rv = root;
+			debugger;
+			for (var i=0; i<tokens.length; i++) {
+				rv = rv..*.(@jsapi::id == tokens[i])[0];
+			}
+			return rv;
+		}
+	}
+
 	modules.forEach( function(item) {
 		if (item.ns) {
 			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
@@ -334,14 +356,15 @@ $exports.doc = function(modules,to) {
 				//delete contextDiv.parent()[contextDiv.childIndex()];
 			}
 
-			for each (var e in xhtml..*.(@jsapi::location.length() > 0)) {
-			}
-
 			//	TODO	document and enhance this ability to import documentation from other files
+			var declaration = new ApiHtml({ file: getApiHtml(item.location) });
 			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
 				var x = e;
 				while(x.@jsapi::reference.length() > 0) {
 					try {
+						var getApi = function(path) {
+							return declaration.getApi(path);
+						}
 						x = eval(String(x.@jsapi::reference));
 					} catch (e) {
 						var error = new EvalError("Error evaluating reference: " + x.@jsapi::reference);
