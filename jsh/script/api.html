@@ -27,6 +27,74 @@ END LICENSE
 <body>
 	<script type="application/x.jsapi#initialize">
 	</script>
+	<div class="type">
+		<a class="type" name="types.Loader">Loader</a>
+		<span>An object that can load code from logical paths denoted by strings.</span>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="function">
+				<div class="name">run</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A logical path to a code file to run.</span>
+						</li>
+						<li class="value">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">file</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A logical path to a code file to run.</span>
+						</li>
+						<li class="value" jsapi:location="../../loader/rhino/api.html:file/arguments[1]">
+							The second argument to the Rhino loader 
+							<a href="../../loader/rhino/api.html#exports.file">file</a> method.
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">module</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+		</ul>
+	</div>
 	<div>
 		<h1>Context</h1>
 		<ul>
@@ -35,54 +103,8 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
-						<div class="name">java</div>
-						<span>The rhino/host module.</span>
-					</li>
-					<li class="value">
 						<div class="name">file</div>
 						<span>The rhino/file module.</span>
-					</li>
-				</ul>
-			</li>
-			<!--	TODO	update; outdated	-->
-			<li class="value">
-				<div class="name">script</div>
-				<span class="type">rhino/file file</span>
-				<span>The object representing the main script file this shell is running.</span>
-			</li>
-			<li class="value">
-				<div class="name">arguments</div>
-				<span class="type">Array of string</span>
-				<span>The arguments passed to the script.</span>
-			</li>
-			<li class="constructor">
-				<div class="name">Loader</div>
-				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-					</ol>
-				</div>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</div>
-			</li>
-			<li class="value">
-				<div class="name">loader</div>
-				<span class="type">__TYPE__</span>
-				<span>__DESCRIPTION__</span>
-			</li>
-			<li class="object">
-				<div class="name">api</div>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">file</div>
-						<span class="type">rhino/file module</span>
-						<span>__DESCRIPTION__</span>
 					</li>
 					<li class="function">
 						<div class="name">addClasses</div>
@@ -98,6 +120,40 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
+			</li>
+			<li class="value">
+				<div class="name">script</div>
+				<span class="type">rhino/file file</span>
+				<span>The object representing the main script file this shell is running.</span>
+			</li>
+			<li class="value">
+				<div class="name">arguments</div>
+				<span class="type">Array of string</span>
+				<span>The arguments passed to the script.</span>
+			</li>
+			<li class="constructor">
+				<!--	TODO	modularize; get this description from the export property below	-->
+				<div class="name">Loader</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">rhino/file directory</span>
+							<span>The base directory for this loader.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Loader">Loader</a></span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="value">
+				<div class="name">loader</div>
+				<span class="type">__TYPE__</span>
+				<span>__DESCRIPTION__</span>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#context">
@@ -155,55 +211,47 @@ END LICENSE
 		<h1>Exports</h1>
 		<ul>
 			<li class="value">
-				<div class="name">pathname</div>
-				<span class="type">jsh.file Pathname</span>
-				<span>The path of the main script.</span>
-			</li>
-			<li class="value">
 				<div class="name">file</div>
-				<span class="type">jsh.file File</span>
-				<span>The object representing the main script's file itself.</span>
+				<span class="type">jsh.file file</span>
+				<span>
+					(optional)
+					The object representing the main script being run.
+				</span>
 			</li>
 			<li class="value">
 				<div class="name">arguments</div>
 				<span class="type">Array of string</span>
 				<span>An array containing the arguments passed to the shell.</span>
 			</li>
-			<li class="function">
-				<div class="name">getRelativePath</div>
-				<span>Returns a pathname calculated relative to the path of the main script.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>A relative path.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">jsh.file Pathname</span>
-					<span>
-						A path relative to the main script.  A convenience method for
-						<code>file.getRelativePath(...)</code>
-					</span>
-				</div>
+			<li class="value">
+				<div class="name">loader</div>
+				<span class="type"><a href="#types.Loader">Loader</a></span>
+				<span>
+					An object that can be used to load code associated with this script. For packaged scripts, this object loads
+					modules and files packaged with the script using the packaging tool. For unpackaged scripts, this object loads
+					modules and files relative to the directory from which the script was run (although a script can replace this
+					property; see <code><a href="#exports.Loader">Loader</a></code>).
+				</span>
 			</li>
-			<li class="function">
-				<div class="name">addClasses</div>
-				<span>Adds a <code>jsh.file.Pathname</code> to the script classpath.</span>
+			<li class="constructor">
+				<div class="name"><a id="exports.Loader">Loader</a></div>
+				<span>A constructor that can be used by scripts to create <a href="#types.Loader">Loader</a>s.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">jsh.file.Pathname</span>
+							<span class="type">rhino/file directory</span>
 							<span>
-								A pathname to add to the classpath. An error will be thrown if no file or directory is found
-								at the given pathname.
+								A base directory. Paths within this loader will be resolved as pathnames relative to this
+								directory.
 							</span>
 						</li>
 					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Loader">Loader</a></span>
+					<span>An object that loads code from the files and subdirectories of the given directory.</span>
 				</div>
 			</li>
 			<li class="function">

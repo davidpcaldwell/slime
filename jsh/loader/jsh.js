@@ -344,22 +344,21 @@ this.jsh = new function() {
 	})();
 
 	jsh.script = (function() {
-		var script = null;
-		if ($host.getInvocation().getScript().getFile()) {
-			script = jsh.file.filesystem.$jsh.Pathname($host.getInvocation().getScript().getFile()).file;
-		}
-		var context = {
-			script: script,
+		return loader.bootstrap({
+			api: {
+				file: jsh.file,
+				addClasses: jsh.loader.addClasses
+			},
+			script: (function() {
+				if ($host.getInvocation().getScript().getFile()) {
+					return jsh.file.filesystem.$jsh.Pathname($host.getInvocation().getScript().getFile()).file;
+				}
+				return null;
+			})(),
 			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
 			Loader: loader.Loader,
 			loader: loader.bundled
-		};
-		context.api = {
-			file: jsh.file,
-			addClasses: jsh.loader.addClasses
-		};
-
-		return loader.bootstrap(context,"jsh/script");
+		},"jsh/script");
 	})();
 
 	if (jsh.script) {

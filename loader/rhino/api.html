@@ -64,24 +64,24 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.code">code</a>
+			<span>An object describing a code file.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">name</div>
+					<span class="type">string</span>
+					<span>A name to use for this file, for debugging, stack traces, etc.</span>
+				</li>
+				<li class="value">
+					<div class="name">$in</div>
+					<span class="type">JavaClass java.io.InputStream</span>
+					<span>An input stream from which the file can be read.</span>
+				</li>
+			</ul>
+		</div>
 		<ul>
-			<div class="type">
-				<a class="type" name="types.code">code</a>
-				<span>An object describing a code file.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>A name to use for this file, for debugging, stack traces, etc.</span>
-					</li>
-					<li class="value">
-						<div class="name">$in</div>
-						<span class="type">JavaClass java.io.InputStream</span>
-						<span>An input stream from which the file can be read.</span>
-					</li>
-				</ul>
-			</div>
 			<li class="function" jsapi:id="run">
 				<div class="name">run</div>
 				<span jsapi:id="description"
@@ -100,7 +100,8 @@ END LICENSE
 				</div>
 			</li>
 			<li class="function" jsapi:id="file">
-				<div class="name">file</div>
+				<!--	TODO	generate these anchor elements?	-->
+				<div class="name"><a id="exports.file">file</a></div>
 				<span jsapi:id="description" 
 					jsapi:reference="doc['loader/']..*.(@jsapi::id == 'file').*.(@jsapi::id == 'description')"
 				>Invokes the platform loader's <code>file</code> method.</span>

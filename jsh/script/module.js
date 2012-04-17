@@ -14,11 +14,14 @@
 //	END LICENSE
 
 if ($context.script) {
-	$exports.pathname = $context.script.pathname;
 	$exports.file = $context.script;
+
+	$exports.pathname = $context.script.pathname;
+	$api.deprecate($exports,"pathname");
 	$exports.getRelativePath = function(path) {
 		return $exports.file.getRelativePath(path);
 	}
+	$api.deprecate($exports,"getRelativePath");
 } else {
 	debugger;
 }
