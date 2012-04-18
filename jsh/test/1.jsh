@@ -28,8 +28,10 @@ if (!parameters.options.modules) {
 	for (var x in jsh.shell.environment) {
 		jsh.shell.echo(x + " = [" + jsh.shell.environment[x] + "]");
 	}
-	jsh.shell.echo("jsh.file.Pathname(jsh.shell.environment.MODULES) = " + jsh.file.Pathname(jsh.shell.environment.MODULES));
-	jsh.shell.echo("jsh.file.filesystems.os.Pathname(jsh.shell.environment.MODULES) = " + jsh.file.filesystems.os.Pathname(jsh.shell.environment.MODULES));
+	if (jsh.shell.environment.MODULES) {
+		jsh.shell.echo("jsh.file.Pathname(jsh.shell.environment.MODULES) = " + jsh.file.Pathname(jsh.shell.environment.MODULES));
+		jsh.shell.echo("jsh.file.filesystems.os.Pathname(jsh.shell.environment.MODULES) = " + jsh.file.filesystems.os.Pathname(jsh.shell.environment.MODULES));
+	}
 	jsh.shell.exit(1);
 }
 

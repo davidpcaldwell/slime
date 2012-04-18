@@ -74,6 +74,12 @@ JSH.getSubdirectory("modules").list().forEach( function(module) {
 	jsh.file.unzip({ zip: module, to: destination });
 } );
 
+if (JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe")) {
+	to.getRelativePath("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe")
+		.write(JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe").read(String), { recursive: true })
+	;
+}
+
 var libraries = [].concat(parameters.options.library);
 libraries.forEach( function(library,index) {
 	to.getRelativePath("$libraries/" + String(index) + ".jar").write( library.file.read(jsh.file.Streams.binary), { recursive: true });

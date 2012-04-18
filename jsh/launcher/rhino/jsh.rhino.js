@@ -188,6 +188,17 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		this.rhinoClasspath = new Searchpath([ rhinoCopiedTo ]);
 		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
 		this.scriptClasspath = libraries;
+
+		var cygwin = ClassLoader.getSystemResourceAsStream("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe");
+		if (cygwin != null && platform.cygwin) {
+			debug("Copying Cygwin paths helper ...");
+			var cygwinTo = tmpdir.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").writeTo();
+			platform.io.copyStream(cygwin,cygwinTo);
+			cygwin.close();
+			cygwinTo.close();
+			debug("Copied Cygwin paths helper.");
+			this.JSH_LIBRARY_NATIVE = tmpdir;
+		}
 	}
 }
 
