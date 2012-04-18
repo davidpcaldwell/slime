@@ -25,6 +25,10 @@ public abstract class Code {
 
 		public static Source create(final ClassLoader loader) {
 			return new Source() {
+				@Override public String toString() {
+					return "Source: loader=" + loader;
+				}
+
 				public InputStream getResourceAsStream(String path) {
 					return loader.getResourceAsStream(path);
 				}
@@ -33,6 +37,10 @@ public abstract class Code {
 
 		public static Source create(final ClassLoader loader, final String prefix) {
 			return new Source() {
+				@Override public String toString() {
+					return "Source: prefix=" + prefix + " loader=" + loader;
+				}
+
 				public InputStream getResourceAsStream(String path) {
 					return loader.getResourceAsStream(prefix + path);
 				}
