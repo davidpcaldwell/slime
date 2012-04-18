@@ -116,10 +116,14 @@
 					//	TODO	This is experimental: document it if it stays
 					if (typeof(object) == "function" && arguments.length == 1) {
 						var deprecateFunction = function(f) {
-							return function() {
+							var rv = function() {
 								warning({ "function": f, call: arguments, reason: reason });
 								return f.apply(this,arguments);
 							}
+							for (var x in f) {
+								rv[x] = f[x];
+							}
+							return rv;
 						}
 						return deprecateFunction(arguments[0]);
 					}
