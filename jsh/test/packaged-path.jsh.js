@@ -1,5 +1,5 @@
-if (jsh.script.getRelativePath) {
-	jsh.script.loader = new jsh.script.Loader(jsh.script.getRelativePath("packaged-path"));
+if (jsh.script.script) {
+	jsh.script.loader = new jsh.script.Loader(jsh.script.file.getRelativePath("packaged-path").directory);
 }
 var file = jsh.script.loader.file("file.js");
 if (file.bar != "bar") {
@@ -9,4 +9,4 @@ var module = jsh.script.loader.module("path");
 if (module.bar != "baz") {
 	throw new Error("Failed to load module.");
 }
-jsh.shell.echo("Success: packaged-path.jsh.js");
+jsh.shell.echo("Success: " + jsh.script.file.pathname.basename);

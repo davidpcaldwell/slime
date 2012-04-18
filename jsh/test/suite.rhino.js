@@ -81,16 +81,26 @@ var checkOutput = function(options,messages) {
 	}
 }
 
-var testCommandOutput = function(path,tester) {
-	var command = [
-		String(new File(BASE,"jsh/test/" + path).getCanonicalPath())
-	];
+var testCommandOutput = function(path,tester,launcher) {
+	if (typeof(launcher) == "undefined") {
+		launcher = LAUNCHER_COMMAND;
+	}
+	var command;
+	if (typeof(path) == "string") {
+		command = [
+			String(new File(BASE,"jsh/test/" + path).getCanonicalPath())
+		];
+	} else {
+		command = [
+			String(path.getCanonicalPath())
+		];
+	}
 	var options = {
 		output: "",
 		env: mode.env
 	};
 
-	var status = runCommand.apply(this,LAUNCHER_COMMAND.concat(command).concat([options]));
+	var status = runCommand.apply(this,launcher.concat(command).concat([options]));
 	if (status != 0) throw new Error("Failed with exit status " + status);
 	tester(options);
 	console("");
@@ -163,7 +173,7 @@ var jshPackage = function(p) {
 	}
 	var packaged = createTemporaryDirectory();
 	packaged.mkdirs();
-	var to = new File(packaged,"packaged.jsh.jar");
+	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
 	invocation.push("-to",getJshPathname(to));
 	run(LAUNCHER_COMMAND.concat(invocation));
 	return to;
@@ -206,10 +216,9 @@ var packagedPackaged2 = jshPackage({
 	files: [ { from: "packaged-path/file.js", to: "file.js" }]
 });
 console("Running " + packagedPackaged2 + " ...");
-run(LAUNCHER_COMMAND.slice(0,2).concat([
-	packagedPackaged.getCanonicalPath(),
-	mode
-]));
+testCommandOutput(packagedPackaged2, function(options) {
+	checkOutput(options,["Success: packaged-path.jsh.js.jar",""]);
+}, LAUNCHER_COMMAND.slice(0,2));
 
 console("Running unpackaged packaged-path.jsh.js");
 testCommandOutput("packaged-path.jsh.js", function(options) {

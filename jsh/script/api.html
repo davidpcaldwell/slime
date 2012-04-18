@@ -145,6 +145,11 @@ END LICENSE
 				<span>The object representing the main script file this shell is running.</span>
 			</li>
 			<li class="value">
+				<div class="name">packaged</div>
+				<span class="type">rhino/file file</span>
+				<span>The object representing the package file this shell is running.</span>
+			</li>
+			<li class="value">
 				<div class="name">arguments</div>
 				<span class="type">Array of string</span>
 				<span>The arguments passed to the script.</span>
@@ -157,7 +162,7 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">rhino/file directory</span>
+							<span class="type"><a href="../../rhino/file/api.html#types.directory">rhino/file directory</a></span>
 							<span>The base directory for this loader.</span>
 						</li>
 					</ol>
@@ -170,8 +175,11 @@ END LICENSE
 			</li>
 			<li class="value">
 				<div class="name">loader</div>
-				<span class="type">__TYPE__</span>
-				<span>__DESCRIPTION__</span>
+				<span class="type"><a href="#types.Loader">Loader</a></span>
+				<span>
+					(optional)
+					An object that can load code from the currently running package file, if the current script is packaged.
+				</span>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#context">
@@ -232,24 +240,24 @@ END LICENSE
 				<div class="name">file</div>
 				<span class="type">jsh.file file</span>
 				<span>
+					The object representing the main file being executed.
+					In the case of an ordinary script, this is the script that was launched.
+					In the case of a packaged script, it is the package file.
+				</span>
+			</li>
+			<li class="value">
+				<div class="name">script</div>
+				<span class="type">jsh.file file</span>
+				<span>
 					(optional)
-					The object representing the main script being run.
+					The object representing the script being executed. In the case of a packaged script, this value will be absent
+					as the script is embedded in the package file itself.
 				</span>
 			</li>
 			<li class="value">
 				<div class="name">arguments</div>
 				<span class="type">Array of string</span>
 				<span>An array containing the arguments passed to the shell.</span>
-			</li>
-			<li class="value">
-				<div class="name">loader</div>
-				<span class="type"><a href="#types.Loader">Loader</a></span>
-				<span>
-					An object that can be used to load code associated with this script. For packaged scripts, this object loads
-					modules and files packaged with the script using the packaging tool. For unpackaged scripts, this object loads
-					modules and files relative to the directory from which the script was run (although a script can replace this
-					property; see <code><a href="#exports.Loader">Loader</a></code>).
-				</span>
 			</li>
 			<li class="constructor">
 				<div class="name"><a id="exports.Loader">Loader</a></div>
@@ -258,7 +266,7 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">rhino/file directory</span>
+							<span class="type"><a href="../../rhino/file/api.html#types.directory">rhino/file directory</a></span>
 							<span>
 								A base directory. Paths within this loader will be resolved as pathnames relative to this
 								directory.
@@ -271,6 +279,16 @@ END LICENSE
 					<span class="type"><a href="#types.Loader">Loader</a></span>
 					<span>An object that loads code from the files and subdirectories of the given directory.</span>
 				</div>
+			</li>
+			<li class="value">
+				<div class="name">loader</div>
+				<span class="type"><a href="#types.Loader">Loader</a></span>
+				<span>
+					An object that can be used to load code associated with this script. For packaged scripts, this object loads
+					modules and files packaged with the script using the packaging tool. For unpackaged scripts, this object loads
+					modules and files relative to the directory from which the script was run (although a script can replace this
+					property; see <code><a href="#exports.Loader">Loader</a></code>).
+				</span>
 			</li>
 			<li class="function">
 				<div class="name">getopts</div>

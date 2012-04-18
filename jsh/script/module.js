@@ -15,6 +15,7 @@
 
 if ($context.script) {
 	$exports.file = $context.script;
+	$exports.script = $context.script;
 
 	$exports.pathname = $context.script.pathname;
 	$api.deprecate($exports,"pathname");
@@ -22,8 +23,10 @@ if ($context.script) {
 		return $exports.file.getRelativePath(path);
 	}
 	$api.deprecate($exports,"getRelativePath");
+} else if ($context.packaged) {
+	$exports.file = $context.packaged;
 } else {
-	debugger;
+	throw new Error("Unreachable.");
 }
 $exports.arguments = $context.arguments;
 $exports.addClasses = $api.deprecate($context.api.addClasses);
@@ -34,7 +37,7 @@ $exports.Loader = $context.Loader;
 if ($context.loader) {
 	$exports.loader = $context.loader;
 } else if ($context.script) {
-	$exports.loader = new $exports.Loader($exports.pathname.parent);
+	$exports.loader = new $exports.Loader($exports.file.parent);
 }
 
 $exports.getopts = $loader.file("getopts.js", {

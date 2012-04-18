@@ -149,9 +149,6 @@ this.jsh = new function() {
 
 		var self = this;
 		this.Loader = function(directory) {
-			if (!directory.directory) {
-				throw new Error("No directory at " + directory);
-			}
 			var args = function() {
 				var toArray = function() {
 					var rv = [];
@@ -162,7 +159,7 @@ this.jsh = new function() {
 				}
 			
 				var rv = toArray.apply(null, arguments);
-				rv[0] = directory.directory.getRelativePath(arguments[0]);
+				rv[0] = directory.getRelativePath(arguments[0]);
 				return rv;
 			}
 
@@ -348,6 +345,17 @@ this.jsh = new function() {
 			script: (function() {
 				if ($host.getInvocation().getScript().getFile()) {
 					return jsh.file.filesystem.$jsh.Pathname($host.getInvocation().getScript().getFile()).file;
+				}
+				return null;
+			})(),
+			packaged: (function() {
+				//	TODO	push back into Invocation
+				if ($host.getSystemProperties().getProperty("jsh.launcher.packaged")) {
+					return jsh.file.filesystem.$jsh.Pathname(
+						new Packages.java.io.File(
+							$host.getSystemProperties().getProperty("jsh.launcher.packaged")
+						)
+					).file;
 				}
 				return null;
 			})(),
