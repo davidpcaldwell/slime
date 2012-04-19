@@ -15,6 +15,8 @@
 
 var UNZIP_RHINO_WHEN_PACKAGING = true;
 
+//	TODO	perhaps this should assume it is running as part of a built shell and the jsh default should be ..
+
 var parameters = jsh.script.getopts({
 	options: {
 		jsh: jsh.file.Pathname
@@ -31,6 +33,15 @@ var parameters = jsh.script.getopts({
 
 if (!parameters.options.to) {
 	jsh.shell.echo("Required: -to <pathname>");
+	jsh.shell.exit(1);
+}
+
+if (!parameters.options.script) {
+	jsh.shell.echo("Required: -script <pathname>");
+	jsh.shell.exit(1);
+}
+if (!parameters.options.script.file) {
+	jsh.shell.echo("Not found: -script " + parameters.options.script);
 	jsh.shell.exit(1);
 }
 
@@ -76,7 +87,7 @@ JSH.getSubdirectory("modules").list().forEach( function(module) {
 
 if (JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe")) {
 	to.getRelativePath("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe")
-		.write(JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe").read(String), { recursive: true })
+		.write(JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe").read(jsh.io.Streams.binary), { recursive: true })
 	;
 }
 

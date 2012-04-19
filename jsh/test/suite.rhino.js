@@ -267,3 +267,14 @@ testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
 }, {
 	env: environment
 });
+
+var packaged_helper = jshPackage({
+	script: "cygwin/helper.jsh.js"
+});
+testCommandOutput(packaged_helper, function(options) {
+	checkOutput(options,[
+		getJshPathname(packaged_helper)
+		,getJshPathname(packaged_helper)
+		,""
+	])
+});

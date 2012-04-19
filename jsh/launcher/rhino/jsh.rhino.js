@@ -196,10 +196,8 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			platform.io.copyStream(cygwin,cygwinTo);
 			cygwin.close();
 			cygwinTo.close();
-			debug("Copied Cygwin paths helper.");
-			if (false) {
-				this.JSH_LIBRARY_NATIVE = tmpdir;
-			}
+			debug("Copied Cygwin paths helper to " + tmpdir);
+			this.JSH_LIBRARY_NATIVE = tmpdir;
 		}
 	}
 }
