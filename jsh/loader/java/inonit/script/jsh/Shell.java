@@ -95,6 +95,7 @@ public class Shell {
 		 */
 		public abstract Code getShellModuleCode(String path);
 
+		//	TODO	move to Configuration? It may make more sense there
 		/**
 		 *
 		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or

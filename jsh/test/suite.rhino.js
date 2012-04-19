@@ -20,6 +20,9 @@ for (var x in env) {
 		mode.env[x] = env[x];
 	}
 }
+if (debug.on) {
+	mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
+}
 
 var run = function(command,mymode) {
 	if (!mymode) mymode = mode;
@@ -39,6 +42,93 @@ var getPath = function(basedir,relative) {
 		rv = platform.cygwin.cygpath.unix(rv);
 	}
 	return rv;
+}
+
+var testCommandOutput = function(path,tester,p) {
+	if (!p) p = {};
+	var env = (function() {
+		if (!p.env) return mode.env;
+		var rv = {};
+		for (var x in mode.env) {
+			rv[x] = mode.env[x];
+		}
+		for (var x in p.env) {
+			if (typeof(p.env[x]) != "undefined") {
+				rv[x] = p.env[x];
+			}
+		}
+		return rv;
+	})();
+	var launcher;
+	var command;
+	if (typeof(path) == "string") {
+		command = [
+			String(new File(BASE,"jsh/test/" + path).getCanonicalPath())
+		];
+		launcher = LAUNCHER_COMMAND;
+	} else {
+		command = [
+			String(path.getCanonicalPath())
+		];
+		launcher = LAUNCHER_COMMAND.slice(0,2);
+	}
+	debug("Environment: " + env.toSource());
+	var options = {
+		output: "",
+		env: env
+	};
+
+	var status = runCommand.apply(this,launcher.concat(command).concat([options]));
+	if (status != 0) throw new Error("Failed with exit status " + status);
+	tester(options);
+	console("");
+	console("Passed: " + command.join(" "));
+	console("");
+};
+
+var checkOutput = function(options,messages) {
+	var expected = messages.join(String(Packages.java.lang.System.getProperty("line.separator")));
+	if (options.output != expected) {
+		throw new Error("Output wrong: it is [" + options.output + "] when expected was [" + expected + "]");
+	}
+}
+
+var getJshPathname = function(file) {
+	var rv = String(file.getCanonicalPath());
+	if (platform.cygwin) {
+		rv = platform.cygwin.cygpath.unix(rv);
+	}
+	return rv;
+}
+
+var jshPackage = function(p) {
+	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
+	invocation.push("-jsh",getJshPathname(JSH_HOME));
+	invocation.push("-script",getJshPathname(new File(BASE,"jsh/test/" + p.script)));
+	if (p.modules) {
+		p.modules.forEach(function(module) {
+			if (typeof(module) == "string") {
+				invocation.push("-module", module + "=" + getJshPathname(new File(BASE,"jsh/test/" + module)));
+			} else if (module.from && module.to) {
+				invocation.push("-module", module.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + module.from)));
+			}
+		});
+	}
+	if (p.files) {
+		p.files.forEach(function(file) {
+			if (typeof(file) == "string") {
+				invocation.push("-file", file + "=" + getJshPathname(new File(BASE,"jsh/test/" + file)));
+			} else if (file.from && file.to) {
+				invocation.push("-file", file.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + file.from)));
+			}
+		});
+	}
+	var packaged = createTemporaryDirectory();
+	packaged.mkdirs();
+	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
+	invocation.push("-to",getJshPathname(to));
+	run(LAUNCHER_COMMAND.concat(invocation));
+	return to;
 }
 
 var tmp = createTemporaryDirectory();
@@ -74,40 +164,6 @@ platform.jdk.compile(compileOptions.concat([
 	String(new File(BASE,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
 ]));
 
-var checkOutput = function(options,messages) {
-	var expected = messages.join(String(Packages.java.lang.System.getProperty("line.separator")));
-	if (options.output != expected) {
-		throw new Error("Output wrong: it is [" + options.output + "] when expected was [" + expected + "]");
-	}
-}
-
-var testCommandOutput = function(path,tester,launcher) {
-	if (typeof(launcher) == "undefined") {
-		launcher = LAUNCHER_COMMAND;
-	}
-	var command;
-	if (typeof(path) == "string") {
-		command = [
-			String(new File(BASE,"jsh/test/" + path).getCanonicalPath())
-		];
-	} else {
-		command = [
-			String(path.getCanonicalPath())
-		];
-	}
-	var options = {
-		output: "",
-		env: mode.env
-	};
-
-	var status = runCommand.apply(this,launcher.concat(command).concat([options]));
-	if (status != 0) throw new Error("Failed with exit status " + status);
-	tester(options);
-	console("");
-	console("Passed: " + command.join(" "));
-	console("");
-};
-
 testCommandOutput(
 	"jsh.shell.echo.jsh.js",
 	function(options) {
@@ -134,50 +190,12 @@ testCommandOutput(
 	}
 );
 
-var getJshPathname = function(file) {
-	var rv = String(file.getCanonicalPath());
-	if (platform.cygwin) {
-		rv = platform.cygwin.cygpath.unix(rv);
-	}
-	return rv;
-}
-
 run(LAUNCHER_COMMAND.concat(
 	[
 		String(new File(BASE,"jsh/test/addClasses/addClasses.jsh.js").getCanonicalPath())
 		,"-classes",getJshPathname(classes)
 	]
 ));
-
-var jshPackage = function(p) {
-	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
-	invocation.push("-jsh",getJshPathname(JSH_HOME));
-	invocation.push("-script",getJshPathname(new File(BASE,"jsh/test/" + p.script)));
-	if (p.modules) {
-		p.modules.forEach(function(module) {
-			if (typeof(module) == "string") {
-				invocation.push("-module", module + "=" + getJshPathname(new File(BASE,"jsh/test/" + module)));
-			} else if (module.from && module.to) {
-				invocation.push("-module", module.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + module.from)));
-			}
-		});
-	}
-	if (p.files) {
-		p.files.forEach(function(file) {
-			if (typeof(file) == "string") {
-				invocation.push("-file", file + "=" + getJshPathname(new File(BASE,"jsh/test/" + file)));
-			} else if (file.from && file.to) {
-				invocation.push("-file", file.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + file.from)));
-			}
-		});
-	}
-	var packaged = createTemporaryDirectory();
-	packaged.mkdirs();
-	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
-	invocation.push("-to",getJshPathname(to));
-	run(LAUNCHER_COMMAND.concat(invocation));
-	return to;
-}
 
 console("Packaging addClasses/addClasses.jsh.js");
 var packagedAddClasses = jshPackage({
@@ -218,9 +236,34 @@ var packagedPackaged2 = jshPackage({
 console("Running " + packagedPackaged2 + " ...");
 testCommandOutput(packagedPackaged2, function(options) {
 	checkOutput(options,["Success: packaged-path.jsh.js.jar",""]);
-}, LAUNCHER_COMMAND.slice(0,2));
+});
 
 console("Running unpackaged packaged-path.jsh.js");
 testCommandOutput("packaged-path.jsh.js", function(options) {
 	checkOutput(options,["Success: packaged-path.jsh.js",""]);
+});
+
+var packaged_JSH_SHELL_CLASSPATH = jshPackage({
+	script: "JSH_SHELL_CLASSPATH.jsh.js"
+});
+
+console("Running JSH_SHELL_CLASSPATH package ... ")
+testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
+	checkOutput(options,[
+		String(packaged_JSH_SHELL_CLASSPATH.toURI()),
+		""
+	]);
+});
+
+var environment = {
+	JSH_SHELL_CLASSPATH: String(new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath())
+};
+console("Running JSH_SHELL_CLASSPATH package with " + environment.toSource() + " ...");
+testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
+	checkOutput(options,[
+		String(new File(JSH_HOME,"lib/jsh.jar").toURI()),
+		""
+	]);
+}, {
+	env: environment
 });

@@ -48,6 +48,7 @@ var getClass = function(name) {
 //verify(typeof(Packages.test.AddClasses) == "object", "typeof(Packages.test.AddClasses) == object");
 verify(getClass("test.AddClasses") == null, "Class not found");
 jsh.loader.addClasses(parameters.options.classes);
+jsh.shell.echo("Classes added: " + parameters.options.classes);
 verify(getClass("test.AddClasses") != null, "Class found");
 verify(typeof(Packages.test.AddClasses) == "function", "typeof(Packages.test.AddClasses) == function");
 verify(new Packages.test.AddClasses().toString() == "Loaded");

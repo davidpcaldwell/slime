@@ -197,7 +197,9 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			cygwin.close();
 			cygwinTo.close();
 			debug("Copied Cygwin paths helper.");
-			this.JSH_LIBRARY_NATIVE = tmpdir;
+			if (false) {
+				this.JSH_LIBRARY_NATIVE = tmpdir;
+			}
 		}
 	}
 }
@@ -221,14 +223,24 @@ if (getProperty("jsh.launcher.home")) {
 }
 
 settings.explicit = new function() {
-	this.shellClasspath = (env.JSH_SHELL_CLASSPATH) ? new Searchpath(os(env.JSH_SHELL_CLASSPATH,true)) : UNDEFINED;
+	var shellClasspath = (function() {
+		if (!env.JSH_SHELL_CLASSPATH) return UNDEFINED;
+		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
+		if (!settings.packaged) return specified;
+		return specified.append(settings.packaged.shellClasspath);
+	})();
+	if (shellClasspath) {
+		this.shellClasspath = shellClasspath;
+	}
 
 	this.scriptClasspath = (env.JSH_SCRIPT_CLASSPATH) ? new Searchpath(os(env.JSH_SCRIPT_CLASSPATH,true)).elements : UNDEFINED;
 
 	var self = this;
 	[
-		"JSH_LIBRARY_MODULES","JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH","JSH_TMPDIR",
-		"JSH_LIBRARY_NATIVE"
+		"JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH",
+		"JSH_LIBRARY_MODULES",
+		"JSH_LIBRARY_NATIVE",
+		"JSH_TMPDIR"
 	].forEach( function(name) {
 		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
 	});
@@ -423,7 +435,7 @@ try {
 		command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
 		//	TODO	check for existence of the executable?
 		if (!settings.get("JSH_LIBRARY_NATIVE")) {
-			console("WARNING: could not start Cygwin paths helper; could not find Cygwin native library path.");
+			console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
 			console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
 		} else {
 			command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);

@@ -233,6 +233,7 @@ this.jsh = new function() {
 		this.script = loader.$api.deprecate(loader.file);
 
 		this.addClasses = function(pathname) {
+			debugger;
 			if (!pathname.directory && !pathname.file) {
 				throw "Classes not found: " + pathname;
 			}
