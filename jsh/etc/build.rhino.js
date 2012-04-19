@@ -312,7 +312,7 @@ var jsapi_jsh = function() {
 	if (platform.cygwin) {
 		JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
 	}
-	if (getSetting("jsh.build.nounit")) {
+	if (getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) {
 		command.add("-notest");
 	}
 	command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
