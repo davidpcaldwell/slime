@@ -407,3 +407,34 @@ bases.forEach( function(base) {
 		}
 	]);
 });
+
+//	Native launcher only supported on Cygwin so far
+//	TODO	write UNIX version
+//	TODO	move earlier in build process and test launcher itself
+if (platform.cygwin) {
+	var bashpath = platform.cygwin.realpath("/bin/bash");
+	//console("real path: [" + gccpath + "]");
+	var bash = new File(platform.cygwin.cygpath.windows(bashpath));
+	var script = new File(BASE,"jsh/launcher/rhino/native/win32/cygwin.bash");
+	var scriptpath = platform.cygwin.cygpath.unix(script.getCanonicalPath());
+	var envuse = {};
+	for (var x in env) {
+		envuse[x] = env[x];
+	}
+	var myenv = {
+		//	Assume JAVA_HOME is a JRE and therefore the JDK is at $JAVA_HOME/..
+		JAVA_HOME: platform.cygwin.cygpath.unix(JAVA_HOME.getParentFile().getCanonicalPath()),
+		TMP: System.getProperty("java.io.tmpdir"),
+		TO: platform.cygwin.cygpath.unix(JSH_HOME.getCanonicalPath())
+	};
+	for (var x in myenv) {
+		envuse[x] = myenv[x];
+	}
+	var command = runCommand(
+		String(bash.getCanonicalPath()),
+		scriptpath,
+		{
+			env: envuse
+		}
+	)
+}
