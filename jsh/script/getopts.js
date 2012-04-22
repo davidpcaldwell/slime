@@ -155,7 +155,13 @@ var getopts = function(settings,array) {
 					defaults[x] = v["default"];
 				} else if (typeof(settings.options[x]) == "boolean" && settings.options[x]) {
 					throw "A boolean option declared to be true cannot be negated.";
-				} else if (settings.options[x].constructor == $Pathname) {
+				} else if (
+						settings.options[x].java && settings.options[x].java.adapt
+						&& String(settings.options[x].java.adapt().getClass().getName()) == "java.io.File"
+					)
+				{
+					//	TODO	the check above is a workaround for the fact that instanceof and the constructor property for
+					//			Pathname does not work; we should be doing instanceof $Pathname
 					var v = PATHNAME(settings.options[x]);
 					switches[x] = v.parser;
 					defaults[x] = v["default"];
