@@ -11,8 +11,13 @@ var which = function(command,extension) {
 	//	Search the path for a given command
 	if (!extension) extension = "";
 	for (var i=0; i<jsh.shell.PATH.pathnames.length; i++) {
-		if (jsh.shell.PATH.pathnames[i].directory.getFile(command+extension)) {
-			return jsh.shell.PATH.pathnames[i].directory.getFile(command+extension);
+		var dir = jsh.shell.PATH.pathnames[i].directory;
+		if (dir) {
+			if (dir.getFile(command+extension)) {
+				return dir.getFile(command+extension);
+			}
+		} else {
+			//	jsh.shell.echo("Not a directory: " + jsh.shell.PATH.pathnames[i]);
 		}
 	}
 	return null;
@@ -67,6 +72,8 @@ if (parameters.options.cygwin) {
 }
 
 if (parameters.options.cygwin) {
+	//	TODO	use LoadLibrary call to locate jvm.dll
+	//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
 	var bash = which("bash",EXTENSION);
 	if (bash) {
 		var env = jsh.js.Object.set({}, jsh.shell.environment, {
@@ -88,5 +95,43 @@ if (parameters.options.cygwin) {
 		);
 	} else {
 		jsh.shell.echo("bash not found on Cygwin; not building native launcher.");
+	}
+} else if (parameters.options.unix) {
+	var gcc = which("gcc");
+	var unix = (function() {
+		if (jsh.shell.os.name == "FreeBSD") {
+			return {
+				include: "freebsd",
+				library: "jre/lib/" + jsh.shell.os.arch + "/client"
+			}
+		} else {
+			throw new Error("Unknown OS: " + jsh.shell.os.name);
+		}
+	})();
+	if (gcc) {
+		//	Assume we are running in JRE
+		var jdk = jsh.shell.java.home.parent;
+		jsh.shell.shell(
+			gcc.pathname,
+			[
+				"-o", "jsh",
+				"-I" + jdk.getRelativePath("include").toString(),
+				"-I" + jdk.getRelativePath("include/" + unix.include).toString(),
+				"src/jsh/launcher/rhino/native/jsh.c",
+				"-L" + jdk.getRelativePath(unix.library).toString(),
+				"-l" + "jvm",
+				"-rpath", jdk.getRelativePath(unix.library).toString()
+			],
+			{
+				workingDirectory: install,
+				onExit: function(result) {
+					if (result.status == 0) {
+						jsh.shell.echo("Built native launcher to " + install.getRelativePath("jsh"));
+					} else {
+						throw new Error("Failed to build native launcher.");
+					}
+				}
+			}
+		);
 	}
 }

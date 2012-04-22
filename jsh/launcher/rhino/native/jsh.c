@@ -2,7 +2,22 @@
 
 #include <jni.h>
 
+#ifdef WIN32
+const char SLASH = '\\';
 #include "shlwapi.h"
+const int PATH_MAX = MAX_PATH;
+
+char* dirname(char *path) {
+	PathRemoveFileSpec(path);
+	return path;
+}
+#endif
+
+#ifdef __unix__
+#include <limits.h>
+#include <libgen.h>
+const char SLASH = '/';
+#endif
 
 JNIEnv* create_vm(char *classpath) {
 	JavaVM* jvm;
@@ -12,7 +27,7 @@ JNIEnv* create_vm(char *classpath) {
 
 	args.version = JNI_VERSION_1_2;
 	args.nOptions = 1;
-	char classpathOption[MAX_PATH];
+	char classpathOption[PATH_MAX];
 	sprintf(classpathOption, "-Djava.class.path=%s", classpath);
 	options[0].optionString = classpathOption;
 	args.options = options;
@@ -54,12 +69,16 @@ int main(int argc, char **argv) {
 	*/
 
 	/*	Get the parent directory of this launcher. */
-	PathRemoveFileSpec(argv[0]);
+	char* parent;
+	parent = dirname(argv[0]);
 
 	/*	Append jsh.jar to the path of the parent directory of this launcher. */
-	char jar[MAX_PATH];
-	strcpy(jar, argv[0]);
-	strcat(jar, "\\jsh.jar");
+	char jar[PATH_MAX];
+	strcpy(jar, parent);
+	char path[9];
+	sprintf(path, "/jsh.jar");
+	path[0] = SLASH;
+	strcat(jar, path);
 
 	JNIEnv* env = create_vm(jar);
 	invoke_class(env, argc, argv);
