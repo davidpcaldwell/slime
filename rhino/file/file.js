@@ -70,6 +70,9 @@ var Pathname = function(parameters) {
 	this.__defineGetter__("parent", getParent);
 
 	var getFile = function() {
+		if (arguments.length > 0) {
+			throw new RangeError("No arguments expected to Pathname.getFile");
+		}
 		if (!$filesystem.exists(peer)) return null;
 		if ($filesystem.isDirectory(peer)) return null;
 		return new File(this,peer);
