@@ -137,46 +137,14 @@ console("Creating directories ...");
 	new File(JSH_HOME,path).mkdir();
 });
 
-
 console("Copying launcher scripts ...");
 copyFile(new File(BASE,"jsh/launcher/rhino/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
 copyFile(new File(BASE,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
-
-if (platform.unix) {
-	copyFile(new File(BASE,"jsh/launcher/rhino/jsh.bash"), new File(JSH_HOME,"jsh.bash"));
-	var path = String(new File(JSH_HOME,"jsh.bash").getCanonicalPath());
-	if (platform.cygwin) {
-		path = platform.cygwin.cygpath.unix(path);
-	}
-	var exit = runCommand("chmod","+x",path);
-	if (exit) throw "Error running command: " + path;
-	if (!exit) console("Created bash launcher.");
-}
 
 console("Copying libraries ...");
 RHINO_LIBRARIES.forEach( function(file) {
 	copyFile(file,new File(JSH_HOME,"lib/" + file.getName()));
 });
-
-if (platform.cygwin) {
-	console("Building Cygwin path helper ...");
-	var gccpath = platform.cygwin.realpath("/bin/g++");
-	//console("real path: [" + gccpath + "]");
-	var gcc = new File(platform.cygwin.cygpath.windows(gccpath));
-	if (gcc.exists()) {
-		new File(JSH_HOME,"bin").mkdir();
-		var command = [
-			String(gcc.getCanonicalPath()),
-			"-o", platform.cygwin.cygpath.unix(String(new File(JSH_HOME,"bin/inonit.script.runtime.io.cygwin.cygpath.exe").getCanonicalPath())),
-			platform.cygwin.cygpath.unix(String(new File(BASE,"rhino/file/java/inonit/script/runtime/io/cygwin/cygpath.cpp")))
-		];
-		runCommand.apply(this,command);
-	} else {
-		console("(build.rhino.js) Missing compiler at " + gcc.getCanonicalPath() + "; not bundling Cygwin path helper.");
-	}
-	//	TODO	A previous version of this build file fixed DOS line endings in the jsh.bash file when running on Cygwin bash. However,
-	//			it seems possible the bash file is going away, and this can be done manually, so we leave it for now
-}
 
 var tmp = createTemporaryDirectory();
 
@@ -379,6 +347,10 @@ var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
 copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
 
+console("Creating install script ...");
+new File(JSH_HOME,"etc").mkdir();
+copyFile(new File(BASE,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
+
 if (!getSetting("jsh.build.notest")) {
 	var integrationTests = function() {
 		var script = new File(BASE,"jsh/test/suite.rhino.js");
@@ -407,34 +379,3 @@ bases.forEach( function(base) {
 		}
 	]);
 });
-
-//	Native launcher only supported on Cygwin so far
-//	TODO	write UNIX version
-//	TODO	move earlier in build process and test launcher itself
-if (platform.cygwin) {
-	var bashpath = platform.cygwin.realpath("/bin/bash");
-	//console("real path: [" + gccpath + "]");
-	var bash = new File(platform.cygwin.cygpath.windows(bashpath));
-	var script = new File(BASE,"jsh/launcher/rhino/native/win32/cygwin.bash");
-	var scriptpath = platform.cygwin.cygpath.unix(script.getCanonicalPath());
-	var envuse = {};
-	for (var x in env) {
-		envuse[x] = env[x];
-	}
-	var myenv = {
-		//	Assume JAVA_HOME is a JRE and therefore the JDK is at $JAVA_HOME/..
-		JAVA_HOME: platform.cygwin.cygpath.unix(JAVA_HOME.getParentFile().getCanonicalPath()),
-		TMP: System.getProperty("java.io.tmpdir"),
-		TO: platform.cygwin.cygpath.unix(JSH_HOME.getCanonicalPath())
-	};
-	for (var x in myenv) {
-		envuse[x] = myenv[x];
-	}
-	var command = runCommand(
-		String(bash.getCanonicalPath()),
-		scriptpath,
-		{
-			env: envuse
-		}
-	)
-}
