@@ -5,21 +5,33 @@ var parameters = jsh.script.getopts({
 	options: {
 		src: jsh.file.Pathname,
 		to: jsh.file.Pathname,
+		replace: false,
 		unix: false,
 		cygwin: false
 	}
 });
 
 if (!parameters.options.to) {
-	jsh.shell.echo("Required: -to");
+	jsh.shell.echo("Usage: " + jsh.script.file.pathname.basename + " -to <destination> [-replace]");
+	jsh.shell.echo("If <destination> does not exist, it will be created, recursively if necessary.");
+	jsh.shell.echo("If <destination> does exist, -replace will overwrite it; otherwise, the installation will abort.");
+	//	TODO	what if it exists and is an ordinary file?
+	//	TODO	if it is a symlink to a directory with -replace, the symlink *target* will be removed ... and then what will happen?
+	//	TODO	if it is a symlink to a non-existent directory, what will happen?
 	jsh.shell.exit(1);
 }
 
 var file = jsh.script.loader.resource("build.zip");
 var install = parameters.options.to.createDirectory({
 	ifExists: function(dir) {
-		dir.remove();
-		return true;
+		if (parameters.options.replace) {
+			dir.remove();
+			return true;
+		} else {
+			jsh.shell.echo("Directory found at " + dir);
+			jsh.shell.echo("Use -replace to overwrite it.");
+			jsh.shell.exit(1);
+		}
 	},
 	recursive: true
 });
