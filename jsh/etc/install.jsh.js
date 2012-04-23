@@ -176,3 +176,29 @@ if (parameters.options.cygwin) {
 }
 
 //	TODO	run test cases given in jsh.c
+
+if (which("chmod")) {
+	var makeExecutable = function(node) {
+		if (!arguments.callee.chmod) {
+			arguments.callee.chmod = which("chmod");
+		}
+		var recurse = arguments.callee;
+		if (node.directory) {
+			node.list().forEach(function(item) {
+				recurse(item);
+			});
+		} else {
+			if (/\.jsh\.js$/.test(node.pathname.basename)) {
+				jsh.shell.echo("Making executable: " + node.pathname.toString());
+				jsh.shell.shell(
+					chmod.pathname,
+					[
+						"+x", node.pathname.toString()
+					]
+				);
+			}
+		}
+	};
+
+	makeExecutable(install.getSubdirectory("tools"));
+}
