@@ -27,7 +27,7 @@
 	need a way to "hard-code" the path on Windows (write it to a file at build time, and read it at runtime?).
 
 	We could use a JSH_JAVA_HOME, perhaps falling back to JAVA_HOME, on both platforms. But on Windows, implementation-wise, that
-	might have difficulty under Cygwin, where the JSH_JAVA_HOME variable might be presented in Cygwin form. And there might be
+	might have difficulty under Cygwin, where the JSH_JAVA_HOME variable is in Cygwin form. And there might be
 	problems making the launcher a Cygwin executable (Cygwin might need to be in the PATH, and it might mess up the JNI, though it
 	might not; that might be just calls running in the other direction).
 
@@ -38,15 +38,17 @@
 /*
 	TODO	Locating jsh
 
-	On UNIX, there is no foolproof way to retrieve the executable path. argv[0], on FreeBSD, just contains the command name if the
-	command was in the path. See http://stackoverflow.com/questions/933850/how-to-find-the-location-of-the-executable-in-c.
+	On UNIX, there is no foolproof, platform-independent way to retrieve the executable path. argv[0], on FreeBSD, just contains the
+	command name if the command was in the path.
+
+	See http://stackoverflow.com/questions/933850/how-to-find-the-location-of-the-executable-in-c.
 
 	Implementing the following algorithm seems to make sense:
 	1. If starts with /, assume absolute
 	2. If contains /, use relative to PWD (or getcwd)
 	3. Parse and check PATH
 
-	On Windows, there is apparently a system call GetModuleFileName that can be used for this purpose.
+	On Windows, there is apparently a system call GetModuleFileName that can be used for the purpose of resolving argv[0].
 */
 /*
 	TODO	add Windows-without-Cygwin test cases
@@ -140,13 +142,15 @@ void invoke_class(JNIEnv* env, int argc, char **argv) {
 }
 
 void debug(char* mask, char* string) {
-	/*	TODO	This output should happen if JSH_LAUNCHER_DEBUG is set. */
-	if (1 == 2) {
+	//	TODO	remove JSH_LAUNCHER_CONSOLE_DEBUG?
+	if (getenv("JSH_LAUNCHER_DEBUG") != NULL || getenv("JSH_LAUNCHER_CONSOLE_DEBUG") != NULL) {
 		printf(mask, string);
 	}
 }
 
 int main(int argc, char **argv) {
+	debug("JSH_JAVA_HOME = %s\n", getenv("JSH_JAVA_HOME"));
+
 	/*	Get the parent directory of this launcher. */
 	debug("argv[0] = %s\n", argv[0]);
 	char *absolutejshpath = malloc(PATH_MAX);
