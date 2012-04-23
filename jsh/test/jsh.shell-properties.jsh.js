@@ -21,7 +21,7 @@ var log = function(string) {
 
 //	TODO	could more robustly check values below; this pretty much just outputs them and makes sure the appropriate parent objects
 //			exist
-log("TMP = " + jsh.shell.TMP);
+log("TMPDIR = " + jsh.shell.TMPDIR);
 log("USER = " + jsh.shell.USER);
 log("PWD = " + jsh.shell.PWD);
 log("HOME = " + jsh.shell.HOME);

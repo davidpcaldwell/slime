@@ -27,8 +27,8 @@ var format = parameters.options.format;
 
 var build = (function() {
 	if (format == "zip") {
-		var TMP = jsh.file.filesystems.os.Pathname(String(jsh.shell.properties.java.io.tmpdir)).directory;
-		return TMP.getRelativePath("slime/" + from.pathname.basename + "-" + String(new Date().getTime())).createDirectory({ recursive: true });
+		var TMP_BUILD = jsh.shell.TMPDIR;
+		return TMP_BUILD.getRelativePath("slime/" + from.pathname.basename + "-" + String(new Date().getTime())).createDirectory({ recursive: true });
 	} else if (format == "directory") {
 		return parameters.options.to.createDirectory();
 	} else {

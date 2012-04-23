@@ -164,7 +164,7 @@ var getSearchpath = function(value) {
 	return $context.api.file.Searchpath(rv);
 }
 
-$exports.TMP = getDirectoryProperty("java.io.tmpdir");
+$exports.TMPDIR = getDirectoryProperty("java.io.tmpdir");
 $exports.USER = getMandatoryStringProperty("user.name");
 $exports.HOME = getDirectoryProperty("user.home");
 $exports.PWD = getDirectoryProperty("user.dir");
@@ -212,7 +212,7 @@ $exports.java = new function() {
 		this.path = getSearchpath(getMandatoryStringProperty("java.library.path"));
 	}
 
-	//	java.io.tmpdir really part of filesystem; see TMP above
+	//	java.io.tmpdir really part of filesystem; see TMPDIR above
 
 	//	Javadoc claims this to be always present but it is sometimes null; we leave it as undefined in that case, although this
 	//	behavior is undocumented

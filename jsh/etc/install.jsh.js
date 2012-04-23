@@ -131,7 +131,7 @@ if (parameters.options.cygwin) {
 			//	We assume we are running in a JDK, so the java.home is [jdk]/jre, so we look at parent
 			//	TODO	improve this check
 			JAVA_HOME: jsh.shell.java.home.parent.pathname.toString(),
-			TMP: jsh.shell.TMP.pathname.toString(),
+			LIB_TMP: jsh.shell.TMPDIR.pathname.toString(),
 			TO: install.pathname.toString()
 		});
 		jsh.shell.echo("Building Cygwin native launcher with environment " + jsh.js.toLiteral(env));
