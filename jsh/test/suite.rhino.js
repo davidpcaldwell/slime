@@ -278,3 +278,9 @@ testCommandOutput(packaged_helper, function(options) {
 		,""
 	])
 });
+
+testCommandOutput("$api-deprecate-properties.jsh.js", function(options) {
+	checkOutput(options,[
+		"o.f.property = foo", ""
+	]);
+});
