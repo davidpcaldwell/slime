@@ -112,7 +112,14 @@ $exports.zip = function(p) {
 }
 
 $exports.unzip = function(p) {
-	var _zipstream = new Packages.java.util.zip.ZipInputStream(p.zip.read($context.Streams.binary).$getInputStream());
+	var _zipstream = (function() {
+		if (p.zip.read) {
+			return new Packages.java.util.zip.ZipInputStream(p.zip.read($context.Streams.binary).$getInputStream());
+		} else if (p.zip.java && p.zip.java.adapt) {
+			//	Assume stream, which is a terrible API; should check to see peer is java.io.InputStream but being lazy
+			return new Packages.java.util.zip.ZipInputStream(p.zip.java.adapt());
+		}
+	})();
 	var entry;
 	while( (entry = _zipstream.getNextEntry()) != null ) {
 		var name = String(entry.getName());

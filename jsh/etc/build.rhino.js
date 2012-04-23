@@ -37,6 +37,63 @@ var JAVA_VERSION = "1.6";
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
 
+var zip = function(from,to,filters) {
+	if (!filters) filters = [];
+	var zstream = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(to));
+
+	var directories = {};
+
+	var createDirectory = function(path) {
+		if (path.length == 0) return;
+		var tokens = path.split("/");
+		for (var i=1; i<tokens.length; i++) {
+			var partial = tokens.slice(0,i).join("/");
+			if (!directories[partial]) {
+				var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
+				zstream.putNextEntry(entry);
+				zstream.closeEntry();
+				directories[partial] = true;
+			}
+		}
+	}
+
+	var process = function(file,prefix,filters) {
+		for (var i=0; i<filters.length; i++) {
+			if (filters[i].accept(file)) {
+				filters[i].process(file,prefix);
+				return;
+			}
+		}
+
+		var nextPrefix = function() {
+			if (prefix == "") return "";
+			return prefix + "/";
+		}
+
+		if (file.isDirectory()) {
+			createDirectory(prefix);
+			var files = file.listFiles();
+			for (var i=0; i<files.length; i++) {
+				process(files[i],nextPrefix()+file.getName(),filters);
+			}
+		} else {
+			createDirectory(prefix);
+			var entry = new Packages.java.util.zip.ZipEntry(nextPrefix()+file.getName());
+			zstream.putNextEntry(entry);
+			var i = new Packages.java.io.FileInputStream(file);
+			platform.io.copyStream(i,zstream);
+			i.close();
+			zstream.closeEntry();
+		}
+	}
+
+	var top = from.listFiles();
+	for (var i=0; i<top.length; i++) {
+		process(top[i],"",filters);
+	}
+	zstream.close();
+}
+
 var getSetting = function(systemPropertyName) {
 	var environmentVariableName = systemPropertyName.replace(/\./g, "_").toUpperCase();
 	if (System.getProperty(systemPropertyName)) {
@@ -79,17 +136,34 @@ if (!platform.jdk.compile) {
 	exit(1);
 }
 
-var JSH_HOME = function(path) {
-	if (typeof(path) == "undefined") {
-		console("Usage: java -jar js.jar build.rhino.js <build-destination>");
-		//	TODO	Should this be interpreted as Cygwin path when on Cygwin?
-		exit(1);
+var destination = (function() {
+	var toNativePath = function(path) {
+		if (platform.cygwin) {
+			path = platform.cygwin.cygpath.windows(path);
+		}
+		return path;
 	}
-	if (platform.cygwin) {
-		path = platform.cygwin.cygpath.windows(path);
+
+	if (arguments[0] == "-installer") {
+		return {
+			installer: new File(toNativePath(arguments[1])),
+			shell: createTemporaryDirectory()
+		}
+	} else {
+		if (arguments.length == 0) {
+			console("Usage:");
+			console("java -jar js.jar build.rhino.js <build-destination>");
+			console("-or-");
+			console("java -jar js.jar build.rhino.js -install <installer-jar-location>");
+			exit(1);
+		}
+		return {
+			shell: new File(toNativePath(arguments[0]))
+		}
 	}
-	return new File(path);
-}(arguments[0]);
+}).apply(this,arguments);
+
+var JSH_HOME = destination.shell;
 debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 console("Building to: " + JSH_HOME.getCanonicalPath());
 
@@ -379,3 +453,28 @@ bases.forEach( function(base) {
 		}
 	]);
 });
+
+if (destination.installer) {
+	//	TODO	allow getting named resource as stream from within jsh
+	//	TODO	allow jsh.file.unzip to take a stream as its source
+	console("Build installer to " + destination.installer);
+	var build = new File(JSH_HOME,"build.zip");
+	console("Build build.zip to " + build.getCanonicalPath());
+	zip(JSH_HOME,build);
+
+	var getPath = function(file) {
+		var path = String(file.getCanonicalPath());
+		if (platform.cygwin) {
+			path = platform.cygwin.cygpath.unix(path);
+		}
+		return path;
+	}
+
+	var command = LAUNCHER_COMMAND.slice(0);
+	command.push(getPath(new File(JSH_HOME,"tools/package.jsh.js")));
+	command.push("-jsh",getPath(JSH_HOME));
+	command.push("-script",getPath(new File(JSH_HOME,"etc/install.jsh.js")));
+	command.push("-file","build.zip=" + getPath(build));
+	command.push("-to",getPath(destination.installer));
+	runCommand.apply(this,command);
+}

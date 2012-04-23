@@ -1,20 +1,46 @@
+//	TODO	this should not depend on source directory, should it? On the other hand, we need to bundle the launcher C source and
+//			related files ...
+//	TODO	remove obsolete command-line options unix, cygwin, src
 var parameters = jsh.script.getopts({
 	options: {
-		src: jsh.script.file.getRelativePath("../src"),
-		install: jsh.script.file.getRelativePath(".."),
+		src: jsh.file.Pathname,
+		to: jsh.file.Pathname,
 		unix: false,
 		cygwin: false
 	}
 });
 
-var which = function(command,extension) {
+if (!parameters.options.to) {
+	jsh.shell.echo("Required: -to");
+	jsh.shell.exit(1);
+}
+
+var file = jsh.script.loader.resource("build.zip");
+var install = parameters.options.to.createDirectory({
+	ifExists: function(dir) {
+		dir.remove();
+		return true;
+	},
+	recursive: true
+});
+jsh.file.unzip({
+	zip: file,
+	to: install
+});
+//	TODO	remove build.zip
+
+var which = function(command) {
+	if (arguments.length > 1) throw new RangeError("Too many arguments.");
 	//	Search the path for a given command
-	if (!extension) extension = "";
 	for (var i=0; i<jsh.shell.PATH.pathnames.length; i++) {
 		var dir = jsh.shell.PATH.pathnames[i].directory;
 		if (dir) {
-			if (dir.getFile(command+extension)) {
-				return dir.getFile(command+extension);
+			//	TODO	generalize extensions
+			if (dir.getFile(command)) {
+				return dir.getFile(command);
+			}
+			if (dir.getFile(command + ".exe")) {
+				return dir.getFile(command + ".exe");
 			}
 		} else {
 			//	jsh.shell.echo("Not a directory: " + jsh.shell.PATH.pathnames[i]);
@@ -23,12 +49,25 @@ var which = function(command,extension) {
 	return null;
 }
 
-var EXTENSION = (parameters.options.cygwin) ? ".exe" : "";
+//	TODO	Is this the best way to detect UNIX? We later use the jsh.shell.os.name property, but do we want to try a list of
+//			UNIXes and check that property for them?
+var uname = which("uname");
+if (uname) {
+	parameters.options.unix = true;
+	//	Re-use the detection logic that jsh uses for Cygwin, although this leaves it opaque in this script exactly how we are doing
+	//	it; we could run the uname we just found, or even check for its .exe extension
+	if (jsh.file.filesystems.cygwin) {
+		parameters.options.cygwin = true;
+	}
+}
+
+if (!parameters.options.src) {
+	parameters.options.src = install.getRelativePath("src");
+}
 var src = parameters.options.src.directory;
-var install = parameters.options.install.directory;
 
 if (parameters.options.unix) {
-	var bash = which("bash",EXTENSION);
+	var bash = which("bash");
 	if (bash) {
 		var code = src.getFile("jsh/launcher/rhino/jsh.bash").read(String);
 		var lines = code.split("\n");
@@ -40,7 +79,7 @@ if (parameters.options.unix) {
 	//	if (platform.cygwin) {
 	//		path = platform.cygwin.cygpath.unix(path);
 	//	}
-		var chmod = which("chmod",EXTENSION);
+		var chmod = which("chmod");
 		jsh.shell.shell(
 			chmod.pathname,
 			[
@@ -54,7 +93,7 @@ if (parameters.options.unix) {
 }
 
 if (parameters.options.cygwin) {
-	var gplusplus = which("g++",EXTENSION);
+	var gplusplus = which("g++");
 	if (gplusplus) {
 		jsh.shell.echo("Creating cygwin paths helper ...");
 		install.getRelativePath("bin").createDirectory();
@@ -74,7 +113,7 @@ if (parameters.options.cygwin) {
 if (parameters.options.cygwin) {
 	//	TODO	use LoadLibrary call to locate jvm.dll
 	//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
-	var bash = which("bash",EXTENSION);
+	var bash = which("bash");
 	if (bash) {
 		var env = jsh.js.Object.set({}, jsh.shell.environment, {
 			//	We assume we are running in a JDK, so the java.home is [jdk]/jre, so we look at parent
@@ -135,3 +174,5 @@ if (parameters.options.cygwin) {
 		);
 	}
 }
+
+//	TODO	run test cases given in jsh.c

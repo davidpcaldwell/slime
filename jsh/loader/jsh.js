@@ -145,6 +145,12 @@ this.jsh = new function() {
 				}
 				return rhinoLoader.module(m,p);
 			}
+
+			this.resource = function(path) {
+				var _in = _source.getResourceAsStream(path);
+				if (!_in) return null;
+				return jsh.io.java.adapt(_in);
+			}
 		}
 
 		var self = this;
