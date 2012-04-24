@@ -47,7 +47,7 @@ var modules = parameters.options.module.map( function(string) {
 	var match = /^(.*)\@(.*)$/.exec(string);
 	if (match == null) throw new Error("No match: " + string);
 	//	TODO	some redundancy below which made adapting jsapi.js easier for now
-	var rv = { 
+	var rv = {
 		base: parameters.options.base.directory,
 		path: match[2],
 		location: parameters.options.base.directory.getRelativePath(match[2])

@@ -41,7 +41,7 @@ this.jsh = new function() {
 
 		this.bootstrap = function(context,path) {
 			return rhinoLoader.module(
-				{ 
+				{
 					_code: $host.getLoader().getBootstrapModule(path),
 					main: "module.js"
 				},
@@ -163,7 +163,7 @@ this.jsh = new function() {
 					}
 					return rv;
 				}
-			
+
 				var rv = toArray.apply(null, arguments);
 				rv[0] = directory.getRelativePath(arguments[0]);
 				return rv;
@@ -215,7 +215,7 @@ this.jsh = new function() {
 //	}
 //}
 //$api.experimental($exports,"Loader");
-		
+
 		if ($host.getLoader().getPackagedCode()) {
 			this.bundled = new Loader($host.getLoader().getPackagedCode());
 		}
