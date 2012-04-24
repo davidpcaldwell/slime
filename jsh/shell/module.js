@@ -165,6 +165,7 @@ $exports.TMP = getDirectoryProperty("java.io.tmpdir");
 $exports.HOME = getDirectoryProperty("user.home");
 
 $exports.jsh = function(script,args,mode) {
+	if (!mode) mode = {};
 	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 	var executable = jdk.getRelativePath("bin/java").toString();
 	//	Set defaults from this shell
@@ -180,7 +181,6 @@ $exports.jsh = function(script,args,mode) {
 		jargs.push(arg);
 	});
 
-	if (!mode) mode = {};
 	if (!mode.environment) mode.environment = {};
 	for (var x in $context.api.shell.properties.jsh.launcher.environment) {
 		if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
