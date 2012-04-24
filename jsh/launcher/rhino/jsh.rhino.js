@@ -458,6 +458,11 @@ try {
 	}
 
 	command.add("-classpath");
+	var shellClasspath = settings.get("shellClasspath");
+	if (!shellClasspath) {
+		console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
+		exit(1);
+	}
 	command.add(
 		settings.get("rhinoClasspath")
 		.append(settings.get("shellClasspath"))
