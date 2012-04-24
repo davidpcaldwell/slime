@@ -35,6 +35,14 @@ if (!parameters.options.jsapi) {
 	jsh.shell.exit(1);
 }
 
+if (!parameters.options.base) {
+	jsh.shell.echo("Missing: -base");
+	jsh.shell.exit(1);
+} else if (!parameters.options.base.directory) {
+	jsh.shell.echo("Not a directory: -base " + parameters.options.base);
+	jsh.shell.exit(1);
+}
+
 var modules = parameters.options.module.map( function(string) {
 	var match = /^(.*)\@(.*)$/.exec(string);
 	if (match == null) throw new Error("No match: " + string);
