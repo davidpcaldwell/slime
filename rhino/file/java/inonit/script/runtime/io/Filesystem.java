@@ -158,6 +158,9 @@ public abstract class Filesystem {
 						joined += File.separator;
 					}
 				}
+				if (joined.length() == 0) {
+					joined += File.separator;
+				}
 				return new File(joined);
 			}
 
