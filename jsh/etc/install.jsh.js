@@ -22,13 +22,36 @@ if (!parameters.options.to) {
 }
 
 var file = jsh.script.loader.resource("build.zip");
+var realpath = function(pathname) {
+	return new jsh.file.filesystem.$jsh.Pathname(pathname.java.adapt());
+}
+
+var destinationIsSoftlink = function() {
+	jsh.shell.echo(parameters.options.to.toString() + " detected as a softlink to " + realpath(parameters.options.to));
+	jsh.shell.echo("Please remove the softlink manually, or reference " + realpath(parameters.options.to) + " directly.");
+	jsh.shell.exit(1);
+}
+
+if (realpath(parameters.options.to).toString() != parameters.options.to.toString()
+) {
+	destinationIsSoftlink();
+}
+
 var install = parameters.options.to.createDirectory({
 	ifExists: function(dir) {
 		if (parameters.options.replace) {
-			dir.remove();
-			return true;
+			if (realpath(parameters.options.to).toString() != parameters.options.to.toString()) {
+				//	softlink; currently unreachable as all softlinks are captured above, but in the future we may need to capture
+				//	them here
+				destinationIsSoftlink();
+			} else {
+				dir.remove();
+				return true;
+			}
 		} else {
-			jsh.shell.echo("Directory found at " + dir);
+			//	TODO	for symlink to file, dir.toString() does not work. Why?
+			var type = (parameters.options.to.file) ? "File" : "Directory";
+			jsh.shell.echo(type + " found at " + parameters.options.to);
 			jsh.shell.echo("Use -replace to overwrite it.");
 			jsh.shell.exit(1);
 		}

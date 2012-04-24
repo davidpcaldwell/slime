@@ -133,12 +133,36 @@ public abstract class Filesystem {
 		private static class NodeImpl extends Node {
 			private File file;
 
-			NodeImpl(File file) throws IOException {
-				try {
-					this.file = file.getCanonicalFile();
-				} catch (IOException e) {
-					throw new IOException(e.getMessage() + " path=[" + file.getPath() + "]", e);
+			private File canonicalize(File file) {
+				String absolute = file.getAbsolutePath();
+				String[] tokens = absolute.split("\\" + File.separator);
+				java.util.ArrayList rv = new java.util.ArrayList();
+				for (int i=0; i<tokens.length; i++) {
+					if (tokens[i].equals(".")) {
+						//	do nothing
+					} else if (tokens[i].equals("..")) {
+						if (rv.isEmpty()) {
+							rv.add("..");
+						} else {
+							rv.remove(rv.size()-1);
+						}
+					} else {
+						rv.add(tokens[i]);
+					}
 				}
+				//	TODO	analysis of how this would work with Windows drive letters
+				String joined = "";
+				for (int i=0; i<rv.size(); i++) {
+					joined += (String)rv.get(i);
+					if (i+1 != rv.size() || i == 0) {
+						joined += File.separator;
+					}
+				}
+				return new File(joined);
+			}
+
+			NodeImpl(File file) throws IOException {
+				this.file = canonicalize(file);
 			}
 
 			public String toString() {
@@ -153,8 +177,12 @@ public abstract class Filesystem {
 				return file.isDirectory();
 			}
 
-			public File getHostFile() {
-				return file;
+			public File getHostFile() throws IOException {
+				try {
+					return file.getCanonicalFile();
+				} catch (IOException e) {
+					throw new IOException(e.getMessage() + " path=[" + file.getPath() + "]", e);
+				}
 			}
 
 			public String getScriptPath() {
