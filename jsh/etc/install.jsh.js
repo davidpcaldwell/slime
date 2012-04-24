@@ -241,7 +241,7 @@ if (which("chmod")) {
 			if (/\.jsh\.js$/.test(node.pathname.basename)) {
 				jsh.shell.echo("Making executable: " + node.pathname.toString());
 				jsh.shell.shell(
-					chmod.pathname,
+					arguments.callee.chmod.pathname,
 					[
 						"+x", node.pathname.toString()
 					]
