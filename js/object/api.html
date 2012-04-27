@@ -14,6 +14,7 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>JavaScript language constructs</title>
@@ -50,6 +51,7 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
+				this.globals = false;
 			}
 		</script>
 	</div>
@@ -425,6 +427,19 @@ END LICENSE
 				]]></script>
 			</li>
 			<li class="object" jsapi:id="Filter">
+				<script type="application/x.jsapi#initialize"><![CDATA[
+					//	TODO	load this from globals.js somehow?
+
+					scope.Array_filter = function(f) {
+						var rv = [];
+						for (var i=0; i<this.length; i++) {
+							if (f(this[i])) {
+								rv.push(this[i]);
+							}
+						}
+						return rv;
+					}
+				]]></script>
 				<div class="name">Filter</div>
 				<div>
 					A <i>Filter</i> is a function that implements a particular interface: it takes a single argument, and returns a
@@ -453,7 +468,7 @@ END LICENSE
 							A Filter that returns <code>true</code> if the value of its property for the given property
 							name is accepted by the given Filter, and <code>false</code> otherwise.
 						</div>
-						<script type="application/x.jsapi#tests" jsapi:id="1">
+						<script type="application/x.jsapi#tests" jsapi:id="1"><![CDATA[
 							var isUpperCase = function(value) {
 								return value.toUpperCase() == value;
 							}
@@ -463,9 +478,9 @@ END LICENSE
 							var a = { a: "A" };
 							var b = { a: "a" };
 
-							test([a,b].filter(filter).length == 1);
-							test([a,b].filter(filter)[0] == a);
-						</script>
+							test(Array_filter.call([a,b], filter).length == 1);
+							test(Array_filter.call([a,b], filter)[0] == a);
+						]]></script>
 					</li>
 					<li class="function">
 						<div class="name">equals</div>
@@ -512,12 +527,12 @@ END LICENSE
 				<script type="application/x.jsapi#tests">
 					var f = module.Filter.property("a", module.Filter.equals(3));
 					var array = [{ a: 3 }, {}, { a: 4 }];
-					var matches = array.filter(f);
+					var matches = Array_filter.call(array, f);
 					test(matches.length == 1);
 					test(matches[0] == array[0]);
 				</script>
 			</li>
-			<li class="object">
+			<li class="object" jsapi:id="Map">
 				<div class="name">Map</div>
 				<span>
 					A <i>Map</i> is a function that implements a particular interface: it takes a single argument, and returns
@@ -565,7 +580,7 @@ END LICENSE
 				</ul>
 				<!--	TODO	decide whether Map.Categorizer is experimental; find a use of it: my guess is prop8	-->
 			</li>
-			<li class="object">
+			<li class="object" jsapi:id="Order">
 				<div class="name">Order</div>
 				<span>
 					An <i>Order</i> implements a specific interface, intended for sorting: it takes two arguments and returns
@@ -640,7 +655,7 @@ END LICENSE
 					test(array[2].s == "c");
 				</script>
 			</li>
-			<li class="object">
+			<li class="object" jsapi:id="Array">
 				<div class="name">Array</div>
 				<div class="label">has properties:</div>
 				<ul>

@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3c.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Rhino-based interaction with shell</title>
 	<link rel="stylesheet" type="text/css" href="http://127.0.0.1/cygwin/home/inonit/src/end/jsh/code/current/jsh/unit/src/js/jsdoc.css" jsapi:link="local" />
@@ -25,7 +26,7 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				this.api = {
-					java: $jsapi.module("rhino/host/")
+					java: $jsapi.module("../../rhino/host/")
 				}
 			}
 		</script>

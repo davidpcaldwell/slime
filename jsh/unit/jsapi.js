@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -24,7 +24,9 @@ var getApiHtml = function(moduleMainPathname) {
 		var basename = moduleMainPathname.file.pathname.basename;
 		var directory = moduleMainPathname.file.parent;
 		var jsName = /(.*)\.js$/.exec(basename);
-		if (jsName) {
+		if (/api\.html$/.test(basename)) {
+			return moduleMainPathname.file;
+		} else if (jsName) {
 			return directory.getFile(jsName[1]+".api.html");
 		} else {
 			return directory.getFile(basename+".api.html");
@@ -140,6 +142,10 @@ $exports.tests = new function() {
 				return jsh.loader.module(moduleDescriptor.location, (context) ? context : {});
 			}
 
+			this.getRelativePath = function(path) {
+				return getApiHtml(moduleDescriptor.location).getRelativePath(path);
+			}
+
 			this.getResourcePathname = function(path) {
 				if (moduleDescriptor.location.directory) return moduleDescriptor.location.directory.getRelativePath(path);
 				if (moduleDescriptor.location.file) return moduleDescriptor.location.file.parent.getRelativePath(path);
@@ -175,17 +181,21 @@ $exports.tests = new function() {
 								jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
 								return arguments.callee.call(this,arguments[1],arguments[0]);
 							}
-							var MODULES = $context.MODULES;
-							if (MODULES[name+"/"]) {
-								//	Forgot trailing slash; fix; this ability may later be removed
-								debugger;
-								name += "/";
+							if (false) {
+								var MODULES = $context.MODULES;
+								if (MODULES[name+"/"]) {
+									//	Forgot trailing slash; fix; this ability may later be removed
+									debugger;
+									name += "/";
+								}
+								if (!MODULES[name]) {
+									debugger;
+									return null;
+								}
+								return jsh.loader.module(MODULES[name].location,context);
+							} else {
+								return jsh.loader.module(suite.getRelativePath(name),context);
 							}
-							if (!MODULES[name]) {
-								debugger;
-								return null;
-							}
-							return jsh.loader.module(MODULES[name].location,context);
 						},
 						//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
 						environment: $context.ENVIRONMENT,
@@ -246,6 +256,8 @@ $exports.tests = new function() {
 					} catch (e) {
 						//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
 						topscope.scenario(new function() {
+							this.name = suite.name;
+
 							this.execute = function(scope) {
 								throw e;
 							}
@@ -284,11 +296,14 @@ $exports.doc = function(modules,to) {
 	var index = $context.jsapi.getFile("index.html").read(XML);
 
 	//	TODO	parameterize the below rather than hard-coding
-	index.head.title = "API Documentation";
-	index.body.h1 = "API Documentation";
+	//	TODO	apparent Rhino 1.7R3 bug which requires the given subscripting; should be able to do index.head.title = "..."
+	index.head.title[0] = "API Documentation";
+	index.body.h1[0] = "API Documentation";
 
 	delete index.body.table.tbody.tr[0];
 
+	//	TODO	find a way to deprecate this object, which is being used in eval() using hard-coded "absolute" paths in
+	//			jsapi:reference expressions
 	var doc = {};
 
 	modules.forEach( function(item) {
@@ -296,10 +311,71 @@ $exports.doc = function(modules,to) {
 		doc[item.path] = xhtml;
 	});
 
+	var ApiHtml = function(p) {
+		var root = p.file.read(XML);
+
+		this.getApi = function(path) {
+			var pathname = p.file.getRelativePath(path);
+			return new ApiHtml({
+				file: getApiHtml(pathname)
+			});
+		}
+
+		var getElement = function(e,declaration) {
+			if (e.@jsapi::reference.length() > 0) {
+				try {
+					var getApi = function(path) {
+						return declaration.getApi(path);
+					}
+					return eval(String(e.@jsapi::reference));
+				} catch (e) {
+					var error = new EvalError("Error evaluating reference: " + e.@jsapi::reference);
+					var string = String(e.@jsapi::reference);
+					error.string = string;
+					error.toString = function() {
+						return this.message + "\n" + this.string;
+					}
+					if (false) {
+						throw error;
+					} else {
+						return <x/>;
+					}
+				}
+			}
+			return e;
+		}
+
+		this.getElement = function(path) {
+			var tokens = path.split("/");
+			var rv = root;
+			for (var i=0; i<tokens.length; i++) {
+				rv = rv..*.(@jsapi::id == tokens[i])[0];
+				if (typeof(rv) == "undefined") {
+					return null;
+				}
+			}
+			return getElement(rv,this);
+		}
+
+		this.resolve = function(element) {
+			return getElement(element,this);
+		}
+	}
+
 	modules.forEach( function(item) {
 		if (item.ns) {
 			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
-			var xhtml = getApiHtml(item.location).read(XML);
+			var file = getApiHtml(item.location);
+			var path = (function() {
+				var rv = file.pathname.basename;
+				var dir = file.pathname.parent.directory;
+				while(dir.pathname.toString() != item.base.pathname.toString()) {
+					rv = dir.pathname.basename + "/" + rv;
+					dir = dir.pathname.parent.directory;
+				}
+				return rv;
+			})();
+			var xhtml = file.read(XML);
 			var ns = (function() {
 				if (xhtml.length() > 1) {
 					return (function() {
@@ -311,10 +387,20 @@ $exports.doc = function(modules,to) {
 					return xhtml.namespace();
 				}
 			})();
-			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href="api.css" />);
-			xhtml.ns::head.appendChild(<script type="text/javascript" src="api.js">{"/**/"}</script>);
+			var top = (function() {
+				//	below could be simplified with join and map but we leave it this way until we make sure all cases work; e.g.,
+				//	path ending with /, path ending with filename
+				var tokens = item.path.split("/");
+				var rv = "";
+				for (var i=0; i<tokens.length-1; i++) {
+					rv += "../";
+				}
+				return rv;
+			})();
+			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href={ top + "api.css" } />);
+			xhtml.ns::head.appendChild(<script type="text/javascript" src={ top + "api.js" }>{"/**/"}</script>);
 
-			xhtml.ns::body.insertChildAfter(null,<a href="index.html">Documentation Home</a>);
+			xhtml.ns::body.insertChildAfter(null,<a href={ top + "index.html" }>Documentation Home</a>);
 
 			var contextDiv = xhtml..ns::div.(ns::h1 == "Context");
 			if (contextDiv.length()) {
@@ -324,28 +410,21 @@ $exports.doc = function(modules,to) {
 			}
 
 			//	TODO	document and enhance this ability to import documentation from other files
+			var declaration = new ApiHtml({ file: getApiHtml(item.location) });
 			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
-				var x = e;
-				while(x.@jsapi::reference.length() > 0) {
-					try {
-						x = eval(String(x.@jsapi::reference));
-					} catch (e) {
-						var error = new EvalError("Error evaluating reference: " + x.@jsapi::reference);
-						var string = String(x.@jsapi::reference);
-						error.string = string;
-						error.toString = function() {
-							return this.message + "\n" + this.string;
-						}
-						throw error;
-					}
+				var resolved = declaration.resolve(e);
+				if (resolved) {
+					e.setChildren(resolved.children());
+				} else {
+					throw new Error("Could not resolve: " + e.@jsapi::reference.toXMLString());
 				}
-				e.setChildren(x.children());
 			}
 
-			var pagename = "ns." + item.ns + ".html";
-			destination.getRelativePath(pagename).write(xhtml.toXMLString());
+			destination.getRelativePath(path).write(xhtml.toXMLString(), { recursive: true });
 
-			index.body.table.tbody.appendChild(<tr><td><a href={pagename}>{item.ns}</a></td><td>{String(xhtml.ns::head.ns::title)}</td></tr>)
+			index.body.table.tbody.appendChild(<tr>
+				<td><a href={path}>{item.ns}</a></td><td>{String(xhtml.ns::head.ns::title)}</td>
+			</tr>);
 		}
 	});
 

@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -21,6 +21,8 @@ import java.util.*;
 import inonit.script.rhino.*;
 
 public class Main {
+	//	TODO	try to remove dependencies on inonit.script.rhino.*;
+
 	private List args;
 
 	private Main() {
@@ -57,18 +59,17 @@ public class Main {
 					return Shell.Script.create("jsh.js", in);
 				}
 
-				public Module.Code getShellModuleCode(String path) {
-					return Module.Code.create(
-						Module.Code.Source.create(
+				public Code getShellModuleCode(String path) {
+					return Code.create(
+						Code.Source.create(
 							ClassLoader.getSystemClassLoader(),
 							"$jsh/modules/" + path + "/"
-						),
-						"module.js"
+						)
 					);
 				}
 
-				public Module.Code.Source getPackagedCode() {
-					return Module.Code.Source.create(
+				public Code.Source getPackagedCode() {
+					return Code.Source.create(
 						ClassLoader.getSystemClassLoader(),
 						"$packaged/"
 					);
@@ -76,12 +77,8 @@ public class Main {
 			};
 
 			invocation = new Shell.Invocation() {
-				public File getScriptFile() {
-					return null;
-				}
-
-				public Shell.Script getScript() {
-					return Shell.Script.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js"));
+				public Script getScript() {
+					return Script.create(Shell.Script.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
 				}
 
 				public String[] getArguments() {
@@ -144,22 +141,18 @@ public class Main {
 					return Shell.Script.create(getFile("jsh", "jsh.js"));
 				}
 
-				public Module.Code getShellModuleCode(String path) {
-					return Module.Code.slime(getModulePath(path), "module.js");
+				public Code getShellModuleCode(String path) {
+					return Code.slime(getModulePath(path));
 				}
 
-				public Module.Code.Source getPackagedCode() {
+				public Code.Source getPackagedCode() {
 					return null;
 				}
 			};
 
 			invocation = new Shell.Invocation() {
-				public File getScriptFile() {
-					return mainScript;
-				}
-
-				public Shell.Script getScript() {
-					return Shell.Script.create(mainScript);
+				public Script getScript() {
+					return Script.create(mainScript);
 				}
 
 				public String[] getArguments() {

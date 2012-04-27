@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the rhino/io SLIME module.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -248,36 +248,38 @@ var Streams = new function() {
 		}
 	}
 
-	this.stderr = new function() {
-		this.$getOutputStream = function() {
-			return $context.stdio.$err;
+	if ($context.stdio) {
+		this.stderr = new function() {
+			this.$getOutputStream = function() {
+				return $context.stdio.$err;
+			}
+
+			this.$getWriter = function() {
+				return new Packages.java.io.OutputStreamWriter($context.stdio.$err);
+			}
+
+			this.split = function(other) {
+				return new OutputStream($context.stdio.$err).split(other);
+			}
+
+			this.close = function() {}
 		}
 
-		this.$getWriter = function() {
-			return new Packages.java.io.OutputStreamWriter($context.stdio.$err);
+		this.stdout = new function() {
+			this.$getOutputStream = function() {
+				return $context.stdio.$out;
+			}
+
+			this.$getWriter = function() {
+				return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
+			}
+
+			this.split = function(other) {
+				return new OutputStream($context.stdio.$out).split(other);
+			}
+
+			this.close = function() {}
 		}
-
-		this.split = function(other) {
-			return new OutputStream($context.stdio.$err).split(other);
-		}
-
-		this.close = function() {}
-	}
-
-	this.stdout = new function() {
-		this.$getOutputStream = function() {
-			return $context.stdio.$out;
-		}
-
-		this.$getWriter = function() {
-			return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
-		}
-
-		this.split = function(other) {
-			return new OutputStream($context.stdio.$out).split(other);
-		}
-
-		this.close = function() {}
 	}
 }
 $exports.Streams = Streams;

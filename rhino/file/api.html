@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Filesystem API</title>
 </head>
@@ -41,14 +42,6 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
-			<li class="value">
-				<div class="name">$pwd</div>
-				<span class="type">string</span>
-				<span>
-					(optional) The current working directory, if applicable to this context, as a string representing a native
-					operating system path.
-				</span>
-			</li>
 			<li class="object">
 				<div class="name">cygwin</div>
 				<span>
@@ -74,7 +67,7 @@ END LICENSE
 			(function() {
 				var $Context = function(p) {
 					this.api = arguments.callee.api;
-					this.$pwd = jsh.shell.properties.user.dir;
+					this.$pwd = String(jsh.shell.properties.user.dir);
 					this.addFinalizer = jsh.loader.addFinalizer;
 
 					if (p && p.cygwin) {
@@ -94,12 +87,14 @@ END LICENSE
 					this.$Context = arguments.callee;
 				}
 				$Context.api = new function() {
-					this.js = $jsapi.module("js/object/");
-					var java = $jsapi.module("rhino/host/", {
-						classLoader: $host.getClassLoader()
+					this.js = $jsapi.module("../../js/object/");
+					var java = $jsapi.module("../../rhino/host/", {
+						loadClass: function(name) {
+							return $host.getLoader().getJavaClass(name)
+						}
 					});
 					this.java = java;
-					this.io = $jsapi.module("rhino/io/", {
+					this.io = $jsapi.module("../../rhino/io/", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
 						,api: {
 							java: java
@@ -126,7 +121,8 @@ END LICENSE
 					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				}
 
-				//	TODO	can this helper be replaced by $jsapi.newTemporaryDirectory() ?
+				//	Although this is equivalent to $jsapi.newTemporaryDirectory(), we use a separate copy here because we want the
+				//	calls to go to the module being tested, not the module executing the test environment
 				this.newTemporaryDirectory = function() {
 					var $dir = $java.io.newTemporaryDirectory();
 					return scope.filesystem.$unit.Pathname(scope.filesystem.$unit.getNode($dir)).directory;
@@ -152,10 +148,82 @@ END LICENSE
 			scope.newTemporaryDirectory = scope.helpers.newTemporaryDirectory;
 			scope.createFile = scope.helpers.createFile;
 			scope.createDirectory = scope.helpers.createDirectory;
+
+			scope.expectError = function(test,f,expect) {
+				if (typeof(expect) == "undefined") {
+					expect = true;
+				}
+				try {
+					var invoke = (expect) ? jsh.debug.disableBreakOnExceptionsFor(f) : f;
+					invoke();
+					test(!expect);
+				} catch (e) {
+					test(expect);
+				}
+			}
 		]]></script>
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			helpers.initialize(module);
 		]]></script>
+		<div class="type">
+			<a class="type" name="types.filesystem">filesystem</a>
+			<div>A filesystem implementation from which files may be read and listed and to which files may be written.</div>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">Pathname</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li><span class="type">string</span> A path name that is valid in this filesystem.</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.Pathname">Pathname</a></span> A Pathname in this filesystem corresponding
+						to the given string.
+					</div>
+				</li>
+				<!--
+					$doc.types.filesystem = new $Doc.Type({
+						name: "(filesystem)",
+						summary: <>A filesystem implementation from which files may be read and listed and to which files may be written.</>,
+						members: {
+							PATHNAME_SEPARATOR: {
+								type: "string",
+								summary: <>The string used to separate components of a path name in this filesystem; for example, / in Unix-like
+									operating systems.
+								</>
+							},
+							SEARCHPATH_SEPARATOR: {
+								type: "string",
+								summary: <>The string used to separate components of a search path in this filesystem; for example, : in Unix-like
+									operating systems.
+								</>
+							},
+							LINE_SEPARATOR: {
+								type: "string",
+								summary: <>The string used to separate components of a search path in this filesystem; for example, "\n" in Unix-like
+									operating systems.
+								</>
+							},
+							Pathname: {
+								type: $Doc.Method,
+								arguments: {
+									list: [
+										{ name: "path", type: "string", comment: <>A path name that is valid in this filesystem.</> },
+									]
+								},
+								returns: {
+									type: $doc.types.Pathname,
+									comment: <>A Pathname in this filesystem corresponding to the given string.</>
+								}
+							}
+						}
+					});
+				-->
+			</ul>
+		</div>
 		<ul>
 			<li class="object">
 				<div class="name">filesystems</div>
@@ -166,68 +234,10 @@ END LICENSE
 						<div class="name">os</div>
 						<span class="type"><a href="#types.filesystem">filesystem</a></span> The underlying operating system's
 						filesystem.
-						<div class="type">
-							<a class="type" name="types.filesystem">filesystem</a>
-							<div>A filesystem implementation from which files may be read and listed and to which files may be written.</div>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="function">
-									<div class="name">Pathname</div>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li><span class="type">string</span> A path name that is valid in this filesystem.</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.Pathname">Pathname</a></span> A Pathname in this filesystem corresponding
-										to the given string.
-									</div>
-								</li>
-								<!--
-									$doc.types.filesystem = new $Doc.Type({
-										name: "(filesystem)",
-										summary: <>A filesystem implementation from which files may be read and listed and to which files may be written.</>,
-										members: {
-											PATHNAME_SEPARATOR: {
-												type: "string",
-												summary: <>The string used to separate components of a path name in this filesystem; for example, / in Unix-like
-													operating systems.
-												</>
-											},
-											SEARCHPATH_SEPARATOR: {
-												type: "string",
-												summary: <>The string used to separate components of a search path in this filesystem; for example, : in Unix-like
-													operating systems.
-												</>
-											},
-											LINE_SEPARATOR: {
-												type: "string",
-												summary: <>The string used to separate components of a search path in this filesystem; for example, "\n" in Unix-like
-													operating systems.
-												</>
-											},
-											Pathname: {
-												type: $Doc.Method,
-												arguments: {
-													list: [
-														{ name: "path", type: "string", comment: <>A path name that is valid in this filesystem.</> },
-													]
-												},
-												returns: {
-													type: $doc.types.Pathname,
-													comment: <>A Pathname in this filesystem corresponding to the given string.</>
-												}
-											}
-										}
-									});
-								-->
-							</ul>
-						</div>
 					</li>
 					<li class="object">
 						<div class="name">cygwin</div>
+						<span>(if $context.cygwin was specified)</span>
 						<span class="type"><a href="#types.filesystem">filesystem</a></span> A Cygwin file system that interoperates
 						with an underlying Windows file system. Along with the normal filesystem API, it supports the
 						following methods:
@@ -474,6 +484,28 @@ END LICENSE
 				<div class="type">
 					<a class="type" name="types.node">node</a>
 					<span>An object representing a node in the local file system.</span>
+					<div class="type">
+						<a class="type" name="types.node.entry">node.entry</a>
+						<span>
+							Consists of a <a href="#types.node">node</a> and a path to it relative to a
+							base directory. Used in directory operations that return or process a set of nodes.
+						</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">path</div>
+								<span class="type">string</span>
+								<span>
+									The path, relative to the base, at which this node can be found. For the base directory
+									itself, this will be a zero-length string.
+								</span>
+							</li>
+							<li class="value">
+								<div class="name">node</div>
+								<span class="type"><a href="#types.node">node</a></span>
+							</li>
+						</ul>
+					</div>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="value">
@@ -527,6 +559,410 @@ END LICENSE
 							<div class="name">remove</div>
 							<span>Removes this node, recursively removing any children if it is a directory.</span>
 						</li>
+						<li class="function" jsapi:id="move">
+							<div class="name">move</div>
+							<span>Moves (or renames) this node to a different location.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type"><a href="#types.pathname">pathname</a></span>
+										-or- <span class="type"><a href="#types.directory">directory</a></span>
+										<span>
+											The location to which to move this node; if it is a directory, the node
+											will be moved into that directory with its current basename; if it is a
+											pathname, the node will be moved to that pathname.
+										</span>
+									</li>
+									<li class="object">
+										<span>A mode argument that configures the operation of this method.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">overwrite</div>
+												<span class="type">boolean</span>
+												<span>
+													Whether to overwrite an existing node at the destination location if one is
+													found.
+												</span>
+											</li>
+											<li class="value">
+												<div class="name">recursive</div>
+												<span class="type">boolean</span>
+												<span>
+													Whether to create the necessary parent directories if the parent directories
+													of the destination location do not exist.
+												</span>
+											</li>
+										</ul>
+										<script type="application/x.jsapi#tests">
+											var top = scope.newTemporaryDirectory();
+
+											var d1 = top.getRelativePath("d1").createDirectory();
+											var d2 = top.getRelativePath("d2").createDirectory();
+											d2.getRelativePath("f").write("d2/f", { append: false });
+
+											top.getRelativePath("f1").write("f1", { append: false });
+											var f1 = top.getFile("f1");
+											top.getRelativePath("f2").write("f2", { append: false });
+											var f2 = top.getFile("f2");
+											var p1 = top.getRelativePath("p1");
+											var p2 = top.getRelativePath("p2");
+											var p3 = top.getRelativePath("p3/sub");
+											var p4 = top.getRelativePath("p4/file");
+
+											test(p1.directory == null);
+											debugger;
+											var d1_moved = d1.move(p1);
+											//	TODO	what is state of d1 object now?
+											test(p1.directory != null);
+											test(d1_moved.pathname.toString() == p1.directory.pathname.toString());
+
+											test(p2.file == null);
+											f1.move(p2);
+											//	TODO	what is state of f1 object now?
+											test(p2.file != null);
+											test(p2.file.read(String) == "f1");
+
+											//	Test overwrite property
+											debugger;
+											expectError(test, function() {
+												d2.move(p1);
+											});
+											test(p1.directory != null);
+											test(p1.directory.getFile("f") == null);
+
+											d2.move(p1, { overwrite: true });
+											test(p1.directory != null);
+											test(p1.directory.getFile("f") != null);
+
+											test(p2.file != null);
+											expectError(test, function() {
+												f2.move(p2);
+											});
+											test(p2.file.read(String) == "f1");
+
+											test(p2.file != null);
+											expectError(test, function() {
+												f2.move(p2, { overwrite: true });
+											}, false);
+											test(p2.file.read(String) == "f2");
+
+											//	Test recursive property
+											expectError(test, function() {
+												p1.directory.move(p3);
+											});
+											test(p3.directory == null);
+											p1.directory.move(p3, { recursive: true });
+											test(p3.directory != null);
+
+											expectError(test, function() {
+												p2.file.move(p4);
+											});
+											test(p4.file == null);
+											p2.file.move(p4, { recursive: true });
+											test(p4.file != null);
+											test(p4.file.read(String) == "f2");
+										</script>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.node">node</a></span>
+								<span>The node at the new location.</span>
+							</div>
+						</li>
+						<li class="function" jsapi:id="copy">
+							<div class="name">copy</div>
+							<!--	Inspiration: http://unixhelp.ed.ac.uk/CGI/man-cgi?cp -->
+							<!--	TODO	should we be preserving attributes like timestamps?	-->
+							<span>
+								Copies this node to another location. If this node is a regular file, the file is copied. If this
+								node is a directory, the node is copied recursively. Directories can be selectively copied using
+								the <code>filter</code> property of the second argument.
+								<!--	TODO	does this preserve modification times?	-->
+							</span>
+							<script type="application/x.jsapi#initialize">
+								var top = scope.newTemporaryDirectory();
+								scope.d1 = top.getRelativePath("d1").createDirectory();
+								top.getRelativePath("f1").write("f1", { append: false });
+								top.getRelativePath("f2").write("f2", { append: false });
+								scope.f1 = top.getFile("f1");
+								scope.f2 = top.getFile("f2");
+								scope.d2 = top.getRelativePath("d2").createDirectory();
+								scope.d3 = top.getRelativePath("d3").createDirectory();
+								scope.d4 = top.getRelativePath("d4").createDirectory();
+								scope.d4.getRelativePath("f3").write("f3", { append: false });
+								scope.f3 = scope.d4.getFile("f3");
+								scope.d5 = scope.d4.getRelativePath("d5").createDirectory();
+								scope.d5.getRelativePath("f4").write("f4", { append: false });
+								scope.f4 = scope.d5.getFile("f4");
+								scope.p1 = top.getRelativePath("p1");
+								scope.p2 = top.getRelativePath("p2");
+								scope.p_overwrite = top.getRelativePath("p_overwrite");
+								scope.p_recursive = top.getRelativePath("p_recursive/sub");
+								scope.p_recursive2 = top.getRelativePath("p_recursive2/sub");
+
+								scope.top = top;
+							</script>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type"><a href="#types.pathname">Pathname</a></span>
+										or <span class="type"><a href="#types.directory">directory</a></span>
+										<span>
+											A location to which to copy this node. If the given location is a
+											<a href="#types.directory">directory</a>, the node will be copied into that directory
+											with this node's basename. If the given location is a
+											<a href="#types.Pathname">Pathname</a>,
+											the node will be copied to the
+											given <code>Pathname</code>.
+										</span>
+										<script type="application/x.jsapi#tests">
+											test(d1.getFile("f1") == null);
+											f1.copy(d1);
+											test(d1.getFile("f1") != null);
+
+											expectError(test, function() {
+												f1.copy(d2.pathname)
+											});
+
+											test(p1.file == null);
+											f1.copy(p1);
+											test(p1.file != null);
+
+											test(d1.getSubdirectory("d4") == null);
+											var d4_copy = d4.copy(d1);
+											test(d1.getSubdirectory("d4") != null);
+											test(d1.getFile("d4/f3") != null);
+											test(d1.getFile("d4/f3").read(String) == "f3");
+											test(d4_copy.getFile("f3") != null);
+											test(d4_copy.getFile("f3").read(String) == "f3");
+											test(d4_copy.getFile("d5/f4").read(String) == "f4");
+
+											test(d2.getSubdirectory("d4") == null);
+											var d4_copy2 = d4.copy(d2);
+											test(d2.getSubdirectory("d4") != null);
+											test(d2.getFile("d4/f3") != null);
+											test(d2.getFile("d4/f3").read(String) == "f3");
+											test(d4_copy2.getFile("f3") != null);
+											test(d4_copy2.getFile("f3").read(String) == "f3");
+											test(d4_copy2.getFile("d5/f4").read(String) == "f4");
+
+											test(p2.directory == null);
+											var d4_copy3 = d4.copy(p2);
+											test(p2.directory != null);
+											test(p2.directory.getFile("f3") != null);
+											test(p2.directory.getFile("f3").read(String) == "f3");
+											test(d4_copy3.getFile("f3") != null);
+											test(d4_copy3.getFile("f3").read(String) == "f3");
+											test(d4_copy3.getFile("d5/f4").read(String) == "f4");
+										</script>
+									</li>
+									<li class="object">
+										<span>
+											A mode argument with properties describing the operation of this method.
+										</span>
+										<span>(optional) An object whose properties specify the operation of this method.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value" jsapi:id="recursive">
+												<div class="name">recursive</div>
+												<span class="type">boolean</span>
+												<span>
+													If <code>true</code>, then if the parent directory or directories to which this
+													file would be copied do not exist, they will be created. Otherwise, if they do
+													not exist, an exception will be thrown.
+												</span>
+												<script type="application/x.jsapi#tests">
+													try {
+														f1.copy(p_recursive);
+														test(false);
+													} catch (e) {
+														test(true);
+													}
+													try {
+														var copied = f1.copy(p_recursive, { recursive: true });
+														test(true);
+														test(p_recursive.file.read(String) == "f1");
+														test(copied.read(String) == "f1");
+													} catch (e) {
+														test(false);
+													}
+
+													expectError(test, function() {
+														d4.copy(p_recursive2);
+													});
+													expectError(test, function() {
+														var to = d4.copy(p_recursive2, { recursive: true });
+														test(p_recursive2.directory.getFile("f3").read(String) == "f3");
+														test(to.getFile("f3").read(String) == "f3");
+													}, false);
+												</script>
+											</li>
+											<li class="function" jsapi:id="filter">
+												<div class="name">filter</div>
+												<span>
+													(optional)
+													A function that specifies which nodes to copy. For an ordinary
+													file, this function will be invoked once with the given file; for a directory,
+													it will be invoked for the directory and then recursively for its contents.
+													If omitted, an implementation will be supplied that copies all nodes unless
+													there is an existing node at the given location, in which case it will throw
+													an exception.
+												</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="object">
+															<span>
+																An argument with properties describing a node to copy.
+															</span>
+															<div class="label">has properties:</div>
+															<ul>
+																<li class="value">
+																	<div class="name">entry</div>
+																	<span class="type"><a href="#types.node.entry">node.entry</a></span>
+																	<span>
+																		The entry to copy, relative to the node on which the
+																		<code>copy()</code> method was invoked.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">exists</div>
+																	<span class="type"><a href="#types.node">node</a></span>
+																	<span>
+																		The node, if any, that already exists at the destination to
+																		which this node will be copied.
+																	</span>
+																</li>
+															</ul>
+														</li>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type">boolean</span>
+													<div>
+														If <code>true</code> is returned, then if this node is an ordinary file, it
+														will be copied, overwriting the file at the given location. If it is a
+														directory, then the directory will be created; if it already exists, no
+														action will be taken.
+													</div>
+													<div>
+														If <code>false</code> is returned, then for ordinary files; no action will
+														be taken. For directories, not only will no action be taken, but the
+														contents of the given directory will not be processed.
+													</div>
+												</div>
+												<script type="application/x.jsapi#tests">
+													var d_filter = top.getRelativePath("d_filter").createDirectory();
+													d_filter.getRelativePath("a").write("a", { append: false });
+													d_filter.getRelativePath("d/b").write("b", { append: false, recursive: true });
+													var d_filter2 = top.getRelativePath("d_filter2").createDirectory();
+													d_filter2.getRelativePath("a").write("a2", { append: false });
+													var p_filter = top.getRelativePath("p_filter");
+													var p_filter2 = top.getRelativePath("p_filter2");
+													var p_filter3 = top.getRelativePath("p_filter3");
+													var p_filter4 = top.getRelativePath("p_filter4");
+
+													f1.copy(p_overwrite);
+													expectError(test, function() {
+														f2.copy(p_overwrite);
+													});
+													test(p_overwrite.file.read(String) == "f1");
+
+													expectError(test, function() {
+														var copied = f2.copy(p_overwrite, { filter: f2.copy.filter.OVERWRITE });
+														test(p_overwrite.file.read(String) == "f2");
+														test(copied.read(String) == "f2");
+													}, false);
+
+													//	Implement for directories
+													//	TODO	definition should be consolidated with list() if possible
+													var copied = d_filter.copy(p_filter);
+													test(copied.getFile("a") != null);
+													test(copied.getFile("a").read(String) == "a");
+													test(copied.getFile("d/b") != null);
+													test(copied.getFile("d/b").read(String) == "b");
+
+													var filtered2 = d_filter.copy(p_filter2, {
+														filter: function(p) {
+															if (p.entry.path == "") return true;
+															if (p.entry.path == ("d" + filesystem.$unit.getPathnameSeparator())) return true;
+														}
+													});
+													test(filtered2.getFile("a") == null);
+													test(filtered2.getSubdirectory("d") != null);
+													test(filtered2.getFile("d/b") == null);
+
+													var filtered3 = d_filter.copy(p_filter3, {
+														filter: function(p) {
+															if (p.entry.path == "") return true;
+															if (p.entry.path == "a") return true;
+														}
+													});
+													test(filtered3.getFile("a") != null);
+													test(filtered3.getSubdirectory("d") == null);
+													test(filtered3.getFile("d/b") == null);
+
+													var filtered4 = d_filter.copy(p_filter4, {
+														filter: function(p) {
+															if (p.entry.path == "") return true;
+															if (p.entry.path == "d/b") return true;
+														}
+													});
+													test(filtered4.getFile("a") == null);
+													test(filtered4.getSubdirectory("d") == null);
+													test(filtered4.getFile("d/b") == null);
+
+													var filtered5 = d_filter2.copy(p_filter, {
+														filter: function(p) {
+															if (p.entry.path == "") return true;
+															if (p.exists) return false;
+															return true;
+														}
+													});
+													test(filtered5.getFile("a").read(String) == "a");
+
+													var filtered6 = d_filter2.copy(p_filter, {
+														filter: function(p) {
+															return true;
+														}
+													});
+													test(filtered6.getFile("a").read(String) == "a2");
+												</script>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.node">node</a></span>
+								<span>The node created by this copy.</span>
+							</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="object">
+									<div class="name">filter</div>
+									<span>
+										An object whose properties supply implementations suitable for use as the
+										<code>filter</code> property of the mode argument of <code>copy</code>.
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">OVERWRITE</div>
+											<span class="type">function suitable for use as value for <code>filter</code></span>
+											<span>Implementation that always overwrites the given files and directories.</span>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</li>
 					</ul>
 				</div>
 				<div class="type">
@@ -545,7 +981,7 @@ END LICENSE
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="value">
-										<span>
+										<div>
 											An argument specifying how the caller wants to read the file. The following arguments
 											are allowed. If the argument is:
 											<ul>
@@ -568,7 +1004,7 @@ END LICENSE
 													file into an <code>XMLList</code> and return it.
 												</li>
 											</ul>
-										</span>
+										</div>
 									</li>
 								</ol>
 							</div>
@@ -636,7 +1072,7 @@ END LICENSE
 								</span>
 							</div>
 						</li>
-						<li class="function" jsapi:id="directory.list">
+						<li class="function" jsapi:id="list">
 							<div class="name">list</div>
 							<div class="arguments">
 								<div class="label">Arguments</div>
@@ -816,6 +1252,10 @@ END LICENSE
 									return entry.path == ["e","f"].join(filesystem.$unit.getPathnameSeparator());
 								} );
 								test(entryf.length == 1);
+								var entrye = entries.filter( function(entry) {
+									return entry.path == "e" + filesystem.$unit.getPathnameSeparator();
+								} );
+								test(entrye.length == 1);
 								entryf = entryf[0];
 								test(entryf.node.pathname.basename == "f");
 
@@ -965,47 +1405,6 @@ END LICENSE
 						}
 					} );
 				</script>
-			</li>
-			<li class="value">
-				<div class="name">workingDirectory</div>
-				<span class="type"><a href="#types.directory">directory</a></span>
-				<span>
-					The current working directory, if the context allowed it to be determined.
-				</span>
-			</li>
-			<li class="object">
-				<div class="name">java</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">adapt</div>
-						<span>Converts a native Java object to a corresponding type from this package.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">JavaClass java.io.InputStream</span>
-									or
-									<span class="type">JavaClass java.io.OutputStream</span>
-									<span>A native Java object to convert.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.binput">byte input stream</a></span>,
-							if the argument was a native Java <code>java.io.InputStream</code>,
-							or
-							<span class="type"><a href="#types.boutput">byte output stream</a></span>, if the
-							argument was a native Java <code>java.io.OutputStream</code>.
-						</div>
-						<script type="application/x.jsapi#tests">
-							var $out = new Packages.java.io.ByteArrayOutputStream();
-							var out = context.$Context.api.io.java.adapt($out);
-							test(out != null);
-						</script>
-					</li>
-				</ul>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#tests"><![CDATA[

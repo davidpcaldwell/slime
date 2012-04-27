@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -188,6 +188,17 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		this.rhinoClasspath = new Searchpath([ rhinoCopiedTo ]);
 		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
 		this.scriptClasspath = libraries;
+
+		var cygwin = ClassLoader.getSystemResourceAsStream("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe");
+		if (cygwin != null && platform.cygwin) {
+			debug("Copying Cygwin paths helper ...");
+			var cygwinTo = tmpdir.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").writeTo();
+			platform.io.copyStream(cygwin,cygwinTo);
+			cygwin.close();
+			cygwinTo.close();
+			debug("Copied Cygwin paths helper to " + tmpdir);
+			this.JSH_LIBRARY_NATIVE = tmpdir;
+		}
 	}
 }
 
@@ -210,14 +221,28 @@ if (getProperty("jsh.launcher.home")) {
 }
 
 settings.explicit = new function() {
-	this.shellClasspath = (env.JSH_SHELL_CLASSPATH) ? new Searchpath(os(env.JSH_SHELL_CLASSPATH,true)) : UNDEFINED;
+	var shellClasspath = (function() {
+		if (!env.JSH_SHELL_CLASSPATH) return UNDEFINED;
+		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
+		if (!settings.packaged) return specified;
+		//	if we are running in a packaged application, we set the loader shell classpath to the specified value plus the package
+		//	file location. If the user-specified JSH_SHELL_CLASSPATH contains other classes contained in the package file,
+		//	those classes will preferentially be used to those in the package.
+		//	TODO	More thinking required about this. The analogous problem exists for unpackaged applications as well.
+		return specified.append(settings.packaged.shellClasspath);
+	})();
+	if (shellClasspath) {
+		this.shellClasspath = shellClasspath;
+	}
 
 	this.scriptClasspath = (env.JSH_SCRIPT_CLASSPATH) ? new Searchpath(os(env.JSH_SCRIPT_CLASSPATH,true)).elements : UNDEFINED;
 
 	var self = this;
 	[
-		"JSH_LIBRARY_MODULES","JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH","JSH_TMPDIR",
-		"JSH_LIBRARY_NATIVE"
+		"JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH",
+		"JSH_LIBRARY_MODULES",
+		"JSH_LIBRARY_NATIVE",
+		"JSH_TMPDIR"
 	].forEach( function(name) {
 		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
 	});
@@ -412,7 +437,7 @@ try {
 		command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
 		//	TODO	check for existence of the executable?
 		if (!settings.get("JSH_LIBRARY_NATIVE")) {
-			console("WARNING: could not start Cygwin paths helper; could not find Cygwin native library path.");
+			console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
 			console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
 		} else {
 			command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
@@ -433,6 +458,11 @@ try {
 	}
 
 	command.add("-classpath");
+	var shellClasspath = settings.get("shellClasspath");
+	if (!shellClasspath) {
+		console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
+		exit(1);
+	}
 	command.add(
 		settings.get("rhinoClasspath")
 		.append(settings.get("shellClasspath"))

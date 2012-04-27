@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Browser slime loader</title>
 </head>
@@ -35,32 +36,12 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li>
-							<span>
-								An argument indicating where the module can be found. It can take one of two forms: a
-								<code>string</code> path to the module's base (or to its main file), or an object with properties.
-							</span>
 							<div class="value">
 								<span class="type">string</span>
 								<span>
 									The path of the module's main file. Other files the main file may load will be loaded from the
 									base location of the main file.
 								</span>
-							</div>
-							OR
-							<div class="object">
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">base</div>
-										<span class="type">string</span>
-										<span>The base path from which to load files associated with the module.</span>
-									</li>
-									<li class="value">
-										<div class="name">main</div>
-										<span class="type">string</span>
-										<span>(optional) The location of the module's main file.</span>
-									</li>
-								</ul>
 							</div>
 						</li>
 						<li class="object">

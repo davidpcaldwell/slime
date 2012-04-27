@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Rhino Input/Output</title>
 </head>
@@ -42,8 +43,10 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var java = $jsapi.module("rhino/host/", {
-					classLoader: $host.getClassLoader()
+				var java = $jsapi.module("../../rhino/host/", {
+					loadClass: function(name) {
+						return $host.getLoader().getJavaClass(name)
+					}
 				});
 				if (!java) throw new Error("Not found: rhino/host/");
 
@@ -356,6 +359,42 @@ END LICENSE
 							<a href="#types.coutput">character output stream</a>
 						</span>
 						<span>The standard error stream.</span>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">adapt</div>
+						<span>Converts a native Java object to a corresponding type from this package.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">JavaClass java.io.InputStream,</span>
+									<span class="type">JavaClass java.io.Reader,</span>
+									<span class="type">JavaClass java.io.OutputStream,</span>
+									or
+									<span class="type">JavaClass java.io.Writer</span>
+									<span>A native Java object to convert.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.binput">byte input stream</a></span>,
+							if the argument was a native Java <code>java.io.InputStream</code>,
+							or
+							<span class="type"><a href="#types.boutput">byte output stream</a></span>, if the
+							argument was a native Java <code>java.io.OutputStream</code>.
+						</div>
+						<script type="application/x.jsapi#tests">
+							var $out = new Packages.java.io.ByteArrayOutputStream();
+							var out = module.java.adapt($out);
+							test(out != null);
+						</script>
 					</li>
 				</ul>
 			</li>

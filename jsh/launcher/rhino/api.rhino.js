@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -173,61 +173,4 @@ var createTemporaryDirectory = function() {
 	} else {
 		throw "Could not create temporary file.";
 	}
-}
-
-var zip = function(from,to,filters) {
-	if (!filters) filters = [];
-	var zstream = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(to));
-
-	var directories = {};
-
-	var createDirectory = function(path) {
-		if (path.length == 0) return;
-		var tokens = path.split("/");
-		for (var i=1; i<tokens.length; i++) {
-			var partial = tokens.slice(0,i).join("/");
-			if (!directories[partial]) {
-				var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
-				zstream.putNextEntry(entry);
-				zstream.closeEntry();
-				directories[partial] = true;
-			}
-		}
-	}
-
-	var process = function(file,prefix,filters) {
-		for (var i=0; i<filters.length; i++) {
-			if (filters[i].accept(file)) {
-				filters[i].process(file,prefix);
-				return;
-			}
-		}
-
-		var nextPrefix = function() {
-			if (prefix == "") return "";
-			return prefix + "/";
-		}
-
-		if (file.isDirectory()) {
-			createDirectory(prefix);
-			var files = file.listFiles();
-			for (var i=0; i<files.length; i++) {
-				process(files[i],nextPrefix()+file.getName(),filters);
-			}
-		} else {
-			createDirectory(prefix);
-			var entry = new Packages.java.util.zip.ZipEntry(nextPrefix()+file.getName());
-			zstream.putNextEntry(entry);
-			var i = new Packages.java.io.FileInputStream(file);
-			platform.io.copyStream(i,zstream);
-			i.close();
-			zstream.closeEntry();
-		}
-	}
-
-	var top = from.listFiles();
-	for (var i=0; i<top.length; i++) {
-		process(top[i],"",filters);
-	}
-	zstream.close();
 }

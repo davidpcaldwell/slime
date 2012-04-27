@@ -1,25 +1,26 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the rhino/host SLIME module.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	replace 'warning' with standard tools like $api.deprecate
 var warning = ($context.warning) ? $context.warning : function(s) {
 	debugger;
 	Packages.java.lang.System.err.println("rhino/host WARNING: " + s);
 };
 
 var items = $loader.file("java.js", {
-	classLoader: $context.classLoader,
+	//	TODO	replace 'warning' with standard tools like $api.deprecate
 	warning: (function() {
 		if ($context.warning) return $context.warning;
 		return function(message) {
@@ -165,12 +166,15 @@ var getJavaClassName = function(javaclass) {
 }
 
 var $isJavaType = function(javaclass,object) {
-	var getNamedJavaClass = function(className) {
-		var classLoader = ($context.classLoader) ? $context.classLoader : Packages.java.lang.Class.forName("java.lang.Object").getClassLoader();
-		if (classLoader) {
-			return classLoader.loadClass(className);
+	var getNamedJavaClass = function(name) {
+		if ($context.loadClass) {
+			return $context.loadClass(name);
 		} else {
-			return Packages.java.lang.Class.forName(className);
+			if (Packages.java.lang.Class.forName("java.lang.Object").getClassLoader()) {
+				return Packages.java.lang.Class.forName("java.lang.Object").getClassLoader().loadClass(name);
+			} else {
+				return Packages.java.lang.Class.forName(name);
+			}
 		}
 	};
 

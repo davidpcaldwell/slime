@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>jsh loader</title>
 </head>
@@ -28,11 +29,68 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.code">code</a>
+			<span>A type that can be processed by the <code>run</code> and <code>file</code> methods.</span>
+			<div>
+				<span class="type"><a href="../../rhino/file/api.html#types.Pathname">rhino/file Pathname</a></span>
+				<strong>-or-</strong>
+				<span>Any type supported by the rhino loader.</span>
+			</div>
+		</div>
 		<ul>
-			<li class="function">
-				<div class="name">module</div>
-				<span jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description')">Invokes the Rhino loader's <code>module</code> method.</span>
-				<div jsapi:reference="doc['loader/']..*.(@jsapi::id == 'module').*.(@jsapi::id == 'description2')"></div>
+			<li class="function" jsapi:id="run">
+				<div class="name"><a id="exports.run">run</a></div>
+				<span jsapi:reference="getApi('../../loader/rhino/').getElement('run/description')">__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="#types.code">code</a></span>
+							<span>The code to execute.</span>
+						</li>
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/rhino/').getElement('run/arguments[1]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value" jsapi:id="arguments[2]" jsapi:reference="getApi('../../loader/rhino/').getElement('run/arguments[2]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name"><a id="exports.file">file</a></div>
+				<span jsapi:reference="getApi('../../loader/rhino/').getElement('file/description')">__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="#types.code">code</a></span>
+							<span>The code to execute.</span>
+						</li>
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/rhino/').getElement('file/arguments[1]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/rhino/').getElement('file/returns')">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="function" jsapi:id="module">
+				<div class="name"><a id="exports.module">module</a></div>
+				<span jsapi:reference="getApi('../../loader/rhino').getElement('module/description')">
+					Invokes the Rhino loader's <code>module</code> method.
+				</span>
+				<div jsapi:reference="getApi('../../loader/rhino').getElement('module/description2')"></div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -45,37 +103,23 @@ END LICENSE
 								directory in which the file is located.
 							</span>
 						</li>
-						<li class="value">
+						<li class="value" jsapi:id="arguments[1]">
 							<span class="type">object</span>
-							<span>(optional) The object to use as the <code>$context</code> object for this module.</span>
+							<!--	TODO	what if this is omitted? Does the module receive null context, or empty?	-->
+							<span>
+								(optional) The object to use as the <code>$context</code> object for this module; if not
+								specified, an empty object will be supplied.
+							</span>
 						</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'module')..*.(@jsapi::id == 'returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/rhino').getElement('module/returns')">
 					<!--
 						TODO	Document that this method returns null if the module cannot be found, and check whether that is also
 								true of the Rhino loader's module()
 					-->
 					<div class="label">Returns</div>
 					<span>The return value of the Rhino loader's <code>module</code> method.</span>
-				</div>
-			</li>
-			<li class="function">
-				<div class="name">script</div>
-				<span jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'script').*.(@jsapi::id == 'description')">Invokes the Rhino loader's <code>script</code> method.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">jsh.file.Pathname</span>
-							<span>The <code>jsh.file.Pathname</code> at which the script is located.</span>
-						</li>
-						<li jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'arguments[1]')">The second argument to the Rhino loader's <code>script</code> method.</li>
-					</ol>
-				</div>
-				<div class="returns" jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'script')..*.(@jsapi::id == 'returns')">
-					<div class="label">Returns</div>
-					<span>The return value of the Rhino loader's <code>script</code> method.</span>
 				</div>
 			</li>
 			<li class="function" jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'namespace')">

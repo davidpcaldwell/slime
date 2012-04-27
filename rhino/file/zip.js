@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the rhino/file SLIME module.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -21,7 +21,7 @@ $exports.zip = function(p) {
 	} else if (p.from instanceof $context.Pathname && p.from.directory) {
 		//	TODO	Should really allow p.from to *be* a directory
 		from = p.from.directory.list({ recursive: true, type: p.from.directory.list.ENTRY }).map( function(item) {
-			if (item.node.directory) return { directory: item.path.substring(0,item.path.length-1) };
+			if (item.node.directory) return { directory: item.path.substring(0,item.path.length-1).replace(/\\/g, "/") };
 			return {
 				path: item.path.replace(/\\/g, "/"),
 				$stream: item.node.read($context.Streams.binary).java.adapt()
@@ -112,7 +112,14 @@ $exports.zip = function(p) {
 }
 
 $exports.unzip = function(p) {
-	var _zipstream = new Packages.java.util.zip.ZipInputStream(p.zip.read($context.Streams.binary).$getInputStream());
+	var _zipstream = (function() {
+		if (p.zip.read) {
+			return new Packages.java.util.zip.ZipInputStream(p.zip.read($context.Streams.binary).$getInputStream());
+		} else if (p.zip.java && p.zip.java.adapt) {
+			//	Assume stream, which is a terrible API; should check to see peer is java.io.InputStream but being lazy
+			return new Packages.java.util.zip.ZipInputStream(p.zip.java.adapt());
+		}
+	})();
 	var entry;
 	while( (entry = _zipstream.getNextEntry()) != null ) {
 		var name = String(entry.getName());

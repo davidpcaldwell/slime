@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>jsh.script</title>
 	<style type="text/css">
@@ -26,6 +27,92 @@ END LICENSE
 <body>
 	<script type="application/x.jsapi#initialize">
 	</script>
+	<div class="type">
+		<a class="type" name="types.Loader">Loader</a>
+		<span>An object that can load code from logical paths denoted by strings.</span>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="function">
+				<div class="name">run</div>
+				<span>
+					Analogous to the jsh.loader method of the same name; see
+					<code><a href="../../jsh/loader/api.html#exports.run">jsh.loader.run</a></code> for details.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A logical path to a code file to run.</span>
+						</li>
+						<li class="value" jsapi:reference="getApi('../../jsh/loader/').getElement('run/arguments[1]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value" jsapi:reference="getApi('../../jsh/loader/').getElement('run/arguments[2]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">file</div>
+				<span>
+					Analogous to the jsh.loader method of the same name; see
+					<code><a href="../../jsh/loader/api.html#exports.file">jsh.loader.file</a></code> for details.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A logical path to a code file to run.</span>
+						</li>
+						<li class="value" jsapi:reference="getApi('../../jsh/loader/api.html').getElement('file/arguments[1]')">
+							The second argument to the Rhino loader
+							<a href="../../jsh/loader/api.html#exports.file">file</a> method.
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:reference="getApi('../../jsh/loader/').getElement('file/returns')">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">module</div>
+				<span>
+					Analogous to the jsh.loader method of the same name; see
+					<code><a href="../../jsh/loader/api.html#exports.module">jsh.loader.module</a></code> for details.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A logical path to a module to load.</span>
+						</li>
+						<li class="value" jsapi:reference="getApi('../../jsh/loader/').getElement('module/arguments[1]')">
+							<div class="name">__NAME__</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:reference="getApi('../../jsh/loader/').getElement('module/returns')">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+		</ul>
+	</div>
 	<div>
 		<h1>Context</h1>
 		<ul>
@@ -34,49 +121,79 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
-						<div class="name">java</div>
-						<span>The rhino/host module.</span>
-					</li>
-					<li class="value">
 						<div class="name">file</div>
 						<span>The rhino/file module.</span>
+					</li>
+					<li class="function">
+						<div class="name">addClasses</div>
+						<span>Adds a file to the classpath of this script.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">jsh.file Pathname</span>
+									<span>A file to add to the classpath (either a directory or a .jar file)</span>
+								</li>
+							</ol>
+						</div>
 					</li>
 				</ul>
 			</li>
 			<li class="value">
-				<div class="name">$script</div>
-				<span class="type">JavaClass java.io.File</span>
-				<span>The <code>java.io.File</code> object representing the main script file this shell is running.</span>
+				<div class="name">script</div>
+				<span class="type">rhino/file file</span>
+				<span>The object representing the main script file this shell is running.</span>
 			</li>
 			<li class="value">
-				<div class="name">$arguments</div>
-				<span class="type">JavaClass java.lang.String[]</span>
+				<div class="name">packaged</div>
+				<span class="type">rhino/file file</span>
+				<span>The object representing the package file this shell is running.</span>
+			</li>
+			<li class="value">
+				<div class="name">arguments</div>
+				<span class="type">Array of string</span>
 				<span>The arguments passed to the script.</span>
 			</li>
-			<li class="function">
-				<div class="name">addClasses</div>
-				<span>Adds a file to the classpath of this script.</span>
+			<li class="constructor">
+				<!--	TODO	modularize; get this description from the export property below	-->
+				<div class="name">Loader</div>
+				<span>__DESCRIPTION__</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">jsh.file Pathname</span>
-							<span>A file to add to the classpath (either a directory or a .jar file)</span>
+							<span class="type"><a href="../../rhino/file/api.html#types.directory">rhino/file directory</a></span>
+							<span>The base directory for this loader.</span>
 						</li>
 					</ol>
 				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Loader">Loader</a></span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="value">
+				<div class="name">loader</div>
+				<span class="type"><a href="#types.Loader">Loader</a></span>
+				<span>
+					(optional)
+					An object that can load code from the currently running package file, if the current script is packaged.
+				</span>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#context">
 			(function() {
-				var host = $jsapi.module("rhino/host/", {
-					classLoader: $host.getClassLoader()
+				var host = $jsapi.module("../../rhino/host/", {
+					loadClass: function(name) {
+						return $host.getLoader().getJavaClass(name)
+					}
 				});
 				var context = {
 					api: {
-						js: $jsapi.module("js/object/"),
+						js: $jsapi.module("../../js/object/"),
 						java: host,
-						io: $jsapi.module("rhino/io/", {
+						io: $jsapi.module("../../rhino/io/", {
 							$java: new Packages.inonit.script.runtime.io.Streams(),
 							api: {
 								java: host
@@ -94,24 +211,22 @@ END LICENSE
 						context.cygwin.paths = String(System.getProperty("cygwin.paths"));
 					}
 				};
-				var file = $jsapi.module("rhino/file/", context);
+				var file = $jsapi.module("../../rhino/file/", context);
 				var $filesystem = file.filesystem;
 				var FILE = file;
 				return new function() {
 					this.api = new function() {
-						this.java = $jsapi.module("rhino/host/");
 						this.file = file;
 						this.addClasses = jsh.loader.addClasses;
 					};
 
-					this.$script = jsh.script.pathname.java.adapt();
-					this.$arguments = function() {
-						var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,3);
-						rv[0] = "a";
-						rv[1] = "bb";
-						rv[2] = "C";
-						return rv;
-					}();
+					this.script = jsh.script.file;
+					this.arguments = ["a","bb","C"];
+
+					this.Loader = jsh.script.Loader;
+					//	loader
+
+					//	TODO	what are the next two for?
 					this.$filesystem = $filesystem;
 					this.FILE = file;
 				}
@@ -122,56 +237,58 @@ END LICENSE
 		<h1>Exports</h1>
 		<ul>
 			<li class="value">
-				<div class="name">pathname</div>
-				<span class="type">jsh.file Pathname</span>
-				<span>The path of the main script.</span>
+				<div class="name">file</div>
+				<span class="type">jsh.file file</span>
+				<span>
+					The object representing the main file being executed.
+					In the case of an ordinary script, this is the script that was launched.
+					In the case of a packaged script, it is the package file.
+				</span>
 			</li>
 			<li class="value">
-				<div class="name">file</div>
-				<span class="type">jsh.file File</span>
-				<span>The object representing the main script's file itself.</span>
+				<div class="name">script</div>
+				<span class="type">jsh.file file</span>
+				<span>
+					(optional)
+					The object representing the script being executed. In the case of a packaged script, this value will be absent
+					as the script is embedded in the package file itself.
+				</span>
 			</li>
 			<li class="value">
 				<div class="name">arguments</div>
 				<span class="type">Array of string</span>
 				<span>An array containing the arguments passed to the shell.</span>
 			</li>
-			<li class="function">
-				<div class="name">getRelativePath</div>
-				<span>Returns a pathname calculated relative to the path of the main script.</span>
+			<li class="constructor">
+				<div class="name"><a id="exports.Loader">Loader</a></div>
+				<span>A constructor that can be used by scripts to create <a href="#types.Loader">Loader</a>s.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">string</span>
-							<span>A relative path.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">jsh.file Pathname</span>
-					<span>
-						A path relative to the main script.  A convenience method for
-						<code>file.getRelativePath(...)</code>
-					</span>
-				</div>
-			</li>
-			<li class="function">
-				<div class="name">addClasses</div>
-				<span>Adds a <code>jsh.file.Pathname</code> to the script classpath.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">jsh.file.Pathname</span>
+							<span class="type"><a href="../../rhino/file/api.html#types.directory">rhino/file directory</a></span>
 							<span>
-								A pathname to add to the classpath. An error will be thrown if no file or directory is found
-								at the given pathname.
+								A base directory. Paths within this loader will be resolved as pathnames relative to this
+								directory.
 							</span>
 						</li>
 					</ol>
 				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Loader">Loader</a></span>
+					<span>An object that loads code from the files and subdirectories of the given directory.</span>
+				</div>
+			</li>
+			<li class="value">
+				<div class="name">loader</div>
+				<span class="type"><a href="#types.Loader">Loader</a></span>
+				<span>
+					An object that can be used to load code associated with this script. For packaged scripts, this object loads
+					modules and files packaged with the script using the packaging tool. For unpackaged scripts, this object loads
+					modules and files relative to the directory from which the script was run (although a script can replace this
+					property; see <code><a href="#exports.Loader">Loader</a></code>).
+				</span>
 			</li>
 			<li class="function">
 				<div class="name">getopts</div>

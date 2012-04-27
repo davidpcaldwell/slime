@@ -188,12 +188,14 @@ END LICENSE
 					var location = (function() {
 						if (module.substring(module.length-1) == "/") {
 							return {
-								base: module
+								base: module,
+								path: module
 							};
 						} else {
 							return {
 								base: module.split("/").slice(0,-1).join("/") + "/",
-								main: module.split("/").slice(-1)
+								main: module.split("/").slice(-1),
+								path: module
 							};
 						}
 					})();
@@ -220,7 +222,7 @@ END LICENSE
 							this.$jsapi = new function() {
 								this.module = function(path,context) {
 									return inonit.loader.module(
-										{ base: module + self.top + path },
+										module + self.top + path,
 										context
 									);
 								}
@@ -373,7 +375,7 @@ END LICENSE
 						for (var i=0; i<contexts.length; i++) {
 							try {
 								var object = inonit.loader.module(
-									location,
+									location.path,
 									contexts[i]
 								);
 								scope.module = object;

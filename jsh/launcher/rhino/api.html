@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>jsh Launcher</title>
 </head>
@@ -55,6 +56,88 @@ END LICENSE
 		<p>
 			Also used by jsh/etc/build.rhino.js
 		</p>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="object">
+				<div class="name">platform</div>
+				<span>Describes the underlying platform.</span>
+				<p>
+					Determines platform by attempting to run <code>uname</code>. If found, assumes underlying system is UNIX.
+					Evaluates value to detect Cygwin by matching on the first six characters of the output.
+				</p>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">unix</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">uname</div>
+								<span class="type">string</span>
+								<span>The output returned by <code>uname</code>.</span>
+							</li>
+						</ul>
+					</li>
+					<li class="object">
+						<div class="name">cygwin</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">realpath</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+							<li class="object">
+								<div class="name">cygpath</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">unix</div>
+										<span>__DESCRIPTION__</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+									<li class="function">
+										<div class="name">windows</div>
+										<span>__DESCRIPTION__</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+		</ul>
 		<h2>jsh.rhino.js (and api.rhino.js)</h2>
 		<div>
 			Required in classpath: rhino/system/java
@@ -104,7 +187,8 @@ END LICENSE
 						PATH: Is used to locate the target script if only a file name is supplied.
 					</li>
 					<li>
-						JSH_JVM_OPTIONS: If present, is used as space-delimited set of options to supply to the jsh loader.
+						JSH_JVM_OPTIONS: If present, is used as space-delimited set of options to supply to the Java virtual machine
+						running the jsh loader.
 					</li>
 					<li>
 						JSH_JAVA_DEBUGGER: If present, the JVM process executing the jsh loader main class is run in a debugger.
@@ -132,9 +216,9 @@ END LICENSE
 						using environment variables).
 					</li>
 					<li>
-						<code>jsh.launcher.classpath</code>: classpath from which jsh launcher was loaded, to pass to loader.
+						<code>jsh.launcher.classpath</code>: classpath from which jsh launcher was loaded, made available to loader.
 					</li>
-					<li><code>jsh.launcher.rhino.script</code>: location of jsh.rhino.js, to pass to loader.</li>
+					<li><code>jsh.launcher.rhino.script</code>: location of jsh.rhino.js, made available to loader.</li>
 				</ul>
 			</div>
 			<div>

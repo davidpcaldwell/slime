@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -21,6 +21,7 @@ var parameters = jsh.shell.getopts({
 		notest: false,
 		classpath: jsh.shell.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.shell.getopts.ARRAY( String ),
+		base: jsh.file.Pathname,
 		module: jsh.shell.getopts.ARRAY( String ),
 		test: jsh.shell.getopts.ARRAY( String )
 	}
@@ -34,10 +35,23 @@ if (!parameters.options.jsapi) {
 	jsh.shell.exit(1);
 }
 
+if (!parameters.options.base) {
+	jsh.shell.echo("Missing: -base");
+	jsh.shell.exit(1);
+} else if (!parameters.options.base.directory) {
+	jsh.shell.echo("Not a directory: -base " + parameters.options.base);
+	jsh.shell.exit(1);
+}
+
 var modules = parameters.options.module.map( function(string) {
-	var match = /^(.*)\@(.*)\=(.*)$/.exec(string);
-	if (match == null) throw "No match: " + string;
-	var rv = { path: match[2], location: jsh.file.Pathname(match[3]) };
+	var match = /^(.*)\@(.*)$/.exec(string);
+	if (match == null) throw new Error("No match: " + string);
+	//	TODO	some redundancy below which made adapting jsapi.js easier for now
+	var rv = {
+		base: parameters.options.base.directory,
+		path: match[2],
+		location: parameters.options.base.directory.getRelativePath(match[2])
+	};
 	if (match[1]) rv.namespace = match[1];
 	return rv;
 } );
@@ -76,9 +90,13 @@ var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 
 		this.run = function(code,scope) {
 			if (typeof(code) == "string") {
+				//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
+				//			properties. This code, after being moved to jsh loader, can then invoke rhino loader with name/_in
+				//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
+				//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
 				code = {
 					name: "<eval>:" + String(++seq),
-					$in: (function() {
+					_in: (function() {
 						var out = new Packages.java.io.ByteArrayOutputStream();
 						var writer = new Packages.java.io.OutputStreamWriter(out);
 						writer.write(code);
@@ -151,7 +169,7 @@ if (!parameters.options.notest) {
 if (parameters.options.doc) {
 	var list = [];
 	modules.forEach( function(item) {
-		list.push({ ns: item.namespace, path: item.path, location: item.location });
+		list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
 	} );
 	jsapi.doc(list,parameters.options.doc);
 }

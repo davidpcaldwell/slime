@@ -1,55 +1,41 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the rhino/file SLIME module.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
 var defined = $context.defined;
-var defaults = $context.defaults;
 var constant = $context.constant;
-var deprecate = $context.deprecate;
 var fail = $context.fail;
-var warning = $context.warning;
 
 var Pathname = function(parameters) {
-	if (this.constructor != arguments.callee) {
-		//	not called as constructor but as function
-		//	perform a "cast"
-		if (typeof(parameters) == "string") {
-			return defaults.filesystem.Pathname(parameters);
-		} else if (typeof(parameters) == "object" && parameters instanceof String) {
-			return defaults.filesystem.Pathname(parameters.toString());
-		} else {
-			fail("Illegal argument to Pathname(): " + parameters);
-		}
-	}
-
 	if (!parameters) {
 		fail("Missing argument to new Pathname()");
 	}
 
-	if (parameters.$filesystem) warning("DEPRECATED: new Pathname() parameter '$filesystem'");
-	var $filesystem = defined(parameters.filesystem,parameters.$filesystem,defaults.filesystem);
+	$api.deprecate(parameters,"$filesystem");
+	$api.deprecate(parameters,"$path");
+	$api.deprecate(parameters,"$peer");
+	$api.deprecate(parameters,"path");
+
+	var $filesystem = defined(parameters.filesystem,parameters.$filesystem);
 	if (!$filesystem.peerToString) fail("Internal error; Pathname constructed incorrectly: " + parameters.toSource());
 
 	var peer = (function() {
-		if (parameters.$path) warning("DEPRECATED: new Pathname() parameter '$path'");
-		if (parameters.$peer) warning("DEPRECATED: new Pathname() parameter '$peer'");
-		if (parameters.path) warning("DEPRECATED: new Pathname() parameter 'path'");
+		var peer = defined(parameters.peer,parameters.$peer);
+		if (peer) return peer;
 		var path = defined(parameters.path,parameters.$path);
 		//	TODO	below line appears to invoke nonexistent method
 		if (path) return $filesystem.getPeer(path);
-		var peer = defined(parameters.peer,parameters.$peer);
-		if (peer) return peer;
 		if (parameters.toSource) {
 			fail("Missing new Pathname() arguments: " + parameters.toSource());
 		} else {
@@ -84,6 +70,9 @@ var Pathname = function(parameters) {
 	this.__defineGetter__("parent", getParent);
 
 	var getFile = function() {
+		if (arguments.length > 0) {
+			throw new RangeError("No arguments expected to Pathname.getFile");
+		}
 		if (!$filesystem.exists(peer)) return null;
 		if ($filesystem.isDirectory(peer)) return null;
 		return new File(this,peer);
@@ -102,13 +91,13 @@ var Pathname = function(parameters) {
 		if (!mode) mode = {};
 
 		var prepareWrite = function(mode) {
+			$api.deprecate(mode,"overwrite");
 			//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
 			//			create it, but not one where we are willing to create its directory but not parent directories.  Is that OK?
 			if ($filesystem.exists(peer)) {
 				var append = mode.append;
 				if (typeof(append) == "undefined") {
 					if (mode.overwrite) {
-						warning("DEPRECATED: writeXXX() mode property overwrite; use mode property append");
 						append = false;
 					}
 				}
@@ -189,6 +178,12 @@ var Pathname = function(parameters) {
 
 		this.adapt = function() {
 			return peer.getHostFile();
+		}
+
+		if (peer.invalidate) {
+			this.invalidate = function() {
+				peer.invalidate();
+			}
 		}
 	}
 
@@ -285,6 +280,34 @@ var Pathname = function(parameters) {
 			$filesystem.remove(peer);
 		}
 
+		this.move = function(toPathname,mode) {
+			if (!mode) mode = {};
+			if (toPathname.file || toPathname.directory) {
+				if (mode.overwrite) {
+					if (toPathname.file) {
+						toPathname.file.remove();
+					} else {
+						toPathname.directory.remove();
+					}
+				} else {
+					throw new Error("Cannot move " + this + " to " + toPathname + "; " + toPathname + " already exists.");
+				}
+			}
+			if (!toPathname.parent.directory) {
+				if (mode.recursive) {
+					toPathname.parent.createDirectory({ recursive: true });
+				}
+			}
+			$filesystem.move(peer,toPathname);
+			if (toPathname.file) {
+				return toPathname.file;
+			} else if (toPathname.directory) {
+				return toPathname.directory;
+			} else {
+				throw new Error("Unreachable: moving node that is neither file nor directory.");
+			}
+		}
+
 		this.getPathname = getPathname;
 		$api.deprecate(this, "getPathname");
 		this.getParent = getParent;
@@ -293,6 +316,92 @@ var Pathname = function(parameters) {
 		this.getLastModified = getLastModified;
 		$api.deprecate(this, "getLastModified");
 		$api.deprecate(this, "setLastModified");
+
+		this.copy = function(target,mode) {
+			var to = (function() {
+				if (target.pathname && $context.isPathname(target.pathname)) {
+					//	Assume target is itself a directory
+					if (target.pathname.directory) {
+						return target.pathname.directory.getRelativePath(pathname.basename);
+					} else {
+						throw new Error();
+					}
+				} else if ($context.isPathname(target)) {
+					return target;
+				} else {
+					throw new Error();
+				}
+			})();
+			if (!mode) mode = {};
+			if (!to.parent.directory) {
+				if (mode.recursive) {
+					to.parent.createDirectory({ recursive: true });
+				} else {
+					throw new Error();
+				}
+			}
+
+			var filter = (mode.filter) ? mode.filter : function(p) {
+				if (p.exists) throw new Error(
+					"Cannot copy " + p.entry.node
+					+ "; node already exists at " + p.exists.pathname.toString()
+				);
+				return true;
+			};
+
+			var getNode = function(pathname) {
+				if (pathname.file) return pathname.file;
+				if (pathname.directory) return pathname.directory;
+			}
+
+			var processFile = function(path,file,topathname) {
+				var b = filter({
+					entry: {
+						path: path,
+						node: file
+					},
+					exists: getNode(topathname)
+				});
+				if (b) {
+					topathname.write( file.resource.read($context.Streams.binary), { append: false } );
+					return topathname.file;
+				}
+			}
+
+			var processDirectory = function(path,directory,topathname) {
+				var b = filter({
+					entry: {
+						path: path,
+						node: directory
+					},
+					exists: getNode(topathname)
+				});
+				if (b) {
+					var rv = (topathname.directory) ? topathname.directory : topathname.createDirectory();
+					directory.list({
+						type: directory.list.ENTRY
+					}).forEach(function(entry) {
+						if (!entry.node.directory) {
+							processFile(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
+						} else {
+							processDirectory(path+entry.path,entry.node,topathname.directory.getRelativePath(entry.path));
+						}
+					});
+					return rv;
+				}
+			}
+
+			if (!this.directory) {
+				return processFile("", this, to);
+			} else {
+				return processDirectory("", this, to);
+			}
+		};
+		this.copy.filter = {
+			OVERWRITE: function(p) {
+				return true;
+			}
+		}
 	}
 
 	var File = function(pathname,peer) {
@@ -450,23 +559,13 @@ var Pathname = function(parameters) {
 			this.createTemporary = function(parameters) {
 				return $filesystem.temporary(peer,parameters);
 			}
-			$context.experimental(this,"createTemporary");
+			$api.experimental(this,"createTemporary");
 		}
 	}
 //	Directory.prototype = new Node(this,"");
 }
 
 var Searchpath = function(parameters) {
-	if (this.constructor != arguments.callee) {
-		//	not called as constructor but as function
-		//	perform a "cast"
-		if (parameters instanceof Array) {
-			return defaults.filesystem.Searchpath(parameters);
-		} else {
-			throw new TypeError("Illegal argument to Searchpath(): " + parameters);
-		}
-	}
-
 	if (!parameters || !parameters.array) {
 		throw new TypeError("Illegal argument to new Searchpath(): " + parameters);
 	}
@@ -498,7 +597,7 @@ var Searchpath = function(parameters) {
 	}
 }
 Searchpath.createEmpty = function() {
-	return Searchpath([]);
+	return new Searchpath({ array: [] });
 }
 
 $exports.Searchpath = Searchpath;

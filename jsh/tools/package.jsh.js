@@ -1,19 +1,21 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
 var UNZIP_RHINO_WHEN_PACKAGING = true;
+
+//	TODO	perhaps this should assume it is running as part of a built shell and the jsh default should be ..
 
 var parameters = jsh.script.getopts({
 	options: {
@@ -31,6 +33,15 @@ var parameters = jsh.script.getopts({
 
 if (!parameters.options.to) {
 	jsh.shell.echo("Required: -to <pathname>");
+	jsh.shell.exit(1);
+}
+
+if (!parameters.options.script) {
+	jsh.shell.echo("Required: -script <pathname>");
+	jsh.shell.exit(1);
+}
+if (!parameters.options.script.file) {
+	jsh.shell.echo("Not found: -script " + parameters.options.script);
 	jsh.shell.exit(1);
 }
 
@@ -74,6 +85,12 @@ JSH.getSubdirectory("modules").list().forEach( function(module) {
 	jsh.file.unzip({ zip: module, to: destination });
 } );
 
+if (JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe")) {
+	to.getRelativePath("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe")
+		.write(JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe").read(jsh.io.Streams.binary), { recursive: true })
+	;
+}
+
 var libraries = [].concat(parameters.options.library);
 libraries.forEach( function(library,index) {
 	to.getRelativePath("$libraries/" + String(index) + ".jar").write( library.file.read(jsh.file.Streams.binary), { recursive: true });
@@ -86,7 +103,7 @@ parameters.options.module.forEach( function(module) {
 	if (pathname.directory) {
 		slime.build.jsh(pathname.directory,to.getRelativePath("$packaged/" + name).createDirectory({recursive: true}));
 	} else {
-		throw "Unimplemented: bundle slime format module.";
+		throw new Error("Did not find module at " + pathname);
 	}
 } );
 

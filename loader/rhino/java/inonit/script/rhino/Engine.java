@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the SLIME loader for rhino.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -463,11 +463,6 @@ public class Engine {
 		source.evaluate(debugger, Context.getCurrentContext(), scope, target);
 	}
 
-	public static abstract class Loader {
-		public abstract String getPlatformCode() throws IOException;
-		public abstract String getRhinoCode() throws IOException;
-	}
-
 	public static abstract class Source {
 		public static Source create(String sourceName, java.io.Reader reader) {
 			if (reader == null) throw new RuntimeException("'reader' must not be null.");
@@ -856,10 +851,5 @@ public class Engine {
 
 	public Debugger getDebugger() {
 		return this.debugger;
-	}
-
-	public Module load(Module.Code source) {
-		if (source == null) throw new NullPointerException("'source' must not be null.");
-		return new Module(this, source);
 	}
 }

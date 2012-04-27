@@ -1,20 +1,31 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the js/object SLIME module.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
+var globals = $loader.file("global.js");
+
 if ($context.globals) {
-	$loader.file("global.js");
+	var copyGlobals = function(exported,global) {
+		for (var x in exported) {
+			if (!global.prototype[x]) {
+				global.prototype[x] = exported[x];
+			}
+		}
+	};
+
+	copyGlobals(globals.Array,Array);
+	copyGlobals(globals.String,String);
 }
 
 var deprecate = $api.deprecate;
@@ -97,7 +108,8 @@ var toLiteral = function(value) {
 		} else if (typeof(value) == "xml") {
 			return null;
 		} else if (typeof(value) == "object") {
-			if (references.indexOf(value) == -1) {
+			//	TODO	indexOf is not defined if globals is false
+			if (globals.Array.indexOf(references,value) == -1) {
 				references.push(value);
 			} else {
 				debugger;
@@ -107,12 +119,13 @@ var toLiteral = function(value) {
 			var isAnArray = function(object) {
 				//	return object.constructor && (object.constructor.prototype == Array.prototype)
 				//	return object instanceof Array
-				return typeof(object.slice) == "function" && typeof(object.indexOf) == "function" && typeof(object.splice) == "function";
+				//	TODO	indexOf is not defined if globals is false
+				return typeof(object.slice) == "function" && typeof(object.splice) == "function";
 			}
 
 			if (isAnArray(value)) {
 				//	we leave out non-numeric properties; the Mozilla toSource() does this too
-				return "[" + value.map( function(item) {
+				return "[" + globals.Array.map.call( value, function(item) {
 					return literal(item);
 				} ).join(",") + "]";
 	//		} else if (object.constructor.prototype == Date.prototype) {
@@ -157,13 +170,13 @@ var ObjectTransformer = function() {
 
 	this.transform = function(o) {
 		var self = this;
-		if (typeof(o.length) == "number" && o.map) {
-			return o.map(function(e) {
+		if (typeof(o.length) == "number" && o.slice && o.splice) {
+			return globals.Array.map.call(o, function(e) {
 				//	This will recurse if elements are also arrays ... is this desirable?
 				return self.transform(e);
 			});
 		}
-		delegates.forEach( function(f) {
+		globals.Array.forEach.call(delegates, function(f) {
 			o = f(o);
 		});
 		return o;
@@ -435,7 +448,7 @@ $exports.Order = new function() {
 
 $exports.Array = new function() {
 	this.choose = function(array,filter) {
-		var select = (filter) ? array.filter(filter) : array;
+		var select = (filter) ? globals.Array.filter.call(array, filter) : array;
 		if (select.length > 1) throw "Too many matches for filter " + filter + " in " + array;
 		if (select.length == 0) return null;
 		return select[0];

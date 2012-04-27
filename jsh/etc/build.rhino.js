@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -27,11 +27,72 @@
 //	generates and runs unit tests is run in the debugger
 //
 //	jsh.build.nounit (JSH_BUILD_NOUNIT): if set, unit tests are not run as part of the build process
+//	jsh.build.notest (JSH_BUILD_NOTEST): if set, unit and integration tests are not run as part of the build process
 //
 //	jsh.build.nodoc (JSH_BUILD_NODOC): if set, no documentation is emitted as part of the build process
 
+//	Policy decision to support 1.6 and up
+var JAVA_VERSION = "1.6";
+
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
+
+var zip = function(from,to,filters) {
+	if (!filters) filters = [];
+	var zstream = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(to));
+
+	var directories = {};
+
+	var createDirectory = function(path) {
+		if (path.length == 0) return;
+		var tokens = path.split("/");
+		for (var i=1; i<tokens.length; i++) {
+			var partial = tokens.slice(0,i).join("/");
+			if (!directories[partial]) {
+				var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
+				zstream.putNextEntry(entry);
+				zstream.closeEntry();
+				directories[partial] = true;
+			}
+		}
+	}
+
+	var process = function(file,prefix,filters) {
+		for (var i=0; i<filters.length; i++) {
+			if (filters[i].accept(file)) {
+				filters[i].process(file,prefix);
+				return;
+			}
+		}
+
+		var nextPrefix = function() {
+			if (prefix == "") return "";
+			return prefix + "/";
+		}
+
+		if (file.isDirectory()) {
+			createDirectory(prefix);
+			var files = file.listFiles();
+			for (var i=0; i<files.length; i++) {
+				process(files[i],nextPrefix()+file.getName(),filters);
+			}
+		} else {
+			createDirectory(prefix);
+			var entry = new Packages.java.util.zip.ZipEntry(nextPrefix()+file.getName());
+			zstream.putNextEntry(entry);
+			var i = new Packages.java.io.FileInputStream(file);
+			platform.io.copyStream(i,zstream);
+			i.close();
+			zstream.closeEntry();
+		}
+	}
+
+	var top = from.listFiles();
+	for (var i=0; i<top.length; i++) {
+		process(top[i],"",filters);
+	}
+	zstream.close();
+}
 
 var getSetting = function(systemPropertyName) {
 	var environmentVariableName = systemPropertyName.replace(/\./g, "_").toUpperCase();
@@ -75,17 +136,34 @@ if (!platform.jdk.compile) {
 	exit(1);
 }
 
-var JSH_HOME = function(path) {
-	if (typeof(path) == "undefined") {
-		console("Usage: java -jar js.jar build.rhino.js <build-destination>");
-		//	TODO	Should this be interpreted as Cygwin path when on Cygwin?
-		exit(1);
+var destination = (function() {
+	var toNativePath = function(path) {
+		if (platform.cygwin) {
+			path = platform.cygwin.cygpath.windows(path);
+		}
+		return path;
 	}
-	if (platform.cygwin) {
-		path = platform.cygwin.cygpath.windows(path);
+
+	if (arguments[0] == "-installer") {
+		return {
+			installer: new File(toNativePath(arguments[1])),
+			shell: createTemporaryDirectory()
+		}
+	} else {
+		if (arguments.length == 0) {
+			console("Usage:");
+			console("java -jar js.jar build.rhino.js <build-destination>");
+			console("-or-");
+			console("java -jar js.jar build.rhino.js -install <installer-jar-location>");
+			exit(1);
+		}
+		return {
+			shell: new File(toNativePath(arguments[0]))
+		}
 	}
-	return new File(path);
-}(arguments[0]);
+}).apply(this,arguments);
+
+var JSH_HOME = destination.shell;
 debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 console("Building to: " + JSH_HOME.getCanonicalPath());
 
@@ -133,46 +211,14 @@ console("Creating directories ...");
 	new File(JSH_HOME,path).mkdir();
 });
 
-
 console("Copying launcher scripts ...");
 copyFile(new File(BASE,"jsh/launcher/rhino/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
 copyFile(new File(BASE,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
-
-if (platform.unix) {
-	copyFile(new File(BASE,"jsh/launcher/rhino/jsh.bash"), new File(JSH_HOME,"jsh.bash"));
-	var path = String(new File(JSH_HOME,"jsh.bash").getCanonicalPath());
-	if (platform.cygwin) {
-		path = platform.cygwin.cygpath.unix(path);
-	}
-	var exit = runCommand("chmod","+x",path);
-	if (exit) throw "Error running command: " + path;
-	if (!exit) console("Created bash launcher.");
-}
 
 console("Copying libraries ...");
 RHINO_LIBRARIES.forEach( function(file) {
 	copyFile(file,new File(JSH_HOME,"lib/" + file.getName()));
 });
-
-if (platform.cygwin) {
-	console("Building Cygwin path helper ...");
-	var gccpath = platform.cygwin.realpath("/bin/g++");
-	//console("real path: [" + gccpath + "]");
-	var gcc = new File(platform.cygwin.cygpath.windows(gccpath));
-	if (gcc.exists()) {
-		new File(JSH_HOME,"bin").mkdir();
-		var command = [
-			String(gcc.getCanonicalPath()),
-			"-o", platform.cygwin.cygpath.unix(String(new File(JSH_HOME,"bin/inonit.script.runtime.io.cygwin.cygpath.exe").getCanonicalPath())),
-			platform.cygwin.cygpath.unix(String(new File(BASE,"rhino/file/java/inonit/script/runtime/io/cygwin/cygpath.cpp")))
-		];
-		runCommand.apply(this,command);
-	} else {
-		console("(build.rhino.js) Missing compiler at " + gcc.getCanonicalPath() + "; not bundling Cygwin path helper.");
-	}
-	//	TODO	A previous version of this build file fixed DOS line endings in the jsh.bash file when running on Cygwin bash. However,
-	//			it seems possible the bash file is going away, and this can be done manually, so we leave it for now
-}
 
 var tmp = createTemporaryDirectory();
 
@@ -195,7 +241,8 @@ console("Building jsh application ...");
 addJavaFiles(new File(BASE,"loader/rhino/java"));
 addJavaFiles(new File(BASE,"rhino/system/java"));
 addJavaFiles(new File(BASE,"jsh/loader/java"));
-var compileOptions = ["-g", "-nowarn"]
+//	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
+var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
 var javacArguments = compileOptions.concat([
 	"-d", tmpClasses.getCanonicalPath(),
 	"-classpath", RHINO_LIBRARIES.map(function(file) { return String(file.getCanonicalPath()); }).join(colon)
@@ -273,6 +320,8 @@ var module = function(path) {
 		copyFile: copyFile,
 		compile: platform.jdk.compile
 	}, {
+		source: JAVA_VERSION,
+		target: JAVA_VERSION,
 		classpath: new File(RHINO_HOME, "js.jar").getCanonicalPath() + colon + new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath(),
 		nowarn: true
 	});
@@ -294,6 +343,7 @@ var LAUNCHER_COMMAND = [
 
 var jsapi_jsh = function() {
 	var command = LAUNCHER_COMMAND.slice(0,LAUNCHER_COMMAND.length);
+	debug("Launcher command: " + command);
 	command.add = function() {
 		for (var i=0; i<arguments.length; i++) {
 			this.push(arguments[i]);
@@ -304,15 +354,16 @@ var jsapi_jsh = function() {
 	if (platform.cygwin) {
 		JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
 	}
-	if (getSetting("jsh.build.nounit")) {
+	if (getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) {
 		command.add("-notest");
 	}
 	command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
+	command.add("-base", JSH_JSAPI_BASE);
 
 	var modules = [];
 	modules.add = function(path,ns) {
 		var namespace = (ns) ? ns : "";
-		this.push(namespace+"@"+path+"="+JSH_JSAPI_BASE+"/"+path);
+		this.push(namespace+"@"+path);
 	}
 	modules.add("jsh/loader/","jsh.loader");
 	modules.add("loader/");
@@ -340,7 +391,9 @@ var jsapi_jsh = function() {
 
 	var subenv = {};
 	for (var x in env) {
-		subenv[x] = env[x];
+		if (!/^JSH_/.test(x)) {
+			subenv[x] = env[x];
+		}
 	}
 	if (env.JSH_BUILD_DEBUG) {
 		subenv.JSH_LAUNCHER_DEBUG = "true";
@@ -357,7 +410,7 @@ var jsapi_jsh = function() {
 	}
 }
 
-if (getSetting("jsh.build.nounit") && getSetting("jsh.build.nodoc")) {
+if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSetting("jsh.build.nodoc")) {
 } else {
 	console("Running JSAPI ...");
 	jsapi_jsh();
@@ -368,11 +421,17 @@ var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
 copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
 
-if (!getSetting("jsh.build.nounit")) {
+console("Creating install script ...");
+new File(JSH_HOME,"etc").mkdir();
+copyFile(new File(BASE,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
+
+if (!getSetting("jsh.build.notest")) {
 	var integrationTests = function() {
 		var script = new File(BASE,"jsh/test/suite.rhino.js");
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");
-		load(script.getCanonicalPath());
+		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
+		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
+		eval(readFile(script.getCanonicalPath()));
 	}
 
 	integrationTests();
@@ -394,3 +453,28 @@ bases.forEach( function(base) {
 		}
 	]);
 });
+
+if (destination.installer) {
+	//	TODO	allow getting named resource as stream from within jsh
+	//	TODO	allow jsh.file.unzip to take a stream as its source
+	console("Build installer to " + destination.installer);
+	var build = new File(JSH_HOME,"build.zip");
+	console("Build build.zip to " + build.getCanonicalPath());
+	zip(JSH_HOME,build);
+
+	var getPath = function(file) {
+		var path = String(file.getCanonicalPath());
+		if (platform.cygwin) {
+			path = platform.cygwin.cygpath.unix(path);
+		}
+		return path;
+	}
+
+	var command = LAUNCHER_COMMAND.slice(0);
+	command.push(getPath(new File(JSH_HOME,"tools/package.jsh.js")));
+	command.push("-jsh",getPath(JSH_HOME));
+	command.push("-script",getPath(new File(JSH_HOME,"etc/install.jsh.js")));
+	command.push("-file","build.zip=" + getPath(build));
+	command.push("-to",getPath(destination.installer));
+	runCommand.apply(this,command);
+}

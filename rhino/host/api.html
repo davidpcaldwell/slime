@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Java host objects</title>
 </head>
@@ -36,8 +37,32 @@ END LICENSE
 					</ol>
 				</div>
 			</li>
+			<li class="function">
+				<div class="name">loadClass</div>
+				<span>
+					A method that finds Java classes for the module. Probably will be supplied by
+					<a href="../../loader/rhino/">classpath.getClass()</a> from the Rhino loader.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A class name.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">java.lang.Class</span>
+					<span>
+						Should return the <code>java.lang.Class</code> with the given name, or <code>null</code> if there is no
+						class with that name.
+					</span>
+				</div>
+			</li>
 			<li class="value">
-				<div class="name">classLoader</div>
+				<div class="name">loadClass</div>
 				<span class="type">java.lang.ClassLoader</span>
 				<span>
 					(optional) A <code>ClassLoader</code> that should be used when this module attempts to locate classes by name.

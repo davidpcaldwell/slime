@@ -14,7 +14,8 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>jsapi</title>
 </head>
@@ -46,7 +47,10 @@ END LICENSE
 				</ul>
 			</li>
 			<li>
-				<code>-module <i>[namespace]</i>@<i>path</i>=<i>location</i>:<i>[mode]</i></code>
+				<code>-base <i>pathname</i></code> Base location from which to resolve paths specified with <code>-module</code>.
+			</li>
+			<li>
+				<code>-module <i>[namespace]</i>@<i>path</i></code>
 				Adds a module to the list of modules to be documented and/or tested.
 				<ul>
 					<li>
@@ -54,12 +58,8 @@ END LICENSE
 						the module will not be documented.
 					</li>
 					<li>
-						<code><i>path</i></code> The logical name of the module; this is the name by which it can be accessed by
-						other modules when running tests, or when implementing cross-file documentation references.
-						<!--	TODO	document cross-file documentation references	-->
+						<code><i>path</i></code> The path of of the module relative to <code>-base</code>.
 					</li>
-					<li><code><i>location</i></code> The location from which the module can be loaded.</li>
-					<li><code><i>mode</i></code> If <code>skip</code>, tests will not be run on this module.</li>
 				</ul>
 			</li>
 			<li>
@@ -76,17 +76,79 @@ END LICENSE
 		</ul>
 	</div>
 	<h1>api.html</h1>
-	<ul>
-		<li>application/x.jsapi#scope</li>
-		<li>
-			<code>script</code> element with <code>type</code> attribute <code>application/x.jsapi#context</code>: For each
-			element of this type, the script content will be interpreted as a literal and its value will be used as the
-			<code>$context</code> for running a round of tests on the module. If no scripts of this type are included, a single
-			empty one will be generated with <code>new Object()</code>.
-		</li>
-		<li>application/x.jsapi#initialize</li>
-		<li>application/x.jsapi#tests</li>
-	</ul>
+	<div>
+		<h2>Unit tests</h2>
+		<ul>
+			<li>application/x.jsapi#scope</li>
+			<li>
+				<code>script</code> element with <code>type</code> attribute <code>application/x.jsapi#context</code>: For each
+				element of this type, the script content will be interpreted as a literal and its value will be used as the
+				<code>$context</code> for running a round of tests on the module. If no scripts of this type are included, a single
+				empty one will be generated with <code>new Object()</code>.
+			</li>
+			<li>application/x.jsapi#initialize</li>
+			<li>application/x.jsapi#tests</li>
+		</ul>
+	</div>
+	<div>
+		<h2>Documentation</h2>
+		Any element that specifies a <code>jsapi:reference</code> attribute will have its contents replaced by the target of the
+		reference. The reference is written as a snippet of JavaScript code that is expected to evaluate to an E4X element. The
+		API available to the reference is as follows:
+		<div class="type">
+			<a class="type" name="types.api">api</a>
+			<span>An object representing an <i>api.html</i> file.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">getElement</div>
+					<span>Returns a specific E4X element within the given file.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>
+									A logical "path" to the element within the file; the path is delimited by <code>/</code> and its
+									components are made up of <code>jsapi:id</code> attributes.
+								</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">xml</span>
+						<span>
+							The E4X element that is ultimately determined to be the target of the reference. References can be
+							chained: if the element at the given location also has a <code>jsapi:reference</code> attribute, the
+							target of that reference is returned.
+						</span>
+						<!--	TODO	what is return value if not found? Or does the script error?	-->
+					</div>
+				</li>
+			</ul>
+		</div>
+		<ul>
+			<li class="function">
+				<div class="name">getApi</div>
+				<span>Returns a specific <i>api.html</i> given its path.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A relative path.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type"><a href="#types.api">api</a></span>
+					<span>The <code>api</code> with the given path, resolved relatively to the current file.</span>
+				</div>
+			</li>
+		</ul>
+	</div>
 	<h1>$java</h1>
 	<ul>
 		<li class="object">

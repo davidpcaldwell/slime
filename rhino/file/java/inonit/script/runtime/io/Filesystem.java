@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the rhino/file SLIME module.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -78,6 +78,7 @@ public abstract class Filesystem {
 
 		public abstract Node[] list(FilenameFilter pattern) throws IOException;
 		public abstract void delete() throws IOException;
+		public abstract void move(Node to) throws IOException;
 		public abstract void mkdir() throws IOException;
 		public abstract void mkdirs() throws IOException;
 
@@ -90,6 +91,13 @@ public abstract class Filesystem {
 
 		public final Reader readText() throws IOException {
 			return new FileReader( getHostFile() );
+		}
+
+		//	Need this method to be public because Cygwin NodeImpl is nonpublic type, and script code refers to this method to
+		//	forget Cygwin information when a pathname is the destination for a move operation. Perhaps the CygwinFilesystem itself
+		//	needs a cache by pathname so that we do not have to call the method on the pathname directly (using weak references,
+		//	perhaps).
+		public void invalidate() {
 		}
 	}
 
@@ -125,12 +133,39 @@ public abstract class Filesystem {
 		private static class NodeImpl extends Node {
 			private File file;
 
-			NodeImpl(File file) throws IOException {
-				try {
-					this.file = file.getCanonicalFile();
-				} catch (IOException e) {
-					throw new IOException(e.getMessage() + " path=[" + file.getPath() + "]", e);
+			private File canonicalize(File file) {
+				String absolute = file.getAbsolutePath();
+				String[] tokens = absolute.split("\\" + File.separator);
+				java.util.ArrayList rv = new java.util.ArrayList();
+				for (int i=0; i<tokens.length; i++) {
+					if (tokens[i].equals(".")) {
+						//	do nothing
+					} else if (tokens[i].equals("..")) {
+						if (rv.isEmpty()) {
+							rv.add("..");
+						} else {
+							rv.remove(rv.size()-1);
+						}
+					} else {
+						rv.add(tokens[i]);
+					}
 				}
+				//	TODO	analysis of how this would work with Windows drive letters
+				String joined = "";
+				for (int i=0; i<rv.size(); i++) {
+					joined += (String)rv.get(i);
+					if (i+1 != rv.size() || i == 0) {
+						joined += File.separator;
+					}
+				}
+				if (joined.length() == 0) {
+					joined += File.separator;
+				}
+				return new File(joined);
+			}
+
+			NodeImpl(File file) throws IOException {
+				this.file = canonicalize(file);
 			}
 
 			public String toString() {
@@ -145,8 +180,12 @@ public abstract class Filesystem {
 				return file.isDirectory();
 			}
 
-			public File getHostFile() {
-				return file;
+			public File getHostFile() throws IOException {
+				try {
+					return file.getCanonicalFile();
+				} catch (IOException e) {
+					throw new IOException(e.getMessage() + " path=[" + file.getPath() + "]", e);
+				}
 			}
 
 			public String getScriptPath() {
@@ -179,6 +218,12 @@ public abstract class Filesystem {
 			public void delete() throws IOException {
 				boolean success = delete(this.file);
 				if (!success) throw new IOException("Failed to delete: " + this.file);
+			}
+
+			public void move(Node to) throws IOException {
+				NodeImpl toNode = (NodeImpl)to;
+				boolean success = file.renameTo(toNode.file);
+				if (!success) throw new IOException("Failed to move: " + this.file + " to " + toNode.file);
 			}
 
 			public void mkdir() throws IOException {

@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -26,30 +26,30 @@ public class Main {
 
 	private static abstract class Invocation {
 		static Invocation create() throws IOException {
+			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
+			String codeUrlString = codeLocation.toExternalForm();
+			String launcherLocation = null;
+			if (codeUrlString.startsWith("file:")) {
+				if (codeUrlString.charAt(7) == ':') {
+					//	Windows
+					launcherLocation = codeUrlString.substring("file:/".length());
+				} else {
+					//	UNIX
+					launcherLocation = codeUrlString.substring("file:".length());
+				}
+			} else {
+				throw new RuntimeException("Unreachable: code source = " + codeUrlString);
+			}
 			Invocation rv = null;
 			if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-				rv = new Packaged();
+				rv = new Packaged(launcherLocation);
 			} else {
-				java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
-				String codeUrlString = codeLocation.toExternalForm();
 				java.io.File JSH_HOME = null;
-				if (codeUrlString.startsWith("file:")) {
-					String launcherLocation = null;
-					if (codeUrlString.charAt(7) == ':') {
-						//	Windows
-						launcherLocation = codeUrlString.substring("file:/".length());
-					} else {
-						//	UNIX
-						launcherLocation = codeUrlString.substring("file:".length());
-					}
-					if (launcherLocation.endsWith("jsh.jar")) {
-						JSH_HOME = new java.io.File(launcherLocation.substring(0, launcherLocation.length()-"jsh.jar".length()-1));
-					}
-				} else {
-					throw new RuntimeException("Unreachable: code source = " + codeUrlString);
+				if (launcherLocation.endsWith("jsh.jar")) {
+					JSH_HOME = new java.io.File(launcherLocation.substring(0, launcherLocation.length()-"jsh.jar".length()-1));
 				}
 				FileInvocation frv = (JSH_HOME != null) ? new Built(JSH_HOME) : new Unbuilt();
-			//	TODO	This might miss some exotic situations, like loading this class in its own classloader
+				//	TODO	This might miss some exotic situations, like loading this class in its own classloader
 				frv.setLauncherClasspath(System.getProperty("java.class.path"));
 				if (JSH_HOME != null) {
 					frv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
@@ -149,8 +149,14 @@ public class Main {
 	}
 
 	private static class Packaged extends Invocation {
+		private String location;
+
+		Packaged(String location) {
+			this.location = location;
+		}
+
 		void initializeSystemProperties() {
-			System.setProperty("jsh.launcher.packaged", "true");
+			System.setProperty("jsh.launcher.packaged", location);
 		}
 
 		ClassLoader getMainClassLoader() {

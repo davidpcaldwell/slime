@@ -1,15 +1,15 @@
 //	LICENSE
 //	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
 //	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
-//	
+//
 //	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
 //	express or implied. See the License for the specific language governing rights and limitations under the License.
-//	
+//
 //	The Original Code is the jsh JavaScript/Java shell.
-//	
+//
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
 //	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
-//	
+//
 //	Contributor(s):
 //	END LICENSE
 
@@ -25,6 +25,8 @@ import inonit.script.rhino.*;
 import inonit.script.runtime.io.*;
 
 public class Shell {
+	//	TODO	try to remove dependencies on inonit.script.rhino.*;
+
 	public static int execute(Installation installation, Configuration configuration, Invocation invocation) {
 		return Host.create(installation, configuration, invocation).execute();
 	}
@@ -91,26 +93,15 @@ public class Shell {
 		 *
 		 *	@return An object that can load the specified module.
 		 */
-		public abstract Module.Code getShellModuleCode(String path);
+		public abstract Code getShellModuleCode(String path);
 
+		//	TODO	move to Configuration? It may make more sense there
 		/**
 		 *
 		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
 		 *	<code>null</code> if it is not.
 		 */
-		public abstract Module.Code.Source getPackagedCode();
-
-		Engine.Loader getRhinoLoaderBootstrap() {
-			return new Engine.Loader() {
-				public String getPlatformCode() throws IOException {
-					return new Streams().readString(Installation.this.getPlatformLoader().getReader());
-				}
-
-				public String getRhinoCode() throws IOException {
-					return new Streams().readString(Installation.this.getRhinoLoader().getReader());
-				}
-			};
-		}
+		public abstract Code.Source getPackagedCode();
 	}
 
 	public static abstract class Configuration {
@@ -123,37 +114,7 @@ public class Shell {
 		public abstract Map getEnvironment();
 		public abstract Stdio getStdio();
 
-		public static abstract class Stdio {
-			public abstract InputStream getStandardInput();
-			public abstract OutputStream getStandardOutput();
-			public abstract OutputStream getStandardError();
-		}
-	}
-
-	public static abstract class Invocation {
-		/**
-		 * Returns the <code>java.io.File</code> object corresponding to the main script.
-		 *
-		 * @return The <code>java.io.File</code> object corresponding to the main script, or <code>null</code> if there is no such
-		 *		file; e.g., the script has been packaged into a JAR file.
-		 */
-		public abstract File getScriptFile();
-
-		public abstract Script getScript();
-		public abstract String[] getArguments();
-	}
-
-	static class Host {
-		private Installation installation;
-		private Configuration configuration;
-		private Invocation invocation;
-
-		private Engine engine;
-		private Classpath classpath;
-
-		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
-
-		private static abstract class Classpath extends ClassLoader {
+		static abstract class Classpath extends ClassLoader {
 			static Classpath create(ClassLoader delegate) {
 				return new ModulesClasspath(delegate);
 			}
@@ -162,58 +123,7 @@ public class Shell {
 				super(delegate);
 			}
 
-			public abstract void append(URL url);
-			public abstract void append(Module module);
-		}
-
-		private static class DelegationChain extends Classpath {
-			private ClassLoader current = Shell.class.getClassLoader();
-
-			DelegationChain(ClassLoader delegate) {
-				super(delegate);
-			}
-
-			public String toString() {
-				return getClass().getName() + " current=" + current;
-			}
-
-			protected Class findClass(String name) throws ClassNotFoundException {
-				return current.loadClass(name);
-			}
-
-			public void append(URL url) {
-				current = new URLClassLoader(new URL[] { url }, current);
-			}
-
-			public void append(Module module) {
-				current = module.getClasses(current);
-			}
-		}
-
-		private static class ListClasspath extends Classpath {
-			private ArrayList loaders = new ArrayList();
-
-			ListClasspath(ClassLoader delegate) {
-				super(delegate);
-			}
-
-			protected Class findClass(String name) throws ClassNotFoundException {
-				for (int i=0; i<loaders.size(); i++) {
-					try {
-						return ((ClassLoader)loaders.get(i)).loadClass(name);
-					} catch (ClassNotFoundException e) {
-					}
-				}
-				throw new ClassNotFoundException();
-			}
-
-			public void append(URL url) {
-				loaders.add(new URLClassLoader(new URL[] { url }));
-			}
-
-			public void append(Module module) {
-				loaders.add(module.getClasses(Shell.class.getClassLoader()));
-			}
+			abstract Loader.Classpath toLoaderClasspath();
 		}
 
 		private static class ModulesClasspath extends Classpath {
@@ -237,7 +147,7 @@ public class Shell {
 			protected Class findClass(String name) throws ClassNotFoundException {
 				String path = name.replace('.', '/') + ".class";
 				for (int i=0; i<items.size(); i++) {
-					Module.Code.Classes classes = ((Module.Code.Classes)items.get(i));
+					Code.Source classes = ((Code.Source)items.get(i));
 					try {
 						InputStream stream = classes.getResourceAsStream(path);
 						if (stream != null) {
@@ -245,32 +155,118 @@ public class Shell {
 							return defineClass(name, b, 0, b.length);
 						}
 					} catch (IOException e) {
+						//	Treat an exception reading as not found
+						//	TODO	dubious decision
 					}
 				}
 				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
 			}
 
-			public void append(Module module) {
-				items.add(module.getClasses());
-			}
+			public Loader.Classpath toLoaderClasspath() {
+				return new Loader.Classpath() {
+					@Override public void append(Code.Source classes) {
+						items.add(classes);
+					}
 
-			public void append(URL url) {
-				items.add(Module.Code.Classes.create(Module.Code.Source.create(url)));
+					@Override public Class getClass(String name) {
+						try {
+							return ModulesClasspath.this.loadClass(name);
+						} catch (ClassNotFoundException e) {
+							return null;
+						}
+					}
+				};
 			}
 		}
 
-		static Host create(Installation installation, Configuration configuration, Invocation invocation) {
+		private Engine engine;
+		private Classpath classpath;
+
+		final void initialize() {
+			final Configuration configuration = this;
 			ContextFactoryImpl contexts = new ContextFactoryImpl();
-			Classpath classpath = Classpath.create(configuration.getClassLoader());
+			this.classpath = Classpath.create(configuration.getClassLoader());
 			contexts.initApplicationClassLoader(classpath);
 			contexts.setOptimization(configuration.getOptimizationLevel());
+			this.engine = Engine.create(configuration.getDebugger(), contexts);
+		}
 
+		Engine getEngine() {
+			return engine;
+		}
+
+		Classpath getClasspath() {
+			return classpath;
+		}
+
+		public static abstract class Stdio {
+			public abstract InputStream getStandardInput();
+			public abstract OutputStream getStandardOutput();
+			public abstract OutputStream getStandardError();
+		}
+	}
+
+	public static abstract class Invocation {
+		public static abstract class Script {
+			private static Script create(final Shell.Script delegate, final File file) {
+				return new Script() {
+					@Override
+					public File getFile() {
+						return file;
+					}
+
+					@Override
+					public String getName() {
+						return delegate.getName();
+					}
+
+					@Override
+					public Reader getReader() {
+						return delegate.getReader();
+					}
+				};
+			}
+
+			static Script create(File file) {
+				return create(Shell.Script.create(file), file);
+			}
+
+			static Script create(final Shell.Script delegate) {
+				return create(delegate, null);
+			}
+
+			public abstract String getName();
+			/**
+				Returns the <code>java.io.File</code> object corresponding to the main script.
+
+				@return The <code>java.io.File</code> object corresponding to the main script, or <code>null</code> if there is no
+					such file; e.g., the script has been packaged into a JAR file.
+			*/
+			public abstract File getFile();
+			public abstract Reader getReader();
+		}
+
+		public abstract Script getScript();
+
+		public abstract String[] getArguments();
+	}
+
+	static class Host {
+		private Installation installation;
+		private Configuration configuration;
+		private Invocation invocation;
+
+//		private Engine engine;
+
+		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
+
+		static Host create(Installation installation, Configuration configuration, Invocation invocation) {
 			Host rv = new Host();
 			rv.installation = installation;
 			rv.configuration = configuration;
 			rv.invocation = invocation;
-			rv.engine = Engine.create(configuration.getDebugger(), contexts);
-			rv.classpath = classpath;
+			configuration.initialize();
+//			rv.engine = configuration.getEngine();
 			return rv;
 		}
 
@@ -303,13 +299,14 @@ public class Shell {
 				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
 			}
 			program.add(jshJs.toSource());
+			//	TODO	jsh could execute this below
 			program.add(Engine.Source.create(invocation.getScript().getName(), invocation.getScript().getReader()));
 			return program;
 		}
 
 		int execute() {
 			try {
-				Object ignore = engine.execute(createProgram());
+				Object ignore = configuration.getEngine().execute(createProgram());
 				return 0;
 			} catch (Engine.Errors e) {
 				Engine.Errors.ScriptError[] errors = e.getErrors();
@@ -329,6 +326,7 @@ public class Shell {
 					try {
 						finalizers.get(i).run();
 					} catch (Throwable t) {
+						//	TODO	log something about the exception
 						configuration.getLog().println("Error running finalizer: " + finalizers.get(i));
 					}
 				}
@@ -336,65 +334,69 @@ public class Shell {
 		}
 
 		Scriptable load() {
-			return engine.load(createProgram());
+			return configuration.getEngine().load(createProgram());
 		}
 
 		public class Interface {
-			private Engine engine = new Engine();
-
 			public String toString() {
 				return getClass().getName()
-					+ " engine=" + engine
+					+ " engine=" + configuration.getEngine()
 					+ " installation=" + installation
-					+ " classpath=" + classpath
+					+ " classpath=" + configuration.getClasspath()
 				;
 			}
 
-			public void exit(int status) throws ExitException {
-				Host.this.engine.getDebugger().setBreakOnExceptions(false);
-				throw new ExitException(status);
+			public Scriptable getRhinoLoader() throws IOException {
+				inonit.script.rhino.Loader loader = new inonit.script.rhino.Loader() {
+					@Override
+					public String getPlatformCode() throws IOException {
+						return new Streams().readString(installation.getPlatformLoader().getReader());
+					}
+
+					@Override
+					public String getRhinoCode() throws IOException {
+						return new Streams().readString(installation.getRhinoLoader().getReader());
+					}
+
+					@Override
+					public inonit.script.rhino.Loader.Classpath getClasspath() {
+						return configuration.getClasspath().toLoaderClasspath();
+					}
+
+					@Override
+					protected Engine getEngine() {
+						return Host.this.configuration.getEngine();
+					}
+				};
+				return loader.initialize(configuration.getEngine());
 			}
 
-			public void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
-				Host.this.engine.script(name, code, scope, target);
+			public class Loader {
+				public Code getBootstrapModule(String path) {
+					return installation.getShellModuleCode(path);
+				}
+
+				public Code.Source getPackagedCode() {
+					return installation.getPackagedCode();
+				}
+
+				public void addFinalizer(Runnable runnable) {
+					finalizers.add(runnable);
+				}
+
+				//	TODO	only known use of this is in addClasses.jsh.js test script; replace that with access to rhino/host
+				//			module and remove this?
+				public Class getJavaClass(String name) {
+					try {
+						return configuration.getClasspath().loadClass(name);
+					} catch (ClassNotFoundException e) {
+						return null;
+					}
+				}
 			}
 
-			public Module getBootstrapModule(String path) {
-				Module rv = Host.this.engine.load(installation.getShellModuleCode(path));
-				classpath.append(rv);
-				return rv;
-			}
-
-			public Module getUnpackedModule(File base, String main) {
-				Module rv = Host.this.engine.load(Module.Code.unpacked(base,main));
-				classpath.append(rv);
-				return rv;
-			}
-
-			public Module getPackedModule(File slime, String main) {
-				Module rv = Host.this.engine.load(Module.Code.slime(slime,main));
-				classpath.append(rv);
-				return rv;
-			}
-
-			public Module.Code.Source getPackagedCode() {
-				return installation.getPackagedCode();
-			}
-
-			public ClassLoader getClassLoader() {
-				return classpath;
-			}
-
-			public inonit.script.rhino.Engine.Loader getRhinoLoaderBootstrap() {
-				return installation.getRhinoLoaderBootstrap();
-			}
-
-			public void addClasses(File classes) throws java.net.MalformedURLException {
-				classpath.append(classes.toURI().toURL());
-			}
-
-			public Invocation getInvocation() {
-				return invocation;
+			public Loader getLoader() {
+				return new Loader();
 			}
 
 			public Properties getSystemProperties() {
@@ -405,39 +407,63 @@ public class Shell {
 				return configuration.getEnvironment();
 			}
 
-			public InputStream getStandardInput() {
-				return configuration.getStdio().getStandardInput();
-			}
+			public class Stdio {
+				public InputStream getStandardInput() {
+					return configuration.getStdio().getStandardInput();
+				}
 
-			public PrintStream getStandardOutput() {
-				return new PrintStream(configuration.getStdio().getStandardOutput());
-			}
+				public PrintStream getStandardOutput() {
+					return new PrintStream(configuration.getStdio().getStandardOutput());
+				}
 
-			public PrintStream getStandardError() {
-				return new PrintStream(configuration.getStdio().getStandardError());
-			}
-
-			public void addFinalizer(Runnable runnable) {
-				finalizers.add(runnable);
-			}
-
-			public inonit.script.rhino.Engine.Debugger getDebugger() {
-				return Host.this.engine.getDebugger();
-			}
-
-			//
-			//	Not used by shell, but useful to specialized scripts that do various kinds of embedding
-			//
-
-			public Engine getEngine() {
-				return Interface.this.engine;
-			}
-
-			public class Engine {
-				public Module load(Module.Code code) {
-					return Host.this.engine.load(code);
+				public PrintStream getStandardError() {
+					return new PrintStream(configuration.getStdio().getStandardError());
 				}
 			}
+
+			public Stdio getStdio() {
+				return new Stdio();
+			}
+
+			public class Debugger {
+				private Engine.Debugger implementation = Host.this.configuration.getEngine().getDebugger();
+
+				public boolean isBreakOnExceptions() {
+					return implementation.isBreakOnExceptions();
+				}
+
+				public void setBreakOnExceptions(boolean b) {
+					implementation.setBreakOnExceptions(b);
+				}
+			}
+
+			public Debugger getDebugger() {
+				return new Debugger();
+			}
+
+			//	Contains information used by jsh.script, like arguments and the base file invoked
+			public Invocation getInvocation() {
+				return invocation;
+			}
+
+			public void exit(int status) throws ExitException {
+				Host.this.configuration.getEngine().getDebugger().setBreakOnExceptions(false);
+				throw new ExitException(status);
+			}
+
+//			//
+//			//	Not used by shell, but useful to specialized scripts that do various kinds of embedding
+//			//
+//
+//			public Engine getEngine() {
+//				return Interface.this.engine;
+//			}
+//
+//			public class Engine {
+//				public Module load(Code code) {
+//					return Host.this.engine.load(code);
+//				}
+//			}
 		}
 	}
 }
