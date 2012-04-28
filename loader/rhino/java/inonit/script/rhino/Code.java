@@ -115,6 +115,10 @@ public abstract class Code {
 
 	public static Code create(final Source js, final Source classes) {
 		return new Code() {
+			@Override public String toString() {
+				return getClass().getName() + " js=" + js + " classes=" + classes;
+			}
+
 			public Source getScripts() {
 				return js;
 			}
