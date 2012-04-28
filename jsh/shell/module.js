@@ -85,9 +85,13 @@ $exports.shell = function(command,args,mode) {
 
 	var preprocessor = function(item) { return item; }
 	if ($filesystems.cygwin && mode.filesystem == $filesystems.os) {
-		preprocessor = $filesystems.cygwin.toWindows;
+		preprocessor = function(item) {
+			return $filesystems.cygwin.toWindows(item);
+		}
 	} else if ($filesystems.cygwin && mode.filesystem == $filesystems.cygwin) {
-		preprocessor = $filesystems.cygwin.toUnix;
+		preprocessor = function(item) {
+			return $filesystems.cygwin.toUnix(item);
+		}
 	}
 	args = args.map( preprocessor );
 
