@@ -363,8 +363,7 @@ public class Shell {
 						return configuration.getClasspath().toLoaderClasspath();
 					}
 
-					@Override
-					protected Engine getEngine() {
+					@Override protected Engine getEngine() {
 						return Host.this.configuration.getEngine();
 					}
 				};
