@@ -260,9 +260,6 @@ this.jsh = new function() {
 	var java = loader.bootstrap(
 		new function() {
 			this.experimental = function() {};
-			this.loadClass = function(name) {
-				return loader.getClass(name);
-			}
 			this.globals = true;
 		},
 		"rhino/host"

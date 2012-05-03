@@ -167,15 +167,7 @@ var getJavaClassName = function(javaclass) {
 
 var $isJavaType = function(javaclass,object) {
 	var getNamedJavaClass = function(name) {
-		if ($context.loadClass) {
-			return $context.loadClass(name);
-		} else {
-			if (Packages.java.lang.Class.forName("java.lang.Object").getClassLoader()) {
-				return Packages.java.lang.Class.forName("java.lang.Object").getClassLoader().loadClass(name);
-			} else {
-				return Packages.java.lang.Class.forName(name);
-			}
-		}
+		return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
 	};
 
 	var className = getJavaClassName(javaclass);
