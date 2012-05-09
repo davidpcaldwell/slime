@@ -442,22 +442,33 @@ END LICENSE
 				};
 				var ASYNCHRONOUS = Boolean(parameters.asynchronous);
 
-				var onResult = (window.opener && window.opener.onTestResult) ? window.opener.onTestResult : function(window,success) {
-					if (!success) {
-						alert("Failed!");
-					} else {
-						alert("PASS");
+				var onResult = (window.opener 
+					&& window.opener.inonit
+					&& window.opener.inonit.dom
+					&& window.opener.inonit.dom.window
+					&& window.opener.inonit.dom.window.open
+					&& window.opener.inonit.dom.window.open.context
+				)
+					? function(success) {
+						window.opener.inonit.dom.window.open.context.get(window).onTestResult(success);
 					}
-				}
+					: function(success) {
+						if (!success) {
+							alert("Failed!");
+						} else {
+							alert("PASS");
+						}
+					}
+				;
 				if (ASYNCHRONOUS) {
 					scenario.start(console,{
 						success: function(success) {
-							onResult(window,success);
+							onResult(success);
 						}
 					});
 				} else {
 					var result = scenario.run(console);
-					onResult(window,result);
+					onResult(result);
 				}
 			}
 		}
