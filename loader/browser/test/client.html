@@ -442,7 +442,7 @@ END LICENSE
 				};
 				var ASYNCHRONOUS = Boolean(parameters.asynchronous);
 
-				var onResult = function(success) {
+				var onResult = (window.opener && window.opener.onTestResult) ? window.opener.onTestResult : function(window,success) {
 					if (!success) {
 						alert("Failed!");
 					} else {
@@ -452,12 +452,12 @@ END LICENSE
 				if (ASYNCHRONOUS) {
 					scenario.start(console,{
 						success: function(success) {
-							onResult(success);
+							onResult(window,success);
 						}
 					});
 				} else {
 					var result = scenario.run(console);
-					onResult(result);
+					onResult(window,result);
 				}
 			}
 		}
