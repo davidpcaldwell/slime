@@ -171,7 +171,7 @@ var $isJavaType = function(javaclass,object) {
 	};
 
 	var className = getJavaClassName(javaclass);
-	if (className == null) throw "Not a class: " + javaclass;
+	if (className == null) throw new TypeError("Not a class: " + javaclass);
 	if (!items.isJavaObject(object)) return false;
 	var loaded = getNamedJavaClass(className);
 	return loaded.isInstance(object);
