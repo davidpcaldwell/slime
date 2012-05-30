@@ -35,7 +35,7 @@ public class Engine {
 	}
 
 	public static abstract class Debugger {
-		abstract void initialize(ContextFactory contexts);
+		abstract void initialize(ContextFactoryImpl contexts);
 		abstract void initialize(Scriptable scope, Engine engine, Program program);
 		abstract void setBreakpoint(Engine.Source source, int line);
 		abstract Log getLog();
@@ -49,7 +49,7 @@ public class Engine {
 	}
 
 	private static class NoDebugger extends Debugger {
-		void initialize(ContextFactory contexts) {
+		void initialize(ContextFactoryImpl contexts) {
 		}
 
 		void setBreakpoint(Engine.Source source, int line) {
@@ -140,7 +140,7 @@ public class Engine {
 			}
 		}
 
-		void initialize(ContextFactory contexts) {
+		void initialize(ContextFactoryImpl contexts) {
 			this.dim = new org.mozilla.javascript.tools.debugger.Dim();
 			dim.attachTo(contexts);
 			String title = "Script Debugger";
@@ -200,7 +200,7 @@ public class Engine {
 		}
 	}
 
-	public static Engine create(Debugger debugger, ContextFactory contexts) {
+	public static Engine create(Debugger debugger, ContextFactoryImpl contexts) {
 		Engine rv = new Engine();
 		if (debugger == null) {
 			debugger = new NoDebugger();
@@ -212,7 +212,7 @@ public class Engine {
 	}
 
 	private Debugger debugger;
-	private ContextFactory contexts;
+	private ContextFactoryImpl contexts;
 
 	private HashMap globals = new HashMap();
 
@@ -446,21 +446,20 @@ public class Engine {
 	 *	for the new code included in <code>source</code>.
 	 */
 	public void include(Scriptable jsThis, Engine.Source source) throws IOException {
-		Context context = Context.getCurrentContext();
-		source.evaluate(debugger, context, null, jsThis);
+		source.evaluate(debugger, contexts.getCurrentContext(), null, jsThis);
 	}
 
-	public Scriptable evaluate(Scriptable scope, String code) {
-		return (Scriptable)Context.getCurrentContext().evaluateString(scope, code, "<cmd>", 1, null);
-	}
+//	public Scriptable evaluate(Scriptable scope, String code) {
+//		return (Scriptable)Context.getCurrentContext().evaluateString(scope, code, "<cmd>", 1, null);
+//	}
 
-	public void script(Scriptable scope, String name, InputStream code) throws IOException {
-		this.include(scope, Engine.Source.create(name, new InputStreamReader(code)));
-	}
+//	public void script(Scriptable scope, String name, InputStream code) throws IOException {
+//		this.include(scope, Engine.Source.create(name, new InputStreamReader(code)));
+//	}
 
-	public void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
+	void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name,new InputStreamReader(code));
-		source.evaluate(debugger, Context.getCurrentContext(), scope, target);
+		source.evaluate(debugger, contexts.getCurrentContext(), scope, target);
 	}
 
 	public static abstract class Source {
@@ -521,6 +520,9 @@ public class Engine {
 		}
 
 		final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws java.io.IOException {
+			if (context == null) {
+				throw new IllegalArgumentException("context is null");
+			}
 			Script script = compile(dim, context);
 			if (target != null) {
 				if (scope != null) {

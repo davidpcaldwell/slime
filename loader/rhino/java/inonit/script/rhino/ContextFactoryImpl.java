@@ -15,9 +15,13 @@
 
 package inonit.script.rhino;
 
+import java.util.*;
 import org.mozilla.javascript.*;
 
 public class ContextFactoryImpl extends ContextFactory {
+	//	TODO	rename this class to SingleContextFactory and get rid of thread mapping; just cache the single context
+	private HashMap<Thread,Context> byThread = new HashMap<Thread,Context>();
+
 	private int optimization = -1;
 
 	public final void setOptimization(int optimization) {
@@ -28,6 +32,15 @@ public class ContextFactoryImpl extends ContextFactory {
 		Context rv = super.makeContext();
 		rv.setErrorReporter(new Engine.Errors().getErrorReporter());
 		rv.setOptimizationLevel(optimization);
+		byThread.put(Thread.currentThread(), rv);
+		return rv;
+	}
+
+	Context getCurrentContext() {
+		Context rv = byThread.get(Thread.currentThread());
+		if (rv == null) {
+			rv = makeContext();
+		}
 		return rv;
 	}
 
