@@ -251,11 +251,27 @@ public class Engine {
 		}
 
 		public String getImplementationVersion() {
-			return getContext().getImplementationVersion();
+			Context context = getContext();
+			if (context == null) {
+				Context.enter();
+				String rv = getContext().getImplementationVersion();
+				Context.exit();
+				return rv;
+			} else {
+				return context.getImplementationVersion();
+			}
 		}
 
 		public org.mozilla.javascript.xml.XMLLib.Factory getRhinoE4xImplementationFactory() {
-			return getContext().getE4xImplementationFactory();
+			Context context = getContext();
+			if (context == null) {
+				Context.enter();
+				org.mozilla.javascript.xml.XMLLib.Factory rv = getContext().getE4xImplementationFactory();
+				Context.exit();
+				return rv;
+			} else {
+				return context.getE4xImplementationFactory();
+			}
 		}
 	}
 
