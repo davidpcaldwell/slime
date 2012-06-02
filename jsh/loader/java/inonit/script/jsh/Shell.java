@@ -184,10 +184,18 @@ public class Shell {
 
 		final void initialize() {
 			final Configuration configuration = this;
-			ContextFactoryImpl contexts = new ContextFactoryImpl();
 			this.classpath = Classpath.create(configuration.getClassLoader());
-			contexts.initApplicationClassLoader(classpath);
-			contexts.setOptimization(configuration.getOptimizationLevel());
+			Engine.Configuration contexts = new Engine.Configuration() {
+				@Override
+				public ClassLoader getApplicationClassLoader() {
+					return classpath;
+				}
+
+				@Override
+				public int getOptimizationLevel() {
+					return configuration.getOptimizationLevel();
+				}
+			};
 			this.engine = Engine.create(configuration.getDebugger(), contexts);
 		}
 
