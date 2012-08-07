@@ -60,17 +60,13 @@ public class Main {
 				}
 
 				public Code getShellModuleCode(String path) {
-					return Code.create(
-						Code.Source.create(
-							ClassLoader.getSystemClassLoader(),
-							"$jsh/modules/" + path + "/"
-						)
+					return Code.system(
+						"$jsh/modules/" + path + "/"
 					);
 				}
 
 				public Code.Source getPackagedCode() {
-					return Code.Source.create(
-						ClassLoader.getSystemClassLoader(),
+					return Code.Source.system(
 						"$packaged/"
 					);
 				}
