@@ -211,6 +211,9 @@ public abstract class Code {
 	}
 
 	public static Code unpacked(final File base) {
+		if (!base.isDirectory()) {
+			throw new IllegalArgumentException(base + " is not a directory.");
+		}
 		return new Code() {
 			public String toString() {
 				try {

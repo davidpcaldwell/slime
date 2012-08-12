@@ -209,10 +209,10 @@ if (getProperty("jsh.launcher.home")) {
 
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
-		this.JSH_LIBRARY_MODULES = JSH_HOME.getDirectory("modules");
 		this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_HOME.getDirectory("script/platform");
 		this.JSH_LIBRARY_SCRIPTS_RHINO = JSH_HOME.getDirectory("script/rhino");
 		this.JSH_LIBRARY_SCRIPTS_JSH = JSH_HOME.getDirectory("script/jsh");
+		this.JSH_LIBRARY_MODULES = JSH_HOME.getDirectory("modules");
 
 		if (platform.cygwin) {
 			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
@@ -245,6 +245,12 @@ settings.explicit = new function() {
 		"JSH_TMPDIR"
 	].forEach( function(name) {
 		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
+	});
+
+	[
+		"JSH_PLUGINS"
+	].forEach( function(name) {
+		self[name] = (env[name]) ? new Searchpath(os(env[name])) : UNDEFINED;
 	});
 
 	["JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
@@ -405,8 +411,10 @@ try {
 			if (typeof(value) == "object" && value != null) {
 				if (value.constructor == File || value.constructor == Directory) {
 					return arguments.callee.call(this,name,value.path);
+				} else if (value.constructor == Searchpath) {
+					return arguments.callee.call(this,name,value.toPath());
 				} else {
-					throw "Illegal value: "  + value;
+					throw new Error("Trying to set " + name + " to illegal object value: "  + value);
 				}
 			} else if (typeof(value) == "boolean") {
 				return arguments.callee.call(this,name,String(value));
@@ -422,8 +430,11 @@ try {
 	command.add(settings.combine("jvmOptions"));
 
 	[
-		"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER", "JSH_LIBRARY_MODULES", "JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_RHINO"
-		,"JSH_LIBRARY_SCRIPTS_JSH","JSH_OS_ENV_UNIX"
+		"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
+		,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH"
+		,"JSH_LIBRARY_MODULES"
+		,"JSH_PLUGINS"
+		,"JSH_OS_ENV_UNIX"
 	].forEach(function(name) {
 		var property = name.toLowerCase().split("_").join(".");
 		command.jvmProperty(property,settings.get(name));

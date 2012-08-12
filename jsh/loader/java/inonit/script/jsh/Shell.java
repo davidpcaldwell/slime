@@ -95,6 +95,20 @@ public class Shell {
 		 */
 		public abstract Code getShellModuleCode(String path);
 
+		public static abstract class Plugin {
+			static Plugin create(final Code code) {
+				return new Plugin() {
+					@Override public Code getCode() {
+						return code;
+					}
+				};
+			}
+
+			public abstract Code getCode();
+		}
+
+		public abstract Plugin[] getPlugins();
+
 		//	TODO	move to Configuration? It may make more sense there
 		/**
 		 *
@@ -344,6 +358,10 @@ public class Shell {
 			public class Loader {
 				public Code getBootstrapModule(String path) {
 					return installation.getShellModuleCode(path);
+				}
+				
+				public Installation.Plugin[] getPlugins() {
+					return installation.getPlugins();
 				}
 
 				public Code.Source getPackagedCode() {

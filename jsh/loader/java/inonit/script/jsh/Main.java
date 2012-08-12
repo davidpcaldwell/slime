@@ -65,6 +65,10 @@ public class Main {
 					);
 				}
 
+				public Plugin[] getPlugins() {
+					return new Plugin[0];
+				}
+
 				public Code.Source getPackagedCode() {
 					return Code.Source.system(
 						"$packaged/"
@@ -139,6 +143,43 @@ public class Main {
 
 				public Code getShellModuleCode(String path) {
 					return Code.slime(getModulePath(path));
+				}
+
+				public Plugin[] getPlugins() {
+					String property = System.getProperty("jsh.plugins");
+					ArrayList<Plugin> rv = new ArrayList<Plugin>();
+					if (property != null) {
+						String[] tokens = property.split(File.pathSeparator);
+						for (String token : tokens) {
+							File file = new File(token);
+							if (file.exists()) {
+								if (file.isDirectory()) {
+									if (new File(file, "plugin.jsh.js").exists()) {
+										//	interpret as unpacked module
+										rv.add(Plugin.create(Code.unpacked(file)));
+									} else {
+										//	interpret as directory of .slime
+										File[] list = file.listFiles(new FileFilter() {
+											public boolean accept(File pathname) {
+												return pathname.getName().endsWith(".slime");
+											}
+										});
+										for (File f : list) {
+											rv.add(Plugin.create(Code.slime(f)));
+										}
+									}
+								} else if (token.endsWith(".slime")) {
+									rv.add(Plugin.create(Code.slime(file)));
+								} else {
+									throw new RuntimeException("Not apparently a jsh plugin: " + file);
+								}
+							}
+						}
+					} else {
+						//	Installation directory?
+						//	Home directory / .jsh/plugins or something?
+					}
+					return rv.toArray(new Plugin[rv.size()]);
 				}
 
 				public Code.Source getPackagedCode() {

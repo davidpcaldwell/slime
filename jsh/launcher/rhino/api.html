@@ -165,7 +165,8 @@ END LICENSE
 						the classpath.
 					</li>
 					<li>
-						JSH_LIBRARY_MODULES, JSH_LIBRARY_SCRIPTS_LOADER, JSH_LIBRARY_SCRIPTS_RHINO, JSH_LIBRARY_SCRIPTS_JSH: if
+						JSH_LIBRARY_SCRIPTS_LOADER, JSH_LIBRARY_SCRIPTS_RHINO, JSH_LIBRARY_SCRIPTS_JSH, JSH_LIBRARY_MODULES,
+						JSH_PLUGINS: if
 						present, values are passed to jsh loader as properties: a property is created by converting the name of the
 						environment variable to lowercase and replacing underscores with periods to create a name, and the value is
 						set to the value of the environment variable.
@@ -207,13 +208,13 @@ END LICENSE
 						application.
 					</li>
 					<li>
-						<code>jsh.launcher.rhino.classpath</code>: Indicates the location of the Rhino interpreter to be used to
-						execute the jsh loader, in native OS format.
+						<code>jsh.launcher.rhino.classpath</code>: If present, indicates the location of the Rhino interpreter to
+						be used to execute the jsh loader, in native OS format.
 					</li>
 					<li>
-						<code>jsh.launcher.home</code>: If present, used to locate the platform modules, SLIME loader, Rhino SLIME
-						loader, jsh SLIME loader, and native libraries directory (assuming the locations of these are not specified
-						using environment variables).
+						<code>jsh.launcher.home</code>: If present, used to locate the jsh loader classes, SLIME loader scripts,
+						Rhino SLIME loader scripts, jsh SLIME loader scripts, jsh modules, and native libraries directory (assuming
+						the locations of these are not specified using environment variables).
 					</li>
 					<li>
 						<code>jsh.launcher.classpath</code>: classpath from which jsh launcher was loaded, made available to loader.
