@@ -423,7 +423,7 @@ this.jsh = new function() {
 		}
 	}
 
-	var plugins = new function() {
+	(function() {
 		var _plugins = $host.getLoader().getPlugins();
 		var list = [];
 
@@ -462,5 +462,5 @@ this.jsh = new function() {
 				stop = true;
 			}
 		}
-	};
+	})();
 };
