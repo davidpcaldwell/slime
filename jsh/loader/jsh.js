@@ -401,27 +401,7 @@ this.jsh = new function() {
 	jsh.$jsapi = {
 		$platform: loader.$platform,
 		$api: loader.$api
-	}
-
-	jsh.debug = (function() {
-		return loader.bootstrap({},"jsh/debug");
-	})();
-
-	jsh.debug.disableBreakOnExceptionsFor = function(f) {
-		return function() {
-			var enabled = $host.getDebugger().isBreakOnExceptions();
-			if (enabled) {
-				$host.getDebugger().setBreakOnExceptions(false);
-			}
-			try {
-				return f.apply(this,arguments);
-			} finally {
-				if (enabled) {
-					$host.getDebugger().setBreakOnExceptions(true);
-				}
-			}
-		}
-	}
+	};
 
 	(function() {
 		var _plugins = $host.getLoader().getPlugins();
@@ -430,6 +410,8 @@ this.jsh = new function() {
 		for (var i=0; i<_plugins.length; i++) {
 			var _code = _plugins[i].getCode();
 			var scope = {};
+			//	TODO	$host is currently automatically in scope for these plugins, but that is probably not as it should be; see
+			//			issue 32
 			scope.plugin = function(p) {
 				list.push(p);
 			}
@@ -441,8 +423,6 @@ this.jsh = new function() {
 			})(_code);
 			loader.plugin.read(_code,scope);
 		}
-
-		debugger;
 
 		var stop = false;
 		while(list.length > 0 && !stop) {

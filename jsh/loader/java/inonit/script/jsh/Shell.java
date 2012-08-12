@@ -104,6 +104,15 @@ public class Shell {
 				};
 			}
 
+			static Plugin check(final Code code) throws IOException {
+				Plugin rv = create(code);
+				if (rv.getCode().getScripts().getResourceAsStream("plugin.jsh.js") != null) {
+					return rv;
+				} else {
+					return null;
+				}
+			}
+
 			public abstract Code getCode();
 		}
 
