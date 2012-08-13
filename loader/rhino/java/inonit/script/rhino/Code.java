@@ -100,6 +100,19 @@ public abstract class Code {
 			}
 		}
 
+		public static abstract class Resources {
+			public abstract InputStream getResourceAsStream(String path) throws IOException;
+		}
+
+		public static Source create(final Resources resources) {
+			return new ResourceBased() {
+				@Override
+				public InputStream getResourceAsStream(String path) throws IOException {
+					return resources.getResourceAsStream(path);
+				}
+			};
+		}
+
 		public abstract ClassLoader getClassLoader(ClassLoader delegate);
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
 
