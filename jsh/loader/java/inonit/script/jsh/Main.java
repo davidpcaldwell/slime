@@ -60,17 +60,17 @@ public class Main {
 				}
 
 				public Code getShellModuleCode(String path) {
-					return Code.create(
-						Code.Source.create(
-							ClassLoader.getSystemClassLoader(),
-							"$jsh/modules/" + path + "/"
-						)
+					return Code.system(
+						"$jsh/modules/" + path + "/"
 					);
 				}
 
+				public Plugin[] getPlugins() {
+					return new Plugin[0];
+				}
+
 				public Code.Source getPackagedCode() {
-					return Code.Source.create(
-						ClassLoader.getSystemClassLoader(),
+					return Code.Source.system(
 						"$packaged/"
 					);
 				}
@@ -143,6 +143,54 @@ public class Main {
 
 				public Code getShellModuleCode(String path) {
 					return Code.slime(getModulePath(path));
+				}
+
+				private void addPluginsTo(List<Plugin> rv, File file) {
+					if (file.exists()) {
+						if (file.isDirectory()) {
+							if (new File(file, "plugin.jsh.js").exists()) {
+								//	interpret as unpacked module
+								rv.add(Plugin.create(Code.unpacked(file)));
+							} else {
+								//	interpret as directory of slime
+								File[] list = file.listFiles();
+								for (File f : list) {
+									addPluginsTo(rv, f);
+								}
+							}
+						} else if (file.getName().endsWith(".slime")) {
+							try {
+								Plugin p = Plugin.check(Code.slime(file));
+								if (p != null) {
+									rv.add(p);
+								}
+							} catch (IOException e) {
+								//	TODO	probably error message or warning
+							}
+						} else {
+							//	Ignore, not .slime or directory
+							//	TODO	probably log message of some kind
+						}
+					}
+				}
+
+				private void addPluginsTo(List<Plugin> rv, String property) {
+					if (property != null) {
+						String[] tokens = property.split(File.pathSeparator);
+						for (String token : tokens) {
+							File file = new File(token);
+							addPluginsTo(rv, file);
+						}
+					}
+				}
+
+				public Plugin[] getPlugins() {
+					ArrayList<Plugin> rv = new ArrayList<Plugin>();
+					addPluginsTo(rv, System.getProperty("jsh.library.modules"));
+					//	Defaults for jsh.plugins: installation modules directory? Probably obsolete given that we will be loading
+					//	them. $HOME/.jsh/plugins?
+					addPluginsTo(rv, System.getProperty("jsh.plugins"));
+					return rv.toArray(new Plugin[rv.size()]);
 				}
 
 				public Code.Source getPackagedCode() {

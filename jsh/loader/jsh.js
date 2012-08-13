@@ -67,6 +67,24 @@ this.jsh = new function() {
 			}
 		}
 
+		this.plugin = new function() {
+			this.read = function(_code,scope) {
+				return rhinoLoader.run({
+					_source: _code.getScripts(),
+					path: "plugin.jsh.js"
+				}, scope);
+			};
+			this.module = function(_code,main,context) {
+				return rhinoLoader.module(
+					{
+						_code: _code,
+						main: main
+					},
+					{ $context: context }
+				);
+			};
+		}
+
 		this.run = function(code,scope,target) {
 			return rhinoLoader.run(getCode(code),scope,target);
 		}
@@ -349,6 +367,7 @@ this.jsh = new function() {
 				file: jsh.file,
 				addClasses: jsh.loader.addClasses
 			},
+			workingDirectory: jsh.shell.PWD,
 			script: (function() {
 				if ($host.getInvocation().getScript().getFile()) {
 					return jsh.file.filesystem.$jsh.Pathname($host.getInvocation().getScript().getFile()).file;
@@ -382,25 +401,46 @@ this.jsh = new function() {
 	jsh.$jsapi = {
 		$platform: loader.$platform,
 		$api: loader.$api
-	}
+	};
 
-	jsh.debug = (function() {
-		return loader.bootstrap({},"jsh/debug");
-	})();
+	(function() {
+		var _plugins = $host.getLoader().getPlugins();
+		var list = [];
 
-	jsh.debug.disableBreakOnExceptionsFor = function(f) {
-		return function() {
-			var enabled = $host.getDebugger().isBreakOnExceptions();
-			if (enabled) {
-				$host.getDebugger().setBreakOnExceptions(false);
+		for (var i=0; i<_plugins.length; i++) {
+			var _code = _plugins[i].getCode();
+			var scope = {};
+			//	TODO	$host is currently automatically in scope for these plugins, but that is probably not as it should be; see
+			//			issue 32
+			scope.plugin = function(p) {
+				list.push(p);
 			}
-			try {
-				return f.apply(this,arguments);
-			} finally {
-				if (enabled) {
-					$host.getDebugger().setBreakOnExceptions(true);
+			scope.jsh = jsh;
+			scope.$loader = new (function(_code) {
+				this.module = function(path,context) {
+					return loader.plugin.module(_code,path,context);
 				}
+			})(_code);
+			loader.plugin.read(_code,scope);
+		}
+
+		var stop = false;
+		while(list.length > 0 && !stop) {
+			var marked = false;
+			var i = 0;
+			while(i < list.length && !marked) {
+				if (list[i].isReady()) {
+					list[i].load();
+					list.splice(i,1);
+					marked = true;
+				}
+				i++;
+			}
+			if (list.length > 0 && !marked) {
+				//	Some plugin was never ready
+				debugger;
+				stop = true;
 			}
 		}
-	}
+	})();
 };

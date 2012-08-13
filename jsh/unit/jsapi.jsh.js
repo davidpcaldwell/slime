@@ -68,6 +68,8 @@ parameters.options.classpath.forEach( function(pathname) {
 	jsh.script.addClasses(pathname);
 } );
 
+debugger;
+
 var ENVIRONMENT = (function() {
 	var rv = {};
 	parameters.options.environment.forEach( function(item) {

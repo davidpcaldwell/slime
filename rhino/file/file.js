@@ -17,6 +17,15 @@ var defined = $context.defined;
 var constant = $context.constant;
 var fail = $context.fail;
 
+var firstDefined = function(object/*, names */) {
+	for (var i=1; i<arguments.length; i++) {
+		if (typeof(object[arguments[i]]) != "undefined") {
+			return object[arguments[i]];
+		}
+	}
+	return function(){}();
+}
+
 var Pathname = function(parameters) {
 	if (!parameters) {
 		fail("Missing argument to new Pathname()");
@@ -27,13 +36,13 @@ var Pathname = function(parameters) {
 	$api.deprecate(parameters,"$peer");
 	$api.deprecate(parameters,"path");
 
-	var $filesystem = defined(parameters.filesystem,parameters.$filesystem);
+	var $filesystem = firstDefined(parameters,"filesystem","$filesystem");
 	if (!$filesystem.peerToString) fail("Internal error; Pathname constructed incorrectly: " + parameters.toSource());
 
 	var peer = (function() {
-		var peer = defined(parameters.peer,parameters.$peer);
+		var peer = firstDefined(parameters,"peer","$peer");
 		if (peer) return peer;
-		var path = defined(parameters.path,parameters.$path);
+		var path = firstDefined(parameters,"path","$path");
 		//	TODO	below line appears to invoke nonexistent method
 		if (path) return $filesystem.getPeer(path);
 		if (parameters.toSource) {

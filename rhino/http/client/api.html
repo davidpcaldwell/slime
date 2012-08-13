@@ -1,0 +1,471 @@
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>http/client</title>
+</head>
+<body>
+	<!--
+	<script type="application/x.jsapi#context">
+		new $Context(false)
+	</script>
+	<script type="application/x.jsapi#context">
+		new $Context(true)
+	</script>
+	-->
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="object">
+				<div class="name">api</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">js</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">io</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+				</ul>
+			</li>
+			<li class="value">
+				<div class="name">gae</div>
+				<span class="type">boolean</span>
+				<span>
+					If true, avoids the use of classes that are not whitelisted in Google App Engine. Currently, this means
+					that a custom cookie handler is supplied, rather than using the default from the <code>java.net</code> package.
+				</span>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#context"><![CDATA[
+			//	TODO	Deal with possibility Tomcat classes are not present
+			(function() {
+				var global = (function() { return this; })();
+				var tomcat;
+				var servlet;
+				if (!global.tomcat && !$jsapi.environment.windowsSocketsError10106) {
+					tomcat = new Packages.org.apache.catalina.startup.Tomcat();
+					servlet = new function() {
+						var implementation;
+
+						this.set = function(f) {
+							implementation = f;
+						}
+
+						this.service = function(request,response) {
+							implementation.call(this,request,response);
+						}
+					};
+
+					(function() {
+						var base = $jsapi.newTemporaryDirectory();
+						tomcat.setPort(84);
+						tomcat.setBaseDir(base);
+						var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
+						Packages.org.apache.catalina.startup.Tomcat.addServlet(context,"aName",new JavaAdapter(
+							Packages.javax.servlet.http.HttpServlet,
+							servlet
+						));
+						context.addServletMapping("/*","aName");
+						tomcat.start();
+					})();
+					global.tomcat = tomcat;
+					global.servlet = servlet;
+				} else {
+					tomcat = global.tomcat;
+					servlet = global.servlet;
+				}
+
+				var Cookie = Packages.javax.servlet.http.Cookie;
+
+				scope.$Context = function(gae) {
+					if ($jsapi.module("rhino/io")) {
+						var js = $jsapi.module("js/object");
+						var java = $jsapi.module("rhino/host");					
+						var io = $jsapi.module("rhino/io", {
+							api: {
+								java: java
+							},
+							$java: new Packages.inonit.script.runtime.io.Streams()
+						});
+
+						this.api = {
+							js: js,
+							io: io
+						};
+					} else {
+						this.api = {
+							js: jsh.js,
+							io: jsh.io
+						}
+					}
+					this.gae = gae;
+				};
+
+				return [ new $Context(false), new $Context(true) ];
+			})()
+		]]></script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.pair">pair</a>
+			<span>An object representing a name-value pair.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">name</div>
+					<span class="type">string</span>
+					<span></span>
+				</li>
+				<li class="value">
+					<div class="name">value</div>
+					<span class="type">string</span>
+					<span></span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.values">values</a>
+			<span>
+				An object with properties. Each named property represents one or more <a href="#types.pair">pair</a> objects. If
+				the value of the property is a <code>string</code>, the property represents a single pair with the given name and
+				the given value. If the value of the property is an <code>Array</code> of <code>string</code>, the property
+				represents a collection of pairs with the given name and the <code>string</code> values contained in the array.
+			</span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.parameters">parameters</a>
+			<span>Either an <code>Array</code> of <a href="#types.pair">pair</a>, or a <a href="#types.values">values</a>.</span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.query">query</a>
+			<span>Either a <a href="#types.parameters">parameters</a>, or a <code>string</code> representing a query string.</span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.response">response</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">status</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">code</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">message</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">headers</div>
+					<span><code>Array</code> of <a href="#types.pair">pair</a>, augmented as follows:</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">get</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A header name.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>								
+								<span class="type">string</span>
+								-or-
+								<span class="type">Array of string</span>
+								<span>
+									Returns the single value of this header, if it has one, or an array of values if there are
+									multiple values. If the header has no values, <code>null</code> is returned.
+								</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">body</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">type</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">stream</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<ul>
+			<li class="constructor">
+				<div class="name">Client</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">request</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>An object representing the request, along with some arguments for processing it.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">method</div>
+												<span class="type">string</span>
+												<span>
+													(optional)
+													The HTTP request method to use. If omitted, a <code>GET</code> is issued.
+												</span>
+											</li>
+											<li class="value">
+												<!--	TODO	merge with same notion from client side?	-->
+												<div class="name">url</div>
+												<span class="type">string</span>
+												<span>The URL to which to issue the request.</span>
+											</li>
+											<li class="value">
+												<div class="name">parameters</div>
+												<span class="type"><a href="#types.parameters">parameters</a></span>
+												<span>
+													(optional)
+													Additional parameters to send to the request as part of the URL.
+												</span>
+											</li>
+											<li class="value">
+												<div class="name">headers</div>
+												<span class="type"><a href="#types.parameters">parameters</a></span>
+												<span>
+													(optional)
+													Additional headers to send with this request.
+												</span>
+											</li>
+											<li class="object">
+												<div class="name">body</div>
+												<span>
+													(optional)
+													The message body to use with the HTTP request. Message bodies must specify
+													their content in some way; a <code>string</code> property or a 
+													<code>stream</code> property may be used.
+												</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">type</div>
+														<span class="type">string</span>
+														<span>
+															(optional)
+															The MIME type of the message body. If omitted, 
+															<code>application/octet-stream</code> will be used.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">string</div>
+														<span class="type">string</span>
+														<span>
+															(optional; <code>string</code> or <code>stream</code> must be specified)
+															The content of the message body, as a string.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">stream</div>
+														<span class="type">rhino/io byte input stream</span>
+														<span>
+															(optional; <code>string</code> or <code>stream</code> must be specified)
+															A stream from which the content of the message body can be read.
+														</span>
+													</li>
+												</ul>
+											</li>
+											<li class="object">
+												<div class="name">timeout</div>
+												<span>
+													(optional)
+												</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">connect</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</li>
+													<li class="value">
+														<div class="name">read</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</li>
+												</ul>
+											</li>
+											<li class="function">
+												<div class="name">parse</div>
+												<span>
+													(optional)
+													A function that parses the response from the server and returns it to the
+													caller of <code>request()</code> automatically.
+												</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type"><a href="#types.response">response</a></span>
+															<span>The response to the request.</span>
+														</li>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span>A JavaScript value.</span>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.response">response</a></span>
+								-or-
+								<span class="type">(any)</span>
+								<span>
+									Returns the response, unless a <code>parse</code> function was
+									provided; in that case, the result of that function is returned.
+								</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.Cookie = Packages.javax.servlet.http.Cookie;
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="Hello World">
+					if (!$jsapi.environment.windowsSocketsError10106) {
+						var client = new module.Client();
+						servlet.set(function(request,response) {
+							test(request.getMethod().toUpperCase() == "GET");
+							response.getWriter().print("Hello, World!");
+						});
+						var response = client.request({
+							method: "GET"
+							,url: "http://127.0.0.1:84/"
+							,parse: function(response) {
+								return response.body.stream.character().asString();
+							}
+						});
+						test(response == "Hello, World!");
+					}
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106) {
+						var client = new module.Client();
+						servlet.set(function(request,response) {
+							test(request.getCookies() == null);
+							response.addCookie(new Cookie("cname", "cvalue"));
+							response.setContentType("text/plain");
+							response.getWriter().print("Hello, World!");
+						});
+						var response = client.request({
+							method: "GET"
+							,url: "http://127.0.0.1:84/"
+						});
+						test(response.body.type.split(";")[0] == "text/plain");
+						servlet.set(function(request,response) {
+							test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+							test(Boolean(request.getCookies()) && request.getCookies()[0].getName() == "cname");
+							test(Boolean(request.getCookies()) && request.getCookies()[0].getValue() == "cvalue");
+						});
+						client.request({
+							method: "GET"
+							,url: "http://127.0.0.1:84/"
+						});
+					}
+				]]></script>
+				<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106) {
+						var client = new module.Client();
+						var redirected = false;
+						servlet.set(function(request,response) {
+							if (request.getRequestURI() == "/") {
+								test(request.getCookies() == null);
+								response.addCookie(new Cookie("rname", "rvalue"));
+								response.sendRedirect("./redirected");
+							} else if (request.getRequestURI() == "/redirected") {
+								redirected = true;
+								test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+								response.setContentType("text/plain");
+								response.getWriter().print("Redirected!");
+							} else {
+								debugger;
+								test(false, "Wrong URL: " + request.getRequestURI());
+							}
+						});
+						var response = client.request({
+							method: "GET",
+							url: "http://127.0.0.1:84/"
+							,parse: function(response) {
+							}
+						});
+						test(redirected);
+					}
+				]]></script>
+			</li>
+			<li class="object">
+				<div class="name">Body</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Form</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type"><a href="#types.query">query</a></span>
+								</li>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">MIME message</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<!--
+				TODO	Parser is undocumented.
+			-->
+		</ul>
+	</div>
+</body>
+</html>

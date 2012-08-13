@@ -95,6 +95,29 @@ public class Shell {
 		 */
 		public abstract Code getShellModuleCode(String path);
 
+		public static abstract class Plugin {
+			static Plugin create(final Code code) {
+				return new Plugin() {
+					@Override public Code getCode() {
+						return code;
+					}
+				};
+			}
+
+			static Plugin check(final Code code) throws IOException {
+				Plugin rv = create(code);
+				if (rv.getCode().getScripts().getResourceAsStream("plugin.jsh.js") != null) {
+					return rv;
+				} else {
+					return null;
+				}
+			}
+
+			public abstract Code getCode();
+		}
+
+		public abstract Plugin[] getPlugins();
+
 		//	TODO	move to Configuration? It may make more sense there
 		/**
 		 *
@@ -119,53 +142,24 @@ public class Shell {
 				return new ModulesClasspath(delegate);
 			}
 
-			Classpath(ClassLoader delegate) {
-				super(delegate);
-			}
-
 			abstract Loader.Classpath toLoaderClasspath();
 		}
 
 		private static class ModulesClasspath extends Classpath {
-			private ArrayList items = new ArrayList();
+			private ClassLoader current;
 
 			ModulesClasspath(ClassLoader delegate) {
-				super(delegate);
-			}
-
-			public String toString() {
-				String rv = getClass().getName() + " ";
-				for (int i=0; i<items.size(); i++) {
-					rv += items.get(i);
-					if (i+1 != items.size()) {
-						rv += ",";
-					}
-				}
-				return rv;
+				this.current = delegate;
 			}
 
 			protected Class findClass(String name) throws ClassNotFoundException {
-				String path = name.replace('.', '/') + ".class";
-				for (int i=0; i<items.size(); i++) {
-					Code.Source classes = ((Code.Source)items.get(i));
-					try {
-						InputStream stream = classes.getResourceAsStream(path);
-						if (stream != null) {
-							byte[] b = new Streams().readBytes(stream);
-							return defineClass(name, b, 0, b.length);
-						}
-					} catch (IOException e) {
-						//	Treat an exception reading as not found
-						//	TODO	dubious decision
-					}
-				}
-				throw new ClassNotFoundException("Class not found in " + this.toString() + ": " + name);
+				return current.loadClass(name);
 			}
 
 			public Loader.Classpath toLoaderClasspath() {
 				return new Loader.Classpath() {
 					@Override public void append(Code.Source classes) {
-						items.add(classes);
+						current = classes.getClassLoader(current);
 					}
 
 					@Override public Class getClass(String name) {
@@ -373,6 +367,10 @@ public class Shell {
 			public class Loader {
 				public Code getBootstrapModule(String path) {
 					return installation.getShellModuleCode(path);
+				}
+				
+				public Installation.Plugin[] getPlugins() {
+					return installation.getPlugins();
 				}
 
 				public Code.Source getPackagedCode() {
