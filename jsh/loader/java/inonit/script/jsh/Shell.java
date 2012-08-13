@@ -178,10 +178,18 @@ public class Shell {
 
 		final void initialize() {
 			final Configuration configuration = this;
-			ContextFactoryImpl contexts = new ContextFactoryImpl();
 			this.classpath = Classpath.create(configuration.getClassLoader());
-			contexts.initApplicationClassLoader(classpath);
-			contexts.setOptimization(configuration.getOptimizationLevel());
+			Engine.Configuration contexts = new Engine.Configuration() {
+				@Override
+				public ClassLoader getApplicationClassLoader() {
+					return classpath;
+				}
+
+				@Override
+				public int getOptimizationLevel() {
+					return configuration.getOptimizationLevel();
+				}
+			};
 			this.engine = Engine.create(configuration.getDebugger(), contexts);
 		}
 
@@ -342,18 +350,15 @@ public class Shell {
 
 			public Scriptable getRhinoLoader() throws IOException {
 				inonit.script.rhino.Loader loader = new inonit.script.rhino.Loader() {
-					@Override
-					public String getPlatformCode() throws IOException {
+					@Override public String getPlatformCode() throws IOException {
 						return new Streams().readString(installation.getPlatformLoader().getReader());
 					}
 
-					@Override
-					public String getRhinoCode() throws IOException {
+					@Override public String getRhinoCode() throws IOException {
 						return new Streams().readString(installation.getRhinoLoader().getReader());
 					}
 
-					@Override
-					public inonit.script.rhino.Loader.Classpath getClasspath() {
+					@Override public inonit.script.rhino.Loader.Classpath getClasspath() {
 						return configuration.getClasspath().toLoaderClasspath();
 					}
 
@@ -389,6 +394,12 @@ public class Shell {
 					} catch (ClassNotFoundException e) {
 						return null;
 					}
+				}
+
+				//	TODO	Currently used in httpd unit testing in embedded server, possibly; may be able to get rid of it
+				//			given the new architecture running httpd unit tests in jsh subshell
+				public ClassLoader getClassLoader() {
+					return configuration.getClasspath();
 				}
 			}
 
