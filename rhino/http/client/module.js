@@ -8,6 +8,8 @@ if (!$context.api.io) {
 	throw new TypeError("Missing $context.api.io");
 }
 
+//	TODO	Pretty much all this does currently is log "Requesting:" followed by the URL being requested; should document and make
+//			this much more advanced; probably should configure at instance level, not module level
 var debug = ($context.debug) ? $context.debug : function(){};
 
 var Cookies = function() {
@@ -185,7 +187,7 @@ Url.Query = function(p) {
 	}
 }
 
-var Client = function() {
+var Client = function(mode) {
 	var cookies = new Cookies();
 	
 	var connect = function(method,url,headers,mode) {
@@ -315,11 +317,13 @@ var Client = function() {
 			//	TODO	copy object rather than modifying
 			var rv = {};
 			for (var x in p) {
-				//	TODO	should allow treating 302 as 303, as many user agents do that
-				//			see discussion in RFC 2616 10.3.3
-				if (x == "method" && status.code == 303) {
+				//	Treating 302 as 303, as many user agents do that; see discussion in RFC 2616 10.3.3
+				//	TODO	document this, perhaps after designing mode to be more general
+				var TREAT_302_AS_303 = (mode && mode.TREAT_302_AS_303);
+				var IS_303 = (TREAT_302_AS_303) ? (status.code == 302 || status.code == 303) : status.code == 303;
+				if (x == "method" && IS_303) {
 					rv.method = "GET";
-				} else if (x == "body" && status.code == 303) {
+				} else if (x == "body" && IS_303) {
 					//	leave body undefined
 				} else {
 					rv[x] = p[x];
