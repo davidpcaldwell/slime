@@ -172,8 +172,7 @@ public abstract class Code {
 		}
 	}
 
-	public static Code system(final String prefix) {
-		final Source source = Source.system(prefix);
+	private static Code create(final Code.Source source) {
 		return new Code() {
 			@Override public String toString() {
 				return getClass().getName() + " source=" + source;
@@ -187,6 +186,16 @@ public abstract class Code {
 				return Source.create(source, "$jvm/classes");
 			}
 		};
+	}
+
+	public static Code system(final String prefix) {
+		final Source source = Source.system(prefix);
+		return create(source);
+	}
+
+	public static Code create(final Code.Source source, final String prefix) {
+		Code.Source s = Code.Source.create(source, prefix);
+		return create(s);
 	}
 
 	public static Code create(final Source js, final Source classes) {
