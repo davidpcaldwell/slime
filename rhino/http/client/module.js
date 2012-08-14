@@ -331,6 +331,9 @@ var Client = function(mode) {
 			}
 			rv.url = redirectUrl.url;
 			rv.parameters = redirectUrl.parameters;
+			if (p.on && p.on.redirect) {
+				p.on.redirect({ url: rv.url, parameters: rv.parameters });
+			}
 			//	rv.body is undefined
 			return arguments.callee(rv);
 		} else {
