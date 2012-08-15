@@ -17,6 +17,7 @@
 //
 //	Execute using Rhino shell, e.g.
 //	cd /path/to/jsh/source; java -jar js.jar jsh/etc/build.rhino.js <build-destination>
+//	cd /path/to/jsh/source; java -jar js.jar jsh/etc/build.rhino.js -installer <installer-destination>
 //
 //	System properties that affect the build (environment variable name in parentheses):
 //
