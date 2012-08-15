@@ -25,6 +25,10 @@ public abstract class Loader {
 
 	public static abstract class Classpath {
 		public abstract void append(Code.Source code);
+
+		/**
+			Should return the class with the given name, or <code>null</code> if there is no such class.
+		*/
 		public abstract Class getClass(String name);
 
 		public final void append(Code code) {
@@ -36,9 +40,9 @@ public abstract class Loader {
 
 	protected abstract Engine getEngine();
 
-	public final void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
-		getEngine().script(name, in, scope, target);
-	}
+//	public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
+//		getEngine().script(name, in, scope, target);
+//	}
 
 	//	TODO	verify whether this class needs to be public in order to be used by script calls
 	public static class Bootstrap {
@@ -57,7 +61,7 @@ public abstract class Loader {
 		}
 
 		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
-			loader.script(name, in, scope, target);
+			loader.getEngine().script(name, in, scope, target);
 		}
 	}
 

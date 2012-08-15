@@ -85,9 +85,13 @@ $exports.shell = function(command,args,mode) {
 
 	var preprocessor = function(item) { return item; }
 	if ($filesystems.cygwin && mode.filesystem == $filesystems.os) {
-		preprocessor = $filesystems.cygwin.toWindows;
+		preprocessor = function(item) {
+			return $filesystems.cygwin.toWindows(item);
+		}
 	} else if ($filesystems.cygwin && mode.filesystem == $filesystems.cygwin) {
-		preprocessor = $filesystems.cygwin.toUnix;
+		preprocessor = function(item) {
+			return $filesystems.cygwin.toUnix(item);
+		}
 	}
 	args = args.map( preprocessor );
 
@@ -167,7 +171,10 @@ var getSearchpath = function(value) {
 $exports.TMPDIR = getDirectoryProperty("java.io.tmpdir");
 $exports.USER = getMandatoryStringProperty("user.name");
 $exports.HOME = getDirectoryProperty("user.home");
-$exports.PWD = getDirectoryProperty("user.dir");
+//	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
+if ($context.getSystemProperty("user.dir")) {
+	$exports.PWD = getDirectoryProperty("user.dir");
+}
 if ($context.api.shell.environment.PATH) {
 	$exports.PATH = getSearchpath($context.api.shell.environment.PATH);
 } else {
@@ -235,6 +242,7 @@ $exports.java = new function() {
 }
 
 $exports.jsh = function(script,args,mode) {
+	if (!mode) mode = {};
 	//	TODO	can we use $exports.java.home here?
 	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 	var executable = jdk.getRelativePath("bin/java").toString();
@@ -251,7 +259,6 @@ $exports.jsh = function(script,args,mode) {
 		jargs.push(arg);
 	});
 
-	if (!mode) mode = {};
 	if (!mode.environment) mode.environment = {};
 	for (var x in $context.api.shell.properties.jsh.launcher.environment) {
 		if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {

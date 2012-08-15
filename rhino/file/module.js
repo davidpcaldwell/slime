@@ -96,6 +96,9 @@ $exports.Searchpath = function(parameters) {
 		$context.api.java.fail("Cannot invoke Searchpath as constructor.");
 	}
 };
+$exports.Searchpath.createEmpty = function() {
+	return file.Searchpath.createEmpty.apply(this,arguments);
+}
 
 //	Possibly used for initial attempt to produce HTTP filesystem, for example
 $exports.Filesystem = os.Filesystem;

@@ -100,6 +100,19 @@ public abstract class Code {
 			}
 		}
 
+		public static abstract class Resources {
+			public abstract InputStream getResourceAsStream(String path) throws IOException;
+		}
+
+		public static Source create(final Resources resources) {
+			return new ResourceBased() {
+				@Override
+				public InputStream getResourceAsStream(String path) throws IOException {
+					return resources.getResourceAsStream(path);
+				}
+			};
+		}
+
 		public abstract ClassLoader getClassLoader(ClassLoader delegate);
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
 
@@ -159,8 +172,7 @@ public abstract class Code {
 		}
 	}
 
-	public static Code system(final String prefix) {
-		final Source source = Source.system(prefix);
+	private static Code create(final Code.Source source) {
 		return new Code() {
 			@Override public String toString() {
 				return getClass().getName() + " source=" + source;
@@ -176,8 +188,22 @@ public abstract class Code {
 		};
 	}
 
+	public static Code system(final String prefix) {
+		final Source source = Source.system(prefix);
+		return create(source);
+	}
+
+	public static Code create(final Code.Source source, final String prefix) {
+		Code.Source s = Code.Source.create(source, prefix);
+		return create(s);
+	}
+
 	public static Code create(final Source js, final Source classes) {
 		return new Code() {
+			@Override public String toString() {
+				return getClass().getName() + " js=" + js + " classes=" + classes;
+			}
+
 			public Source getScripts() {
 				return js;
 			}

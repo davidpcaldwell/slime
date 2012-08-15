@@ -332,8 +332,7 @@ var module = function(path) {
 	console("Created module file: " + to.getCanonicalPath());
 };
 
-//	TODO	loader is just to support the old platform module used by the deprecated bootstrap loader
-["js/object","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","jsh/debug"].forEach( function(item) {
+["js/object","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","jsh/debug","rhino/http/client"].forEach( function(item) {
 	module(item);
 });
 
@@ -459,7 +458,8 @@ if (destination.installer) {
 	//	TODO	allow getting named resource as stream from within jsh
 	//	TODO	allow jsh.file.unzip to take a stream as its source
 	console("Build installer to " + destination.installer);
-	var build = new File(JSH_HOME,"build.zip");
+	var zipdir = createTemporaryDirectory();
+	var build = new File(zipdir,"build.zip");
 	console("Build build.zip to " + build.getCanonicalPath());
 	zip(JSH_HOME,build);
 

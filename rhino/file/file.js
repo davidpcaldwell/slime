@@ -606,7 +606,7 @@ var Searchpath = function(parameters) {
 	}
 }
 Searchpath.createEmpty = function() {
-	return Searchpath([]);
+	return new Searchpath({ array: [] });
 }
 
 $exports.Searchpath = Searchpath;

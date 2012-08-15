@@ -35,7 +35,7 @@ public class Engine {
 	}
 
 	public static abstract class Debugger {
-		abstract void initialize(ContextFactory contexts);
+		abstract void initialize(Configuration contexts);
 		abstract void initialize(Scriptable scope, Engine engine, Program program);
 		abstract void setBreakpoint(Engine.Source source, int line);
 		abstract Log getLog();
@@ -49,7 +49,7 @@ public class Engine {
 	}
 
 	private static class NoDebugger extends Debugger {
-		void initialize(ContextFactory contexts) {
+		void initialize(Configuration contexts) {
 		}
 
 		void setBreakpoint(Engine.Source source, int line) {
@@ -140,9 +140,9 @@ public class Engine {
 			}
 		}
 
-		void initialize(ContextFactory contexts) {
+		void initialize(Engine.Configuration contexts) {
 			this.dim = new org.mozilla.javascript.tools.debugger.Dim();
-			dim.attachTo(contexts);
+			contexts.attach(dim);
 			String title = "Script Debugger";
 
 			if (configuration.startWithBreak) {
@@ -156,7 +156,7 @@ public class Engine {
 
 			this.gui = new org.mozilla.javascript.tools.debugger.SwingGui(dim, title);
 			gui.setExitAction(new ExitAction(this.dim, configuration.exit));
-			dim.attachTo(contexts);
+			contexts.attach(dim);
 		}
 
 		void setBreakpoint(Engine.Source source, int line) {
@@ -200,7 +200,82 @@ public class Engine {
 		}
 	}
 
-	public static Engine create(Debugger debugger, ContextFactory contexts) {
+	public static abstract class Configuration {
+		public static final Configuration DEFAULT = new Configuration() {
+
+			@Override public ClassLoader getApplicationClassLoader() {
+				return null;
+			}
+
+			@Override public int getOptimizationLevel() {
+				return -1;
+			}
+		};
+
+		public abstract ClassLoader getApplicationClassLoader();
+		public abstract int getOptimizationLevel();
+
+		private ContextFactoryInner factory = new ContextFactoryInner();
+
+		final synchronized Context getContext() {
+			return Context.getCurrentContext();
+		}
+
+		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
+			dim.attachTo(factory);
+		}
+
+		Object call(ContextAction action) {
+			return factory.call(action);
+		}
+
+		private class ContextFactoryInner extends ContextFactory {
+			@Override protected synchronized Context makeContext() {
+				Context rv = super.makeContext();
+				if (Configuration.this.getApplicationClassLoader() != null) {
+					rv.setApplicationClassLoader(Configuration.this.getApplicationClassLoader());
+				}
+				rv.setErrorReporter(new Engine.Errors().getErrorReporter());
+				rv.setOptimizationLevel(getOptimizationLevel());
+				return rv;
+			}
+
+			@Override protected boolean hasFeature(Context context, int feature) {
+				if (feature == Context.FEATURE_STRICT_VARS) {
+					return true;
+				} else if (feature == Context.FEATURE_STRICT_EVAL) {
+					return true;
+				}
+				return super.hasFeature(context, feature);
+			}
+		}
+
+		public String getImplementationVersion() {
+			Context context = getContext();
+			if (context == null) {
+				Context.enter();
+				String rv = getContext().getImplementationVersion();
+				Context.exit();
+				return rv;
+			} else {
+				return context.getImplementationVersion();
+			}
+		}
+
+		public org.mozilla.javascript.xml.XMLLib.Factory getRhinoE4xImplementationFactory() {
+			Context context = getContext();
+			if (context == null) {
+				Context.enter();
+				org.mozilla.javascript.xml.XMLLib.Factory rv = getContext().getE4xImplementationFactory();
+				Context.exit();
+				return rv;
+			} else {
+				return context.getE4xImplementationFactory();
+			}
+		}
+	}
+
+	public static Engine create(Debugger debugger, Configuration contexts) {
 		Engine rv = new Engine();
 		if (debugger == null) {
 			debugger = new NoDebugger();
@@ -212,7 +287,7 @@ public class Engine {
 	}
 
 	private Debugger debugger;
-	private ContextFactory contexts;
+	private Configuration contexts;
 
 	private HashMap globals = new HashMap();
 
@@ -226,6 +301,11 @@ public class Engine {
 			globals.put(context, rv);
 		}
 		return rv;
+	}
+
+	void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
+		Source source = Engine.Source.create(name,new InputStreamReader(code));
+		source.evaluate(debugger, contexts, scope, target);
 	}
 
 	public static class Errors extends RuntimeException {
@@ -439,28 +519,14 @@ public class Engine {
 		return outcome.getGlobal();
 	}
 
-	//	XXX	Would this work in a multithreaded environment in which scripts started their own threads?
+	//	Seems to be used by Servlet
 	/**
 	 *	This method can be exposed to scripts to allow a script to include its own script code into its environment, using
 	 *	<code>jsThis</code> as the scope
 	 *	for the new code included in <code>source</code>.
 	 */
 	public void include(Scriptable jsThis, Engine.Source source) throws IOException {
-		Context context = Context.getCurrentContext();
-		source.evaluate(debugger, context, null, jsThis);
-	}
-
-	public Scriptable evaluate(Scriptable scope, String code) {
-		return (Scriptable)Context.getCurrentContext().evaluateString(scope, code, "<cmd>", 1, null);
-	}
-
-	public void script(Scriptable scope, String name, InputStream code) throws IOException {
-		this.include(scope, Engine.Source.create(name, new InputStreamReader(code)));
-	}
-
-	public void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
-		Source source = Engine.Source.create(name,new InputStreamReader(code));
-		source.evaluate(debugger, Context.getCurrentContext(), scope, target);
+		source.evaluate(debugger, contexts, null, jsThis);
 	}
 
 	public static abstract class Source {
@@ -520,7 +586,11 @@ public class Engine {
 			}
 		}
 
-		final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws java.io.IOException {
+		final Object evaluate(Debugger dim, Configuration configuration, Scriptable scope, Scriptable target) throws java.io.IOException {
+			Context context = configuration.getContext();
+			if (context == null) {
+				throw new IllegalArgumentException("context is null");
+			}
 			Script script = compile(dim, context);
 			if (target != null) {
 				if (scope != null) {
@@ -688,7 +758,7 @@ public class Engine {
 					throw errors;
 				} catch (EvaluatorException e) {
 					//	TODO	Oh my goodness, is there no better way to do this?
-					if (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1) {
+					if (true || e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1) {
 						errors.add(e);
 					}
 					throw errors;

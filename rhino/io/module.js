@@ -248,36 +248,38 @@ var Streams = new function() {
 		}
 	}
 
-	this.stderr = new function() {
-		this.$getOutputStream = function() {
-			return $context.stdio.$err;
+	if ($context.stdio) {
+		this.stderr = new function() {
+			this.$getOutputStream = function() {
+				return $context.stdio.$err;
+			}
+
+			this.$getWriter = function() {
+				return new Packages.java.io.OutputStreamWriter($context.stdio.$err);
+			}
+
+			this.split = function(other) {
+				return new OutputStream($context.stdio.$err).split(other);
+			}
+
+			this.close = function() {}
 		}
 
-		this.$getWriter = function() {
-			return new Packages.java.io.OutputStreamWriter($context.stdio.$err);
+		this.stdout = new function() {
+			this.$getOutputStream = function() {
+				return $context.stdio.$out;
+			}
+
+			this.$getWriter = function() {
+				return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
+			}
+
+			this.split = function(other) {
+				return new OutputStream($context.stdio.$out).split(other);
+			}
+
+			this.close = function() {}
 		}
-
-		this.split = function(other) {
-			return new OutputStream($context.stdio.$err).split(other);
-		}
-
-		this.close = function() {}
-	}
-
-	this.stdout = new function() {
-		this.$getOutputStream = function() {
-			return $context.stdio.$out;
-		}
-
-		this.$getWriter = function() {
-			return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
-		}
-
-		this.split = function(other) {
-			return new OutputStream($context.stdio.$out).split(other);
-		}
-
-		this.close = function() {}
 	}
 }
 $exports.Streams = Streams;

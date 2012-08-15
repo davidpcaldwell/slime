@@ -22,6 +22,7 @@ END LICENSE
 		div#log { padding: 1em 0em; background: #c0c0c0 }
 	</style>
 	<script type="text/javascript">
+		document.domain = document.domain;
 		var request = new function() {
 			this.query = function(mode) {
 				var rv = null;
@@ -188,12 +189,14 @@ END LICENSE
 					var location = (function() {
 						if (module.substring(module.length-1) == "/") {
 							return {
-								base: module
+								base: module,
+								path: module
 							};
 						} else {
 							return {
 								base: module.split("/").slice(0,-1).join("/") + "/",
-								main: module.split("/").slice(-1)
+								main: module.split("/").slice(-1),
+								path: module
 							};
 						}
 					})();
@@ -220,7 +223,7 @@ END LICENSE
 							this.$jsapi = new function() {
 								this.module = function(path,context) {
 									return inonit.loader.module(
-										{ base: module + self.top + path },
+										module + self.top + path,
 										context
 									);
 								}
@@ -373,7 +376,7 @@ END LICENSE
 						for (var i=0; i<contexts.length; i++) {
 							try {
 								var object = inonit.loader.module(
-									location,
+									location.path,
 									contexts[i]
 								);
 								scope.module = object;
@@ -440,13 +443,24 @@ END LICENSE
 				};
 				var ASYNCHRONOUS = Boolean(parameters.asynchronous);
 
-				var onResult = function(success) {
-					if (!success) {
-						alert("Failed!");
-					} else {
-						alert("PASS");
+				var onResult = (window.opener 
+					&& window.opener.inonit
+					&& window.opener.inonit.dom
+					&& window.opener.inonit.dom.window
+					&& window.opener.inonit.dom.window.open
+					&& window.opener.inonit.dom.window.open.context
+				)
+					? function(success) {
+						window.opener.inonit.dom.window.open.context.get(window).onTestResult(success);
 					}
-				}
+					: function(success) {
+						if (!success) {
+							alert("Failed!");
+						} else {
+							alert("PASS");
+						}
+					}
+				;
 				if (ASYNCHRONOUS) {
 					scenario.start(console,{
 						success: function(success) {

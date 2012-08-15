@@ -178,10 +178,18 @@ public class Shell {
 
 		final void initialize() {
 			final Configuration configuration = this;
-			ContextFactoryImpl contexts = new ContextFactoryImpl();
 			this.classpath = Classpath.create(configuration.getClassLoader());
-			contexts.initApplicationClassLoader(classpath);
-			contexts.setOptimization(configuration.getOptimizationLevel());
+			Engine.Configuration contexts = new Engine.Configuration() {
+				@Override
+				public ClassLoader getApplicationClassLoader() {
+					return classpath;
+				}
+
+				@Override
+				public int getOptimizationLevel() {
+					return configuration.getOptimizationLevel();
+				}
+			};
 			this.engine = Engine.create(configuration.getDebugger(), contexts);
 		}
 
@@ -293,6 +301,7 @@ public class Shell {
 				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
 			}
 			program.add(jshJs.toSource());
+			//	TODO	jsh could execute this below
 			program.add(Engine.Source.create(invocation.getScript().getName(), invocation.getScript().getReader()));
 			return program;
 		}
@@ -341,23 +350,19 @@ public class Shell {
 
 			public Scriptable getRhinoLoader() throws IOException {
 				inonit.script.rhino.Loader loader = new inonit.script.rhino.Loader() {
-					@Override
-					public String getPlatformCode() throws IOException {
+					@Override public String getPlatformCode() throws IOException {
 						return new Streams().readString(installation.getPlatformLoader().getReader());
 					}
 
-					@Override
-					public String getRhinoCode() throws IOException {
+					@Override public String getRhinoCode() throws IOException {
 						return new Streams().readString(installation.getRhinoLoader().getReader());
 					}
 
-					@Override
-					public inonit.script.rhino.Loader.Classpath getClasspath() {
+					@Override public inonit.script.rhino.Loader.Classpath getClasspath() {
 						return configuration.getClasspath().toLoaderClasspath();
 					}
 
-					@Override
-					protected Engine getEngine() {
+					@Override protected Engine getEngine() {
 						return Host.this.configuration.getEngine();
 					}
 				};
@@ -377,18 +382,25 @@ public class Shell {
 					return installation.getPackagedCode();
 				}
 
-				public Class getJavaClass(String name) throws ClassNotFoundException {
-					return configuration.getClasspath().loadClass(name);
-				}
-
 				public void addFinalizer(Runnable runnable) {
 					finalizers.add(runnable);
 				}
 
-				//	Probably will need to define a default base for the non-packaged jsh.script.loader
-//				public Invocation getInvocation() {
-//					return invocation;
-//				}
+				//	TODO	only known use of this is in addClasses.jsh.js test script; replace that with access to rhino/host
+				//			module and remove this?
+				public Class getJavaClass(String name) {
+					try {
+						return configuration.getClasspath().loadClass(name);
+					} catch (ClassNotFoundException e) {
+						return null;
+					}
+				}
+
+				//	TODO	Currently used in httpd unit testing in embedded server, possibly; may be able to get rid of it
+				//			given the new architecture running httpd unit tests in jsh subshell
+				public ClassLoader getClassLoader() {
+					return configuration.getClasspath();
+				}
 			}
 
 			public Loader getLoader() {

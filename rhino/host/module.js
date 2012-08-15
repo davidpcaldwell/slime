@@ -167,19 +167,11 @@ var getJavaClassName = function(javaclass) {
 
 var $isJavaType = function(javaclass,object) {
 	var getNamedJavaClass = function(name) {
-		if ($context.loadClass) {
-			return $context.loadClass(name);
-		} else {
-			if (Packages.java.lang.Class.forName("java.lang.Object").getClassLoader()) {
-				return Packages.java.lang.Class.forName("java.lang.Object").getClassLoader().loadClass(name);
-			} else {
-				return Packages.java.lang.Class.forName(name);
-			}
-		}
+		return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
 	};
 
 	var className = getJavaClassName(javaclass);
-	if (className == null) throw "Not a class: " + javaclass;
+	if (className == null) throw new TypeError("Not a class: " + javaclass);
 	if (!items.isJavaObject(object)) return false;
 	var loaded = getNamedJavaClass(className);
 	return loaded.isInstance(object);

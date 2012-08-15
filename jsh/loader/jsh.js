@@ -136,6 +136,10 @@ this.jsh = new function() {
 			rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(file));
 		}
 
+		this.getClass = function(name) {
+			return rhinoLoader.classpath.getClass(name);
+		}
+
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
@@ -160,10 +164,7 @@ this.jsh = new function() {
 				var Code = Packages.inonit.script.rhino.Code;
 				//	TODO	replace with a _source path main API
 				var m = {
-					_code: Code.create(Code.Source.create(
-						_source,
-						path
-					)),
+					_code: Code.create(_source,path),
 					main: "module.js"
 				};
 				var p = {};
@@ -266,7 +267,6 @@ this.jsh = new function() {
 		this.script = loader.$api.deprecate(loader.file);
 
 		this.addClasses = function(pathname) {
-			debugger;
 			if (!pathname.directory && !pathname.file) {
 				throw "Classes not found: " + pathname;
 			}
@@ -284,9 +284,6 @@ this.jsh = new function() {
 	var java = loader.bootstrap(
 		new function() {
 			this.experimental = function() {};
-			this.loadClass = function(name) {
-				return $host.getLoader().getJavaClass(name);
-			}
 			this.globals = true;
 		},
 		"rhino/host"

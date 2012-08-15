@@ -169,7 +169,7 @@
 					code = { base: code };
 				} else {
 					var tokens = code.split("/");
-					code = { base: tokens.slice(0,tokens.length-1).join("/"), main: tokens[tokens.length-1] };
+					code = { base: tokens.slice(0,tokens.length-1).join("/") + "/", main: tokens[tokens.length-1] };
 				}
 			} else if (typeof(code) == "object" && code.base && code.main) {
 				throw new RangeError(
