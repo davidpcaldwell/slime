@@ -74,6 +74,15 @@ this.jsh = new function() {
 					path: "plugin.jsh.js"
 				}, scope);
 			};
+			this.file = function(_code,path,context) {
+				return rhinoLoader.file(
+					{
+						_source: _code.getScripts(),
+						path: path
+					},
+					{ $context: context }
+				);
+			};
 			this.module = function(_code,main,context) {
 				return rhinoLoader.module(
 					{
@@ -417,6 +426,9 @@ this.jsh = new function() {
 			}
 			scope.jsh = jsh;
 			scope.$loader = new (function(_code) {
+				this.file = function(path,context) {
+					return loader.plugin.file(_code,path,context);
+				}
 				this.module = function(path,context) {
 					return loader.plugin.module(_code,path,context);
 				}
