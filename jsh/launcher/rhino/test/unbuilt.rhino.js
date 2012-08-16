@@ -1,6 +1,7 @@
-//	Build the launcher classes
 debug.on = true;
 debug("Source: " + String(Packages.java.lang.System.getProperty("user.dir")));
+
+//	Build the launcher classes
 var LAUNCHER_CLASSES = createTemporaryDirectory();
 //	TODO	duplicated almost exactly in jsh/etc/build.rhino.js
 platform.jdk.compile([
