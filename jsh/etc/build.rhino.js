@@ -111,7 +111,8 @@ if (new File(BASE,"jsh/etc/build.rhino.js").exists() && new File(BASE,"jsh/launc
 	load(new File(BASE,"jsh/launcher/rhino/api.rhino.js").getCanonicalPath());
 } else {
 	//	TODO	A way to get around this would be to have the Rhino shell somehow make available the location from which
-	//			the currently executing script was loaded, and then walk up the source tree to where the root must be
+	//			the currently executing script was loaded, and then walk up the source tree to where the root must be; this can
+	//			apparently be done in CommonJS mode
 	//	TODO	Another way would be to examine the arguments given to js.jar, knowing that this script would be the first
 	//			argument and it would tell us the location, but currently we cannot access this
 	System.err.println("ERROR: Could not locate source code at: " + BASE.getCanonicalPath());
