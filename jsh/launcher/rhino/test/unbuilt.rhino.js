@@ -1,4 +1,5 @@
 debug.on = true;
+//	TODO	could we get our own location using a stack trace and make this unnecessary?
 debug("Source: " + String(Packages.java.lang.System.getProperty("user.dir")));
 
 //	Build the launcher classes
