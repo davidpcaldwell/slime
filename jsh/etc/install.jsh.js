@@ -47,7 +47,9 @@ var destinationIsSoftlink = function() {
 	jsh.shell.exit(1);
 }
 
-if (realpath(parameters.options.to).toString() != parameters.options.to.toString()
+if (
+	realpath(parameters.options.to).toString() != parameters.options.to.toString()
+	&& realpath(parameters.options.to.parent).toString() == parameters.options.to.parent.toString()
 ) {
 	destinationIsSoftlink();
 }
@@ -55,7 +57,11 @@ if (realpath(parameters.options.to).toString() != parameters.options.to.toString
 var install = parameters.options.to.createDirectory({
 	ifExists: function(dir) {
 		if (parameters.options.replace) {
-			if (realpath(parameters.options.to).toString() != parameters.options.to.toString()) {
+			if (
+				realpath(parameters.options.to).toString() != parameters.options.to.toString()
+				&& realpath(parameters.options.to.parent).toString() == parameters.options.to.parent.toString()
+
+			) {
 				//	softlink; currently unreachable as all softlinks are captured above, but in the future we may need to capture
 				//	them here
 				destinationIsSoftlink();
@@ -187,30 +193,60 @@ if (parameters.options.cygwin) {
 	}
 } else if (parameters.options.unix) {
 	var gcc = which("gcc");
+	if (!gcc) {
+		jsh.shell.echo("Cannot find gcc in PATH; not building native launcher.");
+	}
 	var unix = (function() {
+		var jdk = jsh.shell.java.home.parent;
 		if (jsh.shell.os.name == "FreeBSD") {
 			return {
-				include: "freebsd",
-				library: "jre/lib/" + jsh.shell.os.arch + "/client"
+				include: [
+					jdk.getRelativePath("include"),
+					jdk.getRelativePath("include/freebsd")
+				],
+				library: {
+					name: "jvm",
+					path: jdk.getRelativePath("jre/lib/" + jsh.shell.os.arch + "/client")
+				},
+				rpath: true
+			}
+		} else if (jsh.shell.os.name == "Mac OS X") {
+			return {
+				include: [
+					"/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
+				],
+				library: {
+					command: ["-framework", "JavaVM"]
+				}
 			}
 		} else {
-			throw new Error("Unknown OS: " + jsh.shell.os.name);
+			jsh.shell.echo("Unsupported Unix-like OS: " + jsh.shell.os.name + "; not building native launcher.");
 		}
 	})();
-	if (gcc) {
+	if (gcc && unix) {
 		//	Assume we are running in JRE
-		var jdk = jsh.shell.java.home.parent;
+		//	Mac OS X:
+		//	gcc -o core/jsh -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers
+		//		core/src/jsh/launcher/rhino/native/jsh.c
+		//		-framework JavaVM
+		var args = ["-o", "jsh"];
+		unix.include.forEach(function(directory) {
+			args.push("-I" + directory);
+		});
+		args.push("src/jsh/launcher/rhino/native/jsh.c");
+		if (unix.library.path && unix.library.name) {
+			args.push("-L" + unix.library.path);
+			args.push("-l" + unix.library.name);
+		} else if (unix.library.command) {
+			args.push.apply(args, unix.library.command);
+		}
+		if (unix.rpath) {
+			args.push("-rpath", unix.library.path);
+		}
+		jsh.shell.echo("Invoking gcc " + args.join(" ") + " ...");
 		jsh.shell.shell(
 			gcc.pathname,
-			[
-				"-o", "jsh",
-				"-I" + jdk.getRelativePath("include").toString(),
-				"-I" + jdk.getRelativePath("include/" + unix.include).toString(),
-				"src/jsh/launcher/rhino/native/jsh.c",
-				"-L" + jdk.getRelativePath(unix.library).toString(),
-				"-l" + "jvm",
-				"-rpath", jdk.getRelativePath(unix.library).toString()
-			],
+			args,
 			{
 				workingDirectory: install,
 				onExit: function(result) {
