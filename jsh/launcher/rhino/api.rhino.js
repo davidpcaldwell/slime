@@ -111,6 +111,7 @@ platform.io.copyStream = function(i,o) {
 platform.jdk = {};
 if (Packages.javax.tools.ToolProvider.getSystemJavaCompiler()) {
 	platform.jdk.compile = function(args) {
+		debug("Compiling with: " + args);
 		var jarray = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,args.length);
 		for (var i=0; i<jarray.length; i++) {
 			jarray[i] = new Packages.java.lang.String(args[i]);
@@ -127,7 +128,7 @@ if (Packages.javax.tools.ToolProvider.getSystemJavaCompiler()) {
 			jarray
 		);
 		if (status) {
-			throw "Compiler exited with status " + status + " with inputs " + args.join(",");
+			throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
 		}
 	}
 }
