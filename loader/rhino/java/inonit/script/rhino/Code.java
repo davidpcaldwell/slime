@@ -122,7 +122,7 @@ public abstract class Code {
 			UrlBased(java.net.URL url) {
 				this.url = url;
 			}
-			
+
 			public final ClassLoader getClassLoader(ClassLoader delegate) {
 				java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[]{url}, delegate);
 				return loader;

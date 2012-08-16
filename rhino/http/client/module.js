@@ -1,3 +1,18 @@
+//	LICENSE
+//	The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+//	this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+//
+//	Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+//	express or implied. See the License for the specific language governing rights and limitations under the License.
+//
+//	The Original Code is the rhino/http/client SLIME module.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 if (!$context.api) {
 	throw new TypeError("Missing $context.api");
 }
@@ -15,11 +30,11 @@ var debug = ($context.debug) ? $context.debug : function(){};
 var Cookies = function() {
 	if ($context.gae) {
 		var cookies = [];
-		
+
 		this.toString = function() {
 			return "Cookies: " + $context.api.js.toLiteral(cookies);
 		};
-		
+
 		this.set = function(url,headers) {
 			var sets = headers.filter( function(header) {
 				return header.name.toLowerCase() == "set-cookie";
@@ -28,7 +43,7 @@ var Cookies = function() {
 				var trim = function(str) {
 					return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 				}
-				
+
 				var parts = header.value.split(";");
 				var nvp = parts[0];
 				var cookie = {};
@@ -63,7 +78,7 @@ var Cookies = function() {
 				cookies.unshift(cookie);
 			})
 		}
-		
+
 		this.get = function(url,headers) {
 			//	TODO	obviously this does not work, but passes current unit tests because no cookies are apparently needed for
 			//			the Google module, which is the only module that uses the gae implementation currently
@@ -75,7 +90,7 @@ var Cookies = function() {
 	} else {
 		var peer = new Packages.java.net.CookieManager();
 		peer.setCookiePolicy(Packages.java.net.CookiePolicy.ACCEPT_ALL);
-		
+
 		var toMap = function(headers) {
 			var rv = new Packages.java.util.HashMap();
 			headers.forEach(function(header) {
@@ -119,12 +134,12 @@ var QueryString = function(string) {
 	var decode = function(string) {
 		return String(Packages.java.net.URLDecoder.decode(string, "UTF-8"));
 	}
-	
+
 	var pairs = string.split("&").map( function(token) {
 		var assign = token.split("=");
 		return { name: decode(assign[0]), value: decode(assign[1]) };
 	});
-	
+
 	return pairs;
 }
 QueryString.encode = function(array) {
@@ -189,7 +204,7 @@ Url.Query = function(p) {
 
 var Client = function(mode) {
 	var cookies = new Cookies();
-	
+
 	var connect = function(method,url,headers,mode) {
 		var $url = new Packages.java.net.URL(url);
 		debug("Requesting: " + url);
@@ -231,7 +246,7 @@ var Client = function(mode) {
 		$urlConnection.setInstanceFollowRedirects(false);
 		return $urlConnection;
 	}
-	
+
 	var getStatus = function($urlConnection) {
 		return {
 			code: Number($urlConnection.getResponseCode()),
@@ -252,9 +267,9 @@ var Client = function(mode) {
 				more = false;
 			}
 			i++;
-		}		
+		}
 		cookies.set(String($urlConnection.getURL().toExternalForm()),headers);
-		
+
 		headers.get = function(name) {
 			var values = this
 				.filter(function(header) { return header.name.toUpperCase() == name.toUpperCase() })
@@ -303,11 +318,11 @@ var Client = function(mode) {
 		}
 		var status = getStatus($urlConnection);
 		var headers = getHeaders($urlConnection);
-		
+
 		var isRedirect = function(status) {
 			return (status.code >= 300 && status.code <= 303) || status.code == 307;
 		}
-		
+
 		if (isRedirect(status)) {
 			var URI = Packages.java.net.URI;
 			var redirectTo = headers.get("Location");

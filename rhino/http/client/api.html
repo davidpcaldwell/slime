@@ -1,3 +1,19 @@
+<!--
+LICENSE
+The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the License at http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
+express or implied. See the License for the specific language governing rights and limitations under the License.
+
+The Original Code is the rhino/http/client SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
 <html xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>http/client</title>
@@ -84,7 +100,7 @@
 				scope.$Context = function(gae) {
 					if ($jsapi.module("rhino/io")) {
 						var js = $jsapi.module("js/object");
-						var java = $jsapi.module("rhino/host");					
+						var java = $jsapi.module("rhino/host");
 						var io = $jsapi.module("rhino/io", {
 							api: {
 								java: java
@@ -185,7 +201,7 @@
 								</ol>
 							</div>
 							<div class="returns">
-								<div class="label">Returns</div>								
+								<div class="label">Returns</div>
 								<span class="type">string</span>
 								-or-
 								<span class="type">Array of string</span>
@@ -275,7 +291,7 @@
 												<span>
 													(optional)
 													The message body to use with the HTTP request. Message bodies must specify
-													their content in some way; a <code>string</code> property or a 
+													their content in some way; a <code>string</code> property or a
 													<code>stream</code> property may be used.
 												</span>
 												<div class="label">has properties:</div>
@@ -285,7 +301,7 @@
 														<span class="type">string</span>
 														<span>
 															(optional)
-															The MIME type of the message body. If omitted, 
+															The MIME type of the message body. If omitted,
 															<code>application/octet-stream</code> will be used.
 														</span>
 													</li>

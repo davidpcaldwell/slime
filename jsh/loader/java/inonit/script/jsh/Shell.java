@@ -373,7 +373,7 @@ public class Shell {
 				public Code getBootstrapModule(String path) {
 					return installation.getShellModuleCode(path);
 				}
-				
+
 				public Installation.Plugin[] getPlugins() {
 					return installation.getPlugins();
 				}
