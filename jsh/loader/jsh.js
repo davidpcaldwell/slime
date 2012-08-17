@@ -80,7 +80,7 @@ this.jsh = new function() {
 						_source: _code.getScripts(),
 						path: path
 					},
-					{ $context: context }
+					context
 				);
 			};
 			this.module = function(_code,main,context) {
@@ -437,6 +437,7 @@ this.jsh = new function() {
 		while(list.length > 0 && !stop) {
 			var marked = false;
 			var i = 0;
+			//	TODO	should isReady be optional?
 			while(i < list.length && !marked) {
 				if (list[i].isReady()) {
 					list[i].load();
@@ -449,6 +450,10 @@ this.jsh = new function() {
 				//	Some plugin was never ready
 				debugger;
 				stop = true;
+				//	TODO	think harder about what to do
+				list.forEach(function(item) {
+					jsh.shell.echo("WARNING: could not load plugin: never became ready\n" + item.isReady);
+				});
 			}
 		}
 	})();
