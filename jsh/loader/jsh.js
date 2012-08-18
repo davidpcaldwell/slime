@@ -92,6 +92,9 @@ this.jsh = new function() {
 					{ $context: context }
 				);
 			};
+			this.addClasses = function(_code) {
+				rhinoLoader.classpath.add(_code.getClasses());
+			}
 		}
 
 		this.run = function(code,scope,target) {
@@ -415,22 +418,26 @@ this.jsh = new function() {
 
 		for (var i=0; i<_plugins.length; i++) {
 			var _code = _plugins[i].getCode();
-			var scope = {};
-			//	TODO	$host is currently automatically in scope for these plugins, but that is probably not as it should be; see
-			//			issue 32
-			scope.plugin = function(p) {
-				list.push(p);
+			if (_code.getScripts()) {
+				var scope = {};
+				//	TODO	$host is currently automatically in scope for these plugins, but that is probably not as it should be; see
+				//			issue 32
+				scope.plugin = function(p) {
+					list.push(p);
+				}
+				scope.jsh = jsh;
+				scope.$loader = new (function(_code) {
+					this.file = function(path,context) {
+						return loader.plugin.file(_code,path,context);
+					}
+					this.module = function(path,context) {
+						return loader.plugin.module(_code,path,context);
+					}
+				})(_code);
+				loader.plugin.read(_code,scope);
+			} else {
+				loader.plugin.addClasses(_code);
 			}
-			scope.jsh = jsh;
-			scope.$loader = new (function(_code) {
-				this.file = function(path,context) {
-					return loader.plugin.file(_code,path,context);
-				}
-				this.module = function(path,context) {
-					return loader.plugin.module(_code,path,context);
-				}
-			})(_code);
-			loader.plugin.read(_code,scope);
 		}
 
 		var stop = false;

@@ -145,28 +145,44 @@ public class Main {
 					return Code.slime(getModulePath(path));
 				}
 
+				class PluginComparator implements Comparator<File> {
+					private int evaluate(File file) {
+						if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+							return -1;
+						}
+						return 0;
+					}
+
+					public int compare(File o1, File o2) {
+						return evaluate(o1) - evaluate(o2);
+					}
+				}
+
 				private void addPluginsTo(List<Plugin> rv, File file) {
 					if (file.exists()) {
 						if (file.isDirectory()) {
 							if (new File(file, "plugin.jsh.js").exists()) {
 								//	interpret as unpacked module
-								rv.add(Plugin.create(Code.unpacked(file)));
+								rv.add(Plugin.unpacked(file));
 							} else {
 								//	interpret as directory of slime
 								File[] list = file.listFiles();
+								Arrays.sort(list, new PluginComparator());
 								for (File f : list) {
 									addPluginsTo(rv, f);
 								}
 							}
 						} else if (file.getName().endsWith(".slime")) {
 							try {
-								Plugin p = Plugin.check(Code.slime(file));
+								Plugin p = Plugin.slime(file);
 								if (p != null) {
 									rv.add(p);
 								}
 							} catch (IOException e) {
 								//	TODO	probably error message or warning
 							}
+						} else if (file.getName().endsWith(".jar")) {
+							rv.add(Plugin.jar(file));
 						} else {
 							//	Ignore, not .slime or directory
 							//	TODO	probably log message of some kind
