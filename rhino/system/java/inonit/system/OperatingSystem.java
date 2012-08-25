@@ -37,6 +37,11 @@ public class OperatingSystem {
 		return Command.execute(path, arguments);
 	}
 
+	//	Used by jsh launcher
+	public int execute(Command.Context context, Command.Configuration configuration) throws IOException {
+		return Command.getExitStatus(context, configuration);
+	}
+
 	public Subprocess start(Command.Configuration configuration, Command.Context context) throws IOException {
 		return Command.create(configuration).start(context);
 	}

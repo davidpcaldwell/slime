@@ -356,6 +356,11 @@ this.jsh = new function() {
 			io: jsh.io,
 			file: jsh.file
 		}
+		context.stdio = new function() {
+			this["in"] = jsh.io.java.adapt($host.getStdio().getStandardInput());
+			this["out"] = jsh.io.java.adapt($host.getStdio().getStandardOutput());
+			this["err"] = jsh.io.java.adapt($host.getStdio().getStandardOutput());
+		}
 		context.getSystemProperty = function(name) {
 			var rv = $host.getSystemProperties().getProperty(name);
 			if (rv == null) return null;

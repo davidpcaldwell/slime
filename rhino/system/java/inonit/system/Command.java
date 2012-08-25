@@ -166,6 +166,15 @@ public class Command {
 		return result;
 	}
 
+	static int getExitStatus(Context context, Configuration configuration) throws IOException {
+		Command shell = new Command();
+		shell.configuration = configuration;
+		ListenerImpl listener = new ListenerImpl();
+		shell.execute(context, listener);
+		if (listener.threw() != null) throw listener.threw();
+		return listener.getExitStatus();
+	}
+
 	private static class ContextImpl extends Context {
 		private ByteArrayOutputStream out = new ByteArrayOutputStream();
 		private ByteArrayOutputStream err = new ByteArrayOutputStream();
