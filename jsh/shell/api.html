@@ -103,6 +103,12 @@ END LICENSE
 					return String(Packages.java.lang.System.getProperty(name));
 				}
 
+				this.stdio = new function() {
+					this["in"] = jsh.shell.stdin;
+					this["out"] = jsh.shell.stdout;
+					this["err"] = jsh.shell.stderr;
+				}
+
 				this.exit = function() {
 				}
 			}

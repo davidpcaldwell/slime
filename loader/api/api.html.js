@@ -13,8 +13,11 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	Shared code for unit test harnesses
+
 $exports.MEDIA_TYPE = "application/x.jsapi";
 
+//	Returns a path for api.html given a path to a .js file or other file
 $exports.getApiHtmlPath = function(path) {
 	if (/\/$/.test(path)) {
 		return path + "api.html";
@@ -42,6 +45,10 @@ $exports.getApiHtmlPath = function(path) {
 	}
 }
 
+//	Creates an object representing an api.html given its HTML and a 'name' used to name the top-level scenario; this object can:
+//		.getContexts(): produce the list of contexts declared on the page
+//		.getScenario(scope,unit): produce a unit.before.js/Scenario given a scope and a test path
+//
 $exports.ApiHtmlTests = function(html,name) {
 	var SCRIPT_TYPE_PREFIX = $exports.MEDIA_TYPE + "#";
 

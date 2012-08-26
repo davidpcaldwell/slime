@@ -18,6 +18,10 @@ $exports.environment = $context.api.shell.environment;
 $exports.properties = $context.api.shell.properties;
 $api.experimental($exports,"properties");
 
+$exports.stdin = $context.stdio["in"];
+$exports.stdout = $context.stdio["out"];
+$exports.stderr = $context.stdio["err"];
+
 $exports.echo = function(message,mode) {
 	if (arguments.length == 0) message = "";
 	if (!mode) mode = {};
