@@ -169,7 +169,13 @@
 					code = { base: code };
 				} else {
 					var tokens = code.split("/");
-					code = { base: tokens.slice(0,tokens.length-1).join("/") + "/", main: tokens[tokens.length-1] };
+					var base = tokens.slice(0,tokens.length-1).join("/");
+					//	TODO	add an automated test for loading a "sibling" module (one from a URL with no /); the below
+					//			'if' statement seems to make that work correctly
+					if (base.length > 0) {
+						base += "/";
+					}
+					code = { base: base, main: tokens[tokens.length-1] };
 				}
 			} else if (typeof(code) == "object" && code.base && code.main) {
 				throw new RangeError(
