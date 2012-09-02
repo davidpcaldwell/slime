@@ -102,7 +102,7 @@ this.jsh = new function() {
 		}
 
 		this.file = function(code,$context) {
-			return rhinoLoader.file(getCode(code), $context);
+			return rhinoLoader.file(getCode(code),$context);
 		}
 
 		this.module = function(pathname) {
