@@ -58,7 +58,7 @@
 				}
 			} else if (typeof(code) == "object" && code._source && code.path) {
 				return arguments.callee({
-					name: code._source.toString(),
+					name: code._source.toString() + ":" + code.path,
 					_in: code._source.getResourceAsStream(code.path)
 				});
 			} else if (typeof(code) == "string") {
@@ -69,10 +69,12 @@
 		}
 
 		this.run = function(code,scope,target) {
+			debugger;
 			loader.run(getCode(code),scope,target);
 		}
 
 		this.file = function(code,$context) {
+			debugger;
 			return loader.file(getCode(code),$context);
 		}
 
@@ -115,45 +117,37 @@
 		};
 
 		var Loader = function(_source) {
-			var getCode = function(path) {
-				return {
-					_source: _source,
-					path: path
+			var p = new function() {
+				this.getCode = function(path) {
+					return getCode({
+						_source: _source,
+						path: path
+					})
 				};
-			}
 
-			this.run = function(path,scope,target) {
-				return rhinoLoader.run(getCode(path),scope,target);
-			}
-
-			this.file = function(path,$context) {
-				return rhinoLoader.file(getCode(path),$context);
-			}
-
-			this.module = function(path) {
-				var Code = Packages.inonit.script.rhino.Code;
-				//	TODO	replace with a _source path main API
-				var m = {
-					_code: Code.create(_source,path),
-					main: "module.js"
-				};
-				var p = {};
-				if (arguments.length == 2) {
-					p.$context = arguments[1];
+				this.decorateLoader = function(rv) {
+					//	TODO	probably will not work correctly with child loaders? Would need access to the underlying getCode
+//					rv.resource = function(path) {
+//						var _in = _source.getResourceAsStream(path);
+//						if (!_in) return null;
+//						throw new Error("Not yet implemented correctly.");
+//						return jsh.io.java.adapt(_in);
+//					}
 				}
-				return rhinoLoader.module(m,p);
 			}
-
-			this.resource = function(path) {
-				var _in = _source.getResourceAsStream(path);
-				if (!_in) return null;
-				return jsh.io.java.adapt(_in);
-			}
+			
+			var delegate = new loader.Loader(p);
+			return delegate;
 		}
 
 		this.Loader = function(p) {
 			if (p._source) {
-				return new Loader(_source);
+				return new Loader(p._source);
+			} else if (p._code) {
+				//	TODO	this is probably a bad place to do this, but it will do for now; actually should use loader decoration
+				//			to do this
+				$loader.classpath.append(p._code);
+				return new Loader(p._code.getScripts());
 			}
 		}
 
@@ -161,6 +155,7 @@
 		//	Code currently contains a Code.Source for scripts and a Code.Source for classes
 		//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
 		this.module = function(format,p) {
+			debugger;
 			if (format._code) {
 				$loader.classpath.append(format._code);
 				return loader.module(engineModuleCodeLoader(format._code, format.main),p);
