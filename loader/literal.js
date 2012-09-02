@@ -255,7 +255,9 @@
 			return scope.$exports;
 		}
 
-		var Loader = function(getCode,decorateLoader) {
+		var Loader = function(p) {
+			var getCode = p.getCode;
+			var decorateLoader = p.decorateLoader;
 			var Callee = arguments.callee;
 
 			this.run = function(path,scope,target) {
@@ -286,10 +288,12 @@
 			this.module = function(path,scope,target) {
 				var tokens = path.split("/");
 				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-				var main = tokens[tokens.length-1];
-				var loader = new Callee(function(path) {
-					return getCode(prefix+path);
-				}, decorateLoader);
+				var loader = new Callee({
+					getCode: function(path) {
+						return getCode(prefix+path);
+					},
+					decorateLoader: decorateLoader
+				});
 				var inner = createScope(scope);
 				inner.$loader = loader;
 				runInScope(getCode(path),inner,target);
@@ -298,52 +302,6 @@
 
 			if (decorateLoader) {
 				decorateLoader(this);
-			}
-		}
-
-		var ModuleLoader = function(format) {
-			//	format.getCode: function(path), returns string containing the code contained at that path
-			//	format.main: string, path to module file
-
-			var Callee = arguments.callee;
-
-			this.load = function(p) {
-				var scope = {
-					$context: (p && p.$context) ? p.$context : {},
-					$exports: (p && p.$exports) ? p.$exports : {},
-					$loader: new function() {
-						this.run = function(path,scope,target) {
-							runInScope(format.getCode(path),scope,target);
-						}
-
-						this.file = function(path,context) {
-							return file(format.getCode(path),context);
-						}
-
-						this.script = $api.deprecate(this.file);
-
-						this.module = function(path,context) {
-							var tokens = path.split("/");
-							var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-							var main = tokens[tokens.length-1];
-							var loader = new Callee({
-								main: main,
-								getCode: function(path) {
-									return format.getCode(prefix+path);
-								}
-							});
-							return loader.load({ $context: context });
-						}
-
-						//	TODO	should this return a value and allow wholesale replacement?
-						if (format.decorateLoader) {
-							format.decorateLoader(this);
-						}
-					}()
-				};
-
-				runInScope(format.getCode(format.main),scope);
-				return scope.$exports;
 			}
 		}
 
@@ -358,9 +316,7 @@
 		};
 
 		this.module = function(format,scope) {
-//			var loader = new ModuleLoader(format);
-//			return loader.load(scope);
-			var loader = new Loader(format.getCode,format.decorateLoader);
+			var loader = new Loader(format);
 			return loader.module(format.main,scope);
 		};
 
