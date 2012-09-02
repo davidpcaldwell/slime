@@ -296,6 +296,9 @@
 				});
 				var inner = createScope(scope);
 				inner.$loader = loader;
+				if (path == "" || /\/$/.test(path)) {
+					path += "module.js";
+				}
 				runInScope(getCode(path),inner,target);
 				return inner.$exports;
 			}
@@ -305,17 +308,22 @@
 			}
 		}
 
+		this.Loader = Loader;
+
 		this.run = function(code,scope,target) {
+			debugger;
 			runInScope(code,scope,target);
 		};
 
 		//	TODO	For file and module, what should we do about 'this' and why?
 
 		this.file = function(code,$context) {
+			debugger;
 			return file(code,$context);
 		};
 
 		this.module = function(format,scope) {
+			debugger;
 			var loader = new Loader(format);
 			return loader.module(format.main,scope);
 		};

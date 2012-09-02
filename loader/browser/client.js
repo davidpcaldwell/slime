@@ -143,67 +143,77 @@
 
 		var instantiate = {};
 
-		this.module = function(code,args) {
-			var createModuleLoader = function(code) {
-				return new function() {
-					this.main = (code.main) ? code.main : "module.js";
-
-					this.getCode = function(path) {
-						if (instantiate[code.base+path]) {
-							return function(scope,target) {
-								instantiate[code.base+path](scope);
-							}
-						} else {
-							//	TODO	assumes trailing slash when loading module
-							return fetcher.getCode(code.base+path);
-						}
-					}
-				}
+		var loader = new platform.Loader({
+			getCode: function(path) {
+				return fetcher.getCode(path);
 			}
+		});
 
-			if (!code) {
-				//	TODO	probably want better message for zero-length string
-				throw new RangeError("Missing argument 0 specifying location of module.");
-			} else if (typeof(code) == "string") {
-				if (/\/$/.test(code)) {
-					code = { base: code };
-				} else {
-					var tokens = code.split("/");
-					var base = tokens.slice(0,tokens.length-1).join("/");
-					//	TODO	add an automated test for loading a "sibling" module (one from a URL with no /); the below
-					//			'if' statement seems to make that work correctly
-					if (base.length > 0) {
-						base += "/";
-					}
-					code = { base: base, main: tokens[tokens.length-1] };
-				}
-			} else if (typeof(code) == "object" && code.base && code.main) {
-				throw new RangeError(
-					"Attempt to use removed inonit.loader.module API by invoking with first argument having base/main properties."
-					+ " base=" + code.base + " main=" + code.main
-					+ " Resolve the properties to a single location and invoke using that."
-				);
-			} else {
-				throw new RangeError(
-					"Non-string passed to inonit.loader.module: " + code
-				);
-			}
-
-			if (typeof(args) == "object") {
-				if (args.$context && args.$exports) {
-				} else {
-					args = {
-						$context: args,
-						$exports: {}
-					}
-				}
-			}
-
-			return platform.module(createModuleLoader(code),args);
+//		this.module = function(code,args) {
+//			var createModuleLoader = function(code) {
+//				return new function() {
+//					this.main = (code.main) ? code.main : "module.js";
+//
+//					this.getCode = function(path) {
+//						if (instantiate[code.base+path]) {
+//							return function(scope,target) {
+//								instantiate[code.base+path](scope);
+//							}
+//						} else {
+//							//	TODO	assumes trailing slash when loading module
+//							return fetcher.getCode(code.base+path);
+//						}
+//					}
+//				}
+//			}
+//
+//			if (!code) {
+//				//	TODO	probably want better message for zero-length string
+//				throw new RangeError("Missing argument 0 specifying location of module.");
+//			} else if (typeof(code) == "string") {
+//				if (/\/$/.test(code)) {
+//					code = { base: code };
+//				} else {
+//					var tokens = code.split("/");
+//					var base = tokens.slice(0,tokens.length-1).join("/");
+//					//	TODO	add an automated test for loading a "sibling" module (one from a URL with no /); the below
+//					//			'if' statement seems to make that work correctly
+//					if (base.length > 0) {
+//						base += "/";
+//					}
+//					code = { base: base, main: tokens[tokens.length-1] };
+//				}
+//			} else if (typeof(code) == "object" && code.base && code.main) {
+//				throw new RangeError(
+//					"Attempt to use removed inonit.loader.module API by invoking with first argument having base/main properties."
+//					+ " base=" + code.base + " main=" + code.main
+//					+ " Resolve the properties to a single location and invoke using that."
+//				);
+//			} else {
+//				throw new RangeError(
+//					"Non-string passed to inonit.loader.module: " + code
+//				);
+//			}
+//
+//			if (typeof(args) == "object") {
+//				if (args.$context && args.$exports) {
+//				} else {
+//					args = {
+//						$context: args,
+//						$exports: {}
+//					}
+//				}
+//			}
+//
+//			return platform.module(createModuleLoader(code),args);
+//		}
+		this.module = function() {
+			return loader.module.apply(loader,arguments);
 		}
 
 		this.file = function(path,$context) {
-			return platform.file(fetcher.getCode(path),$context);
+			return loader.file.apply(loader,arguments);
+//			return platform.file(fetcher.getCode(path),$context);
 		};
 
 		this.script = platform.$api.deprecate(this.file);
