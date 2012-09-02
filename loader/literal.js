@@ -255,6 +255,52 @@
 			return scope.$exports;
 		}
 
+		var Loader = function(getCode,decorateLoader) {
+			var Callee = arguments.callee;
+
+			this.run = function(path,scope,target) {
+				runInScope(getCode(path),scope,target);
+			}
+
+			var createScope = function(scope) {
+				var rv;
+				if (scope && (scope.$context || scope.$exports)) {
+					rv = scope;
+				} else {
+					rv = { $context: scope };
+				}
+				if (!rv.$exports) {
+					rv.$exports = {};
+				}
+				return rv;
+			}
+
+			this.file = function(path,scope,target) {
+				//	TODO	can we put file in here somehow?
+				//	TODO	should we be able to provide a 'this' here?
+				var inner = createScope(scope);
+				runInScope(getCode(path),inner,target);
+				return inner.$exports;
+			}
+
+			this.module = function(path,scope,target) {
+				var tokens = path.split("/");
+				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+				var main = tokens[tokens.length-1];
+				var loader = new Callee(function(path) {
+					return getCode(prefix+path);
+				}, decorateLoader);
+				var inner = createScope(scope);
+				inner.$loader = loader;
+				runInScope(getCode(path),inner,target);
+				return inner.$exports;
+			}
+
+			if (decorateLoader) {
+				decorateLoader(this);
+			}
+		}
+
 		var ModuleLoader = function(format) {
 			//	format.getCode: function(path), returns string containing the code contained at that path
 			//	format.main: string, path to module file
@@ -312,8 +358,10 @@
 		};
 
 		this.module = function(format,scope) {
-			var loader = new ModuleLoader(format);
-			return loader.load(scope);
+//			var loader = new ModuleLoader(format);
+//			return loader.load(scope);
+			var loader = new Loader(format.getCode,format.decorateLoader);
+			return loader.module(format.main,scope);
 		};
 
 		this.namespace = function(string) {

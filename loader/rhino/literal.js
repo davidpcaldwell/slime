@@ -76,15 +76,15 @@
 			return loader.file(getCode(code),$context);
 		}
 
-		var engineModuleCodeLoader = function($engine_module,main) {
+		var engineModuleCodeLoader = function(_code,main) {
 			return new function() {
 				this.main = main;
 
 				this.getCode = function(path) {
-					var $in = $engine_module.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
-					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
+					var $in = _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
+					if (!$in) throw "Missing module file: " + path + " in " + _code;
 					return getCode({
-						name: String($engine_module) + ":" + path,
+						name: String(_code) + ":" + path,
 						_in: $in
 					});
 				};
@@ -93,7 +93,7 @@
 				this.decorateLoader = function($loader) {
 					$loader.java = new function() {
 						this.read = function(path) {
-							return $engine_module.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
+							return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
 						}
 					}
 				}
@@ -113,6 +113,49 @@
 				return { _code: Code.slime(_slime), main: main };
 			}
 		};
+
+		var Loader = function(_source) {
+			var getCode = function(path) {
+				return {
+					_source: _source,
+					path: path
+				};
+			}
+
+			this.run = function(path,scope,target) {
+				return rhinoLoader.run(getCode(path),scope,target);
+			}
+
+			this.file = function(path,$context) {
+				return rhinoLoader.file(getCode(path),$context);
+			}
+
+			this.module = function(path) {
+				var Code = Packages.inonit.script.rhino.Code;
+				//	TODO	replace with a _source path main API
+				var m = {
+					_code: Code.create(_source,path),
+					main: "module.js"
+				};
+				var p = {};
+				if (arguments.length == 2) {
+					p.$context = arguments[1];
+				}
+				return rhinoLoader.module(m,p);
+			}
+
+			this.resource = function(path) {
+				var _in = _source.getResourceAsStream(path);
+				if (!_in) return null;
+				return jsh.io.java.adapt(_in);
+			}
+		}
+
+		this.Loader = function(p) {
+			if (p._source) {
+				return new Loader(_source);
+			}
+		}
 
 		//	Only modules may currently contain Java classes, which causes the API to be somewhat different
 		//	Code currently contains a Code.Source for scripts and a Code.Source for classes
