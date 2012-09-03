@@ -268,38 +268,37 @@
 		}
 
 		var Loader = function(p) {
-			var getCode = p.getCode;
-			var decorateLoader = p.decorateLoader;
 			var Callee = arguments.callee;
 
 			this.run = function(path,scope,target) {
-				runInScope(getCode(path),scope,target);
+				runInScope(p.getCode(path),scope,target);
 			}
 
 			this.file = function(path,scope,target) {
-				return file(getCode(path),scope,target);
+				return file(p.getCode(path),scope,target);
 			}
 
 			this.module = function(path,scope,target) {
 				var tokens = path.split("/");
 				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-				var loader = new Callee({
-					getCode: function(path) {
-						return getCode(prefix+path);
-					},
-					decorateLoader: decorateLoader
-				});
+				var loader = (function() {
+					if (p.createChild) {
+						return p.createChild(prefix);
+					} else {
+						return new Callee({
+							getCode: function(path) {
+								return p.getCode(prefix+path);
+							}
+						})
+					}
+				})();
 				var inner = createScope(scope);
 				inner.$loader = loader;
 				if (path == "" || /\/$/.test(path)) {
 					path += "module.js";
 				}
-				runInScope(getCode(path),inner,target);
+				runInScope(p.getCode(path),inner,target);
 				return inner.$exports;
-			}
-
-			if (decorateLoader) {
-				decorateLoader(this);
 			}
 		}
 

@@ -69,37 +69,11 @@
 		}
 
 		this.run = function(code,scope,target) {
-			debugger;
 			loader.run(getCode(code),scope,target);
 		}
 
 		this.file = function(code,$context) {
-			debugger;
 			return loader.file(getCode(code),$context);
-		}
-
-		var engineModuleCodeLoader = function(_code,main) {
-			return new function() {
-				this.main = main;
-
-				this.getCode = function(path) {
-					var $in = _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
-					if (!$in) throw "Missing module file: " + path + " in " + _code;
-					return getCode({
-						name: String(_code) + ":" + path,
-						_in: $in
-					});
-				};
-
-
-				this.decorateLoader = function($loader) {
-					$loader.java = new function() {
-						this.read = function(path) {
-							return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
-						}
-					}
-				}
-			}
 		}
 
 		this.Module = new function() {
@@ -116,27 +90,30 @@
 			}
 		};
 
-		var Loader = function(_source) {
+		var Loader = function(_source,root) {
+			if (typeof(root) == "undefined") {
+				root = "";
+			}
+			var Callee = arguments.callee;
+
 			var p = new function() {
 				this.getCode = function(path) {
 					return getCode({
 						_source: _source,
-						path: path
+						path: root+path
 					})
 				};
 
-				this.decorateLoader = function(rv) {
+				this.createChild = function(prefix) {
+					return new Callee(_source,root+prefix);
 					//	TODO	probably will not work correctly with child loaders? Would need access to the underlying getCode
-//					rv.resource = function(path) {
-//						var _in = _source.getResourceAsStream(path);
-//						if (!_in) return null;
-//						throw new Error("Not yet implemented correctly.");
-//						return jsh.io.java.adapt(_in);
-//					}
 				}
 			}
 			
 			var delegate = new loader.Loader(p);
+			delegate._resource = function(path) {
+				return _source.getResourceAsStream(root+path);
+			}
 			return delegate;
 		}
 
@@ -163,6 +140,31 @@
 		//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
 		this.module = function(format,p) {
 			debugger;
+
+			var engineModuleCodeLoader = function(_code,main) {
+				return new function() {
+					this.main = main;
+
+					this.getCode = function(path) {
+						var $in = _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
+						if (!$in) throw "Missing module file: " + path + " in " + _code;
+						return getCode({
+							name: String(_code) + ":" + path,
+							_in: $in
+						});
+					};
+
+
+					this.decorateLoader = function($loader) {
+						$loader.java = new function() {
+							this.read = function(path) {
+								return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
+							}
+						}
+					}
+				}
+			}
+
 			if (format._code) {
 				$loader.classpath.append(format._code);
 				return loader.module(engineModuleCodeLoader(format._code, format.main),p);

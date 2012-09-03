@@ -98,32 +98,12 @@ this.jsh = new function() {
 			}
 		}
 
-		var FileLoader = function(base) {
-			return new rhinoLoader.Loader({
-				getCode: function(path) {
-					return getCode(base.getRelativePath(path));
-				}
-			});
-		}
-
 		this.run = function(code,scope,target) {
-			if (!code.parent || !code.basename) {
-				debugger;
-				return rhinoLoader.run(getCode(code),scope,target);
-			}
-			return new FileLoader(code.parent.directory).run(code.basename,scope,target);
-//			return rhinoLoader.run(getCode(code),scope,target);
+			return rhinoLoader.run(getCode(code),scope,target);
 		}
 
 		this.file = function(code,$context) {
-			if (!code.parent || !code.basename) {
-				debugger;
-				return rhinoLoader.file(getCode(code),$context);
-			}
-			if (!code.parent.directory) {
-				throw new RangeError("Directory not found: " + code.parent);
-			}
-			return new FileLoader(code.parent.directory).file(code.basename,$context);
+			return rhinoLoader.file(getCode(code),$context);
 		}
 
 		this.module = function(pathname) {
@@ -175,40 +155,15 @@ this.jsh = new function() {
 		}
 
 		var Loader = function(_source) {
-			var getCode = function(path) {
-				return {
-					_source: _source,
-					path: path
-				};
-			}
-
-			this.run = function(path,scope,target) {
-				return rhinoLoader.run(getCode(path),scope,target);
-			}
-
-			this.file = function(path,$context) {
-				return rhinoLoader.file(getCode(path),$context);
-			}
-
-			this.module = function(path) {
-				var Code = Packages.inonit.script.rhino.Code;
-				//	TODO	replace with a _source path main API
-				var m = {
-					_code: Code.create(_source,path),
-					main: "module.js"
-				};
-				var p = {};
-				if (arguments.length == 2) {
-					p.$context = arguments[1];
+			var rv = new rhinoLoader.Loader({ _source: _source });
+			rv.resource = (function(target) {
+				return function(path) {
+					var _in = target._resource(path);
+					if (!_in) return null;
+					return jsh.io.java.adapt(_in);
 				}
-				return rhinoLoader.module(m,p);
-			}
-
-			this.resource = function(path) {
-				var _in = _source.getResourceAsStream(path);
-				if (!_in) return null;
-				return jsh.io.java.adapt(_in);
-			}
+			})(rv);
+			return rv;
 		}
 
 		var self = this;

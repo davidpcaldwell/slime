@@ -397,3 +397,18 @@ $exports.Parser = new function() {
 		}
 	}
 }
+
+$exports.Loader = function(p) {
+	//	TODO	document
+	this.run = function(path,scope,target) {
+		throw new Error("Unimplemented.");
+	}
+
+	this.file = function(path,$context) {
+		throw new Error("Unimplemented.");
+	}
+
+	this.module = function(path,scope) {
+		throw new Error("Unimplemented.");
+	}
+}
