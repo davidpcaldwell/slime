@@ -98,12 +98,32 @@ this.jsh = new function() {
 			}
 		}
 
+		var FileLoader = function(base) {
+			return new rhinoLoader.Loader({
+				getCode: function(path) {
+					return getCode(base.getRelativePath(path));
+				}
+			});
+		}
+
 		this.run = function(code,scope,target) {
-			return rhinoLoader.run(getCode(code),scope,target);
+			if (!code.parent || !code.basename) {
+				debugger;
+				return rhinoLoader.run(getCode(code),scope,target);
+			}
+			return new FileLoader(code.parent.directory).run(code.basename,scope,target);
+//			return rhinoLoader.run(getCode(code),scope,target);
 		}
 
 		this.file = function(code,$context) {
-			return rhinoLoader.file(getCode(code),$context);
+			if (!code.parent || !code.basename) {
+				debugger;
+				return rhinoLoader.file(getCode(code),$context);
+			}
+			if (!code.parent.directory) {
+				throw new RangeError("Directory not found: " + code.parent);
+			}
+			return new FileLoader(code.parent.directory).file(code.basename,$context);
 		}
 
 		this.module = function(pathname) {

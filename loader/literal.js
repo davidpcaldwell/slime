@@ -246,13 +246,25 @@
 			}
 		}
 
-		var file = function(code,$context) {
-			var scope = {
-				$exports: {}
-			};
-			scope.$context = ($context) ? $context : {};
-			runInScope(code,scope,{});
-			return scope.$exports;
+		var createScope = function(scope) {
+			var rv;
+			if (scope && (scope.$context || scope.$exports)) {
+				rv = scope;
+			} else {
+				rv = { $context: scope };
+			}
+			if (!rv.$exports) {
+				rv.$exports = {};
+			}
+			return rv;
+		}
+
+		var file = function(code,scope,target) {
+			//	TODO	can we put file in here somehow?
+			//	TODO	should we be able to provide a 'this' here?
+			var inner = createScope(scope);
+			runInScope(code,inner,target);
+			return inner.$exports;
 		}
 
 		var Loader = function(p) {
@@ -264,25 +276,8 @@
 				runInScope(getCode(path),scope,target);
 			}
 
-			var createScope = function(scope) {
-				var rv;
-				if (scope && (scope.$context || scope.$exports)) {
-					rv = scope;
-				} else {
-					rv = { $context: scope };
-				}
-				if (!rv.$exports) {
-					rv.$exports = {};
-				}
-				return rv;
-			}
-
 			this.file = function(path,scope,target) {
-				//	TODO	can we put file in here somehow?
-				//	TODO	should we be able to provide a 'this' here?
-				var inner = createScope(scope);
-				runInScope(getCode(path),inner,target);
-				return inner.$exports;
+				return file(getCode(path),scope,target);
 			}
 
 			this.module = function(path,scope,target) {
@@ -311,15 +306,13 @@
 		this.Loader = Loader;
 
 		this.run = function(code,scope,target) {
-			debugger;
 			runInScope(code,scope,target);
 		};
 
 		//	TODO	For file and module, what should we do about 'this' and why?
 
-		this.file = function(code,$context) {
-			debugger;
-			return file(code,$context);
+		this.file = function() {
+			return file.apply(this,arguments);
 		};
 
 		this.module = function(format,scope) {

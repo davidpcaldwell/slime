@@ -148,6 +148,13 @@
 				//			to do this
 				$loader.classpath.append(p._code);
 				return new Loader(p._code.getScripts());
+			} else if (p.getCode) {
+				return new loader.Loader({
+					getCode: function(path) {
+						debugger;
+						return getCode(p.getCode(path));
+					}
+				});
 			}
 		}
 
