@@ -250,8 +250,10 @@
 			var rv;
 			if (scope && (scope.$context || scope.$exports)) {
 				rv = scope;
-			} else {
+			} else if (scope) {
 				rv = { $context: scope };
+			} else {
+				rv = { $context: {} };
 			}
 			if (!rv.$exports) {
 				rv.$exports = {};
