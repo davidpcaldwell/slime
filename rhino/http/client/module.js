@@ -398,17 +398,20 @@ $exports.Parser = new function() {
 	}
 }
 
-$exports.Loader = function(p) {
-	//	TODO	document
-	this.run = function(path,scope,target) {
-		throw new Error("Unimplemented.");
+$exports.Loader = function(client) {
+	this.getCode = function(url) {
+		client.request({
+			url: url,
+			parse: function(response) {
+				if (response.status.code == 200) {
+					return {
+						name: url,
+						_in: response.body.stream.java.adapt()
+					};
+				} else {
+					throw new Error("Not found: " + url);
+				}
+			}
+		});
 	}
-
-	this.file = function(path,$context) {
-		throw new Error("Unimplemented.");
-	}
-
-	this.module = function(path,scope) {
-		throw new Error("Unimplemented.");
-	}
-}
+};
