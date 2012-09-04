@@ -293,6 +293,9 @@ var Client = function(mode) {
 			url.parameters = url.parameters.concat(new Url.Query(p.parameters));
 		}
 		var headers = (p.headers) ? new Parameters(p.headers) : [];
+		if (p.authorization) {
+			headers.push({ name: "Authorization", value: p.authorization });
+		}
 		var $urlConnection = connect(method,url.toString(),headers,{ proxy: p.proxy, timeout: p.timeout });
 		if (p.body) {
 			$urlConnection.setDoOutput(true);
@@ -375,6 +378,18 @@ var Client = function(mode) {
 }
 
 $exports.Client = Client;
+
+$exports.Authentication = new function() {
+	this.Basic = new function() {
+		this.Authorization = function(p) {
+			return new String("Basic " + String(
+				Packages.javax.xml.bind.DatatypeConverter.printBase64Binary(
+					new Packages.java.lang.String(p.user + ":" + p.password).getBytes()
+				)
+			));
+		}
+	}
+}
 
 $exports.Body = new function() {
 	this.Form = function(p) {
