@@ -13,6 +13,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+jsh.shell.stderr.character().write("Verify that the text 'stdout' shows up before typing anything:\n");
+//	TODO	it does not, at least in my setup, which is a bug, but it is unclear exactly what is causing it
+//	TODO	currently does not work on Windows or FreeBSD
+jsh.shell.stdout.character().write("stdout: ");
 jsh.shell.stdin.character().readLines(function(line) {
 	jsh.shell.echo("Line: [" + line + "]");
 });

@@ -13,6 +13,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	no apparent dependency on Rhino, let alone jsh; should this be available to all execution environments?
+
 var Stopwatch = function() {
 	var elapsed = 0;
 	var started;
@@ -173,43 +175,21 @@ var Profile = function() {
 		return top.getData(new Date());
 	}
 
-	var dump = function(data,indent,mode) {
-		if (!indent) indent = "";
+	var dump = function(data,dumper) {
 		var recurse = arguments.callee;
-		var title = (function() {
-			if (typeof(data.node) == "undefined") {
-				return "(top)";
-			} else if (data.node == null) {
-				return "(self)";
-			} else if (typeof(data.node == "function")) {
-				var code = String(data.node);
-				code = code.split("\n").map(function(line) {
-					return indent + line;
-				}).slice(0,-1).join("\n")
-				return code;
-			} else {
-				throw new Error("Unknown node type: " + data.node);
-			}
-		})();
-		if (data.calls > 0) {
-			mode.log(indent + "Calls: " + data.calls + " elapsed: " + String( (data.elapsed / 1000).toFixed(3) )
-				+ " average: " + String( (data.elapsed / data.calls / 1000).toFixed(6) ) + " " + title
-			);
-		} else {
-			mode.log(indent + "Calls: " + data.calls + " " + title);
-		}
+		dumper.dump(data);
 		if (data.children) {
 			data.children.sort(function(a,b) {
 				return b.elapsed - a.elapsed;
 			});
 			data.children.forEach( function(child) {
-				recurse(child,indent+mode.indent,mode);
+				recurse(child,dumper.child());
 			});
 		}
 	}
 
-	this.dump = function(mode) {
-		dump(this.getData(),"",mode);
+	this.dump = function(dumper) {
+		dump(this.getData(),dumper);
 	}
 }
 
@@ -226,11 +206,11 @@ $exports.profile = new function() {
 		return cpu;
 	}
 
-	this.add = function(f) {
+	this.add = function(p) {
 		if (cpu) {
-			return cpu.add(f);
+			return cpu.add(p);
 		} else {
-			return f;
+			return p;
 		}
 	}
 }

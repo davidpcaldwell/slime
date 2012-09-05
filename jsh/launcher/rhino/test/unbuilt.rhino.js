@@ -15,15 +15,41 @@
 
 debug.on = true;
 //	TODO	could we get our own location using a stack trace and make this unnecessary?
-debug("Source: " + String(Packages.java.lang.System.getProperty("user.dir")));
+debug("Source: " + String(env.JSH_SLIME_SRC));
+var JSH_SLIME_SRC = new (function() {
+	var _base;
+
+	if (platform.cygwin) {
+		_base = new Packages.java.io.File(platform.cygwin.cygpath.windows(String(env.JSH_SLIME_SRC)));
+	} else {
+		_base = new Packages.java.io.File(String(env.JSH_SLIME_SRC));
+	}
+
+	var getFile = function(path) {
+		return new Packages.java.io.File(_base, path);
+	}
+
+	var getPath = function(path) {
+		return String(getFile(path).getCanonicalPath());
+	}
+
+	this.getFile = function(path) {
+		return getFile(path);
+	}
+
+	this.getPath = function(path) {
+		return getPath(path);
+	}
+})();
+//var JSH_SLIME_SRC =
 
 //	Build the launcher classes
 var LAUNCHER_CLASSES = createTemporaryDirectory();
 //	TODO	duplicated almost exactly in jsh/etc/build.rhino.js
 platform.jdk.compile([
 	"-d", LAUNCHER_CLASSES,
-	"-sourcepath", "rhino/system/java",
-	"jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java"
+	"-sourcepath", JSH_SLIME_SRC.getPath("rhino/system/java"),
+	JSH_SLIME_SRC.getPath("jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java")
 ]);
 
 var addJavaSourceFilesFrom = function(dir,rv) {
@@ -48,11 +74,15 @@ var addJavaSourceFilesFrom = function(dir,rv) {
 var LOADER_CLASSES = createTemporaryDirectory();
 platform.jdk.compile([
 	"-d", LOADER_CLASSES,
-	"-sourcepath", ["loader/rhino/java","rhino/system/java","jsh/loader/java"].join(colon)
+	"-sourcepath", [
+		JSH_SLIME_SRC.getPath("loader/rhino/java"),
+		JSH_SLIME_SRC.getPath("rhino/system/java"),
+		JSH_SLIME_SRC.getPath("jsh/loader/java")
+	].join(colon)
 ]
-	.concat(addJavaSourceFilesFrom(new Packages.java.io.File("loader/rhino")))
-	.concat(addJavaSourceFilesFrom(new Packages.java.io.File("rhino/system")))
-	.concat(addJavaSourceFilesFrom(new Packages.java.io.File("jsh/loader")))
+	.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("loader/rhino")))
+	.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("rhino/system")))
+	.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("jsh/loader")))
 );
 
 var MODULE_CLASSES = createTemporaryDirectory();
@@ -79,7 +109,7 @@ var RHINO_JAR = (function() {
 	return new File(RHINO_HOME, "js.jar").getCanonicalPath();
 })();
 modules.forEach(function(path) {
-	var files = addJavaSourceFilesFrom(new Packages.java.io.File(path));
+	var files = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path));
 
 	if (files.length > 0) {
 		platform.jdk.compile([
@@ -99,14 +129,20 @@ runCommand(
 	arguments[0],
 	{
 		env: new (function() {
+			for (var x in env) {
+				if (/^JSH_/.test(x)) {
+				} else {
+					this[x] = env[x];
+				}
+			}
 			this.JSH_RHINO_CLASSPATH = RHINO_JAR;
-			this.JSH_RHINO_SCRIPT = "jsh/launcher/rhino/jsh.rhino.js";
+			this.JSH_RHINO_SCRIPT = JSH_SLIME_SRC.getPath("jsh/launcher/rhino/jsh.rhino.js");
 			this.JSH_SHELL_CLASSPATH = LOADER_CLASSES;
 			this.JSH_SCRIPT_CLASSPATH = MODULE_CLASSES;
-			this.JSH_LIBRARY_SCRIPTS_LOADER = "loader";
-			this.JSH_LIBRARY_SCRIPTS_RHINO = "loader/rhino";
-			this.JSH_LIBRARY_SCRIPTS_JSH = "jsh/loader";
-			this.JSH_LIBRARY_MODULES = ".";
+			this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_SLIME_SRC.getPath("loader");
+			this.JSH_LIBRARY_SCRIPTS_RHINO = JSH_SLIME_SRC.getPath("loader/rhino");
+			this.JSH_LIBRARY_SCRIPTS_JSH = JSH_SLIME_SRC.getPath("jsh/loader");
+			this.JSH_LIBRARY_MODULES = JSH_SLIME_SRC.getPath(".");
 		})()
 	}
 );

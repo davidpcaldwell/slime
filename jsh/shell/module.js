@@ -36,14 +36,14 @@ $exports.echo = function(message,mode) {
 	if (mode.console) {
 		console = mode.console;
 	} else if (mode.stream) {
-		console = streamToConsole(mode.stream,arguments.callee.toString);
+		console = streamToConsole(mode.stream,arguments.callee.String);
 	} else {
-		console = streamToConsole($context.api.io.Streams.stdout,arguments.callee.toString);
+		console = streamToConsole($context.api.io.Streams.stdout,arguments.callee.String);
 	}
 
 	console(message);
 }
-$exports.echo.toString = function(message) {
+$exports.echo.String = function(message) {
 	if (typeof(message) == "string") {
 		return message;
 	} else if (typeof(message) == "number") {
@@ -69,8 +69,8 @@ $exports.echo.toString = function(message) {
 	}
 	return message;
 }
-$exports.echo.toString["undefined"] = "(undefined)";
-$exports.echo.toString["null"] = "(null)";
+$exports.echo.String["undefined"] = "(undefined)";
+$exports.echo.String["null"] = "(null)";
 
 $exports.shell = function(command,args,mode) {
 	if (arguments.length < 3) {

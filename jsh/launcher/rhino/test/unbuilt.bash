@@ -33,8 +33,7 @@ if [ -z "$JSH_RHINO_HOME" ]; then
 	echo "Cannot locate Rhino: please specify \$JSH_RHINO_HOME"
 	exit 1
 fi
-JSH_SLIME_SRC=$(dirname $0)/../../../..
-cd $JSH_SLIME_SRC
+export JSH_SLIME_SRC=$(dirname $0)/../../../..
 
 CYGPATH=$(which cygpath)
 if [ -z "$CYGPATH" ]; then
@@ -43,4 +42,6 @@ else
 	CYGPATH="cygpath -w"
 fi
 
-$JAVA_COMMAND -jar $(${CYGPATH} ${JSH_RHINO_HOME}/js.jar) -f jsh/launcher/rhino/api.rhino.js jsh/launcher/rhino/test/unbuilt.rhino.js "$@"
+LAUNCHER_COMMAND="$JAVA_COMMAND -jar $(${CYGPATH} ${JSH_RHINO_HOME}/js.jar)"
+#LAUNCHER_COMMAND="$JAVA_COMMAND -classpath $(${CYGPATH} ${JSH_RHINO_HOME}/js.jar) org.mozilla.javascript.tools.debugger.Main"
+$LAUNCHER_COMMAND -f $(${CYGPATH} $JSH_SLIME_SRC/jsh/launcher/rhino/api.rhino.js) $(${CYGPATH} $JSH_SLIME_SRC/jsh/launcher/rhino/test/unbuilt.rhino.js) "$@"
