@@ -42,6 +42,55 @@ var Stopwatch = function() {
 	}
 }
 
+var cpu;
+
+var decorated = [];
+
+//	environment:
+//		getCurrent: node that currently applies to this profiling context
+var decorate = function(p) {
+	if (typeof(p) == "function") {
+		var f = p;
+		var rv = function() {
+			var next = cpu.profiles.current().getCurrent().getNodeFor(f);
+			next.start();
+			try {
+				var rv;
+				if (this.constructor == f) {
+					//	is constructor
+					rv = eval("new f(" + Array.prototype.map.call(arguments,function(arg,index) { return "arguments[" + index + "]"} ).join(",") + ")");
+				} else {
+					rv = f.apply(this,arguments);
+				}
+				next.stop();
+				//	Also adds decoration to the return value of this function
+				if (typeof(rv) == "object" && rv != null) {
+					if (decorated.indexOf(rv) == -1) {
+						decorate(rv);
+						decorated.push(rv);
+					}
+				}
+				return rv;
+			} finally {
+				next.stop();
+			}
+		}
+		//	Copy function properties
+		for (var x in f) {
+			rv[x] = f[x];
+		}
+		return rv;
+	} else if (typeof(p) == "object") {
+		var o = p;
+		for (var x in o) {
+			if (typeof(o[x]) == "function") {
+				o[x] = decorate(o[x]);
+			}
+			//	TODO	decorate nested properties?
+		}
+	}
+}
+
 var Profile = function() {
 	//	TODO	Does not really work with threading
 
@@ -124,47 +173,8 @@ var Profile = function() {
 
 	var current = top;
 
-	var decorated = [];
-
-	var decorate = function(p) {
-		if (typeof(p) == "function") {
-			var f = p;
-			var rv = function() {
-				var next = current.getNodeFor(f);
-				next.start();
-				try {
-					var rv;
-					if (this.constructor == f) {
-						//	is constructor
-						rv = eval("new f(" + Array.prototype.map.call(arguments,function(arg,index) { return "arguments[" + index + "]"} ).join(",") + ")");
-					} else {
-						rv = f.apply(this,arguments);
-					}
-					next.stop();
-					if (typeof(rv) == "object" && rv != null) {
-						if (decorated.indexOf(rv) == -1) {
-							decorate(rv);
-							decorated.push(rv);
-						}
-					}
-					return rv;
-				} finally {
-					next.stop();
-				}
-			}
-			for (var x in f) {
-				rv[x] = f[x];
-			}
-			return rv;
-		} else if (typeof(p) == "object") {
-			var o = p;
-			for (var x in o) {
-				if (typeof(o[x]) == "function") {
-					o[x] = decorate(o[x]);
-				}
-				//	TODO	decorate nested properties?
-			}
-		}
+	this.getCurrent = function() {
+		return current;
 	}
 
 	this.add = function(o) {
@@ -194,23 +204,56 @@ var Profile = function() {
 }
 
 $exports.profile = new function() {
-	var cpu;
-
 	this.cpu = function() {
 		if (!cpu) {
-			cpu = new Profile();
+			cpu = (function() {
+				if ($context.cpu) {
+					return $context.cpu({ Profile: Profile });
+				} else {
+					return new function() {
+						var profile;
+
+						this.profiles = new function() {
+							this.current = function() {
+								if (!profile) {
+									profile = new Profile();
+								}
+								return profile;
+							}
+
+							this.all = function() {
+								return [ {
+									id: "<only>",
+									profile: this.current()
+								} ];
+							}
+						}
+					}
+				}
+			})();
 		}
 		for (var i=0; i<arguments.length; i++) {
-			cpu.add(arguments[i]);
+			decorate(arguments[i]);
 		}
 		return cpu;
 	}
-
-	this.add = function(p) {
+	this.cpu.add = function(p) {
 		if (cpu) {
-			return cpu.add(p);
+			return decorate(p);
 		} else {
 			return p;
 		}
+	}
+	this.cpu.dump = function(p) {
+		if (cpu) {
+			cpu.profiles.all().forEach(function(profile) {
+				profile.profile.dump.call(profile.profile,p);
+			});
+		}
+	}
+
+	this.add = function(p) {
+		debugger;
+		return this.cpu.add(p);
 	}
 }

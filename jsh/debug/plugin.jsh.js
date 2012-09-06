@@ -18,7 +18,38 @@ plugin({
 		return true;
 	},
 	load: function() {
-		jsh.debug = $loader.module("module.js");
+		jsh.debug = $loader.module("module.js", {
+			cpu: function(spi) {
+				return new function() {
+					this.profiles = new function() {
+						var currentThread = function() {
+							return Packages.java.lang.Thread.currentThread();
+						}
+
+						var getThreadId = function() {
+							return Packages.java.lang.System.identityHashCode(currentThread());
+						}
+
+						var byThread = {};
+
+						this.current = function() {
+							if (!byThread[getThreadId()]) {
+								byThread[getThreadId()] = { id: String(currentThread().getName()), profile: new spi.Profile() };
+							}
+							return byThread[getThreadId()].profile;
+						}
+
+						this.all = function() {
+							var rv = [];
+							for (var x in byThread) {
+								rv.push(byThread[x]);
+							}
+							return rv;
+						}
+					}
+				}
+			}
+		});
 
 		var Dumper = function(indent,p) {
 			var getTitle = function(data) {
@@ -56,31 +87,17 @@ plugin({
 			}
 		}
 
-		jsh.debug.profile.cpu = (function(f) {
-			var JshProfile = function(delegate) {
-				for (var x in delegate) {
-					this[x] = delegate[x];
+		jsh.debug.profile.cpu.dump = (function(f) {
+			return function(p) {
+				if (p.indent && p.log) {
+					//	TODO	use $api.deprecate? Would it work in a plugin?
+					debugger;
+					return f.call(this, new Dumper("", p));
+				} else {
+					return f.call(this, p);
 				}
-
-				//	wrap jsh.debug.profile.dump: it used to take a mode argument with indent and log properties, and we
-				//	accept those, create an appropriate dumper from them, and call the underlying new jsh.debug.profile.dump
-				this.dump = (function(f) {
-					return function(p) {
-						if (p.indent && p.log) {
-							//	TODO	use $api.deprecate? Would it work in a plugin?
-							debugger;
-							return f.call(this, new Dumper("", p));
-						} else {
-							return f.call(this, p);
-						}
-					}
-				})(this.dump);
 			}
-
-			return function() {
-				return new JshProfile(f.apply(this,arguments));
-			}
-		})(jsh.debug.profile.cpu);
+		})(jsh.debug.profile.cpu.dump);
 
 		jsh.debug.disableBreakOnExceptionsFor = function(f) {
 			return function() {
