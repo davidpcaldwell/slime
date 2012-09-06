@@ -61,6 +61,9 @@ plugin({
 					} else if (data.node == null) {
 						return "(self)";
 					} else if (typeof(data.node == "function")) {
+						if (data.label) {
+							return data.label;
+						}
 						var code = String(data.node);
 						code = code.split("\n").map(function(line) {
 							return indent + line;
@@ -84,11 +87,19 @@ plugin({
 			this.dump = function(data) {
 				if (data.calls > 0) {
 					debugger;
-					p.log(indent + "Calls: " + data.calls + " elapsed: " + String( (data.elapsed / 1000).toFixed(3) )
-						+ " average: " + String( (data.elapsed / data.calls / 1000).toFixed(6) ) + " " + getTitle(data)
-					);
+					var title = getTitle(data);
+					var counts = [
+						"Elapsed: " + String( (data.elapsed / 1000).toFixed(3) )
+						,"calls: " + data.calls
+						,"average: " + String( (data.elapsed / data.calls / 1000).toFixed(6) )
+					].join(" ");
+					if (title.indexOf("\n") == -1) {
+						p.log(indent + title + " " + counts);
+					} else {
+						p.log(indent + counts + " " + title);
+					}
 				} else {
-					p.log(indent + "Calls: " + data.calls + " " + getTitle(data));
+					p.log(indent + getTitle(data));
 				}
 			}
 		}

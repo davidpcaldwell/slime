@@ -44,15 +44,15 @@ var Stopwatch = function() {
 
 var cpu;
 
-var decorated = [];
+var decoratedObjects = [];
 
 //	environment:
 //		getCurrent: node that currently applies to this profiling context
-var decorate = function(p) {
+var decorate = function(p,label) {
 	if (typeof(p) == "function") {
 		var f = p;
 		var rv = function() {
-			var next = cpu.profiles.current().getCurrent().getNodeFor(f);
+			var next = cpu.profiles.current().getCurrent().getNodeFor(f,label);
 			next.start();
 			try {
 				var rv;
@@ -65,9 +65,9 @@ var decorate = function(p) {
 				next.stop();
 				//	Also adds decoration to the return value of this function
 				if (typeof(rv) == "object" && rv != null) {
-					if (decorated.indexOf(rv) == -1) {
+					if (decoratedObjects.indexOf(rv) == -1) {
 						decorate(rv);
-						decorated.push(rv);
+						decoratedObjects.push(rv);
 					}
 				}
 				return rv;
@@ -84,7 +84,11 @@ var decorate = function(p) {
 		var o = p;
 		for (var x in o) {
 			if (typeof(o[x]) == "function") {
-				o[x] = decorate(o[x]);
+				if (label) {
+					o[x] = decorate(o[x],label+"."+x);
+				} else {
+					o[x] = decorate(o[x]);
+				}
 			}
 			//	TODO	decorate nested properties?
 		}
@@ -99,6 +103,8 @@ var Profile = function() {
 		var children = [];
 		var calls = 0;
 
+		//	TODO	could not we use an object rather than an array? Granted the source would be an unconventional index, but
+		//			should work ... could also use key/label combination
 		var getNodeFor = function(key) {
 			for (var i=0; i<children.length; i++) {
 				if (children[i].key == key) {
@@ -108,12 +114,15 @@ var Profile = function() {
 			return null;
 		}
 
-		this.getNodeFor = function(f) {
+		this.getNodeFor = function(f,label) {
 			var key = String(f);
 			var rv = getNodeFor(key);
 			if (rv == null) {
 				rv = new Node(f,this);
 				children.push({ f: f, key: String(f), node: rv });
+			}
+			if (label) {
+				rv.label = label;
 			}
 			return rv;
 		}
@@ -148,6 +157,7 @@ var Profile = function() {
 		this.getData = function(date) {
 			var rv = {};
 			rv.node = p;
+			rv.label = this.label;
 			rv.calls = calls;
 			rv.elapsed = this.getElapsed(date);
 			rv.children = children.map(function(child) {
@@ -224,7 +234,7 @@ $exports.profile = new function() {
 							this.all = function() {
 								return [ {
 									id: "<only>",
-									profile: (profile) ? profile : new Profile("<only>")
+									profile: (profile) ? profile : new Profile()
 								} ];
 							}
 						}
@@ -237,9 +247,9 @@ $exports.profile = new function() {
 		}
 		return cpu;
 	}
-	this.cpu.add = function(p) {
+	this.cpu.add = function(p,label) {
 		if (cpu) {
-			return decorate(p);
+			return decorate(p,label);
 		} else {
 			return p;
 		}
@@ -255,8 +265,8 @@ $exports.profile = new function() {
 		}
 	}
 
-	this.add = function(p) {
+	this.add = function() {
 		debugger;
-		return this.cpu.add(p);
+		return this.cpu.add.apply(this.cpu,arguments);
 	}
 }
