@@ -224,7 +224,7 @@ $exports.profile = new function() {
 							this.all = function() {
 								return [ {
 									id: "<only>",
-									profile: this.current()
+									profile: (profile) ? profile : new Profile("<only>")
 								} ];
 							}
 						}
@@ -244,10 +244,13 @@ $exports.profile = new function() {
 			return p;
 		}
 	}
-	this.cpu.dump = function(p) {
+	this.cpu.dump = function(dumper) {
 		if (cpu) {
 			cpu.profiles.all().forEach(function(profile) {
-				profile.profile.dump.call(profile.profile,p);
+				if (dumper.start) {
+					dumper.start(profile.id);
+				}
+				profile.profile.dump.call(profile.profile,dumper);
 			});
 		}
 	}

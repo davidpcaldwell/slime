@@ -52,10 +52,12 @@ plugin({
 		});
 
 		var Dumper = function(indent,p) {
+			var top;
+
 			var getTitle = function(data) {
 				var title = (function() {
 					if (typeof(data.node) == "undefined") {
-						return "(top)";
+						return top;
 					} else if (data.node == null) {
 						return "(self)";
 					} else if (typeof(data.node == "function")) {
@@ -69,6 +71,10 @@ plugin({
 					}
 				})();
 				return title;
+			}
+
+			this.start = function(id) {
+				top = id;
 			}
 
 			this.child = function() {
