@@ -84,10 +84,15 @@ var decorate = function(p,label) {
 		var o = p;
 		for (var x in o) {
 			if (typeof(o[x]) == "function") {
-				if (label) {
-					o[x] = decorate(o[x],label+"."+x);
-				} else {
-					o[x] = decorate(o[x]);
+				//	TODO	allow context to filter objects, or maybe functions, to not be filtered
+				try {
+					if (label) {
+						o[x] = decorate(o[x],label+"."+x);
+					} else {
+						o[x] = decorate(o[x]);
+					}
+				} catch (e) {
+					//	Function is not assignable
 				}
 			}
 			//	TODO	decorate nested properties?
@@ -254,7 +259,13 @@ $exports.profile = new function() {
 			return p;
 		}
 	}
+	//	TODO	a dumper should optionally re-set profiling data; perhaps there should be another way to do that, too
 	this.cpu.dump = function(dumper) {
+		if (cpu) {
+			cpu.profiles.current().dump(dumper);
+		}
+	}
+	this.cpu.dump.all = function(dumper) {
 		if (cpu) {
 			cpu.profiles.all().forEach(function(profile) {
 				if (dumper.start) {

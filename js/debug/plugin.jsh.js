@@ -26,7 +26,7 @@ plugin({
 			var getTitle = function(data) {
 				var title = (function() {
 					if (typeof(data.node) == "undefined") {
-						return top;
+						return (top) ? top : "(top)";
 					} else if (data.node == null) {
 						return "(self)";
 					} else if (typeof(data.node == "function")) {

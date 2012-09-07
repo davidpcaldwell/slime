@@ -48,7 +48,11 @@
 		})();
 
 		var getCode = function(code) {
-			if (typeof(code) == "object" && code.name && code._in) {
+			if (typeof(code) == "object" && typeof(code.name) != "undefined" && typeof(code._in) != "undefined") {
+				if (!code._in) {
+					//	TODO	decide semantics of this
+					throw new Error("code._in is null");
+				}
 				if ($loader.script) {
 					return function() { $loader.script(code.name,code._in,arguments[0],arguments[1]); };
 				} else {
