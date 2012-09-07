@@ -75,7 +75,7 @@ END LICENSE
 					<span>A name to use for this file, for debugging, stack traces, etc.</span>
 				</li>
 				<li class="value">
-					<div class="name">$in</div>
+					<div class="name">_in</div>
 					<span class="type">JavaClass java.io.InputStream</span>
 					<span>An input stream from which the file can be read.</span>
 				</li>
@@ -85,25 +85,23 @@ END LICENSE
 			<li class="function" jsapi:id="run">
 				<div class="name">run</div>
 				<span jsapi:id="description" jsapi:reference="getApi('..').getElement('run/description')">
+					<!--	TODO	Can we now hyperlink this?	-->
 					Invokes the platform loader's <code>run</code> method.
 				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<!--	TODO	do the first part by reference, even though it is partial	-->
+							<span>The first argument to the platform loader's <code>run</code> method, -OR-
+							<span class="type"><a href="#types.code">code</a></span>
+							<span>__DESCRIPTION__</span></span>
 						</li>
 						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('..').getElement('run/arguments[1]')">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span>The second argument to the platform loader's <code>run</code> method.</span>
 						</li>
 						<li class="value" jsapi:id="arguments[2]" jsapi:reference="getApi('..').getElement('run/arguments[2]')">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span>The third argument to the platform loader's <code>run</code> method.</span>
 						</li>
 					</ol>
 				</div>

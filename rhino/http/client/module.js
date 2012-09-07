@@ -293,6 +293,9 @@ var Client = function(mode) {
 			url.parameters = url.parameters.concat(new Url.Query(p.parameters));
 		}
 		var headers = (p.headers) ? new Parameters(p.headers) : [];
+		if (p.authorization) {
+			headers.push({ name: "Authorization", value: p.authorization });
+		}
 		var $urlConnection = connect(method,url.toString(),headers,{ proxy: p.proxy, timeout: p.timeout });
 		if (p.body) {
 			$urlConnection.setDoOutput(true);
@@ -376,6 +379,18 @@ var Client = function(mode) {
 
 $exports.Client = Client;
 
+$exports.Authentication = new function() {
+	this.Basic = new function() {
+		this.Authorization = function(p) {
+			return new String("Basic " + String(
+				Packages.javax.xml.bind.DatatypeConverter.printBase64Binary(
+					new Packages.java.lang.String(p.user + ":" + p.password).getBytes()
+				)
+			));
+		}
+	}
+}
+
 $exports.Body = new function() {
 	this.Form = function(p) {
 		return {
@@ -397,3 +412,21 @@ $exports.Parser = new function() {
 		}
 	}
 }
+
+$exports.Loader = function(client) {
+	this.getCode = function(url) {
+		client.request({
+			url: url,
+			parse: function(response) {
+				if (response.status.code == 200) {
+					return {
+						name: url,
+						_in: response.body.stream.java.adapt()
+					};
+				} else {
+					throw new Error("Not found: " + url);
+				}
+			}
+		});
+	}
+};

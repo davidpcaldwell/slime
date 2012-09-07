@@ -143,11 +143,16 @@
 
 		var instantiate = {};
 
+		var loader = new platform.Loader({
+			getCode: function(path) {
+				return fetcher.getCode(path);
+			}
+		});
+
 		this.module = function(code,args) {
 			var createModuleLoader = function(code) {
 				return new function() {
 					this.main = (code.main) ? code.main : "module.js";
-
 					this.getCode = function(path) {
 						if (instantiate[code.base+path]) {
 							return function(scope,target) {
@@ -203,7 +208,8 @@
 		}
 
 		this.file = function(path,$context) {
-			return platform.file(fetcher.getCode(path),$context);
+			return loader.file.apply(loader,arguments);
+//			return platform.file(fetcher.getCode(path),$context);
 		};
 
 		this.script = platform.$api.deprecate(this.file);

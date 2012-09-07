@@ -94,7 +94,16 @@ END LICENSE
 		};
 		var log = debug;
 	</script>
-	<script type="text/javascript" src="../client.js"></script>
+	<script type="text/javascript">
+		(function() {
+			var script = document.createElement("script");
+			script.src = "../client.js";
+			if (parameters.platform) {
+				script.src = parameters.platform + "browser/client.js";
+			}
+			document.head.appendChild(script);
+		})()
+	</script>
 	<script type="text/javascript">
 		var dom = new function() {
 			var addChildrenTo = function(rv,e,filter,recurse) {

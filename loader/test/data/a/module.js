@@ -18,7 +18,7 @@ if (typeof($context.d) == "undefined") {
 	throw "$context.d is undefined";
 }
 
-var file = $loader.script("file.js", {$debug: $context.debug, b: 4});
+var file = $loader.file("file.js", {$debug: $context.debug, b: 4});
 
 var runScope = new function() {
 	this.e = 2;

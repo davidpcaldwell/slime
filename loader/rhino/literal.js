@@ -62,7 +62,7 @@
 				}
 			} else if (typeof(code) == "object" && code._source && code.path) {
 				return arguments.callee({
-					name: code._source.toString(),
+					name: code._source.toString() + ":" + code.path,
 					_in: code._source.getResourceAsStream(code.path)
 				});
 			} else if (typeof(code) == "string") {
@@ -80,30 +80,6 @@
 			return loader.file(getCode(code),$context);
 		}
 
-		var engineModuleCodeLoader = function($engine_module,main) {
-			return new function() {
-				this.main = main;
-
-				this.getCode = function(path) {
-					var $in = $engine_module.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
-					if (!$in) throw "Missing module file: " + path + " in " + $engine_module;
-					return getCode({
-						name: String($engine_module) + ":" + path,
-						_in: $in
-					});
-				};
-
-
-				this.decorateLoader = function($loader) {
-					$loader.java = new function() {
-						this.read = function(path) {
-							return $engine_module.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
-						}
-					}
-				}
-			}
-		}
-
 		this.Module = new function() {
 			var Code = Packages.inonit.script.rhino.Code;
 
@@ -118,10 +94,81 @@
 			}
 		};
 
+		var Loader = function(_source,root) {
+			if (typeof(root) == "undefined") {
+				root = "";
+			}
+			var Callee = arguments.callee;
+
+			var p = new function() {
+				this.getCode = function(path) {
+					return getCode({
+						_source: _source,
+						path: root+path
+					})
+				};
+
+				this.createChild = function(prefix) {
+					return new Callee(_source,root+prefix);
+					//	TODO	probably will not work correctly with child loaders? Would need access to the underlying getCode
+				}
+			}
+			
+			var delegate = new loader.Loader(p);
+			delegate._resource = function(path) {
+				return _source.getResourceAsStream(root+path);
+			}
+			return delegate;
+		}
+
+		this.Loader = function(p) {
+			if (p._source) {
+				return new Loader(p._source);
+			} else if (p._code) {
+				//	TODO	this is probably a bad place to do this, but it will do for now; actually should use loader decoration
+				//			to do this
+				$loader.classpath.append(p._code);
+				return new Loader(p._code.getScripts());
+			} else if (p.getCode) {
+				return new loader.Loader({
+					getCode: function(path) {
+						debugger;
+						return getCode(p.getCode(path));
+					}
+				});
+			}
+		}
+
 		//	Only modules may currently contain Java classes, which causes the API to be somewhat different
 		//	Code currently contains a Code.Source for scripts and a Code.Source for classes
 		//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
 		this.module = function(format,p) {
+			debugger;
+
+			var engineModuleCodeLoader = function(_code,main) {
+				return new function() {
+					this.main = main;
+
+					this.getCode = function(path) {
+						var $in = _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
+						if (!$in) throw "Missing module file: " + path + " in " + _code;
+						return getCode({
+							name: String(_code) + ":" + path,
+							_in: $in
+						});
+					};
+
+
+					this.decorateLoader = function($loader) {
+						$loader.java = new function() {
+							this.read = function(path) {
+								return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
+							}
+						}
+					}
+				}
+			}
+
 			if (format._code) {
 				$loader.classpath.append(format._code);
 				return loader.module(engineModuleCodeLoader(format._code, format.main),p);

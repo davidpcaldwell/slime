@@ -40,13 +40,10 @@ this.jsh = new function() {
 		this.$api = rhinoLoader.$api;
 
 		this.bootstrap = function(context,path) {
-			return rhinoLoader.module(
-				{
-					_code: $host.getLoader().getBootstrapModule(path),
-					main: "module.js"
-				},
-				{ $context: context }
-			);
+			var loader = new rhinoLoader.Loader({
+				_code: $host.getLoader().getBootstrapModule(path)
+			});
+			return loader.module("module.js", { $context: context });
 		}
 
 		var getCode = function(code) {
@@ -69,10 +66,12 @@ this.jsh = new function() {
 
 		this.plugin = new function() {
 			this.read = function(_code,scope) {
-				return rhinoLoader.run({
-					_source: _code.getScripts(),
-					path: "plugin.jsh.js"
-				}, scope);
+				var loader = new rhinoLoader.Loader({ _source: _code.getScripts() });
+				return loader.run("plugin.jsh.js", scope);
+//				return rhinoLoader.run({
+//					_source: _code.getScripts(),
+//					path: "plugin.jsh.js"
+//				}, scope);
 			};
 			this.file = function(_code,path,context) {
 				return rhinoLoader.file(
@@ -84,13 +83,15 @@ this.jsh = new function() {
 				);
 			};
 			this.module = function(_code,main,context) {
-				return rhinoLoader.module(
-					{
-						_code: _code,
-						main: main
-					},
-					{ $context: context }
-				);
+				var loader = new rhinoLoader.Loader({ _code: _code });
+				return loader.module(main, { $context: context });
+//				return rhinoLoader.module(
+//					{
+//						_code: _code,
+//						main: main
+//					},
+//					{ $context: context }
+//				);
 			};
 			this.addClasses = function(_code) {
 				rhinoLoader.classpath.add(_code.getClasses());
@@ -102,7 +103,7 @@ this.jsh = new function() {
 		}
 
 		this.file = function(code,$context) {
-			return rhinoLoader.file(getCode(code), $context);
+			return rhinoLoader.file(getCode(code),$context);
 		}
 
 		this.module = function(pathname) {
@@ -127,9 +128,15 @@ this.jsh = new function() {
 				p.$context = arguments[1];
 			}
 			if (format.slime) {
-				return rhinoLoader.module(rhinoLoader.Module.packed(format.slime,format.name),p);
+				var descriptor = rhinoLoader.Module.packed(format.slime,format.name);
+				var loader = new rhinoLoader.Loader({ _code: descriptor._code });
+				return loader.module(format.name,p);
+//				return rhinoLoader.module(rhinoLoader.Module.packed(format.slime,format.name),p);
 			} else if (format.base) {
-				return rhinoLoader.module(rhinoLoader.Module.unpacked(format.base,format.name),p);
+				var descriptor = rhinoLoader.Module.unpacked(format.base,format.name);
+				var loader = new rhinoLoader.Loader({ _code: descriptor._code });
+				return loader.module(format.name,p);
+//				return rhinoLoader.module(rhinoLoader.Module.unpacked(format.base,format.name),p);
 			} else {
 				throw "Unreachable code: format.slime and format.base null in jsh loader's module()";
 			}
@@ -148,40 +155,15 @@ this.jsh = new function() {
 		}
 
 		var Loader = function(_source) {
-			var getCode = function(path) {
-				return {
-					_source: _source,
-					path: path
-				};
-			}
-
-			this.run = function(path,scope,target) {
-				return rhinoLoader.run(getCode(path),scope,target);
-			}
-
-			this.file = function(path,$context) {
-				return rhinoLoader.file(getCode(path),$context);
-			}
-
-			this.module = function(path) {
-				var Code = Packages.inonit.script.rhino.Code;
-				//	TODO	replace with a _source path main API
-				var m = {
-					_code: Code.create(_source,path),
-					main: "module.js"
-				};
-				var p = {};
-				if (arguments.length == 2) {
-					p.$context = arguments[1];
+			var rv = new rhinoLoader.Loader({ _source: _source });
+			rv.resource = (function(target) {
+				return function(path) {
+					var _in = target._resource(path);
+					if (!_in) return null;
+					return jsh.io.java.adapt(_in);
 				}
-				return rhinoLoader.module(m,p);
-			}
-
-			this.resource = function(path) {
-				var _in = _source.getResourceAsStream(path);
-				if (!_in) return null;
-				return jsh.io.java.adapt(_in);
-			}
+			})(rv);
+			return rv;
 		}
 
 		var self = this;

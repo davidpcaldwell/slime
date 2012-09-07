@@ -18,7 +18,8 @@ if (file.foo != "bar") {
 	throw new Error("Failed to load file.");
 }
 
-var module = jsh.script.loader.module("packaged");
+//	TODO	would there be a way to make jsh.script.loader.module("packaged") work? It would be intuitive
+var module = jsh.script.loader.module("packaged/");
 if (module.foo != "baz") {
 	throw new Error("Failed to load module.");
 }

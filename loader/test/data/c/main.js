@@ -13,6 +13,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-var other = $loader.script("other.js");
+var other = $loader.file("other.js");
 $exports.value = 13;
 $exports.other = other.value;

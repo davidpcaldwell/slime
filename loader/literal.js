@@ -246,60 +246,65 @@
 			}
 		}
 
-		var file = function(code,$context) {
-			var scope = {
-				$exports: {}
-			};
-			scope.$context = ($context) ? $context : {};
-			runInScope(code,scope,{});
-			return scope.$exports;
+		var createScope = function(scope) {
+			var rv;
+			if (scope && (scope.$context || scope.$exports)) {
+				rv = scope;
+			} else if (scope) {
+				rv = { $context: scope };
+			} else {
+				rv = { $context: {} };
+			}
+			if (!rv.$exports) {
+				rv.$exports = {};
+			}
+			return rv;
 		}
 
-		var ModuleLoader = function(format) {
-			//	format.getCode: function(path), returns string containing the code contained at that path
-			//	format.main: string, path to module file
+		var file = function(code,scope,target) {
+			//	TODO	can we put file in here somehow?
+			//	TODO	should we be able to provide a 'this' here?
+			var inner = createScope(scope);
+			runInScope(code,inner,target);
+			return inner.$exports;
+		}
 
+		var Loader = function(p) {
 			var Callee = arguments.callee;
 
-			this.load = function(p) {
-				var scope = {
-					$context: (p && p.$context) ? p.$context : {},
-					$exports: (p && p.$exports) ? p.$exports : {},
-					$loader: new function() {
-						this.run = function(path,scope,target) {
-							runInScope(format.getCode(path),scope,target);
-						}
+			this.run = function(path,scope,target) {
+				runInScope(p.getCode(path),scope,target);
+			}
 
-						this.file = function(path,context) {
-							return file(format.getCode(path),context);
-						}
+			this.file = function(path,scope,target) {
+				return file(p.getCode(path),scope,target);
+			}
 
-						this.script = $api.deprecate(this.file);
-
-						this.module = function(path,context) {
-							var tokens = path.split("/");
-							var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-							var main = tokens[tokens.length-1];
-							var loader = new Callee({
-								main: main,
-								getCode: function(path) {
-									return format.getCode(prefix+path);
-								}
-							});
-							return loader.load({ $context: context });
-						}
-
-						//	TODO	should this return a value and allow wholesale replacement?
-						if (format.decorateLoader) {
-							format.decorateLoader(this);
-						}
-					}()
-				};
-
-				runInScope(format.getCode(format.main),scope);
-				return scope.$exports;
+			this.module = function(path,scope,target) {
+				var tokens = path.split("/");
+				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+				var loader = (function() {
+					if (p.createChild) {
+						return p.createChild(prefix);
+					} else {
+						return new Callee({
+							getCode: function(path) {
+								return p.getCode(prefix+path);
+							}
+						})
+					}
+				})();
+				var inner = createScope(scope);
+				inner.$loader = loader;
+				if (path == "" || /\/$/.test(path)) {
+					path += "module.js";
+				}
+				runInScope(p.getCode(path),inner,target);
+				return inner.$exports;
 			}
 		}
+
+		this.Loader = Loader;
 
 		this.run = function(code,scope,target) {
 			runInScope(code,scope,target);
@@ -307,13 +312,14 @@
 
 		//	TODO	For file and module, what should we do about 'this' and why?
 
-		this.file = function(code,$context) {
-			return file(code,$context);
+		this.file = function() {
+			return file.apply(this,arguments);
 		};
 
 		this.module = function(format,scope) {
-			var loader = new ModuleLoader(format);
-			return loader.load(scope);
+			debugger;
+			var loader = new Loader(format);
+			return loader.module(format.main,scope);
 		};
 
 		this.namespace = function(string) {

@@ -20,7 +20,7 @@
 //	configuration? listener?
 //
 Packages.java.lang.System.err.println("Loading script.js ...");
-var script = $loader.script("js/script.js", {
+var script = $loader.file("js/script.js", {
 	echo: $context.echo
 });
 $exports.multiply = script.multiply;
