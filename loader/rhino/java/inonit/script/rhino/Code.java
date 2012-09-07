@@ -123,6 +123,10 @@ public abstract class Code {
 				this.url = url;
 			}
 
+			@Override public String toString() {
+				return Code.class.getName() + " url=" + url;
+			}
+
 			public final ClassLoader getClassLoader(ClassLoader delegate) {
 				java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[]{url}, delegate);
 				return loader;
@@ -256,6 +260,18 @@ public abstract class Code {
 
 			public Source getClasses() {
 				return Source.NULL;
+			}
+		};
+	}
+
+	public static Code jar(final File jar) {
+		return new Code() {
+			public Source getScripts() {
+				return null;
+			}
+
+			public Source getClasses() {
+				return Source.create(jar);
 			}
 		};
 	}

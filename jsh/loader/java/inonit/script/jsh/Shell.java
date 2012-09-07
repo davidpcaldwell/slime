@@ -96,7 +96,7 @@ public class Shell {
 		public abstract Code getShellModuleCode(String path);
 
 		public static abstract class Plugin {
-			static Plugin create(final Code code) {
+			private static Plugin create(final Code code) {
 				return new Plugin() {
 					@Override public Code getCode() {
 						return code;
@@ -104,13 +104,22 @@ public class Shell {
 				};
 			}
 
-			static Plugin check(final Code code) throws IOException {
-				Plugin rv = create(code);
+			static Plugin unpacked(final File directory) {
+				return create(Code.unpacked(directory));
+			}
+
+			static Plugin slime(final File slime) throws IOException {
+				//	TODO	what if this .slime contains classes? Should we load them? Right now, we do not
+				Plugin rv = create(Code.slime(slime));
 				if (rv.getCode().getScripts().getResourceAsStream("plugin.jsh.js") != null) {
 					return rv;
 				} else {
 					return null;
 				}
+			}
+
+			static Plugin jar(final File jar) {
+				return create(Code.jar(jar));
 			}
 
 			public abstract Code getCode();
