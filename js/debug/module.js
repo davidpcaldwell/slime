@@ -13,6 +13,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	no apparent dependency on Rhino, let alone jsh; should this be available to all execution environments?
+
 var Stopwatch = function() {
 	var elapsed = 0;
 	var started;
@@ -40,6 +42,64 @@ var Stopwatch = function() {
 	}
 }
 
+var cpu;
+
+var decoratedObjects = [];
+
+//	environment:
+//		getCurrent: node that currently applies to this profiling context
+var decorate = function(p,label) {
+	if (typeof(p) == "function") {
+		var f = p;
+		var rv = function() {
+			var next = cpu.profiles.current().getCurrent().getNodeFor(f,label);
+			next.start();
+			try {
+				var rv;
+				if (this.constructor == f) {
+					//	is constructor
+					rv = eval("new f(" + Array.prototype.map.call(arguments,function(arg,index) { return "arguments[" + index + "]"} ).join(",") + ")");
+				} else {
+					rv = f.apply(this,arguments);
+				}
+				next.stop();
+				//	Also adds decoration to the return value of this function
+				if (typeof(rv) == "object" && rv != null) {
+					if (decoratedObjects.indexOf(rv) == -1) {
+						decorate(rv);
+						decoratedObjects.push(rv);
+					}
+				}
+				return rv;
+			} finally {
+				next.stop();
+			}
+		}
+		//	Copy function properties
+		for (var x in f) {
+			rv[x] = f[x];
+		}
+		return rv;
+	} else if (typeof(p) == "object") {
+		var o = p;
+		for (var x in o) {
+			if (typeof(o[x]) == "function") {
+				//	TODO	allow context to filter objects, or maybe functions, to not be filtered
+				try {
+					if (label) {
+						o[x] = decorate(o[x],label+"."+x);
+					} else {
+						o[x] = decorate(o[x]);
+					}
+				} catch (e) {
+					//	Function is not assignable
+				}
+			}
+			//	TODO	decorate nested properties?
+		}
+	}
+}
+
 var Profile = function() {
 	//	TODO	Does not really work with threading
 
@@ -48,6 +108,8 @@ var Profile = function() {
 		var children = [];
 		var calls = 0;
 
+		//	TODO	could not we use an object rather than an array? Granted the source would be an unconventional index, but
+		//			should work ... could also use key/label combination
 		var getNodeFor = function(key) {
 			for (var i=0; i<children.length; i++) {
 				if (children[i].key == key) {
@@ -57,12 +119,15 @@ var Profile = function() {
 			return null;
 		}
 
-		this.getNodeFor = function(f) {
+		this.getNodeFor = function(f,label) {
 			var key = String(f);
 			var rv = getNodeFor(key);
 			if (rv == null) {
 				rv = new Node(f,this);
 				children.push({ f: f, key: String(f), node: rv });
+			}
+			if (label) {
+				rv.label = label;
 			}
 			return rv;
 		}
@@ -97,6 +162,7 @@ var Profile = function() {
 		this.getData = function(date) {
 			var rv = {};
 			rv.node = p;
+			rv.label = this.label;
 			rv.calls = calls;
 			rv.elapsed = this.getElapsed(date);
 			rv.children = children.map(function(child) {
@@ -122,47 +188,8 @@ var Profile = function() {
 
 	var current = top;
 
-	var decorated = [];
-
-	var decorate = function(p) {
-		if (typeof(p) == "function") {
-			var f = p;
-			var rv = function() {
-				var next = current.getNodeFor(f);
-				next.start();
-				try {
-					var rv;
-					if (this.constructor == f) {
-						//	is constructor
-						rv = eval("new f(" + Array.prototype.map.call(arguments,function(arg,index) { return "arguments[" + index + "]"} ).join(",") + ")");
-					} else {
-						rv = f.apply(this,arguments);
-					}
-					next.stop();
-					if (typeof(rv) == "object" && rv != null) {
-						if (decorated.indexOf(rv) == -1) {
-							decorate(rv);
-							decorated.push(rv);
-						}
-					}
-					return rv;
-				} finally {
-					next.stop();
-				}
-			}
-			for (var x in f) {
-				rv[x] = f[x];
-			}
-			return rv;
-		} else if (typeof(p) == "object") {
-			var o = p;
-			for (var x in o) {
-				if (typeof(o[x]) == "function") {
-					o[x] = decorate(o[x]);
-				}
-				//	TODO	decorate nested properties?
-			}
-		}
+	this.getCurrent = function() {
+		return current;
 	}
 
 	this.add = function(o) {
@@ -173,64 +200,84 @@ var Profile = function() {
 		return top.getData(new Date());
 	}
 
-	var dump = function(data,indent,mode) {
-		if (!indent) indent = "";
+	var dump = function(data,dumper) {
 		var recurse = arguments.callee;
-		var title = (function() {
-			if (typeof(data.node) == "undefined") {
-				return "(top)";
-			} else if (data.node == null) {
-				return "(self)";
-			} else if (typeof(data.node == "function")) {
-				var code = String(data.node);
-				code = code.split("\n").map(function(line) {
-					return indent + line;
-				}).slice(0,-1).join("\n")
-				return code;
-			} else {
-				throw new Error("Unknown node type: " + data.node);
-			}
-		})();
-		if (data.calls > 0) {
-			mode.log(indent + "Calls: " + data.calls + " elapsed: " + String( (data.elapsed / 1000).toFixed(3) )
-				+ " average: " + String( (data.elapsed / data.calls / 1000).toFixed(6) ) + " " + title
-			);
-		} else {
-			mode.log(indent + "Calls: " + data.calls + " " + title);
-		}
+		dumper.dump(data);
 		if (data.children) {
 			data.children.sort(function(a,b) {
 				return b.elapsed - a.elapsed;
 			});
 			data.children.forEach( function(child) {
-				recurse(child,indent+mode.indent,mode);
+				recurse(child,dumper.child());
 			});
 		}
 	}
 
-	this.dump = function(mode) {
-		dump(this.getData(),"",mode);
+	this.dump = function(dumper) {
+		dump(this.getData(),dumper);
 	}
 }
 
 $exports.profile = new function() {
-	var cpu;
-
 	this.cpu = function() {
 		if (!cpu) {
-			cpu = new Profile();
+			cpu = (function() {
+				if ($context.cpu) {
+					return $context.cpu({ Profile: Profile });
+				} else {
+					return new function() {
+						var profile;
+
+						this.profiles = new function() {
+							this.current = function() {
+								if (!profile) {
+									profile = new Profile();
+								}
+								return profile;
+							}
+
+							this.all = function() {
+								return [ {
+									id: "<only>",
+									profile: (profile) ? profile : new Profile()
+								} ];
+							}
+						}
+					}
+				}
+			})();
 		}
 		for (var i=0; i<arguments.length; i++) {
-			cpu.add(arguments[i]);
+			decorate(arguments[i]);
 		}
 		return cpu;
 	}
-
-	this.add = function(f) {
+	this.cpu.add = function(p,label) {
 		if (cpu) {
-			return cpu.add(f);
+			return decorate(p,label);
 		} else {
-			return f;
+			return p;
 		}
+	}
+	//	TODO	a dumper should optionally re-set profiling data; perhaps there should be another way to do that, too
+	this.cpu.dump = function(dumper) {
+		if (cpu) {
+			cpu.profiles.current().dump(dumper);
+		}
+	}
+	this.cpu.dump.all = function(dumper) {
+		if (cpu) {
+			cpu.profiles.all().forEach(function(profile) {
+				if (dumper.start) {
+					dumper.start(profile.id);
+				}
+				profile.profile.dump.call(profile.profile,dumper);
+			});
+		}
+	}
+
+	this.add = function() {
+		debugger;
+		return this.cpu.add.apply(this.cpu,arguments);
 	}
 }

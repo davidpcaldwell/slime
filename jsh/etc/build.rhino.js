@@ -333,7 +333,7 @@ var module = function(path) {
 	console("Created module file: " + to.getCanonicalPath());
 };
 
-["js/object","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","jsh/debug","rhino/http/client"].forEach( function(item) {
+["js/object","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"].forEach( function(item) {
 	module(item);
 });
 
