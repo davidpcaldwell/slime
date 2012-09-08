@@ -59,10 +59,11 @@ END LICENSE
 		<script type="application/x.jsapi#context"><![CDATA[
 			//	TODO	Deal with possibility Tomcat classes are not present
 			(function() {
+				var tomcatPresent = (typeof(Packages.org.apache.catalina.startup.Tomcat) == "function");
 				var global = (function() { return this; })();
 				var tomcat;
 				var servlet;
-				if (!global.tomcat && !$jsapi.environment.windowsSocketsError10106) {
+				if (!global.tomcat && !$jsapi.environment.windowsSocketsError10106 && tomcatPresent) {
 					tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 					servlet = new function() {
 						var implementation;
@@ -121,7 +122,13 @@ END LICENSE
 					this.gae = gae;
 				};
 
-				return [ new $Context(false), new $Context(true) ];
+				if (tomcat) {
+					return [ new $Context(false), new $Context(true) ];
+				} else {
+					var context = new $Context(false);
+					context.notomcat = true;
+					return [ context ];
+				}
 			})()
 		]]></script>
 	</div>
@@ -383,8 +390,8 @@ END LICENSE
 				<script type="application/x.jsapi#initialize">
 					scope.Cookie = Packages.javax.servlet.http.Cookie;
 				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="Hello World">
-					if (!$jsapi.environment.windowsSocketsError10106) {
+				<script type="application/x.jsapi#tests" jsapi:id="Hello World"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 						var client = new module.Client();
 						servlet.set(function(request,response) {
 							test(request.getMethod().toUpperCase() == "GET");
@@ -399,9 +406,9 @@ END LICENSE
 						});
 						test(response == "Hello, World!");
 					}
-				</script>
+				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106) {
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 						var client = new module.Client();
 						servlet.set(function(request,response) {
 							test(request.getCookies() == null);
@@ -426,7 +433,7 @@ END LICENSE
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106) {
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 						var client = new module.Client();
 						var redirected = false;
 						servlet.set(function(request,response) {
