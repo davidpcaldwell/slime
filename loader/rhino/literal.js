@@ -113,7 +113,7 @@
 					//	TODO	probably will not work correctly with child loaders? Would need access to the underlying getCode
 				}
 			}
-			
+
 			var delegate = new loader.Loader(p);
 			delegate._resource = function(path) {
 				return _source.getResourceAsStream(root+path);
