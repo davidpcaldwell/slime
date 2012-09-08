@@ -34,6 +34,8 @@ if (!parameters.options.to) {
 	//	TODO	if it is a symlink to a directory with -replace, the symlink *target* will be removed ... and then what will happen?
 	//	TODO	if it is a symlink to a non-existent directory, what will happen?
 	jsh.shell.exit(1);
+} else {
+	jsh.shell.echo("Installing to: " + parameters.options.to);
 }
 
 var file = jsh.script.loader.resource("build.zip");
