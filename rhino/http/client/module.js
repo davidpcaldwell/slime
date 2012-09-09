@@ -248,10 +248,16 @@ var Client = function(mode) {
 	}
 
 	var getStatus = function($urlConnection) {
-		return {
-			code: Number($urlConnection.getResponseCode()),
-			message: ($urlConnection.getResponseMessage()) ? String($urlConnection.getResponseMessage()) : function(){}()
+		if ($urlConnection.getResponseCode() == -1 || $urlConnection.getResponseMessage() == null) {
+			throw new Error("Response was not valid HTTP.");
 		}
+		var rv = {
+			code: Number($urlConnection.getResponseCode()),
+			reason: String($urlConnection.getResponseMessage())
+		};
+		rv.message = rv.reason;
+		$api.deprecate(rv,"message");
+		return rv;
 	}
 
 	var getHeaders = function($urlConnection) {
@@ -308,15 +314,16 @@ var Client = function(mode) {
 			}
 
 			//	TODO	Does not handle stream/$stream from rhino/mime
-			if (typeof(p.body.string) != "undefined") {
-				var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
-				writer.write(p.body.string);
-				writer.close();
+			if (false) {
 			} else if (p.body.stream) {
 				$context.api.io.Streams.binary.copy(p.body.stream,$urlConnection.getOutputStream());
 				$urlConnection.getOutputStream().close();
+			} else if (typeof(p.body.string) != "undefined") {
+				var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
+				writer.write(p.body.string);
+				writer.close();
 			} else {
-				throw "Unimplemented: no p.body.string or p.body.stream";
+				throw new RangeError("A message body must specify its content; no p.body.stream or p.body.string found.");
 			}
 		}
 		var status = getStatus($urlConnection);
@@ -401,7 +408,7 @@ $exports.Body = new function() {
 }
 
 $exports.Parser = new function() {
-	this.OK = function(f) {
+	this.ok = function(f) {
 		return function(response) {
 			if (response.status.code != 200) {
 				var error = new Error("HTTP Status code: " + response.status.code + " message=" + response.status.message);
@@ -411,6 +418,8 @@ $exports.Parser = new function() {
 			return f(response);
 		}
 	}
+
+	this.OK = $api.deprecate(this.ok);
 }
 
 $exports.Loader = function(client) {

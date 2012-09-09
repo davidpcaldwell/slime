@@ -14,9 +14,10 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>http/client</title>
+	<title>HTTP client</title>
 </head>
 <body>
 	<!--
@@ -32,18 +33,16 @@ END LICENSE
 		<ul>
 			<li class="object">
 				<div class="name">api</div>
-				<span>__DESCRIPTION__</span>
+				<span>Modules used in implementing the HTTP client.</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
 						<div class="name">js</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
+						<span>The <a href="../../../js/object/">js/object</a> module.</span>
 					</li>
 					<li class="value">
 						<div class="name">io</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
+						<span>The <a href="../../../rhino/io/">rhino/io</a> module.</span>
 					</li>
 				</ul>
 			</li>
@@ -169,24 +168,67 @@ END LICENSE
 			<span>Either a <a href="#types.parameters">parameters</a>, or a <code>string</code> representing a query string.</span>
 		</div>
 		<div class="type">
+			<a class="type" name="types.body">body</a>
+			<span>A message body.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">type</div>
+					<span class="type">string</span>
+					<span>
+						(optional)
+						The MIME type of the message body.
+					</span>
+				</li>
+				<li class="value">
+					<div class="name">stream</div>
+					<span class="type"><a href="../../io/api.html#types.binput">byte input stream</a></span>
+					<span>
+						(optional)
+						A stream from which the content of the message body can be read.
+					</span>
+				</li>
+				<li class="value">
+					<div class="name">string</div>
+					<span class="type">string</span>
+					<span>
+						(optional)
+						The content of the message body, as a string.
+					</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.authorization">authorization</a>
+			<span>A value suitable for authorizing a request.</span>
+		</div>
+		<div class="type">
 			<a class="type" name="types.response">response</a>
-			<span>__DESCRIPTION__</span>
+			<span>
+				Represents an HTTP response.
+				See <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC 2616, section 6</a>.
+			</span>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="object">
 					<div class="name">status</div>
-					<span>__DESCRIPTION__</span>
+					<span>An object describing the response status. See
+						<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1">RFC 2616 section 6.1</a>.</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="value">
 							<div class="name">code</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type">number</span>
+							<span>
+								The status code.
+							</span>
 						</li>
 						<li class="value">
-							<div class="name">message</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<div class="name">reason</div>
+							<span class="type">string</span>
+							<span>
+								The message associated with the status code (RFC calls it "reason phrase").
+							</span>
 						</li>
 					</ul>
 				</li>
@@ -197,13 +239,13 @@ END LICENSE
 					<ul>
 						<li class="function">
 							<div class="name">get</div>
-							<span>__DESCRIPTION__</span>
+							<span>Provides the value or values of a given header.</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="value">
 										<span class="type">string</span>
-										<span>A header name.</span>
+										<span>A header name; case-insensitive.</span>
 									</li>
 								</ol>
 							</div>
@@ -213,7 +255,7 @@ END LICENSE
 								-or-
 								<span class="type">Array of string</span>
 								<span>
-									Returns the single value of this header, if it has one, or an array of values if there are
+									Returns the single value of the given header, if it has one, or an array of values if there are
 									multiple values. If the header has no values, <code>null</code> is returned.
 								</span>
 							</div>
@@ -222,45 +264,75 @@ END LICENSE
 				</li>
 				<li class="object">
 					<div class="name">body</div>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">type</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="value">
-							<div class="name">stream</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-					</ul>
+					<span class="type"><a href="#types.body">body</a></span>
+					<span>
+						Returns the message body associated with this response. This message body will have a <code>stream</code>
+						property, but no <code>string</code> property.
+					</span>
 				</li>
 			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.parser">parser</a>
+			<span>A function intended to process an HTTP response.</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="value">
+						<span class="type"><a href="#types.response">response</a></span>
+						<span>The response to the request.</span>
+					</li>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span>A JavaScript value.</span>
+			</div>
 		</div>
 		<ul>
 			<li class="constructor">
 				<div class="name">Client</div>
-				<span>__DESCRIPTION__</span>
+				<span>Creates an object capable of issuing HTTP requests and returning their responses.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
+						<li class="object">
+							<span>An object describing the configuration of this HTTP client.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">TREAT_302_AS_303</div>
+									<span class="type">boolean</span>
+									<span>
+										(optional)
+										Instructs the client to handle responses with status 302 as though they were responses
+										with status 303, as most browsers erroneously do. See the note at
+										the end of
+										<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.3">RFC 2616 10.3.3</a>
+										for details.
+									</span>
+								</li>
+							</ul>
+						</li>
 					</ol>
 				</div>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
 							<div class="name">request</div>
-							<span>__DESCRIPTION__</span>
+							<span>
+								Issues a request to a server and returns that server's response, after following any redirects.
+							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="object">
-										<span>An object representing the request, along with some arguments for processing it.</span>
+										<span>
+											An object representing the request, with an optional <code>parse</code> property that
+											processes the response.
+										</span>
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="value">
@@ -286,6 +358,11 @@ END LICENSE
 												</span>
 											</li>
 											<li class="value">
+												<div class="name">authorization</div>
+												<span class="type"><a href="#types.authorization">authorization</a></span>
+												<span>Credentials information to be used to authorize this request.</span>
+											</li>
+											<li class="value">
 												<div class="name">headers</div>
 												<span class="type"><a href="#types.parameters">parameters</a></span>
 												<span>
@@ -295,37 +372,57 @@ END LICENSE
 											</li>
 											<li class="object">
 												<div class="name">body</div>
+												<span class="type"><a href="#types.body">body</a></span>
 												<span>
 													(optional)
-													The message body to use with the HTTP request. Message bodies must specify
-													their content in some way; a <code>string</code> property or a
-													<code>stream</code> property may be used.
+													The message body to use with the HTTP request. If no <code>type</code> property
+													is provided, <code>application/octet-stream</code> will be used. Must specify
+													its content in some way. If a <code>stream</code> property is present, it
+													will be read to provide the content of the message body. Otherwise, if a
+													<code>string</code> property is present, its content will be used.
 												</span>
+											</li>
+											<li class="object">
+												<div class="name">proxy</div>
+												<span>
+													Information used to specify a proxy server for this request. This object should
+													contain an <code>http</code> property or a <code>socks</code> property
+													specifying information about the proxy to use.
+													<!--	What if both are absent? What if both are present?	-->
+												</span>
+												<div class="type">
+													<a class="type" name="types.proxy.server">proxy.server</a>
+													<span>Information specifying a proxy server.</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="value">
+															<div class="name">host</div>
+															<span class="type">String</span>
+															<span>A host name.</span>
+														</li>
+														<li class="value">
+															<div class="name">port</div>
+															<span class="type">number</span>
+															<span>A port number.</span>
+														</li>
+													</ul>
+												</div>
 												<div class="label">has properties:</div>
 												<ul>
 													<li class="value">
-														<div class="name">type</div>
-														<span class="type">string</span>
+														<div class="name">http</div>
+														<span class="type"><a href="#types.proxy.server">proxy.server</a></span>
 														<span>
 															(optional)
-															The MIME type of the message body. If omitted,
-															<code>application/octet-stream</code> will be used.
+															Specifies an HTTP proxy to use for this request.
 														</span>
 													</li>
 													<li class="value">
-														<div class="name">string</div>
-														<span class="type">string</span>
+														<div class="name">socks</div>
+														<span class="type"><a href="#types.proxy.server">proxy.server</a></span>
 														<span>
-															(optional; <code>string</code> or <code>stream</code> must be specified)
-															The content of the message body, as a string.
-														</span>
-													</li>
-													<li class="value">
-														<div class="name">stream</div>
-														<span class="type">rhino/io byte input stream</span>
-														<span>
-															(optional; <code>string</code> or <code>stream</code> must be specified)
-															A stream from which the content of the message body can be read.
+															(optional)
+															Specifies a SOCKS proxy to use for this request.
 														</span>
 													</li>
 												</ul>
@@ -339,36 +436,64 @@ END LICENSE
 												<ul>
 													<li class="value">
 														<div class="name">connect</div>
-														<span class="type">__TYPE__</span>
-														<span>__DESCRIPTION__</span>
+														<span class="type">number</span>
+														<span>
+															A timeout, in milliseconds, that should be used when attempting
+															to connect to a remote URL.
+														</span>
 													</li>
 													<li class="value">
 														<div class="name">read</div>
-														<span class="type">__TYPE__</span>
-														<span>__DESCRIPTION__</span>
+														<span class="type">number</span>
+														<span>
+															A timeout, in milliseconds, that should be used when attempting to
+															read a remote URL.
+														</span>
+													</li>
+												</ul>
+											</li>
+											<li class="object">
+												<div class="name">on</div>
+												<span>An object containing a set of properties representing callbacks.</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="function">
+														<div class="name">redirect</div>
+														<!--	What 'this' parameter will be used?	-->
+														<span>A function that will be invoked if the request is redirected.</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+																<li class="value">
+																	<div class="name">url</div>
+																	<span class="type">string</span>
+																	<span>
+																		The URL to which the request was redirected, excluding
+																		parameters.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">parameters</div>
+																	<span class="type">Array of <a href="#types.pair">pair</a></span>
+																	<span>
+																		An array of parameters representing the query string of the
+																		URL to which the request was rediected, or a zero-length
+																		array if there were no parameters.
+																	</span>
+																</li>
+															</ol>
+														</div>
 													</li>
 												</ul>
 											</li>
 											<li class="function">
 												<div class="name">parse</div>
+												<span class="type"><a href="#types.parser">parser</a></span>
 												<span>
 													(optional)
-													A function that parses the response from the server and returns it to the
+													A function that interprets the response from the server and returns it to the
 													caller of <code>request()</code> automatically.
 												</span>
-												<div class="arguments">
-													<div class="label">Arguments</div>
-													<ol>
-														<li class="value">
-															<span class="type"><a href="#types.response">response</a></span>
-															<span>The response to the request.</span>
-														</li>
-													</ol>
-												</div>
-												<div class="returns">
-													<div class="label">Returns</div>
-													<span>A JavaScript value.</span>
-												</div>
 											</li>
 										</ul>
 									</li>
@@ -461,33 +586,111 @@ END LICENSE
 					}
 				]]></script>
 			</li>
+			<!--
+				TODO	Better API would have Form object that could be translated into query string and body, and probably
+						have two subtypes: one for ordinary forms, another for multipart
+			-->
 			<li class="object">
 				<div class="name">Body</div>
-				<span>__DESCRIPTION__</span>
+				<span>Contains methods for creating request bodies.</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="constructor">
 						<div class="name">Form</div>
-						<span>__DESCRIPTION__</span>
+						<span>
+							Creates request bodies representing HTML non-multipart
+							(<code>application/x-www-form-urlencoded</code>) forms.
+							See <a href="http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3">HTML 4.01 section 17.13.3</a>.
+						</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="value">
 									<span class="type"><a href="#types.query">query</a></span>
+									<span>An object specifying the form.</span>
 								</li>
 							</ol>
 						</div>
 						<div class="instances">
 							<div class="label">Instances</div>
-							<span class="type">MIME message</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type"><a href="#types.body">body</a></span>
+							<span>Objects suitable as request bodies.</span>
 						</div>
 					</li>
 				</ul>
 			</li>
-			<!--
-				TODO	Parser is undocumented.
-			-->
+			<li class="object">
+				<div class="name">Authentication</div>
+				<span>Contains interfaces for implementing HTTP authentication.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">Basic</div>
+						<span>
+							The Basic authentication scheme, described by
+							<a href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</a> section 2.
+						</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="constructor">
+								<div class="name">Authorization</div>
+								<span>Creates objects representing a particular set of authorization credentials.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="object">
+											<span>A set of credentials.</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">userid</div>
+													<span class="type">string</span>
+												</li>
+												<li class="value">
+													<div class="name">password</div>
+													<span class="type">string</span>
+												</li>
+											</ul>
+										</li>
+									</ol>
+								</div>
+								<div class="instances">
+									<div class="label">Instances</div>
+									<span class="type"><a href="#types.authorization">authorization</a></span>
+								</div>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">Parser</div>
+				<span>Contains interfaces for manipulating parsers.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">ok</div>
+						<span>A function that creates parsers that throw errors when unsuccessful responses are received.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type"><a href="#types.parser">parser</a></span>
+									<span>A parser for successful responses.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.parser">parser</a></span>
+							<span>
+								A parser that invokes the given parser for successful responses, but throws an error for
+								non-successful responses.
+							</span>
+						</div>
+					</li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 </body>
