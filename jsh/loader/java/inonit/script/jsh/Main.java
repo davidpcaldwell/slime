@@ -34,6 +34,51 @@ public class Main {
 		}
 	}
 
+	class PluginComparator implements Comparator<File> {
+		private int evaluate(File file) {
+			if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+				return -1;
+			}
+			return 0;
+		}
+
+		public int compare(File o1, File o2) {
+			return evaluate(o1) - evaluate(o2);
+		}
+	}
+
+	private void addPluginsTo(List<Shell.Installation.Plugin> rv, File file) {
+		if (file.exists()) {
+			if (file.isDirectory()) {
+				if (new File(file, "plugin.jsh.js").exists()) {
+					//	interpret as unpacked module
+					rv.add(Shell.Installation.Plugin.unpacked(file));
+				} else {
+					//	interpret as directory of slime
+					File[] list = file.listFiles();
+					Arrays.sort(list, new PluginComparator());
+					for (File f : list) {
+						addPluginsTo(rv, f);
+					}
+				}
+			} else if (file.getName().endsWith(".slime")) {
+				try {
+					Shell.Installation.Plugin p = Shell.Installation.Plugin.slime(file);
+					if (p != null) {
+						rv.add(p);
+					}
+				} catch (IOException e) {
+					//	TODO	probably error message or warning
+				}
+			} else if (file.getName().endsWith(".jar")) {
+				rv.add(Shell.Installation.Plugin.jar(file));
+			} else {
+				//	Ignore, not .slime or directory
+				//	TODO	probably log message of some kind
+			}
+		}
+	}
+
 	private int run() throws CheckedException {
 		Shell.Installation installation = null;
 		Shell.Invocation invocation = null;
@@ -66,7 +111,13 @@ public class Main {
 				}
 
 				public Plugin[] getPlugins() {
-					return new Plugin[0];
+					System.err.println("jsh.plugins=" + System.getProperty("jsh.plugins"));
+					String[] paths = System.getProperty("jsh.plugins").split("\\" + java.io.File.pathSeparator);
+					ArrayList<Plugin> rv = new ArrayList<Plugin>();
+					for (int i=0; i<paths.length; i++) {
+						addPluginsTo(rv, new File(paths[i]));
+					}
+					return rv.toArray(new Plugin[rv.size()]);
 				}
 
 				public Code.Source getPackagedCode() {
@@ -145,57 +196,12 @@ public class Main {
 					return Code.slime(getModulePath(path));
 				}
 
-				class PluginComparator implements Comparator<File> {
-					private int evaluate(File file) {
-						if (!file.isDirectory() && file.getName().endsWith(".jar")) {
-							return -1;
-						}
-						return 0;
-					}
-
-					public int compare(File o1, File o2) {
-						return evaluate(o1) - evaluate(o2);
-					}
-				}
-
-				private void addPluginsTo(List<Plugin> rv, File file) {
-					if (file.exists()) {
-						if (file.isDirectory()) {
-							if (new File(file, "plugin.jsh.js").exists()) {
-								//	interpret as unpacked module
-								rv.add(Plugin.unpacked(file));
-							} else {
-								//	interpret as directory of slime
-								File[] list = file.listFiles();
-								Arrays.sort(list, new PluginComparator());
-								for (File f : list) {
-									addPluginsTo(rv, f);
-								}
-							}
-						} else if (file.getName().endsWith(".slime")) {
-							try {
-								Plugin p = Plugin.slime(file);
-								if (p != null) {
-									rv.add(p);
-								}
-							} catch (IOException e) {
-								//	TODO	probably error message or warning
-							}
-						} else if (file.getName().endsWith(".jar")) {
-							rv.add(Plugin.jar(file));
-						} else {
-							//	Ignore, not .slime or directory
-							//	TODO	probably log message of some kind
-						}
-					}
-				}
-
 				private void addPluginsTo(List<Plugin> rv, String property) {
 					if (property != null) {
 						String[] tokens = property.split(File.pathSeparator);
 						for (String token : tokens) {
 							File file = new File(token);
-							addPluginsTo(rv, file);
+							Main.this.addPluginsTo(rv, file);
 						}
 					}
 				}

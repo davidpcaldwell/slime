@@ -358,7 +358,7 @@ this.jsh = new function() {
 	})();
 
 	jsh.script = (function() {
-		return loader.bootstrap({
+		var rv = loader.bootstrap({
 			api: {
 				file: jsh.file,
 				addClasses: jsh.loader.addClasses
@@ -385,14 +385,9 @@ this.jsh = new function() {
 			Loader: loader.Loader,
 			loader: loader.bundled
 		},"jsh/script");
+		jsh.shell.getopts = loader.$api.deprecate(rv.getopts);
+		return rv;
 	})();
-
-	if (jsh.script) {
-		//	Need to do this rather than jsh.shell.getopts = deprecate(jsh.script.getopts) because of not copying function properties
-		//	(issue 13)
-		jsh.shell.getopts = jsh.script.getopts;
-		loader.$api.deprecate(jsh.shell, "getopts");
-	}
 
 	jsh.$jsapi = {
 		$platform: loader.$platform,
@@ -402,6 +397,7 @@ this.jsh = new function() {
 	(function() {
 		var _plugins = $host.getLoader().getPlugins();
 		var list = [];
+		var plugins = {};
 
 		for (var i=0; i<_plugins.length; i++) {
 			var _code = _plugins[i].getCode();
@@ -409,6 +405,7 @@ this.jsh = new function() {
 				var scope = {};
 				//	TODO	$host is currently automatically in scope for these plugins, but that is probably not as it should be; see
 				//			issue 32
+				scope.plugins = plugins;
 				scope.plugin = function(p) {
 					list.push(p);
 				}

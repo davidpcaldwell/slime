@@ -475,7 +475,6 @@ if (destination.installer) {
 
 	var command = LAUNCHER_COMMAND.slice(0);
 	command.push(getPath(new File(JSH_HOME,"tools/package.jsh.js")));
-	command.push("-jsh",getPath(JSH_HOME));
 	command.push("-script",getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command.push("-file","build.zip=" + getPath(build));
 	command.push("-to",getPath(destination.installer));

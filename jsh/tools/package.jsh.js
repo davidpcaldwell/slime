@@ -15,17 +15,15 @@
 
 var UNZIP_RHINO_WHEN_PACKAGING = true;
 
-//	TODO	perhaps this should assume it is running as part of a built shell and the jsh default should be ..
-
 var parameters = jsh.script.getopts({
 	options: {
-		jsh: jsh.file.Pathname
+		jsh: jsh.script.getRelativePath("..")
 		,script: jsh.file.Pathname
 		//	module format is name=pathname
 		,module: jsh.script.getopts.ARRAY(String)
 		//	file format is topath=pathname
 		,file: jsh.script.getopts.ARRAY(String)
-		,library: jsh.script.getopts.ARRAY(jsh.file.Pathname)
+		,plugin: jsh.script.getopts.ARRAY(jsh.file.Pathname)
 		,directory: false
 		,to: jsh.file.Pathname
 	}
@@ -85,15 +83,40 @@ JSH.getSubdirectory("modules").list().forEach( function(module) {
 	jsh.file.unzip({ zip: module, to: destination });
 } );
 
+//	TODO	This is undesirable hard-coding
 if (JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe")) {
 	to.getRelativePath("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe")
 		.write(JSH.getFile("bin/inonit.script.runtime.io.cygwin.cygpath.exe").read(jsh.io.Streams.binary), { recursive: true })
 	;
 }
 
-var libraries = [].concat(parameters.options.library);
-libraries.forEach( function(library,index) {
-	to.getRelativePath("$libraries/" + String(index) + ".jar").write( library.file.read(jsh.file.Streams.binary), { recursive: true });
+//	TODO	this implementation of plugins is essentially dependent on launcher jsh.rhino.js
+//	TODO	this is pretty awful, blindly copying all shell modules into the plugins directory
+var plugins = JSH.getSubdirectory("modules").list().map(function(node) { return node.pathname; }).concat(parameters.options.plugin);
+plugins.forEach( function(library,index) {
+	var toUnixPath = function(pathname) {
+		if (jsh.file.filesystems.cygwin) {
+			return jsh.file.filesystems.cygwin.toUnix(pathname);
+		}
+		return pathname;
+	}
+
+	if (false) {
+	} else if (library.directory) {
+		jsh.shell.jsh(
+			jsh.script.getRelativePath("slime.jsh.js"),
+			[
+				"-from", library.directory.toString(),
+				"-to", toUnixPath(to.getRelativePath("$plugins/" + String(index) + ".slime")).toString()
+			]
+		);
+	} else if (/\.jar$/.test(library.basename)) {
+		to.getRelativePath("$plugins/" + String(index) + ".jar").write( library.file.read(jsh.file.Streams.binary), { recursive: true });
+	} else if (/\.slime/.test(library.basename)) {
+		to.getRelativePath("$plugins/" + String(index) + ".slime").write( library.file.read(jsh.file.Streams.binary), { recursive: true });
+	} else {
+		throw new Error("Unimplemented: not directory, not .jar, not slime: " + library);
+	}
 } );
 
 parameters.options.module.forEach( function(module) {

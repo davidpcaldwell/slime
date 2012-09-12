@@ -291,7 +291,9 @@ settings.defaults = new function() {
 		? new Searchpath(getProperty("jsh.launcher.rhino.classpath"))
 		: new Searchpath(getProperty("java.class.path"))
 	;
-}
+
+	this.JSH_PLUGINS = new Directory(getProperty("user.home")).getDirectory(".jsh").path;
+};
 debug("jsh.launcher.packaged = " + getProperty("jsh.launcher.packaged"));
 if (getProperty("jsh.launcher.packaged") != null) {
 	settings.packaged = new function() {
@@ -313,23 +315,41 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		writeTo.close();
 
 		var index = 0;
-		var library;
-		var libraries = [];
-		debug("Copying libraries ...");
-		while( (library = ClassLoader.getSystemResourceAsStream("$libraries/" + String(index) + ".jar")) != null ) {
-			var copyTo = tmpdir.getFile(String(index) + ".jar");
+		var plugin;
+		var plugins = [];
+		debug("Copying plugins ...");
+
+		var getPlugin = function(index) {
+			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
+				return {
+					name: String(index) + ".jar",
+					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")
+				};
+			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")) {
+				return {
+					name: String(index) + ".slime",
+					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")
+				};
+			} else {
+				return null;
+			}
+		}
+
+		while( plugin = getPlugin(index) ) {
+			var copyTo = tmpdir.getFile(plugin.name);
 			var writeTo = copyTo.writeTo();
-			platform.io.copyStream(library,writeTo);
-			library.close();
+			platform.io.copyStream(plugin.stream,writeTo);
+			plugin.stream.close();
 			writeTo.close();
-			libraries.push(copyTo);
+			plugins.push(copyTo);
 			index++;
-			debug("Copied library " + index);
+			debug("Copied plugin " + index + " from " + plugin.name);
 		}
 
 		this.rhinoClasspath = new Searchpath([ rhinoCopiedTo ]);
 		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
-		this.scriptClasspath = libraries;
+		this.scriptClasspath = [];
+		this.JSH_PLUGINS = new Searchpath(plugins).toPath();
 
 		var cygwin = ClassLoader.getSystemResourceAsStream("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe");
 		if (cygwin != null && platform.cygwin) {
@@ -392,7 +412,7 @@ settings.explicit = new function() {
 	[
 		"JSH_PLUGINS"
 	].forEach( function(name) {
-		self[name] = (env[name]) ? new Searchpath(os(env[name],true)) : UNDEFINED;
+		self[name] = (env[name]) ? new Searchpath(os(env[name],true)).toPath() : UNDEFINED;
 	});
 
 	["JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
@@ -453,6 +473,7 @@ settings.explicit = new function() {
 	}
 }
 
+//	TODO	allow directive to declare plugin?
 settings.directives = function(source) {
 	var directivePattern = /^(?:\/\/)?\#(.*)$/;
 	var directives = source.split("\n").map( function(line) {
@@ -650,6 +671,8 @@ try {
 		e.rhinoException.printStackTrace();
 	} else if (typeof(e) == "string") {
 		Packages.java.lang.System.err.println("[jsh] Launch failed: " + e);
+	} else if (e instanceof Error) {
+		Packages.java.lang.System.err.println("[jsh] Launch failed: " + e.message);
 	}
 	var error = e;
 	debugger;

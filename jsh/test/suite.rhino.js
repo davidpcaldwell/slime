@@ -103,7 +103,6 @@ var getJshPathname = function(file) {
 
 var jshPackage = function(p) {
 	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
-	invocation.push("-jsh",getJshPathname(JSH_HOME));
 	invocation.push("-script",getJshPathname(new File(BASE,"jsh/test/" + p.script)));
 	if (p.modules) {
 		p.modules.forEach(function(module) {
@@ -121,6 +120,11 @@ var jshPackage = function(p) {
 			} else if (file.from && file.to) {
 				invocation.push("-file", file.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + file.from)));
 			}
+		});
+	}
+	if (p.plugins) {
+		p.plugins.forEach(function(plugin) {
+			invocation.push("-plugin", getJshPathname(new File(BASE,"jsh/test/" + plugin)));
 		});
 	}
 	var packaged = createTemporaryDirectory();
@@ -283,4 +287,15 @@ testCommandOutput("$api-deprecate-properties.jsh.js", function(options) {
 	checkOutput(options,[
 		"o.f.property = foo", ""
 	]);
+});
+
+var packaged_plugins = jshPackage({
+	script: "plugins/packaged.jsh.js",
+	plugins: ["plugins/a"]
+});
+testCommandOutput(packaged_plugins, function(options) {
+	checkOutput(options,[
+		"a: Hello, World!",
+		""
+	])
 });
