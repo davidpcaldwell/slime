@@ -18,8 +18,22 @@ $exports.environment = $context.api.shell.environment;
 $exports.properties = $context.api.shell.properties;
 $api.experimental($exports,"properties");
 
+["readLines", "asString", "asXml"].forEach(function(method) {
+	$context.stdio["in"][method] = function(p) {
+		return this.character()[method].apply(this.character(), arguments);
+	}
+});
+
 $exports.stdin = $context.stdio["in"];
+
+["out","err"].forEach(function(name) {
+	$context.stdio[name].write = function(p) {
+		$context.stdio[name].character().write(p);
+	}
+});
+
 $exports.stdout = $context.stdio["out"];
+
 $exports.stderr = $context.stdio["err"];
 
 $exports.echo = function(message,mode) {

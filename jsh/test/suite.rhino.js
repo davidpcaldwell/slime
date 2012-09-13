@@ -75,8 +75,12 @@ var testCommandOutput = function(path,tester,p) {
 	debug("Environment: " + env.toSource());
 	var options = {
 		output: "",
+		err: "",
 		env: env
 	};
+	if (p.stdin) {
+		options.input = p.stdin;
+	}
 
 	var status = runCommand.apply(this,launcher.concat(command).concat([options]));
 	if (status != 0) throw new Error("Failed with exit status " + status);
@@ -299,4 +303,32 @@ testCommandOutput(packaged_plugins, function(options) {
 		"[global] a: Hello, World!",
 		""
 	]);
+});
+
+testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
+	return options.output == "Hello, World!" && options.err == "Hello, tty!";
+});
+
+var input_abcdefghij = function() {
+	var b = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Byte.TYPE, 10);
+	for (var i=0; i<b.length; i++) {
+		b[i] = i+65;
+	}
+	return new Packages.java.io.ByteArrayInputStream(b);
+};
+
+testCommandOutput("jsh.shell/stdio.2.jsh.js", function(options) {
+	checkOutput(options,[
+		"ABCDEFGHIJ"
+	]);
+}, {
+	stdin: input_abcdefghij()
+});
+
+testCommandOutput("jsh.shell/stdio.3.jsh.js", function(options) {
+	checkOutput(options,[
+		"ABCDEFGHIJ"
+	]);
+}, {
+	stdin: input_abcdefghij()
 });
