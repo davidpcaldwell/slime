@@ -314,67 +314,100 @@ $exports.java = new function() {
 }
 
 var Resource = function(p) {
-	var binary = function() {
+	var binary = (function() {
 		if (p.read && p.read.binary) {
-			return p.read.binary();
+			return function() {
+				return p.read.binary();
+			}
 		}
-	}
+	})();
 
-	var text = function() {
+	var text = (function() {
 		if (p.read && p.read.text) {
-			return p.read.text();
+			return function() {
+				return p.read.text();
+			}
 		}
 		if (p.read && p.read.binary) {
-			return p.read.binary().character();
+			return function() {
+				return p.read.binary().character();
+			}
 		}
-	}
+	})();
 
 	this.read = function(mode) {
-		if (p.read && p.read.binary) {
+		if (binary) {
 			if (mode == Streams.binary) return binary();
+		}
+		if (text) {
 			if (mode == Streams.text) return text();
 			if (mode == XML) return text().asXml();
 			if (mode == String) return text().asString();
-			throw new TypeError("No read() mode specified: argument was " + mode);
 		}
+		throw new TypeError("No compatible read() mode specified: argument was " + mode);
 	}
 
-	if (p.read.binary) {
+	//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
+	//	for two reasons. First, they
+	//	allow callers to use object detection to determine the capabilities of this resource. Second, they make it possible for
+	//	callers to use these methods without having access to the module Streams object (which would be used as an argument to
+	//	read()). This is why we do not provide the same sort of API for String and XML, because those global objects will be
+	//	accessible to every caller.
+
+	if (binary) {
 		this.read.binary = function() {
 			return binary();
 		}
 	}
 
-	this.read.lines = function() {
-		var text = text();
-		return text.readLines.apply(text,arguments);
+	if (text) {
+		this.read.text = function() {
+			return text();
+		};
+
+		this.read.lines = function() {
+			var text = text();
+			return text.readLines.apply(text,arguments);
+		};
 	}
 
 	if (p.write) {
-		var writeText = function(mode) {
-			if (p.write.text) {
-				return p.write.text(mode);
-			} else if (p.write.binary) {
-				return p.write.binary(mode).character();
+		var writeBinary = (function() {
+			if (p.write.binary) {
+				return function(mode) {
+					return p.write.binary(mode);
+				}
 			}
-		}
+		})();
+
+		var writeText = (function() {
+			if (p.write.text) {
+				return function(mode) {
+					return p.write.text(mode);
+				};
+			} else if (p.write.binary) {
+				return function(mode) {
+					return p.write.binary(mode).character();
+				};
+			}
+		})();
 
 		this.write = function(dataOrType,mode) {
 			if (!mode) mode = {};
-			if (dataOrType == Streams.binary) {
-				return p.write.binary(mode);
-			} else if (dataOrType == Streams.text) {
+			if (dataOrType == Streams.binary && writeBinary) {
+				return writeBinary(mode);
+			} else if (dataOrType == Streams.text && writeText) {
 				return writeText(mode);
-			} else if (typeof(dataOrType) == "string") {
+			} else if (typeof(dataOrType) == "string" && writeText) {
 				var writer = writeText(mode);
 				writer.write(dataOrType);
 				writer.close();
-			} else if (typeof(dataOrType) == "xml") {
+			} else if (typeof(dataOrType) == "xml" && writeText) {
 				var writer = writeText(mode);
 				writer.write(dataOrType.toXMLString());
 				writer.close();
 			} else {
-				fail("Unimplemented: write " + dataOrType);
+				throw new Error("No compatible write mode, trying to write: " + dataOrType);
 			}
 		}
 	}

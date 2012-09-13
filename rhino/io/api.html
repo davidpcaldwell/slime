@@ -60,6 +60,109 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.Resource">Resource</a>
+			<span>An object from which input may be possible and to which output may be possible.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">read</div>
+					<span>Provides the content of this resource, or a stream from which to read it.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">Streams.binary, Streams.text, the String function, or the XML function</span>
+								<span>A constant value indicating the type desired.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.binput">byte input stream</a></span>,
+						<span class="type"><a href="#types.binput">character input stream</a></span>,
+						<span class="type">String</span>,
+						or <span class="type">XML</span>
+						<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
+					</div>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">binary</div>
+							<span>
+								(if content can be read as a byte stream)
+								Reads the content of this resource as a byte stream.
+							</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.binput">byte input stream</a></span>
+								<span>A stream that can provide the content of this resource.</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">text</div>
+							<span>
+								(if content can be read as a character stream)
+								Reads the content of this resource as a character stream.
+							</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.cinput">character input stream</a></span>
+								<span>A stream that can provide the content of this resource.</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">lines</div>
+							<span>
+								(if content can be read as a character stream)
+								Iterates through the lines in this stream, with semantics equivalent to the
+								<code>readLines</code> method defined by
+								<a href="#types.cinput">character input stream</a>.
+							</span>
+						</li>
+					</ul>
+				</li>
+				<li class="function">
+					<div class="name">write</div>
+					<span>
+						(if resource is writable)
+						Writes content to this resource, or returns a stream to which content can be written to write content to
+						this resource.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">Streams.binary or Streams.text</span>,
+								<span class="type">string</span>,
+								or <span class="type">xml</span>
+								<span>
+									If the given value is a <code>string</code> or <code>xml</code>, writes the given value
+									to the resource. If the given value is <code>Streams.binary</code> or
+									<code>Streams.text</code>, opens a stream of the appropriate type for writing to the given
+									resource.
+								</span>
+							</li>
+							<li class="value">
+								<span class="type">object</span>
+								<span>
+									An argument that can be used to configure the write operation; its semantics depend on
+									the underlying implementation.
+								</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">(varies)</span>
+						<span>
+							If <code>arguments[0]</code> specifies a stream to open, returns that stream; otherwise, returns
+							<code>undefined</code>.
+						</span>
+					</div>
+				</li>
+			</ul>
+		</div>
 		<ul>
 			<li class="constructor">
 				<div class="name">Buffer</div>
@@ -373,9 +476,9 @@ END LICENSE
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="value">
-									<span class="type">JavaClass java.io.InputStream,</span>
-									<span class="type">JavaClass java.io.Reader,</span>
-									<span class="type">JavaClass java.io.OutputStream,</span>
+									<span class="type">JavaClass java.io.InputStream</span>,
+									<span class="type">JavaClass java.io.Reader</span>,
+									<span class="type">JavaClass java.io.OutputStream</span>,
 									or
 									<span class="type">JavaClass java.io.Writer</span>
 									<span>A native Java object to convert.</span>
