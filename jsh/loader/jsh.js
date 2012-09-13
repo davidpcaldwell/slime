@@ -409,6 +409,7 @@ this.jsh = new function() {
 				scope.plugin = function(p) {
 					list.push(p);
 				}
+				scope.global = (function() { return this; })();
 				scope.jsh = jsh;
 				scope.$loader = new (function(_code) {
 					this.file = function(path,context) {

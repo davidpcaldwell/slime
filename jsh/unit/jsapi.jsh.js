@@ -173,5 +173,8 @@ if (parameters.options.doc) {
 	modules.forEach( function(item) {
 		list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
 	} );
-	jsapi.doc(list,parameters.options.doc);
+	jsapi.doc({
+		modules: list,
+		to: parameters.options.doc
+	});
 }

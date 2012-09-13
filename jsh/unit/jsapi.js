@@ -277,7 +277,10 @@ $exports.tests = new function() {
 	}
 }
 
-$exports.doc = function(modules,to) {
+$exports.doc = function(p) {
+	var modules = p.modules;
+	var to = p.to;
+
 	var destination = to.createDirectory({
 		ifExists: function(dir) {
 			dir.remove();

@@ -366,6 +366,9 @@ var jsapi_jsh = function() {
 		var namespace = (ns) ? ns : "";
 		this.push(namespace+"@"+path);
 	}
+	modules.add("jsh/launcher/rhino/", "(launcher)");
+	modules.add("jsh/loader/plugin.api.html", "(plugins)");
+	modules.add("jsh/tools/", "(tools)");
 	modules.add("jsh/loader/","jsh.loader");
 	modules.add("loader/");
 	modules.add("loader/rhino/");

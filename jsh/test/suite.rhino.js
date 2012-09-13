@@ -296,6 +296,7 @@ var packaged_plugins = jshPackage({
 testCommandOutput(packaged_plugins, function(options) {
 	checkOutput(options,[
 		"a: Hello, World!",
+		"[global] a: Hello, World!",
 		""
-	])
+	]);
 });

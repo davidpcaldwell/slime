@@ -17,225 +17,26 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>jsh Launcher</title>
+	<title>Running jsh</title>
 </head>
 <body>
-	<!--	TODO	document directives	-->
 	<div>
-		<h1>Java launcher (inonit.script.jsh.launcher.Main)</h1>
+		<h1>Java launcher</h1>
 		<div>
-			<h2>Resources used</h2>
-			<ul>
-				<li>
-					main.jsh.js: If present in classpath, this is a packaged application.
-				</li>
-				<li>
-					jsh.jar: If <code>inonit.script.jsh.launcher.Main</code> loaded from a file named <code>jsh.jar</code>, we
-					assume we can find js.jar and jsh.rhino.js at their typical relative locations (unless otherwise specified).
-				</li>
-			</ul>
-			<h2>Environment variables used</h2>
-			<ul>
-				<li>
-					JSH_LAUNCHER_DEBUG: If set, launcher script will run inside debugger, and additional debugging
-					information will be output to console.
-				</li>
-				<li>
-					JSH_RHINO_CLASSPATH: if present, specifies location of js.jar; otherwise, if running inside
-					shell, location is inferred from location of jsh.jar. In packaged application, location of js.jar does not
-					apply. If Cygwin is present, assumed to be in Cygwin format.
-				</li>
-				<li>
-					JSH_RHINO_SCRIPT: specifies location of jsh.rhino.js (location of api.rhino.js is inferred from this).
-					Otherwise, location is inferred from location of jsh.jar.
-				</li>
-			</ul>
-		</div>
-		<h1>Rhino script</h1>
-		<h2>api.rhino.js</h2>
-		<p>
-			Also used by jsh/etc/build.rhino.js
-		</p>
-		<div class="label">has properties:</div>
-		<ul>
-			<li class="object">
-				<div class="name">platform</div>
-				<span>Describes the underlying platform.</span>
-				<p>
-					Determines platform by attempting to run <code>uname</code>. If found, assumes underlying system is UNIX.
-					Evaluates value to detect Cygwin by matching on the first six characters of the output.
-				</p>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="object">
-						<div class="name">unix</div>
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="value">
-								<div class="name">uname</div>
-								<span class="type">string</span>
-								<span>The output returned by <code>uname</code>.</span>
-							</li>
-						</ul>
-					</li>
-					<li class="object">
-						<div class="name">cygwin</div>
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">realpath</div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</div>
-							</li>
-							<li class="object">
-								<div class="name">cygpath</div>
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="function">
-										<div class="name">unix</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-									<li class="function">
-										<div class="name">windows</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</li>
-				</ul>
-			</li>
-		</ul>
-		<h2>jsh.rhino.js (and api.rhino.js)</h2>
-		<div>
-			Required in classpath: rhino/system/java
-			<div>
-				Environment variables used:
-				<p>
-					All environment variables beginning with <code>JSH_</code>, along with the <code>PATH</code> variable, are also
-					used to pass to the loader as-is, as system properties named <code>jsh.launcher.environment.<i>name</i></code>.
-				</p>
-				<ul>
-					<li>
-						JSH_LAUNCHER_DEBUG: If set, launcher emits additional debugging information to console.
-					</li>
-					<li>
-						JSH_JAVA_HOME: If set, this value is used for locating JDK libraries specified by the script, and also is
-						used to execute the jsh loader main class. Otherwise, the Java installation executing the launcher is
-						used.
-					</li>
-					<li>
-						JSH_SHELL_CLASSPATH: If set, this path is used to supply the jsh loader with the classes normally contained
-						in lib/jsh.jar.
-					</li>
-					<li>
-						JSH_SCRIPT_CLASSPATH: If set, this path is used to supply the jsh loader with additional Java libraries on
-						the classpath.
-					</li>
-					<li>
-						JSH_LIBRARY_SCRIPTS_LOADER, JSH_LIBRARY_SCRIPTS_RHINO, JSH_LIBRARY_SCRIPTS_JSH, JSH_LIBRARY_MODULES,
-						JSH_PLUGINS: if
-						present, values are passed to jsh loader as properties: a property is created by converting the name of the
-						environment variable to lowercase and replacing underscores with periods to create a name, and the value is
-						set to the value of the environment variable.
-					</li>
-					<li>
-						JSH_TMPDIR: if present, value is supplied as the <code>java.io.tmpdir</code> property to the loader.
-					</li>
-					<li>
-						JSH_LIBRARY_NATIVE: if running on Cygwin, the value is used to locate the Cygwin paths helper application,
-						and the location of that application is passed to the jsh loader as property <code>cygwin.paths</code>.
-					</li>
-					<li>
-						JSH_OPTIMIZATION: If present, value is passed to jsh loader as property <code>jsh.optimization</code>.
-					</li>
-					<li>
-						JSH_SCRIPT_DEBUGGER: If present, value is passed to jsh loader as property <code>jsh.script.debugger</code>.
-					</li>
-					<li>
-						PATH: Is used to locate the target script if only a file name is supplied.
-					</li>
-					<li>
-						JSH_JVM_OPTIONS: If present, is used as space-delimited set of options to supply to the Java virtual machine
-						running the jsh loader.
-					</li>
-					<li>
-						JSH_JAVA_DEBUGGER: If present, the JVM process executing the jsh loader main class is run in a debugger.
-					</li>
-				</ul>
-			</div>
-			<div>
-				System properties used by Main.java to communicate with jsh.rhino.js:
-				<p>
-					All of the below properties except <code>jsh.launcher.home</code> are also passed as-is to the loader
-					subprocess.
-				</p>
-				<ul>
-					<li>
-						<code>jsh.launcher.packaged</code>: If present, indicates that the shell is running within a packaged
-						application.
-					</li>
-					<li>
-						<code>jsh.launcher.rhino.classpath</code>: If present, indicates the location of the Rhino interpreter to
-						be used to execute the jsh loader, in native OS format.
-					</li>
-					<li>
-						<code>jsh.launcher.home</code>: If present, used to locate the jsh loader classes, SLIME loader scripts,
-						Rhino SLIME loader scripts, jsh SLIME loader scripts, jsh modules, and native libraries directory (assuming
-						the locations of these are not specified using environment variables).
-					</li>
-					<li>
-						<code>jsh.launcher.classpath</code>: classpath from which jsh launcher was loaded, made available to loader.
-					</li>
-					<li><code>jsh.launcher.rhino.script</code>: location of jsh.rhino.js, made available to loader.</li>
-				</ul>
-			</div>
-			<div>
-				System properties used:
-				<ul>
-					<li>
-						<code>java.home</code>: if JSH_JAVA_HOME is not specified, used to execute the jsh loader.
-					</li>
-					<li>
-						<code>java.class.path</code>: Supplied to the jsh loader to provide the Rhino interpreter if
-						<code>jsh.launcher.rhino.classpath</code> is not present. Also provides the jsh loader classes if this
-						application is a packaged application.
-					</li>
-				</ul>
-			</div>
+			When jsh is built, its installation directory contains the file <code>jsh.jar</code>, containing the classes necessary
+			to start a jsh shell. So jsh can be invoked with:
+			<blockquote><code>java -jar jsh.jar &lt;script> [arguments]</code></blockquote>
 		</div>
 	</div>
+	<!--
+		TODO	document native launcher
+		<div>
+			<h1>Native launcher</h1>
+			<div>
+				If jsh is installed via its installer program, it will attempt to create a native launcher in its installation
+				directory.
+			</div>
+		</div>
+	-->
 </body>
 </html>
