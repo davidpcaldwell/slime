@@ -36,11 +36,11 @@ $exports.run = function(tokens,mode) {
 		if (!arg) return null;
 		if (typeof(arg) == "string") return arguments.callee(new Packages.java.io.File(arg));
 		if (arg["class"] == Packages.java.io.File) {
-			if (!arg.exists()) throw "Working directory does not exist: " + arg.getCanonicalPath();
-			if (!arg.isDirectory()) throw "Working directory is file, not directory: " + arg.getCanonicalPath();
+			if (!arg.exists()) throw new Error("Working directory does not exist: " + arg.getCanonicalPath());
+			if (!arg.isDirectory()) throw new Error("Working directory is file, not directory: " + arg.getCanonicalPath());
 			return arg;
 		}
-		throw "Unrecognized working directory: value=" + arg + " type=" + typeof(arg);
+		throw new Error("Unrecognized working directory: value=" + arg + " type=" + typeof(arg));
 	})(mode.work);
 
 	var onExit = (mode.onExit) ? mode.onExit : function(result) {
@@ -88,8 +88,8 @@ $exports.run = function(tokens,mode) {
 	if (mode.environment) {
 		result.environment = mode.environment;
 	}
-	if (work) {
-		result.workingDirectory = work;
+	if (mode.work) {
+		result.workingDirectory = mode.work;
 	}
 
 	var listener = new JavaAdapter(

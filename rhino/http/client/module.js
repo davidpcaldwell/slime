@@ -323,7 +323,7 @@ var Client = function(mode) {
 				writer.write(p.body.string);
 				writer.close();
 			} else {
-				throw new RangeError("A message body must specify its content; no p.body.stream or p.body.string found.");
+				throw new TypeError("A message body must specify its content; no p.body.stream or p.body.string found.");
 			}
 		}
 		var status = getStatus($urlConnection);

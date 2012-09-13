@@ -47,8 +47,8 @@ this.jsh = new function() {
 		}
 
 		var getCode = function(code) {
-			if (typeof(code) == "undefined") throw new RangeError("'code' must not be undefined.");
-			if (code === null) throw new RangeError("'code' must not be null.");
+			if (typeof(code) == "undefined") throw new TypeError("'code' must not be undefined.");
+			if (code === null) throw new TypeError("'code' must not be null.");
 			//	This check determines whether the object is a Pathname; is there a way to do that in the rhino/file module itself?
 			//	TODO	presumably the run/file methods should only support file objects, not directories or pathnames not
 			//			corresponding to files ... or else what should they do if the file is not found? Maybe file could return

@@ -14,3 +14,27 @@
 //	END LICENSE
 
 jsh.shell.echo(true);
+
+var console = new function() {
+	var lines = [];
+
+	this.echo = function(s) {
+		lines.push(s);
+	}
+
+	this.getLines = function() {
+		return lines;
+	}
+}
+
+jsh.shell.echo("A", { console: console.echo });
+jsh.shell.echo("B", { console: console.echo });
+
+var lines = console.getLines();
+if (lines.length != 2) {
+	jsh.shell.exit(1);
+}
+if (lines[0] != "A" || lines[1] != "B") {
+	jsh.shell.exit(1);
+}
+

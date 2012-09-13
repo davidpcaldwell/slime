@@ -107,36 +107,41 @@ END LICENSE
 											<li class="object">
 												<div class="label">has properties:</div>
 												<ul>
-													<li>
+													<li class="value">
 														<div class="name">status</div>
-														The exit status of the subprocess, if it was launched successfully.
+														<span class="type">number</span>
+														<span>The exit status of the subprocess, if it was launched successfully.</span>
 													</li>
-													<li>
+													<li class="value">
 														<div class="name">error</div>
-														The <code>java.lang.Throwable</code> that was thrown by the Java
+														<span class="type">JavaClass java.lang.Throwable</span>
+														<span>The <code>java.lang.Throwable</code> that was thrown by the Java
 														virtual machine when attempting to execute the subprocess, if it was not
-														successfully launched.
+														successfully launched.</span>
 													</li>
-													<li>
+													<li class="value">
 														<div class="name">command</div>
-														The program that was run.
+														<span>The program that was run.</span>
 													</li>
-													<li>
+													<li class="value">
 														<div class="name">arguments</div>
-														The arguments that were passed to the program.
+														<span class="type">Array</span>
+														<span>The arguments that were passed to the program.</span>
 													</li>
 													<li class="value">
 														<div class="name">environment</div>
 														<span class="type">object</span>
 														<span>
-															(optional) The environment that was passed to the program, if any.
+															(optional)
+															The environment that was passed to the program, if any.
 														</span>
 													</li>
 													<li class="value">
 														<div class="name">workingDirectory</div>
-														<span class="type">JavaClass java.io.File</span>
 														<span>
-															(optional) The working directory in which the program was run, if any.
+															(optional)
+															The working directory that was specified for running the
+															program, if any.
 														</span>
 													</li>
 												</ul>

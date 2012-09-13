@@ -80,7 +80,7 @@ var Pathname = function(parameters) {
 
 	var getFile = function() {
 		if (arguments.length > 0) {
-			throw new RangeError("No arguments expected to Pathname.getFile");
+			throw new TypeError("No arguments expected to Pathname.getFile");
 		}
 		if (!$filesystem.exists(peer)) return null;
 		if ($filesystem.isDirectory(peer)) return null;

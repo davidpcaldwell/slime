@@ -88,7 +88,7 @@ jsh.file.unzip({
 //	TODO	remove build.zip
 
 var which = function(command) {
-	if (arguments.length > 1) throw new RangeError("Too many arguments.");
+	if (arguments.length > 1) throw new Error("Too many arguments.");
 	//	Search the path for a given command
 	for (var i=0; i<jsh.shell.PATH.pathnames.length; i++) {
 		var dir = jsh.shell.PATH.pathnames[i].directory;

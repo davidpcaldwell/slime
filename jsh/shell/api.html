@@ -43,7 +43,7 @@ END LICENSE
 			</li>
 			<li class="function">
 				<div class="name">getSystemProperty</div>
-				<span>__DESCRIPTION__</span>
+				<span>Provides the value of a given system property.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -186,7 +186,7 @@ END LICENSE
 								(optional) Specifies a destination. The <code>console</code> function, if present, specifies a
 								handler for messages. Otherwise, the <code>stream</code> property, if present, specifies a stream to
 								which to write messages. If neither is defined, or this argument is omitted entirely, the message
-								is written to the <code>jsh.file.Streams.stdout</code> stream.
+								is written to the <code>stdout</code> stream.
 							</span>
 							<div class="label">has properties:</div>
 							<ul>
@@ -205,10 +205,9 @@ END LICENSE
 								</li>
 								<li class="value">
 									<div class="name">stream</div>
-									<span class="type">jsh.io character output stream</span>
+									<span class="type"><a href="../../rhino/io/api.html#types.coutput">character output stream</a></span>
 									<span>(optional) A destination stream for messages.</span>
 								</li>
-
 							</ul>
 						</li>
 					</ol>
@@ -221,12 +220,16 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">jsh.file.Pathname</span>
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
 							<span>The pathname of the executable to run.</span>
 						</li>
 						<li class="value">
 							<span class="type">Array</span>
-							<span>An array containing strings and/or jsh.file.Pathname objects.</span>
+							<span>
+								An array containing strings and/or
+								<a href="../../rhino/file/api.html#types.Pathname">Pathname</a>
+								objects.
+							</span>
 						</li>
 						<li class="object">
 							<span></span>
@@ -234,9 +237,11 @@ END LICENSE
 							<ul>
 								<li class="value">
 									<div class="name">filesystem</div>
-									<span class="type">jsh.file filesystem</span>
+									<span class="type"><a href="../../rhino/file/api.html#types.filesystem">filesystem</a></span>
 									<span>
-										(optional) If present, all arguments of type <code>jsh.file.Pathname</code> are converted
+										(optional) If present, all arguments of type 
+										<code><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></code>
+										are converted
 										into pathnames in this filesystem before the subprocess is launched.
 									</span>
 								</li>
@@ -251,7 +256,7 @@ END LICENSE
 								<li class="value">
 									<div class="name">stdin</div>
 									<span class="type">JavaClass java.io.InputStream</span>
-									or <span class="type">jsh.file byte input stream</span>
+									or <span class="type"><a href="../../rhino/io/api.html#types.binput">byte input stream</a></span>
 									<span>
 										(optional) The stream to use as the standard input stream of the subprocess. If
 										<code>null</code>, an empty stream will be used.
@@ -262,7 +267,7 @@ END LICENSE
 								<li class="value">
 									<div class="name">stdout</div>
 									<span class="type">JavaClass java.io.OutputStream</span>
-									or <span class="type">jsh.file byte output stream</span>
+									or <span class="type"><a href="../../rhino/io/api.html#types.boutput">byte output stream</a></span>
 									<span>
 										(optional) The stream to use as the standard output stream of the subprocess. If not
 										present, the standard output stream of this process will be used. If <code>null</code>,
@@ -272,7 +277,7 @@ END LICENSE
 								<li class="value">
 									<div class="name">stderr</div>
 									<span class="type">JavaClass java.io.OutputStream</span>
-									or <span class="type">jsh.file byte output stream</span>
+									or <span class="type"><a href="../../rhino/io/api.html#types.boutput">byte output stream</a></span>
 									<span>
 										(optional) The stream to use as the standard error stream of the subprocess. If not
 										present, the standard error stream of this process will be used. If <code>null</code>,
@@ -281,7 +286,7 @@ END LICENSE
 								</li>
 								<li class="value">
 									<div class="name">workingDirectory</div>
-									<span class="type">jsh.file directory</span>
+									<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 									<span>
 										(optional) The working directory to use for the subprocess. If not specified, the
 										working directory of the parent process will be used.
@@ -303,7 +308,7 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">rhino/file Pathname</span>
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
 							<span>The pathname of the script to run.</span>
 						</li>
 						<!--	TODO	update the below using jsapi:reference	-->
@@ -336,7 +341,7 @@ END LICENSE
 				<ul>
 					<li class="value">
 						<div class="name">home</div>
-						<span class="type">jsh.file directory</span>
+						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 						<span>The home directory of the Java installation used to run this shell.</span>
 					</li>
 				</ul>
@@ -346,17 +351,17 @@ END LICENSE
 			</li>
 			<li class="value">
 				<div class="name">TMPDIR</div>
-				<span class="type">jsh.file directory</span>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 				<span>A temporary directory that may be used by this shell.</span>
 			</li>
 			<li class="value">
 				<div class="name">HOME</div>
-				<span class="type">jsh.file directory</span>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 				<span>The home directory of the user executing this shell.</span>
 			</li>
 			<li class="value">
 				<div class="name">PWD</div>
-				<span class="type">jsh.file directory</span>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
 				<!--	TODO	can this be changed while the shell is running?	-->
 				<span>The current working directory.</span>
 			</li>

@@ -168,7 +168,7 @@
 
 			if (!code) {
 				//	TODO	probably want better message for zero-length string
-				throw new RangeError("Missing argument 0 specifying location of module.");
+				throw new TypeError("Missing argument 0 specifying location of module.");
 			} else if (typeof(code) == "string") {
 				if (/\/$/.test(code)) {
 					code = { base: code };
@@ -183,13 +183,13 @@
 					code = { base: base, main: tokens[tokens.length-1] };
 				}
 			} else if (typeof(code) == "object" && code.base && code.main) {
-				throw new RangeError(
+				throw new TypeError(
 					"Attempt to use removed inonit.loader.module API by invoking with first argument having base/main properties."
 					+ " base=" + code.base + " main=" + code.main
 					+ " Resolve the properties to a single location and invoke using that."
 				);
 			} else {
-				throw new RangeError(
+				throw new TypeError(
 					"Non-string passed to inonit.loader.module: " + code
 				);
 			}

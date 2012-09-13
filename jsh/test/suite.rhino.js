@@ -172,32 +172,6 @@ platform.jdk.compile(compileOptions.concat([
 	String(new File(BASE,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
 ]));
 
-testCommandOutput(
-	"jsh.shell.echo.jsh.js",
-	function(options) {
-		var messages = [
-			"true",
-			""
-		];
-		if (options.output != messages.join(String(Packages.java.lang.System.getProperty("line.separator")))) {
-			throw new Error("Output wrong: it is [" + options.output + "]");
-		}
-	}
-);
-
-testCommandOutput(
-	"jsh.shell-properties.jsh.js",
-	function(options) {
-		var messages = [
-			"Passed.",
-			""
-		];
-		if (options.output != messages.join(String(Packages.java.lang.System.getProperty("line.separator")))) {
-			throw new Error("Output wrong: it is [" + options.output + "]");
-		}
-	}
-);
-
 run(LAUNCHER_COMMAND.concat(
 	[
 		String(new File(BASE,"jsh/test/addClasses/addClasses.jsh.js").getCanonicalPath())
@@ -304,6 +278,32 @@ testCommandOutput(packaged_plugins, function(options) {
 		""
 	]);
 });
+
+testCommandOutput(
+	"jsh.shell/echo.jsh.js",
+	function(options) {
+		var messages = [
+			"true",
+			""
+		];
+		if (options.output != messages.join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+			throw new Error("Output wrong: it is [" + options.output + "]");
+		}
+	}
+);
+
+testCommandOutput(
+	"jsh.shell/properties.jsh.js",
+	function(options) {
+		var messages = [
+			"Passed.",
+			""
+		];
+		if (options.output != messages.join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+			throw new Error("Output wrong: it is [" + options.output + "]");
+		}
+	}
+);
 
 testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
 	return options.output == "Hello, World!" && options.err == "Hello, tty!";

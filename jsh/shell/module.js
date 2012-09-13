@@ -143,7 +143,7 @@ $exports.shell = function(command,args,mode) {
 					return work.pathname.toString();
 				}
 			}
-			throw "Unknown working directory: " + work;
+			throw new Error("Unknown working directory: " + work);
 		})();
 
 		this.onExit = mode.onExit;
