@@ -408,7 +408,7 @@ var jsapi_jsh = function() {
 	debug("jsapi.jsh.js command: " + command.join(" "));
 	var status = runCommand.apply(this,command);
 	if (status) {
-		throw "Failed: " + command.join(" ");
+		throw new Error("Failed: " + command.join(" "));
 	}
 }
 

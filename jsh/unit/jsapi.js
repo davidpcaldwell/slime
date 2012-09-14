@@ -136,7 +136,11 @@ $exports.tests = new function() {
 			this.namespace = moduleDescriptor.namespace;
 
 			this.loadWith = function(context) {
-				return jsh.loader.module(moduleDescriptor.location, (context) ? context : {});
+				if (/\.html/.test(moduleDescriptor.location.basename)) {
+					return {};
+				} else {
+					return jsh.loader.module(moduleDescriptor.location, (context) ? context : {});
+				}
 			}
 
 			this.getRelativePath = function(path) {
