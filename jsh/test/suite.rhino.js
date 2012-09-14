@@ -234,18 +234,20 @@ testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
 	]);
 });
 
-var environment = {
-	JSH_SHELL_CLASSPATH: String(new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath())
-};
-console("Running JSH_SHELL_CLASSPATH package with " + environment.toSource() + " ...");
-testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
-	checkOutput(options,[
-		String(new File(JSH_HOME,"lib/jsh.jar").toURI()),
-		""
-	]);
-}, {
-	env: environment
-});
+if (false) {
+	var environment = {
+		JSH_SHELL_CLASSPATH: String(new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath())
+	};
+	console("Running JSH_SHELL_CLASSPATH package with " + environment.toSource() + " ...");
+	testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
+		checkOutput(options,[
+			String(new File(JSH_HOME,"lib/jsh.jar").toURI()),
+			""
+		]);
+	}, {
+		env: environment
+	});
+}
 
 var packaged_helper = jshPackage({
 	script: "cygwin/helper.jsh.js"
