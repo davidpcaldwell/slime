@@ -378,6 +378,11 @@ if (getProperty("jsh.launcher.home")) {
 		if (platform.cygwin) {
 			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
 		}
+
+		this.JSH_PLUGINS = new Searchpath([
+			JSH_HOME.getDirectory("plugins"),
+			new Directory(getProperty("user.home")).getDirectory(".jsh")
+		]);
 	}
 }
 

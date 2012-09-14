@@ -423,6 +423,15 @@ var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
 copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
 
+console("Creating plugins directory ...");
+var JSH_PLUGINS = new File(JSH_HOME,"plugins");
+JSH_PLUGINS.mkdir();
+//	TODO	it might be useful in the future to copy jsh/loader/plugin.api.html into this directory, to make it easy to find.
+//			this would also make it so that an installer would automatically create the plugins directory when unzipping the
+//			distribution; right now this is also done in install.jsh.js. But currently, this would mess up the CSS, etc., so it
+//			might be better to leave the plugin documentation only in docs/api/
+//	copyFile(new File(BASE, "jsh/loader/plugin.api.html"))
+
 console("Creating install script ...");
 new File(JSH_HOME,"etc").mkdir();
 copyFile(new File(BASE,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));

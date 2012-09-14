@@ -82,7 +82,7 @@ jsh.file.unzip({
 	zip: file,
 	to: install
 });
-//	TODO	remove build.zip
+install.getRelativePath("plugins").createDirectory();
 
 var which = function(command) {
 	if (arguments.length > 1) throw new Error("Too many arguments.");
