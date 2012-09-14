@@ -197,18 +197,46 @@ if (parameters.options.cygwin) {
 	}
 	var unix = (function() {
 		var jdk = jsh.shell.java.home.parent;
-		if (jsh.shell.os.name == "FreeBSD") {
+
+		var jni = function(include,rpath) {
+			var vmpath = (function() {
+				var rv;
+				//	Prefer client VM to server VM
+				["client", "server"].forEach(function(vm) {
+					if (!rv) {
+						if (jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm)) {
+							rv = jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm);
+						}
+					}
+				});
+				return rv;
+			})();
+
 			return {
 				include: [
 					jdk.getRelativePath("include"),
-					jdk.getRelativePath("include/freebsd")
+					jdk.getRelativePath("include/" + include)
 				],
 				library: {
 					name: "jvm",
-					path: jdk.getRelativePath("jre/lib/" + jsh.shell.os.arch + "/client")
+					path: vmpath
 				},
-				rpath: true
+				rpath: rpath
 			}
+		}
+
+		var rpath = function(path) {
+			return ["-Wl,-rpath," + path.toString()];
+		};
+
+		if (jsh.shell.os.name == "FreeBSD") {
+			//	The below also works on FreeBSD 9.0 with gcc, but the above seems more portable
+//			return jni("freebsd", function(path) {
+//				return ["-rpath", path.toString()];
+//			});
+			return jni("freebsd", rpath);
+		} else if (jsh.shell.os.name == "Linux") {
+			return jni("linux", rpath);
 		} else if (jsh.shell.os.name == "Mac OS X") {
 			return {
 				include: [
@@ -240,7 +268,7 @@ if (parameters.options.cygwin) {
 			args.push.apply(args, unix.library.command);
 		}
 		if (unix.rpath) {
-			args.push("-rpath", unix.library.path);
+			args.push.apply(args, unix.rpath(unix.library.path));
 		}
 		jsh.shell.echo("Invoking gcc " + args.join(" ") + " ...");
 		jsh.shell.shell(

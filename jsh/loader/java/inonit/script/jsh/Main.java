@@ -108,7 +108,6 @@ public class Main {
 				}
 
 				public Plugin[] getPlugins() {
-					System.err.println("jsh.plugins=" + System.getProperty("jsh.plugins"));
 					String[] paths = System.getProperty("jsh.plugins").split("\\" + java.io.File.pathSeparator);
 					ArrayList<Plugin> rv = new ArrayList<Plugin>();
 					for (int i=0; i<paths.length; i++) {
