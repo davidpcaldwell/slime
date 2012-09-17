@@ -314,7 +314,6 @@
 		};
 
 		this.module = function(format,scope) {
-			debugger;
 			var loader = new Loader(format);
 			return loader.module(format.main,scope);
 		};
