@@ -42,6 +42,16 @@ $exports.getApiHtmlPath = function(path) {
 	}
 }
 
+var run = function() {
+	if (typeof($context) == "object" && $context.run) {
+		$context.run(arguments[0],arguments[1]);
+	} else {
+		with(arguments[1]) {
+			eval(arguments[0]);
+		}
+	}
+}
+
 //	Creates an object representing an api.html given its HTML and a 'name' used to name the top-level scenario; this object can:
 //		.getContexts(scope): produce the list of contexts declared on the page
 //		.getScenario(scope,unit): produce a unit.before.js/Scenario given a scope and a test path
@@ -92,14 +102,17 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	var getScenario = function(scope,element,container) {
-		var run = function(code,scope) {
-			if (typeof($context) == "object" && $context.run) {
-				$context.run(code,scope);
-			} else {
-				with(scope) {
-					eval(code);
+		var createTestScope = function() {
+			var rv = {
+				$platform: $platform,
+				scope: scope
+			};
+			for (var i=0; i<arguments.length; i++) {
+				for (var x in arguments[i]) {
+					rv[x] = arguments[i][x];
 				}
 			}
+			return rv;
 		}
 
 		var p = {};
@@ -118,26 +131,16 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
-					run(container.initializes[i].getContentString(),scope);
+					run(container.initializes[i].getContentString(), createTestScope());
 				}
 			}
 			var initializes = element.getScripts("initialize");
 			for (var i=0; i<initializes.length; i++) {
-				run(initializes[i].getContentString(), scope);
+				run(initializes[i].getContentString(), createTestScope());
 			}
 		};
 
 		p.execute = function(unit) {
-			var createTestScope = function() {
-				var rv = {};
-				for (var i=0; i<arguments.length; i++) {
-					for (var x in arguments[i]) {
-						rv[x] = arguments[i][x];
-					}
-				}
-				return rv;
-			}
-
 			var children = (function() {
 				if (element.localName == "script" && element.getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
 					return [ element ];
@@ -178,11 +181,11 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.destroy = function() {
 			var destroys = element.getScripts("destroy");
 			for (var i=0; i<destroys.length; i++) {
-				run(destroys[i].getContentString(),scope);
+				run(destroys[i].getContentString(),createTestScope());
 			}
 			if (container) {
 				for (var i=0; i<container.destroys.length; i++) {
-					run(container.destroys[i].getContentString(),scope);
+					run(container.destroys[i].getContentString(),createTestScope());
 				}
 			}
 		};
