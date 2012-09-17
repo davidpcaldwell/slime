@@ -43,7 +43,7 @@ $exports.getApiHtmlPath = function(path) {
 }
 
 //	Creates an object representing an api.html given its HTML and a 'name' used to name the top-level scenario; this object can:
-//		.getContexts(): produce the list of contexts declared on the page
+//		.getContexts(scope): produce the list of contexts declared on the page
 //		.getScenario(scope,unit): produce a unit.before.js/Scenario given a scope and a test path
 //
 $exports.ApiHtmlTests = function(html,name) {
@@ -92,6 +92,16 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	var getScenario = function(scope,element,container) {
+		var run = function(code,scope) {
+			if (typeof($context) == "object" && $context.run) {
+				$context.run(code,scope);
+			} else {
+				with(scope) {
+					eval(code);
+				}
+			}
+		}
+
 		var p = {};
 		if (element.isTop()) {
 			p.name = name;
@@ -108,24 +118,12 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
-					if (typeof($context) == "object" && $context.run) {
-						$context.run(container.initializes[i].getContentString(),scope);
-					} else {
-						with(scope) {
-							eval(container.initializes[i].getContentString());
-						}
-					}
+					run(container.initializes[i].getContentString(),scope);
 				}
 			}
 			var initializes = element.getScripts("initialize");
 			for (var i=0; i<initializes.length; i++) {
-				if (typeof($context) == "object"  && $context.run) {
-					$context.run(initializes[i].getContentString(),scope);
-				} else {
-					with(scope) {
-						eval(initializes[i].getContentString());
-					}
-				}
+				run(initializes[i].getContentString(), scope);
 			}
 		};
 
@@ -149,15 +147,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			})();
 			for (var i=0; i<children.length; i++) {
 				if (children[i].localName == "script" && children[i].getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
-					if (typeof($context) == "object"  && $context.run) {
-						$context.run(children[i].getContentString(),createTestScope(scope,unit));
-					} else {
-						with(scope) {
-							with(unit) {
-								eval(children[i].getContentString());
-							}
-						}
-					}
+					run(children[i].getContentString(),createTestScope(scope,unit));
 				} else if (children[i].localName == "script") {
 					//	do nothing
 				} else {
@@ -188,23 +178,11 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.destroy = function() {
 			var destroys = element.getScripts("destroy");
 			for (var i=0; i<destroys.length; i++) {
-				if (typeof($context) == "object"  && $context.run) {
-					$context.run(destroys[i].getContentString(),scope);
-				} else {
-					with(scope) {
-						eval(destroys[i].getContentString());
-					}
-				}
+				run(destroys[i].getContentString(),scope);
 			}
 			if (container) {
 				for (var i=0; i<container.destroys.length; i++) {
-					if (typeof($context) == "object"  && $context.run) {
-						$context.run(container.destroys[i].getContentString(),scope);
-					} else {
-						with(scope) {
-							eval(container.destroys[i].getContentString());
-						}
-					}
+					run(container.destroys[i].getContentString(),scope);
 				}
 			}
 		};
