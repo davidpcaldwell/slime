@@ -119,15 +119,20 @@ modules.forEach(function(path) {
 
 //	TODO	Obviously under Cygwin shell does not include the paths helper
 
-runCommand(
+var args = [];
+args.push(
 	Packages.java.lang.System.getProperty("java.home") + "/bin/java",
 	"-classpath", LAUNCHER_CLASSES,
-	"inonit.script.jsh.launcher.Main",
-	arguments[0],
+	"inonit.script.jsh.launcher.Main"
+);
+args = args.concat(arguments);
+args.push(
 	{
 		env: new (function() {
 			for (var x in env) {
-				if (/^JSH_/.test(x)) {
+				if (x == "JSH_SCRIPT_DEBUGGER") {
+					this[x] = env[x];
+				} else if (/^JSH_/.test(x)) {
 				} else {
 					this[x] = env[x];
 				}
@@ -143,3 +148,4 @@ runCommand(
 		})()
 	}
 );
+runCommand.apply(null, args);
