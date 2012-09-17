@@ -312,7 +312,7 @@ END LICENSE
 							}
 						}
 
-						var a = new MetaObject({ get: doubler });
+						var a = new $platform.MetaObject({ get: doubler });
 						test( a[1] == 2 );
 						test( a.name == "namename" );
 
@@ -329,7 +329,7 @@ END LICENSE
 						}
 
 						var $b = {};
-						var b = new MetaObject({ delegate: $b, get: null, set: logger.setter });
+						var b = new $platform.MetaObject({ delegate: $b, get: null, set: logger.setter });
 						b.foo = "bar";
 						test( logger.log[0].target == $b );
 						test( logger.log[0].name == "foo" );
