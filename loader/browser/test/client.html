@@ -245,7 +245,12 @@ END LICENSE
 							var nodes = (e.childNodes.length) ? e.childNodes : [ { data: e.text } ];
 							for (var i=0; i<nodes.length; i++) {
 								var data = nodes[i].data;
-								data = data.replace(/\&amp\;/g, "&").replace(/\&lt\;/g, "<");
+								if (!data) {
+									data = nodes[i].innerHTML;
+								}
+								if (data) {
+									data = data.replace(/\&amp\;/g, "&").replace(/\&lt\;/g, "<");
+								}
 								rv += data;
 							}
 							if (/^\<\!\[CDATA\[/.test(rv)) {
@@ -258,53 +263,24 @@ END LICENSE
 							var Element = function(node) {
 								this.localName = node.tagName.toLowerCase();
 
-								if (node != html) {
-									this.parent = new arguments.callee(node.parentNode);
+								this.getAttribute = function(name) {
+									return node.getAttribute(name);
 								}
 
-								this.toString = function() {
-									return node.toString();
+								this.getJsapiAttribute = function(name) {
+									//	Would not work in IE
+									return node.getAttribute("jsapi:" + name);
 								}
 
 								this.getContentString = function() {
 									return getCode(node);
 								}
 
-								var getScriptFilter = function(type) {
-									if (!type) {
-										return function(node) {
-											return node.tagName && node.tagName.toLowerCase() == "script";
-										};
-									} else {
-										return function(node) {
-											return node.tagName && node.tagName.toLowerCase() == "script" && node.type == (apiHtmlScript.MEDIA_TYPE + "#" + type);
-										};
-									}
-								}
-
 								var wrap = function(node) {
 									return new Element(node);
 								}
 
-								this.getScripts = function(type) {
-									var rv = [];
-									var children = dom.getChildren(node,getScriptFilter(type));
-									for (var i=0; i<children.length; i++) {
-										rv[i] = wrap(children[i]);
-									}
-									return rv;
-								}
-
-								this.getDescendantScripts = function(type) {
-									var rv = [];
-									var children = dom.getChildren(node,getScriptFilter(type),true);
-									for (var i=0; i<children.length; i++) {
-										rv[i] = wrap(children[i]);
-									}
-									return rv;
-								}
-
-								this.getChildElements = function() {
+								this.getChildren = function() {
 									var rv = [];
 									var children = dom.getChildren(node,function(node) {
 										return node.nodeType == node.ELEMENT_NODE || node.nodeType == 1;
@@ -315,35 +291,102 @@ END LICENSE
 									return rv;
 								}
 
-								var wrapArray = function(array) {
-									var rv = [];
-									for (var i=0; i<array.length; i++) {
-										rv[i] = wrap(array[i]);
-									}
-									return rv;
+								if (node != html) {
+									this.parent = new arguments.callee(node.parentNode);
 								}
 
-								this.getScriptType = function() {
-									return node.type;
+								//	Below unverified as to use
+
+								this.toString = function() {
+									return node.toString();
 								}
 
-								this.isTop = function() {
-									return node == html;
-								}
-
-								this.getJsapiId = function() {
-									//	Would not work in IE
-									return node.getAttribute("jsapi:id");
-								}
-
-								this.getNameDiv = function() {
-									var children = dom.getChildren(node,function(node) {
-										return node.tagName && node.tagName.toLowerCase() == "div" && node.getAttribute("class") == "name";
-									});
-									var target = wrapArray(children);
-									if (target.length == 0) return null;
-									return target[0].innerHTML;
-								}
+//								var getScriptFilter = function(type) {
+//									if (!type) {
+//										return function(node) {
+//											return node.tagName && node.tagName.toLowerCase() == "script";
+//										};
+//									} else {
+//										return function(node) {
+//											return node.tagName && node.tagName.toLowerCase() == "script" && node.type == (apiHtmlScript.MEDIA_TYPE + "#" + type);
+//										};
+//									}
+//								}
+//
+//								this.getScripts = function(type) {
+//									var rv = [];
+//									var children = dom.getChildren(node,getScriptFilter(type));
+//									for (var i=0; i<children.length; i++) {
+//										rv[i] = wrap(children[i]);
+//									}
+//									return rv;
+//								}
+//
+//								var isElement = function(node) {
+//									return node.nodeType == node.ELEMENT_NODE || node.nodeType == 1;
+//								}
+//
+//								var wrapArray = function(children) {
+//									var rv = [];
+//									for (var i=0; i<children.length; i++) {
+//										rv[i] = wrap(children[i]);
+//									}
+//									return rv;
+//								}
+//
+//								this.getDescendants = function() {
+//									return wrap(dom.getChildren(node,isElement,true));
+//								}
+//
+//								this.getDescendantScripts = function(type) {
+//									var rv = [];
+//									var children = dom.getChildren(node,getScriptFilter(type),true);
+//									for (var i=0; i<children.length; i++) {
+//										rv[i] = wrap(children[i]);
+//									}
+//									return rv;
+//								}
+//
+//								this.getChildElements = function() {
+//									var rv = [];
+//									var children = dom.getChildren(node,function(node) {
+//										return node.nodeType == node.ELEMENT_NODE || node.nodeType == 1;
+//									});
+//									for (var i=0; i<children.length; i++) {
+//										rv[i] = wrap(children[i]);
+//									}
+//									return rv;
+//								}
+//
+//								var wrapArray = function(array) {
+//									var rv = [];
+//									for (var i=0; i<array.length; i++) {
+//										rv[i] = wrap(array[i]);
+//									}
+//									return rv;
+//								}
+//
+//								this.getScriptType = function() {
+//									return node.type;
+//								}
+//
+//								this.isTop = function() {
+//									return node == html;
+//								}
+//
+//								this.getJsapiId = function() {
+//									//	Would not work in IE
+//									return node.getAttribute("jsapi:id");
+//								}
+//
+//								this.getNameDiv = function() {
+//									var children = dom.getChildren(node,function(node) {
+//										return node.tagName && node.tagName.toLowerCase() == "div" && node.getAttribute("class") == "name";
+//									});
+//									var target = wrapArray(children);
+//									if (target.length == 0) return null;
+//									return target[0].innerHTML;
+//								}
 							}
 
 							this.top = new Element(html);

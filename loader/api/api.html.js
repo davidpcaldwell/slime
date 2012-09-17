@@ -12,6 +12,7 @@
 
 //	Shared code for unit test harnesses
 
+//	TODO	in-progress refactoring of ApiHtmlTests below may make this unneeded as a public variable
 $exports.MEDIA_TYPE = "application/x.jsapi";
 
 //	Returns a path for api.html given a path to a .js file or other file
@@ -59,33 +60,77 @@ var run = function() {
 $exports.ApiHtmlTests = function(html,name) {
 	var SCRIPT_TYPE_PREFIX = $exports.MEDIA_TYPE + "#";
 
-	var scripts = (function() {
-		var scripts = [];
-		var descendants = html.top.getDescendantScripts();
-		for (var i=0; i<descendants.length; i++) {
-			var node = descendants[i];
-			var type = node.getScriptType();
-			if (type.substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX) {
-				scripts.push({ type: type.substring(SCRIPT_TYPE_PREFIX.length), element: node });
+	var getScriptFilter = function(type) {
+		if (!type) {
+			return function(node) {
+				return node.localName == "script" && node.getAttribute("type").substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX;
+			};
+		} else {
+			return function(node) {
+				return node.localName == "script" && node.getAttribute("type") == ($exports.MEDIA_TYPE + "#" + type);
+			};
+		}
+	};
+
+	var getDescendants = function(element) {
+		var addChildren = function(list,children) {
+			for (var i=0; i<children.length; i++) {
+				list.push(children[i]);
+				arguments.callee(list,children[i].getChildren());
+			}
+		};
+
+		var rv = [];
+		addChildren(rv,element.getChildren());
+		return rv;
+	}
+
+	var filter = function(array,f) {
+		var rv = [];
+		for (var i=0; i<array.length; i++) {
+			if (f(array[i])) {
+				rv.push(array[i]);
 			}
 		}
-	})();
+		return rv;
+	}
+
+	var select = function(array,f) {
+		var rv = filter(array,f);
+		if (rv.length > 1) {
+			throw new Error("Too many satisfy filter.");
+		}
+		if (rv.length == 0) return null;
+		return rv[0];
+	}
+
+	var getScripts = function(element,type) {
+		return filter(element.getChildren(),getScriptFilter(type));
+	}
+
+	var getDescendantScripts = function(element,type) {
+		return filter(getDescendants(element),getScriptFilter(type));
+	}
+
+	var isNameDiv = function(element) {
+		return element.localName == "div" && element.getAttribute("class") == "name";
+	}
 
 	this.getContexts = function(scope) {
-		var contextScripts = html.top.getDescendantScripts("context");
+		var contextScripts = getDescendantScripts(html.top,"context");
 
 		var contexts = [];
 		for (var i=0; i<contextScripts.length; i++) {
-			var id = (contextScripts[i].getJsapiId()) ? contextScripts[i].getJsapiId() : "";
+			var id = (contextScripts[i].getJsapiAttribute("id")) ? contextScripts[i].getJsapiAttribute("id") : "";
 			with(scope) {
 				var value = eval("(" + contextScripts[i].getContentString() + ")");
 			}
 			//	If the value produced is null or undefined, this context is not used
 			if (value) {
 				if (value.length) {
-					value.forEach( function(context,index) {
-						context.id = id + "[" + index + "]";
-					});
+					for (var j=0; j<value.length; j++) {
+						value[j].id = id + "[" + j + "]";
+					}
 					contexts = contexts.concat(value);
 				} else {
 					value.id = id;
@@ -116,13 +161,13 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 
 		var p = {};
-		if (element.isTop()) {
+		if (element.parent == null) {
 			p.name = name;
-		} else if (element.getJsapiId()) {
-			p.name = element.getJsapiId();
+		} else if (element.getJsapiAttribute("id")) {
+			p.name = element.getJsapiAttribute("id");
 		} else {
-			if (element.getNameDiv()) {
-				p.name = element.getNameDiv();
+			if (select(element.getChildren(), isNameDiv)) {
+				p.name = select(element.getChildren(), isNameDiv).getContentString();
 			} else {
 				p.name = "<" + element.localName + ">";
 			}
@@ -134,7 +179,7 @@ $exports.ApiHtmlTests = function(html,name) {
 					run(container.initializes[i].getContentString(), createTestScope());
 				}
 			}
-			var initializes = element.getScripts("initialize");
+			var initializes = getScripts(element,"initialize");
 			for (var i=0; i<initializes.length; i++) {
 				run(initializes[i].getContentString(), createTestScope());
 			}
@@ -142,28 +187,29 @@ $exports.ApiHtmlTests = function(html,name) {
 
 		p.execute = function(unit) {
 			var children = (function() {
-				if (element.localName == "script" && element.getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
+				if (element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
 					return [ element ];
 				} else {
-					return element.getChildElements();
+					return element.getChildren();
 				}
 			})();
 			for (var i=0; i<children.length; i++) {
-				if (children[i].localName == "script" && children[i].getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")) {
+				if (children[i].localName == "script" && children[i].getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
 					run(children[i].getContentString(),createTestScope(scope,unit));
 				} else if (children[i].localName == "script") {
 					//	do nothing
 				} else {
 					var areTests = function(script) {
-						return script.getScriptType() == (SCRIPT_TYPE_PREFIX + "initialize")
-							|| script.getScriptType() == (SCRIPT_TYPE_PREFIX + "tests")
-							|| script.getScriptType() == (SCRIPT_TYPE_PREFIX + "destroy")
+						return script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "initialize")
+							|| script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")
+							|| script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "destroy")
 						;
 					}
 
 					var someAreTests = (function() {
-						for (var j=0; j<children[i].getDescendantScripts().length; j++) {
-							var script = children[i].getDescendantScripts()[j];
+						var descendants = getDescendantScripts(children[i]);
+						for (var j=0; j<descendants.length; j++) {
+							var script = descendants[j];
 							if (areTests(script)) {
 								return true;
 							}
@@ -179,7 +225,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		};
 
 		p.destroy = function() {
-			var destroys = element.getScripts("destroy");
+			var destroys = getScripts(element,"destroy");
 			for (var i=0; i<destroys.length; i++) {
 				run(destroys[i].getContentString(),createTestScope());
 			}
@@ -197,11 +243,11 @@ $exports.ApiHtmlTests = function(html,name) {
 		var element = (function() {
 			if (unit) {
 				var getJsapiChild = function(target,id) {
-					var elements = target.getChildElements();
+					var elements = target.getChildren();
 					for (var i=0; i<elements.length; i++) {
-						if (elements[i].getJsapiId() == id) {
+						if (elements[i].getJsapiAttribute("id") == id) {
 							return elements[i];
-						} else if (elements[i].getJsapiId() == null) {
+						} else if (elements[i].getJsapiAttribute("id") == null) {
 							var childSearch = getJsapiChild(elements[i],id);
 							if (childSearch != null) return childSearch;
 						}
@@ -229,8 +275,8 @@ $exports.ApiHtmlTests = function(html,name) {
 		if (unit) {
 			var ancestor = element;
 			while(ancestor.parent) {
-				container.initializes.unshift.apply(container.initializes,ancestor.parent.getScripts("initialize"));
-				container.destroys.push.apply(container.destroys,ancestor.parent.getScripts("destroy"));
+				container.initializes.unshift.apply(container.initializes,getScripts(ancestor.parent,"initialize"));
+				container.destroys.push.apply(container.destroys,getScripts(ancestor.parent,"destroy"));
 				ancestor = ancestor.parent;
 			}
 		}
