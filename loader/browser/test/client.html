@@ -92,45 +92,74 @@ END LICENSE
 		var log = debug;
 	</script>
 	<script type="text/javascript">
-		(function() {
-			var script = document.createElement("script");
-			script.src = "../client.js";
-			if (parameters.platform) {
-				script.src = parameters.platform + "browser/client.js";
-			}
-			document.head.appendChild(script);
-		})()
-	</script>
-	<script type="text/javascript">
-		var dom = new function() {
-			var addChildrenTo = function(rv,e,filter,recurse) {
-				for (var i=0; i<e.childNodes.length; i++) {
-					if (filter(e.childNodes[i])) {
-						rv.push(e.childNodes[i]);
-					}
-					if (recurse && e.childNodes[i]) {
-						addChildrenTo(rv,e.childNodes[i],filter,recurse);
+		var callbacks = [];
+		var loaded = {
+			client: false,
+			page: false,
+			go: function() {
+				if (this.client && this.page) {
+					for (var i=0; i<callbacks.length; i++) {
+						callbacks[i].call(null);
 					}
 				}
 			}
-
-			this.getChild = function(e,filter,recurse) {
-				var rv = [];
-				addChildrenTo(rv,e,filter,recurse);
-				if (rv.length == 0) return null;
-				if (rv.length > 1) throw "Multiple elements match filter";
-				return rv[0];
-			}
-
-			this.getChildren = function(e,filter,recurse) {
-				var rv = [];
-				addChildrenTo(rv,e,filter,recurse);
-				return rv;
-			}
-		}
+		};
 	</script>
 	<script type="text/javascript">
-		window.onload = function() {
+		(function() {
+			inonit.loader.callback = function() {
+				loaded.client = true;
+				loaded.go();
+			}
+			window.onload = function() {
+				loaded.page = true;
+				loaded.go();
+			}
+			var script = document.createElement("script");
+			script.src = (function() {
+				if (parameters.platform) return parameters.platform + "browser/client.js";
+				return "../client.js";
+			})();
+			if (document.head) {
+				document.head.appendChild(script);
+			} else {
+				//	IE
+				document.getElementsByTagName("head")[0].appendChild(script);
+			}
+		})()
+	</script>
+	<script type="text/javascript">
+		callbacks.push(function() {
+			dom = new function() {
+				var addChildrenTo = function(rv,e,filter,recurse) {
+					for (var i=0; i<e.childNodes.length; i++) {
+						if (filter(e.childNodes[i])) {
+							rv.push(e.childNodes[i]);
+						}
+						if (recurse && e.childNodes[i]) {
+							addChildrenTo(rv,e.childNodes[i],filter,recurse);
+						}
+					}
+				}
+
+				this.getChild = function(e,filter,recurse) {
+					var rv = [];
+					addChildrenTo(rv,e,filter,recurse);
+					if (rv.length == 0) return null;
+					if (rv.length > 1) throw "Multiple elements match filter";
+					return rv[0];
+				}
+
+				this.getChildren = function(e,filter,recurse) {
+					var rv = [];
+					addChildrenTo(rv,e,filter,recurse);
+					return rv;
+				}
+			};
+		});
+	</script>
+	<script type="text/javascript">
+		callbacks.push(function() {
 			html.initialize();
 			if (parameters) {
 				if (!parameters.jsapi) {
@@ -471,7 +500,7 @@ END LICENSE
 					onResult(result);
 				}
 			}
-		}
+		});
 	</script>
 	<script type="text/javascript">
 		var html = new function() {
