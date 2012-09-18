@@ -266,6 +266,20 @@ testCommandOutput("$api-deprecate-properties.jsh.js", function(options) {
 	]);
 });
 
+(function() {
+	testCommandOutput("plugins/packaged.jsh.js", function(options) {
+		checkOutput(options,[
+			"a: Hello, World!",
+			"[global] a: Hello, World!",
+			""
+		]);
+	}, {
+		env: {
+			JSH_PLUGINS: String(new File(BASE,"jsh/test/plugins/a").getCanonicalPath())
+		}
+	})
+})();
+
 var packaged_plugins = jshPackage({
 	script: "plugins/packaged.jsh.js",
 	plugins: ["plugins/a"]

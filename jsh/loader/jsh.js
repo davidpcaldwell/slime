@@ -404,6 +404,11 @@ this.jsh = new function() {
 				//			issue 32
 				scope.plugins = plugins;
 				scope.plugin = function(p) {
+					if (typeof(p.isReady) == "undefined") {
+						p.isReady = function() {
+							return true;
+						};
+					}
 					list.push(p);
 				}
 				scope.global = (function() { return this; })();

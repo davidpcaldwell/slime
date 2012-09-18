@@ -11,9 +11,6 @@
 //	END LICENSE
 
 plugin({
-	isReady: function() {
-		return true;
-	},
 	load: function() {
 		global.a = $loader.module("module.js", {
 			log: function(s) {
