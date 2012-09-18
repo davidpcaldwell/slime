@@ -160,6 +160,64 @@ END LICENSE
 			with <code>application/x.jsapi</code> and a qualifier indicating when they should be executed.
 		</div>
 		<div>
+			Any element that specifies a <code>jsapi:reference</code> attribute will have its contents replaced by the target of the
+			reference. The reference is written as a snippet of JavaScript code that is expected to evaluate to a specific HTML
+			element. The API available to the reference is as follows:
+			<div class="type">
+				<a class="type" name="types.api">api</a>
+				<span>An object representing an <i>api.html</i> file.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">getElement</div>
+						<span>Returns a specific element within the given file.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>
+										A logical "path" to the element within the file; the path is delimited by <code>/</code> and its
+										components are made up of <code>jsapi:id</code> attributes.
+									</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">element</span>
+							<span>
+								An opaque object representing the element that is ultimately determined to be the target of the
+								reference. References can be chained: if the element at the given location also has a
+								<code>jsapi:reference</code> attribute, the target of that reference is returned.
+							</span>
+							<!--	TODO	what is return value if not found? Or does the script error?	-->
+						</div>
+					</li>
+				</ul>
+			</div>
+			<ul>
+				<li class="function">
+					<div class="name">getApi</div>
+					<span>Returns a specific <i>api.html</i> given its path.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A relative path.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.api">api</a></span>
+						<span>The <code>api</code> with the given path, resolved relatively to the current file.</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div>
 			<h2>Context</h2>
 			<div>
 				Each <code>&lt;script></code> element with <code>type="application/x.jsapi#context"</code> specifies a configuration
@@ -174,18 +232,27 @@ END LICENSE
 			</div>
 		</div>
 		<p>
+			<!--	TODO	which initializers run, exactly? Somehow related to document structure.	-->
 			Throughout the code we can have scripts with <code>type="application/x.jsapi#initialize"</code> that contain
-			initialization code; during the initialization phase of the tests, these will be run in sequence. They will have access
-			to the <code>module</code> object instantiated for the current context.
+			initialization code. They will have access
+			to the <code>module</code> object instantiated for the current context, and access to the scope in which tests will be
+			run via a variable called <code>scope</code>. Before a test is run, all initializers that precede it as siblings are
+			run, as well as any initializers that are (direct) children of its ancestors.
 		</p>
 		<p>
 			Throughout the code we can have scripts with <code>type="application/x.jsapi#tests"</code> that contain tests to be run.
 			These scripts also will have access to the <code>module</code> object, representing the module being tested. Further,
-			they are supplied with
-			a variable named <code>scope</code> corresponding to the test scope (see <code>js/api/unit.before.js</code>). These
-			script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
+			they are supplied with variables corresponding to the properties of the <code>scope</code> object; these properties
+			might come from the test execution environment or might come from <code>type="application/x.jsapi#initialize"</code>
+			sections.
+			These script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
 			<code>http://www.inonit.com/jsapi</code>) which will be used as the scenario label when executing the tests within the
 			element.
+		</p>
+		<p>
+			Finally, we can have scripts with <code>type="application/x.jsapi#destroy"</code>. These have access to the same scope
+			in the same way as <code>type="application/x.jsapi#initialize"</code> scripts, and can be used to destroy resources
+			after tests are run.
 		</p>
 	</div>
 </body>

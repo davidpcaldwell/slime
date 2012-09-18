@@ -78,7 +78,7 @@ END LICENSE
 			<h2>Unit Tests</h2>
 			<div>
 				See the documentation on the <a href="../../loader/api/api.html">API format</a> for details on how files are
-				processed for testing.
+				processed for testing. The following objects are provided in the scope in which tests are executed.
 			</div>
 			<div>
 				<h3>$java</h3>
@@ -171,62 +171,10 @@ END LICENSE
 		</div>
 		<div>
 			<h2>Documentation</h2>
-			Any element that specifies a <code>jsapi:reference</code> attribute will have its contents replaced by the target of the
-			reference. The reference is written as a snippet of JavaScript code that is expected to evaluate to an E4X element. The
-			API available to the reference is as follows:
-			<div class="type">
-				<a class="type" name="types.api">api</a>
-				<span>An object representing an <i>api.html</i> file.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">getElement</div>
-						<span>Returns a specific E4X element within the given file.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>
-										A logical "path" to the element within the file; the path is delimited by <code>/</code> and its
-										components are made up of <code>jsapi:id</code> attributes.
-									</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">xml</span>
-							<span>
-								The E4X element that is ultimately determined to be the target of the reference. References can be
-								chained: if the element at the given location also has a <code>jsapi:reference</code> attribute, the
-								target of that reference is returned.
-							</span>
-							<!--	TODO	what is return value if not found? Or does the script error?	-->
-						</div>
-					</li>
-				</ul>
+			<div>
+				The documentation emitted by jsapi respects the <code>jsapi:reference</code> attribute defined in the
+				<a href="../../loader/api/api.html">loader API</a> documentation.
 			</div>
-			<ul>
-				<li class="function">
-					<div class="name">getApi</div>
-					<span>Returns a specific <i>api.html</i> given its path.</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>A relative path.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><a href="#types.api">api</a></span>
-						<span>The <code>api</code> with the given path, resolved relatively to the current file.</span>
-					</div>
-				</li>
-			</ul>
 		</div>
 	</div>
 </body>
