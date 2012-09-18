@@ -216,11 +216,6 @@ END LICENSE
 							return location.base + location.main + ".api.html";
 						}
 					})();
-					var unparsed = inonit.loader.$sdk.fetch(documentation);
-					var div = document.createElement("div");
-					//	TODO	there may be a more complex, robust, standards-compliant way of doing this
-					//			maybe with DocumentObjectModel or whatever
-					div.innerHTML = unparsed;
 
 					(function() {
 						var Scope = function() {
@@ -300,109 +295,35 @@ END LICENSE
 								this.toString = function() {
 									return node.toString();
 								}
-
-//								var getScriptFilter = function(type) {
-//									if (!type) {
-//										return function(node) {
-//											return node.tagName && node.tagName.toLowerCase() == "script";
-//										};
-//									} else {
-//										return function(node) {
-//											return node.tagName && node.tagName.toLowerCase() == "script" && node.type == (apiHtmlScript.MEDIA_TYPE + "#" + type);
-//										};
-//									}
-//								}
-//
-//								this.getScripts = function(type) {
-//									var rv = [];
-//									var children = dom.getChildren(node,getScriptFilter(type));
-//									for (var i=0; i<children.length; i++) {
-//										rv[i] = wrap(children[i]);
-//									}
-//									return rv;
-//								}
-//
-//								var isElement = function(node) {
-//									return node.nodeType == node.ELEMENT_NODE || node.nodeType == 1;
-//								}
-//
-//								var wrapArray = function(children) {
-//									var rv = [];
-//									for (var i=0; i<children.length; i++) {
-//										rv[i] = wrap(children[i]);
-//									}
-//									return rv;
-//								}
-//
-//								this.getDescendants = function() {
-//									return wrap(dom.getChildren(node,isElement,true));
-//								}
-//
-//								this.getDescendantScripts = function(type) {
-//									var rv = [];
-//									var children = dom.getChildren(node,getScriptFilter(type),true);
-//									for (var i=0; i<children.length; i++) {
-//										rv[i] = wrap(children[i]);
-//									}
-//									return rv;
-//								}
-//
-//								this.getChildElements = function() {
-//									var rv = [];
-//									var children = dom.getChildren(node,function(node) {
-//										return node.nodeType == node.ELEMENT_NODE || node.nodeType == 1;
-//									});
-//									for (var i=0; i<children.length; i++) {
-//										rv[i] = wrap(children[i]);
-//									}
-//									return rv;
-//								}
-//
-//								var wrapArray = function(array) {
-//									var rv = [];
-//									for (var i=0; i<array.length; i++) {
-//										rv[i] = wrap(array[i]);
-//									}
-//									return rv;
-//								}
-//
-//								this.getScriptType = function() {
-//									return node.type;
-//								}
-//
-//								this.isTop = function() {
-//									return node == html;
-//								}
-//
-//								this.getJsapiId = function() {
-//									//	Would not work in IE
-//									return node.getAttribute("jsapi:id");
-//								}
-//
-//								this.getNameDiv = function() {
-//									var children = dom.getChildren(node,function(node) {
-//										return node.tagName && node.tagName.toLowerCase() == "div" && node.getAttribute("class") == "name";
-//									});
-//									var target = wrapArray(children);
-//									if (target.length == 0) return null;
-//									return target[0].innerHTML;
-//								}
 							}
 
 							this.top = new Element(html);
+							this.$dom = {
+								root: html
+							};
 						}
 
-						var root = (function() {
-							for (var i=0; i<div.childNodes.length; i++) {
-								if (div.childNodes[i].tagName == "html") {
-									return div.childNodes[i];
+						var getLoaderApiDom = function(location) {
+							var unparsed = inonit.loader.$sdk.fetch(location);
+							var div = document.createElement("div");
+							//	TODO	there may be a more complex, robust, standards-compliant way of doing this
+							//			maybe with DocumentObjectModel or whatever
+							div.innerHTML = unparsed;
+							var root = (function() {
+								for (var i=0; i<div.childNodes.length; i++) {
+									if (div.childNodes[i].tagName == "html") {
+										return div.childNodes[i];
+									}
 								}
-							}
-							//	browser does not preserve html element under div, at least in Chrome, rather putting title
-							//	and other body content under div
-							return div;
-						})();
-						var apiHtml = new apiHtmlScript.ApiHtmlTests(new DOM(root),module);
+								//	browser does not preserve html element under div, at least in Chrome, rather putting title
+								//	and other body content under div
+								return div;
+							})();
+							return new DOM(root);
+						};
+
+						var loaderApiDom = getLoaderApiDom(documentation);
+						var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,module);
 						var scope = new Scope();
 						scope.top = (function() {
 							var find = function(element) {
@@ -417,7 +338,7 @@ END LICENSE
 								}
 							};
 
-							var declaration = find(root);
+							var declaration = find(loaderApiDom.$dom.root);
 							if (declaration) return declaration.getAttribute("path");
 							return "";
 						})();
@@ -498,6 +419,8 @@ END LICENSE
 					&& window.opener.inonit.dom.window
 					&& window.opener.inonit.dom.window.open
 					&& window.opener.inonit.dom.window.open.context
+					&& window.opener.inonit.dom.window.open.context.get(window)
+					&& window.opener.inonit.dom.window.open.context.get(window).onTestResult
 				)
 					? function(success) {
 						window.opener.inonit.dom.window.open.context.get(window).onTestResult(success);

@@ -78,37 +78,6 @@ var E4X = function(html) {
 		this.toString = function() {
 			return xml.toXMLString();
 		}
-
-//		this.getScripts = function(type) {
-//			return map(xml.script.(@type == ($context.html.MEDIA_TYPE + "#" + type)));
-//		}
-//
-//		this.getDescendantScripts = function(type) {
-//			if (type) {
-//				return map(xml..script.(@type == ($context.html.MEDIA_TYPE + "#" + type)));
-//			} else {
-//				return map(xml..script);
-//			}
-//		}
-//
-//		this.getScriptType = function() {
-//			return String(xml.@type);
-//		}
-//
-//		this.isTop = function() {
-//			return xml == html;
-//		}
-//
-//		this.getJsapiId = function() {
-//			if (xml.@jsapi::id.length()) return String(xml.@jsapi::id);
-//			return null;
-//		}
-//
-//		this.getNameDiv = function() {
-//			var rv = xml.div.(@["class"] == "name");
-//			if (rv.length()) return String(rv);
-//			return null;
-//		}
 	}
 
 	this.top = new Element(html);

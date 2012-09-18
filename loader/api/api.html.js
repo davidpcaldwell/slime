@@ -53,11 +53,82 @@ var run = function() {
 	}
 }
 
+var getDescendants = function(element) {
+	var addChildren = function(list,children) {
+		for (var i=0; i<children.length; i++) {
+			list.push(children[i]);
+			arguments.callee(list,children[i].getChildren());
+		}
+	};
+
+	var rv = [];
+	addChildren(rv,element.getChildren());
+	return rv;
+}
+
+var filter = function(array,f) {
+	var rv = [];
+	for (var i=0; i<array.length; i++) {
+		if (f(array[i])) {
+			rv.push(array[i]);
+		}
+	}
+	return rv;
+}
+
+var select = function(array,f) {
+	var rv = filter(array,f);
+	if (rv.length > 1) {
+		throw new Error("Too many satisfy filter.");
+	}
+	if (rv.length == 0) return null;
+	return rv[0];
+}
+
+var getElement = function(root,path) {
+	var tokens = path.split("/");
+	var rv = root;
+	for (var i=0; i<tokens.length; i++) {
+		rv = select(getDescendants(rv), function(e) { return e.getJsapiAttribute("id") == tokens[i]; });
+		if (typeof(rv) == "undefined") {
+			return null;
+		}
+	}
+	return rv;
+}
+
 //	Creates an object representing an api.html given its HTML and a 'name' used to name the top-level scenario; this object can:
 //		.getContexts(scope): produce the list of contexts declared on the page
 //		.getScenario(scope,unit): produce a unit.before.js/Scenario given a scope and a test path
 //
 $exports.ApiHtmlTests = function(html,name) {
+	var jsapiReferenceFilter = function(element) {
+		return element.getJsapiAttribute("reference") != null;
+	}
+
+	//	Cannot have reference at top level, currently
+	var references = filter(getDescendants(html.top), jsapiReferenceFilter);
+	for (var i=0; i<references.length; i++) {
+		var scope = new function() {
+			this.getApi = function(path) {
+				var otherhtml = html.load(path);
+				var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
+				rv.getElement = function(path) {
+					return getElement(this.top,path);
+				}
+			}
+		}
+	}
+
+//	for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
+//		var resolved = declaration.resolve(e);
+//		if (resolved) {
+//			e.setChildren(resolved.children());
+//		} else {
+//			throw new Error("Could not resolve: " + e.@jsapi::reference.toXMLString());
+//		}
+//	}
+	
 	var SCRIPT_TYPE_PREFIX = $exports.MEDIA_TYPE + "#";
 
 	var getScriptFilter = function(type) {
@@ -71,38 +142,6 @@ $exports.ApiHtmlTests = function(html,name) {
 			};
 		}
 	};
-
-	var getDescendants = function(element) {
-		var addChildren = function(list,children) {
-			for (var i=0; i<children.length; i++) {
-				list.push(children[i]);
-				arguments.callee(list,children[i].getChildren());
-			}
-		};
-
-		var rv = [];
-		addChildren(rv,element.getChildren());
-		return rv;
-	}
-
-	var filter = function(array,f) {
-		var rv = [];
-		for (var i=0; i<array.length; i++) {
-			if (f(array[i])) {
-				rv.push(array[i]);
-			}
-		}
-		return rv;
-	}
-
-	var select = function(array,f) {
-		var rv = filter(array,f);
-		if (rv.length > 1) {
-			throw new Error("Too many satisfy filter.");
-		}
-		if (rv.length == 0) return null;
-		return rv[0];
-	}
 
 	var getScripts = function(element,type) {
 		return filter(element.getChildren(),getScriptFilter(type));
