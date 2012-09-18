@@ -23,6 +23,8 @@ var getApiHtml = function(moduleMainPathname) {
 		var jsName = /(.*)\.js$/.exec(basename);
 		if (/api\.html$/.test(basename)) {
 			return moduleMainPathname.file;
+		} else if (/^api\.(.*)\.html$/.test(basename)) {
+			return moduleMainPathname.file;
 		} else if (jsName) {
 			return directory.getFile(jsName[1]+".api.html");
 		} else {
