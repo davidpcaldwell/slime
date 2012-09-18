@@ -223,6 +223,9 @@ END LICENSE
 
 							this.$jsapi = new function() {
 								this.module = function(path,context) {
+									//	TODO	probable bug here; probably works when module path ends in /, but for module path
+									//			that has a terminal file name, probably needs to strip that file name to find the
+									//			base from which to load the module at 'path'
 									return inonit.loader.module(
 										module + self.top + path,
 										context
@@ -254,7 +257,7 @@ END LICENSE
 							return rv;
 						}
 
-						var DOM = function(html) {
+						var DOM = function(base,root) {
 							var Element = function(node) {
 								this.localName = node.tagName.toLowerCase();
 
@@ -286,9 +289,13 @@ END LICENSE
 									return rv;
 								}
 
-								if (node != html) {
+								if (node != root) {
 									this.parent = new arguments.callee(node.parentNode);
 								}
+
+								this.load = function(path) {
+									return getLoaderApiDom(base+path);
+								};
 
 								//	Below unverified as to use
 
@@ -297,9 +304,9 @@ END LICENSE
 								}
 							}
 
-							this.top = new Element(html);
+							this.top = new Element(root);
 							this.$dom = {
-								root: html
+								root: root
 							};
 						}
 
@@ -319,13 +326,21 @@ END LICENSE
 								//	and other body content under div
 								return div;
 							})();
-							return new DOM(root);
+							var base = (function() {
+								if (location.substring(location.length-1) == "/") return location;
+								return location.split("/").slice(0,-1).join("/") + "/";
+							})();
+							return new DOM(base,root);
 						};
 
 						var loaderApiDom = getLoaderApiDom(documentation);
 						var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,module);
 						var scope = new Scope();
 						scope.top = (function() {
+							//	TODO	it could be that this jsapi:top capability is obsolete, and therefore the $dom member
+							//			of DOM is obsolete; possibly this was used before relative paths were used to find
+							//			modules being loaded. This would also obsolete the 'top' attribute of scope, which means
+							//			Scope would be modified above.
 							var find = function(element) {
 								var recurse = arguments.callee;
 								if (element.tagName && element.tagName.toLowerCase() == "jsapi:top") return element;
