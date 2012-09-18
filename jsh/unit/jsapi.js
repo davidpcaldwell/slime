@@ -34,15 +34,15 @@ var getApiHtml = function(moduleMainPathname) {
 var E4X = function(base,html) {
 	default xml namespace = html.namespace();
 
-	var map = function(query) {
-		var rv = [];
-		for (var i=0; i<query.length(); i++) {
-			rv[i] = new Element(query[i]);
+	var Element = function(xml,parent) {
+		var map = function(query,parent) {
+			var rv = [];
+			for each (var e in query) {
+				rv.push(new Element(e,parent));
+			}
+			return rv;
 		}
-		return rv;
-	}
 
-	var Element = function(xml) {
 		this.localName = xml.localName();
 
 		this.getAttribute = function(name) {
@@ -69,13 +69,13 @@ var E4X = function(base,html) {
 
 		this.getChildren = function() {
 			if (!children) {
-				children = map(xml.elements());
+				children = map(xml.elements(), this);
 			}
 			return children;
 		};
 
-		if (xml != html) {
-			this.parent = new Element(xml.parent());
+		if (parent) {
+			this.parent = parent;
 		}
 
 		this.replaceContentWithContentOf = function(other) {
