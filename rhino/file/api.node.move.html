@@ -107,6 +107,15 @@
 						p2.file.move(p4, { recursive: true });
 						test(p4.file != null);
 						test(p4.file.read(String) == "f2");
+
+						top.getRelativePath("f3").write("f3", { append: false });
+						var d3 = top.getRelativePath("d3").createDirectory();
+						test(top.getFile("f3") != null);
+						test(d3.getFile("f3") == null);
+						var f3 = top.getFile("f3");
+						f3.move(d3);
+						test(top.getFile("f3") == null);
+						test(d3.getFile("f3") != null);
 					</script>
 				</li>
 			</ol>

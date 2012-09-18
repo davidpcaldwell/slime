@@ -288,6 +288,10 @@ var Pathname = function(parameters) {
 
 		this.move = function(toPathname,mode) {
 			if (!mode) mode = {};
+			if (typeof(toPathname.directory) == "boolean") {
+				//	toPathname is a directory object
+				toPathname = toPathname.getRelativePath(pathname.basename);
+			}
 			if (toPathname.file || toPathname.directory) {
 				if (mode.overwrite) {
 					if (toPathname.file) {
