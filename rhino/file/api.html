@@ -110,6 +110,7 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize"><![CDATA[
+			debugger;
 			scope.helpers = new function() {
 				var module;
 
@@ -121,13 +122,14 @@ END LICENSE
 				//	Although this is equivalent to $jsapi.newTemporaryDirectory(), we use a separate copy here because we want the
 				//	calls to go to the module being tested, not the module executing the test environment
 				this.newTemporaryDirectory = function() {
-					var $dir = $java.io.newTemporaryDirectory();
+					var $dir = scope.$java.io.newTemporaryDirectory();
 					return scope.filesystem.$unit.Pathname(scope.filesystem.$unit.getNode($dir)).directory;
 				}
 
 				this.createFile = function(base,name,length) {
 					var pathname = base.getRelativePath(name);
-					var out = pathname.write(context.$Context.api.io.Streams.binary);
+					//	Why the below is qualified with 'this' is a little mysterious
+					var out = pathname.write(this.context.$Context.api.io.Streams.binary);
 					if (length) {
 						for (var i=0; i<length; i++) {
 							out.java.adapt().write(0);
@@ -160,7 +162,7 @@ END LICENSE
 			}
 		]]></script>
 		<script type="application/x.jsapi#initialize"><![CDATA[
-			helpers.initialize(module);
+			scope.helpers.initialize(scope.module);
 		]]></script>
 		<div class="type">
 			<a class="type" name="types.filesystem">filesystem</a>
@@ -172,7 +174,10 @@ END LICENSE
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
-							<li><span class="type">string</span> A path name that is valid in this filesystem.</li>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A path name that is valid in this filesystem.</span>
+							</li>
 						</ol>
 					</div>
 					<div class="returns">
@@ -1742,10 +1747,8 @@ END LICENSE
 				createTests(module.filesystems.os);
 			}
 		]]></script>
-		<script type="application/x.jsapi#scope">
-		</script>
 		<script type="application/x.jsapi#initialize">
-			var hostdir = new Packages.java.io.File($java.io.newTemporaryDirectory(), "streamtests");
+			var hostdir = new Packages.java.io.File(scope.$java.io.newTemporaryDirectory(), "streamtests");
 			hostdir.mkdirs();
 			var fileA = new Packages.java.io.File(hostdir, "a");
 			var aWriter = new Packages.java.io.PrintWriter( new Packages.java.io.FileWriter( fileA ) );
@@ -1754,7 +1757,7 @@ END LICENSE
 			aWriter.print("Finished.");
 			aWriter.flush();
 			aWriter.close();
-			scope.streamdir = module.filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
+			scope.streamdir = scope.module.filesystem.$unit.Pathname(scope.module.filesystem.$unit.getNode(hostdir)).directory;
 		</script>
 		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
 			var fileA = streamdir.getFile("a");

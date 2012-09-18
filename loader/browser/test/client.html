@@ -293,9 +293,18 @@ END LICENSE
 									this.parent = new arguments.callee(node.parentNode);
 								}
 
-								this.load = function(path) {
-									return getLoaderApiDom(base+path);
+								this.$dom = node;
+
+								this.replaceContentWithContentOf = function(other) {
+									//	There would be DOM-based ways to do this, but they would require importNode, adoptNode,
+									//	something like that; this seems more supported
+									this.$dom.innerHTML = other.$dom.innerHTML;
 								};
+
+								this.removeJsapiAttribute = function(name) {
+									//	TODO	does this work in IE?
+									node.removeAttribute("jsapi:" + name);
+								}
 
 								//	Below unverified as to use
 
@@ -307,6 +316,9 @@ END LICENSE
 							this.top = new Element(root);
 							this.$dom = {
 								root: root
+							};
+							this.load = function(path) {
+								return getLoaderApiDom(base+path);
 							};
 						}
 

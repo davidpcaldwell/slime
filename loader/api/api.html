@@ -155,20 +155,24 @@ END LICENSE
 	<div>
 		<!--	TODO	define file locations and names in relation to files being tested and documented	-->
 		<h1>Unit testing</h1>
-		<p>
+		<div>
 			Unit tests are implemented using special <code>&lt;script></code> elements with <code>type</code> attributes beginning
 			with <code>application/x.jsapi</code> and a qualifier indicating when they should be executed.
-		</p>
-		<p>
-			Anywhere in the document, one may declare one or more scripts with
-			<code>type="application/x.jsapi#scope"</code>; these will be executed before anything else in the scope in which tests
-			will be executed. They will be executed before the <code>module</code> object is created.
-		</p>
-		<p>
-			In the context div, we should have one or more scripts with <code>type="application/x.jsapi#context"</code> that
-			contains a potential module context as a literal. The tests will be executed once for each context provided. If the
-			literal embedded in any of these scripts evaluates to <code>null</code>, the context will be ignored.
-		</p>
+		</div>
+		<div>
+			<h2>Context</h2>
+			<div>
+				Each <code>&lt;script></code> element with <code>type="application/x.jsapi#context"</code> specifies a configuration
+				with which the declared tests should be run. The content of the element is a literal that either evaluates to an
+				object or an array (or <code>null</code> or <code>undefined</code>). If the literal evaluates to an object, it is
+				used as the <code>$context</code> for instantiating the module being tested. If the literal evaluates to an array,
+				each element of that array is used a a <code>$context</code> for instantiating the module.
+			</div>
+			<div>
+				For each declared context, the module is instantiated with that context and the tests are run with the resulting
+				module. If no contexts are declared, a single, empty context will be supplied.
+			</div>
+		</div>
 		<p>
 			Throughout the code we can have scripts with <code>type="application/x.jsapi#initialize"</code> that contain
 			initialization code; during the initialization phase of the tests, these will be run in sequence. They will have access

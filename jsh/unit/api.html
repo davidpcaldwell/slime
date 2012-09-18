@@ -72,165 +72,162 @@ END LICENSE
 			</li>
 		</ul>
 	</div>
-	<h1>api.html</h1>
 	<div>
-		<h2>Unit tests</h2>
-		<ul>
-			<li>application/x.jsapi#scope</li>
-			<li>
-				<code>script</code> element with <code>type</code> attribute <code>application/x.jsapi#context</code>: For each
-				element of this type, the script content will be interpreted as a literal and its value will be used as the
-				<code>$context</code> for running a round of tests on the module. If no scripts of this type are included, a single
-				empty one will be generated with <code>new Object()</code>.
-			</li>
-			<li>application/x.jsapi#initialize</li>
-			<li>application/x.jsapi#tests</li>
-		</ul>
-	</div>
-	<div>
-		<h2>Documentation</h2>
-		Any element that specifies a <code>jsapi:reference</code> attribute will have its contents replaced by the target of the
-		reference. The reference is written as a snippet of JavaScript code that is expected to evaluate to an E4X element. The
-		API available to the reference is as follows:
-		<div class="type">
-			<a class="type" name="types.api">api</a>
-			<span>An object representing an <i>api.html</i> file.</span>
-			<div class="label">has properties:</div>
+		<h1>api.html</h1>
+		<div>
+			<h2>Unit Tests</h2>
+			<div>
+				See the documentation on the <a href="../../loader/api/api.html">API format</a> for details on how files are
+				processed for testing.
+			</div>
+			<div>
+				<h3>$java</h3>
+				<ul>
+					<li class="object">
+						<div class="name">io</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">newTemporaryDirectory</div>
+								<span>
+									Returns a <code>java.io.File</code> representing a new, empty directory.
+								</span>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">JavaClass java.io.File</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<h3>$jsapi</h3>
+				<ul>
+					<li class="function">
+						<div class="name">module</div>
+						<span>Loads a module from the source tree.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>
+										The "path" (or logical name) of the module, as provided on the command line when jsapi.jsh.js was
+										launched.
+									</span>
+								</li>
+								<li class="value">
+									<span class="type">object</span>
+									<span>The <code>$context</code> with which to load the module.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">object</span>
+							<span>A module, or <code>null</code> if the module cannot be found.</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">newTemporaryDirectory</div>
+						<span>Returns a new, empty directory.</span>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">jsh.file directory</span>
+						</div>
+					</li>
+				</ul>
+				<h3>$unit</h3>
+				<ul>
+					<li class="value">
+						<div class="name">context</div>
+						<span class="type">object</span>
+						<span>The <code>$context</code> that was used when instantiating the module to run the current set of tests.</span>
+					</li>
+				</ul>
+				<h3>$module</h3>
+				<ul>
+					<li class="function">
+						<div class="name">getResourcePathname</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div>
+			<h2>Documentation</h2>
+			Any element that specifies a <code>jsapi:reference</code> attribute will have its contents replaced by the target of the
+			reference. The reference is written as a snippet of JavaScript code that is expected to evaluate to an E4X element. The
+			API available to the reference is as follows:
+			<div class="type">
+				<a class="type" name="types.api">api</a>
+				<span>An object representing an <i>api.html</i> file.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">getElement</div>
+						<span>Returns a specific E4X element within the given file.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>
+										A logical "path" to the element within the file; the path is delimited by <code>/</code> and its
+										components are made up of <code>jsapi:id</code> attributes.
+									</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">xml</span>
+							<span>
+								The E4X element that is ultimately determined to be the target of the reference. References can be
+								chained: if the element at the given location also has a <code>jsapi:reference</code> attribute, the
+								target of that reference is returned.
+							</span>
+							<!--	TODO	what is return value if not found? Or does the script error?	-->
+						</div>
+					</li>
+				</ul>
+			</div>
 			<ul>
 				<li class="function">
-					<div class="name">getElement</div>
-					<span>Returns a specific E4X element within the given file.</span>
+					<div class="name">getApi</div>
+					<span>Returns a specific <i>api.html</i> given its path.</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="value">
 								<span class="type">string</span>
-								<span>
-									A logical "path" to the element within the file; the path is delimited by <code>/</code> and its
-									components are made up of <code>jsapi:id</code> attributes.
-								</span>
+								<span>A relative path.</span>
 							</li>
 						</ol>
 					</div>
 					<div class="returns">
 						<div class="label">Returns</div>
-						<span class="type">xml</span>
-						<span>
-							The E4X element that is ultimately determined to be the target of the reference. References can be
-							chained: if the element at the given location also has a <code>jsapi:reference</code> attribute, the
-							target of that reference is returned.
-						</span>
-						<!--	TODO	what is return value if not found? Or does the script error?	-->
+						<span class="type"><a href="#types.api">api</a></span>
+						<span>The <code>api</code> with the given path, resolved relatively to the current file.</span>
 					</div>
 				</li>
 			</ul>
 		</div>
-		<ul>
-			<li class="function">
-				<div class="name">getApi</div>
-				<span>Returns a specific <i>api.html</i> given its path.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>A relative path.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type"><a href="#types.api">api</a></span>
-					<span>The <code>api</code> with the given path, resolved relatively to the current file.</span>
-				</div>
-			</li>
-		</ul>
 	</div>
-	<h1>$java</h1>
-	<ul>
-		<li class="object">
-			<div class="name">io</div>
-			<span>__DESCRIPTION__</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="function">
-					<div class="name">newTemporaryDirectory</div>
-					<span>
-						Returns a <code>java.io.File</code> representing a new, empty directory.
-					</span>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">JavaClass java.io.File</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-			</ul>
-		</li>
-	</ul>
-	<h1>$jsapi</h1>
-	<ul>
-		<li class="function">
-			<div class="name">module</div>
-			<span>Loads a module from the source tree.</span>
-			<div class="arguments">
-				<div class="label">Arguments</div>
-				<ol>
-					<li class="value">
-						<span class="type">string</span>
-						<span>
-							The "path" (or logical name) of the module, as provided on the command line when jsapi.jsh.js was
-							launched.
-						</span>
-					</li>
-					<li class="value">
-						<span class="type">object</span>
-						<span>The <code>$context</code> with which to load the module.</span>
-					</li>
-				</ol>
-			</div>
-			<div class="returns">
-				<div class="label">Returns</div>
-				<span class="type">object</span>
-				<span>A module, or <code>null</code> if the module cannot be found.</span>
-			</div>
-		</li>
-		<li class="function">
-			<div class="name">newTemporaryDirectory</div>
-			<span>Returns a new, empty directory.</span>
-			<div class="returns">
-				<div class="label">Returns</div>
-				<span class="type">jsh.file directory</span>
-			</div>
-		</li>
-	</ul>
-	<h1>$unit</h1>
-	<ul>
-		<li class="value">
-			<div class="name">context</div>
-			<span class="type">object</span>
-			<span>The <code>$context</code> that was used when instantiating the module to run the current set of tests.</span>
-		</li>
-	</ul>
-	<h1>$module</h1>
-	<ul>
-		<li class="function">
-			<div class="name">getResourcePathname</div>
-			<span>__DESCRIPTION__</span>
-			<div class="arguments">
-				<div class="label">Arguments</div>
-				<ol>
-					<li class="value">
-						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-				</ol>
-			</div>
-			<div class="returns">
-				<div class="label">Returns</div>
-				<span class="type">__TYPE__</span>
-				<span>__DESCRIPTION__</span>
-			</div>
-		</li>
-	</ul>
 </body>
 </html>

@@ -17,12 +17,12 @@ END LICENSE
 	<title>jsh loader</title>
 </head>
 <body>
-	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '1')"></div>
-	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '2')"></div>
-	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '3')"></div>
-	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '$platform')">
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('1')"></div>
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('2')"></div>
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('3')"></div>
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('$platform')">
 	</div>
-	<div jsapi:reference="doc['loader/']..*.(@jsapi::id == '$api')">
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('$api')">
 	</div>
 	<div>
 		<h1>Exports</h1>
@@ -38,7 +38,7 @@ END LICENSE
 		<ul>
 			<li class="function" jsapi:id="run">
 				<div class="name"><a id="exports.run">run</a></div>
-				<span jsapi:reference="getApi('../../loader/rhino/').getElement('run/description')">__DESCRIPTION__</span>
+				<span jsapi:reference="getApi('../../loader/rhino/api.html').getElement('run/description')">__DESCRIPTION__</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -46,12 +46,12 @@ END LICENSE
 							<span class="type"><a href="#types.code">code</a></span>
 							<span>The code to execute.</span>
 						</li>
-						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/rhino/').getElement('run/arguments[1]')">
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('run/arguments[1]')">
 							<div class="name">__NAME__</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</li>
-						<li class="value" jsapi:id="arguments[2]" jsapi:reference="getApi('../../loader/rhino/').getElement('run/arguments[2]')">
+						<li class="value" jsapi:id="arguments[2]" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('run/arguments[2]')">
 							<div class="name">__NAME__</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
@@ -61,7 +61,7 @@ END LICENSE
 			</li>
 			<li class="function" jsapi:id="file">
 				<div class="name"><a id="exports.file">file</a></div>
-				<span jsapi:reference="getApi('../../loader/rhino/').getElement('file/description')">__DESCRIPTION__</span>
+				<span jsapi:reference="getApi('../../loader/rhino/api.html').getElement('file/description')">__DESCRIPTION__</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -69,14 +69,14 @@ END LICENSE
 							<span class="type"><a href="#types.code">code</a></span>
 							<span>The code to execute.</span>
 						</li>
-						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/rhino/').getElement('file/arguments[1]')">
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('file/arguments[1]')">
 							<div class="name">__NAME__</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/rhino/').getElement('file/returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('file/returns')">
 					<div class="label">Returns</div>
 					<span class="type">__TYPE__</span>
 					<span>__DESCRIPTION__</span>
@@ -84,10 +84,10 @@ END LICENSE
 			</li>
 			<li class="function" jsapi:id="module">
 				<div class="name"><a id="exports.module">module</a></div>
-				<span jsapi:reference="getApi('../../loader/rhino').getElement('module/description')">
+				<span jsapi:reference="getApi('../../loader/rhino/api.html').getElement('module/description')">
 					Invokes the Rhino loader's <code>module</code> method.
 				</span>
-				<div jsapi:reference="getApi('../../loader/rhino').getElement('module/description2')"></div>
+				<div jsapi:reference="getApi('../../loader/rhino/api.html').getElement('module/description2')"></div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -110,7 +110,7 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/rhino').getElement('module/returns')">
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('module/returns')">
 					<!--
 						TODO	Document that this method returns null if the module cannot be found, and check whether that is also
 								true of the Rhino loader's module()
@@ -119,7 +119,7 @@ END LICENSE
 					<span>The return value of the Rhino loader's <code>module</code> method.</span>
 				</div>
 			</li>
-			<li class="function" jsapi:reference="doc['loader/rhino/']..*.(@jsapi::id == 'namespace')">
+			<li class="function" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('namespace')">
 				<div class="name">namespace</div>
 				Invokes the Rhino loader's <code>namespace</code> method.
 			</li>

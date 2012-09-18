@@ -31,7 +31,7 @@ var getApiHtml = function(moduleMainPathname) {
 	}
 }
 
-var E4X = function(html) {
+var E4X = function(base,html) {
 	default xml namespace = html.namespace();
 
 	var map = function(query) {
@@ -54,7 +54,7 @@ var E4X = function(html) {
 		}
 
 		this.getJsapiAttribute = function(name) {
-			var rv = String(xml.jsapi::["@"+name]);
+			var rv = String(xml.@jsapi::[name]);
 			if (!rv.length) {
 				return null;
 			}
@@ -65,13 +65,34 @@ var E4X = function(html) {
 			return String(xml);
 		}
 
-		this.getChildren = jsh.js.constant(function() {
-			return map(xml.elements());
-		});
+		var children;
+
+		this.getChildren = function() {
+			if (!children) {
+				children = map(xml.elements());
+			}
+			return children;
+		};
 
 		if (xml != html) {
 			this.parent = new Element(xml.parent());
 		}
+
+		this.replaceContentWithContentOf = function(other) {
+			while(xml.children().length() > 0) {
+				xml.replace(0, <></>);
+			}
+			xml.appendChild(other.$e4x.xml.children());
+			children = null;
+		}
+
+		this.removeJsapiAttribute = function(name) {
+			delete xml.@jsapi::[name];
+		}
+
+		this.$e4x = {
+			xml: xml
+		};
 
 		//	Unclear whether below used
 
@@ -81,6 +102,41 @@ var E4X = function(html) {
 	}
 
 	this.top = new Element(html);
+
+	this.load = function(path) {
+		var file = base.getFile(path);
+		if (file == null) {
+			throw new Error("Cannot find referenced file at " + path + " from base: " + base);
+		} else {
+			jsh.shell.echo("Loading " + path + " from " + base);
+		}
+		return loadApiHtml(base.getFile(path));
+	}
+};
+
+var loadApiHtml = function(file) {
+	if (!arguments.callee.cache) {
+		arguments.callee.cache = {};
+	}
+	if (!arguments.callee.cache[file.pathname.toString()]) {
+		arguments.callee.cache[file.pathname.toString()] = (function() {
+			jsh.shell.echo("Reading api.html: " + file.pathname);
+			var html = file.read(XML);
+			if (html.length() > 1) {
+				html = (function(list) {
+					for (var i=0; i<list.length(); i++) {
+						if (list[i].localName()) {
+							return list[i];
+						}
+					}
+				})(html);
+			}
+			return new E4X(file.parent,html);
+		})();
+	} else {
+		jsh.shell.echo("Returning cached api.html: " + file.pathname);
+	}
+	return arguments.callee.cache[file.pathname.toString()];
 }
 
 $exports.tests = new function() {
@@ -93,22 +149,9 @@ $exports.tests = new function() {
 			if (!moduleDescriptor.location.directory && !moduleDescriptor.location.file) {
 				throw new Error("Not found: " + moduleDescriptor.location);
 			}
-			if (getApiHtml(moduleDescriptor.location)) {
-				var html = (function() {
-					var file = getApiHtml(moduleDescriptor.location);
-					return file.read(XML);
-				})();
-				if (html.length() > 1) {
-					html = (function(list) {
-						for (var i=0; i<list.length(); i++) {
-							if (list[i].localName()) {
-								return list[i];
-							}
-						}
-					})(html);
-				}
-
-				var e4x = new E4X(html);
+			var apiHtmlFile = getApiHtml(moduleDescriptor.location);
+			if (apiHtmlFile) {
+				var e4x = loadApiHtml(apiHtmlFile);
 
 				var name = moduleDescriptor.path;
 				if (unit) {

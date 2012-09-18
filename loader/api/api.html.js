@@ -107,6 +107,7 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	//	Cannot have reference at top level, currently
+
 	var references = filter(getDescendants(html.top), jsapiReferenceFilter);
 	for (var i=0; i<references.length; i++) {
 		var scope = new function() {
@@ -114,10 +115,22 @@ $exports.ApiHtmlTests = function(html,name) {
 				var otherhtml = html.load(path);
 				var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
 				rv.getElement = function(path) {
-					return getElement(this.top,path);
+					return getElement(otherhtml.top,path);
 				}
+				return rv;
 			}
-		}
+		};
+		var reference = references[i].getJsapiAttribute("reference");
+		var element = (function() {
+			var rv;
+			with(scope) {
+				rv = eval(reference);
+			}
+			return rv;
+		})();
+		references[i].replaceContentWithContentOf(element);
+		//	TODO	is the next line necessary? If not, can also remove this call in the DOM/E4X implementations
+		references[i].removeJsapiAttribute("reference");
 	}
 
 //	for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
@@ -162,7 +175,14 @@ $exports.ApiHtmlTests = function(html,name) {
 		for (var i=0; i<contextScripts.length; i++) {
 			var id = (contextScripts[i].getJsapiAttribute("id")) ? contextScripts[i].getJsapiAttribute("id") : "";
 			with(scope) {
-				var value = eval("(" + contextScripts[i].getContentString() + ")");
+				try {
+					var value = eval("(" + contextScripts[i].getContentString() + ")");
+				} catch (e) {
+					var error = new Error("Error instantiating context");
+					error.cause = e;
+					error.code = contextScripts[i].getContentString();
+					throw error;
+				}
 			}
 			//	If the value produced is null or undefined, this context is not used
 			if (value) {

@@ -1,0 +1,17 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title></title>
+</head>
+<body>
+	<div jsapi:id="top">
+		<script type="application/x.jsapi#tests">
+			test(module.foo == "bar");
+		</script>
+		<div jsapi:reference="getApi('bar.api.html').getElement('top')">
+			<script type="application/x.jsapi#tests">
+				test(false);
+			</script>
+		</div>
+	</div>
+</body>
+</html>

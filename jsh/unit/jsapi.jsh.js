@@ -65,8 +65,6 @@ parameters.options.classpath.forEach( function(pathname) {
 	jsh.script.addClasses(pathname);
 } );
 
-debugger;
-
 var ENVIRONMENT = (function() {
 	var rv = {};
 	parameters.options.environment.forEach( function(item) {
@@ -87,25 +85,26 @@ var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 	html: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("api.html.js"), new function() {
 		var seq = 0;
 
-		this.run = function() {
-			if (typeof(arguments[0]) == "string") {
+		this.run = function(code,scope) {
+			debugger;
+			if (typeof(code) == "string") {
 				//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
 				//			properties. This code, after being moved to jsh loader, can then invoke rhino loader with name/_in
 				//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
 				//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
-				arguments[0] = {
+				code = {
 					name: "<eval>:" + String(++seq),
 					_in: (function() {
 						var out = new Packages.java.io.ByteArrayOutputStream();
 						var writer = new Packages.java.io.OutputStreamWriter(out);
-						writer.write(arguments[0]);
+						writer.write(code);
 						writer.flush();
 						writer.close();
 						return new Packages.java.io.ByteArrayInputStream(out.toByteArray());
 					})()
 				}
 			}
-			jsh.loader.run(arguments[0],arguments[1]);
+			jsh.loader.run(code,scope);
 		}
 	} ),
 	jsapi: {
