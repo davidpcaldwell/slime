@@ -116,6 +116,19 @@ END LICENSE
 								<code>readLines</code> method defined by
 								<a href="#types.cinput">character input stream</a>.
 							</span>
+							<script type="application/x.jsapi#tests">
+								var string = "Hello\nWorld";
+								var buffer = new module.Buffer();
+								buffer.writeBinary().character().write(string);
+								buffer.close();
+								var resource = buffer.readBinary().cache();
+								var lines = [];
+								resource.read.lines(function(item) {
+									lines.push(item);
+								}, { ending: "\n" });
+								test(lines[0] == "Hello");
+								test(lines[1] == "World");
+							</script>
 						</li>
 					</ul>
 				</li>
@@ -294,6 +307,15 @@ END LICENSE
 												} );
 											</script>
 										</li>
+										<li class="function">
+											<div class="name">cache</div>
+											<span>Creates a resource that contains the contents of this stream.</span>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.Resource">Resource</a></span>
+												<span>A resource that contains a copy of this stream.</span>
+											</div>
+										</li>
 									</ul>
 								</div>
 								<div class="type">
@@ -301,6 +323,14 @@ END LICENSE
 									<span>A stream to which bytes may be written.</span>
 									<div class="label">has properties:</div>
 									<ul>
+										<li class="function">
+											<div class="name">character</div>
+											<span>Returns a character output stream that writes to this stream.</span>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.coutput">character output stream</a></span>
+											</div>
+										</li>
 										<li class="function">
 											<div class="name">close</div>
 											<span>Closes the underlying stream.</span>

@@ -363,8 +363,8 @@ var Resource = function(p) {
 		};
 
 		this.read.lines = function() {
-			var text = text();
-			return text.readLines.apply(text,arguments);
+			var stream = text();
+			return stream.readLines.apply(stream,arguments);
 		};
 	}
 
