@@ -15,15 +15,23 @@
 //	TODO	remove obsolete command-line options unix, cygwin, src
 var parameters = jsh.script.getopts({
 	options: {
-		src: jsh.file.Pathname,
 		to: jsh.file.Pathname,
 		replace: false,
+		//	below three arguments all are auto-detected later in the code
+		//	TODO	review whether this should be able to be specified on the command line and how it works if it is
+		src: jsh.file.Pathname,
+		//	TODO	-unix and -cygwin cannot be turned off currently; if unspecified and autodetected, they will be added anyway
 		unix: false,
 		cygwin: false
 	}
 });
 
-if (!parameters.options.to) {
+debugger;
+
+//	TODO	below is affected by issue 61
+var zip = (jsh.script.loader.resource) ? jsh.script.loader.resource("build.zip") : null;
+
+if (!parameters.options.to && zip) {
 	jsh.shell.echo("Usage: " + jsh.script.file.pathname.basename + " -to <destination> [-replace]");
 	jsh.shell.echo("If <destination> does not exist, it will be created, recursively if necessary.");
 	jsh.shell.echo("If <destination> does exist, -replace will overwrite it; otherwise, the installation will abort.");
@@ -31,12 +39,19 @@ if (!parameters.options.to) {
 	//	TODO	if it is a symlink to a directory with -replace, the symlink *target* will be removed ... and then what will happen?
 	//	TODO	if it is a symlink to a non-existent directory, what will happen?
 	jsh.shell.exit(1);
+} else if (!parameters.options.to && !zip) {
+	//	TODO	add sanity check to make sure that the directory ../.. is actually the installation directory
+	jsh.shell.echo("Doing post-installation for shell at " + jsh.script.file.parent.parent);
+	//	TODO	this rigamarole is necessary because of a false positive in softlink detection; figure it out and simplify
+	//	does not work:
+	//	parameters.options.to = jsh.script.file.parent.parent.pathname;
+	parameters.options.to = jsh.script.file.parent.parent.parent.getRelativePath(jsh.script.file.parent.parent.pathname.basename);
 } else {
 	jsh.shell.echo("Installing to: " + parameters.options.to);
 }
 
-var file = jsh.script.loader.resource("build.zip");
 var realpath = function(pathname) {
+	//	TODO	should not use private API; should either use public one or develop public one
 	return new jsh.file.filesystem.$jsh.Pathname(pathname.java.adapt());
 }
 
@@ -53,36 +68,41 @@ if (
 	destinationIsSoftlink();
 }
 
-var install = parameters.options.to.createDirectory({
-	ifExists: function(dir) {
-		if (parameters.options.replace) {
-			if (
-				realpath(parameters.options.to).toString() != parameters.options.to.toString()
-				&& realpath(parameters.options.to.parent).toString() == parameters.options.to.parent.toString()
+var install;
+if (zip) {
+	install = parameters.options.to.createDirectory({
+		ifExists: function(dir) {
+			if (parameters.options.replace) {
+				if (
+					realpath(parameters.options.to).toString() != parameters.options.to.toString()
+					&& realpath(parameters.options.to.parent).toString() == parameters.options.to.parent.toString()
 
-			) {
-				//	softlink; currently unreachable as all softlinks are captured above, but in the future we may need to capture
-				//	them here
-				destinationIsSoftlink();
+				) {
+					//	softlink; currently unreachable as all softlinks are captured above, but in the future we may need to capture
+					//	them here
+					destinationIsSoftlink();
+				} else {
+					dir.remove();
+					return true;
+				}
 			} else {
-				dir.remove();
-				return true;
+				//	TODO	for symlink to file, dir.toString() does not work. Why?
+				var type = (parameters.options.to.file) ? "File" : "Directory";
+				jsh.shell.echo(type + " found at " + parameters.options.to);
+				jsh.shell.echo("Use -replace to overwrite it.");
+				jsh.shell.exit(1);
 			}
-		} else {
-			//	TODO	for symlink to file, dir.toString() does not work. Why?
-			var type = (parameters.options.to.file) ? "File" : "Directory";
-			jsh.shell.echo(type + " found at " + parameters.options.to);
-			jsh.shell.echo("Use -replace to overwrite it.");
-			jsh.shell.exit(1);
-		}
-	},
-	recursive: true
-});
-jsh.file.unzip({
-	zip: file,
-	to: install
-});
-install.getRelativePath("plugins").createDirectory();
+		},
+		recursive: true
+	});
+	jsh.file.unzip({
+		zip: zip,
+		to: install
+	});
+	install.getRelativePath("plugins").createDirectory();
+} else {
+	install = parameters.options.to.directory;
+}
 
 var which = function(command) {
 	if (arguments.length > 1) throw new Error("Too many arguments.");
@@ -313,5 +333,6 @@ if (which("chmod")) {
 		}
 	};
 
+	//	TODO	this may not be necessary now; these scripts are only being run by the launcher
 	makeExecutable(install.getSubdirectory("tools"));
 }
