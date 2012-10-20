@@ -290,10 +290,19 @@ var SystemFilesystem = function(peer,os) {
 
 	var self = this;
 
+	this.java = new function() {
+		this.adapt = function(_jfile) {
+			//	TODO	if no arguments, may want to someday consider returning the native peer of this object
+			//	TODO	document this and write unit tests for it
+			return new $context.Pathname({ filesystem: system, peer: peer.getNode(_jfile) });
+		}
+	};
+
 	this.$jsh = new function() {
 		//	Currently used by jsh.shell.getopts for Pathname
 		this.PATHNAME_SEPARATOR = system.PATHNAME_SEPARATOR;
 
+		//	TODO	probably can be replaced by .java.adapt() above
 		this.Pathname = function($jfile) {
 			return new $context.Pathname({ filesystem: system, peer: peer.getNode($jfile) });
 		}
