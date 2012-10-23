@@ -78,6 +78,9 @@ var platform = new function() {
 						var m = (mode.path) ? "-wp" : "-w";
 						var option = {output: ""};
 						var exit = runCommand("c:/cygwin/bin/cygpath.exe", m, unix, option);
+						if (exit) {
+							throw new Error("Error running cygpath: " + m + " " + unix);
+						}
 						return option.output.substring(0,option.output.length-1);
 					}
 
@@ -86,6 +89,9 @@ var platform = new function() {
 						var m = (mode.path) ? "-up" : "-u";
 						var option = {output: ""};
 						var exit = runCommand("c:/cygwin/bin/cygpath.exe", m, windows, option);
+						if (exit) {
+							throw new Error("Error running cygpath: " + m + " " + windows);
+						}
 						return option.output.substring(0,option.output.length-1);
 					}
 				}
