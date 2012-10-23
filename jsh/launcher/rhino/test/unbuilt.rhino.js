@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	requires api.rhino.js, could we load it?
+
 debug.on = true;
 //	TODO	could we get our own location using a stack trace and make this unnecessary?
 debug("Source: " + String(env.JSH_SLIME_SRC));
