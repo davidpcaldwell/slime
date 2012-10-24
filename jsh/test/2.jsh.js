@@ -24,7 +24,7 @@ jsh.shell.jsh(jsh.script.getRelativePath("1.jsh"), [], {
 		buffer.close();
 		jsh.shell.echo("output = " + buffer.readText().asString());
 		if (result.status != 0) {
-			jsh.shell.echo("Failure in jsh.shell.jsh!");
+			jsh.shell.echo("Failure in jsh.shell.jsh! (exit status: " + result.status + ")");
 			jsh.shell.exit(result.status);
 		}
 	}
