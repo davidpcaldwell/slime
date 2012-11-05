@@ -14,6 +14,10 @@
 
 debug.on = true;
 //	TODO	could we get our own location using a stack trace and make this unnecessary?
+if (!env.JSH_SLIME_SRC) {
+	jsh.shell.echo("Required: environment variable JSH_SLIME_SRC");
+	jsh.shell.exit(1);
+}
 debug("Source: " + String(env.JSH_SLIME_SRC));
 var JSH_SLIME_SRC = new (function() {
 	var _base;
