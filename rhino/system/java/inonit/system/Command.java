@@ -299,8 +299,14 @@ public class Command {
 	}
 
 	private Process launch(Context context) throws IOException {
+		String[] command = configuration.cmdarray();
+		for (int i=0; i<command.length; i++) {
+			if (command[i] == null) {
+				throw new NullPointerException("Command argument " + i + " must not be null.");
+			}
+		}
 		return new Process(
-			Runtime.getRuntime().exec( configuration.cmdarray(), context.envp(), context.getWorkingDirectory() )
+			Runtime.getRuntime().exec( command, context.envp(), context.getWorkingDirectory() )
 			,context
 			,configuration
 		);
