@@ -14,6 +14,11 @@ var Text = function(p) {
 }
 
 var Element = function(p) {
+	//	Much complexity seeps into the model if nodes need to be aware of their parents; now, when adding a child to a parent,
+	//	we need to update the child's parent property. When updating a child's parent property, we need to place it somewhere in
+	//	its parent's children. But most objects don't work this way. An object that is a property of another JavaScript object
+	//	cannot navigate to its parent. So we will try to implement the model in this way.
+	
 	this.name = p.name;
 	
 	var namespaces = (p.namespaces) ? p.namespaces : [];
@@ -24,6 +29,14 @@ var Element = function(p) {
 		//	TODO	allow empty element model
 		var rv = {};
 		rv.name = this.name.local;
+		rv.namespaces = (function() {
+			if (namespaces.length == 0) return "";
+			return " " + namespaces.map(function(namespace) {
+				return ((namespace.prefix) ? "xmlns:" + namespace.prefix : "xmlns")
+					+ "=" + "\"" + namespace.uri + "\""
+				;
+			}).join(" ");
+		})();
 		rv.attributes = (function() {
 			if (attributes.length == 0) return "";
 			return " " + attributes.map(function(attribute) {
@@ -31,7 +44,21 @@ var Element = function(p) {
 			}).join(" ");
 		})();
 		rv.content = children.join("");
-		return "<" + rv.name + rv.attributes + ">" + rv.content + "</" + rv.name + ">";
+		return "<" + rv.name + rv.namespaces + rv.attributes + ">" + rv.content + "</" + rv.name + ">";
+	}
+	
+	this.getAttribute = function(p) {
+		var filter = (function() {
+			if (typeof(p) == "string") {
+				return function(attribute) {
+					return !attribute.namespace && attribute.local == p;
+				};
+			}			
+		})();
+		var match = attributes.filter(filter);
+		if (match.length == 0) return null;
+		//	TODO	too many matches
+		return match[0].value;
 	}
 	
 	this.get = function(p) {
@@ -49,20 +76,6 @@ var Element = function(p) {
 		} else {
 			return children.filter(filter);
 		}
-	}
-	
-	this.getAttribute = function(p) {
-		var filter = (function() {
-			if (typeof(p) == "string") {
-				return function(attribute) {
-					return !attribute.namespace && attribute.local == p;
-				};
-			}			
-		})();
-		var match = attributes.filter(filter);
-		if (match.length == 0) return null;
-		//	TODO	too many matches
-		return match[0].value;
 	}
 	
 	this.append = function(child) {
@@ -90,17 +103,6 @@ $exports.Element = Element;
 $exports.Document = Document;
 
 $exports.Document.E4X = function(e4x) {
-	var ns = (function() {
-		if (e4x.length() > 1) {
-			return (function() {
-				for (var i=0; i<e4x.length(); i++) {
-					if (e4x[i].nodeKind() == "element") return e4x[i].namespace();
-				}
-			})();
-		} else {
-			return e4x.namespace();
-		}
-	})();
 	var rv = new Document();
 	
 	var toElement = function(e4x) {
@@ -160,7 +162,6 @@ $exports.Document.E4X = function(e4x) {
 	
 	for (var i=0; i<e4x.length(); i++) {
 		rv.addNode(toNode(e4x[i]));
-		debugger;
 	}
 	
 	return rv;
