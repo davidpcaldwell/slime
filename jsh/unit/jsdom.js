@@ -115,12 +115,16 @@ var Element = function(p) {
 				return function(node) {
 					return node.name.namespace == "" && node.name.local == p.name;
 				}
+			} else if (p && typeof(p.filter) == "function") {
+				return p.filter;
 			} else if (typeof(p) == "function") {
 				return p;
 			} else if (typeof(p) == "undefined") {
 				return function(node) {
 					return true;
 				};
+			} else {
+				throw new Error();
 			}
 		})();
 		if (p && p.recurse) {
@@ -142,6 +146,26 @@ var Element = function(p) {
 	
 	this.append = function(child) {
 		children.push(child);
+	}
+	
+	this.remove = function(p) {
+		var child;
+		if (p.recursive && p.node) {
+			child = p.node;			
+		} else {
+			child = p;
+		}
+		for (var i=0; i<children.length; i++) {
+			debugger;
+			if (children[i] == child) {
+				debugger;
+				children.splice(i,1);
+				return;
+			}
+			if (p.recursive && children[i].remove) {
+				children[i].remove(p);
+			}
+		}			
 	}
 }
 

@@ -69,4 +69,33 @@ var inserted = body.get()[0];
 verify(typeof(inserted) != "undefined");
 verify(inserted.name.local == "a");
 verify(inserted.get()[0].toString() == "Documentation Home");
+var jsapiDiv = body.get({
+	//	TODO	probably need to be able to return STOP or something from filter to stop searching below a certain element
+	//	TODO	may want to look into xpath
+	recursive: true,
+	filter: function(node) {
+		if (!node.name) return false;
+		var elements = node.get(function(child) {
+			return Boolean(child.name);
+		});
+		if (elements[0] && elements[0].name.local == "h1") {
+			if (elements[0].get()[0] && elements[0].get()[0].toString() == "jsapi.jsh.js") {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+})[0];
+var before = body.toString();
+verify(before == body.toString());
+if (jsapiDiv) {
+	body.remove({
+		recursive: true,
+		node: jsapiDiv
+	});
+	verify(before != body.toString());
+}
 debugger;
