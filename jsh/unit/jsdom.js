@@ -101,7 +101,11 @@ var Element = function(p) {
 				return function(attribute) {
 					return !attribute.namespace && attribute.local == p;
 				};
-			}			
+			} else if (p.namespace && p.name) {
+				return function(attribute) {
+					return attribute.namespace == p.namespace && attribute.local == p.name;
+				}
+			}
 		})();
 		var match = attributes.filter(filter);
 		if (match.length == 0) return null;
@@ -127,8 +131,18 @@ var Element = function(p) {
 				throw new Error();
 			}
 		})();
-		if (p && p.recurse) {
-			throw new Error("Unimplemented: recurse.");
+		if (p && p.recursive) {
+			var rv = [];
+			for (var i=0; i<children.length; i++) {
+				if (filter(children[i])) {
+					rv.push(children[i]);
+				}
+				if (children[i].get) {
+					var descendants = children[i].get(p);
+					rv.push.apply(rv, descendants);
+				}
+			}
+			return rv;
 		} else {
 			return children.filter(filter);
 		}
@@ -156,9 +170,7 @@ var Element = function(p) {
 			child = p;
 		}
 		for (var i=0; i<children.length; i++) {
-			debugger;
 			if (children[i] == child) {
-				debugger;
 				children.splice(i,1);
 				return;
 			}
@@ -189,9 +201,7 @@ $exports.Text = Text;
 $exports.Element = Element;
 $exports.Document = Document;
 
-$exports.Document.E4X = function(e4x) {
-	var rv = new Document();
-	
+$exports.E4X = new function() {
 	var toElement = function(e4x) {
 		var namespaces = [];
 		for (var i=0; i<e4x.namespaceDeclarations().length; i++) {
@@ -229,7 +239,7 @@ $exports.Document.E4X = function(e4x) {
 			children: children
 		});
 	}
-	
+
 	var toNode = function(e4x) {
 		if (e4x.nodeKind() == "comment") {
 			//	TODO	the below does not work for some reason; is it a Rhino bug?
@@ -247,9 +257,21 @@ $exports.Document.E4X = function(e4x) {
 		throw new Error();
 	}
 	
-	for (var i=0; i<e4x.length(); i++) {
-		rv.addNode(toNode(e4x[i]));
+	this.toJsdom = function(xmllist) {
+		var rv = [];
+		for (var i=0; i<xmllist.length(); i++) {
+			rv.push(toNode(xmllist[i]));
+		}
+		return rv;
 	}
-	
-	return rv;
-}
+
+	this.Document = function(e4x) {
+		var rv = new Document();
+
+		for (var i=0; i<e4x.length(); i++) {
+			rv.addNode(toNode(e4x[i]));
+		}
+
+		return rv;
+	};
+};

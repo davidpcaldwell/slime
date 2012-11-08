@@ -7,7 +7,7 @@ pages.jsh = {};
 XML.ignoreWhitespace = false;
 XML.prettyPrinting = false;
 pages.jsh.unit = BASE.getFile("jsh/unit/api.html").read(XML);
-var document = jsdom.Document.E4X(pages.jsh.unit);
+var document = jsdom.E4X.Document(pages.jsh.unit);
 var xhtml = "http://www.w3.org/1999/xhtml";
 var root = document.get(function(node) {
 	return node.name && node.name.local == "html";
@@ -18,7 +18,6 @@ var head = root.get(function(node) {
 var body = root.get(function(node) {
 	return node.name && node.name.local == "body";	
 })[0];
-debugger;
 var css = head.get(function(node) {
 	return node.name && node.name.local == "link" && /api\.css$/.test(node.getAttribute("href"));
 })[0];
@@ -37,7 +36,6 @@ head.append(new jsdom.Element({
 		{ local: "href", value: top + "api.css" }
 	]
 }));
-debugger;
 
 var verify = function(b) {
 	if (!b) {
@@ -98,4 +96,14 @@ if (jsapiDiv) {
 	});
 	verify(before != body.toString());
 }
+var withJsapiAttribute = root.get({
+	recursive: true,
+	filter: function(node) {
+		return node.getAttribute && node.getAttribute({
+			namespace: "http://www.inonit.com/jsapi",
+			name: "test"
+		}) != null;
+	}
+});
+verify(withJsapiAttribute.length == 1);
 debugger;
