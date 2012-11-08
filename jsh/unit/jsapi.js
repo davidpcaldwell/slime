@@ -435,15 +435,17 @@ $exports.doc = function(p) {
 				}
 				return rv;
 			})();
-			var root = document.get(function(node) {
-				return node.name && node.name.local == "html";
-			})[0];
+			var root = document.get(jsdom.filter({ name: "html" }))[0];
 
 //			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href={ top + "api.css" } />);
 //			xhtml.ns::head.appendChild(<script type="text/javascript" src={ top + "api.js" }>{"/**/"}</script>);
-			var head = root.get(function(node) {
-				return node.name && node.name.local == "head";	
+			var head = root.get(jsdom.filter({ name: "head" }))[0];
+			var css = head.get(function(node) {
+				return node.name && node.name.local == "link" && /api\.css$/.test(node.getAttribute("href"));
 			})[0];
+			if (css) {
+				head.remove(css);
+			}
 			head.append(new jsdom.Element({
 				name: {
 					namespace: ns,
@@ -455,6 +457,12 @@ $exports.doc = function(p) {
 					{ local: "href", value: top + "api.css" }
 				]
 			}));
+			var js = head.get(function(node) {
+				return node.name && node.name.local == "script" && /api\.js$/.test(node.getAttribute("src"));
+			})[0];
+			if (js) {
+				head.remove(js);
+			}
 			head.append(new jsdom.Element({
 				name: {
 					namespace: ns,
@@ -467,9 +475,7 @@ $exports.doc = function(p) {
 			}));
 			
 //			xhtml.ns::body.insertChildAfter(null,<a href={ top + "index.html" }>Documentation Home</a>);
-			var body = root.get(function(node) {
-				return node.name && node.name.local == "body";	
-			})[0];
+			var body = root.get(jsdom.filter({ name: "body" }))[0];
 			body.insert(new jsdom.Element({
 				name: {
 					namespace: ns,
