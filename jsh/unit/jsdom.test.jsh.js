@@ -15,6 +15,9 @@ var root = document.get(function(node) {
 var head = root.get(function(node) {
 	return node.name && node.name.local == "head";	
 })[0];
+var body = root.get(function(node) {
+	return node.name && node.name.local == "body";	
+})[0];
 debugger;
 var css = head.get(function(node) {
 	return node.name && node.name.local == "link" && /api\.css$/.test(node.getAttribute("href"));
@@ -48,3 +51,22 @@ var link = head.get(function(node) {
 verify(typeof(link) != "undefined");
 verify(link.name.local == "link");
 verify(link.getAttribute("rel") == "stylesheet");
+root.toString();
+head.toString();
+body.insert(new jsdom.Element({
+	name: {
+		namespace: xhtml,
+		local: "a"
+	},
+	attributes: [
+		{ local: "href", value: top + "index.html" }
+	],
+	children: [
+		new jsdom.Text("Documentation Home")
+	]
+}), { index: 0 });
+var inserted = body.get()[0];
+verify(typeof(inserted) != "undefined");
+verify(inserted.name.local == "a");
+verify(inserted.get()[0].toString() == "Documentation Home");
+debugger;

@@ -25,10 +25,40 @@ var Element = function(p) {
 	var attributes = (p.attributes) ? p.attributes : [];
 	var children = (p.children) ? p.children : [];
 	
-	this.toString = function() {
-		//	TODO	allow empty element model
-		var rv = {};
-		rv.name = this.name.local;
+	this.serialize = function(p) {
+		var scope = {};
+		var xmlns = "";
+		for (var x in p.namespaces) {
+			scope[x] = p.namespaces[x];
+		}
+		namespaces.forEach(function(namespace) {
+			scope[namespace.uri] = namespace.prefix;
+			if (!namespace.prefix) {
+				xmlns = namespace.uri;
+			}
+		});
+		var rv = {};		
+		rv.name = (function() {
+			var prefix = scope[this.name.namespace];
+			if (this.name.namespace && typeof(prefix) == "undefined") {
+				if (xmlns) {
+					//	add a namespace
+					throw new Error();
+				} else {
+					//	make my namespace the default namespace
+					scope[this.name.namespace] = "";
+					namespaces.unshift({
+						prefix: "",
+						uri: this.name.namespace
+					});
+					return this.name.local;
+				}
+			} else if (prefix) {
+				return prefix + ":" + this.name.local;
+			} else {
+				return this.name.local;
+			}
+		}).call(this);
 		rv.namespaces = (function() {
 			if (namespaces.length == 0) return "";
 			return " " + namespaces.map(function(namespace) {
@@ -43,8 +73,26 @@ var Element = function(p) {
 				return attribute.local + "=" + "\"" + attribute.value + "\"";
 			}).join(" ");
 		})();
-		rv.content = children.join("");
+		rv.content = children.map(function(child) {
+			var params = {};
+			for (var x in p) {
+				params[x] = p[x];
+			}
+			params.namespaces = scope;
+			if (child.serialize) {
+				return child.serialize(params);
+			} else {
+				return child.toString();
+			}
+		}).join("");
+		//	TODO	allow empty element model
 		return "<" + rv.name + rv.namespaces + rv.attributes + ">" + rv.content + "</" + rv.name + ">";
+	}
+	
+	this.toString = function() {
+		return this.serialize({
+			namespaces: {}
+		});
 	}
 	
 	this.getAttribute = function(p) {
@@ -63,18 +111,32 @@ var Element = function(p) {
 	
 	this.get = function(p) {
 		var filter = (function() {
-			if (p.name && typeof(p.name) == "string") {
+			if (p && p.name && typeof(p.name) == "string") {
 				return function(node) {
 					return node.name.namespace == "" && node.name.local == p.name;
 				}
 			} else if (typeof(p) == "function") {
 				return p;
+			} else if (typeof(p) == "undefined") {
+				return function(node) {
+					return true;
+				};
 			}
 		})();
-		if (p.recurse) {
+		if (p && p.recurse) {
 			throw new Error("Unimplemented: recurse.");
 		} else {
 			return children.filter(filter);
+		}
+	}
+	
+	this.insert = function(child,where) {
+		if (!where) {
+			this.append(child);
+		} else if (typeof(where.index) == "number") {
+			children.splice(where.index,0,child);
+		} else {
+			throw new Error("Unimplemented.");
 		}
 	}
 	
@@ -99,6 +161,7 @@ var Document = function(p) {
 	}
 };
 
+$exports.Text = Text;
 $exports.Element = Element;
 $exports.Document = Document;
 
