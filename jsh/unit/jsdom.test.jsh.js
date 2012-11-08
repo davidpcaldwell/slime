@@ -9,15 +9,9 @@ XML.prettyPrinting = false;
 pages.jsh.unit = BASE.getFile("jsh/unit/api.html").read(XML);
 var document = jsdom.E4X.Document(pages.jsh.unit);
 var xhtml = "http://www.w3.org/1999/xhtml";
-var root = document.get(function(node) {
-	return node.name && node.name.local == "html";
-})[0];
-var head = root.get(function(node) {
-	return node.name && node.name.local == "head";	
-})[0];
-var body = root.get(function(node) {
-	return node.name && node.name.local == "body";	
-})[0];
+var root = document.get(jsdom.filter({ name: "html" }))[0];
+var head = root.get(jsdom.filter({ name: "head" }))[0];
+var body = root.get(jsdom.filter({ name: "body" }))[0];
 var css = head.get(function(node) {
 	return node.name && node.name.local == "link" && /api\.css$/.test(node.getAttribute("href"));
 })[0];
@@ -43,9 +37,7 @@ var verify = function(b) {
 	}
 };
 
-var link = head.get(function(node) {
-	return node.name && node.name.local == "link";
-})[0];
+var link = head.get(jsdom.filter({ name: "link" }))[0];
 verify(typeof(link) != "undefined");
 verify(link.name.local == "link");
 verify(link.getAttribute("rel") == "stylesheet");

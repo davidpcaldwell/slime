@@ -201,6 +201,14 @@ $exports.Text = Text;
 $exports.Element = Element;
 $exports.Document = Document;
 
+$exports.filter = function(p) {
+	if (p && typeof(p.name) == "string") {
+		return function(node) {
+			return node.name && node.name.local == p.name;			
+		}
+	}
+}
+
 $exports.E4X = new function() {
 	var toElement = function(e4x) {
 		var namespaces = [];

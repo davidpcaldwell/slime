@@ -423,6 +423,8 @@ $exports.doc = function(p) {
 					return xhtml.namespace();
 				}
 			})();
+			var jsdom = $context.jsdom;
+			var document = new jsdom.E4X.Document(xhtml);
 			var top = (function() {
 				//	below could be simplified with join and map but we leave it this way until we make sure all cases work; e.g.,
 				//	path ending with /, path ending with filename
@@ -433,30 +435,118 @@ $exports.doc = function(p) {
 				}
 				return rv;
 			})();
-			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href={ top + "api.css" } />);
-			xhtml.ns::head.appendChild(<script type="text/javascript" src={ top + "api.js" }>{"/**/"}</script>);
+			var root = document.get(function(node) {
+				return node.name && node.name.local == "html";
+			})[0];
 
-			xhtml.ns::body.insertChildAfter(null,<a href={ top + "index.html" }>Documentation Home</a>);
+//			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href={ top + "api.css" } />);
+//			xhtml.ns::head.appendChild(<script type="text/javascript" src={ top + "api.js" }>{"/**/"}</script>);
+			var head = root.get(function(node) {
+				return node.name && node.name.local == "head";	
+			})[0];
+			head.append(new jsdom.Element({
+				name: {
+					namespace: ns,
+					local: "link"
+				},
+				attributes: [
+					{ local: "rel", value: "stylesheet" },
+					{ local: "type", value: "text/css" },
+					{ local: "href", value: top + "api.css" }
+				]
+			}));
+			head.append(new jsdom.Element({
+				name: {
+					namespace: ns,
+					local: "script"
+				},
+				attributes: [
+					{ local: "type", value: "text/javascript" },
+					{ local: "src", value: top + "api.js" }
+				]
+			}));
+			
+//			xhtml.ns::body.insertChildAfter(null,<a href={ top + "index.html" }>Documentation Home</a>);
+			var body = root.get(function(node) {
+				return node.name && node.name.local == "body";	
+			})[0];
+			body.insert(new jsdom.Element({
+				name: {
+					namespace: ns,
+					local: "a"
+				},
+				attributes: [
+					{ local: "href", value: top + "index.html" }
+				],
+				children: [
+					new jsdom.Text("Documentation Home")
+				]
+			}), { index: 0 });
 
-			var contextDiv = xhtml..ns::div.(ns::h1 == "Context");
-			if (contextDiv.length()) {
-				contextDiv.parent().replace(contextDiv.childIndex(),<></>);
-				//	Why does the below not work?
-				//delete contextDiv.parent()[contextDiv.childIndex()];
+//			var contextDiv = xhtml..ns::div.(ns::h1 == "Context");
+//			if (contextDiv.length()) {
+//				contextDiv.parent().replace(contextDiv.childIndex(),<></>);
+//				//	Why does the below not work?
+//				//delete contextDiv.parent()[contextDiv.childIndex()];
+//			}
+			var contextDiv = body.get({
+				//	TODO	probably need to be able to return STOP or something from filter to stop searching below a certain element
+				//	TODO	may want to look into xpath
+				recursive: true,
+				filter: function(node) {
+					if (!node.name) return false;
+					var elements = node.get(function(child) {
+						return Boolean(child.name);
+					});
+					if (elements[0] && elements[0].name.local == "h1") {
+						if (elements[0].get()[0] && elements[0].get()[0].toString() == "Context") {
+							return true;
+						} else {
+							return false;
+						}
+					} else {
+						return false;
+					}
+				}
+			})[0];
+			if (contextDiv) {
+				body.remove({
+					recursive: true,
+					node: contextDiv
+				});
 			}
 
 			//	TODO	document and enhance this ability to import documentation from other files
 			var declaration = new ApiHtml({ file: getApiHtml(item.location) });
-			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
-				var resolved = declaration.resolve(e);
+			var withJsapiReference = root.get({
+				recursive: true,
+				filter: function(node) {
+					return node.getAttribute && node.getAttribute({
+						namespace: "http://www.inonit.com/jsapi",
+						name: "reference"
+					}) != null;
+				}
+			});
+//			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
+			for (var i=0; i<withJsapiReference.length; i++) {
+				var e = withJsapiReference[i];
+				var resolved = declaration.resolve(XML(e.toString()));
 				if (resolved) {
-					e.setChildren(resolved.children());
+//					e.setChildren(resolved.children());
+					while(e.get().length) {
+						e.remove(e.get()[0]);
+					}
+					var nodes = jsdom.E4X.toJsdom(resolved.children());
+					nodes.forEach(function(node) {
+						e.append(node);
+					});
 				} else {
 					throw new Error("Could not resolve: " + e.@jsapi::reference.toXMLString());
 				}
 			}
 
-			destination.getRelativePath(path).write(xhtml.toXMLString(), { recursive: true });
+//			destination.getRelativePath(path).write(xhtml.toXMLString(), { recursive: true });
+			destination.getRelativePath(path).write(document.toString(), { recursive: true });
 
 			index.body.table.tbody.appendChild(<tr>
 				<td><a href={path}>{item.ns}</a></td><td>{String(xhtml.ns::head.ns::title)}</td>
