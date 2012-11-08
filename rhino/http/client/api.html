@@ -61,7 +61,8 @@ END LICENSE
 				var global = (function() { return this; })();
 				var tomcat;
 				var servlet;
-				if (!global.tomcat && !$jsapi.environment.windowsSocketsError10106 && tomcatPresent && false) {
+				var port;
+				if (!global.tomcat && !$jsapi.environment.windowsSocketsError10106 && tomcatPresent) {
 					tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 					servlet = new function() {
 						var implementation;
@@ -75,9 +76,16 @@ END LICENSE
 						}
 					};
 
+					port = (function() {
+						var address = new Packages.java.net.ServerSocket(0);
+						var rv = address.getLocalPort();
+						address.close();
+						return rv;
+					})();
+					
 					(function() {
 						var base = $jsapi.newTemporaryDirectory();
-						tomcat.setPort(84);
+						tomcat.setPort(port);
 						tomcat.setBaseDir(base);
 						var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
 						Packages.org.apache.catalina.startup.Tomcat.addServlet(context,"aName",new JavaAdapter(
@@ -117,6 +125,7 @@ END LICENSE
 							io: jsh.io
 						}
 					}
+					this.port = port;
 					this.gae = gae;
 				};
 
@@ -523,7 +532,7 @@ END LICENSE
 						});
 						var response = client.request({
 							method: "GET"
-							,url: "http://127.0.0.1:84/"
+							,url: "http://127.0.0.1:" + context.port + "/"
 							,parse: function(response) {
 								return response.body.stream.character().asString();
 							}
@@ -542,7 +551,7 @@ END LICENSE
 						});
 						var response = client.request({
 							method: "GET"
-							,url: "http://127.0.0.1:84/"
+							,url: "http://127.0.0.1:" + context.port + "/"
 						});
 						test(response.body.type.split(";")[0] == "text/plain");
 						servlet.set(function(request,response) {
@@ -552,7 +561,7 @@ END LICENSE
 						});
 						client.request({
 							method: "GET"
-							,url: "http://127.0.0.1:84/"
+							,url: "http://127.0.0.1:" + context.port + "/"
 						});
 					}
 				]]></script>
@@ -577,7 +586,7 @@ END LICENSE
 						});
 						var response = client.request({
 							method: "GET",
-							url: "http://127.0.0.1:84/"
+							url: "http://127.0.0.1:" + context.port + "/"
 							,parse: function(response) {
 							}
 						});
