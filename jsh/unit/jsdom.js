@@ -9,7 +9,48 @@ var Comment = function(p) {
 
 var Text = function(p) {
 	this.toString = function() {
-		return p;
+		return p.replace(/\</g, "&lt;").replace(/\&/g, "&amp;");
+	}
+}
+
+var CdataSection = function(p) {
+	this.toString = function() {
+		return "<![CDATA[" + p + "]]>";
+	}	
+}
+
+var filtering = function(children,p) {
+	var filter = (function() {
+		if (p && p.name && typeof(p.name) == "string") {
+			return function(node) {
+				return node.name.namespace == "" && node.name.local == p.name;
+			}
+		} else if (p && typeof(p.filter) == "function") {
+			return p.filter;
+		} else if (typeof(p) == "function") {
+			return p;
+		} else if (typeof(p) == "undefined") {
+			return function(node) {
+				return true;
+			};
+		} else {
+			throw new Error();
+		}
+	})();
+	if (p && p.recursive) {
+		var rv = [];
+		for (var i=0; i<children.length; i++) {
+			if (filter(children[i])) {
+				rv.push(children[i]);
+			}
+			if (children[i].get) {
+				var descendants = children[i].get(p);
+				rv.push.apply(rv, descendants);
+			}
+		}
+		return rv;
+	} else {
+		return children.filter(filter);
 	}
 }
 
@@ -37,7 +78,7 @@ var Element = function(p) {
 				xmlns = namespace.uri;
 			}
 		});
-		var rv = {};		
+		var rv = {};
 		rv.name = (function() {
 			var prefix = scope[this.name.namespace];
 			if (this.name.namespace && typeof(prefix) == "undefined") {
@@ -47,10 +88,13 @@ var Element = function(p) {
 				} else {
 					//	make my namespace the default namespace
 					scope[this.name.namespace] = "";
-					namespaces.unshift({
-						prefix: "",
-						uri: this.name.namespace
-					});
+					//	TODO	this probably is not necessary
+					if (!p.namespaces[this.name.namespace]) {
+						namespaces.unshift({
+							prefix: "",
+							uri: this.name.namespace
+						});
+					}
 					return this.name.local;
 				}
 			} else if (prefix) {
@@ -114,38 +158,7 @@ var Element = function(p) {
 	}
 	
 	this.get = function(p) {
-		var filter = (function() {
-			if (p && p.name && typeof(p.name) == "string") {
-				return function(node) {
-					return node.name.namespace == "" && node.name.local == p.name;
-				}
-			} else if (p && typeof(p.filter) == "function") {
-				return p.filter;
-			} else if (typeof(p) == "function") {
-				return p;
-			} else if (typeof(p) == "undefined") {
-				return function(node) {
-					return true;
-				};
-			} else {
-				throw new Error();
-			}
-		})();
-		if (p && p.recursive) {
-			var rv = [];
-			for (var i=0; i<children.length; i++) {
-				if (filter(children[i])) {
-					rv.push(children[i]);
-				}
-				if (children[i].get) {
-					var descendants = children[i].get(p);
-					rv.push.apply(rv, descendants);
-				}
-			}
-			return rv;
-		} else {
-			return children.filter(filter);
-		}
+		return filtering(children,p);
 	}
 	
 	this.insert = function(child,where) {
@@ -184,8 +197,8 @@ var Element = function(p) {
 var Document = function(p) {
 	var nodes = [];
 	
-	this.get = function(filter) {
-		return nodes.filter(filter);
+	this.get = function(p) {
+		return filtering(nodes,p);
 	}
 	
 	this.addNode = function(node) {
@@ -198,6 +211,7 @@ var Document = function(p) {
 };
 
 $exports.Text = Text;
+$exports.CdataSection = CdataSection;
 $exports.Element = Element;
 $exports.Document = Document;
 
