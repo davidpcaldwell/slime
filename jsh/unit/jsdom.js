@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var Node = function() {
 }
 
@@ -16,7 +28,7 @@ var Text = function(p) {
 var CdataSection = function(p) {
 	this.toString = function() {
 		return "<![CDATA[" + p + "]]>";
-	}	
+	}
 }
 
 var filtering = function(children,p) {
@@ -59,13 +71,13 @@ var Element = function(p) {
 	//	we need to update the child's parent property. When updating a child's parent property, we need to place it somewhere in
 	//	its parent's children. But most objects don't work this way. An object that is a property of another JavaScript object
 	//	cannot navigate to its parent. So we will try to implement the model in this way.
-	
+
 	this.name = p.name;
-	
+
 	var namespaces = (p.namespaces) ? p.namespaces : [];
 	var attributes = (p.attributes) ? p.attributes : [];
 	var children = (p.children) ? p.children : [];
-	
+
 	this.serialize = function(p) {
 		var scope = {};
 		var xmlns = "";
@@ -132,13 +144,13 @@ var Element = function(p) {
 		//	TODO	allow empty element model
 		return "<" + rv.name + rv.namespaces + rv.attributes + ">" + rv.content + "</" + rv.name + ">";
 	}
-	
+
 	this.toString = function() {
 		return this.serialize({
 			namespaces: {}
 		});
 	}
-	
+
 	this.getAttribute = function(p) {
 		var filter = (function() {
 			if (typeof(p) == "string") {
@@ -156,11 +168,11 @@ var Element = function(p) {
 		//	TODO	too many matches
 		return match[0].value;
 	}
-	
+
 	this.get = function(p) {
 		return filtering(children,p);
 	}
-	
+
 	this.insert = function(child,where) {
 		if (!where) {
 			this.append(child);
@@ -170,15 +182,15 @@ var Element = function(p) {
 			throw new Error("Unimplemented.");
 		}
 	}
-	
+
 	this.append = function(child) {
 		children.push(child);
 	}
-	
+
 	this.remove = function(p) {
 		var child;
 		if (p.recursive && p.node) {
-			child = p.node;			
+			child = p.node;
 		} else {
 			child = p;
 		}
@@ -190,21 +202,21 @@ var Element = function(p) {
 			if (p.recursive && children[i].remove) {
 				children[i].remove(p);
 			}
-		}			
+		}
 	}
 }
 
 var Document = function(p) {
 	var nodes = [];
-	
+
 	this.get = function(p) {
 		return filtering(nodes,p);
 	}
-	
+
 	this.addNode = function(node) {
 		nodes.push(node);
 	}
-	
+
 	this.toString = function() {
 		return nodes.join("");
 	}
@@ -218,7 +230,7 @@ $exports.Document = Document;
 $exports.filter = function(p) {
 	if (p && typeof(p.name) == "string") {
 		return function(node) {
-			return node.name && node.name.local == p.name;			
+			return node.name && node.name.local == p.name;
 		}
 	}
 }
@@ -278,7 +290,7 @@ $exports.E4X = new function() {
 		debugger;
 		throw new Error();
 	}
-	
+
 	this.toJsdom = function(xmllist) {
 		var rv = [];
 		for (var i=0; i<xmllist.length(); i++) {

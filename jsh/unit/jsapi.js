@@ -473,7 +473,7 @@ $exports.doc = function(p) {
 					{ local: "src", value: top + "api.js" }
 				]
 			}));
-			
+
 //			xhtml.ns::body.insertChildAfter(null,<a href={ top + "index.html" }>Documentation Home</a>);
 			var body = root.get(jsdom.filter({ name: "body" }))[0];
 			body.insert(new jsdom.Element({
