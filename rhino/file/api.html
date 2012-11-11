@@ -1223,88 +1223,9 @@ END LICENSE
 					</ul>
 				</div>
 			</li>
-			<li class="function">
+			<li class="function" jsapi:id="Searchpath" jsapi:reference="getApi('api.Searchpath.html').getElement('main')">
 				<div class="name">Searchpath</div>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<!--	TODO	should array of directory be allowed? array of string? mixture?	-->
-						<li class="value">
-							<span class="type">Array of <a href="#types.Pathname">Pathname</a></span>
-							<span>The list of paths to search.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type"><a href="#types.Searchpath">Searchpath</a></span>
-					<span>A <code>Searchpath</code> which searches the given <code>Pathname</code>s, in order.</span>
-				</div>
-				<div class="type">
-					<a class="type" name="types.Searchpath">Searchpath</a>
-					<span>
-						An object representing a search path in the local file system.
-						<!--	TODO	improve	-->
-					</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">pathnames</div>
-							<span class="type">Array of <a href="#types.Pathname">Pathname</a></span>
-							<span>The set of <code>Pathname</code>s that make up this search path.</span>
-						</li>
-						<li class="function">
-							<div class="name">toString</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">string</span>
-								<span>
-									A <code>string</code> representation of this <code>Searchpath</code>.
-									<!--	TODO	describe better	-->
-								</span>
-							</div>
-						</li>
-					</ul>
-				</div>
-				<script type="application/x.jsapi#tests">
-					scenario( new function() {
-						var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
-						var dir = filesystem.$unit.temporary(null, { directory: true });
-						var Searchpath = module.Searchpath;
-
-						this.name = "Searchpath";
-
-						this.execute = function(scope) {
-							var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
-							if (typeof(pathelements[0]) == "undefined") throw "No/0";
-							if (typeof(pathelements[1]) == "undefined") throw "No/1";
-							var searchpath = Searchpath(pathelements);
-							scope.test(
-								searchpath.toString()
-								== (
-									dir.getRelativePath("c").toString()
-									+ String( filesystem.$unit.getSearchpathSeparator() )
-									+ dir.getRelativePath("e").toString()
-								)
-							);
-							if (module.filesystems.cygwin) {
-								scope.scenario( new function() {
-									this.name = "Mixed paths";
-									this.execute = function(scope) {
-										var a = module.filesystems.os.Pathname("C:\\cygwin\\etc");
-										var b = module.filesystems.cygwin.Pathname("/usr/local/bin");
-										var searchpath = module.Searchpath([a,b]);
-										var upath = module.filesystems.cygwin.toUnix(searchpath);
-										var wpath = module.filesystems.cygwin.toWindows(searchpath);
-										scope.test( upath.toString() == "/etc:/usr/local/bin" );
-										scope.test( wpath.toString() == "C:\\cygwin\\etc;C:\\cygwin\\usr\\local\\bin" );
-										scope.test( searchpath.toString() == upath.toString() );
-									}
-								} );
-							}
-						}
-					} );
-				</script>
+				See <a href="api.Searchpath.html">detailed documentation</a>.
 			</li>
 		</ul>
 		<script type="application/x.jsapi#tests"><![CDATA[
