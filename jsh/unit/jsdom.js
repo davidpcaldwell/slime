@@ -115,18 +115,28 @@ var Element = function(p) {
 				return this.name.local;
 			}
 		}).call(this);
-		rv.namespaces = (function() {
-			if (namespaces.length == 0) return "";
-			return " " + namespaces.map(function(namespace) {
-				return ((namespace.prefix) ? "xmlns:" + namespace.prefix : "xmlns")
-					+ "=" + "\"" + namespace.uri + "\""
-				;
-			}).join(" ");
-		})();
 		rv.attributes = (function() {
 			if (attributes.length == 0) return "";
 			return " " + attributes.map(function(attribute) {
-				return attribute.local + "=" + "\"" + attribute.value + "\"";
+				if (attribute.namespace && typeof(scope[attribute.namespace]) == "undefined") {
+					var hasPrefix = function(prefix) {
+						for (var i=0; i<namespaces.length; i++) {
+							if (namespaces[i].prefix == prefix) return true;
+						}
+						return false;
+					};
+					var index = 0;
+					while(hasPrefix("jsdom_" + index)) {
+						index++;
+					}
+					namespaces.push({
+						prefix: "jsdom_" + index,
+						uri: attribute.namespace
+					});
+					scope[attribute.namespace] = "jsdom_" + index;
+				}
+				var ns = (attribute.namespace) ? scope[attribute.namespace] + ":" : "";
+				return ns + attribute.local + "=" + "\"" + attribute.value + "\"";
 			}).join(" ");
 		})();
 		rv.content = children.map(function(child) {
@@ -141,6 +151,14 @@ var Element = function(p) {
 				return child.toString();
 			}
 		}).join("");
+		rv.namespaces = (function() {
+			if (namespaces.length == 0) return "";
+			return " " + namespaces.map(function(namespace) {
+				return ((namespace.prefix) ? "xmlns:" + namespace.prefix : "xmlns")
+					+ "=" + "\"" + namespace.uri + "\""
+				;
+			}).join(" ");
+		})();
 		//	TODO	allow empty element model
 		return "<" + rv.name + rv.namespaces + rv.attributes + ">" + rv.content + "</" + rv.name + ">";
 	}

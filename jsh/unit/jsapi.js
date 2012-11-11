@@ -536,7 +536,10 @@ $exports.doc = function(p) {
 //			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
 			for (var i=0; i<withJsapiReference.length; i++) {
 				var e = withJsapiReference[i];
-				var resolved = declaration.resolve(XML(e.toString()));
+				var resolved = declaration.resolve(XML(e.serialize({
+					namespaces: {
+					}
+				})));
 				if (resolved) {
 //					e.setChildren(resolved.children());
 					while(e.get().length) {
