@@ -14,6 +14,7 @@ var Filesystem = function(implementation) {
 	this.Searchpath = function(array) {
 		return new $context.Searchpath({ filesystem: implementation, array: array });
 	}
+	this.Searchpath.prototype = $context.Searchpath.prototype;
 	this.Searchpath.parse = function(string) {
 		if (!string) {
 			throw new Error("No string to parse in Searchpath.parse");

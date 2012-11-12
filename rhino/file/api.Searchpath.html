@@ -62,6 +62,11 @@ END LICENSE
 		</ul>
 	</div>
 	<script type="application/x.jsapi#tests">
+		var x = module.Searchpath([]);
+		test(x instanceof module.Searchpath);
+		test(x instanceof module.filesystems.os.Searchpath);
+	</script>
+	<script type="application/x.jsapi#tests">
 		scenario( new function() {
 			var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 			var dir = filesystem.$unit.temporary(null, { directory: true });
