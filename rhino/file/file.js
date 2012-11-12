@@ -599,10 +599,15 @@ var Searchpath = function(parameters) {
 
 	this.toString = function() {
 		return getPathnames().map( function(pathname) {
-			if (filesystem.$Searchpath && filesystem.$Searchpath.mapPathname) {
-				pathname = filesystem.$Searchpath.mapPathname(pathname);
+			if (!filesystem.java) {
+				debugger;
 			}
-			return pathname.toString();
+			var mapped = filesystem.java.adapt(pathname.java.adapt());
+			return mapped.toString();
+//			if (filesystem.$Searchpath && filesystem.$Searchpath.mapPathname) {
+//				pathname = filesystem.$Searchpath.mapPathname(pathname);
+//			}
+//			return pathname.toString();
 		} ).join(filesystem.SEARCHPATH_SEPARATOR);
 	}
 }
