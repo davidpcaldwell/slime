@@ -274,7 +274,7 @@ var System = function(peer,PARENT) {
 	this.$Searchpath = {
 		mapPathname: mapPathnameFunction(PARENT)
 	}
-	
+
 	this.java = new function() {
 		this.adapt = function(_jfile) {
 			//	TODO	if no arguments, may want to someday consider returning the native peer of this object

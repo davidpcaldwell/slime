@@ -596,7 +596,7 @@ var Searchpath = function(parameters) {
 
 	this.getPathnames = getPathnames;
 	$api.deprecate(this, "getPathnames");
-	
+
 	this.getCommand = function(name) {
 		for (var i=0; i<array.length; i++) {
 			if (array[i].directory) {
