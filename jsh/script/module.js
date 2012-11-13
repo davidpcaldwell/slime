@@ -40,9 +40,6 @@ if ($context.loader) {
 $exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
 	$filesystem: $context.api.file.filesystem,
-	$workingDirectory: $context.api.file.workingDirectory,
-	//	TODO	the below would remove the dependency on the deprecated variable
-	//	$workingDirectory: $context.workingDirectory, might be Pathname not directory so may need to be switched in context sent
-	//		by jsh loader
+	$workingDirectory: $context.workingDirectory,
 	$Pathname: $context.api.file.Pathname
 }).getopts;
