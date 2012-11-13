@@ -50,7 +50,12 @@ $exports.console = new function() {
 			if (test.success == null) {
 				$context.console.println(test.error);
 				if (test.error.stack) {
-					$context.console.println(test.error.stack.join("\n"));
+					if (test.error.stack.join) {
+						$context.console.println(test.error.stack.join("\n"));
+					} else {
+						//	TODO	When running jsh/unit tests on FreeBSD this property is a string, is it ever an array? Harmonize
+						$context.console.println(test.error.stack);
+					}
 				}
 			}
 			stack[stack.length-1].success = false;
