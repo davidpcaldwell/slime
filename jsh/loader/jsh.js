@@ -290,6 +290,10 @@ this.jsh = new function() {
 			java: java
 		}
 
+		if ($shell.environment.PATHEXT) {
+			context.pathext = $shell.environment.PATHEXT.split(";");
+		}
+
 		context.stdio = new function() {
 			this.$out = $host.getStdio().getStandardOutput();
 			this.$in = $host.getStdio().getStandardError();

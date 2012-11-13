@@ -19,7 +19,12 @@ var isPathname = function(item) {
 	return item && item.java && item.java.adapt() && $context.api.java.isJavaType(Packages.java.io.File)(item.java.adapt());
 }
 
+var prototypes = {
+	Searchpath: {}
+};
+
 var file = $loader.file("file.js", {
+	pathext: $context.pathext,
 	isPathname: isPathname,
 	defined: $context.api.js.defined,
 	constant: $context.api.js.constant,
@@ -27,6 +32,7 @@ var file = $loader.file("file.js", {
 	Streams: $context.api.io.Streams,
 	Resource: $context.api.io.Resource
 });
+file.Searchpath.prototype = prototypes.Searchpath;
 
 //	TODO	separate out Cygwin and make it less tightly bound with the rest of this
 var os = $loader.file("os.js", new function() {
@@ -75,27 +81,20 @@ $exports.Pathname = function(parameters) {
 };
 $exports.Searchpath = function(parameters) {
 	if (this.constructor != arguments.callee) {
-		var ctor = arguments.callee;
-
-		var decorator = function(rv) {
-			rv.constructor = ctor;
-			return rv;
-		}
-
-		//	not called as constructor but as function
-		//	perform a "cast"
 		if (parameters instanceof Array) {
-			return decorator($exports.filesystem.Searchpath(parameters));
+			return $exports.filesystem.Searchpath(parameters);
 		} else {
 			throw new TypeError("Illegal argument to Searchpath(): " + parameters);
 		}
 	} else {
-		$context.api.java.fail("Cannot invoke Searchpath as constructor.");
+		throw new Error("Cannot invoke Searchpath as constructor.");
 	}
 };
 $exports.Searchpath.createEmpty = function() {
 	return file.Searchpath.createEmpty.apply(this,arguments);
 }
+$api.deprecate($exports.Searchpath,"createEmpty");
+$exports.Searchpath.prototype = prototypes.Searchpath;
 
 //	Possibly used for initial attempt to produce HTTP filesystem, for example
 $exports.Filesystem = os.Filesystem;
