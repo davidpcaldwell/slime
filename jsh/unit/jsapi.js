@@ -122,7 +122,7 @@ var loadApiHtml = function(file) {
 	}
 	if (!arguments.callee.cache[file.pathname.toString()]) {
 		arguments.callee.cache[file.pathname.toString()] = (function() {
-			jsh.shell.echo("Reading api.html: " + file.pathname);
+			if (false) jsh.shell.echo("Reading api.html: " + file.pathname);
 			var html = file.read(XML);
 			if (html.length() > 1) {
 				html = (function(list) {
