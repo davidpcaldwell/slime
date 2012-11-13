@@ -59,13 +59,49 @@ END LICENSE
 					</span>
 				</div>
 			</li>
+			<li class="function">
+				<div class="name">getCommand</div>
+				<span>Returns a file representing a given command within this Searchpath.</span>
+				<div>
+					The implementation searches each directory within this Searchpath, looking for a file that corresponds to the
+					given command. If the <code>pathext</code> property of the module context is specified, each extension in the
+					<code>pathext</code> variable is appended to the given command name in succession in an attempt to locate the
+					file. If this variable is not present, the system simply looks for raw files with the given name in each
+					directory in the Searchpath.
+					<!--	TODO	could be written more clearly	-->
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A name representing an executable command.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type"><a href="./api.html#types.file">file</a></span>
+					<span>
+						A file object corresponding to the given command, or <code>null</code> if no corresponding command could
+						be found in this Searchpath.
+					</span>
+				</div>
+			</li>
 		</ul>
 	</div>
-	<script type="application/x.jsapi#tests">
+	<script type="application/x.jsapi#tests"><![CDATA[
 		var x = module.Searchpath([]);
 		test(x instanceof module.Searchpath);
 		test(x instanceof module.filesystems.os.Searchpath);
-	</script>
+		var jhome = jsh.shell.java.home;
+		var jdk = module.Searchpath([
+			jhome.getRelativePath("bin")
+		]);
+		debugger;
+		var command = jdk.getCommand("java");
+		test(typeof(command) == "object" && command && typeof(command.pathname) == "object");
+	]]></script>
 	<script type="application/x.jsapi#tests">
 		scenario( new function() {
 			var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;

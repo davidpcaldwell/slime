@@ -24,6 +24,7 @@ var prototypes = {
 };
 
 var file = $loader.file("file.js", {
+	pathext: $context.pathext,
 	isPathname: isPathname,
 	defined: $context.api.js.defined,
 	constant: $context.api.js.constant,
@@ -80,18 +81,8 @@ $exports.Pathname = function(parameters) {
 };
 $exports.Searchpath = function(parameters) {
 	if (this.constructor != arguments.callee) {
-		var ctor = arguments.callee;
-
-		var decorator = function(rv) {
-			rv.prototype = $exports.Searchpath.prototype;
-			rv.constructor = ctor;
-			return rv;
-		}
-
-		//	not called as constructor but as function
-		//	perform a "cast"
 		if (parameters instanceof Array) {
-			return decorator($exports.filesystem.Searchpath(parameters));
+			return $exports.filesystem.Searchpath(parameters);
 		} else {
 			throw new TypeError("Illegal argument to Searchpath(): " + parameters);
 		}

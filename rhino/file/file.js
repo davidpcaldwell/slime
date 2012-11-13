@@ -596,6 +596,25 @@ var Searchpath = function(parameters) {
 
 	this.getPathnames = getPathnames;
 	$api.deprecate(this, "getPathnames");
+	
+	this.getCommand = function(name) {
+		for (var i=0; i<array.length; i++) {
+			if (array[i].directory) {
+				if ($context.pathext) {
+					for (var j=0; j<$context.pathext.length; j++) {
+						if (array[i].directory.getFile(name + $context.pathext[j])) {
+							return array[i].directory.getFile(name + $context.pathext[j]);
+						}
+					}
+				} else {
+					if (array[i].directory.getFile(name)) {
+						return array[i].directory.getFile(name);
+					}
+				}
+			}
+		}
+		return null;
+	}
 
 	this.toString = function() {
 		return getPathnames().map( function(pathname) {
@@ -604,10 +623,6 @@ var Searchpath = function(parameters) {
 			}
 			var mapped = filesystem.java.adapt(pathname.java.adapt());
 			return mapped.toString();
-//			if (filesystem.$Searchpath && filesystem.$Searchpath.mapPathname) {
-//				pathname = filesystem.$Searchpath.mapPathname(pathname);
-//			}
-//			return pathname.toString();
 		} ).join(filesystem.SEARCHPATH_SEPARATOR);
 	}
 }

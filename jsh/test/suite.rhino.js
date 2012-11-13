@@ -345,3 +345,6 @@ testCommandOutput("jsh.shell/stdio.3.jsh.js", function(options) {
 }, {
 	stdin: input_abcdefghij()
 });
+
+testCommandOutput("jsh.file/Searchpath.jsh.js", function(options) {
+})

@@ -41,6 +41,14 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
+			<li class="value">
+				<div class="name">pathext</div>
+				<span class="type">Array of string</span>
+				<span>
+					A list of file extensions that should be considered "executable." Corresponds to the PATHEXT environment
+					variable present on Microsoft Windows systems.
+				</span>
+			</li>
 			<li class="object">
 				<div class="name">cygwin</div>
 				<span>
@@ -66,6 +74,9 @@ END LICENSE
 			(function() {
 				var $Context = function(p) {
 					this.api = arguments.callee.api;
+					if (jsh.shell.environment.PATHEXT) {
+						this.pathext = jsh.shell.environment.PATHEXT.split(";");
+					}
 					this.$pwd = String(jsh.shell.properties.user.dir);
 					this.addFinalizer = jsh.loader.addFinalizer;
 
