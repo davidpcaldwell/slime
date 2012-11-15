@@ -34,6 +34,7 @@ plugin({
 				tomcat.setBaseDir(base);
 				tomcat.setPort(port);
 				var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
+				var server = $loader.file("server.js");
 				Packages.org.apache.catalina.startup.Tomcat.addServlet(context,"script",new JavaAdapter(
 					Packages.javax.servlet.http.HttpServlet,
 					new function() {
@@ -42,16 +43,16 @@ plugin({
 						var script;
 						
 						this.init = function() {
-							script = jsh.loader.module(p.script, new function() {
-							});
+							var scope = $loader.file("api.js");
+							scope.$loader = new jsh.script.Loader(p.script.file.parent);
+							scope.$exports = {};
+							jsh.loader.run(p.script, scope);
+							script = scope.$exports;
 						};
-						
-						var Request = function(_request) {
-						}
 						
 						this.service = function(_request,_response) {
 							try {
-								var response = script.handle(new Request(_request));
+								var response = script.handle(new server.Request(_request));
 								if (typeof(response) == "undefined") {
 									_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 								} else if (response === null) {
