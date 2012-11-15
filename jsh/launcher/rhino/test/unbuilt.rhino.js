@@ -136,7 +136,7 @@ args.push(
 	{
 		env: new (function() {
 			for (var x in env) {
-				if (x == "JSH_SCRIPT_DEBUGGER") {
+				if (x == "JSH_SCRIPT_DEBUGGER" || x == "JSH_PLUGINS") {
 					this[x] = env[x];
 				} else if (/^JSH_/.test(x)) {
 				} else {
