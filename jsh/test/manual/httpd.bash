@@ -8,6 +8,7 @@ if [ -z "$TOMCAT_HOME" ]; then
 fi
 export JSH_SLIME_SRC=$(dirname $0)/../../..
 cd $JSH_SLIME_SRC
+JSH_SLIME_SRC="."
 TOMCAT_CLASSPATH="${TOMCAT_HOME}/bin/tomcat-juli.jar"
 TOMCAT_CLASSPATH="${TOMCAT_CLASSPATH}:${TOMCAT_HOME}/lib/servlet-api.jar"
 TOMCAT_CLASSPATH="${TOMCAT_CLASSPATH}:${TOMCAT_HOME}/lib/tomcat-api.jar"
