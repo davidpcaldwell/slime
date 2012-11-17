@@ -61,14 +61,22 @@ this.jsh = new function() {
 			}
 		}
 
+		var Loader = function(p) {
+			var rv = new rhinoLoader.Loader(p);
+			rv.resource = (function(target) {
+				return function(path) {
+					var _in = target._resource(path);
+					if (!_in) return null;
+					return jsh.io.java.adapt(_in);
+				}
+			})(rv);
+			return rv;
+		}
+		
 		this.plugin = new function() {
 			this.read = function(_code,scope) {
-				var loader = new rhinoLoader.Loader({ _source: _code.getScripts() });
+				var loader = new Loader({ _source: _code.getScripts() });
 				return loader.run("plugin.jsh.js", scope);
-//				return rhinoLoader.run({
-//					_source: _code.getScripts(),
-//					path: "plugin.jsh.js"
-//				}, scope);
 			};
 			this.file = function(_code,path,context) {
 				return rhinoLoader.file(
@@ -80,15 +88,8 @@ this.jsh = new function() {
 				);
 			};
 			this.module = function(_code,main,context) {
-				var loader = new rhinoLoader.Loader({ _code: _code });
+				var loader = new Loader({ _code: _code });
 				return loader.module(main, { $context: context });
-//				return rhinoLoader.module(
-//					{
-//						_code: _code,
-//						main: main
-//					},
-//					{ $context: context }
-//				);
 			};
 			this.addClasses = function(_code) {
 				rhinoLoader.classpath.add(_code.getClasses());
@@ -126,12 +127,12 @@ this.jsh = new function() {
 			}
 			if (format.slime) {
 				var descriptor = rhinoLoader.Module.packed(format.slime,format.name);
-				var loader = new rhinoLoader.Loader({ _code: descriptor._code });
+				var loader = new Loader({ _code: descriptor._code });
 				return loader.module(format.name,p);
 //				return rhinoLoader.module(rhinoLoader.Module.packed(format.slime,format.name),p);
 			} else if (format.base) {
 				var descriptor = rhinoLoader.Module.unpacked(format.base,format.name);
-				var loader = new rhinoLoader.Loader({ _code: descriptor._code });
+				var loader = new Loader({ _code: descriptor._code });
 				return loader.module(format.name,p);
 //				return rhinoLoader.module(rhinoLoader.Module.unpacked(format.base,format.name),p);
 			} else {
@@ -149,18 +150,6 @@ this.jsh = new function() {
 
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
-		}
-
-		var Loader = function(_source) {
-			var rv = new rhinoLoader.Loader({ _source: _source });
-			rv.resource = (function(target) {
-				return function(path) {
-					var _in = target._resource(path);
-					if (!_in) return null;
-					return jsh.io.java.adapt(_in);
-				}
-			})(rv);
-			return rv;
 		}
 
 		var self = this;
@@ -227,7 +216,7 @@ this.jsh = new function() {
 //$api.experimental($exports,"Loader");
 
 		if ($host.getLoader().getPackagedCode()) {
-			this.bundled = new Loader($host.getLoader().getPackagedCode());
+			this.bundled = new Loader({ _source: $host.getLoader().getPackagedCode() });
 		}
 	}
 
