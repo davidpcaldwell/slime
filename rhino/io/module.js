@@ -416,3 +416,14 @@ $exports.Reader = Reader;
 $exports.Writer = Writer;
 $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
+
+$exports.Loader = function(rv) {
+	rv.resource = (function(target) {
+		return function(path) {
+			var _in = target._resource(path);
+			if (!_in) return null;
+			return new InputStream(_in);
+		}
+	})(rv);
+	return rv;
+}

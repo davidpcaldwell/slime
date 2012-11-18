@@ -63,14 +63,7 @@ this.jsh = new function() {
 
 		var Loader = function(p) {
 			var rv = new rhinoLoader.Loader(p);
-			rv.resource = (function(target) {
-				return function(path) {
-					var _in = target._resource(path);
-					if (!_in) return null;
-					return jsh.io.java.adapt(_in);
-				}
-			})(rv);
-			return rv;
+			return jsh.io.Loader(rv);
 		}
 		
 		this.plugin = new function() {
@@ -215,8 +208,12 @@ this.jsh = new function() {
 //}
 //$api.experimental($exports,"Loader");
 
-		if ($host.getLoader().getPackagedCode()) {
-			this.bundled = new Loader({ _source: $host.getLoader().getPackagedCode() });
+		this.getBundled = function() {
+			if ($host.getLoader().getPackagedCode()) {
+				return new Loader({ _source: $host.getLoader().getPackagedCode() });
+			} else {
+				return function(){}();
+			}
 		}
 	}
 
@@ -226,10 +223,10 @@ this.jsh = new function() {
 		this.module = loader.module;
 		this.namespace = loader.namespace;
 
-		if (loader.bundled) {
-			this.bundled = loader.bundled;
-			loader.$api.deprecate(this,"bundled");
-		}
+//		if (loader.bundled) {
+//			this.bundled = loader.bundled;
+//			loader.$api.deprecate(this,"bundled");
+//		}
 
 		this.addFinalizer = function(f) {
 			addFinalizer(f);
@@ -373,7 +370,7 @@ this.jsh = new function() {
 			})(),
 			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
 			Loader: loader.Loader,
-			loader: loader.bundled
+			loader: loader.getBundled()
 		},"jsh/script");
 		jsh.shell.getopts = loader.$api.deprecate(rv.getopts);
 		return rv;
