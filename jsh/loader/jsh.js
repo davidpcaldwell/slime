@@ -71,6 +71,16 @@ this.jsh = new function() {
 				var loader = new Loader({ _source: _code.getScripts() });
 				return loader.run("plugin.jsh.js", scope);
 			};
+			this.run = function(_code,path,scope,target) {
+				rhinoLoader.run(
+					{
+						_source: _code.getScripts(),
+						path: path
+					},
+					scope,
+					target
+				);
+			};
 			this.file = function(_code,path,context) {
 				return rhinoLoader.file(
 					{
@@ -409,6 +419,9 @@ this.jsh = new function() {
 					}
 					this.module = function(path,context) {
 						return loader.plugin.module(_code,path,context);
+					}
+					this.run = function(path,scope,target) {
+						return loader.plugin.run(_code,path,scope,target);
 					}
 				})(_code);
 				loader.plugin.read(_code,scope);

@@ -1,7 +1,3 @@
-if (typeof(eval("$context")) == "object") {
-	$host = $context;
-}
-
 $exports.Response = function() {
 };
 

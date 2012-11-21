@@ -43,30 +43,19 @@ plugin({
 						var script;
 						
 						this.init = function() {
+							var applicationScope = {};
 							var apiScope = {
 								$host: new function() {									
 								},
-								$exports: {}
+								$exports: applicationScope
 							};
-							debugger;
 							//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this
 							//			if (false) and delete the $context/$host rigamarole at the top of api.js
-							if (false) {
-								$loader.run("api.js", apiScope);
-							} else {
-								var apiExports = $loader.file("api.js", apiScope.$host);
-								for (var x in apiExports) {
-									apiScope.$exports[x] = apiExports[x];
-								}
-							}
-							var scope = {};
-							for (var x in apiScope.$exports) {
-								scope[x] = apiScope.$exports[x];
-							}
-							scope.$loader = new jsh.script.Loader(p.script.file.parent);
-							scope.$exports = {};
-							jsh.loader.run(p.script, scope);
-							script = scope.$exports;
+							$loader.run("api.js", apiScope);
+							applicationScope.$loader = new jsh.script.Loader(p.script.file.parent);
+							applicationScope.$exports = {};
+							jsh.loader.run(p.script, applicationScope);
+							script = applicationScope.$exports;
 						};
 						
 						this.service = function(_request,_response) {
