@@ -1,5 +1,5 @@
 var tomcat = new jsh.httpd.Tomcat({
-	script: jsh.script.getRelativePath("httpd.js")
+	script: jsh.script.getRelativePath("httpd.servlet.js")
 });
 jsh.shell.echo("Tomcat port: " + tomcat.port);
 var client = new jsh.http.Client();

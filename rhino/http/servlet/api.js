@@ -1,7 +1,11 @@
-$exports.Response = function() {
+$exports.httpd = {};
+
+$exports.httpd.http = {};
+
+$exports.httpd.http.Response = function() {
 };
 
-$exports.Response.text = function(string) {
+$exports.httpd.http.Response.text = function(string) {
 	return {
 		status: {
 			code: 200
