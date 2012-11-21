@@ -33,55 +33,34 @@ public class Shell {
 	}
 
 	public static abstract class Script {
-		public static Script create(final File f) {
+		public static Engine.Source create(final File f) {
 			if (!f.exists()) return null;
-			return new Script() {
-				public String getName() {
-					try {
-						return f.getCanonicalPath();
-					} catch (java.io.IOException e) {
-						throw new RuntimeException(e);
-					}
-				}
-
-				public Reader getReader() {
-					try {
-						return new FileReader(f);
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			};
+			return Engine.Source.create(f);
 		}
 
-		public static Script create(final String name, final Reader reader) {
-			return new Script() {
-				public String getName() {
-					return name;
-				}
-
-				public Reader getReader() {
-					return reader;
-				}
-			};
+		public static Engine.Source create(final String name, final Reader reader) {
+			return Engine.Source.create(name, reader);
 		}
 
-		public static Script create(String name, InputStream in) {
+		public static Engine.Source create(String name, InputStream in) {
 			return create(name, new InputStreamReader(in));
 		}
-
-		public abstract String getName();
-		public abstract Reader getReader();
-
-		final Engine.Source toSource() {
-			return Engine.Source.create(getName(), getReader());
+		
+		private Script() {
 		}
+//
+//		public abstract String getName();
+//		public abstract Reader getReader();
+//
+//		final Engine.Source toSource() {
+//			return Engine.Source.create(getName(), getReader());
+//		}
 	}
 
 	public static abstract class Installation {
-		public abstract Script getPlatformLoader();
-		public abstract Script getRhinoLoader();
-		public abstract Script getJshLoader();
+		public abstract Engine.Source getPlatformLoader();
+		public abstract Engine.Source getRhinoLoader();
+		public abstract Engine.Source getJshLoader();
 
 		/**
 		 *	Specifies where code for "shell modules" -- modules included with jsh itself -- can be found.
@@ -216,17 +195,21 @@ public class Shell {
 
 	public static abstract class Invocation {
 		public static abstract class Script {
-			private static Script create(final Shell.Script delegate, final File file) {
+			private static Script create(final Engine.Source delegate, final File file) {
 				return new Script() {
 					@Override
 					public File getFile() {
 						return file;
 					}
-
-					@Override
-					public String getName() {
-						return delegate.getName();
+					
+					public Engine.Source getSource() {
+						return delegate;
 					}
+
+//					@Override
+//					public String getName() {
+//						return delegate.getName();
+//					}
 
 					@Override
 					public Reader getReader() {
@@ -239,11 +222,11 @@ public class Shell {
 				return create(Shell.Script.create(file), file);
 			}
 
-			static Script create(final Shell.Script delegate) {
+			static Script create(final Engine.Source delegate) {
 				return create(delegate, null);
 			}
 
-			public abstract String getName();
+//			public abstract String getName();
 			/**
 				Returns the <code>java.io.File</code> object corresponding to the main script.
 
@@ -252,6 +235,7 @@ public class Shell {
 			*/
 			public abstract File getFile();
 			public abstract Reader getReader();
+			public abstract Engine.Source getSource();
 		}
 
 		public abstract Script getScript();
@@ -302,13 +286,13 @@ public class Shell {
 			jsh.setDontenum(true);
 			program.set(jsh);
 
-			Script jshJs = installation.getJshLoader();
+			Engine.Source jshJs = installation.getJshLoader();
 			if (jshJs == null) {
 				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
 			}
-			program.add(jshJs.toSource());
+			program.add(jshJs);
 			//	TODO	jsh could execute this below
-			program.add(Engine.Source.create(invocation.getScript().getName(), invocation.getScript().getReader()));
+			program.add(invocation.getScript().getSource());
 			return program;
 		}
 

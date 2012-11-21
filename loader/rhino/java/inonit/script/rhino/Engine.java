@@ -559,6 +559,8 @@ public class Engine {
 
 		abstract String getSourceName();
 		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
+		
+		public abstract Reader getReader();
 
 		public final void setDebug(boolean debug) {
 			this.debug = debug;
@@ -606,6 +608,10 @@ public class Engine {
 			ReaderSource(String id, java.io.Reader reader) {
 				this.id = id;
 				this.reader = reader;
+			}
+			
+			public Reader getReader() {
+				return reader;
 			}
 
 			final String getSourceName() {
