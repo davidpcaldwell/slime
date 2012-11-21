@@ -32,31 +32,6 @@ public class Shell {
 		return Host.create(installation, configuration, invocation).load();
 	}
 
-	public static abstract class Script {
-		public static Engine.Source create(final File f) {
-			if (!f.exists()) return null;
-			return Engine.Source.create(f);
-		}
-
-		public static Engine.Source create(final String name, final Reader reader) {
-			return Engine.Source.create(name, reader);
-		}
-
-		public static Engine.Source create(String name, InputStream in) {
-			return create(name, new InputStreamReader(in));
-		}
-		
-		private Script() {
-		}
-//
-//		public abstract String getName();
-//		public abstract Reader getReader();
-//
-//		final Engine.Source toSource() {
-//			return Engine.Source.create(getName(), getReader());
-//		}
-	}
-
 	public static abstract class Installation {
 		public abstract Engine.Source getPlatformLoader();
 		public abstract Engine.Source getRhinoLoader();
@@ -219,7 +194,7 @@ public class Shell {
 			}
 
 			static Script create(File file) {
-				return create(Shell.Script.create(file), file);
+				return create(Engine.Source.create(file), file);
 			}
 
 			static Script create(final Engine.Source delegate) {

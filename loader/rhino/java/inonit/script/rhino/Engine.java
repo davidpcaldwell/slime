@@ -532,6 +532,10 @@ public class Engine {
 			return new ReaderSource(sourceName, reader);
 		}
 
+		public static Engine.Source create(String name, InputStream in) {
+			return create(name, new InputStreamReader(in));
+		}
+		
 		public static Source create(String sourceName, String s) {
 			return new ReaderSource(sourceName, new StringReader(s));
 		}
