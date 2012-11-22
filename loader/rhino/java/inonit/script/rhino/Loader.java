@@ -61,11 +61,11 @@ public abstract class Loader {
 			loader.getEngine().script(name, in, scope, target);
 		}
 	}
-
-	public final Scriptable initialize(Engine engine) throws IOException {
+	
+	public static Scriptable load(Loader loader) throws IOException {
 		Engine.Program program = new Engine.Program();
-		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(this))));
-		program.add(Engine.Source.create("<rhino loader>", this.getRhinoCode()));
-		return (Scriptable)engine.execute(program);
+		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(loader))));
+		program.add(Engine.Source.create("<rhino loader>", loader.getRhinoCode()));
+		return (Scriptable)loader.getEngine().execute(program);		
 	}
 }
