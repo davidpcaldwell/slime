@@ -2,6 +2,8 @@ var Request = function(_request) {
 }
 
 $exports.Servlet = function(script) {
+	var _streams = new Packages.inonit.script.runtime.io.Streams();
+	
 	this.service = function(_request,_response) {
 		try {
 			var response = script.handle(new Request(_request));

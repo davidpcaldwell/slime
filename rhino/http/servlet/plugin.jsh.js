@@ -39,21 +39,20 @@ plugin({
 					Packages.javax.servlet.http.HttpServlet,
 					new function() {
 						//	TODO	could use jsh.io here
-						var _streams = new Packages.inonit.script.runtime.io.Streams();
 						var servlet;
 						
 						this.init = function() {
 							var apiScope = {
-								$host: new function() {									
-								},
-								$loader: new jsh.script.Loader(p.script.file.parent),
-								$code: (function() {
-									//	TODO	basically need a rhino-loader-compatible object to be invoked via $loader.run()
-//									throw new Error();
-									return p.script;
-								})(),
-								register: function(implementation) {
-									servlet = new server.Servlet(implementation);
+								$host: new function() {
+									this.register = function(implementation) {
+										servlet = new server.Servlet(implementation);										
+									};
+									
+									this.loaders = {
+										script: new jsh.script.Loader(p.script.file.parent)
+									};
+									
+									this.code = p.script;
 								}
 							};
 							//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this

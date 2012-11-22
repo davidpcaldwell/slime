@@ -1,9 +1,38 @@
 var scope = {
-	$loader: $loader,
 	$exports: {}
 };
 
+var $loader = (function() {
+	if ($host.getResource) {
+		throw new Error("Unimplemented");
+		//	servlet container, determine webapp path and load relative to that
+	} else if ($host.loaders) {
+		return $host.loaders.script;
+	} else {
+		throw new Error();
+	}
+})();
+
+var $code = (function() {
+	if ($host.getResource && $host.getMainResourcePath) {
+		throw new Error("Unimplemented");
+	} else if ($host.code) {
+		return $host.code;
+	} else {
+		throw new Error();
+	}
+})();
+
 scope.httpd = {};
+
+scope.httpd.loader = (function() {
+	if ($host.getResource) {
+		throw new Error("Unimplemented");
+		//	servlet container, determine webapp path and load relative to that
+	} else if ($host.loaders) {
+		return $host.loaders.container;
+	}
+})();
 
 scope.httpd.http = {};
 
@@ -23,5 +52,10 @@ scope.httpd.http.Response.text = function(string) {
 	};	
 }
 
+scope.$loader = (function() {
+	//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the
+	//			global loader; in the jsh embedding, it should resolve them relative to the current directory of the script
+})();
+
 $loader.run($code, scope);
-register(scope.$exports);
+$host.register(scope.$exports);
