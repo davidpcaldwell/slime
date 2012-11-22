@@ -43,19 +43,22 @@ plugin({
 						var servlet;
 						
 						this.init = function() {
-							var applicationScope = {};
 							var apiScope = {
 								$host: new function() {									
 								},
-								$exports: applicationScope
+								$loader: new jsh.script.Loader(p.script.file.parent),
+								$code: (function() {
+									//	TODO	basically need a rhino-loader-compatible object to be invoked via $loader.run()
+//									throw new Error();
+									return p.script;
+								})(),
+								register: function(implementation) {
+									servlet = new server.Servlet(implementation);
+								}
 							};
 							//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this
 							//			if (false) and delete the $context/$host rigamarole at the top of api.js
 							$loader.run("api.js", apiScope);
-							applicationScope.$loader = new jsh.script.Loader(p.script.file.parent);
-							applicationScope.$exports = {};
-							jsh.loader.run(p.script, applicationScope);
-							servlet = new server.Servlet(applicationScope.$exports);
 						};
 						
 						this.service = function(_request,_response) {

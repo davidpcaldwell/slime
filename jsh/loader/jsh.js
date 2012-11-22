@@ -167,7 +167,9 @@ this.jsh = new function() {
 				}
 
 				var rv = toArray.apply(null, arguments);
-				rv[0] = directory.getRelativePath(arguments[0]);
+				if (typeof(arguments[0]) == "string") {
+					rv[0] = directory.getRelativePath(arguments[0]);
+				}
 				return rv;
 			}
 

@@ -1,11 +1,16 @@
-$exports.httpd = {};
-
-$exports.httpd.http = {};
-
-$exports.httpd.http.Response = function() {
+var scope = {
+	$loader: $loader,
+	$exports: {}
 };
 
-$exports.httpd.http.Response.text = function(string) {
+scope.httpd = {};
+
+scope.httpd.http = {};
+
+scope.httpd.http.Response = function() {
+};
+
+scope.httpd.http.Response.text = function(string) {
 	return {
 		status: {
 			code: 200
@@ -17,3 +22,6 @@ $exports.httpd.http.Response.text = function(string) {
 		}
 	};	
 }
+
+$loader.run($code, scope);
+register(scope.$exports);
