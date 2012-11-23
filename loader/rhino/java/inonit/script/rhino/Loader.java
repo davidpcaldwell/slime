@@ -20,6 +20,7 @@ public abstract class Loader {
 	public abstract String getPlatformCode() throws IOException;
 	public abstract String getRhinoCode() throws IOException;
 
+	//	Used in literal.js to support operations on the class loader
 	public static abstract class Classpath {
 		public abstract void append(Code.Source code);
 
@@ -60,6 +61,38 @@ public abstract class Loader {
 		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
 			loader.getEngine().script(name, in, scope, target);
 		}
+	}
+	
+	public static class Classes extends ClassLoader {
+		public static Classes create(ClassLoader delegate) {
+			return new Classes(delegate);
+		}
+		
+		private ClassLoader current;
+
+		Classes(ClassLoader delegate) {
+			this.current = delegate;
+		}
+
+		protected Class findClass(String name) throws ClassNotFoundException {
+			return current.loadClass(name);
+		}
+
+		public Loader.Classpath toLoaderClasspath() {
+			return new Loader.Classpath() {
+				@Override public void append(Code.Source classes) {
+					current = classes.getClassLoader(current);
+				}
+
+				@Override public Class getClass(String name) {
+					try {
+						return Classes.this.loadClass(name);
+					} catch (ClassNotFoundException e) {
+						return null;
+					}
+				}
+			};
+		}		
 	}
 	
 	public static Scriptable load(Loader loader) throws IOException {

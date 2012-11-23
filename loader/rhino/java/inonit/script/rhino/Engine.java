@@ -199,7 +199,6 @@ public class Engine {
 
 	public static abstract class Configuration {
 		public static final Configuration DEFAULT = new Configuration() {
-
 			@Override public ClassLoader getApplicationClassLoader() {
 				return null;
 			}

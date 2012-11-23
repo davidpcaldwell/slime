@@ -97,56 +97,18 @@ public class Shell {
 		public abstract Map getEnvironment();
 		public abstract Stdio getStdio();
 
-		static abstract class Classpath extends ClassLoader {
-			static Classpath create(ClassLoader delegate) {
-				return new ModulesClasspath(delegate);
-			}
-
-			abstract Loader.Classpath toLoaderClasspath();
-		}
-
-		private static class ModulesClasspath extends Classpath {
-			private ClassLoader current;
-
-			ModulesClasspath(ClassLoader delegate) {
-				this.current = delegate;
-			}
-
-			protected Class findClass(String name) throws ClassNotFoundException {
-				return current.loadClass(name);
-			}
-
-			public Loader.Classpath toLoaderClasspath() {
-				return new Loader.Classpath() {
-					@Override public void append(Code.Source classes) {
-						current = classes.getClassLoader(current);
-					}
-
-					@Override public Class getClass(String name) {
-						try {
-							return ModulesClasspath.this.loadClass(name);
-						} catch (ClassNotFoundException e) {
-							return null;
-						}
-					}
-				};
-			}
-		}
-
 		private Engine engine;
-		private Classpath classpath;
+		private Loader.Classes classpath;
 
 		final void initialize() {
 			final Configuration configuration = this;
-			this.classpath = Classpath.create(configuration.getClassLoader());
+			this.classpath = Loader.Classes.create(configuration.getClassLoader());
 			Engine.Configuration contexts = new Engine.Configuration() {
-				@Override
-				public ClassLoader getApplicationClassLoader() {
+				@Override public ClassLoader getApplicationClassLoader() {
 					return classpath;
 				}
 
-				@Override
-				public int getOptimizationLevel() {
+				@Override public int getOptimizationLevel() {
 					return configuration.getOptimizationLevel();
 				}
 			};
@@ -157,7 +119,7 @@ public class Shell {
 			return engine;
 		}
 
-		Classpath getClasspath() {
+		Loader.Classes getClasspath() {
 			return classpath;
 		}
 

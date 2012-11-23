@@ -3,7 +3,7 @@ var scope = {
 };
 
 var $loader = (function() {
-	if ($host.getResource) {
+	if ($host.getServletResource) {
 		throw new Error("Unimplemented");
 		//	servlet container, determine webapp path and load relative to that
 	} else if ($host.loaders) {
@@ -14,7 +14,7 @@ var $loader = (function() {
 })();
 
 var $code = (function() {
-	if ($host.getResource && $host.getMainResourcePath) {
+	if ($host.getServletResource && $host.getServletScriptPath) {
 		throw new Error("Unimplemented");
 	} else if ($host.code) {
 		return $host.code;
@@ -26,7 +26,7 @@ var $code = (function() {
 scope.httpd = {};
 
 scope.httpd.loader = (function() {
-	if ($host.getResource) {
+	if ($host.getServletResource) {
 		throw new Error("Unimplemented");
 		//	servlet container, determine webapp path and load relative to that
 	} else if ($host.loaders) {
