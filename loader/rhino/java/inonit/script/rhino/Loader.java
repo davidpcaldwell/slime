@@ -22,13 +22,13 @@ public abstract class Loader {
 	public abstract String getPlatformCode() throws IOException;
 	public abstract String getRhinoCode() throws IOException;
 
-	protected abstract Engine getEngine();
-
 	//	TODO	verify whether this class needs to be public in order to be used by script calls
 	public static class Bootstrap {
+		private Engine engine;
 		private Loader loader;
 
-		Bootstrap(Loader loader) {
+		Bootstrap(Engine engine, Loader loader) {
+			this.engine = engine;
 			this.loader = loader;
 		}
 
@@ -37,11 +37,11 @@ public abstract class Loader {
 		}
 
 		public Classpath getClasspath() {
-			return loader.getEngine().getApplicationClassLoader().toScriptClasspath();
+			return engine.getApplicationClassLoader().toScriptClasspath();
 		}
 
 		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
-			loader.getEngine().script(name, in, scope, target);
+			engine.script(name, in, scope, target);
 		}
 	}
 	
@@ -136,10 +136,10 @@ public abstract class Loader {
 		}
 	}
 	
-	public static Scriptable load(Loader loader) throws IOException {
+	public static Scriptable load(Engine engine, Loader loader) throws IOException {
 		Engine.Program program = new Engine.Program();
-		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(loader))));
+		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
 		program.add(Engine.Source.create("<rhino loader>", loader.getRhinoCode()));
-		return (Scriptable)loader.getEngine().execute(program);		
+		return (Scriptable)engine.execute(program);		
 	}
 }

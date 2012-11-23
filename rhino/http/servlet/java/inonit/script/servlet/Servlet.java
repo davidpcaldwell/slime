@@ -42,7 +42,8 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	
 	public class Host {
 		public Scriptable getRhinoLoader() throws IOException {
-			return inonit.script.rhino.Loader.load(new inonit.script.rhino.Loader() {
+			Engine engine = null;
+			return inonit.script.rhino.Loader.load(engine, new inonit.script.rhino.Loader() {
 				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 				
 				@Override public String getPlatformCode() throws IOException {
@@ -51,10 +52,6 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 
 				@Override public String getRhinoCode() throws IOException {
 					return streams.readString(getServletContext().getResourceAsStream("WEB-INF/slime/loader/rhino.js"));
-				}
-
-				@Override protected Engine getEngine() {
-					throw new UnsupportedOperationException("Not supported yet.");
 				}
 			});
 		}
