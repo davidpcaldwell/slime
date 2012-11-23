@@ -13,6 +13,8 @@
 package inonit.script.rhino;
 
 import java.io.*;
+import java.util.*;
+import java.net.*;
 
 import org.mozilla.javascript.*;
 
@@ -65,10 +67,18 @@ public abstract class Loader {
 	
 	public static abstract class Classes extends ClassLoader {
 		public static Classes create(ClassLoader delegate) {
-			return new Old(delegate);
+			return new New(delegate);
 		}
 		
 		public abstract Loader.Classpath toLoaderClasspath();
+		
+		Classes() {
+			super();
+		}
+		
+		Classes(ClassLoader delegate) {
+			super(delegate);
+		}
 		
 		private static class Old extends Classes {
 			private ClassLoader current;
@@ -96,6 +106,67 @@ public abstract class Loader {
 					}
 				};
 			}			
+		}
+		
+		private static class New extends Classes {
+			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
+			
+			New(ClassLoader delegate) {
+				super(delegate);
+			}
+			
+			protected Class findClass(String name) throws ClassNotFoundException {
+				for (Code.Source source : locations) {
+					String path = name.replace('.', '/') + ".class";
+					try {
+						InputStream in = source.getResourceAsStream(path);
+						if (in != null) {
+							String[] tokens = name.split("\\.");
+							String packageName = tokens[0];
+							for (int i=1; i<tokens.length-1; i++) {
+								packageName += "." + tokens[i];
+							}
+							if (getPackage(packageName) == null) {
+								definePackage(packageName,null,null,null,null,null,null,null);
+							}
+							byte[] b = new inonit.script.runtime.io.Streams().readBytes(in);
+							return defineClass(name, b, 0, b.length);
+						}
+					} catch (IOException e) {
+						//	do nothing
+					}
+				}
+				throw new ClassNotFoundException(name);
+			}
+			
+			protected URL findResource(String name) {
+				for (Code.Source source : locations) {
+					Code.Classes classes = source.getClasses();
+					if (classes != null) {
+						URL url = classes.getResource(name);
+						if (url != null) {
+							return url;
+						}
+					}
+				}
+				return null;
+			}
+			
+			public Loader.Classpath toLoaderClasspath() {
+				return new Loader.Classpath() {
+					@Override public void append(Code.Source code) {
+						locations.add(code);
+					}
+
+					@Override public Class getClass(String name) {
+						try {
+							return New.this.loadClass(name);
+						} catch (ClassNotFoundException e) {
+							return null;
+						}
+					}
+				};
+			}
 		}
 	}
 	

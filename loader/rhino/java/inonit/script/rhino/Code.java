@@ -79,13 +79,29 @@ public abstract class Code {
 		static Source create(final Source source, final String prefix) {
 			//	TODO	should figure out /; maybe should only add it if we don't already end in it
 			final String prepend = (prefix != null) ? (prefix + "/") : "";
-			return new ResourceBased() {
+			return new Source() {
 				@Override public String toString() {
 					return Source.class.getName() + " source=" + source + " prefix=" + prefix;
 				}
 
 				public InputStream getResourceAsStream(String path) throws IOException {
 					return source.getResourceAsStream(prepend + path);
+				}
+				
+				public Classes getClasses() {
+					final Classes delegate = source.getClasses();
+					if (delegate == null) {
+						return null;
+					}
+					return new Classes() {
+						@Override public URL getResource(String path) {
+							return delegate.getResource(prepend+path);
+						}
+					};
+				}
+				
+				public ClassLoader getClassLoader(ClassLoader delegate) {
+					throw new RuntimeException("Unused?");
 				}
 			};
 		}
@@ -139,17 +155,23 @@ public abstract class Code {
 			}
 
 			public InputStream getResourceAsStream(String path) {
-				return getClassLoader(null).getResourceAsStream(path);
+				URL url = getClasses().getResource(path);
+				if (url != null) {
+					try {
+						return url.openStream();
+					} catch (IOException e) {
+						//	if we cannot open it, returning null seems fine
+					}
+				}
+				return null;
 			}
 			
 			public Classes getClasses() {
 				return new Classes() {
+					private java.net.URLClassLoader delegate = new java.net.URLClassLoader(new java.net.URL[] {url});
+					
 					@Override public URL getResource(String path) {
-						try {
-							return new URL(url, path);
-						} catch (MalformedURLException e) {
-							throw new RuntimeException(e);
-						}
+						return delegate.getResource(path);
 					}
 				};
 			}
