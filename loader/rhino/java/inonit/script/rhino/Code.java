@@ -134,7 +134,6 @@ public abstract class Code {
 			};
 		}
 
-		@Deprecated public abstract ClassLoader getClassLoader(ClassLoader delegate);
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
 		public abstract Classes getClasses();
 
@@ -147,11 +146,6 @@ public abstract class Code {
 
 			@Override public String toString() {
 				return Code.class.getName() + " url=" + url;
-			}
-
-			public final ClassLoader getClassLoader(ClassLoader delegate) {
-				java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[]{url}, delegate);
-				return loader;
 			}
 
 			public InputStream getResourceAsStream(String path) {
@@ -180,43 +174,7 @@ public abstract class Code {
 		private static abstract class ResourceBased extends Source {			
 			public Classes getClasses() {
 				return null;
-			}
-			
-			public ClassLoader getClassLoader(final ClassLoader delegate) {
-				return new ClassLoader(delegate) {
-					private Source classes = ResourceBased.this;
-
-					public String toString() {
-						return Code.class.getName() + " classes=" + classes + " delegate=" + delegate;
-					}
-
-					protected Class findClass(String name) throws ClassNotFoundException {
-						try {
-							String path = name.replace('.', '/') + ".class";
-							InputStream in = classes.getResourceAsStream(path);
-							if (in == null) {
-								throw new ClassNotFoundException(name);
-							}
-							int i;
-							ByteArrayOutputStream out = new ByteArrayOutputStream();
-							try {
-								while ((i = in.read()) != -1) {
-									out.write(i);
-								}
-							} catch (NullPointerException e) {
-								//	TODO	Grotesque hack; when this is JAR file which does not have this entry, this is the
-								//			error that will result because of implementation of
-								//			sun.net.www.protocol.jar.JarURLConnection$JarURLInputStream
-								throw new ClassNotFoundException(name);
-							}
-							byte[] b = out.toByteArray();
-							return defineClass(name, b, 0, b.length);
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				};
-			}
+			}			
 		}
 	}
 
@@ -322,8 +280,4 @@ public abstract class Code {
 
 	public abstract Source getScripts();
 	public abstract Source getClasses();
-
-	public ClassLoader getClassLoader(final ClassLoader delegate) {
-		return getClasses().getClassLoader(delegate);
-	}
 }

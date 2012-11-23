@@ -80,34 +80,6 @@ public abstract class Loader {
 			super(delegate);
 		}
 		
-		private static class Old extends Classes {
-			private ClassLoader current;
-
-			Old(ClassLoader delegate) {
-				this.current = delegate;
-			}
-
-			protected Class findClass(String name) throws ClassNotFoundException {
-				return current.loadClass(name);
-			}
-
-			public Loader.Classpath toLoaderClasspath() {
-				return new Loader.Classpath() {
-					@Override public void append(Code.Source classes) {
-						current = classes.getClassLoader(current);
-					}
-
-					@Override public Class getClass(String name) {
-						try {
-							return Old.this.loadClass(name);
-						} catch (ClassNotFoundException e) {
-							return null;
-						}
-					}
-				};
-			}			
-		}
-		
 		private static class New extends Classes {
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
 			
