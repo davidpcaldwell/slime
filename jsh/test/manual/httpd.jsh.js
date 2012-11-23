@@ -1,10 +1,12 @@
 var tomcat = new jsh.httpd.Tomcat({
 });
 jsh.shell.echo("Tomcat port: " + tomcat.port);
-var script = jsh.script.getRelativePath("httpd.servlet.js");
+var script = jsh.script.getRelativePath("httpd.servlet.js").file;
 tomcat.map({
-	servlet: script,
-	pattern: "/*"
+	path: "/",
+	servlets: {
+		"/*": script
+	}
 });
 tomcat.start();
 var client = new jsh.http.Client();
