@@ -1,7 +1,7 @@
 var tomcat = new jsh.httpd.Tomcat({
 });
 jsh.shell.echo("Tomcat port: " + tomcat.port);
-var script = jsh.script.getRelativePath("httpd.servlet.js").file;
+var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/hello.servlet.js").file;
 tomcat.map({
 	path: "/",
 	servlets: {
