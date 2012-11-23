@@ -13,8 +13,13 @@
 package inonit.script.rhino;
 
 import java.io.*;
+import java.net.*;
 
 public abstract class Code {
+	public static abstract class Classes {
+		public abstract URL getResource(String path);
+	}
+	
 //	private static Source createSource(File[] files) {
 //		try {
 //			java.net.URL[] urls = new java.net.URL[files.length];
@@ -103,15 +108,19 @@ public abstract class Code {
 
 		public static Source create(final Resources resources) {
 			return new ResourceBased() {
-				@Override
-				public InputStream getResourceAsStream(String path) throws IOException {
+				@Override public InputStream getResourceAsStream(String path) throws IOException {
 					return resources.getResourceAsStream(path);
+				}
+				
+				@Override public Classes getClasses() {
+					return null;
 				}
 			};
 		}
 
-		public abstract ClassLoader getClassLoader(ClassLoader delegate);
+		@Deprecated public abstract ClassLoader getClassLoader(ClassLoader delegate);
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
+		public abstract Classes getClasses();
 
 		private static class UrlBased extends Source {
 			private java.net.URL url;
@@ -132,9 +141,25 @@ public abstract class Code {
 			public InputStream getResourceAsStream(String path) {
 				return getClassLoader(null).getResourceAsStream(path);
 			}
+			
+			public Classes getClasses() {
+				return new Classes() {
+					@Override public URL getResource(String path) {
+						try {
+							return new URL(url, path);
+						} catch (MalformedURLException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				};
+			}
 		}
 
-		private static abstract class ResourceBased extends Source {
+		private static abstract class ResourceBased extends Source {			
+			public Classes getClasses() {
+				return null;
+			}
+			
 			public ClassLoader getClassLoader(final ClassLoader delegate) {
 				return new ClassLoader(delegate) {
 					private Source classes = ResourceBased.this;

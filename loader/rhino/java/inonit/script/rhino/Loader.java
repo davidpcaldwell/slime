@@ -63,36 +63,40 @@ public abstract class Loader {
 		}
 	}
 	
-	public static class Classes extends ClassLoader {
+	public static abstract class Classes extends ClassLoader {
 		public static Classes create(ClassLoader delegate) {
-			return new Classes(delegate);
+			return new Old(delegate);
 		}
 		
-		private ClassLoader current;
+		public abstract Loader.Classpath toLoaderClasspath();
+		
+		private static class Old extends Classes {
+			private ClassLoader current;
 
-		Classes(ClassLoader delegate) {
-			this.current = delegate;
-		}
+			Old(ClassLoader delegate) {
+				this.current = delegate;
+			}
 
-		protected Class findClass(String name) throws ClassNotFoundException {
-			return current.loadClass(name);
-		}
+			protected Class findClass(String name) throws ClassNotFoundException {
+				return current.loadClass(name);
+			}
 
-		public Loader.Classpath toLoaderClasspath() {
-			return new Loader.Classpath() {
-				@Override public void append(Code.Source classes) {
-					current = classes.getClassLoader(current);
-				}
-
-				@Override public Class getClass(String name) {
-					try {
-						return Classes.this.loadClass(name);
-					} catch (ClassNotFoundException e) {
-						return null;
+			public Loader.Classpath toLoaderClasspath() {
+				return new Loader.Classpath() {
+					@Override public void append(Code.Source classes) {
+						current = classes.getClassLoader(current);
 					}
-				}
-			};
-		}		
+
+					@Override public Class getClass(String name) {
+						try {
+							return Old.this.loadClass(name);
+						} catch (ClassNotFoundException e) {
+							return null;
+						}
+					}
+				};
+			}			
+		}
 	}
 	
 	public static Scriptable load(Loader loader) throws IOException {
