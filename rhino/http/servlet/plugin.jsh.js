@@ -30,48 +30,59 @@ plugin({
 			
 			this.port = port;
 
-			(function() {
-				tomcat.setBaseDir(base);
-				tomcat.setPort(port);
-				var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
-				var server = $loader.file("server.js");
-				Packages.org.apache.catalina.startup.Tomcat.addServlet(context,"script",new JavaAdapter(
-					Packages.javax.servlet.http.HttpServlet,
-					new function() {
-						//	TODO	could use jsh.io here
-						var servlet;
-						
-						this.init = function() {
-							var apiScope = {
-								$host: new function() {									
-									this.loaders = {
-										script: new jsh.script.Loader(p.script.file.parent)
-									};
-									
-									this.code = p.script;
-									
-									this.$exports = {};
-								},
-								$context: server
+			tomcat.setBaseDir(base);
+			tomcat.setPort(port);
+			
+			var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
+			
+			var server = $loader.file("server.js");
+			
+			var id = 0;
+			
+			this.map = function(m) {
+				if (m.servlet) {
+					var servletName = "slime" + String(id++);
+					Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
+						Packages.javax.servlet.http.HttpServlet,
+						new function() {
+							//	TODO	could use jsh.io here
+							var servlet;
+
+							this.init = function() {
+								var apiScope = {
+									$host: new function() {									
+										this.loaders = {
+											script: new jsh.script.Loader(m.servlet.file.parent)
+										};
+
+										this.code = m.servlet;
+
+										this.$exports = {};
+									},
+									$context: server
+								};
+								//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this
+								//			if (false) and delete the $context/$host rigamarole at the top of api.js
+								$loader.run("api.js", apiScope);
+								servlet = apiScope.$host.$exports.servlet;
 							};
-							//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this
-							//			if (false) and delete the $context/$host rigamarole at the top of api.js
-							$loader.run("api.js", apiScope);
-							servlet = apiScope.$host.$exports.servlet;
-						};
-						
-						this.service = function(_request,_response) {
-							servlet.service(_request,_response);
+
+							this.service = function(_request,_response) {
+								servlet.service(_request,_response);
+							}
+
+							this.destroy = function() {
+								servlet.destroy();
+							}
 						}
-						
-						this.destroy = function() {
-							servlet.destroy();
-						}
-					}
-				));
-				context.addServletMapping("/*","script");
+					));
+					context.addServletMapping(m.pattern,servletName);
+				}
+			}
+			
+			this.start = function() {
 				tomcat.start();
-			})();
+			}
 		}
 	}
 });
