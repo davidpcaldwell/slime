@@ -23,27 +23,26 @@ var $code = (function() {
 	}
 })();
 
-var Servlet = (function() {
-	if ($host.Servlet) {
-		return $host.Servlet;
-	} else if ($context.Servlet) {
-		return function(script) {
-			return new JavaAdapter(
-				Packages.inonit.script.servlet.Servlet.Script,
-				new $context.Servlet(script)
-			)
-		}
+var resources = (function() {
+	if ($host.getRhinoLoader && $host.getServletResources) {
+		var rhinoLoader = $host.getRhinoLoader();
+		return new rhinoLoader.Loader({
+			_source: $host.getServletResources()
+		});
+	} else if ($host.loaders) {
+		return $host.loaders.container;
 	}
-})
+})();
 
 scope.httpd = {};
 
-scope.httpd.loader = (function() {
-	if ($host.getServletResource) {
-		throw new Error("Unimplemented");
-		//	servlet container, determine webapp path and load relative to that
-	} else if ($host.loaders) {
-		return $host.loaders.container;
+scope.httpd.loader = resources;
+
+var server = (function() {
+	if ($host.server) {
+		return $host.server;
+	} else if ($host.getServletResources) {
+		return resources.file("WEB-INF/slime/loader/server.js");
 	}
 })();
 
