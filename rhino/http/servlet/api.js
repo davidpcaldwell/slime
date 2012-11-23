@@ -14,7 +14,7 @@ var $loader = (function() {
 })();
 
 var $code = (function() {
-	if ($host.getServletResource && $host.getServletScriptPath) {
+	if ($host.getServletResources && $host.getServletScriptPath) {
 		throw new Error("Unimplemented");
 	} else if ($host.code) {
 		return $host.code;
@@ -22,6 +22,19 @@ var $code = (function() {
 		throw new Error();
 	}
 })();
+
+var Servlet = (function() {
+	if ($host.Servlet) {
+		return $host.Servlet;
+	} else if ($context.Servlet) {
+		return function(script) {
+			return new JavaAdapter(
+				Packages.inonit.script.servlet.Servlet.Script,
+				new $context.Servlet(script)
+			)
+		}
+	}
+})
 
 scope.httpd = {};
 
@@ -58,4 +71,15 @@ scope.$loader = (function() {
 })();
 
 $loader.run($code, scope);
-$host.register(scope.$exports);
+
+var servlet = new $context.Servlet(scope.$exports);
+
+if ($host.$exports) {
+	$host.$exports.servlet = servlet;
+} else if ($host.register) {
+	$host.register(new JavaAdapter(
+		Packages.inonit.script.servlet.Servlet.Script,
+		servlet
+	));	
+}
+

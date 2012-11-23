@@ -11,6 +11,12 @@ import inonit.script.rhino.Code.Source;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
 	private Host host = new Host();
+	private Script script;
+	
+	public static abstract class Script {
+		public abstract void service(HttpServletRequest request, HttpServletResponse response);
+		public abstract void destroy();
+	}
 	
 	@Override public final void init() {
 //			Engine.Program program = new Engine.Program();
@@ -35,14 +41,16 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 	
 	@Override public final void destroy() {
+		script.destroy();
 	}
 	
 	@Override protected final void service(HttpServletRequest request, HttpServletResponse response) {
+		script.service(request, response);
 	}
 	
 	public class Host {
 		public Scriptable getRhinoLoader() throws IOException {
-			Engine engine = null;
+			Engine engine = Engine.create(null, Engine.Configuration.DEFAULT);
 			return inonit.script.rhino.Loader.load(engine, new inonit.script.rhino.Loader() {
 				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 				
@@ -56,12 +64,16 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			});
 		}
 		
-		public InputStream getServletResource(String absolutePath) {
-			return getServletConfig().getServletContext().getResourceAsStream(absolutePath);
+		public Code.Source getServletResources() {
+			try {
+				return Code.Source.create(getServletConfig().getServletContext().getResource("/"));
+			} catch (java.net.MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		
 		public String getServletScriptPath() {
-			throw new UnsupportedOperationException("Unimplemented.");
+			return getServletConfig().getInitParameter("script");
 		}
 	}
 }

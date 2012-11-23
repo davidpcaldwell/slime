@@ -43,21 +43,21 @@ plugin({
 						
 						this.init = function() {
 							var apiScope = {
-								$host: new function() {
-									this.register = function(implementation) {
-										servlet = new server.Servlet(implementation);										
-									};
-									
+								$host: new function() {									
 									this.loaders = {
 										script: new jsh.script.Loader(p.script.file.parent)
 									};
 									
 									this.code = p.script;
-								}
+									
+									this.$exports = {};
+								},
+								$context: server
 							};
 							//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this
 							//			if (false) and delete the $context/$host rigamarole at the top of api.js
 							$loader.run("api.js", apiScope);
+							servlet = apiScope.$host.$exports.servlet;
 						};
 						
 						this.service = function(_request,_response) {
