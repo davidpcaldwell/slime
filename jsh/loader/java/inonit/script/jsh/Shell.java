@@ -278,10 +278,6 @@ public class Shell {
 						return new Streams().readString(installation.getRhinoLoader().getReader());
 					}
 
-					@Override public inonit.script.rhino.Loader.Classes getClasspath() {
-						return configuration.getEngine().getApplicationClassLoader();
-					}
-
 					@Override protected Engine getEngine() {
 						return Host.this.configuration.getEngine();
 					}

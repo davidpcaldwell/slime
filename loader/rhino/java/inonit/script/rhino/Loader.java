@@ -22,13 +22,7 @@ public abstract class Loader {
 	public abstract String getPlatformCode() throws IOException;
 	public abstract String getRhinoCode() throws IOException;
 
-	public abstract Classes getClasspath();
-
 	protected abstract Engine getEngine();
-
-//	public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
-//		getEngine().script(name, in, scope, target);
-//	}
 
 	//	TODO	verify whether this class needs to be public in order to be used by script calls
 	public static class Bootstrap {
@@ -43,7 +37,7 @@ public abstract class Loader {
 		}
 
 		public Classpath getClasspath() {
-			return loader.getClasspath().toScriptClasspath();
+			return loader.getEngine().getApplicationClassLoader().toScriptClasspath();
 		}
 
 		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
