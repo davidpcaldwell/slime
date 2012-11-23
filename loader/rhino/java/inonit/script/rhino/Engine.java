@@ -216,6 +216,10 @@ public class Engine {
 		final synchronized Context getContext() {
 			return Context.getCurrentContext();
 		}
+		
+		final Loader.Classes getLoaderClasses() {
+			return factory.getLoaderClasses();
+		}
 
 		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
 			dim.attachTo(factory);
@@ -226,11 +230,16 @@ public class Engine {
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
+			private Loader.Classes classes = Loader.Classes.create(Configuration.this.getApplicationClassLoader());
+			
+			final Loader.Classes getLoaderClasses() {
+				return classes;
+			}
+			
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
-				if (Configuration.this.getApplicationClassLoader() != null) {
-					rv.setApplicationClassLoader(Configuration.this.getApplicationClassLoader());
-				}
+				ClassLoader parent = (Configuration.this.getApplicationClassLoader() == null) ? Engine.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+				rv.setApplicationClassLoader(classes);
 				rv.setErrorReporter(new Engine.Errors().getErrorReporter());
 				rv.setOptimizationLevel(getOptimizationLevel());
 				return rv;
@@ -927,5 +936,9 @@ public class Engine {
 
 	public Debugger getDebugger() {
 		return this.debugger;
+	}
+	
+	public Loader.Classes getApplicationClassLoader() {
+		return this.contexts.getLoaderClasses();
 	}
 }

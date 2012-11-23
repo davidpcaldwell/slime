@@ -22,21 +22,7 @@ public abstract class Loader {
 	public abstract String getPlatformCode() throws IOException;
 	public abstract String getRhinoCode() throws IOException;
 
-	//	Used in literal.js to support operations on the class loader
-	public static abstract class Classpath {
-		public abstract void append(Code.Source code);
-
-		/**
-			Should return the class with the given name, or <code>null</code> if there is no such class.
-		*/
-		public abstract Class getClass(String name);
-
-		public final void append(Code code) {
-			append(code.getClasses());
-		}
-	}
-
-	public abstract Classpath getClasspath();
+	public abstract Classes getClasspath();
 
 	protected abstract Engine getEngine();
 
@@ -57,7 +43,7 @@ public abstract class Loader {
 		}
 
 		public Classpath getClasspath() {
-			return loader.getClasspath();
+			return loader.getClasspath().toScriptClasspath();
 		}
 
 		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
@@ -65,12 +51,26 @@ public abstract class Loader {
 		}
 	}
 	
+	//	Used in literal.js to support operations on the class loader
+	public static abstract class Classpath {
+		public abstract void append(Code.Source code);
+
+		/**
+			Should return the class with the given name, or <code>null</code> if there is no such class.
+		*/
+		public abstract Class getClass(String name);
+
+		public final void append(Code code) {
+			append(code.getClasses());
+		}
+	}
+
 	public static abstract class Classes extends ClassLoader {
 		public static Classes create(ClassLoader delegate) {
 			return new New(delegate);
 		}
 		
-		public abstract Loader.Classpath toLoaderClasspath();
+		public abstract Loader.Classpath toScriptClasspath();
 		
 		Classes() {
 			super();
@@ -124,7 +124,7 @@ public abstract class Loader {
 				return null;
 			}
 			
-			public Loader.Classpath toLoaderClasspath() {
+			public Loader.Classpath toScriptClasspath() {
 				return new Loader.Classpath() {
 					@Override public void append(Code.Source code) {
 						locations.add(code);

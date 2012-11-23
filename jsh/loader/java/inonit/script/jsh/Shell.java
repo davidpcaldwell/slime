@@ -98,29 +98,22 @@ public class Shell {
 		public abstract Stdio getStdio();
 
 		private Engine engine;
-		private Loader.Classes classpath;
 
 		final void initialize() {
-			final Configuration configuration = this;
-			this.classpath = Loader.Classes.create(configuration.getClassLoader());
 			Engine.Configuration contexts = new Engine.Configuration() {
 				@Override public ClassLoader getApplicationClassLoader() {
-					return classpath;
+					return Configuration.this.getClassLoader();
 				}
 
 				@Override public int getOptimizationLevel() {
-					return configuration.getOptimizationLevel();
+					return Configuration.this.getOptimizationLevel();
 				}
 			};
-			this.engine = Engine.create(configuration.getDebugger(), contexts);
+			this.engine = Engine.create(Configuration.this.getDebugger(), contexts);
 		}
 
 		Engine getEngine() {
 			return engine;
-		}
-
-		Loader.Classes getClasspath() {
-			return classpath;
 		}
 
 		public static abstract class Stdio {
@@ -271,7 +264,7 @@ public class Shell {
 				return getClass().getName()
 					+ " engine=" + configuration.getEngine()
 					+ " installation=" + installation
-					+ " classpath=" + configuration.getClasspath()
+					+ " classpath=" + configuration.getEngine().getApplicationClassLoader()
 				;
 			}
 
@@ -285,8 +278,8 @@ public class Shell {
 						return new Streams().readString(installation.getRhinoLoader().getReader());
 					}
 
-					@Override public inonit.script.rhino.Loader.Classpath getClasspath() {
-						return configuration.getClasspath().toLoaderClasspath();
+					@Override public inonit.script.rhino.Loader.Classes getClasspath() {
+						return configuration.getEngine().getApplicationClassLoader();
 					}
 
 					@Override protected Engine getEngine() {
@@ -316,7 +309,7 @@ public class Shell {
 				//			module and remove this?
 				public Class getJavaClass(String name) {
 					try {
-						return configuration.getClasspath().loadClass(name);
+						return configuration.getEngine().getApplicationClassLoader().loadClass(name);
 					} catch (ClassNotFoundException e) {
 						return null;
 					}
@@ -325,7 +318,7 @@ public class Shell {
 				//	TODO	Currently used in httpd unit testing in embedded server, possibly; may be able to get rid of it
 				//			given the new architecture running httpd unit tests in jsh subshell
 				public ClassLoader getClassLoader() {
-					return configuration.getClasspath();
+					return configuration.getEngine().getApplicationClassLoader();
 				}
 			}
 

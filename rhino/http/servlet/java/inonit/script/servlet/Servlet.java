@@ -53,16 +53,8 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 					return streams.readString(getServletContext().getResourceAsStream("WEB-INF/slime/loader/rhino.js"));
 				}
 
-				@Override public Classpath getClasspath() {
-					return new Classpath() {
-						@Override public void append(Code.Source code) {
-							throw new UnsupportedOperationException("Not supported yet.");
-						}
-
-						@Override public Class getClass(String name) {
-							throw new UnsupportedOperationException("Not supported yet.");
-						}
-					};
+				@Override public Loader.Classes getClasspath() {
+					return Loader.Classes.create(Servlet.class.getClassLoader());
 				}
 
 				@Override protected Engine getEngine() {
