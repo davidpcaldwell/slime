@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME servlet interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var parameters = jsh.script.getopts({
 	options: {
 		to: jsh.file.Pathname,
@@ -63,7 +75,7 @@ var SLIME = jsh.script.getRelativePath("../../../..").directory;
 	SLIME.getFile("loader/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader.platform.js"));
 	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader.rhino.js"));
 	SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
-	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));	
+	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 })();
 
 (function() {
@@ -76,7 +88,7 @@ var SLIME = jsh.script.getRelativePath("../../../..").directory;
 			if (from.directory) return from.directory;
 		})();
 		node.copy(to, { recursive: true });
-	});	
+	});
 })();
 
 (function() {

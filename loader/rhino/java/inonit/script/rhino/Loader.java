@@ -44,7 +44,7 @@ public abstract class Loader {
 			engine.script(name, in, scope, target);
 		}
 	}
-	
+
 	//	Used in literal.js to support operations on the class loader
 	public static abstract class Classpath {
 		public abstract void append(Code.Source code);
@@ -63,24 +63,24 @@ public abstract class Loader {
 		public static Classes create(ClassLoader delegate) {
 			return new New(delegate);
 		}
-		
+
 		public abstract Loader.Classpath toScriptClasspath();
-		
+
 		Classes() {
 			super();
 		}
-		
+
 		Classes(ClassLoader delegate) {
 			super(delegate);
 		}
-		
+
 		private static class New extends Classes {
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
-			
+
 			New(ClassLoader delegate) {
 				super(delegate);
 			}
-			
+
 			protected Class findClass(String name) throws ClassNotFoundException {
 				for (Code.Source source : locations) {
 					String path = name.replace('.', '/') + ".class";
@@ -104,7 +104,7 @@ public abstract class Loader {
 				}
 				throw new ClassNotFoundException(name);
 			}
-			
+
 			protected URL findResource(String name) {
 				for (Code.Source source : locations) {
 					Code.Classes classes = source.getClasses();
@@ -117,7 +117,7 @@ public abstract class Loader {
 				}
 				return null;
 			}
-			
+
 			public Loader.Classpath toScriptClasspath() {
 				return new Loader.Classpath() {
 					@Override public void append(Code.Source code) {
@@ -135,11 +135,11 @@ public abstract class Loader {
 			}
 		}
 	}
-	
+
 	public static Scriptable load(Engine engine, Loader loader) throws IOException {
 		Engine.Program program = new Engine.Program();
 		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
 		program.add(Engine.Source.create("<rhino loader>", loader.getRhinoCode()));
-		return (Scriptable)engine.execute(program);		
+		return (Scriptable)engine.execute(program);
 	}
 }

@@ -21,7 +21,7 @@ if (!env.JSH_SLIME_SRC) {
 debug("Source: " + String(env.JSH_SLIME_SRC));
 var JSH_SLIME_SRC = new (function() {
 	var _base;
-	
+
 	debug("user.dir=" + Packages.java.lang.System.getProperty("user.dir"));
 
 	if (platform.cygwin) {
@@ -31,7 +31,7 @@ var JSH_SLIME_SRC = new (function() {
 	}
 
 	debug("_base: " + _base.getCanonicalPath());
-	
+
 	var getFile = function(path) {
 		return new Packages.java.io.File(_base, path);
 	}

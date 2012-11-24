@@ -65,7 +65,7 @@ this.jsh = new function() {
 			var rv = new rhinoLoader.Loader(p);
 			return jsh.io.Loader(rv);
 		}
-		
+
 		this.plugin = new function() {
 			this.read = function(_code,scope) {
 				var loader = new Loader({ _source: _code.getScripts() });

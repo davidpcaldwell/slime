@@ -19,7 +19,7 @@ public abstract class Code {
 	public static abstract class Classes {
 		public abstract URL getResource(String path);
 	}
-	
+
 //	private static Source createSource(File[] files) {
 //		try {
 //			java.net.URL[] urls = new java.net.URL[files.length];
@@ -89,7 +89,7 @@ public abstract class Code {
 				public InputStream getResourceAsStream(String path) throws IOException {
 					return source.getResourceAsStream(prepend + path);
 				}
-				
+
 				public Classes getClasses() {
 					final Classes delegate = source.getClasses();
 					if (delegate == null) {
@@ -101,7 +101,7 @@ public abstract class Code {
 						}
 					};
 				}
-				
+
 				public ClassLoader getClassLoader(ClassLoader delegate) {
 					throw new RuntimeException("Unused?");
 				}
@@ -129,7 +129,7 @@ public abstract class Code {
 				@Override public InputStream getResourceAsStream(String path) throws IOException {
 					return resources.getResourceAsStream(path);
 				}
-				
+
 				@Override public Classes getClasses() {
 					return null;
 				}
@@ -161,11 +161,11 @@ public abstract class Code {
 				}
 				return null;
 			}
-			
+
 			public Classes getClasses() {
 				return new Classes() {
 					private java.net.URLClassLoader delegate = new java.net.URLClassLoader(new java.net.URL[] {url});
-					
+
 					@Override public URL getResource(String path) {
 						return delegate.getResource(path);
 					}
@@ -173,10 +173,10 @@ public abstract class Code {
 			}
 		}
 
-		private static abstract class ResourceBased extends Source {			
+		private static abstract class ResourceBased extends Source {
 			public Classes getClasses() {
 				return null;
-			}			
+			}
 		}
 	}
 

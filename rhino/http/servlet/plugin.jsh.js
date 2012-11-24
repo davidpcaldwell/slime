@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME servlet interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	Requires the following plugins in the following order
 //	Order is not important if they are in JSH_SCRIPT_CLASSPATH
 //
@@ -18,9 +30,9 @@ plugin({
 		}
 		jsh.httpd.Tomcat = function(p) {
 			var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
-			
+
 			var base = (p.base) ? p.base : jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" });
-			
+
 			this.base = base;
 
 			var port = (p.port) ? p.port : (function() {
@@ -29,12 +41,12 @@ plugin({
 				address.close();
 				return rv;
 			})();
-			
+
 			this.port = port;
 
 			tomcat.setBaseDir(base);
 			tomcat.setPort(port);
-			
+
 			var server = $loader.file("server.js");
 
 			this.map = function(m) {
@@ -52,7 +64,7 @@ plugin({
 
 								this.init = function() {
 									var apiScope = {
-										$host: new function() {									
+										$host: new function() {
 											this.loaders = {
 												script: new jsh.script.Loader(servletFile.parent)
 											};
@@ -78,18 +90,18 @@ plugin({
 								}
 							}
 						));
-						context.addServletMapping(pattern,servletName);					
+						context.addServletMapping(pattern,servletName);
 					}
 				} else if (typeof(m.path) == "string" && m.webapp) {
 					throw new Error("Currently does not work, apparently, due to issues with ClassLoaders");
 					var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());					jsh.shell.echo("Added " + context);
 				}
 			}
-			
+
 			this.start = function() {
 				tomcat.start();
 			}
-			
+
 			this.run = function() {
 				tomcat.start();
 				tomcat.getServer().await();

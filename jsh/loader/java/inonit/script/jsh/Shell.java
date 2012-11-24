@@ -131,7 +131,7 @@ public class Shell {
 					public File getFile() {
 						return file;
 					}
-					
+
 					public Engine.Source getSource() {
 						return delegate;
 					}

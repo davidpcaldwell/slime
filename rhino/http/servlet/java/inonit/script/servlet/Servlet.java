@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME servlet interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 package inonit.script.servlet;
 
 import java.io.*;
@@ -12,14 +24,14 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	static {
 		Class dependency = inonit.script.rhino.Objects.class;
 	}
-	
+
 	private Script script;
-	
+
 	public static abstract class Script {
 		public abstract void service(HttpServletRequest request, HttpServletResponse response);
 		public abstract void destroy();
 	}
-	
+
 	@Override public final void init() {
 		Engine.Debugger debugger = null;
 		if (System.getenv("JSH_SCRIPT_DEBUGGER") != null && System.getenv("JSH_SCRIPT_DEBUGGER").equals("rhino")) {
@@ -36,7 +48,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			debugger = Engine.RhinoDebugger.create(configuration);
 		}
 		Engine engine = Engine.create(debugger, Engine.Configuration.DEFAULT);
-		
+
 		Engine.Program program = new Engine.Program();
 
 		try {
@@ -58,11 +70,11 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 				},
 				"[slime] "
 			);
-			throw errors;			
+			throw errors;
 		}
 
 		program.add(Engine.Source.create("<api.js>", getServletContext().getResourceAsStream("WEB-INF/api.js")));
-		
+
 		try {
 			engine.execute(program);
 		} catch (Engine.Errors errors) {
@@ -78,18 +90,18 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			throw errors;
 		}
 	}
-	
+
 	@Override public final void destroy() {
 		script.destroy();
 	}
-	
+
 	@Override protected final void service(HttpServletRequest request, HttpServletResponse response) {
 		script.service(request, response);
 	}
-	
+
 	public class Host {
 		private Scriptable rhinoLoader;
-		
+
 		Host(Engine engine) {
 			try {
 				this.rhinoLoader = inonit.script.rhino.Loader.load(engine, new inonit.script.rhino.Loader() {
@@ -107,15 +119,15 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 				throw new RuntimeException("Could not load Slime rhino loader.", e);
 			}
 		}
-		
+
 		public void register(Script script) {
 			Servlet.this.script = script;
 		}
-		
+
 		public Scriptable getRhinoLoader() throws IOException {
 			return this.rhinoLoader;
 		}
-		
+
 		public Code.Source getServletResources() {
 			try {
 				return Code.Source.create(getServletConfig().getServletContext().getResource("/"));
@@ -123,7 +135,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		public String getServletScriptPath() {
 			return getServletConfig().getInitParameter("script");
 		}

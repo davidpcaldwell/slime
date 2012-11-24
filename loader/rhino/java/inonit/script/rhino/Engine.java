@@ -116,7 +116,7 @@ public class Engine {
 
 		private org.mozilla.javascript.tools.debugger.Dim dim;
 		private org.mozilla.javascript.tools.debugger.SwingGui gui;
-		
+
 		private RhinoDebugger() {
 		}
 
@@ -219,7 +219,7 @@ public class Engine {
 		final synchronized Context getContext() {
 			return Context.getCurrentContext();
 		}
-		
+
 		final Loader.Classes getLoaderClasses() {
 			return factory.getLoaderClasses();
 		}
@@ -234,16 +234,16 @@ public class Engine {
 
 		private class ContextFactoryInner extends ContextFactory {
 			private Loader.Classes classes = Loader.Classes.create(Configuration.this.getApplicationClassLoader());
-			
+
 			ContextFactoryInner() {
 				ClassLoader parent = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
 				this.classes = Loader.Classes.create(parent);
 			}
-			
+
 			final Loader.Classes getLoaderClasses() {
 				return classes;
 			}
-			
+
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
 				rv.setApplicationClassLoader(classes);
@@ -550,13 +550,13 @@ public class Engine {
 		public static Engine.Source create(String name, InputStream in) {
 			return create(name, new InputStreamReader(in));
 		}
-		
+
 		public static Source create(String sourceName, String s) {
 			return new ReaderSource(sourceName, new StringReader(s));
 		}
-		
+
 		//	TODO	should look at unifying Code.Source and Engine.Source
-		
+
 		/**
 			Creates a new <code>Source</code> using the contents of the given file.
 
@@ -580,7 +580,7 @@ public class Engine {
 
 		abstract String getSourceName();
 		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
-		
+
 		public abstract Reader getReader();
 
 		public final void setDebug(boolean debug) {
@@ -630,7 +630,7 @@ public class Engine {
 				this.id = id;
 				this.reader = reader;
 			}
-			
+
 			public Reader getReader() {
 				return reader;
 			}
@@ -946,7 +946,7 @@ public class Engine {
 	public Debugger getDebugger() {
 		return this.debugger;
 	}
-	
+
 	public Loader.Classes getApplicationClassLoader() {
 		return this.contexts.getLoaderClasses();
 	}
