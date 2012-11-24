@@ -76,7 +76,9 @@ public abstract class Code {
 //			};
 //		}
 //
-		static Source create(final Source source, final String prefix) {
+		//	public because used within script for servlet launching to load associated servlet classes; alternative would be to
+		//	create a loader and load the servlet classes from that
+		public static Source create(final Source source, final String prefix) {
 			//	TODO	should figure out /; maybe should only add it if we don't already end in it
 			final String prepend = (prefix != null) ? (prefix + "/") : "";
 			return new Source() {

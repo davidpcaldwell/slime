@@ -7,10 +7,12 @@ import javax.servlet.http.*;
 import org.mozilla.javascript.*;
 
 import inonit.script.rhino.*;
-import inonit.script.rhino.Code.Source;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
-	private Host host = new Host();
+	static {
+		Class dependency = inonit.script.rhino.Objects.class;
+	}
+	
 	private Script script;
 	
 	public static abstract class Script {
@@ -19,25 +21,62 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 	
 	@Override public final void init() {
-//			Engine.Program program = new Engine.Program();
-//
-//			Engine.Program.Variable jsh = Engine.Program.Variable.create(
-//				"$host",
-//				Engine.Program.Variable.Value.create(new Interface())
-//			);
-//			jsh.setReadonly(true);
-//			jsh.setPermanent(true);
-//			jsh.setDontenum(true);
-//			program.set(jsh);
-//
-//			Engine.Source jshJs = installation.getJshLoader();
-//			if (jshJs == null) {
-//				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
-//			}
-//			program.add(jshJs);
-//			//	TODO	jsh could execute this below
-//			program.add(invocation.getScript().getSource());
-//			return program;
+		Engine.Debugger debugger = null;
+		if (System.getenv("JSH_SCRIPT_DEBUGGER") != null && System.getenv("JSH_SCRIPT_DEBUGGER").equals("rhino")) {
+			Engine.RhinoDebugger.Configuration configuration = new Engine.RhinoDebugger.Configuration();
+			configuration.setExit(new Runnable() {
+				public void run() {
+				}
+			});
+			configuration.setLog(new Engine.Log() {
+				@Override public void println(String message) {
+					System.err.println(message);
+				}
+			});
+			debugger = Engine.RhinoDebugger.create(configuration);
+		}
+		Engine engine = Engine.create(debugger, Engine.Configuration.DEFAULT);
+		
+		Engine.Program program = new Engine.Program();
+
+		try {
+			Engine.Program.Variable jsh = Engine.Program.Variable.create(
+				"$host",
+				Engine.Program.Variable.Value.create(new Host(engine))
+			);
+			jsh.setReadonly(true);
+			jsh.setPermanent(true);
+			jsh.setDontenum(true);
+			program.set(jsh);
+		} catch (Engine.Errors errors) {
+			errors.dump(
+				new Engine.Log() {
+					@Override
+					public void println(String message) {
+						System.err.println(message);
+					}
+				},
+				"[slime] "
+			);
+			throw errors;			
+		}
+
+		program.add(Engine.Source.create("<api.js>", getServletContext().getResourceAsStream("WEB-INF/api.js")));
+		
+		try {
+			engine.execute(program);
+		} catch (Engine.Errors errors) {
+			errors.dump(
+				new Engine.Log() {
+					@Override
+					public void println(String message) {
+						System.err.println(message);
+					}
+				},
+				"[slime] "
+			);
+			throw errors;
+		}
 	}
 	
 	@Override public final void destroy() {
@@ -49,19 +88,32 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 	
 	public class Host {
-		public Scriptable getRhinoLoader() throws IOException {
-			Engine engine = Engine.create(null, Engine.Configuration.DEFAULT);
-			return inonit.script.rhino.Loader.load(engine, new inonit.script.rhino.Loader() {
-				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
-				
-				@Override public String getPlatformCode() throws IOException {
-					return streams.readString(getServletContext().getResourceAsStream("WEB-INF/slime/loader/platform.js"));
-				}
+		private Scriptable rhinoLoader;
+		
+		Host(Engine engine) {
+			try {
+				this.rhinoLoader = inonit.script.rhino.Loader.load(engine, new inonit.script.rhino.Loader() {
+					private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
-				@Override public String getRhinoCode() throws IOException {
-					return streams.readString(getServletContext().getResourceAsStream("WEB-INF/slime/loader/rhino.js"));
-				}
-			});
+					@Override public String getPlatformCode() throws IOException {
+						return streams.readString(getServletContext().getResourceAsStream("WEB-INF/loader.platform.js"));
+					}
+
+					@Override public String getRhinoCode() throws IOException {
+						return streams.readString(getServletContext().getResourceAsStream("WEB-INF/loader.rhino.js"));
+					}
+				});
+			} catch (IOException e) {
+				throw new RuntimeException("Could not load Slime rhino loader.", e);
+			}
+		}
+		
+		public void register(Script script) {
+			Servlet.this.script = script;
+		}
+		
+		public Scriptable getRhinoLoader() throws IOException {
+			return this.rhinoLoader;
 		}
 		
 		public Code.Source getServletResources() {

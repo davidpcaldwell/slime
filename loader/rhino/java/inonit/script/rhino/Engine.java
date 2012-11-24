@@ -116,6 +116,9 @@ public class Engine {
 
 		private org.mozilla.javascript.tools.debugger.Dim dim;
 		private org.mozilla.javascript.tools.debugger.SwingGui gui;
+		
+		private RhinoDebugger() {
+		}
 
 		private org.mozilla.javascript.tools.debugger.Dim.SourceInfo getSourceInfo(String id) {
 			return dim.sourceInfo(id);
@@ -232,13 +235,17 @@ public class Engine {
 		private class ContextFactoryInner extends ContextFactory {
 			private Loader.Classes classes = Loader.Classes.create(Configuration.this.getApplicationClassLoader());
 			
+			ContextFactoryInner() {
+				ClassLoader parent = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+				this.classes = Loader.Classes.create(parent);
+			}
+			
 			final Loader.Classes getLoaderClasses() {
 				return classes;
 			}
 			
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
-				ClassLoader parent = (Configuration.this.getApplicationClassLoader() == null) ? Engine.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
 				rv.setApplicationClassLoader(classes);
 				rv.setErrorReporter(new Engine.Errors().getErrorReporter());
 				rv.setOptimizationLevel(getOptimizationLevel());
@@ -547,7 +554,9 @@ public class Engine {
 		public static Source create(String sourceName, String s) {
 			return new ReaderSource(sourceName, new StringReader(s));
 		}
-
+		
+		//	TODO	should look at unifying Code.Source and Engine.Source
+		
 		/**
 			Creates a new <code>Source</code> using the contents of the given file.
 

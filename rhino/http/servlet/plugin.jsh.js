@@ -20,6 +20,8 @@ plugin({
 			var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 			
 			var base = (p.base) ? p.base : jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" });
+			
+			this.base = base;
 
 			var port = (p.port) ? p.port : (function() {
 				var address = new Packages.java.net.ServerSocket(0);
@@ -33,10 +35,8 @@ plugin({
 			tomcat.setBaseDir(base);
 			tomcat.setPort(port);
 			
-			
 			var server = $loader.file("server.js");
-			
-			
+
 			this.map = function(m) {
 				if (m.path && m.servlets) {
 					var context = tomcat.addContext(m.path, base.pathname.java.adapt().getCanonicalPath());
@@ -60,8 +60,8 @@ plugin({
 											this.code = servletFile.pathname;
 
 											this.$exports = {};
-										},
-										$context: server
+											this.server = server;
+										}
 									};
 									//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this
 									//			if (false) and delete the $context/$host rigamarole at the top of api.js
@@ -80,11 +80,19 @@ plugin({
 						));
 						context.addServletMapping(pattern,servletName);					
 					}
+				} else if (typeof(m.path) == "string" && m.webapp) {
+					throw new Error("Currently does not work, apparently, due to issues with ClassLoaders");
+					var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());					jsh.shell.echo("Added " + context);
 				}
 			}
 			
 			this.start = function() {
 				tomcat.start();
+			}
+			
+			this.run = function() {
+				tomcat.start();
+				tomcat.getServer().await();
 			}
 		}
 	}

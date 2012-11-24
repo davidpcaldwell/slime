@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" version="2.5">
+	<servlet>
+		<servlet-name>slime</servlet-name>
+		<servlet-class>inonit.script.servlet.Servlet</servlet-class>
+		<init-param>
+			<param-name>script</param-name>
+			<param-value>__SCRIPT__</param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>slime</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+</web-app>
