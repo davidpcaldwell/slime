@@ -85,20 +85,20 @@ public class Main {
 					return getClass().getName() + " [packaged]";
 				}
 
-				public Shell.Script getPlatformLoader() {
-					return Shell.Script.create("loader.js", ClassLoader.getSystemResourceAsStream("$jsh/loader.js"));
+				public Engine.Source getPlatformLoader() {
+					return Engine.Source.create("loader.js", ClassLoader.getSystemResourceAsStream("$jsh/loader.js"));
 				}
 
-				public Shell.Script getRhinoLoader() {
-					return Shell.Script.create("rhino.js", ClassLoader.getSystemResourceAsStream("$jsh/rhino.js"));
+				public Engine.Source getRhinoLoader() {
+					return Engine.Source.create("rhino.js", ClassLoader.getSystemResourceAsStream("$jsh/rhino.js"));
 				}
 
-				public Shell.Script getJshLoader() {
+				public Engine.Source getJshLoader() {
 					InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/jsh.js");
 					if (in == null) {
 						throw new RuntimeException("Not found in system class loader: $jsh/jsh.js" + "; system class path is " + System.getProperty("java.class.path"));
 					}
-					return Shell.Script.create("jsh.js", in);
+					return Engine.Source.create("jsh.js", in);
 				}
 
 				public Code getShellModuleCode(String path) {
@@ -125,7 +125,7 @@ public class Main {
 
 			invocation = new Shell.Invocation() {
 				public Script getScript() {
-					return Script.create(Shell.Script.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
+					return Script.create(Engine.Source.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
 				}
 
 				public String[] getArguments() {
@@ -176,16 +176,16 @@ public class Main {
 					throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
 				}
 
-				public Shell.Script getPlatformLoader() {
-					return Shell.Script.create(getFile("loader", "literal.js"));
+				public Engine.Source getPlatformLoader() {
+					return Engine.Source.create(getFile("loader", "literal.js"));
 				}
 
-				public Shell.Script getRhinoLoader() {
-					return Shell.Script.create(getFile("rhino", "literal.js"));
+				public Engine.Source getRhinoLoader() {
+					return Engine.Source.create(getFile("rhino", "literal.js"));
 				}
 
-				public Shell.Script getJshLoader() {
-					return Shell.Script.create(getFile("jsh", "jsh.js"));
+				public Engine.Source getJshLoader() {
+					return Engine.Source.create(getFile("jsh", "jsh.js"));
 				}
 
 				public Code getShellModuleCode(String path) {

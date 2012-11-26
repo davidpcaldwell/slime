@@ -117,6 +117,9 @@ public class Engine {
 		private org.mozilla.javascript.tools.debugger.Dim dim;
 		private org.mozilla.javascript.tools.debugger.SwingGui gui;
 
+		private RhinoDebugger() {
+		}
+
 		private org.mozilla.javascript.tools.debugger.Dim.SourceInfo getSourceInfo(String id) {
 			return dim.sourceInfo(id);
 		}
@@ -199,7 +202,6 @@ public class Engine {
 
 	public static abstract class Configuration {
 		public static final Configuration DEFAULT = new Configuration() {
-
 			@Override public ClassLoader getApplicationClassLoader() {
 				return null;
 			}
@@ -218,6 +220,10 @@ public class Engine {
 			return Context.getCurrentContext();
 		}
 
+		final Loader.Classes getLoaderClasses() {
+			return factory.getLoaderClasses();
+		}
+
 		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
 			dim.attachTo(factory);
 		}
@@ -227,11 +233,20 @@ public class Engine {
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
+			private Loader.Classes classes = Loader.Classes.create(Configuration.this.getApplicationClassLoader());
+
+			ContextFactoryInner() {
+				ClassLoader parent = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+				this.classes = Loader.Classes.create(parent);
+			}
+
+			final Loader.Classes getLoaderClasses() {
+				return classes;
+			}
+
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
-				if (Configuration.this.getApplicationClassLoader() != null) {
-					rv.setApplicationClassLoader(Configuration.this.getApplicationClassLoader());
-				}
+				rv.setApplicationClassLoader(classes);
 				rv.setErrorReporter(new Engine.Errors().getErrorReporter());
 				rv.setOptimizationLevel(getOptimizationLevel());
 				return rv;
@@ -532,9 +547,15 @@ public class Engine {
 			return new ReaderSource(sourceName, reader);
 		}
 
+		public static Engine.Source create(String name, InputStream in) {
+			return create(name, new InputStreamReader(in));
+		}
+
 		public static Source create(String sourceName, String s) {
 			return new ReaderSource(sourceName, new StringReader(s));
 		}
+
+		//	TODO	should look at unifying Code.Source and Engine.Source
 
 		/**
 			Creates a new <code>Source</code> using the contents of the given file.
@@ -559,6 +580,8 @@ public class Engine {
 
 		abstract String getSourceName();
 		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
+
+		public abstract Reader getReader();
 
 		public final void setDebug(boolean debug) {
 			this.debug = debug;
@@ -606,6 +629,10 @@ public class Engine {
 			ReaderSource(String id, java.io.Reader reader) {
 				this.id = id;
 				this.reader = reader;
+			}
+
+			public Reader getReader() {
+				return reader;
 			}
 
 			final String getSourceName() {
@@ -918,5 +945,9 @@ public class Engine {
 
 	public Debugger getDebugger() {
 		return this.debugger;
+	}
+
+	public Loader.Classes getApplicationClassLoader() {
+		return this.contexts.getLoaderClasses();
 	}
 }

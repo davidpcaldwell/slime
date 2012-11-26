@@ -1,0 +1,113 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
+var jsdom = jsh.script.loader.file("jsdom.js");
+
+var BASE = jsh.script.getRelativePath("../..").directory;
+
+var pages = {};
+pages.jsh = {};
+XML.ignoreWhitespace = false;
+XML.prettyPrinting = false;
+pages.jsh.unit = BASE.getFile("jsh/unit/api.html").read(XML);
+var document = jsdom.E4X.Document(pages.jsh.unit);
+var xhtml = "http://www.w3.org/1999/xhtml";
+var root = document.get(jsdom.filter({ name: "html" }))[0];
+var head = root.get(jsdom.filter({ name: "head" }))[0];
+var body = root.get(jsdom.filter({ name: "body" }))[0];
+var css = head.get(function(node) {
+	return node.name && node.name.local == "link" && /api\.css$/.test(node.getAttribute("href"));
+})[0];
+if (css) {
+	head.remove(css);
+}
+var top = "../../loader/api/";
+head.append(new jsdom.Element({
+	name: {
+		namespace: xhtml,
+		local: "link"
+	},
+	attributes: [
+		{ local: "rel", value: "stylesheet" },
+		{ local: "type", value: "text/css" },
+		{ local: "href", value: top + "api.css" }
+	]
+}));
+
+var verify = function(b) {
+	if (!b) {
+		throw new Error("Assertion failed.");
+	}
+};
+
+var link = head.get(jsdom.filter({ name: "link" }))[0];
+verify(typeof(link) != "undefined");
+verify(link.name.local == "link");
+verify(link.getAttribute("rel") == "stylesheet");
+root.toString();
+head.toString();
+body.insert(new jsdom.Element({
+	name: {
+		namespace: xhtml,
+		local: "a"
+	},
+	attributes: [
+		{ local: "href", value: top + "index.html" }
+	],
+	children: [
+		new jsdom.Text("Documentation Home")
+	]
+}), { index: 0 });
+var inserted = body.get()[0];
+verify(typeof(inserted) != "undefined");
+verify(inserted.name.local == "a");
+verify(inserted.get()[0].toString() == "Documentation Home");
+var jsapiDiv = body.get({
+	//	TODO	probably need to be able to return STOP or something from filter to stop searching below a certain element
+	//	TODO	may want to look into xpath
+	recursive: true,
+	filter: function(node) {
+		if (!node.name) return false;
+		var elements = node.get(function(child) {
+			return Boolean(child.name);
+		});
+		if (elements[0] && elements[0].name.local == "h1") {
+			if (elements[0].get()[0] && elements[0].get()[0].toString() == "jsapi.jsh.js") {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+})[0];
+var before = body.toString();
+verify(before == body.toString());
+if (jsapiDiv) {
+	body.remove({
+		recursive: true,
+		node: jsapiDiv
+	});
+	verify(before != body.toString());
+}
+var withJsapiAttribute = root.get({
+	recursive: true,
+	filter: function(node) {
+		return node.getAttribute && node.getAttribute({
+			namespace: "http://www.inonit.com/jsapi",
+			name: "test"
+		}) != null;
+	}
+});
+verify(withJsapiAttribute.length == 1);
+debugger;

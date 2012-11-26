@@ -61,14 +61,25 @@ this.jsh = new function() {
 			}
 		}
 
+		var Loader = function(p) {
+			var rv = new rhinoLoader.Loader(p);
+			return jsh.io.Loader(rv);
+		}
+
 		this.plugin = new function() {
 			this.read = function(_code,scope) {
-				var loader = new rhinoLoader.Loader({ _source: _code.getScripts() });
+				var loader = new Loader({ _source: _code.getScripts() });
 				return loader.run("plugin.jsh.js", scope);
-//				return rhinoLoader.run({
-//					_source: _code.getScripts(),
-//					path: "plugin.jsh.js"
-//				}, scope);
+			};
+			this.run = function(_code,path,scope,target) {
+				rhinoLoader.run(
+					{
+						_source: _code.getScripts(),
+						path: path
+					},
+					scope,
+					target
+				);
 			};
 			this.file = function(_code,path,context) {
 				return rhinoLoader.file(
@@ -80,15 +91,8 @@ this.jsh = new function() {
 				);
 			};
 			this.module = function(_code,main,context) {
-				var loader = new rhinoLoader.Loader({ _code: _code });
+				var loader = new Loader({ _code: _code });
 				return loader.module(main, { $context: context });
-//				return rhinoLoader.module(
-//					{
-//						_code: _code,
-//						main: main
-//					},
-//					{ $context: context }
-//				);
 			};
 			this.addClasses = function(_code) {
 				rhinoLoader.classpath.add(_code.getClasses());
@@ -126,12 +130,12 @@ this.jsh = new function() {
 			}
 			if (format.slime) {
 				var descriptor = rhinoLoader.Module.packed(format.slime,format.name);
-				var loader = new rhinoLoader.Loader({ _code: descriptor._code });
+				var loader = new Loader({ _code: descriptor._code });
 				return loader.module(format.name,p);
 //				return rhinoLoader.module(rhinoLoader.Module.packed(format.slime,format.name),p);
 			} else if (format.base) {
 				var descriptor = rhinoLoader.Module.unpacked(format.base,format.name);
-				var loader = new rhinoLoader.Loader({ _code: descriptor._code });
+				var loader = new Loader({ _code: descriptor._code });
 				return loader.module(format.name,p);
 //				return rhinoLoader.module(rhinoLoader.Module.unpacked(format.base,format.name),p);
 			} else {
@@ -151,18 +155,6 @@ this.jsh = new function() {
 			return rhinoLoader.namespace(name);
 		}
 
-		var Loader = function(_source) {
-			var rv = new rhinoLoader.Loader({ _source: _source });
-			rv.resource = (function(target) {
-				return function(path) {
-					var _in = target._resource(path);
-					if (!_in) return null;
-					return jsh.io.java.adapt(_in);
-				}
-			})(rv);
-			return rv;
-		}
-
 		var self = this;
 		this.Loader = function(directory) {
 			var args = function() {
@@ -175,7 +167,9 @@ this.jsh = new function() {
 				}
 
 				var rv = toArray.apply(null, arguments);
-				rv[0] = directory.getRelativePath(arguments[0]);
+				if (typeof(arguments[0]) == "string") {
+					rv[0] = directory.getRelativePath(arguments[0]);
+				}
 				return rv;
 			}
 
@@ -226,8 +220,12 @@ this.jsh = new function() {
 //}
 //$api.experimental($exports,"Loader");
 
-		if ($host.getLoader().getPackagedCode()) {
-			this.bundled = new Loader($host.getLoader().getPackagedCode());
+		this.getBundled = function() {
+			if ($host.getLoader().getPackagedCode()) {
+				return new Loader({ _source: $host.getLoader().getPackagedCode() });
+			} else {
+				return function(){}();
+			}
 		}
 	}
 
@@ -237,10 +235,10 @@ this.jsh = new function() {
 		this.module = loader.module;
 		this.namespace = loader.namespace;
 
-		if (loader.bundled) {
-			this.bundled = loader.bundled;
-			loader.$api.deprecate(this,"bundled");
-		}
+//		if (loader.bundled) {
+//			this.bundled = loader.bundled;
+//			loader.$api.deprecate(this,"bundled");
+//		}
 
 		this.addFinalizer = function(f) {
 			addFinalizer(f);
@@ -288,6 +286,10 @@ this.jsh = new function() {
 		context.api = {
 			js: js,
 			java: java
+		}
+
+		if ($shell.environment.PATHEXT) {
+			context.pathext = $shell.environment.PATHEXT.split(";");
 		}
 
 		context.stdio = new function() {
@@ -380,7 +382,7 @@ this.jsh = new function() {
 			})(),
 			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
 			Loader: loader.Loader,
-			loader: loader.bundled
+			loader: loader.getBundled()
 		},"jsh/script");
 		jsh.shell.getopts = loader.$api.deprecate(rv.getopts);
 		return rv;
@@ -419,6 +421,9 @@ this.jsh = new function() {
 					}
 					this.module = function(path,context) {
 						return loader.plugin.module(_code,path,context);
+					}
+					this.run = function(path,scope,target) {
+						return loader.plugin.run(_code,path,scope,target);
 					}
 				})(_code);
 				loader.plugin.read(_code,scope);

@@ -13,6 +13,8 @@
 package inonit.script.rhino;
 
 import java.io.*;
+import java.util.*;
+import java.net.*;
 
 import org.mozilla.javascript.*;
 
@@ -20,6 +22,30 @@ public abstract class Loader {
 	public abstract String getPlatformCode() throws IOException;
 	public abstract String getRhinoCode() throws IOException;
 
+	//	TODO	verify whether this class needs to be public in order to be used by script calls
+	public static class Bootstrap {
+		private Engine engine;
+		private Loader loader;
+
+		Bootstrap(Engine engine, Loader loader) {
+			this.engine = engine;
+			this.loader = loader;
+		}
+
+		public String getPlatformCode() throws IOException {
+			return loader.getPlatformCode();
+		}
+
+		public Classpath getClasspath() {
+			return engine.getApplicationClassLoader().toScriptClasspath();
+		}
+
+		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
+			engine.script(name, in, scope, target);
+		}
+	}
+
+	//	Used in literal.js to support operations on the class loader
 	public static abstract class Classpath {
 		public abstract void append(Code.Source code);
 
@@ -33,39 +59,87 @@ public abstract class Loader {
 		}
 	}
 
-	public abstract Classpath getClasspath();
-
-	protected abstract Engine getEngine();
-
-//	public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
-//		getEngine().script(name, in, scope, target);
-//	}
-
-	//	TODO	verify whether this class needs to be public in order to be used by script calls
-	public static class Bootstrap {
-		private Loader loader;
-
-		Bootstrap(Loader loader) {
-			this.loader = loader;
+	public static abstract class Classes extends ClassLoader {
+		public static Classes create(ClassLoader delegate) {
+			return new New(delegate);
 		}
 
-		public String getPlatformCode() throws IOException {
-			return loader.getPlatformCode();
+		public abstract Loader.Classpath toScriptClasspath();
+
+		Classes() {
+			super();
 		}
 
-		public Classpath getClasspath() {
-			return loader.getClasspath();
+		Classes(ClassLoader delegate) {
+			super(delegate);
 		}
 
-		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
-			loader.getEngine().script(name, in, scope, target);
+		private static class New extends Classes {
+			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
+
+			New(ClassLoader delegate) {
+				super(delegate);
+			}
+
+			protected Class findClass(String name) throws ClassNotFoundException {
+				for (Code.Source source : locations) {
+					String path = name.replace('.', '/') + ".class";
+					try {
+						InputStream in = source.getResourceAsStream(path);
+						if (in != null) {
+							String[] tokens = name.split("\\.");
+							String packageName = tokens[0];
+							for (int i=1; i<tokens.length-1; i++) {
+								packageName += "." + tokens[i];
+							}
+							if (getPackage(packageName) == null) {
+								definePackage(packageName,null,null,null,null,null,null,null);
+							}
+							byte[] b = new inonit.script.runtime.io.Streams().readBytes(in);
+							return defineClass(name, b, 0, b.length);
+						}
+					} catch (IOException e) {
+						//	do nothing
+					}
+				}
+				throw new ClassNotFoundException(name);
+			}
+
+			protected URL findResource(String name) {
+				for (Code.Source source : locations) {
+					Code.Classes classes = source.getClasses();
+					if (classes != null) {
+						URL url = classes.getResource(name);
+						if (url != null) {
+							return url;
+						}
+					}
+				}
+				return null;
+			}
+
+			public Loader.Classpath toScriptClasspath() {
+				return new Loader.Classpath() {
+					@Override public void append(Code.Source code) {
+						locations.add(code);
+					}
+
+					@Override public Class getClass(String name) {
+						try {
+							return New.this.loadClass(name);
+						} catch (ClassNotFoundException e) {
+							return null;
+						}
+					}
+				};
+			}
 		}
 	}
 
-	public final Scriptable initialize(Engine engine) throws IOException {
+	public static Scriptable load(Engine engine, Loader loader) throws IOException {
 		Engine.Program program = new Engine.Program();
-		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(this))));
-		program.add(Engine.Source.create("<rhino loader>", this.getRhinoCode()));
+		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
+		program.add(Engine.Source.create("<rhino loader>", loader.getRhinoCode()));
 		return (Scriptable)engine.execute(program);
 	}
 }

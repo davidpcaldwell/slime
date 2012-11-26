@@ -11,9 +11,63 @@ Portions created by the Initial Developer are Copyright (C) 2010 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>api.html format</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+	<script>//<![CDATA[
+		debugger;
+		window.addEventListener("load", function() {
+			var all = document.getElementsByTagName("*");
+			var match = [];
+			for (var i=0; i<all.length; i++) {
+				if (all[i].getAttribute("class") == "template") {
+					match.push(all[i]);
+				}
+			}
+			for (var i=0; i<match.length; i++) {
+				var inner = match[i].innerHTML;
+				inner = inner.split("\n");
+				debugger;
+				var tabs = 0;
+				var more = true;
+				while(more) {
+					var allMatched = true;
+					for (var j=0; j<inner.length-1; j++) {
+						var matched = true;
+						for (var k=0; k<tabs+1; k++) {
+							if (inner[j].length > 0 && inner[j].substring(k,k+1) != "\t") {
+								debugger;
+								matched = false;
+							}
+						}
+						if (!matched) {
+							allMatched = false;
+						}
+					}
+					if (allMatched) {
+						tabs++;
+					} else {
+						more = false;
+					}
+				}
+				debugger;
+				for (j=0; j<inner.length-1; j++) {
+					if (inner[j].length >= tabs) {
+						inner[j] = inner[j].substring(tabs);
+					}
+					inner[inner.length-1] = "";
+				}
+				var pre = document.createElement("pre");
+				match[i].innerHTML = "";
+				match[i].appendChild(pre);
+				//	${cursor} is NetBeans-only
+				pre.innerHTML = inner.join("\n").replace(/\</g, "&lt;").replace(/\>/g, "&gt;").replace(/\$\{cursor\}/g, "");
+			}
+		}, false);
+	//]]></script>
 </head>
 <body>
 	<div>
@@ -23,11 +77,11 @@ END LICENSE
 			<code>class="type"</code>."
 		</p>
 		<h1>Documentation</h1>
-		<p>
+		<div>
 			<strong>Context</strong> and <strong>Exports</strong> are objects. They should be contained in <code>div</code>
 			elements with an appropriate <code>h1</code> element containing the word "Context" or "Exports." After this
 			information, they can commence with the <code>ul</code> described below containing their properties.
-			<!--
+			<blockquote id="template.body" class="template">
 				<div>${cursor}__DESCRIPTION__</div>
 				<div>
 					<h1>Context</h1>
@@ -39,35 +93,35 @@ END LICENSE
 					<ul>
 					</ul>
 				</div>
-			-->
-		</p>
-		<p>
+			</blockquote>
+		</div>
+		<div>
 			An object is an unordered list (<code>ul</code>) of properties.
-		</p>
-		<p>
+		</div>
+		<div>
 			Each property is a <code>li</code> which can be a <code>li.object</code>, <code>li.function</code>,
 			<code>li.constructor</code>, or <code>li.value</code>. If a function can be called both as a function and a constructor,
 			it may appear twice in the list.
-		</p>
-		<p>
+		</div>
+		<div>
 			The type of a value (for example, the types of non-object properties, or function arguments or return values) can be
 			specified using a <code>span.type</code> at the beginning of their content.
-		</p>
-		<p>
+		</div>
+		<div>
 			These property <code>li</code> elements each contain a <code>div.name</code>. This is the name of
 			the property.
-		</p>
-		<!--
+		</div>
+		<div><blockquote class="template" id="template.value">
 			<li class="value">
 				<div class="name">${cursor}__NAME__</div>
 				<span class="type">__TYPE__</span>
 				<span>__DESCRIPTION__</span>
 			</li>
-		-->
-		<p>
+		</blockquote></div>
+		<div>
 			<code>li.object</code> elements should contain a <code>div.label</code> containing
 			the text "has properties." This will cause the description of that object to display comprehensibly.
-			<!--
+			<blockquote class="template" id="template.object">
 				<li class="object">
 					<div class="name">${cursor}__NAME__</div>
 					<span>__DESCRIPTION__</span>
@@ -75,8 +129,8 @@ END LICENSE
 					<ul>
 					</ul>
 				</li>
-			-->
-		</p>
+			</blockquote>
+		</div>
 		<div>
 			<h2>Function / Constructor</h2>
 			<p>
@@ -95,7 +149,7 @@ END LICENSE
 				<code>div.label</code> containing the word "Returns" or "Instances" as appropriate. Then can contain HTML
 				describing the return value(s) expected and the circumstances under which each value might be expected.
 			</p>
-			<!--
+			<blockquote class="template" id="template.function">
 				<li class="function">
 					<div class="name">${cursor}__NAME__</div>
 					<span>__DESCRIPTION__</span>
@@ -110,8 +164,8 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
-			-->
-			<!--
+			</blockquote>
+			<blockquote class="template" id="template.constructor">
 				<li class="constructor">
 					<div class="name">${cursor}__NAME__</div>
 					<span>__DESCRIPTION__</span>
@@ -126,7 +180,7 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
-			-->
+			</blockquote>
 			<p>
 				<!--	TODO	Add div.prototype?, "serves as extra stuff for new." I believe this meant that this would further
 								describe the use of this object as a constructor.	-->
@@ -141,7 +195,7 @@ END LICENSE
 				description <code>span</code> and a <code>ul</code> of properties (preceded by a <code>div.label</code> with the
 				text "has properties:"). Other code can then link to types using links to <code>#types.<i>name</i></code>.
 			</p>
-			<!--
+			<div><blockquote class="template" id="template.type">
 				<div class="type">
 					<a class="type" name="types.__NAME__">__NAME__</a>
 					<span>__DESCRIPTION__</span>
@@ -149,7 +203,7 @@ END LICENSE
 					<ul>
 					</ul>
 				</div>
-			-->
+			</blockquote></div>
 		</div>
 	</div>
 	<div>

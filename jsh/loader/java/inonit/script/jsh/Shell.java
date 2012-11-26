@@ -32,56 +32,10 @@ public class Shell {
 		return Host.create(installation, configuration, invocation).load();
 	}
 
-	public static abstract class Script {
-		public static Script create(final File f) {
-			if (!f.exists()) return null;
-			return new Script() {
-				public String getName() {
-					try {
-						return f.getCanonicalPath();
-					} catch (java.io.IOException e) {
-						throw new RuntimeException(e);
-					}
-				}
-
-				public Reader getReader() {
-					try {
-						return new FileReader(f);
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			};
-		}
-
-		public static Script create(final String name, final Reader reader) {
-			return new Script() {
-				public String getName() {
-					return name;
-				}
-
-				public Reader getReader() {
-					return reader;
-				}
-			};
-		}
-
-		public static Script create(String name, InputStream in) {
-			return create(name, new InputStreamReader(in));
-		}
-
-		public abstract String getName();
-		public abstract Reader getReader();
-
-		final Engine.Source toSource() {
-			return Engine.Source.create(getName(), getReader());
-		}
-	}
-
 	public static abstract class Installation {
-		public abstract Script getPlatformLoader();
-		public abstract Script getRhinoLoader();
-		public abstract Script getJshLoader();
+		public abstract Engine.Source getPlatformLoader();
+		public abstract Engine.Source getRhinoLoader();
+		public abstract Engine.Source getJshLoader();
 
 		/**
 		 *	Specifies where code for "shell modules" -- modules included with jsh itself -- can be found.
@@ -143,68 +97,23 @@ public class Shell {
 		public abstract Map getEnvironment();
 		public abstract Stdio getStdio();
 
-		static abstract class Classpath extends ClassLoader {
-			static Classpath create(ClassLoader delegate) {
-				return new ModulesClasspath(delegate);
-			}
-
-			abstract Loader.Classpath toLoaderClasspath();
-		}
-
-		private static class ModulesClasspath extends Classpath {
-			private ClassLoader current;
-
-			ModulesClasspath(ClassLoader delegate) {
-				this.current = delegate;
-			}
-
-			protected Class findClass(String name) throws ClassNotFoundException {
-				return current.loadClass(name);
-			}
-
-			public Loader.Classpath toLoaderClasspath() {
-				return new Loader.Classpath() {
-					@Override public void append(Code.Source classes) {
-						current = classes.getClassLoader(current);
-					}
-
-					@Override public Class getClass(String name) {
-						try {
-							return ModulesClasspath.this.loadClass(name);
-						} catch (ClassNotFoundException e) {
-							return null;
-						}
-					}
-				};
-			}
-		}
-
 		private Engine engine;
-		private Classpath classpath;
 
 		final void initialize() {
-			final Configuration configuration = this;
-			this.classpath = Classpath.create(configuration.getClassLoader());
 			Engine.Configuration contexts = new Engine.Configuration() {
-				@Override
-				public ClassLoader getApplicationClassLoader() {
-					return classpath;
+				@Override public ClassLoader getApplicationClassLoader() {
+					return Configuration.this.getClassLoader();
 				}
 
-				@Override
-				public int getOptimizationLevel() {
-					return configuration.getOptimizationLevel();
+				@Override public int getOptimizationLevel() {
+					return Configuration.this.getOptimizationLevel();
 				}
 			};
-			this.engine = Engine.create(configuration.getDebugger(), contexts);
+			this.engine = Engine.create(Configuration.this.getDebugger(), contexts);
 		}
 
 		Engine getEngine() {
 			return engine;
-		}
-
-		Classpath getClasspath() {
-			return classpath;
 		}
 
 		public static abstract class Stdio {
@@ -216,17 +125,21 @@ public class Shell {
 
 	public static abstract class Invocation {
 		public static abstract class Script {
-			private static Script create(final Shell.Script delegate, final File file) {
+			private static Script create(final Engine.Source delegate, final File file) {
 				return new Script() {
 					@Override
 					public File getFile() {
 						return file;
 					}
 
-					@Override
-					public String getName() {
-						return delegate.getName();
+					public Engine.Source getSource() {
+						return delegate;
 					}
+
+//					@Override
+//					public String getName() {
+//						return delegate.getName();
+//					}
 
 					@Override
 					public Reader getReader() {
@@ -236,14 +149,14 @@ public class Shell {
 			}
 
 			static Script create(File file) {
-				return create(Shell.Script.create(file), file);
+				return create(Engine.Source.create(file), file);
 			}
 
-			static Script create(final Shell.Script delegate) {
+			static Script create(final Engine.Source delegate) {
 				return create(delegate, null);
 			}
 
-			public abstract String getName();
+//			public abstract String getName();
 			/**
 				Returns the <code>java.io.File</code> object corresponding to the main script.
 
@@ -252,6 +165,7 @@ public class Shell {
 			*/
 			public abstract File getFile();
 			public abstract Reader getReader();
+			public abstract Engine.Source getSource();
 		}
 
 		public abstract Script getScript();
@@ -302,13 +216,13 @@ public class Shell {
 			jsh.setDontenum(true);
 			program.set(jsh);
 
-			Script jshJs = installation.getJshLoader();
+			Engine.Source jshJs = installation.getJshLoader();
 			if (jshJs == null) {
 				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
 			}
-			program.add(jshJs.toSource());
+			program.add(jshJs);
 			//	TODO	jsh could execute this below
-			program.add(Engine.Source.create(invocation.getScript().getName(), invocation.getScript().getReader()));
+			program.add(invocation.getScript().getSource());
 			return program;
 		}
 
@@ -350,12 +264,12 @@ public class Shell {
 				return getClass().getName()
 					+ " engine=" + configuration.getEngine()
 					+ " installation=" + installation
-					+ " classpath=" + configuration.getClasspath()
+					+ " classpath=" + configuration.getEngine().getApplicationClassLoader()
 				;
 			}
 
 			public Scriptable getRhinoLoader() throws IOException {
-				inonit.script.rhino.Loader loader = new inonit.script.rhino.Loader() {
+				return inonit.script.rhino.Loader.load(configuration.getEngine(), new inonit.script.rhino.Loader() {
 					@Override public String getPlatformCode() throws IOException {
 						return new Streams().readString(installation.getPlatformLoader().getReader());
 					}
@@ -363,16 +277,7 @@ public class Shell {
 					@Override public String getRhinoCode() throws IOException {
 						return new Streams().readString(installation.getRhinoLoader().getReader());
 					}
-
-					@Override public inonit.script.rhino.Loader.Classpath getClasspath() {
-						return configuration.getClasspath().toLoaderClasspath();
-					}
-
-					@Override protected Engine getEngine() {
-						return Host.this.configuration.getEngine();
-					}
-				};
-				return loader.initialize(configuration.getEngine());
+				});
 			}
 
 			public class Loader {
@@ -396,7 +301,7 @@ public class Shell {
 				//			module and remove this?
 				public Class getJavaClass(String name) {
 					try {
-						return configuration.getClasspath().loadClass(name);
+						return configuration.getEngine().getApplicationClassLoader().loadClass(name);
 					} catch (ClassNotFoundException e) {
 						return null;
 					}
@@ -405,7 +310,7 @@ public class Shell {
 				//	TODO	Currently used in httpd unit testing in embedded server, possibly; may be able to get rid of it
 				//			given the new architecture running httpd unit tests in jsh subshell
 				public ClassLoader getClassLoader() {
-					return configuration.getClasspath();
+					return configuration.getEngine().getApplicationClassLoader();
 				}
 			}
 

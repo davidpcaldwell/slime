@@ -13,8 +13,13 @@
 package inonit.script.rhino;
 
 import java.io.*;
+import java.net.*;
 
 public abstract class Code {
+	public static abstract class Classes {
+		public abstract URL getResource(String path);
+	}
+
 //	private static Source createSource(File[] files) {
 //		try {
 //			java.net.URL[] urls = new java.net.URL[files.length];
@@ -71,16 +76,34 @@ public abstract class Code {
 //			};
 //		}
 //
-		static Source create(final Source source, final String prefix) {
+		//	public because used within script for servlet launching to load associated servlet classes; alternative would be to
+		//	create a loader and load the servlet classes from that
+		public static Source create(final Source source, final String prefix) {
 			//	TODO	should figure out /; maybe should only add it if we don't already end in it
 			final String prepend = (prefix != null) ? (prefix + "/") : "";
-			return new ResourceBased() {
+			return new Source() {
 				@Override public String toString() {
 					return Source.class.getName() + " source=" + source + " prefix=" + prefix;
 				}
 
 				public InputStream getResourceAsStream(String path) throws IOException {
 					return source.getResourceAsStream(prepend + path);
+				}
+
+				public Classes getClasses() {
+					final Classes delegate = source.getClasses();
+					if (delegate == null) {
+						return null;
+					}
+					return new Classes() {
+						@Override public URL getResource(String path) {
+							return delegate.getResource(prepend+path);
+						}
+					};
+				}
+
+				public ClassLoader getClassLoader(ClassLoader delegate) {
+					throw new RuntimeException("Unused?");
 				}
 			};
 		}
@@ -103,15 +126,18 @@ public abstract class Code {
 
 		public static Source create(final Resources resources) {
 			return new ResourceBased() {
-				@Override
-				public InputStream getResourceAsStream(String path) throws IOException {
+				@Override public InputStream getResourceAsStream(String path) throws IOException {
 					return resources.getResourceAsStream(path);
+				}
+
+				@Override public Classes getClasses() {
+					return null;
 				}
 			};
 		}
 
-		public abstract ClassLoader getClassLoader(ClassLoader delegate);
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
+		public abstract Classes getClasses();
 
 		private static class UrlBased extends Source {
 			private java.net.URL url;
@@ -124,51 +150,32 @@ public abstract class Code {
 				return Code.class.getName() + " url=" + url;
 			}
 
-			public final ClassLoader getClassLoader(ClassLoader delegate) {
-				java.net.URLClassLoader loader = new java.net.URLClassLoader(new java.net.URL[]{url}, delegate);
-				return loader;
+			public InputStream getResourceAsStream(String path) {
+				URL url = getClasses().getResource(path);
+				if (url != null) {
+					try {
+						return url.openStream();
+					} catch (IOException e) {
+						//	if we cannot open it, returning null seems fine
+					}
+				}
+				return null;
 			}
 
-			public InputStream getResourceAsStream(String path) {
-				return getClassLoader(null).getResourceAsStream(path);
+			public Classes getClasses() {
+				return new Classes() {
+					private java.net.URLClassLoader delegate = new java.net.URLClassLoader(new java.net.URL[] {url});
+
+					@Override public URL getResource(String path) {
+						return delegate.getResource(path);
+					}
+				};
 			}
 		}
 
 		private static abstract class ResourceBased extends Source {
-			public ClassLoader getClassLoader(final ClassLoader delegate) {
-				return new ClassLoader(delegate) {
-					private Source classes = ResourceBased.this;
-
-					public String toString() {
-						return Code.class.getName() + " classes=" + classes + " delegate=" + delegate;
-					}
-
-					protected Class findClass(String name) throws ClassNotFoundException {
-						try {
-							String path = name.replace('.', '/') + ".class";
-							InputStream in = classes.getResourceAsStream(path);
-							if (in == null) {
-								throw new ClassNotFoundException(name);
-							}
-							int i;
-							ByteArrayOutputStream out = new ByteArrayOutputStream();
-							try {
-								while ((i = in.read()) != -1) {
-									out.write(i);
-								}
-							} catch (NullPointerException e) {
-								//	TODO	Grotesque hack; when this is JAR file which does not have this entry, this is the
-								//			error that will result because of implementation of
-								//			sun.net.www.protocol.jar.JarURLConnection$JarURLInputStream
-								throw new ClassNotFoundException(name);
-							}
-							byte[] b = out.toByteArray();
-							return defineClass(name, b, 0, b.length);
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				};
+			public Classes getClasses() {
+				return null;
 			}
 		}
 	}
@@ -275,8 +282,4 @@ public abstract class Code {
 
 	public abstract Source getScripts();
 	public abstract Source getClasses();
-
-	public ClassLoader getClassLoader(final ClassLoader delegate) {
-		return getClasses().getClassLoader(delegate);
-	}
 }

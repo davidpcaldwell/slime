@@ -15,18 +15,22 @@
 debug.on = true;
 //	TODO	could we get our own location using a stack trace and make this unnecessary?
 if (!env.JSH_SLIME_SRC) {
-	jsh.shell.echo("Required: environment variable JSH_SLIME_SRC");
-	jsh.shell.exit(1);
+	Packages.java.lang.System.err.println("Required: environment variable JSH_SLIME_SRC");
+	exit(1);
 }
 debug("Source: " + String(env.JSH_SLIME_SRC));
 var JSH_SLIME_SRC = new (function() {
 	var _base;
+
+	debug("user.dir=" + Packages.java.lang.System.getProperty("user.dir"));
 
 	if (platform.cygwin) {
 		_base = new Packages.java.io.File(platform.cygwin.cygpath.windows(String(env.JSH_SLIME_SRC)));
 	} else {
 		_base = new Packages.java.io.File(String(env.JSH_SLIME_SRC));
 	}
+
+	debug("_base: " + _base.getCanonicalPath());
 
 	var getFile = function(path) {
 		return new Packages.java.io.File(_base, path);
@@ -136,7 +140,7 @@ args.push(
 	{
 		env: new (function() {
 			for (var x in env) {
-				if (x == "JSH_SCRIPT_DEBUGGER") {
+				if (x == "JSH_SCRIPT_DEBUGGER" || x == "JSH_PLUGINS") {
 					this[x] = env[x];
 				} else if (/^JSH_/.test(x)) {
 				} else {
