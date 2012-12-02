@@ -50,7 +50,7 @@ plugin({
 			var server = $loader.file("server.js");
 
 			this.map = function(m) {
-				if (m.path && m.servlets) {
+				if (typeof(m.path) == "string" && m.servlets) {
 					var context = tomcat.addContext(m.path, base.pathname.java.adapt().getCanonicalPath());
 					var id = 0;
 					for (var pattern in m.servlets) {
@@ -66,7 +66,8 @@ plugin({
 									var apiScope = {
 										$host: new function() {
 											this.loaders = {
-												script: new jsh.script.Loader(servletFile.parent)
+												script: new jsh.script.Loader(servletFile.parent),
+												container: m.resources
 											};
 
 											this.code = servletFile.pathname;
@@ -94,7 +95,8 @@ plugin({
 					}
 				} else if (typeof(m.path) == "string" && m.webapp) {
 					throw new Error("Currently does not work, apparently, due to issues with ClassLoaders");
-					var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());					jsh.shell.echo("Added " + context);
+					var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());
+					jsh.shell.echo("Added " + context);
 				}
 			}
 

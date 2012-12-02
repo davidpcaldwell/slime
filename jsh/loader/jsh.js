@@ -156,6 +156,9 @@ this.jsh = new function() {
 		}
 
 		var self = this;
+		
+		//	TODO	this implementation would be much simpler if we could use a normal loader/rhino loader with a _source, but
+		//			right now this would cause Cygwin loaders to fail, probably
 		this.Loader = function(directory) {
 			var args = function() {
 				var toArray = function() {
@@ -183,6 +186,12 @@ this.jsh = new function() {
 
 			this.module = function(path) {
 				return self.module.apply(null, args.apply(null, arguments));
+			}
+			
+			this.resource = function(path) {
+				var file = directory.getFile(path);
+				if (!file) return null;
+				return file.read(jsh.io.Streams.binary);
 			}
 		}
 		//	Below code was in earlier version from jsh/script; worth reviewing, especially SlimeDirectory

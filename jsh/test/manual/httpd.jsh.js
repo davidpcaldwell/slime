@@ -10,29 +10,64 @@
 //	Contributor(s):
 //	END LICENSE
 
-var tomcat = new jsh.httpd.Tomcat({
-});
-jsh.shell.echo("Tomcat port: " + tomcat.port);
-var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/hello.servlet.js").file;
-tomcat.map({
-	path: "/",
-	servlets: {
-		"/*": script
+(function() {
+	jsh.shell.echo("hello servlet");
+	var tomcat = new jsh.httpd.Tomcat({
+	});
+	jsh.shell.echo("Tomcat port: " + tomcat.port);
+	var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/hello.servlet.js").file;
+	tomcat.map({
+		path: "/",
+		servlets: {
+			"/*": script
+		}
+	});
+	tomcat.start();
+	var client = new jsh.http.Client();
+	var response = client.request({
+		url: "http://127.0.0.1:" + tomcat.port + "/"
+	});
+	if (!/^text\/plain/.test(response.body.type)) {
+		jsh.shell.echo("Type = " + response.body.type);
+		jsh.shell.exit(1);
 	}
-});
-tomcat.start();
-var client = new jsh.http.Client();
-var response = client.request({
-	url: "http://127.0.0.1:" + tomcat.port + "/"
-});
-if (!/^text\/plain/.test(response.body.type)) {
-	jsh.shell.echo("Type = " + response.body.type);
-	jsh.shell.exit(1);
-}
-var string = response.body.stream.character().asString();
-if (string != "Hello, World!") {
-	jsh.shell.echo("string = " + string);
-	jsh.shell.exit(1);
-};
-jsh.shell.echo("Success! " + jsh.script.file);
+	var string = response.body.stream.character().asString();
+	if (string != "Hello, World!") {
+		jsh.shell.echo("string = " + string);
+		jsh.shell.exit(1);
+	};
+})();
+(function() {
+	jsh.shell.echo("file servlet");
+	var tomcat = new jsh.httpd.Tomcat({});
+	var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file
+	tomcat.map({
+		path: "/",
+		servlets: {
+			"/*": script
+		},
+		resources: new jsh.script.Loader(jsh.script.getRelativePath("../../..").directory)
+	});
+	tomcat.start();
+	var client = new jsh.http.Client();
+	var response = client.request({
+		url: "http://127.0.0.1:" + tomcat.port + "/" + "rhino/http/servlet/test/file.servlet.js"
+	});
+	if (response.status.code != 200) {
+		jsh.shell.echo("status = " + response.status.code);
+		jsh.shell.exit(1);
+	}
+	jsh.shell.echo(response.body.type);
+	var code = {
+		http: response.body.stream.character().asString(),
+		file: jsh.script.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file.read(String)
+	};
+	if (code.http != code.file) {
+		jsh.shell.echo("did not match code");
+		jsh.shell.exit(1);
+	} else {
+		jsh.shell.echo("code matches: http = " + code.http + " file = " + code.file);
+	}
+})();
+jsh.shell.echo("Success! " + jsh.script.file);	
 jsh.shell.exit(0);

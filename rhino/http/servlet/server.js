@@ -11,6 +11,7 @@
 //	END LICENSE
 
 var Request = function(_request) {
+	this.path = String(_request.getPathInfo()).substring(1);
 }
 
 $exports.Servlet = function(script) {
