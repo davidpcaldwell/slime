@@ -28,6 +28,17 @@ plugin({
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
+		
+		jsh.httpd.Resources = function(pathname) {
+			var mapping = [];
+			
+			jsh.loader.run(pathname, {
+				map: function(pathname,path) {
+					mapping.push({ pathname: pathname, path: path });
+				}
+			});
+		};
+		
 		jsh.httpd.Tomcat = function(p) {
 			var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 

@@ -14,7 +14,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		to: jsh.file.Pathname,
 		servletapi: jsh.file.Pathname,
-		resources: jsh.script.getopts.ARRAY(String),
+		resources: jsh.file.Pathname,
 		norhino: false,
 		servlet: String
 	}
@@ -78,18 +78,18 @@ var SLIME = jsh.script.getRelativePath("../../../..").directory;
 	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 })();
 
-(function() {
-	parameters.options.resources.forEach(function(item) {
-		var tokens = item.split("=");
-		var from = jsh.file.Pathname(tokens[0]);
-		var to = WEBAPP.getRelativePath(tokens[1]);
-		var node = (function() {
-			if (from.file) return from.file;
-			if (from.directory) return from.directory;
-		})();
-		node.copy(to, { recursive: true });
+if (parameters.options.resources) {
+	jsh.loader.run(parameters.options.resources, {
+		map: function(pathname,path) {
+			var to = WEBAPP.getRelativePath(path);
+			var node = (function() {
+				if (pathname.file) return pathname.file;
+				if (pathname.directory) return pathname.directory;
+			})();
+			node.copy(to, { recursive: true });		
+		}
 	});
-})();
+}
 
 (function() {
 	var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);

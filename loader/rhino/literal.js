@@ -126,6 +126,22 @@
 				//			to do this
 				$loader.classpath.append(p._code);
 				return new Loader(p._code.getScripts());
+			} else if (p.resources) {
+				var _resources = new JavaAdapter(
+					Packages.inonit.script.rhino.Code.Source.Resources,
+					new function() {
+						this.toString = function() {
+							return p.resources.toString();
+						}
+						
+						this.getResourceAsStream = function(path) {
+							var stream = p.resources.getResourceAsStream(path);
+							if (stream) return stream.java.adapt();
+							return null;
+						}
+					}
+				);
+				return new Loader(Packages.inonit.script.rhino.Code.Source.create(_resources));
 			} else if (p.getCode) {
 				return new loader.Loader({
 					getCode: function(path) {

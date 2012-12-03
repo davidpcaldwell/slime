@@ -126,6 +126,10 @@ public abstract class Code {
 
 		public static Source create(final Resources resources) {
 			return new ResourceBased() {
+				@Override public String toString() {
+					return Code.Source.class.getName() + " resources=" + resources;
+				}
+				
 				@Override public InputStream getResourceAsStream(String path) throws IOException {
 					return resources.getResourceAsStream(path);
 				}
@@ -147,7 +151,7 @@ public abstract class Code {
 			}
 
 			@Override public String toString() {
-				return Code.class.getName() + " url=" + url;
+				return Code.Source.class.getName() + " url=" + url;
 			}
 
 			public InputStream getResourceAsStream(String path) {
