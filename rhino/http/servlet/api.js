@@ -47,13 +47,16 @@ var $code = (function() {
 	if ($host.getServletResources && $host.getServletScriptPath) {
 		var path = String($host.getServletScriptPath());
 		var tokens = path.split("/");
-		return tokens[tokens.length-1];
+		var path = tokens[tokens.length-1];
+		return function(scope) {
+			$loader.run(path,scope);
+		};
 //		return {
 //			name: String($host.getServletScriptPath()),
 //			_in: $host.getServletResources().getResourceAsStream($host.getServletScriptPath())
 //		};
-	} else if ($host.code) {
-		return $host.code;
+	} else if ($host.getCode) {
+		return $host.getCode;
 	} else {
 		throw new Error();
 	}
@@ -94,7 +97,7 @@ scope.$loader = (function() {
 	//			global loader; in the jsh embedding, it should resolve them relative to the current directory of the script
 })();
 
-$loader.run($code, scope);
+$code(scope);
 
 var servlet = new server.Servlet(scope.$exports);
 

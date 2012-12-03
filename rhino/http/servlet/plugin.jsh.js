@@ -81,7 +81,9 @@ plugin({
 												container: m.resources
 											};
 
-											this.code = servletFile.pathname;
+											this.getCode = function(scope) {
+												jsh.loader.run(servletFile.pathname, scope);
+											}
 
 											this.$exports = {};
 											this.server = server;

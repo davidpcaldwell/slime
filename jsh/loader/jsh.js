@@ -173,52 +173,7 @@ this.jsh = new function() {
 					}
 				}
 			});
-			rv = jsh.io.Loader(rv);
-			var self = this;
-			["run", "file", "module", "resource"].forEach(function(method) {
-				self[method] = function() {
-					if (typeof(arguments[0]) == "string") {
-						return rv[method].apply(rv,arguments);
-					} else if (typeof(parent[method]) == "function") {
-						return parent[method].apply(parent,arguments);
-					} else {
-						throw new Error("No method " + method);
-					}
-				}
-			});
-//			var args = function() {
-//				var toArray = function() {
-//					var rv = [];
-//					for (var i=0; i<arguments.length; i++) {
-//						rv[i] = arguments[i];
-//					}
-//					return rv;
-//				}
-//
-//				var rv = toArray.apply(null, arguments);
-//				if (typeof(arguments[0]) == "string") {
-//					rv[0] = directory.getRelativePath(arguments[0]);
-//				}
-//				return rv;
-//			}
-//
-//			this.run = function(path) {
-//				return self.run.apply(null, args.apply(null, arguments));
-//			}
-//
-//			this.file = function(path) {
-//				return self.file.apply(null, args.apply(null, arguments));
-//			}
-//
-//			this.module = function(path) {
-//				return self.module.apply(null, args.apply(null, arguments));
-//			}
-//			
-//			this.resource = function(path) {
-//				var file = directory.getFile(path);
-//				if (!file) return null;
-//				return file.read(jsh.io.Streams.binary);
-//			}
+			return jsh.io.Loader(rv);
 		}
 		//	Below code was in earlier version from jsh/script; worth reviewing, especially SlimeDirectory
 //$exports.Loader = function(paths) {
