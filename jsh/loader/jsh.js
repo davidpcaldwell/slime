@@ -69,7 +69,7 @@ this.jsh = new function() {
 
 		var Loader = function(p) {
 			var rv = new rhinoLoader.Loader(p);
-			return jsh.io.Loader(rv);
+			return jsh.io.Loader.decorate(rv);
 		}
 
 		this.plugin = new function() {
@@ -258,6 +258,7 @@ this.jsh = new function() {
 
 		var io = loader.bootstrap({
 			$java: new Packages.inonit.script.runtime.io.Streams()
+			,$rhino: loader.getRhinoLoader()
 			,stdio: context.stdio
 			,api: {
 				java: java

@@ -99,7 +99,7 @@ $exports.Searchpath.prototype = prototypes.Searchpath;
 //	TODO	this implementation would be much simpler if we could use a normal loader/rhino loader with a _source, but
 //			right now this would cause Cygwin loaders to fail, probably
 $exports.Loader = function(directory) {
-	var rv = new $context.api.loader.Loader({
+	return new $context.api.io.Loader({
 		resources: new function() {
 			this.toString = function() {
 				return "rhino/file Loader: directory=" + directory;
@@ -112,9 +112,7 @@ $exports.Loader = function(directory) {
 			}
 		}
 	});
-	return $context.api.io.Loader(rv);
-}
-
+};
 
 //	Possibly used for initial attempt to produce HTTP filesystem, for example
 $exports.Filesystem = os.Filesystem;

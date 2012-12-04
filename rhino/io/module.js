@@ -417,7 +417,32 @@ $exports.Writer = Writer;
 $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
-$exports.Loader = function(rv) {
+$exports.Loader = function(p) {
+	if (p.resources) {
+		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
+		//			on this package into it
+		var _resources = new JavaAdapter(
+			Packages.inonit.script.rhino.Code.Source.Resources,
+			new function() {
+				this.toString = function() {
+					return p.resources.toString();
+				}
+
+				this.getResourceAsStream = function(path) {
+					var stream = p.resources.getResourceAsStream(path);
+					if (stream) return stream.java.adapt();
+					return null;
+				}
+			}
+		);
+		var rv = new $context.$rhino.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(_resources) });
+		arguments.callee.decorate(rv);
+		return rv;
+	} else {
+		throw new TypeError();
+	}
+};
+$exports.Loader.decorate = function(rv) {
 	rv.resource = (function(target) {
 		return function(path) {
 			var _in = target._resource(path);
