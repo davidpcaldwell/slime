@@ -77,7 +77,7 @@ plugin({
 									var apiScope = {
 										$host: new function() {
 											this.loaders = {
-												script: new jsh.script.Loader(servletFile.parent),
+												script: new jsh.file.Loader(servletFile.parent),
 												container: m.resources
 											};
 
