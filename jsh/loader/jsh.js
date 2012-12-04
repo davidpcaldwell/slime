@@ -27,11 +27,17 @@ this.jsh = new function() {
 	}
 
 	var loader = new function() {
-		var rhinoLoader = $host.getRhinoLoader();
+		var rhinoLoader = (function() {
+			var rv = $host.getRhinoLoader();
+			rv.$api.deprecate.warning = function(o) {
+				debugger;
+			}
+			return rv;
+		})();
 
-		rhinoLoader.$api.deprecate.warning = function(o) {
-			debugger;
-		}
+		this.getRhinoLoader = function() {
+			return rhinoLoader;
+		};
 
 		this.$platform = rhinoLoader.$platform;
 		this.$api = rhinoLoader.$api;
@@ -155,61 +161,6 @@ this.jsh = new function() {
 			return rhinoLoader.namespace(name);
 		}
 		
-		var parent = this;
-
-		//	TODO	this implementation would be much simpler if we could use a normal loader/rhino loader with a _source, but
-		//			right now this would cause Cygwin loaders to fail, probably
-		this.Loader = function(directory) {
-			var rv = new rhinoLoader.Loader({
-				resources: new function() {
-					this.toString = function() {
-						return "(jsh) loader.Loader: directory=" + directory;
-					}
-					
-					this.getResourceAsStream = function(path) {
-						var file = directory.getFile(path);
-						if (file) return file.read(jsh.io.Streams.binary);
-						return null;
-					}
-				}
-			});
-			return jsh.io.Loader(rv);
-		}
-		//	Below code was in earlier version from jsh/script; worth reviewing, especially SlimeDirectory
-//$exports.Loader = function(paths) {
-//	//	TODO	do we also need the analog of loader.run()?
-//	this.file = function(path) {
-//		var args = [ paths.file(path) ];
-//		for (var i=1; i<arguments.length; i++) {
-//			args[i] = arguments[i];
-//		}
-//		return jsh.loader.file.apply(jsh.loader,args);
-//	}
-//
-//	this.module = function(path) {
-//		var args = [ paths.module(path) ];
-//		for (var i=1; i<arguments.length; i++) {
-//			args[i] = arguments[i];
-//		}
-//		return jsh.loader.module.apply(jsh.loader,args);
-//	}
-//}
-//$exports.Loader.Paths = function(base) {
-//	this.file = function(path) {
-//		return base.getRelativePath(path);
-//	}
-//
-//	this.module = function(path) {
-//		return base.getRelativePath(path);
-//	}
-//}
-//$exports.Loader.SlimeDirectory = function(dir) {
-//	return function(path) {
-//		return dir.getRelativePath(path.substring(0,path.length-1).replace(/\//g,".") + ".slime")
-//	}
-//}
-//$api.experimental($exports,"Loader");
-
 		this.getBundled = function() {
 			if ($host.getLoader().getPackagedCode()) {
 				return new Loader({ _source: $host.getLoader().getPackagedCode() });
@@ -274,6 +225,7 @@ this.jsh = new function() {
 		context._streams = new Packages.inonit.script.runtime.io.Streams();
 
 		context.api = {
+			loader: loader.getRhinoLoader(),
 			js: js,
 			java: java
 		}
@@ -312,9 +264,8 @@ this.jsh = new function() {
 			}
 		}, "rhino/io");
 
-		context.api.io = io;
-
 		jsh.io = io;
+		context.api.io = io;
 
 		jsh.file = loader.bootstrap(
 			context,
@@ -371,7 +322,6 @@ this.jsh = new function() {
 				return null;
 			})(),
 			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
-			Loader: loader.Loader,
 			loader: loader.getBundled()
 		},"jsh/script");
 		jsh.shell.getopts = loader.$api.deprecate(rv.getopts);

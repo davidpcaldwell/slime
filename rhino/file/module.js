@@ -96,6 +96,26 @@ $exports.Searchpath.createEmpty = function() {
 $api.deprecate($exports.Searchpath,"createEmpty");
 $exports.Searchpath.prototype = prototypes.Searchpath;
 
+//	TODO	this implementation would be much simpler if we could use a normal loader/rhino loader with a _source, but
+//			right now this would cause Cygwin loaders to fail, probably
+$exports.Loader = function(directory) {
+	var rv = new $context.api.loader.Loader({
+		resources: new function() {
+			this.toString = function() {
+				return "rhino/file Loader: directory=" + directory;
+			}
+
+			this.getResourceAsStream = function(path) {
+				var file = directory.getFile(path);
+				if (file) return file.read($context.api.io.Streams.binary);
+				return null;
+			}
+		}
+	});
+	return $context.api.io.Loader(rv);
+}
+
+
 //	Possibly used for initial attempt to produce HTTP filesystem, for example
 $exports.Filesystem = os.Filesystem;
 $api.experimental($exports,"Filesystem");
