@@ -429,7 +429,7 @@ $exports.Loader = function(p) {
 				}
 
 				this.getResourceAsStream = function(path) {
-					var stream = p.resources.getResourceAsStream(path);
+					var stream = p.resources.getResourceAsStream(String(path));
 					if (stream) return stream.java.adapt();
 					return null;
 				}
