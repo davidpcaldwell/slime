@@ -52,7 +52,7 @@
 	tomcat.start();
 	var client = new jsh.http.Client();
 	var response = client.request({
-		url: "http://127.0.0.1:" + tomcat.port + "/" + "rhino/http/servlet/test/file.servlet.js"
+		url: "http://127.0.0.1:" + tomcat.port + "/" + "test/file.servlet.js"
 	});
 	if (response.status.code != 200) {
 		jsh.shell.echo("status = " + response.status.code);
@@ -61,7 +61,7 @@
 	jsh.shell.echo(response.body.type);
 	var code = {
 		http: response.body.stream.character().asString(),
-		file: jsh.script.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file.read(String)
+		file: script.read(String)
 	};
 	if (code.http != code.file) {
 		jsh.shell.echo("did not match code");

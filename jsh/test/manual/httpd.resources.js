@@ -1,1 +1,1 @@
-map("",$mapping.getRelativePath("../../.."));
+map("",$mapping.getRelativePath("../../../rhino/http/servlet/"));

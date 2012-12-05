@@ -80,6 +80,7 @@ var SLIME = jsh.script.getRelativePath("../../../..").directory;
 
 if (parameters.options.resources) {
 	jsh.loader.run(parameters.options.resources, {
+		$mapping: parameters.options.resources.file,
 		map: function(pathname,path) {
 			var to = WEBAPP.getRelativePath(path);
 			var node = (function() {
