@@ -24,17 +24,19 @@ $exports.Servlet = function(script) {
 				_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} else if (response === null) {
 				_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_FOUND);
-			} else if (typeof(response) == "object" && response.status && response.headers && response.body) {
+			} else if (typeof(response) == "object" && response.status && typeof(response.status.code) == "number") {
 				_response.setStatus(response.status.code);
-				response.headers.forEach(function(header) {
-					_response.addHeader(header.name, header.value);
-				});
-				if (response.body.type) {
+				if (response.headers) {
+					response.headers.forEach(function(header) {
+						_response.addHeader(header.name, header.value);
+					});
+				}
+				if (response.body && response.body.type) {
 					_response.setContentType(response.body.type);
 				}
-				if (response.body.string) {
+				if (response.body && response.body.string) {
 					_response.getWriter().write(response.body.string);
-				} else if (response.body.stream) {
+				} else if (response.body && response.body.stream) {
 					_streams.copy(response.body.stream.java.adapt(),_response.getOutputStream());
 					response.body.stream.java.adapt().close();
 				}
