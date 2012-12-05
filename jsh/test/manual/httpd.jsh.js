@@ -46,7 +46,8 @@
 		servlets: {
 			"/*": script
 		},
-		resources: new jsh.script.Loader(jsh.script.getRelativePath("../../..").directory)
+		//	TODO	is there a jsh.script.getFile()?
+		resources: new jsh.httpd.Resources(jsh.script.getRelativePath("httpd.resources.js").file)
 	});
 	tomcat.start();
 	var client = new jsh.http.Client();

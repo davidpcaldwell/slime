@@ -29,15 +29,7 @@ plugin({
 			jsh.httpd = {};
 		}
 		
-		jsh.httpd.Resources = function(pathname) {
-			var mapping = [];
-			
-			jsh.loader.run(pathname, {
-				map: function(pathname,path) {
-					mapping.push({ pathname: pathname, path: path });
-				}
-			});
-		};
+		$loader.file("resources.js").addJshPluginTo(jsh);
 		
 		jsh.httpd.Tomcat = function(p) {
 			var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
