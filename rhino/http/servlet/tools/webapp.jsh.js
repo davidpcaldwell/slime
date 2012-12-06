@@ -43,7 +43,7 @@ if (!parameters.options.norhino) {
 	})();
 }
 
-var SLIME = jsh.script.getRelativePath("../../../..").directory;
+var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 
 (function() {
 	//	Compile the servlet to WEB-INF/classes
@@ -81,13 +81,38 @@ var SLIME = jsh.script.getRelativePath("../../../..").directory;
 if (parameters.options.resources) {
 	jsh.loader.run(parameters.options.resources, {
 		$mapping: parameters.options.resources.file,
-		map: function(pathname,path) {
-			var to = WEBAPP.getRelativePath(path);
+		map: function(prefix,pathname) {
+			var to = WEBAPP.getRelativePath(prefix);
 			var node = (function() {
 				if (pathname.file) return pathname.file;
 				if (pathname.directory) return pathname.directory;
+				throw new Error("Not directory or file: " + pathname);
 			})();
-			node.copy(to, { recursive: true });		
+			
+			var copy = function(node,pathname) {
+				var recurse = arguments.callee;
+				if (node.directory) {
+					var to = pathname.createDirectory({
+						ifExists: function(dir) {
+							return false;
+						},
+						recursive: true
+					});
+					var nodes = node.list();
+					nodes.forEach(function(item) {
+						jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
+						recurse(item,to.getRelativePath(item.pathname.basename));
+					});
+				} else {
+					node.copy(pathname, {
+						filter: function(item) {
+							return true;
+						}
+					});
+				}
+			}
+			
+			copy(node,to)
 		}
 	});
 }
@@ -95,5 +120,7 @@ if (parameters.options.resources) {
 (function() {
 	var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);
 	xml = xml.replace(/__SCRIPT__/, parameters.options.servlet);
+	//	The below line removes the license, because Tomcat cannot parse it; this may or may not be what we want
+	xml = xml.substring(xml.indexOf("-->") + "-->".length + 1);
 	WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 })();
