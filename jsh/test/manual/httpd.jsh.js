@@ -13,7 +13,8 @@
 var parameters = jsh.script.getopts({
 	options: {
 		"tomcat.home": jsh.file.Pathname,
-		"tomcat.base": jsh.file.Pathname
+		"tomcat.base": jsh.file.Pathname,
+		suite: "all"
 	}
 });
 
@@ -124,7 +125,7 @@ var server = new function() {
 	
 	var webapps;
 	
-	this.initialize = function() {
+	var initialize = function() {
 		environment.CATALINA_HOME.getFile("conf/server.xml").copy(environment.CATALINA_BASE.getRelativePath("conf/server.xml"), {
 			recursive: true
 		});
@@ -146,7 +147,7 @@ var server = new function() {
 		});		
 	};
 	
-	this.build = function() {
+	var build = function() {
 		jsh.shell.echo("Building webapps ...");
 
 		var buildWebapp = function(urlpath,servletpath) {
@@ -197,6 +198,8 @@ var server = new function() {
 	};
 	
 	this.start = function() {
+		initialize();
+		build();
 		jsh.shell.echo("Starting server at " + environment.CATALINA_HOME + " with base " + environment.CATALINA_BASE + " ...");
 		
 		new jsh.java.Thread(catalina("run")).start();
@@ -210,18 +213,24 @@ var server = new function() {
 	}
 }
 
-plugin.hello();
-plugin.file();
+var suites = {
+	plugin: function() {
+		plugin.hello();
+		plugin.file();		
+	},
+	server: function() {
+		server.start();
+		jsh.shell.echo("Test hello servlet inside Tomcat ...");
+		helloServlet.test("http://127.0.0.1:8080/slime.hello/");
+		server.stop();
+	},
+	all: function() {
+		this.plugin();
+		this.server();
+	}
+};
 
-(function() {
-	jsh.shell.echo("Inside Tomcat ...");
-	//	TODO	may need to fork the below, perhaps using "start"
-	server.initialize();
-	server.build();
-	server.start();
-	helloServlet.test("http://127.0.0.1:8080/slime.hello/");
-	server.stop();
-})();
+suites[parameters.options.suite]();
 
 jsh.shell.echo("Success! " + jsh.script.file);	
 jsh.shell.exit(0);
