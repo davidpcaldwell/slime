@@ -66,36 +66,42 @@ var fileServlet = new function() {
 	}	
 };
 
-(function() {
-	jsh.shell.echo("hello servlet");
-	var tomcat = new jsh.httpd.Tomcat({
-	});
-	jsh.shell.echo("Tomcat port: " + tomcat.port);
-	var script = jsh.script.script.getRelativePath("../../../rhino/http/servlet/test/hello.servlet.js").file;
-	tomcat.map({
-		path: "/",
-		servlets: {
-			"/*": script
-		}
-	});
-	tomcat.start();
-	helloServlet.test("http://127.0.0.1:" + tomcat.port + "/");
-})();
-(function() {
-	jsh.shell.echo("file servlet");
-	var tomcat = new jsh.httpd.Tomcat({});
-	var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file
-	tomcat.map({
-		path: "/",
-		servlets: {
-			"/*": script
-		},
-		//	TODO	is there a jsh.script.getFile()?
-		resources: new jsh.httpd.Resources(jsh.script.getRelativePath("httpd.resources.js").file)
-	});
-	tomcat.start();
-	fileServlet.test("http://127.0.0.1:" + tomcat.port + "/");
-})();
+var plugin = new function() {
+	this.hello = function() {
+		jsh.shell.echo("hello servlet");
+		var tomcat = new jsh.httpd.Tomcat({
+		});
+		jsh.shell.echo("Tomcat port: " + tomcat.port);
+		var script = jsh.script.script.getRelativePath("../../../rhino/http/servlet/test/hello.servlet.js").file;
+		tomcat.map({
+			path: "/",
+			servlets: {
+				"/*": script
+			}
+		});
+		tomcat.start();
+		helloServlet.test("http://127.0.0.1:" + tomcat.port + "/");
+	};
+	
+	this.file = function() {
+		jsh.shell.echo("file servlet");
+		var tomcat = new jsh.httpd.Tomcat({});
+		var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file
+		tomcat.map({
+			path: "/",
+			servlets: {
+				"/*": script
+			},
+			//	TODO	is there a jsh.script.getFile()?
+			resources: new jsh.httpd.Resources(jsh.script.getRelativePath("httpd.resources.js").file)
+		});
+		tomcat.start();
+		fileServlet.test("http://127.0.0.1:" + tomcat.port + "/");
+	}
+};
+
+plugin.hello();
+plugin.file();
 
 (function() {
 	jsh.shell.echo("Inside Tomcat ...");
