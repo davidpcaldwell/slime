@@ -100,11 +100,7 @@ var plugin = new function() {
 	}
 };
 
-plugin.hello();
-plugin.file();
-
-(function() {
-	jsh.shell.echo("Inside Tomcat ...");
+var server = new function() {
 	if (!jsh.file.Pathname("/bin/sh").file) {
 		jsh.shell.echo("No Bourne shell");
 		return;
@@ -125,51 +121,57 @@ plugin.file();
 	};
 	jsh.shell.echo("CATALINA_HOME: " + environment.CATALINA_HOME);
 	jsh.shell.echo("CATALINA_BASE: " + environment.CATALINA_BASE);
-	environment.CATALINA_HOME.getFile("conf/server.xml").copy(environment.CATALINA_BASE.getRelativePath("conf/server.xml"), {
-		recursive: true
-	});
-	environment.CATALINA_BASE.getRelativePath("logs").createDirectory({
-		ifExists: function(dir) {
-			return false;
-		}
-	});
-	environment.CATALINA_BASE.getRelativePath("temp").createDirectory({
-		ifExists: function(dir) {
-			return false;
-		}
-	});
-	var webapps = environment.CATALINA_BASE.getRelativePath("webapps").createDirectory({
-		ifExists: function(dir) {
-			return false;
-		},
-		recursive: true
-	});
-	jsh.shell.echo("Building webapps ...");
 	
-	var buildWebapp = function(urlpath,servletpath) {
-		jsh.shell.jsh(
-			jsh.script.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js"),
-			[
-				"-to", webapps.getRelativePath(urlpath),
-				"-servletapi", environment.CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
-				"-resources", jsh.script.getRelativePath("httpd.resources.js"),
-				"-servlet", servletpath
-			],
-			{
-				onExit: function(result) {
-					jsh.shell.echo("Command: " + [result.command].concat(result.arguments).join(" "));
-					jsh.shell.echo("Status: " + result.status);
-					if (result.status) {
-						throw new Error("Exit status: " + result.status);
+	var webapps;
+	
+	this.initialize = function() {
+		environment.CATALINA_HOME.getFile("conf/server.xml").copy(environment.CATALINA_BASE.getRelativePath("conf/server.xml"), {
+			recursive: true
+		});
+		environment.CATALINA_BASE.getRelativePath("logs").createDirectory({
+			ifExists: function(dir) {
+				return false;
+			}
+		});
+		environment.CATALINA_BASE.getRelativePath("temp").createDirectory({
+			ifExists: function(dir) {
+				return false;
+			}
+		});
+		webapps = environment.CATALINA_BASE.getRelativePath("webapps").createDirectory({
+			ifExists: function(dir) {
+				return false;
+			},
+			recursive: true
+		});		
+	};
+	
+	this.build = function() {
+		jsh.shell.echo("Building webapps ...");
+
+		var buildWebapp = function(urlpath,servletpath) {
+			jsh.shell.jsh(
+				jsh.script.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js"),
+				[
+					"-to", webapps.getRelativePath(urlpath),
+					"-servletapi", environment.CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
+					"-resources", jsh.script.getRelativePath("httpd.resources.js"),
+					"-servlet", servletpath
+				],
+				{
+					onExit: function(result) {
+						jsh.shell.echo("Command: " + [result.command].concat(result.arguments).join(" "));
+						jsh.shell.echo("Status: " + result.status);
+						if (result.status) {
+							throw new Error("Exit status: " + result.status);
+						}
 					}
 				}
-			}
-		);		
-	};
-	buildWebapp("slime.hello", "test/hello.servlet.js");
-	buildWebapp("slime.file", "test/file.servlet.js");
-	//	TODO	may need to fork the below, perhaps using "start"
-	jsh.shell.echo("Starting server at " + environment.CATALINA_HOME + " with base " + environment.CATALINA_BASE + " ...");
+			);		
+		};
+		buildWebapp("slime.hello", "test/hello.servlet.js");
+		buildWebapp("slime.file", "test/file.servlet.js");		
+	}
 	
 	var catalina = function(command) {
 		return function() {
@@ -193,13 +195,32 @@ plugin.file();
 			);
 		}
 	};
-	new jsh.java.Thread(catalina("run")).start();
 	
-	//	TODO	horrifying synchronization strategy
-	debugger;
-	Packages.java.lang.Thread.sleep(2000);
+	this.start = function() {
+		jsh.shell.echo("Starting server at " + environment.CATALINA_HOME + " with base " + environment.CATALINA_BASE + " ...");
+		
+		new jsh.java.Thread(catalina("run")).start();
+		//	TODO	horrifying synchronization strategy
+		debugger;
+		Packages.java.lang.Thread.sleep(2000);
+	}
+	
+	this.stop = function() {
+		catalina("stop")();		
+	}
+}
+
+plugin.hello();
+plugin.file();
+
+(function() {
+	jsh.shell.echo("Inside Tomcat ...");
+	//	TODO	may need to fork the below, perhaps using "start"
+	server.initialize();
+	server.build();
+	server.start();
 	helloServlet.test("http://127.0.0.1:8080/slime.hello/");
-	catalina("stop")();
+	server.stop();
 })();
 
 jsh.shell.echo("Success! " + jsh.script.file);	
