@@ -79,6 +79,11 @@ plugin({
 
 											this.$exports = {};
 											this.server = server;
+											this.api = {
+												js: jsh.js,
+												java: jsh.java,
+												io: jsh.io
+											}
 										}
 									};
 									//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this

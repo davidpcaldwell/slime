@@ -53,6 +53,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	var sourcepath = jsh.file.Searchpath([]);
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/java"));
+	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/java"));
 	jsh.java.tools.javac({
 		destination: WEBAPP.getRelativePath("WEB-INF/classes"),
 		classpath: classpath,
@@ -77,7 +78,9 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 	
-	SLIME.getFile("rhino/io/module.js").copy(WEBAPP.getRelativePath("WEB-INF/slime/rhino/io/module.js"), { recursive: true });
+	SLIME.getSubdirectory("js/object").copy(WEBAPP.getRelativePath("WEB-INF/slime/js/object"), { recursive: true });
+	SLIME.getSubdirectory("rhino/host").copy(WEBAPP.getRelativePath("WEB-INF/slime/rhino/host"), { recursive: true });
+	SLIME.getSubdirectory("rhino/io").copy(WEBAPP.getRelativePath("WEB-INF/slime/rhino/io"), { recursive: true });
 })();
 
 if (parameters.options.resources) {

@@ -14,16 +14,40 @@ var scope = {
 	$exports: {}
 };
 
-var Loader = (function() {
+var bootstrap = (function() {
 	if ($host.getRhinoLoader && $host.getServletResources) {
 		var $rhino = $host.getRhinoLoader();
-		var bootstrap = new $rhino.Loader({
+		var loader = new $rhino.Loader({
 			_source: $host.getServletResources()
 		});
-		var io = bootstrap.module("WEB-INF/slime/rhino/io/", {
-			$rhino: $rhino
+		var rv = {};
+		rv.js = loader.module("WEB-INF/slime/js/object/", {
+			globals: true
 		});
-		return io.Loader;
+		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
+			globals: true
+		});
+		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
+			$rhino: $rhino,
+			api: {
+				java: rv.java
+			}
+		});
+		return rv;
+	}
+})();
+
+var Loader = (function() {
+	if (bootstrap) {
+		return bootstrap.io.Loader;
+	}
+})();
+
+var api = (function() {
+	if (bootstrap) {
+		return bootstrap;
+	} else if ($host.api) {
+		return $host.api;
 	}
 })();
 
@@ -76,6 +100,10 @@ var $code = (function() {
 scope.httpd = {};
 
 scope.httpd.loader = resources;
+
+scope.httpd.js = api.js;
+scope.httpd.java = api.java;
+scope.httpd.io = api.io;
 
 var server = (function() {
 	if ($host.server) {

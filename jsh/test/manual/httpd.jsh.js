@@ -71,6 +71,25 @@ var fileServlet = new function() {
 	}	
 };
 
+var apiServlet = new function() {
+	this.test = function(url) {
+		var client = new jsh.http.Client();
+		var response = client.request({
+			url: url
+		});
+		if (response.status.code != 200) {
+			fail("status = " + response.status.code);
+		}
+		jsh.shell.echo(response.body.type);
+		var value = response.body.stream.character().asString();
+		if (value == "true") {
+			jsh.shell.echo("Got response 'true' as expected.");
+		} else {
+			fail("Did not match value: " + value);
+		}
+	}
+}
+
 var plugin = new function() {
 	this.hello = function() {
 		jsh.shell.echo("hello servlet");
@@ -102,6 +121,22 @@ var plugin = new function() {
 		});
 		tomcat.start();
 		fileServlet.test("http://127.0.0.1:" + tomcat.port + "/");
+	}
+	
+	this.api = function() {
+		jsh.shell.echo("plugin api servlet");
+		var tomcat = new jsh.httpd.Tomcat({});
+		var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/api.servlet.js").file
+		tomcat.map({
+			path: "/",
+			servlets: {
+				"/*": script
+			},
+			//	TODO	is there a jsh.script.getFile()?
+			resources: new jsh.httpd.Resources(jsh.script.getRelativePath("httpd.resources.js").file)
+		});
+		tomcat.start();
+		apiServlet.test("http://127.0.0.1:" + tomcat.port + "/");		
 	}
 };
 
@@ -177,7 +212,8 @@ var server = new function() {
 			);		
 		};
 		buildWebapp("slime.hello", "test/hello.servlet.js");
-		buildWebapp("slime.file", "test/file.servlet.js");		
+		buildWebapp("slime.file", "test/file.servlet.js");
+		buildWebapp("slime.api", "test/api.servlet.js");
 	}
 	
 	var started = false;
@@ -228,13 +264,15 @@ var server = new function() {
 var suites = {
 	plugin: function() {
 		plugin.hello();
-		plugin.file();		
+		plugin.file();
+		plugin.api();
 	},
 	server: function() {
 		server.start();
 		jsh.shell.echo("Test hello servlet inside Tomcat ...");
 		helloServlet.test("http://127.0.0.1:8080/slime.hello/");
 		fileServlet.test("http://127.0.0.1:8080/slime.file/");
+		apiServlet.test("http://127.0.0.1:8080/slime.api/");
 		server.stop();
 	},
 	all: function() {
