@@ -14,16 +14,28 @@ var scope = {
 	$exports: {}
 };
 
+var Loader = (function() {
+	if ($host.getRhinoLoader && $host.getServletResources) {
+		var $rhino = $host.getRhinoLoader();
+		var bootstrap = new $rhino.Loader({
+			_source: $host.getServletResources()
+		});
+		var io = bootstrap.module("WEB-INF/slime/rhino/io/", {
+			$rhino: $rhino
+		});
+		return io.Loader;
+	}
+})();
+
 var $loader = (function() {
-	if ($host.getServletResources && $host.getServletScriptPath) {
+	if ($host.getRhinoLoader && $host.getServletResources && $host.getServletScriptPath) {
 		//	servlet container, determine webapp path and load relative to that
 		var path = String($host.getServletScriptPath());
 		var tokens = path.split("/");
-		var rv = tokens.slice(0,tokens.length-1).join("/") + "/";
-		Packages.java.lang.System.err.println("Creating application loader with prefix " + rv);
-		var Loader = $host.getRhinoLoader().Loader;
+		var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
+		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
 		return new Loader({
-			_source: Packages.inonit.script.rhino.Code.Source.create($host.getServletResources(), rv)
+			_source: Packages.inonit.script.rhino.Code.Source.create($host.getServletResources(), prefix)
 		});
 	} else if ($host.loaders) {
 		return $host.loaders.script;
@@ -34,9 +46,8 @@ var $loader = (function() {
 
 var resources = (function() {
 	if ($host.getRhinoLoader && $host.getServletResources) {
-		var rhinoLoader = $host.getRhinoLoader();
-		return new rhinoLoader.Loader({
-			_source: $host.getServletResources()
+		return new Loader({
+			_source: $host.getServletResources()			
 		});
 	} else if ($host.loaders) {
 		return $host.loaders.container;

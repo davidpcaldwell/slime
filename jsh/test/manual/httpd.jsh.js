@@ -14,9 +14,17 @@ var parameters = jsh.script.getopts({
 	options: {
 		"tomcat.home": jsh.file.Pathname,
 		"tomcat.base": jsh.file.Pathname,
+		"debug:server": false,
 		suite: "all"
 	}
 });
+
+//	TODO	probably should use addShutdownHook to stop server; right now, if run in debug mode, does not shut down on success.
+var fail = function(reason) {
+	server.stop();
+	jsh.shell.echo(reason);
+	jsh.shell.exit(1);
+}
 
 var helloServlet = new function() {
 	this.test = function(url) {
@@ -26,15 +34,13 @@ var helloServlet = new function() {
 			url: url
 		});		
 		if (!/^text\/plain/.test(response.body.type)) {
-			jsh.shell.echo("Response is wrong type: " + response.body.type);
-			jsh.shell.exit(1);
+			fail("Response is wrong type: " + response.body.type);
 		} else {
 			jsh.shell.echo("Got correct type: " + response.body.type);
 		}
 		var string = response.body.stream.character().asString();
 		if (string != "Hello, World!") {
-			jsh.shell.echo("string = " + string);
-			jsh.shell.exit(1);
+			fail("string = " + string);
 		} else {
 			jsh.shell.echo("Got correct string: " + string);			
 		}
@@ -50,8 +56,7 @@ var fileServlet = new function() {
 			url: url + "test/file.servlet.js"
 		});
 		if (response.status.code != 200) {
-			jsh.shell.echo("status = " + response.status.code);
-			jsh.shell.exit(1);
+			fail("status = " + response.status.code);
 		}
 		jsh.shell.echo(response.body.type);
 		var code = {
@@ -59,8 +64,7 @@ var fileServlet = new function() {
 			file: script.read(String)
 		};
 		if (code.http != code.file) {
-			jsh.shell.echo("did not match code");
-			jsh.shell.exit(1);
+			fail("did not match code");
 		} else {
 			jsh.shell.echo("code matches: http = " + code.http + " file = " + code.file);
 		}		
@@ -118,10 +122,12 @@ var server = new function() {
 			} else {
 				return jsh.shell.TMPDIR.createTemporary({ directory: true });
 			}
-		})()
+		})(),
+		SLIME_SCRIPT_DEBUGGER: (parameters.options["debug:server"]) ? "rhino" : "none"
 	};
 	jsh.shell.echo("CATALINA_HOME: " + environment.CATALINA_HOME);
 	jsh.shell.echo("CATALINA_BASE: " + environment.CATALINA_BASE);
+	jsh.shell.echo("SLIME_SCRIPT_DEBUGGER: " + environment.SLIME_SCRIPT_DEBUGGER);
 	
 	var webapps;
 	
@@ -174,6 +180,8 @@ var server = new function() {
 		buildWebapp("slime.file", "test/file.servlet.js");		
 	}
 	
+	var started = false;
+	
 	var catalina = function(command) {
 		return function() {
 			jsh.shell.shell(
@@ -187,7 +195,8 @@ var server = new function() {
 						//	Strip trailing slashes from path names, which appear to confuse catalina.sh
 						//	TODO	see if it works without the stripping
 						CATALINA_BASE: environment.CATALINA_BASE.toString().substring(0,environment.CATALINA_BASE.toString().length-1),
-						CATALINA_HOME: environment.CATALINA_HOME.toString().substring(0,environment.CATALINA_HOME.toString().length-1)
+						CATALINA_HOME: environment.CATALINA_HOME.toString().substring(0,environment.CATALINA_HOME.toString().length-1),
+						SLIME_SCRIPT_DEBUGGER: environment.SLIME_SCRIPT_DEBUGGER
 					}),
 					onExit: function(result) {
 						jsh.shell.echo("Executed " + command + " with status: " + result.status);
@@ -203,13 +212,16 @@ var server = new function() {
 		jsh.shell.echo("Starting server at " + environment.CATALINA_HOME + " with base " + environment.CATALINA_BASE + " ...");
 		
 		new jsh.java.Thread(catalina("run")).start();
+		started = true;
 		//	TODO	horrifying synchronization strategy
 		debugger;
 		Packages.java.lang.Thread.sleep(2000);
 	}
 	
 	this.stop = function() {
-		catalina("stop")();		
+		if (started) {
+			catalina("stop")();
+		}
 	}
 }
 
@@ -222,6 +234,7 @@ var suites = {
 		server.start();
 		jsh.shell.echo("Test hello servlet inside Tomcat ...");
 		helloServlet.test("http://127.0.0.1:8080/slime.hello/");
+		fileServlet.test("http://127.0.0.1:8080/slime.file/");
 		server.stop();
 	},
 	all: function() {

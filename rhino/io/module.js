@@ -439,7 +439,9 @@ $exports.Loader = function(p) {
 		arguments.callee.decorate(rv);
 		return rv;
 	} else {
-		throw new TypeError();
+		var rv = new $context.$rhino.Loader(p);
+		arguments.callee.decorate(rv);
+		return rv;
 	}
 };
 $exports.Loader.decorate = function(rv) {

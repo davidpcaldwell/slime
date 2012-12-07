@@ -76,6 +76,8 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader.rhino.js"));
 	SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
+	
+	SLIME.getFile("rhino/io/module.js").copy(WEBAPP.getRelativePath("WEB-INF/slime/rhino/io/module.js"), { recursive: true });
 })();
 
 if (parameters.options.resources) {
