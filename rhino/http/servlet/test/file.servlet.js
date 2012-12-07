@@ -9,7 +9,7 @@ $exports.handle = function(request) {
 			headers: [],
 			body: {
 				type: null,
-				stream: resource
+				stream: resource.read(httpd.io.Streams.binary)
 			}
 		}
 	} else {

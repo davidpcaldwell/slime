@@ -96,7 +96,7 @@ if (zip) {
 		recursive: true
 	});
 	jsh.file.unzip({
-		zip: zip,
+		zip: zip.read(jsh.io.Streams.binary),
 		to: install
 	});
 	install.getRelativePath("plugins").createDirectory();

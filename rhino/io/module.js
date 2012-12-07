@@ -449,7 +449,14 @@ $exports.Loader.decorate = function(rv) {
 		return function(path) {
 			var _in = target._resource(path);
 			if (!_in) return null;
-			return new InputStream(_in);
+			_in.close();
+			return new $exports.Resource({
+				read: {
+					binary: function() {
+						return new InputStream(target._resource(path));
+					}
+				}
+			})
 		}
 	})(rv);
 	return rv;
