@@ -153,7 +153,7 @@ var destination = (function() {
 			console("Usage:");
 			console("java -jar js.jar build.rhino.js <build-destination>");
 			console("-or-");
-			console("java -jar js.jar build.rhino.js -install <installer-jar-location>");
+			console("java -jar js.jar build.rhino.js -installer <installer-jar-location>");
 			exit(1);
 		}
 		return {
