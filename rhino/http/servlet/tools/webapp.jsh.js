@@ -59,7 +59,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 		classpath: classpath,
 		sourcepath: sourcepath,
 		arguments: [
-			jsh.script.getRelativePath("../java/inonit/script/servlet/Servlet.java")
+			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java")
 		],
 		on: new function() {
 			this.exit = function(p) {

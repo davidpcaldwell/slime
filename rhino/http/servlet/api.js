@@ -84,6 +84,7 @@ var $code = (function() {
 		var tokens = path.split("/");
 		var path = tokens[tokens.length-1];
 		return function(scope) {
+			Packages.java.lang.System.err.println("Loading servlet from " + path);
 			$loader.run(path,scope);
 		};
 //		return {

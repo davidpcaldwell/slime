@@ -1,21 +1,26 @@
-$exports.Tomcat = function(p) {	
+$exports.Tomcat = function(p) {
+	this.home = p.home;
+	
 	this.Base = function(pp) {
+		var base = (pp.base) ? pp.base : jsh.shell.TMPDIR.createTemporary({ directory: true });
+		this.base = base;
+		
 		(function() {
 			if (pp.configuration) {
 				//	pp.configuration is file
-				pp.configuration.copy(pp.base.getRelativePath("conf/server.xml"), { recursive: true });
+				pp.configuration.copy(base.getRelativePath("conf/server.xml"), { recursive: true });
 			}
-			pp.base.getRelativePath("logs").createDirectory({
+			base.getRelativePath("logs").createDirectory({
 				ifExists: function(dir) {
 					return false;
 				}
 			});
-			pp.base.getRelativePath("temp").createDirectory({
+			base.getRelativePath("temp").createDirectory({
 				ifExists: function(dir) {
 					return false;
 				}
 			});
-			pp.base.getRelativePath("webapps").createDirectory({
+			base.getRelativePath("webapps").createDirectory({
 				ifExists: function(dir) {
 					return false;
 				}
@@ -34,7 +39,7 @@ $exports.Tomcat = function(p) {
 						environment: jsh.js.Object.set({}, jsh.shell.environment, {
 							//	Strip trailing slashes from path names, which appear to confuse catalina.sh
 							//	TODO	see if it works without the stripping
-							CATALINA_BASE: pp.base.toString().substring(0,pp.base.toString().length-1),
+							CATALINA_BASE: base.toString().substring(0,base.toString().length-1),
 							CATALINA_HOME: p.home.toString().substring(0,p.home.toString().length-1),
 							SLIME_SCRIPT_DEBUGGER: (m && m.debug && m.debug.script) ? "rhino" : "none"
 						}),
@@ -49,12 +54,12 @@ $exports.Tomcat = function(p) {
 		var started = false;
 	
 		this.start = function(m) {
-			jsh.shell.echo("Starting server at " + p.home + " with base " + pp.base + " ...");
+			jsh.shell.echo("Starting server at " + p.home + " with base " + base + " ...");
 
 			new jsh.java.Thread(catalina("run",m)).start();
 			started = true;
-		}		
-	
+		}
+		
 		this.stop = function() {
 			if (started) {
 				catalina("stop")();
