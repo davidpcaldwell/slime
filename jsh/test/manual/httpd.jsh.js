@@ -157,45 +157,30 @@ var server = new function() {
 			} else {
 				return jsh.shell.TMPDIR.createTemporary({ directory: true });
 			}
-		})(),
-		SLIME_SCRIPT_DEBUGGER: (parameters.options["debug:server"]) ? "rhino" : "none"
+		})()
 	};
 	jsh.shell.echo("CATALINA_HOME: " + environment.CATALINA_HOME);
 	jsh.shell.echo("CATALINA_BASE: " + environment.CATALINA_BASE);
-	jsh.shell.echo("SLIME_SCRIPT_DEBUGGER: " + environment.SLIME_SCRIPT_DEBUGGER);
 	
-	var webapps;
-	
-	var initialize = function() {
-		environment.CATALINA_HOME.getFile("conf/server.xml").copy(environment.CATALINA_BASE.getRelativePath("conf/server.xml"), {
-			recursive: true
-		});
-		environment.CATALINA_BASE.getRelativePath("logs").createDirectory({
-			ifExists: function(dir) {
-				return false;
-			}
-		});
-		environment.CATALINA_BASE.getRelativePath("temp").createDirectory({
-			ifExists: function(dir) {
-				return false;
-			}
-		});
-		webapps = environment.CATALINA_BASE.getRelativePath("webapps").createDirectory({
-			ifExists: function(dir) {
-				return false;
-			},
-			recursive: true
-		});		
-	};
+	var tomcat = jsh.script.loader.file("httpd.tomcat.js");
+	var installation = new tomcat.Tomcat({
+		home: environment.CATALINA_HOME
+	});
+	var server = new installation.Base({
+		base: environment.CATALINA_BASE,
+		configuration: environment.CATALINA_HOME.getFile("conf/server.xml")
+	});
 	
 	var build = function() {
 		jsh.shell.echo("Building webapps ...");
 
 		var buildWebapp = function(urlpath,servletpath) {
+			//	TODO	may want to move this to httpd.tomcat.js, although it would need to somehow be aware of location of
+			//			webapp.jsh.js
 			jsh.shell.jsh(
 				jsh.script.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js"),
 				[
-					"-to", webapps.getRelativePath(urlpath),
+					"-to", environment.CATALINA_BASE.getSubdirectory("webapps").getRelativePath(urlpath),
 					"-servletapi", environment.CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
 					"-resources", jsh.script.getRelativePath("httpd.resources.js"),
 					"-servlet", servletpath
@@ -216,48 +201,20 @@ var server = new function() {
 		buildWebapp("slime.api", "test/api.servlet.js");
 	}
 	
-	var started = false;
-	
-	var catalina = function(command) {
-		return function() {
-			jsh.shell.shell(
-				jsh.file.Pathname("/bin/sh"),
-				[
-					parameters.options["tomcat.home"].directory.getRelativePath("bin/catalina.sh"),
-					command
-				],
-				{
-					environment: jsh.js.Object.set({}, jsh.shell.environment, {
-						//	Strip trailing slashes from path names, which appear to confuse catalina.sh
-						//	TODO	see if it works without the stripping
-						CATALINA_BASE: environment.CATALINA_BASE.toString().substring(0,environment.CATALINA_BASE.toString().length-1),
-						CATALINA_HOME: environment.CATALINA_HOME.toString().substring(0,environment.CATALINA_HOME.toString().length-1),
-						SLIME_SCRIPT_DEBUGGER: environment.SLIME_SCRIPT_DEBUGGER
-					}),
-					onExit: function(result) {
-						jsh.shell.echo("Executed " + command + " with status: " + result.status);
-					}
-				}
-			);
-		}
-	};
-	
 	this.start = function() {
-		initialize();
 		build();
-		jsh.shell.echo("Starting server at " + environment.CATALINA_HOME + " with base " + environment.CATALINA_BASE + " ...");
-		
-		new jsh.java.Thread(catalina("run")).start();
-		started = true;
+		server.start({
+			debug: {
+				script: parameters.options["debug:server"]
+			}
+		});
 		//	TODO	horrifying synchronization strategy
 		debugger;
 		Packages.java.lang.Thread.sleep(2000);
 	}
 	
 	this.stop = function() {
-		if (started) {
-			catalina("stop")();
-		}
+		server.stop();
 	}
 }
 
