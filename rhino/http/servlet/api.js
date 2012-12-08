@@ -134,6 +134,7 @@ scope.httpd.http.Response.text = function(string) {
 scope.$loader = (function() {
 	//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the
 	//			global loader; in the jsh embedding, it should resolve them relative to the current directory of the script
+	return $loader;
 })();
 
 $code(scope);
