@@ -70,7 +70,7 @@ plugin({
 										$host: new function() {
 											this.loaders = {
 												script: new jsh.file.Loader(servletFile.parent),
-												container: m.resources
+												container: (m.resources) ? m.resources.loader : null
 											};
 
 											this.getCode = function(scope) {

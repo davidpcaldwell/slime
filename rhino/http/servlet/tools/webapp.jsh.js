@@ -84,42 +84,17 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 })();
 
 if (parameters.options.resources) {
-	jsh.loader.run(parameters.options.resources, {
-		$mapping: parameters.options.resources.file,
-		map: function(prefix,pathname) {
-			var to = WEBAPP.getRelativePath(prefix);
-			var node = (function() {
-				if (pathname.file) return pathname.file;
-				if (pathname.directory) return pathname.directory;
-				throw new Error("Not directory or file: " + pathname);
-			})();
-			
-			var copy = function(node,pathname) {
-				var recurse = arguments.callee;
-				if (node.directory) {
-					var to = pathname.createDirectory({
-						ifExists: function(dir) {
-							return false;
-						},
-						recursive: true
-					});
-					var nodes = node.list();
-					nodes.forEach(function(item) {
-						jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
-						recurse(item,to.getRelativePath(item.pathname.basename));
-					});
-				} else {
-					node.copy(pathname, {
-						filter: function(item) {
-							return true;
-						}
-					});
-				}
-			}
-			
-			copy(node,to)
-		}
-	});
+	//	Right now, we do not assume the plugin is installed, so we will "install" it.
+	var resourcesPlugin = jsh.loader.file(SLIME.getRelativePath("rhino/http/servlet/resources.js"));
+	var namespace = {
+		io: jsh.io,
+		loader: jsh.loader,
+		shell: jsh.shell,
+		httpd: {}
+	};
+	resourcesPlugin.addJshPluginTo(namespace);
+	var resources = namespace.httpd.Resources.script(parameters.options.resources.file);
+	resources.build(WEBAPP);
 }
 
 (function() {
