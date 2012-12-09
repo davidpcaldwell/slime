@@ -21,8 +21,12 @@ $exports.Servlet = function(script) {
 		try {
 			var response = script.handle(new Request(_request));
 			if (typeof(response) == "undefined") {
-				_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				//	TODO	What would it take to write our own error page? Should we try to throw ServletException, for example?
+				//			Should we use setStatus and write some sort of error page normally?
+				debugger;
+				_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Script returned undefined");
 			} else if (response === null) {
+				debugger;
 				_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_FOUND);
 			} else if (typeof(response) == "object" && response.status && typeof(response.status.code) == "number") {
 				_response.setStatus(response.status.code);

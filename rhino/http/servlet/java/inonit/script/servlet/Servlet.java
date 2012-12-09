@@ -84,8 +84,11 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		program.add(Engine.Source.create("<api.js>", getServletContext().getResourceAsStream("WEB-INF/api.js")));
 
 		try {
+			System.err.println("Executing JavaScript program ...");
 			engine.execute(program);
+			System.err.println("Executed program: script = " + script);
 		} catch (Engine.Errors errors) {
+			System.err.println("Caught errors.");
 			errors.dump(
 				new Engine.Log() {
 					@Override
@@ -104,6 +107,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 
 	@Override protected final void service(HttpServletRequest request, HttpServletResponse response) {
+		System.err.println("Executing request ...");
 		script.service(request, response);
 	}
 
