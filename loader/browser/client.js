@@ -78,7 +78,7 @@
 		return (inonit.loader && inonit.loader.url) ? new Bootstrap(inonit.loader.url) : getCurrentScript();
 	})();
 
-	var callback = (inonit.loader.callback) ? inonit.loader.callback : function(){};
+	var callback = (inonit.loader && inonit.loader.callback) ? inonit.loader.callback : function(){};
 
 	//	Now even if the object existed before, we have obtained the specified properties and we replace the existing object with
 	//	this one
