@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME servlet interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	A resource mapping consists of a way to map file system locations to resource paths for a servlet.
 //
 //	This mapping can be shared between jsh plugin implementation of a servlet, where it can be used via the jsh.httpd.Resources
@@ -9,7 +21,7 @@ $exports.addJshPluginTo = function(jsh) {
 		var mapping = [];
 
 		this.map = function(prefix,pathname) {
-			mapping.push({ pathname: pathname, prefix: prefix });				
+			mapping.push({ pathname: pathname, prefix: prefix });
 		}
 
 		this.loader = new jsh.io.Loader({
@@ -25,9 +37,9 @@ $exports.addJshPluginTo = function(jsh) {
 					}
 					return null;
 				}
-			}				
+			}
 		});
-		
+
 		this.build = function(WEBAPP) {
 			var build = function(prefix,pathname) {
 				var to = WEBAPP.getRelativePath(prefix);
@@ -62,7 +74,7 @@ $exports.addJshPluginTo = function(jsh) {
 
 				copy(node,to);
 			}
-			
+
 			mapping.forEach(function(item) {
 				build(item.prefix,item.pathname);
 			});
@@ -70,14 +82,14 @@ $exports.addJshPluginTo = function(jsh) {
 	}
 	jsh.httpd.Resources.script = function(mappingFile) {
 		var rv = new jsh.httpd.Resources();
-		
+
 		jsh.loader.run(mappingFile.pathname, {
 			$mapping: mappingFile,
 			map: function(prefix,pathname) {
 				rv.map(prefix,pathname);
 			}
 		});
-		
+
 		return rv;
 	};
 };

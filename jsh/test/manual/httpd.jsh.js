@@ -32,7 +32,7 @@ var helloServlet = new function() {
 		jsh.shell.echo("Testing hello servlet at " + url);
 		var response = client.request({
 			url: url
-		});		
+		});
 		if (!/^text\/plain/.test(response.body.type)) {
 			fail("Response is wrong type: " + response.body.type);
 		} else {
@@ -42,14 +42,14 @@ var helloServlet = new function() {
 		if (string != "Hello, World!") {
 			fail("string = " + string);
 		} else {
-			jsh.shell.echo("Got correct string: " + string);			
+			jsh.shell.echo("Got correct string: " + string);
 		}
 	}
 };
 
 var fileServlet = new function() {
 	var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file;
-	
+
 	this.test = function(url) {
 		var client = new jsh.http.Client();
 		var response = client.request({
@@ -67,8 +67,8 @@ var fileServlet = new function() {
 			fail("did not match code");
 		} else {
 			jsh.shell.echo("code matches: http = " + code.http + " file = " + code.file);
-		}		
-	}	
+		}
+	}
 };
 
 var apiServlet = new function() {
@@ -106,7 +106,7 @@ var plugin = new function() {
 		tomcat.start();
 		helloServlet.test("http://127.0.0.1:" + tomcat.port + "/");
 	};
-	
+
 	this.file = function() {
 		jsh.shell.echo("file servlet");
 		var tomcat = new jsh.httpd.Tomcat({});
@@ -122,7 +122,7 @@ var plugin = new function() {
 		tomcat.start();
 		fileServlet.test("http://127.0.0.1:" + tomcat.port + "/");
 	}
-	
+
 	this.api = function() {
 		jsh.shell.echo("plugin api servlet");
 		var tomcat = new jsh.httpd.Tomcat({});
@@ -136,7 +136,7 @@ var plugin = new function() {
 			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
 		});
 		tomcat.start();
-		apiServlet.test("http://127.0.0.1:" + tomcat.port + "/");		
+		apiServlet.test("http://127.0.0.1:" + tomcat.port + "/");
 	}
 };
 
@@ -161,7 +161,7 @@ var server = new function() {
 	};
 	jsh.shell.echo("CATALINA_HOME: " + environment.CATALINA_HOME);
 	jsh.shell.echo("CATALINA_BASE: " + environment.CATALINA_BASE);
-	
+
 	var tomcat = jsh.script.loader.file("httpd.tomcat.js");
 	var installation = new tomcat.Tomcat({
 		home: environment.CATALINA_HOME
@@ -170,7 +170,7 @@ var server = new function() {
 		base: environment.CATALINA_BASE,
 		configuration: environment.CATALINA_HOME.getFile("conf/server.xml")
 	});
-	
+
 	var build = function() {
 		jsh.shell.echo("Building webapps ...");
 
@@ -194,13 +194,13 @@ var server = new function() {
 						}
 					}
 				}
-			);		
+			);
 		};
 		buildWebapp("slime.hello", "test/hello.servlet.js");
 		buildWebapp("slime.file", "test/file.servlet.js");
 		buildWebapp("slime.api", "test/api.servlet.js");
 	}
-	
+
 	this.start = function() {
 		build();
 		server.start({
@@ -212,7 +212,7 @@ var server = new function() {
 		debugger;
 		Packages.java.lang.Thread.sleep(2000);
 	}
-	
+
 	this.stop = function() {
 		server.stop();
 	}
@@ -240,5 +240,5 @@ var suites = {
 
 suites[parameters.options.suite]();
 
-jsh.shell.echo("Success! " + jsh.script.file);	
+jsh.shell.echo("Success! " + jsh.script.file);
 jsh.shell.exit(0);

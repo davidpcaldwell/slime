@@ -160,7 +160,7 @@ this.jsh = new function() {
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
-		
+
 		this.getBundled = function() {
 			if ($host.getLoader().getPackagedCode()) {
 				return new Loader({ _source: $host.getLoader().getPackagedCode() });

@@ -129,7 +129,7 @@ public abstract class Code {
 				@Override public String toString() {
 					return Code.Source.class.getName() + " resources=" + resources;
 				}
-				
+
 				@Override public InputStream getResourceAsStream(String path) throws IOException {
 					return resources.getResourceAsStream(path);
 				}

@@ -28,9 +28,9 @@ plugin({
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
-		
+
 		$loader.file("resources.js").addJshPluginTo(jsh);
-		
+
 		jsh.httpd.Tomcat = function(p) {
 			var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 

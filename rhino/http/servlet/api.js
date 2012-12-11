@@ -73,7 +73,7 @@ var $loader = (function() {
 var resources = (function() {
 	if ($host.getRhinoLoader && $host.getServletResources) {
 		return new Loader({
-			_source: $host.getServletResources()			
+			_source: $host.getServletResources()
 		});
 	} else if ($host.loaders) {
 		return $host.loaders.container;
