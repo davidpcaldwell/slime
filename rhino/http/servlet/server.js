@@ -11,7 +11,14 @@
 //	END LICENSE
 
 var Request = function(_request) {
+	this.method = String(_request.getMethod()).toUpperCase();
 	this.path = String(_request.getPathInfo()).substring(1);
+	
+	//	TODO	it would make more sense for this property to be absent if there is no content
+	this.body = new function() {
+		this.type = (_request.getContentType()) ? String(_request.getContentType()) : null;
+		this.stream = $context.api.io.java.adapt(_request.getInputStream());
+	}
 }
 
 $exports.Servlet = function(script) {

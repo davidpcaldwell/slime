@@ -112,7 +112,9 @@ var server = (function() {
 	if ($host.server) {
 		return $host.server;
 	} else if ($host.getServletResources) {
-		return resources.file("WEB-INF/server.js");
+		return resources.file("WEB-INF/server.js", {
+			api: api
+		});
 	}
 })();
 
