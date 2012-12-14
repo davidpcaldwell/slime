@@ -10,20 +10,58 @@
 //	Contributor(s):
 //	END LICENSE
 
+debugger;
+
 var scope = {
 	$exports: {}
 };
 
+var bootstrap = (function() {
+	if ($host.getRhinoLoader && $host.getServletResources) {
+		var $rhino = $host.getRhinoLoader();
+		var loader = new $rhino.Loader({
+			_source: $host.getServletResources()
+		});
+		var rv = {};
+		rv.js = loader.module("WEB-INF/slime/js/object/", {
+			globals: true
+		});
+		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
+			globals: true
+		});
+		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
+			$rhino: $rhino,
+			api: {
+				java: rv.java
+			}
+		});
+		return rv;
+	}
+})();
+
+var Loader = (function() {
+	if (bootstrap) {
+		return bootstrap.io.Loader;
+	}
+})();
+
+var api = (function() {
+	if (bootstrap) {
+		return bootstrap;
+	} else if ($host.api) {
+		return $host.api;
+	}
+})();
+
 var $loader = (function() {
-	if ($host.getServletResources && $host.getServletScriptPath) {
+	if ($host.getRhinoLoader && $host.getServletResources && $host.getServletScriptPath) {
 		//	servlet container, determine webapp path and load relative to that
 		var path = String($host.getServletScriptPath());
 		var tokens = path.split("/");
-		var rv = tokens.slice(0,tokens.length-1).join("/") + "/";
-		Packages.java.lang.System.err.println("Creating application loader with prefix " + rv);
-		var Loader = $host.getRhinoLoader().Loader;
+		var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
+		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
 		return new Loader({
-			_source: Packages.inonit.script.rhino.Code.Source.create($host.getServletResources(), rv)
+			_source: Packages.inonit.script.rhino.Code.Source.create($host.getServletResources(), prefix)
 		});
 	} else if ($host.loaders) {
 		return $host.loaders.script;
@@ -34,8 +72,7 @@ var $loader = (function() {
 
 var resources = (function() {
 	if ($host.getRhinoLoader && $host.getServletResources) {
-		var rhinoLoader = $host.getRhinoLoader();
-		return new rhinoLoader.Loader({
+		return new Loader({
 			_source: $host.getServletResources()
 		});
 	} else if ($host.loaders) {
@@ -47,13 +84,17 @@ var $code = (function() {
 	if ($host.getServletResources && $host.getServletScriptPath) {
 		var path = String($host.getServletScriptPath());
 		var tokens = path.split("/");
-		return tokens[tokens.length-1];
+		var path = tokens[tokens.length-1];
+		return function(scope) {
+			Packages.java.lang.System.err.println("Loading servlet from " + path);
+			$loader.run(path,scope);
+		};
 //		return {
 //			name: String($host.getServletScriptPath()),
 //			_in: $host.getServletResources().getResourceAsStream($host.getServletScriptPath())
 //		};
-	} else if ($host.code) {
-		return $host.code;
+	} else if ($host.getCode) {
+		return $host.getCode;
 	} else {
 		throw new Error();
 	}
@@ -63,11 +104,17 @@ scope.httpd = {};
 
 scope.httpd.loader = resources;
 
+scope.httpd.js = api.js;
+scope.httpd.java = api.java;
+scope.httpd.io = api.io;
+
 var server = (function() {
 	if ($host.server) {
 		return $host.server;
 	} else if ($host.getServletResources) {
-		return resources.file("WEB-INF/server.js");
+		return resources.file("WEB-INF/server.js", {
+			api: api
+		});
 	}
 })();
 
@@ -92,9 +139,10 @@ scope.httpd.http.Response.text = function(string) {
 scope.$loader = (function() {
 	//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the
 	//			global loader; in the jsh embedding, it should resolve them relative to the current directory of the script
+	return $loader;
 })();
 
-$loader.run($code, scope);
+$code(scope);
 
 var servlet = new server.Servlet(scope.$exports);
 

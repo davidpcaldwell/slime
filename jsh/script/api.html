@@ -194,10 +194,12 @@ END LICENSE
 						java: host,
 						io: $jsapi.module("../../rhino/io/", {
 							$java: new Packages.inonit.script.runtime.io.Streams(),
+							$rhino: $host.getRhinoLoader(),
 							api: {
 								java: host
 							}
-						})
+						}),
+						loader: $host.getRhinoLoader()
 					},
 					$pwd: String(jsh.shell.properties.user.dir)
 				};

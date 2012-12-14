@@ -28,6 +28,9 @@ plugin({
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
+
+		$loader.file("resources.js").addJshPluginTo(jsh);
+
 		jsh.httpd.Tomcat = function(p) {
 			var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 
@@ -50,7 +53,7 @@ plugin({
 			var server = $loader.file("server.js");
 
 			this.map = function(m) {
-				if (m.path && m.servlets) {
+				if (typeof(m.path) == "string" && m.servlets) {
 					var context = tomcat.addContext(m.path, base.pathname.java.adapt().getCanonicalPath());
 					var id = 0;
 					for (var pattern in m.servlets) {
@@ -66,13 +69,21 @@ plugin({
 									var apiScope = {
 										$host: new function() {
 											this.loaders = {
-												script: new jsh.script.Loader(servletFile.parent)
+												script: new jsh.file.Loader(servletFile.parent),
+												container: (m.resources) ? m.resources.loader : null
 											};
 
-											this.code = servletFile.pathname;
+											this.getCode = function(scope) {
+												jsh.loader.run(servletFile.pathname, scope);
+											}
 
 											this.$exports = {};
 											this.server = server;
+											this.api = {
+												js: jsh.js,
+												java: jsh.java,
+												io: jsh.io
+											}
 										}
 									};
 									//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this
@@ -94,7 +105,8 @@ plugin({
 					}
 				} else if (typeof(m.path) == "string" && m.webapp) {
 					throw new Error("Currently does not work, apparently, due to issues with ClassLoaders");
-					var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());					jsh.shell.echo("Added " + context);
+					var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());
+					jsh.shell.echo("Added " + context);
 				}
 			}
 

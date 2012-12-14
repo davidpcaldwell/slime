@@ -28,13 +28,13 @@ if ($context.script) {
 $exports.arguments = $context.arguments;
 $exports.addClasses = $api.deprecate($context.api.addClasses);
 
-	//	TODO	should jsh.script.loader support some sort of path structure?
-$exports.Loader = $context.Loader;
+$exports.Loader = $api.deprecate($context.api.file.Loader);
 
+//	TODO	should jsh.script.loader support some sort of path structure?
 if ($context.loader) {
 	$exports.loader = $context.loader;
 } else if ($context.script) {
-	$exports.loader = new $exports.Loader($exports.file.parent);
+	$exports.loader = new $context.api.file.Loader($exports.file.parent);
 }
 
 $exports.getopts = $loader.file("getopts.js", {

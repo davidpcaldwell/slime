@@ -14,7 +14,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		to: jsh.file.Pathname,
 		servletapi: jsh.file.Pathname,
-		resources: jsh.script.getopts.ARRAY(String),
+		resources: jsh.file.Pathname,
 		norhino: false,
 		servlet: String
 	}
@@ -43,7 +43,7 @@ if (!parameters.options.norhino) {
 	})();
 }
 
-var SLIME = jsh.script.getRelativePath("../../../..").directory;
+var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 
 (function() {
 	//	Compile the servlet to WEB-INF/classes
@@ -53,12 +53,13 @@ var SLIME = jsh.script.getRelativePath("../../../..").directory;
 	var sourcepath = jsh.file.Searchpath([]);
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/java"));
+	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/java"));
 	jsh.java.tools.javac({
 		destination: WEBAPP.getRelativePath("WEB-INF/classes"),
 		classpath: classpath,
 		sourcepath: sourcepath,
 		arguments: [
-			jsh.script.getRelativePath("../java/inonit/script/servlet/Servlet.java")
+			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java")
 		],
 		on: new function() {
 			this.exit = function(p) {
@@ -76,23 +77,30 @@ var SLIME = jsh.script.getRelativePath("../../../..").directory;
 	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader.rhino.js"));
 	SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
+
+	SLIME.getSubdirectory("js/object").copy(WEBAPP.getRelativePath("WEB-INF/slime/js/object"), { recursive: true });
+	SLIME.getSubdirectory("rhino/host").copy(WEBAPP.getRelativePath("WEB-INF/slime/rhino/host"), { recursive: true });
+	SLIME.getSubdirectory("rhino/io").copy(WEBAPP.getRelativePath("WEB-INF/slime/rhino/io"), { recursive: true });
 })();
 
-(function() {
-	parameters.options.resources.forEach(function(item) {
-		var tokens = item.split("=");
-		var from = jsh.file.Pathname(tokens[0]);
-		var to = WEBAPP.getRelativePath(tokens[1]);
-		var node = (function() {
-			if (from.file) return from.file;
-			if (from.directory) return from.directory;
-		})();
-		node.copy(to, { recursive: true });
-	});
-})();
+if (parameters.options.resources) {
+	//	Right now, we do not assume the plugin is installed, so we will "install" it.
+	var resourcesPlugin = jsh.loader.file(SLIME.getRelativePath("rhino/http/servlet/resources.js"));
+	var namespace = {
+		io: jsh.io,
+		loader: jsh.loader,
+		shell: jsh.shell,
+		httpd: {}
+	};
+	resourcesPlugin.addJshPluginTo(namespace);
+	var resources = namespace.httpd.Resources.script(parameters.options.resources.file);
+	resources.build(WEBAPP);
+}
 
 (function() {
 	var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);
 	xml = xml.replace(/__SCRIPT__/, parameters.options.servlet);
+	//	The below line removes the license, because Tomcat cannot parse it; this may or may not be what we want
+	xml = xml.substring(xml.indexOf("-->") + "-->".length + 1);
 	WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 })();

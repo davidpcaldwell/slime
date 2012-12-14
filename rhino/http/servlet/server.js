@@ -11,6 +11,14 @@
 //	END LICENSE
 
 var Request = function(_request) {
+	this.method = String(_request.getMethod()).toUpperCase();
+	this.path = String(_request.getPathInfo()).substring(1);
+
+	//	TODO	it would make more sense for this property to be absent if there is no content
+	this.body = new function() {
+		this.type = (_request.getContentType()) ? String(_request.getContentType()) : null;
+		this.stream = $context.api.io.java.adapt(_request.getInputStream());
+	}
 }
 
 $exports.Servlet = function(script) {
@@ -20,20 +28,26 @@ $exports.Servlet = function(script) {
 		try {
 			var response = script.handle(new Request(_request));
 			if (typeof(response) == "undefined") {
-				_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				//	TODO	What would it take to write our own error page? Should we try to throw ServletException, for example?
+				//			Should we use setStatus and write some sort of error page normally?
+				debugger;
+				_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Script returned undefined");
 			} else if (response === null) {
+				debugger;
 				_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_FOUND);
-			} else if (typeof(response) == "object" && response.status && response.headers && response.body) {
+			} else if (typeof(response) == "object" && response.status && typeof(response.status.code) == "number") {
 				_response.setStatus(response.status.code);
-				response.headers.forEach(function(header) {
-					_response.addHeader(header.name, header.value);
-				});
-				if (response.body.type) {
+				if (response.headers) {
+					response.headers.forEach(function(header) {
+						_response.addHeader(header.name, header.value);
+					});
+				}
+				if (response.body && response.body.type) {
 					_response.setContentType(response.body.type);
 				}
-				if (response.body.string) {
+				if (response.body && response.body.string) {
 					_response.getWriter().write(response.body.string);
-				} else if (response.body.stream) {
+				} else if (response.body && response.body.stream) {
 					_streams.copy(response.body.stream.java.adapt(),_response.getOutputStream());
 					response.body.stream.java.adapt().close();
 				}

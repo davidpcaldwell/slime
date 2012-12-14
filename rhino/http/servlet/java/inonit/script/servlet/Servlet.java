@@ -22,7 +22,15 @@ import inonit.script.rhino.*;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
 	static {
-		Class dependency = inonit.script.rhino.Objects.class;
+		Class[] dependencies = new Class[] {
+			//	Pull this in as a dependency, since the Rhino loader depends on it
+			inonit.script.rhino.Objects.class
+			//	Pull these in as dependencies, since servlets load the rhino/host module, which includes these classes
+			//	Currently, webapp.jsh.js is unaware of modules and just copies them into the WEB-INF/slime directory, expecting
+			//	them to be loaded by its bootstrap loader
+			,inonit.script.runtime.Throwables.class
+			,inonit.script.runtime.Properties.class
+		};
 	}
 
 	private Script script;
@@ -34,7 +42,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 
 	@Override public final void init() {
 		Engine.Debugger debugger = null;
-		if (System.getenv("JSH_SCRIPT_DEBUGGER") != null && System.getenv("JSH_SCRIPT_DEBUGGER").equals("rhino")) {
+		if (System.getenv("SLIME_SCRIPT_DEBUGGER") != null && System.getenv("SLIME_SCRIPT_DEBUGGER").equals("rhino")) {
 			Engine.RhinoDebugger.Configuration configuration = new Engine.RhinoDebugger.Configuration();
 			configuration.setExit(new Runnable() {
 				public void run() {
@@ -76,8 +84,11 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		program.add(Engine.Source.create("<api.js>", getServletContext().getResourceAsStream("WEB-INF/api.js")));
 
 		try {
+			System.err.println("Executing JavaScript program ...");
 			engine.execute(program);
+			System.err.println("Executed program: script = " + script);
 		} catch (Engine.Errors errors) {
+			System.err.println("Caught errors.");
 			errors.dump(
 				new Engine.Log() {
 					@Override
@@ -96,6 +107,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 
 	@Override protected final void service(HttpServletRequest request, HttpServletResponse response) {
+		System.err.println("Executing request ...");
 		script.service(request, response);
 	}
 
