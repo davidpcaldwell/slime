@@ -12,6 +12,10 @@ Contributor(s):
 END LICENSE
 -->
 <html>
+<!--
+	TODO	does not work when loaded from file system (tested in Google Chrome) because of XMLHttpRequest restrictions; need
+			little server running to serve these pages
+-->
 <head>
 	<title>Module Unit Tester</title>
 	<style type="text/css">
@@ -57,10 +61,12 @@ END LICENSE
 				module: Array
 			}
 		})
-		if (parameters.platform) parameters.platform = unescape(parameters.platform);
-		if (parameters.jsapi) parameters.jsapi = unescape(parameters.jsapi);
-		for (var i=0; i<parameters.module.length; i++) {
-			parameters.module[i] = unescape(parameters.module[i]);
+		if (parameters) {
+			if (parameters.platform) parameters.platform = unescape(parameters.platform);
+			if (parameters.jsapi) parameters.jsapi = unescape(parameters.jsapi);
+			for (var i=0; i<parameters.module.length; i++) {
+				parameters.module[i] = unescape(parameters.module[i]);
+			}
 		}
 	</script>
 	<script type="text/javascript">
@@ -83,8 +89,8 @@ END LICENSE
 			loader: {
 				debug: debug,
 				modes: {
-					module: parameters["modes.module"],
-					execute: parameters["modes.execute"]
+					module: (parameters) ? parameters["modes.module"] : null,
+					execute: (parameters) ? parameters["modes.execute"] : null
 				},
 				url: (parameters && parameters.platform) ? parameters.platform : "../../../loader/"
 			}
@@ -117,7 +123,7 @@ END LICENSE
 			}
 			var script = document.createElement("script");
 			script.src = (function() {
-				if (parameters.platform) return parameters.platform + "browser/client.js";
+				if (parameters && parameters.platform) return parameters.platform + "browser/client.js";
 				return "../client.js";
 			})();
 			if (document.head) {
