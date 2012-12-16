@@ -200,7 +200,8 @@ $exports.os = new function() {
 	this.name = getMandatoryStringProperty("os.name");
 	this.arch = getMandatoryStringProperty("os.arch");
 	this.version = getMandatoryStringProperty("os.version");
-}
+};
+
 $exports.java = new function() {
 	this.version = getMandatoryStringProperty("java.version");
 	this.vendor = new function() {
@@ -254,7 +255,15 @@ $exports.java = new function() {
 	//	user.name is $exports.USER
 	//	user.home is $exports.HOME
 	//	user.dir is $exports.PWD
-}
+};
+
+//	TODO	if not running on Rhino, this property should not appear
+//	TODO	no test coverage for $exports.rhino
+$exports.rhino = new function() {
+	if (getProperty("jsh.launcher.rhino.classpath")) {
+		this.classpath = getSearchpath(getProperty("jsh.launcher.rhino.classpath"));
+	}
+};
 
 $exports.jsh = function(script,args,mode) {
 	if (!mode) mode = {};
