@@ -127,6 +127,7 @@ END LICENSE
 											<span>The path to the module's main file, relative to the plugin file.</span>
 										</li>
 										<li class="value">
+											<!--	TODO	jsapi:reference?	-->
 											<span class="type">object</span>
 											<span>The <code>$context</code> object to provide to the module.</span>
 										</li>
@@ -162,6 +163,53 @@ END LICENSE
 									<span class="type">objects</span>
 									<span>The file's exports.</span>
 								</div>
+							</li>
+							<li class="function">
+								<div class="name">run</div>
+								<span>
+									Executes a script file from the given path in a particular scope, and with a particular value
+									for <code>this</code>. See the SLIME <a href="../../loader.html">loader</a> for a description
+									of how files are loaded.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path of the file to execute, relative to the plugin file.</span>
+										</li>
+										<li class="value">
+											<!--	TODO	jsapi:reference?	-->
+											<span class="type">object</span>
+											<span>The scope in which to execute the file.</span>
+										</li>
+										<li class="value">
+											<!--	TODO	jsapi:reference?	-->
+											<span class="type">object</span>
+											<span>The object to use as <code>this</code> when executing the file.</span>
+										</li>
+									</ol>
+								</div>
+							</li>
+							<li class="object">
+								<div class="name">classpath</div>
+								<span>An object representing the classpath visible to scripts</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">add</div>
+										<span>Adds a particular location to the script classpath</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type"><a href="../../rhino/file/api.html#types.Pathname">jsh.file.Pathname</a></span>
+													<span>A jsh.file.Pathname containing classes to add to the script classpath.</span>
+												</li>
+											</ol>
+										</div>
+									</li>
+								</ul>
 							</li>
 						</ul>
 					</li>

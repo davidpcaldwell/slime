@@ -27,6 +27,8 @@ this.jsh = new function() {
 	}
 
 	var loader = new function() {
+		//	TODO	naming conventions are inconsistent in this stuff; look at how there are addClasses methods and classpath.add().
+		//			generally speaking, should probably match the rhinoLoader API across all of these representations of it
 		var rhinoLoader = (function() {
 			var rv = $host.getRhinoLoader();
 			rv.$api.deprecate.warning = function(o) {
@@ -359,12 +361,17 @@ this.jsh = new function() {
 				scope.$loader = new (function(_code) {
 					this.file = function(path,context) {
 						return loader.plugin.file(_code,path,context);
-					}
+					};
 					this.module = function(path,context) {
 						return loader.plugin.module(_code,path,context);
-					}
+					};
 					this.run = function(path,scope,target) {
 						return loader.plugin.run(_code,path,scope,target);
+					};
+					this.classpath = new function() {
+						this.add = function(pathname) {
+							return loader.addClasses(pathname.java.adapt());
+						}
 					}
 				})(_code);
 				loader.plugin.read(_code,scope);
