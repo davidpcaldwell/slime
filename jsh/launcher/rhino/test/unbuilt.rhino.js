@@ -158,4 +158,4 @@ args.push(
 		})()
 	}
 );
-runCommand.apply(null, args);
+exit(runCommand.apply(null, args));
