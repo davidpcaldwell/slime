@@ -12,7 +12,6 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		"tomcat.home": jsh.file.Pathname,
 		"tomcat.base": jsh.file.Pathname,
 		"debug:server": false,
 		suite: "all"
@@ -33,6 +32,9 @@ var helloServlet = new function() {
 		var response = client.request({
 			url: url
 		});
+		if (response.status.code != 200) {
+			fail("Response is wrong status: " + response.status.code);
+		}
 		if (!/^text\/plain/.test(response.body.type)) {
 			fail("Response is wrong type: " + response.body.type);
 		} else {
@@ -145,12 +147,12 @@ var server = new function() {
 		jsh.shell.echo("No Bourne shell");
 		return;
 	}
-	if (!parameters.options["tomcat.home"]) {
-		jsh.shell.echo("No tomcat.home");
+	if (!jsh.shell.environment.CATALINA_HOME) {
+		jsh.shell.echo("No $CATALINA_HOME");
 		return;
 	}
 	var environment = {
-		CATALINA_HOME: parameters.options["tomcat.home"].directory,
+		CATALINA_HOME: jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory,
 		CATALINA_BASE: (function() {
 			if (parameters.options["tomcat.base"]) {
 				return parameters.options["tomcat.base"].directory;
