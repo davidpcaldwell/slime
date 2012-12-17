@@ -399,7 +399,9 @@ this.jsh = new function() {
 				stop = true;
 				//	TODO	think harder about what to do
 				list.forEach(function(item) {
-					jsh.shell.echo("WARNING: could not load plugin: never became ready\n" + item.isReady);
+					jsh.shell.echo("WARNING: could not load plugin: never became ready\n" + item.isReady, {
+						stream: jsh.io.Streams.stderr
+					});
 				});
 			}
 		}

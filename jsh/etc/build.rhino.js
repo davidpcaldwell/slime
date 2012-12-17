@@ -312,12 +312,12 @@ console("Creating bundled modules ...")
 load(new File(BASE,"jsh/tools/slime.js").getCanonicalPath());
 var tmpModules = new File(tmp,"modules");
 tmpModules.mkdir();
-var module = function(path) {
+var module = function(path,compile) {
 	var tmp = new File(tmpModules,path);
 	tmp.mkdirs();
 	slime.build.rhino(new File(BASE,path), tmp, {
 		copyFile: copyFile,
-		compile: platform.jdk.compile
+		compile: compile
 	}, {
 		source: JAVA_VERSION,
 		target: JAVA_VERSION,
@@ -330,9 +330,22 @@ var module = function(path) {
 	console("Created module file: " + to.getCanonicalPath());
 };
 
-["js/object","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"].forEach( function(item) {
-	module(item);
+[
+	"js/object","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"
+	,"rhino/tools"
+].forEach( function(item) {
+	module(item,platform.jdk.compile);
 });
+
+[
+	"rhino/http/servlet"
+].forEach( function(item) {
+	module(item,function(args) {
+		//	do not compile servlet; servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with
+		//	servlet API is supplied by invoker
+	});
+});
+
 
 var LAUNCHER_COMMAND = [
 	String(new File(JAVA_HOME,"bin/java").getCanonicalPath()),
