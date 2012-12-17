@@ -22,9 +22,21 @@
 
 plugin({
 	isReady: function() {
-		return typeof(Packages.org.apache.catalina.startup.Tomcat) == "function";
+		//	TODO	allow system property?
+		return typeof(jsh.shell.environment.CATALINA_HOME) == "string" || typeof(Packages.org.apache.catalina.startup.Tomcat) == "function";
 	},
 	load: function() {
+		var CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+		
+		if (CATALINA_HOME) {
+			[
+				"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
+				"lib/catalina.jar"
+			].forEach(function(path) {
+				$loader.classpath.add(CATALINA_HOME.getRelativePath(path));			
+			});
+		}
+		
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
@@ -50,7 +62,11 @@ plugin({
 			tomcat.setBaseDir(base);
 			tomcat.setPort(port);
 
-			var server = $loader.file("server.js");
+			var server = $loader.file("server.js", {
+				api: {
+					io: jsh.io
+				}
+			});
 
 			this.map = function(m) {
 				if (typeof(m.path) == "string" && m.servlets) {
