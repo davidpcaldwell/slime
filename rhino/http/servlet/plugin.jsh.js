@@ -22,8 +22,8 @@
 
 plugin({
 	isReady: function() {
-		//	TODO	allow system property?
-		return typeof(jsh.shell.environment.CATALINA_HOME) == "string" || typeof(Packages.org.apache.catalina.startup.Tomcat) == "function";
+		//	TODO	allow system property rather than environment variable?
+		return jsh.java && jsh.shell && jsh.file && typeof(jsh.shell.environment.CATALINA_HOME) == "string" || typeof(Packages.org.apache.catalina.startup.Tomcat) == "function";
 	},
 	load: function() {
 		var CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
@@ -125,14 +125,38 @@ plugin({
 					jsh.shell.echo("Added " + context);
 				}
 			}
+			
+			//	TODO	are both start() and run() needed?
+			
+			var started = false;
 
 			this.start = function() {
-				tomcat.start();
+				if (!started) {
+					tomcat.start();
+					started = true;
+				}
 			}
 
 			this.run = function() {
-				tomcat.start();
-				tomcat.getServer().await();
+				if (!started) {
+					tomcat.start();
+					started = true;
+				}
+				var run = function() {
+					tomcat.getServer().await();
+					started = false;
+				};
+				var fork = false;
+				if (fork) {
+					new jsh.java.Thread(run).start();
+				} else {
+					run();
+				}
+			}
+			
+			this.stop = function() {
+				tomcat.stop();
+				started = false;
 			}
 		}
 	}
