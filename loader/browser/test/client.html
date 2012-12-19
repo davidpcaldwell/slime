@@ -60,7 +60,7 @@ END LICENSE
 			types: {
 				module: Array
 			}
-		})
+		});
 		if (parameters) {
 			if (parameters.platform) parameters.platform = unescape(parameters.platform);
 			if (parameters.jsapi) parameters.jsapi = unescape(parameters.jsapi);
@@ -475,26 +475,36 @@ END LICENSE
 				};
 				var ASYNCHRONOUS = Boolean(parameters.asynchronous);
 
-				var onResult = (window.opener
-					&& window.opener.inonit
-					&& window.opener.inonit.dom
-					&& window.opener.inonit.dom.window
-					&& window.opener.inonit.dom.window.open
-					&& window.opener.inonit.dom.window.open.context
-					&& window.opener.inonit.dom.window.open.context.get(window)
-					&& window.opener.inonit.dom.window.open.context.get(window).onTestResult
-				)
-					? function(success) {
-						window.opener.inonit.dom.window.open.context.get(window).onTestResult(success);
+				var onResult = (function() {
+					if (window.opener
+						&& window.opener.inonit
+						&& window.opener.inonit.dom
+						&& window.opener.inonit.dom.window
+						&& window.opener.inonit.dom.window.open
+						&& window.opener.inonit.dom.window.open.context
+						&& window.opener.inonit.dom.window.open.context.get(window)
+						&& window.opener.inonit.dom.window.open.context.get(window).onTestResult
+					) {
+						return function(success) {
+							window.opener.inonit.dom.window.open.context.get(window).onTestResult(success);
+						};
+					} else if (parameters.callback == "server") {
+						return function(success) {
+							var req = new inonit.loader.nugget.XMLHttpRequest();
+							req.open("POST", "success", false);
+							req.send(success);
+							//	We do not really care about response code
+						};
+					} else {
+						return function(success) {
+							if (!success) {
+								alert("Failed!");
+							} else {
+								alert("PASS");
+							}
+						};
 					}
-					: function(success) {
-						if (!success) {
-							alert("Failed!");
-						} else {
-							alert("PASS");
-						}
-					}
-				;
+				})();
 				if (ASYNCHRONOUS) {
 					scenario.start(console,{
 						success: function(success) {
