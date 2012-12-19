@@ -186,6 +186,9 @@ $api.experimental($exports,"isJavaType");
 experimental("toJavaArray");
 
 $exports.Thread = function(f) {
+	if (typeof(f) != "function") {
+		throw new TypeError("Should be function: " + f);
+	}
 	var runnable = new function() {
 		var _callbacks;
 
@@ -224,3 +227,16 @@ $exports.Thread.thisSynchronize = function(f) {
 	//			synchronize()
 	return new Packages.org.mozilla.javascript.Synchronizer(f);
 };
+$exports.Thread.Monitor = function() {
+	var lock = new Packages.java.lang.Object();
+	
+	this.Waiter = function(c) {
+		return Packages.inonit.script.runtime.Threads.synchronizeOn(lock, function() {
+			while(!c.until()) {
+				lock.wait();
+			}
+			c.then();
+			lock.notifyAll();
+		});
+	}
+}

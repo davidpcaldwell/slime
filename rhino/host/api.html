@@ -224,6 +224,71 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<div>
 					<ul>
+						<li class="constructor">
+							<div class="name">Monitor</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="instances">
+								<div class="label">Instances</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+								</ul>
+							</div>
+							<script type="application/x.jsapi#tests" jsapi:id="Monitor"><![CDATA[
+								var lock = new module.Thread.Monitor();
+								
+								var count = 0;
+								
+								var waiter = function() {
+									return new lock.Waiter({
+										//	TODO	make optional in API with this default implementation
+										until: function() {
+											return true;
+										},
+										then: function() {
+											test(count == 0);
+											count++;
+											test(count == 1);
+											Packages.java.lang.Thread.sleep(Packages.java.lang.Math.random() * 100);
+											count--;
+											test(count == 0);
+//											jsh.shell.echo("Success.");
+										}
+									});
+								}
+								
+								var waiters = [];
+								for (var i=0; i<10; i++) {
+									waiters.push(waiter());
+								}
+								
+								var joiners = [];
+								waiters.forEach(function(element) {
+									//	jsh.shell.echo("Starting ...");
+									var t = new module.Thread(element);
+									t.start({
+										returned: function(o) {
+											//	jsh.shell.echo("Finished.");
+											test(true);
+										},
+										threw: function(t) {
+											//	jsh.shell.echo("Threw.");
+											throw t;
+										}
+									});
+									joiners.push(t);
+								});
+								
+								joiners.forEach(function(t) {
+									t.join();
+								});
+							]]></script>
+						</li>
 						<li class="function">
 							<div class="name">thisSynchronize</div>
 							<span>
@@ -246,7 +311,7 @@ END LICENSE
 									then releases the lock.
 								</span>
 							</div>
-							<script type="application/x.jsapi#tests" jsapi:id="synchronize"><![CDATA[
+							<script type="application/x.jsapi#tests" jsapi:id="thisSynchronize"><![CDATA[
 								var f = function(x) {
 									return 2*x;
 								};
