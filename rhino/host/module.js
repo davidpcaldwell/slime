@@ -235,8 +235,9 @@ $exports.Thread.Monitor = function() {
 			while(!c.until()) {
 				lock.wait();
 			}
-			c.then();
+			var rv = c.then();
 			lock.notifyAll();
+			return rv;
 		});
 	}
 }
