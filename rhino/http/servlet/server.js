@@ -16,6 +16,7 @@ var Request = function(_request) {
 
 	//	TODO	it would make more sense for this property to be absent if there is no content
 	this.body = new function() {
+		//	TODO	what happens if there is no content? Presumably type is null, and is stream empty?
 		this.type = (_request.getContentType()) ? String(_request.getContentType()) : null;
 		this.stream = $context.api.io.java.adapt(_request.getInputStream());
 	}
