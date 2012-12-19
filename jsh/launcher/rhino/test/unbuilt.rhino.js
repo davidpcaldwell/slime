@@ -80,12 +80,7 @@ var addJavaSourceFilesFrom = function(dir,rv) {
 //	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
 var LOADER_CLASSES = createTemporaryDirectory();
 platform.jdk.compile([
-	"-d", LOADER_CLASSES,
-	"-sourcepath", [
-		JSH_SLIME_SRC.getPath("loader/rhino/java"),
-		JSH_SLIME_SRC.getPath("rhino/system/java"),
-		JSH_SLIME_SRC.getPath("jsh/loader/java")
-	].join(colon)
+	"-d", LOADER_CLASSES
 ]
 	.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("loader/rhino")))
 	.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("rhino/system")))
