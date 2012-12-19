@@ -79,6 +79,7 @@ $exports.Pathname = function(parameters) {
 		$context.api.java.fail("Cannot invoke Pathname as constructor.");
 	}
 };
+//	TODO	Searchpath implementation has multiple layers: in os.js, file.js, here ... consolidate and refactor
 $exports.Searchpath = function(parameters) {
 	if (this.constructor != arguments.callee) {
 		if (parameters instanceof Array) {
@@ -91,7 +92,7 @@ $exports.Searchpath = function(parameters) {
 	}
 };
 $exports.Searchpath.createEmpty = function() {
-	return file.Searchpath.createEmpty.apply(this,arguments);
+	return $exports.Searchpath([]);
 }
 $api.deprecate($exports.Searchpath,"createEmpty");
 $exports.Searchpath.prototype = prototypes.Searchpath;

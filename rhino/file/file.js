@@ -580,6 +580,9 @@ var Searchpath = function(parameters) {
 		throw new TypeError("Illegal argument to new Searchpath(): " + parameters);
 	}
 
+	if (!parameters.filesystem) {
+		throw new TypeError("Required: filesystem property to Searchpath constructor.");
+	}
 	var array = parameters.array.slice(0);
 	var filesystem = parameters.filesystem;
 
