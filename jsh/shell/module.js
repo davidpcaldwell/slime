@@ -300,4 +300,9 @@ $exports.jsh = function(script,args,mode) {
 	}
 
 	$exports.shell(executable,jargs,mode);
+};
+
+var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.launcher.classpath));
+if (launcherClasspath.pathnames.length == 1 && launcherClasspath.pathnames[0].basename == "jsh.jar") {
+	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
 }
