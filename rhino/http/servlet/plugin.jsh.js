@@ -79,7 +79,7 @@ plugin({
 							throw new Error("Incorrect launch.");
 						}
 						var servletName = "slime" + String(id++);
-						Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
+						var servlet = Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
 							Packages.javax.servlet.http.HttpServlet,
 							new function() {
 								//	TODO	could use jsh.io here
@@ -88,6 +88,8 @@ plugin({
 								this.init = function() {
 									var apiScope = {
 										$host: new function() {
+											this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
+											
 											this.loaders = {
 												script: new jsh.file.Loader(servletFile.parent),
 												container: (m.resources) ? m.resources.loader : null

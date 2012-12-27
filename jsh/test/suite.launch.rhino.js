@@ -10,6 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	assumes jsh/launcher/rhino/api.rhino.js has been run; provides context that originally was provided by jsh/etc/build.rhino.js
+//	but this file allows the tests to be run from outside the build process
+
 var File = Packages.java.io.File;
 var JSH_HOME = new File(env.JSH_HOME);
 var BASE = new File(env.BASE);

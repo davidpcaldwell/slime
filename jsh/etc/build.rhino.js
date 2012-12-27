@@ -11,15 +11,27 @@
 //	END LICENSE
 
 //	Build script for jsh
+//	
+//	The best way to execute this script is to execute it in the Rhino shell via the jsh/etc/unbuilt.rhino.js helper script:
+//	
+//	java -jar /path/to/rhino/js.jar /path/to/source/jsh/etc/unbuilt.rhino.js build <arguments>
 //
-//	Execute using Rhino shell, e.g.
-//	cd /path/to/jsh/source; java -jar js.jar jsh/etc/build.rhino.js <build-destination>
-//	cd /path/to/jsh/source; java -jar js.jar jsh/etc/build.rhino.js -installer <installer-destination>
+//	It can also be executed directly using the Rhino shell, but it then needs assistance finding the source code, as Rhino scripts
+//	do not know their own location. This can be done by changing the working directory to the source root:
+//	
+//	cd /path/to/source; java -jar js.jar jsh/etc/build.rhino.js <arguments>
+//	
+//	The script can be invoked in two ways. The first builds a shell to the given directory:
+//	build.rhino.js <build-destination>
+//	
+//	The second builds an executable JAR capable of installing the shell:
+//	build.rhino.js -installer <installer-destination>
 //
-//	System properties that affect the build (environment variable name in parentheses):
+//	System properties that affect the build (equivalent environment variable name in parentheses):
 //
-//	jsh.build.base (JSH_BUILD_BASE): specifies directory where jsh source distribution can be found; otherwise the current working
-//	directory is assumed to be the location of the source distribution
+//	jsh.build.base (JSH_BUILD_BASE): if not executed via the unbuilt.rhino.js helper script, this setting specifies the directory 
+//	where the SLIME source distribution can be found; otherwise the current working directory is assumed to be the location of the 
+//	source distribution
 //
 //	jsh.build.debug (JSH_BUILD_DEBUG): if set, additional debugging information is emitted to System.err, and the subshell that
 //	generates and runs unit tests is run in the debugger
@@ -103,9 +115,14 @@ var getSetting = function(systemPropertyName) {
 	}
 }
 
-var BASE = (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));
+var SLIME_SRC;
+var BASE = (function() {
+	if (typeof(SLIME_SRC) != "undefined") return SLIME_SRC;
+	return (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));
+})();
+
 if (new File(BASE,"jsh/etc/build.rhino.js").exists() && new File(BASE,"jsh/launcher/rhino/api.rhino.js").exists()) {
-	load(new File(BASE,"jsh/launcher/rhino/api.rhino.js").getCanonicalPath());
+	load(new File(BASE,"jsh/launcher/rhino/api.rhino.js"));
 } else {
 	//	TODO	A way to get around this would be to have the Rhino shell somehow make available the location from which
 	//			the currently executing script was loaded, and then walk up the source tree to where the root must be; this can
@@ -151,9 +168,9 @@ var destination = (function() {
 	} else {
 		if (arguments.length == 0) {
 			console("Usage:");
-			console("java -jar js.jar build.rhino.js <build-destination>");
+			console("build.rhino.js <build-destination>");
 			console("-or-");
-			console("java -jar js.jar build.rhino.js -installer <installer-jar-location>");
+			console("build.rhino.js -installer <installer-jar-location>");
 			exit(1);
 		}
 		return {

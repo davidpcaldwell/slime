@@ -10,6 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	Required in scope:
+//	LAUNCHER_COMMAND: the command to use when launching a shell
+
 var mode = {};
 mode.env = {};
 for (var x in env) {
@@ -292,6 +295,9 @@ testCommandOutput(packaged_plugins, function(options) {
 	]);
 });
 
+testCommandOutput("jsh.file/Searchpath.jsh.js", function(options) {
+});
+
 testCommandOutput(
 	"jsh.shell/echo.jsh.js",
 	function(options) {
@@ -346,5 +352,10 @@ testCommandOutput("jsh.shell/stdio.3.jsh.js", function(options) {
 	stdin: input_abcdefghij()
 });
 
-testCommandOutput("jsh.file/Searchpath.jsh.js", function(options) {
-})
+//	TODO	correct output for below in an unbuilt shell is "jsh.home=undefined"
+testCommandOutput("jsh.shell/jsh.home.jsh.js", function(options) {
+	checkOutput(options,[
+		"jsh.home=" + JSH_HOME.getCanonicalPath() + Packages.java.io.File.separator,
+		""
+	])
+});

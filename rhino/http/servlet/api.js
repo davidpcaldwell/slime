@@ -80,6 +80,20 @@ var resources = (function() {
 	}
 })();
 
+var $parameters = (function() {
+	if ($host.getServletInitParameters) {
+		var _map = $host.getServletInitParameters();
+		var rv = {};
+		var _entries = _map.entrySet().toArray();
+		for (var i=0; i<_entries.length; i++) {
+			rv[String(_entries[i].getKey())] = String(_entries[i].getValue());
+		}
+		return rv;
+	} else if ($host.parameters) {
+		return $host.parameters;
+	}
+})();
+
 var $code = (function() {
 	if ($host.getServletResources && $host.getServletScriptPath) {
 		var path = String($host.getServletScriptPath());
@@ -141,6 +155,8 @@ scope.$loader = (function() {
 	//			global loader; in the jsh embedding, it should resolve them relative to the current directory of the script
 	return $loader;
 })();
+
+scope.$parameters = $parameters;
 
 $code(scope);
 

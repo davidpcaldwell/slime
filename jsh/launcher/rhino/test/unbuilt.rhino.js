@@ -10,28 +10,23 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	TODO	requires api.rhino.js, could we load it?
+//	Script to launch a script in an unbuilt jsh. Should be invoked via the jsh/etc/unbuilt.rhino.js tool; see that tool for
+//	details
+
+var SLIME_SRC;
+if (typeof(SLIME_SRC) == "undefined") {
+	Packages.java.lang.System.err.println("This script should be invoked from the jsh/etc/unbuilt.rhino.js script; see that"
+		+ " script for details."
+	);
+	Packages.java.lang.System.exit(1);
+}
+var _base = SLIME_SRC;
+
+load(new Packages.java.io.File(_base,"jsh/launcher/rhino/api.rhino.js"));
 
 debug.on = true;
-//	TODO	could we get our own location using a stack trace and make this unnecessary?
-if (!env.JSH_SLIME_SRC) {
-	Packages.java.lang.System.err.println("Required: environment variable JSH_SLIME_SRC");
-	exit(1);
-}
-debug("Source: " + String(env.JSH_SLIME_SRC));
+debug("Source: " + String(_base.getCanonicalPath()));
 var JSH_SLIME_SRC = new (function() {
-	var _base;
-
-	debug("user.dir=" + Packages.java.lang.System.getProperty("user.dir"));
-
-	if (platform.cygwin) {
-		_base = new Packages.java.io.File(platform.cygwin.cygpath.windows(String(env.JSH_SLIME_SRC)));
-	} else {
-		_base = new Packages.java.io.File(String(env.JSH_SLIME_SRC));
-	}
-
-	debug("_base: " + _base.getCanonicalPath());
-
 	var getFile = function(path) {
 		return new Packages.java.io.File(_base, path);
 	}
@@ -48,7 +43,6 @@ var JSH_SLIME_SRC = new (function() {
 		return getPath(path);
 	}
 })();
-//var JSH_SLIME_SRC =
 
 //	Build the launcher classes
 var LAUNCHER_CLASSES = createTemporaryDirectory();
