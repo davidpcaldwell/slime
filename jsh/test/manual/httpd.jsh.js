@@ -102,7 +102,9 @@ var plugin = new function() {
 		tomcat.map({
 			path: "/",
 			servlets: {
-				"/*": script
+				"/*": {
+					file: script
+				}
 			}
 		});
 		tomcat.start();
@@ -116,7 +118,9 @@ var plugin = new function() {
 		tomcat.map({
 			path: "/",
 			servlets: {
-				"/*": script
+				"/*": {
+					file: script
+				}
 			},
 			//	TODO	is there a jsh.script.getFile()?
 			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
@@ -132,7 +136,9 @@ var plugin = new function() {
 		tomcat.map({
 			path: "/",
 			servlets: {
-				"/*": script
+				"/*": {
+					file: script
+				}
 			},
 			//	TODO	is there a jsh.script.getFile()?
 			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
@@ -205,14 +211,18 @@ var server = new function() {
 
 	this.start = function() {
 		build();
+		jsh.shell.echo("Invoking Tomcat start script ...");
 		server.start({
 			debug: {
 				script: parameters.options["debug:server"]
 			}
 		});
 		//	TODO	horrifying synchronization strategy
+		jsh.shell.echo("Invoked Tomcat start script ...");
 		debugger;
-		Packages.java.lang.Thread.sleep(2000);
+		jsh.shell.echo("Pausing to let Tomcat start ...");
+		Packages.java.lang.Thread.sleep(5000);
+		jsh.shell.echo("Continuing, assuming Tomcat has started.");
 	}
 
 	this.stop = function() {

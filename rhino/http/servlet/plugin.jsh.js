@@ -73,7 +73,8 @@ plugin({
 					var context = tomcat.addContext(m.path, base.pathname.java.adapt().getCanonicalPath());
 					var id = 0;
 					for (var pattern in m.servlets) {
-						var servletFile = m.servlets[pattern];
+						var servletDeclaration = m.servlets[pattern];
+						var servletFile = servletDeclaration.file;
 						var servletName = "slime" + String(id++);
 						Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
 							Packages.javax.servlet.http.HttpServlet,
