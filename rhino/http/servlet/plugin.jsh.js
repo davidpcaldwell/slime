@@ -75,6 +75,9 @@ plugin({
 					for (var pattern in m.servlets) {
 						var servletDeclaration = m.servlets[pattern];
 						var servletFile = servletDeclaration.file;
+						if (!servletFile) {
+							throw new Error("Incorrect launch.");
+						}
 						var servletName = "slime" + String(id++);
 						Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
 							Packages.javax.servlet.http.HttpServlet,
