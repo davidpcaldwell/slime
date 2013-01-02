@@ -277,22 +277,26 @@
 				return file(p.getCode(path),scope,target);
 			}
 
-			this.module = function(path,scope,target) {
+			//	Creates a child loader that prepends the given prefix
+			var Child = function(path) {
 				var tokens = path.split("/");
 				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-				var loader = (function() {
-					if (p.createChild) {
-						return p.createChild(prefix);
-					} else {
-						return new Callee({
-							getCode: function(path) {
-								return p.getCode(prefix+path);
-							}
-						})
-					}
-				})();
+				if (p.createChild) {
+					return p.createChild(prefix);
+				} else {
+					return new Callee({
+						getCode: function(path) {
+							return p.getCode(prefix+path);
+						}
+					})
+				}
+			}
+			
+			this.Child = Child;
+
+			this.module = function(path,scope,target) {
 				var inner = createScope(scope);
-				inner.$loader = loader;
+				inner.$loader = new Child(path);
 				if (path == "" || /\/$/.test(path)) {
 					path += "module.js";
 				}
