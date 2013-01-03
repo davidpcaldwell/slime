@@ -31,6 +31,9 @@ $exports.addJshPluginTo = function(jsh) {
 						var prefix = mapping[i].prefix;
 						if (path.substring(0,prefix.length) == prefix) {
 							var subpath = path.substring(prefix.length);
+							if (!mapping[i].pathname.directory) {
+								throw new Error("Directory not found at " + mapping[i].pathname);
+							}
 							var file = mapping[i].pathname.directory.getFile(subpath);
 							return (file) ? file.read(jsh.io.Streams.binary) : null;
 						}
