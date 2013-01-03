@@ -242,7 +242,7 @@
 				throw "Unimplemented: typeof(code) = " + typeof(code);
 			}
 		}
-
+		
 		var createScope = function(scope) {
 			var rv;
 			if (scope && (scope.$context || scope.$exports)) {
@@ -276,7 +276,7 @@
 			this.file = function(path,scope,target) {
 				return file(p.getCode(path),scope,target);
 			}
-
+			
 			//	Creates a child loader that prepends the given prefix
 			var Child = function(path) {
 				var tokens = path.split("/");
@@ -321,7 +321,7 @@
 			var loader = new Loader(format);
 			return loader.module(format.main,scope);
 		};
-
+		
 		this.namespace = function(string) {
 			//	This construct returns the top-level global object, e.g., window in the browser
 			var global = function() {
