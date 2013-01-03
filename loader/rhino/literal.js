@@ -48,7 +48,7 @@
 			if (typeof(code) == "object" && typeof(code.name) != "undefined" && typeof(code._in) != "undefined") {
 				if (!code._in) {
 					//	TODO	decide semantics of this
-					throw new Error("code._in is null");
+					throw new Error("code._in is null for name = " + code.name);
 				}
 				if ($loader.script) {
 					return function() { $loader.script(code.name,code._in,arguments[0],arguments[1]); };
