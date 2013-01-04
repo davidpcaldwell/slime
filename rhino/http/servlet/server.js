@@ -13,6 +13,26 @@
 var Request = function(_request) {
 	this.method = String(_request.getMethod()).toUpperCase();
 	this.path = String(_request.getPathInfo()).substring(1);
+	
+	var _query = _request.getQueryString();
+	var parameters = [];
+	if (_query) {
+		debugger;
+		var query = String(_query);
+		var tokens = query.split("&");
+		for (var i=0; i<tokens.length; i++) {
+			var nv = tokens[i].split("=");
+			var decode = function(s) {
+				return String(Packages.java.net.URLDecoder.decode(s));
+			}
+			if (nv.length == 2) {
+				parameters.push({ name: decode(nv[0]), value: decode(nv[1]) });
+			}
+		}
+		if (parameters.length) {
+			this.parameters = parameters;
+		}
+	}
 
 	//	TODO	it would make more sense for this property to be absent if there is no content
 	this.body = new function() {
