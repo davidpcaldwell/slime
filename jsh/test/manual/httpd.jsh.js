@@ -33,6 +33,9 @@ var helloServlet = new function() {
 			url: url
 		});
 		if (response.status.code != 200) {
+			if (response.status.code == 500) {
+				jsh.shell.echo(response.body.stream.character().asString());
+			}
 			fail("Response is wrong status: " + response.status.code);
 		}
 		if (!/^text\/plain/.test(response.body.type)) {
