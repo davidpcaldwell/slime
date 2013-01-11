@@ -91,7 +91,7 @@ public class Shell {
 		public abstract Properties getSystemProperties();
 		public abstract Map getEnvironment();
 		public abstract Stdio getStdio();
-
+		
 		/**
 		 *
 		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
