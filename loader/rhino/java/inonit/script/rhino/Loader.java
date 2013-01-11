@@ -80,6 +80,18 @@ public abstract class Loader {
 			New(ClassLoader delegate) {
 				super(delegate);
 			}
+			
+			public String toString() {
+				String rv = getClass().getName() + ": locations=[";
+				for (int i=0; i<locations.size(); i++) {
+					rv += locations.get(i);
+					if (i+1 != locations.size()) {
+						rv += ",";
+					}
+				}
+				rv += "]";
+				return rv;
+			}
 
 			protected Class findClass(String name) throws ClassNotFoundException {
 				for (Code.Source source : locations) {
@@ -120,6 +132,10 @@ public abstract class Loader {
 
 			public Loader.Classpath toScriptClasspath() {
 				return new Loader.Classpath() {
+					@Override public String toString() {
+						return "Loader.Classpath for: " + New.this.toString();
+					}
+					
 					@Override public void append(Code.Source code) {
 						locations.add(code);
 					}
