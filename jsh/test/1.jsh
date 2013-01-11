@@ -32,9 +32,20 @@ if (!parameters.options.modules) {
 	jsh.shell.exit(1);
 }
 
-var slime = jsh.loader.module(parameters.options.modules.directory.getRelativePath("1.slime"));
+//	TODO	would be nice to figure out how to get the below to trigger a breakpoint when running inside jsh.shell.jsh
+debugger;
+var slime = jsh.loader.module(parameters.options.modules.directory.getRelativePath("1.slime"), {
+	//	TODO	load slime module with reference to application class loader to work around bug in jsh.shell.jsh subshells; 
+	//			see loader/rhino/test/data/1/module.js for more information.
+	java: {
+		getClass: function(name) {
+			return jsh.loader.$getClass(name);
+		}
+	}
+});
 jsh.shell.echo(slime.data);
 if (slime.data != "From Java") {
+	jsh.shell.echo("Did not get slime class in " + parameters.options.modules.directory.getRelativePath("1.slime"));
 	jsh.shell.exit(1);
 } else {
 	jsh.shell.echo("Success: " + jsh.script.pathname.basename);

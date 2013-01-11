@@ -195,6 +195,10 @@ this.jsh = new function() {
 			}
 			loader.addClasses(pathname.java.adapt());
 		}
+		
+		this.$getClass = function(name) {
+			return loader.getClass(name);
+		};
 	};
 
 	//	TODO	should separate everything above/below into two files; above is loader implementation, below is
@@ -242,6 +246,8 @@ this.jsh = new function() {
 			this.$err = $host.getStdio().getStandardError();
 		}
 
+		//	TODO	both jsh.file and jsh.shell use this property; consider making it part of host object and/or shell configuration
+		//			and pushing property-mapping back into inonit.script.jsh.Main
 		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
 
 		context.addFinalizer = addFinalizer;

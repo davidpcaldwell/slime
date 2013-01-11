@@ -269,7 +269,10 @@ $exports.rhino = new function() {
 $exports.jsh = function(script,args,mode) {
 	//	TODO	need to detect directives in the given script and fork if they are present
 	
-	var fork = true;
+	var fork = (function() {
+		if (mode && mode.classpath) return true;
+		return false;
+	})();
 	
 	var environment = (function() {
 		var rv = (mode && mode.environment) ? mode.environment : {};
@@ -299,7 +302,7 @@ $exports.jsh = function(script,args,mode) {
 			};
 			
 			this.getDebugger = function() {
-				//	TODO	an alternative would be to re-use the debugger from this shell; not sure how either would work
+				//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
 				if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
 					var Engine = Packages.inonit.script.rhino.Engine;
 					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
@@ -311,18 +314,23 @@ $exports.jsh = function(script,args,mode) {
 			var stdio = new JavaAdapter(
 				Packages.inonit.script.jsh.Shell.Configuration.Stdio,
 				new function() {
+					var Streams = Packages.inonit.script.runtime.io.Streams;
 					var m = (mode) ? mode : {};
 					
+					var ifNonNull = function(value,otherwise) {
+						return (value) ? value : otherwise;
+					}
+					
 					this.getStandardInput = function() {
-						return stream(m,"stdin");
+						return ifNonNull(stream(m,"stdin"), Streams.Null.INPUT_STREAM);
 					}
 					
 					this.getStandardOutput = function() {
-						return stream(m,"stdout");
+						return ifNonNull(stream(m,"stdout"), Streams.Null.OUTPUT_STREAM);
 					}
 					
 					this.getStandardError = function() {
-						return stream(m,"stderr");
+						return ifNonNull(stream(m,"stderr"), Streams.Null.OUTPUT_STREAM);
 					}
 				}
 			);
@@ -352,8 +360,11 @@ $exports.jsh = function(script,args,mode) {
 				while(keys.hasNext()) {
 					var key = keys.next();
 					if (String(key) != "jsh.launcher.packaged") {
-						rv.setProperty(keys.next(), $context._getSystemProperties().getProperty(key));
+						rv.setProperty(key, $context._getSystemProperties().getProperty(key));
 					}
+				}
+				if (mode && mode.workingDirectory) {
+					rv.setProperty("user.dir", mode.workingDirectory.pathname.java.adapt());
 				}
 				return rv;
 			}
@@ -398,7 +409,23 @@ $exports.jsh = function(script,args,mode) {
 
 		$exports.shell(executable,jargs,mode);
 	} else {
-		throw new Error("Unimplemented.");
+		var status = $host.jsh(configuration,script.java.adapt(),$context.api.java.toJavaArray(args,Packages.java.lang.String,function(s) {
+			return new Packages.java.lang.String(s);
+		}));
+		var onExit = (mode && mode.onExit) ? mode.onExit : function(result) {
+			if (result.status != 0) {
+				throw new Error("Exit status: " + result.status);
+			}
+		};
+		onExit({
+			status: status,
+			//	no error property
+			//	TODO	maybe not strictly the same as rhino/shell run onExit callback, command would be java I would think
+			command: script,
+			arguments: args,
+			environment: environment,
+			workingDirectory: (mode && mode.workingDirectory) ? mode.workingDirectory : function(){}()
+		});
 	}
 };
 

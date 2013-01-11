@@ -17,6 +17,7 @@ if (file.y != 3) jsh.shell.exit(1);
 
 var buffer = new jsh.io.Buffer();
 
+debugger;
 jsh.shell.jsh(jsh.script.getRelativePath("1.jsh"), [], {
 	stdout: buffer,
 	stderr: buffer,
