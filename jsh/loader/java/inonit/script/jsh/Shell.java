@@ -82,7 +82,10 @@ public class Shell {
 	public static abstract class Configuration {
 		public abstract int getOptimizationLevel();
 		public abstract Engine.Debugger getDebugger();
+		
+		//	TODO	consider: should this log implementation be supplied, and just log to stderr?
 		public abstract Engine.Log getLog();
+		
 		public abstract ClassLoader getClassLoader();
 
 		public abstract Properties getSystemProperties();
@@ -357,7 +360,16 @@ public class Shell {
 				throw new ExitException(status);
 			}
 			
-			public int jsh(Configuration configuration, Invocation invocation) {
+			public int jsh(Configuration configuration, final File script, final String[] arguments) {
+				Invocation invocation = new Invocation() {
+					@Override public Invocation.Script getScript() {
+						return Invocation.Script.create(script);
+					}
+
+					@Override public String[] getArguments() {
+						return arguments;
+					}
+				};
 				return Shell.execute(installation, configuration, invocation);
 			}
 

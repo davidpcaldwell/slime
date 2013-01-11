@@ -83,13 +83,29 @@ $exports.echo.String = function(message) {
 $exports.echo.String["undefined"] = "(undefined)";
 $exports.echo.String["null"] = "(null)";
 
+var stream = function(mode,x) {
+	var Streams = $context.api.io.Streams;
+	var isJavaType = $context.api.java.isJavaType;
+	var type = (x == "stdin") ? "InputStream" : "OutputStream";
+	if (typeof(mode[x]) == "undefined") {
+		//	currently Streams.stdin not defined, so no way to get parent process stdin, thus we use empty stream
+		if (Streams[x]) {
+			return Streams[x]["$get" + type]();
+		} else {
+			return null;
+		}
+	}
+	if (mode[x] == null) return null;
+	if (isJavaType(Packages.java.io[type])(mode[x])) return mode[x];
+	return mode[x]["$get" + type]();
+}
+
+
 $exports.shell = function(command,args,mode) {
 	if (arguments.length < 3) {
 		mode = {};
 	}
 
-	var Streams = $context.api.io.Streams;
-	var isJavaType = $context.api.java.isJavaType;
 	var $run = $context.api.shell.run;
 	var $filesystems = $context.api.file.filesystems;
 
@@ -113,21 +129,6 @@ $exports.shell = function(command,args,mode) {
 	var tokens = [ command ].concat( args );
 
 	var rMode = new function() {
-		var stream = function(x) {
-			var type = (x == "stdin") ? "InputStream" : "OutputStream";
-			if (typeof(mode[x]) == "undefined") {
-				//	currently Streams.stdin not defined, so no way to get parent process stdin, thus we use empty stream
-				if (Streams[x]) {
-					return Streams[x]["$get" + type]();
-				} else {
-					return null;
-				}
-			}
-			if (mode[x] == null) return null;
-			if (isJavaType(Packages.java.io[type])(mode[x])) return mode[x];
-			return mode[x]["$get" + type]();
-		}
-
 		this.environment = mode.environment;
 
 		this.work = (function() {
@@ -145,9 +146,9 @@ $exports.shell = function(command,args,mode) {
 
 		this.onExit = mode.onExit;
 
-		this.stdin = stream("stdin");
-		this.stdout = stream("stdout");
-		this.stderr = stream("stderr");
+		this.stdin = stream(mode,"stdin");
+		this.stdout = stream(mode,"stdout");
+		this.stderr = stream(mode,"stderr");
 	};
 
 	$run(tokens,rMode);
@@ -266,7 +267,29 @@ $exports.rhino = new function() {
 };
 
 $exports.jsh = function(script,args,mode) {
+	//	TODO	need to detect directives in the given script and fork if they are present
+	
 	var fork = true;
+	
+	var environment = (function() {
+		var rv = (mode && mode.environment) ? mode.environment : {};
+		
+		var addProperties = function(from) {
+			for (var x in from) {
+				if (x != "JSH_LAUNCHER_DEBUG") {
+					if (typeof(rv[x]) == "undefined") {
+						//	Conversion to string is necessary for $context.api.shell.properties.jsh.launcher.environment, which
+						//	contains host objects
+						rv[x] = String(from[x]);
+					}
+				}
+			}			
+		}
+		
+		addProperties($context.api.shell.properties.jsh.launcher.environment);
+		addProperties($context.api.shell.environment);
+		return rv;
+	})();
 	
 	var configuration = new JavaAdapter(
 		Packages.inonit.script.jsh.Shell.Configuration,
@@ -276,27 +299,75 @@ $exports.jsh = function(script,args,mode) {
 			};
 			
 			this.getDebugger = function() {
-				throw new Error();
+				//	TODO	an alternative would be to re-use the debugger from this shell; not sure how either would work
+				if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
+					var Engine = Packages.inonit.script.rhino.Engine;
+					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
+				} else {
+					return null;
+				}
 			}
+
+			var stdio = new JavaAdapter(
+				Packages.inonit.script.jsh.Shell.Configuration.Stdio,
+				new function() {
+					var m = (mode) ? mode : {};
+					
+					this.getStandardInput = function() {
+						return stream(m,"stdin");
+					}
+					
+					this.getStandardOutput = function() {
+						return stream(m,"stdout");
+					}
+					
+					this.getStandardError = function() {
+						return stream(m,"stderr");
+					}
+				}
+			);
 			
+			//	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
+			//	possible we should revisit this
+			var log = new JavaAdapter(
+				Packages.inonit.script.rhino.Engine.Log,
+				new function() {
+					this.println = function(message) {
+						new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
+					}
+				}
+			);
+
 			this.getLog = function() {
-				throw new Error();
+				return log;
 			}
 			
 			this.getClassLoader = function() {
-				throw new Error();
+				return Packages.java.lang.ClassLoader.getSystemClassLoader();
 			}
 			
 			this.getSystemProperties = function() {
-				throw new Error();
+				var rv = new Packages.java.util.Properties();
+				var keys = $context._getSystemProperties().keySet().iterator();
+				while(keys.hasNext()) {
+					var key = keys.next();
+					if (String(key) != "jsh.launcher.packaged") {
+						rv.setProperty(keys.next(), $context._getSystemProperties().getProperty(key));
+					}
+				}
+				return rv;
 			}
 			
 			this.getEnvironment = function() {
-				throw new Error();
-			}
+				var rv = new Packages.java.util.HashMap();
+				for (var x in environment) {
+					rv.put(new Packages.java.lang.String(x),new Packages.java.lang.String(environment[x]));
+				}
+				return rv;
+			};
 			
 			this.getStdio = function() {
-				throw new Error();
+				return stdio;
 			}
 			
 			this.getPackagedCode = function() {
@@ -323,21 +394,7 @@ $exports.jsh = function(script,args,mode) {
 			jargs.push(arg);
 		});
 
-		if (!mode.environment) mode.environment = {};
-		for (var x in $context.api.shell.properties.jsh.launcher.environment) {
-			if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
-				if (typeof(mode.environment[x]) == "undefined") {
-					mode.environment[x] = String($context.api.shell.properties.jsh.launcher.environment[x]);
-				}
-			}
-		}
-		for (var x in $context.api.shell.environment) {
-			if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
-				if (typeof(mode.environment[x]) == "undefined") {
-					mode.environment[x] = $context.api.shell.environment[x];
-				}
-			}
-		}
+		mode.environment = environment;
 
 		$exports.shell(executable,jargs,mode);
 	} else {

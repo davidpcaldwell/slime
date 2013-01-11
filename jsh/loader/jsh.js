@@ -293,7 +293,10 @@ this.jsh = new function() {
 			var rv = $host.getSystemProperties().getProperty(name);
 			if (rv == null) return null;
 			return String(rv);
-		}
+		};
+		context._getSystemProperties = function() {
+			return $host.getSystemProperties();
+		};
 		context.exit = function(code) {
 			$host.exit(code);
 		}
