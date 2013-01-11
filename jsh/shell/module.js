@@ -266,40 +266,83 @@ $exports.rhino = new function() {
 };
 
 $exports.jsh = function(script,args,mode) {
-	if (!mode) mode = {};
-	//	TODO	can we use $exports.java.home here?
-	var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
-	var executable = jdk.getRelativePath("bin/java").toString();
-	//	Set defaults from this shell
-	var LAUNCHER_CLASSPATH = (mode.classpath) ? mode.classpath : getProperty("jsh.launcher.classpath");
-
-	var jargs = [];
-	jargs.push("-classpath");
-	jargs.push(LAUNCHER_CLASSPATH);
-	jargs.push("inonit.script.jsh.launcher.Main");
-
-	jargs.push(script);
-	args.forEach( function(arg) {
-		jargs.push(arg);
-	});
-
-	if (!mode.environment) mode.environment = {};
-	for (var x in $context.api.shell.properties.jsh.launcher.environment) {
-		if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
-			if (typeof(mode.environment[x]) == "undefined") {
-				mode.environment[x] = String($context.api.shell.properties.jsh.launcher.environment[x]);
+	var fork = true;
+	
+	var configuration = new JavaAdapter(
+		Packages.inonit.script.jsh.Shell.Configuration,
+		new function() {
+			this.getOptimizationLevel = function() {
+				return -1;
+			};
+			
+			this.getDebugger = function() {
+				throw new Error();
+			}
+			
+			this.getLog = function() {
+				throw new Error();
+			}
+			
+			this.getClassLoader = function() {
+				throw new Error();
+			}
+			
+			this.getSystemProperties = function() {
+				throw new Error();
+			}
+			
+			this.getEnvironment = function() {
+				throw new Error();
+			}
+			
+			this.getStdio = function() {
+				throw new Error();
+			}
+			
+			this.getPackagedCode = function() {
+				return null;
 			}
 		}
-	}
-	for (var x in $context.api.shell.environment) {
-		if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
-			if (typeof(mode.environment[x]) == "undefined") {
-				mode.environment[x] = $context.api.shell.environment[x];
+	);
+	
+	if (fork) {
+		if (!mode) mode = {};
+		//	TODO	can we use $exports.java.home here?
+		var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
+		var executable = jdk.getRelativePath("bin/java").toString();
+		//	Set defaults from this shell
+		var LAUNCHER_CLASSPATH = (mode.classpath) ? mode.classpath : getProperty("jsh.launcher.classpath");
+
+		var jargs = [];
+		jargs.push("-classpath");
+		jargs.push(LAUNCHER_CLASSPATH);
+		jargs.push("inonit.script.jsh.launcher.Main");
+
+		jargs.push(script);
+		args.forEach( function(arg) {
+			jargs.push(arg);
+		});
+
+		if (!mode.environment) mode.environment = {};
+		for (var x in $context.api.shell.properties.jsh.launcher.environment) {
+			if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
+				if (typeof(mode.environment[x]) == "undefined") {
+					mode.environment[x] = String($context.api.shell.properties.jsh.launcher.environment[x]);
+				}
 			}
 		}
-	}
+		for (var x in $context.api.shell.environment) {
+			if (x != "JSH_RHINO_DEBUGGER" && x != "JSH_LAUNCHER_DEBUG") {
+				if (typeof(mode.environment[x]) == "undefined") {
+					mode.environment[x] = $context.api.shell.environment[x];
+				}
+			}
+		}
 
-	$exports.shell(executable,jargs,mode);
+		$exports.shell(executable,jargs,mode);
+	} else {
+		throw new Error("Unimplemented.");
+	}
 };
 
 var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.launcher.classpath));

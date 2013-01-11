@@ -77,14 +77,6 @@ public class Shell {
 		}
 
 		public abstract Plugin[] getPlugins();
-
-		//	TODO	move to Configuration? It may make more sense there
-		/**
-		 *
-		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
-		 *	<code>null</code> if it is not.
-		 */
-		public abstract Code.Source getPackagedCode();
 	}
 
 	public static abstract class Configuration {
@@ -97,6 +89,13 @@ public class Shell {
 		public abstract Map getEnvironment();
 		public abstract Stdio getStdio();
 
+		/**
+		 *
+		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
+		 *	<code>null</code> if it is not.
+		 */
+		public abstract Code.Source getPackagedCode();
+		
 		private Engine engine;
 
 		final void initialize() {
@@ -135,16 +134,6 @@ public class Shell {
 					public Engine.Source getSource() {
 						return delegate;
 					}
-
-//					@Override
-//					public String getName() {
-//						return delegate.getName();
-//					}
-
-					@Override
-					public Reader getReader() {
-						return delegate.getReader();
-					}
 				};
 			}
 
@@ -156,7 +145,6 @@ public class Shell {
 				return create(delegate, null);
 			}
 
-//			public abstract String getName();
 			/**
 				Returns the <code>java.io.File</code> object corresponding to the main script.
 
@@ -164,7 +152,6 @@ public class Shell {
 					such file; e.g., the script has been packaged into a JAR file.
 			*/
 			public abstract File getFile();
-			public abstract Reader getReader();
 			public abstract Engine.Source getSource();
 		}
 
@@ -290,7 +277,7 @@ public class Shell {
 				}
 
 				public Code.Source getPackagedCode() {
-					return installation.getPackagedCode();
+					return configuration.getPackagedCode();
 				}
 
 				public void addFinalizer(Runnable runnable) {
@@ -368,6 +355,10 @@ public class Shell {
 			public void exit(int status) throws ExitException {
 				Host.this.configuration.getEngine().getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
+			}
+			
+			public int jsh(Configuration configuration, Invocation invocation) {
+				return Shell.execute(installation, configuration, invocation);
 			}
 
 //			//
