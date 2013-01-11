@@ -409,6 +409,9 @@ $exports.jsh = function(script,args,mode) {
 
 		$exports.shell(executable,jargs,mode);
 	} else {
+		if (!script.java) {
+			throw new TypeError("Expected script " + script + " to have java.adapt()");
+		}
 		var status = $host.jsh(configuration,script.java.adapt(),$context.api.java.toJavaArray(args,Packages.java.lang.String,function(s) {
 			return new Packages.java.lang.String(s);
 		}));
