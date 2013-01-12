@@ -19,7 +19,6 @@ plugin({
 			var javac = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
 
 			this.javac = function(p) {
-				jsh.shell.echo("Compiler ...");
 				var args = [];
 				//	TODO	accept destination that is directory object, not just Pathname
 				if (p.destination) {
@@ -32,10 +31,10 @@ plugin({
 					});
 					args.push("-d", p.destination);
 				}
-				if (p.classpath) {
+				if (p.classpath && p.classpath.pathnames.length) {
 					args.push("-classpath", p.classpath);
 				}
-				if (p.sourcepath) {
+				if (p.sourcepath && p.sourcepath.pathnames.length) {
 					args.push("-sourcepath", p.sourcepath);
 				}
 				if (p.arguments) {
