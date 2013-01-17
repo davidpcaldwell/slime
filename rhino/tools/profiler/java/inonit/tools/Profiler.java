@@ -359,18 +359,36 @@ public class Profiler {
 		public abstract void onExit(Profile[] profiles);
 	}
 	
+	private Listener listener = new Listener() {
+		@Override public void onExit(Profile[] profiles) {
+			java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
+			Set<Map.Entry<Thread,Timing>> entries = javaagent.profiles.entrySet();
+			for (Map.Entry<Thread,Timing> e : entries) {
+				err.println(e.getKey().getName());
+				e.getValue().dump(err);
+			}
+		}
+	};
+	
 	public static void premain(String agentArgs, Instrumentation inst) {
 		javaagent = new Profiler();
 		System.err.println("Starting profiler ...");
 		inst.addTransformer(new Transformer(new Configuration()));
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
-				java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
-				Set<Map.Entry<Thread,Timing>> entries = javaagent.profiles.entrySet();
-				for (Map.Entry<Thread,Timing> e : entries) {
-					err.println(e.getKey().getName());
-					e.getValue().dump(err);
+				ArrayList<Profile> profiles = new ArrayList<Profile>();
+				for (final Map.Entry<Thread,Timing> entry : javaagent.profiles.entrySet()) {
+					profiles.add(new Profile() {
+						@Override public Thread getThread() {
+							return entry.getKey();
+						}
+
+						@Override public Timing getGraph() {
+							return entry.getValue();
+						}
+					});
 				}
+				javaagent.listener.onExit(profiles.toArray(new Profile[profiles.size()]));
 			}
 		}));
 	}
