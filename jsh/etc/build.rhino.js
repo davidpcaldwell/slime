@@ -40,6 +40,8 @@
 //	jsh.build.notest (JSH_BUILD_NOTEST): if set, unit and integration tests are not run as part of the build process
 //
 //	jsh.build.nodoc (JSH_BUILD_NODOC): if set, no documentation is emitted as part of the build process
+//
+//	jsh.build.javassist.jar (JSH_BUILD_JAVASSIST_JAR): if set, profiler is built using Javassist.
 
 //	Policy decision to support 1.6 and up
 var JAVA_VERSION = "1.6";
@@ -369,83 +371,81 @@ var LAUNCHER_COMMAND = [
 	"-jar",String(new File(JSH_HOME,"jsh.jar").getCanonicalPath())
 ];
 
-var jsapi_jsh = function() {
-	var command = LAUNCHER_COMMAND.slice(0,LAUNCHER_COMMAND.length);
-	debug("Launcher command: " + command);
-	command.add = function() {
-		for (var i=0; i<arguments.length; i++) {
-			this.push(arguments[i]);
-		}
-	}
-	command.add("jsh/unit/jsapi.jsh.js");
-	var JSH_JSAPI_BASE = String(BASE.getCanonicalPath());
-	if (platform.cygwin) {
-		JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
-	}
-	if (getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) {
-		command.add("-notest");
-	}
-	command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
-	command.add("-base", JSH_JSAPI_BASE);
-
-	var modules = [];
-	modules.add = function(path,ns) {
-		var namespace = (ns) ? ns : "";
-		this.push(namespace+"@"+path);
-	}
-	modules.add("jsh/launcher/rhino/", "(launcher)");
-	modules.add("jsh/loader/plugin.api.html", "(plugins)");
-	modules.add("jsh/tools/", "(tools)");
-	modules.add("jsh/loader/","jsh.loader");
-	modules.add("loader/");
-	modules.add("loader/rhino/");
-	modules.add("js/object/","jsh.js");
-	modules.add("rhino/host/","jsh.java");
-	modules.add("rhino/io/", "jsh.io");
-	modules.add("rhino/file/","jsh.file");
-	modules.add("rhino/http/client/", "jsh.http")
-	modules.add("rhino/shell/");
-	modules.add("jsh/shell/","jsh.shell");
-	modules.add("jsh/script/","jsh.script");
-
-	modules.forEach( function(module) {
-		command.add("-module",module);
-	});
-
-	var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());
-	if (platform.cygwin) {
-		JSAPI_DOC = platform.cygwin.cygpath.unix(JSAPI_DOC);
-	}
-	if (getSetting("jsh.build.nodoc")) {
-	} else {
-		command.add("-doc",JSAPI_DOC);
-	}
-
-	var subenv = {};
-	for (var x in env) {
-		if (!/^JSH_/.test(x)) {
-			subenv[x] = env[x];
-		}
-	}
-	if (env.JSH_BUILD_DEBUG) {
-		subenv.JSH_LAUNCHER_DEBUG = "true";
-		subenv.JSH_SCRIPT_DEBUGGER = "rhino";
-	}
-	command.add({
-		env: subenv
-	});
-
-	debug("jsapi.jsh.js command: " + command.join(" "));
-	var status = runCommand.apply(this,command);
-	if (status) {
-		throw new Error("Failed: " + command.join(" "));
-	}
-}
-
 if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSetting("jsh.build.nodoc")) {
 } else {
 	console("Running JSAPI ...");
-	jsapi_jsh();
+	var jsapi_jsh = (function() {
+		var command = LAUNCHER_COMMAND.slice(0,LAUNCHER_COMMAND.length);
+		debug("Launcher command: " + command);
+		command.add = function() {
+			for (var i=0; i<arguments.length; i++) {
+				this.push(arguments[i]);
+			}
+		}
+		command.add("jsh/unit/jsapi.jsh.js");
+		var JSH_JSAPI_BASE = String(BASE.getCanonicalPath());
+		if (platform.cygwin) {
+			JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
+		}
+		if (getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) {
+			command.add("-notest");
+		}
+		command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
+		command.add("-base", JSH_JSAPI_BASE);
+
+		var modules = [];
+		modules.add = function(path,ns) {
+			var namespace = (ns) ? ns : "";
+			this.push(namespace+"@"+path);
+		}
+		modules.add("jsh/launcher/rhino/", "(launcher)");
+		modules.add("jsh/loader/plugin.api.html", "(plugins)");
+		modules.add("jsh/tools/", "(tools)");
+		modules.add("jsh/loader/","jsh.loader");
+		modules.add("loader/");
+		modules.add("loader/rhino/");
+		modules.add("js/object/","jsh.js");
+		modules.add("rhino/host/","jsh.java");
+		modules.add("rhino/io/", "jsh.io");
+		modules.add("rhino/file/","jsh.file");
+		modules.add("rhino/http/client/", "jsh.http")
+		modules.add("rhino/shell/");
+		modules.add("jsh/shell/","jsh.shell");
+		modules.add("jsh/script/","jsh.script");
+
+		modules.forEach( function(module) {
+			command.add("-module",module);
+		});
+
+		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());
+		if (platform.cygwin) {
+			JSAPI_DOC = platform.cygwin.cygpath.unix(JSAPI_DOC);
+		}
+		if (getSetting("jsh.build.nodoc")) {
+		} else {
+			command.add("-doc",JSAPI_DOC);
+		}
+
+		var subenv = {};
+		for (var x in env) {
+			if (!/^JSH_/.test(x)) {
+				subenv[x] = env[x];
+			}
+		}
+		if (env.JSH_BUILD_DEBUG) {
+			subenv.JSH_LAUNCHER_DEBUG = "true";
+			subenv.JSH_SCRIPT_DEBUGGER = "rhino";
+		}
+		command.add({
+			env: subenv
+		});
+
+		debug("jsapi.jsh.js command: " + command.join(" "));
+		var status = runCommand.apply(this,command);
+		if (status) {
+			throw new Error("Failed: " + command.join(" "));
+		}
+	})();
 }
 
 console("Creating tools ...");
@@ -480,6 +480,27 @@ if (!getSetting("jsh.build.notest")) {
 
 var bases = ["js","loader","rhino","jsh"];
 
+var getPath = function(file) {
+	var path = String(file.getCanonicalPath());
+	if (platform.cygwin) {
+		path = platform.cygwin.cygpath.unix(path);
+	}
+	return path;
+};
+
+if (getSetting("jsh.build.javassist.jar")) {
+	(function() {
+		console("Build profiler ...");
+		var command = LAUNCHER_COMMAND.slice(0);
+		command.push(getPath(new File(BASE, "rhino/tools/profiler/build.jsh.js")));
+		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
+		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
+		runCommand.apply(this,command);
+	}).call(this);
+} else {
+	console("Javassist location not specified; not building profiler.");
+}
+
 var JSH_SRC = new File(JSH_HOME,"src");
 console("Bundling source code ...");
 JSH_SRC.mkdir();
@@ -503,14 +524,6 @@ if (destination.installer) {
 	var build = new File(zipdir,"build.zip");
 	console("Build build.zip to " + build.getCanonicalPath());
 	zip(JSH_HOME,build);
-
-	var getPath = function(file) {
-		var path = String(file.getCanonicalPath());
-		if (platform.cygwin) {
-			path = platform.cygwin.cygpath.unix(path);
-		}
-		return path;
-	}
 
 	var command = LAUNCHER_COMMAND.slice(0);
 	command.push(getPath(new File(JSH_HOME,"tools/package.jsh.js")));

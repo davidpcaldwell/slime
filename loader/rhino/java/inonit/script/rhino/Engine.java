@@ -66,6 +66,189 @@ public class Engine {
 		public void setBreakOnExceptions(boolean breakOnExceptions) {
 		}
 	}
+	
+	public static class Profiler extends Debugger {
+		private org.mozilla.javascript.debug.Debugger debugger = new MyDebugger();
+		private Listener listener;
+		
+		//	TODO	should not be public
+		public Profiler() {
+			this.listener = AgentListener.get();
+			//System.err.println("Profiler listener: " + this.listener);
+		}
+		
+		private static abstract class Listener {
+			abstract void start(Object o);
+			abstract void end(Object o);
+		}
+		
+		private static class AgentListener extends Listener {
+			static AgentListener get() {
+				try {
+					java.lang.reflect.Field field = Class.forName("inonit.tools.Profiler").getDeclaredField("javaagent");
+					field.setAccessible(true);
+					Object agent = field.get(null);
+					return new AgentListener(agent);
+				} catch (ClassNotFoundException e) {
+					return null;
+				} catch (NoSuchFieldException e) {
+					return null;
+				} catch (IllegalAccessException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			
+			private Object agent;
+			private java.lang.reflect.Method start;
+			private java.lang.reflect.Method stop;
+			
+			AgentListener(Object agent) {
+				this.agent = agent;
+				try {
+					this.start = agent.getClass().getDeclaredMethod("start", Object.class);
+					this.stop = agent.getClass().getDeclaredMethod("stop", Object.class);
+				} catch (NoSuchMethodException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			
+			void start(Object o) {
+				try {
+					start.invoke(agent, o);
+				} catch (IllegalAccessException e) {
+					throw new RuntimeException(e);
+				} catch (java.lang.reflect.InvocationTargetException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			
+			void end(Object o) {
+				try {
+					stop.invoke(agent, o);
+				} catch (IllegalAccessException e) {
+					throw new RuntimeException(e);
+				} catch (java.lang.reflect.InvocationTargetException e) {
+					throw new RuntimeException(e);
+				}				
+			}
+		}
+		
+		private class MyDebugger implements org.mozilla.javascript.debug.Debugger {
+			private class DebugFrameImpl implements org.mozilla.javascript.debug.DebugFrame {
+				private org.mozilla.javascript.debug.DebuggableScript script;
+				private Listener listener;
+				private CodeImpl code;
+				
+				DebugFrameImpl(org.mozilla.javascript.debug.DebuggableScript script, Listener listener) {
+					if (script == null) {
+						throw new NullPointerException();
+					}
+					this.script = script;
+					this.listener = listener;
+					this.code = new CodeImpl(script);
+				}
+				
+				public String toString() {
+					return code.toString();
+				}
+				
+				private class CodeImpl {
+					private String string;
+					
+					CodeImpl(org.mozilla.javascript.debug.DebuggableScript script) {
+						int[] lines = script.getLineNumbers();
+						Arrays.sort(lines);
+						String rv = script.getSourceName() + " [" + lines[0] + "-" + lines[lines.length-1] + "]";
+						if (script.getFunctionName() != null) {
+							rv += " " + script.getFunctionName() + "()";
+						}
+						this.string = rv;
+					}
+					
+					public String toString() {
+						return string;
+					}
+					
+					public int hashCode() {
+						return string.hashCode();
+					}
+					
+					public boolean equals(Object o) {
+						if (o == null) return false;
+						if (!(o instanceof CodeImpl)) return false;
+						return this.toString().equals(o.toString());
+					}
+				}
+				
+				public void onEnter(Context cntxt, Scriptable s, Scriptable s1, Object[] os) {
+					//System.err.println("Script enter: " + code);
+					if (listener != null) {
+						listener.start(code);
+					}
+				}
+
+				public void onExit(Context cntxt, boolean byThrow, Object resultOrException) {
+					//System.err.println("Script exit: " + code);
+					if (listener != null) {
+						listener.end(code);					
+					}
+				}
+
+				public void onExceptionThrown(Context cntxt, Throwable thrwbl) {
+					//	We do not care; onExit will be called below
+				}
+
+				public void onLineChange(Context cntxt, int i) {
+					//	do not care, although I suppose we could capture line-level profiling data
+				}
+
+				public void onDebuggerStatement(Context cntxt) {
+					//	ignore it
+				}				
+			}
+
+			public void handleCompilationDone(Context cntxt, org.mozilla.javascript.debug.DebuggableScript ds, String string) {
+				//	This would give us an opportunity to store the source code if we wanted to use it, but we probably do not want
+				//	to use it
+				//	System.err.println("handleCompilationDone " + new DebugFrameImpl(ds).toString());
+				//	do nothing
+			}
+
+			public org.mozilla.javascript.debug.DebugFrame getFrame(Context cntxt, org.mozilla.javascript.debug.DebuggableScript ds) {
+				return new DebugFrameImpl(ds, listener);
+			}
+		}
+		
+		void initialize(Configuration contexts) {
+			//System.err.println("Initializing profiler with context factory");
+			contexts.factory.addListener(new ContextFactory.Listener() {
+				public void contextCreated(Context cntxt) {
+					//System.err.println("Initializing context with profiler");
+					cntxt.setDebugger(debugger, null);
+				}
+
+				public void contextReleased(Context cntxt) {
+				}
+			});
+		}
+
+		void setBreakpoint(Engine.Source source, int line) {
+		}
+
+		void initialize(Scriptable scope, Engine engine, Program program) {
+		}
+
+		Log getLog() {
+			return Log.NULL;
+		}
+
+		public boolean isBreakOnExceptions() {
+			return false;
+		}
+
+		public void setBreakOnExceptions(boolean breakOnExceptions) {
+		}
+	}
 
 	public static class RhinoDebugger extends Debugger {
 		public static class Configuration {
@@ -580,6 +763,7 @@ public class Engine {
 
 		abstract String getSourceName();
 		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
+		abstract Object evaluate(Debugger dim, Context context, Scriptable scope) throws java.io.IOException;
 
 		public abstract Reader getReader();
 
@@ -611,7 +795,6 @@ public class Engine {
 			if (context == null) {
 				throw new IllegalArgumentException("context is null");
 			}
-			Script script = compile(dim, context);
 			if (target != null) {
 				if (scope != null) {
 					target.setParentScope(scope);
@@ -619,7 +802,12 @@ public class Engine {
 			} else {
 				target = scope;
 			}
-			return script.exec(context, target);
+			if (false) {
+				Script script = compile(dim, context);
+				return script.exec(context, target);
+			} else {
+				return evaluate(dim, context, target);
+			}
 		}
 
 		private static class ReaderSource extends Source {
@@ -638,11 +826,9 @@ public class Engine {
 			final String getSourceName() {
 				return id;
 			}
-
-			final Script compile(Debugger dim, Context context) throws java.io.IOException {
-				int i;
+			
+			private String parse(BufferedReader lines) throws IOException {
 				StringBuffer b = new StringBuffer();
-				BufferedReader lines = new BufferedReader(reader);
 				String line;
 				int number = 0;
 				while( (line = lines.readLine()) != null) {
@@ -668,6 +854,29 @@ public class Engine {
 					b.append( toParser + "\n" );
 				}
 				String code = b.toString();
+				return code;
+			}
+			
+			final Object evaluate(Debugger dim, Context context, Scriptable scope) throws IOException {
+				BufferedReader lines = new BufferedReader(reader);
+				String code = parse(lines);
+				try {
+					setBreakpoints(dim);
+					return context.evaluateString(scope, code, id, 1, null);
+				} finally {
+					try {
+						lines.close();
+					} catch (IOException e) {
+						//	TODO	do some sort of reasonable logging or notification or something
+						System.err.println("Error closing: " + reader);
+						e.printStackTrace();
+					}
+				}
+			}
+
+			final Script compile(Debugger dim, Context context) throws java.io.IOException {
+				BufferedReader lines = new BufferedReader(reader);
+				String code = parse(lines);
 				try {
 					Script rv = context.compileString(code, id, 1, null);
 					setBreakpoints(dim);
