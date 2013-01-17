@@ -79,10 +79,6 @@ public class Profiler {
 			stack.push(root);
 		}
 		
-		void dump(java.io.PrintWriter writer) {
-			root.dump(writer,"");
-		}
-		
 		Node start(Code code) {
 			Node rv = stack.peek().getChild(code);
 			stack.push(rv);
@@ -111,42 +107,10 @@ public class Profiler {
 		Invocation getInvocation() {
 			return invocation;
 		}
-	}
-	
-	private static String getCaption(Code code, HashMap<Code,Node> children) {
-		if (code == null) {
-			if (children.size() == 0) {
-				return "(self)";
-			} else {
-				return "(top)";
-			}
-		} else {
-			return code.toString();
-		}
-	}
 		
-	private static void dump(java.io.PrintWriter writer, String indent, Timing parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
-		writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, children));
-		Collection<Node> values = children.values();
-		ArrayList<Node> list = new ArrayList<Node>(values);
-		if (values.size() > 0 && statistics.elapsed > 0) {
-			int sum = 0;
-			for (Node n : list) {
-				sum += n.statistics.elapsed;
-			}
-			int self = (int)statistics.elapsed - sum;
-			if (self > 0) {
-				list.add(new Node.Self(parent,self));
-			}
+		public Node getRoot() {
+			return root;
 		}
-		Collections.sort(list, new Comparator<Node>() {
-			public int compare(Node o1, Node o2) {
-				return (int)(o2.statistics.elapsed - o1.statistics.elapsed);
-			}
-		});
-		for (Node node : list) {
-			node.dump(writer, "  " + indent);
-		}		
 	}
 	
 	private static class Node {
@@ -174,7 +138,7 @@ public class Profiler {
 		}
 		
 		void dump(java.io.PrintWriter writer, String indent) {
-			Profiler.dump(writer, indent, parent, code, statistics, children);
+			Listener.dump(writer, indent, parent, code, statistics, children);
 		}
 		
 		//	TODO	can getChild, start() be combined?
@@ -356,16 +320,51 @@ public class Profiler {
 	}
 	
 	public static abstract class Listener {
+		private static String getCaption(Code code, HashMap<Code,Node> children) {
+			if (code == null) {
+				if (children.size() == 0) {
+					return "(self)";
+				} else {
+					return "(top)";
+				}
+			} else {
+				return code.toString();
+			}
+		}
+
+		private static void dump(java.io.PrintWriter writer, String indent, Timing parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
+			writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, children));
+			Collection<Node> values = children.values();
+			ArrayList<Node> list = new ArrayList<Node>(values);
+			if (values.size() > 0 && statistics.elapsed > 0) {
+				int sum = 0;
+				for (Node n : list) {
+					sum += n.statistics.elapsed;
+				}
+				int self = (int)statistics.elapsed - sum;
+				if (self > 0) {
+					list.add(new Node.Self(parent,self));
+				}
+			}
+			Collections.sort(list, new Comparator<Node>() {
+				public int compare(Node o1, Node o2) {
+					return (int)(o2.statistics.elapsed - o1.statistics.elapsed);
+				}
+			});
+			for (Node node : list) {
+				node.dump(writer, "  " + indent);
+			}		
+		}
+	
 		public abstract void onExit(Profile[] profiles);
 	}
 	
 	private Listener listener = new Listener() {
 		@Override public void onExit(Profile[] profiles) {
 			java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
-			Set<Map.Entry<Thread,Timing>> entries = javaagent.profiles.entrySet();
-			for (Map.Entry<Thread,Timing> e : entries) {
-				err.println(e.getKey().getName());
-				e.getValue().dump(err);
+			for (Profile profile : profiles) {
+				err.println(profile.getThread().getName());
+				Listener.dump(err, "", profile.getGraph(), profile.getGraph().getRoot().code, profile.getGraph().getRoot().statistics, profile.getGraph().getRoot().children);
 			}
 		}
 	};

@@ -495,7 +495,10 @@ if (getSetting("jsh.build.javassist.jar")) {
 		command.push(getPath(new File(BASE, "rhino/tools/profiler/build.jsh.js")));
 		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
 		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
-		runCommand.apply(this,command);
+		var status = runCommand.apply(this,command);
+		if (status != 0) {
+			throw new Error("Exit status when building profile: " + status);
+		}
 	}).call(this);
 } else {
 	console("Javassist location not specified; not building profiler.");
