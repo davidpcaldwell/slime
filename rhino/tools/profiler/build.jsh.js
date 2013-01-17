@@ -48,7 +48,7 @@ var jar = jsh.shell.java.home.parent.getFile("bin/jar");
 jsh.shell.shell(
 	jar.pathname,
 	[
-		"xvf", javassist
+		"xf", javassist
 	],
 	{
 		workingDirectory: tmp.getSubdirectory("classes")
@@ -58,7 +58,7 @@ jsh.shell.shell(
 jsh.shell.shell(
 	jar.pathname,
 	[
-		"cvfm", parameters.options.to,
+		"cfm", parameters.options.to,
 		jsh.script.file.getRelativePath("java/manifest.txt"),
 		//	TODO	should list directory
 	].concat(
