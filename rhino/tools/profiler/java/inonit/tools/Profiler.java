@@ -137,10 +137,6 @@ public class Profiler {
 			}
 		}
 		
-		void dump(java.io.PrintWriter writer, String indent) {
-			Listener.dump(writer, indent, parent, code, statistics, children);
-		}
-		
 		//	TODO	can getChild, start() be combined?
 		
 		Node getChild(Code code) {
@@ -352,7 +348,7 @@ public class Profiler {
 				}
 			});
 			for (Node node : list) {
-				node.dump(writer, "  " + indent);
+				Listener.dump(writer, "  " + indent, parent, node.code, node.statistics, node.children);
 			}		
 		}
 	
