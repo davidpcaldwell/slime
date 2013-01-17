@@ -10,18 +10,18 @@ public class Profiler {
 		return javaagent;
 	}
 	
-	private HashMap<Thread,Profile> profiles = new HashMap<Thread,Profile>();
+	private HashMap<Thread,Graph> profiles = new HashMap<Thread,Graph>();
 	
-	private Profile getProfile() {
+	private Graph getProfile() {
 		if (profiles.get(Thread.currentThread()) == null) {
-			profiles.put(Thread.currentThread(), new Profile());
+			profiles.put(Thread.currentThread(), new Graph());
 		}
 		return profiles.get(Thread.currentThread());
 	}
 	
 	private Invocation startImpl(Code code) {
 		//System.err.println("Starting code: " + code);
-		Profile profile = getProfile();
+		Graph profile = getProfile();
 		Node node = profile.start(code);
 		Invocation rv = new Invocation(node);
 		profile.setInvocation(rv);
@@ -63,7 +63,7 @@ public class Profiler {
 	}
 	
 	public void stopImpl() {
-		Profile profile = getProfile();
+		Graph profile = getProfile();
 		//System.err.println("Ending node " + profile.stack.peek());
 		profile.stop();
 		//System.err.println("Ending invocation: " + invocation);
@@ -80,11 +80,11 @@ public class Profiler {
 		stopImpl();
 	}
 	
-	private static class Profile {
+	private static class Graph {
 		private Node root = new Node(this);
 		private LinkedList<Node> stack = new LinkedList<Node>();
 		
-		Profile() {
+		Graph() {
 			stack.push(root);
 		}
 		
@@ -122,20 +122,56 @@ public class Profiler {
 		}
 	}
 	
+	private static String getCaption(Code code, HashMap<Code,Node> children) {
+		if (code == null) {
+			if (children.size() == 0) {
+				return "(self)";
+			} else {
+				return "(top)";
+			}
+		} else {
+			return code.toString();
+		}
+	}
+		
+	private static void dump(java.io.PrintWriter writer, String indent, Graph parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
+		writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, children));
+		Collection<Node> values = children.values();
+		ArrayList<Node> list = new ArrayList<Node>(values);
+		if (values.size() > 0 && statistics.elapsed > 0) {
+			int sum = 0;
+			for (Node n : list) {
+				sum += n.statistics.elapsed;
+			}
+			int self = (int)statistics.elapsed - sum;
+			if (self > 0) {
+				list.add(new Node.Self(parent,self));
+			}
+		}
+		Collections.sort(list, new Comparator<Node>() {
+			public int compare(Node o1, Node o2) {
+				return (int)(o2.statistics.elapsed - o1.statistics.elapsed);
+			}
+		});
+		for (Node node : list) {
+			node.dump(writer, "  " + indent);
+		}		
+	}
+	
 	private static class Node {
-		private Profile parent;
+		private Graph parent;
 		//	TODO	unused instance variable
 		private Code code;
 		
 		protected Statistics statistics = new Statistics();
 		private HashMap<Code,Node> children = new HashMap<Code,Node>();
 		
-		Node(Profile parent, Code code) {
+		Node(Graph parent, Code code) {
 			this.parent = parent;
 			this.code = code;
 		}
 		
-		Node(Profile parent) {
+		Node(Graph parent) {
 			this.parent = parent;
 		}
 		
@@ -143,47 +179,15 @@ public class Profiler {
 			return "Node: " + code.toString();
 		}
 		
-		private class SelfNode extends Node {
-			SelfNode(int time) {
-				super(Node.this.parent);
+		static class Self extends Node {
+			Self(Graph parent, int time) {
+				super(parent);
 				this.statistics.elapsed = time;
 			}
 		}
 		
-		private String getCaption() {
-			if (code == null) {
-				if (children.size() == 0) {
-					return "(self)";
-				} else {
-					return "(top)";
-				}
-			} else {
-				return code.toString();
-			}
-		}
-		
 		void dump(java.io.PrintWriter writer, String indent) {
-			writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption());
-			Collection<Node> values = children.values();
-			ArrayList<Node> list = new ArrayList<Node>(values);
-			if (values.size() > 0 && statistics.elapsed > 0) {
-				int sum = 0;
-				for (Node n : list) {
-					sum += n.statistics.elapsed;
-				}
-				int self = (int)statistics.elapsed - sum;
-				if (self > 0) {
-					list.add(new SelfNode(self));
-				}
-			}
-			Collections.sort(list, new Comparator<Node>() {
-				public int compare(Node o1, Node o2) {
-					return (int)(o2.statistics.elapsed - o1.statistics.elapsed);
-				}
-			});
-			for (Node node : list) {
-				node.dump(writer, "  " + indent);
-			}
+			Profiler.dump(writer, indent, parent, code, statistics, children);
 		}
 		
 		//	TODO	can getChild, start() be combined?
@@ -196,12 +200,10 @@ public class Profiler {
 		}
 		
 		void start() {
-			//System.err.println("Statistics start: " + code);
 			statistics.start();
 		}
 		
 		void stop() {
-			//System.err.println("Statistics stop: " + code);
 			statistics.stop();
 		}
 	}
@@ -439,8 +441,8 @@ public class Profiler {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
 				java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
-				Set<Map.Entry<Thread,Profile>> entries = javaagent.profiles.entrySet();
-				for (Map.Entry<Thread,Profile> e : entries) {
+				Set<Map.Entry<Thread,Graph>> entries = javaagent.profiles.entrySet();
+				for (Map.Entry<Thread,Graph> e : entries) {
 					err.println(e.getKey().getName());
 					e.getValue().dump(err);
 				}
