@@ -316,7 +316,11 @@ public class Profiler {
 	}
 	
 	public static abstract class Listener {
-		private static String getCaption(Code code, HashMap<Code,Node> children) {
+		public abstract void onExit(Profile[] profiles);
+	}
+	
+	private Listener listener = new Listener() {
+		private String getCaption(Code code, HashMap<Code,Node> children) {
 			if (code == null) {
 				if (children.size() == 0) {
 					return "(self)";
@@ -328,7 +332,7 @@ public class Profiler {
 			}
 		}
 
-		private static void dump(java.io.PrintWriter writer, String indent, Timing parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
+		private void dump(java.io.PrintWriter writer, String indent, Timing parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
 			writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, children));
 			Collection<Node> values = children.values();
 			ArrayList<Node> list = new ArrayList<Node>(values);
@@ -348,19 +352,15 @@ public class Profiler {
 				}
 			});
 			for (Node node : list) {
-				Listener.dump(writer, "  " + indent, parent, node.code, node.statistics, node.children);
+				dump(writer, "  " + indent, parent, node.code, node.statistics, node.children);
 			}		
 		}
 	
-		public abstract void onExit(Profile[] profiles);
-	}
-	
-	private Listener listener = new Listener() {
 		@Override public void onExit(Profile[] profiles) {
 			java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
 			for (Profile profile : profiles) {
 				err.println(profile.getThread().getName());
-				Listener.dump(err, "", profile.getGraph(), profile.getGraph().getRoot().code, profile.getGraph().getRoot().statistics, profile.getGraph().getRoot().children);
+				dump(err, "", profile.getGraph(), profile.getGraph().getRoot().code, profile.getGraph().getRoot().statistics, profile.getGraph().getRoot().children);
 			}
 		}
 	};
