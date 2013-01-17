@@ -10,18 +10,18 @@ public class Profiler {
 		return javaagent;
 	}
 	
-	private HashMap<Thread,Graph> profiles = new HashMap<Thread,Graph>();
+	private HashMap<Thread,Timing> profiles = new HashMap<Thread,Timing>();
 	
-	private Graph getProfile() {
+	private Timing getProfile() {
 		if (profiles.get(Thread.currentThread()) == null) {
-			profiles.put(Thread.currentThread(), new Graph());
+			profiles.put(Thread.currentThread(), new Timing());
 		}
 		return profiles.get(Thread.currentThread());
 	}
 	
 	private Invocation startImpl(Code code) {
 		//System.err.println("Starting code: " + code);
-		Graph profile = getProfile();
+		Timing profile = getProfile();
 		Node node = profile.start(code);
 		Invocation rv = new Invocation(node);
 		profile.setInvocation(rv);
@@ -55,19 +55,11 @@ public class Profiler {
 	} 
 	
 	public void start(String declaring, String methodName, String signature, Object target) {
-		if (declaring.equals("org.mozilla.javascript.InterpretedFunction") && (methodName.equals("exec"))) {
-			startImpl(new ScriptCode(declaring, methodName, signature, target));
-		} else {
-			startImpl(new MethodCode(declaring, methodName, signature));
-		}
+		startImpl(new MethodCode(declaring, methodName, signature));
 	}
 	
-	public void stopImpl() {
-		Graph profile = getProfile();
-		//System.err.println("Ending node " + profile.stack.peek());
-		profile.stop();
-		//System.err.println("Ending invocation: " + invocation);
-		//invocation.stop();
+	private void stopImpl() {
+		getProfile().stop();
 	}
 	
 	public void stop(Object o) {
@@ -75,16 +67,15 @@ public class Profiler {
 	}
 	
 	public void stop(String declaring, String methodName, String signature, Object target) {
-		//	TODO	check to verify it is the same invocation
-		//	Invocation invocation = getProfile().getInvocation();
+		//	TODO	check to verify it is the same invocation?
 		stopImpl();
 	}
 	
-	private static class Graph {
+	private static class Timing {
 		private Node root = new Node(this);
 		private LinkedList<Node> stack = new LinkedList<Node>();
 		
-		Graph() {
+		Timing() {
 			stack.push(root);
 		}
 		
@@ -134,7 +125,7 @@ public class Profiler {
 		}
 	}
 		
-	private static void dump(java.io.PrintWriter writer, String indent, Graph parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
+	private static void dump(java.io.PrintWriter writer, String indent, Timing parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
 		writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, children));
 		Collection<Node> values = children.values();
 		ArrayList<Node> list = new ArrayList<Node>(values);
@@ -159,28 +150,24 @@ public class Profiler {
 	}
 	
 	private static class Node {
-		private Graph parent;
+		private Timing parent;
 		//	TODO	unused instance variable
 		private Code code;
 		
 		protected Statistics statistics = new Statistics();
 		private HashMap<Code,Node> children = new HashMap<Code,Node>();
 		
-		Node(Graph parent, Code code) {
+		Node(Timing parent, Code code) {
 			this.parent = parent;
 			this.code = code;
 		}
 		
-		Node(Graph parent) {
+		Node(Timing parent) {
 			this.parent = parent;
 		}
 		
-		public String toString() {
-			return "Node: " + code.toString();
-		}
-		
 		static class Self extends Node {
-			Self(Graph parent, int time) {
+			Self(Timing parent, int time) {
 				super(parent);
 				this.statistics.elapsed = time;
 			}
@@ -250,41 +237,6 @@ public class Profiler {
 		}
 	}
 	
-	private static class ScriptCode extends Code {
-		private String source;
-		private String methodName;
-		
-		ScriptCode(String className, String methodName, String signature, Object target) {
-			try {
-				java.lang.reflect.Method decompile = target.getClass().getSuperclass().getDeclaredMethod("decompile", int.class, int.class);
-				decompile.setAccessible(true);
-				this.source = (String)decompile.invoke(target,0,0);
-			} catch (NoSuchMethodException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			} catch (java.lang.reflect.InvocationTargetException e) {
-				throw new RuntimeException(e);
-			} finally {
-			}
-			this.methodName = methodName;
-		}
-		
-		public String toString() {
-			return methodName + source;
-		}
-		
-		public int hashCode() {
-			return source.hashCode();
-		}
-		
-		public boolean equals(Object o) {
-			if (o == null) return false;
-			if (!(o instanceof ScriptCode)) return false;
-			return ((ScriptCode)o).source.equals(source);
-		}
-	}
-	
 	private static class Statistics {
 		private int count;
 		private long elapsed;
@@ -300,6 +252,7 @@ public class Profiler {
 		}
 	}
 	
+	//	TODO	should this go away?
 	public static class Invocation {
 		private Node node;
 		
@@ -318,34 +271,12 @@ public class Profiler {
 	
 	private static class Configuration {
 		public boolean profile(String className) {
-			//	If the below is commented out, it leads to an enormous graph even for Hello World
-			if (className.startsWith("org/mozilla/javascript/TokenStream")) return false;
-			if (className.startsWith("org/mozilla/javascript/Parser")) return false;
-			if (className.startsWith("org/mozilla/javascript/CodeGenerator")) return false;
-			if (className.startsWith("org/mozilla/javascript/NodeTransformer")) return false;
-			if (className.startsWith("org/mozilla/javascript/Node")) return false;
-			if (className.startsWith("org/mozilla/javascript/IRFactory")) return false;
-			if (className.startsWith("org/mozilla/javascript/ObjToIntMap")) return false;
-			if (className.startsWith("org/mozilla/javascript/ObjArray")) return false;
-			if (className.startsWith("org/mozilla/javascript/IdScriptableObject")) return false;
-			if (className.startsWith("org/mozilla/javascript/NativeObject")) return false;
-			if (className.startsWith("org/mozilla/javascript/NativeString")) return false;
-			if (className.startsWith("org/mozilla/javascript/NativeArray")) return false;
-			if (className.startsWith("org/mozilla/javascript/JavaMembers")) return false;
-			if (className.startsWith("org/mozilla/javascript/ICode")) return false;
-			if (className.startsWith("org/mozilla/javascript/ast/")) return false;
-			if (className.startsWith("org/mozilla/javascript/jdk13/")) return false;
-			
-//			if (className.startsWith("org/mozilla/javascript/InterpretedFunction")) return true;
 			if (className.startsWith("org/mozilla/javascript/")) return false;
 			if (className.startsWith("inonit/script/rhino/Engine$Profiler")) return false;
 			return true;
 		}
 		
 		public boolean profile(javassist.CtBehavior behavior) {
-//			if (behavior.getDeclaringClass().getName().equals("org.mozilla.javascript.InterpretedFunction")) {
-//				return behavior.getName().equals("exec");
-//			}
 			return true;
 		}
 	}
@@ -361,35 +292,26 @@ public class Profiler {
 			classes.appendSystemPath();
 		}
 		
-		private void trace(String message) {
-			System.err.println(message);
-		}
-		
 		private String quote(String literal) {
 			return "\"" + literal + "\"";
 		}
 
 		public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, java.security.ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-//			System.err.println("Examine: " + className);
 			if (protectionDomain == null) return null;
+			//	Remove other classes loaded by the agent, but if we make this capable of being loaded separately, this may need to
+			//	change; just do not know enough about the definition of ProtectionDomain
 			if (protectionDomain.equals(Profiler.class.getProtectionDomain())) return null;
-//			System.err.println("class: " + className + " location: " + protectionDomain);
 			if (configuration.profile(className)) {
-//				System.err.println("Transform: " + className);
 				try {
 					if (!added.contains(loader)) {
 						added.add(loader);
 						classes.appendClassPath(new javassist.LoaderClassPath((loader)));
 					}
 					javassist.CtClass c = classes.makeClass(new java.io.ByteArrayInputStream(classfileBuffer));
-//					System.err.println("1: " + className);
 					ArrayList<javassist.CtBehavior> behaviors = new ArrayList<javassist.CtBehavior>();
-//					System.err.println("2: " + className);
 					behaviors.addAll(Arrays.asList(c.getDeclaredBehaviors()));
-//					trace("3: " + className);
 					for (javassist.CtBehavior b : c.getDeclaredMethods()) {
 						if (configuration.profile(b)) {
-	//						trace("4: " + b);
 							if (java.lang.reflect.Modifier.isAbstract(b.getModifiers())) break;
 							if (b instanceof javassist.CtMethod) {
 								javassist.CtMethod m = (javassist.CtMethod)b;
@@ -401,7 +323,6 @@ public class Profiler {
 								arguments = "(" + quote(b.getDeclaringClass().getName()) + "," + quote(b.getName()) + "," + quote(b.getSignature()) + "," + "$0" + ")";							
 							}
 							String before = "inonit.tools.Profiler.javaagent().start" + arguments + ";";
-	//						System.err.println(before);
 							String after = "inonit.tools.Profiler.javaagent().stop" + arguments + ";";
 							try {
 								b.insertBefore(before);
@@ -409,21 +330,16 @@ public class Profiler {
 								b.addCatch("{ " + after + "; throw $e; }", classes.getCtClass("java.lang.Throwable"));
 							} catch (javassist.CannotCompileException e) {
 								System.err.println("CannotCompileException: " + e.getMessage() + ": " + b.getDeclaringClass().getName() + "." + b.getName() + "(" + b.getSignature() + ")");
-	//							e.printStackTrace();
 							}
 						}
 					}
-//					trace("5: " + b);
-//					System.err.println("Transformed: " + className);
-//					return null;
 					return c.toBytecode();
 				} catch (javassist.NotFoundException e) {
 					e.printStackTrace();
 					throw new RuntimeException(e);
 				} catch (javassist.CannotCompileException e) {
 					e.printStackTrace();
-					return null;
-					//throw new RuntimeException(e);
+					throw new RuntimeException(e);
 				} catch (java.io.IOException e) {
 					e.printStackTrace();
 					throw new RuntimeException(e);
@@ -434,6 +350,15 @@ public class Profiler {
 		}
 	}
 	
+	public static abstract class Profile {
+		public abstract Thread getThread();
+		public abstract Timing getGraph();
+	}
+	
+	public static abstract class Listener {
+		public abstract void onExit(Profile[] profiles);
+	}
+	
 	public static void premain(String agentArgs, Instrumentation inst) {
 		javaagent = new Profiler();
 		System.err.println("Starting profiler ...");
@@ -441,8 +366,8 @@ public class Profiler {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
 				java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
-				Set<Map.Entry<Thread,Graph>> entries = javaagent.profiles.entrySet();
-				for (Map.Entry<Thread,Graph> e : entries) {
+				Set<Map.Entry<Thread,Timing>> entries = javaagent.profiles.entrySet();
+				for (Map.Entry<Thread,Timing> e : entries) {
 					err.println(e.getKey().getName());
 					e.getValue().dump(err);
 				}
