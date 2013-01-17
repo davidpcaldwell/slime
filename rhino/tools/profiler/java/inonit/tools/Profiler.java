@@ -316,54 +316,56 @@ public class Profiler {
 	}
 	
 	public static abstract class Listener {
+		public static final Listener DEFAULT = new Listener() {
+			private String getCaption(Code code, HashMap<Code,Node> children) {
+				if (code == null) {
+					if (children.size() == 0) {
+						return "(self)";
+					} else {
+						return "(top)";
+					}
+				} else {
+					return code.toString();
+				}
+			}
+
+			private void dump(java.io.PrintWriter writer, String indent, Timing parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
+				writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, children));
+				Collection<Node> values = children.values();
+				ArrayList<Node> list = new ArrayList<Node>(values);
+				if (values.size() > 0 && statistics.elapsed > 0) {
+					int sum = 0;
+					for (Node n : list) {
+						sum += n.statistics.elapsed;
+					}
+					int self = (int)statistics.elapsed - sum;
+					if (self > 0) {
+						list.add(new Node.Self(parent,self));
+					}
+				}
+				Collections.sort(list, new Comparator<Node>() {
+					public int compare(Node o1, Node o2) {
+						return (int)(o2.statistics.elapsed - o1.statistics.elapsed);
+					}
+				});
+				for (Node node : list) {
+					dump(writer, "  " + indent, parent, node.code, node.statistics, node.children);
+				}		
+			}
+
+			@Override public void onExit(Profile[] profiles) {
+				java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
+				for (Profile profile : profiles) {
+					err.println(profile.getThread().getName());
+					dump(err, "", profile.getGraph(), profile.getGraph().getRoot().code, profile.getGraph().getRoot().statistics, profile.getGraph().getRoot().children);
+				}
+			}
+		};
+		
 		public abstract void onExit(Profile[] profiles);
 	}
 	
-	private Listener listener = new Listener() {
-		private String getCaption(Code code, HashMap<Code,Node> children) {
-			if (code == null) {
-				if (children.size() == 0) {
-					return "(self)";
-				} else {
-					return "(top)";
-				}
-			} else {
-				return code.toString();
-			}
-		}
-
-		private void dump(java.io.PrintWriter writer, String indent, Timing parent, Code code, Statistics statistics, HashMap<Code,Node> children) {
-			writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, children));
-			Collection<Node> values = children.values();
-			ArrayList<Node> list = new ArrayList<Node>(values);
-			if (values.size() > 0 && statistics.elapsed > 0) {
-				int sum = 0;
-				for (Node n : list) {
-					sum += n.statistics.elapsed;
-				}
-				int self = (int)statistics.elapsed - sum;
-				if (self > 0) {
-					list.add(new Node.Self(parent,self));
-				}
-			}
-			Collections.sort(list, new Comparator<Node>() {
-				public int compare(Node o1, Node o2) {
-					return (int)(o2.statistics.elapsed - o1.statistics.elapsed);
-				}
-			});
-			for (Node node : list) {
-				dump(writer, "  " + indent, parent, node.code, node.statistics, node.children);
-			}		
-		}
-	
-		@Override public void onExit(Profile[] profiles) {
-			java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
-			for (Profile profile : profiles) {
-				err.println(profile.getThread().getName());
-				dump(err, "", profile.getGraph(), profile.getGraph().getRoot().code, profile.getGraph().getRoot().statistics, profile.getGraph().getRoot().children);
-			}
-		}
-	};
+	private ArrayList<Listener> listeners = new ArrayList<Listener>();
 	
 	public static void premain(String agentArgs, Instrumentation inst) {
 		javaagent = new Profiler();
@@ -383,7 +385,17 @@ public class Profiler {
 						}
 					});
 				}
-				javaagent.listener.onExit(profiles.toArray(new Profile[profiles.size()]));
+				//	TODO	this basically re-sets all the timers so that the timing data, starting now, is unaffected by the
+				//			listeners. But it would probably be better to somehow disable profiling altogether, by setting a state
+				//			variable somewhere that shuts everything off
+				javaagent.profiles.clear();
+				if (javaagent.listeners.size() == 0) {
+					javaagent.listeners.add(Listener.DEFAULT);					
+				}
+				Profile[] array = profiles.toArray(new Profile[profiles.size()]);
+				for (Listener listener : javaagent.listeners) {
+					listener.onExit(array);
+				}
 			}
 		}));
 	}
