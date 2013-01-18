@@ -492,6 +492,8 @@ if (getSetting("jsh.build.javassist.jar")) {
 		if (status != 0) {
 			throw new Error("Exit status when building profile: " + status);
 		}
+		new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
+		copyFile(new File(BASE,"rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
 	}).call(this);
 } else {
 	console("Javassist location not specified; not building profiler.");
