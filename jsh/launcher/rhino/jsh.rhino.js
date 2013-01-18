@@ -595,11 +595,13 @@ try {
 	command.add(JAVA_HOME.getFile("bin/java"));
 	if (env.JSH_JAVA_DEBUGGER) {
 		command.add("-Xrunjdwp:transport=dt_shmem,server=y");
-	} else if (env.JSH_SCRIPT_DEBUGGER == "profiler") {
+	} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
+		//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
+		//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
 		if (settings.get("profiler")) {
 			command.add("-javaagent:" + settings.get("profiler").path);
 		} else {
-			//	TODO	allow explicit setting of profiler agent location
+			//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
 			//	emit warning message?
 		}
 	}

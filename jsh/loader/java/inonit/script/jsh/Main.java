@@ -244,6 +244,8 @@ public class Main {
 						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
 					} else if (id.equals("profiler")) {
 						return new Engine.Profiler();
+					} else if (id.startsWith("profiler:")) {
+						return new Engine.Profiler();
 					} else {
 						//	TODO	emit some kind of error?
 					}
