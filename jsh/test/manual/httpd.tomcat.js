@@ -53,7 +53,8 @@ $exports.Tomcat = function(p) {
 							//	TODO	see if it works without the stripping
 							CATALINA_BASE: base.toString().substring(0,base.toString().length-1),
 							CATALINA_HOME: p.home.toString().substring(0,p.home.toString().length-1),
-							SLIME_SCRIPT_DEBUGGER: (m && m.debug && m.debug.script) ? "rhino" : "none"
+							SLIME_SCRIPT_DEBUGGER: (m && m.debug && m.debug.script) ? "rhino" : "none",
+							JAVA_HOME: jsh.shell.java.home.toString()
 						}),
 						onExit: function(result) {
 							jsh.shell.echo("Executed " + command + " with status: " + result.status);
