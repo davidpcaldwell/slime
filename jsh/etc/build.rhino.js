@@ -456,18 +456,6 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 	})();
 }
 
-if (!getSetting("jsh.build.notest")) {
-	var integrationTests = function() {
-		var script = new File(BASE,"jsh/test/suite.rhino.js");
-		console("Running integration tests at " + script.getCanonicalPath() + " ...");
-		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
-		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
-		eval(readFile(script.getCanonicalPath()));
-	}
-
-	integrationTests();
-}
-
 console("Creating tools ...");
 var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
@@ -497,6 +485,18 @@ if (getSetting("jsh.build.javassist.jar")) {
 	}).call(this);
 } else {
 	console("Javassist location not specified; not building profiler.");
+}
+
+if (!getSetting("jsh.build.notest")) {
+	var integrationTests = function() {
+		var script = new File(BASE,"jsh/test/suite.rhino.js");
+		console("Running integration tests at " + script.getCanonicalPath() + " ...");
+		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
+		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
+		eval(readFile(script.getCanonicalPath()));
+	}
+
+	integrationTests();
 }
 
 console("Creating install script ...");
