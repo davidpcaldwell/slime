@@ -301,10 +301,12 @@ public class Profiler {
 				}
 			}
 
-			private void dump(java.io.PrintWriter writer, String indent, Timing parent, Code code, Statistics statistics, Node[] children) {
-				writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, children));
-				ArrayList<Node> list = new ArrayList<Node>(Arrays.asList(children));
-				if (children.length > 0 && statistics.elapsed > 0) {
+			private void dump(java.io.PrintWriter writer, String indent, Timing parent, Node node) {
+				Statistics statistics = node.statistics;
+				Code code = node.code;
+				writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, node.getChildren()));
+				ArrayList<Node> list = new ArrayList<Node>(Arrays.asList(node.getChildren()));
+				if (node.getChildren().length > 0 && statistics.elapsed > 0) {
 					int sum = 0;
 					for (Node n : list) {
 						sum += n.statistics.elapsed;
@@ -319,8 +321,8 @@ public class Profiler {
 						return (int)(o2.statistics.elapsed - o1.statistics.elapsed);
 					}
 				});
-				for (Node node : list) {
-					dump(writer, "  " + indent, parent, node.code, node.statistics, node.getChildren());
+				for (Node child : list) {
+					dump(writer, "  " + indent, parent, child);
 				}		
 			}
 
@@ -328,7 +330,7 @@ public class Profiler {
 				java.io.PrintWriter err = new java.io.PrintWriter(System.err, true);
 				for (Profile profile : profiles) {
 					err.println(profile.getThread().getName());
-					dump(err, "", profile.getTiming(), profile.getTiming().getRoot().code, profile.getTiming().getRoot().statistics, profile.getTiming().getRoot().getChildren());
+					dump(err, "", profile.getTiming(), profile.getTiming().getRoot());
 				}
 			}
 		};
