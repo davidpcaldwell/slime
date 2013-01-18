@@ -19,13 +19,8 @@ public class Profiler {
 		return profiles.get(Thread.currentThread());
 	}
 	
-	private Invocation startImpl(Code code) {
-		//System.err.println("Starting code: " + code);
-		Timing profile = getProfile();
-		Node node = profile.start(code);
-		Invocation rv = new Invocation(node);
-		profile.setInvocation(rv);
-		return rv;
+	private void startImpl(Code code) {
+		getProfile().start(code);
 	}
 	
 	private static class CustomCode extends Code {
@@ -98,15 +93,15 @@ public class Profiler {
 			stop(stack.peek());
 		}
 		
-		private Invocation invocation;
-		
-		void setInvocation(Invocation invocation) {
-			this.invocation = invocation;
-		}
-		
-		Invocation getInvocation() {
-			return invocation;
-		}
+//		private Invocation invocation;
+//		
+//		void setInvocation(Invocation invocation) {
+//			this.invocation = invocation;
+//		}
+//		
+//		Invocation getInvocation() {
+//			return invocation;
+//		}
 		
 		public Node getRoot() {
 			return root;
@@ -212,22 +207,22 @@ public class Profiler {
 		}
 	}
 	
-	//	TODO	should this go away?
-	public static class Invocation {
-		private Node node;
-		
-		Invocation(Node node) {
-			this.node = node;
-		}
-		
-		public String toString() {
-			return this.node.code.toString();
-		}
-		
-		void stop() {
-			this.node.stop();
-		}
-	}
+//	//	TODO	should this go away?
+//	public static class Invocation {
+//		private Node node;
+//		
+//		Invocation(Node node) {
+//			this.node = node;
+//		}
+//		
+//		public String toString() {
+//			return this.node.code.toString();
+//		}
+//		
+//		void stop() {
+//			this.node.stop();
+//		}
+//	}
 	
 	private static class Configuration {
 		public boolean profile(String className) {
@@ -366,6 +361,10 @@ public class Profiler {
 	}
 	
 	private ArrayList<Listener> listeners = new ArrayList<Listener>();
+	
+	public void addListener(Listener listener) {
+		listeners.add(listener);
+	}
 	
 	public static void premain(String agentArgs, Instrumentation inst) {
 		javaagent = new Profiler();
