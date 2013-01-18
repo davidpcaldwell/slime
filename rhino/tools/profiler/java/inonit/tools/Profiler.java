@@ -66,7 +66,7 @@ public class Profiler {
 		stopImpl();
 	}
 	
-	private static class Timing {
+	public static class Timing {
 		private Node root = new Node(this);
 		private LinkedList<Node> stack = new LinkedList<Node>();
 		
@@ -98,7 +98,7 @@ public class Profiler {
 		}
 	}
 	
-	private static class Node {
+	public static class Node {
 		private Timing parent;
 		//	TODO	unused instance variable
 		private Code code;

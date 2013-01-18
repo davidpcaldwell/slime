@@ -7,26 +7,33 @@ and open the template in the editor.
 	<head>
 		<title>Profiling data</title>
 		<link rel="stylesheet" type="text/css" href="viewer.css" />
-		<script type="text/javascript" src="data.js"></script>
+		<script type="text/javascript" src="profiles.js"></script>
 		<script type="text/javascript" src="viewer.js"></script>
 	</head>
 	<body>
-		<div>
-			<h1>Tree</h1>
+		Threshold <input id="threshold" value="0.000" />
+		<input id="refresh" type="button" value="Refresh" />
+		<div id="data">
 			<div id="design">
-				<div>
-					<div class="top">Top level</div>
-					<div>
-						<div class="leaf">Child 1</div>
+				<div class="profile">
+					<h1 class="thread"></h1>
+					<div class="tree">
+						<h1>Tree</h1>
 						<div>
-							<div class="top">Child 2</div>
+							<div class="top">Top level</div>
 							<div>
-								<div class="leaf">Child 2a</div>
+								<div class="leaf">Child 1</div>
+								<div>
+									<div class="top">Child 2</div>
+									<div>
+										<div class="leaf">Child 2a</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			</div>			
 		</div>
 	</body>
 </html>

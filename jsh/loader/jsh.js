@@ -73,6 +73,10 @@ this.jsh = new function() {
 			var rv = new rhinoLoader.Loader(p);
 			return jsh.io.Loader.decorate(rv);
 		}
+		
+		this.Loader = function(p) {
+			return Loader(p);
+		}
 
 		this.plugin = new function() {
 			this.read = function(_code,scope) {
@@ -421,21 +425,22 @@ this.jsh = new function() {
 					Packages.inonit.tools.Profiler.Listener,
 					new function() {
 						this.onExit = function(_profiles) {
-							jsh.shell.echo("There are " + _profiles.length + " profiles.");
-							var pathname = jsh.file.Pathname(String(new Packages.java.io.File(options.listener).getCanonicalPath()));
-							jsh.shell.echo("listener: " + pathname);
+							var _listener = new Packages.java.io.File(options.listener);
 							
 							var Code = function(_peer) {
-								if (_peer.getSourceName && _peer.getLineNumbers && _peer.getFunctionName) {
+								if (_peer && _peer.getSourceName && _peer.getLineNumbers && _peer.getFunctionName) {
 									this.sourceName = String(_peer.getSourceName());
-									this.lineNumbers = jsh.java.toJsArray(_peer.getLineNumbers());
+									this.lineNumbers = jsh.java.toJsArray(_peer.getLineNumbers(), function(v) {
+										return v;
+									});
 									if (_peer.getFunctionName()) {
 										this.functionName = String(_peer.getFunctionName());
 									}
-								} else if (_peer.getClassName && _peer.getMethodName && _peer.getSignature) {
+								} else if (_peer && _peer.getClassName && _peer.getMethodName && _peer.getSignature) {
 									this.className = String(_peer.getClassName());
 									this.methodName = String(_peer.getMethodName());
 									this.signature = String(_peer.getSignature());
+								} else {
 								}
 							}
 							
@@ -464,8 +469,18 @@ this.jsh = new function() {
 								};
 
 								this.timing = new Timing(_peer.getTiming());
-							}
-							//	jsh.loader.run(jsh.script.getopts(...))
+							};
+							
+							var profiles = jsh.java.toJsArray(_profiles, function(_profile) {
+								return new Profile(_profile);
+							});
+							
+							var pathname = jsh.file.Pathname(String(_listener.getCanonicalPath()));
+							jsh.loader.run(pathname, {
+								$loader: new loader.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(_listener.getParentFile()) }),
+								jsh: jsh,
+								profiles: profiles
+							});
 						}
 					}
 				));

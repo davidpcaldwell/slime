@@ -133,6 +133,51 @@ public class Engine {
 			}
 		}
 		
+		public static class CodeImpl {
+			private org.mozilla.javascript.debug.DebuggableScript script;
+			private int[] lines;
+
+			private String string;
+
+			CodeImpl(org.mozilla.javascript.debug.DebuggableScript script) {
+				this.script = script;
+				//	TODO	should array be copied?
+				this.lines = script.getLineNumbers();
+				Arrays.sort(lines);
+				String rv = script.getSourceName() + " [" + lines[0] + "-" + lines[lines.length-1] + "]";
+				if (script.getFunctionName() != null) {
+					rv += " " + script.getFunctionName() + "()";
+				}
+				this.string = rv;
+			}
+
+			public String toString() {
+				return string;
+			}
+
+			public int hashCode() {
+				return string.hashCode();
+			}
+
+			public boolean equals(Object o) {
+				if (o == null) return false;
+				if (!(o instanceof CodeImpl)) return false;
+				return this.toString().equals(o.toString());
+			}
+
+			public String getSourceName() {
+				return script.getSourceName();
+			}
+
+			public int[] getLineNumbers() {
+				return lines;
+			}
+
+			public String getFunctionName() {
+				return script.getFunctionName();
+			}
+		}
+
 		private class MyDebugger implements org.mozilla.javascript.debug.Debugger {
 			private class DebugFrameImpl implements org.mozilla.javascript.debug.DebugFrame {
 				private org.mozilla.javascript.debug.DebuggableScript script;
@@ -150,50 +195,6 @@ public class Engine {
 				
 				public String toString() {
 					return code.toString();
-				}
-				
-				private class CodeImpl {
-					private org.mozilla.javascript.debug.DebuggableScript script;
-					private int[] lines;
-					
-					private String string;
-					
-					CodeImpl(org.mozilla.javascript.debug.DebuggableScript script) {
-						//	TODO	should array be copied?
-						this.lines = script.getLineNumbers();
-						Arrays.sort(lines);
-						String rv = script.getSourceName() + " [" + lines[0] + "-" + lines[lines.length-1] + "]";
-						if (script.getFunctionName() != null) {
-							rv += " " + script.getFunctionName() + "()";
-						}
-						this.string = rv;
-					}
-					
-					public String toString() {
-						return string;
-					}
-					
-					public int hashCode() {
-						return string.hashCode();
-					}
-					
-					public boolean equals(Object o) {
-						if (o == null) return false;
-						if (!(o instanceof CodeImpl)) return false;
-						return this.toString().equals(o.toString());
-					}
-					
-					public String getSource() {
-						return script.getSourceName();
-					}
-					
-					public int[] getLineNumbers() {
-						return lines;
-					}
-					
-					public String getFunctionName() {
-						return script.getFunctionName();
-					}
 				}
 				
 				public void onEnter(Context cntxt, Scriptable s, Scriptable s1, Object[] os) {
