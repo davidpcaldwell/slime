@@ -93,16 +93,6 @@ public class Profiler {
 			stop(stack.peek());
 		}
 		
-//		private Invocation invocation;
-//		
-//		void setInvocation(Invocation invocation) {
-//			this.invocation = invocation;
-//		}
-//		
-//		Invocation getInvocation() {
-//			return invocation;
-//		}
-		
 		public Node getRoot() {
 			return root;
 		}
@@ -206,23 +196,6 @@ public class Profiler {
 			elapsed += System.currentTimeMillis() - start;
 		}
 	}
-	
-//	//	TODO	should this go away?
-//	public static class Invocation {
-//		private Node node;
-//		
-//		Invocation(Node node) {
-//			this.node = node;
-//		}
-//		
-//		public String toString() {
-//			return this.node.code.toString();
-//		}
-//		
-//		void stop() {
-//			this.node.stop();
-//		}
-//	}
 	
 	private static class Configuration {
 		public boolean profile(String className) {
