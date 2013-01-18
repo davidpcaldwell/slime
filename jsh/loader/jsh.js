@@ -482,10 +482,26 @@ this.jsh = new function() {
 									profiles: profiles
 								});
 							} else if (options.output && /\.html$/.test(options.output) && jsh.shell.jsh.home) {
-								jsh.loader.module(jsh.shell.jsh.home.getRelativePath("tools/profiler/viewer/module.js"), {
-									profiles: profiles,
-									to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
-								});
+								var pathname = jsh.shell.jsh.home.getRelativePath("tools/profiler/viewer/module.js");
+								//	TODO	the below would not work because when jsh.loader.module loads the module, it does not
+								//			provide the module with a $loader which has been decorated with the jsh.io stuff
+								//			(that is, the .resource() method). That's a bug and a redesign may be needed.
+								//
+								//			The good news is that we can now use the same scope strategy to send profiles (not
+								//			putting it within $context).
+								if (false) {
+									jsh.loader.module(pathname, {
+										profiles: profiles,
+										to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
+									});
+								} else {
+									jsh.loader.run(pathname, {
+										$loader: new loader.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(pathname.parent.java.adapt()) }),
+										jsh: jsh,
+										profiles: profiles,
+										to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
+									});
+								}
 							}
 						}
 					}
