@@ -153,10 +153,14 @@ public class Engine {
 				}
 				
 				private class CodeImpl {
+					private org.mozilla.javascript.debug.DebuggableScript script;
+					private int[] lines;
+					
 					private String string;
 					
 					CodeImpl(org.mozilla.javascript.debug.DebuggableScript script) {
-						int[] lines = script.getLineNumbers();
+						//	TODO	should array be copied?
+						this.lines = script.getLineNumbers();
 						Arrays.sort(lines);
 						String rv = script.getSourceName() + " [" + lines[0] + "-" + lines[lines.length-1] + "]";
 						if (script.getFunctionName() != null) {
@@ -177,6 +181,18 @@ public class Engine {
 						if (o == null) return false;
 						if (!(o instanceof CodeImpl)) return false;
 						return this.toString().equals(o.toString());
+					}
+					
+					public String getSource() {
+						return script.getSourceName();
+					}
+					
+					public int[] getLineNumbers() {
+						return lines;
+					}
+					
+					public String getFunctionName() {
+						return script.getFunctionName();
 					}
 				}
 				

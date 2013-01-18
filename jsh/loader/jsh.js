@@ -406,4 +406,71 @@ this.jsh = new function() {
 			}
 		}
 	})();
+	
+	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
+		(function() {
+			var property = String($host.getSystemProperties().getProperty("jsh.script.debugger"));
+			var parser = /^profiler\:(.*)$/;
+			if (parser.test(property)) {
+				var options = {};
+				parser.exec(property)[1].split(",").forEach(function(declaration) {
+					var tokens = declaration.split("=");
+					options[tokens[0]] = tokens[1];
+				});				
+				Packages.inonit.tools.Profiler.javaagent().addListener(new JavaAdapter(
+					Packages.inonit.tools.Profiler.Listener,
+					new function() {
+						this.onExit = function(_profiles) {
+							jsh.shell.echo("There are " + _profiles.length + " profiles.");
+							var pathname = jsh.file.Pathname(String(new Packages.java.io.File(options.listener).getCanonicalPath()));
+							jsh.shell.echo("listener: " + pathname);
+							
+							var Code = function(_peer) {
+								if (_peer.getSourceName && _peer.getLineNumbers && _peer.getFunctionName) {
+									this.sourceName = String(_peer.getSourceName());
+									this.lineNumbers = jsh.java.toJsArray(_peer.getLineNumbers());
+									if (_peer.getFunctionName()) {
+										this.functionName = String(_peer.getFunctionName());
+									}
+								} else if (_peer.getClassName && _peer.getMethodName && _peer.getSignature) {
+									this.className = String(_peer.getClassName());
+									this.methodName = String(_peer.getMethodName());
+									this.signature = String(_peer.getSignature());
+								}
+							}
+							
+							var Statistics = function(_peer) {
+								this.count = _peer.getCount();
+								this.elapsed = _peer.getElapsed();
+							}
+
+							var Node = function(_peer) {
+								var Constructor = arguments.callee;
+								
+								this.statistics = new Statistics(_peer.getStatistics());
+								this.code = new Code(_peer.getCode());
+								this.children = jsh.java.toJsArray(_peer.getChildren(), function(_child) {
+									return new Constructor(_child);
+								});
+							}
+
+							var Timing = function(_peer) {
+								this.root = new Node(_peer.getRoot());
+							}
+
+							var Profile = function(_peer) {
+								this.thread = {
+									name: String(_peer.getThread().getName())
+								};
+
+								this.timing = new Timing(_peer.getTiming());
+							}
+							//	jsh.loader.run(jsh.script.getopts(...))
+						}
+					}
+				));
+			}
+		})();
+		//	TODO	test for the existence of this class as well?
+	}
 };

@@ -139,15 +139,30 @@ public class Profiler {
 			statistics.stop();
 		}
 		
+		public Object getCode() {
+			if (code instanceof CustomCode) {
+				return ((CustomCode)code).o;
+			} else {
+				return code;
+			}
+		}
+		
+		public Statistics getStatistics() {
+			return statistics;
+		}
+		
 		public Node[] getChildren() {
 			return children.values().toArray(new Node[0]);
 		}		
 	}
 	
-	private static abstract class Code {
+	public static abstract class Code {
+		@Override public abstract String toString();
+		@Override public abstract int hashCode();
+		@Override public abstract boolean equals(Object o);
 	}
 	
-	private static class MethodCode extends Code {
+	public static class MethodCode extends Code {
 		private String className;
 		private String methodName;
 		private String signature;
@@ -184,20 +199,40 @@ public class Profiler {
 			if (!(o instanceof MethodCode)) return false;
 			return o.toString().equals(toString());
 		}
+		
+		public String getClassName() {
+			return className;
+		}
+		
+		public String getMethodName() {
+			return methodName;
+		}
+		
+		public String getSignature() {
+			return signature;
+		}
 	}
 	
-	private static class Statistics {
+	public static class Statistics {
 		private int count;
 		private long elapsed;
 		private long start;
 		
-		public void start() {
+		void start() {
 			count++;
 			start = System.currentTimeMillis();
 		}
 		
-		public void stop() {
+		void stop() {
 			elapsed += System.currentTimeMillis() - start;
+		}
+		
+		public int getCount() {
+			return count;
+		}
+		
+		public long getElapsed() {
+			return elapsed;
 		}
 	}
 	
@@ -302,7 +337,7 @@ public class Profiler {
 			}
 
 			private void dump(java.io.PrintWriter writer, String indent, Timing parent, Node node) {
-				Statistics statistics = node.statistics;
+				Statistics statistics = node.getStatistics();
 				Code code = node.code;
 				writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, node.getChildren()));
 				ArrayList<Node> list = new ArrayList<Node>(Arrays.asList(node.getChildren()));
