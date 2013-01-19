@@ -66,22 +66,22 @@ public class Engine {
 		public void setBreakOnExceptions(boolean breakOnExceptions) {
 		}
 	}
-	
+
 	public static class Profiler extends Debugger {
 		private org.mozilla.javascript.debug.Debugger debugger = new MyDebugger();
 		private Listener listener;
-		
+
 		//	TODO	should not be public
 		public Profiler() {
 			this.listener = AgentListener.get();
 			//System.err.println("Profiler listener: " + this.listener);
 		}
-		
+
 		private static abstract class Listener {
 			abstract void start(Object o);
 			abstract void end(Object o);
 		}
-		
+
 		private static class AgentListener extends Listener {
 			static AgentListener get() {
 				try {
@@ -97,11 +97,11 @@ public class Engine {
 					throw new RuntimeException(e);
 				}
 			}
-			
+
 			private Object agent;
 			private java.lang.reflect.Method start;
 			private java.lang.reflect.Method stop;
-			
+
 			AgentListener(Object agent) {
 				this.agent = agent;
 				try {
@@ -111,7 +111,7 @@ public class Engine {
 					throw new RuntimeException(e);
 				}
 			}
-			
+
 			void start(Object o) {
 				try {
 					start.invoke(agent, o);
@@ -121,7 +121,7 @@ public class Engine {
 					throw new RuntimeException(e);
 				}
 			}
-			
+
 			void end(Object o) {
 				try {
 					stop.invoke(agent, o);
@@ -129,10 +129,10 @@ public class Engine {
 					throw new RuntimeException(e);
 				} catch (java.lang.reflect.InvocationTargetException e) {
 					throw new RuntimeException(e);
-				}				
+				}
 			}
 		}
-		
+
 		public static class CodeImpl {
 			private org.mozilla.javascript.debug.DebuggableScript script;
 			private int[] lines;
@@ -183,7 +183,7 @@ public class Engine {
 				private org.mozilla.javascript.debug.DebuggableScript script;
 				private Listener listener;
 				private CodeImpl code;
-				
+
 				DebugFrameImpl(org.mozilla.javascript.debug.DebuggableScript script, Listener listener) {
 					if (script == null) {
 						throw new NullPointerException();
@@ -192,11 +192,11 @@ public class Engine {
 					this.listener = listener;
 					this.code = new CodeImpl(script);
 				}
-				
+
 				public String toString() {
 					return code.toString();
 				}
-				
+
 				public void onEnter(Context cntxt, Scriptable s, Scriptable s1, Object[] os) {
 					//System.err.println("Script enter: " + code);
 					if (listener != null) {
@@ -207,7 +207,7 @@ public class Engine {
 				public void onExit(Context cntxt, boolean byThrow, Object resultOrException) {
 					//System.err.println("Script exit: " + code);
 					if (listener != null) {
-						listener.end(code);					
+						listener.end(code);
 					}
 				}
 
@@ -221,7 +221,7 @@ public class Engine {
 
 				public void onDebuggerStatement(Context cntxt) {
 					//	ignore it
-				}				
+				}
 			}
 
 			public void handleCompilationDone(Context cntxt, org.mozilla.javascript.debug.DebuggableScript ds, String string) {
@@ -235,7 +235,7 @@ public class Engine {
 				return new DebugFrameImpl(ds, listener);
 			}
 		}
-		
+
 		void initialize(Configuration contexts) {
 			//System.err.println("Initializing profiler with context factory");
 			contexts.factory.addListener(new ContextFactory.Listener() {
@@ -843,7 +843,7 @@ public class Engine {
 			final String getSourceName() {
 				return id;
 			}
-			
+
 			private String parse(BufferedReader lines) throws IOException {
 				StringBuffer b = new StringBuffer();
 				String line;
@@ -873,7 +873,7 @@ public class Engine {
 				String code = b.toString();
 				return code;
 			}
-			
+
 			final Object evaluate(Debugger dim, Context context, Scriptable scope) throws IOException {
 				BufferedReader lines = new BufferedReader(reader);
 				String code = parse(lines);

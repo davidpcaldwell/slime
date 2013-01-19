@@ -73,7 +73,7 @@ this.jsh = new function() {
 			var rv = new rhinoLoader.Loader(p);
 			return jsh.io.Loader.decorate(rv);
 		}
-		
+
 		this.Loader = function(p) {
 			return Loader(p);
 		}
@@ -410,7 +410,7 @@ this.jsh = new function() {
 			}
 		}
 	})();
-	
+
 	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
 		(function() {
 			var property = String($host.getSystemProperties().getProperty("jsh.script.debugger"));
@@ -420,7 +420,7 @@ this.jsh = new function() {
 				parser.exec(property)[1].split(",").forEach(function(declaration) {
 					var tokens = declaration.split("=");
 					options[tokens[0]] = tokens[1];
-				});				
+				});
 				Packages.inonit.tools.Profiler.javaagent().addListener(new JavaAdapter(
 					Packages.inonit.tools.Profiler.Listener,
 					new function() {
@@ -472,9 +472,9 @@ this.jsh = new function() {
 							var profiles = jsh.java.toJsArray(_profiles, function(_profile) {
 								return new Profile(_profile);
 							});
-							
+
 							if (options.listener) {
-								var _listener = new Packages.java.io.File(options.listener);							
+								var _listener = new Packages.java.io.File(options.listener);
 								var pathname = jsh.file.filesystems.os.Pathname(String(_listener.getCanonicalPath()));
 								jsh.loader.run(pathname, {
 									$loader: new loader.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(_listener.getParentFile()) }),

@@ -241,9 +241,9 @@ END LICENSE
 							</div>
 							<script type="application/x.jsapi#tests" jsapi:id="Monitor"><![CDATA[
 								var lock = new module.Thread.Monitor();
-								
+
 								var count = 0;
-								
+
 								var waiter = function() {
 									return new lock.Waiter({
 										//	TODO	make optional in API with this default implementation
@@ -261,12 +261,12 @@ END LICENSE
 										}
 									});
 								}
-								
+
 								var waiters = [];
 								for (var i=0; i<10; i++) {
 									waiters.push(waiter());
 								}
-								
+
 								var joiners = [];
 								waiters.forEach(function(element) {
 									//	jsh.shell.echo("Starting ...");
@@ -283,7 +283,7 @@ END LICENSE
 									});
 									joiners.push(t);
 								});
-								
+
 								joiners.forEach(function(t) {
 									t.join();
 								});

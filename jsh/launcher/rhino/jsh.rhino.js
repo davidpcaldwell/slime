@@ -383,7 +383,7 @@ if (getProperty("jsh.launcher.home")) {
 			JSH_HOME.getDirectory("plugins"),
 			new Directory(getProperty("user.home")).getDirectory(".jsh")
 		]);
-		
+
 		this.profiler = JSH_HOME.getFile("tools/profiler.jar");
 	}
 }
