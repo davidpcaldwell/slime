@@ -17,7 +17,6 @@ var Request = function(_request) {
 	var _query = _request.getQueryString();
 	var parameters = [];
 	if (_query) {
-		debugger;
 		var query = String(_query);
 		var tokens = query.split("&");
 		for (var i=0; i<tokens.length; i++) {
