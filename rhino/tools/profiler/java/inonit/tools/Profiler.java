@@ -251,6 +251,7 @@ public class Profiler {
 	private static class Configuration {
 		public boolean profile(String className) {
 			if (className.startsWith("org/mozilla/javascript/")) return false;
+			if (className.startsWith("org/mozilla/classfile/")) return false;
 			if (className.startsWith("inonit/script/rhino/Engine$Profiler")) return false;
 			return true;
 		}

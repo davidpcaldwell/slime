@@ -44,7 +44,7 @@ var render = function(profiles,settings) {
 		heading.innerHTML = "Tree";
 		div_tree.appendChild(heading);
 		div_profile.appendChild(div_tree);
-		
+
 		var nodeName = function(node) {
 			if (node.code.className && node.code.methodName) {
 				return node.code.className + " " + node.code.methodName + " " + node.code.signature;
@@ -77,14 +77,14 @@ var render = function(profiles,settings) {
 		}
 
 		div_tree.appendChild(renderNode(profile.timing.root));
-		
+
 		var div_hotspots = div("hotspots", div_profile);
 		var heading = document.createElement("h2");
 		heading.innerHTML = "Hot Spots";
 		div_hotspots.appendChild(heading);
-		
+
 		var map = {};
-		
+
 		var addToHotspots = function(node) {
 			var key = nodeName(node);
 			if (!map[key]) {
@@ -99,9 +99,9 @@ var render = function(profiles,settings) {
 				addToHotspots(child);
 			});
 		};
-		
+
 		addToHotspots(profile.timing.root);
-		
+
 		var list = [];
 		for (var x in map) {
 			list.push({ key: x, count: map[x].count, elapsed: map[x].elapsed });
