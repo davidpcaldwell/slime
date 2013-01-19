@@ -819,7 +819,7 @@ public class Engine {
 			} else {
 				target = scope;
 			}
-			if (false) {
+			if (true) {
 				Script script = compile(dim, context);
 				return script.exec(context, target);
 			} else {
