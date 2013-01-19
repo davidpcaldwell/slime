@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var parameters = jsh.script.getopts({
 	options: {
 		to: jsh.file.Pathname,
@@ -55,11 +67,13 @@ jsh.shell.shell(
 	}
 );
 
+var manifest = jsh.shell.TMPDIR.createTemporary({ suffix: "mf" });
+manifest.pathname.write("Premain-Class: inonit.tools.Profiler\n", { append: false });
 jsh.shell.shell(
 	jar.pathname,
 	[
 		"cfm", parameters.options.to,
-		jsh.script.file.getRelativePath("java/manifest.txt"),
+		manifest,
 		//	TODO	should list directory
 	].concat(
 		tmp.getSubdirectory("classes").list().map(function(node) { return node.pathname.basename })

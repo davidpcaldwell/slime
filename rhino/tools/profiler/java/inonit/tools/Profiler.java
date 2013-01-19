@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 package inonit.tools;
 
 import java.lang.instrument.*;
@@ -5,31 +17,31 @@ import java.util.*;
 
 public class Profiler {
 	private static Profiler javaagent = new Profiler();
-	
+
 	public static Profiler javaagent() {
 		return javaagent;
 	}
-	
+
 	private HashMap<Thread,Timing> profiles = new HashMap<Thread,Timing>();
-	
+
 	private Timing getProfile() {
 		if (profiles.get(Thread.currentThread()) == null) {
 			profiles.put(Thread.currentThread(), new Timing());
 		}
 		return profiles.get(Thread.currentThread());
 	}
-	
+
 	private void startImpl(Code code) {
 		getProfile().start(code);
 	}
-	
+
 	private static class CustomCode extends Code {
 		private Object o;
-		
+
 		CustomCode(Object o) {
 			this.o = o;
 		}
-		
+
 		public String toString() {
 			return o.toString();
 		}
@@ -42,45 +54,45 @@ public class Profiler {
 			if (other == null) return false;
 			if (!(other instanceof CustomCode)) return false;
 			return o.equals(((CustomCode)other).o);
-		}		
+		}
 	}
-	
+
 	public void start(Object o) {
 		startImpl(new CustomCode(o));
-	} 
-	
+	}
+
 	public void start(String declaring, String methodName, String signature, Object target) {
 		startImpl(new MethodCode(declaring, methodName, signature));
 	}
-	
+
 	private void stopImpl() {
 		getProfile().stop();
 	}
-	
+
 	public void stop(Object o) {
 		stopImpl();
 	}
-	
+
 	public void stop(String declaring, String methodName, String signature, Object target) {
 		//	TODO	check to verify it is the same invocation?
 		stopImpl();
 	}
-	
+
 	public static class Timing {
 		private Node root = new Node(this);
 		private LinkedList<Node> stack = new LinkedList<Node>();
-		
+
 		Timing() {
 			stack.push(root);
 		}
-		
+
 		Node start(Code code) {
 			Node rv = stack.peek().getChild(code);
 			stack.push(rv);
 			rv.start();
 			return rv;
 		}
-		
+
 		void stop(Node node) {
 			stack.peek().stop();
 			if (stack.peek() != node) {
@@ -88,57 +100,57 @@ public class Profiler {
 			}
 			stack.pop();
 		}
-		
+
 		void stop() {
 			stop(stack.peek());
 		}
-		
+
 		public Node getRoot() {
 			return root;
 		}
 	}
-	
+
 	public static class Node {
 		private Timing parent;
 		//	TODO	unused instance variable
 		private Code code;
-		
+
 		protected Statistics statistics = new Statistics();
 		private HashMap<Code,Node> children = new HashMap<Code,Node>();
-		
+
 		Node(Timing parent, Code code) {
 			this.parent = parent;
 			this.code = code;
 		}
-		
+
 		Node(Timing parent) {
 			this.parent = parent;
 		}
-		
+
 		static class Self extends Node {
 			Self(Timing parent, int time) {
 				super(parent);
 				this.statistics.elapsed = time;
 			}
 		}
-		
+
 		//	TODO	can getChild, start() be combined?
-		
+
 		Node getChild(Code code) {
 			if (children.get(code) == null) {
 				children.put(code,new Node(parent,code));
 			}
 			return children.get(code);
 		}
-		
+
 		void start() {
 			statistics.start();
 		}
-		
+
 		void stop() {
 			statistics.stop();
 		}
-		
+
 		public Object getCode() {
 			if (code instanceof CustomCode) {
 				return ((CustomCode)code).o;
@@ -146,27 +158,27 @@ public class Profiler {
 				return code;
 			}
 		}
-		
+
 		public Statistics getStatistics() {
 			return statistics;
 		}
-		
+
 		public Node[] getChildren() {
 			return children.values().toArray(new Node[0]);
-		}		
+		}
 	}
-	
+
 	public static abstract class Code {
 		@Override public abstract String toString();
 		@Override public abstract int hashCode();
 		@Override public abstract boolean equals(Object o);
 	}
-	
+
 	public static class MethodCode extends Code {
 		private String className;
 		private String methodName;
 		private String signature;
-		
+
 		MethodCode(Class c, String methodName, Class[] signature) {
 			this.className = c.getName();
 			String s = "";
@@ -179,86 +191,86 @@ public class Profiler {
 			this.methodName = methodName;
 			this.signature = s;
 		}
-		
+
 		MethodCode(String className, String methodName, String signature) {
 			this.className = className;
 			this.methodName = methodName;
 			this.signature = signature;
 		}
-		
+
 		public String toString() {
 			return className + " " + methodName + " " + signature;
 		}
-		
+
 		public int hashCode() {
 			return toString().hashCode();
 		}
-		
+
 		public boolean equals(Object o) {
 			if (o == null) return false;
 			if (!(o instanceof MethodCode)) return false;
 			return o.toString().equals(toString());
 		}
-		
+
 		public String getClassName() {
 			return className;
 		}
-		
+
 		public String getMethodName() {
 			return methodName;
 		}
-		
+
 		public String getSignature() {
 			return signature;
 		}
 	}
-	
+
 	public static class Statistics {
 		private int count;
 		private long elapsed;
 		private long start;
-		
+
 		void start() {
 			count++;
 			start = System.currentTimeMillis();
 		}
-		
+
 		void stop() {
 			elapsed += System.currentTimeMillis() - start;
 		}
-		
+
 		public int getCount() {
 			return count;
 		}
-		
+
 		public long getElapsed() {
 			return elapsed;
 		}
 	}
-	
+
 	private static class Configuration {
 		public boolean profile(String className) {
 			if (className.startsWith("org/mozilla/javascript/")) return false;
 			if (className.startsWith("inonit/script/rhino/Engine$Profiler")) return false;
 			return true;
 		}
-		
+
 		public boolean profile(javassist.CtBehavior behavior) {
 			return true;
 		}
 	}
-	
+
 	private static class Transformer implements java.lang.instrument.ClassFileTransformer {
 		private Configuration configuration;
-		
+
 		private javassist.ClassPool classes = new javassist.ClassPool();
 		private HashSet<ClassLoader> added = new HashSet<ClassLoader>();
-		
+
 		Transformer(Configuration configuration) {
 			this.configuration = configuration;
 			classes.appendSystemPath();
 		}
-		
+
 		private String quote(String literal) {
 			return "\"" + literal + "\"";
 		}
@@ -287,7 +299,7 @@ public class Profiler {
 							if (java.lang.reflect.Modifier.isStatic(b.getModifiers())) {
 								arguments = "(" + quote(b.getDeclaringClass().getName()) + "," + quote(b.getName()) + "," + quote(b.getSignature()) + "," + "null" + ")";
 							} else {
-								arguments = "(" + quote(b.getDeclaringClass().getName()) + "," + quote(b.getName()) + "," + quote(b.getSignature()) + "," + "$0" + ")";							
+								arguments = "(" + quote(b.getDeclaringClass().getName()) + "," + quote(b.getName()) + "," + quote(b.getSignature()) + "," + "$0" + ")";
 							}
 							String before = "inonit.tools.Profiler.javaagent().start" + arguments + ";";
 							String after = "inonit.tools.Profiler.javaagent().stop" + arguments + ";";
@@ -316,12 +328,12 @@ public class Profiler {
 			}
 		}
 	}
-	
+
 	public static abstract class Profile {
 		public abstract Thread getThread();
 		public abstract Timing getTiming();
 	}
-	
+
 	public static abstract class Listener {
 		public static final Listener DEFAULT = new Listener() {
 			private String getCaption(Code code, Node[] children) {
@@ -358,7 +370,7 @@ public class Profiler {
 				});
 				for (Node child : list) {
 					dump(writer, "  " + indent, parent, child);
-				}		
+				}
 			}
 
 			@Override public void onExit(Profile[] profiles) {
@@ -369,16 +381,16 @@ public class Profiler {
 				}
 			}
 		};
-		
+
 		public abstract void onExit(Profile[] profiles);
 	}
-	
+
 	private ArrayList<Listener> listeners = new ArrayList<Listener>();
-	
+
 	public void addListener(Listener listener) {
 		listeners.add(listener);
 	}
-	
+
 	public static void premain(String agentArgs, Instrumentation inst) {
 		javaagent = new Profiler();
 		System.err.println("Starting profiler ...");
@@ -402,7 +414,7 @@ public class Profiler {
 				//			variable somewhere that shuts everything off
 				javaagent.profiles.clear();
 				if (javaagent.listeners.size() == 0) {
-					javaagent.listeners.add(Listener.DEFAULT);					
+					javaagent.listeners.add(Listener.DEFAULT);
 				}
 				Profile[] array = profiles.toArray(new Profile[profiles.size()]);
 				for (Listener listener : javaagent.listeners) {

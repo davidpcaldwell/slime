@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	TODO	requires relatively advanced JavaScript implementation for Array.prototype.forEach
 var div = function(className,parent) {
 	var rv = document.createElement("div");
@@ -13,7 +25,7 @@ var render = function(profiles,settings) {
 		}
 	};
 	document.getElementById("data").innerHTML = "";
-	
+
 	var top = document.createElement("div");
 	document.getElementById("data").appendChild(top);
 
@@ -21,18 +33,18 @@ var render = function(profiles,settings) {
 		var div_profile = document.createElement("div");
 		div_profile.className = "profile";
 		top.appendChild(div_profile);
-		
+
 		var div_thread = document.createElement("h1");
 		div_thread.className = "thread";
 		div_profile.appendChild(div_thread);
 		div_thread.innerHTML = profile.thread.name;
-		
+
 		var div_tree = div("tree", div_profile);
 		var heading = document.createElement("h2");
 		heading.innerHTML = "Tree";
 		div_tree.appendChild(heading);
 		div_profile.appendChild(div_tree);
-		
+
 		var renderNode = function(node) {
 			var top = document.createElement("div");
 			top.className = "node";
@@ -61,7 +73,7 @@ var render = function(profiles,settings) {
 			});
 			return top;
 		}
-		
+
 		div_tree.appendChild(renderNode(profile.timing.root));
 	});
 }
@@ -75,4 +87,3 @@ window.addEventListener("load", function() {
 		render(profiles,settings);
 	});
 });
-
