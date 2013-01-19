@@ -55,11 +55,13 @@ jsh.shell.shell(
 	}
 );
 
+var manifest = jsh.shell.TMPDIR.createTemporary({ suffix: "mf" });
+manifest.pathname.write("Premain-Class: inonit.tools.Profiler\n", { append: false });
 jsh.shell.shell(
 	jar.pathname,
 	[
 		"cfm", parameters.options.to,
-		jsh.script.file.getRelativePath("java/manifest.txt"),
+		manifest,
 		//	TODO	should list directory
 	].concat(
 		tmp.getSubdirectory("classes").list().map(function(node) { return node.pathname.basename })
