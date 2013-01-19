@@ -229,7 +229,7 @@ $exports.Thread.thisSynchronize = function(f) {
 };
 $exports.Thread.Monitor = function() {
 	var lock = new Packages.java.lang.Object();
-	
+
 	this.Waiter = function(c) {
 		return Packages.inonit.script.runtime.Threads.synchronizeOn(lock, function() {
 			while(!c.until()) {

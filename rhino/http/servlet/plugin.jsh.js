@@ -27,16 +27,16 @@ plugin({
 	},
 	load: function() {
 		var CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
-		
+
 		if (CATALINA_HOME) {
 			[
 				"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
 				"lib/catalina.jar"
 			].forEach(function(path) {
-				$loader.classpath.add(CATALINA_HOME.getRelativePath(path));			
+				$loader.classpath.add(CATALINA_HOME.getRelativePath(path));
 			});
 		}
-		
+
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
@@ -89,7 +89,7 @@ plugin({
 									var apiScope = {
 										$host: new function() {
 											this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
-											
+
 											this.loaders = {
 												script: new jsh.file.Loader(servletFile.parent),
 												container: (m.resources) ? m.resources.loader : null
@@ -131,9 +131,9 @@ plugin({
 					jsh.shell.echo("Added " + context);
 				}
 			}
-			
+
 			//	TODO	are both start() and run() needed?
-			
+
 			var started = false;
 
 			this.start = function() {
@@ -159,7 +159,7 @@ plugin({
 					run();
 				}
 			}
-			
+
 			this.stop = function() {
 				tomcat.stop();
 				started = false;

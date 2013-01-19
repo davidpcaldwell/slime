@@ -230,10 +230,15 @@ public class Main {
 				public Engine.Debugger getDebugger() {
 					String id = System.getProperty("jsh.script.debugger");
 					if (id == null) return null;
-					if (id != null && id.equals("rhino")) {
+					if (id.equals("rhino")) {
 						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
+					} else if (id.equals("profiler")) {
+						return new Engine.Profiler();
+					} else if (id.startsWith("profiler:")) {
+						return new Engine.Profiler();
+					} else {
+						//	TODO	emit some kind of error?
 					}
-					//	TODO	emit some kind of error?
 					return null;
 				}
 
