@@ -13,7 +13,7 @@
 var Request = function(_request) {
 	this.method = String(_request.getMethod()).toUpperCase();
 	this.path = String(_request.getPathInfo()).substring(1);
-	
+
 	var _query = _request.getQueryString();
 	var parameters = [];
 	if (_query) {

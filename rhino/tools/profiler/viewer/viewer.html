@@ -1,0 +1,52 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME JDK interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Profiling data</title>
+		<link rel="stylesheet" type="text/css" href="viewer.css" />
+		<script type="text/javascript" src="profiles.js"></script>
+		<script type="text/javascript" src="viewer.js"></script>
+	</head>
+	<body>
+		Threshold <input id="threshold" value="0.000" />
+		<input id="refresh" type="button" value="Refresh" />
+		<div id="data">
+			<div id="design">
+				<div class="profile">
+					<h1 class="thread"></h1>
+					<div class="tree">
+						<h1>Tree</h1>
+						<div>
+							<div class="top">Top level</div>
+							<div>
+								<div class="leaf">Child 1</div>
+								<div>
+									<div class="top">Child 2</div>
+									<div>
+										<div class="leaf">Child 2a</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
