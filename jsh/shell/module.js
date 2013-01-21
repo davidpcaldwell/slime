@@ -271,6 +271,8 @@ $exports.jsh = function(script,args,mode) {
 	
 	var fork = (function() {
 		if (mode && mode.classpath) return true;
+		if (mode && mode.environment && mode.environment.JSH_SCRIPT_CLASSPATH) return true;
+		if (mode && mode.environment && mode.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
 		return false;
 	})();
 	
