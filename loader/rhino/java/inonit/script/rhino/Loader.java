@@ -75,6 +75,7 @@ public abstract class Loader {
 		}
 
 		private static class New extends Classes {
+			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
 
 			New(ClassLoader delegate) {
@@ -94,20 +95,20 @@ public abstract class Loader {
 			}
 
 			protected Class findClass(String name) throws ClassNotFoundException {
+				String path = name.replace('.', '/') + ".class";
+				String[] tokens = name.split("\\.");
+				String packageName = tokens[0];
+				for (int i=1; i<tokens.length-1; i++) {
+					packageName += "." + tokens[i];
+				}
 				for (Code.Source source : locations) {
-					String path = name.replace('.', '/') + ".class";
 					try {
 						InputStream in = source.getResourceAsStream(path);
 						if (in != null) {
-							String[] tokens = name.split("\\.");
-							String packageName = tokens[0];
-							for (int i=1; i<tokens.length-1; i++) {
-								packageName += "." + tokens[i];
-							}
 							if (getPackage(packageName) == null) {
 								definePackage(packageName,null,null,null,null,null,null,null);
 							}
-							byte[] b = new inonit.script.runtime.io.Streams().readBytes(in);
+							byte[] b = streams.readBytes(in);
 							return defineClass(name, b, 0, b.length);
 						}
 					} catch (IOException e) {
