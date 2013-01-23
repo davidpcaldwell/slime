@@ -453,7 +453,7 @@ settings.explicit = new function() {
 
 				//	Find the file to be executed
 				if (platform.cygwin) {
-					path = platform.cygwin.cygpath.windows(arguments[0]);
+					path = platform.cygwin.cygpath.windows(path);
 				}
 				if (new Packages.java.io.File(path).exists()) {
 					return new File( String(Packages.java.io.File(path).getCanonicalPath()) );
