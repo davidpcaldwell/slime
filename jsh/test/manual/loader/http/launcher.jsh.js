@@ -40,6 +40,8 @@ jsh.shell.jsh(
 		})
 	}
 );
-if (string != "1 2") {
+if (string != ("1 2" + String(Packages.java.lang.System.getProperty("line.separator")))) {
 	throw new Error("Failed: string = " + string);
+} else {
+	jsh.shell.echo("Success! Got " + string);
 }

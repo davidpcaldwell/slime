@@ -214,9 +214,10 @@ public class Main {
 			final String scriptPath = args.remove(0);
 			
 			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
+				final java.net.URL url;
 				final java.io.InputStream stream;
 				try {
-					final java.net.URL url = new java.net.URL(scriptPath);
+					url = new java.net.URL(scriptPath);
 					stream = url.openStream();
 				} catch (java.net.MalformedURLException e) {
 					throw new CheckedException("Malformed URL: " + scriptPath, e);
@@ -227,8 +228,14 @@ public class Main {
 					public Script getScript() {
 						return new Script() {
 							@Override
-							public File getFile() {
-								return null;
+							public java.net.URI getUri() {
+								try {
+									return url.toURI();
+								} catch (java.net.URISyntaxException e) {
+									//	TODO	when can this happen? Probably should refactor to do this parsing earlier and use
+									//			CheckedException
+									throw new RuntimeException(e);
+								}
 							}
 
 							@Override
