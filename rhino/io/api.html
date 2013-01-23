@@ -181,11 +181,6 @@ END LICENSE
 				<span>Creates a buffer to which bytes can be written, and later read.</span>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<span>
-						Instances support
-						<span class="type"><a href="#types.boutput">byte output stream</a></span>
-						as well as the specified API.
-					</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
@@ -195,6 +190,22 @@ END LICENSE
 								buffer is closed, an attempt to read from it cannot reach the end of the stream, but
 								will instead block waiting for more input.
 							</span>
+						</li>
+						<li class="function">
+							<div class="name">writeBinary</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.boutput">byte output stream</a></span>
+								<span>A stream which inserts bytes written to it into this buffer.</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">writeText</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.boutput">character output stream</a></span>
+								<span>A stream which inserts characters written to it into this buffer.</span>
+							</div>
 						</li>
 						<li class="function">
 							<div class="name">readBinary</div>
@@ -242,7 +253,28 @@ END LICENSE
 			</li>
 			<li class="object">
 				<div class="name">Streams</div>
-				Provides operations for processing streams of input or output.
+				<span>Provides operations for processing streams of input or output.</span>
+				<div class="type">
+					<a class="type" name="types.doutput">soutput</a>
+					<span class="type">supports <a href="#types.boutput">byte output stream</a>, except close()</span>
+					<span>Represents a standard output stream to which bytes and characters can be written.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">write</div>
+							<span>Writes a string to the stream and then flushes the stream.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A string to write to this console.</span>
+									</li>
+								</ol>
+							</div>
+						</li>
+					</ul>
+				</div>
 				<ul>
 					<li class="object">
 						<div class="name">binary</div>
@@ -310,6 +342,14 @@ END LICENSE
 											</script>
 										</li>
 										<li class="function">
+											<div class="name">character</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.cinput">character input stream</a></span>
+												<span>A character input stream that reads this stream.</span>
+											</div>
+										</li>
+										<li class="function">
 											<div class="name">cache</div>
 											<span>Creates a resource that contains the contents of this stream.</span>
 											<div class="returns">
@@ -317,6 +357,21 @@ END LICENSE
 												<span class="type"><a href="#types.Resource">Resource</a></span>
 												<span>A resource that contains a copy of this stream.</span>
 											</div>
+										</li>
+										<li class="object">
+											<div class="name">java</div>
+											<span>Operations that bridge to Java constructs.</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function">
+													<div class="name">adapt</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">JavaClass java.io.InputStream</span>
+														<span>A Java input stream equivalent to this stream.</span>
+													</div>
+												</li>
+											</ul>
 										</li>
 									</ul>
 								</div>
@@ -326,6 +381,10 @@ END LICENSE
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="function">
+											<div class="name">close</div>
+											<span>Closes the underlying stream.</span>
+										</li>
+										<li class="function">
 											<div class="name">character</div>
 											<span>Returns a character output stream that writes to this stream.</span>
 											<div class="returns">
@@ -333,9 +392,20 @@ END LICENSE
 												<span class="type"><a href="#types.coutput">character output stream</a></span>
 											</div>
 										</li>
-										<li class="function">
-											<div class="name">close</div>
-											<span>Closes the underlying stream.</span>
+										<li class="object">
+											<div class="name">java</div>
+											<span>Operations that bridge to Java constructs.</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function">
+													<div class="name">adapt</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">JavaClass java.io.OutputStream</span>
+														<span>A Java OutputStream equivalent to this stream.</span>
+													</div>
+												</li>
+											</ul>
 										</li>
 									</ul>
 								</div>
@@ -438,7 +508,7 @@ END LICENSE
 											<div class="returns">
 												<div class="label">Returns</div>
 												<span class="type">string</span>
-												<span>The entire content of this stream as a single <code>string</code>.</span>
+												<span>The entire content of this stream as a single string.</span>
 											</div>
 										</li>
 										<li class="function">
@@ -448,6 +518,21 @@ END LICENSE
 												<span class="type">XMLList</span>
 												<span>The entire content of this stream as a single <code>XMLList</code>.</span>
 											</div>
+										</li>
+										<li class="object">
+											<div class="name">java</div>
+											<span>Operations bridging to Java constructs.</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function">
+													<div class="name">adapt</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">JavaClass java.io.Reader</span>
+														<span>A Java Reader equivalent to this stream.</span>
+													</div>
+												</li>
+											</ul>
 										</li>
 									</ul>
 								</div>
@@ -471,6 +556,21 @@ END LICENSE
 												</ol>
 											</div>
 										</li>
+										<li class="object">
+											<div class="name">java</div>
+											<span>Operations that bridge to Java constructs.</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function">
+													<div class="name">adapt</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">JavaClass java.io.Writer</span>
+														<span>A Java Writer equivalent to this character output stream.</span>
+													</div>
+												</li>
+											</ul>
+										</li>
 									</ul>
 								</div>
 							</li>
@@ -479,16 +579,14 @@ END LICENSE
 					<li class="value">
 						<div class="name">stdout</div>
 						<span class="type">
-							<a href="#types.boutput">byte output stream</a>
-							<a href="#types.coutput">character output stream</a>
+							<a href="#types.soutput">standard output stream</a>
 						</span>
 						<span>The standard output stream.</span>
 					</li>
 					<li class="value">
 						<div class="name">stderr</div>
 						<span class="type">
-							<a href="#types.boutput">byte output stream</a>
-							<a href="#types.coutput">character output stream</a>
+							<a href="#types.soutput">standard output stream</a>
 						</span>
 						<span>The standard error stream.</span>
 					</li>
@@ -518,9 +616,12 @@ END LICENSE
 							<div class="label">Returns</div>
 							<span class="type"><a href="#types.binput">byte input stream</a></span>,
 							if the argument was a native Java <code>java.io.InputStream</code>,
-							or
 							<span class="type"><a href="#types.boutput">byte output stream</a></span>, if the
 							argument was a native Java <code>java.io.OutputStream</code>.
+							<span class="type"><a href="#types.cinput">character input stream</a></span>, if the
+							argument was a native Java <code>java.io.Reader</code>.
+							<span class="type"><a href="#types.coutput">character output stream</a></span>, if the
+							argument was a native Java <code>java.io.Writer</code>.
 						</div>
 						<script type="application/x.jsapi#tests">
 							var $out = new Packages.java.io.ByteArrayOutputStream();

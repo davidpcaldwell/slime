@@ -17,16 +17,6 @@ var InputStream = function(peer) {
 		return peer;
 	});
 
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
-
-		this.array = function() {
-			return $java.readBytes(peer);
-		}
-	};
-
 	this.close = function() {
 		peer.close();
 	}
@@ -59,18 +49,22 @@ var InputStream = function(peer) {
 			}
 		});
 	}
+	
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
+
+		this.array = function() {
+			return $java.readBytes(peer);
+		}
+	};
 };
 
 var OutputStream = function(peer) {
 	this.$getOutputStream = $api.deprecate(function() {
 		return peer;
 	});
-
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
-	}
 
 	this.close = function() {
 		peer.close();
@@ -90,6 +84,12 @@ var OutputStream = function(peer) {
 
 		return new OutputStream($java.split(peer,otherPeer))
 	}
+
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
+	}
 };
 
 var Reader = function(peer) {
@@ -97,12 +97,10 @@ var Reader = function(peer) {
 		return peer;
 	});
 	
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
+	this.close = function() {
+		peer.close();
 	}
-
+	
 	this.readLines = function(callback,mode) {
 
 		if (!mode) mode = {};
@@ -147,20 +145,16 @@ var Reader = function(peer) {
 		return XMLList( string );
 	}
 
-	this.close = function() {
-		peer.close();
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
 	}
 }
 var Writer = function(peer) {
 	this.$getWriter = $api.deprecate(function() {
 		return peer;
 	});
-	
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
-	}
 
 	this.close = function() {
 		peer.close();
@@ -176,7 +170,13 @@ var Writer = function(peer) {
 		} else {
 			throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);
 		}
-	}
+	};
+	
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
+	};
 };
 
 var Buffer = function() {
@@ -193,6 +193,8 @@ var Buffer = function() {
 	this.close = function() {
 		peer.getOutputStream().close();
 	}
+	
+	//	TODO	could we name these better? in/out, read/write, ... ?
 
 	this.writeBinary = function() {
 		return new OutputStream(peer.getOutputStream());
@@ -257,27 +259,14 @@ var Streams = new function() {
 
 	if ($context.stdio) {
 		var StandardOutputStream = function(_peer) {
-			return new function() {
-				this.$getOutputStream = function() {
-					return _peer;
-				};
-
-				this.$getWriter = function() {
-					return new Packages.java.io.OutputStreamWriter(_peer);
-				};
-
-				this.write = function(message) {
-					var _writer = this.$getWriter();
-					_writer.write(message);
-					_writer.flush();
-				};
-
-				this.split = function(other) {
-					return new OutputStream(_peer).split(other);
-				};
-
-				this.close = function() {};				
-			}
+			var rv = new OutputStream(_peer);
+			rv.write = function(message) {
+				var _writer = new Packages.java.io.OutputStreamWriter(_peer);
+				_writer.write(message);
+				_writer.flush();
+			};
+			delete rv.close;
+			return rv;
 		}
 		
 		this.stderr = StandardOutputStream($context.stdio.$err);
