@@ -144,7 +144,7 @@ void invoke_class(JNIEnv* env, int argc, char **argv) {
 
 	mainMethod = (*env)->GetStaticMethodID(env, helloWorldClass, "main", "([Ljava/lang/String;)V");
 
-	applicationArgs = (*env)->NewObjectArray(env, argc, (*env)->FindClass(env, "java/lang/String"), NULL);
+	applicationArgs = (*env)->NewObjectArray(env, argc-1, (*env)->FindClass(env, "java/lang/String"), NULL);
 
 	for (i=1; i<argc; i++) {
 		applicationArg = (*env)->NewStringUTF(env, argv[i]);
