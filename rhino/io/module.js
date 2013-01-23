@@ -13,10 +13,9 @@
 var $java = ($context.$java) ? $context.$java : new Packages.inonit.script.runtime.io.Streams();
 
 var InputStream = function(peer) {
-	this.$getInputStream = function() {
+	this.$getInputStream = $api.deprecate(function() {
 		return peer;
-	}
-	$api.deprecate(this,"$getInputStream");
+	});
 
 	this.java = new function() {
 		this.adapt = function() {
@@ -63,10 +62,9 @@ var InputStream = function(peer) {
 };
 
 var OutputStream = function(peer) {
-	this.$getOutputStream = function() {
+	this.$getOutputStream = $api.deprecate(function() {
 		return peer;
-	}
-	$api.deprecate(this,"$getOutputStream");
+	});
 
 	this.java = new function() {
 		this.adapt = function() {
@@ -95,8 +93,14 @@ var OutputStream = function(peer) {
 };
 
 var Reader = function(peer) {
-	this.$getReader = function() {
+	this.$getReader = $api.deprecate(function() {
 		return peer;
+	});
+	
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
 	}
 
 	this.readLines = function(callback,mode) {
@@ -148,8 +152,14 @@ var Reader = function(peer) {
 	}
 }
 var Writer = function(peer) {
-	this.$getWriter = function() {
+	this.$getWriter = $api.deprecate(function() {
 		return peer;
+	});
+	
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
 	}
 
 	this.close = function() {
@@ -231,7 +241,7 @@ var Streams = new function() {
 				debugger;
 				return new Buffer();
 			} else {
-				throw "Unimplemented: Buffer called as function.";
+				throw new Error("Unimplemented: Buffer called as function.");
 			}
 		}
 	}
@@ -246,37 +256,32 @@ var Streams = new function() {
 	}
 
 	if ($context.stdio) {
-		this.stderr = new function() {
-			this.$getOutputStream = function() {
-				return $context.stdio.$err;
-			}
+		var StandardOutputStream = function(_peer) {
+			return new function() {
+				this.$getOutputStream = function() {
+					return _peer;
+				};
 
-			this.$getWriter = function() {
-				return new Packages.java.io.OutputStreamWriter($context.stdio.$err);
-			}
+				this.$getWriter = function() {
+					return new Packages.java.io.OutputStreamWriter(_peer);
+				};
 
-			this.split = function(other) {
-				return new OutputStream($context.stdio.$err).split(other);
-			}
+				this.write = function(message) {
+					var _writer = this.$getWriter();
+					_writer.write(message);
+					_writer.flush();
+				};
 
-			this.close = function() {}
+				this.split = function(other) {
+					return new OutputStream(_peer).split(other);
+				};
+
+				this.close = function() {};				
+			}
 		}
-
-		this.stdout = new function() {
-			this.$getOutputStream = function() {
-				return $context.stdio.$out;
-			}
-
-			this.$getWriter = function() {
-				return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
-			}
-
-			this.split = function(other) {
-				return new OutputStream($context.stdio.$out).split(other);
-			}
-
-			this.close = function() {}
-		}
+		
+		this.stderr = StandardOutputStream($context.stdio.$err);
+		this.stdout = StandardOutputStream($context.stdio.$out);
 	}
 }
 $exports.Streams = Streams;

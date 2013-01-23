@@ -15,6 +15,13 @@ $exports.environment = $context.api.shell.environment;
 $exports.properties = $context.api.shell.properties;
 $api.experimental($exports,"properties");
 
+var getProperty = function(name) {
+	var value = eval("$context.api.shell.properties." + name);
+	if (String(value) == "undefined") return function(){}();
+	if (value == null) return null;
+	return String(value);
+};
+
 ["readLines", "asString", "asXml"].forEach(function(method) {
 	$context.stdio["in"][method] = function(p) {
 		return this.character()[method].apply(this.character(), arguments);
@@ -38,8 +45,17 @@ $exports.echo = function(message,mode) {
 	if (!mode) mode = {};
 
 	var streamToConsole = function(stream,toString) {
+		var writer = (function() {
+			//	TODO	is this redundancy necessary? Does isJavaType(...) need to know it is a Java object?
+			if ($context.api.java.isJavaObject(stream) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(stream)) return $context.api.io.adapt(stream).character();
+			if ($context.api.java.isJavaObject(stream) && $context.api.java.isJavaType(Packages.java.io.Writer)(stream)) return $context.api.io.adapt(stream);
+			if (stream && typeof(stream.character) == "function") return stream.character();
+			if (stream && typeof(stream.write) == "function") return stream;
+			if (stream && typeof(stream) == "object") throw new TypeError("Not a recognized stream: " + stream + " with properties " + Object.keys(stream));
+			throw new TypeError("Not a recognized stream: " + stream);
+		})();
 		return function(message) {
-			new Packages.java.io.PrintWriter(stream.$getWriter(), true).println(toString(message));
+			writer.write(toString(message)+getProperty("line.separator"));
 		}
 	}
 
@@ -151,13 +167,6 @@ $exports.shell = function(command,args,mode) {
 	};
 
 	$run(tokens,rMode);
-}
-
-var getProperty = function(name) {
-	var value = eval("$context.api.shell.properties." + name);
-	if (String(value) == "undefined") return function(){}();
-	if (value == null) return null;
-	return String(value);
 }
 
 var getMandatoryStringProperty = function(name) {
