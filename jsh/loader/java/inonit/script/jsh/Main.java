@@ -29,7 +29,7 @@ public class Main {
 		CheckedException(String message) {
 			super(message);
 		}
-		
+
 		CheckedException(String message, Throwable cause) {
 			super(message, cause);
 		}
@@ -212,7 +212,7 @@ public class Main {
 			};
 
 			final String scriptPath = args.remove(0);
-			
+
 			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
 				final java.net.URL url;
 				final java.io.InputStream stream;
@@ -244,7 +244,7 @@ public class Main {
 							}
 						};
 					}
-					
+
 					public String[] getArguments() {
 						return args.toArray(new String[args.size()]);
 					}

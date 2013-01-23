@@ -430,7 +430,7 @@ settings.explicit = new function() {
 		if (httpUrlPattern.test(ARGUMENTS[0])) {
 			debugger;
 			this.script = ARGUMENTS[0];
-			
+
 			this.source = readUrl(ARGUMENTS[0]);
 		} else {
 			this.script = (function(path) {

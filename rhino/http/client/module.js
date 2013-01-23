@@ -379,7 +379,7 @@ var Client = function(mode) {
 			});
 		}
 	}
-	
+
 	this.Loader = (function(parent) {
 		return function(base) {
 			return new $context.api.io.Loader({

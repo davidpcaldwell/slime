@@ -147,7 +147,7 @@ public class Shell {
 			}
 
 			public abstract java.net.URI getUri();
-			
+
 			/**
 				Returns the <code>java.io.File</code> object corresponding to the main script.
 
@@ -164,7 +164,7 @@ public class Shell {
 					return null;
 				}
 			}
-			
+
 			public abstract Engine.Source getSource();
 		}
 
