@@ -329,7 +329,9 @@ this.jsh = new function() {
 				return null;
 			})(),
 			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
-			loader: loader.getBundled()
+			loader: (function() {
+				if (loader.getBundled()) return loader.getBundled();
+			})()
 		},"jsh/script");
 		jsh.shell.getopts = loader.$api.deprecate(rv.getopts);
 		return rv;

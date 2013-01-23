@@ -135,16 +135,6 @@ public class Shell {
 					public Engine.Source getSource() {
 						return delegate;
 					}
-
-//					@Override
-//					public String getName() {
-//						return delegate.getName();
-//					}
-
-					@Override
-					public Reader getReader() {
-						return delegate.getReader();
-					}
 				};
 			}
 
@@ -156,7 +146,8 @@ public class Shell {
 				return create(delegate, null);
 			}
 
-//			public abstract String getName();
+			//	TODO	we need to really figure out how getFile is used, so that we can decide whether getUrl would be a full
+			//			substitute; currently, it appears to only be used in jsh.js, to set the script property
 			/**
 				Returns the <code>java.io.File</code> object corresponding to the main script.
 
@@ -164,7 +155,6 @@ public class Shell {
 					such file; e.g., the script has been packaged into a JAR file.
 			*/
 			public abstract File getFile();
-			public abstract Reader getReader();
 			public abstract Engine.Source getSource();
 		}
 

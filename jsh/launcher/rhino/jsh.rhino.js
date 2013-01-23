@@ -426,48 +426,57 @@ settings.explicit = new function() {
 	}, this);
 
 	if (!settings.packaged) {
-		this.script = (function(path) {
-			/*
-			#	Find the file to be executed
-			#
-			#	We are attempting to support the following usages:
-			#	#!/path/to/bash /path/to/jsh/jsh.bash
-			#	/path/to/specific/jsh/jsh.bash /path/to/script
-			#	/path/to/specific/jsh/jsh.bash /path/to/softlink
-			#
-			#	Also:
-			#	#!/path/to/jsh.bash - works when executed from Cygwin bash shell, does not work on FreeBSD, apparently does not work on
-			#		Fedora
-			#	/path/to/specific/jsh.bash command - looks up command in PATH, works on Cygwin and FreeBSD, but emits warning message
-			#		that usage is unsupported.  See comment below.
-			#	#!/path/to/jsh - not yet supported, need to build C wrapper which either invokes bash and this script or recreates the
-			#		logic in this script
-			#	Development version of jsh which runs directly out of the source tree - undistributed, but noted for reference
-			*/
-			if (platform.cygwin) {
-				path = platform.cygwin.cygpath.windows(arguments[0]);
-			}
-			if (new Packages.java.io.File(path).exists()) {
-				return new File( String(Packages.java.io.File(path).getCanonicalPath()) );
-			}
-			if (path.indexOf(slash) == -1) {
-				debug("PATH = " + env.PATH);
-				var search = env.PATH.split(colon);
-				for (var i=0; i<search.length; i++) {
-					if (new Packages.java.io.File(search[i] + slash + arguments[0]).exists()) {
-						return new File(String(new Packages.java.io.File(search[i] + slash + path).getCanonicalPath()));
-					}
-				}
-				console("Not found in PATH: " + path);
-				Packages.java.lang.System.exit(1);
-			} else {
-				debug("Working directory: PWD=" + env.PWD);
-				console("Script not found: " + path)
-				Packages.java.lang.System.exit(1);
-			}
-		})(ARGUMENTS[0]);
+		var httpUrlPattern = /^http(?:s?)\:\/\/(.*)/;
+		if (httpUrlPattern.test(ARGUMENTS[0])) {
+			debugger;
+			this.script = ARGUMENTS[0];
+			
+			this.source = readUrl(ARGUMENTS[0]);
+		} else {
+			this.script = (function(path) {
+//				TODO	move this documentation somewhere more relevant
+//
+//				We are attempting to support the following usages:
+//				#!/path/to/bash /path/to/jsh/jsh.bash
+//				/path/to/specific/jsh/jsh.bash /path/to/script
+//				/path/to/specific/jsh/jsh.bash /path/to/softlink
+//				#!/path/to/jsh
+//
+//				Need to document this:
+//				Development version of jsh which runs directly out of the source tree
+//
+//				Also:
+//				#!/path/to/jsh.bash - works when executed from Cygwin bash shell, does not work on FreeBSD, apparently does not work on
+//					Fedora
+//				/path/to/specific/jsh.bash command - looks up command in PATH, works on Cygwin and FreeBSD, but emits warning message
+//					that usage is unsupported.  See comment below.
 
-		this.source = readFile(this.script.path);
+				//	Find the file to be executed
+				if (platform.cygwin) {
+					path = platform.cygwin.cygpath.windows(arguments[0]);
+				}
+				if (new Packages.java.io.File(path).exists()) {
+					return new File( String(Packages.java.io.File(path).getCanonicalPath()) );
+				}
+				if (path.indexOf(slash) == -1) {
+					debug("PATH = " + env.PATH);
+					var search = env.PATH.split(colon);
+					for (var i=0; i<search.length; i++) {
+						if (new Packages.java.io.File(search[i] + slash + arguments[0]).exists()) {
+							return new File(String(new Packages.java.io.File(search[i] + slash + path).getCanonicalPath()));
+						}
+					}
+					console("Not found in PATH: " + path);
+					Packages.java.lang.System.exit(1);
+				} else {
+					debug("Working directory: PWD=" + env.PWD);
+					console("Script not found: " + path)
+					Packages.java.lang.System.exit(1);
+				}
+			})(ARGUMENTS[0]);
+
+			this.source = readFile(this.script.path);
+		}
 	}
 
 	this.jvmOptions = [];
@@ -571,9 +580,6 @@ try {
 	//		fi
 	//	fi
 
-	var script = settings.get("script");
-	var source = settings.get("source");
-
 	var command = new Command();
 	command.jvmProperty = function(name,value) {
 		if (typeof(value) != "undefined") {
@@ -659,8 +665,8 @@ try {
 		.toPath()
 	);
 	command.add("inonit.script.jsh.Main");
-	command.add(script);
-	var index = (script) ? 1 : 0;
+	command.add(settings.get("script"));
+	var index = (settings.get("script")) ? 1 : 0;
 	for (var i=index; i<arguments.length; i++) {
 		command.add(arguments[i]);
 	}

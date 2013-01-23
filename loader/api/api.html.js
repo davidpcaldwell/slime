@@ -147,7 +147,7 @@ $exports.ApiHtmlTests = function(html,name) {
 	var getScriptFilter = function(type) {
 		if (!type) {
 			return function(node) {
-				return node.localName == "script" && node.getAttribute("type").substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX;
+				return node.localName == "script" && node.getAttribute("type") && node.getAttribute("type").substring(0,SCRIPT_TYPE_PREFIX.length) == SCRIPT_TYPE_PREFIX;
 			};
 		} else {
 			return function(node) {

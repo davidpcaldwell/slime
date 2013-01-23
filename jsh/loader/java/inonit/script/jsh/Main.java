@@ -20,7 +20,7 @@ import inonit.script.rhino.*;
 public class Main {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	private List args;
+	private List<String> args;
 
 	private Main() {
 	}
@@ -28,6 +28,10 @@ public class Main {
 	private static class CheckedException extends Exception {
 		CheckedException(String message) {
 			super(message);
+		}
+		
+		CheckedException(String message, Throwable cause) {
+			super(message, cause);
 		}
 	}
 
@@ -133,15 +137,6 @@ public class Main {
 				}
 			};
 		} else {
-			String scriptPath = (String)args.remove(0);
-
-			final File mainScript = new File(scriptPath);
-			if (!mainScript.exists()) {
-				throw new CheckedException("File not found: " + scriptPath);
-			}
-			if (mainScript.isDirectory()) {
-				throw new CheckedException("Filename: " + scriptPath + " is a directory");
-			}
 			installation = new Shell.Installation() {
 				public String toString() {
 					return getClass().getName()
@@ -216,15 +211,57 @@ public class Main {
 				}
 			};
 
-			invocation = new Shell.Invocation() {
-				public Script getScript() {
-					return Script.create(mainScript);
+			final String scriptPath = args.remove(0);
+			
+			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
+				final java.io.InputStream stream;
+				try {
+					final java.net.URL url = new java.net.URL(scriptPath);
+					stream = url.openStream();
+				} catch (java.net.MalformedURLException e) {
+					throw new CheckedException("Malformed URL: " + scriptPath, e);
+				} catch (IOException e) {
+					throw new CheckedException("Could not open: " + scriptPath, e);
+				}
+				invocation = new Shell.Invocation() {
+					public Script getScript() {
+						return new Script() {
+							@Override
+							public File getFile() {
+								return null;
+							}
+
+							@Override
+							public Engine.Source getSource() {
+								return Engine.Source.create(scriptPath, stream);
+							}
+						};
+					}
+					
+					public String[] getArguments() {
+						return args.toArray(new String[args.size()]);
+					}
+				};
+			} else {
+				final File mainScript = new File(scriptPath);
+				if (!mainScript.exists()) {
+					//	TODO	this really should not happen if the launcher is launching this
+					throw new CheckedException("File not found: " + scriptPath);
+				}
+				if (mainScript.isDirectory()) {
+					throw new CheckedException("Filename: " + scriptPath + " is a directory");
 				}
 
-				public String[] getArguments() {
-					return (String[])args.toArray(new String[0]);
-				}
-			};
+				invocation = new Shell.Invocation() {
+					public Script getScript() {
+						return Script.create(mainScript);
+					}
+
+					public String[] getArguments() {
+						return (String[])args.toArray(new String[0]);
+					}
+				};
+			}
 		}
 		return Shell.execute(
 			installation,
