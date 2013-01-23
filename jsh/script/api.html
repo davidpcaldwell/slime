@@ -120,6 +120,10 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
+						<div class="name">js</div>
+						<span>The js/object module.</span>
+					</li>
+					<li class="value">
 						<div class="name">file</div>
 						<span>The rhino/file module.</span>
 					</li>
@@ -141,7 +145,21 @@ END LICENSE
 			<li class="value">
 				<div class="name">script</div>
 				<span class="type">rhino/file file</span>
-				<span>The object representing the main script file this shell is running.</span>
+				<span>The object representing the main script file this shell is running, if it is an ordinary file.</span>
+			</li>
+			<li class="value">
+				<div class="name">file</div>
+				<span class="type">rhino/file file</span>
+				<span>
+					The object representing the main file this shell is running, if it is an ordinary file; this property will
+					point to the package file if the shell is running a packaged script.
+				</span>
+			</li>
+			<!--	TODO	the 'url' property is completely untested	-->
+			<li class="value">
+				<div class="name">url</div>
+				<span class="type">string</span>
+				<span>The URL from which the main script file was loaded.</span>
 			</li>
 			<li class="value">
 				<div class="name">packaged</div>

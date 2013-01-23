@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh Servlet Plugin</title>
+	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css"/>
+	<script src="../../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.servlet">servlet</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">file</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">parameters</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.resources">resources</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">map</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A prefix, which does <em>not</em> include a leading <code>/</code>.</span>
+							</li>
+							<li class="value">
+								<span class="type"><!-- TODO hyperlink -->rhino/file Pathname</span>
+								<span>A pathname.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">loader</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">build</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<ul>
+			<li class="constructor">
+				<div class="name">Resources</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.resources">resources</a></span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">script</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="constructor">
+				<div class="name">Tomcat</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">map</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">path</div>
+												<span class="type">string</span>
+												<span>The path at which to deploy the webapp specified by the given argument, including the leading <code>/</code>.</span>
+											</li>
+											<li class="value">
+												<div class="name">servlets</div>
+												<span class="type">object</span> with property values of type <span class="type"><a href="#types.servlet">servlet</a></span>
+												<!--	TODO	add reference to URL patterns from servlet specification	-->
+												<span>An object whose property names are interpreted as URL patterns and property values are interpreted as servlet declarations.</span>
+											</li>
+											<li class="value">
+												<div class="name">resources</div>
+												<span class="type"><a href="#types.resources">resources</a></span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">webapp</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">start</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">run</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">stop</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

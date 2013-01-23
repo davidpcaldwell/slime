@@ -379,6 +379,31 @@ var Client = function(mode) {
 			});
 		}
 	}
+	
+	this.Loader = (function(parent) {
+		return function(base) {
+			return new $context.api.io.Loader({
+				resources: new function() {
+					this.toString = function() {
+						return "rhino/http/client Loader: base=" + base;
+					}
+
+					this.getResourceAsStream = function(path) {
+						var url = base + path;
+						var response = parent.request({
+							url: url
+						});
+						if (response.status.code == 200) {
+							return response.body.stream;
+						} else {
+							//	TODO	figure out what this API should do when a resource is not found
+							throw new Error("Status when loading " + url + " is HTTP " + response.status.code);
+						}
+					}
+				}
+			});
+		}
+	})(this);
 }
 
 $exports.Client = Client;
@@ -419,6 +444,7 @@ $exports.Parser = new function() {
 	this.OK = $api.deprecate(this.ok);
 }
 
+//	TODO	is this used anywhere?
 $exports.Loader = function(client) {
 	this.getCode = function(url) {
 		client.request({

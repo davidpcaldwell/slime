@@ -316,7 +316,11 @@ this.jsh = new function() {
 	jsh.script = (function() {
 		var rv = loader.bootstrap({
 			api: {
+				js: jsh.js,
 				file: jsh.file,
+				http: function() {
+					return jsh.http;
+				},
 				addClasses: jsh.loader.addClasses
 			},
 			workingDirectory: jsh.shell.PWD,
@@ -325,6 +329,11 @@ this.jsh = new function() {
 					return jsh.file.filesystem.$jsh.Pathname($host.getInvocation().getScript().getFile()).file;
 				}
 				return null;
+			})(),
+			uri: (function() {
+				if ($host.getInvocation().getScript().getUri()) {
+					return String($host.getInvocation().getScript().getUri().normalize().toString());
+				}
 			})(),
 			packaged: (function() {
 				//	TODO	push back into Invocation
@@ -338,7 +347,9 @@ this.jsh = new function() {
 				return null;
 			})(),
 			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
-			loader: loader.getBundled()
+			loader: (function() {
+				if (loader.getBundled()) return loader.getBundled();
+			})()
 		},"jsh/script");
 		jsh.shell.getopts = loader.$api.deprecate(rv.getopts);
 		return rv;

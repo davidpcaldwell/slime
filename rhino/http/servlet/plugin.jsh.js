@@ -73,9 +73,10 @@ plugin({
 					var context = tomcat.addContext(m.path, base.pathname.java.adapt().getCanonicalPath());
 					var id = 0;
 					for (var pattern in m.servlets) {
+						//	TODO	below may not work if more than one servlet; value changes during loop and may be picked up
+						//			by servlets earlier in loop
 						var servletDeclaration = m.servlets[pattern];
-						var servletFile = servletDeclaration.file;
-						if (!servletFile) {
+						if (!servletDeclaration.file) {
 							throw new Error("Incorrect launch.");
 						}
 						var servletName = "slime" + String(id++);
@@ -91,12 +92,12 @@ plugin({
 											this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
 
 											this.loaders = {
-												script: new jsh.file.Loader(servletFile.parent),
+												script: new jsh.file.Loader(servletDeclaration.file.parent),
 												container: (m.resources) ? m.resources.loader : null
 											};
 
 											this.getCode = function(scope) {
-												jsh.loader.run(servletFile.pathname, scope);
+												jsh.loader.run(servletDeclaration.file.pathname, scope);
 											}
 
 											this.$exports = {};

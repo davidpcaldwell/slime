@@ -22,8 +22,10 @@ if ($context.script) {
 	$api.deprecate($exports,"getRelativePath");
 } else if ($context.packaged) {
 	$exports.file = $context.packaged;
+} else if ($context.uri) {
+	$exports.url = $context.uri;
 } else {
-	throw new Error("Unreachable.");
+//	throw new Error("Unreachable.");
 }
 $exports.arguments = $context.arguments;
 $exports.addClasses = $api.deprecate($context.api.addClasses);
@@ -35,6 +37,14 @@ if ($context.loader) {
 	$exports.loader = $context.loader;
 } else if ($context.script) {
 	$exports.loader = new $context.api.file.Loader($exports.file.parent);
+} else if ($context.uri) {
+	$exports.__defineGetter__("loader", $context.api.js.constant(function() {
+		var http = $context.api.http();
+		var client = new http.Client();
+		var base = $context.uri.split("/").slice(0,-1).join("/") + "/";
+		if (!client) throw new Error("client is null");
+		return new client.Loader(base);
+	}));
 }
 
 $exports.getopts = $loader.file("getopts.js", {

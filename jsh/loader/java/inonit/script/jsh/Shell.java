@@ -127,11 +127,11 @@ public class Shell {
 
 	public static abstract class Invocation {
 		public static abstract class Script {
-			private static Script create(final Engine.Source delegate, final File file) {
+			private static Script create(final Engine.Source delegate, final java.net.URI uri) {
 				return new Script() {
 					@Override
-					public File getFile() {
-						return file;
+					public java.net.URI getUri() {
+						return uri;
 					}
 
 					public Engine.Source getSource() {
@@ -141,20 +141,32 @@ public class Shell {
 			}
 
 			static Script create(File file) {
-				return create(Engine.Source.create(file), file);
+				return create(Engine.Source.create(file), file.toURI());
 			}
 
 			static Script create(final Engine.Source delegate) {
 				return create(delegate, null);
 			}
 
+			public abstract java.net.URI getUri();
+			
 			/**
 				Returns the <code>java.io.File</code> object corresponding to the main script.
 
 				@return The <code>java.io.File</code> object corresponding to the main script, or <code>null</code> if there is no
 					such file; e.g., the script has been packaged into a JAR file.
 			*/
-			public abstract File getFile();
+			//	TODO	we need to really figure out how getFile is used, so that we can decide whether getUrl would be a full
+			//			substitute; currently, it appears to only be used in jsh.js, to set the script property
+			public final File getFile() {
+				java.net.URI uri = getUri();
+				if (uri != null && uri.getScheme() != null && uri.getScheme().equals("file")) {
+					return new java.io.File(uri);
+				} else {
+					return null;
+				}
+			}
+			
 			public abstract Engine.Source getSource();
 		}
 
