@@ -25,6 +25,9 @@ plugin({
 		//	TODO	allow system property rather than environment variable?
 		return jsh.java && jsh.shell && jsh.file && typeof(jsh.shell.environment.CATALINA_HOME) == "string" || typeof(Packages.org.apache.catalina.startup.Tomcat) == "function";
 	},
+	disabled: function() {
+		return "Environment variable CATALINA_HOME is not defined.";
+	},
 	load: function() {
 		var CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
 

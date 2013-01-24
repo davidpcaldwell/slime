@@ -369,7 +369,7 @@ this.jsh = new function() {
 							return true;
 						};
 					}
-					list.push(p);
+					list.push({ _code: _code, declaration: p });
 				}
 				scope.global = (function() { return this; })();
 				scope.jsh = jsh;
@@ -401,8 +401,8 @@ this.jsh = new function() {
 			var i = 0;
 			//	TODO	should isReady be optional?
 			while(i < list.length && !marked) {
-				if (list[i].isReady()) {
-					list[i].load();
+				if (list[i].declaration.isReady()) {
+					list[i].declaration.load();
 					list.splice(i,1);
 					marked = true;
 				}
@@ -414,9 +414,8 @@ this.jsh = new function() {
 				stop = true;
 				//	TODO	think harder about what to do
 				list.forEach(function(item) {
-					jsh.shell.echo("WARNING: could not load plugin: never became ready\n" + item.isReady, {
-						stream: jsh.io.Streams.stderr
-					});
+					var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
+					jsh.shell.echo("Plugin from " + _code.getScripts() + " is disabled: " + message, { stream: jsh.io.Streams.stderr });
 				});
 			}
 		}
