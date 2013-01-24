@@ -13,12 +13,16 @@
 //	assumes jsh/launcher/rhino/api.rhino.js has been run; provides context that originally was provided by jsh/etc/build.rhino.js
 //	but this file allows the tests to be run from outside the build process
 
-var File = Packages.java.io.File;
-var JSH_HOME = new File(env.JSH_HOME);
-var BASE = new File(env.BASE);
+//	Built shell location
+var JSH_HOME = new Packages.java.io.File(env.JSH_HOME);
+
+//	Source base
+var BASE = new Packages.java.io.File(env.BASE);
+
 var LAUNCHER_COMMAND = [
-	String(new File(JAVA_HOME,"bin/java").getCanonicalPath()),
-	"-jar",String(new File(JSH_HOME,"jsh.jar").getCanonicalPath())
+	String(new Packages.java.io.File(JAVA_HOME,"bin/java").getCanonicalPath()),
+	"-jar",String(new Packages.java.io.File(JSH_HOME,"jsh.jar").getCanonicalPath())
 ];
 console("LAUNCHER_COMMAND = " + LAUNCHER_COMMAND);
 var compileOptions = ["-g", "-nowarn"];
+var File = Packages.java.io.File;
