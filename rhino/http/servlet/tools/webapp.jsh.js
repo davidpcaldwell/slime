@@ -14,9 +14,10 @@ var parameters = jsh.script.getopts({
 	options: {
 		to: jsh.file.Pathname,
 		servletapi: jsh.file.Pathname,
-		resources: jsh.file.Pathname,
+		resources: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		norhino: false,
-		servlet: String
+		servlet: String,
+		parameter: jsh.script.getopts.ARRAY(String)
 	}
 });
 
@@ -83,24 +84,38 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	SLIME.getSubdirectory("rhino/io").copy(WEBAPP.getRelativePath("WEB-INF/slime/rhino/io"), { recursive: true });
 })();
 
-if (parameters.options.resources) {
-	//	Right now, we do not assume the plugin is installed, so we will "install" it.
-	var resourcesPlugin = jsh.loader.file(SLIME.getRelativePath("rhino/http/servlet/resources.js"));
-	var namespace = {
-		io: jsh.io,
-		loader: jsh.loader,
-		shell: jsh.shell,
-		httpd: {}
-	};
-	resourcesPlugin.addJshPluginTo(namespace);
-	var resources = namespace.httpd.Resources.script(parameters.options.resources.file);
-	resources.build(WEBAPP);
-}
+parameters.options.resources.forEach(function(resources) {
+	jsh.httpd.Resources.script(resources.file).build(WEBAPP);
+});
 
 (function() {
+	//	Obviously using an XML parser would be beneficial here if this begins to get more complex
+	
 	var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);
 	xml = xml.replace(/__SCRIPT__/, parameters.options.servlet);
 	//	The below line removes the license, because Tomcat cannot parse it; this may or may not be what we want
 	xml = xml.substring(xml.indexOf("-->") + "-->".length + 1);
+
+	var nextInitParamIndex;
+	var lines = xml.split("\n");
+	for (var i=0; i<lines.length; i++) {
+		if (/\<\/init-param\>/.test(lines[i])) {
+			nextInitParamIndex = i+1;
+		}
+	}
+	var initParamLines = [];
+	parameters.options.parameter.forEach(function(parameter) {
+		var tokens = parameter.split("=");
+		initParamLines = initParamLines.concat([
+			"\t\t<init-param>",
+			"\t\t\t<param-name>" + tokens[0] + "</param-name>",
+			"\t\t\t<param-value>" + tokens[1] + "</param-value>",
+			"\t\t</init-param>"
+		]);
+	});
+	var spliceArgs = [nextInitParamIndex,0].concat(initParamLines);
+	lines.splice.apply(lines,spliceArgs);
+	xml = lines.join("\n");
+	
 	WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 })();
