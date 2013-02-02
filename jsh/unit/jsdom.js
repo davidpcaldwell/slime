@@ -215,6 +215,10 @@ var Element = function(p) {
 		children.push(child);
 	}
 	
+	this.set = function(p) {
+		children = p;
+	}
+	
 	this.remove = function(p) {
 		var child;
 		if (p.recursive && p.node) {
@@ -245,6 +249,7 @@ var Document = function() {
 		nodes.push(node);
 	}
 
+	//	TODO	decide whether to emit XML prologue
 	this.toString = function() {
 		return nodes.join("");
 	}
