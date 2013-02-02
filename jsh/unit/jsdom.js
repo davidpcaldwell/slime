@@ -72,10 +72,15 @@ var Element = function(p) {
 	//	its parent's children. But most objects don't work this way. An object that is a property of another JavaScript object
 	//	cannot navigate to its parent. So we will try to implement the model in this way.
 
+	//	has namespace / local properties
 	this.name = p.name;
 
+	//	objects with prefix/uri representing namespace declarations
 	var namespaces = (p.namespaces) ? p.namespaces : [];
+	//	objects with namespace / local / value properties
 	var attributes = (p.attributes) ? p.attributes : [];
+	
+	//	optionally adds children upon construction
 	var children = (p.children) ? p.children : [];
 
 	this.serialize = function(p) {
@@ -201,10 +206,15 @@ var Element = function(p) {
 		}
 	}
 
-	this.append = function(child) {
+	this.addNode = function(child) {
 		children.push(child);
 	}
 
+	//	TODO	perhaps remove the below?
+	this.append = function(child) {
+		children.push(child);
+	}
+	
 	this.remove = function(p) {
 		var child;
 		if (p.recursive && p.node) {
@@ -224,7 +234,7 @@ var Element = function(p) {
 	}
 }
 
-var Document = function(p) {
+var Document = function() {
 	var nodes = [];
 
 	this.get = function(p) {
@@ -249,6 +259,84 @@ $exports.filter = function(p) {
 	if (p && typeof(p.name) == "string") {
 		return function(node) {
 			return node.name && node.name.local == p.name;
+		}
+	}
+};
+
+//	TODO	this name should be reviewed if we start supporting Nashorn
+$exports.Rhino = new function() {
+	var toNamespace = function(v) {
+		return (v) ? String(v) : "";
+	}
+	
+	var toElement = function(_element) {
+		var p = {};
+		debugger;
+		//	TODO	do some unit tests to figure this out
+		if (_element.getTagName() && !_element.getLocalName()) {
+			p.name = {
+				namespace: "",
+				local: String(_element.getTagName())
+			}
+		} else {
+			p.name = {
+				namespace: toNamespace(_element.getNamespaceURI()),
+				local: String(_element.getLocalName())
+			};
+		}
+		p.namespaces = [];
+		p.attributes = [];
+		for (var i=0; i<_element.getAttributes().getLength(); i++) {
+			var _attribute = _element.getAttributes().item(i);
+			var ns = toNamespace(_attribute.getNamespaceURI());
+			var name = String(_attribute.getName());
+			var value = String(_attribute.getValue());
+			if (ns == "http://www.w3.org/2000/xmlns/") {
+				p.namespaces.push({
+					prefix: name,
+					uri: value
+				});
+			} else if (name == "xmlns") {
+				p.namespaces.push({
+					prefix: "",
+					uri: value
+				});
+			} else {
+				p.attributes.push({
+					namespace: ns,
+					local: name,
+					value: value
+				});
+			}
+		}
+		return new Element(p);
+	}
+	
+	var toNode = function(_node) {
+		var rv;
+		if (_node.getNodeType() == Packages.org.w3c.dom.Node.DOCUMENT_NODE) {
+			rv = new Document();
+		} else if (_node.getNodeType() == Packages.org.w3c.dom.Node.ELEMENT_NODE) {
+			rv = toElement(_node);
+		} else if (_node.getNodeType() == Packages.org.w3c.dom.Node.TEXT_NODE) {
+			rv = new Text(String(_node.getNodeValue()));
+		} else {
+			throw new Error("Unknown node type: " + _node);
+		}
+		var _children = _node.getChildNodes();
+		for (var i=0; i<_children.getLength(); i++) {
+			rv.addNode(toNode(_children.item(i)));
+		}
+		return rv;
+	}
+	
+	this.Document = function(p) {
+		if (p.stream) {
+			var _jaxp = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			var _dom = _jaxp.parse(p.stream.java.adapt());
+			return toNode(_dom);
+		} else {
+			throw new TypeError();
 		}
 	}
 }
