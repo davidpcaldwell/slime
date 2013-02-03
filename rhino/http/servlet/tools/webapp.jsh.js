@@ -17,7 +17,8 @@ var parameters = jsh.script.getopts({
 		resources: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		norhino: false,
 		servlet: String,
-		parameter: jsh.script.getopts.ARRAY(String)
+		parameter: jsh.script.getopts.ARRAY(String),
+		"java:version": String
 	}
 });
 
@@ -59,6 +60,8 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 		destination: WEBAPP.getRelativePath("WEB-INF/classes"),
 		classpath: classpath,
 		sourcepath: sourcepath,
+		source: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
+		target: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
 		arguments: [
 			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java")
 		],
