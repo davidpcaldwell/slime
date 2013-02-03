@@ -14,6 +14,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		to: jsh.file.Pathname,
 		servletapi: jsh.file.Pathname,
+		compile: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		resources: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		norhino: false,
 		servlet: String,
@@ -48,6 +49,23 @@ if (!parameters.options.norhino) {
 var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 
 (function() {
+	var args = [];
+	parameters.options.compile.forEach(function(pathname) {
+		if (pathname.directory) {
+			var pathnames = pathname.directory.list({
+				recursive: true,
+				type: pathname.directory.list.ENTRY
+			}).filter(function(entry) {
+				return /\.java/.test(entry.node.pathname.basename);
+			}).map(function(entry) {
+				return entry.node.pathname;
+			});
+			args = args.concat(pathnames);
+		} else {
+			args.push(pathname);
+		}
+	});
+	
 	//	Compile the servlet to WEB-INF/classes
 	var classpath = jsh.file.Searchpath([]);
 	classpath.pathnames.push(WEBAPP.getRelativePath("WEB-INF/lib/js.jar"));
@@ -64,7 +82,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 		target: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
 		arguments: [
 			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java")
-		],
+		].concat(args),
 		on: new function() {
 			this.exit = function(p) {
 				jsh.shell.echo("Exit status: " + p.status);
