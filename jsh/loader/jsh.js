@@ -415,7 +415,7 @@ this.jsh = new function() {
 				//	TODO	think harder about what to do
 				list.forEach(function(item) {
 					var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
-					jsh.shell.echo("Plugin from " + _code.getScripts() + " is disabled: " + message, { stream: jsh.io.Streams.stderr });
+					jsh.shell.echo("Plugin from " + item._code.getScripts() + " is disabled: " + message, { stream: jsh.io.Streams.stderr });
 				});
 			}
 		}
