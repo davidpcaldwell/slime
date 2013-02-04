@@ -83,15 +83,18 @@ $exports.addJshPluginTo = function(jsh) {
 			});
 		}
 	}
-	jsh.httpd.Resources.script = function(mappingFile) {
+	jsh.httpd.Resources.script = function(mappingFiles) {
 		var rv = new jsh.httpd.Resources();
 
-		jsh.loader.run(mappingFile.pathname, {
-			$mapping: mappingFile,
-			map: function(prefix,pathname) {
-				rv.map(prefix,pathname);
-			}
-		});
+		for (var i=0; i<arguments.length; i++) {
+			var mappingFile = arguments[i];
+			jsh.loader.run(mappingFile.pathname, {
+				$mapping: mappingFile,
+				map: function(prefix,pathname) {
+					rv.map(prefix,pathname);
+				}
+			});
+		}
 
 		return rv;
 	};

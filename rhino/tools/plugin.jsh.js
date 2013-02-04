@@ -39,6 +39,12 @@ plugin({
 					if (p.sourcepath && p.sourcepath.pathnames.length) {
 						args.push("-sourcepath", p.sourcepath);
 					}
+				if (p.source) {
+					args.push("-source", p.source);
+				}
+				if (p.target) {
+					args.push("-target", p.target);
+				}
 					if (p.arguments) {
 						args = args.concat(p.arguments);
 					}

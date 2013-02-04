@@ -24,8 +24,9 @@ import inonit.script.rhino.*;
 public class Servlet extends javax.servlet.http.HttpServlet {
 	static {
 		Class[] dependencies = new Class[] {
-			//	Pull this in as a dependency, since the Rhino loader depends on it
+			//	Pull these in as dependencies, since the Rhino loader depends on them
 			inonit.script.rhino.Objects.class
+			,inonit.script.rhino.MetaObject.class
 			//	Pull these in as dependencies, since servlets load the rhino/host module, which includes these classes
 			//	Currently, webapp.jsh.js is unaware of modules and just copies them into the WEB-INF/slime directory, expecting
 			//	them to be loaded by its bootstrap loader
@@ -82,7 +83,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			throw errors;
 		}
 
-		program.add(Engine.Source.create("<api.js>", getServletContext().getResourceAsStream("WEB-INF/api.js")));
+		program.add(Engine.Source.create("<api.js>", getServletContext().getResourceAsStream("/WEB-INF/api.js")));
 
 		try {
 			System.err.println("Executing JavaScript program ...");
@@ -121,11 +122,11 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 					private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
 					@Override public String getPlatformCode() throws IOException {
-						return streams.readString(getServletContext().getResourceAsStream("WEB-INF/loader.platform.js"));
+						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader.platform.js"));
 					}
 
 					@Override public String getRhinoCode() throws IOException {
-						return streams.readString(getServletContext().getResourceAsStream("WEB-INF/loader.rhino.js"));
+						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader.rhino.js"));
 					}
 				});
 			} catch (IOException e) {
