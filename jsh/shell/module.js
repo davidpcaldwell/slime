@@ -273,6 +273,7 @@ $exports.jsh = function(script,args,mode) {
 		if (mode && mode.classpath) return true;
 		if (mode && mode.environment && mode.environment.JSH_SCRIPT_CLASSPATH) return true;
 		if (mode && mode.environment && mode.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
+		if (mode && mode.environment && mode.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
 		return false;
 	})();
 	
