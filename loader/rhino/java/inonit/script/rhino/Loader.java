@@ -117,6 +117,20 @@ public abstract class Loader {
 				}
 				return null;
 			}
+			
+			protected Enumeration<URL> findResources(String name) {
+				java.util.Vector rv = new java.util.Vector();
+				for (Code.Source source : locations) {
+					Code.Classes classes = source.getClasses();
+					if (classes != null) {
+						URL url = classes.getResource(name);
+						if (url != null) {
+							rv.add(url);
+						}
+					}
+				}
+				return rv.elements();
+			}
 
 			public Loader.Classpath toScriptClasspath() {
 				return new Loader.Classpath() {
