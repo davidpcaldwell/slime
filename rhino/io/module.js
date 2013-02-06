@@ -131,7 +131,7 @@ var Reader = function(peer) {
 	this.asString = function() {
 		var buffer = new Packages.java.io.StringWriter();
 		$java.copy(
-			this.$getReader(),
+			peer,
 			buffer
 		);
 		return String( buffer.toString() );
