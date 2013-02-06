@@ -111,7 +111,7 @@ $exports.zip = function(p) {
 $exports.unzip = function(p) {
 	var _zipstream = (function() {
 		if (p.zip.read) {
-			return new Packages.java.util.zip.ZipInputStream(p.zip.read($context.Streams.binary).$getInputStream());
+			return new Packages.java.util.zip.ZipInputStream(p.zip.read($context.Streams.binary).java.adapt());
 		} else if (p.zip.java && p.zip.java.adapt) {
 			//	Assume stream, which is a terrible API; should check to see peer is java.io.InputStream but being lazy
 			return new Packages.java.util.zip.ZipInputStream(p.zip.java.adapt());

@@ -193,55 +193,55 @@ var Pathname = function(parameters) {
 		}
 	}
 
-	this.getBasename = getBasename;
-	$api.deprecate(this, "getBasename");
+//	this.getBasename = getBasename;
+//	$api.deprecate(this, "getBasename");
 
-	this.getParent = getParent;
-	$api.deprecate(this, "getParent");
+//	this.getParent = getParent;
+//	$api.deprecate(this, "getParent");
 
-	this.getFile = getFile;
-	$api.deprecate(this, "getFile");
+//	this.getFile = getFile;
+//	$api.deprecate(this, "getFile");
 
-	this.getDirectory = getDirectory;
-	$api.deprecate(this, "getDirectory");
+//	this.getDirectory = getDirectory;
+//	$api.deprecate(this, "getDirectory");
 
-	this.writeBinary = function() {
-		var args = [Streams.binary];
-		for (var i=0; i<arguments.length; i++) {
-			args.push(arguments[i]);
-		}
-		return write.apply(null,args);
-	};
-	this.writeText = function() {
-		var args = [Streams.text];
-		for (var i=0; i<arguments.length; i++) {
-			args.push(arguments[i]);
-		}
-		return write.apply(null,args);
-	};
-	$api.deprecate(this, "writeBinary");
-	$api.deprecate(this, "writeText");
+//	this.writeBinary = function() {
+//		var args = [Streams.binary];
+//		for (var i=0; i<arguments.length; i++) {
+//			args.push(arguments[i]);
+//		}
+//		return write.apply(null,args);
+//	};
+//	this.writeText = function() {
+//		var args = [Streams.text];
+//		for (var i=0; i<arguments.length; i++) {
+//			args.push(arguments[i]);
+//		}
+//		return write.apply(null,args);
+//	};
+//	$api.deprecate(this, "writeBinary");
+//	$api.deprecate(this, "writeText");
 
-	this.__defineGetter__("$peer", function() {
-		return peer;
-	});
-	this.__defineGetter__("$filesystem", function() {
-		return $filesystem;
-	});
-	this.$getPeer = function() {
-		return peer;
-	};
-	this.$getFilesystem = function() {
-		return $filesystem;
-	};
-	this.$inFilesystem = function(filesystem) {
-		return filesystem.$system.$inFilesystem(this);
-	}
-	$api.deprecate(this, "$peer");
-	$api.deprecate(this, "$filesystem");
-	$api.deprecate(this, "$getPeer");
-	$api.deprecate(this, "$getFilesystem");
-	$api.deprecate(this, "$inFilesystem");
+//	this.__defineGetter__("$peer", function() {
+//		return peer;
+//	});
+//	this.__defineGetter__("$filesystem", function() {
+//		return $filesystem;
+//	});
+//	this.$getPeer = function() {
+//		return peer;
+//	};
+//	this.$getFilesystem = function() {
+//		return $filesystem;
+//	};
+//	this.$inFilesystem = function(filesystem) {
+//		return filesystem.$system.$inFilesystem(this);
+//	}
+//	$api.deprecate(this, "$peer");
+//	$api.deprecate(this, "$filesystem");
+//	$api.deprecate(this, "$getPeer");
+//	$api.deprecate(this, "$getFilesystem");
+//	$api.deprecate(this, "$inFilesystem");
 
 	var Node = function(pathname,prefix) {
 		this.toString = function() {
@@ -318,14 +318,14 @@ var Pathname = function(parameters) {
 			}
 		}
 
-		this.getPathname = getPathname;
-		$api.deprecate(this, "getPathname");
-		this.getParent = getParent;
-		$api.deprecate(this, "getParent");
-		this.setLastModified = setLastModified;
-		this.getLastModified = getLastModified;
-		$api.deprecate(this, "getLastModified");
-		$api.deprecate(this, "setLastModified");
+//		this.getPathname = getPathname;
+//		$api.deprecate(this, "getPathname");
+//		this.getParent = getParent;
+//		$api.deprecate(this, "getParent");
+//		this.setLastModified = setLastModified;
+//		this.getLastModified = getLastModified;
+//		$api.deprecate(this, "getLastModified");
+//		$api.deprecate(this, "setLastModified");
 
 		this.copy = function(target,mode) {
 			var to = (function() {

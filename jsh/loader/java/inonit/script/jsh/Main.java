@@ -119,12 +119,6 @@ public class Main {
 					}
 					return rv.toArray(new Plugin[rv.size()]);
 				}
-
-				public Code.Source getPackagedCode() {
-					return Code.Source.system(
-						"$packaged/"
-					);
-				}
 			};
 
 			invocation = new Shell.Invocation() {
@@ -204,10 +198,6 @@ public class Main {
 					//	them. $HOME/.jsh/plugins?
 					addPluginsTo(rv, System.getProperty("jsh.plugins"));
 					return rv.toArray(new Plugin[rv.size()]);
-				}
-
-				public Code.Source getPackagedCode() {
-					return null;
 				}
 			};
 
@@ -331,6 +321,14 @@ public class Main {
 							return System.err;
 						}
 					};
+				}
+				
+				@Override public Code.Source getPackagedCode() {
+					if (System.getProperty("jsh.launcher.packaged") != null) {					
+						return Code.Source.system("$packaged/");
+					} else {
+						return null;
+					}
 				}
 			},
 			invocation

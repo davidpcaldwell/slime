@@ -77,26 +77,28 @@ public class Shell {
 		}
 
 		public abstract Plugin[] getPlugins();
+	}
 
-		//	TODO	move to Configuration? It may make more sense there
+	public static abstract class Configuration {
+		public abstract int getOptimizationLevel();
+		public abstract Engine.Debugger getDebugger();
+		
+		//	TODO	consider: should this log implementation be supplied, and just log to stderr?
+		public abstract Engine.Log getLog();
+		
+		public abstract ClassLoader getClassLoader();
+
+		public abstract Properties getSystemProperties();
+		public abstract Map getEnvironment();
+		public abstract Stdio getStdio();
+		
 		/**
 		 *
 		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
 		 *	<code>null</code> if it is not.
 		 */
 		public abstract Code.Source getPackagedCode();
-	}
-
-	public static abstract class Configuration {
-		public abstract int getOptimizationLevel();
-		public abstract Engine.Debugger getDebugger();
-		public abstract Engine.Log getLog();
-		public abstract ClassLoader getClassLoader();
-
-		public abstract Properties getSystemProperties();
-		public abstract Map getEnvironment();
-		public abstract Stdio getStdio();
-
+		
 		private Engine engine;
 
 		final void initialize() {
@@ -290,7 +292,7 @@ public class Shell {
 				}
 
 				public Code.Source getPackagedCode() {
-					return installation.getPackagedCode();
+					return configuration.getPackagedCode();
 				}
 
 				public void addFinalizer(Runnable runnable) {
@@ -368,6 +370,19 @@ public class Shell {
 			public void exit(int status) throws ExitException {
 				Host.this.configuration.getEngine().getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
+			}
+			
+			public int jsh(Configuration configuration, final File script, final String[] arguments) {
+				Invocation invocation = new Invocation() {
+					@Override public Invocation.Script getScript() {
+						return Invocation.Script.create(script);
+					}
+
+					@Override public String[] getArguments() {
+						return arguments;
+					}
+				};
+				return Shell.execute(installation, configuration, invocation);
 			}
 
 //			//

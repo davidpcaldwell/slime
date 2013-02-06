@@ -16,8 +16,36 @@ var div = function(className,parent) {
 	rv.className = className;
 	parent.appendChild(rv);
 	return rv;
-}
+};
 
+var calculate = function(profiles) {
+	profiles.forEach(function(profile) {
+		var calculateNode = function(node) {
+			if (node.children.length) {
+				node.children.forEach(function(child) {
+					calculateNode(child);
+				});
+				var self = node.statistics.elapsed;
+				node.children.forEach(function(child) {
+					self -= child.statistics.elapsed;
+				});
+				//	TODO	in theory should not have to check for this, but we are working around bug in which main(String[]) and (top) have 0 elapsed
+				node.self = {
+					code: { self: node.code },
+					statistics: {
+						elapsed: self,
+						count: node.statistics.count
+					},
+					children: []
+				};
+				node.children.push(node.self);
+			}
+		};
+
+		calculateNode(profile.timing.root);		
+	});
+};
+		
 var render = function(profiles,settings) {
 	if (!settings) {
 		settings = {
@@ -50,6 +78,8 @@ var render = function(profiles,settings) {
 				return node.code.className + " " + node.code.methodName + " " + node.code.signature;
 			} else if (node.code.sourceName && node.code.lineNumbers) {
 				return node.code.sourceName + " [" + node.code.lineNumbers[0] + "-" + node.code.lineNumbers[node.code.lineNumbers.length-1] + "]";
+			} else if (node.code.self) {
+				return "(self)";
 			} else {
 				return "(top)";
 			}
@@ -62,11 +92,15 @@ var render = function(profiles,settings) {
 			var name = nodeName(node);
 			total.innerHTML = (node.statistics.elapsed/1000).toFixed(3) + " " + node.statistics.count + " " + name.replace(/\</g, "&lt;");
 			node.children.filter(function(child) {
+				//	Work around problem with top level
 				var children = 0;
 				child.children.forEach(function(gc) {
-					children += gc.statistics.elapsed;
+					if (gc != child.self) {
+						children += gc.statistics.elapsed;
+					}
 				});
 				if (children >= settings.threshold) return true;
+				
 				return child.statistics.elapsed >= settings.threshold;
 			}).sort(function(a,b) {
 				return b.statistics.elapsed - a.statistics.elapsed;
@@ -93,8 +127,13 @@ var render = function(profiles,settings) {
 					elapsed: 0
 				};
 			}
-			map[key].count += node.statistics.count;
-			map[key].elapsed += node.statistics.elapsed;
+			if (node.self) {
+				map[key].count += node.self.statistics.count;
+				map[key].elapsed += node.self.statistics.elapsed;
+			} else {
+				map[key].count += node.statistics.count;
+				map[key].elapsed += node.statistics.elapsed;
+			}
 			node.children.forEach(function(child) {
 				addToHotspots(child);
 			});
@@ -109,8 +148,18 @@ var render = function(profiles,settings) {
 		list.sort(function(a,b) {
 			return b.elapsed - a.elapsed;
 		});
+		if (false) {
+			var total = { count: 1, elapsed: 0 };
+			list.forEach(function(item) {
+				//	TODO	this check is to work around the negative-self-time bug
+				if (item.elapsed > 0) {
+					total.elapsed += item.elapsed;
+				}
+			});
+			list.push({ key: "TOTAL", count: total.count, elapsed: total.elapsed });
+		}
 		list.forEach(function(item) {
-			if ( item.elapsed > settings.threshold ) {
+			if ( item.elapsed >= settings.threshold ) {
 				var hotspotdiv = div("hotspot", div_hotspots);
 				hotspotdiv.innerHTML = (item.elapsed / 1000).toFixed(3) + " " + item.count + " " + item.key.replace(/\</g, "&lt;");
 			}
@@ -119,6 +168,7 @@ var render = function(profiles,settings) {
 }
 
 window.addEventListener("load", function() {
+	calculate(profiles);
 	render(profiles);
 	document.getElementById("refresh").addEventListener("click", function() {
 		var settings = {
