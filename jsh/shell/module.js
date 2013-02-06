@@ -201,8 +201,11 @@ if ($context.getSystemProperty("user.dir")) {
 }
 if ($context.api.shell.environment.PATH) {
 	$exports.PATH = getSearchpath($context.api.shell.environment.PATH);
+} else if ($context.api.shell.environment.Path) {
+	//	Windows
+	$exports.PATH = getSearchpath($context.api.shell.environment.Path);
 } else {
-	$exports.PATH = $context.api.file.Searchpath.createEmpty();
+	$exports.PATH = $context.api.file.Searchpath([]);
 }
 
 $exports.os = new function() {
