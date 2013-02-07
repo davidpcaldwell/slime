@@ -48,43 +48,47 @@ $exports.run = function(p) {
 			};
 		}
 	);
+		
+	var invocation = (function() {
+		var rv = {
+			configuration: {},
+			result: {}
+		};
+		if (p.tokens) {
+			//	TODO	ensure array
+			if (p.tokens.length == 0) {
+				throw new TypeError("tokens cannot be zero-length.");
+			}
+			rv.result.command = p.tokens[0];
+			rv.result.arguments = p.tokens.slice(1);
+			var configuration = p.tokens.map(function(arg) {
+				if (typeof(arg) == "undefined") {
+					throw new TypeError("token " + arguments[1] + " cannot be undefined.");
+				}
+				if (arg && typeof(arg) == "object") return String(arg);
+				return arg;
+			});
+			rv.configuration.command = configuration[0];
+			rv.configuration.arguments = configuration.slice(1);
+			return rv;
+		}
+	})();
 
 	var configuration = new JavaAdapter(
 		Packages.inonit.system.Command.Configuration,
 		new function() {
-			var command;
-			var args;
-			if (p.tokens) {
-				command = p.tokens.shift();
-				if (typeof(command) == "undefined") {
-					throw new TypeError("token 0 cannot be undefined.");
-				}
-				if (typeof(command) == "object" && command) {
-					command = String(command);
-				}
-				args = p.tokens.slice(0);
-				for (var i=0; i<args.length; i++) {
-					if (typeof(args[i]) == "object" && args[i]) {
-						args[i] = String(args[i]);
-					}
-				}
-			}
-			
-			this.command = command;
-			this.arguments = args;
-			
 			this.getCommand = function() {
-				return command;
+				return invocation.configuration.command;
 			};
 			
 			this.getArguments = function() {
-				return args;
+				return invocation.configuration.arguments;
 			};
 		}
 	);
 	var result = {
-		command: configuration.delegee.command,
-		arguments: configuration.delegee.arguments
+		command: invocation.result.command,
+		arguments: invocation.result.arguments
 	};
 	if (p.environment) {
 		result.environment = p.environment;
