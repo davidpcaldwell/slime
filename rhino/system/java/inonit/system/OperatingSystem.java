@@ -21,20 +21,18 @@ public class OperatingSystem {
 		return singleton;
 	}
 
-	//	Used by jsh launcher redefinition of Rhino shell runCommand
-	public int getExitStatus(Command.Context context, Command.Configuration configuration) throws IOException {
-		return Command.create(configuration).execute(context).getExitStatus();
+	//	Used by rhino/shell module and jsh launcher redefinition of Rhino shell runCommand
+	public Command.Listener run(Command.Context context, Command.Configuration configuration) {
+		return Command.create(configuration).execute(context);
 	}
-
+	
+	//	Used by Cygwin filesystem implementation and rhino/file tests
 	public Command.Result execute(String path, String[] arguments) {
 		return Command.create(Command.Configuration.create(path, arguments)).getResult();
 	}
 
+	//	Used by Cygwin filesystem implementation
 	public Subprocess start(Command.Context context, Command.Configuration configuration) throws IOException {
 		return Command.create(configuration).start(context);
-	}
-
-	public Command.Listener run(final Command.Context context, final Command.Configuration configuration) {
-		return Command.create(configuration).execute(context);
 	}
 }

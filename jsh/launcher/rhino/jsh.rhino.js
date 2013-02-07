@@ -215,7 +215,7 @@ var Command = function() {
 		}
 		//	TODO	for fully Rhino-compatible runCommand we should have special processing of output / err / input
 		//			see https://developer.mozilla.org/en-US/docs/Rhino/Shell
-		return Packages.inonit.system.OperatingSystem.get().getExitStatus(
+		return Packages.inonit.system.OperatingSystem.get().run(
 			new JavaAdapter(Packages.inonit.system.Command.Context, context),
 			new JavaAdapter(
 				Packages.inonit.system.Command.Configuration,
@@ -233,7 +233,7 @@ var Command = function() {
 					}
 				}
 			)
-		)
+		).getExitStatus();
 	}
 
 	this.run = function(mode) {
