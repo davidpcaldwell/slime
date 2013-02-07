@@ -75,21 +75,12 @@ public class Command {
 		}
 	}
 
-	public static abstract class Listener {
-		static final Listener LISTEN = new Listener() {
-			@Override public void finished() {
-			}
-
-			@Override public void threw() {
-			}
-		};
-		
+	public static class Listener {
 		private Integer status;
 		private IOException threw;
 		
 		final void finished(int status) {
 			this.status = new Integer(status);
-			this.finished();
 		}
 		
 		final void threw(IOException e) {
@@ -103,9 +94,6 @@ public class Command {
 		public final IOException getLaunchException() {
 			return threw;
 		}
-		
-		public abstract void finished();
-		public abstract void threw();
 	}
 
 	public static class Result {
@@ -166,16 +154,7 @@ public class Command {
 		private byte[] output;
 		private byte[] error;
 		private ContextImpl context = new ContextImpl();
-		private Listener listener = new Listener() {
-			@Override public void finished() {
-				Result.this.output = context.output();
-				Result.this.error = context.error();
-			}
-
-			@Override public void threw() {
-				Result.this.exception = this.getLaunchException();
-			}
-		};
+		private Listener listener = new Listener();
 		
 		Context getContext() {
 			return context;
@@ -287,8 +266,8 @@ public class Command {
 			,configuration
 		);
 	}
-
-	void execute(Context context, Listener listener) {
+	
+	private void execute(Context context, Listener listener) {
 		try {
 			Process p = launch(context, configuration);
 			try {
@@ -300,16 +279,15 @@ public class Command {
 			listener.threw(e);
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
-		}
+		}		
 	}
 
-	int getExitStatus(Context context) throws IOException {
-		Listener listener = Listener.LISTEN;
+	Listener execute(Context context) {
+		Listener listener = new Listener();
 		execute(context, listener);
-		if (listener.getLaunchException() != null) throw listener.getLaunchException();
-		return listener.getExitStatus();
+		return listener;
 	}
-	
+
 	Subprocess start(Context context) throws IOException {
 		return new Subprocess(launch(context, configuration));
 	}

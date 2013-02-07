@@ -21,24 +21,20 @@ public class OperatingSystem {
 		return singleton;
 	}
 
-	public Command.Result execute(String path, String[] arguments) {
-		return Command.create(Command.Configuration.create(path, arguments)).getResult();
+	//	Used by jsh launcher redefinition of Rhino shell runCommand
+	public int getExitStatus(Command.Context context, Command.Configuration configuration) throws IOException {
+		return Command.create(configuration).execute(context).getExitStatus();
 	}
 
-	//	Used by jsh launcher
-	public int execute(Command.Context context, Command.Configuration configuration) throws IOException {
-		return Command.create(configuration).getExitStatus(context);
+	public Command.Result execute(String path, String[] arguments) {
+		return Command.create(Command.Configuration.create(path, arguments)).getResult();
 	}
 
 	public Subprocess start(Command.Context context, Command.Configuration configuration) throws IOException {
 		return Command.create(configuration).start(context);
 	}
 
-	public Runnable run(final Command.Context context, final Command.Configuration configuration, final Command.Listener listener) {
-		return new Runnable() {
-			public void run() {
-				Command.create(configuration).execute(context, listener);
-			}
-		};
+	public Command.Listener run(final Command.Context context, final Command.Configuration configuration) {
+		return Command.create(configuration).execute(context);
 	}
 }

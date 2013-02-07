@@ -91,20 +91,12 @@ $exports.run = function(tokens,mode) {
 		result.workingDirectory = mode.work;
 	}
 
-	var listener = new JavaAdapter(
-		Command.Listener,
-		{
-			finished: function() {
-				result.status = Number( this.getExitStatus().intValue() );
-			},
-			threw: function(e) {
-				result.error = e;
-			}
-		}
-	);
-
-	var runnable = OperatingSystem.get().run( context, configuration, listener );
-	runnable.run();
+	var _listener = OperatingSystem.get().run( context, configuration );
+	if (_listener.getLaunchException()) {
+		result.error = _listener.getLaunchException();
+	} else {
+		result.status = Number( _listener.getExitStatus().intValue() );
+	}
 	onExit(result);
 };
 
@@ -115,9 +107,10 @@ $exports.environment = (function() {
 	while(i.hasNext()) {
 		var name = String( i.next() );
 		var value = String( jenv.get(name) );
-		rv.__defineGetter__(name, function() {
-			return value;
-		});
+		rv[name] = value;
+//		rv.__defineGetter__(name, function() {
+//			return value;
+//		});
 	}
 	return rv;
 })();
