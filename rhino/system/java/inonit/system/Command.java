@@ -48,6 +48,18 @@ public class Command {
 	}
 
 	public static abstract class Configuration {
+		static Configuration create(final String path, final String[] arguments) {
+			return new Configuration() {
+				public final String getCommand() {
+					return path;
+				}
+				
+				public final String[] getArguments() {
+					return arguments;
+				}
+			};
+		}
+		
 		public abstract String getCommand();
 		public abstract String[] getArguments();
 
@@ -64,19 +76,36 @@ public class Command {
 	}
 
 	public static abstract class Listener {
+		static final Listener LISTEN = new Listener() {
+			@Override public void finished() {
+			}
+
+			@Override public void threw() {
+			}
+		};
+		
 		private Integer status;
+		private IOException threw;
 		
 		final void finished(int status) {
 			this.status = new Integer(status);
 			this.finished();
 		}
+		
+		final void threw(IOException e) {
+			this.threw = e;
+		}
 
 		public final Integer getExitStatus() {
 			return status;
 		}
-
+		
+		public final IOException getLaunchException() {
+			return threw;
+		}
+		
 		public abstract void finished();
-		public abstract void threw(IOException e);
+		public abstract void threw();
 	}
 
 	public static class Result {
@@ -143,8 +172,8 @@ public class Command {
 				Result.this.error = context.error();
 			}
 
-			@Override public void threw(IOException e) {
-				Result.this.exception = e;
+			@Override public void threw() {
+				Result.this.exception = this.getLaunchException();
 			}
 		};
 		
@@ -199,39 +228,6 @@ public class Command {
 		}
 	}
 
-	private static class ConfigurationImpl extends Configuration {
-		private String command;
-		private String[] arguments;
-
-		ConfigurationImpl(String command, String[] arguments) {
-			this.command = command;
-			this.arguments = arguments;
-		}
-
-		public final String getCommand() {
-			return command;
-		}
-
-		public final String[] getArguments() {
-			return arguments;
-		}
-	}
-
-	private static class ListenerImpl extends Listener {
-		private IOException io;
-
-		public void finished() {
-		}
-
-		public void threw(IOException e) {
-			this.io = e;
-		}
-
-		IOException threw() {
-			return this.io;
-		}
-	}
-
 	static class Process {
 		private java.lang.Process delegate;
 
@@ -267,9 +263,15 @@ public class Command {
 		}
 	}
 
+	static Command create(Configuration configuration) {
+		Command rv = new Command();
+		rv.configuration = configuration;
+		return rv;
+	}
+
 	private Configuration configuration;
 
-	Command() {
+	private Command() {
 	}
 
 	private static Process launch(Context context, Configuration configuration) throws IOException {
@@ -301,30 +303,10 @@ public class Command {
 		}
 	}
 
-	private void execute(Result result) {
-		execute(result.getContext(), result.getListener());
-	}
-
-	static Command create(Configuration configuration) {
-		Command rv = new Command();
-		rv.configuration = configuration;
-		return rv;
-	}
-
-	static String getCommandOutput(String path, String[] arguments) throws IOException {
-		Command shell = Command.create(new ConfigurationImpl(path,arguments));
-		Result result = new Result();
-		shell.execute(result);
-		if (result.getLaunchException() != null) throw result.getLaunchException();
-		return result.getCommandOutput();
-	}
-
-	static int getExitStatus(Context context, Configuration configuration) throws IOException {
-		Command shell = new Command();
-		shell.configuration = configuration;
-		ListenerImpl listener = new ListenerImpl();
-		shell.execute(context, listener);
-		if (listener.threw() != null) throw listener.threw();
+	int getExitStatus(Context context) throws IOException {
+		Listener listener = Listener.LISTEN;
+		execute(context, listener);
+		if (listener.getLaunchException() != null) throw listener.getLaunchException();
 		return listener.getExitStatus();
 	}
 	
@@ -332,10 +314,9 @@ public class Command {
 		return new Subprocess(launch(context, configuration));
 	}
 
-	static Result execute(String path, String[] arguments) {
-		Command shell = Command.create(new ConfigurationImpl(path, arguments));
+	Result getResult() {
 		Result result = new Result();
-		shell.execute(result);
+		execute(result.getContext(), result.getListener());
 		return result;
 	}
 

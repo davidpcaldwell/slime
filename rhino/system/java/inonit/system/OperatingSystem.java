@@ -22,12 +22,12 @@ public class OperatingSystem {
 	}
 
 	public Command.Result execute(String path, String[] arguments) {
-		return Command.execute(path, arguments);
+		return Command.create(Command.Configuration.create(path, arguments)).getResult();
 	}
 
 	//	Used by jsh launcher
 	public int execute(Command.Context context, Command.Configuration configuration) throws IOException {
-		return Command.getExitStatus(context, configuration);
+		return Command.create(configuration).getExitStatus(context);
 	}
 
 	public Subprocess start(Command.Context context, Command.Configuration configuration) throws IOException {
