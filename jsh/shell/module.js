@@ -111,13 +111,7 @@ $exports.shell = function(command,args,mode) {
 		mode = {};
 	}
 
-	var $run = $context.api.shell.run;
 	var $filesystems = $context.api.file.filesystems;
-
-	//	If the command is given as a Pathname object, convert it to a host file name for execution.
-	if ($filesystems.cygwin) {
-		command = $filesystems.cygwin.toWindows( command );
-	}
 
 	var preprocessor = function(item) { return item; }
 	if ($filesystems.cygwin && mode.filesystem == $filesystems.os) {
@@ -129,14 +123,13 @@ $exports.shell = function(command,args,mode) {
 			return $filesystems.cygwin.toUnix(item);
 		}
 	}
-	args = args.map( preprocessor );
 
-	var tokens = [ command ].concat( args );
+	var tokens = [ command ].concat( args ).map(preprocessor);
 
-	var rMode = new function() {
-		this.environment = mode.environment;
-
-		this.workingDirectory = (function() {
+	$context.api.shell.run({
+		tokens: tokens,
+		environment: mode.environment,
+		workingDirectory: (function() {
 			var work = mode.workingDirectory;
 			if (!work) return;
 			if (work && work.pathname && work.pathname.directory) {
@@ -147,18 +140,12 @@ $exports.shell = function(command,args,mode) {
 				}
 			}
 			throw new Error("Unknown working directory: " + work);
-		})();
-
-		this.onExit = mode.onExit;
-
-		this.stdin = stream(mode,"stdin");
-		this.stdout = stream(mode,"stdout");
-		this.stderr = stream(mode,"stderr");
-	};
-	
-	$run($context.api.js.Object.set({
-		tokens: tokens
-	}, rMode));
+		})(),
+		onExit: mode.onExit,
+		stdin: stream(mode,"stdin"),
+		stdout: stream(mode,"stdout"),
+		stderr: stream(mode,"stderr")
+	});
 }
 
 var getMandatoryStringProperty = function(name) {
