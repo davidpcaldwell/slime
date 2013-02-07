@@ -56,6 +56,9 @@ $exports.run = function(p) {
 			var args;
 			if (p.tokens) {
 				command = p.tokens.shift();
+				if (typeof(command) == "undefined") {
+					throw new TypeError("token 0 cannot be undefined.");
+				}
 				if (typeof(command) == "object" && command) {
 					command = String(command);
 				}
@@ -96,12 +99,12 @@ $exports.run = function(p) {
 	} else {
 		result.status = Number( _listener.getExitStatus().intValue() );
 	}
-	var onExit = (p.evaluate) ? p.evaluate : function(result) {
+	var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 		if (result.error) throw result.error;
 		if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + " " + result.arguments.join(" "));
 		return result;
 	};
-	return onExit(result);
+	return evaluate(result);
 };
 
 $exports.environment = (function() {
