@@ -285,29 +285,28 @@ $exports.rhino = new function() {
 	}
 };
 
-$exports.jsh = function(script,args,mode) {
-	if (arguments.length == 1 && arguments[0].script) {
-		var p = arguments[0];
-		script = p.script;
-		args = p.arguments;
-		mode = {};
-		for (var x in p) {
-			if (x != "script" && x != "arguments") {
-				mode[x] = p[x];
-			}
+$exports.jsh = function(p) {
+	if (!arguments[0].script) {
+		p = {
+			script: arguments[0],
+			arguments: (arguments[1]) ? arguments[1] : []
+		};
+		for (var x in arguments[2]) {
+			p[x] = arguments[2][x];
 		}
 	}
 	//	TODO	need to detect directives in the given script and fork if they are present
 	
 	var fork = (function() {
-		if (mode && mode.classpath) return true;
-		if (mode && mode.environment && mode.environment.JSH_SCRIPT_CLASSPATH) return true;
-		if (mode && mode.environment && mode.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
+		if (p.fork) return true;
+		if (p.classpath) return true;
+		if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
+		if (p.environment && p.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
 		return false;
 	})();
 	
 	var environment = (function() {
-		var rv = (mode && mode.environment) ? mode.environment : {};
+		var rv = (p.environment) ? p.environment : {};
 		
 		var addProperties = function(from) {
 			for (var x in from) {
@@ -327,26 +326,31 @@ $exports.jsh = function(script,args,mode) {
 	})();
 	
 	if (fork) {
-		if (!mode) mode = {};
+		debugger;
 		//	TODO	can we use $exports.java.home here?
 		var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 		var executable = jdk.getRelativePath("bin/java").toString();
 		//	Set defaults from this shell
-		var LAUNCHER_CLASSPATH = (mode.classpath) ? mode.classpath : getProperty("jsh.launcher.classpath");
+		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : getProperty("jsh.launcher.classpath");
 
 		var jargs = [];
 		jargs.push("-classpath");
 		jargs.push(LAUNCHER_CLASSPATH);
 		jargs.push("inonit.script.jsh.launcher.Main");
 
-		jargs.push(script);
-		args.forEach( function(arg) {
+		jargs.push(p.script);
+		p.arguments.forEach( function(arg) {
 			jargs.push(arg);
 		});
-
-		mode.environment = environment;
-
-		$exports.shell(executable,jargs,mode);
+		
+		var shell = {
+			command: executable,
+			arguments: jargs,
+			environment: environment,
+			evaluate: p.evaluate
+		};
+		
+		return $exports.shell(shell);
 	} else {
 		var configuration = new JavaAdapter(
 			Packages.inonit.script.jsh.Shell.Configuration,
@@ -369,7 +373,6 @@ $exports.jsh = function(script,args,mode) {
 					Packages.inonit.script.jsh.Shell.Configuration.Stdio,
 					new function() {
 						var Streams = Packages.inonit.script.runtime.io.Streams;
-						var m = (mode) ? mode : {};
 
 						var ifNonNull = function(_type,value,otherwise) {
 							if ($context.api.java.isJavaType(_type)(value)) return value;
@@ -377,9 +380,9 @@ $exports.jsh = function(script,args,mode) {
 							return (value) ? value.java.adapt() : otherwise;
 						}
 
-						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(m,"stdin"), Streams.Null.INPUT_STREAM);
-						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(m,"stdout"), Streams.Null.OUTPUT_STREAM);
-						var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(m,"stderr"), Streams.Null.OUTPUT_STREAM);
+						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(p,"stdin"), Streams.Null.INPUT_STREAM);
+						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(p,"stdout"), Streams.Null.OUTPUT_STREAM);
+						var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(p,"stderr"), Streams.Null.OUTPUT_STREAM);
 
 						this.getStandardInput = function() {
 							return _stdin;
@@ -423,8 +426,8 @@ $exports.jsh = function(script,args,mode) {
 							rv.setProperty(key, $context._getSystemProperties().getProperty(key));
 						}
 					}
-					if (mode && mode.workingDirectory) {
-						rv.setProperty("user.dir", mode.workingDirectory.pathname.java.adapt());
+					if (p.workingDirectory) {
+						rv.setProperty("user.dir", p.workingDirectory.pathname.java.adapt());
 					}
 					return rv;
 				}
@@ -447,13 +450,13 @@ $exports.jsh = function(script,args,mode) {
 			}
 		);
 	
-		if (!script.java) {
-			throw new TypeError("Expected script " + script + " to have java.adapt()");
+		if (!p.script.java) {
+			throw new TypeError("Expected script " + p.script + " to have java.adapt()");
 		}
-		var status = $host.jsh(configuration,script.java.adapt(),$context.api.java.toJavaArray(args,Packages.java.lang.String,function(s) {
+		var status = $host.jsh(configuration,p.script.java.adapt(),$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
 			return new Packages.java.lang.String(s);
 		}));
-		var evaluate = (mode && mode.evaluate) ? mode.evaluate : function(result) {
+		var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 			if (result.status != 0) {
 				throw new Error("Exit status: " + result.status);
 			}
@@ -463,10 +466,10 @@ $exports.jsh = function(script,args,mode) {
 			status: status,
 			//	no error property
 			//	TODO	maybe not strictly the same as rhino/shell run onExit callback, command would be java I would think
-			command: script,
-			arguments: args,
+			command: p.script,
+			arguments: p.arguments,
 			environment: environment,
-			workingDirectory: (mode && mode.workingDirectory) ? mode.workingDirectory : function(){}()
+			workingDirectory: p.workingDirectory
 		});
 	}
 };

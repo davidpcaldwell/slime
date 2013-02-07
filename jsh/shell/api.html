@@ -326,14 +326,32 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#tests">
 					debugger;
-					var status = module.jsh({
+					var unforked = module.jsh({
 						script: $module.getResourcePathname("test/jsh.jsh.js"),
 						arguments: [],
 						evaluate: function(result) {
-							return result.status;
+							return {
+								status: result.status,
+								command: result.command
+							}
 						}
 					});
-					test(status == 2);
+					test(unforked.status == 2);
+					test(typeof(unforked.command) != "undefined");
+					
+					var forked = module.jsh({
+						script: $module.getResourcePathname("test/jsh.jsh.js"),
+						arguments: [],
+						evaluate: function(result) {
+							return {
+								status: result.status,
+								script: result.script
+							}
+						},
+						fork: true
+					});
+					test(forked.status == 2);
+					test(typeof(forked.command) == "undefined");
 				</script>
 			</li>
 			<li class="object">
