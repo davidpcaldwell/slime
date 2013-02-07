@@ -106,31 +106,54 @@ var stream = function(mode,x) {
 	return mode[x];
 }
 
-$exports.shell = function(command,args,mode) {
-	if (arguments.length < 3) {
-		mode = {};
+$exports.shell = function(p) {
+	if (arguments.length == 3) {
+		$api.deprecate(function() {
+			p = {
+				command: arguments[0],
+				arguments: arguments[1]
+			};
+			for (var x in arguments[2]) {
+				p[x] = arguments[2][x];
+			}			
+		}).apply(this,arguments);
+	} else if (arguments.length == 2) {
+		$api.deprecate(function() {
+			p = {
+				command: arguments[0],
+				arguments: arguments[1]				
+			}
+		}).apply(this,arguments);
+	}
+	if (!p.command) {
+		throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
 	}
 
 	var $filesystems = $context.api.file.filesystems;
 
 	var preprocessor = function(item) { return item; }
-	if ($filesystems.cygwin && mode.filesystem == $filesystems.os) {
+	if ($filesystems.cygwin && p.filesystem == $filesystems.os) {
 		preprocessor = function(item) {
 			return $filesystems.cygwin.toWindows(item);
 		}
-	} else if ($filesystems.cygwin && mode.filesystem == $filesystems.cygwin) {
+	} else if ($filesystems.cygwin && p.filesystem == $filesystems.cygwin) {
 		preprocessor = function(item) {
 			return $filesystems.cygwin.toUnix(item);
 		}
 	}
 
-	var tokens = [ command ].concat( args ).map(preprocessor);
+	var tokens = [ p.command ].concat( p.arguments ).map(preprocessor);
+	
+	var evaluate = (function() {
+		if (p.evaluate) return p.evaluate;
+		if (p.onExit) return $api.deprecate(p.onExit);
+	})();
 
-	$context.api.shell.run({
+	return $context.api.shell.run({
 		tokens: tokens,
-		environment: mode.environment,
+		environment: p.environment,
 		workingDirectory: (function() {
-			var work = mode.workingDirectory;
+			var work = p.workingDirectory;
 			if (!work) return;
 			if (work && work.pathname && work.pathname.directory) {
 				if ($filesystems.cygwin) {
@@ -141,10 +164,10 @@ $exports.shell = function(command,args,mode) {
 			}
 			throw new Error("Unknown working directory: " + work);
 		})(),
-		onExit: mode.onExit,
-		stdin: stream(mode,"stdin"),
-		stdout: stream(mode,"stdout"),
-		stderr: stream(mode,"stderr")
+		evaluate: evaluate,
+		stdin: stream(p,"stdin"),
+		stdout: stream(p,"stdout"),
+		stderr: stream(p,"stderr")
 	});
 }
 
