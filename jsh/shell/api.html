@@ -101,6 +101,10 @@ END LICENSE
 				this.getSystemProperty = function(name) {
 					return String(Packages.java.lang.System.getProperty(name));
 				}
+				
+				this._getSystemProperties = function() {
+					return Packages.java.lang.System.getProperties();
+				}
 
 				this.stdio = new function() {
 					this["in"] = jsh.shell.stdin;
@@ -320,6 +324,17 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#tests">
+					debugger;
+					var status = module.jsh({
+						script: $module.getResourcePathname("test/jsh.jsh.js"),
+						arguments: [],
+						evaluate: function(result) {
+							return result.status;
+						}
+					});
+					test(status == 2);
+				</script>
 			</li>
 			<li class="object">
 				<div class="name">java</div>

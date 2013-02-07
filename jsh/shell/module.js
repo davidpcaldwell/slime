@@ -269,6 +269,12 @@ $exports.java = new function() {
 	//	user.name is $exports.USER
 	//	user.home is $exports.HOME
 	//	user.dir is $exports.PWD
+
+	//	TODO	Document
+	this.launcher = (function() {
+		if (this.home.getFile("bin/java")) return this.home.getFile("bin/java");
+		if (this.home.getFile("bin/java.exe")) return this.home.getFile("bin/java.exe");
+	}).call(this);
 };
 
 //	TODO	if not running on Rhino, this property should not appear
@@ -280,6 +286,17 @@ $exports.rhino = new function() {
 };
 
 $exports.jsh = function(script,args,mode) {
+	if (arguments.length == 1 && arguments[0].script) {
+		var p = arguments[0];
+		script = p.script;
+		args = p.arguments;
+		mode = {};
+		for (var x in p) {
+			if (x != "script" && x != "arguments") {
+				mode[x] = p[x];
+			}
+		}
+	}
 	//	TODO	need to detect directives in the given script and fork if they are present
 	
 	var fork = (function() {
@@ -309,105 +326,6 @@ $exports.jsh = function(script,args,mode) {
 		return rv;
 	})();
 	
-	var configuration = new JavaAdapter(
-		Packages.inonit.script.jsh.Shell.Configuration,
-		new function() {
-			this.getOptimizationLevel = function() {
-				return -1;
-			};
-			
-			this.getDebugger = function() {
-				//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
-				if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
-					var Engine = Packages.inonit.script.rhino.Engine;
-					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
-				} else {
-					return null;
-				}
-			}
-
-			var stdio = new JavaAdapter(
-				Packages.inonit.script.jsh.Shell.Configuration.Stdio,
-				new function() {
-					var Streams = Packages.inonit.script.runtime.io.Streams;
-					var m = (mode) ? mode : {};
-					
-					var ifNonNull = function(_type,value,otherwise) {
-						if ($context.api.java.isJavaType(_type)(value)) return value;
-						if (value && !value.java) throw new TypeError("value: " + value);
-						return (value) ? value.java.adapt() : otherwise;
-					}
-					
-					var _stdin = ifNonNull(Packages.java.io.InputStream, stream(m,"stdin"), Streams.Null.INPUT_STREAM);
-					var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(m,"stdout"), Streams.Null.OUTPUT_STREAM);
-					var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(m,"stderr"), Streams.Null.OUTPUT_STREAM);
-					
-					this.getStandardInput = function() {
-						return _stdin;
-					}
-					
-					this.getStandardOutput = function() {
-						return _stdout;
-					}
-					
-					this.getStandardError = function() {
-						return _stderr;
-					}
-				}
-			);
-			
-			//	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
-			//	possible we should revisit this
-			var log = new JavaAdapter(
-				Packages.inonit.script.rhino.Engine.Log,
-				new function() {
-					this.println = function(message) {
-						new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
-					}
-				}
-			);
-
-			this.getLog = function() {
-				return log;
-			}
-			
-			this.getClassLoader = function() {
-				return Packages.java.lang.ClassLoader.getSystemClassLoader();
-			}
-			
-			this.getSystemProperties = function() {
-				var rv = new Packages.java.util.Properties();
-				var keys = $context._getSystemProperties().keySet().iterator();
-				while(keys.hasNext()) {
-					var key = keys.next();
-					if (String(key) != "jsh.launcher.packaged") {
-						rv.setProperty(key, $context._getSystemProperties().getProperty(key));
-					}
-				}
-				if (mode && mode.workingDirectory) {
-					rv.setProperty("user.dir", mode.workingDirectory.pathname.java.adapt());
-				}
-				return rv;
-			}
-			
-			this.getEnvironment = function() {
-				var rv = new Packages.java.util.HashMap();
-				for (var x in environment) {
-					rv.put(new Packages.java.lang.String(x),new Packages.java.lang.String(environment[x]));
-				}
-				return rv;
-			};
-			
-			this.getStdio = function() {
-				return stdio;
-			}
-			
-			this.getPackagedCode = function() {
-				return null;
-			}
-		}
-	);
-	
 	if (fork) {
 		if (!mode) mode = {};
 		//	TODO	can we use $exports.java.home here?
@@ -430,18 +348,118 @@ $exports.jsh = function(script,args,mode) {
 
 		$exports.shell(executable,jargs,mode);
 	} else {
+		var configuration = new JavaAdapter(
+			Packages.inonit.script.jsh.Shell.Configuration,
+			new function() {
+				this.getOptimizationLevel = function() {
+					return -1;
+				};
+
+				this.getDebugger = function() {
+					//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
+					if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
+						var Engine = Packages.inonit.script.rhino.Engine;
+						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
+					} else {
+						return null;
+					}
+				}
+
+				var stdio = new JavaAdapter(
+					Packages.inonit.script.jsh.Shell.Configuration.Stdio,
+					new function() {
+						var Streams = Packages.inonit.script.runtime.io.Streams;
+						var m = (mode) ? mode : {};
+
+						var ifNonNull = function(_type,value,otherwise) {
+							if ($context.api.java.isJavaType(_type)(value)) return value;
+							if (value && !value.java) throw new TypeError("value: " + value);
+							return (value) ? value.java.adapt() : otherwise;
+						}
+
+						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(m,"stdin"), Streams.Null.INPUT_STREAM);
+						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(m,"stdout"), Streams.Null.OUTPUT_STREAM);
+						var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(m,"stderr"), Streams.Null.OUTPUT_STREAM);
+
+						this.getStandardInput = function() {
+							return _stdin;
+						}
+
+						this.getStandardOutput = function() {
+							return _stdout;
+						}
+
+						this.getStandardError = function() {
+							return _stderr;
+						}
+					}
+				);
+
+				//	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
+				//	possible we should revisit this
+				var log = new JavaAdapter(
+					Packages.inonit.script.rhino.Engine.Log,
+					new function() {
+						this.println = function(message) {
+							new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
+						}
+					}
+				);
+
+				this.getLog = function() {
+					return log;
+				}
+
+				this.getClassLoader = function() {
+					return Packages.java.lang.ClassLoader.getSystemClassLoader();
+				}
+
+				this.getSystemProperties = function() {
+					var rv = new Packages.java.util.Properties();
+					var keys = $context._getSystemProperties().keySet().iterator();
+					while(keys.hasNext()) {
+						var key = keys.next();
+						if (String(key) != "jsh.launcher.packaged") {
+							rv.setProperty(key, $context._getSystemProperties().getProperty(key));
+						}
+					}
+					if (mode && mode.workingDirectory) {
+						rv.setProperty("user.dir", mode.workingDirectory.pathname.java.adapt());
+					}
+					return rv;
+				}
+
+				this.getEnvironment = function() {
+					var rv = new Packages.java.util.HashMap();
+					for (var x in environment) {
+						rv.put(new Packages.java.lang.String(x),new Packages.java.lang.String(environment[x]));
+					}
+					return rv;
+				};
+
+				this.getStdio = function() {
+					return stdio;
+				}
+
+				this.getPackagedCode = function() {
+					return null;
+				}
+			}
+		);
+	
 		if (!script.java) {
 			throw new TypeError("Expected script " + script + " to have java.adapt()");
 		}
 		var status = $host.jsh(configuration,script.java.adapt(),$context.api.java.toJavaArray(args,Packages.java.lang.String,function(s) {
 			return new Packages.java.lang.String(s);
 		}));
-		var onExit = (mode && mode.onExit) ? mode.onExit : function(result) {
+		var evaluate = (mode && mode.evaluate) ? mode.evaluate : function(result) {
 			if (result.status != 0) {
 				throw new Error("Exit status: " + result.status);
 			}
+			return result;
 		};
-		onExit({
+		return evaluate({
 			status: status,
 			//	no error property
 			//	TODO	maybe not strictly the same as rhino/shell run onExit callback, command would be java I would think
