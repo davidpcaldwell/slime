@@ -16,28 +16,6 @@ import java.io.*;
 import java.util.*;
 
 public class Command {
-	static Command create(Configuration configuration) {
-		Command rv = new Command();
-		rv.configuration = configuration;
-		return rv;
-	}
-
-	public static abstract class Configuration {
-		public abstract String getCommand();
-		public abstract String[] getArguments();
-
-		final String[] cmdarray() {
-			ArrayList args = new ArrayList();
-			String program = getCommand();
-			String[] arguments = getArguments();
-			args.add(program);
-			for (int i=0; i<arguments.length; i++) {
-				args.add(arguments[i]);
-			}
-			return (String[])args.toArray(new String[0]);
-		}
-	}
-
 	public static abstract class Context {
 		public abstract OutputStream getStandardOutput();
 		public abstract OutputStream getStandardError();
@@ -66,6 +44,22 @@ public class Command {
 				env = (String[])list.toArray(new String[0]);
 			}
 			return env;
+		}
+	}
+
+	public static abstract class Configuration {
+		public abstract String getCommand();
+		public abstract String[] getArguments();
+
+		final String[] cmdarray() {
+			ArrayList args = new ArrayList();
+			String program = getCommand();
+			String[] arguments = getArguments();
+			args.add(program);
+			for (int i=0; i<arguments.length; i++) {
+				args.add(arguments[i]);
+			}
+			return (String[])args.toArray(new String[0]);
 		}
 	}
 
@@ -144,34 +138,6 @@ public class Command {
 		}
 	}
 
-	static String getCommandOutput(String path, String[] arguments) throws IOException {
-		Command shell = new Command();
-		shell.configuration = new ConfigurationImpl(path,arguments);
-		ContextImpl context = new ContextImpl();
-		ListenerImpl listener = new ListenerImpl();
-		shell.execute(context, listener);
-		if (listener.threw() != null) throw listener.threw();
-		return context.getCommandOutput();
-	}
-
-	static Result execute(String path, String[] arguments) {
-		Command shell = new Command();
-		ContextImpl context = new ContextImpl();
-		shell.configuration = new ConfigurationImpl(path, arguments);
-		Result result = new Result();
-		shell.execute(context, result);
-		return result;
-	}
-
-	static int getExitStatus(Context context, Configuration configuration) throws IOException {
-		Command shell = new Command();
-		shell.configuration = configuration;
-		ListenerImpl listener = new ListenerImpl();
-		shell.execute(context, listener);
-		if (listener.threw() != null) throw listener.threw();
-		return listener.getExitStatus();
-	}
-
 	private static class ContextImpl extends Context {
 		private ByteArrayOutputStream out = new ByteArrayOutputStream();
 		private ByteArrayOutputStream err = new ByteArrayOutputStream();
@@ -225,21 +191,6 @@ public class Command {
 		}
 	}
 
-	private static class ListenerImpl extends Listener {
-		private IOException io;
-
-		public void finished() {
-		}
-
-		public void threw(IOException e) {
-			this.io = e;
-		}
-
-		IOException threw() {
-			return this.io;
-		}
-	}
-
 	private static class ConfigurationImpl extends Configuration {
 		private String command;
 		private String[] arguments;
@@ -255,6 +206,21 @@ public class Command {
 
 		public final String[] getArguments() {
 			return arguments;
+		}
+	}
+
+	private static class ListenerImpl extends Listener {
+		private IOException io;
+
+		public void finished() {
+		}
+
+		public void threw(IOException e) {
+			this.io = e;
+		}
+
+		IOException threw() {
+			return this.io;
 		}
 	}
 
@@ -312,8 +278,42 @@ public class Command {
 		);
 	}
 
+	static Command create(Configuration configuration) {
+		Command rv = new Command();
+		rv.configuration = configuration;
+		return rv;
+	}
+
+	static String getCommandOutput(String path, String[] arguments) throws IOException {
+		Command shell = new Command();
+		shell.configuration = new ConfigurationImpl(path,arguments);
+		ContextImpl context = new ContextImpl();
+		ListenerImpl listener = new ListenerImpl();
+		shell.execute(context, listener);
+		if (listener.threw() != null) throw listener.threw();
+		return context.getCommandOutput();
+	}
+
+	static int getExitStatus(Context context, Configuration configuration) throws IOException {
+		Command shell = new Command();
+		shell.configuration = configuration;
+		ListenerImpl listener = new ListenerImpl();
+		shell.execute(context, listener);
+		if (listener.threw() != null) throw listener.threw();
+		return listener.getExitStatus();
+	}
+	
 	Subprocess start(Context context) throws IOException {
 		return new Subprocess(launch(context));
+	}
+
+	static Result execute(String path, String[] arguments) {
+		Command shell = new Command();
+		ContextImpl context = new ContextImpl();
+		shell.configuration = new ConfigurationImpl(path, arguments);
+		Result result = new Result();
+		shell.execute(context, result);
+		return result;
 	}
 
 	void execute(ContextImpl context, Result result) {

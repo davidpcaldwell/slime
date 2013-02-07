@@ -308,7 +308,7 @@ public class CygwinFilesystem extends Filesystem {
 				}
 			};
 
-			this.subprocess = OperatingSystem.get().start(configuration, context);
+			this.subprocess = OperatingSystem.get().start(context, configuration);
 			this.output = stdout.getInputStream();
 			this.input = new PrintWriter(stdin.getOutputStream(), true);
 		}

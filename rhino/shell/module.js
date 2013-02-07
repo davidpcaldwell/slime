@@ -10,22 +10,114 @@
 //	Contributor(s):
 //	END LICENSE
 
-var scope = $loader.file("shell.js");
-$exports.run = scope.run;
-$exports.environment = (function() {
-	//	TODO	Document $context.$environment
-	var jenv = ($context.$environment) ? $context.$environment : Packages.inonit.script.runtime.shell.Environment.create();
-	var rv;
-	if (jenv) {
-		rv = {};
-		var i = jenv.keySet().iterator();
-		while(i.hasNext()) {
-			var name = String( i.next() );
-			var value = String( jenv.get(name) );
-			rv[name] = value;
+$exports.run = function(tokens,mode) {
+	var Command = Packages.inonit.system.Command;
+	var OperatingSystem = Packages.inonit.system.OperatingSystem;
+	var Streams = Packages.inonit.script.runtime.io.Streams;
+
+	var stdout = (mode.stdout) ? mode.stdout : Streams.Null.OUTPUT_STREAM;
+	var stderr = (mode.stderr) ? mode.stderr : Streams.Null.OUTPUT_STREAM;
+	var stdin = (mode.stdin) ? mode.stdin : Streams.Null.INPUT_STREAM;
+	
+	var environment = (function() {
+		if (mode.environment) {
+			var rv = new Packages.java.util.HashMap();
+			for (var x in mode.environment) {
+				rv.put( x, mode.environment[x] );
+			}
+			return rv;
+		} else {
+			return null;
 		}
-	} else {
-		//	This version of JDK does not support getenv
+	})();
+	
+	var work = (function(arg) {
+		if (!arg) return null;
+		if (typeof(arg) == "string") return arguments.callee(new Packages.java.io.File(arg));
+		if (arg["class"] == Packages.java.io.File) {
+			if (!arg.exists()) throw new Error("Working directory does not exist: " + arg.getCanonicalPath());
+			if (!arg.isDirectory()) throw new Error("Working directory is file, not directory: " + arg.getCanonicalPath());
+			return arg;
+		}
+		throw new Error("Unrecognized working directory: value=" + arg + " type=" + typeof(arg));
+	})(mode.work);
+
+	var onExit = (mode.onExit) ? mode.onExit : function(result) {
+		if (result.error) throw result.error;
+		if (result.status != 0) throw "Exit code: " + result.status;
+	};
+
+	var context = new JavaAdapter(
+		Command.Context,
+		{
+			getStandardOutput: function() {
+				return stdout;
+			},
+			getStandardError: function() {
+				return stderr;
+			},
+			getStandardInput: function() {
+				return stdin;
+			},
+			getSubprocessEnvironment: function() {
+				return environment;
+			},
+			getWorkingDirectory: function() {
+				return work;
+			}
+		}
+	);
+
+	var program = tokens.shift();
+	var configuration = new JavaAdapter(
+		Command.Configuration,
+		{
+			getCommand: function() {
+				return program;
+			},
+			getArguments: function() {
+				return tokens;
+			}
+		}
+	);
+	var result = {
+		command: program,
+		arguments: tokens
+	};
+	if (mode.environment) {
+		result.environment = mode.environment;
+	}
+	if (mode.work) {
+		result.workingDirectory = mode.work;
+	}
+
+	var listener = new JavaAdapter(
+		Command.Listener,
+		{
+			finished: function() {
+				result.status = Number( this.getExitStatus().intValue() );
+			},
+			threw: function(e) {
+				result.error = e;
+			}
+		}
+	);
+
+	var runnable = OperatingSystem.get().run( context, configuration, listener );
+	runnable.run();
+	onExit(result);
+};
+
+$exports.environment = (function() {
+	var jenv = Packages.java.lang.System.getenv();
+	var rv = {};
+	var i = jenv.keySet().iterator();
+	while(i.hasNext()) {
+		var name = String( i.next() );
+		var value = String( jenv.get(name) );
+		rv.__defineGetter__(name, function() {
+			return value;
+		});
 	}
 	return rv;
 })();
