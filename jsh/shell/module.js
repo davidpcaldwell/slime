@@ -100,22 +100,11 @@ $exports.echo.String["undefined"] = "(undefined)";
 $exports.echo.String["null"] = "(null)";
 
 var stream = function(mode,x) {
-	var Streams = $context.api.io.Streams;
-	var isJavaType = $context.api.java.isJavaType;
-	var type = (x == "stdin") ? "InputStream" : "OutputStream";
 	if (typeof(mode[x]) == "undefined") {
-		//	currently Streams.stdin not defined, so no way to get parent process stdin, thus we use empty stream
-		if (Streams[x]) {
-			return Streams[x]["$get" + type]();
-		} else {
-			return null;
-		}
+		return $exports[x];
 	}
-	if (mode[x] == null) return null;
-	if (isJavaType(Packages.java.io[type])(mode[x])) return mode[x];
-	return mode[x]["$get" + type]();
+	return mode[x];
 }
-
 
 $exports.shell = function(command,args,mode) {
 	if (arguments.length < 3) {
@@ -147,14 +136,14 @@ $exports.shell = function(command,args,mode) {
 	var rMode = new function() {
 		this.environment = mode.environment;
 
-		this.work = (function() {
-			if (!mode.workingDirectory) return null;
+		this.workingDirectory = (function() {
 			var work = mode.workingDirectory;
-			if (work.pathname && work.pathname.directory) {
+			if (!work) return;
+			if (work && work.pathname && work.pathname.directory) {
 				if ($filesystems.cygwin) {
-					return $filesystems.cygwin.toWindows(work.pathname).toString();
+					return $filesystems.cygwin.toWindows(work.pathname).directory;
 				} else {
-					return work.pathname.toString();
+					return work;
 				}
 			}
 			throw new Error("Unknown working directory: " + work);
@@ -166,8 +155,10 @@ $exports.shell = function(command,args,mode) {
 		this.stdout = stream(mode,"stdout");
 		this.stderr = stream(mode,"stderr");
 	};
-
-	$run(tokens,rMode);
+	
+	$run($context.api.js.Object.set({
+		tokens: tokens
+	}, rMode));
 }
 
 var getMandatoryStringProperty = function(name) {
@@ -331,20 +322,26 @@ $exports.jsh = function(script,args,mode) {
 					var Streams = Packages.inonit.script.runtime.io.Streams;
 					var m = (mode) ? mode : {};
 					
-					var ifNonNull = function(value,otherwise) {
-						return (value) ? value : otherwise;
+					var ifNonNull = function(_type,value,otherwise) {
+						if ($context.api.java.isJavaType(_type)(value)) return value;
+						if (value && !value.java) throw new TypeError("value: " + value);
+						return (value) ? value.java.adapt() : otherwise;
 					}
 					
+					var _stdin = ifNonNull(Packages.java.io.InputStream, stream(m,"stdin"), Streams.Null.INPUT_STREAM);
+					var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(m,"stdout"), Streams.Null.OUTPUT_STREAM);
+					var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(m,"stderr"), Streams.Null.OUTPUT_STREAM);
+					
 					this.getStandardInput = function() {
-						return ifNonNull(stream(m,"stdin"), Streams.Null.INPUT_STREAM);
+						return _stdin;
 					}
 					
 					this.getStandardOutput = function() {
-						return ifNonNull(stream(m,"stdout"), Streams.Null.OUTPUT_STREAM);
+						return _stdout;
 					}
 					
 					this.getStandardError = function() {
-						return ifNonNull(stream(m,"stderr"), Streams.Null.OUTPUT_STREAM);
+						return _stderr;
 					}
 				}
 			);

@@ -289,6 +289,7 @@ this.jsh = new function() {
 	jsh.shell = (function() {
 		var context = {};
 		context.api = {
+			js: js,
 			java: java,
 			shell: $shell,
 			io: jsh.io,
