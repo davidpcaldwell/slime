@@ -101,16 +101,18 @@ $exports.run = function(tokens,mode) {
 };
 
 $exports.environment = (function() {
+	var getter = function(value) {
+		return function() {
+			return value;
+		};
+	};
+	
 	var jenv = Packages.java.lang.System.getenv();
 	var rv = {};
 	var i = jenv.keySet().iterator();
 	while(i.hasNext()) {
-		var name = String( i.next() );
-		var value = String( jenv.get(name) );
-		rv[name] = value;
-//		rv.__defineGetter__(name, function() {
-//			return value;
-//		});
+		var name = String(i.next());
+		rv.__defineGetter__(name, getter(String(jenv.get(name))));
 	}
 	return rv;
 })();
