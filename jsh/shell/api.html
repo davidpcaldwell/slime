@@ -299,60 +299,135 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
-							<span>The pathname of the script to run.</span>
-						</li>
-						<!--	TODO	update the below using jsapi:reference	-->
-						<li class="value">
-							<span class="type">Array</span>
-							<span>An argument with the same semantics as the second argument to <code>shell</code>.</span>
-						</li>
-						<li class="value">
 							<span class="type">object</span>
 							<span>
-								An argument with the same semantics as the third argument to <code>shell</code>, except that
+								An argument with the same semantics as the argument to <code>shell</code>, except that
 								it includes the following properties in addition:
 							</span>
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
+									<div class="name">script</div>
+									<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+									<span>The pathname of the script to run.</span>
+								</li>
+								<!--	TODO	update the below using jsapi:reference	-->
+								<li class="value">
+									<div class="name">arguments</div>
+									<span class="type">Array</span>
+									<span>An argument with the same semantics as the second argument to <code>shell</code>.</span>
+								</li>
+								<li class="value">
+									<div class="name">fork</div>
+									<span class="type">boolean</span>
+									<span>
+										If <code>true</code>, the script is forced to execute in a separate process. Otherwise,
+										jsh may attempt to execute it in-process if it deems the script to be compatible with its
+										execution environment.
+									</span>
+								</li>
+								<li class="value">
 									<div class="name">classpath</div>
 									<span class="type">string</span>
 									<span>The classpath to use when running the jsh launcher.</span>
+								</li>
+								<li class="function">
+									<div class="name">evaluate</div>
+									<span>
+										A function which is called after the script executes, and receives information about the
+										result. It specifies the return value of the call to <code>jsh</code> by returning a value.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="object">
+												<span>
+													An object with the same properties as those of the argument to 
+													<a href="../../rhino/shell/api.html#run.evaluate">the rhino/shell version</a>,
+													with the following differences:
+												</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="object">
+														<div class="name">jsh</div>
+														<span>An additional argument which describes the jsh invocation.</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">script</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</li>
+															<li class="value">
+																<div class="name">arguments</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</li>
+														</ul>
+													</li>
+													<li class="value">
+														<div class="name">classpath</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</li>
+													<li class="value">
+														<div class="name">command</div>
+														<span class="type">__TYPE__</span>
+														<span>
+															(if an operating system shell was created) The operating system command
+															invoked. Not present if the subshell was executed in-process.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">arguments</div>
+														<span class="type">__TYPE__</span>
+														<span>
+															(if an operating system shell was created) The arguments sent to the 
+															operating system command. Not present if the subshell was 
+															executed in-process.
+														</span>
+													</li>
+												</ul>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">(any)</span>
+										<span>An arbitrary value to return from the <code>jsh</code> method.</span>
+									</div>
 								</li>
 							</ul>
 						</li>
 					</ol>
 				</div>
-				<script type="application/x.jsapi#tests">
+				<script type="application/x.jsapi#tests"><![CDATA[
 					debugger;
 					var unforked = module.jsh({
 						script: $module.getResourcePathname("test/jsh.jsh.js"),
 						arguments: [],
 						evaluate: function(result) {
-							return {
-								status: result.status,
-								command: result.command
-							}
+							return result;
 						}
 					});
 					test(unforked.status == 2);
-					test(typeof(unforked.command) != "undefined");
+					test(typeof(unforked.command) == "undefined");
+					test(typeof(unforked.arguments) == "undefined");
+					test(Boolean(unforked.jsh) && Boolean(unforked.jsh.script));
 					
 					var forked = module.jsh({
 						script: $module.getResourcePathname("test/jsh.jsh.js"),
 						arguments: [],
 						evaluate: function(result) {
-							return {
-								status: result.status,
-								script: result.script
-							}
+							return result;
 						},
 						fork: true
 					});
 					test(forked.status == 2);
-					test(typeof(forked.command) == "undefined");
-				</script>
+					test(typeof(forked.command) != "undefined");
+					test(typeof(forked.arguments) != "undefined");
+					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
+				]]></script>
 			</li>
 			<li class="object">
 				<div class="name">java</div>

@@ -343,11 +343,24 @@ $exports.jsh = function(p) {
 			jargs.push(arg);
 		});
 		
+		var evaluate = (function() {
+			if (p.evaluate) {
+				return function(result) {
+					result.jsh = {
+						script: p.script,
+						arguments: p.arguments
+					};
+					result.classpath = p.classpath;
+					return p.evaluate(result);
+				}
+			}
+		})();
+		
 		var shell = {
 			command: executable,
 			arguments: jargs,
 			environment: environment,
-			evaluate: p.evaluate
+			evaluate: evaluate
 		};
 		
 		return $exports.shell(shell);
@@ -465,9 +478,12 @@ $exports.jsh = function(p) {
 		return evaluate({
 			status: status,
 			//	no error property
-			//	TODO	maybe not strictly the same as rhino/shell run onExit callback, command would be java I would think
-			command: p.script,
-			arguments: p.arguments,
+			//	no command or arguments
+			jsh: {
+				script: p.script,
+				arguments: p.arguments
+			},
+			classpath: p.classpath,
 			environment: environment,
 			workingDirectory: p.workingDirectory
 		});

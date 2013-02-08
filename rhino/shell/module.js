@@ -103,12 +103,13 @@ $exports.run = function(p) {
 	} else {
 		result.status = Number( _listener.getExitStatus().intValue() );
 	}
-	var evaluate = (p.evaluate) ? p.evaluate : function(result) {
-		if (result.error) throw result.error;
-		if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + " " + result.arguments.join(" "));
-		return result;
-	};
+	var evaluate = (p.evaluate) ? p.evaluate : arguments.callee.evaluate;
 	return evaluate(result);
+};
+$exports.run.evaluate = function(result) {
+	if (result.error) throw result.error;
+	if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + " " + result.arguments.join(" "));
+	return result;
 };
 
 $exports.environment = (function() {
