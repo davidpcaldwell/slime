@@ -427,6 +427,14 @@ END LICENSE
 					test(typeof(forked.command) != "undefined");
 					test(typeof(forked.arguments) != "undefined");
 					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
+					
+					var issue82 = module.jsh({
+						script: $module.getResourcePathname("test/jsh.jsh.js"),
+						evaluate: function(result) {
+							return (result.status == 2) ? "worked" : "did not work";
+						}
+					});
+					test(issue82 == "worked");
 				]]></script>
 			</li>
 			<li class="object">

@@ -295,6 +295,9 @@ $exports.jsh = function(p) {
 			p[x] = arguments[2][x];
 		}
 	}
+	if (!p.arguments) {
+		p.arguments = [];
+	}
 	//	TODO	need to detect directives in the given script and fork if they are present
 	
 	var fork = (function() {
@@ -466,6 +469,7 @@ $exports.jsh = function(p) {
 		if (!p.script.java) {
 			throw new TypeError("Expected script " + p.script + " to have java.adapt()");
 		}
+		//	TODO	Does Rhino 1.7R3 obviate the need for the Java array conversion stuff?
 		var status = $host.jsh(configuration,p.script.java.adapt(),$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
 			return new Packages.java.lang.String(s);
 		}));
