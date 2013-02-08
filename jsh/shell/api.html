@@ -292,7 +292,7 @@ END LICENSE
 					test(success == "success");
 				</script>
 			</li>
-			<li class="function">
+			<li class="function" jsapi:id="jsh">
 				<div class="name">jsh</div>
 				<span>Runs a jsh script.</span>
 				<div class="arguments">
@@ -355,24 +355,27 @@ END LICENSE
 														<ul>
 															<li class="value">
 																<div class="name">script</div>
-																<span class="type">__TYPE__</span>
-																<span>__DESCRIPTION__</span>
+																<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+																<span>The script that was launched.</span>
 															</li>
 															<li class="value">
 																<div class="name">arguments</div>
-																<span class="type">__TYPE__</span>
-																<span>__DESCRIPTION__</span>
+																<span class="type">Array of string</span>
+																<span>The arguments passed to the script.</span>
 															</li>
 														</ul>
 													</li>
 													<li class="value">
 														<div class="name">classpath</div>
-														<span class="type">__TYPE__</span>
-														<span>__DESCRIPTION__</span>
+														<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
+														<span>The classpath supplied to the given script, as specified by the caller.</span>
 													</li>
 													<li class="value">
 														<div class="name">command</div>
-														<span class="type">__TYPE__</span>
+														<!--
+														<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+														-->
+														<span class="type">string</span>
 														<span>
 															(if an operating system shell was created) The operating system command
 															invoked. Not present if the subshell was executed in-process.
@@ -380,7 +383,7 @@ END LICENSE
 													</li>
 													<li class="value">
 														<div class="name">arguments</div>
-														<span class="type">__TYPE__</span>
+														<span class="type">Array of string</span>
 														<span>
 															(if an operating system shell was created) The arguments sent to the 
 															operating system command. Not present if the subshell was 
@@ -424,7 +427,7 @@ END LICENSE
 						fork: true
 					});
 					test(forked.status == 2);
-					test(typeof(forked.command) != "undefined");
+					test(typeof(forked.command) != "undefined" && typeof(forked.command) == "string");
 					test(typeof(forked.arguments) != "undefined");
 					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
 					
@@ -452,20 +455,38 @@ END LICENSE
 					test(output == $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator"));
 				</script>
 			</li>
-			<li class="object" jsapi:id="java">
+			<li class="function">
 				<div class="name">java</div>
-				<span>A description of the Java environment for this shell.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">home</div>
-						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>The home directory of the Java installation used to run this shell.</span>
-					</li>
-				</ul>
-				<script type="application/x.jsapi#tests">
-					test(Boolean(module.java.home));
-				</script>
+				<span>Launches a Java program.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>
+								An argument with the same specification as that for <code>shell</code>, with the following
+								differences:
+							</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">classpath</div>
+									<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
+									<span>The classpath to pass to the Java process.</span>
+								</li>
+								<li class="value">
+									<div class="name">main</div>
+									<span class="type">string</span>
+									<span>The name of the main class to execute.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">(any)</span>
+					<span>The return value of the <code>evaluate</code> property of the argument.</span>
+				</div>
 				<script type="application/x.jsapi#tests">
 					debugger;
 					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -485,6 +506,22 @@ END LICENSE
 					});
 					test(output == "Hello");
 				</script>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">home</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+						<span>The home directory of the Java installation used to run this shell.</span>
+						<script type="application/x.jsapi#tests">
+							test(Boolean(module.java.home));
+						</script>
+					</li>
+					<li class="value">
+						<div class="name">launcher</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+						<span>The Java launcher program, that is, the executable used to launch Java programs.</span>
+					</li>
+				</ul>
 			</li>
 			<li class="value">
 				<div class="name">TMPDIR</div>
