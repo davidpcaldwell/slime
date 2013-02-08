@@ -452,7 +452,7 @@ END LICENSE
 					test(output == $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator"));
 				</script>
 			</li>
-			<li class="object">
+			<li class="object" jsapi:id="java">
 				<div class="name">java</div>
 				<span>A description of the Java environment for this shell.</span>
 				<div class="label">has properties:</div>
@@ -465,6 +465,25 @@ END LICENSE
 				</ul>
 				<script type="application/x.jsapi#tests">
 					test(Boolean(module.java.home));
+				</script>
+				<script type="application/x.jsapi#tests">
+					debugger;
+					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.java.tools.javac({
+						destination: to.pathname,
+						arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/Program.java")]
+					});
+					var buffer = new jsh.io.Buffer();
+					var output = module.java({
+						classpath: jsh.file.Searchpath([to.pathname]),
+						main: "inonit.jsh.test.Program",
+						stdout: buffer.writeBinary(),
+						evaluate: function(result) {
+							buffer.close();
+							return buffer.readText().asString();
+						}
+					});
+					test(output == "Hello");
 				</script>
 			</li>
 			<li class="value">

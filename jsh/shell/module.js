@@ -227,7 +227,24 @@ $exports.os = new function() {
 	this.version = getMandatoryStringProperty("os.version");
 };
 
-$exports.java = new function() {
+$exports.java = function(p) {
+	var launcher = arguments.callee.launcher;
+	var shell = {
+		command: launcher
+	};
+	var args = [];
+	for (var x in p) {
+		if (x == "classpath") {
+			args.push("-classpath", p[x]);
+		} else {
+			shell[x] = p[x];
+		}
+	}
+	args.push(p.main);
+	shell.arguments = args;
+	return $exports.shell(shell);
+};
+(function() {
 	this.version = getMandatoryStringProperty("java.version");
 	this.vendor = new function() {
 		this.toString = function() {
@@ -286,8 +303,7 @@ $exports.java = new function() {
 		if (this.home.getFile("bin/java")) return this.home.getFile("bin/java");
 		if (this.home.getFile("bin/java.exe")) return this.home.getFile("bin/java.exe");
 	}).call(this);
-};
-
+}).call($exports.java);
 //	TODO	if not running on Rhino, this property should not appear
 //	TODO	no test coverage for $exports.rhino
 $exports.rhino = new function() {
