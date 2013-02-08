@@ -128,6 +128,11 @@ $exports.shell = function(p) {
 	if (!p.command) {
 		throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
 	}
+	if (p.command.file && !p.command.pathname) {
+		$api.deprecate(function() {
+			p.command = p.command.file;
+		})();
+	}
 
 	var $filesystems = $context.api.file.filesystems;
 
@@ -141,8 +146,14 @@ $exports.shell = function(p) {
 			return $filesystems.cygwin.toUnix(item);
 		}
 	}
+	
+	var command = (function() {
+		if (typeof(p.command) == "string") return p.command;
+		if (p.command.pathname) return p.command.pathname;
+		throw new TypeError("p.command not string or file");
+	})();
 
-	var tokens = [ p.command ].concat( p.arguments ).map(preprocessor);
+	var tokens = [ command ].concat( p.arguments.map(preprocessor) );
 	
 	var evaluate = (function() {
 		if (p.evaluate) return p.evaluate;
@@ -297,6 +308,12 @@ $exports.jsh = function(p) {
 	}
 	if (!p.arguments) {
 		p.arguments = [];
+	}
+	if (p.script.file && !p.script.pathname) {
+		$api.deprecate(function() {
+			//	User supplied Pathname; should have supplied file
+			p.script = p.script.file;
+		})();
 	}
 	//	TODO	need to detect directives in the given script and fork if they are present
 	
@@ -466,11 +483,11 @@ $exports.jsh = function(p) {
 			}
 		);
 	
-		if (!p.script.java) {
-			throw new TypeError("Expected script " + p.script + " to have java.adapt()");
+		if (!p.script || !p.script.pathname || !p.script.pathname.java || !p.script.pathname.java.adapt) {
+			throw new TypeError("Expected script " + p.script + " to have pathname.java.adapt()");
 		}
 		//	TODO	Does Rhino 1.7R3 obviate the need for the Java array conversion stuff?
-		var status = $host.jsh(configuration,p.script.java.adapt(),$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
+		var status = $host.jsh(configuration,p.script.pathname.java.adapt(),$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
 			return new Packages.java.lang.String(s);
 		}));
 		var evaluate = (p.evaluate) ? p.evaluate : function(result) {

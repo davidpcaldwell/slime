@@ -228,8 +228,8 @@ END LICENSE
 							<ul>
 								<li class="value">
 									<div class="name">command</div>
-									<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
-									<span>The pathname of the executable to run.</span>
+									<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+									<span>The executable to run.</span>
 								</li>
 								<li class="value">
 									<div class="name">arguments</div>
@@ -308,7 +308,7 @@ END LICENSE
 							<ul>
 								<li class="value">
 									<div class="name">script</div>
-									<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+									<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
 									<span>The pathname of the script to run.</span>
 								</li>
 								<!--	TODO	update the below using jsapi:reference	-->
@@ -404,7 +404,7 @@ END LICENSE
 				<script type="application/x.jsapi#tests"><![CDATA[
 					debugger;
 					var unforked = module.jsh({
-						script: $module.getResourcePathname("test/jsh.jsh.js"),
+						script: $module.getResourcePathname("test/jsh.jsh.js").file,
 						arguments: [],
 						evaluate: function(result) {
 							return result;
@@ -416,7 +416,7 @@ END LICENSE
 					test(Boolean(unforked.jsh) && Boolean(unforked.jsh.script));
 					
 					var forked = module.jsh({
-						script: $module.getResourcePathname("test/jsh.jsh.js"),
+						script: $module.getResourcePathname("test/jsh.jsh.js").file,
 						arguments: [],
 						evaluate: function(result) {
 							return result;
@@ -429,7 +429,7 @@ END LICENSE
 					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
 					
 					var issue82 = module.jsh({
-						script: $module.getResourcePathname("test/jsh.jsh.js"),
+						script: $module.getResourcePathname("test/jsh.jsh.js").file,
 						evaluate: function(result) {
 							return (result.status == 2) ? "worked" : "did not work";
 						}
