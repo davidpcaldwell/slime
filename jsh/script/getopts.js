@@ -117,6 +117,9 @@ var getopts = function(settings,array) {
 		array = settings;
 		settings = tmp;
 	}
+	if (arguments.length == 2 && array == null) {
+		throw new Error("Required: second argument to getopts containing array of arguments to process.");
+	}
 	if (typeof(array) == "undefined") {
 		if ($arguments) {
 			array = $arguments;
