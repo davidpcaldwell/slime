@@ -436,6 +436,21 @@ END LICENSE
 					});
 					test(issue82 == "worked");
 				]]></script>
+				<script type="application/x.jsapi#tests">
+					debugger;
+					var buffer = new jsh.io.Buffer();
+					module.jsh({
+						script: $module.getResourcePathname("test/plugins.jsh.js"),
+						fork: true,
+						environment: jsh.js.Object.set({}, jsh.shell.environment, {
+							JSH_PLUGINS: $module.getResourcePathname("test").toString()
+						}),
+						stdout: buffer.writeBinary()
+					});
+					buffer.close();
+					var output = buffer.readText().asString();
+					test(output == $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator"));
+				</script>
 			</li>
 			<li class="object">
 				<div class="name">java</div>

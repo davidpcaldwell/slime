@@ -380,6 +380,9 @@ $exports.jsh = function(p) {
 			command: executable,
 			arguments: jargs,
 			environment: environment,
+			stdout: p.stdout,
+			stderr: p.stderr,
+			stdin: p.stdin,
 			evaluate: evaluate
 		};
 		
@@ -510,6 +513,10 @@ $exports.jsh = function(p) {
 		});
 	}
 };
+
+if (String($exports.properties.jsh.plugins)) {
+	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.plugins));
+}
 
 var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.launcher.classpath));
 if (launcherClasspath.pathnames.length == 1 && launcherClasspath.pathnames[0].basename == "jsh.jar") {
