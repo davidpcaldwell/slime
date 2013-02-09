@@ -326,10 +326,10 @@ this.jsh = new function() {
 			},
 			workingDirectory: jsh.shell.PWD,
 			script: (function() {
-				if ($host.getInvocation().getScript().getFile()) {
-					return jsh.file.filesystem.$jsh.Pathname($host.getInvocation().getScript().getFile()).file;
+				var uri = $host.getInvocation().getScript().getUri();
+				if (uri  && uri.getScheme() && String(uri.getScheme()) == "file") {
+					return jsh.file.filesystem.$jsh.Pathname(new Packages.java.io.File(uri)).file;
 				}
-				return null;
 			})(),
 			uri: (function() {
 				if ($host.getInvocation().getScript().getUri()) {
