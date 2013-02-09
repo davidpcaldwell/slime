@@ -22,8 +22,6 @@ if (typeof(SLIME_SRC) == "undefined") {
 }
 var _base = SLIME_SRC;
 
-load(new Packages.java.io.File(_base,"jsh/launcher/rhino/api.rhino.js"));
-
 debug.on = true;
 debug("Source: " + String(_base.getCanonicalPath()));
 var JSH_SLIME_SRC = new (function() {

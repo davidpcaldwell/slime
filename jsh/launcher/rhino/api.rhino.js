@@ -41,6 +41,10 @@ var env = (function() {
 	return rv;
 })();
 
+var getSystemProperty = function(name) {
+	return String(Packages.java.lang.System.getProperty(name));
+}
+
 var JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 
 var platform = new function() {

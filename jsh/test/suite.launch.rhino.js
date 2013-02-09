@@ -17,12 +17,4 @@
 var JSH_HOME = new Packages.java.io.File(env.JSH_HOME);
 
 //	Source base
-var BASE = new Packages.java.io.File(env.BASE);
-
-var LAUNCHER_COMMAND = [
-	String(new Packages.java.io.File(JAVA_HOME,"bin/java").getCanonicalPath()),
-	"-jar",String(new Packages.java.io.File(JSH_HOME,"jsh.jar").getCanonicalPath())
-];
-console("LAUNCHER_COMMAND = " + LAUNCHER_COMMAND);
-var compileOptions = ["-g", "-nowarn"];
-var File = Packages.java.io.File;
+var SLIME_SRC = new Packages.java.io.File(env.SLIME_SRC);

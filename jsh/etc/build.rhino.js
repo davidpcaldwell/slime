@@ -118,20 +118,18 @@ var getSetting = function(systemPropertyName) {
 }
 
 var SLIME_SRC;
-var BASE = (function() {
-	if (typeof(SLIME_SRC) != "undefined") return SLIME_SRC;
-	return (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));
-})();
+if (typeof(SLIME_SRC) == "undefined") {
+	SLIME_SRC = (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));	
+}
 
-if (new File(BASE,"jsh/etc/build.rhino.js").exists() && new File(BASE,"jsh/launcher/rhino/api.rhino.js").exists()) {
-	load(new File(BASE,"jsh/launcher/rhino/api.rhino.js"));
+if (new File(SLIME_SRC,"jsh/etc/build.rhino.js").exists() && new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js").exists()) {
 } else {
 	//	TODO	A way to get around this would be to have the Rhino shell somehow make available the location from which
 	//			the currently executing script was loaded, and then walk up the source tree to where the root must be; this can
 	//			apparently be done in CommonJS mode
 	//	TODO	Another way would be to examine the arguments given to js.jar, knowing that this script would be the first
 	//			argument and it would tell us the location, but currently we cannot access this
-	System.err.println("ERROR: Could not locate source code at: " + BASE.getCanonicalPath());
+	System.err.println("ERROR: Could not locate source code at: " + SLIME_SRC.getCanonicalPath());
 	System.err.println();
 	System.err.println("Either execute this script from the top-level directory of the SLIME source distribution, or specify where");
 	System.err.println("the source distribution can be found by setting the jsh.build.base system property. For example:");
@@ -230,8 +228,8 @@ console("Creating directories ...");
 });
 
 console("Copying launcher scripts ...");
-copyFile(new File(BASE,"jsh/launcher/rhino/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
-copyFile(new File(BASE,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
+copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
+copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
 
 console("Copying libraries ...");
 RHINO_LIBRARIES.forEach( function(file) {
@@ -256,9 +254,9 @@ var addJavaFiles = function(f) {
 }
 
 console("Building jsh application ...");
-addJavaFiles(new File(BASE,"loader/rhino/java"));
-addJavaFiles(new File(BASE,"rhino/system/java"));
-addJavaFiles(new File(BASE,"jsh/loader/java"));
+addJavaFiles(new File(SLIME_SRC,"loader/rhino/java"));
+addJavaFiles(new File(SLIME_SRC,"rhino/system/java"));
+addJavaFiles(new File(SLIME_SRC,"jsh/loader/java"));
 //	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
 var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
 var javacArguments = compileOptions.concat([
@@ -275,21 +273,21 @@ tmpLauncher.mkdir();
 platform.jdk.compile(compileOptions.concat([
 	"-d", tmpLauncher.getCanonicalPath(),
 	"-sourcepath", [
-		String(new File(BASE,"rhino/system/java").getCanonicalPath())
+		String(new File(SLIME_SRC,"rhino/system/java").getCanonicalPath())
 	].join(colon),
-	String(new File(BASE,"jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java").getCanonicalPath())
+	String(new File(SLIME_SRC,"jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java").getCanonicalPath())
 ]));
 var metainf = new File(tmpLauncher,"META-INF");
 metainf.mkdir();
 platform.io.write(new File(metainf, "MANIFEST.MF"), function(writer) {
 	writer.println("Main-Class: inonit.script.jsh.launcher.Main");
 });
-//copyFile(new File(BASE,"jsh/launcher/rhino/java/MANIFEST.MF"), new File(metainf, "MANIFEST.MF"));
+//copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/java/MANIFEST.MF"), new File(metainf, "MANIFEST.MF"));
 debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
 zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
 
 console("Copying script implementations ...")
-copyFile(new File(BASE,"loader"), new File(JSH_HOME,"script/platform"), [
+copyFile(new File(SLIME_SRC,"loader"), new File(JSH_HOME,"script/platform"), [
 	{
 		accept: function(f) {
 			return (f.isDirectory() && f.getName() == ".hg")
@@ -304,7 +302,7 @@ copyFile(new File(BASE,"loader"), new File(JSH_HOME,"script/platform"), [
 		}
 	}
 ]);
-copyFile(new File(BASE,"loader/rhino"), new File(JSH_HOME,"script/rhino"), [
+copyFile(new File(SLIME_SRC,"loader/rhino"), new File(JSH_HOME,"script/rhino"), [
 	{
 		accept: function(f) {
 			return f.isDirectory() && f.getName() == "test"
@@ -315,7 +313,7 @@ copyFile(new File(BASE,"loader/rhino"), new File(JSH_HOME,"script/rhino"), [
 		}
 	}
 ]);
-copyFile(new File(BASE,"jsh/loader"), new File(JSH_HOME,"script/jsh"), [
+copyFile(new File(SLIME_SRC,"jsh/loader"), new File(JSH_HOME,"script/jsh"), [
 	{
 		accept: function(f) {
 			return f.getName() == "api.html"
@@ -328,13 +326,13 @@ copyFile(new File(BASE,"jsh/loader"), new File(JSH_HOME,"script/jsh"), [
 ]);
 
 console("Creating bundled modules ...")
-load(new File(BASE,"jsh/tools/slime.js").getCanonicalPath());
+load(new File(SLIME_SRC,"jsh/tools/slime.js").getCanonicalPath());
 var tmpModules = new File(tmp,"modules");
 tmpModules.mkdir();
 var module = function(path,compile) {
 	var tmp = new File(tmpModules,path);
 	tmp.mkdirs();
-	slime.build.rhino(new File(BASE,path), tmp, {
+	slime.build.rhino(new File(SLIME_SRC,path), tmp, {
 		copyFile: copyFile,
 		compile: compile
 	}, {
@@ -372,7 +370,7 @@ JSH_PLUGINS.mkdir();
 //			this would also make it so that an installer would automatically create the plugins directory when unzipping the
 //			distribution; right now this is also done in install.jsh.js. But currently, this would mess up the CSS, etc., so it
 //			might be better to leave the plugin documentation only in docs/api/
-//	copyFile(new File(BASE, "jsh/loader/plugin.api.html"))
+//	copyFile(new File(SLIME_SRC, "jsh/loader/plugin.api.html"))
 
 var LAUNCHER_COMMAND = [
 	String(new File(JAVA_HOME,"bin/java").getCanonicalPath()),
@@ -391,7 +389,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			}
 		}
 		command.add("jsh/unit/jsapi.jsh.js");
-		var JSH_JSAPI_BASE = String(BASE.getCanonicalPath());
+		var JSH_JSAPI_BASE = String(SLIME_SRC.getCanonicalPath());
 		if (platform.cygwin) {
 			JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
 		}
@@ -459,7 +457,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 console("Creating tools ...");
 var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
-copyFile(new File(BASE,"jsh/tools"),JSH_TOOLS);
+copyFile(new File(SLIME_SRC,"jsh/tools"),JSH_TOOLS);
 
 var getPath = function(file) {
 	var path = String(file.getCanonicalPath());
@@ -473,7 +471,7 @@ if (getSetting("jsh.build.javassist.jar")) {
 	(function() {
 		console("Building profiler to " + getPath(new File(JSH_HOME,"tools/profiler.jar")) + " ...");
 		var command = LAUNCHER_COMMAND.slice(0);
-		command.push(getPath(new File(BASE, "rhino/tools/profiler/build.jsh.js")));
+		command.push(getPath(new File(SLIME_SRC, "rhino/tools/profiler/build.jsh.js")));
 		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
 		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
 		var status = runCommand.apply(this,command);
@@ -481,7 +479,7 @@ if (getSetting("jsh.build.javassist.jar")) {
 			throw new Error("Exit status when building profile: " + status);
 		}
 		new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
-		copyFile(new File(BASE,"rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
+		copyFile(new File(SLIME_SRC,"rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
 	}).call(this);
 } else {
 	console("Javassist location not specified; not building profiler.");
@@ -489,7 +487,7 @@ if (getSetting("jsh.build.javassist.jar")) {
 
 if (!getSetting("jsh.build.notest")) {
 	var integrationTests = function() {
-		var script = new File(BASE,"jsh/test/suite.rhino.js");
+		var script = new File(SLIME_SRC,"jsh/test/suite.rhino.js");
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");
 		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
 		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
@@ -501,7 +499,7 @@ if (!getSetting("jsh.build.notest")) {
 
 console("Creating install script ...");
 new File(JSH_HOME,"etc").mkdir();
-copyFile(new File(BASE,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
+copyFile(new File(SLIME_SRC,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
 
 var bases = ["js","loader","rhino","jsh"];
 
@@ -509,7 +507,7 @@ var JSH_SRC = new File(JSH_HOME,"src");
 console("Bundling source code ...");
 JSH_SRC.mkdir();
 bases.forEach( function(base) {
-	copyFile(new File(BASE,base), new File(JSH_SRC,base), [
+	copyFile(new File(SLIME_SRC,base), new File(JSH_SRC,base), [
 		{
 			accept: function(f) {
 				return f.isDirectory() && f.getName() == ".hg";
