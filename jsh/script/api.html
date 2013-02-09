@@ -545,6 +545,23 @@ END LICENSE
 						}, arguments);
 					})("-a", "b");
 					test(usingArgumentsObject.options.a == "b");
+					
+					var expectError = function(f) {
+						try {
+							f.apply(this,arguments);
+							return false;
+						} catch (e) {
+							return true;
+						}
+					};
+
+					test(expectError(function() { 
+						var args;
+						var parameters = module.getopts({
+							options: {
+							}
+						}, args);
+					}));
 
 					//
 					//	Deprecated usage
