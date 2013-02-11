@@ -20,6 +20,19 @@
 
 var File = Packages.java.io.File;
 
+var getPath = function(basedir,relative) {
+	var jfile = new File(basedir,relative);
+	var rv = String(jfile.getCanonicalPath());
+	if (platform.cygwin) {
+		rv = platform.cygwin.cygpath.unix(rv);
+	}
+	return rv;
+};
+
+var getSourceFilePath = function(relative) {
+	return getPath(SLIME_SRC, relative);
+}
+
 if (typeof(this.JSH_HOME) == "undefined") {
 	if (getSystemProperty("jsh.home")) {
 		JSH_HOME = new File(getSystemProperty("jsh.home"));
@@ -38,10 +51,30 @@ if (typeof(this.SLIME_SRC) == "undefined") {
 
 var LAUNCHER_COMMAND;
 if (!LAUNCHER_COMMAND) {
+	var vmargs = [];
+	if (getSystemProperty("jsh.suite.profile")) {
+		vmargs = ["-javaagent:" + getPath(JSH_HOME, "tools/profiler.jar")]
+	}
 	LAUNCHER_COMMAND = [
-		String(new Packages.java.io.File(JAVA_HOME,"bin/java").getCanonicalPath()),
+		getPath(JAVA_HOME,"bin/java")
+	].concat(vmargs).concat([
 		"-jar",String(new Packages.java.io.File(JSH_HOME,"jsh.jar").getCanonicalPath())
-	];
+	]);
+}
+
+var PACKAGED_LAUNCHER = (function() {
+	var command = [];
+	command.push(getPath(JAVA_HOME,"bin/java"));
+	command.push("-jar");
+	return command;
+})();
+	
+var runPackaged = function() {
+	var command = PACKAGED_LAUNCHER.slice(0);
+	for (var i=0; i<arguments.length; i++) {
+		command.push(arguments[i]);
+	}
+	run(command);
 }
 
 var compileOptions;
@@ -71,19 +104,6 @@ var run = function(command,mymode) {
 	}
 }
 
-var getPath = function(basedir,relative) {
-	var jfile = new File(basedir,relative);
-	var rv = String(jfile.getCanonicalPath());
-	if (platform.cygwin) {
-		rv = platform.cygwin.cygpath.unix(rv);
-	}
-	return rv;
-};
-
-var getSourceFilePath = function(relative) {
-	return getPath(SLIME_SRC, relative);
-}
-
 var testCommandOutput = function(path,tester,p) {
 	if (!p) p = {};
 	var env = (function() {
@@ -110,7 +130,7 @@ var testCommandOutput = function(path,tester,p) {
 		command = [
 			String(path.getCanonicalPath())
 		];
-		launcher = LAUNCHER_COMMAND.slice(0,2);
+		launcher = PACKAGED_LAUNCHER;
 	}
 	debug("Environment: " + env.toSource());
 	var options = {
@@ -122,6 +142,7 @@ var testCommandOutput = function(path,tester,p) {
 		options.input = p.stdin;
 	}
 
+	console(launcher.concat(command).join(" "));
 	var status = runCommand.apply(this,launcher.concat(command).concat([options]));
 	if (status != 0) throw new Error("Failed with exit status " + status);
 	tester(options);
@@ -226,11 +247,11 @@ var packagedAddClasses = jshPackage({
 	script: "addClasses/addClasses.jsh.js"
 });
 console("Running " + packagedAddClasses + " ...");
-run(LAUNCHER_COMMAND.slice(0,2).concat([
+runPackaged(
 	packagedAddClasses.getCanonicalPath(),
 	"-classes",getJshPathname(classes),
 	mode
-]));
+);
 
 console("Packaging packaged.jsh.js");
 var packagedPackaged = jshPackage({
@@ -239,12 +260,12 @@ var packagedPackaged = jshPackage({
 	files: ["packaged.file.js"]
 });
 console("Running " + packagedPackaged + " ...");
-run(LAUNCHER_COMMAND.slice(0,2).concat([
+runPackaged(
 	packagedPackaged.getCanonicalPath(),
 	//	TODO	remove, I believe
 	"-classes",getJshPathname(classes),
 	mode
-]));
+);
 
 console("Running unpackaged packaged.jsh.js");
 testCommandOutput("packaged.jsh.js", function(options) {

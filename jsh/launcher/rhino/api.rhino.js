@@ -42,7 +42,9 @@ var env = (function() {
 })();
 
 var getSystemProperty = function(name) {
-	return String(Packages.java.lang.System.getProperty(name));
+	if (Packages.java.lang.System.getProperty(name)) {
+		return String(Packages.java.lang.System.getProperty(name));
+	}
 }
 
 var JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));

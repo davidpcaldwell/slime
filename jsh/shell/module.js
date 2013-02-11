@@ -535,6 +535,12 @@ if (String($exports.properties.jsh.plugins)) {
 }
 
 var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.launcher.classpath));
-if (launcherClasspath.pathnames.length == 1 && launcherClasspath.pathnames[0].basename == "jsh.jar") {
+//	TODO	this is fragile. The above property is, in a built shell:
+//			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath
+//			*	supplied by the script launcher to the underlying process as is
+//			In the case in which the *launcher* is being profiled, apparently the -javaagent: is *appended* to its java.class.path,
+//			so jsh.jar is still first. An earlier implementation made sure the launcher classpath length was 1 also, but that is no
+//			longer true in the profiling case.
+if (launcherClasspath.pathnames[0] && launcherClasspath.pathnames[0].basename == "jsh.jar") {
 	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
 }
