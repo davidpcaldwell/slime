@@ -5,7 +5,7 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2011-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -16,11 +16,12 @@ if (typeof(file.x) != "undefined") jsh.shell.exit(1);
 if (file.y != 3) jsh.shell.exit(1);
 
 var buffer = new jsh.io.Buffer();
+var singleStream = buffer.writeBinary();
 
 debugger;
 jsh.shell.jsh(jsh.script.getRelativePath("1.jsh"), [], {
-	stdout: buffer,
-	stderr: buffer,
+	stdout: singleStream,
+	stderr: singleStream,
 	onExit: function(result) {
 		buffer.close();
 		jsh.shell.echo("output = " + buffer.readText().asString());

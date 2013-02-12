@@ -5,7 +5,7 @@
 //	The Original Code is the rhino/http/client SLIME module.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -379,7 +379,7 @@ var Client = function(mode) {
 			});
 		}
 	}
-	
+
 	this.Loader = (function(parent) {
 		return function(base) {
 			return new $context.api.io.Loader({

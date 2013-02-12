@@ -5,13 +5,82 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2011-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
 
 //	Required in scope:
-//	LAUNCHER_COMMAND: the command to use when launching a shell
+//	jsh/launcher/rhino/api.rhino.js must be run in global scope
+//	
+//	(optional, can use environment variable) JSH_HOME: Packages.java.io.File representing home of built shell
+//	(optional, can use environment variable) SLIME_SRC: Packages.java.io.File representing source directory
+//	(optional) LAUNCHER_COMMAND: the command to use when launching a shell
+//	(optional) compileOptions: array of string to use when compiling Java code
+
+var File = Packages.java.io.File;
+
+var getPath = function(basedir,relative) {
+	var jfile = new File(basedir,relative);
+	var rv = String(jfile.getCanonicalPath());
+	if (platform.cygwin) {
+		rv = platform.cygwin.cygpath.unix(rv);
+	}
+	return rv;
+};
+
+var getSourceFilePath = function(relative) {
+	return getPath(SLIME_SRC, relative);
+}
+
+if (typeof(this.JSH_HOME) == "undefined") {
+	if (getSystemProperty("jsh.home")) {
+		JSH_HOME = new File(getSystemProperty("jsh.home"));
+	} else {
+		throw new Error("Could not find built shell.");
+	}
+}
+
+if (typeof(this.SLIME_SRC) == "undefined") {
+	if (getSystemProperty("slime.src")) {
+		SLIME_SRC = new File(getSystemProperty("slime.src"));		
+	} else {
+		throw new Error("Could not find SLIME source.");		
+	}
+}
+
+var LAUNCHER_COMMAND;
+if (!LAUNCHER_COMMAND) {
+	var vmargs = [];
+	if (getSystemProperty("jsh.suite.profile")) {
+		vmargs = ["-javaagent:" + getPath(JSH_HOME, "tools/profiler.jar")]
+	}
+	LAUNCHER_COMMAND = [
+		getPath(JAVA_HOME,"bin/java")
+	].concat(vmargs).concat([
+		"-jar",String(new Packages.java.io.File(JSH_HOME,"jsh.jar").getCanonicalPath())
+	]);
+}
+
+var PACKAGED_LAUNCHER = (function() {
+	var command = [];
+	command.push(getPath(JAVA_HOME,"bin/java"));
+	command.push("-jar");
+	return command;
+})();
+	
+var runPackaged = function() {
+	var command = PACKAGED_LAUNCHER.slice(0);
+	for (var i=0; i<arguments.length; i++) {
+		command.push(arguments[i]);
+	}
+	run(command);
+}
+
+var compileOptions;
+if (!compileOptions) {
+	compileOptions = ["-g", "-nowarn"];
+}
 
 var mode = {};
 mode.env = {};
@@ -35,15 +104,6 @@ var run = function(command,mymode) {
 	}
 }
 
-var getPath = function(basedir,relative) {
-	var jfile = new File(basedir,relative);
-	var rv = String(jfile.getCanonicalPath());
-	if (platform.cygwin) {
-		rv = platform.cygwin.cygpath.unix(rv);
-	}
-	return rv;
-}
-
 var testCommandOutput = function(path,tester,p) {
 	if (!p) p = {};
 	var env = (function() {
@@ -63,14 +123,14 @@ var testCommandOutput = function(path,tester,p) {
 	var command;
 	if (typeof(path) == "string") {
 		command = [
-			String(new File(BASE,"jsh/test/" + path).getCanonicalPath())
+			String(new File(SLIME_SRC,"jsh/test/" + path).getCanonicalPath())
 		];
 		launcher = LAUNCHER_COMMAND;
 	} else {
 		command = [
 			String(path.getCanonicalPath())
 		];
-		launcher = LAUNCHER_COMMAND.slice(0,2);
+		launcher = PACKAGED_LAUNCHER;
 	}
 	debug("Environment: " + env.toSource());
 	var options = {
@@ -82,6 +142,7 @@ var testCommandOutput = function(path,tester,p) {
 		options.input = p.stdin;
 	}
 
+	console(launcher.concat(command).join(" "));
 	var status = runCommand.apply(this,launcher.concat(command).concat([options]));
 	if (status != 0) throw new Error("Failed with exit status " + status);
 	tester(options);
@@ -107,28 +168,28 @@ var getJshPathname = function(file) {
 
 var jshPackage = function(p) {
 	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
-	invocation.push("-script",getJshPathname(new File(BASE,"jsh/test/" + p.script)));
+	invocation.push("-script",getJshPathname(new File(SLIME_SRC,"jsh/test/" + p.script)));
 	if (p.modules) {
 		p.modules.forEach(function(module) {
 			if (typeof(module) == "string") {
-				invocation.push("-module", module + "=" + getJshPathname(new File(BASE,"jsh/test/" + module)));
+				invocation.push("-module", module + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + module)));
 			} else if (module.from && module.to) {
-				invocation.push("-module", module.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + module.from)));
+				invocation.push("-module", module.to + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + module.from)));
 			}
 		});
 	}
 	if (p.files) {
 		p.files.forEach(function(file) {
 			if (typeof(file) == "string") {
-				invocation.push("-file", file + "=" + getJshPathname(new File(BASE,"jsh/test/" + file)));
+				invocation.push("-file", file + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + file)));
 			} else if (file.from && file.to) {
-				invocation.push("-file", file.to + "=" + getJshPathname(new File(BASE,"jsh/test/" + file.from)));
+				invocation.push("-file", file.to + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + file.from)));
 			}
 		});
 	}
 	if (p.plugins) {
 		p.plugins.forEach(function(plugin) {
-			invocation.push("-plugin", getJshPathname(new File(BASE,"jsh/test/" + plugin)));
+			invocation.push("-plugin", getJshPathname(new File(SLIME_SRC,"jsh/test/" + plugin)));
 		});
 	}
 	var packaged = createTemporaryDirectory();
@@ -137,28 +198,30 @@ var jshPackage = function(p) {
 	invocation.push("-to",getJshPathname(to));
 	run(LAUNCHER_COMMAND.concat(invocation));
 	return to;
-}
-
-var tmp = createTemporaryDirectory();
-run(LAUNCHER_COMMAND.concat([
-	String(new File(BASE,"jsh/tools/slime.jsh.js")),
-	"-from", getPath(BASE,"loader/rhino/test/data/1"),
-	"-to", getPath(tmp,"1.slime")
-]));
-
-var mymode = {
-	env: {}
 };
-for (var x in mode.env) {
-	mymode.env[x] = mode.env[x];
-}
-mymode.env.MODULES = tmp.getCanonicalPath();
-mymode.env.PATH = String(Packages.java.lang.System.getenv("PATH"));
-run(LAUNCHER_COMMAND.concat(
-	[
-		String(new File(BASE,"jsh/test/2.jsh.js").getCanonicalPath())
-	]
-), mymode);
+
+(function() {
+	var tmp = createTemporaryDirectory();
+	run(LAUNCHER_COMMAND.concat([
+		getSourceFilePath("jsh/tools/slime.jsh.js"),
+		"-from", getPath(SLIME_SRC,"loader/rhino/test/data/1"),
+		"-to", getPath(tmp,"1.slime")
+	]));
+
+	var mymode = {
+		env: {}
+	};
+	for (var x in mode.env) {
+		mymode.env[x] = mode.env[x];
+	}
+	mymode.env.MODULES = tmp.getCanonicalPath();
+//	mymode.env.PATH = String(Packages.java.lang.System.getenv("PATH"));
+	run(LAUNCHER_COMMAND.concat(
+		[
+			String(new File(SLIME_SRC,"jsh/test/loader/2.jsh.js").getCanonicalPath())
+		]
+	), mymode);	
+})();
 
 var classes = createTemporaryDirectory();
 classes.mkdirs();
@@ -167,14 +230,14 @@ console("Compiling AddClasses to: " + classes);
 platform.jdk.compile(compileOptions.concat([
 	"-d", classes.getCanonicalPath(),
 	"-sourcepath", [
-		String(new File(BASE,"jsh/test/addClasses/java").getCanonicalPath())
+		String(new File(SLIME_SRC,"jsh/test/addClasses/java").getCanonicalPath())
 	].join(colon),
-	String(new File(BASE,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
+	String(new File(SLIME_SRC,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
 ]));
 
 run(LAUNCHER_COMMAND.concat(
 	[
-		String(new File(BASE,"jsh/test/addClasses/addClasses.jsh.js").getCanonicalPath())
+		String(new File(SLIME_SRC,"jsh/test/addClasses/addClasses.jsh.js").getCanonicalPath())
 		,"-classes",getJshPathname(classes)
 	]
 ));
@@ -184,11 +247,11 @@ var packagedAddClasses = jshPackage({
 	script: "addClasses/addClasses.jsh.js"
 });
 console("Running " + packagedAddClasses + " ...");
-run(LAUNCHER_COMMAND.slice(0,2).concat([
+runPackaged(
 	packagedAddClasses.getCanonicalPath(),
 	"-classes",getJshPathname(classes),
 	mode
-]));
+);
 
 console("Packaging packaged.jsh.js");
 var packagedPackaged = jshPackage({
@@ -197,12 +260,12 @@ var packagedPackaged = jshPackage({
 	files: ["packaged.file.js"]
 });
 console("Running " + packagedPackaged + " ...");
-run(LAUNCHER_COMMAND.slice(0,2).concat([
+runPackaged(
 	packagedPackaged.getCanonicalPath(),
 	//	TODO	remove, I believe
 	"-classes",getJshPathname(classes),
 	mode
-]));
+);
 
 console("Running unpackaged packaged.jsh.js");
 testCommandOutput("packaged.jsh.js", function(options) {
@@ -237,14 +300,15 @@ testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
 	]);
 });
 
-if (false) {
+//	Test was disabled as failing, attempting to re-enable to fix issue 79
+if (true) {
 	var environment = {
 		JSH_SHELL_CLASSPATH: String(new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath())
 	};
 	console("Running JSH_SHELL_CLASSPATH package with " + environment.toSource() + " ...");
 	testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
 		checkOutput(options,[
-			String(new File(JSH_HOME,"lib/jsh.jar").toURI()),
+			String(new File(JSH_HOME,"lib/jsh.jar").getCanonicalFile().toURI()),
 			""
 		]);
 	}, {
@@ -278,7 +342,7 @@ testCommandOutput("$api-deprecate-properties.jsh.js", function(options) {
 		]);
 	}, {
 		env: {
-			JSH_PLUGINS: String(new File(BASE,"jsh/test/plugins/a").getCanonicalPath())
+			JSH_PLUGINS: String(new File(SLIME_SRC,"jsh/test/plugins/a").getCanonicalPath())
 		}
 	})
 })();

@@ -5,7 +5,7 @@
 //	The Original Code is the rhino/file SLIME module.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -308,7 +308,7 @@ public class CygwinFilesystem extends Filesystem {
 				}
 			};
 
-			this.subprocess = OperatingSystem.get().start(configuration, context);
+			this.subprocess = OperatingSystem.get().start(context, configuration);
 			this.output = stdout.getInputStream();
 			this.input = new PrintWriter(stdin.getOutputStream(), true);
 		}

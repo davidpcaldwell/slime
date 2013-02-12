@@ -5,7 +5,7 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -21,8 +21,6 @@ if (typeof(SLIME_SRC) == "undefined") {
 	Packages.java.lang.System.exit(1);
 }
 var _base = SLIME_SRC;
-
-load(new Packages.java.io.File(_base,"jsh/launcher/rhino/api.rhino.js"));
 
 debug.on = true;
 debug("Source: " + String(_base.getCanonicalPath()));

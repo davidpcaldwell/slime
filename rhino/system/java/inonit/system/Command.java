@@ -5,7 +5,7 @@
 //	The Original Code is the SLIME operating system interface.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -16,28 +16,6 @@ import java.io.*;
 import java.util.*;
 
 public class Command {
-	static Command create(Configuration configuration) {
-		Command rv = new Command();
-		rv.configuration = configuration;
-		return rv;
-	}
-
-	public static abstract class Configuration {
-		public abstract String getCommand();
-		public abstract String[] getArguments();
-
-		final String[] cmdarray() {
-			ArrayList args = new ArrayList();
-			String program = getCommand();
-			String[] arguments = getArguments();
-			args.add(program);
-			for (int i=0; i<arguments.length; i++) {
-				args.add(arguments[i]);
-			}
-			return (String[])args.toArray(new String[0]);
-		}
-	}
-
 	public static abstract class Context {
 		public abstract OutputStream getStandardOutput();
 		public abstract OutputStream getStandardError();
@@ -69,40 +47,121 @@ public class Command {
 		}
 	}
 
-	public static abstract class Listener {
-		private Integer status;
+	public static abstract class Configuration {
+		static Configuration create(final String path, final String[] arguments) {
+			return new Configuration() {
+				public final String getCommand() {
+					return path;
+				}
+				
+				public final String[] getArguments() {
+					return arguments;
+				}
+			};
+		}
+		
+		public abstract String getCommand();
+		public abstract String[] getArguments();
 
+		final String[] cmdarray() {
+			ArrayList args = new ArrayList();
+			String program = getCommand();
+			String[] arguments = getArguments();
+			args.add(program);
+			for (int i=0; i<arguments.length; i++) {
+				args.add(arguments[i]);
+			}
+			return (String[])args.toArray(new String[0]);
+		}
+	}
+
+	public static class Listener {
+		private Integer status;
+		private IOException threw;
+		
 		final void finished(int status) {
 			this.status = new Integer(status);
-			this.finished();
+		}
+		
+		final void threw(IOException e) {
+			this.threw = e;
 		}
 
 		public final Integer getExitStatus() {
 			return status;
 		}
-
-		public abstract void finished();
-		public abstract void threw(IOException e);
+		
+		public final IOException getLaunchException() {
+			return threw;
+		}
 	}
 
 	public static class Result {
-		private Integer status;
+		private static class ContextImpl extends Context {
+			private ByteArrayOutputStream out = new ByteArrayOutputStream();
+			private ByteArrayOutputStream err = new ByteArrayOutputStream();
+
+			private InputStream in = new ByteArrayInputStream(new byte[0]);
+
+			private File working = null;
+			private Map environment = null;
+
+			public File getWorkingDirectory() {
+				return working;
+			}
+
+			public Map getSubprocessEnvironment() {
+				return environment;
+			}
+
+			public OutputStream getStandardOutput() {
+				return out;
+			}
+
+			public OutputStream getStandardError() {
+				return err;
+			}
+
+			public InputStream getStandardInput() {
+				return in;
+			}
+
+			private String commandOutput;
+
+			byte[] output() {
+				return out.toByteArray();
+			}
+
+			byte[] error() {
+				return err.toByteArray();
+			}
+
+			public String getCommandOutput() throws IOException {
+				if (commandOutput == null) {
+					Reader outputReader = new InputStreamReader(new ByteArrayInputStream(out.toByteArray()));
+					StringBuffer outputBuffer = new StringBuffer();
+					int charInt;
+					while( (charInt = outputReader.read()) != -1) {
+						outputBuffer.append( (char)charInt );
+					}
+					commandOutput = outputBuffer.toString();
+				}
+				return commandOutput;
+			}
+		}
+
 		private IOException exception;
 		private byte[] output;
 		private byte[] error;
-
-		final void finished(int status, byte[] output, byte[] error) {
-			this.status = new Integer(status);
-			this.output = output;
-			this.error = error;
+		private ContextImpl context = new ContextImpl();
+		private Listener listener = new Listener();
+		
+		Context getContext() {
+			return context;
 		}
-
-		final void threw(IOException e) {
-			this.exception = e;
-		}
-
-		public final Integer getExitStatus() {
-			return status;
+		
+		Listener getListener() {
+			return listener;
 		}
 
 		public final InputStream getOutputStream() {
@@ -120,7 +179,7 @@ public class Command {
 		}
 
 		public final boolean isSuccess() {
-			return this.status != null && this.status.intValue() == 0;
+			return listener.getExitStatus() != null && listener.getExitStatus().intValue() == 0;
 		}
 
 		public static class Failure extends Exception {
@@ -135,6 +194,10 @@ public class Command {
 			}
 		}
 
+		public String getCommandOutput() throws IOException {
+			return context.getCommandOutput();
+		}
+		
 		public final Result evaluate() throws Failure {
 			if (this.isSuccess()) {
 				return this;
@@ -142,125 +205,6 @@ public class Command {
 				throw new Failure(this);
 			}
 		}
-	}
-
-	static String getCommandOutput(String path, String[] arguments) throws IOException {
-		Command shell = new Command();
-		shell.configuration = new ConfigurationImpl(path,arguments);
-		ContextImpl context = new ContextImpl();
-		ListenerImpl listener = new ListenerImpl();
-		shell.execute(context, listener);
-		if (listener.threw() != null) throw listener.threw();
-		return context.getCommandOutput();
-	}
-
-	static Result execute(String path, String[] arguments) {
-		Command shell = new Command();
-		ContextImpl context = new ContextImpl();
-		shell.configuration = new ConfigurationImpl(path, arguments);
-		Result result = new Result();
-		shell.execute(context, result);
-		return result;
-	}
-
-	static int getExitStatus(Context context, Configuration configuration) throws IOException {
-		Command shell = new Command();
-		shell.configuration = configuration;
-		ListenerImpl listener = new ListenerImpl();
-		shell.execute(context, listener);
-		if (listener.threw() != null) throw listener.threw();
-		return listener.getExitStatus();
-	}
-
-	private static class ContextImpl extends Context {
-		private ByteArrayOutputStream out = new ByteArrayOutputStream();
-		private ByteArrayOutputStream err = new ByteArrayOutputStream();
-
-		private InputStream in = new ByteArrayInputStream(new byte[0]);
-
-		private File working = null;
-		private Map environment = null;
-
-		public File getWorkingDirectory() {
-			return working;
-		}
-
-		public Map getSubprocessEnvironment() {
-			return environment;
-		}
-
-		public ByteArrayOutputStream getStandardOutput() {
-			return out;
-		}
-
-		public ByteArrayOutputStream getStandardError() {
-			return err;
-		}
-
-		public InputStream getStandardInput() {
-			return in;
-		}
-
-		void setWorkingDirectory(File file) {
-			this.working = file;
-		}
-
-		void setStandardInput(InputStream in) {
-			this.in = in;
-		}
-
-		private String commandOutput;
-
-		public String getCommandOutput() throws IOException {
-			if (commandOutput == null) {
-				Reader outputReader = new InputStreamReader(new ByteArrayInputStream(out.toByteArray()));
-				StringBuffer outputBuffer = new StringBuffer();
-				int charInt;
-				while( (charInt = outputReader.read()) != -1) {
-					outputBuffer.append( (char)charInt );
-				}
-				commandOutput = outputBuffer.toString();
-			}
-			return commandOutput;
-		}
-	}
-
-	private static class ListenerImpl extends Listener {
-		private IOException io;
-
-		public void finished() {
-		}
-
-		public void threw(IOException e) {
-			this.io = e;
-		}
-
-		IOException threw() {
-			return this.io;
-		}
-	}
-
-	private static class ConfigurationImpl extends Configuration {
-		private String command;
-		private String[] arguments;
-
-		ConfigurationImpl(String command, String[] arguments) {
-			this.command = command;
-			this.arguments = arguments;
-		}
-
-		public final String getCommand() {
-			return command;
-		}
-
-		public final String[] getArguments() {
-			return arguments;
-		}
-	}
-
-	private Configuration configuration;
-
-	Command() {
 	}
 
 	static class Process {
@@ -298,7 +242,18 @@ public class Command {
 		}
 	}
 
-	private Process launch(Context context) throws IOException {
+	static Command create(Configuration configuration) {
+		Command rv = new Command();
+		rv.configuration = configuration;
+		return rv;
+	}
+
+	private Configuration configuration;
+
+	private Command() {
+	}
+
+	private static Process launch(Context context, Configuration configuration) throws IOException {
 		String[] command = configuration.cmdarray();
 		for (int i=0; i<command.length; i++) {
 			if (command[i] == null) {
@@ -311,30 +266,10 @@ public class Command {
 			,configuration
 		);
 	}
-
-	Subprocess start(Context context) throws IOException {
-		return new Subprocess(launch(context));
-	}
-
-	void execute(ContextImpl context, Result result) {
+	
+	private void execute(Context context, Listener listener) {
 		try {
-			Process p = launch(context);
-			try {
-				int status = p.waitFor();
-				result.finished(status, context.getStandardOutput().toByteArray(), context.getStandardError().toByteArray());
-			} catch (InterruptedException e) {
-				throw new RuntimeException("Subprocess thread interrupted.");
-			}
-		} catch (IOException e) {
-			result.threw(e);
-		} catch (Throwable t) {
-			throw new RuntimeException(t);
-		}
-	}
-
-	void execute(Context context, Listener listener) {
-		try {
-			Process p = launch(context);
+			Process p = launch(context, configuration);
 			try {
 				listener.finished(p.waitFor());
 			} catch (InterruptedException e) {
@@ -344,7 +279,23 @@ public class Command {
 			listener.threw(e);
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
-		}
+		}		
+	}
+
+	Listener execute(Context context) {
+		Listener listener = new Listener();
+		execute(context, listener);
+		return listener;
+	}
+
+	Subprocess start(Context context) throws IOException {
+		return new Subprocess(launch(context, configuration));
+	}
+
+	Result getResult() {
+		Result result = new Result();
+		execute(result.getContext(), result.getListener());
+		return result;
 	}
 
 	private static class Spooler implements Runnable {

@@ -5,7 +5,7 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -14,6 +14,13 @@ $exports.exit = $context.exit;
 $exports.environment = $context.api.shell.environment;
 $exports.properties = $context.api.shell.properties;
 $api.experimental($exports,"properties");
+
+var getProperty = function(name) {
+	var value = eval("$context.api.shell.properties." + name);
+	if (String(value) == "undefined") return function(){}();
+	if (value == null) return null;
+	return String(value);
+};
 
 ["readLines", "asString", "asXml"].forEach(function(method) {
 	$context.stdio["in"][method] = function(p) {
@@ -38,8 +45,17 @@ $exports.echo = function(message,mode) {
 	if (!mode) mode = {};
 
 	var streamToConsole = function(stream,toString) {
+		var writer = (function() {
+			//	TODO	is this redundancy necessary? Does isJavaType(...) need to know it is a Java object?
+			if ($context.api.java.isJavaObject(stream) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(stream)) return $context.api.io.adapt(stream).character();
+			if ($context.api.java.isJavaObject(stream) && $context.api.java.isJavaType(Packages.java.io.Writer)(stream)) return $context.api.io.adapt(stream);
+			if (stream && typeof(stream.character) == "function") return stream.character();
+			if (stream && typeof(stream.write) == "function") return stream;
+			if (stream && typeof(stream) == "object") throw new TypeError("Not a recognized stream: " + stream + " with properties " + Object.keys(stream));
+			throw new TypeError("Not a recognized stream: " + stream);
+		})();
 		return function(message) {
-			new Packages.java.io.PrintWriter(stream.$getWriter(), true).println(toString(message));
+			writer.write(toString(message)+getProperty("line.separator"));
 		}
 	}
 
@@ -84,81 +100,86 @@ $exports.echo.String["undefined"] = "(undefined)";
 $exports.echo.String["null"] = "(null)";
 
 var stream = function(mode,x) {
-	var Streams = $context.api.io.Streams;
-	var isJavaType = $context.api.java.isJavaType;
-	var type = (x == "stdin") ? "InputStream" : "OutputStream";
 	if (typeof(mode[x]) == "undefined") {
-		//	currently Streams.stdin not defined, so no way to get parent process stdin, thus we use empty stream
-		if (Streams[x]) {
-			return Streams[x]["$get" + type]();
-		} else {
-			return null;
-		}
+		return $exports[x];
 	}
-	if (mode[x] == null) return null;
-	if (isJavaType(Packages.java.io[type])(mode[x])) return mode[x];
-	return mode[x]["$get" + type]();
+	return mode[x];
 }
 
-
-$exports.shell = function(command,args,mode) {
-	if (arguments.length < 3) {
-		mode = {};
+$exports.shell = function(p) {
+	if (arguments.length == 3) {
+		$api.deprecate(function() {
+			p = {
+				command: arguments[0],
+				arguments: arguments[1]
+			};
+			for (var x in arguments[2]) {
+				p[x] = arguments[2][x];
+			}			
+		}).apply(this,arguments);
+	} else if (arguments.length == 2) {
+		$api.deprecate(function() {
+			p = {
+				command: arguments[0],
+				arguments: arguments[1]				
+			}
+		}).apply(this,arguments);
+	}
+	if (!p.command) {
+		throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
+	}
+	if (p.command.file && !p.command.pathname) {
+		$api.deprecate(function() {
+			p.command = p.command.file;
+		})();
 	}
 
-	var $run = $context.api.shell.run;
 	var $filesystems = $context.api.file.filesystems;
 
-	//	If the command is given as a Pathname object, convert it to a host file name for execution.
-	if ($filesystems.cygwin) {
-		command = $filesystems.cygwin.toWindows( command );
-	}
-
 	var preprocessor = function(item) { return item; }
-	if ($filesystems.cygwin && mode.filesystem == $filesystems.os) {
+	if ($filesystems.cygwin && p.filesystem == $filesystems.os) {
 		preprocessor = function(item) {
 			return $filesystems.cygwin.toWindows(item);
 		}
-	} else if ($filesystems.cygwin && mode.filesystem == $filesystems.cygwin) {
+	} else if ($filesystems.cygwin && p.filesystem == $filesystems.cygwin) {
 		preprocessor = function(item) {
 			return $filesystems.cygwin.toUnix(item);
 		}
 	}
-	args = args.map( preprocessor );
+	
+	var command = (function() {
+		if (typeof(p.command) == "string") return p.command;
+		if (p.command.pathname) return p.command.pathname;
+		throw new TypeError("p.command not string or file");
+	})();
 
-	var tokens = [ command ].concat( args );
+	var tokens = [ command ].concat( p.arguments.map(preprocessor) );
+	
+	var evaluate = (function() {
+		if (p.evaluate) return p.evaluate;
+		if (p.onExit) return $api.deprecate(p.onExit);
+	})();
 
-	var rMode = new function() {
-		this.environment = mode.environment;
-
-		this.work = (function() {
-			if (!mode.workingDirectory) return null;
-			var work = mode.workingDirectory;
-			if (work.pathname && work.pathname.directory) {
+	return $context.api.shell.run({
+		tokens: tokens,
+		environment: p.environment,
+		workingDirectory: (function() {
+			var work = p.workingDirectory;
+			if (!work) return;
+			if (work && work.pathname && work.pathname.directory) {
 				if ($filesystems.cygwin) {
-					return $filesystems.cygwin.toWindows(work.pathname).toString();
+					return $filesystems.cygwin.toWindows(work.pathname).directory;
 				} else {
-					return work.pathname.toString();
+					return work;
 				}
 			}
 			throw new Error("Unknown working directory: " + work);
-		})();
-
-		this.onExit = mode.onExit;
-
-		this.stdin = stream(mode,"stdin");
-		this.stdout = stream(mode,"stdout");
-		this.stderr = stream(mode,"stderr");
-	};
-
-	$run(tokens,rMode);
-}
-
-var getProperty = function(name) {
-	var value = eval("$context.api.shell.properties." + name);
-	if (String(value) == "undefined") return function(){}();
-	if (value == null) return null;
-	return String(value);
+		})(),
+		evaluate: evaluate,
+		stdin: stream(p,"stdin"),
+		stdout: stream(p,"stdout"),
+		stderr: stream(p,"stderr")
+	});
 }
 
 var getMandatoryStringProperty = function(name) {
@@ -193,8 +214,11 @@ if ($context.getSystemProperty("user.dir")) {
 }
 if ($context.api.shell.environment.PATH) {
 	$exports.PATH = getSearchpath($context.api.shell.environment.PATH);
+} else if ($context.api.shell.environment.Path) {
+	//	Windows
+	$exports.PATH = getSearchpath($context.api.shell.environment.Path);
 } else {
-	$exports.PATH = $context.api.file.Searchpath.createEmpty();
+	$exports.PATH = $context.api.file.Searchpath([]);
 }
 
 $exports.os = new function() {
@@ -203,7 +227,24 @@ $exports.os = new function() {
 	this.version = getMandatoryStringProperty("os.version");
 };
 
-$exports.java = new function() {
+$exports.java = function(p) {
+	var launcher = arguments.callee.launcher;
+	var shell = {
+		command: launcher
+	};
+	var args = [];
+	for (var x in p) {
+		if (x == "classpath") {
+			args.push("-classpath", p[x]);
+		} else {
+			shell[x] = p[x];
+		}
+	}
+	args.push(p.main);
+	shell.arguments = args;
+	return $exports.shell(shell);
+};
+(function() {
 	this.version = getMandatoryStringProperty("java.version");
 	this.vendor = new function() {
 		this.toString = function() {
@@ -256,8 +297,13 @@ $exports.java = new function() {
 	//	user.name is $exports.USER
 	//	user.home is $exports.HOME
 	//	user.dir is $exports.PWD
-};
 
+	//	TODO	Document
+	this.launcher = (function() {
+		if (this.home.getFile("bin/java")) return this.home.getFile("bin/java");
+		if (this.home.getFile("bin/java.exe")) return this.home.getFile("bin/java.exe");
+	}).call(this);
+}).call($exports.java);
 //	TODO	if not running on Rhino, this property should not appear
 //	TODO	no test coverage for $exports.rhino
 $exports.rhino = new function() {
@@ -266,19 +312,38 @@ $exports.rhino = new function() {
 	}
 };
 
-$exports.jsh = function(script,args,mode) {
+$exports.jsh = function(p) {
+	if (!arguments[0].script) {
+		p = {
+			script: arguments[0],
+			arguments: (arguments[1]) ? arguments[1] : []
+		};
+		for (var x in arguments[2]) {
+			p[x] = arguments[2][x];
+		}
+	}
+	if (!p.arguments) {
+		p.arguments = [];
+	}
+	if (p.script.file && !p.script.pathname) {
+		$api.deprecate(function() {
+			//	User supplied Pathname; should have supplied file
+			p.script = p.script.file;
+		})();
+	}
 	//	TODO	need to detect directives in the given script and fork if they are present
 	
 	var fork = (function() {
-		if (mode && mode.classpath) return true;
-		if (mode && mode.environment && mode.environment.JSH_SCRIPT_CLASSPATH) return true;
-		if (mode && mode.environment && mode.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
-		if (mode && mode.environment && mode.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
+		if (p.fork) return true;
+		if (p.classpath) return true;
+		if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
+		if (p.environment && p.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
+		if (p.environment && p.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
 		return false;
 	})();
 	
 	var environment = (function() {
-		var rv = (mode && mode.environment) ? mode.environment : {};
+		var rv = (p.environment) ? p.environment : {};
 		
 		var addProperties = function(from) {
 			for (var x in from) {
@@ -297,145 +362,186 @@ $exports.jsh = function(script,args,mode) {
 		return rv;
 	})();
 	
-	var configuration = new JavaAdapter(
-		Packages.inonit.script.jsh.Shell.Configuration,
-		new function() {
-			this.getOptimizationLevel = function() {
-				return -1;
-			};
-			
-			this.getDebugger = function() {
-				//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
-				if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
-					var Engine = Packages.inonit.script.rhino.Engine;
-					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
-				} else {
-					return null;
-				}
-			}
-
-			var stdio = new JavaAdapter(
-				Packages.inonit.script.jsh.Shell.Configuration.Stdio,
-				new function() {
-					var Streams = Packages.inonit.script.runtime.io.Streams;
-					var m = (mode) ? mode : {};
-					
-					var ifNonNull = function(value,otherwise) {
-						return (value) ? value : otherwise;
-					}
-					
-					this.getStandardInput = function() {
-						return ifNonNull(stream(m,"stdin"), Streams.Null.INPUT_STREAM);
-					}
-					
-					this.getStandardOutput = function() {
-						return ifNonNull(stream(m,"stdout"), Streams.Null.OUTPUT_STREAM);
-					}
-					
-					this.getStandardError = function() {
-						return ifNonNull(stream(m,"stderr"), Streams.Null.OUTPUT_STREAM);
-					}
-				}
-			);
-			
-			//	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
-			//	possible we should revisit this
-			var log = new JavaAdapter(
-				Packages.inonit.script.rhino.Engine.Log,
-				new function() {
-					this.println = function(message) {
-						new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
-					}
-				}
-			);
-
-			this.getLog = function() {
-				return log;
-			}
-			
-			this.getClassLoader = function() {
-				return Packages.java.lang.ClassLoader.getSystemClassLoader();
-			}
-			
-			this.getSystemProperties = function() {
-				var rv = new Packages.java.util.Properties();
-				var keys = $context._getSystemProperties().keySet().iterator();
-				while(keys.hasNext()) {
-					var key = keys.next();
-					if (String(key) != "jsh.launcher.packaged") {
-						rv.setProperty(key, $context._getSystemProperties().getProperty(key));
-					}
-				}
-				if (mode && mode.workingDirectory) {
-					rv.setProperty("user.dir", mode.workingDirectory.pathname.java.adapt());
-				}
-				return rv;
-			}
-			
-			this.getEnvironment = function() {
-				var rv = new Packages.java.util.HashMap();
-				for (var x in environment) {
-					rv.put(new Packages.java.lang.String(x),new Packages.java.lang.String(environment[x]));
-				}
-				return rv;
-			};
-			
-			this.getStdio = function() {
-				return stdio;
-			}
-			
-			this.getPackagedCode = function() {
-				return null;
-			}
-		}
-	);
-	
 	if (fork) {
-		if (!mode) mode = {};
+		debugger;
 		//	TODO	can we use $exports.java.home here?
 		var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
 		var executable = jdk.getRelativePath("bin/java").toString();
 		//	Set defaults from this shell
-		var LAUNCHER_CLASSPATH = (mode.classpath) ? mode.classpath : getProperty("jsh.launcher.classpath");
+		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : getProperty("jsh.launcher.classpath");
 
 		var jargs = [];
 		jargs.push("-classpath");
 		jargs.push(LAUNCHER_CLASSPATH);
 		jargs.push("inonit.script.jsh.launcher.Main");
 
-		jargs.push(script);
-		args.forEach( function(arg) {
+		jargs.push(p.script);
+		p.arguments.forEach( function(arg) {
 			jargs.push(arg);
 		});
-
-		mode.environment = environment;
-
-		$exports.shell(executable,jargs,mode);
+		
+		var evaluate = (function() {
+			if (p.evaluate) {
+				return function(result) {
+					result.jsh = {
+						script: p.script,
+						arguments: p.arguments
+					};
+					result.classpath = p.classpath;
+					return p.evaluate(result);
+				}
+			}
+		})();
+		
+		var shell = {
+			command: executable,
+			arguments: jargs,
+			environment: environment,
+			stdout: p.stdout,
+			stderr: p.stderr,
+			stdin: p.stdin,
+			evaluate: evaluate
+		};
+		
+		return $exports.shell(shell);
 	} else {
-		if (!script.java) {
-			throw new TypeError("Expected script " + script + " to have java.adapt()");
+		var configuration = new JavaAdapter(
+			Packages.inonit.script.jsh.Shell.Configuration,
+			new function() {
+				this.getOptimizationLevel = function() {
+					return -1;
+				};
+
+				this.getDebugger = function() {
+					//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
+					if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
+						var Engine = Packages.inonit.script.rhino.Engine;
+						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
+					} else {
+						return null;
+					}
+				}
+
+				var stdio = new JavaAdapter(
+					Packages.inonit.script.jsh.Shell.Configuration.Stdio,
+					new function() {
+						var Streams = Packages.inonit.script.runtime.io.Streams;
+
+						var ifNonNull = function(_type,value,otherwise) {
+							if ($context.api.java.isJavaType(_type)(value)) return value;
+							if (value && !value.java) throw new TypeError("value: " + value);
+							return (value) ? value.java.adapt() : otherwise;
+						}
+
+						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(p,"stdin"), Streams.Null.INPUT_STREAM);
+						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(p,"stdout"), Streams.Null.OUTPUT_STREAM);
+						var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(p,"stderr"), Streams.Null.OUTPUT_STREAM);
+
+						this.getStandardInput = function() {
+							return _stdin;
+						}
+
+						this.getStandardOutput = function() {
+							return _stdout;
+						}
+
+						this.getStandardError = function() {
+							return _stderr;
+						}
+					}
+				);
+
+				//	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
+				//	possible we should revisit this
+				var log = new JavaAdapter(
+					Packages.inonit.script.rhino.Engine.Log,
+					new function() {
+						this.println = function(message) {
+							new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
+						}
+					}
+				);
+
+				this.getLog = function() {
+					return log;
+				}
+
+				this.getClassLoader = function() {
+					return Packages.java.lang.ClassLoader.getSystemClassLoader();
+				}
+
+				this.getSystemProperties = function() {
+					var rv = new Packages.java.util.Properties();
+					var keys = $context._getSystemProperties().keySet().iterator();
+					while(keys.hasNext()) {
+						var key = keys.next();
+						if (String(key) != "jsh.launcher.packaged") {
+							rv.setProperty(key, $context._getSystemProperties().getProperty(key));
+						}
+					}
+					if (p.workingDirectory) {
+						rv.setProperty("user.dir", p.workingDirectory.pathname.java.adapt());
+					}
+					return rv;
+				}
+
+				this.getEnvironment = function() {
+					var rv = new Packages.java.util.HashMap();
+					for (var x in environment) {
+						rv.put(new Packages.java.lang.String(x),new Packages.java.lang.String(environment[x]));
+					}
+					return rv;
+				};
+
+				this.getStdio = function() {
+					return stdio;
+				}
+
+				this.getPackagedCode = function() {
+					return null;
+				}
+			}
+		);
+	
+		if (!p.script || !p.script.pathname || !p.script.pathname.java || !p.script.pathname.java.adapt) {
+			throw new TypeError("Expected script " + p.script + " to have pathname.java.adapt()");
 		}
-		var status = $host.jsh(configuration,script.java.adapt(),$context.api.java.toJavaArray(args,Packages.java.lang.String,function(s) {
+		//	TODO	Does Rhino 1.7R3 obviate the need for the Java array conversion stuff?
+		var status = $host.jsh(configuration,p.script.pathname.java.adapt(),$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
 			return new Packages.java.lang.String(s);
 		}));
-		var onExit = (mode && mode.onExit) ? mode.onExit : function(result) {
+		var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 			if (result.status != 0) {
 				throw new Error("Exit status: " + result.status);
 			}
+			return result;
 		};
-		onExit({
+		return evaluate({
 			status: status,
 			//	no error property
-			//	TODO	maybe not strictly the same as rhino/shell run onExit callback, command would be java I would think
-			command: script,
-			arguments: args,
+			//	no command or arguments
+			jsh: {
+				script: p.script,
+				arguments: p.arguments
+			},
+			classpath: p.classpath,
 			environment: environment,
-			workingDirectory: (mode && mode.workingDirectory) ? mode.workingDirectory : function(){}()
+			workingDirectory: p.workingDirectory
 		});
 	}
 };
 
+if (String($exports.properties.jsh.plugins)) {
+	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.plugins));
+}
+
 var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.launcher.classpath));
-if (launcherClasspath.pathnames.length == 1 && launcherClasspath.pathnames[0].basename == "jsh.jar") {
+//	TODO	this is fragile. The above property is, in a built shell:
+//			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath
+//			*	supplied by the script launcher to the underlying process as is
+//			In the case in which the *launcher* is being profiled, apparently the -javaagent: is *appended* to its java.class.path,
+//			so jsh.jar is still first. An earlier implementation made sure the launcher classpath length was 1 also, but that is no
+//			longer true in the profiling case.
+if (launcherClasspath.pathnames[0] && launcherClasspath.pathnames[0].basename == "jsh.jar") {
 	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
 }

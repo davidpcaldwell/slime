@@ -5,7 +5,7 @@
 //	The Original Code is the rhino/io SLIME module.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -13,20 +13,9 @@
 var $java = ($context.$java) ? $context.$java : new Packages.inonit.script.runtime.io.Streams();
 
 var InputStream = function(peer) {
-	this.$getInputStream = function() {
+	this.$getInputStream = $api.deprecate(function() {
 		return peer;
-	}
-	$api.deprecate(this,"$getInputStream");
-
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
-
-		this.array = function() {
-			return $java.readBytes(peer);
-		}
-	};
+	});
 
 	this.close = function() {
 		peer.close();
@@ -60,19 +49,22 @@ var InputStream = function(peer) {
 			}
 		});
 	}
-};
-
-var OutputStream = function(peer) {
-	this.$getOutputStream = function() {
-		return peer;
-	}
-	$api.deprecate(this,"$getOutputStream");
-
+	
 	this.java = new function() {
 		this.adapt = function() {
 			return peer;
 		}
-	}
+
+		this.array = function() {
+			return $java.readBytes(peer);
+		}
+	};
+};
+
+var OutputStream = function(peer) {
+	this.$getOutputStream = $api.deprecate(function() {
+		return peer;
+	});
 
 	this.close = function() {
 		peer.close();
@@ -92,13 +84,23 @@ var OutputStream = function(peer) {
 
 		return new OutputStream($java.split(peer,otherPeer))
 	}
+
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
+	}
 };
 
 var Reader = function(peer) {
-	this.$getReader = function() {
+	this.$getReader = $api.deprecate(function() {
 		return peer;
+	});
+	
+	this.close = function() {
+		peer.close();
 	}
-
+	
 	this.readLines = function(callback,mode) {
 
 		if (!mode) mode = {};
@@ -129,7 +131,7 @@ var Reader = function(peer) {
 	this.asString = function() {
 		var buffer = new Packages.java.io.StringWriter();
 		$java.copy(
-			this.$getReader(),
+			peer,
 			buffer
 		);
 		return String( buffer.toString() );
@@ -143,14 +145,16 @@ var Reader = function(peer) {
 		return XMLList( string );
 	}
 
-	this.close = function() {
-		peer.close();
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
 	}
 }
 var Writer = function(peer) {
-	this.$getWriter = function() {
+	this.$getWriter = $api.deprecate(function() {
 		return peer;
-	}
+	});
 
 	this.close = function() {
 		peer.close();
@@ -166,7 +170,13 @@ var Writer = function(peer) {
 		} else {
 			throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);
 		}
-	}
+	};
+	
+	this.java = new function() {
+		this.adapt = function() {
+			return peer;
+		}
+	};
 };
 
 var Buffer = function() {
@@ -183,6 +193,8 @@ var Buffer = function() {
 	this.close = function() {
 		peer.getOutputStream().close();
 	}
+	
+	//	TODO	could we name these better? in/out, read/write, ... ?
 
 	this.writeBinary = function() {
 		return new OutputStream(peer.getOutputStream());
@@ -231,7 +243,7 @@ var Streams = new function() {
 				debugger;
 				return new Buffer();
 			} else {
-				throw "Unimplemented: Buffer called as function.";
+				throw new Error("Unimplemented: Buffer called as function.");
 			}
 		}
 	}
@@ -246,37 +258,19 @@ var Streams = new function() {
 	}
 
 	if ($context.stdio) {
-		this.stderr = new function() {
-			this.$getOutputStream = function() {
-				return $context.stdio.$err;
-			}
-
-			this.$getWriter = function() {
-				return new Packages.java.io.OutputStreamWriter($context.stdio.$err);
-			}
-
-			this.split = function(other) {
-				return new OutputStream($context.stdio.$err).split(other);
-			}
-
-			this.close = function() {}
+		var StandardOutputStream = function(_peer) {
+			var rv = new OutputStream(_peer);
+			rv.write = function(message) {
+				var _writer = new Packages.java.io.OutputStreamWriter(_peer);
+				_writer.write(message);
+				_writer.flush();
+			};
+			delete rv.close;
+			return rv;
 		}
-
-		this.stdout = new function() {
-			this.$getOutputStream = function() {
-				return $context.stdio.$out;
-			}
-
-			this.$getWriter = function() {
-				return new Packages.java.io.OutputStreamWriter($context.stdio.$out);
-			}
-
-			this.split = function(other) {
-				return new OutputStream($context.stdio.$out).split(other);
-			}
-
-			this.close = function() {}
-		}
+		
+		this.stderr = StandardOutputStream($context.stdio.$err);
+		this.stdout = StandardOutputStream($context.stdio.$out);
 	}
 }
 $exports.Streams = Streams;

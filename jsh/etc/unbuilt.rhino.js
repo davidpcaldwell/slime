@@ -5,7 +5,7 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -49,12 +49,23 @@ var SLIME_SRC = (function() {
 
 Packages.java.lang.System.out.println("SLIME_SRC = " + SLIME_SRC.getCanonicalPath());
 
+load(new Packages.java.io.File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"));
+
 if (arguments[0] == "build") {
 	arguments.splice(0,1);
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/etc/build.rhino.js"));
 } else if (arguments[0] == "launch") {
 	arguments.splice(0,1);
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
+} else if (arguments[0] == "test") {
+	arguments.splice(0,1);
+	//	create temporary file
+	var JSH_HOME = Packages.java.io.File.createTempFile("jsh-unbuilt.", ".tmp");
+	JSH_HOME.mkdirs();
+	arguments.push(JSH_HOME.getCanonicalPath());
+	Packages.java.lang.System.setProperty("jsh.build.nounit", "true");
+	load(new Packages.java.io.File(SLIME_SRC, "jsh/etc/build.rhino.js"));
+//	load(new Packages.java.io.File(SLIME_SRC, "jsh/test/suite.rhino.js"));
 } else {
 	Packages.java.lang.System.err.println("Usage:");
 	Packages.java.lang.System.err.println("unbuilt.rhino.js build <arguments>");

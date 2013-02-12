@@ -5,7 +5,7 @@
 //	The Original Code is the SLIME servlet interface.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -24,6 +24,9 @@ plugin({
 	isReady: function() {
 		//	TODO	allow system property rather than environment variable?
 		return jsh.java && jsh.shell && jsh.file && typeof(jsh.shell.environment.CATALINA_HOME) == "string" || typeof(Packages.org.apache.catalina.startup.Tomcat) == "function";
+	},
+	disabled: function() {
+		return "Environment variable CATALINA_HOME is not defined.";
 	},
 	load: function() {
 		var CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;

@@ -5,7 +5,7 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -289,6 +289,7 @@ this.jsh = new function() {
 	jsh.shell = (function() {
 		var context = {};
 		context.api = {
+			js: js,
 			java: java,
 			shell: $shell,
 			io: jsh.io,
@@ -325,10 +326,15 @@ this.jsh = new function() {
 			},
 			workingDirectory: jsh.shell.PWD,
 			script: (function() {
-				if ($host.getInvocation().getScript().getFile()) {
-					return jsh.file.filesystem.$jsh.Pathname($host.getInvocation().getScript().getFile()).file;
+				var uri = $host.getInvocation().getScript().getUri();
+				if (uri  && uri.getScheme() && String(uri.getScheme()) == "file") {
+					return jsh.file.filesystem.$jsh.Pathname(new Packages.java.io.File(uri)).file;
 				}
-				return null;
+			})(),
+			uri: (function() {
+				if ($host.getInvocation().getScript().getUri()) {
+					return String($host.getInvocation().getScript().getUri().normalize().toString());
+				}
 			})(),
 			uri: (function() {
 				if ($host.getInvocation().getScript().getUri()) {
@@ -378,7 +384,7 @@ this.jsh = new function() {
 							return true;
 						};
 					}
-					list.push(p);
+					list.push({ _code: _code, declaration: p });
 				}
 				scope.global = (function() { return this; })();
 				scope.jsh = jsh;
@@ -410,8 +416,8 @@ this.jsh = new function() {
 			var i = 0;
 			//	TODO	should isReady be optional?
 			while(i < list.length && !marked) {
-				if (list[i].isReady()) {
-					list[i].load();
+				if (list[i].declaration.isReady()) {
+					list[i].declaration.load();
 					list.splice(i,1);
 					marked = true;
 				}
@@ -423,9 +429,8 @@ this.jsh = new function() {
 				stop = true;
 				//	TODO	think harder about what to do
 				list.forEach(function(item) {
-					jsh.shell.echo("WARNING: could not load plugin: never became ready\n" + item.isReady, {
-						stream: jsh.io.Streams.stderr
-					});
+					var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
+					jsh.shell.echo("Plugin from " + item._code.getScripts() + " is disabled: " + message, { stream: jsh.io.Streams.stderr });
 				});
 			}
 		}

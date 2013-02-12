@@ -6,7 +6,7 @@ distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 The Original Code is the jsh JavaScript/Java shell.
 
 The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
 
 Contributor(s):
 END LICENSE
@@ -144,7 +144,7 @@ void invoke_class(JNIEnv* env, int argc, char **argv) {
 
 	mainMethod = (*env)->GetStaticMethodID(env, helloWorldClass, "main", "([Ljava/lang/String;)V");
 
-	applicationArgs = (*env)->NewObjectArray(env, argc, (*env)->FindClass(env, "java/lang/String"), NULL);
+	applicationArgs = (*env)->NewObjectArray(env, argc-1, (*env)->FindClass(env, "java/lang/String"), NULL);
 
 	for (i=1; i<argc; i++) {
 		applicationArg = (*env)->NewStringUTF(env, argv[i]);

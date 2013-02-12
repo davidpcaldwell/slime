@@ -6,7 +6,7 @@ distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 The Original Code is the rhino/shell SLIME module.
 
 The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 
 Contributor(s):
 END LICENSE
@@ -58,46 +58,58 @@ END LICENSE
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
-						<li class="value"><code>(array of string)</code> The set of command tokens to pass to the underlying operating system.</li>
 						<li class="object">
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
+									<div class="name">tokens</div>
+									<span class="type">Array of string</span>
+									<span>The set of command tokens to pass to the underlying operating system.</span>
+								</li>
+								<li class="value" jsapi:id="run.stdin">
 									<div class="name">stdin</div>
-									A native <code>java.io.InputStream</code>, which will be attached to the subprocess as its
+									<span class="type"><a href="../io/api.html#types.binput">byte input stream</a></span>
+									A stream which will be attached to the subprocess as its
 									standard input stream.
 								</li>
-								<li class="value">
+								<li class="value" jsapi:id="run.stdout">
 									<div class="name">stdout</div>
-									A native <code>java.io.OutputStream</code>, which will be attached to the subprocess as its
+									<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
+									A stream which will be attached to the subprocess as its
 									standard output stream.
 								</li>
-								<li class="value">
+								<li class="value" jsapi:id="run.stderr">
 									<div class="name">stderr</div>
-									A native <code>java.io.OutputStream</code>, which will be attached to the subprocess as its
+									<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
+									A stream which will be attached to the subprocess as its
 									standard error stream.
 								</li>
-								<li class="value">
+								<li class="value" jsapi:id="run.environment">
 									<div class="name">environment</div>
+									<span class="type">object</span>
 									A set of names and values that will be passed to the subprocess as its environment.
 									<!--	TODO	what if this is null or missing?	-->
 								</li>
-								<li class="value">
-									<div class="name">work</div>
-									Specifies the working directory to use for the subprocess; can be either a string specifying
-									the full path, or a native <code>java.io.File</code> object representing the directory.
-									<!--	TODO	what if it does not exist? -->
-									<!--	TODO	what if it is missing?	-->
+								<li class="value" jsapi:id="run.workingDirectory">
+									<div class="name">workingDirectory</div>
+									<span class="type"><a href="../file/api.html#types.directory">directory</a></span>
+									(optional) The working directory to use for the subprocess. If not specified, the
+									working directory of the parent process will be used.
+									<!--
+										TODO	if this property is null, we should error, assuming the caller made a mistake
+										passing a non-existent directory.
+									-->
 								</li>
-								<li class="function" jsapi:id="run.onExit">
-									<div class="name"><a name="run.onExit">onExit</a></div>
+								<li class="function" jsapi:id="run.evaluate">
+									<div class="name"><a name="run.evaluate">evaluate</a></div>
 									<div>
-										A function that will be invoked when the subprocess terminates, and will be provided with
-										information about the result.
+										A function that will be invoked when the subprocess terminates, will be provided with
+										information about the result, and specifies the return value of <code>run</code>.
 									</div>
 									<div>
 										If this property is omitted, a default will be used that throws an exception if the
-										exit status of the subprocess is not zero or the subprocess cannot be launched.
+										exit status of the subprocess is not zero or the subprocess cannot be launched, and returns
+										its argument.
 									</div>
 									<div class="arguments">
 										<div class="label">Arguments</div>
@@ -146,11 +158,24 @@ END LICENSE
 											</li>
 										</ol>
 									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">(any)</span>
+										<span>An arbitrary value to return as the return value of <code>run</code>.</span>
+									</div>									
 								</li>
 							</ul>
 						</li>
 					</ol>
 				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">(any)</span>
+					<span>
+						The value returned by the function given as the <code>evaluate</code> property of the argument, or
+						by the default implementation of <code>evaluate</code>.
+					</span>
+				</div>									
 			</li>
 			<li class="value" jsapi:id="environment">
 				<div class="name">environment</div>

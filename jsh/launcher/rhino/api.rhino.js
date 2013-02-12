@@ -5,7 +5,7 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -40,6 +40,12 @@ var env = (function() {
 	}
 	return rv;
 })();
+
+var getSystemProperty = function(name) {
+	if (Packages.java.lang.System.getProperty(name)) {
+		return String(Packages.java.lang.System.getProperty(name));
+	}
+}
 
 var JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 
@@ -112,29 +118,36 @@ platform.io.copyStream = function(i,o) {
 	}
 }
 platform.jdk = {};
-if (Packages.javax.tools.ToolProvider.getSystemJavaCompiler()) {
-	platform.jdk.compile = function(args) {
-		debug("Compiling with: " + args);
-		var jarray = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,args.length);
-		for (var i=0; i<jarray.length; i++) {
-			jarray[i] = new Packages.java.lang.String(args[i]);
+(function() {
+	var tried = false;
+	var compiler;
+	
+	platform.jdk.__defineGetter__("compile", function() {
+		if (!tried) {
+			Packages.java.lang.System.err.println("Loading Java compiler ...");
+			compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+			tried = true;
 		}
-		//	TODO	The below method getSystemJavaCompiler returns null if this is a JRE
-		var compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-		if (compiler == null) {
-			throw { jdk: true };
+		if (compiler) {
+			return function(args) {
+				debug("Compiling with: " + args);
+				var jarray = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,args.length);
+				for (var i=0; i<jarray.length; i++) {
+					jarray[i] = new Packages.java.lang.String(args[i]);
+				}
+				var status = compiler.run(
+					Packages.java.lang.System["in"],
+					Packages.java.lang.System.out,
+					Packages.java.lang.System.err,
+					jarray
+				);
+				if (status) {
+					throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
+				}				
+			}
 		}
-		var status = compiler.run(
-			Packages.java.lang.System["in"],
-			Packages.java.lang.System.out,
-			Packages.java.lang.System.err,
-			jarray
-		);
-		if (status) {
-			throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
-		}
-	}
-}
+	});	
+})();
 
 var copyFile = function(from,to,filters) {
 	if (!filters) filters = [];

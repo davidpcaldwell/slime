@@ -5,7 +5,7 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -29,7 +29,7 @@ public class Main {
 		CheckedException(String message) {
 			super(message);
 		}
-		
+
 		CheckedException(String message, Throwable cause) {
 			super(message, cause);
 		}
@@ -202,7 +202,7 @@ public class Main {
 			};
 
 			final String scriptPath = args.remove(0);
-			
+
 			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
 				final java.net.URL url;
 				final java.io.InputStream stream;
@@ -234,7 +234,7 @@ public class Main {
 							}
 						};
 					}
-					
+
 					public String[] getArguments() {
 						return args.toArray(new String[args.size()]);
 					}

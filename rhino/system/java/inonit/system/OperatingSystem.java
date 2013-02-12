@@ -5,7 +5,7 @@
 //	The Original Code is the SLIME operating system interface.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -21,34 +21,18 @@ public class OperatingSystem {
 		return singleton;
 	}
 
-	public String getCommandOutput(String path, String[] arguments) throws IOException {
-		return Command.getCommandOutput(path, arguments);
+	//	Used by rhino/shell module and jsh launcher redefinition of Rhino shell runCommand
+	public Command.Listener run(Command.Context context, Command.Configuration configuration) {
+		return Command.create(configuration).execute(context);
 	}
-
-	//	TODO	eliminate; return Result object
-	public boolean shellCommand(String path, String[] arguments) throws IOException {
-		return Command.execute(path, arguments).isSuccess();
-	}
-
+	
+	//	Used by Cygwin filesystem implementation and rhino/file tests
 	public Command.Result execute(String path, String[] arguments) {
-		return Command.execute(path, arguments);
+		return Command.create(Command.Configuration.create(path, arguments)).getResult();
 	}
 
-	//	Used by jsh launcher
-	public int execute(Command.Context context, Command.Configuration configuration) throws IOException {
-		return Command.getExitStatus(context, configuration);
-	}
-
-	public Subprocess start(Command.Configuration configuration, Command.Context context) throws IOException {
+	//	Used by Cygwin filesystem implementation
+	public Subprocess start(Command.Context context, Command.Configuration configuration) throws IOException {
 		return Command.create(configuration).start(context);
-	}
-
-	public Runnable run(final Command.Context context, final Command.Configuration configuration, final Command.Listener listener)
-	{
-		return new Runnable() {
-			public void run() {
-				Command.create(configuration).execute(context, listener);
-			}
-		};
 	}
 }

@@ -5,7 +5,7 @@
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -215,7 +215,7 @@ var Command = function() {
 		}
 		//	TODO	for fully Rhino-compatible runCommand we should have special processing of output / err / input
 		//			see https://developer.mozilla.org/en-US/docs/Rhino/Shell
-		return Packages.inonit.system.OperatingSystem.get().execute(
+		return Packages.inonit.system.OperatingSystem.get().run(
 			new JavaAdapter(Packages.inonit.system.Command.Context, context),
 			new JavaAdapter(
 				Packages.inonit.system.Command.Configuration,
@@ -233,7 +233,7 @@ var Command = function() {
 					}
 				}
 			)
-		)
+		).getExitStatus();
 	}
 
 	this.run = function(mode) {
@@ -430,7 +430,7 @@ settings.explicit = new function() {
 		if (httpUrlPattern.test(ARGUMENTS[0])) {
 			debugger;
 			this.script = ARGUMENTS[0];
-			
+
 			this.source = readUrl(ARGUMENTS[0]);
 		} else {
 			this.script = (function(path) {
@@ -453,7 +453,7 @@ settings.explicit = new function() {
 
 				//	Find the file to be executed
 				if (platform.cygwin) {
-					path = platform.cygwin.cygpath.windows(arguments[0]);
+					path = platform.cygwin.cygpath.windows(path);
 				}
 				if (new Packages.java.io.File(path).exists()) {
 					return new File( String(Packages.java.io.File(path).getCanonicalPath()) );

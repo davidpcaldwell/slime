@@ -5,7 +5,7 @@
 //	The Original Code is the SLIME loader for rhino.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -129,6 +129,20 @@ public abstract class Loader {
 					}
 				}
 				return null;
+			}
+			
+			protected Enumeration<URL> findResources(String name) {
+				java.util.Vector rv = new java.util.Vector();
+				for (Code.Source source : locations) {
+					Code.Classes classes = source.getClasses();
+					if (classes != null) {
+						URL url = classes.getResource(name);
+						if (url != null) {
+							rv.add(url);
+						}
+					}
+				}
+				return rv.elements();
 			}
 
 			public Loader.Classpath toScriptClasspath() {
