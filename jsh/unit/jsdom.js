@@ -325,6 +325,8 @@ $exports.Rhino = new function() {
 			rv = toElement(_node);
 		} else if (_node.getNodeType() == Packages.org.w3c.dom.Node.TEXT_NODE) {
 			rv = new Text(String(_node.getNodeValue()));
+		} else if (_node.getNodeType() == Packages.org.w3c.dom.Node.COMMENT_NODE) {
+			rv = new Comment(String(_node.getNodeValue()));
 		} else {
 			throw new Error("Unknown node type: " + _node);
 		}
