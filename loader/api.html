@@ -15,7 +15,8 @@ END LICENSE
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Slime Loader and Module API</title>
-	<link rel="stylesheet" type="text/css" href="../loader/api/api.css"></link>
+	<link rel="stylesheet" type="text/css" href="api/api.css" />
+
 	<script type="text/javascript" src="../loader/api/api.js"></script>
 </head>
 <body>
@@ -353,19 +354,42 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
+							<span class="type">function</span>
+							<span>A function to mark.</span>
+						</li>
+					</ol>
+					-or-
+					<ol>
+						<li class="value">
 							<span class="type">object</span>
 							<span>A target object whose property will be marked.</span>
 						</li>
 						<li class="value">
 							<span class="type">string</span>
-							<span>The name of the property to mark.</span>
+							<span>
+								(optional) The name of the property to mark. If omitted, <strong>all</strong> properties will be
+								marked.
+							</span>
 						</li>
 					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">function</span>
+					-or-
+					<span class="type">undefined</span>					
+					<span>
+						If the argument was a function, returns a version of the function that is deprecated: that is, executes
+						the appropriate warning callback when it is executed. Otherwise, returns undefined.
+					</span>
 				</div>
 				<ul>
 					<li class="function">
 						<div class="name">warning</div>
-						<span>(optional) A callback function that will be invoked when a marked property is accessed.</span>
+						<span>
+							(optional) A callback function that will be invoked when a marked property is accessed or marked
+							function is called, or when a call to <code>deprecate</code> is made with invalid arguments.
+						</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
@@ -373,6 +397,14 @@ END LICENSE
 									<span>Represents a single usage of a marked API.</span>
 									<div class="label">has properties:</div>
 									<ul>
+										<li class="value">
+											<div class="name">reason</div>
+											<span class="type">function</span>
+											<span>
+												(optional) The reason that the API was marked: in the case of deprecation, a
+												reference to the <code>deprecate</code> function itself.
+											</span>
+										</li>
 										<!--
 										TODO	Single-argument form deprecating a function
 										<li class="value">
@@ -382,43 +414,59 @@ END LICENSE
 										</li>
 										-->
 										<li class="value">
+											<div class="name">object</div>
+											<span class="type">object</span>
+											<span>(if object was specified) The object containing the marked property.</span>
+										</li>
+										<li class="value">
+											<div class="name">property</div>
+											<span class="type">string</span>
+											<span>(if object was specified) The name of the marked property.</span>
+										</li>
+										<li class="value">
+											<div class="name">callee</div>
+											<span class="type">function</span>
+											<span>(if deprecated item is function) A reference to the deprecated function.</span>
+										</li>
+										<li class="value">
 											<div class="name">target</div>
 											<span class="type">object</span>
-											<span>The object containing the marked property.</span>
-										</li>
-										<li class="value">
-											<div class="name">name</div>
-											<span class="type">string</span>
-											<span>The name of the marked property.</span>
-										</li>
-										<li class="value">
-											<div class="name">call</div>
-											<span class="type">arguments</span>
 											<span>
-												(optional) The <code>arguments</code> object passed to the marked method, if this
-												usage was an invocation of a marked method.
+												(if deprecated item is function) The <code>this</code> value when the deprecated 
+												function was invoked.
+											</span>
+										</li>
+
+										<li class="value">
+											<div class="name">arguments</div>
+											<span class="type">Array</span>
+											<span>
+												(if deprecated item is function) The contents of the <code>arguments</code> object 
+												passed to the function; note that this object is an array, not the
+												<code>arguments</code> object.
 											</span>
 										</li>
 										<li class="value">
 											<div class="name">get</div>
 											<span>
-												(optional) The value of the marked property when it was accessed, if this usage was
+												(if deprecated item is non-function) The value of the marked property when it was 
+												accessed, if this usage was
 												a retrieval of the value of a marked property.
 											</span>
 										</li>
 										<li class="value">
 											<div class="name">set</div>
 											<span>
-												(optional) The value to which the deprecated property was set, if this usage was an
+												(if deprecated item is non-function) The value to which the deprecated property was set, if this usage was an
 												assignment to a marked property.
 											</span>
 										</li>
 										<li class="value">
-											<div class="name">reason</div>
-											<span class="type">function</span>
+											<div class="name">flag</div>
+											<span class="type">Array</span>
 											<span>
-												(optional) The reason that the API was marked: in the case of deprecation, a
-												reference to the <code>deprecate</code> function itself.
+												(when invalid arguments sent to deprecate) The arguments passed to deprecate that
+												did not identify a valid function or property to deprecate.
 											</span>
 										</li>
 									</ul>
@@ -427,18 +475,64 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
+				<script jsapi:id="deprecate.function" type="application/x.jsapi#tests"><![CDATA[
+					var was = $api.deprecate.warning;
+					var called = 0;
+					var warnings = 0;
+					var f = function() {
+						called++;
+						return called;
+					};
+					var warning = function(p) {
+						test(p.callee == f);
+						warnings++;
+					};
+					$api.deprecate.warning = warning;
+					
+					var deprecated = $api.deprecate(f);
+					
+					test(f() == 1 && warnings == 0);
+					test(deprecated() == 2);
+					test(warnings == 1);
+					test(deprecated() == 3);
+					test(warnings == 2);
+					$api.deprecate.warning = was;
+				]]></script>
+				<script jsapi:id="deprecate.object" type="application/x.jsapi#tests"><![CDATA[
+					var was = $api.deprecate.warning;
+					var called = 0;
+					var warnings = [];
+					var warning = function(p) {
+						warnings.push(p);
+					}
+					$api.deprecate.warning = warning;
+					var o = new function() {
+						this.p = 1;
+						this.m = function() {
+							return 2;
+						};
+					};
+					var rv = $api.deprecate(o);
+					test(typeof(rv) == "undefined");
+					var p = o.p;
+					test(p == 1);
+					var m = o.m();
+					test(m == 2);
+					test(warnings.length == 2);
+					//	TODO	test content of warnings
+					$api.deprecate.warning = was;
+				]]></script>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					scenario( new function() {
 						this.name = "deprecate";
 						this.execute = function(scope) {
-							//	var deprecate = module.deprecate;
 							var deprecate = $api.deprecate;
 
 							//	TODO	Add a test somewhere in here where we attempt to set a deprecated property, do not really
 							//			set it, and confirm that our callback receives the attempted (not actual) value
 							var expectWarn = function(b) {
 								var rv = function(content) {
-									if (content.reason != deprecate) throw "Not expected reason.";
+									if (content.reason != deprecate) throw new Error("Not expected reason.");
 									arguments.callee.actual = true;
 								}
 								rv.actual = false;
