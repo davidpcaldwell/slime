@@ -329,7 +329,7 @@ END LICENSE
 														p.put("yes", "i do");
 														p.put("laptop", "inonit");
 														p.put("laptop.manufacturer", "dell");
-														p.store(buffer.$getOutputStream(), "No comment!");
+														p.store(buffer.writeBinary().java.adapt(), "No comment!");
 														buffer.close();
 													}
 													this.execute = function(scope) {

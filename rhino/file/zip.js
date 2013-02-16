@@ -30,7 +30,7 @@ $exports.zip = function(p) {
 		throw "Unimplemented: from " + p.from;
 	}
 
-	var $getInputStream = function(item) {
+	var _getInputStream = function(item) {
 		if (item.$stream) return item.$stream;
 		throw "Unimplemented: item lacks input stream: " + item;
 	}
@@ -40,9 +40,8 @@ $exports.zip = function(p) {
 	if (p.to instanceof $context.Pathname) {
 		$to = p.to.write($context.Streams.binary, { append: false }).java.adapt();
 	} else if (p.java && p.java.adapt) {
+		//	TODO	should do a type check here
 		$to = p.java.adapt();
-	} else if (p.to.$getOutputStream) {
-		$to = p.to.$getOutputStream();
 	} else {
 		debugger;
 		throw "Unimplemented: to " + p.to;
@@ -100,7 +99,7 @@ $exports.zip = function(p) {
 		//	TODO	Clean this up; this API is not right, just convenient to use for the two use cases in admin project and
 		//			slime.jsh.js for now
 		if (!from[i].directory) {
-			zipOutputStream.addEntry(from[i].path,$getInputStream(from[i]));
+			zipOutputStream.addEntry(from[i].path,_getInputStream(from[i]));
 		} else {
 			zipOutputStream.addDirectory(from[i].directory);
 		}

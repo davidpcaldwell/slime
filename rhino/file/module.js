@@ -29,6 +29,7 @@ var file = $loader.file("file.js", {
 	defined: $context.api.js.defined,
 	constant: $context.api.js.constant,
 	fail: $context.api.java.fail,
+	isJavaType: $context.api.java.isJavaType,
 	Streams: $context.api.io.Streams,
 	Resource: $context.api.io.Resource
 });

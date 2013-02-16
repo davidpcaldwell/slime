@@ -133,11 +133,11 @@ var Pathname = function(parameters) {
 			return $filesystem.write.character(peer,append);
 		} else if (typeof(dataOrType) == "string") {
 			$filesystem.write.string(peer,append,dataOrType);
-		} else if (dataOrType.$getInputStream) {
+		} else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
 			var stream = $filesystem.write.binary(peer,append);
 			$context.Streams.binary.copy(dataOrType,stream);
 			stream.close();
-		} else if (dataOrType.$getReader) {
+		} else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
 			var stream = $filesystem.write.character(peer,append);
 			$context.Streams.text.copy(dataOrType,stream);
 			stream.close();

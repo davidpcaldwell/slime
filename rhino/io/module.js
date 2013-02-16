@@ -10,13 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-var $java = ($context.$java) ? $context.$java : new Packages.inonit.script.runtime.io.Streams();
+//	TODO	rename this
+var _java = ($context.$java) ? $context.$java : new Packages.inonit.script.runtime.io.Streams();
 
 var InputStream = function(peer) {
-	this.$getInputStream = $api.deprecate(function() {
-		return peer;
-	});
-
 	this.close = function() {
 		peer.close();
 	}
@@ -40,7 +37,7 @@ var InputStream = function(peer) {
 	$api.deprecate(this, "characters");
 
 	this.cache = function() {
-		var $bytes = $java.readBytes(peer);
+		var $bytes = _java.readBytes(peer);
 		return new Resource(new function() {
 			this.read = new function() {
 				this.binary = function() {
@@ -56,16 +53,12 @@ var InputStream = function(peer) {
 		}
 
 		this.array = function() {
-			return $java.readBytes(peer);
+			return _java.readBytes(peer);
 		}
 	};
 };
 
 var OutputStream = function(peer) {
-	this.$getOutputStream = $api.deprecate(function() {
-		return peer;
-	});
-
 	this.close = function() {
 		peer.close();
 	}
@@ -77,12 +70,12 @@ var OutputStream = function(peer) {
 	this.split = function(other) {
 		var otherPeer = other.java.adapt();
 
-		//	Handle Buffer special case
-		if (!otherPeer && other.$getOutputStream) {
-			otherPeer = other.$getOutputStream();
+		//	Handle Buffer special case, very dubious
+		if (!otherPeer && other.writeBinary) {
+			otherPeer = other.writeBinary.java.adapt();
 		}
 
-		return new OutputStream($java.split(peer,otherPeer))
+		return new OutputStream(_java.split(peer,otherPeer))
 	}
 
 	this.java = new function() {
@@ -93,10 +86,6 @@ var OutputStream = function(peer) {
 };
 
 var Reader = function(peer) {
-	this.$getReader = $api.deprecate(function() {
-		return peer;
-	});
-	
 	this.close = function() {
 		peer.close();
 	}
@@ -109,7 +98,7 @@ var Reader = function(peer) {
 		if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
 		var line;
 		var result;
-		while( (line = $java.readLine(peer,mode.ending)) != null ) {
+		while( (line = _java.readLine(peer,mode.ending)) != null ) {
 			result = callback( String( line ) );
 			if (typeof(result) != "undefined") {
 				break;
@@ -130,7 +119,7 @@ var Reader = function(peer) {
 
 	this.asString = function() {
 		var buffer = new Packages.java.io.StringWriter();
-		$java.copy(
+		_java.copy(
 			peer,
 			buffer
 		);
@@ -152,10 +141,6 @@ var Reader = function(peer) {
 	}
 }
 var Writer = function(peer) {
-	this.$getWriter = $api.deprecate(function() {
-		return peer;
-	});
-
 	this.close = function() {
 		peer.close();
 	}
@@ -181,14 +166,6 @@ var Writer = function(peer) {
 
 var Buffer = function() {
 	var peer = new Packages.inonit.script.runtime.io.Streams.Bytes.Buffer();
-
-	this.$getOutputStream = function() {
-		return peer.getOutputStream();
-	}
-
-	this.$getInputStream = function() {
-		return peer.getInputStream();
-	}
 
 	this.close = function() {
 		peer.getOutputStream().close();
@@ -217,23 +194,22 @@ $exports.Buffer = Buffer;
 var Streams = new function() {
 	this.binary = new function() {
 		this.copy = function(from,to,mode) {
-			var $r = (function() {
-				if ($context.api.java.isJavaType(Packages.java.io.InputStream)(from)) return from;
-				if (from.java && from.java.adapt) return from.java.adapt();
-				if (from.$getInputStream) return from.$getInputStream();
+			var isJavaType = $context.api.java.isJavaType;
+			var _r = (function() {
+				if (isJavaType(Packages.java.io.InputStream)(from)) return from;
+				if (from.java && from.java.adapt && isJavaType(Packages.java.io.InputStream)(from.java.adapt())) return from.java.adapt();
 			})();
-			var $w = (function() {
-				if ($context.api.java.isJavaType(Packages.java.io.OutputStream)(to)) return to;
-				if (to.java && to.java.adapt) return to.java.adapt();
-				if (to.$getOutputStream) return to.$getOutputStream();
+			var _w = (function() {
+				if (isJavaType(Packages.java.io.OutputStream)(to)) return to;
+				if (to.java && to.java.adapt && isJavaType(Packages.java.io.OutputStream)(to.java.adapt())) return to.java.adapt();
 			})();
 			if (mode) {
-				$java.copy($r,$w,false);
+				_java.copy(_r,_w,false);
 				if (mode.onFinish) {
-					mode.onFinish($r,$w);
+					mode.onFinish(_r,_w);
 				}
 			} else {
-				$java.copy($r,$w);
+				_java.copy(_r,_w);
 			}
 		}
 
@@ -250,10 +226,17 @@ var Streams = new function() {
 
 	this.text = new function() {
 		this.copy = function(from,to) {
-			$java.copy(
-				from.$getReader(),
-				to.$getWriter()
-			);
+			//	TODO	unknown the cases in which this is called, but the below is a pretty scary implicit conversion
+			var isJavaType = $context.api.java.isJavaType;
+			if (
+				from && from.java && from.java.adapt && isJavaType(Packages.java.io.Reader)(from.java.adapt())
+				&& to && to.java && to.java.adapt && isJavaType(Packages.java.io.Writer)(to.java.adapt())
+			) {
+				_java.copy(
+					from.java.adapt(),
+					to.java.adapt()
+				);
+			}
 		}
 	}
 
