@@ -17,15 +17,15 @@ $exports.run = function(p) {
 			this.getStandardOutput = function() {
 				return (p.stdout) ? p.stdout.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
 			};
-			
+
 			this.getStandardError = function() {
 				return (p.stderr) ? p.stderr.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
 			};
-			
+
 			this.getStandardInput = function() {
 				return (p.stdin) ? p.stdin.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM;
 			};
-			
+
 			this.getSubprocessEnvironment = function() {
 				if (p.environment) {
 					var rv = new Packages.java.util.HashMap();
@@ -37,7 +37,7 @@ $exports.run = function(p) {
 					return null;
 				}
 			};
-			
+
 			this.getWorkingDirectory = function() {
 				if (p.workingDirectory) {
 					if (p.workingDirectory && p.workingDirectory.pathname) {
@@ -48,7 +48,7 @@ $exports.run = function(p) {
 			};
 		}
 	);
-		
+
 	var invocation = (function() {
 		var rv = {
 			configuration: {},
@@ -80,7 +80,7 @@ $exports.run = function(p) {
 			this.getCommand = function() {
 				return invocation.configuration.command;
 			};
-			
+
 			this.getArguments = function() {
 				return invocation.configuration.arguments;
 			};
@@ -118,7 +118,7 @@ $exports.environment = (function() {
 			return value;
 		};
 	};
-	
+
 	var jenv = Packages.java.lang.System.getenv();
 	var rv = {};
 	var i = jenv.keySet().iterator();

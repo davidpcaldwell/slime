@@ -115,7 +115,7 @@
 						}
 						return rv;
 					};
-					
+
 					var deprecateProperty = function(object,property) {
 						if (typeof(object[property]) == "function") {
 							object[property] = deprecateFunction(object[property],object,property);
@@ -166,9 +166,9 @@
 
 							object.__defineGetter__(property,wrapGetter(object.__lookupGetter__(property)));
 							object.__defineSetter__(property,wrapSetter(object.__lookupSetter__(property)));
-						}						
+						}
 					};
-					
+
 					if (typeof(object) == "function" && arguments.length == 1) {
 						return deprecateFunction(arguments[0]);
 					} else if ( (typeof(object) == "object" || typeof(object) == "function") && typeof(property) == "string") {

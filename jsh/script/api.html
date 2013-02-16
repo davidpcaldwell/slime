@@ -545,7 +545,7 @@ END LICENSE
 						}, arguments);
 					})("-a", "b");
 					test(usingArgumentsObject.options.a == "b");
-					
+
 					var expectError = function(f) {
 						try {
 							f.apply(this,arguments);
@@ -555,7 +555,7 @@ END LICENSE
 						}
 					};
 
-					test(expectError(function() { 
+					test(expectError(function() {
 						var args;
 						var parameters = module.getopts({
 							options: {

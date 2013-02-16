@@ -53,13 +53,13 @@ public class Command {
 				public final String getCommand() {
 					return path;
 				}
-				
+
 				public final String[] getArguments() {
 					return arguments;
 				}
 			};
 		}
-		
+
 		public abstract String getCommand();
 		public abstract String[] getArguments();
 
@@ -78,11 +78,11 @@ public class Command {
 	public static class Listener {
 		private Integer status;
 		private IOException threw;
-		
+
 		final void finished(int status) {
 			this.status = new Integer(status);
 		}
-		
+
 		final void threw(IOException e) {
 			this.threw = e;
 		}
@@ -90,7 +90,7 @@ public class Command {
 		public final Integer getExitStatus() {
 			return status;
 		}
-		
+
 		public final IOException getLaunchException() {
 			return threw;
 		}
@@ -155,11 +155,11 @@ public class Command {
 		private byte[] error;
 		private ContextImpl context = new ContextImpl();
 		private Listener listener = new Listener();
-		
+
 		Context getContext() {
 			return context;
 		}
-		
+
 		Listener getListener() {
 			return listener;
 		}
@@ -197,7 +197,7 @@ public class Command {
 		public String getCommandOutput() throws IOException {
 			return context.getCommandOutput();
 		}
-		
+
 		public final Result evaluate() throws Failure {
 			if (this.isSuccess()) {
 				return this;
@@ -266,7 +266,7 @@ public class Command {
 			,configuration
 		);
 	}
-	
+
 	private void execute(Context context, Listener listener) {
 		try {
 			Process p = launch(context, configuration);
@@ -279,7 +279,7 @@ public class Command {
 			listener.threw(e);
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
-		}		
+		}
 	}
 
 	Listener execute(Context context) {

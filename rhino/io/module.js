@@ -46,7 +46,7 @@ var InputStream = function(peer) {
 			}
 		});
 	}
-	
+
 	this.java = new function() {
 		this.adapt = function() {
 			return peer;
@@ -89,7 +89,7 @@ var Reader = function(peer) {
 	this.close = function() {
 		peer.close();
 	}
-	
+
 	this.readLines = function(callback,mode) {
 
 		if (!mode) mode = {};
@@ -156,7 +156,7 @@ var Writer = function(peer) {
 			throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);
 		}
 	};
-	
+
 	this.java = new function() {
 		this.adapt = function() {
 			return peer;
@@ -170,7 +170,7 @@ var Buffer = function() {
 	this.close = function() {
 		peer.getOutputStream().close();
 	}
-	
+
 	//	TODO	could we name these better? in/out, read/write, ... ?
 
 	this.writeBinary = function() {
@@ -251,7 +251,7 @@ var Streams = new function() {
 			delete rv.close;
 			return rv;
 		}
-		
+
 		this.stderr = StandardOutputStream($context.stdio.$err);
 		this.stdout = StandardOutputStream($context.stdio.$out);
 	}

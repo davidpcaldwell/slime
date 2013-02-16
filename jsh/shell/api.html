@@ -101,7 +101,7 @@ END LICENSE
 				this.getSystemProperty = function(name) {
 					return String(Packages.java.lang.System.getProperty(name));
 				}
-				
+
 				this._getSystemProperties = function() {
 					return Packages.java.lang.System.getProperties();
 				}
@@ -342,7 +342,7 @@ END LICENSE
 										<ol>
 											<li class="object">
 												<span>
-													An object with the same properties as those of the argument to 
+													An object with the same properties as those of the argument to
 													<a href="../../rhino/shell/api.html#run.evaluate">the rhino/shell version</a>,
 													with the following differences:
 												</span>
@@ -385,8 +385,8 @@ END LICENSE
 														<div class="name">arguments</div>
 														<span class="type">Array of string</span>
 														<span>
-															(if an operating system shell was created) The arguments sent to the 
-															operating system command. Not present if the subshell was 
+															(if an operating system shell was created) The arguments sent to the
+															operating system command. Not present if the subshell was
 															executed in-process.
 														</span>
 													</li>
@@ -417,7 +417,7 @@ END LICENSE
 					test(typeof(unforked.command) == "undefined");
 					test(typeof(unforked.arguments) == "undefined");
 					test(Boolean(unforked.jsh) && Boolean(unforked.jsh.script));
-					
+
 					var forked = module.jsh({
 						script: $module.getResourcePathname("test/jsh.jsh.js").file,
 						arguments: [],
@@ -430,7 +430,7 @@ END LICENSE
 					test(typeof(forked.command) != "undefined" && typeof(forked.command) == "string");
 					test(typeof(forked.arguments) != "undefined");
 					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
-					
+
 					var issue82 = module.jsh({
 						script: $module.getResourcePathname("test/jsh.jsh.js").file,
 						evaluate: function(result) {

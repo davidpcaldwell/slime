@@ -199,7 +199,7 @@ this.jsh = new function() {
 			}
 			loader.addClasses(pathname.java.adapt());
 		}
-		
+
 		this.$getClass = function(name) {
 			return loader.getClass(name);
 		};

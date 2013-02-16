@@ -79,7 +79,7 @@ var Element = function(p) {
 	var namespaces = (p.namespaces) ? p.namespaces : [];
 	//	objects with namespace / local / value properties
 	var attributes = (p.attributes) ? p.attributes : [];
-	
+
 	//	optionally adds children upon construction
 	var children = (p.children) ? p.children : [];
 
@@ -214,11 +214,11 @@ var Element = function(p) {
 	this.append = function(child) {
 		children.push(child);
 	}
-	
+
 	this.set = function(p) {
 		children = p;
 	}
-	
+
 	this.remove = function(p) {
 		var child;
 		if (p.recursive && p.node) {
@@ -273,7 +273,7 @@ $exports.Rhino = new function() {
 	var toNamespace = function(v) {
 		return (v) ? String(v) : "";
 	}
-	
+
 	var toElement = function(_element) {
 		var p = {};
 		debugger;
@@ -316,7 +316,7 @@ $exports.Rhino = new function() {
 		}
 		return new Element(p);
 	}
-	
+
 	var toNode = function(_node) {
 		var rv;
 		if (_node.getNodeType() == Packages.org.w3c.dom.Node.DOCUMENT_NODE) {
@@ -336,7 +336,7 @@ $exports.Rhino = new function() {
 		}
 		return rv;
 	}
-	
+
 	this.Document = function(p) {
 		if (p.stream) {
 			var _jaxp = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder();

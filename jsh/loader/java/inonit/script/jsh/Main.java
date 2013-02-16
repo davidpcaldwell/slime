@@ -322,9 +322,9 @@ public class Main {
 						}
 					};
 				}
-				
+
 				@Override public Code.Source getPackagedCode() {
-					if (System.getProperty("jsh.launcher.packaged") != null) {					
+					if (System.getProperty("jsh.launcher.packaged") != null) {
 						return Code.Source.system("$packaged/");
 					} else {
 						return null;

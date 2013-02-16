@@ -121,7 +121,7 @@ platform.jdk = {};
 (function() {
 	var tried = false;
 	var compiler;
-	
+
 	platform.jdk.__defineGetter__("compile", function() {
 		if (!tried) {
 			Packages.java.lang.System.err.println("Loading Java compiler ...");
@@ -143,10 +143,10 @@ platform.jdk = {};
 				);
 				if (status) {
 					throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
-				}				
+				}
 			}
 		}
-	});	
+	});
 })();
 
 var copyFile = function(from,to,filters) {

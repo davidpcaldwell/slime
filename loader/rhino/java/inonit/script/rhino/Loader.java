@@ -81,7 +81,7 @@ public abstract class Loader {
 			New(ClassLoader delegate) {
 				super(delegate);
 			}
-			
+
 			public String toString() {
 				String rv = getClass().getName() + ": locations=[";
 				for (int i=0; i<locations.size(); i++) {
@@ -130,7 +130,7 @@ public abstract class Loader {
 				}
 				return null;
 			}
-			
+
 			protected Enumeration<URL> findResources(String name) {
 				java.util.Vector rv = new java.util.Vector();
 				for (Code.Source source : locations) {
@@ -150,7 +150,7 @@ public abstract class Loader {
 					@Override public String toString() {
 						return "Loader.Classpath for: " + New.this.toString();
 					}
-					
+
 					@Override public void append(Code.Source code) {
 						locations.add(code);
 					}

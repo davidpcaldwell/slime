@@ -25,7 +25,7 @@ public class OperatingSystem {
 	public Command.Listener run(Command.Context context, Command.Configuration configuration) {
 		return Command.create(configuration).execute(context);
 	}
-	
+
 	//	Used by Cygwin filesystem implementation and rhino/file tests
 	public Command.Result execute(String path, String[] arguments) {
 		return Command.create(Command.Configuration.create(path, arguments)).getResult();

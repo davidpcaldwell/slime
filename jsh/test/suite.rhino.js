@@ -12,7 +12,7 @@
 
 //	Required in scope:
 //	jsh/launcher/rhino/api.rhino.js must be run in global scope
-//	
+//
 //	(optional, can use environment variable) JSH_HOME: Packages.java.io.File representing home of built shell
 //	(optional, can use environment variable) SLIME_SRC: Packages.java.io.File representing source directory
 //	(optional) LAUNCHER_COMMAND: the command to use when launching a shell
@@ -43,9 +43,9 @@ if (typeof(this.JSH_HOME) == "undefined") {
 
 if (typeof(this.SLIME_SRC) == "undefined") {
 	if (getSystemProperty("slime.src")) {
-		SLIME_SRC = new File(getSystemProperty("slime.src"));		
+		SLIME_SRC = new File(getSystemProperty("slime.src"));
 	} else {
-		throw new Error("Could not find SLIME source.");		
+		throw new Error("Could not find SLIME source.");
 	}
 }
 
@@ -68,7 +68,7 @@ var PACKAGED_LAUNCHER = (function() {
 	command.push("-jar");
 	return command;
 })();
-	
+
 var runPackaged = function() {
 	var command = PACKAGED_LAUNCHER.slice(0);
 	for (var i=0; i<arguments.length; i++) {
@@ -220,7 +220,7 @@ var jshPackage = function(p) {
 		[
 			String(new File(SLIME_SRC,"jsh/test/loader/2.jsh.js").getCanonicalPath())
 		]
-	), mymode);	
+	), mymode);
 })();
 
 var classes = createTemporaryDirectory();

@@ -42,10 +42,10 @@ var calculate = function(profiles) {
 			}
 		};
 
-		calculateNode(profile.timing.root);		
+		calculateNode(profile.timing.root);
 	});
 };
-		
+
 var render = function(profiles,settings) {
 	if (!settings) {
 		settings = {
@@ -100,7 +100,7 @@ var render = function(profiles,settings) {
 					}
 				});
 				if (children >= settings.threshold) return true;
-				
+
 				return child.statistics.elapsed >= settings.threshold;
 			}).sort(function(a,b) {
 				return b.statistics.elapsed - a.statistics.elapsed;

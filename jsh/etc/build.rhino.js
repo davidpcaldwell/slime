@@ -119,7 +119,7 @@ var getSetting = function(systemPropertyName) {
 
 var SLIME_SRC;
 if (typeof(SLIME_SRC) == "undefined") {
-	SLIME_SRC = (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));	
+	SLIME_SRC = (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));
 }
 
 if (new File(SLIME_SRC,"jsh/etc/build.rhino.js").exists() && new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js").exists()) {

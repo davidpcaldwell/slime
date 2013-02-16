@@ -65,7 +65,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 			args.push(pathname);
 		}
 	});
-	
+
 	//	Compile the servlet to WEB-INF/classes
 	var classpath = jsh.file.Searchpath([]);
 	classpath.pathnames.push(WEBAPP.getRelativePath("WEB-INF/lib/js.jar"));
@@ -111,7 +111,7 @@ parameters.options.resources.forEach(function(resources) {
 
 (function() {
 	//	Obviously using an XML parser would be beneficial here if this begins to get more complex
-	
+
 	var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);
 	xml = xml.replace(/__SCRIPT__/, parameters.options.servlet);
 	//	The below line removes the license, because Tomcat cannot parse it; this may or may not be what we want
@@ -137,6 +137,6 @@ parameters.options.resources.forEach(function(resources) {
 	var spliceArgs = [nextInitParamIndex,0].concat(initParamLines);
 	lines.splice.apply(lines,spliceArgs);
 	xml = lines.join("\n");
-	
+
 	WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 })();

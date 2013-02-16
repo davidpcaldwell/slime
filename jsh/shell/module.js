@@ -115,13 +115,13 @@ $exports.shell = function(p) {
 			};
 			for (var x in arguments[2]) {
 				p[x] = arguments[2][x];
-			}			
+			}
 		}).apply(this,arguments);
 	} else if (arguments.length == 2) {
 		$api.deprecate(function() {
 			p = {
 				command: arguments[0],
-				arguments: arguments[1]				
+				arguments: arguments[1]
 			}
 		}).apply(this,arguments);
 	}
@@ -146,7 +146,7 @@ $exports.shell = function(p) {
 			return $filesystems.cygwin.toUnix(item);
 		}
 	}
-	
+
 	var command = (function() {
 		if (typeof(p.command) == "string") return p.command;
 		if (p.command.pathname) return p.command.pathname;
@@ -154,7 +154,7 @@ $exports.shell = function(p) {
 	})();
 
 	var tokens = [ command ].concat( p.arguments.map(preprocessor) );
-	
+
 	var evaluate = (function() {
 		if (p.evaluate) return p.evaluate;
 		if (p.onExit) return $api.deprecate(p.onExit);
@@ -332,7 +332,7 @@ $exports.jsh = function(p) {
 		})();
 	}
 	//	TODO	need to detect directives in the given script and fork if they are present
-	
+
 	var fork = (function() {
 		if (p.fork) return true;
 		if (p.classpath) return true;
@@ -341,10 +341,10 @@ $exports.jsh = function(p) {
 		if (p.environment && p.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
 		return false;
 	})();
-	
+
 	var environment = (function() {
 		var rv = (p.environment) ? p.environment : {};
-		
+
 		var addProperties = function(from) {
 			for (var x in from) {
 				if (x != "JSH_LAUNCHER_DEBUG") {
@@ -354,14 +354,14 @@ $exports.jsh = function(p) {
 						rv[x] = String(from[x]);
 					}
 				}
-			}			
+			}
 		}
-		
+
 		addProperties($context.api.shell.properties.jsh.launcher.environment);
 		addProperties($context.api.shell.environment);
 		return rv;
 	})();
-	
+
 	if (fork) {
 		debugger;
 		//	TODO	can we use $exports.java.home here?
@@ -379,7 +379,7 @@ $exports.jsh = function(p) {
 		p.arguments.forEach( function(arg) {
 			jargs.push(arg);
 		});
-		
+
 		var evaluate = (function() {
 			if (p.evaluate) {
 				return function(result) {
@@ -392,7 +392,7 @@ $exports.jsh = function(p) {
 				}
 			}
 		})();
-		
+
 		var shell = {
 			command: executable,
 			arguments: jargs,
@@ -402,7 +402,7 @@ $exports.jsh = function(p) {
 			stdin: p.stdin,
 			evaluate: evaluate
 		};
-		
+
 		return $exports.shell(shell);
 	} else {
 		var configuration = new JavaAdapter(
@@ -502,7 +502,7 @@ $exports.jsh = function(p) {
 				}
 			}
 		);
-	
+
 		if (!p.script || !p.script.pathname || !p.script.pathname.java || !p.script.pathname.java.adapt) {
 			throw new TypeError("Expected script " + p.script + " to have pathname.java.adapt()");
 		}

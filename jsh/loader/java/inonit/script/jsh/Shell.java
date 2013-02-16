@@ -82,23 +82,23 @@ public class Shell {
 	public static abstract class Configuration {
 		public abstract int getOptimizationLevel();
 		public abstract Engine.Debugger getDebugger();
-		
+
 		//	TODO	consider: should this log implementation be supplied, and just log to stderr?
 		public abstract Engine.Log getLog();
-		
+
 		public abstract ClassLoader getClassLoader();
 
 		public abstract Properties getSystemProperties();
 		public abstract Map getEnvironment();
 		public abstract Stdio getStdio();
-		
+
 		/**
 		 *
 		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
 		 *	<code>null</code> if it is not.
 		 */
 		public abstract Code.Source getPackagedCode();
-		
+
 		private Engine engine;
 
 		final void initialize() {
@@ -149,7 +149,7 @@ public class Shell {
 			}
 
 			public abstract java.net.URI getUri();
-			
+
 
 			//			substitute; currently, it appears to only be used in jsh.js, to set the script property
 			public final File getFile() {
@@ -160,7 +160,7 @@ public class Shell {
 					return null;
 				}
 			}
-			
+
 			public abstract Engine.Source getSource();
 		}
 
@@ -365,7 +365,7 @@ public class Shell {
 				Host.this.configuration.getEngine().getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
 			}
-			
+
 			public int jsh(Configuration configuration, final File script, final String[] arguments) {
 				Invocation invocation = new Invocation() {
 					@Override public Invocation.Script getScript() {

@@ -377,7 +377,7 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span class="type">function</span>
 					-or-
-					<span class="type">undefined</span>					
+					<span class="type">undefined</span>
 					<span>
 						If the argument was a function, returns a version of the function that is deprecated: that is, executes
 						the appropriate warning callback when it is executed. Otherwise, returns undefined.
@@ -432,7 +432,7 @@ END LICENSE
 											<div class="name">target</div>
 											<span class="type">object</span>
 											<span>
-												(if deprecated item is function) The <code>this</code> value when the deprecated 
+												(if deprecated item is function) The <code>this</code> value when the deprecated
 												function was invoked.
 											</span>
 										</li>
@@ -441,7 +441,7 @@ END LICENSE
 											<div class="name">arguments</div>
 											<span class="type">Array</span>
 											<span>
-												(if deprecated item is function) The contents of the <code>arguments</code> object 
+												(if deprecated item is function) The contents of the <code>arguments</code> object
 												passed to the function; note that this object is an array, not the
 												<code>arguments</code> object.
 											</span>
@@ -449,7 +449,7 @@ END LICENSE
 										<li class="value">
 											<div class="name">get</div>
 											<span>
-												(if deprecated item is non-function) The value of the marked property when it was 
+												(if deprecated item is non-function) The value of the marked property when it was
 												accessed, if this usage was
 												a retrieval of the value of a marked property.
 											</span>
@@ -488,9 +488,9 @@ END LICENSE
 						warnings++;
 					};
 					$api.deprecate.warning = warning;
-					
+
 					var deprecated = $api.deprecate(f);
-					
+
 					test(f() == 1 && warnings == 0);
 					test(deprecated() == 2);
 					test(warnings == 1);
