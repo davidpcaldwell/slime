@@ -37,6 +37,7 @@
 //	generates and runs unit tests is run in the debugger
 //
 //	jsh.build.nounit (JSH_BUILD_NOUNIT): if set, unit tests are not run as part of the build process
+//	jsh.build.tomcat.home (JSH_BUILD_TOMCAT_HOME): if set, allows HTTP client and server tests to be run
 //	jsh.build.notest (JSH_BUILD_NOTEST): if set, unit and integration tests are not run as part of the build process
 //
 //	jsh.build.nodoc (JSH_BUILD_NODOC): if set, no documentation is emitted as part of the build process
@@ -415,6 +416,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		modules.add("rhino/io/", "jsh.io");
 		modules.add("rhino/file/","jsh.file");
 		modules.add("rhino/http/client/", "jsh.http")
+		modules.add("rhino/http/servlet/")
 		modules.add("rhino/shell/");
 		modules.add("jsh/shell/","jsh.shell");
 		modules.add("jsh/script/","jsh.script");
@@ -437,6 +439,14 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			if (!/^JSH_/.test(x)) {
 				subenv[x] = env[x];
 			}
+		}
+		if (getSetting("jsh.build.tomcat.home")) {
+			//	TODO	is this the best way to do it? Or would simply adding CATALINA_HOME to the environment cause the jsh.httpd
+			//			plugin to do this for us?
+			subenv.CATALINA_HOME = getSetting("jsh.build.tomcat.home");
+		} else {
+			console("Tomcat not found (use environment variable JSH_BUILD_TOMCAT_HOME or system property jsh.build.tomcat.home)");
+			console("Unit tests for HTTP client and server will not be run.");
 		}
 		if (env.JSH_BUILD_DEBUG) {
 			subenv.JSH_LAUNCHER_DEBUG = "true";
