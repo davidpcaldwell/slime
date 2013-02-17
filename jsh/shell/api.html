@@ -217,7 +217,7 @@ END LICENSE
 				</div>
 			</li>
 			<li class="function">
-				<div class="name">shell</div>
+				<div class="name"><a id="shell">shell</a></div>
 				<span>Executes a subprocess.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
@@ -266,7 +266,7 @@ END LICENSE
 									<div class="name">stderr</div>
 									<span><a href="../../rhino/shell/api.html#run.stderr">See rhino/shell</a></span>
 								</li>
-								<li class="value">
+								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run.workingDirectory')">
 									<div class="name">workingDirectory</div>
 									<span><a href="../../rhino/shell/api.html#run.workingDirectory">See rhino/shell</a></span>
 								</li>
@@ -342,8 +342,9 @@ END LICENSE
 										<ol>
 											<li class="object">
 												<span>
-													An object with the same properties as those of the argument to
-													<a href="../../rhino/shell/api.html#run.evaluate">the rhino/shell version</a>,
+													An object with the same properties as those of 
+													the evaluate property of the argument to 
+													<a href="#shell">shell</a>,
 													with the following differences:
 												</span>
 												<div class="label">has properties:</div>
