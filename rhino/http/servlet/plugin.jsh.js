@@ -29,15 +29,17 @@ plugin({
 		return "Environment variable CATALINA_HOME is not defined.";
 	},
 	load: function() {
-		var CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+		if (jsh.shell.environment.CATALINA_HOME) {
+			var CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
 
-		if (CATALINA_HOME) {
-			[
-				"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
-				"lib/catalina.jar"
-			].forEach(function(path) {
-				$loader.classpath.add(CATALINA_HOME.getRelativePath(path));
-			});
+			if (CATALINA_HOME) {
+				[
+					"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
+					"lib/catalina.jar"
+				].forEach(function(path) {
+					$loader.classpath.add(CATALINA_HOME.getRelativePath(path));
+				});
+			}
 		}
 
 		if (!jsh.httpd) {
