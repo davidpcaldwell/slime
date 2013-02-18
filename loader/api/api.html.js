@@ -79,7 +79,7 @@ var filter = function(array,f) {
 var select = function(array,f) {
 	var rv = filter(array,f);
 	if (rv.length > 1) {
-		throw new Error("Too many satisfy filter.");
+		throw new Error("Too many satisfy filter: " + f + " " + rv);
 	}
 	if (rv.length == 0) return null;
 	return rv[0];
@@ -88,8 +88,19 @@ var select = function(array,f) {
 var getElement = function(root,path) {
 	var tokens = path.split("/");
 	var rv = root;
+	
+	var hasJsapiId = function(id) {
+		var rv = function(e) {
+			return e.getJsapiAttribute("id") == id;
+		};
+		rv.toString = function() {
+			return "[element: jsapi:id=" + id + " tokens=" + tokens + "]";
+		}
+		return rv;
+	}
+	
 	for (var i=0; i<tokens.length; i++) {
-		rv = select(getDescendants(rv), function(e) { return e.getJsapiAttribute("id") == tokens[i]; });
+		rv = select(getDescendants(rv), hasJsapiId(tokens[i]));
 		if (typeof(rv) == "undefined") {
 			return null;
 		}
