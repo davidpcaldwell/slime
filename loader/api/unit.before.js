@@ -78,6 +78,33 @@ $exports.Scenario = function(properties) {
 		}
 
 		var runTest = function(assertion,next) {
+			var MESSAGE = function(success) {
+				return (success) ? "Success." : "FAILED!";
+			};
+			
+			var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
+				return function(success) {
+					var messages = {
+						success: assertion_messages.success,
+						failure: assertion_messages.failure
+					};
+					if (messages && typeof(messages.success) == "string") {
+						messages.success = (function(value) {
+							return function() {
+								return value;
+							}
+						})(messages.success)
+					}
+					if (messages && typeof(messages.failure) == "string") {
+						messages.failure = (function(value) {
+							return function() {
+								return value;
+							}
+						})(messages.failure)
+					}
+					return (success) ? messages.success() : messages.failure();
+				}
+			};
 			if (typeof(assertion) == "boolean") {
 				assertion = (function(b) {
 					return (function() {
@@ -87,10 +114,7 @@ $exports.Scenario = function(properties) {
 						}
 						return {
 							success: function() { return b; },
-							messages: {
-								success: function() { return "Success."; },
-								failure: function() { return "FAILED!"; }
-							}
+							message: MESSAGE
 						};
 					})();
 				})(assertion);
@@ -100,10 +124,7 @@ $exports.Scenario = function(properties) {
 				assertion = function() {
 					return {
 						success: function() { return null; },
-						messages: {
-							success: function() { return "Success." },
-							failure: function() { return "FAILED!"; }
-						}
+						message: MESSAGE
 					}
 				};
 			} else if (
@@ -117,12 +138,9 @@ $exports.Scenario = function(properties) {
 						};
 						
 						if (object.messages) {
-							this.messages = object.messages;
+							this.message = MESSAGE_FOR_MESSAGES(object.messages);
 						} else {
-							this.messages = {
-								success: function() { return "Success." },
-								failure: function() { return "FAILED!"; }								
-							};
+							this.message = MESSAGE;
 						}
 					}
 				})(assertion);
@@ -136,15 +154,7 @@ $exports.Scenario = function(properties) {
 									return value;
 								};
 								
-								this.messages = new function() {
-									this.success = function() {
-										return "Success";
-									};
-									
-									this.failure = function() {
-										return "FAILED!";
-									}
-								}
+								this.message = MESSAGE;
 							}
 						})(v);
 					};
@@ -153,15 +163,7 @@ $exports.Scenario = function(properties) {
 							return v.success;
 						};
 						
-						this.messages = new function() {
-							this.success = function() {
-								return v.messages.success;
-							};
-							
-							this.failure = function() {
-								return v.messages.failure;
-							}
-						}
+						this.message = MESSAGE_FOR_MESSAGES;
 					}
 				})(assertion);
 			} else if (typeof(assertion) != "object" || typeof(assertion.success) != "function") {
@@ -169,48 +171,22 @@ $exports.Scenario = function(properties) {
 				error.assertion = assertion;
 				throw error;
 			}
-//			if (!result.messages) result.messages = {};
-//			if (!result.messages.success) {
-//				result.messages.success = function() { return "Success."; }
-//			}
-//			if (!result.messages.failure) {
-//				result.messages.failure = function() { return "FAILED!"; }
-//			}
 			var success = assertion.success();
 			if (!success) {
 				fail();
 			}
 			var result = {
-				success: success
-			};
-			var messages = {
-				success: assertion.messages.success,
-				failure: assertion.messages.failure
-			};
-			if (messages && typeof(messages.success) == "string") {
-				messages.success = (function(value) {
-					return function() {
-						return value;
+				success: success,
+				message: function() {
+					//	TODO	this may be an expensive operation, which is why it is a function in the first place; should cache
+					//			the value in case callers invoke it multiple times
+					try {
+						return assertion.message(success);
+					} catch (e) {
+						return "Error occurred when trying to generate message: " + e;
 					}
-				})(messages.success)
-			}
-			if (messages && typeof(messages.failure) == "string") {
-				messages.failure = (function(value) {
-					return function() {
-						return value;
-					}
-				})(messages.failure)
-			}
-			if (success) {
-				result.message = messages.success();
-			} else {
-				result.message = messages.failure();
-			}
-//			if (typeof(result) == "boolean") {
-//				//	not sure this should be supported
-//				runTest(result,next);
-//				return;
-//			}
+				}
+			};
 			if (console.test) console.test(result);
 			if (next) {
 				if ($context.asynchronous && $context.asynchronous.test) {

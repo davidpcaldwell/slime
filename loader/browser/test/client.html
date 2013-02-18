@@ -459,13 +459,13 @@ END LICENSE
 
 					this.test = function(test) {
 						if (test.success) {
-							log("Success: " + test + "; " + test.message);
+							log("Success: " + test + "; " + test.message());
 						} else {
 							log("Failure: " + test);
-							log("Reason: " + test.message);
+							log("Reason: " + test.message());
 						}
 						var div = document.createElement("div");
-						div.appendChild(document.createTextNode(test.message));
+						div.appendChild(document.createTextNode(test.message()));
 						current.appendChild(div);
 					}
 				};
