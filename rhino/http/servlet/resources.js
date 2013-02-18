@@ -26,7 +26,7 @@ $exports.addJshPluginTo = function(jsh) {
 
 		this.loader = new jsh.io.Loader({
 			resources: new function() {
-				this.getResourceAsStream = function(path) {
+				this.get = function(path) {
 					for (var i=0; i<mapping.length; i++) {
 						var prefix = mapping[i].prefix;
 						if (path.substring(0,prefix.length) == prefix) {
@@ -35,7 +35,13 @@ $exports.addJshPluginTo = function(jsh) {
 								throw new Error("Directory not found at " + mapping[i].pathname);
 							}
 							var file = mapping[i].pathname.directory.getFile(subpath);
-							return (file) ? file.read(jsh.io.Streams.binary) : null;
+							return (file) ? new jsh.io.Resource({
+								read: {
+									binary: function() {
+										return file.read(jsh.io.Streams.binary)
+									}
+								}
+							}) : null;
 						}
 					}
 					return null;

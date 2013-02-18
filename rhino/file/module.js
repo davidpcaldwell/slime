@@ -107,9 +107,18 @@ $exports.Loader = function(directory) {
 				return "rhino/file Loader: directory=" + directory;
 			}
 
-			this.getResourceAsStream = function(path) {
+			this.get = function(path) {
 				var file = directory.getFile(path);
-				if (file) return file.read($context.api.io.Streams.binary);
+				//	TODO	could we modify this so that file supported Resource?
+				if (file) {
+					return new $context.api.io.Resource({
+						read: {
+							binary: function() {
+								return file.read(jsh.io.Streams.binary);
+							}
+						}
+					});
+				}
 				return null;
 			}
 		}

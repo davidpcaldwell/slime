@@ -314,6 +314,7 @@
 			}
 		}
 
+		//	TODO	currently undocumented
 		this.Loader = Loader;
 
 		this.run = function(code,scope,target) {

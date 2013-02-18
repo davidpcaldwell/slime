@@ -406,8 +406,11 @@ $exports.Loader = function(p) {
 				}
 
 				this.getResourceAsStream = function(path) {
-					var stream = p.resources.getResourceAsStream(String(path));
-					if (stream) return stream.java.adapt();
+					var resource = p.resources.get(String(path));
+					if (resource && resource.read && resource.read.binary) return resource.read.binary().java.adapt();
+					if (resource) {
+						throw new TypeError("Resource not found: " + path);
+					}
 					return null;
 				}
 			}

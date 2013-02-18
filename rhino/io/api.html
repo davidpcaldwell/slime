@@ -157,10 +157,10 @@ END LICENSE
 							</li>
 							<li class="value">
 								<span class="type">object</span>
-								<span>
+								<span><a name="Resource.write.arguments[1]">
 									An argument that can be used to configure the write operation; its semantics depend on
 									the underlying implementation.
-								</span>
+								</a></span>
 							</li>
 						</ol>
 					</div>
@@ -176,6 +176,99 @@ END LICENSE
 			</ul>
 		</div>
 		<ul>
+			<li class="constructor">
+				<div class="name">Resource</div>
+				<span>Creates a <a href="#types.Resource">Resource</a>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>An object providing an implementation for this resource.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="object">
+									<div class="name">read</div>
+									<span>An object providing an implementation for reading this resource.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">binary</div>
+											<span>Returns a byte stream representing this resource.</span>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.binput">byte input stream</a></span>
+												<span>A stream for reading this resource.</span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">text</div>
+											<span>Returns a character stream representing this resource.</span>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.cinput">character input stream</a></span>
+												<span>A stream for reading this resource.</span>
+											</div>
+										</li>
+									</ul>
+								</li>
+								<li class="object">
+									<div class="name">write</div>
+									<span>An object providing an implementation for writing to this resource.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">binary</div>
+											<span>Returns a byte stream for writing to this resource.</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">object</span>
+														<span>
+															See <a href="#Resource.write.arguments[1]">the second argument</a> to
+															Resource.write().
+														</span>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.boutput">byte output stream</a></span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">text</div>
+											<span>Returns a character stream for writing to this resource.</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">object</span>
+														<span>
+															See <a href="#Resource.write.arguments[1]">the second argument</a> to
+															Resource.write().
+														</span>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.coutput">character output stream</a></span>
+											</div>
+										</li>
+
+									</ul>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Resource">Resource</a></span>
+				</div>
+			</li>
+
 			<li class="constructor">
 				<div class="name">Buffer</div>
 				<span>Creates a buffer to which bytes can be written, and later read.</span>
@@ -592,6 +685,87 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
+			<li class="constructor">
+				<div class="name">Loader</div>
+				<span>Creates a <a href="../../loader/api.html#Loader">Loader</a>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span>
+								An object that specifies how to load the resources. The object can support the following
+								interface:
+							</span>
+							<!--	
+								TODO	otherwise, we invoke the Rhino loader's undocumented Loader constructor; document
+										it
+							-->
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="object">
+									<div class="name">resources</div>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">get</div>
+											<span>
+												Returns the resource at the given path.
+											</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">string</span>
+														<span>A path.</span>
+													</li>
+
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type"><a href="#types.Resource">Resource</a></span>
+												<span>
+													The resource at the given path, or <code>null</code> if no resource is
+													located at the given path.
+												</span>
+											</div>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</li>
+
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="../../loader/api.html#types.Loader">Loader</a></span>
+					<span>Objects support the SLIME Loader interface, as well as the following interface:</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">resource</div>
+							<span>Returns the resource located at the given path.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A path.</span>
+									</li>
+
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.Resource">Resource</a></span>
+							</div>
+						</li>
+
+					</ul>
+				</div>
+			</li>
+
 			<li class="object">
 				<div class="name">java</div>
 				<div class="label">has properties:</div>

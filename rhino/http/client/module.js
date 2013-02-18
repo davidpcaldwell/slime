@@ -388,15 +388,23 @@ var Client = function(mode) {
 						return "rhino/http/client Loader: base=" + base;
 					}
 
-					this.getResourceAsStream = function(path) {
+					this.get = function(path) {
 						var url = base + path;
 						var response = parent.request({
 							url: url
 						});
 						if (response.status.code == 200) {
-							return response.body.stream;
+							return new $context.api.io.Resource({
+								read: {
+									binary: function() {
+										return response.body.stream;
+									}
+								}
+							});
+						} else if (response.status.code == 404) {
+							return null;
 						} else {
-							//	TODO	figure out what this API should do when a resource is not found
+							//	TODO	figure out what this API should do in this case
 							throw new Error("Status when loading " + url + " is HTTP " + response.status.code);
 						}
 					}

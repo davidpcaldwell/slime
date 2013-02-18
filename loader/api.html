@@ -757,12 +757,133 @@ END LICENSE
 				</div>
 			</div>
 		</div>
-		<ul>
+		<div class="type" jsapi:id="Loader">
+			<a class="type" name="types.Loader">Loader</a>
+			<span>A <i>Loader</i> loads and executes JavaScript code from a specific source.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function" jsapi:id="run">
+					<div class="name"><a name="Loader.run">run</a></div>
+					<span jsapi:id="description">
+						Executes code in a particular scope with a particular <code>this</code> value. The code will automatically
+						contain the <code>$platform</code> and <code>$api</code> objects described above in its scope.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>The path of the code to execute.</span>
+							</li>
+							<li class="value" jsapi:id="arguments[1]">
+								<span class="type">object</span>
+								<span>The scope in which to execute the code.</span>
+							</li>
+							<li class="value" jsapi:id="arguments[2]">
+								<span class="type">object</span>
+								<span>The object to use as the <code>this</code> value when executing the code.</span>
+							</li>
+						</ol>
+					</div>
+				</li>
+				<li class="function" jsapi:id="file">
+					<div class="name"><a name="Loader.file">file</a></div>
+					<span jsapi:id="description">
+						Executes a script in a separate scope. The scope will contain the <code>$platform</code> and <code>$api</code>
+						objects described above. In addition, the script will be provided with special objects named
+						<code>$context</code> and <code>$exports</code>. The <code>$context</code> object represents an
+						application-specific context to provide to the script; the <code>$exports</code> object represents an object to
+						which the script can assign properties that will be visible outside the script.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>The path of the code to execute.</span>
+							</li>
+							<li class="value" jsapi:id="arguments[1]">
+								<span class="type">object</span>
+								<span>
+									An object to use as the <code>$context</code> object when executing the given code. If absent, an
+									empty object will be supplied.
+									<!--	TODO	What about if it is a number, string, or boolean?	-->
+								</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns" jsapi:id="returns">
+						<div class="label">Returns</div>
+						<span class="type">object</span>
+						<span>An object which contains the properties the script assigned to the <code>$exports</code> object.</span>
+					</div>
+				</li>
+				<li class="function" jsapi:id="module">
+					<div class="name">module</div>
+					<span jsapi:id="description">
+						Loads a module. The module's code is specified by the first argument, and the second argument specifies
+						objects to be supplied to the module when loading it.
+					</span>
+					<div jsapi:id="description2">
+						The module's main file will be executed with the following variables in scope:
+						<ul>
+							<li>the <code>$platform</code> and <code>$api</code> objects specified above,</li>
+							<li>the <code>$context</code> and <code>$exports</code> objects specified by the second argument,</li>
+							<li>
+								a <code>$loader</code> object of type <a href="#types.Loader">Loader</a> allowing other source
+								files and submodules to be loaded.
+							</li>
+						</ul>
+					</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>The path of the code to execute.</span>
+							</li>
+							<li class="object" jsapi:id="arguments[1]">
+								<span>
+									(optional) An object specifying objects for the module. If no object is provided, an object will be
+									created and supplied with default values for its properties as indicated below.
+								</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">$context</div>
+										<span class="type">object</span>
+										<span>
+											(optional) The <code>$context</code> object to supply to the module's main file. If not
+											provided, an empty object will be created and supplied.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">$exports</div>
+										<span class="type">object</span>
+										<span>
+											(optional) The <code>$exports</code> object to supply to the module's main file. If not
+											provided, an empty object will be created and supplied.
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns" jsapi:id="returns">
+						<div class="label">Returns</div>
+						<span class="type">object</span>
+						<span>An object containing this module's exports.</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+
+		<ul jsapi:id="global">
 			<li class="function" jsapi:id="run">
 				<div class="name">run</div>
 				<span jsapi:id="description">
-					Executes code in a particular scope with a particular <code>this</code> value. The code will automatically
-					contain the <code>$platform</code> and <code>$api</code> objects described above in its scope.
+					Analogous to <a href="#Loader.run">Loader.run()</a>, except that the caller specifies a
+					<a href="#types.code">code</a> to execute rather than a path within a <a href="#types.Loader">Loader</a>.
 				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
@@ -773,11 +894,11 @@ END LICENSE
 						</li>
 						<li class="value" jsapi:id="arguments[1]">
 							<span class="type">object</span>
-							<span>The scope in which to execute the code.</span>
+							<span>See <a href="#Loader.run">Loader.run()</a>.</span>
 						</li>
 						<li class="value" jsapi:id="arguments[2]">
 							<span class="type">object</span>
-							<span>The object to use as the <code>this</code> value when executing the code.</span>
+							<span>See <a href="#Loader.run">Loader.run()</a>.</span>
 						</li>
 					</ol>
 				</div>
@@ -785,119 +906,33 @@ END LICENSE
 			<li class="function" jsapi:id="file">
 				<div class="name">file</div>
 				<span jsapi:id="description">
-					Executes a script in a separate scope. The scope will contain the <code>$platform</code> and <code>$api</code>
-					objects described above. In addition, the script will be provided with special objects named
-					<code>$context</code> and <code>$exports</code>. The <code>$context</code> object represents an
-					application-specific context to provide to the script; the <code>$exports</code> object represents an object to
-					which the script can assign properties that will be visible outside the script.
+					Analogous to <a href="#Loader.file">Loader.file()</a>, except that the caller specifies a
+					<a href="#types.code">code</a> to execute rather than a path within a <a href="#types.Loader">Loader</a>.
 				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type"><a href="#types.code">code</a></span> The code to execute.
+							<span class="type"><a href="#types.code">code</a></span>
+							<span>The code to execute.</span>
 						</li>
 						<li class="value" jsapi:id="arguments[1]">
 							<span class="type">object</span>
-							<span>
-								An object to use as the <code>$context</code> object when executing the given code. If absent, an
-								empty object will be supplied.
-								<!--	TODO	What about if it is a number, string, or boolean?	-->
-							</span>
+							<span>See <a href="#Loader.file">Loader.file()</a>.</span>
 						</li>
 					</ol>
 				</div>
 				<div class="returns" jsapi:id="returns">
 					<div class="label">Returns</div>
-					<span class="type">object</span>
-					<span>An object which contains the properties the script assigned to the <code>$exports</code> object.</span>
+					<span>See <a href="#Loader.file">Loader.file()</a>.</span>
 				</div>
 			</li>
 			<li class="function" jsapi:id="module">
 				<div class="name">module</div>
 				<span jsapi:id="description">
-					Loads a module. The module's code is specified by the first argument, and the second argument specifies
-					objects to be supplied to the module when loading it.
+					Analogous to <a href="#Loader.module">Loader.module()</a>, except that the caller specifies information about
+					the module structure and how to load the code rather than a path within a <a href="#types.Loader">Loader</a>.
 				</span>
-				<div jsapi:id="description2">
-					The module's main file will be executed with the following variables in scope:
-					<ul>
-						<li>the <code>$platform</code> and <code>$api</code> objects specified above,</li>
-						<li>the <code>$context</code> and <code>$exports</code> objects specified by the second argument,</li>
-						<li>a <code>$loader</code> object allowing other source files and submodules to be loaded.</li>
-					</ul>
-					The <code>$loader</code> object provides the following interface:
-					<ul>
-						<li class="function">
-							<div class="name">run</div>
-							<span>Runs a script from this module. Analogous to <code>run()</code> above.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>The path within this module from which to load the script to execute.</span>
-									</li>
-									<li class="value">
-										<span class="type">object</span>
-										<span>See the second argument to <code>run()</code>.</span>
-									</li>
-									<li class="value">
-										<span class="type">object</span>
-										<span>See the third argument to <code>run()</code>.</span>
-									</li>
-								</ol>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">file</div>
-							<span>Runs a script from this module. Analogous to <code>file()</code> above.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>The path within this module from which to load the script to execute.</span>
-									</li>
-									<li class="value">
-										<span class="type">object</span>
-										<span>See the second argument to <code>file()</code>.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">object</span>
-								<span>
-									An object containing the exports of the script: the properties assigned to the
-									<code>$exports</code> object.
-								</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">module</div>
-							<span>Loads a submodule from this module.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>The path within this module from which to load the submodule's main file.</span>
-									</li>
-									<li class="value">
-										<span class="type">object</span>
-										<span>The <code>$context</code> to use when executing the submodule.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">object</span>
-								<span>An object containing the submodule's exports.</span>
-							</div>
-						</li>
-					</ul>
-				</div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -962,35 +997,14 @@ END LICENSE
 						</li>
 						<li class="object" jsapi:id="arguments[1]">
 							<span>
-								(optional) An object specifying objects for the module. If no object is provided, an object will be
-								created and supplied with default values for its properties as indicated below.
+								See <a href="#Loader.module">Loader.module()</a>.
 							</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">$context</div>
-									<span class="type">object</span>
-									<span>
-										(optional) The <code>$context</code> object to supply to the module's main file. If not
-										provided, an empty object will be created and supplied.
-									</span>
-								</li>
-								<li class="value">
-									<div class="name">$exports</div>
-									<span class="type">object</span>
-									<span>
-										(optional) The <code>$exports</code> object to supply to the module's main file. If not
-										provided, an empty object will be created and supplied.
-									</span>
-								</li>
-							</ul>
 						</li>
 					</ol>
 				</div>
 				<div class="returns" jsapi:id="returns">
 					<div class="label">Returns</div>
-					<span class="type">object</span>
-					<span>An object containing this module's exports.</span>
+					See <a href="#types.Loader">Loader.module()</a>.
 				</div>
 			</li>
 			<li class="function" jsapi:id="namespace">

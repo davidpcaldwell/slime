@@ -457,7 +457,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			env: subenv
 		});
 
-		debug("jsapi.jsh.js command: " + command.join(" "));
+		console(command.join(" "));
 		var status = runCommand.apply(this,command);
 		if (status) {
 			throw new Error("Failed: " + command.join(" "));

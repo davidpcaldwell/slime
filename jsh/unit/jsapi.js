@@ -424,11 +424,6 @@ $exports.doc = function(p) {
 //				}
 //			})();
 			//	TODO	it would be nice to get the below from the document itself like we did with E4X
-			if (item.ns == "(modules)") {
-				debugger;
-			} else {
-				debugger;
-			}
 			var ns = "http://www.w3.org/1999/xhtml";
 			var jsdom = $context.jsdom;
 			var document = new jsdom.Rhino.Document({ stream: file.read(jsh.io.Streams.binary) });
@@ -548,6 +543,7 @@ $exports.doc = function(p) {
 			});
 //			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
 			for (var i=0; i<withJsapiReference.length; i++) {
+				debugger;
 				var e = withJsapiReference[i];
 				var resolved = declaration.resolve(XML(e.serialize({
 					namespaces: {

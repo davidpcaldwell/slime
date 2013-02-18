@@ -94,6 +94,10 @@ var Element = function(p) {
 	var namespaces = (p.namespaces) ? p.namespaces : [];
 	//	objects with namespace / local / value properties
 	var attributes = (p.attributes) ? p.attributes : [];
+	
+	if (p.attributes.length) {
+		debugger;
+	}
 
 	//	optionally adds children upon construction
 	var children = (p.children) ? p.children : [];
@@ -295,7 +299,6 @@ $exports.Rhino = new function() {
 
 	var toElement = function(_element) {
 		var p = {};
-		debugger;
 		//	TODO	do some unit tests to figure this out
 		if (_element.getTagName() && !_element.getLocalName()) {
 			p.name = {
@@ -313,16 +316,16 @@ $exports.Rhino = new function() {
 		for (var i=0; i<_element.getAttributes().getLength(); i++) {
 			var _attribute = _element.getAttributes().item(i);
 			var ns = toNamespace(_attribute.getNamespaceURI());
-			var name = String(_attribute.getName());
+			var name = String(_attribute.getLocalName());
 			var value = String(_attribute.getValue());
-			if (ns == "http://www.w3.org/2000/xmlns/") {
-				p.namespaces.push({
-					prefix: name,
-					uri: value
-				});
-			} else if (name == "xmlns") {
+			if (name == "xmlns") {
 				p.namespaces.push({
 					prefix: "",
+					uri: value
+				});
+			} else if (ns == "http://www.w3.org/2000/xmlns/") {
+				p.namespaces.push({
+					prefix: name,
 					uri: value
 				});
 			} else {
@@ -332,6 +335,7 @@ $exports.Rhino = new function() {
 					value: value
 				});
 			}
+			debugger;
 		}
 		return new Element(p);
 	}
@@ -371,7 +375,9 @@ $exports.Rhino = new function() {
 
 	this.Document = function(p) {
 		if (p.stream) {
-			var _jaxp = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			var _jaxpFactory = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance();
+			_jaxpFactory.setNamespaceAware(true);
+			var _jaxp = _jaxpFactory.newDocumentBuilder();
 			_jaxp.setEntityResolver(new JavaAdapter(
 				Packages.org.xml.sax.EntityResolver,
 				new function() {
@@ -381,7 +387,6 @@ $exports.Rhino = new function() {
 					}
 				}
 			));
-			debugger;
 //			var _dom = _jaxp.parse(p.stream.java.adapt());
 			var string = p.stream.character().asString();
 			var _dom = _jaxp.parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(string)));
