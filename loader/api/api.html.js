@@ -88,7 +88,7 @@ var select = function(array,f) {
 var getElement = function(root,path) {
 	var tokens = path.split("/");
 	var rv = root;
-	
+
 	var hasJsapiId = function(id) {
 		var rv = function(e) {
 			return e.getJsapiAttribute("id") == id;
@@ -98,7 +98,7 @@ var getElement = function(root,path) {
 		}
 		return rv;
 	}
-	
+
 	for (var i=0; i<tokens.length; i++) {
 		rv = select(getDescendants(rv), hasJsapiId(tokens[i]));
 		if (typeof(rv) == "undefined") {

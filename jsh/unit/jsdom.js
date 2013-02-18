@@ -94,7 +94,7 @@ var Element = function(p) {
 	var namespaces = (p.namespaces) ? p.namespaces : [];
 	//	objects with namespace / local / value properties
 	var attributes = (p.attributes) ? p.attributes : [];
-	
+
 	if (p.attributes.length) {
 		debugger;
 	}
