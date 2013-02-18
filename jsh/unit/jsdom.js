@@ -42,7 +42,7 @@ var DocumentType = function(p) {
 		var quote = function(s) {
 			return "\"" + s + "\"";
 		};
-		return "<!DOCTYPE " + p.name + " " + quote(p.publicId) + " " + quote(p.systemId) + ">";		
+		return "<!DOCTYPE " + p.name + " " + quote(p.publicId) + " " + quote(p.systemId) + ">";
 	}
 }
 
@@ -353,7 +353,7 @@ $exports.Rhino = new function() {
 				if (s === null) return null;
 				return String(s);
 			};
-			
+
 			rv = new DocumentType({
 				name: toJs(_node.getName()),
 				publicId: toJs(_node.getPublicId()),
