@@ -81,7 +81,7 @@ $exports.Scenario = function(properties) {
 			var MESSAGE = function(success) {
 				return (success) ? "Success." : "FAILED!";
 			};
-			
+
 			var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
 				return function(success) {
 					var messages = {
@@ -136,7 +136,7 @@ $exports.Scenario = function(properties) {
 						this.success = function() {
 							return object.success;
 						};
-						
+
 						if (object.messages) {
 							this.message = MESSAGE_FOR_MESSAGES(object.messages);
 						} else {
@@ -153,7 +153,7 @@ $exports.Scenario = function(properties) {
 								this.success = function() {
 									return value;
 								};
-								
+
 								this.message = MESSAGE;
 							}
 						})(v);
@@ -162,7 +162,7 @@ $exports.Scenario = function(properties) {
 						this.success = function() {
 							return v.success;
 						};
-						
+
 						this.message = MESSAGE_FOR_MESSAGES;
 					}
 				})(assertion);
