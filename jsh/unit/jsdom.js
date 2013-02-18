@@ -31,6 +31,21 @@ var CdataSection = function(p) {
 	}
 }
 
+var DocumentType = function(p) {
+	//	TODO	implement entities
+	//	TODO	implement notations
+	//	TODO	implement internal subset
+	if (p.name === null) throw new TypeError();
+	if (p.publicId === null) throw new TypeError();
+	if (p.systemId === null) throw new TypeError();
+	this.toString = function() {
+		var quote = function(s) {
+			return "\"" + s + "\"";
+		};
+		return "<!DOCTYPE " + p.name + " " + quote(p.publicId) + " " + quote(p.systemId) + ">";		
+	}
+}
+
 var filtering = function(children,p) {
 	var filter = (function() {
 		if (p && p.name && typeof(p.name) == "string") {
@@ -265,6 +280,10 @@ $exports.filter = function(p) {
 		return function(node) {
 			return node.name && node.name.local == p.name;
 		}
+	} else if (p && typeof(p.id) == "string") {
+		return function(node) {
+			return node.name && node.getAttribute("id") == p.id;
+		}
 	}
 };
 
@@ -327,6 +346,19 @@ $exports.Rhino = new function() {
 			rv = new Text(String(_node.getNodeValue()));
 		} else if (_node.getNodeType() == Packages.org.w3c.dom.Node.COMMENT_NODE) {
 			rv = new Comment(String(_node.getNodeValue()));
+		} else if (_node.getNodeType() == Packages.org.w3c.dom.Node.CDATA_SECTION_NODE) {
+			rv = new CdataSection(String(_node.getNodeValue()));
+		} else if (_node.getNodeType() == Packages.org.w3c.dom.Node.DOCUMENT_TYPE_NODE) {
+			var toJs = function(s) {
+				if (s === null) return null;
+				return String(s);
+			};
+			
+			rv = new DocumentType({
+				name: toJs(_node.getName()),
+				publicId: toJs(_node.getPublicId()),
+				systemId: toJs(_node.getSystemId())
+			});
 		} else {
 			throw new Error("Unknown node type: " + _node);
 		}
@@ -340,7 +372,19 @@ $exports.Rhino = new function() {
 	this.Document = function(p) {
 		if (p.stream) {
 			var _jaxp = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			var _dom = _jaxp.parse(p.stream.java.adapt());
+			_jaxp.setEntityResolver(new JavaAdapter(
+				Packages.org.xml.sax.EntityResolver,
+				new function() {
+					this.resolveEntity = function() {
+						//	TODO	this dependency is obviously not ideal
+						return new Packages.org.xml.sax.InputSource(Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM);
+					}
+				}
+			));
+			debugger;
+//			var _dom = _jaxp.parse(p.stream.java.adapt());
+			var string = p.stream.character().asString();
+			var _dom = _jaxp.parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(string)));
 			return toNode(_dom);
 		} else {
 			throw new TypeError();

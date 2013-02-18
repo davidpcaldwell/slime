@@ -411,20 +411,27 @@ $exports.doc = function(p) {
 				}
 				return rv;
 			})();
-			var xhtml = file.read(XML);
-			var ns = (function() {
-				if (xhtml.length() > 1) {
-					return (function() {
-						for (var i=0; i<xhtml.length(); i++) {
-							if (xhtml[i].nodeKind() == "element") return xhtml[i].namespace();
-						}
-					})();
-				} else {
-					return xhtml.namespace();
-				}
-			})();
+//			var xhtml = file.read(XML);
+//			var ns = (function() {
+//				if (xhtml.length() > 1) {
+//					return (function() {
+//						for (var i=0; i<xhtml.length(); i++) {
+//							if (xhtml[i].nodeKind() == "element") return xhtml[i].namespace();
+//						}
+//					})();
+//				} else {
+//					return xhtml.namespace();
+//				}
+//			})();
+			//	TODO	it would be nice to get the below from the document itself like we did with E4X
+			if (item.ns == "(modules)") {
+				debugger;
+			} else {
+				debugger;
+			}
+			var ns = "http://www.w3.org/1999/xhtml";
 			var jsdom = $context.jsdom;
-			var document = new jsdom.E4X.Document(xhtml);
+			var document = new jsdom.Rhino.Document({ stream: file.read(jsh.io.Streams.binary) });
 			var top = (function() {
 				//	below could be simplified with join and map but we leave it this way until we make sure all cases work; e.g.,
 				//	path ending with /, path ending with filename
@@ -495,31 +502,37 @@ $exports.doc = function(p) {
 //				//	Why does the below not work?
 //				//delete contextDiv.parent()[contextDiv.childIndex()];
 //			}
-			var contextDiv = body.get({
-				//	TODO	probably need to be able to return STOP or something from filter to stop searching below a certain element
-				//	TODO	may want to look into xpath
+			var apiSpecificationMarkers = body.get({
 				recursive: true,
-				filter: function(node) {
-					if (!node.name) return false;
-					var elements = node.get(function(child) {
-						return Boolean(child.name);
-					});
-					if (elements[0] && elements[0].name.local == "h1") {
-						if (elements[0].get()[0] && elements[0].get()[0].toString() == "Context") {
-							return true;
+				filter: jsdom.filter({ id: "template.body" })
+			});
+			if (apiSpecificationMarkers.length == 0) {
+				var contextDiv = body.get({
+					//	TODO	probably need to be able to return STOP or something from filter to stop searching below a certain element
+					//	TODO	may want to look into xpath
+					recursive: true,
+					filter: function(node) {
+						if (!node.name) return false;
+						var elements = node.get(function(child) {
+							return Boolean(child.name);
+						});
+						if (elements[0] && elements[0].name.local == "h1") {
+							if (elements[0].get()[0] && elements[0].get()[0].toString() == "Context") {
+								return true;
+							} else {
+								return false;
+							}
 						} else {
 							return false;
 						}
-					} else {
-						return false;
 					}
+				})[0];
+				if (contextDiv) {
+					body.remove({
+						recursive: true,
+						node: contextDiv
+					});
 				}
-			})[0];
-			if (contextDiv) {
-				body.remove({
-					recursive: true,
-					node: contextDiv
-				});
 			}
 
 			//	TODO	document and enhance this ability to import documentation from other files
@@ -558,7 +571,9 @@ $exports.doc = function(p) {
 			destination.getRelativePath(path).write(document.toString(), { recursive: true });
 
 			index.body.table.tbody.appendChild(<tr>
-				<td><a href={path}>{item.ns}</a></td><td>{String(xhtml.ns::head.ns::title)}</td>
+				<td><a href={path}>{item.ns}</a></td><td>{
+					document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString()
+				}</td>
 			</tr>);
 		}
 	});
