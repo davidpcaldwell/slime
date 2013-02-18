@@ -80,29 +80,29 @@ $exports.Scenario = function(properties) {
 		var runTest = function(assertion,next) {
 			if (typeof(assertion) == "boolean") {
 				assertion = (function(b) {
-					return function() {
+					return (function() {
 						if (callback) {
 							//	warning: test probably did not work as expected asynchronously
 							//	debugger;
 						}
 						return {
-							success: b,
+							success: function() { return b; },
 							messages: {
-								success: "Success.",
-								failure: "FAILED!"
+								success: function() { return "Success."; },
+								failure: function() { return "FAILED!"; }
 							}
 						};
-					}
+					})();
 				})(assertion);
 			} else if (typeof(assertion) == "undefined") {
 				throw "Assertion is undefined.";
 			} else if (assertion === null) {
 				assertion = function() {
 					return {
-						success: null,
+						success: function() { return null; },
 						messages: {
-							success: "Success.",
-							failure: "FAILED"
+							success: function() { return "Success." },
+							failure: function() { return "FAILED!"; }
 						}
 					}
 				};
@@ -111,31 +111,106 @@ $exports.Scenario = function(properties) {
 					|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
 				) {
 				assertion = (function(object) {
-					return function() {
-						return object;
+					return new function() {
+						this.success = function() {
+							return object.success;
+						};
+						
+						if (object.messages) {
+							this.messages = object.messages;
+						} else {
+							this.messages = {
+								success: function() { return "Success." },
+								failure: function() { return "FAILED!"; }								
+							};
+						}
 					}
 				})(assertion);
-			} else if (typeof(assertion) != "function") {
-				var error = new Error("Assertion is not valid format; assertion property of this error contains value");
+			} else if (typeof(assertion) == "function") {
+				assertion = (function(f) {
+					var v = f();
+					if (typeof(v) == "boolean") {
+						v = (function(value) {
+							return new function() {
+								this.success = function() {
+									return value;
+								};
+								
+								this.messages = new function() {
+									this.success = function() {
+										return "Success";
+									};
+									
+									this.failure = function() {
+										return "FAILED!";
+									}
+								}
+							}
+						})(v);
+					};
+					return new function() {
+						this.success = function() {
+							return v.success;
+						};
+						
+						this.messages = new function() {
+							this.success = function() {
+								return v.messages.success;
+							};
+							
+							this.failure = function() {
+								return v.messages.failure;
+							}
+						}
+					}
+				})(assertion);
+			} else if (typeof(assertion) != "object" || typeof(assertion.success) != "function") {
+				var error = new TypeError("Assertion is not valid format; see this error's 'assertion' property for incorrect value");
 				error.assertion = assertion;
 				throw error;
 			}
-			var result = assertion();
-			if (typeof(result) == "boolean") {
-				//	not sure this should be supported
-				runTest(result,next);
-				return;
-			}
-			if (!result.messages) result.messages = {};
-			if (!result.messages.success) {
-				result.messages.success = "Success.";
-			}
-			if (!result.messages.failure) {
-				result.messages.failure = "FAILED!";
-			}
-			if (!result.success) {
+//			if (!result.messages) result.messages = {};
+//			if (!result.messages.success) {
+//				result.messages.success = function() { return "Success."; }
+//			}
+//			if (!result.messages.failure) {
+//				result.messages.failure = function() { return "FAILED!"; }
+//			}
+			var success = assertion.success();
+			if (!success) {
 				fail();
 			}
+			var result = {
+				success: success
+			};
+			var messages = {
+				success: assertion.messages.success,
+				failure: assertion.messages.failure
+			};
+			if (messages && typeof(messages.success) == "string") {
+				messages.success = (function(value) {
+					return function() {
+						return value;
+					}
+				})(messages.success)
+			}
+			if (messages && typeof(messages.failure) == "string") {
+				messages.failure = (function(value) {
+					return function() {
+						return value;
+					}
+				})(messages.failure)
+			}
+			if (success) {
+				result.message = messages.success();
+			} else {
+				result.message = messages.failure();
+			}
+//			if (typeof(result) == "boolean") {
+//				//	not sure this should be supported
+//				runTest(result,next);
+//				return;
+//			}
 			if (console.test) console.test(result);
 			if (next) {
 				if ($context.asynchronous && $context.asynchronous.test) {
@@ -213,10 +288,14 @@ $exports.Scenario = function(properties) {
 				//	and viewed in the debugger when running in Rhino.
 				var error = e;
 				scope.test({
-					success: null,
+					success: function() {
+						return null;
+					},
 					error: e,
-					messages: new function() {
-						this.failure = "Exception thrown: " + e;
+					messages: {
+						failure: function() {
+							return "Exception thrown: " + e;
+						}
 					}
 				});
 			}

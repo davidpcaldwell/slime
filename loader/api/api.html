@@ -296,16 +296,49 @@ END LICENSE
 			run via a variable called <code>scope</code>. Before a test is run, all initializers that precede it as siblings are
 			run, as well as any initializers that are (direct) children of its ancestors.
 		</p>
-		<p>
+		<div>
 			Throughout the code we can have scripts with <code>type="application/x.jsapi#tests"</code> that contain tests to be run.
 			These scripts also will have access to the <code>module</code> object, representing the module being tested. Further,
 			they are supplied with variables corresponding to the properties of the <code>scope</code> object; these properties
 			might come from the test execution environment or might come from <code>type="application/x.jsapi#initialize"</code>
 			sections.
+			The test execution environment places the following in the scope:
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">test</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+
+				<li class="function">
+					<div class="name">scenario</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
 			These script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
 			<code>http://www.inonit.com/jsapi</code>) which will be used as the scenario label when executing the tests within the
 			element.
-		</p>
+		</div>
 		<p>
 			Finally, we can have scripts with <code>type="application/x.jsapi#destroy"</code>. These have access to the same scope
 			in the same way as <code>type="application/x.jsapi#initialize"</code> scripts, and can be used to destroy resources

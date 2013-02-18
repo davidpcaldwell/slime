@@ -40,14 +40,15 @@ $exports.console = new function() {
 	}
 
 	this.test = function(test) {
-		if (!test.success) {
+		var success = test.success;
+		if (!success) {
 			if (!dots) {
 				$context.console.print(indent());
 				dots = true;
 			}
-			var code = (test.success == null) ? "*" : "X";
+			var code = (success == null) ? "*" : "X";
 			$context.console.print(code);
-			if (test.success == null) {
+			if (test.error) {
 				$context.console.println(test.error);
 				if (test.error.stack) {
 					if (test.error.stack.join) {
