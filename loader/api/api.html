@@ -17,9 +17,43 @@ END LICENSE
 	<title>api.html format</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
+	<style type="text/css">
+		div.template {
+			padding: 1em;
+			background: #c0c080;
+		}
+		
+		div.template span.heading {
+			font-weight: bold
+		}
+	</style>
 	<script>//<![CDATA[
 		debugger;
 		window.addEventListener("load", function() {
+			var getInnerHtml = function(element) {
+				var rv = "";
+				for (var i=0; i<element.childNodes.length; i++) {
+					var child = element.childNodes[i];
+					if (child.nodeType == document.CDATA_SECTION_NODE) {
+						debugger;
+						rv += child.nodeData;
+					} else if (child.nodeType == document.COMMENT_NODE) {
+						rv += "<!--" + child.nodeValue + "-->";
+					} else if (child.nodeType == document.TEXT_NODE) {
+						rv += child.nodeValue;
+					} else if (child.outerHTML) {
+						if (child.nodeName.toLowerCase() == "ul") {
+							rv += child.innerHTML;
+						} else {
+							rv += child.outerHTML;
+						}
+					} else {
+						throw new TypeError();
+					}
+				}
+				return rv;
+			}
+			
 			var all = document.getElementsByTagName("*");
 			var match = [];
 			for (var i=0; i<all.length; i++) {
@@ -28,9 +62,11 @@ END LICENSE
 				}
 			}
 			for (var i=0; i<match.length; i++) {
-				var inner = match[i].innerHTML;
+				var inner = getInnerHtml(match[i]);
 				inner = inner.split("\n");
-				debugger;
+				if (inner.length == 1) {
+					throw new Error();
+				}
 				var tabs = 0;
 				var more = true;
 				while(more) {
@@ -39,7 +75,6 @@ END LICENSE
 						var matched = true;
 						for (var k=0; k<tabs+1; k++) {
 							if (inner[j].length > 0 && inner[j].substring(k,k+1) != "\t") {
-								debugger;
 								matched = false;
 							}
 						}
@@ -53,7 +88,6 @@ END LICENSE
 						more = false;
 					}
 				}
-				debugger;
 				for (j=0; j<inner.length-1; j++) {
 					if (inner[j].length >= tabs) {
 						inner[j] = inner[j].substring(tabs);
@@ -62,6 +96,10 @@ END LICENSE
 				}
 				var pre = document.createElement("pre");
 				match[i].innerHTML = "";
+				var span = document.createElement("span");
+				span.className = "heading";
+				span.appendChild(document.createTextNode("Template"));
+				match[i].appendChild(span);
 				match[i].appendChild(pre);
 				//	${cursor} is NetBeans-only
 				pre.innerHTML = inner.join("\n").replace(/\</g, "&lt;").replace(/\>/g, "&gt;").replace(/\$\{cursor\}/g, "");
@@ -81,7 +119,7 @@ END LICENSE
 			<strong>Context</strong> and <strong>Exports</strong> are objects. They should be contained in <code>div</code>
 			elements with an appropriate <code>h1</code> element containing the word "Context" or "Exports." After this
 			information, they can commence with the <code>ul</code> described below containing their properties.
-			<blockquote id="template.body" class="template">
+			<div id="template.body" class="template">
 				<div>${cursor}__DESCRIPTION__</div>
 				<div>
 					<h1>Context</h1>
@@ -93,7 +131,7 @@ END LICENSE
 					<ul>
 					</ul>
 				</div>
-			</blockquote>
+			</div>
 		</div>
 		<div>
 			An object is an unordered list (<code>ul</code>) of properties.
@@ -111,25 +149,25 @@ END LICENSE
 			These property <code>li</code> elements each contain a <code>div.name</code>. This is the name of
 			the property.
 		</div>
-		<div><blockquote class="template" id="template.value">
-			<li class="value">
+		<div><div class="template" id="template.value">
+			<ul><li class="value">
 				<div class="name">${cursor}__NAME__</div>
 				<span class="type">__TYPE__</span>
 				<span>__DESCRIPTION__</span>
-			</li>
-		</blockquote></div>
+			</li></ul>
+		</div></div>
 		<div>
 			<code>li.object</code> elements should contain a <code>div.label</code> containing
 			the text "has properties." This will cause the description of that object to display comprehensibly.
-			<blockquote class="template" id="template.object">
-				<li class="object">
+			<div class="template" id="template.object">
+				<ul><li class="object">
 					<div class="name">${cursor}__NAME__</div>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
 					</ul>
-				</li>
-			</blockquote>
+				</li></ul>
+			</div>
 		</div>
 		<div>
 			<h2>Function / Constructor</h2>
@@ -149,8 +187,8 @@ END LICENSE
 				<code>div.label</code> containing the word "Returns" or "Instances" as appropriate. Then can contain HTML
 				describing the return value(s) expected and the circumstances under which each value might be expected.
 			</p>
-			<blockquote class="template" id="template.function">
-				<li class="function">
+			<div class="template" id="template.function">
+				<ul><li class="function">
 					<div class="name">${cursor}__NAME__</div>
 					<span>__DESCRIPTION__</span>
 					<div class="arguments">
@@ -163,10 +201,10 @@ END LICENSE
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
-				</li>
-			</blockquote>
-			<blockquote class="template" id="template.constructor">
-				<li class="constructor">
+				</li></ul>
+			</div>
+			<div class="template" id="template.constructor">
+				<ul><li class="constructor">
 					<div class="name">${cursor}__NAME__</div>
 					<span>__DESCRIPTION__</span>
 					<div class="arguments">
@@ -179,8 +217,8 @@ END LICENSE
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
-				</li>
-			</blockquote>
+				</li></ul>
+			</div>
 			<p>
 				<!--	TODO	Add div.prototype?, "serves as extra stuff for new." I believe this meant that this would further
 								describe the use of this object as a constructor.	-->
@@ -195,7 +233,7 @@ END LICENSE
 				description <code>span</code> and a <code>ul</code> of properties (preceded by a <code>div.label</code> with the
 				text "has properties:"). Other code can then link to types using links to <code>#types.<i>name</i></code>.
 			</p>
-			<div><blockquote class="template" id="template.type">
+			<div><div class="template" id="template.type">
 				<div class="type">
 					<a class="type" name="types.__NAME__">__NAME__</a>
 					<span>__DESCRIPTION__</span>
@@ -203,7 +241,7 @@ END LICENSE
 					<ul>
 					</ul>
 				</div>
-			</blockquote></div>
+			</div></div>
 		</div>
 	</div>
 	<div>
