@@ -457,7 +457,12 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			env: subenv
 		});
 
-		console(command.join(" "));
+		console(command.map(function(item) {
+			if (item.env) return "";
+			var token = String(item);
+			if (token.indexOf("(") != -1) return "\"" + token + "\"";
+			return token;
+		}).join(" "));
 		var status = runCommand.apply(this,command);
 		if (status) {
 			throw new Error("Failed: " + command.join(" "));
