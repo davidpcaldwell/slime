@@ -64,13 +64,22 @@ var filtering = function(children,p) {
 			throw new Error();
 		}
 	})();
-	if (p && p.recursive) {
+	if (p && (p.descendants || p.recursive)) {
+		//	probably want to deprecate p.recursive
 		var rv = [];
 		for (var i=0; i<children.length; i++) {
-			if (filter(children[i])) {
+			var match = filter(children[i]);
+			if (match) {
 				rv.push(children[i]);
 			}
-			if (children[i].get) {
+			var recurse = (function() {
+				if (typeof(p.descendants) == "function") {
+					return p.descendants(children[i]);
+				}
+				if (p.recursive) return true;
+				return false;
+			})();
+			if (recurse && children[i].get) {
 				var descendants = children[i].get(p);
 				rv.push.apply(rv, descendants);
 			}

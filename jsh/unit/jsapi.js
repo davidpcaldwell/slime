@@ -348,7 +348,15 @@ $exports.doc = function(p) {
 	});
 
 	var ApiHtml = function(p) {
-		var root = p.file.read(XML);
+		//	TODO	disentangle all this recursion and 'this'-manipulation
+//		var root = p.file.read(XML);
+		var root = new $context.jsdom.Rhino.Document({
+			stream: p.file.read(jsh.io.Streams.binary)
+		}).get({
+			filter: function(e) {
+				return Boolean(e.name);
+			}
+		})[0];
 
 		this.getApi = function(path) {
 			var pathname = p.file.getRelativePath(path);
@@ -358,25 +366,39 @@ $exports.doc = function(p) {
 		}
 
 		var getElement = function(e,declaration) {
-			if (e.@jsapi::reference.length() > 0) {
+			if (!e.getAttribute) {
+				throw new TypeError("No getAttribute in " + e + " with keys " + Object.keys(e));
+			}
+			var reference = e.getAttribute({
+				namespace: "http://www.inonit.com/jsapi",
+				name: "reference"
+			});
+			if (reference) {
 				try {
 					var getApi = function(path) {
 						return declaration.getApi(path);
 					}
-					return eval(String(e.@jsapi::reference));
+					return eval(reference);
 				} catch (e) {
-					var error = new EvalError("Error evaluating reference: " + e.@jsapi::reference);
-					var string = String(e.@jsapi::reference);
+					var _e = e;
+					debugger;
+					var error = new EvalError("Error evaluating reference: " + reference);
+					var string = String(reference);
 					error.string = string;
 					error.toString = function() {
 						return this.message + "\n" + this.string;
 					}
-					if (false) {
+					//	Below appears to decide whether to halt on incorrect reference
+					if (true) {
 						throw error;
 					} else {
-						return <x/>;
+						return new jsdom.Element({
+							name: {
+								local: "x"
+							}
+						});
 					}
-				}
+				}				
 			}
 			return e;
 		}
@@ -385,7 +407,22 @@ $exports.doc = function(p) {
 			var tokens = path.split("/");
 			var rv = root;
 			for (var i=0; i<tokens.length; i++) {
-				rv = rv..*.(@jsapi::id == tokens[i])[0];
+				rv = rv.get({
+					filter: function(e) {
+						return e.getAttribute && e.getAttribute({
+							namespace: "http://www.inonit.com/jsapi",
+							name: "id"
+						}) == tokens[i]
+					},
+					descendants: function(e) {
+						//	TODO	obviously a function like this should return true if it is a document as well, but it will only
+						//			be called for children, and a document should never be a child
+						return e.getAttribute && e.getAttribute({
+							namespace: "http://www.inonit.com/jsapi",
+							name: "id"
+						}) == null;
+					}
+				})[0];
 				if (typeof(rv) == "undefined") {
 					return null;
 				}
@@ -411,18 +448,6 @@ $exports.doc = function(p) {
 				}
 				return rv;
 			})();
-//			var xhtml = file.read(XML);
-//			var ns = (function() {
-//				if (xhtml.length() > 1) {
-//					return (function() {
-//						for (var i=0; i<xhtml.length(); i++) {
-//							if (xhtml[i].nodeKind() == "element") return xhtml[i].namespace();
-//						}
-//					})();
-//				} else {
-//					return xhtml.namespace();
-//				}
-//			})();
 			//	TODO	it would be nice to get the below from the document itself like we did with E4X
 			var ns = "http://www.w3.org/1999/xhtml";
 			var jsdom = $context.jsdom;
@@ -439,8 +464,6 @@ $exports.doc = function(p) {
 			})();
 			var root = document.get(jsdom.filter({ name: "html" }))[0];
 
-//			xhtml.ns::head.appendChild(<link rel="stylesheet" type="text/css" href={ top + "api.css" } />);
-//			xhtml.ns::head.appendChild(<script type="text/javascript" src={ top + "api.js" }>{"/**/"}</script>);
 			var head = root.get(jsdom.filter({ name: "head" }))[0];
 			var css = head.get(function(node) {
 				return node.name && node.name.local == "link" && /api\.css$/.test(node.getAttribute("href"));
@@ -476,7 +499,6 @@ $exports.doc = function(p) {
 				]
 			}));
 
-//			xhtml.ns::body.insertChildAfter(null,<a href={ top + "index.html" }>Documentation Home</a>);
 			var body = root.get(jsdom.filter({ name: "body" }))[0];
 			body.insert(new jsdom.Element({
 				name: {
@@ -491,12 +513,6 @@ $exports.doc = function(p) {
 				]
 			}), { index: 0 });
 
-//			var contextDiv = xhtml..ns::div.(ns::h1 == "Context");
-//			if (contextDiv.length()) {
-//				contextDiv.parent().replace(contextDiv.childIndex(),<></>);
-//				//	Why does the below not work?
-//				//delete contextDiv.parent()[contextDiv.childIndex()];
-//			}
 			var apiSpecificationMarkers = body.get({
 				recursive: true,
 				filter: jsdom.filter({ id: "template.body" })
@@ -544,16 +560,13 @@ $exports.doc = function(p) {
 //			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
 			for (var i=0; i<withJsapiReference.length; i++) {
 				var e = withJsapiReference[i];
-				var resolved = declaration.resolve(XML(e.serialize({
-					namespaces: {
-					}
-				})));
+				var resolved = declaration.resolve(e);
 				if (resolved) {
 //					e.setChildren(resolved.children());
 					while(e.get().length) {
 						e.remove(e.get()[0]);
 					}
-					var nodes = jsdom.E4X.toJsdom(resolved.children());
+					var nodes = resolved.get();
 					nodes.forEach(function(node) {
 						e.append(node);
 					});
