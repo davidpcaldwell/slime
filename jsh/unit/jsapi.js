@@ -10,8 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-var jsapi = new Namespace("http://www.inonit.com/jsapi");
-
 var getApiHtml = function(moduleMainPathname) {
 	//	TODO	logic for this is largely duplicated in loader/api/api.html.js getApiHtmlPath method, which is string based while
 	//			this is pathname- and directory- and file- based
@@ -32,89 +30,6 @@ var getApiHtml = function(moduleMainPathname) {
 		}
 	}
 }
-
-var E4X = function(base,html) {
-	default xml namespace = html.namespace();
-
-	var Element = function(xml,parent) {
-		var map = function(query,parent) {
-			var rv = [];
-			for each (var e in query) {
-				rv.push(new Element(e,parent));
-			}
-			return rv;
-		}
-
-		this.localName = xml.localName();
-
-		this.getAttribute = function(name) {
-			var rv = String(xml["@"+name]);
-			if (!rv.length) {
-				return null;
-			}
-			return rv;
-		}
-
-		this.getJsapiAttribute = function(name) {
-			var rv = String(xml.@jsapi::[name]);
-			if (!rv.length) {
-				return null;
-			}
-			return rv;
-		}
-
-		this.getContentString = function() {
-			return String(xml);
-		}
-
-		var children;
-
-		this.getChildren = function() {
-			if (!children) {
-				children = map(xml.elements(), this);
-			}
-			return children;
-		};
-
-		if (parent) {
-			this.parent = parent;
-		}
-
-		this.replaceContentWithContentOf = function(other) {
-			while(xml.children().length() > 0) {
-				xml.replace(0, <></>);
-			}
-			xml.appendChild(other.$e4x.xml.children());
-			children = null;
-		}
-
-		this.removeJsapiAttribute = function(name) {
-			delete xml.@jsapi::[name];
-		}
-
-		this.$e4x = {
-			xml: xml
-		};
-
-		//	Unclear whether below used
-
-		this.toString = function() {
-			return xml.toXMLString();
-		}
-	}
-
-	this.top = new Element(html);
-
-	this.load = function(path) {
-		var file = base.getFile(path);
-		if (file == null) {
-			throw new Error("Cannot find referenced file at " + path + " from base: " + base);
-		} else {
-			jsh.shell.echo("Loading " + path + " from " + base);
-		}
-		return loadApiHtml(base.getFile(path));
-	}
-};
 
 var Jsdom = function(base,dom) {
 	var Element = function(delegate,parent) {
@@ -216,25 +131,10 @@ var loadApiHtml = function(file) {
 	if (!arguments.callee.cache[file.pathname.toString()]) {
 		arguments.callee.cache[file.pathname.toString()] = (function() {
 			if (false) jsh.shell.echo("Reading api.html: " + file.pathname);
-			//	TODO	reimplement in terms of jsdom
-			if (false) {
-				var html = file.read(XML);
-				if (html.length() > 1) {
-					html = (function(list) {
-						for (var i=0; i<list.length(); i++) {
-							if (list[i].localName()) {
-								return list[i];
-							}
-						}
-					})(html);
-				}
-				return new E4X(file.parent,html);
-			} else {
-				var doc = new $context.jsdom.Rhino.Document({
-					stream: file.read(jsh.io.Streams.binary)
-				});
-				return new Jsdom(file.parent,doc);
-			}
+			var doc = new $context.jsdom.Rhino.Document({
+				stream: file.read(jsh.io.Streams.binary)
+			});
+			return new Jsdom(file.parent,doc);
 		})();
 	} else {
 		jsh.shell.echo("Returning cached api.html: " + file.pathname);
@@ -254,13 +154,13 @@ $exports.tests = new function() {
 			}
 			var apiHtmlFile = getApiHtml(moduleDescriptor.location);
 			if (apiHtmlFile) {
-				var e4x = loadApiHtml(apiHtmlFile);
+				var page = loadApiHtml(apiHtmlFile);
 
 				var name = moduleDescriptor.path;
 				if (unit) {
 					name += "." + unit;
 				}
-				this.html = new $context.html.ApiHtmlTests(e4x,name);
+				this.html = new $context.html.ApiHtmlTests(page,name);
 				this.getScenario = function(scope) {
 					return this.html.getScenario(scope,unit);
 				}
@@ -283,7 +183,7 @@ $exports.tests = new function() {
 			this.getResourcePathname = function(path) {
 				if (moduleDescriptor.location.directory) return moduleDescriptor.location.directory.getRelativePath(path);
 				if (moduleDescriptor.location.file) return moduleDescriptor.location.file.parent.getRelativePath(path);
-				throw "Unimplemented";
+				throw new Error("Unimplemented");
 			}
 		}
 	}
@@ -463,7 +363,6 @@ $exports.doc = function(p) {
 
 	var ApiHtml = function(p) {
 		//	TODO	disentangle all this recursion and 'this'-manipulation
-//		var root = p.file.read(XML);
 		var root = new $context.jsdom.Rhino.Document({
 			stream: p.file.read(jsh.io.Streams.binary)
 		}).get({
@@ -671,12 +570,10 @@ $exports.doc = function(p) {
 					}) != null;
 				}
 			});
-//			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
 			for (var i=0; i<withJsapiReference.length; i++) {
 				var e = withJsapiReference[i];
 				var resolved = declaration.resolve(e);
 				if (resolved) {
-//					e.setChildren(resolved.children());
 					while(e.get().length) {
 						e.remove(e.get()[0]);
 					}
@@ -689,7 +586,6 @@ $exports.doc = function(p) {
 				}
 			}
 
-//			destination.getRelativePath(path).write(xhtml.toXMLString(), { recursive: true });
 			destination.getRelativePath(path).write(document.toString(), { recursive: true });
 			
 			var tbody = index.get({
@@ -734,11 +630,6 @@ $exports.doc = function(p) {
 					})
 				]
 			}));
-//			index.body.table.tbody.appendChild(<tr>
-//				<td><a href={path}>{item.ns}</a></td><td>{
-//					document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString()
-//				}</td>
-//			</tr>);
 		}
 	});
 
