@@ -10,20 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	Requires the following plugins in the following order
-//	Order is not important if they are in JSH_SCRIPT_CLASSPATH
-//
-//	$TOMCAT_HOME/bin/tomcat-juli.jar
-//	$TOMCAT_HOME/lib/servlet-api.jar
-//	$TOMCAT_HOME/lib/tomcat-util.jar
-//	$TOMCAT_HOME/lib/tomcat-api.jar
-//	$TOMCAT_HOME/lib/tomcat-coyote.jar
-//	$TOMCAT_HOME/lib/catalina.jar
-
 plugin({
 	isReady: function() {
-		//	TODO	allow system property rather than environment variable?
-		return jsh.java && jsh.shell && jsh.file && typeof(jsh.shell.environment.CATALINA_HOME) == "string" || typeof(Packages.org.apache.catalina.startup.Tomcat) == "function";
+		//	TODO	allow system property in addition to environment variable?
+		return jsh.java && jsh.shell && jsh.file && (typeof(jsh.shell.environment.CATALINA_HOME) == "string" || typeof(Packages.org.apache.catalina.startup.Tomcat) == "function");
 	},
 	disabled: function() {
 		return "Environment variable CATALINA_HOME is not defined.";
