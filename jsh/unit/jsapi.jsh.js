@@ -87,12 +87,13 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 
 		this.run = function(code,scope) {
 			debugger;
-			if (typeof(code) == "string") {
+			var source = code;
+			if (typeof(source) == "string") {
 				//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
 				//			properties. This code, after being moved to jsh loader, can then invoke rhino loader with name/_in
 				//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
 				//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
-				code = {
+				source = {
 					name: "<eval>:" + String(++seq),
 					_in: (function() {
 						var out = new Packages.java.io.ByteArrayOutputStream();
@@ -104,7 +105,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 					})()
 				}
 			}
-			jsh.loader.run(code,scope);
+			jsh.loader.run(source,scope);
 		}
 	} ),
 	jsdom: jsh.script.loader.file("jsdom.js"),
