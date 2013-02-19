@@ -19,32 +19,41 @@ END LICENSE
 	<script src="../../../loader/api/api.js"></script>
 </head>
 <body>
+	<!--
+		TODO	what APIs must a servlet file implement?
+		TODO	how do we build webapps out of this stuff? How do we create a WAR for deployment?
+	-->
 	<div>
 		<h1>Exports</h1>
 		<div class="type">
 			<a class="type" name="types.servlet">servlet</a>
-			<span>__DESCRIPTION__</span>
+			<span>A declaration for a script-based servlet.</span>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="value">
 					<div class="name">file</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
+					<span>The file providing the implementation of the servlet.</span>
 				</li>
 				<li class="value">
 					<div class="name">parameters</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type">object</span>
+					<span>
+						A set of servlet parameters to make available to the servlet via its <code>$parameters</code> variable.
+						This object can contain properties of any type, but if the servlet is deployed and run in an ordinary
+						container, the <code>$parameters</code> variable will contain the names and values of the servlet
+						parameters, and hence may only have string values.
+					</span>
 				</li>
 			</ul>
 		</div>
 		<div class="type">
 			<a class="type" name="types.resources">resources</a>
-			<span>An object that specifies a set of resources that can be accessed by a logical path.</span>
+			<span>An object that specifies a mapping between logical paths and resources.</span>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="function">
-					<div class="name">map</div>
+					<div class="name"><a name="resources.map">map</a></div>
 					<span>Maps a given prefix to a location on the file system.</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
@@ -63,20 +72,19 @@ END LICENSE
 				<li class="value">
 					<div class="name">loader</div>
 					<span class="type"><a href="../../../rhino/io/api.html#types.Loader">Loader</a></span>
-					<span>A loader that uses this object to find code.</span>
+					<span>A loader that uses this mapping to find code.</span>
 				</li>
 				<li class="function">
 					<div class="name">build</div>
-					<span>__DESCRIPTION__</span>
+					<span>Copies the resources mapped by this mapping into a directory.</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
+							<li class="value">
+								<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+								<span>A directory (presumably a webapp directory).</span>
+							</li>
 						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
 			</ul>
@@ -84,57 +92,93 @@ END LICENSE
 		<ul>
 			<li class="constructor">
 				<div class="name">Resources</div>
-				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-					</ol>
-				</div>
+				<span>Creates an empty <a href="#types.resources">resources</a>.</span>
 				<div class="instances">
 					<div class="label">Instances</div>
 					<span class="type"><a href="#types.resources">resources</a></span>
-					<span>__DESCRIPTION__</span>
 				</div>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="function">
 						<div class="name">script</div>
-						<span>__DESCRIPTION__</span>
+						<div>
+							Creates a <a href="#types.resources">resources</a> from one or more <i>mapping script</i>s. Each mapping
+							file is a script that is provided with the following scope:
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">$mapping</div>
+									<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+									<span>The mapping script itself.</span>
+								</li>
+								<li class="function">
+									<div class="name">map</div>
+									<span>A function with semantics identical to <a href="resources.map">resources.map</a>.</span>
+								</li>
+							</ul>
+							The script can build a mapping using the provided scope variables.
+						</div>
 						<div class="arguments">
 							<div class="label">Arguments</div>
-							<ol>
-							</ol>
+							<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span> Zero or more 
+							<i>mapping script</i>s.
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type"><a href="#types.resources">resources</a></span>
 						</div>
 					</li>
 				</ul>
 			</li>
 			<li class="constructor">
 				<div class="name">Tomcat</div>
-				<span>__DESCRIPTION__</span>
+				<span>
+					Creates an embedded Tomcat server that can run script-based web applications. The server must have at least one
+					application added via <code>map</code> before it will function.
+				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
+						<li class="object">
+							<span>An object specifying the configuration of the embedded server.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">base</div>
+									<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+									<span>
+										(optional)
+										The directory to use as Tomcat's <i>base</i> directory. Analogous to environment variable
+										CATALINA_BASE. If omitted, a temporary directory will be created and used.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">port</div>
+									<span class="type">number</span>
+									<span>
+										(optional) The port number on which to run the HTTP server. If omitted, an ephemeral port
+										will be used.
+									</span>
+								</li>
+							</ul>
+						</li>
 					</ol>
 				</div>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span>The created object implements the following interface:</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
 							<div class="name">map</div>
-							<span>__DESCRIPTION__</span>
+							<span>
+								Configures the server to route requests for a particular request path to a particular webapp.
+							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="object">
-										<span>__DESCRIPTION__</span>
+										<span>An object mapping a server path to a webapp.</span>
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="value">
@@ -151,64 +195,44 @@ END LICENSE
 											<li class="value">
 												<div class="name">resources</div>
 												<span class="type"><a href="#types.resources">resources</a></span>
-												<span>__DESCRIPTION__</span>
+												<span>The resources to provide to the servlets.</span>
 											</li>
+											<!--
+											TODO	disabled because it does not work
 											<li class="value">
 												<div class="name">webapp</div>
 												<span class="type">__TYPE__</span>
 												<span>__DESCRIPTION__</span>
 											</li>
+											-->
 										</ul>
 									</li>
 								</ol>
 							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
 						</li>
+						<!--
+							See jsh/test/manual/httpd.lifecycle.jsh.js for tests of the below.
+						-->
 						<li class="function">
 							<div class="name">start</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
+							<span>
+								Starts the server. When this method completes, the server is ready to serve requests. This method
+								does not block the script from exiting; if the end of the script is reached, the server will be
+								terminated.
+							</span>
 						</li>
 						<li class="function">
 							<div class="name">run</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
+							<span>
+								Starts the server, and then blocks until the server terminates 
+								(for example, because <code>stop</code> is called). Note that if the server is started
+								in the shell's main thread, and there are no other threads in use, the shell will never terminate.
+							</span>
 						</li>
 						<li class="function">
 							<div class="name">stop</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
+							<span>Stops the server.</span>
+							<!--	TODO	 when this method returns, has the server stopped?	-->
 						</li>
 					</ul>
 				</div>
