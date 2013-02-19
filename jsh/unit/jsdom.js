@@ -50,7 +50,7 @@ var filtering = function(children,p) {
 	var filter = (function() {
 		if (p && p.name && typeof(p.name) == "string") {
 			return function(node) {
-				return node.name.namespace == "" && node.name.local == p.name;
+				return node.name && node.name.namespace == "" && node.name.local == p.name;
 			}
 		} else if (p && typeof(p.filter) == "function") {
 			return p.filter;

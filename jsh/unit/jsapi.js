@@ -123,6 +123,7 @@ var loadApiHtml = function(file) {
 	if (!arguments.callee.cache[file.pathname.toString()]) {
 		arguments.callee.cache[file.pathname.toString()] = (function() {
 			if (false) jsh.shell.echo("Reading api.html: " + file.pathname);
+			//	TODO	reimplement in terms of jsdom
 			var html = file.read(XML);
 			if (html.length() > 1) {
 				html = (function(list) {
@@ -329,14 +330,27 @@ $exports.doc = function(p) {
 	XML.ignoreWhitespace = false;
 	XML.prettyPrinting = false;
 
-	var index = $context.jsapi.getFile("index.html").read(XML);
+	var index = new $context.jsdom.Rhino.Document({
+		stream: $context.jsapi.getFile("index.html").read(jsh.io.Streams.binary)
+	});
 
 	//	TODO	parameterize the below rather than hard-coding
 	//	TODO	apparent Rhino 1.7R3 bug which requires the given subscripting; should be able to do index.head.title = "..."
-	index.head.title[0] = "API Documentation";
-	index.body.h1[0] = "API Documentation";
+	var title = index.get({
+		filter: $context.jsdom.filter({ name: "title" }),
+		recursive: true
+	})[0];
+	var h1 = index.get({
+		filter: $context.jsdom.filter({ name: "h1" }),
+		recursive: true
+	})[0];
+	title.set([ new $context.jsdom.Text("API Documentation" )]);
+	h1.set([ new $context.jsdom.Text("API Documentation") ]);
 
-	delete index.body.table.tbody.tr[0];
+	index.get({
+		filter: $context.jsdom.filter({ name: "tbody" }),
+		recursive: true
+	})[0].set([]);
 
 	//	TODO	find a way to deprecate this object, which is being used in eval() using hard-coded "absolute" paths in
 	//			jsapi:reference expressions
@@ -392,7 +406,7 @@ $exports.doc = function(p) {
 					if (true) {
 						throw error;
 					} else {
-						return new jsdom.Element({
+						return new $context.jsdom.Element({
 							name: {
 								local: "x"
 							}
@@ -577,12 +591,54 @@ $exports.doc = function(p) {
 
 //			destination.getRelativePath(path).write(xhtml.toXMLString(), { recursive: true });
 			destination.getRelativePath(path).write(document.toString(), { recursive: true });
+			
+			var tbody = index.get({
+				filter: jsdom.filter({ name: "tbody" }),
+				recursive: true
+			})[0];
 
-			index.body.table.tbody.appendChild(<tr>
-				<td><a href={path}>{item.ns}</a></td><td>{
-					document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString()
-				}</td>
-			</tr>);
+			tbody.append(new jsdom.Element({
+				name: {
+					namespace: ns,
+					local: "tr"
+				},
+				children: [
+					new jsdom.Element({
+						name: {
+							namespace: ns,
+							local: "td"
+						},
+						children: [
+							new jsdom.Element({
+								name: {
+									namespace: ns,
+									local: "a"
+								},
+								attributes: [
+									{ local: "href", value: path }
+								],
+								children: [
+									new jsdom.Text(item.ns)
+								]
+							})
+						]
+					}),
+					new jsdom.Element({
+						name: {
+							namespace: ns,
+							local: "td"
+						},
+						children: [
+							new jsdom.Text(document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString())
+						]
+					})
+				]
+			}));
+//			index.body.table.tbody.appendChild(<tr>
+//				<td><a href={path}>{item.ns}</a></td><td>{
+//					document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString()
+//				}</td>
+//			</tr>);
 		}
 	});
 
@@ -590,5 +646,5 @@ $exports.doc = function(p) {
 		$context.jsapi.getFile("index.css").read(jsh.io.Streams.binary),
 		{ append: false }
 	);
-	destination.getRelativePath("index.html").write(index.toXMLString());
+	destination.getRelativePath("index.html").write(String(index));
 }

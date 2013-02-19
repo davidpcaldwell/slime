@@ -10,17 +10,17 @@
 //	Contributor(s):
 //	END LICENSE
 
-var parameters = jsh.shell.getopts({
+var parameters = jsh.script.getopts({
 	options: {
 		//	See api.html for documentation of these options
 		jsapi: jsh.file.Pathname,
 		doc: jsh.file.Pathname,
 		notest: false,
-		classpath: jsh.shell.getopts.ARRAY( jsh.file.Pathname ),
-		environment: jsh.shell.getopts.ARRAY( String ),
+		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
+		environment: jsh.script.getopts.ARRAY( String ),
 		base: jsh.file.Pathname,
-		module: jsh.shell.getopts.ARRAY( String ),
-		test: jsh.shell.getopts.ARRAY( String )
+		module: jsh.script.getopts.ARRAY( String ),
+		test: jsh.script.getopts.ARRAY( String )
 	}
 });
 
@@ -80,7 +80,7 @@ var ENVIRONMENT = (function() {
 	return rv;
 })();
 
-var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
+var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,
 	html: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("api.html.js"), new function() {
 		var seq = 0;
@@ -110,11 +110,11 @@ var jsapi = jsh.loader.file(jsh.script.getRelativePath("jsapi.js"), {
 	jsdom: jsh.script.loader.file("jsdom.js"),
 	jsapi: {
 		getFile: function(path) {
-			return jsh.script.getRelativePath(path).file;
+			return jsh.script.file.getRelativePath(path).file;
 		}
 	},
 	Scenario: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.before.js") ).Scenario,
-	console: jsh.loader.file( jsh.script.getRelativePath("jsunit.after.js"), {
+	console: jsh.loader.file( jsh.script.file.getRelativePath("jsunit.after.js"), {
 		console: {
 			println: function(s) {
 				if (arguments.length == 0) {
