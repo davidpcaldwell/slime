@@ -14,18 +14,24 @@ var Node = function() {
 }
 
 var Comment = function(p) {
+	this.data = p;
+	
 	this.toString = function() {
 		return "<!--" + p + "-->";
 	}
 }
 
 var Text = function(p) {
+	this.data = p;
+	
 	this.toString = function() {
 		return p.replace(/\</g, "&lt;").replace(/\&/g, "&amp;");
 	}
 }
 
 var CdataSection = function(p) {
+	this.data = p;
+	
 	this.toString = function() {
 		return "<![CDATA[" + p + "]]>";
 	}
@@ -204,7 +210,7 @@ var Element = function(p) {
 				return function(attribute) {
 					return !attribute.namespace && attribute.local == p;
 				};
-			} else if (p.namespace && p.name) {
+			} else if (typeof(p.namespace) == "string" && p.name) {
 				return function(attribute) {
 					return attribute.namespace == p.namespace && attribute.local == p.name;
 				}
@@ -214,6 +220,30 @@ var Element = function(p) {
 		if (match.length == 0) return null;
 		//	TODO	too many matches
 		return match[0].value;
+	}
+	
+	this.setAttribute = function(p,v) {
+		var filter = (function() {
+			if (typeof(p) == "string") {
+				return function(attribute) {
+					return !attribute.namespace && attribute.local == p;
+				};
+			} else if (typeof(p.namespace) == "string" && p.name) {
+				return function(attribute) {
+					return attribute.namespace == p.namespace && attribute.local == p.name;
+				}
+			}
+		})();
+		for (var i=0; i<attributes.length; i++) {
+			if (filter(attributes[i])) {
+				if (v !== null) {
+					attributes[i].value = v;
+				} else {
+					attributes.splice(i,1);
+				}
+				break;
+			}
+		}
 	}
 
 	this.get = function(p) {

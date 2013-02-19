@@ -116,6 +116,99 @@ var E4X = function(base,html) {
 	}
 };
 
+var Jsdom = function(base,dom) {
+	var Element = function(delegate,parent) {
+		if (!delegate.name) {
+			debugger;
+			throw new Error();
+		}
+		
+		var map = function(query,parent) {
+			return query.map(function(e) {
+				return new Element(e,parent);
+			});
+		}
+
+		this.localName = delegate.name.local;
+		
+		this.getAttribute = function(name) {
+			return delegate.getAttribute({
+				namespace: "",
+				name: name
+			});
+		};
+		
+		this.getJsapiAttribute = function(name) {
+			return delegate.getAttribute({
+				namespace: "http://www.inonit.com/jsapi",
+				name: name
+			});
+		}
+		
+		this.getContentString = function() {
+			return delegate.get().map(function(node) {
+				if (node.data) return node.data;
+				return String(node);
+			}).join("");
+		}
+
+		var children;
+
+		this.getChildren = function() {
+			if (!children) {
+				children = map(delegate.get({
+					filter: function(e) {
+						return Boolean(e.name);
+					}
+				}), this);
+			}
+			return children;
+		};
+
+		//	TODO	can need for parent be eliminated? Refer back to loader/api/ and find out how it is used
+		if (parent) {
+			this.parent = parent;
+		}
+		
+		this.$jsdom = delegate;
+
+		this.replaceContentWithContentOf = function(other) {
+			delegate.set(other.$jsdom.get());
+			children = null;
+		}
+
+		this.removeJsapiAttribute = function(name) {
+			delegate.setAttribute({
+				namespace: "http://www.inonit.com/jsapi",
+				name: name
+			}, null);
+		}
+
+		//	Unclear whether below used
+
+		this.toString = function() {
+			throw new Error();
+			return xml.toXMLString();
+		}
+	}
+	
+	this.top = new Element(dom.get({
+		filter: function(e) {
+			return Boolean(e.name);
+		}
+	})[0]);
+	
+	this.load = function(path) {
+		var file = base.getFile(path);
+		if (file == null) {
+			throw new Error("Cannot find referenced file at " + path + " from base: " + base);
+		} else {
+			jsh.shell.echo("Loading " + path + " from " + base);
+		}
+		return loadApiHtml(base.getFile(path));		
+	}
+};
+
 var loadApiHtml = function(file) {
 	if (!arguments.callee.cache) {
 		arguments.callee.cache = {};
@@ -124,17 +217,24 @@ var loadApiHtml = function(file) {
 		arguments.callee.cache[file.pathname.toString()] = (function() {
 			if (false) jsh.shell.echo("Reading api.html: " + file.pathname);
 			//	TODO	reimplement in terms of jsdom
-			var html = file.read(XML);
-			if (html.length() > 1) {
-				html = (function(list) {
-					for (var i=0; i<list.length(); i++) {
-						if (list[i].localName()) {
-							return list[i];
+			if (false) {
+				var html = file.read(XML);
+				if (html.length() > 1) {
+					html = (function(list) {
+						for (var i=0; i<list.length(); i++) {
+							if (list[i].localName()) {
+								return list[i];
+							}
 						}
-					}
-				})(html);
+					})(html);
+				}
+				return new E4X(file.parent,html);
+			} else {
+				var doc = new $context.jsdom.Rhino.Document({
+					stream: file.read(jsh.io.Streams.binary)
+				});
+				return new Jsdom(file.parent,doc);
 			}
-			return new E4X(file.parent,html);
 		})();
 	} else {
 		jsh.shell.echo("Returning cached api.html: " + file.pathname);
