@@ -543,7 +543,6 @@ $exports.doc = function(p) {
 			});
 //			for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
 			for (var i=0; i<withJsapiReference.length; i++) {
-				debugger;
 				var e = withJsapiReference[i];
 				var resolved = declaration.resolve(XML(e.serialize({
 					namespaces: {
@@ -559,7 +558,7 @@ $exports.doc = function(p) {
 						e.append(node);
 					});
 				} else {
-					throw new Error("Could not resolve: " + e.@jsapi::reference.toXMLString());
+					throw new Error("Could not resolve reference in: " + e);
 				}
 			}
 

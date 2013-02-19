@@ -95,10 +95,6 @@ var Element = function(p) {
 	//	objects with namespace / local / value properties
 	var attributes = (p.attributes) ? p.attributes : [];
 
-	if (p.attributes.length) {
-		debugger;
-	}
-
 	//	optionally adds children upon construction
 	var children = (p.children) ? p.children : [];
 
@@ -335,7 +331,6 @@ $exports.Rhino = new function() {
 					value: value
 				});
 			}
-			debugger;
 		}
 		return new Element(p);
 	}
