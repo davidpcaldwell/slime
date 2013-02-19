@@ -416,8 +416,8 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		modules.add("rhino/host/","jsh.java");
 		modules.add("rhino/io/", "jsh.io");
 		modules.add("rhino/file/","jsh.file");
-		modules.add("rhino/http/client/", "jsh.http")
-		modules.add("rhino/http/servlet/")
+		modules.add("rhino/http/client/", "jsh.http");
+		modules.add("rhino/http/servlet/", "jsh.httpd");
 		modules.add("rhino/shell/");
 		modules.add("jsh/shell/","jsh.shell");
 		modules.add("jsh/script/","jsh.script");

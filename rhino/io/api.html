@@ -175,6 +175,45 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
+		<div class="type">
+			<a class="type" name="types.Loader">Loader</a>
+			<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/topdescription')">
+				See platform <a href="../../loader/api.html#types.Loader">Loader</a>.
+			</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run')">
+					<div class="name">run</div>
+					See platform <a href="../../loader/api.html#types.Loader">Loader</a>.
+				</li>
+				<li class="function" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file')">
+					<div class="name">file</div>
+					See platform <a href="../../loader/api.html#types.Loader">Loader</a>.
+				</li>
+				<li class="function" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module')">
+					<div class="name">module</div>
+					See platform <a href="../../loader/api.html#types.Loader">Loader</a>.
+				</li>
+				<li class="function">
+					<div class="name">resource</div>
+					<span>Returns the resource located at the given path.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A path.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.Resource">Resource</a></span>
+					</div>
+				</li>
+			</ul>
+		</div>
+
 		<ul>
 			<li class="constructor">
 				<div class="name">Resource</div>
@@ -738,32 +777,7 @@ END LICENSE
 				</div>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<div class="type" jsapi:reference="getApi('../../loader/api.html').getElement('Loader')">
-						<a class="type" name="types.Loader">Loader</a>
-						See <a href="../../loader/api.html#types.Loader">Loader</a>
-					</div>
-
-					<span>Instances also support the following interface:</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">resource</div>
-							<span>Returns the resource located at the given path.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>A path.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.Resource">Resource</a></span>
-							</div>
-						</li>
-					</ul>
+					<span class="type"><a href="#types.Loader">Loader</a></span>
 				</div>
 			</li>
 
