@@ -37,7 +37,7 @@ var Jsdom = function(base,dom) {
 			debugger;
 			throw new Error();
 		}
-		
+
 		var map = function(query,parent) {
 			return query.map(function(e) {
 				return new Element(e,parent);
@@ -45,21 +45,21 @@ var Jsdom = function(base,dom) {
 		}
 
 		this.localName = delegate.name.local;
-		
+
 		this.getAttribute = function(name) {
 			return delegate.getAttribute({
 				namespace: "",
 				name: name
 			});
 		};
-		
+
 		this.getJsapiAttribute = function(name) {
 			return delegate.getAttribute({
 				namespace: "http://www.inonit.com/jsapi",
 				name: name
 			});
 		}
-		
+
 		this.getContentString = function() {
 			return delegate.get().map(function(node) {
 				if (node.data) return node.data;
@@ -84,7 +84,7 @@ var Jsdom = function(base,dom) {
 		if (parent) {
 			this.parent = parent;
 		}
-		
+
 		this.$jsdom = delegate;
 
 		this.replaceContentWithContentOf = function(other) {
@@ -106,13 +106,13 @@ var Jsdom = function(base,dom) {
 			return xml.toXMLString();
 		}
 	}
-	
+
 	this.top = new Element(dom.get({
 		filter: function(e) {
 			return Boolean(e.name);
 		}
 	})[0]);
-	
+
 	this.load = function(path) {
 		var file = base.getFile(path);
 		if (file == null) {
@@ -120,7 +120,7 @@ var Jsdom = function(base,dom) {
 		} else {
 			jsh.shell.echo("Loading " + path + " from " + base);
 		}
-		return loadApiHtml(base.getFile(path));		
+		return loadApiHtml(base.getFile(path));
 	}
 };
 
@@ -411,7 +411,7 @@ $exports.doc = function(p) {
 							}
 						});
 					}
-				}				
+				}
 			}
 			return e;
 		}
@@ -587,7 +587,7 @@ $exports.doc = function(p) {
 			}
 
 			destination.getRelativePath(path).write(document.toString(), { recursive: true });
-			
+
 			var tbody = index.get({
 				filter: jsdom.filter({ name: "tbody" }),
 				recursive: true

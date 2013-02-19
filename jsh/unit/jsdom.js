@@ -15,7 +15,7 @@ var Node = function() {
 
 var Comment = function(p) {
 	this.data = p;
-	
+
 	this.toString = function() {
 		return "<!--" + p + "-->";
 	}
@@ -23,7 +23,7 @@ var Comment = function(p) {
 
 var Text = function(p) {
 	this.data = p;
-	
+
 	this.toString = function() {
 		return p.replace(/\</g, "&lt;").replace(/\&/g, "&amp;");
 	}
@@ -31,7 +31,7 @@ var Text = function(p) {
 
 var CdataSection = function(p) {
 	this.data = p;
-	
+
 	this.toString = function() {
 		return "<![CDATA[" + p + "]]>";
 	}
@@ -221,7 +221,7 @@ var Element = function(p) {
 		//	TODO	too many matches
 		return match[0].value;
 	}
-	
+
 	this.setAttribute = function(p,v) {
 		var filter = (function() {
 			if (typeof(p) == "string") {
