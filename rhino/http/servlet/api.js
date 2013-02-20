@@ -135,6 +135,7 @@ var server = (function() {
 scope.httpd.http = {};
 
 scope.httpd.http.Response = function() {
+	throw new Error("Reserved for future use.");
 };
 
 scope.httpd.http.Response.text = function(string) {

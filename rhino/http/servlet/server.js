@@ -69,8 +69,11 @@ $exports.Servlet = function(script) {
 					_response.getWriter().write(response.body.string);
 				} else if (response.body && response.body.stream) {
 					_streams.copy(response.body.stream.java.adapt(),_response.getOutputStream());
+					//	TODO	next line may be redundant; should check Java API
 					response.body.stream.java.adapt().close();
 				}
+			} else {
+				throw new TypeError("Servlet response is not of a known type.");
 			}
 		} catch (e) {
 			_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

@@ -19,6 +19,19 @@ END LICENSE
 	<script src="../../../loader/api/api.js"></script>
 </head>
 <body>
+	<div>
+		The jsh Servlet Plugin allows a servlet container to be configured with SLIME servlets and embedded inside a 
+		<code>jsh</code> script, so that the servlet container can serve HTTP requests. See the
+		<a href="api.html">SLIME servlets</a> documentation for details on authoring SLIME servlets and deploying them to
+		containers other than <code>jsh</code>.
+	</div>
+	<div>
+		The jsh Servlet Plugin does not itself implement a servlet container. It relies on Apache Tomcat to be installed and
+		its location specified via the <code>CATALINA_HOME</code> environment variable. 
+	</div>
+	<div>
+		<strong>If <code>CATALINA_HOME</code> is not specified, the jsh Servlet Plugin will not be available.</strong>
+	</div>
 	<!--
 		TODO	what APIs must a servlet file implement?
 		TODO	how do we build webapps out of this stuff? How do we create a WAR for deployment?
@@ -54,20 +67,8 @@ END LICENSE
 			<ul>
 				<li class="function">
 					<div class="name"><a name="resources.map">map</a></div>
-					<span>Maps a given prefix to a location on the file system.</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>A prefix, which does <em>not</em> include a leading <code>/</code>.</span>
-							</li>
-							<li class="value">
-								<span class="type"><a href="../../file/api.html#types.Pathname">Pathname</a></span>
-								<span>A pathname.</span>
-							</li>
-						</ol>
-					</div>
+					Has semantics equivalent to the <code>map()</code> method in a resource mapping script. See 
+					<a href="api.html#types.resource-mapping-script">resource mapping script</a> for details.
 				</li>
 				<li class="value">
 					<div class="name">loader</div>
@@ -102,26 +103,12 @@ END LICENSE
 					<li class="function">
 						<div class="name">script</div>
 						<div>
-							Creates a <a href="#types.resources">resources</a> from one or more <i>mapping script</i>s. Each mapping
-							file is a script that is provided with the following scope:
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">$mapping</div>
-									<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
-									<span>The mapping script itself.</span>
-								</li>
-								<li class="function">
-									<div class="name">map</div>
-									<span>A function with semantics identical to <a href="resources.map">resources.map</a>.</span>
-								</li>
-							</ul>
-							The script can build a mapping using the provided scope variables.
+							Creates a <a href="#types.resources">resources</a> from one or more <a href="api.html#types.resource-mapping-script">resource mapping script</a>s.
 						</div>
 						<div class="arguments">
 							<div class="label">Arguments</div>
-							<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span> Zero or more
-							<i>mapping script</i>s.
+							 
+							Zero or more <span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>s that are resource mapping scripts.
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>

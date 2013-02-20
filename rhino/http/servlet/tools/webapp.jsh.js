@@ -17,6 +17,7 @@ var parameters = jsh.script.getopts({
 		compile: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		resources: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		norhino: false,
+		//	TODO	allow multiple servlets with separate parameters
 		servlet: String,
 		parameter: jsh.script.getopts.ARRAY(String),
 		"java:version": String
