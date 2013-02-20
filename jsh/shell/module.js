@@ -366,7 +366,7 @@ $exports.jsh = function(p) {
 		debugger;
 		//	TODO	can we use $exports.java.home here?
 		var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
-		var executable = jdk.getRelativePath("bin/java").toString();
+		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java").toString();
 		//	Set defaults from this shell
 		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : getProperty("jsh.launcher.classpath");
 
