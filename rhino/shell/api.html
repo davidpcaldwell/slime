@@ -184,8 +184,22 @@ END LICENSE
 					An object describing the operating system process environment under which this script was executed. Each
 					variable defined in the environment is represented as a property in this object, with its name being the name
 					of the property and its value being the value of that property. This object uses JavaScript semantics, and
-					thus this object uses case-sensitive names, even if the underlying operating system does not.
+					thus this object has case-sensitive names. In the event that the underlying operating system has
+					environment variables that are <em>not</em> case-sensitive, all properties of this object will have
+					UPPERCASE names.
 				</span>
+				<script type="application/x.jsapi#tests">
+					scenario( new function() {
+						this.name = "System environment";
+
+						this.execute = function(scope) {
+							var environment = module.environment;
+
+							scope.test( typeof(environment.PATH) != "undefined" );
+							scope.test( typeof(environment.ZZFF) == "undefined" );
+						}
+					} );
+				</script>
 			</li>
 			<li class="value" jsapi:id="properties">
 				<div class="name">properties</div>
@@ -198,18 +212,6 @@ END LICENSE
 			</li>
 		</ul>
 	</div>
-	<script type="application/x.jsapi#tests">
-	scenario( new function() {
-		this.name = "System environment";
-
-		this.execute = function(scope) {
-			var environment = module.environment;
-
-			scope.test( typeof(environment.PATH) != "undefined" );
-			scope.test( typeof(environment.ZZFF) == "undefined" );
-		}
-	} );
-	</script>
 	<script type="application/x.jsapi#tests">
 	scenario( new function() {
 		this.name = "System properties";
