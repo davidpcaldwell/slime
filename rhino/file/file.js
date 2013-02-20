@@ -605,8 +605,9 @@ var Searchpath = function(parameters) {
 			if (array[i].directory) {
 				if ($context.pathext) {
 					for (var j=0; j<$context.pathext.length; j++) {
-						if (array[i].directory.getFile(name + $context.pathext[j])) {
-							return array[i].directory.getFile(name + $context.pathext[j]);
+						//	TODO	subtle bugs lurking here: should probably list the directory and make a case-insensitive check
+						if (array[i].directory.getFile(name + $context.pathext[j].toLowerCase())) {
+							return array[i].directory.getFile(name + $context.pathext[j].toLowerCase());
 						}
 					}
 				} else {
