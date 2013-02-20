@@ -226,6 +226,17 @@ var jshPackage = function(p) {
 var classes = createTemporaryDirectory();
 classes.mkdirs();
 
+if (env.CATALINA_HOME) {
+	console("Running httpd integration tests with CATALINA_HOME = " + env.CATALINA_HOME);
+	run(LAUNCHER_COMMAND.concat(
+		[
+			String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath())
+		]
+	));
+} else {
+	console("No CATALINA_HOME: not running httpd integration tests.");
+}
+
 console("Compiling AddClasses to: " + classes);
 platform.jdk.compile(compileOptions.concat([
 	"-d", classes.getCanonicalPath(),
