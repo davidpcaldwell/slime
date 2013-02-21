@@ -172,7 +172,7 @@ var Command = function() {
 		var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, "stdout: " + spoolName);
 		var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
 		var _stdin = context.getStandardInput();
-		var _out = Spooler.start(this.stdin, delegate.getOutputStream(), true, "stdin from " + this.stdin + ": " + spoolName);
+		var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, "stdin from " + _stdin + ": " + spoolName);
 		return delegate.waitFor();
 	}
 
@@ -291,7 +291,7 @@ settings.defaults = new function() {
 		: new Searchpath(getProperty("java.class.path"))
 	;
 
-	this.JSH_PLUGINS = new Directory(getProperty("user.home")).getDirectory(".jsh").path;
+	this.JSH_PLUGINS = new Directory(getProperty("user.home")).getDirectory(".jsh/plugins").path;
 };
 debug("jsh.launcher.packaged = " + getProperty("jsh.launcher.packaged"));
 if (getProperty("jsh.launcher.packaged") != null) {
@@ -381,7 +381,7 @@ if (getProperty("jsh.launcher.home")) {
 
 		this.JSH_PLUGINS = new Searchpath([
 			JSH_HOME.getDirectory("plugins"),
-			new Directory(getProperty("user.home")).getDirectory(".jsh")
+			new Directory(getProperty("user.home")).getDirectory(".jsh/plugins")
 		]);
 
 		this.profiler = JSH_HOME.getFile("tools/profiler.jar");

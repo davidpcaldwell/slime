@@ -89,6 +89,7 @@ for (var x in env) {
 		mode.env[x] = env[x];
 	}
 }
+mode.env.JSH_PLUGINS = String(new File(JSH_HOME, "plugins").getCanonicalPath());
 if (debug.on) {
 	mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
 }
@@ -114,7 +115,11 @@ var testCommandOutput = function(path,tester,p) {
 		}
 		for (var x in p.env) {
 			if (typeof(p.env[x]) != "undefined") {
-				rv[x] = p.env[x];
+				if (p.env[x]) {
+					rv[x] = p.env[x];
+				} else {
+					delete rv[x];
+				}
 			}
 		}
 		return rv;
@@ -368,6 +373,10 @@ testCommandOutput(packaged_plugins, function(options) {
 		"[global] a: Hello, World!",
 		""
 	]);
+}, {
+	env: {
+		JSH_PLUGINS: null
+	}
 });
 
 testCommandOutput("jsh.file/Searchpath.jsh.js", function(options) {
