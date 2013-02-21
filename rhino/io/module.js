@@ -91,7 +91,6 @@ var Reader = function(peer) {
 	}
 
 	this.readLines = function(callback,mode) {
-
 		if (!mode) mode = {};
 		//	TODO	should we retrieve properties from the rhino/host module, or is this sufficient?
 		if (!mode.ending) mode.ending = String(Packages.java.lang.System.getProperty("line.separator"));
