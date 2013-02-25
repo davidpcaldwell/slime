@@ -38,7 +38,8 @@ END LICENSE
 						debugger;
 						rv += child.nodeData;
 					} else if (child.nodeType == document.COMMENT_NODE) {
-						rv += "<!--" + child.nodeValue + "-->";
+						//	NetBeans 7.3 JavaScript parser was confused by comment delimiters before they were broken up below
+						rv += "<" + "!--" + child.nodeValue + "--" + ">";
 					} else if (child.nodeType == document.TEXT_NODE) {
 						rv += child.nodeValue;
 					} else if (child.outerHTML) {
