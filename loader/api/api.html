@@ -227,13 +227,13 @@ END LICENSE
 		</div>
 		<div>
 			<h2>Types</h2>
-			<p>
+			<div>
 				Types can be declared anywhere using a <code>div.type</code>. They should contain an <code>a.type</code> that
 				contains the name of the type (a logical name for display) and also provides a <code>name</code> attribute so that
 				the type can be hyperlinked (convention is to use <code>types.<i>name</i></code>). Types then contain a
 				description <code>span</code> and a <code>ul</code> of properties (preceded by a <code>div.label</code> with the
 				text "has properties:"). Other code can then link to types using links to <code>#types.<i>name</i></code>.
-			</p>
+			</div>
 			<div><div class="template" id="template.type">
 				<div class="type">
 					<a class="type" name="types.__NAME__">__NAME__</a>
@@ -243,6 +243,12 @@ END LICENSE
 					</ul>
 				</div>
 			</div></div>
+			<div>
+				An object can indicate it supports a given type with:
+				<div class="template">
+					<span class="type">supports <a href="../path/to/reference.api.html#types.__NAME__">__NAME__</a></span>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div>
