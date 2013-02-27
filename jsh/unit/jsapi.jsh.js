@@ -86,7 +86,6 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 		var seq = 0;
 
 		this.run = function(code,scope) {
-			debugger;
 			var source = code;
 			if (typeof(source) == "string") {
 				//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
