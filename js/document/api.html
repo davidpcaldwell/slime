@@ -1,0 +1,444 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME document API.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>js/document</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<!--
+		Design notes:
+ 
+		Do not reinvent Array API for processing children and attributes
+	-->
+	<div>Provides a simple JavaScript-centric API that is analogous to, but not conformant with, the Document Object Model.</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.name">name</a>
+			<span>A qualified name, including an XML namespace and a name within that namespace.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">namespace</div>
+					<span class="type">string</span>
+					<span>A URI specifying an XML namespace.</span>
+				</li>
+				<li class="value">
+					<div class="name">name</div>
+					<span class="type">string</span>
+					<span>The name within the given namespace.</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.node">node</a>
+			<span>A node in a document.</span>
+			<div class="label">has properties:</div>
+			<ul>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.parent">parent</a>
+			<span>A node that can have children.</span>
+			<div class="type">
+				<a class="type" name="types.filter">filter</a>
+				<span>A function that specifies an arbitrary criterion about nodes.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">node</span>
+							<span>A node.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">boolean</span>
+					<span><code>true</code> indicating that the node matches the criterion; <code>false</code> indicating it does not.</span>
+				</div>
+			</div>
+			<div class="type">
+				<a class="type" name="types.search">search</a>
+				<span>An algorithm used to find nodes. Can be fully-specified by the following interface:</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">filter</div>
+						<span class="type"><a href="#types.filter">filter</a></span>
+						<span>A function that specifies which nodes should be included in the results of the search.</span>
+					</li>
+					<li class="function">
+						<div class="name">descendants</div>
+						<span>A function that specifies whether the descendants of a particular node should be searched.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">node</span>
+									<span>A node.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">boolean</span>
+							<span>
+								<code>true</code> indicating that the descendants of this node should be searched; <code>false</code> indicating that the
+								descendants of this node should not be searched.
+							</span>
+						</div>
+					</li>
+				</ul>
+				<div>
+					A search can also be specified via a single function, in which case the function is interpreted as the <code>filter</code> property of the
+					search and descendants of all nodes are searched.
+				</div>
+			</div>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">children</div>
+					<span class="type">Array of <a href="#types.node">node</a></span>
+					<span>The children of this node.</span>
+				</li>
+				<li class="function">
+					<div class="name">identify</div>
+					<span>Searches the descendants of this node for a single matching node.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.search">search</a></span>
+								<span>
+									The algorithm to use.
+								</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.node">node</a></span>
+						<span>
+							Returns the single node found by the search, or <code>null</code> if no nodes were found. If multiple nodes were found, throws
+							an error.
+						</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">child</div>
+					<span>Returns a single child node of this node matching the given filter.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.filter">filter</a></span>
+								<span>A filtering function.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.node">node</a></span>
+						<span>
+							The single child of this node matching the given filter, or <code>null</code> if no child matches the filter. Throws an error
+							if multiple children match.
+						</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.comment">comment</a>
+			<span class="type">supports <a href="#types.node">node</a></span>
+			<span>A node representing a comment.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">comment</div>
+					<span>Contains data about the comment.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">data</div>
+							<span class="type">string</span>
+							<span>The text of the comment.</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.characters">characters</a>
+			<span class="type">supports <a href="#types.node">node</a></span>
+			<span>A node that contains character data.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">getString</div>
+					<span>Returns the character data represented by this node.</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">string</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.text">text</a>
+			<span class="type">supports <a href="#types.characters">characters</a></span>
+			<span>A node that contains text.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">text</div>
+					<span>Contains data about the text node.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">data</div>
+							<span class="type">string</span>
+							<span>The character data represented by this node.</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.cdata">cdata</a>
+			<span class="type">supports <a href="#types.characters">characters</a></span>
+			<span>A node that is a CDATA section.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">cdata</div>
+					<span>Contains data about the CDATA section.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">data</div>
+							<span class="type">string</span>
+							<span>The character data represented by this node.</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.element">element</a>
+			<span class="type">supports <a href="#types.node">node</a></span>
+			<span class="type">supports <a href="#types.parent">parent</a></span>
+			<span>A node representing an element.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">element</div>
+					<span>Contains element-specific data.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">type</div>
+							<span class="type"><a href="#types.name">name</a></span>
+						</li>
+						<li class="object">
+							<div class="name">attributes</div>
+							<span class="type">Array of <a href="#types.attribute">attribute</a></span>
+							<div class="type">
+								<a class="type" name="types.attribute">attribute</a>
+								<span class="type">supports <a href="#types.name">name</a></span>
+								<span>A named attribute and its value; corresponds to a specific attribute declaration in a document.</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">value</div>
+										<span class="type">string</span>
+										<!--	TODO	nullable? undefined?	-->
+										<span>The attribute's value.</span>
+									</li>
+								</ul>
+							</div>
+							<div class="type">
+								<a class="type" name="types.attribute.name">attribute name</a>
+								<span>
+									An attribute name to use in an operation. Is either a <a href="#types.name">name</a> or a <code>string</code>. If it is
+									a <code>string</code>, it is interpreted as a name that is not in a namespace.
+								</span>
+							</div>
+							<span>The <code>attributes</code> array is augmented with the following methods:</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">get</div>
+									<span>Returns the value of a named attribute.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type"><a href="#types.attribute.name">attribute name</a></span>
+												<span>An attribute name.</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">string</span>
+										<span>The value of the given attribute, or <code>null</code> if the attribute is not present.</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">set</div>
+									<span>Sets the value of a named attribute.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type"><a href="#types.attribute.name">attribute name</a></span>
+												<span>An attribute name.</span>
+											</li>
+											<li class="value">
+												<span class="type">string</span>
+												<span>A value to which to set the attribute, or <code>null</code> to remove it.</span>
+											</li>
+										</ol>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.doctype">doctype</a>
+			<span class="type">supports <a href="#types.node">node</a></span>
+			<span>A node representing a document type declaration.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">doctype</div>
+					<span>
+						Contains properties information about the document type declaration. 
+						See the <a href="http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#ID-412266927">DOM 3 specification</a> for 
+						additional specification detail.
+					</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">name</div>
+							<span class="type">string</span>
+							<span>The name given in the DOCTYPE declaration: that is, the name immediately following the DOCTYPE keyword.</span>
+						</li>
+						<li class="value">
+							<div class="name">systemId</div>
+							<span class="type">string</span>
+							<span>The public identifier given in the DOCTYPE declaration: for example, 
+								<code>-//W3C//DTD XHTML 1.0 Transitional//EN</code>.
+							</span>
+						</li>
+						<li class="value">
+							<div class="name">publicId</div>
+							<span class="type">string</span>
+							<span>The public identifier given in the DOCTYPE declaration: for example, 
+								<code>http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</code>.
+							</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.document">document</a>
+			<span class="type">supports <a href="#types.node">node</a></span>
+			<span class="type">supports <a href="#types.parent">parent</a></span>
+			<span>A top-level node that contains other nodes and represents a well-formed document.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">document</div>
+					<span>Contains methods that pertain to the document.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">getElement</div>
+							<span>Returns the <i>document element</i> of the document.</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.element">element</a></span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">getType</div>
+							<span>Returns the document type of this document.</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.doctype">doctype</a></span>
+							</div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<ul>
+			<!--
+			<li class="constructor">
+				<div class="name">Document</div>
+				<span>__DESCRIPTION__</span>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.document">document</a></span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			-->
+			<li class="function">
+				<div class="name">filter</div>
+				<span>Creates a <a href="#types.filter">filter</a> based on the argument given.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">object</span>
+							<span>An object describing the filter.</span>
+							<div>
+								The following forms are supported.
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">elements</div>
+										<span class="type">string</span>
+										<span>Matches elements with the given local name.</span>
+									</li>
+								</ul>
+							</div>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type"><a href="#types.filter">filter</a></span>
+				</div>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

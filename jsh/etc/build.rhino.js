@@ -349,7 +349,7 @@ var module = function(path,compile) {
 };
 
 [
-	"js/object","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"
+	"js/object","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"
 	,"rhino/tools"
 ].forEach( function(item) {
 	module(item,platform.jdk.compile);
@@ -415,6 +415,8 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		modules.add("js/object/","jsh.js");
 		modules.add("rhino/host/","jsh.java");
 		modules.add("rhino/io/", "jsh.io");
+		modules.add("js/document/", "jsh.js.document");
+		modules.add("rhino/document/", "jsh.document");
 		modules.add("rhino/file/","jsh.file");
 		modules.add("rhino/http/client/", "jsh.http");
 		modules.add("rhino/http/servlet/", "(servlets)");
