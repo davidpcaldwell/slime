@@ -394,6 +394,33 @@ $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
 $exports.Loader = function(p) {
+	//	TODO	this assumes Rhino-based loader with _resource; would we want to allow arbitrary arguments to be passed the way
+	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
+	//			.resource decoration?
+	var decorate = function() {
+		if (this._resource) {
+			this.resource = function(path) {
+				//	Test for existence so that we can return null if not found
+				var _in = this._resource(path);
+				if (!_in) {
+					return null;
+				} else {					
+					_in.close();
+				}
+				var target = this;
+				return new $exports.Resource({
+					read: {
+						binary: function() {
+							return new InputStream(target._resource(path));
+						}
+					}
+				})
+			};
+		}
+		if (p.decorate) {
+			p.decorate.apply(this,arguments);
+		}
+	}
 	if (p.resources) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it
@@ -414,13 +441,17 @@ $exports.Loader = function(p) {
 				}
 			}
 		);
-		var rv = new $context.$rhino.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(_resources) });
-		arguments.callee.decorate(rv);
-		return rv;
+		return new $context.$rhino.Loader({ 
+			_source: Packages.inonit.script.rhino.Code.Source.create(_resources),
+			decorate: decorate
+		});
 	} else {
-		var rv = new $context.$rhino.Loader(p);
-		arguments.callee.decorate(rv);
-		return rv;
+		var parameter = {};
+		for (var x in p) {
+			parameter[x] = p[x];
+		}
+		parameter.decorate = decorate;
+		return new $context.$rhino.Loader(parameter);
 	}
 };
 $exports.Loader.decorate = function(rv) {

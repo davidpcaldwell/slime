@@ -287,25 +287,19 @@
 			}
 
 			//	Creates a child loader that prepends the given prefix
-			var Child = function(path) {
-				var tokens = path.split("/");
-				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-				if (p.createChild) {
-					return p.createChild(prefix);
-				} else {
-					return new Callee({
-						getCode: function(path) {
-							return p.getCode(prefix+path);
-						}
-					})
-				}
-			}
-
-			this.Child = Child;
+			var Child = (p.Child) ? p.Child : function(prefix) {
+				return new Callee({
+					getCode: function(path) {
+						return p.getCode(prefix+path);
+					}
+				});
+			};
 
 			this.module = function(path,scope,target) {
 				var inner = createScope(scope);
-				inner.$loader = new Child(path);
+				var tokens = path.split("/");
+				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+				inner.$loader = new Child(prefix);
 				if (path == "" || /\/$/.test(path)) {
 					path += "module.js";
 				}
@@ -327,9 +321,9 @@
 			return file.apply(this,arguments);
 		};
 
-		this.module = function(format,scope) {
-			var loader = new Loader(format);
-			return loader.module(format.main,scope);
+		this.module = function(p,scope) {
+			var loader = new Loader(p);
+			return loader.module(p.main,scope);
 		};
 
 		this.namespace = function(string) {
