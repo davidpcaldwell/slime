@@ -1,0 +1,146 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME portable MIME implementation.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Portable MIME implementation</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<div class="type">
+			<a class="type" name="types.type">type</a>
+			<span>A MIME type.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">getMedia</div>
+					<span>Returns the MIME media type for this type; for <code>text/plain</code>, returns <code>"text"</code>.</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">string</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">getSubtype</div>
+					<span>Returns the MIME subtype for this type; for <code>text/plain</code>, returns <code>"plain"</code>.</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">string</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">getParameters</div>
+					<span>
+						Returns an object with property values of type <code>string</code>. Each property of the object represents a MIME type
+						parameter of the form <code><i>name</i>=<i>value</i></code>. The preceding declaration would result in the returned object containing
+						a property named <code><i>name</i></code> that had the value <code><i>value</i></code>.
+					</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">object</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">toString</div>
+					<span>Returns a string representation of this MIME type, suitable for a MIME type declaration.</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">string</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="constructor">
+				<div class="name">Type</div>
+				<span>Creates a MIME type from its parsed components.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>The MIME media type: for <code>text/plain</code>, <code>"text"</code>.</span>
+						</li>
+						<li class="value">
+							<span class="type">string</span>
+							<span>The MIME subtype: for <code>text/plain</code>, <code>"plain"</code>.</span>
+						</li>
+						<li class="value">
+							<span class="type">object</span>
+							<span>
+								An object with properties that have <code>string</code> values. Each property of the object represents a MIME parameter that
+								will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
+								value of the parameter.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var throwsError = function(b,f,message) {
+						return new function() {
+							this.success = function() {
+								try {
+									f();
+									return !b;
+								} catch (e) {
+									return b;
+								}
+							};
+
+							this.message = function(success) {
+								if (!success) return "Should have errored.";
+								return "Errored as expected.";
+							}
+						};
+					};
+					
+					var a;
+					var b = null;
+					
+					test(throwsError(true, function() {
+						new module.Type(a, "plain"); 
+					}, "First argument undefined"));
+					test(throwsError(true, function() {
+						new module.Type(b, "plain"); 
+					}, "First argument null"));
+					test(throwsError(true, function() {
+						new module.Type("text", a);
+					}, "Second argument undefined"));
+					test(throwsError(true, function() {
+						new module.Type("text", b);
+					}, "Second argument null"));
+					test(throwsError(false, function() {
+						new module.Type("text", "plain");
+					}, "Arguments valid."));
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>
