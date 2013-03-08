@@ -138,6 +138,7 @@ END LICENSE
 					test(throwsError(false, function() {
 						new module.Type("text", "plain");
 					}, "Arguments valid."));
+					test(new module.Type("text", "plain").toString() == "text/plain");
 				</script>
 			</li>
 		</ul>
