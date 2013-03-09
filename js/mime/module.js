@@ -7,7 +7,7 @@ var IsString = function(p) {
 	};
 };
 
-$exports.Type = $context.api.js.Function({
+$exports.Type = $api.Function({
 	before: [
 		IsString({ index: 0, name: "media" }),
 		IsString({ index: 1, name: "subtype" })

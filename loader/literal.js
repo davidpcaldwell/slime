@@ -210,6 +210,36 @@
 			$exports.deprecate = deprecate;
 			$exports.experimental = experimental;
 
+			$exports.Function = function(p) {
+				return function() {
+					var called = {
+						target: this,
+						arguments: Array.prototype.slice.call(arguments)
+					};
+					var before = [];
+					if (p.before && p.before.sort) {
+						before = p.before;
+					} else if (p.before && p.before.call) {
+						before = [p.before];
+					}
+					//	TODO	should we allow replacement of 'this' as well as arguments?
+					for (var i=0; i<before.length; i++) {
+						before[i].call(null,called);
+					}
+					called.returned = p.call.apply(called.target,called.arguments);
+					var after = [];
+					if (p.after && p.after.sort) {
+						after = p.after;
+					} else if (p.after && p.after.call) {
+						after = [p.after];
+					}
+					for (var i=0; i<after.length; i++) {
+						after[i].call(null,called);
+					}
+					return called.returned;
+				};
+			};
+			
 			return $exports;
 		})();
 

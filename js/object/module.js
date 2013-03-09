@@ -326,36 +326,10 @@ if ($context.globals) {
 	}
 }
 
-$exports.Function = function(p) {
-	return function() {
-		var called = {
-			target: this,
-			arguments: Array.prototype.slice.call(arguments)
-		};
-		var before = [];
-		if (p.before && p.before.sort) {
-			before = p.before;
-		} else if (p.before && p.before.call) {
-			before = [p.before];
-		}
-		//	TODO	should we allow replacement of 'this' as well as arguments?
-		for (var i=0; i<before.length; i++) {
-			before[i].call(null,called);
-		}
-		called.returned = p.call.apply(called.target,called.arguments);
-		var after = [];
-		if (p.after && p.after.sort) {
-			after = p.after;
-		} else if (p.after && p.after.call) {
-			after = [p.after];
-		}
-		for (var i=0; i<after.length; i++) {
-			after[i].call(null,called);
-		}
-		return called.returned;
-	};
-};
-$exports.Function.evaluator = function() {
+$exports.Function = $api.deprecate(function(p) {
+	return $api.Function(p);
+});
+$exports.Function.evaluator = $api.deprecate(function() {
 	//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
 	//	undefined
 	var components = arguments;
@@ -369,8 +343,7 @@ $exports.Function.evaluator = function() {
 		}
 		return rv;
 	}
-}
-$api.experimental($exports,"Function");
+});
 
 $exports.Filter = new function() {
 	this.property = function(name,filter) {
