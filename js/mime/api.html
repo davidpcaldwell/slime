@@ -138,6 +138,9 @@ END LICENSE
 					test(throwsError(true, function() {
 						new module.Type("text", b);
 					}, "Second argument null"));
+					test(throwsError(true, function() {
+						new module.Type("text", "plain", 2);
+					}, "Arguments contain number."));
 					test(throwsError(false, function() {
 						new module.Type("text", "plain");
 					}, "Arguments valid."));
