@@ -9,8 +9,8 @@ var IsString = function(p) {
 
 $exports.Type = $api.Function({
 	before: [
-		IsString({ index: 0, name: "media" }),
-		IsString({ index: 1, name: "subtype" })
+		$api.Function.arguments.isString({ index: 0, name: "media" }),
+		$api.Function.arguments.isString({ index: 1, name: "subtype" })
 	],
 	call: function(media,subtype,parameters) {
 		this.getMedia = function() {

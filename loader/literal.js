@@ -239,6 +239,15 @@
 					return called.returned;
 				};
 			};
+			$exports.Function.arguments = {};
+			$exports.Function.arguments.isString = function(p) {
+				var reference = (p.name) ? "arguments[" + p.index + "]" : "arguments[" + p.index + "] (" + p.name + ")";
+				return function(m) {
+					if (typeof(m.arguments[p.index]) == "undefined" && !p.undefined) throw new TypeError(reference + " must be a string, not undefined.");
+					if (m.arguments[p.index] === null && !p["null"]) throw new TypeError(reference + " must be a string, not null.");
+					if (typeof(m.arguments[p.index]) != "string") throw new TypeError(reference + " must be a string, not " + typeof(m.arguments[p.index]));
+				};				
+			};
 			
 			return $exports;
 		})();
