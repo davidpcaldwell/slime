@@ -326,21 +326,48 @@ if ($context.globals) {
 	}
 }
 
-$exports.Function = new function() {
+$exports.Function = function(p) {
+	return function() {
+		var called = {
+			target: this,
+			arguments: Array.prototype.slice.call(arguments)
+		};
+		var before = [];
+		if (p.before && p.before.sort) {
+			before = p.before;
+		} else if (p.before && p.before.call) {
+			before = [p.before];
+		}
+		//	TODO	should we allow replacement of 'this' as well as arguments?
+		for (var i=0; i<before.length; i++) {
+			before[i].call(null,called);
+		}
+		called.returned = p.call.apply(called.target,called.arguments);
+		var after = [];
+		if (p.after && p.after.sort) {
+			after = p.after;
+		} else if (p.after && p.after.call) {
+			after = [p.after];
+		}
+		for (var i=0; i<after.length; i++) {
+			after[i].call(null,called);
+		}
+		return called.returned;
+	};
+};
+$exports.Function.evaluator = function() {
 	//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
 	//	undefined
-	this.evaluator = function() {
-		var components = arguments;
-		return function() {
-			var rv;
-			for (var i=0; i<components.length; i++) {
-				rv = components[i].apply(this,arguments);
-				if (typeof(rv) != "undefined") {
-					return rv;
-				}
+	var components = arguments;
+	return function() {
+		var rv;
+		for (var i=0; i<components.length; i++) {
+			rv = components[i].apply(this,arguments);
+			if (typeof(rv) != "undefined") {
+				return rv;
 			}
-			return rv;
 		}
+		return rv;
 	}
 }
 $api.experimental($exports,"Function");

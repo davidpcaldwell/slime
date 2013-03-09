@@ -20,11 +20,18 @@ END LICENSE
 	<script src="../../loader/api/api.js"></script>
 </head>
 <body>
-	<div>__DESCRIPTION__</div>
+	<div>A simple set of constructs that pertain to MIME that can run on any JavaScript engine.</div>
 	<div>
 		<h1>Context</h1>
 		<ul>
 		</ul>
+		<script type="application/x.jsapi#context">
+			new function() {
+				this.api = {
+					js: jsh.js
+				}
+			}
+		</script>
 	</div>
 	<div>
 		<div class="type">
@@ -98,8 +105,7 @@ END LICENSE
 				</div>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type"><a href="#types.type">type</a></span>
 				</div>
 				<script type="application/x.jsapi#tests">
 					var throwsError = function(b,f,message) {
