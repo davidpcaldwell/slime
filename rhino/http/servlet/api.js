@@ -62,7 +62,7 @@ var $loader = (function() {
 		var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
 		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
 		return new Loader({
-			_source: Packages.inonit.script.rhino.Code.Source.create($host.getServletResources(), prefix)
+			_source: $host.getServletResources().child(prefix)
 		});
 	} else if ($host.loaders) {
 		return $host.loaders.script;

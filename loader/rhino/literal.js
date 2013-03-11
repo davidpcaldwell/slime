@@ -58,9 +58,11 @@
 					);
 				}
 			} else if (typeof(code) == "object" && code._source && code.path) {
+				var _in = code._source.getResourceAsStream(code.path);
+				if (!_in) throw new Error("Could not find resource at " + code.path + " in " + code._source);
 				return arguments.callee({
 					name: code._source.toString() + ":" + code.path,
-					_in: code._source.getResourceAsStream(code.path)
+					_in: _in
 				});
 			} else if (typeof(code) == "string") {
 				return code;
@@ -91,48 +93,59 @@
 			}
 		};
 
-		var Loader = function(_source,root) {
-			if (typeof(root) == "undefined") {
-				root = "";
-			}
+		var Loader = function(p) {
+			if (!p._source) throw new TypeError("_source must be defined and not be null.");
 			var Callee = arguments.callee;
 
-			var p = new function() {
+			var parameter = new function() {
 				this.getCode = function(path) {
 					return getCode({
-						_source: _source,
-						path: root+path
+						_source: p._source,
+						path: path
 					})
 				};
-
-				this.createChild = function(prefix) {
-					return new Callee(_source,root+prefix);
-					//	TODO	probably will not work correctly with child loaders? Would need access to the underlying getCode
+				
+				this.Child = function(prefix) {
+					var c = {
+						_source: p._source.child(prefix),
+						decorate: p.decorate
+					};
+					return new Callee(c);
 				}
+			};
+			
+			var rv = new loader.Loader(parameter);
+			rv._resource = function(path) {
+				return p._source.getResourceAsStream(path);
+			};
+			if (p.decorate) {
+				p.decorate.call(rv,p);
 			}
-
-			var delegate = new loader.Loader(p);
-			delegate._resource = function(path) {
-				return _source.getResourceAsStream(root+path);
-			}
-			return delegate;
+			return rv;
 		}
 
 		this.Loader = function(p) {
 			if (p._source) {
-				return new Loader(p._source);
+				return new Loader(p);
 			} else if (p._code) {
-				//	TODO	this is probably a bad place to do this, but it will do for now; actually should use loader decoration
-				//			to do this
+				//	TODO	this is probably a bad place to do this, but it will do for now; should this move into the Loader
+				//			constructor?
 				$loader.classpath.append(p._code);
-				return new Loader(p._code.getScripts());
+				return new Loader({
+					_source: p._code.getScripts(),
+					decorate: p.decorate
+				});
 			} else if (p.getCode) {
+				//	TODO	document this; it is confusing; should decorate() be disallowed or flagged here since platform loader
+				//			will ignore it?
 				return new loader.Loader({
 					getCode: function(path) {
 						debugger;
 						return getCode(p.getCode(path));
 					}
 				});
+			} else {
+				throw new TypeError();
 			}
 		}
 

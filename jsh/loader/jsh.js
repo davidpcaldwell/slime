@@ -70,13 +70,10 @@ this.jsh = new function() {
 		}
 
 		var Loader = function(p) {
-			var rv = new rhinoLoader.Loader(p);
-			return jsh.io.Loader.decorate(rv);
+			return new jsh.io.Loader(p);
 		}
 
-		this.Loader = function(p) {
-			return Loader(p);
-		}
+		this.Loader = Loader;
 
 		this.plugin = new function() {
 			this.read = function(_code,scope) {

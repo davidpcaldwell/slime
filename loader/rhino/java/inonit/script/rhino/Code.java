@@ -76,37 +76,6 @@ public abstract class Code {
 //			};
 //		}
 //
-		//	public because used within script for servlet launching to load associated servlet classes; alternative would be to
-		//	create a loader and load the servlet classes from that
-		public static Source create(final Source source, final String prefix) {
-			//	TODO	should figure out /; maybe should only add it if we don't already end in it
-			final String prepend = (prefix != null) ? (prefix + "/") : "";
-			return new Source() {
-				@Override public String toString() {
-					return Source.class.getName() + " source=" + source + " prefix=" + prefix;
-				}
-
-				public InputStream getResourceAsStream(String path) throws IOException {
-					return source.getResourceAsStream(prepend + path);
-				}
-
-				public Classes getClasses() {
-					final Classes delegate = source.getClasses();
-					if (delegate == null) {
-						return null;
-					}
-					return new Classes() {
-						@Override public URL getResource(String path) {
-							return delegate.getResource(prepend+path);
-						}
-					};
-				}
-
-				public ClassLoader getClassLoader(ClassLoader delegate) {
-					throw new RuntimeException("Unused?");
-				}
-			};
-		}
 
 		public static Source create(final java.net.URL url) {
 			return new UrlBased(url);
@@ -142,6 +111,32 @@ public abstract class Code {
 
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
 		public abstract Classes getClasses();
+		
+		public final Source child(final String prefix) {
+			//	TODO	should figure out /; maybe should only add it if we don't already end in it
+			final String prepend = (prefix != null && prefix.length() > 0) ? (prefix + "/") : "";
+			return new Code.Source() {
+				@Override public String toString() {
+					return Code.Source.class.getName() + " source=" + Source.this + " prefix=" + prefix;
+				}
+
+				public InputStream getResourceAsStream(String path) throws IOException {
+					return Source.this.getResourceAsStream(prepend + path);
+				}
+
+				public Code.Classes getClasses() {
+					final Classes delegate = Source.this.getClasses();
+					if (delegate == null) {
+						return null;
+					}
+					return new Classes() {
+						@Override public URL getResource(String path) {
+							return delegate.getResource(prepend+path);
+						}
+					};
+				}			};
+			
+		}
 
 		private static class UrlBased extends Source {
 			private java.net.URL url;
@@ -195,7 +190,7 @@ public abstract class Code {
 			}
 
 			public Source getClasses() {
-				return Source.create(source, "$jvm/classes");
+				return source.child("$jvm/classes");
 			}
 		};
 	}
@@ -206,7 +201,7 @@ public abstract class Code {
 	}
 
 	public static Code create(final Code.Source source, final String prefix) {
-		Code.Source s = Code.Source.create(source, prefix);
+		Code.Source s = source.child(prefix);
 		return create(s);
 	}
 
@@ -243,7 +238,7 @@ public abstract class Code {
 			}
 
 			public Source getClasses() {
-				return Source.create(source, "$jvm/classes");
+				return source.child("$jvm/classes");
 			}
 		};
 	}

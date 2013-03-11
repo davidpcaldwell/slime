@@ -228,6 +228,9 @@ var jshPackage = function(p) {
 	), mymode);
 })();
 
+testCommandOutput("loader/child.jsh.js", function(options) {
+});
+
 var classes = createTemporaryDirectory();
 classes.mkdirs();
 
