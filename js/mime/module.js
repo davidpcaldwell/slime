@@ -24,7 +24,7 @@ $exports.Type = $api.Function({
 		this.toString = function() {
 			var rv = media + "/" + subtype;
 			for (var x in parameters) {
-				rv += ";" + x + "=" + parameters[x];
+				rv += ";" + x + "=\"" + parameters[x] + "\"";
 			}
 			return rv;
 		}
