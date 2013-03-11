@@ -19,15 +19,21 @@ if ($context.gae) {
 }
 
 //	TODO	validate subtype and parts using new validation framework, and share the validation between these implementations
-if ($context.nojavamail || typeof(Packages.javax.mail.internet.MimeMultipart) != "function") {
-	$exports.Multipart = function(p) {
+$exports.Multipart = function(p) {
+	//	Defer the check for the MimeMultipart class until after this is invoked, which hopefully will be after all plugins load, due to Rhino bug(?) in
+	//	LiveConnect only checking for Java classes once
+	if ($context.nojavamail || typeof(Packages.javax.mail.internet.MimeMultipart) != "function") {
 		var subtype = p.subtype;
 		var parts = p.parts;
 		var buffer = new $context.api.io.Buffer();
 		var writer = buffer.writeText();
 		var CRLF = "\r\n";
-		var index = (arguments.callee.index) ? ++arguments.callee.index : 1;
-		var BOUNDARY = "----=_SLIME_MULTIPART_HACK_" + index;
+		if (arguments.callee.index) {
+			arguments.callee.index++;
+		} else {
+			arguments.callee.index = 1;
+		}
+		var BOUNDARY = "----=_SLIME_MULTIPART_HACK_" + arguments.callee.index;
 		parts.forEach( function(part) {
 			if (arguments[1] != 0) {
 				writer.write(CRLF);
@@ -54,9 +60,7 @@ if ($context.nojavamail || typeof(Packages.javax.mail.internet.MimeMultipart) !=
 		writer.write("--" + BOUNDARY + "--" + CRLF);
 		writer.close();
 		return new buffer.readBinary().Resource(new $context.api.mime.Type("multipart", subtype, { boundary: BOUNDARY }));
-	}
-} else {
-	$exports.Multipart = function(p) {
+	} else {
 		var subtype = p.subtype;
 		var parts = p.parts;
 		var $mail = Packages.javax.mail;
@@ -113,7 +117,7 @@ if ($context.nojavamail || typeof(Packages.javax.mail.internet.MimeMultipart) !=
 					return buffer.readBinary();					
 				}
 			}
-		})
+		});
 	}
 };
 
