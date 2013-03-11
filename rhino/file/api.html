@@ -107,7 +107,8 @@ END LICENSE
 					this.io = $jsapi.module("../../rhino/io/", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
 						,api: {
-							java: java
+							java: java,
+							mime: $jsapi.module("../../js/mime/", {})
 						}
 					});
 				}

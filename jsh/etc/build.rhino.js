@@ -349,7 +349,7 @@ var module = function(path,compile) {
 };
 
 [
-	"js/object","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"
+	"js/object","js/mime","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"
 	,"rhino/tools"
 ].forEach( function(item) {
 	module(item,platform.jdk.compile);

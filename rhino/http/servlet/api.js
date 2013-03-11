@@ -32,6 +32,7 @@ var bootstrap = (function() {
 		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
 			$rhino: $rhino,
 			api: {
+				mime: loader.module("WEB-INF/slime/js/mime/", {}),
 				java: rv.java
 			}
 		});

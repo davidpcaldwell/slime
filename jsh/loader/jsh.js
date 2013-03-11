@@ -269,11 +269,12 @@ this.jsh = new function() {
 		}
 
 		var io = loader.bootstrap({
-			$java: new Packages.inonit.script.runtime.io.Streams()
+			$java: context._streams
 			,$rhino: loader.getRhinoLoader()
 			,stdio: context.stdio
 			,api: {
-				java: java
+				java: java,
+				mime: loader.bootstrap({}, "js/mime")
 			}
 		}, "rhino/io");
 

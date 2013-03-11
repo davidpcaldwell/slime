@@ -50,7 +50,8 @@ END LICENSE
 				if (!java) throw new Error("Not found: rhino/host/");
 
 				this.api = {
-					java: java
+					java: java,
+					mime: $jsapi.module("../../js/mime/", {})
 				};
 
 				this.$java = new Packages.inonit.script.runtime.io.Streams();
@@ -64,6 +65,14 @@ END LICENSE
 			<span>An object from which input may be possible and to which output may be possible.</span>
 			<div class="label">has properties:</div>
 			<ul>
+				<li class="value">
+					<div class="name">type</div>
+					<span class="type">MIME <a href="mime.api.html#types.type">type</a></span>
+					<span>
+						(optional)
+						Contains the MIME type of the data that can be read from this resource, if known.
+					</span>
+				</li>
 				<li class="function">
 					<div class="name">read</div>
 					<span>Provides the content of this resource, or a stream from which to read it.</span>
@@ -137,7 +146,7 @@ END LICENSE
 				<li class="function">
 					<div class="name">write</div>
 					<span>
-						(if resource is writable)
+						(optional: if resource is writable)
 						Writes content to this resource, or returns a stream to which content can be written to write content to
 						this resource.
 					</span>
@@ -225,6 +234,14 @@ END LICENSE
 							<span>An object providing an implementation for this resource.</span>
 							<div class="label">has properties:</div>
 							<ul>
+								<li class="value">
+									<div class="name">type</div>
+									<span class="type">MIME <a href="mime.api.html#types.type">type</a></span>
+									<span>
+										(optional)
+										The MIME type of this resource.
+									</span>
+								</li>
 								<li class="object">
 									<div class="name">read</div>
 									<span>An object providing an implementation for reading this resource.</span>
@@ -481,13 +498,21 @@ END LICENSE
 												<span>A character input stream that reads this stream.</span>
 											</div>
 										</li>
-										<li class="function">
-											<div class="name">cache</div>
+										<li class="constructor">
+											<div class="name">Resource</div>
 											<span>Creates a resource that contains the contents of this stream.</span>
-											<div class="returns">
-												<div class="label">Returns</div>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type"><a href="mime.api.html#types.type">type</a></span>
+														<span>The MIME type of the data in this stream.</span>
+													</li>
+												</ol>
+											</div>
+											<div class="instances">
+												<div class="label">Instances</div>
 												<span class="type"><a href="#types.Resource">Resource</a></span>
-												<span>A resource that contains a copy of this stream.</span>
 											</div>
 										</li>
 										<li class="object">

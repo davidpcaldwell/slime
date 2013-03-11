@@ -1,7 +1,7 @@
 $exports.Type = $api.Function({
 	before: [
-		$api.Function.arguments.isString({ index: 0, name: "media" }),
-		$api.Function.arguments.isString({ index: 1, name: "subtype" }),
+		$api.Function.argument.isString({ index: 0, name: "media" }),
+		$api.Function.argument.isString({ index: 1, name: "subtype" }),
 		function(p) {
 			if (typeof(p.arguments[2]) != "object" && typeof(p.arguments[2]) != "undefined") {
 				throw new TypeError("arguments[2] (parameters) must be undefined or object");

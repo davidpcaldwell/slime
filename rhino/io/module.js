@@ -36,7 +36,7 @@ var InputStream = function(peer) {
 	this.characters = this.character;
 	$api.deprecate(this, "characters");
 
-	this.cache = function() {
+	this.cache = $api.deprecate(function() {
 		var $bytes = _java.readBytes(peer);
 		return new Resource(new function() {
 			this.read = new function() {
@@ -45,6 +45,19 @@ var InputStream = function(peer) {
 				}
 			}
 		});
+	});
+	
+	this.Resource = function(type) {
+		var _bytes = _java.readBytes(peer);
+		return new Resource(new function() {
+			this.type = type;
+			
+			this.read = new function() {
+				this.binary = function() {
+					return new InputStream(Packages.java.io.ByteArrayInputStream(_bytes));
+				}
+			}
+		});		
 	}
 
 	this.java = new function() {
@@ -307,6 +320,11 @@ var Resource = function(p) {
 			}
 		}
 	})();
+	
+	if (p.type) {
+		//	TODO	may want to do some sort of "cast" here
+		this.type = p.type;
+	}
 
 	this.read = function(mode) {
 		if (binary) {
@@ -439,4 +457,14 @@ $exports.Loader.decorate = function(rv) {
 		}
 	})(rv);
 	return rv;
-}
+};
+
+$exports.mime = $loader.file("mime.js", {
+	_streams: _java,
+	nojavamail: $context.nojavamail,
+	api: {
+		java: $context.api.java,
+		mime: $context.api.mime,
+		io: $exports
+	}
+});

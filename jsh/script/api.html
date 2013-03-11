@@ -214,7 +214,8 @@ END LICENSE
 							$java: new Packages.inonit.script.runtime.io.Streams(),
 							$rhino: $host.getRhinoLoader(),
 							api: {
-								java: host
+								java: host,
+								mime: $jsapi.module("../../js/mime/", {})
 							}
 						}),
 						loader: $host.getRhinoLoader()
