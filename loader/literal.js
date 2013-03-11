@@ -308,9 +308,6 @@
 			}
 		}
 
-		//	TODO	currently undocumented
-		this.Loader = Loader;
-
 		this.run = function(code,scope,target) {
 			runInScope(code,scope,target);
 		};
@@ -325,6 +322,8 @@
 			var loader = new Loader(p);
 			return loader.module(p.main,scope);
 		};
+
+		this.Loader = Loader;
 
 		this.namespace = function(string) {
 			//	This construct returns the top-level global object, e.g., window in the browser

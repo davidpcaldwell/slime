@@ -131,6 +131,11 @@ END LICENSE
 	</div>
 	<div jsapi:id="$platform">
 		<h1>$platform</h1>
+		<div>
+			When code is loaded by the loader, the loader provides the <code>$platform</code> object to that code in the scope.
+			The <code>$platform</code> object provides information about
+			the underlying JavaScript platform; the loaded code can use this information in its implementation.
+		</div>
 		<ul>
 			<li class="object">
 				<div class="name">Object</div>
@@ -344,6 +349,10 @@ END LICENSE
 	</div>
 	<div jsapi:id="$api">
 		<h1>$api</h1>
+		<div>
+			The <code>$api</code> object is also provided to code loaded by the platform loader. It provides capabilities for
+			defining APIs.
+		</div>
 		<ul>
 			<li class="function">
 				<div class="name"><a name="$api.deprecate">deprecate</a></div>
@@ -724,6 +733,10 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<div>
+			The platform loader is normally loaded within an environment-specific loader, so the following exports are not
+			normally available to application code: they are available to the environment-specific loader.
+		</div>
 		<div class="type">
 			<a class="type" name="types.code">code</a>
 			<div>
@@ -1005,6 +1018,58 @@ END LICENSE
 				<div class="returns" jsapi:id="returns">
 					<div class="label">Returns</div>
 					See <a href="#types.Loader">Loader.module()</a>.
+				</div>
+			</li>
+			<li class="constructor">
+				<div class="name">Loader</div>
+				<span>Creates a <a href="#types.Loader">Loader</a>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">getCode</div>
+									<span>Locates JavaScript code to execute given a path.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>A path.</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type"><a href="#types.code">code</a></span>
+									</div>
+								</li>
+								<li class="constructor">
+									<div class="name">Child</div>
+									<span>Creates a child loader for use in code loaded by this loader.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>A path relative to the parent loader to use as the base for loading code.</span>
+											</li>
+										</ol>
+									</div>
+									<div class="instances">
+										<div class="label">Instances</div>
+										<span class="type"><a href="#types.Loader">Loader</a></span>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Loader">Loader</a></span>
 				</div>
 			</li>
 			<li class="function" jsapi:id="namespace">
