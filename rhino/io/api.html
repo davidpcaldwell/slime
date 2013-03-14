@@ -55,6 +55,8 @@ END LICENSE
 				};
 
 				this.$java = new Packages.inonit.script.runtime.io.Streams();
+				
+				this.$rhino = jsh.$jsapi.$rhino;
 			}
 		</script>
 	</div>
@@ -804,6 +806,37 @@ END LICENSE
 					<div class="label">Instances</div>
 					<span class="type"><a href="#types.Loader">Loader</a></span>
 				</div>
+				<script type="application/x.jsapi#tests">
+					var loader = new module.Loader({
+						resources: {
+							get: function(path) {
+								var file = $module.getResourcePathname(path).file;
+								if (!file) return null;
+								var type = (function() {
+									if (/\.jsh\.js$/.test(path)) {
+										return new module.mime.Type("application", "x.jsh");
+									} else if (/\.js$/.test(path)) {
+										return new module.mime.Type("text", "javascript");
+									} else if (/\.html$/.test(path)) {
+										return new module.mime.Type("text", "html");
+									} else {
+										return new module.mime.Type("application", "octet-stream");
+									}
+								})();
+								return new module.Resource({
+									type: type,
+									read: {
+										binary: function() {
+											return file.read(jsh.io.Streams.binary);
+										}
+									}
+								});
+							}
+						}
+					});
+					var api = loader.resource("api.html");
+					test(api.type.toString() == "text/html");
+				</script>
 			</li>
 
 			<li class="object">

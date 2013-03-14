@@ -115,9 +115,10 @@
 			};
 			
 			var rv = new loader.Loader(parameter);
-			rv._resource = function(path) {
+			rv._stream = function(path) {
 				return p._source.getResourceAsStream(path);
 			};
+			rv._resource = loader.$api.deprecate(rv._stream);
 			if (p.decorate) {
 				p.decorate.call(rv,p);
 			}
