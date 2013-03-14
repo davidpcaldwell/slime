@@ -102,6 +102,32 @@ END LICENSE
 		<div class="type">
 			<a class="type" name="types.response">response</a>
 			<span>A response to be sent to a client in response to a request.</span>
+			<div class="type">
+				<a class="type" name="types.body">body</a>
+				<span>
+					The body must specify its content in some way; either a
+					<code>string</code> property specifying the content as a string or a <code>stream</code> property from
+					which the content can be read must be present.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">type</div>
+						<span class="type">string</span>
+						<span>(optional) The MIME type of the request body.</span>
+					</li>
+					<li class="value">
+						<div class="name">string</div>
+						<span class="type">string</span>
+						<span>(optional) The message body to send to the client, as a string.</span>
+					</li>
+					<li class="value">
+						<div class="name">stream</div>
+						<span class="type"><a href="../../../rhino/io/api.html#types.binput">binary input stream</a></span>
+						<span>(optional) A stream from which the message body to send to the client may be read.</span>
+					</li>
+				</ul>
+			</div>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="object">
@@ -121,31 +147,14 @@ END LICENSE
 					<span class="type">Array of <a href="#types.header">header</a></span>
 					<span>(optional) Headers to use in the response.</span>
 				</li>
-				<li class="object">
+				<li class="value">
 					<div class="name">body</div>
+					<span class="type"><a href="../../io/api.html#types.Resource">Resource</a></span>
+					-or-
+					<span class="type"><a href="#types.body">body</a></span>
 					<span>
-						The HTTP request body to send to the client. The body must specify its content in some way; either a
-						<code>string</code> property specifying the content as a string or a <code>stream</code> property from
-						which the content can be read must be present.
+						The HTTP request body to send to the client.
 					</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">type</div>
-							<span class="type">string</span>
-							<span>(optional) The MIME type of the request body.</span>
-						</li>
-						<li class="value">
-							<div class="name">string</div>
-							<span class="type">string</span>
-							<span>(optional) The message body to send to the client, as a string.</span>
-						</li>
-						<li class="value">
-							<div class="name">stream</div>
-							<span class="type"><a href="../../../rhino/io/api.html#types.binput">binary input stream</a></span>
-							<span>(optional) A stream from which the message body to send to the client may be read.</span>
-						</li>
-					</ul>
 				</li>
 			</ul>
 		</div>

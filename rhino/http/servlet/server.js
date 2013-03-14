@@ -67,10 +67,18 @@ $exports.Servlet = function(script) {
 				}
 				if (response.body && response.body.string) {
 					_response.getWriter().write(response.body.string);
+				} else if (response.body && response.body.read && response.body.read.text) {
+					var _stream = response.body.read.text().java.adapt();
+					_streams.copy(_stream, _response.getWriter());
+					_stream.close();
 				} else if (response.body && response.body.stream) {
 					_streams.copy(response.body.stream.java.adapt(),_response.getOutputStream());
 					//	TODO	next line may be redundant; should check Java API
 					response.body.stream.java.adapt().close();
+				} else if (response.body && response.body.read && response.body.read.binary) {
+					var _stream = response.body.read.binary().java.adapt();
+					_streams.copy(_stream,_response.getOutputStream());
+					_stream.close();
 				}
 			} else {
 				throw new TypeError("Servlet response is not of a known type.");

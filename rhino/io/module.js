@@ -429,7 +429,12 @@ $exports.Loader = function(p) {
 					} else {					
 						_in.close();
 					}
+					var type;
+					if (p.type) {
+						type = p.type.call(this,path);
+					}
 					return new $exports.Resource({
+						type: type,
 						read: {
 							binary: function() {
 								return new InputStream(target._stream(path));

@@ -35,7 +35,15 @@ $exports.addJshPluginTo = function(jsh) {
 								throw new Error("Directory not found at " + mapping[i].pathname);
 							}
 							var file = mapping[i].pathname.directory.getFile(subpath);
+							debugger;
+							var type = jsh.io.mime.Type.guess({
+								name: path
+							});
+							if (!type && /\.js$/.test(path)) {
+								type = new jsh.io.mime.Type("text", "javascript");
+							}
 							return (file) ? new jsh.io.Resource({
+								type: type,
 								read: {
 									binary: function() {
 										return file.read(jsh.io.Streams.binary)

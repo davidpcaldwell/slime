@@ -74,7 +74,12 @@ var $loader = (function() {
 var resources = (function() {
 	if ($host.getRhinoLoader && $host.getServletResources) {
 		return new Loader({
-			_source: $host.getServletResources()
+			_source: $host.getServletResources(),
+			type: function(path) {
+				var _type = $host.getMimeType(path);
+				if (_type) return bootstrap.io.mime.Type.parse(String(_type));
+				return null;
+			}
 		});
 	} else if ($host.loaders) {
 		return $host.loaders.container;
