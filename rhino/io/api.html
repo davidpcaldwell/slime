@@ -758,47 +758,82 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span>
-								An object that specifies how to load the resources. The object can support the following
+							<span>An object that specifies how to load the resources.</span>
+							<div>
+								The object can support the following
 								interface:
-							</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="object">
+										<div class="name">resources</div>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">get</div>
+												<span>
+													Returns the resource at the given path.
+												</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">string</span>
+															<span>A path.</span>
+														</li>
+
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type"><a href="#types.Resource">Resource</a></span>
+													<span>
+														The resource at the given path, or <code>null</code> if no resource is
+														located at the given path.
+													</span>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+							<div>
+								Otherwise, the argument will be passed through to the 
+								Rhino <a href="../../loader/rhino/api.html#exports.Loader">Loader</a> constructor.
+								The argument can supply the following additional properties:
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">type</div>
+										<span>
+											(optional)
+											A method that will be invoked (with the loader itself as <code>this</code>) to
+											supply a MIME type for resources loaded by this loader.
+										</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type">string</span>
+													<span>A path.</span>
+												</li>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">MIME <a href="../../js/mime/api.html#types.type">type</a></span>
+											<span>A MIME type to use for the resource given at the given path.</span>
+										</div>
+									</li>
+								</ul>
+							</div>
+							<div>
+								The result of the Rhino Loader constructor will
+								be augmented to support <a href="#types.Loader">Loader</a>.
+							</div>
 							<!--
 								TODO	otherwise, we invoke the Rhino loader's undocumented Loader constructor; document
-										it
+										it, along with the decoration supplied that adds a MIME type if type is supplied
 							-->
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="object">
-									<div class="name">resources</div>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">get</div>
-											<span>
-												Returns the resource at the given path.
-											</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">string</span>
-														<span>A path.</span>
-													</li>
-
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.Resource">Resource</a></span>
-												<span>
-													The resource at the given path, or <code>null</code> if no resource is
-													located at the given path.
-												</span>
-											</div>
-										</li>
-									</ul>
-								</li>
-							</ul>
 						</li>
 					</ol>
 				</div>

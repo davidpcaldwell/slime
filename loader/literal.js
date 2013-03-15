@@ -326,7 +326,7 @@
 			}
 
 			//	Creates a child loader that prepends the given prefix
-			var Child = (p.Child) ? p.Child : function(prefix) {
+			var Child = function(prefix) {
 				return new Callee({
 					getCode: function(path) {
 						return p.getCode(prefix+path);
@@ -338,7 +338,16 @@
 				var inner = createScope(scope);
 				var tokens = path.split("/");
 				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-				inner.$loader = new Child(prefix);
+				var $loader = new Child(prefix);
+				if (p.Child) {
+					var replaced = p.Child.call($loader,prefix);
+					//	TODO	probably should interpret null like a JavaScript constructor would, or switch to prototype-based
+					//			inheritance altogether
+					if (typeof(replaced) != "undefined") {
+						$loader = replaced;
+					}
+				}
+				inner.$loader = $loader;
 				if (path == "" || /\/$/.test(path)) {
 					path += "module.js";
 				}

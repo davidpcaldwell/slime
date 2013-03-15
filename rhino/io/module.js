@@ -470,14 +470,14 @@ $exports.Loader = function(p) {
 		);
 		return new $context.$rhino.Loader({ 
 			_source: Packages.inonit.script.rhino.Code.Source.create(_resources),
-			decorate: decorate
+			Loader: decorate
 		});
 	} else {
 		var parameter = {};
 		for (var x in p) {
 			parameter[x] = p[x];
 		}
-		parameter.decorate = decorate;
+		parameter.Loader = decorate;
 		return new $context.$rhino.Loader(parameter);
 	}
 };
