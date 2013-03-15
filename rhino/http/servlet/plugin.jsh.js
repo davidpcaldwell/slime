@@ -35,8 +35,20 @@ plugin({
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
+		
+		var getMimeType = function(file) {
+			var type = jsh.io.mime.Type.guess({
+				name: file.pathname.basename
+			});
+			if (!type && /\.js$/.test(file.pathname.basename)) {
+				type = new jsh.io.mime.Type("text", "javascript");
+			}
+			return type;			
+		}
 
-		$loader.file("resources.js").addJshPluginTo(jsh);
+		$loader.file("resources.jsh.file.js", {
+			getMimeType: getMimeType
+		}).addJshPluginTo(jsh);
 
 		jsh.httpd.Tomcat = function(p) {
 			var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
@@ -87,7 +99,10 @@ plugin({
 											this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
 
 											this.loaders = {
-												script: new jsh.file.Loader(servletDeclaration.file.parent),
+												script: new jsh.file.Loader({
+													directory: servletDeclaration.file.parent,
+													type: getMimeType
+												}),
 												container: (m.resources) ? m.resources.loader : null
 											};
 

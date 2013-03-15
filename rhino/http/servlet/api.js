@@ -54,36 +54,36 @@ var api = (function() {
 	}
 })();
 
-var $loader = (function() {
+var loaders = (function() {
 	if ($host.getRhinoLoader && $host.getServletResources && $host.getServletScriptPath) {
 		//	servlet container, determine webapp path and load relative to that
 		var path = String($host.getServletScriptPath());
 		var tokens = path.split("/");
 		var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
 		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
-		return new Loader({
-			_source: $host.getServletResources().child(prefix)
-		});
+		return {
+			script: new Loader({
+				_source: $host.getServletResources().child(prefix),
+				type: function(path) {
+					var _type = $host.getMimeType(path);
+					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
+					return null;
+				}
+			}),
+			container: new Loader({
+				_source: $host.getServletResources(),
+				type: function(path) {
+					var _type = $host.getMimeType(path);
+					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
+					return null;
+				}
+			})
+		};
 	} else if ($host.loaders) {
-		return $host.loaders.script;
+		return $host.loaders;
 	} else {
 		throw new Error();
-	}
-})();
-
-var resources = (function() {
-	if ($host.getRhinoLoader && $host.getServletResources) {
-		return new Loader({
-			_source: $host.getServletResources(),
-			type: function(path) {
-				var _type = $host.getMimeType(path);
-				if (_type) return bootstrap.io.mime.Type.parse(String(_type));
-				return null;
-			}
-		});
-	} else if ($host.loaders) {
-		return $host.loaders.container;
-	}
+	}	
 })();
 
 var $parameters = (function() {
@@ -107,7 +107,7 @@ var $code = (function() {
 		var path = tokens[tokens.length-1];
 		return function(scope) {
 			Packages.java.lang.System.err.println("Loading servlet from " + path);
-			$loader.run(path,scope);
+			loaders.script.run(path,scope);
 		};
 //		return {
 //			name: String($host.getServletScriptPath()),
@@ -122,7 +122,7 @@ var $code = (function() {
 
 scope.httpd = {};
 
-scope.httpd.loader = resources;
+scope.httpd.loader = loaders.container;
 
 scope.httpd.js = api.js;
 scope.httpd.java = api.java;
@@ -132,7 +132,7 @@ var server = (function() {
 	if ($host.server) {
 		return $host.server;
 	} else if ($host.getServletResources) {
-		return resources.file("WEB-INF/server.js", {
+		return loaders.container.file("WEB-INF/server.js", {
 			api: api
 		});
 	}
@@ -160,7 +160,7 @@ scope.httpd.http.Response.text = function(string) {
 scope.$loader = (function() {
 	//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the
 	//			global loader; in the jsh embedding, it should resolve them relative to the current directory of the script
-	return $loader;
+	return loaders.script;
 })();
 
 scope.$parameters = $parameters;
