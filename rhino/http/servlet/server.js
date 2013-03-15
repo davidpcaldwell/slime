@@ -36,7 +36,7 @@ var Request = function(_request) {
 	//	TODO	it would make more sense for this property to be absent if there is no content
 	this.body = new function() {
 		//	TODO	what happens if there is no content? Presumably type is null, and is stream empty?
-		this.type = (_request.getContentType()) ? String(_request.getContentType()) : null;
+		this.type = (_request.getContentType()) ? $context.api.io.mime.Type.parse(String(_request.getContentType())) : null;
 		this.stream = $context.api.io.java.adapt(_request.getInputStream());
 	}
 }
@@ -63,7 +63,8 @@ $exports.Servlet = function(script) {
 					});
 				}
 				if (response.body && response.body.type) {
-					_response.setContentType(response.body.type);
+					//	Documented to accept js/mime Type and string
+					_response.setContentType(String(response.body.type));
 				}
 				if (response.body && response.body.string) {
 					_response.getWriter().write(response.body.string);
