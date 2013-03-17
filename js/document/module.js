@@ -331,7 +331,7 @@ var Element = function(p) {
 		var start = "<" + rv.name + rv.namespaces + rv.attributes;
 		if (!rv.content) {
 			if (m.empty) {
-				var format = m.empty.call(this);
+				var format = m.empty(this);
 				if (!format || (format && format.empty)) {
 					return start + "/>";
 				} else if (format && format.xhtml) {
