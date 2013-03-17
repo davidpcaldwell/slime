@@ -328,8 +328,22 @@ var Element = function(p) {
 				;
 			}).join(" ");
 		})();
+		var start = "<" + rv.name + rv.namespaces + rv.attributes;
+		if (!rv.content) {
+			if (m.empty) {
+				var format = m.empty.call(this);
+				if (!format || (format && format.empty)) {
+					return start + "/>";
+				} else if (format && format.xhtml) {
+					return start + " />";
+				}
+				//	If object that is not empty and not xhtml, fall through to start-end model
+			} else {
+				return start + "/>";
+			}
+		}
 		//	TODO	allow empty element model
-		return "<" + rv.name + rv.namespaces + rv.attributes + ">" + rv.content + "</" + rv.name + ">";
+		return start + ">" + rv.content + "</" + rv.name + ">";
 	};
 };
 
@@ -378,7 +392,7 @@ var Document = function(p) {
 	
 	//	TODO	decide whether to emit XML prologue
 	this.serialize = function(m) {
-		return this.children.join("");
+		return this.children.map(function(child) { return child.serialize(m); }).join("");
 	}
 };
 
