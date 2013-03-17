@@ -444,8 +444,10 @@ $exports.Loader = function(p) {
 				}
 			};
 		}
-		if (p.decorate) {
-			p.decorate.apply(this,arguments);
+		if (p.Loader) {
+			//	TODO	probably should treat this like constructor: if it returns a value, replace the return value rather than
+			//			simply modifying it
+			p.Loader.apply(this,arguments);
 		}
 	}
 	if (p.resources) {
