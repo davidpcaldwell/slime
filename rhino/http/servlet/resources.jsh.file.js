@@ -35,7 +35,6 @@ $exports.addJshPluginTo = function(jsh) {
 								throw new Error("Directory not found at " + mapping[i].pathname);
 							}
 							var file = mapping[i].pathname.directory.getFile(subpath);
-							debugger;
 							return (file) ? new jsh.io.Resource({
 								type: $context.getMimeType(file),
 								read: {

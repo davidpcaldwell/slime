@@ -10,8 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-debugger;
-
 var scope = {
 	$exports: {}
 };
