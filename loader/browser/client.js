@@ -210,6 +210,10 @@
 			return loader.file.apply(loader,arguments);
 //			return platform.file(fetcher.getCode(path),$context);
 		};
+		
+		this.run = function(path,scope,target) {
+			return loader.run.apply(loader,arguments);
+		}
 
 		this.script = platform.$api.deprecate(this.file);
 
