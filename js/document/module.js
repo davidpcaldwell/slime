@@ -31,8 +31,8 @@ var Parent = function(p) {
 	var traverse = function(rv,top,p) {
 		if (typeof(top.length) != "undefined") {
 			for (var i=0; i<top.length; i++) {
-				traverse(rv,top[i],p);			
-			}			
+				traverse(rv,top[i],p);
+			}
 		} else {
 			if (p.filter(top)) {
 				rv.push(top);
@@ -44,7 +44,7 @@ var Parent = function(p) {
 	};
 
 	this.children = (p && p.children) ? p.children : [];
-	
+
 	var asSearch = function(search) {
 		if (typeof(search) == "function") {
 			return {
@@ -55,9 +55,9 @@ var Parent = function(p) {
 			};
 		} else {
 			return search;
-		}	
+		}
 	}
-	
+
 	this.identify = function(search) {
 		search = asSearch(search);
 		if (typeof(search) == "function") {
@@ -72,12 +72,12 @@ var Parent = function(p) {
 		traverse(rv,this.children,search);
 		return choose(rv);
 	};
-	
+
 	this.child = function(filter) {
 		var rv = this.children.filter(filter);
 		return choose(rv);
 	}
-	
+
 	this.get = function(p) {
 		var filtering = function(children,p) {
 			var filter = (function() {
@@ -159,7 +159,7 @@ var Text = function(p) {
 	this.text = {
 		data: p.text
 	};
-	
+
 	this.getString = function() {
 		return this.text.data;
 	};
@@ -174,7 +174,7 @@ var Cdata = function(p) {
 	this.cdata = {
 		data: p.cdata
 	};
-	
+
 	this.getString = function() {
 		return this.cdata.data;
 	};
@@ -188,7 +188,7 @@ var Element = function(p) {
 	Node.call(this,p);
 	//	optionally adds children upon construction
 	Parent.call(this,p);
-	
+
 	//	Much complexity seeps into the model if nodes need to be aware of their parents; now, when adding a child to a parent,
 	//	we need to update the child's parent property. When updating a child's parent property, we need to place it somewhere in
 	//	its parent's children. But most objects don't work this way. An object that is a property of another JavaScript object
@@ -203,7 +203,7 @@ var Element = function(p) {
 	var namespaces = (p.namespaces) ? p.namespaces : [];
 	//	objects with namespace / name / value properties
 	this.element.attributes = (p.attributes) ? p.attributes : [];
-	
+
 	var attributeFilter = function(p) {
 		if (typeof(p) == "string") {
 			return function(attribute) {
@@ -215,14 +215,14 @@ var Element = function(p) {
 			}
 		}
 	};
-	
+
 	this.element.attributes.get = function(p) {
 		var match = choose(this,attributeFilter(p));
 		return (match) ? match.value : null;
 	};
-	
+
 	this.element.attributes.set = function(p,v) {
-		//	TODO	we may need a special case to handle an attempt to set an attribute with the XML Namespaces namespace, and perhaps generally for 
+		//	TODO	we may need a special case to handle an attempt to set an attribute with the XML Namespaces namespace, and perhaps generally for
 		//			[xX][mM][lL]
 		var match = choose(this,attributeFilter(p));
 		if (match && v === null) {
@@ -246,7 +246,7 @@ var Element = function(p) {
 			match.value = v;
 		}
 	};
-	
+
 	//	TODO	what if someone wants to "suggest" a namespace prefix and not be stuck with jsdom_X?
 
 	this.serialize = function(m) {
@@ -329,8 +329,22 @@ var Element = function(p) {
 				;
 			}).join(" ");
 		})();
+		var start = "<" + rv.name + rv.namespaces + rv.attributes;
+		if (!rv.content) {
+			if (m.empty) {
+				var format = m.empty(this);
+				if (!format || (format && format.empty)) {
+					return start + "/>";
+				} else if (format && format.xhtml) {
+					return start + " />";
+				}
+				//	If object that is not empty and not xhtml, fall through to start-end model
+			} else {
+				return start + "/>";
+			}
+		}
 		//	TODO	allow empty element model
-		return "<" + rv.name + rv.namespaces + rv.attributes + ">" + rv.content + "</" + rv.name + ">";
+		return start + ">" + rv.content + "</" + rv.name + ">";
 	};
 };
 
@@ -342,13 +356,13 @@ var Doctype = function(p) {
 	if (p.name === null) throw new TypeError();
 	if (p.publicId === null) throw new TypeError();
 	if (p.systemId === null) throw new TypeError();
-	
+
 	this.doctype = {
 		name: p.name,
 		publicId: p.publicId,
 		systemId: p.systemId
 	};
-	
+
 	this.serialize = function() {
 		var quote = function(s) {
 			return "\"" + s + "\"";
@@ -360,26 +374,26 @@ var Doctype = function(p) {
 var Document = function(p) {
 	Node.call(this,p);
 	Parent.call(this,p);
-	
+
 	var self = this;
-	
+
 	this.document = new function() {
 		this.getElement = function() {
 			return self.child(function(node) {
 				return Boolean(node.element);
 			});
 		};
-		
+
 		this.getType = function() {
 			return self.child(function(node) {
 				return Boolean(node.doctype);
 			});
 		}
 	};
-	
+
 	//	TODO	decide whether to emit XML prologue
 	this.serialize = function(m) {
-		return this.children.join("");
+		return this.children.map(function(child) { return child.serialize(m); }).join("");
 	}
 };
 

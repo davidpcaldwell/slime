@@ -36,7 +36,7 @@ var Request = function(_request) {
 	//	TODO	it would make more sense for this property to be absent if there is no content
 	this.body = new function() {
 		//	TODO	what happens if there is no content? Presumably type is null, and is stream empty?
-		this.type = (_request.getContentType()) ? String(_request.getContentType()) : null;
+		this.type = (_request.getContentType()) ? $context.api.io.mime.Type.parse(String(_request.getContentType())) : null;
 		this.stream = $context.api.io.java.adapt(_request.getInputStream());
 	}
 }
@@ -63,14 +63,23 @@ $exports.Servlet = function(script) {
 					});
 				}
 				if (response.body && response.body.type) {
-					_response.setContentType(response.body.type);
+					//	Documented to accept js/mime Type and string
+					_response.setContentType(String(response.body.type));
 				}
 				if (response.body && response.body.string) {
 					_response.getWriter().write(response.body.string);
+				} else if (response.body && response.body.read && response.body.read.text) {
+					var _stream = response.body.read.text().java.adapt();
+					_streams.copy(_stream, _response.getWriter());
+					_stream.close();
 				} else if (response.body && response.body.stream) {
 					_streams.copy(response.body.stream.java.adapt(),_response.getOutputStream());
 					//	TODO	next line may be redundant; should check Java API
 					response.body.stream.java.adapt().close();
+				} else if (response.body && response.body.read && response.body.read.binary) {
+					var _stream = response.body.read.binary().java.adapt();
+					_streams.copy(_stream,_response.getOutputStream());
+					_stream.close();
 				}
 			} else {
 				throw new TypeError("Servlet response is not of a known type.");

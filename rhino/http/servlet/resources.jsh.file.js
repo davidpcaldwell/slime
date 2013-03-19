@@ -36,6 +36,7 @@ $exports.addJshPluginTo = function(jsh) {
 							}
 							var file = mapping[i].pathname.directory.getFile(subpath);
 							return (file) ? new jsh.io.Resource({
+								type: $context.getMimeType(file),
 								read: {
 									binary: function() {
 										return file.read(jsh.io.Streams.binary)

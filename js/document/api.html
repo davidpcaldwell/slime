@@ -22,7 +22,7 @@ END LICENSE
 <body>
 	<!--
 		Design notes:
- 
+
 		Do not reinvent Array API for processing children and attributes
 	-->
 	<div>Provides a simple JavaScript-centric API that is analogous to, but not conformant with, the Document Object Model.</div>
@@ -55,6 +55,76 @@ END LICENSE
 			<span>A node in a document.</span>
 			<div class="label">has properties:</div>
 			<ul>
+				<li class="function">
+					<div class="name">serialize</div>
+					<span>Converts a node to a string.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>
+									An object that specifies various parameters about how to serialize a node. Some of these
+									parameters are internal and undocumented.
+								</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">empty</div>
+										<span>
+											(optional)
+											A function specifying how to serialize empty elements.
+										</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type"><a href="#types.element">element</a></span>
+													<span>The empty element.</span>
+												</li>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">object</span>
+											<span>
+												An object specifying how to render the element.
+											</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">empty</div>
+													<span class="type">boolean</span>
+													<span>
+														If <code>true</code>, the element is rendered with an empty element tag,
+														like <code>&lt;x/></code>.
+													</span>
+												</li>
+												<li class="value">
+													<div class="name">xhtml</div>
+													<span class="type">boolean</span>
+													<span>
+														If <code>true</code>, the element is rendered with an empty element tag
+														containing a space,
+														like <code>&lt;x /></code>.
+													</span>
+												</li>
+											</ul>
+											<span>
+												If neither <code>empty</code> nor <code>xhtml</code> is true, or if
+												<code>undefined</code> is returned, the element is rendered with a start and end
+												tag, like <code>&lt;x>&lt;/x></code>.
+											</span>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">string</span>
+					</div>
+				</li>
 			</ul>
 		</div>
 		<div class="type">
@@ -337,8 +407,8 @@ END LICENSE
 				<li class="object">
 					<div class="name">doctype</div>
 					<span>
-						Contains properties information about the document type declaration. 
-						See the <a href="http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#ID-412266927">DOM 3 specification</a> for 
+						Contains properties information about the document type declaration.
+						See the <a href="http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#ID-412266927">DOM 3 specification</a> for
 						additional specification detail.
 					</span>
 					<div class="label">has properties:</div>
@@ -351,14 +421,14 @@ END LICENSE
 						<li class="value">
 							<div class="name">systemId</div>
 							<span class="type">string</span>
-							<span>The public identifier given in the DOCTYPE declaration: for example, 
+							<span>The public identifier given in the DOCTYPE declaration: for example,
 								<code>-//W3C//DTD XHTML 1.0 Transitional//EN</code>.
 							</span>
 						</li>
 						<li class="value">
 							<div class="name">publicId</div>
 							<span class="type">string</span>
-							<span>The public identifier given in the DOCTYPE declaration: for example, 
+							<span>The public identifier given in the DOCTYPE declaration: for example,
 								<code>http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</code>.
 							</span>
 						</li>

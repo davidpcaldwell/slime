@@ -941,7 +941,7 @@ END LICENSE
 				</div>
 			</li>
 			<li class="function" jsapi:id="module">
-				<div class="name">module</div>
+				<div class="name"><a name="exports.module">module</a></div>
 				<span jsapi:id="description">
 					Analogous to <a href="#Loader.module">Loader.module()</a>, except that the caller specifies information about
 					the module structure and how to load the code rather than a path within a <a href="#types.Loader">Loader</a>.
@@ -990,20 +990,27 @@ END LICENSE
 										<span>The code located at the given location in this module.</span>
 									</div>
 								</li>
-								<li class="function">
-									<div class="name">decorateLoader</div>
+								<li class="constructor">
+									<div class="name">Child</div>
 									<span>
-										An object that can be used by a loader implementation to alter the <code>$loader</code>
-										object provided to modules.
+										(optional)
+										Creates a child loader for use in loading modules within this loader.
+										If omitted, an implementation will be supplied that uses the <code>getCode</code> method
+										with a prefix attached.
 									</span>
 									<div class="arguments">
 										<div class="label">Arguments</div>
 										<ol>
 											<li class="value">
-												<span class="type">object</span>
-												<span>The default <code>$loader</code> implementation.</span>
+												<span class="type">string</span>
+												<span>A prefix to use when loading the resources of the child.</span>
 											</li>
 										</ol>
+									</div>
+									<div class="instances">
+										<div class="label">Instances</div>
+										<span class="type"><a href="#types.Loader">Loader</a></span>
+										<span>A loader that loads code for a child loader.</span>
 									</div>
 								</li>
 							</ul>
@@ -1021,7 +1028,7 @@ END LICENSE
 				</div>
 			</li>
 			<li class="constructor">
-				<div class="name">Loader</div>
+				<div class="name"><a name="exports.Loader">Loader</a></div>
 				<span>Creates a <a href="#types.Loader">Loader</a>.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
@@ -1048,7 +1055,9 @@ END LICENSE
 								</li>
 								<li class="constructor">
 									<div class="name">Child</div>
-									<span>Creates a child loader for use in code loaded by this loader.</span>
+									<span>
+										A constructor invoked when a child loader is created.
+									</span>
 									<div class="arguments">
 										<div class="label">Arguments</div>
 										<ol>

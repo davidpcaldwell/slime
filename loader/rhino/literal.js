@@ -104,22 +104,23 @@
 						path: path
 					})
 				};
-				
+
 				this.Child = function(prefix) {
 					var c = {
 						_source: p._source.child(prefix),
-						decorate: p.decorate
+						Loader: p.Loader
 					};
 					return new Callee(c);
 				}
 			};
-			
+
 			var rv = new loader.Loader(parameter);
-			rv._resource = function(path) {
+			rv._stream = function(path) {
 				return p._source.getResourceAsStream(path);
 			};
-			if (p.decorate) {
-				p.decorate.call(rv,p);
+			rv._resource = loader.$api.deprecate(rv._stream);
+			if (p.Loader) {
+				p.Loader.call(rv,p);
 			}
 			return rv;
 		}
@@ -133,7 +134,7 @@
 				$loader.classpath.append(p._code);
 				return new Loader({
 					_source: p._code.getScripts(),
-					decorate: p.decorate
+					Loader: p.Loader
 				});
 			} else if (p.getCode) {
 				//	TODO	document this; it is confusing; should decorate() be disallowed or flagged here since platform loader
@@ -168,14 +169,15 @@
 						});
 					};
 
-
-					this.decorateLoader = function($loader) {
-						$loader.java = new function() {
+					//	TODO	untested explicitly, although presumably unit tests already cover this as modules are loaded within
+					//			modules pretty often
+					this.Child = function(prefix) {
+						this.java = new function() {
 							this.read = function(path) {
-								return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
+								return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(prefix+path));
 							}
 						}
-					}
+					};
 				}
 			}
 
@@ -183,7 +185,7 @@
 				$loader.classpath.append(format._code);
 				return loader.module(engineModuleCodeLoader(format._code, format.main),p);
 			} else {
-				return loader.module.apply(loader, arguments);
+				return loader.module.apply(loader,arguments);
 			}
 		}
 

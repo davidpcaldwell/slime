@@ -46,18 +46,18 @@ var InputStream = function(peer) {
 			}
 		});
 	});
-	
+
 	this.Resource = function(type) {
 		var _bytes = _java.readBytes(peer);
 		return new Resource(new function() {
 			this.type = type;
-			
+
 			this.read = new function() {
 				this.binary = function() {
 					return new InputStream(Packages.java.io.ByteArrayInputStream(_bytes));
 				}
 			}
-		});		
+		});
 	}
 
 	this.java = new function() {
@@ -320,7 +320,7 @@ var Resource = function(p) {
 			}
 		}
 	})();
-	
+
 	if (p.type) {
 		//	TODO	may want to do some sort of "cast" here
 		this.type = p.type;
@@ -412,31 +412,42 @@ $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
 $exports.Loader = function(p) {
-	//	TODO	this assumes Rhino-based loader with _resource; would we want to allow arbitrary arguments to be passed the way
+	//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
 	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
 	//			.resource decoration?
 	var decorate = function() {
-		if (this._resource) {
+		if (this._stream) {
 			this.resource = function(path) {
-				//	Test for existence so that we can return null if not found
-				var _in = this._resource(path);
-				if (!_in) {
-					return null;
-				} else {					
-					_in.close();
-				}
 				var target = this;
-				return new $exports.Resource({
-					read: {
-						binary: function() {
-							return new InputStream(target._resource(path));
-						}
+				if (p.resources) {
+					return p.resources.get(path);
+				} else {
+					//	Test for existence so that we can return null if not found
+					var _in = this._stream(path);
+					if (!_in) {
+						return null;
+					} else {
+						_in.close();
 					}
-				})
+					var type;
+					if (p.type) {
+						type = p.type.call(this,path);
+					}
+					return new $exports.Resource({
+						type: type,
+						read: {
+							binary: function() {
+								return new InputStream(target._stream(path));
+							}
+						}
+					});
+				}
 			};
 		}
-		if (p.decorate) {
-			p.decorate.apply(this,arguments);
+		if (p.Loader) {
+			//	TODO	probably should treat this like constructor: if it returns a value, replace the return value rather than
+			//			simply modifying it
+			p.Loader.apply(this,arguments);
 		}
 	}
 	if (p.resources) {
@@ -459,29 +470,29 @@ $exports.Loader = function(p) {
 				}
 			}
 		);
-		return new $context.$rhino.Loader({ 
+		return new $context.$rhino.Loader({
 			_source: Packages.inonit.script.rhino.Code.Source.create(_resources),
-			decorate: decorate
+			Loader: decorate
 		});
 	} else {
 		var parameter = {};
 		for (var x in p) {
 			parameter[x] = p[x];
 		}
-		parameter.decorate = decorate;
+		parameter.Loader = decorate;
 		return new $context.$rhino.Loader(parameter);
 	}
 };
 $exports.Loader.decorate = function(rv) {
 	rv.resource = (function(target) {
 		return function(path) {
-			var _in = target._resource(path);
+			var _in = target._stream(path);
 			if (!_in) return null;
 			_in.close();
 			return new $exports.Resource({
 				read: {
 					binary: function() {
-						return new InputStream(target._resource(path));
+						return new InputStream(target._stream(path));
 					}
 				}
 			})

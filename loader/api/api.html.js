@@ -246,12 +246,12 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
-					run(container.initializes[i].getContentString(), createTestScope());
+					run(container.initializes[i].getContentString(), createTestScope(scope));
 				}
 			}
 			var initializes = getScripts(element,"initialize");
 			for (var i=0; i<initializes.length; i++) {
-				run(initializes[i].getContentString(), createTestScope());
+				run(initializes[i].getContentString(), createTestScope(scope));
 			}
 		};
 
@@ -297,11 +297,11 @@ $exports.ApiHtmlTests = function(html,name) {
 		p.destroy = function() {
 			var destroys = getScripts(element,"destroy");
 			for (var i=0; i<destroys.length; i++) {
-				run(destroys[i].getContentString(),createTestScope());
+				run(destroys[i].getContentString(),createTestScope(scope));
 			}
 			if (container) {
 				for (var i=0; i<container.destroys.length; i++) {
-					run(container.destroys[i].getContentString(),createTestScope());
+					run(container.destroys[i].getContentString(),createTestScope(scope));
 				}
 			}
 		};

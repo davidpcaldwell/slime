@@ -361,7 +361,8 @@ this.jsh = new function() {
 
 	jsh.$jsapi = {
 		$platform: loader.$platform,
-		$api: loader.$api
+		$api: loader.$api,
+		$rhino: loader.getRhinoLoader()
 	};
 
 	(function() {

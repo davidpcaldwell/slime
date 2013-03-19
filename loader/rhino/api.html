@@ -22,7 +22,7 @@ END LICENSE
 	<div>
 		The Rhino SLIME loader contains a bundle of Java and JavaScript code that is knitted together at runtime. Users of the Rhino
 		loader can create one inside a Java host object and provide it to scripts. Inside the Java host object, an instance of
-		<code>inonit.script.rhino.Engine</code> must be created, and then 
+		<code>inonit.script.rhino.Engine</code> must be created, and then
 		<code>inonit.script.rhino.Loader.load(inonit.script.rhino.Engine,inonit.script.rhino.Loader)</code> must be invoked
 		with an instance of <code>Loader</code> that knows how to locate the platform loader code (loader/literal.js) and the
 		Rhino loader script (loader/rhino/literal.js).
@@ -59,8 +59,8 @@ END LICENSE
 						<li class="value">
 							<!--	TODO	do the first part by reference, even though it is partial	-->
 							<span>The first argument to the platform loader's <code>run</code> method, -OR-
-							<span class="type"><a href="#types.code">code</a></span>
-							<span>__DESCRIPTION__</span></span>
+							a <span class="type"><a href="#types.code">code</a></span>
+							<span>which can locate the code.</span></span>
 						</li>
 						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../api.html').getElement('Loader/run/arguments[1]')">
 							<span>The second argument to the platform loader's <code>run</code> method.</span>
@@ -83,8 +83,8 @@ END LICENSE
 						<li class="value">
 							The first argument to the platform loader's <code>file</code> method,
 							-OR-
-							<span class="type"><a href="#types.code">code</a></span>
-							<span>__DESCRIPTION__</span>
+							a <span class="type"><a href="#types.code">code</a></span>
+							which can locate the code.
 						</li>
 						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../api.html').getElement('Loader/file/arguments[1]')">
 							<span>The second argument to the platform loader's <code>file</code> method.</span>
@@ -104,8 +104,24 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">JavaClass inonit.script.rhino.Code</span>
-							<span>A module to load.</span>
+							<div>
+								The first argument to the platform loader <a href="../api.html#exports.module">module</a> method, or an object with
+								the following type:
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">_code</div>
+										<span class="type">JavaClass inonit.script.rhino.Code</span>
+										<span>An object describing how to load scripts and/or Java classes from this module.</span>
+									</li>
+									<li class="value">
+										<!--	TODO	what if this path contains a /? Where is base for loader? Where should it be?	-->
+										<div class="name">main</div>
+										<span class="type">string</span>
+										<span>The path to the main file within this module.</span>
+									</li>
+								</ul>
+							</div>
 						</li>
 						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../api.html').getElement('Loader/module/arguments[1]')">
 							<span>The second argument to the platform loader's <code>module</code> method.</span>
@@ -115,6 +131,169 @@ END LICENSE
 				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../api.html').getElement('Loader/module/returns')">
 					<div class="label">Returns</div>
 					<span>The return value of the platform loader's <code>module</code> method.</span>
+				</div>
+			</li>
+			<li class="constructor">
+				<div class="type">
+					<a class="type" name="types.Loader">Loader</a>
+					<span class="type">supports SLIME <a href="../api.html#types.Loader">Loader</a></span>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">_stream</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A path.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">JavaClass java.io.InputStream</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="name"><a name="exports.Loader">Loader</a></div>
+				<span>Creates a SLIME <a href="../api.html#types.Loader">Loader</a>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span>An object specifying how the loader should load code, which has multiple forms.</span>
+							<ul>
+								<li>
+									<span>
+										An object with a _source or _code property, specifying Java objects that can load the
+										code.
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">_source</div>
+											<span class="type">JavaClass inonit.script.rhino.Code.Source</span>
+											<span>
+												(optional; _source or _code must be specified)
+												A Java object that knows how to locate the code.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">_code</div>
+											<span class="type">JavaClass inonit.script.rhino.Code</span>
+											<span>
+												(optional; _source or _code must be specified)
+												A Java object that knows how to locate the code.
+											</span>
+										</li>
+										<li class="constructor">
+											<div class="name">Loader</div>
+											<span>
+												(optional)
+												A constructor that will be called with the created loader as its <code>this</code>
+												argument, allowing decoration of the created loader and any child loaders created by
+												it.
+											</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">object</span>
+														<span>
+															The object passed originally to the Loader constructor, with a
+															<code>_source</code> or <code>_code</code> property.
+														</span>
+													</li>
+												</ol>
+											</div>
+											<div class="instances">
+												<div class="label">Instances</div>
+												<span class="type">Java <a href="#types.Loader">Loader</a></span>
+												<span>
+													An object supporting the original Java <code>Loader</code> interface, augmented
+													as specified by the implementation.
+												</span>
+											</div>
+										</li>
+									</ul>
+								</li>
+								<li class="object">
+									<span>An object implementing a function that can return the code.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">getCode</div>
+											<span>A function that knows how to retrieve code.</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">string</span>
+														<span>A path.</span>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span>A value of one of the following types:</span>
+												<ul>
+													<li class="object">
+														<span>An object specifying a name and stream.</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">name</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</li>
+															<li class="value">
+																<div class="name">_in</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</li>
+														</ul>
+													</li>
+													<li class="object">
+														<span>An object specifying a source and path within that source.</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">_source</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</li>
+															<li class="value">
+																<div class="name">path</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</li>
+														</ul>
+													</li>
+													<li class="value">
+														<span class="type">string</span>
+														<span>A string consisting of JavaScript code.</span>
+													</li>
+												</ul>
+											</div>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span>
+						<span class="type">SLIME <a href="#types.Loader">Loader</a></span>, which may be a
+						<span class="type">Java <a href="#types.Loader">Loader</a></span>,
+						depending on the arguments.
+					</span>
 				</div>
 			</li>
 			<li class="function" jsapi:id="namespace" jsapi:reference="getApi('../api.html').getElement('namespace')">

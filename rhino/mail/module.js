@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME JavaMail interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var _Address = function(value) {
 	var rv = new Packages.javax.mail.internet.InternetAddress();
 	if (typeof(value) == "string") {
@@ -77,7 +89,7 @@ var Message_toPeer = function(_session) {
 		this.type = resource.type;
 		this.stream = resource.read.binary();
 	};
-	
+
 	var DataHandler = Packages.javax.activation.DataHandler;
 	jsh.shell.echo("Packages.javax.mail.Session = " + Packages.javax.mail.Session);
 	var MimeMultipart = Packages.javax.mail.internet.MimeMultipart;
@@ -88,7 +100,7 @@ var Message_toPeer = function(_session) {
 			return bodyparts[0];
 		} else {
 			var alternative = new $context.api.mime.Multipart({
-				subtype: "alternative", 
+				subtype: "alternative",
 				parts: bodyparts
 			});
 			return new Part(alternative);
@@ -122,16 +134,16 @@ var Message = function() {
 
 var Session = function(p) {
 	var _session = Packages.javax.mail.Session.getInstance(p._properties);
-	
+
 	var _transport;
-	
+
 	this.send = function(message) {
 		var _message = Message_toPeer.call(message,_session);
 		if (true) {
 			//	gmail
 			if (!_transport) {
 				_transport = _session.getTransport();
-				_transport.connect(p.credentials.user, p.credentials.password);			
+				_transport.connect(p.credentials.user, p.credentials.password);
 			}
 			var before = Packages.java.lang.Thread.currentThread().getContextClassLoader();
 			Packages.java.lang.Thread.currentThread().setContextClassLoader(_session.getClass().getClassLoader());

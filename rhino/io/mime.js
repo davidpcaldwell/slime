@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the rhino/io SLIME module.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	Mime objects have the following properties:
 //	type: the MIME type of the content
 //	ONE OF:
@@ -14,7 +26,7 @@ var _streams = ($context._streams) ? $context._streams : new Packages.inonit.scr
 //	Old name for this variable
 if ($context.gae) {
 	$api.deprecate(function() {
-		$context.nojavamail = true;		
+		$context.nojavamail = true;
 	})();
 }
 
@@ -114,7 +126,7 @@ $exports.Multipart = function(p) {
 					var buffer = new $context.api.io.Buffer();
 					$multipart.writeTo(buffer.writeBinary().java.adapt());
 					buffer.close();
-					return buffer.readBinary();					
+					return buffer.readBinary();
 				}
 			}
 		});

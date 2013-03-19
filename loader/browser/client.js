@@ -211,6 +211,16 @@
 //			return platform.file(fetcher.getCode(path),$context);
 		};
 
+		this.run = function(path,scope,target) {
+			return loader.run.apply(loader,arguments);
+		};
+
+		this.Loader = function(p) {
+			return new platform.Loader(p);
+		};
+
+		this.Loader.getCode = fetcher.getCode;
+
 		this.script = platform.$api.deprecate(this.file);
 
 		this.namespace = function(name) {
