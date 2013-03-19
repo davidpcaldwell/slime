@@ -104,7 +104,7 @@
 						path: path
 					})
 				};
-				
+
 				this.Child = function(prefix) {
 					var c = {
 						_source: p._source.child(prefix),
@@ -113,7 +113,7 @@
 					return new Callee(c);
 				}
 			};
-			
+
 			var rv = new loader.Loader(parameter);
 			rv._stream = function(path) {
 				return p._source.getResourceAsStream(path);
@@ -176,7 +176,7 @@
 							this.read = function(path) {
 								return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(prefix+path));
 							}
-						}						
+						}
 					};
 				}
 			}

@@ -162,7 +162,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			}
 			return rv;
 		}
-		
+
 		public String getMimeType(String path) {
 			return getServletConfig().getServletContext().getMimeType(path);
 		}

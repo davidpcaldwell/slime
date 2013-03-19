@@ -111,7 +111,7 @@ public abstract class Code {
 
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
 		public abstract Classes getClasses();
-		
+
 		public final Source child(final String prefix) {
 			//	TODO	should figure out /; maybe should only add it if we don't already end in it
 			final String prepend = (prefix != null && prefix.length() > 0) ? (prefix + "/") : "";
@@ -135,7 +135,7 @@ public abstract class Code {
 						}
 					};
 				}			};
-			
+
 		}
 
 		private static class UrlBased extends Source {

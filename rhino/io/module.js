@@ -46,18 +46,18 @@ var InputStream = function(peer) {
 			}
 		});
 	});
-	
+
 	this.Resource = function(type) {
 		var _bytes = _java.readBytes(peer);
 		return new Resource(new function() {
 			this.type = type;
-			
+
 			this.read = new function() {
 				this.binary = function() {
 					return new InputStream(Packages.java.io.ByteArrayInputStream(_bytes));
 				}
 			}
-		});		
+		});
 	}
 
 	this.java = new function() {
@@ -320,7 +320,7 @@ var Resource = function(p) {
 			}
 		}
 	})();
-	
+
 	if (p.type) {
 		//	TODO	may want to do some sort of "cast" here
 		this.type = p.type;
@@ -426,7 +426,7 @@ $exports.Loader = function(p) {
 					var _in = this._stream(path);
 					if (!_in) {
 						return null;
-					} else {					
+					} else {
 						_in.close();
 					}
 					var type;
@@ -470,7 +470,7 @@ $exports.Loader = function(p) {
 				}
 			}
 		);
-		return new $context.$rhino.Loader({ 
+		return new $context.$rhino.Loader({
 			_source: Packages.inonit.script.rhino.Code.Source.create(_resources),
 			Loader: decorate
 		});

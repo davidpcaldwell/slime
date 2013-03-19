@@ -81,7 +81,7 @@ var loaders = (function() {
 		return $host.loaders;
 	} else {
 		throw new Error();
-	}	
+	}
 })();
 
 var $parameters = (function() {

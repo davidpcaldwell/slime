@@ -35,7 +35,7 @@ plugin({
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
-		
+
 		var getMimeType = function(file) {
 			var type = jsh.io.mime.Type.guess({
 				name: file.pathname.basename
@@ -43,7 +43,7 @@ plugin({
 			if (!type && /\.js$/.test(file.pathname.basename)) {
 				type = new jsh.io.mime.Type("text", "javascript");
 			}
-			return type;			
+			return type;
 		}
 
 		$loader.file("resources.jsh.file.js", {

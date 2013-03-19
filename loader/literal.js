@@ -246,9 +246,9 @@
 					if (typeof(m.arguments[p.index]) == "undefined" && !p.undefined) throw new TypeError(reference + " must be a string, not undefined.");
 					if (m.arguments[p.index] === null && !p["null"]) throw new TypeError(reference + " must be a string, not null.");
 					if (typeof(m.arguments[p.index]) != "string") throw new TypeError(reference + " must be a string, not " + typeof(m.arguments[p.index]));
-				};				
+				};
 			};
-			
+
 			return $exports;
 		})();
 

@@ -77,7 +77,7 @@ var Message_toPeer = function(_session) {
 		this.type = resource.type;
 		this.stream = resource.read.binary();
 	};
-	
+
 	var DataHandler = Packages.javax.activation.DataHandler;
 	jsh.shell.echo("Packages.javax.mail.Session = " + Packages.javax.mail.Session);
 	var MimeMultipart = Packages.javax.mail.internet.MimeMultipart;
@@ -88,7 +88,7 @@ var Message_toPeer = function(_session) {
 			return bodyparts[0];
 		} else {
 			var alternative = new $context.api.mime.Multipart({
-				subtype: "alternative", 
+				subtype: "alternative",
 				parts: bodyparts
 			});
 			return new Part(alternative);
@@ -122,16 +122,16 @@ var Message = function() {
 
 var Session = function(p) {
 	var _session = Packages.javax.mail.Session.getInstance(p._properties);
-	
+
 	var _transport;
-	
+
 	this.send = function(message) {
 		var _message = Message_toPeer.call(message,_session);
 		if (true) {
 			//	gmail
 			if (!_transport) {
 				_transport = _session.getTransport();
-				_transport.connect(p.credentials.user, p.credentials.password);			
+				_transport.connect(p.credentials.user, p.credentials.password);
 			}
 			var before = Packages.java.lang.Thread.currentThread().getContextClassLoader();
 			Packages.java.lang.Thread.currentThread().setContextClassLoader(_session.getClass().getClassLoader());

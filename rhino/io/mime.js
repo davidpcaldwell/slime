@@ -14,7 +14,7 @@ var _streams = ($context._streams) ? $context._streams : new Packages.inonit.scr
 //	Old name for this variable
 if ($context.gae) {
 	$api.deprecate(function() {
-		$context.nojavamail = true;		
+		$context.nojavamail = true;
 	})();
 }
 
@@ -114,7 +114,7 @@ $exports.Multipart = function(p) {
 					var buffer = new $context.api.io.Buffer();
 					$multipart.writeTo(buffer.writeBinary().java.adapt());
 					buffer.close();
-					return buffer.readBinary();					
+					return buffer.readBinary();
 				}
 			}
 		});

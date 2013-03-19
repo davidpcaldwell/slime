@@ -122,15 +122,15 @@ END LICENSE
 							}
 						};
 					};
-					
+
 					var a;
 					var b = null;
-					
+
 					test(throwsError(true, function() {
-						new module.Type(a, "plain"); 
+						new module.Type(a, "plain");
 					}, "First argument undefined"));
 					test(throwsError(true, function() {
-						new module.Type(b, "plain"); 
+						new module.Type(b, "plain");
 					}, "First argument null"));
 					test(throwsError(true, function() {
 						new module.Type("text", a);
