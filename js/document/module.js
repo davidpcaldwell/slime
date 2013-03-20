@@ -266,6 +266,7 @@ var Element = function(p) {
 		var rv = {};
 		rv.name = (function() {
 			var prefix = scope[this.element.type.namespace];
+			//	TODO	bug: should check for typeof(this.element.type.namespace); this fails when specifying empty namespace
 			if (this.element.type.namespace && typeof(prefix) == "undefined") {
 				if (xmlns) {
 					//	add a namespace
