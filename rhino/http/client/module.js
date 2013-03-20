@@ -51,9 +51,10 @@ var Cookies = function() {
 				cookie.path = String(jurl.getPath());
 				parts.slice(1).forEach( function(part) {
 					part = trim(part);
-					if (part == "httponly") {
+					//	See http://tools.ietf.org/html/rfc6265#section-5.2.5 and 5.2.6 for documentation on httponly, secure
+					if (part.toLowerCase() == "httponly") {
 						cookie.httponly = true;
-					} else if (part == "Secure") {
+					} else if (part.toLowerCase() == "secure") {
 						cookie.secure = true;
 					} else {
 						var attribute = part.split("=")[0].toLowerCase();
