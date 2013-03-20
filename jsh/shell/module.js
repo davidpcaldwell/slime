@@ -313,7 +313,7 @@ $exports.rhino = new function() {
 };
 
 $exports.jsh = function(p) {
-	if (!arguments[0].script) {
+	if (!arguments[0].script && !arguments[0].arguments) {
 		p = {
 			script: arguments[0],
 			arguments: (arguments[1]) ? arguments[1] : []
@@ -321,6 +321,9 @@ $exports.jsh = function(p) {
 		for (var x in arguments[2]) {
 			p[x] = arguments[2][x];
 		}
+	}
+	if (!p.script) {
+		throw new TypeError("Required: script property indicating script to run.");
 	}
 	if (!p.arguments) {
 		p.arguments = [];
