@@ -231,6 +231,11 @@ $exports.tests = new function() {
 								return jsh.loader.module(suite.getRelativePath(name),context);
 							}
 						},
+						loader: {
+							file: function(name,context) {
+								return jsh.loader.file(suite.getRelativePath(name),context);
+							}
+						},
 						//	TODO	Probably the name of this call should reflect the fact that we are returning a native object
 						environment: $context.ENVIRONMENT,
 						newTemporaryDirectory: function() {
