@@ -72,7 +72,7 @@ public class Threads {
 			public void setPrototype(Scriptable s) {
 				throw new UnsupportedOperationException("Not supported yet.");
 			}
-			
+
 			private Scriptable parentScope;
 
 			public Scriptable getParentScope() {

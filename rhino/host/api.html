@@ -229,23 +229,23 @@ END LICENSE
 									Packages.java.lang.Thread.sleep(100);
 									return 1;
 								};
-								
+
 								var t1 = new module.Thread(f);
 								var Callbacks = function() {
 									var result;
-									
+
 									this.returned = function(v) {
 										result = v;
 									};
-									
+
 									this.threw = function(t) {
 										throw t;
 									};
-									
+
 									this.timedOut = function() {
 										result = "Timed out.";
 									}
-									
+
 									this.result = function() {
 										return result;
 									}
@@ -282,7 +282,7 @@ END LICENSE
 									<li class="constructor">
 										<div class="name">Waiter</div>
 										<span>
-											Creates a function that waits on its parent monitor until a condition is true, and then executes an underlying 
+											Creates a function that waits on its parent monitor until a condition is true, and then executes an underlying
 											function.
 										</span>
 										<div class="arguments">
@@ -320,7 +320,7 @@ END LICENSE
 											<div class="label">Instances</div>
 											<span class="type">function</span>
 											<span>
-												A function that can be invoked that will invoke <code>until</code> repeatedly and wait on the monitor if it 
+												A function that can be invoked that will invoke <code>until</code> repeatedly and wait on the monitor if it
 												returns <code>false</code>; when <code>until</code> returns <code>true</code>, <code>then</code> will be invoked
 												and the return value from <code>then</code> returned.
 											</span>

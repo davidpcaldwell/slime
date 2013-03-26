@@ -189,16 +189,16 @@ $exports.Thread = function(f) {
 	if (typeof(f) != "function") {
 		throw new TypeError("Should be function: " + f);
 	}
-	
+
 	var timeout;
 
 	var lock = new Packages.java.lang.Object();
 	var synchronize = function(f) {
 		return Packages.inonit.script.runtime.Threads.synchronizeOn(lock,f);
 	};
-		
+
 	var done = false;
-	
+
 	var debug = function(m) {
 		if (arguments.callee.on) {
 			Packages.java.lang.System.err.println(m);
@@ -208,7 +208,7 @@ $exports.Thread = function(f) {
 	var runnable = new function() {
 		var _p;
 		var _callbacks;
-		
+
 		this.initialize = function(p) {
 			_p = p;
 			if (_p && _p.on) {
@@ -216,7 +216,7 @@ $exports.Thread = function(f) {
 			} else {
 				_callbacks = _p;
 			}
-			
+
 			timeout = (function() {
 				if (_p && _p.timeout) {
 					return new $exports.Thread(function() {
@@ -239,7 +239,7 @@ $exports.Thread = function(f) {
 				}
 			})();
 		};
-		
+
 		this.run = function() {
 			try {
 				var rv = f();
@@ -259,7 +259,7 @@ $exports.Thread = function(f) {
 					synchronize(function() {
 						if (_callbacks && _callbacks.threw) {
 							_callbacks.threw(error);
-						}					
+						}
 						debug("Threw: " + thread);
 						done = true;
 						lock.notifyAll();
