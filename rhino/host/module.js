@@ -189,22 +189,81 @@ $exports.Thread = function(f) {
 	if (typeof(f) != "function") {
 		throw new TypeError("Should be function: " + f);
 	}
-	var runnable = new function() {
-		var _callbacks;
+	
+	var timeout;
 
-		this.initialize = function(callbacks) {
-			_callbacks = callbacks;
+	var lock = new Packages.java.lang.Object();
+	var synchronize = function(f) {
+		return Packages.inonit.script.runtime.Threads.synchronizeOn(lock,f);
+	};
+		
+	var done = false;
+	
+	var debug = function(m) {
+		if (arguments.callee.on) {
+			Packages.java.lang.System.err.println(m);
 		}
+	}
 
+	var runnable = new function() {
+		var _p;
+		var _callbacks;
+		
+		this.initialize = function(p) {
+			_p = p;
+			if (_p && _p.on) {
+				_callbacks = _p.on;
+			} else {
+				_callbacks = _p;
+			}
+			
+			timeout = (function() {
+				if (_p && _p.timeout) {
+					return new $exports.Thread(function() {
+						debug(thread + ": Sleeping for " + _p.timeout);
+						Packages.java.lang.Thread.sleep(_p.timeout);
+						debug(thread + ": Waking from sleeping for " + _p.timeout);
+						if (!done) {
+							synchronize(function() {
+								if (_callbacks && _callbacks.timedOut) {
+									_callbacks.timedOut();
+								}
+								debug("Timed out: " + thread);
+								done = true;
+								lock.notifyAll();
+							})();
+						}
+					});
+				} else {
+					return null;
+				}
+			})();
+		};
+		
 		this.run = function() {
 			try {
 				var rv = f();
-				if (_callbacks && _callbacks.returned) {
-					_callbacks.returned(rv);
+				if (!done) {
+					synchronize(function() {
+						if (_callbacks && _callbacks.returned) {
+							_callbacks.returned(rv);
+						}
+						debug("Returned: " + thread);
+						done = true;
+						lock.notifyAll();
+					})();
 				}
 			} catch (e) {
-				if (_callbacks && _callbacks.threw) {
-					_callbacks.threw(e);
+				var error = e;
+				if (!done) {
+					synchronize(function() {
+						if (_callbacks && _callbacks.threw) {
+							_callbacks.threw(error);
+						}					
+						debug("Threw: " + thread);
+						done = true;
+						lock.notifyAll();
+					})();
 				}
 			}
 		}
@@ -213,14 +272,26 @@ $exports.Thread = function(f) {
 
 	var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable,runnable));
 
-	this.start = function(callbacks) {
-		runnable.initialize(callbacks);
+	this.start = function(p) {
+		runnable.initialize(p);
+		if (timeout) {
+			debug("Starting timeout thread for " + thread + " ...");
+			timeout.start();
+		}
 		thread.start();
-	}
+	};
 
 	this.join = function() {
-		thread.join();
-	}
+		synchronize(function() {
+			debug("Waiting for " + thread);
+			while(!done) {
+				debug("prewait done = " + done + " for " + thread);
+				lock.wait();
+				debug("postwait done = " + done + " for " + thread);
+			}
+		})();
+		debug("Done waiting for " + thread);
+	};
 };
 $exports.Thread.thisSynchronize = function(f) {
 	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
@@ -232,10 +303,10 @@ $exports.Thread.Monitor = function() {
 
 	this.Waiter = function(c) {
 		return Packages.inonit.script.runtime.Threads.synchronizeOn(lock, function() {
-			while(!c.until()) {
+			while(!c.until.apply(this,arguments)) {
 				lock.wait();
 			}
-			var rv = c.then();
+			var rv = c.then.apply(this,arguments);
 			lock.notifyAll();
 			return rv;
 		});
