@@ -69,7 +69,7 @@ $exports.Tomcat = function(p) {
 		this.start = function(m) {
 			jsh.shell.echo("Starting server at " + p.home + " with base " + base + " ...");
 
-			new jsh.java.Thread(catalina("run",m)).start();
+			jsh.java.Thread.start({ call: catalina("run",m) });
 			started = true;
 		}
 

@@ -185,17 +185,11 @@ $exports.isJavaType = function(javaclass) {
 $api.experimental($exports,"isJavaType");
 experimental("toJavaArray");
 
-$exports.Thread = function(f) {
-	if (typeof(f) != "function") {
-		throw new TypeError("Should be function: " + f);
-	}
-
-	var timeout;
-
-	var lock = new Packages.java.lang.Object();
+var Thread = function(p) {
 	var synchronize = function(f) {
-		return Packages.inonit.script.runtime.Threads.synchronizeOn(lock,f);
+		return Packages.inonit.script.runtime.Threads.synchronizeOn(arguments.callee.lock,f);
 	};
+	synchronize.lock = new Packages.java.lang.Object();
 
 	var done = false;
 
@@ -206,63 +200,29 @@ $exports.Thread = function(f) {
 	}
 
 	var runnable = new function() {
-		var _p;
-		var _callbacks;
-
-		this.initialize = function(p) {
-			_p = p;
-			if (_p && _p.on) {
-				_callbacks = _p.on;
-			} else {
-				_callbacks = _p;
-			}
-
-			timeout = (function() {
-				if (_p && _p.timeout) {
-					return new $exports.Thread(function() {
-						debug(thread + ": Sleeping for " + _p.timeout);
-						Packages.java.lang.Thread.sleep(_p.timeout);
-						debug(thread + ": Waking from sleeping for " + _p.timeout);
-						if (!done) {
-							synchronize(function() {
-								if (_callbacks && _callbacks.timedOut) {
-									_callbacks.timedOut();
-								}
-								debug("Timed out: " + thread);
-								done = true;
-								lock.notifyAll();
-							})();
-						}
-					});
-				} else {
-					return null;
-				}
-			})();
-		};
-
 		this.run = function() {
 			try {
-				var rv = f();
+				var rv = p.call();
 				if (!done) {
 					synchronize(function() {
-						if (_callbacks && _callbacks.returned) {
-							_callbacks.returned(rv);
+						if (p.on && p.on.result) {
+							p.on.result(rv);
 						}
 						debug("Returned: " + thread);
 						done = true;
-						lock.notifyAll();
+						synchronize.lock.notifyAll();
 					})();
 				}
 			} catch (e) {
 				var error = e;
 				if (!done) {
 					synchronize(function() {
-						if (_callbacks && _callbacks.threw) {
-							_callbacks.threw(error);
+						if (p.on && p.on.error) {
+							p.on.error(error);
 						}
 						debug("Threw: " + thread);
 						done = true;
-						lock.notifyAll();
+						synchronize.lock.notifyAll();
 					})();
 				}
 			}
@@ -272,27 +232,85 @@ $exports.Thread = function(f) {
 
 	var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable,runnable));
 
-	this.start = function(p) {
-		runnable.initialize(p);
-		if (timeout) {
-			debug("Starting timeout thread for " + thread + " ...");
-			timeout.start();
-		}
-		thread.start();
-	};
-
+	thread.start();
+	
+	if (p && p.timeout) {
+		debug("Starting timeout thread for " + thread + " ...");
+		new arguments.callee({
+			call: function() {
+				debug(thread + ": Sleeping for " + p.timeout);
+				Packages.java.lang.Thread.sleep(p.timeout);
+				debug(thread + ": Waking from sleeping for " + p.timeout);
+				if (!done) {
+					synchronize(function() {
+						if (p.on && p.on.timeout) {
+							p.on.timeout();
+						}
+						debug("Timed out: " + thread);
+						done = true;
+						synchronize.lock.notifyAll();
+					})();
+				}
+			}
+		});
+	}
+	
 	this.join = function() {
 		synchronize(function() {
 			debug("Waiting for " + thread);
 			while(!done) {
 				debug("prewait done = " + done + " for " + thread);
-				lock.wait();
+				synchronize.lock.wait();
 				debug("postwait done = " + done + " for " + thread);
 			}
 		})();
 		debug("Done waiting for " + thread);
-	};
+	};	
 };
+$exports.Thread = {};
+$exports.Thread.start = function(p) {
+	return new Thread(p);
+}
+$exports.Thread.run = function(p) {
+	var callee = arguments.callee;
+	var on = new function() {
+		var result = {};
+
+		this.result = function(rv) {
+			result.returned = { value: rv };
+		}
+
+		this.error = function(t) {
+			result.threw = t;
+		}
+
+		this.timeout = function() {
+			result.timedOut = true;
+		}
+
+		this.evaluate = function() {
+			if (result.returned) return result.returned.value;
+			if (result.threw) throw result.threw;
+			if (result.timedOut) throw callee.TIMED_OUT;
+		}
+	};
+	var o = {};
+	for (var x in p) {
+		o[x] = p[x];
+	}
+	o.on = on;
+	var t = new Thread(o);
+	t.join();
+	return on.evaluate();
+};
+//	TODO	make the below a subtype of Error
+//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
+$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
+	if (!arguments.callee.cached) {
+		arguments.callee.cached = new Error("Timed out.");
+	}
+	return arguments.callee.cached;
+});
 $exports.Thread.thisSynchronize = function(f) {
 	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
 	//			synchronize()

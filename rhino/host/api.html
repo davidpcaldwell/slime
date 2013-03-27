@@ -138,129 +138,13 @@ END LICENSE
 				}
 				test(count == 3);
 			]]></script>
-			<li class="constructor">
+			<li class="object">
 				<div class="name">Thread</div>
-				<span>Creates (but does not start) a thread.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">function</span>
-							<span>A function to run in a separate thread.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="instances">
-					<div class="label">Instances</div>
+				<div class="type">
+					<a class="type" name="types.thread">thread</a>
+					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="function">
-							<div class="name">start</div>
-							<span>Starts the thread.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="object">
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="value">
-												<div class="name">timeout</div>
-												<span class="type">number</span>
-												<span>
-													(optional)
-													A timeout, in milliseconds.
-												</span>
-											</li>
-											<li class="object">
-												<div class="name">on</div>
-												<span>
-													(optional)
-													Specifies a set of callbacks.
-												</span>
-												<div class="label">has properties:</div>
-												<ul>
-													<li class="function">
-														<div class="name">returned</div>
-														<span>
-															(optional)
-															A function invoked when the function executed by the thread returns.
-														</span>
-														<div class="arguments">
-															<div class="label">Arguments</div>
-															<ol>
-																<li class="value">
-																	<span>The value returned by the function.</span>
-																</li>
-															</ol>
-														</div>
-													</li>
-													<li class="function">
-														<div class="name">threw</div>
-														<span>
-															(optional)
-															A function invoked if the function executed by the thread throws an exception.
-														</span>
-														<div class="arguments">
-															<div class="label">Arguments</div>
-															<ol>
-																<li class="value">
-																	<span>The JavaScript value thrown.</span>
-																</li>
-															</ol>
-														</div>
-													</li>
-													<li class="function">
-														<div class="name">timedOut</div>
-														<span>
-															(optional)
-															A function invoked if the function executed by the thread times out. This function must
-															do any cleanup desired to terminate the executing function; the function will otherwise continue
-															executing in the background.
-														</span>
-													</li>
-												</ul>
-											</li>
-										</ul>
-									</li>
-								</ol>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var f = function() {
-									Packages.java.lang.Thread.sleep(100);
-									return 1;
-								};
-
-								var t1 = new module.Thread(f);
-								var Callbacks = function() {
-									var result;
-
-									this.returned = function(v) {
-										result = v;
-									};
-
-									this.threw = function(t) {
-										throw t;
-									};
-
-									this.timedOut = function() {
-										result = "Timed out.";
-									}
-
-									this.result = function() {
-										return result;
-									}
-								};
-								var c1 = new Callbacks();
-								t1.start({ timeout: 150, on: c1 });
-								t1.join();
-								test(c1.result() == 1);
-								var t2 = new module.Thread(f);
-								var c2 = new Callbacks();
-								t2.start({ timeout: 50, on: c2 });
-								t2.join();
-								test(c2.result() == "Timed out.");
-							</script>
-						</li>
 						<li class="function">
 							<div class="name">join</div>
 							<span>Causes the calling thread to block and wait for this thread to terminate (either via the completion of the execution of the
@@ -269,188 +153,299 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
+				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
-				<div>
-					<ul>
-						<li class="constructor">
-							<div class="name">Monitor</div>
-							<span>Represents a Java monitor that can be used for synchronization.</span>
-							<div class="instances">
-								<div class="label">Instances</div>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="constructor">
-										<div class="name">Waiter</div>
-										<span>
-											Creates a function that waits on its parent monitor until a condition is true, and then executes an underlying
-											function.
-										</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="object">
-													<span>An object specifying the condition and function.</span>
-													<div class="label">has properties:</div>
-													<ul>
-														<li class="function">
-															<div class="name">until</div>
-															<span>
-																A function that specifies whether the condition has been satisfied. The function will receive
-																the <code>this</code> and arguments passed to the function by the caller.
-															</span>
-															<div class="returns">
-																<div class="label">Returns</div>
-																<span class="type">boolean</span>
-																<span><code>true</code> indicating the condition has been satisfied; <code>false</code> indicating it has not.</span>
-															</div>
-														</li>
-														<li class="function">
-															<div class="name">then</div>
-															<span>
-																A function to execute when the condition has been satisfied. The function will receive the
-																<code>this</code> and arguments passed to the function by the caller, and can return any value
-																intended to be returned to the caller.
-															</span>
-														</li>
-													</ul>
-												</li>
-											</ol>
-										</div>
-										<div class="instances">
-											<div class="label">Instances</div>
-											<span class="type">function</span>
+				<ul>
+					<li class="function">
+						<div class="name">start</div>
+						<span>Starts a thread.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">call</div>
 											<span>
-												A function that can be invoked that will invoke <code>until</code> repeatedly and wait on the monitor if it
-												returns <code>false</code>; when <code>until</code> returns <code>true</code>, <code>then</code> will be invoked
-												and the return value from <code>then</code> returned.
+												A function. The function will be invoked with no arguments and an undefined <code>this</code> value; if
+												a specific calling configuration is required, a wrapper function that provides this configuration is required.
 											</span>
-										</div>
-									</li>
-								</ul>
-							</div>
-							<script type="application/x.jsapi#tests" jsapi:id="Monitor"><![CDATA[
-								var lock = new module.Thread.Monitor();
+										</li>
+										<li class="value">
+											<div class="name">timeout</div>
+											<span class="type">number</span>
+											<span>
+												(optional)
+												A timeout, in milliseconds.
+											</span>
+										</li>
+										<li class="object">
+											<div class="name">on</div>
+											<span>
+												(optional)
+												Specifies a set of callbacks.
+											</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function">
+													<div class="name">result</div>
+													<span>
+														(optional)
+														A function invoked when the function executed by the thread returns.
+													</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<span>The value returned by the function.</span>
+															</li>
+														</ol>
+													</div>
+												</li>
+												<li class="function">
+													<div class="name">error</div>
+													<span>
+														(optional)
+														A function invoked if the function executed by the thread throws an exception.
+													</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<span>The JavaScript value thrown.</span>
+															</li>
+														</ol>
+													</div>
+												</li>
+												<li class="function">
+													<div class="name">timeout</div>
+													<span>
+														(optional)
+														A function invoked if the function executed by the thread times out. This function must
+														do any cleanup desired to terminate the executing function; the function will otherwise continue
+														executing in the background.
+													</span>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.thread">thread</a></span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">run</div>
+						<span>Runs a function in a separate thread, but blocks the calling thread until the function completes or times out.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">call</div>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">timeout</div>
+											<span class="type">number</span>
+											<span>
+												(optional)
+												A timeout, in milliseconds.
+											</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span>The value returned by the underlying function specified by <code>call</code>.</span>
+						</div>
+					</li>
+					<li class="constructor">
+						<div class="name">Monitor</div>
+						<span>Represents a Java monitor that can be used for synchronization.</span>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="constructor">
+									<div class="name">Waiter</div>
+									<span>
+										Creates a function that waits on its parent monitor until a condition is true, and then executes an underlying
+										function.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="object">
+												<span>An object specifying the condition and function.</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="function">
+														<div class="name">until</div>
+														<span>
+															A function that specifies whether the condition has been satisfied. The function will receive
+															the <code>this</code> and arguments passed to the function by the caller.
+														</span>
+														<div class="returns">
+															<div class="label">Returns</div>
+															<span class="type">boolean</span>
+															<span><code>true</code> indicating the condition has been satisfied; <code>false</code> indicating it has not.</span>
+														</div>
+													</li>
+													<li class="function">
+														<div class="name">then</div>
+														<span>
+															A function to execute when the condition has been satisfied. The function will receive the
+															<code>this</code> and arguments passed to the function by the caller, and can return any value
+															intended to be returned to the caller.
+														</span>
+													</li>
+												</ul>
+											</li>
+										</ol>
+									</div>
+									<div class="instances">
+										<div class="label">Instances</div>
+										<span class="type">function</span>
+										<span>
+											A function that can be invoked that will invoke <code>until</code> repeatedly and wait on the monitor if it
+											returns <code>false</code>; when <code>until</code> returns <code>true</code>, <code>then</code> will be invoked
+											and the return value from <code>then</code> returned.
+										</span>
+									</div>
+								</li>
+							</ul>
+						</div>
+						<script type="application/x.jsapi#tests" jsapi:id="Monitor"><![CDATA[
+							var lock = new module.Thread.Monitor();
 
-								var count = 0;
+							var count = 0;
 
-								var waiter = function() {
-									return new lock.Waiter({
-										//	TODO	make optional in API with this default implementation
-										until: function() {
-											return true;
-										},
-										then: function() {
-											test(count == 0);
-											count++;
-											test(count == 1);
-											Packages.java.lang.Thread.sleep(Packages.java.lang.Math.random() * 100);
-											count--;
-											test(count == 0);
+							var waiter = function() {
+								return new lock.Waiter({
+									//	TODO	make optional in API with this default implementation
+									until: function() {
+										return true;
+									},
+									then: function() {
+										test(count == 0);
+										count++;
+										test(count == 1);
+										Packages.java.lang.Thread.sleep(Packages.java.lang.Math.random() * 100);
+										count--;
+										test(count == 0);
 //											jsh.shell.echo("Success.");
-										}
-									});
-								}
+									}
+								});
+							}
 
-								var waiters = [];
-								for (var i=0; i<10; i++) {
-									waiters.push(waiter());
-								}
+							var waiters = [];
+							for (var i=0; i<10; i++) {
+								waiters.push(waiter());
+							}
 
-								var joiners = [];
-								waiters.forEach(function(element) {
-									//	jsh.shell.echo("Starting ...");
-									var t = new module.Thread(element);
-									t.start({
-										returned: function(o) {
+							var joiners = [];
+							waiters.forEach(function(element) {
+								//	jsh.shell.echo("Starting ...");
+								var t = module.Thread.start({
+									call: element,
+									on: {
+										result: function(o) {
 											//	jsh.shell.echo("Finished.");
 											test(true);
 										},
-										threw: function(t) {
+										error: function(t) {
 											//	jsh.shell.echo("Threw.");
 											throw t;
 										}
-									});
-									joiners.push(t);
+									}
 								});
+								joiners.push(t);
+							});
 
-								joiners.forEach(function(t) {
-									t.join();
-								});
-							]]></script>
-						</li>
-						<li class="function">
-							<div class="name">thisSynchronize</div>
+							joiners.forEach(function(t) {
+								t.join();
+							});
+						]]></script>
+					</li>
+					<li class="function">
+						<div class="name">thisSynchronize</div>
+						<span>
+							Creates a function whose execution synchronizes on the <code>this</code> object of its invocation.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">function</span>
+									<span>A function which the returned function should execute.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">function</span>
 							<span>
-								Creates a function whose execution synchronizes on the <code>this</code> object of its invocation.
+								A function that obtains the lock to its <code>this</code> object, executes the given function, and
+								then releases the lock.
 							</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">function</span>
-										<span>A function which the returned function should execute.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">function</span>
-								<span>
-									A function that obtains the lock to its <code>this</code> object, executes the given function, and
-									then releases the lock.
-								</span>
-							</div>
-							<script type="application/x.jsapi#tests" jsapi:id="thisSynchronize"><![CDATA[
-								var f = function(x) {
-									return 2*x;
-								};
+						</div>
+						<script type="application/x.jsapi#tests" jsapi:id="thisSynchronize"><![CDATA[
+							var f = function(x) {
+								return 2*x;
+							};
 
-								var s = module.Thread.thisSynchronize(f);
+							var s = module.Thread.thisSynchronize(f);
 
-								//	TODO	actually test synchronization
+							//	TODO	actually test synchronization
 
-								test(s(2) == 4);
-								test(s(4) == 8);
+							test(s(2) == 4);
+							test(s(4) == 8);
 
-								var debug = function(s) {
+							var debug = function(s) {
 	//								Packages.java.lang.System.err.println(s);
-								}
+							}
 
-								var lock = new Packages.java.lang.Object();
+							var lock = new Packages.java.lang.Object();
 
-								var finished = 0;
+							var finished = 0;
 
-								var inner = function() {
-									inner.count++;
-									Packages.java.lang.Thread.sleep(100);
-									inner.count--;
-									finished++;
-									this.notifyAll();
-								}
-								inner.count = 0;
+							var inner = function() {
+								inner.count++;
+								Packages.java.lang.Thread.sleep(100);
+								inner.count--;
+								finished++;
+								this.notifyAll();
+							}
+							inner.count = 0;
 
-								var nested = module.Thread.thisSynchronize(inner);
+							var nested = module.Thread.thisSynchronize(inner);
 
-								var outer = function() {
-									outer.count++;
-									nested.call(lock);
-									outer.count--;
-								}
-								outer.count = 0;
+							var outer = function() {
+								outer.count++;
+								nested.call(lock);
+								outer.count--;
+							}
+							outer.count = 0;
 
-								var getCount = module.Thread.thisSynchronize(function() {
-									return inner.count;
-								});
+							var getCount = module.Thread.thisSynchronize(function() {
+								return inner.count;
+							});
 
-								var runInThread = function(f,callbacks) {
-									var thread = new module.Thread(f);
-									thread.start(callbacks);
-									return thread;
-								}
-
-								var threads = [];
-								for (var i=0; i<10; i++) {
-									threads.push(runInThread(outer, new function() {
+							var threads = [];
+							for (var i=0; i<10; i++) {
+								threads.push(module.Thread.start({
+									call: outer, 
+									on: new function() {
 										this.returned = function(rv) {
 											debug("outer = " + outer.count);
 											test(getCount.call(lock) == 0);
@@ -460,18 +455,76 @@ END LICENSE
 											debug("threw = " + e);
 											throw e;
 										}
-									}));
-								}
+									}
+								}));
+							}
 
-								threads.forEach( function(thread) {
-									thread.join();
-								});
+							threads.forEach( function(thread) {
+								thread.join();
+							});
 
-								test(finished == 10);
-							]]></script>
-						</li>
-					</ul>
-				</div>
+							test(finished == 10);
+						]]></script>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					var f = function() {
+						Packages.java.lang.Thread.sleep(100);
+						return 1;
+					};
+
+					var Callbacks = function() {
+						var result;
+
+						this.result = function(v) {
+							result = v;
+						};
+
+						this.error = function(t) {
+							throw t;
+						};
+
+						this.timeout = function() {
+							result = "Timed out.";
+						}
+
+						this.evaluate = function() {
+							return result;
+						}
+					};
+
+					var c1 = new Callbacks();
+					var t1 = module.Thread.start({
+						call: f,
+						timeout: 150,
+						on: c1
+					});
+					t1.join();
+					test(c1.evaluate() == 1);
+					var c2 = new Callbacks();
+					var t2 = module.Thread.start({
+						call: f,
+						timeout: 50,
+						on: c2
+					});
+					t2.join();
+					test(c2.evaluate() == "Timed out.");
+
+					var r3 = module.Thread.run({
+						call: f,
+						timeout: 150
+					});
+					test(r3 == 1);
+					try {
+						var r4 = module.Thread.run({
+							call: f,
+							timeout: 50
+						});
+						test(false);
+					} catch (e) {
+						test(e == module.Thread.run.TIMED_OUT);
+					}
+				</script>
 			</li>
 			<!--
 				Experimental methods

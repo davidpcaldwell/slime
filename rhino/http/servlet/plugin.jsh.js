@@ -165,7 +165,7 @@ plugin({
 				};
 				var fork = false;
 				if (fork) {
-					new jsh.java.Thread(run).start();
+					jsh.java.Thread.start({ call: run });
 				} else {
 					run();
 				}
