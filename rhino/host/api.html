@@ -444,7 +444,7 @@ END LICENSE
 							var threads = [];
 							for (var i=0; i<10; i++) {
 								threads.push(module.Thread.start({
-									call: outer, 
+									call: outer,
 									on: new function() {
 										this.returned = function(rv) {
 											debug("outer = " + outer.count);

@@ -233,7 +233,7 @@ var Thread = function(p) {
 	var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable,runnable));
 
 	thread.start();
-	
+
 	if (p && p.timeout) {
 		debug("Starting timeout thread for " + thread + " ...");
 		new arguments.callee({
@@ -254,7 +254,7 @@ var Thread = function(p) {
 			}
 		});
 	}
-	
+
 	this.join = function() {
 		synchronize(function() {
 			debug("Waiting for " + thread);
@@ -265,7 +265,7 @@ var Thread = function(p) {
 			}
 		})();
 		debug("Done waiting for " + thread);
-	};	
+	};
 };
 $exports.Thread = {};
 $exports.Thread.start = function(p) {
