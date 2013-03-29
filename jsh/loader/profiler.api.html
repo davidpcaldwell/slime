@@ -23,36 +23,36 @@
 					</li>
 					<li class="value">
 						<div class="type">
-							<a class="type" name="types.code">code.java</a>
+							<a class="type" name="types.code">Java method</a>
 							<span>An object describing a Java method.</span>
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
 									<div class="name">className</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
+									<span class="type">string</span>
+									<span>The name of the class containing the method.</span>
 								</li>
 								<li class="value">
 									<div class="name">methodName</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
+									<span class="type">string</span>
+									<span>The name of the method.</span>
 								</li>
 								<li class="value">
 									<div class="name">signature</div>
 									<span class="type">string</span>
-									<span>__DESCRIPTION__</span>
+									<span>The signature of the method; currently the format is undefined.</span>
 								</li>
 							</ul>
 						</div>
 						<div class="type">
-							<a class="type" name="types.code">code.script</a>
+							<a class="type" name="types.code">script function</a>
 							<span>An object describing a JavaScript function.</span>
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
 									<div class="name">sourceName</div>
 									<span class="type">string</span>
-									<span>__DESCRIPTION__</span>
+									<span>A string describing the source file from which the function was loaded.</span>
 								</li>
 								<li class="value">
 									<div class="name">lineNumbers</div>
@@ -64,71 +64,77 @@
 									<span class="type">string</span>
 									<span>
 										(if defined by the source)
-										The name of the JavaScript function
+										The name of the JavaScript function.
 									</span>
 								</li>
 							</ul>
 						</div>
 						<div class="type">
 							<a class="type" name="types.node">node</a>
-							<span>__DESCRIPTION__</span>
+							<span>
+								An object representing a call stack within an application and data surrounding its execution.
+							</span>
 							<div class="label">has properties:</div>
 							<ul>
+								<li class="value">
+									<div class="name">code</div>
+									<span class="type"><a href="#types.code.java">Java method</a></span>
+									-OR-
+									<span class="type"><a href="#types.code.script">script function</a></span>
+									<span>The unit of code on top of the stack at this point in the call tree.</span>
+								</li>
 								<li class="object">
 									<div class="name">statistics</div>
-									<span>__DESCRIPTION__</span>
+									<span>The numbers collected for this node during execution.</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
 											<div class="name">count</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
+											<span class="type">number</span>
+											<span>The number of times this call stack was reached.</span>
 										</li>
 										<li class="value">
 											<div class="name">elapsed</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
+											<span class="type">number</span>
+											<span>The total elapsed time spent within this call stack.</span>
 										</li>
 									</ul>
 								</li>
 								<li class="value">
-									<div class="name">code</div>
-									<span class="type"><a href="#types.code">code</a></span>
-									<span>__DESCRIPTION__</span>
-								</li>
-								<li class="value">
 									<div class="name">children</div>
 									<span class="type">Array of <a href="#types.node">node</a></span>
-									<span>__DESCRIPTION__</span>
+									<span>
+										The set of nodes representing invocations from this point on the call stack.
+									</span>
 								</li>
 							</ul>
 						</div>
 						<div class="type">
 							<a class="type" name="types.profile">profile</a>
-							<span>__DESCRIPTION__</span>
+							<span>An execution profile for a particular thread.</span>
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="object">
 									<div class="name">thread</div>
-									<span>__DESCRIPTION__</span>
+									<span>An execution thread.</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
 											<div class="name">name</div>
 											<span class="type">string</span>
-											<span>__DESCRIPTION__</span>
+											<span>The name of this thread.</span>
 										</li>
 									</ul>
 								</li>
 								<li class="object">
 									<div class="name">timing</div>
-									<span>__DESCRIPTION__</span>
+									<span>An object representing timing data about the given thread.</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
 											<div class="name">root</div>
 											<span class="type"><a href="#types.node">node</a></span>
-											<span>__DESCRIPTION__</span>
+											<span>A node representing an empty call stack within the given thread.</span>
 										</li>
 									</ul>
 								</li>
@@ -142,11 +148,10 @@
 					</li>
 				</ul>
 			</li>
-		</ul>
-	</div>
-	<div>
-		<h1>Exports</h1>
-		<ul>
+			<li>
+				<code>output</code>: specifies the path in the filesystem to an HTML page that will allow browsing the data 
+				collected by the profiler.
+			</li>
 		</ul>
 	</div>
 </body>
