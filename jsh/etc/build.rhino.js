@@ -410,7 +410,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		modules.add("jsh/tools/", "(tools)");
 		modules.add("loader/api/", "(modules)");
 		modules.add("jsh/unit/", "(testing)");
-		modules.add("jsh/loader/","jsh.loader");
+		modules.add("jsh/loader/loader.api.html","jsh.loader");
 		modules.add("loader/");
 		modules.add("loader/rhino/");
 		modules.add("js/object/","jsh.js");

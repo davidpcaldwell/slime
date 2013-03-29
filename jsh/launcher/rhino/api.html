@@ -37,5 +37,24 @@ END LICENSE
 			</div>
 		</div>
 	-->
+	<div>
+		<h1>Environment variables</h1>
+		Several environment variables affect a jsh shell.
+		<ul>
+			<li>
+				<code>JSH_SCRIPT_DEBUGGER</code>: if set to <code>profiler</code> or a value starting with <code>profiler:</code>, 
+				and a shell including a profiler is being run,  the loader process will be run under a profiler. If set to
+				<code>rhino</code>, the main script will be run under the Rhino debugger. The profiler may be configured with an
+				argument like: <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>.
+				<div jsapi:reference="getApi('../../../jsh/loader/profiler.api.html').getElement('parameters')">The semantics of
+				profiler arguments are defined in the 
+				<a href="../../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.</div>
+				<ul>
+					<!--	See jsh/loader/jsh.js	-->
+					<!--	TODO	move this documentation to jsh/loader	-->
+				</ul>
+			</li>
+		</ul>
+	</div>
 </body>
 </html>

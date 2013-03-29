@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh profiler documentation</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="http://slime.googlecode.com/hg/loader/api/api.css" />
+	<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+</head>
+<body>
+	<div>Profiler parameters are specified as name-value pairs.</div>
+	<div jsapi:id="parameters">
+		<h1>Parameters</h1>
+		<ul>
+			<li>
+				<code>listener</code>: specifies the location of a JavaScript file that will be executed when the program
+				terminates. The script will have the following variables in scope, in addition to <code>jsh</code>:
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">$loader</div>
+						<span class="type">Rhino <a href="../../../loader/rhino/api.html#types.Loader">Loader</a></span>
+						<span>A loader from which the profiler listener can load associated code via its relative path.</span>
+					</li>
+					<li class="value">
+						<div class="type">
+							<a class="type" name="types.code">code.java</a>
+							<span>An object describing a Java method.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">className</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">methodName</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">signature</div>
+									<span class="type">string</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ul>
+						</div>
+						<div class="type">
+							<a class="type" name="types.code">code.script</a>
+							<span>An object describing a JavaScript function.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">sourceName</div>
+									<span class="type">string</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">lineNumbers</div>
+									<span class="type">Array of number</span>
+									<span>(experimental) The line numbers of the source included in the function.</span>
+								</li>
+								<li class="value">
+									<div class="name">functionName</div>
+									<span class="type">string</span>
+									<span>
+										(if defined by the source)
+										The name of the JavaScript function
+									</span>
+								</li>
+							</ul>
+						</div>
+						<div class="type">
+							<a class="type" name="types.node">node</a>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="object">
+									<div class="name">statistics</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">count</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">elapsed</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+								<li class="value">
+									<div class="name">code</div>
+									<span class="type"><a href="#types.code">code</a></span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">children</div>
+									<span class="type">Array of <a href="#types.node">node</a></span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ul>
+						</div>
+						<div class="type">
+							<a class="type" name="types.profile">profile</a>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="object">
+									<div class="name">thread</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+								<li class="object">
+									<div class="name">timing</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">root</div>
+											<span class="type"><a href="#types.node">node</a></span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</div>
+						<div class="name">profiles</div>
+						<span class="type">Array of <a href="#types.profile">profile</a></span>
+						<span>
+							An array containing a profile for each thread.
+						</span>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+		</ul>
+	</div>
+</body>
+</html>
