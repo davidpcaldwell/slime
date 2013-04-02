@@ -73,12 +73,14 @@ public class Threads {
 				throw new UnsupportedOperationException("Not supported yet.");
 			}
 
+			private Scriptable parentScope;
+
 			public Scriptable getParentScope() {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return parentScope;
 			}
 
 			public void setParentScope(Scriptable s) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				this.parentScope = s;
 			}
 
 			public Object[] getIds() {

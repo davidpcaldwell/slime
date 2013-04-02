@@ -185,26 +185,45 @@ $exports.isJavaType = function(javaclass) {
 $api.experimental($exports,"isJavaType");
 experimental("toJavaArray");
 
-$exports.Thread = function(f) {
-	if (typeof(f) != "function") {
-		throw new TypeError("Should be function: " + f);
-	}
-	var runnable = new function() {
-		var _callbacks;
+var Thread = function(p) {
+	var synchronize = function(f) {
+		return Packages.inonit.script.runtime.Threads.synchronizeOn(arguments.callee.lock,f);
+	};
+	synchronize.lock = new Packages.java.lang.Object();
 
-		this.initialize = function(callbacks) {
-			_callbacks = callbacks;
+	var done = false;
+
+	var debug = function(m) {
+		if (arguments.callee.on) {
+			Packages.java.lang.System.err.println(m);
 		}
+	}
 
+	var runnable = new function() {
 		this.run = function() {
 			try {
-				var rv = f();
-				if (_callbacks && _callbacks.returned) {
-					_callbacks.returned(rv);
+				var rv = p.call();
+				if (!done) {
+					synchronize(function() {
+						if (p.on && p.on.result) {
+							p.on.result(rv);
+						}
+						debug("Returned: " + thread);
+						done = true;
+						synchronize.lock.notifyAll();
+					})();
 				}
 			} catch (e) {
-				if (_callbacks && _callbacks.threw) {
-					_callbacks.threw(e);
+				var error = e;
+				if (!done) {
+					synchronize(function() {
+						if (p.on && p.on.error) {
+							p.on.error(error);
+						}
+						debug("Threw: " + thread);
+						done = true;
+						synchronize.lock.notifyAll();
+					})();
 				}
 			}
 		}
@@ -213,15 +232,85 @@ $exports.Thread = function(f) {
 
 	var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable,runnable));
 
-	this.start = function(callbacks) {
-		runnable.initialize(callbacks);
-		thread.start();
+	thread.start();
+
+	if (p && p.timeout) {
+		debug("Starting timeout thread for " + thread + " ...");
+		new arguments.callee({
+			call: function() {
+				debug(thread + ": Sleeping for " + p.timeout);
+				Packages.java.lang.Thread.sleep(p.timeout);
+				debug(thread + ": Waking from sleeping for " + p.timeout);
+				if (!done) {
+					synchronize(function() {
+						if (p.on && p.on.timeout) {
+							p.on.timeout();
+						}
+						debug("Timed out: " + thread);
+						done = true;
+						synchronize.lock.notifyAll();
+					})();
+				}
+			}
+		});
 	}
 
 	this.join = function() {
-		thread.join();
-	}
+		synchronize(function() {
+			debug("Waiting for " + thread);
+			while(!done) {
+				debug("prewait done = " + done + " for " + thread);
+				synchronize.lock.wait();
+				debug("postwait done = " + done + " for " + thread);
+			}
+		})();
+		debug("Done waiting for " + thread);
+	};
 };
+$exports.Thread = {};
+$exports.Thread.start = function(p) {
+	return new Thread(p);
+}
+$exports.Thread.run = function(p) {
+	var callee = arguments.callee;
+	var on = new function() {
+		var result = {};
+
+		this.result = function(rv) {
+			result.returned = { value: rv };
+		}
+
+		this.error = function(t) {
+			result.threw = t;
+		}
+
+		this.timeout = function() {
+			result.timedOut = true;
+		}
+
+		this.evaluate = function() {
+			if (result.returned) return result.returned.value;
+			if (result.threw) throw result.threw;
+			if (result.timedOut) throw callee.TIMED_OUT;
+		}
+	};
+	var o = {};
+	for (var x in p) {
+		o[x] = p[x];
+	}
+	o.on = on;
+	var t = new Thread(o);
+	t.join();
+	return on.evaluate();
+};
+//	TODO	make the below a subtype of Error
+//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
+$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
+	if (!arguments.callee.cached) {
+		arguments.callee.cached = new Error("Timed out.");
+	}
+	return arguments.callee.cached;
+});
 $exports.Thread.thisSynchronize = function(f) {
 	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
 	//			synchronize()
@@ -232,10 +321,10 @@ $exports.Thread.Monitor = function() {
 
 	this.Waiter = function(c) {
 		return Packages.inonit.script.runtime.Threads.synchronizeOn(lock, function() {
-			while(!c.until()) {
+			while(!c.until.apply(this,arguments)) {
 				lock.wait();
 			}
-			var rv = c.then();
+			var rv = c.then.apply(this,arguments);
 			lock.notifyAll();
 			return rv;
 		});

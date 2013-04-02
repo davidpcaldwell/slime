@@ -235,11 +235,19 @@ var Element = function(p) {
 			}
 		} else if (!match && v !== null) {
 			//	TODO	with current API there is nothing to stop callers from using array methods to insert illegal attribute values
-			this.push({
-				namespace: p.namespace,
-				name: p.name,
-				value: v
-			});
+			if (typeof(p) == "string") {
+				this.push({
+					//	TODO	namespace?
+					name: p,
+					value: v
+				})
+			} else {
+				this.push({
+					namespace: p.namespace,
+					name: p.name,
+					value: v
+				});
+			}
 		} else if (!match && v === null) {
 			//	do nothing; attribute already does not exist
 		} else {

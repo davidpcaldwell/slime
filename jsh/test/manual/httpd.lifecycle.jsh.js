@@ -69,7 +69,7 @@ var commands = new function() {
 		map();
 		tomcat.start();
 		if (parameters.options.stop) {
-			new jsh.java.Thread(stop(parameters.options.stop)).start();
+			jsh.java.Thread.start({ call: stop(parameters.options.stop) });
 		}
 		jsh.shell.echo("Running ...");
 		tomcat.run();
