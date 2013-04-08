@@ -473,8 +473,8 @@ this.jsh = new function() {
 						var Node = function(_peer) {
 							var Constructor = arguments.callee;
 
-							this.statistics = new Statistics(_peer.getStatistics());
 							this.code = new Code(_peer.getCode());
+							this.statistics = new Statistics(_peer.getStatistics());
 							this.children = jsh.java.toJsArray(_peer.getChildren(), function(_child) {
 								return new Constructor(_child);
 							});
