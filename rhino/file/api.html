@@ -124,7 +124,6 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize"><![CDATA[
-			debugger;
 			scope.helpers = new function() {
 				var module;
 
@@ -166,13 +165,21 @@ END LICENSE
 				if (typeof(expect) == "undefined") {
 					expect = true;
 				}
-				try {
-					var invoke = (expect) ? jsh.debug.disableBreakOnExceptionsFor(f) : f;
-					invoke();
-					test(!expect);
-				} catch (e) {
-					test(expect);
-				}
+				var invoke = function() {
+					try {
+						f();
+						test(!expect);
+					} catch (e) {
+						test(expect);
+					}
+				};
+				(function() {
+					if (expect) {
+						jsh.debug.disableBreakOnExceptionsFor(invoke)();
+					} else {
+						invoke();
+					}
+				})();
 			}
 		]]></script>
 		<script type="application/x.jsapi#initialize"><![CDATA[
@@ -199,6 +206,50 @@ END LICENSE
 						<span class="type"><a href="#types.Pathname">Pathname</a></span> A Pathname in this filesystem corresponding
 						to the given string.
 					</div>
+				</li>
+				<li class="function">
+					<!--	TODO	Move this documentation into api.Searchpath.html?	-->
+					<div class="name">Searchpath</div>
+					<span>Creates a Searchpath in this filesystem.</span>
+					<!--	TODO	Use anchors in the below two links if this documentation is not moved into that page	-->
+					<div class="arguments" jsapi:reference="getApi('api.Searchpath.html').getElement('main/arguments')">
+						<div class="label">Arguments</div>
+						See <a href="api.Searchpath.html">Searchpath</a> documentation.
+					</div>
+					<div class="returns" jsapi:reference="getApi('api.Searchpath.html').getElement('main/returns')">
+						<div class="label">Returns</div>
+						See <a href="api.Searchpath.html">Searchpath</a> documentation.
+					</div>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">parse</div>
+							<span>Creates a searchpath in this filesystem from the given string.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A string.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type" jsapi:reference="getApi('api.Searchpath.html').getElement('main/returns/typelink')"><a href="api.Searchpath.html#types.Searchpath">Searchpath</a></span>
+								<span>The searchpath represented by the given string.</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var array = [$jsapi.newTemporaryDirectory().pathname, $jsapi.newTemporaryDirectory().pathname];
+								var searchpath = new filesystem.Searchpath(array);
+								var searchpathstring = searchpath.toString();
+								var parsed = filesystem.Searchpath.parse(searchpathstring);
+								test(parsed.pathnames[0].directory.toString() == array[0].toString());
+								test(parsed.pathnames[1].directory.toString() == array[1].toString());
+								test(parsed.toString() == searchpath.toString());
+							</script>
+						</li>
+					</ul>
 				</li>
 				<!--
 					$doc.types.filesystem = new $Doc.Type({
@@ -684,12 +735,9 @@ END LICENSE
 													not exist, an exception will be thrown.
 												</span>
 												<script type="application/x.jsapi#tests">
-													try {
+													expectError(test,function() {
 														f1.copy(p_recursive);
-														test(false);
-													} catch (e) {
-														test(true);
-													}
+													},true);
 													try {
 														var copied = f1.copy(p_recursive, { recursive: true });
 														test(true);

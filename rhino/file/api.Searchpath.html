@@ -77,7 +77,7 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
-			<div class="arguments">
+			<div class="arguments" jsapi:id="arguments">
 				<div class="label">Arguments</div>
 				<ol>
 					<!--	TODO	should array of directory be allowed? array of string? mixture?	-->
@@ -87,9 +87,9 @@ END LICENSE
 					</li>
 				</ol>
 			</div>
-			<div class="returns">
+			<div class="returns" jsapi:id="returns">
 				<div class="label">Returns</div>
-				<span class="type"><a href="#types.Searchpath">Searchpath</a></span>
+				<span class="type" jsapi:id="typelink"><a href="#types.Searchpath">Searchpath</a></span>
 				<span>A <code>Searchpath</code> which searches the given <code>Pathname</code>s, in order.</span>
 			</div>
 			<script type="application/x.jsapi#tests"><![CDATA[
@@ -100,7 +100,6 @@ END LICENSE
 				var jdk = module.Searchpath([
 					jhome.getRelativePath("bin")
 				]);
-				debugger;
 				var command = jdk.getCommand("java");
 				test(typeof(command) == "object" && command && typeof(command.pathname) == "object");
 			]]></script>
