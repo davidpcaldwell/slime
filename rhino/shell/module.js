@@ -54,7 +54,7 @@ $exports.run = function(p) {
 			configuration: {},
 			result: {}
 		};
-		
+
 		var toCommandToken = function(arg) {
 			var index = (arguments.length > 1) ? arguments[1] : null;
 			var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "'" + arg + "'";
@@ -66,7 +66,7 @@ $exports.run = function(p) {
 			if (arg && typeof(arg) == "string") return arg;
 			throw new TypeError(label + " is not a string nor an object that can be converted to string.");
 		}
-		
+
 		if (p.tokens) {
 			//	TODO	ensure array
 			if (p.tokens.length == 0) {
