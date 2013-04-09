@@ -34,7 +34,7 @@ $exports.run = function(p) {
 					}
 					return rv;
 				} else {
-					return null;
+					return $context._environment;
 				}
 			};
 
@@ -54,23 +54,40 @@ $exports.run = function(p) {
 			configuration: {},
 			result: {}
 		};
+		
+		var toCommandToken = function(arg) {
+			var index = (arguments.length > 1) ? arguments[1] : null;
+			var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "'" + arg + "'";
+			if (typeof(arg) == "undefined") {
+				throw new TypeError(label + " cannot be undefined.");
+			}
+			if (arg === null) throw new TypeError(label + " cannot be null.");
+			if (arg && typeof(arg) == "object") return String(arg);
+			if (arg && typeof(arg) == "string") return arg;
+			throw new TypeError(label + " is not a string nor an object that can be converted to string.");
+		}
+		
 		if (p.tokens) {
 			//	TODO	ensure array
 			if (p.tokens.length == 0) {
 				throw new TypeError("tokens cannot be zero-length.");
 			}
+			//	Use a raw copy of the arguments for the callback
 			rv.result.command = p.tokens[0];
 			rv.result.arguments = p.tokens.slice(1);
-			var configuration = p.tokens.map(function(arg) {
-				if (typeof(arg) == "undefined") {
-					throw new TypeError("token " + arguments[1] + " cannot be undefined.");
-				}
-				if (arg && typeof(arg) == "object") return String(arg);
-				return arg;
-			});
+			//	Convert the arguments to strings for invocation
+			var configuration = p.tokens.map(toCommandToken);
 			rv.configuration.command = configuration[0];
 			rv.configuration.arguments = configuration.slice(1);
 			return rv;
+		} else if (typeof(p.command) != "undefined") {
+			rv.result.command = p.command;
+			rv.result.arguments = p.arguments;
+			rv.configuration.command = toCommandToken(p.command);
+			rv.configuration.arguments = (p.arguments) ? p.arguments.map(toCommandToken) : [];
+			return rv;
+		} else {
+			throw new TypeError("Required: command property or tokens property");
 		}
 	})();
 
@@ -132,7 +149,7 @@ $exports.environment = (function() {
 		return function(){}();
 	})();
 
-	var jenv = Packages.java.lang.System.getenv();
+	var jenv = ($context._environment) ? $context._environment : Packages.java.lang.System.getenv();
 	var rv = {};
 	var i = jenv.keySet().iterator();
 	while(i.hasNext()) {
@@ -145,7 +162,7 @@ $exports.environment = (function() {
 	return rv;
 })();
 
-//	TODO	Document $context.$properties
-var $properties = ($context.$properties) ? $context.$properties : Packages.java.lang.System.getProperties();
-$exports.properties = $context.api.java.Properties.adapt($properties);
+//	TODO	Document $context._properties
+var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
+$exports.properties = $context.api.java.Properties.adapt(_properties);
 $api.experimental($exports,"properties");

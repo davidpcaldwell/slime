@@ -222,8 +222,8 @@ this.jsh = new function() {
 		api: {
 			java: java
 		},
-		$environment: $host.getEnvironment(),
-		$properties: $host.getSystemProperties()
+		_environment: $host.getEnvironment(),
+		_properties: $host.getSystemProperties()
 	},"rhino/shell");
 
 	(function() {

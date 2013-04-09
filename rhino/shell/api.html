@@ -35,16 +35,18 @@ END LICENSE
 				<ul>
 					<li class="value">
 						<div class="name">java</div>
-						<span>The <code>rhino/host</code> module.</span>
+						<span>The <a href="../host/api.html">rhino/host</a> module.</span>
 					</li>
 				</ul>
 			</li>
 			<li class="value">
-				<div class="name">$environment</div>
+				<div class="name">_environment</div>
 				<span class="type">Packages.java.util.Map</span>
 				<span>
+					(optional)
 					A native Java object consisting of a <code>Map&lt;String,String></code> representing the environment variables
-					to use for this shell.
+					to use for this shell. If not provided, the environment provided by <code>Packages.java.lang.System.getenv()</code>
+					will be used.
 				</span>
 			</li>
 		</ul>
@@ -57,44 +59,62 @@ END LICENSE
 				<div>Launches a subprocess using the operating system.</div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
+					<div class="type">
+						<a class="type" name="types.token">token</a>
+						<span>
+							A value that can be used as a command token. If the value is a string, it will be used as-is. If it is an object, it will be coerced
+							to string using the String global function. Otherwise, a TypeError will be thrown.
+						</span>
+					</div>
 					<ol>
 						<li class="object">
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
-									<div class="name">tokens</div>
-									<span class="type">Array of string</span>
-									<span>The set of command tokens to pass to the underlying operating system.</span>
+									<div class="name">command</div>
+									<span class="type"><a href="#types.token">token</a></span>
+									<span>The command to pass to the underlying operating system.</span>
+								</li>
+								<li class="value">
+									<div class="name">arguments</div>
+									<span class="type">Array of <a href="#types.token">token</a></span>
+									<span>The command arguments to pass to the underlying operating system.</span>
 								</li>
 								<li class="value" jsapi:id="run.stdin">
 									<div class="name">stdin</div>
 									<span class="type"><a href="../io/api.html#types.binput">byte input stream</a></span>
-									A stream which will be attached to the subprocess as its
-									standard input stream.
+									<span>A stream which will be attached to the subprocess as its standard input stream.</span>
 								</li>
 								<li class="value" jsapi:id="run.stdout">
 									<div class="name">stdout</div>
 									<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
-									A stream which will be attached to the subprocess as its
-									standard output stream.
+									<span>A stream which will be attached to the subprocess as its standard output stream.</span>
 								</li>
 								<li class="value" jsapi:id="run.stderr">
 									<div class="name">stderr</div>
 									<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
-									A stream which will be attached to the subprocess as its
-									standard error stream.
+									<span>A stream which will be attached to the subprocess as its standard error stream.</span>
 								</li>
 								<li class="value" jsapi:id="run.environment">
 									<div class="name">environment</div>
 									<span class="type">object</span>
-									A set of names and values that will be passed to the subprocess as its environment.
-									<!--	TODO	what if this is null or missing?	-->
+									<span>
+										(optional)
+										A set of names and values that will be passed to the subprocess as its environment.
+										<!--
+											TODO	how are non-string property values handled?
+										-->
+										If <code>null</code> or <code>undefined</code>, the environment passed to this module in its context is used.
+									</span>
 								</li>
 								<li class="value" jsapi:id="run.workingDirectory">
 									<div class="name">workingDirectory</div>
 									<span class="type"><a href="../file/api.html#types.directory">directory</a></span>
-									(optional) The working directory to use for the subprocess. If not specified, the
-									working directory of the parent process will be used.
+									<span>
+										(optional)
+										The working directory to use for the subprocess. If not specified, the working directory 
+										of the parent process will be used.
+									</span>
 									<!--
 										TODO	if this property is null, we should error, assuming the caller made a mistake
 										passing a non-existent directory.
