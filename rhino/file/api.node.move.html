@@ -71,7 +71,6 @@ END LICENSE
 						var p4 = top.getRelativePath("p4/file");
 
 						test(p1.directory == null);
-						debugger;
 						var d1_moved = d1.move(p1);
 						//	TODO	what is state of d1 object now?
 						test(p1.directory != null);
@@ -84,7 +83,6 @@ END LICENSE
 						test(p2.file.read(String) == "f1");
 
 						//	Test overwrite property
-						debugger;
 						expectError(test, function() {
 							d2.move(p1);
 						});
