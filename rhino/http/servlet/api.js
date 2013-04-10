@@ -167,6 +167,12 @@ $code(scope);
 
 var servlet = new server.Servlet(scope.$exports);
 
+scope.httpd.$reload = ($host.getCode) ? function() {
+	servlet.destroy();
+	$code(scope);
+	servlet.reload(scope.$exports);
+} : null;
+
 if ($host.$exports) {
 	$host.$exports.servlet = servlet;
 } else if ($host.register) {

@@ -41,9 +41,14 @@ var Request = function(_request) {
 	}
 }
 
-$exports.Servlet = function(script) {
+$exports.Servlet = function(delegate) {
+	var script = delegate;
 	var _streams = new Packages.inonit.script.runtime.io.Streams();
 
+	this.reload = function(reloaded) {
+		script = reloaded;
+	};
+	
 	this.service = function(_request,_response) {
 		try {
 			var response = script.handle(new Request(_request));
