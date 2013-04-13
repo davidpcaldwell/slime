@@ -48,7 +48,7 @@ $exports.Servlet = function(delegate) {
 	this.reload = function(reloaded) {
 		script = reloaded;
 	};
-	
+
 	this.service = function(_request,_response) {
 		try {
 			var response = script.handle(new Request(_request));
