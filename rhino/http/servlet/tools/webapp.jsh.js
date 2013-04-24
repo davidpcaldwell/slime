@@ -29,13 +29,26 @@ if (!parameters.options.to) {
 	jsh.shell.exit(1);
 }
 
-var WEBAPP = parameters.options.to.createDirectory({
-	recursive: parameters.options.recursive,
-	ifExists: function(dir) {
-		dir.remove();
-		return true;
+var destination = (function() {
+	if (/\.war$/.test(parameters.options.to)) {
+		return {
+			directory: jsh.shell.TMPDIR.createTemporary({ directory: true }),
+			war: parameters.options.to
+		};
+	} else {
+		return {
+			directory: parameters.options.to.createDirectory({
+				recursive: parameters.options.recursive,
+				ifExists: function(dir) {
+					dir.remove();
+					return true;
+				}
+			})
+		};
 	}
-});
+})();
+
+var WEBAPP = destination.directory;
 
 if (!parameters.options.norhino) {
 	(function() {
@@ -142,3 +155,10 @@ parameters.options.resources.forEach(function(resources) {
 
 	WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 })();
+
+if (destination.war) {
+	jsh.file.zip({
+		from: destination.directory.pathname,
+		to: destination.war
+	});
+}
