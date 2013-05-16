@@ -30,14 +30,45 @@ END LICENSE
 				<ul>
 					<li class="value">
 						<div class="name">java</div>
-						<span>The rhino/host module.</span>
+						<span>A rhino/host-compatible module.</span>
+					</li>
+					<li class="value">
+						<div class="name">mime</div>
+						<span>A js/mime-compatible module.</span>
 					</li>
 				</ul>
+			</li>
+			<li class="value">
+				<div class="name">$rhino</div>
+				<span class="type">__TYPE__</span>
+				<span>__DESCRIPTION__</span>
+			</li>
+			<li class="value">
+				<div class="name">nojavamail</div>
+				<span class="type">boolean</span>
+				<span>__DESCRIPTION__</span>
 			</li>
 			<li class="value">
 				<div class="name">$java</div>
 				<span class="type">JavaClass inonit.script.runtime.io.Streams</span>
 				<span>(optional) An instance of <code>inonit.script.runtime.io.Streams</code>.</span>
+			</li>
+			<li class="object">
+				<div class="name">stdio</div>
+				<span>(optional)</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">$out</div>
+						<span class="type">JavaClass java.io.OutputStream</span>
+						<span>An output stream to use to create <code>Streams.stdout</code></span>
+					</li>
+					<li class="value">
+						<div class="name">$err</div>
+						<span class="type">JavaClass java.io.OutputStream</span>
+						<span>An output stream to use to create <code>Streams.stderr</code></span>
+					</li>
+				</ul>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#context">
