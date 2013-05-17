@@ -51,7 +51,9 @@
 					throw new Error("code._in is null for name = " + code.name);
 				}
 				if ($loader.script) {
-					return function() { $loader.script(code.name,code._in,arguments[0],arguments[1]); };
+					return function() {
+						$loader.script(code.name,code._in,arguments[0],arguments[1]); 
+					};
 				} else {
 					return String(
 						new Packages.inonit.script.runtime.io.Streams().readString(code._in)
