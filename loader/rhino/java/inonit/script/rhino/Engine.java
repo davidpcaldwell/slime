@@ -780,7 +780,7 @@ public class Engine {
 
 		abstract String getSourceName();
 		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
-		abstract Object evaluate(Debugger dim, Context context, Scriptable scope) throws java.io.IOException;
+		abstract Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws java.io.IOException;
 
 		public abstract Reader getReader();
 
@@ -812,18 +812,41 @@ public class Engine {
 			if (context == null) {
 				throw new IllegalArgumentException("context is null");
 			}
-			if (target != null) {
-				if (scope != null) {
+			//	This flag controls whether scripts are compiled and then evaluated, or just evaluated.
+			final boolean COMPILE_SCRIPTS = false;
+			if (COMPILE_SCRIPTS) {
+				//	The below logic for target/scope probably does not really work; we probably need some logic to rewrite the code similar to that found in 
+				//	the other branch of this if
+				if (target != null && scope != null && target != scope) {
 					target.setParentScope(scope);
+				} else {
+					target = scope;
 				}
-			} else {
-				target = scope;
-			}
-			if (true) {
-				Script script = compile(dim, context);
+				Script script = null;
+				Errors errors = Errors.get(context);
+				try {
+					errors.reset();
+					script = compile(dim, context);
+				} catch (EvaluatorException e) {
+					if (errors.errors.size() > 0) {
+						throw errors;
+					} else {
+						throw e;
+					}
+				}
 				return script.exec(context, target);
 			} else {
-				return evaluate(dim, context, target);
+				Errors errors = Errors.get(context);
+				try {
+					errors.reset();
+					return evaluate(dim, context, scope, target);
+				} catch (EvaluatorException e) {
+					if (errors.errors.size() > 0) {
+						throw errors;
+					} else {
+						throw e;
+					}					
+				}
 			}
 		}
 
@@ -873,13 +896,105 @@ public class Engine {
 				String code = b.toString();
 				return code;
 			}
+			
+			private static class TargetingScope implements Scriptable {
+				private static final String THIS_IDENTIFIER = "__target__";
+				
+				private Scriptable scope;
+				private Scriptable target;
+				
+				TargetingScope(Scriptable scope, Scriptable target) {
+					this.scope = scope;
+					this.target = target;
+				}
 
-			final Object evaluate(Debugger dim, Context context, Scriptable scope) throws IOException {
+				public String getClassName() {
+					return scope.getClassName();
+				}
+
+				public Object get(String string, Scriptable s) {
+					if (string.equals(THIS_IDENTIFIER)) {
+						return target;
+					}
+					return scope.get(string, s);
+				}
+
+				public Object get(int i, Scriptable s) {
+					return scope.get(i, s);
+				}
+
+				public boolean has(String string, Scriptable s) {
+					if (string.equals(THIS_IDENTIFIER)) {
+						return true;
+					}
+					return scope.has(string, s);
+				}
+
+				public boolean has(int i, Scriptable s) {
+					return scope.has(i, s);
+				}
+
+				public void put(String string, Scriptable s, Object o) {
+					scope.put(string, s, o);
+				}
+
+				public void put(int i, Scriptable s, Object o) {
+					scope.put(i, s, o);
+				}
+
+				public void delete(String string) {
+					scope.delete(string);
+				}
+
+				public void delete(int i) {
+					scope.delete(i);
+				}
+
+				public Scriptable getPrototype() {
+					return scope.getPrototype();
+				}
+
+				public void setPrototype(Scriptable s) {
+					scope.setPrototype(s);
+				}
+
+				public Scriptable getParentScope() {
+					return scope.getParentScope();
+				}
+
+				public void setParentScope(Scriptable s) {
+					scope.setParentScope(s);
+				}
+
+				public Object[] getIds() {
+					return scope.getIds();
+				}
+
+				public Object getDefaultValue(Class<?> type) {
+					return scope.getDefaultValue(type);
+				}
+
+				public boolean hasInstance(Scriptable s) {
+					return scope.hasInstance(s);
+				}
+			}
+
+			final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws IOException {
 				BufferedReader lines = new BufferedReader(reader);
 				String code = parse(lines);
 				try {
 					setBreakpoints(dim);
+					//	Rhino is going to evaluate this script as a top-level script, in the magic global scope. Thus, the global scope will also be 'this'
+					//	and we cannot set a separate scope that acts as the provider of scope variables and 'this' object that will be set for a particular
+					//	script. Our API specifies, however, that we can do this. So we do a source-level transformation to make it possible.
+					if (target != scope && target != null) {
+						scope = new TargetingScope(scope,target);
+						code = "(function(){ " + code + "\n}).call(" + TargetingScope.THIS_IDENTIFIER + ");";
+					}
 					return context.evaluateString(scope, code, id, 1, null);
+				} catch (org.mozilla.javascript.EvaluatorException e) {
+					//	TODO	would be nice to somehow attach the code variable to this so that someone could see what source code failed
+					throw e;
 				} finally {
 					try {
 						lines.close();
