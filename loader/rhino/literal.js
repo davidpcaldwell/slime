@@ -52,7 +52,7 @@
 				}
 				if ($loader.script) {
 					return function() {
-						$loader.script(code.name,code._in,arguments[0],arguments[1]); 
+						$loader.script(code.name,code._in,arguments[0],arguments[1]);
 					};
 				} else {
 					return String(

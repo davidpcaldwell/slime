@@ -815,7 +815,7 @@ public class Engine {
 			//	This flag controls whether scripts are compiled and then evaluated, or just evaluated.
 			final boolean COMPILE_SCRIPTS = false;
 			if (COMPILE_SCRIPTS) {
-				//	The below logic for target/scope probably does not really work; we probably need some logic to rewrite the code similar to that found in 
+				//	The below logic for target/scope probably does not really work; we probably need some logic to rewrite the code similar to that found in
 				//	the other branch of this if
 				if (target != null && scope != null && target != scope) {
 					target.setParentScope(scope);
@@ -845,7 +845,7 @@ public class Engine {
 						throw errors;
 					} else {
 						throw e;
-					}					
+					}
 				}
 			}
 		}
@@ -896,13 +896,13 @@ public class Engine {
 				String code = b.toString();
 				return code;
 			}
-			
+
 			private static class TargetingScope implements Scriptable {
 				private static final String THIS_IDENTIFIER = "__target__";
-				
+
 				private Scriptable scope;
 				private Scriptable target;
-				
+
 				TargetingScope(Scriptable scope, Scriptable target) {
 					this.scope = scope;
 					this.target = target;
