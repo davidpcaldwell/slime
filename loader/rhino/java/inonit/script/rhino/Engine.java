@@ -779,8 +779,8 @@ public class Engine {
 		}
 
 		abstract String getSourceName();
-		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
-		abstract Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws java.io.IOException;
+//		abstract Script compile(Debugger dim, Context context) throws java.io.IOException;
+		abstract Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws java.io.IOException;
 
 		public abstract Reader getReader();
 
@@ -826,7 +826,7 @@ public class Engine {
 				Errors errors = Errors.get(context);
 				try {
 					errors.reset();
-					script = compile(dim, context);
+//					script = compile(dim, context);
 				} catch (EvaluatorException e) {
 					if (errors.errors.size() > 0) {
 						throw errors;
@@ -834,12 +834,18 @@ public class Engine {
 						throw e;
 					}
 				}
+				if (true) {
+					//	Making a very low-level change by refactoring this, so leaving old code in place for now; if all goes well, this branch of the if can
+					//	be removed
+					throw new UnsupportedOperationException("Left in for easy reversion");
+				}
 				return script.exec(context, target);
 			} else {
 				Errors errors = Errors.get(context);
 				try {
 					errors.reset();
-					return evaluate(dim, context, scope, target);
+					final boolean USE_COMPILE = true;
+					return evaluate(dim, context, scope, target, USE_COMPILE);
 				} catch (EvaluatorException e) {
 					if (errors.errors.size() > 0) {
 						throw errors;
@@ -979,19 +985,27 @@ public class Engine {
 				}
 			}
 
-			final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target) throws IOException {
+			final Object evaluate(Debugger dim, Context context, Scriptable scope, Scriptable target, boolean compile) throws IOException {
 				BufferedReader lines = new BufferedReader(reader);
 				String code = parse(lines);
 				try {
-					setBreakpoints(dim);
-					//	Rhino is going to evaluate this script as a top-level script, in the magic global scope. Thus, the global scope will also be 'this'
-					//	and we cannot set a separate scope that acts as the provider of scope variables and 'this' object that will be set for a particular
-					//	script. Our API specifies, however, that we can do this. So we do a source-level transformation to make it possible.
 					if (target != scope && target != null) {
 						scope = new TargetingScope(scope,target);
 						code = "(function(){ " + code + "\n}).call(" + TargetingScope.THIS_IDENTIFIER + ");";
 					}
-					return context.evaluateString(scope, code, id, 1, null);
+					Script script = null;
+					if (compile) {
+						script = context.compileString(code, id, 1, null);
+					}
+					setBreakpoints(dim);
+					//	Rhino is going to evaluate this script as a top-level script, in the magic global scope. Thus, the global scope will also be 'this'
+					//	and we cannot set a separate scope that acts as the provider of scope variables and 'this' object that will be set for a particular
+					//	script. Our API specifies, however, that we can do this. So we do a source-level transformation to make it possible.
+					if (compile) {
+						return script.exec(context, scope);
+					} else {
+						return context.evaluateString(scope, code, id, 1, null);
+					}
 				} catch (org.mozilla.javascript.EvaluatorException e) {
 					//	TODO	would be nice to somehow attach the code variable to this so that someone could see what source code failed
 					throw e;
@@ -1005,24 +1019,24 @@ public class Engine {
 					}
 				}
 			}
-
-			final Script compile(Debugger dim, Context context) throws java.io.IOException {
-				BufferedReader lines = new BufferedReader(reader);
-				String code = parse(lines);
-				try {
-					Script rv = context.compileString(code, id, 1, null);
-					setBreakpoints(dim);
-					return rv;
-				} finally {
-					try {
-						lines.close();
-					} catch (IOException e) {
-						//	TODO	do some sort of reasonable logging or notification or something
-						System.err.println("Error closing: " + reader);
-						e.printStackTrace();
-					}
-				}
-			}
+//
+//			final Script compile(Debugger dim, Context context) throws java.io.IOException {
+//				BufferedReader lines = new BufferedReader(reader);
+//				String code = parse(lines);
+//				try {
+//					Script rv = context.compileString(code, id, 1, null);
+//					setBreakpoints(dim);
+//					return rv;
+//				} finally {
+//					try {
+//						lines.close();
+//					} catch (IOException e) {
+//						//	TODO	do some sort of reasonable logging or notification or something
+//						System.err.println("Error closing: " + reader);
+//						e.printStackTrace();
+//					}
+//				}
+//			}
 		}
 	}
 
@@ -1238,10 +1252,11 @@ public class Engine {
 			}
 
 			protected Object execute(Debugger dim, Context context, Scriptable global) throws IOException {
-				Script script = source.compile(dim, context);
 				Scriptable executionScope = scope.get(context, global, true);
-				Object rv = script.exec(context, executionScope);
-				return rv;
+//				Script script = source.compile(dim, context);
+//				Object rv = script.exec(context, executionScope);
+//				return rv;
+				return source.evaluate(dim, context, executionScope, executionScope, true);
 			}
 		}
 
