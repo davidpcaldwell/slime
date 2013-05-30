@@ -91,7 +91,7 @@ var toNode = function(_node) {
 }
 
 $exports.Document = function(p) {
-	if (p.stream) {
+	var parse = function(_source) {
 		var _jaxpFactory = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance();
 		_jaxpFactory.setNamespaceAware(true);
 		var _jaxp = _jaxpFactory.newDocumentBuilder();
@@ -104,10 +104,14 @@ $exports.Document = function(p) {
 				}
 			}
 		));
-//			var _dom = _jaxp.parse(p.stream.java.adapt());
-		var string = p.stream.character().asString();
-		var _dom = _jaxp.parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(string)));
-		return toNode(_dom);
+		var _dom = _jaxp.parse(_source);
+		return toNode(_dom);		
+	};
+	
+	if (p.stream) {
+		return parse(new Packages.org.xml.sax.InputSource(p.stream.java.adapt()));
+	} else if (p.string) {
+		return parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(p.string)));
 	} else {
 		throw new TypeError();
 	}
