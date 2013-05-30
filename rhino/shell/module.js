@@ -63,6 +63,7 @@ $exports.run = function(p) {
 			}
 			if (arg === null) throw new TypeError(label + " cannot be null.");
 			if (arg && typeof(arg) == "object") return String(arg);
+			//	TODO	the below check does not allow the empty string to be a token
 			if (arg && typeof(arg) == "string") return arg;
 			throw new TypeError(label + " is not a string nor an object that can be converted to string.");
 		}
