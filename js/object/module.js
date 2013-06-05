@@ -329,6 +329,11 @@ if ($context.globals) {
 $exports.Function = $api.deprecate(function(p) {
 	return $api.Function(p);
 });
+$exports.Function.returning = function(v) {
+	return function() {
+		return v;
+	};
+};
 $exports.Function.evaluator = $api.deprecate(function() {
 	//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
 	//	undefined
