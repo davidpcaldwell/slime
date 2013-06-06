@@ -105,9 +105,9 @@ $exports.Document = function(p) {
 			}
 		));
 		var _dom = _jaxp.parse(_source);
-		return toNode(_dom);		
+		return toNode(_dom);
 	};
-	
+
 	if (p.stream) {
 		return parse(new Packages.org.xml.sax.InputSource(p.stream.java.adapt()));
 	} else if (p.string) {
