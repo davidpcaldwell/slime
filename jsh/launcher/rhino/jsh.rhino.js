@@ -600,6 +600,8 @@ try {
 	}
 	command.add(JAVA_HOME.getFile("bin/java"));
 	if (env.JSH_JAVA_DEBUGGER) {
+		//	TODO	this option seems to have changed as of Java 5 or Java 6 to agentlib or agentpath
+		//			see http://docs.oracle.com/javase/6/docs/technotes/guides/jpda/conninv.html
 		command.add("-Xrunjdwp:transport=dt_shmem,server=y");
 	} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
 		//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
@@ -611,7 +613,12 @@ try {
 			//	emit warning message?
 		}
 	}
-	command.add(settings.combine("jvmOptions"));
+	var jvmOptions = settings.combine("jvmOptions");
+	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
+	if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
+		jvmOptions.unshift("-client");
+	}
+	command.add(jvmOptions);
 
 	[
 		"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
