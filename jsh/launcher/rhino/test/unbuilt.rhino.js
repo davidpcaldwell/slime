@@ -82,7 +82,7 @@ platform.jdk.compile([
 var MODULE_CLASSES = createTemporaryDirectory();
 var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.dir"));
 //	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
-var modules = ["js/object","js/document","js/mime","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"];
+var modules = ["js/object","js/document","js/mime","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client","rhino/mail"];
 //	TODO	some of this logic is duplicated in jsh/tools/slime.js
 var RHINO_JAR = (function() {
 	//	TODO	brutally plagiarized from jsh/etc/build.rhino.js
