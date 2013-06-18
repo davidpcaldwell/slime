@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	We do not want to pre-load the Java compiler as it is way too slow to do so.
 //	TODO	verify that this setup does not load it
 $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(function() {
@@ -35,7 +47,7 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 			}));
 		}
 		var status = javac.run(
-			null, null, null, 
+			null, null, null,
 			$context.api.java.toJavaArray(
 				args
 				,Packages.java.lang.String
@@ -58,7 +70,7 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 					status: status,
 					arguments: args
 				};
-			}						
+			}
 		};
 		return evaluate({
 			status: status,
