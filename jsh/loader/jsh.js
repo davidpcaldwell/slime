@@ -365,7 +365,7 @@ this.jsh = new function() {
 		$rhino: loader.getRhinoLoader()
 	};
 
-	(function() {
+	(function loadPlugins() {
 		var _plugins = $host.getLoader().getPlugins();
 		var list = [];
 		var plugins = {};

@@ -77,7 +77,8 @@ var render = function(profiles,settings) {
 			if (node.code.className && node.code.methodName) {
 				return node.code.className + " " + node.code.methodName + " " + node.code.signature;
 			} else if (node.code.sourceName && node.code.lineNumbers) {
-				return node.code.sourceName + " [" + node.code.lineNumbers[0] + "-" + node.code.lineNumbers[node.code.lineNumbers.length-1] + "]";
+				var nameToken = (node.code.functionName) ? node.code.functionName + " " : "";
+				return node.code.sourceName + " " + nameToken + "[" + node.code.lineNumbers[0] + "-" + node.code.lineNumbers[node.code.lineNumbers.length-1] + "]";
 			} else if (node.code.self) {
 				return "(self)";
 			} else {
