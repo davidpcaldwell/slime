@@ -136,7 +136,7 @@ $exports.environment = (function() {
 			return value;
 		};
 	};
-	
+
 	var isCaseInsensitive = (function() {
 		var jenv = Packages.java.lang.System.getenv();
 		var i = jenv.keySet().iterator();
