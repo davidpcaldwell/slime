@@ -136,7 +136,7 @@ $exports.environment = (function() {
 			return value;
 		};
 	};
-
+	
 	var isCaseInsensitive = (function() {
 		var jenv = Packages.java.lang.System.getenv();
 		var i = jenv.keySet().iterator();
@@ -155,10 +155,11 @@ $exports.environment = (function() {
 	var i = jenv.keySet().iterator();
 	while(i.hasNext()) {
 		var name = String(i.next());
+		var value = String(jenv.get(name));
 		if (isCaseInsensitive) {
 			name = name.toUpperCase();
 		}
-		rv.__defineGetter__(name, getter(String(jenv.get(name))));
+		rv.__defineGetter__(name, getter(value));
 	}
 	return rv;
 })();
