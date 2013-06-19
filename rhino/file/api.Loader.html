@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>rhino/file Loader</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="http://slime.googlecode.com/hg/loader/api/api.css" />
+	<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+</head>
+<body>
+	<ul>
+		<li class="constructor" jsapi:id="main">
+			<div class="name">Loader</div>
+			<span>
+				Creates a <a href="../io/api.html#types.Loader">Loader</a> that loads resources from the filesystem.
+			</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="object">
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">directory</div>
+								<span class="type"><a href="api.html#types.directory">directory</a></span>
+								<span>The directory to use as the base for loading resources.</span>
+							</li>
+						</ul>
+					</li>
+				</ol>
+			</div>
+			<div class="instances">
+				<div class="label">Instances</div>
+				<span class="type"><a href="../io/api.html#types.Loader">Loader</a></span>
+			</div>
+			<script type="application/x.jsapi#tests">
+				debugger;
+				var loader = new module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+				test(typeof(loader.resource) == "function");
+				test(loader.resource("api.html") != null);
+				test(loader.resource("foo.html") == null);
+			</script>
+		</li>
+	</ul>
+</body>
+</html>

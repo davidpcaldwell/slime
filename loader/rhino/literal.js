@@ -122,7 +122,10 @@
 			};
 			rv._resource = loader.$api.deprecate(rv._stream);
 			if (p.Loader) {
-				p.Loader.call(rv,p);
+				var returned = p.Loader.call(rv,p);
+				if (typeof(returned) == "object" && returned != null) {
+					rv = returned;
+				}
 			}
 			return rv;
 		}
@@ -139,7 +142,7 @@
 					Loader: p.Loader
 				});
 			} else if (p.getCode) {
-				//	TODO	document this; it is confusing; should decorate() be disallowed or flagged here since platform loader
+				//	TODO	document this; it is confusing; should p.Loader be disallowed or flagged here since platform loader
 				//			will ignore it?
 				return new loader.Loader({
 					getCode: function(path) {

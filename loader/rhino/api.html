@@ -137,25 +137,28 @@ END LICENSE
 				<div class="type">
 					<a class="type" name="types.Loader">Loader</a>
 					<span class="type">supports SLIME <a href="../api.html#types.Loader">Loader</a></span>
-					<span>__DESCRIPTION__</span>
+					<span>A SLIME Loader that additionally supports retrieving Java byte streams for resources.</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
 							<div class="name">_stream</div>
-							<span>__DESCRIPTION__</span>
+							<span>Opens a native Java stream that reads the contents of a resource.</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
 									<li class="value">
 										<span class="type">string</span>
-										<span>A path.</span>
+										<span>A path at which the resource can be found.</span>
 									</li>
 								</ol>
 							</div>
 							<div class="returns">
 								<div class="label">Returns</div>
 								<span class="type">JavaClass java.io.InputStream</span>
-								<span>__DESCRIPTION__</span>
+								<span>
+									A stream that reads from the given resource, or <code>null</code> if there is no resource
+									corresponding to the path.
+								</span>
 							</div>
 						</li>
 					</ul>

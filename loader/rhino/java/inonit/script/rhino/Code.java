@@ -109,6 +109,10 @@ public abstract class Code {
 			};
 		}
 
+		/**
+		 *	Returns a stream that reads the content of the resource at the given path, or <code>null</code> if no resource can
+		 *	be found at that path.
+		 */
 		public abstract InputStream getResourceAsStream(String path) throws IOException;
 		public abstract Classes getClasses();
 

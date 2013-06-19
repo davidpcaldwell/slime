@@ -106,6 +106,7 @@ END LICENSE
 					this.java = java;
 					this.io = $jsapi.module("../../rhino/io/", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
+						,$rhino: jsh.$jsapi.$rhino
 						,api: {
 							java: java,
 							mime: $jsapi.module("../../js/mime/", {})
@@ -1286,6 +1287,10 @@ END LICENSE
 			<li class="function" jsapi:id="Searchpath" jsapi:reference="getApi('api.Searchpath.html').getElement('main')">
 				<div class="name">Searchpath</div>
 				See <a href="api.Searchpath.html">detailed documentation</a>.
+			</li>
+			<li class="function" jsapi:id="Loader" jsapi:reference="getApi('api.Loader.html').getElement('main')">
+				<div class="name">Loader</div>
+				See <a href="api.Loader.html">detailed documentation</a>.
 			</li>
 		</ul>
 		<script type="application/x.jsapi#tests"><![CDATA[

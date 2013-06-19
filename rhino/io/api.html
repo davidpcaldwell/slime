@@ -219,23 +219,10 @@ END LICENSE
 		</div>
 		<div class="type">
 			<a class="type" name="types.Loader">Loader</a>
-			<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/topdescription')">
-				See platform <a href="../../loader/api.html#types.Loader">Loader</a>.
-			</span>
+			<span class="type">supports Java <a href="../../loader/rhino/api.html#types.Loader">Loader</a></span>
+			<span>Augments the Java Loader to add the ability to retrieve <a href="#types.Resource">Resource</a> objects.</span>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="function" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run')">
-					<div class="name">run</div>
-					See platform <a href="../../loader/api.html#types.Loader">Loader</a>.
-				</li>
-				<li class="function" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file')">
-					<div class="name">file</div>
-					See platform <a href="../../loader/api.html#types.Loader">Loader</a>.
-				</li>
-				<li class="function" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module')">
-					<div class="name">module</div>
-					See platform <a href="../../loader/api.html#types.Loader">Loader</a>.
-				</li>
 				<li class="function">
 					<div class="name">resource</div>
 					<span>Returns the resource located at the given path.</span>
@@ -255,7 +242,6 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
-
 		<ul>
 			<li class="constructor">
 				<div class="name">Resource</div>
@@ -853,6 +839,29 @@ END LICENSE
 											<div class="label">Returns</div>
 											<span class="type">MIME <a href="../../js/mime/api.html#types.type">type</a></span>
 											<span>A MIME type to use for the resource given at the given path.</span>
+										</div>
+									</li>
+									<li class="constructor">
+										<div class="name">Loader</div>
+										<span>
+											(optional)
+											A constructor-like function that will be invoked, with the created
+											<a href="#types.Loader">Loader</a> itself as 
+											<code>this</code>, to 
+											augment the created <code>Loader</code>.
+										</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											The arguments passed to the <a href="#types.Loader">constructor</a>.
+										</div>
+										<div class="instances">
+											<div class="label">Instances</div>
+											<span>
+												Like a constructor, this function may return any object and that object will be
+												substituted for <code>this</code>; otherwise, the returned object will be the
+												original <code>this</code> value (the created <a href="#types.Loader">Loader</a>),
+												with any modifications performed by this function.
+											</span>
 										</div>
 									</li>
 								</ul>
