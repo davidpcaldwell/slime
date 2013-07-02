@@ -163,14 +163,6 @@ this.jsh = new function() {
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
 		}
-
-		this.getBundled = function() {
-			if ($host.getLoader().getPackagedCode()) {
-				return new Loader({ _source: $host.getLoader().getPackagedCode() });
-			} else {
-				return function(){}();
-			}
-		}
 	}
 
 	this.loader = new function() {
@@ -312,53 +304,6 @@ this.jsh = new function() {
 		return loader.bootstrap(context,"jsh/shell");
 	})();
 
-	jsh.script = (function() {
-		var rv = loader.bootstrap({
-			api: {
-				js: jsh.js,
-				file: jsh.file,
-				http: function() {
-					return jsh.http;
-				},
-				addClasses: jsh.loader.addClasses
-			},
-			workingDirectory: jsh.shell.PWD,
-			script: (function() {
-				var uri = $host.getInvocation().getScript().getUri();
-				if (uri  && uri.getScheme() && String(uri.getScheme()) == "file") {
-					return jsh.file.filesystem.$jsh.Pathname(new Packages.java.io.File(uri)).file;
-				}
-			})(),
-			uri: (function() {
-				if ($host.getInvocation().getScript().getUri()) {
-					return String($host.getInvocation().getScript().getUri().normalize().toString());
-				}
-			})(),
-			uri: (function() {
-				if ($host.getInvocation().getScript().getUri()) {
-					return String($host.getInvocation().getScript().getUri().normalize().toString());
-				}
-			})(),
-			packaged: (function() {
-				//	TODO	push back into Invocation
-				if ($host.getSystemProperties().getProperty("jsh.launcher.packaged")) {
-					return jsh.file.filesystem.$jsh.Pathname(
-						new Packages.java.io.File(
-							$host.getSystemProperties().getProperty("jsh.launcher.packaged")
-						)
-					).file;
-				}
-				return null;
-			})(),
-			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
-			loader: (function() {
-				if (loader.getBundled()) return loader.getBundled();
-			})()
-		},"jsh/script");
-		jsh.shell.getopts = loader.$api.deprecate(rv.getopts);
-		return rv;
-	})();
-
 	jsh.$jsapi = {
 		$platform: loader.$platform,
 		$api: loader.$api,
@@ -375,7 +320,7 @@ this.jsh = new function() {
 			if (_code.getScripts()) {
 				var scope = {};
 				//	TODO	$host is currently automatically in scope for these plugins, but that is probably not as it should be; see
-				//			issue 32
+				//			issue 32. $host *should* be in scope, though.
 				scope.plugins = plugins;
 				scope.plugin = function(p) {
 					if (typeof(p.isReady) == "undefined") {
