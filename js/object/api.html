@@ -425,6 +425,44 @@ END LICENSE
 					test(fOutput.z == "DavidDavid2");
 				]]></script>
 			</li>
+			<li class="object">
+				<div class="name">Object</div>
+				<span>(experimental; methods subject to change)</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">set</div>
+						<span>
+							(experimental)
+							Given a list of objects, uses the second and succeeding arguments to set properties of the first
+							argument.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							The first argument is an object to modify. Extra arguments are objects whose properties will be used to
+							set the properties of the first object. Later arguments take precedence over earlier arguments. So if 
+							there are three arguments: objects A, B, and C, and objects B and C both contain a property <i>x</i>,
+							then after this method is invoked, A.x == C.x (not A.x == B.x). If any of the extra arguments is
+							<code>null</code> or <code>undefined</code>, it is ignored.
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">object</span>
+							<span>The first object.</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							//	TODO	test enforcement that first argument must be object and must not be null
+							var set = module.Object.set;
+							var a = set({}, { a: 2 });
+							test(a.a == 2);
+							var b = set({}, { a: 1 }, { a: 2 });
+							test(b.a == 2);
+							var c = set({}, null, { a: 2 }, (function(){})());
+							test(c.a == 2);
+						</script>
+					</li>
+				</ul>
+			</li>
 			<li class="object" jsapi:id="Filter">
 				<script type="application/x.jsapi#initialize"><![CDATA[
 					//	TODO	load this from globals.js somehow?

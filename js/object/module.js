@@ -272,6 +272,9 @@ $exports.Object = new function() {
 	}
 
 	this.set = function(o) {
+		if (typeof(o) != "object" || o == null) {
+			throw new TypeError("First argument must be an object.");
+		}
 		for (var i=1; i<arguments.length; i++) {
 			for (var x in arguments[i]) {
 				o[x] = arguments[i][x];
