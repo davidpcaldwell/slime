@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var parameters = jsh.shell.getopts({
+var parameters = jsh.script.getopts({
 	options: {
 		classes: jsh.file.Pathname
 	}
