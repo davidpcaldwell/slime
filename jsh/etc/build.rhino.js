@@ -349,7 +349,7 @@ var module = function(path,compile) {
 };
 
 [
-	"js/object","js/mime","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell","jsh/shell","jsh/script","rhino/http/client"
+	"js/object","js/mime","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client"
 	,"rhino/tools"/*,"rhino/mail"*/
 ].forEach( function(item) {
 	module(item,platform.jdk.compile);
@@ -424,7 +424,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		modules.add("rhino/http/servlet/plugin.jsh.api.html", "jsh.httpd");
 		/*modules.add("rhino/mail/", "jsh.mail");*/
 		modules.add("rhino/shell/");
-		modules.add("jsh/shell/","jsh.shell");
+		modules.add("rhino/shell/jsh.api.html","jsh.shell");
 		modules.add("jsh/script/","jsh.script");
 
 		modules.forEach( function(module) {

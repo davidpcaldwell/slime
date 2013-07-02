@@ -210,6 +210,10 @@ this.jsh = new function() {
 	);
 	jsh.java = java;
 
+	var plugins = {};
+
+	//	For now, until jsh.io and jsh.file are converted to ordinary plugins, they need access to this bootstrap copy of the
+	//	rhino/shell module, so we create it here and then provide it in the plugins namespace for use by jsh.shell
 	var $shell = loader.bootstrap({
 		api: {
 			java: java
@@ -217,6 +221,9 @@ this.jsh = new function() {
 		_environment: $host.getEnvironment(),
 		_properties: $host.getSystemProperties()
 	},"rhino/shell");
+	plugins.$jsh = {
+		shell: $shell
+	};
 
 	(function() {
 		var context = {};
@@ -276,33 +283,33 @@ this.jsh = new function() {
 		);
 	})();
 
-	jsh.shell = (function() {
-		var context = {};
-		context.api = {
-			js: js,
-			java: java,
-			shell: $shell,
-			io: jsh.io,
-			file: jsh.file
-		}
-		context.stdio = new function() {
-			this["in"] = jsh.io.java.adapt($host.getStdio().getStandardInput());
-			this["out"] = jsh.io.java.adapt($host.getStdio().getStandardOutput());
-			this["err"] = jsh.io.java.adapt($host.getStdio().getStandardOutput());
-		}
-		context.getSystemProperty = function(name) {
-			var rv = $host.getSystemProperties().getProperty(name);
-			if (rv == null) return null;
-			return String(rv);
-		};
-		context._getSystemProperties = function() {
-			return $host.getSystemProperties();
-		};
-		context.exit = function(code) {
-			$host.exit(code);
-		}
-		return loader.bootstrap(context,"jsh/shell");
-	})();
+//	jsh.shell = (function() {
+//		var context = {};
+//		context.api = {
+//			js: js,
+//			java: java,
+//			shell: $shell,
+//			io: jsh.io,
+//			file: jsh.file
+//		}
+//		context.stdio = new function() {
+//			this["in"] = jsh.io.java.adapt($host.getStdio().getStandardInput());
+//			this["out"] = jsh.io.java.adapt($host.getStdio().getStandardOutput());
+//			this["err"] = jsh.io.java.adapt($host.getStdio().getStandardOutput());
+//		}
+//		context.getSystemProperty = function(name) {
+//			var rv = $host.getSystemProperties().getProperty(name);
+//			if (rv == null) return null;
+//			return String(rv);
+//		};
+//		context._getSystemProperties = function() {
+//			return $host.getSystemProperties();
+//		};
+//		context.exit = function(code) {
+//			$host.exit(code);
+//		}
+//		return loader.bootstrap(context,"jsh/shell");
+//	})();
 
 	jsh.$jsapi = {
 		$platform: loader.$platform,
@@ -313,8 +320,6 @@ this.jsh = new function() {
 	(function loadPlugins() {
 		var _plugins = $host.getLoader().getPlugins();
 		var list = [];
-		var plugins = {};
-
 		for (var i=0; i<_plugins.length; i++) {
 			var _code = _plugins[i].getCode();
 			if (_code.getScripts()) {
