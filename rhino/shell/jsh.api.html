@@ -110,9 +110,9 @@ END LICENSE
 				}
 
 				this.stdio = new function() {
-					this["in"] = jsh.shell.stdin;
-					this["out"] = jsh.shell.stdout;
-					this["err"] = jsh.shell.stderr;
+					this.input = jsh.shell.stdin;
+					this.output = jsh.shell.stdout;
+					this.error = jsh.shell.stderr;
 				}
 
 				this.exit = function() {
@@ -146,11 +146,11 @@ END LICENSE
 					</ol>
 				</div>
 			</li>
-			<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('environment')">
+			<li class="value" jsapi:reference="getApi('api.html').getElement('environment')">
 				<div class="name"><a name="$exports.environment">environment</a></div>
 				<span>The rhino/shell environment.</span>
 			</li>
-			<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('properties')">
+			<li class="value" jsapi:reference="getApi('api.html').getElement('properties')">
 				<div class="name"><a name="$exports.properties">properties</a></div>
 				<span>The rhino/shell properties.</span>
 			</li>
@@ -257,17 +257,10 @@ END LICENSE
 									<div class="name">environment</div>
 									<span><a href="../../rhino/shell/api.html#run.environment">See rhino/shell</a></span>
 								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run.stdin')">
-									<div class="name">stdin</div>
-									<span><a href="../../rhino/shell/api.html#run.stdin">See rhino/shell</a></span>
-								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run.stdout')">
-									<div class="name">stdout</div>
-									<span><a href="../../rhino/shell/api.html#run.stdout">See rhino/shell</a></span>
-								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run.stderr')">
-									<div class="name">stderr</div>
-									<span><a href="../../rhino/shell/api.html#run.stderr">See rhino/shell</a></span>
+								<li class="value">
+									<div class="name">stdio</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
 								</li>
 								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run.workingDirectory')">
 									<div class="name">workingDirectory</div>
@@ -459,7 +452,7 @@ END LICENSE
 					test(output == $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator"));
 				</script>
 			</li>
-			<li class="function">
+			<li class="function" jsapi:id="java">
 				<div class="name">java</div>
 				<span>Launches a Java program.</span>
 				<div class="arguments">

@@ -11,19 +11,20 @@
 //	END LICENSE
 
 $exports.run = function(p) {
+	var stdio = arguments.callee.stdio(p);
 	var context = new JavaAdapter(
 		Packages.inonit.system.Command.Context,
 		new function() {
 			this.getStandardOutput = function() {
-				return (p.stdout) ? p.stdout.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
+				return (stdio && stdio.output) ? stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
 			};
 
 			this.getStandardError = function() {
-				return (p.stderr) ? p.stderr.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
+				return (stdio && stdio.error) ? stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM;
 			};
 
 			this.getStandardInput = function() {
-				return (p.stdin) ? p.stdin.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM;
+				return (stdio && stdio.input) ? stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM;
 			};
 
 			this.getSubprocessEnvironment = function() {
@@ -129,6 +130,16 @@ $exports.run.evaluate = function(result) {
 	if (result.status != 0) throw new Error("Exit code: " + result.status + " executing " + result.command + " " + result.arguments.join(" "));
 	return result;
 };
+$exports.run.stdio = (function(p) {
+	if (p.stdio) return p.stdio;
+	if (p.stdin || p.stdout || p.stderr) return $api.deprecate(function() {
+		return {
+			input: p.stdin,
+			output: p.stdout,
+			error: p.stderr
+		};
+	})();
+});
 
 $exports.environment = (function() {
 	var getter = function(value) {

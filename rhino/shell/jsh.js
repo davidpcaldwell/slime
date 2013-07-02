@@ -22,23 +22,24 @@ var getProperty = function(name) {
 	return String(value);
 };
 
+$exports.stdio = $context.stdio;
 ["readLines", "asString", "asXml"].forEach(function(method) {
-	$context.stdio["in"][method] = function(p) {
+	$exports.stdio.input[method] = function(p) {
 		return this.character()[method].apply(this.character(), arguments);
 	}
 });
 
-$exports.stdin = $context.stdio["in"];
-
-["out","err"].forEach(function(name) {
-	$context.stdio[name].write = function(p) {
-		$context.stdio[name].character().write(p);
+["output","error"].forEach(function(name) {
+	$exports.stdio[name].write = function(p) {
+		$exports.stdio[name].character().write(p);
 	}
 });
-
-$exports.stdout = $context.stdio["out"];
-
-$exports.stderr = $context.stdio["err"];
+$exports.stdin = $exports.stdio.input;
+$exports.stdout = $context.stdio.output;
+$exports.stderr = $context.stdio.error;
+$api.deprecate($exports,"stdin");
+$api.deprecate($exports,"stdout");
+$api.deprecate($exports,"stderr");
 
 $exports.echo = function(message,mode) {
 	if (arguments.length == 0) message = "";
@@ -99,69 +100,53 @@ $exports.echo.String = function(message) {
 $exports.echo.String["undefined"] = "(undefined)";
 $exports.echo.String["null"] = "(null)";
 
-var stream = function(mode,x) {
-	if (typeof(mode[x]) == "undefined") {
-		return $exports[x];
+var stream = function(stdio,x) {
+	if (typeof(stdio[x]) == "undefined") {
+		return $exports.stdio[x];
 	}
-	return mode[x];
+	return stdio[x];
 }
 
 $exports.shell = function(p) {
-	if (arguments.length == 3) {
+	var $filesystems = $context.api.file.filesystems;
+
+	if (arguments.length >= 2) {
 		$api.deprecate(function() {
-			p = {
+			p = $context.api.js.Object.set({}, {
 				command: arguments[0],
 				arguments: arguments[1]
-			};
-			for (var x in arguments[2]) {
-				p[x] = arguments[2][x];
-			}
-		}).apply(this,arguments);
-	} else if (arguments.length == 2) {
-		$api.deprecate(function() {
-			p = {
-				command: arguments[0],
-				arguments: arguments[1]
-			}
+			}, arguments[2]);
 		}).apply(this,arguments);
 	}
 	if (!p.command) {
 		throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
 	}
-	if (p.command.file && !p.command.pathname) {
-		$api.deprecate(function() {
-			p.command = p.command.file;
-		})();
-	}
-
-	var $filesystems = $context.api.file.filesystems;
-
-	var preprocessor = function(item) { return item; }
-	if ($filesystems.cygwin && p.filesystem == $filesystems.os) {
-		preprocessor = function(item) {
-			return $filesystems.cygwin.toWindows(item);
-		}
-	} else if ($filesystems.cygwin && p.filesystem == $filesystems.cygwin) {
-		preprocessor = function(item) {
-			return $filesystems.cygwin.toUnix(item);
-		}
-	}
-
-	var command = (function() {
-		if (typeof(p.command) == "string") return p.command;
-		if (p.command.pathname) return p.command.pathname;
-		throw new TypeError("p.command not string or file");
-	})();
-
-	var tokens = [ command ].concat( p.arguments.map(preprocessor) );
-
-	var evaluate = (function() {
-		if (p.evaluate) return p.evaluate;
-		if (p.onExit) return $api.deprecate(p.onExit);
-	})();
 
 	return $context.api.shell.run({
-		tokens: tokens,
+		command: (function() {
+			//	Accept pathname instead of file for command, for compatibility
+			if (p.command.file && !p.command.pathname) {
+				$api.deprecate(function() {
+					p.command = p.command.file;
+				})();				
+			}
+			if (typeof(p.command) == "string") return p.command;
+			if (p.command.pathname) return p.command.pathname;
+			throw new TypeError("p.command not string or file");
+		})(),
+		arguments: p.arguments.map((function() {
+			var preprocessor = function(item) { return item; }
+			if ($filesystems.cygwin && p.filesystem == $filesystems.os) {
+				preprocessor = function(item) {
+					return $filesystems.cygwin.toWindows(item);
+				}
+			} else if ($filesystems.cygwin && p.filesystem == $filesystems.cygwin) {
+				preprocessor = function(item) {
+					return $filesystems.cygwin.toUnix(item);
+				}
+			}
+			return preprocessor;
+		})()),
 		environment: p.environment,
 		workingDirectory: (function() {
 			var work = p.workingDirectory;
@@ -175,10 +160,28 @@ $exports.shell = function(p) {
 			}
 			throw new Error("Unknown working directory: " + work);
 		})(),
-		evaluate: evaluate,
-		stdin: stream(p,"stdin"),
-		stdout: stream(p,"stdout"),
-		stderr: stream(p,"stderr")
+		evaluate: (function() {
+			if (p.evaluate) return p.evaluate;
+			if (p.onExit) return $api.deprecate(p.onExit);
+		})(),
+		stdio: (function() {
+			if (p.stdio) return p.stdio;
+			if (p.stdin || p.stdout || p.stderr) {
+				var xformed = {
+					input: p.stdin,
+					output: p.stdout,
+					error: p.stderr
+				}
+				return {
+					input: stream(xformed,"input"),
+					output: stream(xformed,"output"),
+					error: stream(xformed,"error")
+				};
+			}
+//		stdin: stream(p,"stdin"),
+//		stdout: stream(p,"stdout"),
+//		stderr: stream(p,"stderr")
+		})()
 	});
 }
 
@@ -233,6 +236,8 @@ $exports.java = function(p) {
 		command: launcher
 	};
 	var args = [];
+	var vmarguments = (p.vmarguments) ? p.vmarguments : [];
+	args.push.apply(args,vmarguments);
 	for (var x in p) {
 		if (x == "classpath") {
 			args.push("-classpath", p[x]);
@@ -240,8 +245,9 @@ $exports.java = function(p) {
 			shell[x] = p[x];
 		}
 	}
+	//	TODO	some way of specifying VM arguments
 	args.push(p.main);
-	shell.arguments = args;
+	shell.arguments = args.concat( (p.arguments) ? p.arguments : [] );
 	return $exports.shell(shell);
 };
 (function() {
@@ -400,9 +406,7 @@ $exports.jsh = function(p) {
 			command: executable,
 			arguments: jargs,
 			environment: environment,
-			stdout: p.stdout,
-			stderr: p.stderr,
-			stdin: p.stdin,
+			stdio: $context.api.shell.run.stdio(p),
 			evaluate: evaluate
 		};
 
@@ -436,9 +440,9 @@ $exports.jsh = function(p) {
 							return (value) ? value.java.adapt() : otherwise;
 						}
 
-						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(p,"stdin"), Streams.Null.INPUT_STREAM);
-						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(p,"stdout"), Streams.Null.OUTPUT_STREAM);
-						var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(p,"stderr"), Streams.Null.OUTPUT_STREAM);
+						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(p,"input"), Streams.Null.INPUT_STREAM);
+						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(p,"output"), Streams.Null.OUTPUT_STREAM);
+						var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(p,"error"), Streams.Null.OUTPUT_STREAM);
 
 						this.getStandardInput = function() {
 							return _stdin;

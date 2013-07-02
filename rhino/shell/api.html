@@ -54,6 +54,28 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<ul>
+			<div class="type">
+				<a class="type" name="types.stdio">stdio</a>
+				<span>The standard I/O streams for a process.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">input</div>
+						<span class="type"><a href="../io/api.html#types.binput">byte input stream</a></span>
+						<span>The standard input stream (stdin).</span>
+					</li>
+					<li class="value">
+						<div class="name">output</div>
+						<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
+						<span>The standard output stream (stdout).</span>
+					</li>
+					<li class="value">
+						<div class="name">error</div>
+						<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
+						<span>The standard error stream (stdout).</span>
+					</li>
+				</ul>
+			</div>
 			<li class="function">
 				<div class="name">run</div>
 				<div>Launches a subprocess using the operating system.</div>
@@ -80,20 +102,16 @@ END LICENSE
 									<span class="type">Array of <a href="#types.token">token</a></span>
 									<span>The command arguments to pass to the underlying operating system.</span>
 								</li>
-								<li class="value" jsapi:id="run.stdin">
-									<div class="name">stdin</div>
-									<span class="type"><a href="../io/api.html#types.binput">byte input stream</a></span>
-									<span>A stream which will be attached to the subprocess as its standard input stream.</span>
-								</li>
-								<li class="value" jsapi:id="run.stdout">
-									<div class="name">stdout</div>
-									<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
-									<span>A stream which will be attached to the subprocess as its standard output stream.</span>
-								</li>
-								<li class="value" jsapi:id="run.stderr">
-									<div class="name">stderr</div>
-									<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
-									<span>A stream which will be attached to the subprocess as its standard error stream.</span>
+								<li class="value">
+									<div class="name">stdio</div>
+									<span class="type"><a href="#types.stdio">stdio</a></span>
+									<span>
+										The streams that will be attached to the subprocess as its standard I/O streams. If
+										any of the streams are omitted, null streams will be
+										supplied for the omitted streams. A zero-byte stream will be supplied for standard input,
+										and streams that ignore written bytes will be supplied for standard output and
+										standard error.
+									</span>
 								</li>
 								<li class="value" jsapi:id="run.environment">
 									<div class="name">environment</div>
@@ -174,6 +192,7 @@ END LICENSE
 															program, if any.
 														</span>
 													</li>
+													<!--	TODO	is there any reason not to return stdio?	-->
 												</ul>
 											</li>
 										</ol>

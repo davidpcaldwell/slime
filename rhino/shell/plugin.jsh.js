@@ -14,9 +14,9 @@ plugin({
 			file: jsh.file
 		}
 		context.stdio = new function() {
-			this["in"] = jsh.io.java.adapt($host.getStdio().getStandardInput());
-			this["out"] = jsh.io.java.adapt($host.getStdio().getStandardOutput());
-			this["err"] = jsh.io.java.adapt($host.getStdio().getStandardOutput());
+			this.input = jsh.io.java.adapt($host.getStdio().getStandardInput());
+			this.output = jsh.io.java.adapt($host.getStdio().getStandardOutput());
+			this.error = jsh.io.java.adapt($host.getStdio().getStandardError());
 		}
 		context.getSystemProperty = function(name) {
 			var rv = $host.getSystemProperties().getProperty(name);
