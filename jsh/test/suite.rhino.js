@@ -269,7 +269,17 @@ console("Running " + packagedAddClasses + " ...");
 runPackaged(
 	packagedAddClasses.getCanonicalPath(),
 	"-classes",getJshPathname(classes),
-	mode
+	(function() {
+		var rv = {};
+		for (var x in mode) {
+			rv[x] = mode[x];
+		}
+		for (var x in mode.env) {
+			rv.env[x] = mode.env[x];
+		}
+		delete rv.env.JSH_PLUGINS;
+		return rv;
+	})()
 );
 
 console("Packaging packaged.jsh.js");
