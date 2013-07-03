@@ -15,10 +15,9 @@
 //			separately, and provides it as $context.api.shell. Normally the module.js module would be $exports and this file
 //			would just be decorating it.
 if ($context.api.shell) {
-	$exports.environment = $context.api.shell.environment;
-	$exports.properties = $context.api.shell.properties;
-	$api.deprecate($exports,"properties");
-	$exports.run = $context.api.shell.run;
+	for (var x in $context.api.shell) {
+		$exports[x] = $context.api.shell[x];
+	}
 }
 
 $exports.exit = $context.exit;
@@ -192,6 +191,8 @@ var getMandatoryStringProperty = function(name) {
 	return rv;
 };
 
+//	TODO	is rhino/file.filesystem.$jsh.os(...) still necessary? Was used here.
+
 var getDirectoryProperty = function(name) {
 	var rv = $context.api.file.filesystems.os.Pathname($context.getSystemProperty(name));
 	rv = $context.api.file.filesystem.$jsh.os(rv);
@@ -207,102 +208,6 @@ var getSearchpath = function(value) {
 	return $context.api.file.Searchpath(rv);
 }
 
-$exports.TMPDIR = getDirectoryProperty("java.io.tmpdir");
-$exports.USER = getMandatoryStringProperty("user.name");
-$exports.HOME = getDirectoryProperty("user.home");
-//	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
-if ($context.getSystemProperty("user.dir")) {
-	$exports.PWD = getDirectoryProperty("user.dir");
-}
-if ($exports.environment.PATH) {
-	$exports.PATH = getSearchpath($exports.environment.PATH);
-} else if ($exports.environment.Path) {
-	//	Windows
-	$exports.PATH = getSearchpath($exports.environment.Path);
-} else {
-	$exports.PATH = $context.api.file.Searchpath([]);
-}
-
-$exports.java = function(p) {
-	var launcher = arguments.callee.launcher;
-	var shell = {
-		command: launcher
-	};
-	var args = [];
-	var vmarguments = (p.vmarguments) ? p.vmarguments : [];
-	args.push.apply(args,vmarguments);
-	for (var x in p) {
-		if (x == "classpath") {
-			args.push("-classpath", p[x]);
-		} else {
-			shell[x] = p[x];
-		}
-	}
-	//	TODO	some way of specifying VM arguments
-	args.push(p.main);
-	shell.arguments = args.concat( (p.arguments) ? p.arguments : [] );
-	return $exports.shell(shell);
-};
-(function() {
-	this.version = getMandatoryStringProperty("java.version");
-	this.vendor = new function() {
-		this.toString = function() {
-			return getMandatoryStringProperty("java.vendor");
-		}
-
-		this.url = getMandatoryStringProperty("java.vendor.url");
-	}
-	this.home = getDirectoryProperty("java.home");
-
-	var Vvn = function(prefix) {
-		this.version = getMandatoryStringProperty(prefix + "version");
-		this.vendor = getMandatoryStringProperty(prefix + "vendor");
-		this.name = getMandatoryStringProperty(prefix + "name");
-	}
-
-	this.vm = new Vvn("java.vm.");
-	this.vm.specification = new Vvn("java.vm.specification.");
-	this.specification = new Vvn("java.specification.");
-
-	this["class"] = new function() {
-		this.version = getMandatoryStringProperty("java.class.version");
-		this.path = getSearchpath(getMandatoryStringProperty("java.class.path"));
-	}
-
-	//	Convenience alias that omits keyword
-	this.CLASSPATH = this["class"].path;
-
-	this.library = new function() {
-		this.path = getSearchpath(getMandatoryStringProperty("java.library.path"));
-	}
-
-	//	java.io.tmpdir really part of filesystem; see TMPDIR above
-
-	//	Javadoc claims this to be always present but it is sometimes null; we leave it as undefined in that case, although this
-	//	behavior is undocumented
-	var compiler = $context.getSystemProperty("java.compiler");
-	if (compiler) {
-		this.compiler = compiler;
-	}
-
-	this.ext = new function() {
-		this.dirs = getSearchpath(getMandatoryStringProperty("java.ext.dirs"));
-	}
-
-	//	os.name, os.arch, os.version handled by $exports.os
-
-	//	file.separator, path.separator, line.separator handled by filesystems in jsh.file
-
-	//	user.name is $exports.USER
-	//	user.home is $exports.HOME
-	//	user.dir is $exports.PWD
-
-	//	TODO	Document
-	this.launcher = (function() {
-		if (this.home.getFile("bin/java")) return this.home.getFile("bin/java");
-		if (this.home.getFile("bin/java.exe")) return this.home.getFile("bin/java.exe");
-	}).call(this);
-}).call($exports.java);
 //	TODO	if not running on Rhino, this property should not appear
 //	TODO	no test coverage for $exports.rhino
 $exports.rhino = new function() {

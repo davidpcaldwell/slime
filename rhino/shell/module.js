@@ -141,14 +141,38 @@ $exports.run.stdio = (function(p) {
 	})();
 });
 $exports.environment = $context.api.java.Environment($context._environment);
-$exports.properties = {
-	object: $context.api.java.Properties.adapt($context._properties),
-	get: function(name) {
+
+var toLocalPathname = function(osPathname) {
+	var _rv = osPathname.java.adapt();
+	return $context.api.file.filesystem.java.adapt(_rv);		
+}
+	
+$exports.properties = new function() {
+	this.object = $context.api.java.Properties.adapt($context._properties),
+	
+	this.get = function(name) {
 		var rv = $context._properties.getProperty(name);
 		if (!rv) return null;
 		return String(rv);
-	}
-}
+	};
+	
+	this.directory = function(name) {
+		return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).directory;
+	};
+	
+	this.searchpath = function(name) {
+		var string = this.get(name);
+		if (!string) throw new Error("No property: " + name);
+		var rv = $context.api.file.filesystems.os.Searchpath.parse(string);
+		var pathnames = rv.pathnames.map(toLocalPathname);
+		return $context.api.file.Searchpath(pathnames);
+	};
+};
+
+var toLocalSearchpath = function(searchpath) {
+	return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
+};
+
 $api.experimental($exports.properties,"object");
 
 //	TODO	document
@@ -157,3 +181,97 @@ $exports.os = new function() {
 	this.arch = $exports.properties.get("os.arch");
 	this.version = $exports.properties.get("os.version");
 };
+
+$exports.TMPDIR = $exports.properties.directory("java.io.tmpdir");
+$exports.USER = $exports.properties.get("user.name");
+$exports.HOME = $exports.properties.directory("user.home");
+//	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
+if ($exports.properties.get("user.dir")) {
+	$exports.PWD = $exports.properties.directory("user.dir");
+}
+if ($exports.environment.PATH) {
+	$exports.PATH = toLocalSearchpath($exports.environment.PATH);
+} else if ($exports.environment.Path) {
+	//	Windows
+	$exports.PATH = toLocalSearchpath($exports.environment.Path);
+} else {
+	$exports.PATH = $context.api.file.Searchpath([]);
+}
+
+$exports.java = function(p) {
+	var launcher = arguments.callee.launcher;
+	var shell = {
+		command: launcher
+	};
+	var args = [];
+	var vmarguments = (p.vmarguments) ? p.vmarguments : [];
+	args.push.apply(args,vmarguments);
+	for (var x in p) {
+		if (x == "classpath") {
+			args.push("-classpath", p[x]);
+		} else {
+			shell[x] = p[x];
+		}
+	}
+	//	TODO	some way of specifying VM arguments
+	args.push(p.main);
+	shell.arguments = args.concat( (p.arguments) ? p.arguments : [] );
+	return $exports.run(shell);
+};
+(function() {
+	this.version = $exports.properties.get("java.version");
+	this.vendor = new function() {
+		this.toString = function() {
+			return $exports.properties.get("java.vendor");
+		}
+
+		this.url = $exports.properties.get("java.vendor.url");
+	}
+	this.home = $exports.properties.directory("java.home");
+
+	var Vvn = function(prefix) {
+		this.version = $exports.properties.get(prefix + "version");
+		this.vendor = $exports.properties.get(prefix + "vendor");
+		this.name = $exports.properties.get(prefix + "name");
+	}
+
+	this.vm = new Vvn("java.vm.");
+	this.vm.specification = new Vvn("java.vm.specification.");
+	this.specification = new Vvn("java.specification.");
+
+	this["class"] = new function() {
+		this.version = $exports.properties.get("java.class.version");
+		this.path = $exports.properties.searchpath("java.class.path");
+	}
+
+	//	Convenience alias that omits keyword
+	this.CLASSPATH = this["class"].path;
+
+	this.library = new function() {
+		this.path = $exports.properties.searchpath("java.library.path");
+	}
+
+	//	java.io.tmpdir really part of filesystem; see TMPDIR above
+
+	//	Javadoc claims this to be always present but it is sometimes null; we leave it as undefined in that case, although this
+	//	behavior is undocumented
+	var compiler = $exports.properties.get("java.compiler");
+	if (compiler) {
+		this.compiler = compiler;
+	}
+
+	this.ext = new function() {
+		this.dirs = $exports.properties.searchpath("java.ext.dirs");
+	}
+
+	//	os.name, os.arch, os.version handled by $exports.os
+
+	//	file.separator, path.separator, line.separator handled by filesystems in jsh.file
+
+	//	user.name is $exports.USER
+	//	user.home is $exports.HOME
+	//	user.dir is $exports.PWD
+
+	//	TODO	Document
+	this.launcher = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("java");
+}).call($exports.java);

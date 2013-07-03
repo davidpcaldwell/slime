@@ -5,7 +5,8 @@ plugin({
 	load: function() {
 		var $shell = $loader.module("module.js", {
 			api: {
-				java: jsh.java
+				java: jsh.java,
+				file: jsh.file
 			},
 			_properties: $host.getSystemProperties(),
 			_environment: $host.getEnvironment()

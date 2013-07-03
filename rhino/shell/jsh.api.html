@@ -67,9 +67,36 @@ END LICENSE
 			new function() {
 				var host = $jsapi.module("../../rhino/host/");
 				debugger;
+				var file = $jsapi.module("../../rhino/file/", new function() {
+					if (jsh.shell.environment.PATHEXT) {
+						this.pathext = jsh.shell.environment.PATHEXT.split(";");
+					}
+					this.api = {
+						io: jsh.io,
+						js: jsh.js,
+						java: jsh.java
+					};
+					this.$pwd = String(jsh.shell.properties.object.user.dir);
+					this.addFinalizer = jsh.loader.addFinalizer;
+					//	TODO	below copy-pasted from rhino/file/api.html
+					//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+					var System = Packages.java.lang.System;
+					if (System.getProperty("cygwin.root")) {
+						this.cygwin = {
+							root: String( System.getProperty("cygwin.root") )
+						};
+						if (System.getProperty("cygwin.paths")) {
+							//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+							//	the SDK server
+							//	TODO	check this
+							this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+						}
+					}
+				});
 				var shell = $jsapi.module("../../rhino/shell/", {
 					api: {
-						java: host
+						java: host,
+						file: file
 					},
 					_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
 					_properties: Packages.java.lang.System.getProperties()
@@ -78,32 +105,7 @@ END LICENSE
 					js: $jsapi.module("../../js/object/"),
 					java: host,
 					shell: shell,
-					file: $jsapi.module("../../rhino/file/", new function() {
-						if (jsh.shell.environment.PATHEXT) {
-							this.pathext = jsh.shell.environment.PATHEXT.split(";");
-						}
-						this.api = {
-							io: jsh.io,
-							js: jsh.js,
-							java: jsh.java
-						};
-						this.$pwd = String(jsh.shell.properties.object.user.dir);
-						this.addFinalizer = jsh.loader.addFinalizer;
-						//	TODO	below copy-pasted from rhino/file/api.html
-						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
-						var System = Packages.java.lang.System;
-						if (System.getProperty("cygwin.root")) {
-							this.cygwin = {
-								root: String( System.getProperty("cygwin.root") )
-							};
-							if (System.getProperty("cygwin.paths")) {
-								//	Using the paths helper currently does not seem to work in the embedded situation when running inside
-								//	the SDK server
-								//	TODO	check this
-								this.cygwin.paths = String( System.getProperty("cygwin.paths") );
-							}
-						}
-					})
+					file: file
 				};
 
 				this.getSystemProperty = function(name) {
