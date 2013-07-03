@@ -23,14 +23,6 @@ if ($context.api.shell) {
 
 $exports.exit = $context.exit;
 
-//	TODO	this method probably does not make any sense and should probably be replaced with $exports.properties.get(name)
-var getProperty = function(name) {
-	var value = eval("$exports.properties.object." + name);
-	if (String(value) == "undefined") return function(){}();
-	if (value == null) return null;
-	return String(value);
-};
-
 $exports.stdio = $context.stdio;
 ["readLines", "asString", "asXml"].forEach(function(method) {
 	$exports.stdio.input[method] = function(p) {
@@ -65,7 +57,7 @@ $exports.echo = function(message,mode) {
 			throw new TypeError("Not a recognized stream: " + stream);
 		})();
 		return function(message) {
-			writer.write(toString(message)+getProperty("line.separator"));
+			writer.write(toString(message)+$exports.properties.get("line.separator"));
 		}
 	}
 
@@ -314,8 +306,8 @@ $exports.java = function(p) {
 //	TODO	if not running on Rhino, this property should not appear
 //	TODO	no test coverage for $exports.rhino
 $exports.rhino = new function() {
-	if (getProperty("jsh.launcher.rhino.classpath")) {
-		this.classpath = getSearchpath(getProperty("jsh.launcher.rhino.classpath"));
+	if ($exports.properties.get("jsh.launcher.rhino.classpath")) {
+		this.classpath = getSearchpath($exports.properties.get("jsh.launcher.rhino.classpath"));
 	}
 };
 
@@ -375,10 +367,10 @@ $exports.jsh = function(p) {
 	if (fork) {
 		debugger;
 		//	TODO	can we use $exports.java.home here?
-		var jdk = $context.api.file.filesystems.os.Pathname(getProperty("java.home")).directory;
+		var jdk = $context.api.file.filesystems.os.Pathname($exports.properties.get("java.home")).directory;
 		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java").toString();
 		//	Set defaults from this shell
-		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : getProperty("jsh.launcher.classpath");
+		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
 
 		var jargs = [];
 		jargs.push("-classpath");
