@@ -128,12 +128,15 @@ var which = function(command) {
 //			UNIXes and check that property for them?
 var uname = which("uname");
 if (uname) {
+	jsh.shell.echo("Detected UNIX-like operating system.");
 	parameters.options.unix = true;
 	//	Re-use the detection logic that jsh uses for Cygwin, although this leaves it opaque in this script exactly how we are doing
 	//	it; we could run the uname we just found, or even check for its .exe extension
 	if (jsh.file.filesystems.cygwin) {
 		parameters.options.cygwin = true;
 	}
+} else {
+	jsh.shell.echo("Did not detect UNIX-like operating system using PATH: " + jsh.shell.PATH);
 }
 
 if (!parameters.options.src) {
@@ -163,7 +166,7 @@ if (parameters.options.unix) {
 		);
 		jsh.shell.echo("Created bash launcher at " + install.getRelativePath("jsh.bash") + " using bash at " + bash);
 	} else {
-		jsh.shell.echo("bash not found.");
+		jsh.shell.echo("bash not found in " + jsh.shell.PATH);
 	}
 }
 
