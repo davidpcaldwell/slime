@@ -87,7 +87,7 @@ END LICENSE
 							js: jsh.js,
 							java: jsh.java
 						};
-						this.$pwd = String(jsh.shell.properties.user.dir);
+						this.$pwd = String(jsh.shell.properties.object.user.dir);
 						this.addFinalizer = jsh.loader.addFinalizer;
 						//	TODO	below copy-pasted from rhino/file/api.html
 						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly

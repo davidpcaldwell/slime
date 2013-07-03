@@ -257,7 +257,7 @@ END LICENSE
 	scenario( new function() {
 		this.name = "System properties";
 
-		var properties = module.properties;
+		var properties = module.properties.object;
 
 		this.initialize = function() {
 			properties.foo = "bar";

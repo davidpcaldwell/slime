@@ -141,5 +141,12 @@ $exports.run.stdio = (function(p) {
 	})();
 });
 $exports.environment = $context.api.java.Environment($context._environment);
-$exports.properties = $context.api.java.Properties.adapt($context._properties);
-$api.experimental($exports,"properties");
+$exports.properties = {
+	object: $context.api.java.Properties.adapt($context._properties),
+	get: function(name) {
+		var rv = $context._properties.getProperty(name);
+		if (!rv) return null;
+		return String(rv);
+	}
+}
+$api.experimental($exports.properties,"object");

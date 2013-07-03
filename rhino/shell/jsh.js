@@ -23,8 +23,9 @@ if ($context.api.shell) {
 
 $exports.exit = $context.exit;
 
+//	TODO	this method probably does not make any sense and should probably be replaced with $exports.properties.get(name)
 var getProperty = function(name) {
-	var value = eval("$exports.properties." + name);
+	var value = eval("$exports.properties.object." + name);
 	if (String(value) == "undefined") return function(){}();
 	if (value == null) return null;
 	return String(value);
@@ -372,7 +373,7 @@ $exports.jsh = function(p) {
 			}
 		}
 
-		addProperties($exports.properties.jsh.launcher.environment);
+		addProperties($exports.properties.object.jsh.launcher.environment);
 		addProperties($exports.environment);
 		return rv;
 	})();
@@ -556,11 +557,11 @@ $exports.jsh = function(p) {
 	}
 };
 
-if (String($exports.properties.jsh.plugins)) {
-	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.plugins));
+if (String($exports.properties.object.jsh.plugins)) {
+	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
 }
 
-var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.jsh.launcher.classpath));
+var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
 //	TODO	this is fragile. The above property is, in a built shell:
 //			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath
 //			*	supplied by the script launcher to the underlying process as is

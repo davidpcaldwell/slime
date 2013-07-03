@@ -77,7 +77,7 @@ END LICENSE
 					if (jsh.shell.environment.PATHEXT) {
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
 					}
-					this.$pwd = String(jsh.shell.properties.user.dir);
+					this.$pwd = String(jsh.shell.properties.object.user.dir);
 					this.addFinalizer = jsh.loader.addFinalizer;
 
 					if (p && p.cygwin) {

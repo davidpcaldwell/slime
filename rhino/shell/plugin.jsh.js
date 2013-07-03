@@ -23,6 +23,7 @@ plugin({
 			this.output = jsh.io.java.adapt($host.getStdio().getStandardOutput());
 			this.error = jsh.io.java.adapt($host.getStdio().getStandardError());
 		}
+		//	TODO	properties methods should go away; should not be necessary now
 		context.getSystemProperty = function(name) {
 			var rv = $host.getSystemProperties().getProperty(name);
 			if (rv == null) return null;

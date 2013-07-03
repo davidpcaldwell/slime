@@ -53,7 +53,7 @@ var compile = function(args) {
 
 var to = (function() {
 	if (parameters.options.directory) return parameters.options.to.createDirectory({ ifExists: function(d) { d.remove(); return true; }, recursive: true });
-	return jsh.file.filesystems.os.Pathname(String(jsh.shell.properties.java.io.tmpdir)).directory.createTemporary({ directory: true });
+	return jsh.file.filesystems.os.Pathname(String(jsh.shell.properties.object.java.io.tmpdir)).directory.createTemporary({ directory: true });
 })();
 
 var JSH = parameters.options.jsh.directory;

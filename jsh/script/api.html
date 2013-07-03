@@ -220,7 +220,7 @@ END LICENSE
 						}),
 						loader: $host.getRhinoLoader()
 					},
-					$pwd: String(jsh.shell.properties.user.dir)
+					$pwd: String(jsh.shell.properties.object.user.dir)
 				};
 				var System = Packages.java.lang.System;
 				if (System.getProperty("cygwin.root")) {
