@@ -13,11 +13,11 @@
 package inonit.script.jsh;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 import org.mozilla.javascript.*;
 
+import inonit.system.*;
 import inonit.script.rhino.*;
 import inonit.script.runtime.io.*;
 
@@ -89,7 +89,7 @@ public class Shell {
 		public abstract ClassLoader getClassLoader();
 
 		public abstract Properties getSystemProperties();
-		public abstract Map getEnvironment();
+		public abstract OperatingSystem.Environment getEnvironment();
 		public abstract Stdio getStdio();
 
 		/**
@@ -117,7 +117,7 @@ public class Shell {
 		Engine getEngine() {
 			return engine;
 		}
-
+		
 		public static abstract class Stdio {
 			public abstract InputStream getStandardInput();
 			public abstract OutputStream getStandardOutput();
@@ -318,7 +318,7 @@ public class Shell {
 				return configuration.getSystemProperties();
 			}
 
-			public Map getEnvironment() {
+			public OperatingSystem.Environment getEnvironment() {
 				return configuration.getEnvironment();
 			}
 

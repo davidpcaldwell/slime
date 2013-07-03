@@ -331,7 +331,7 @@ $exports.Thread.Monitor = function() {
 	}
 }
 
-$exports.environment = (function() {
+$exports.Environment = function(_environment) {
 	var getter = function(value) {
 		return function() {
 			return value;
@@ -339,33 +339,29 @@ $exports.environment = (function() {
 	};
 
 	var isCaseInsensitive = (function() {
-		var jenv = Packages.java.lang.System.getenv();
+		var jenv = _environment.getMap();
 		var i = jenv.keySet().iterator();
 		while(i.hasNext()) {
 			var name = String(i.next());
 			var value = String(jenv.get(name));
 			if (name != name.toUpperCase()) {
-				return String(Packages.java.lang.System.getenv(name.toUpperCase())) == value;
+				return String(_environment.getValue(name.toUpperCase())) == value;
+			} else {
+				return String(_environment.getValue(name.toLowerCase())) == value;
 			}
 		}
 		return function(){}();
 	})();
 
-	var jenv = ($context._environment) ? $context._environment : Packages.java.lang.System.getenv();
 	var rv = {};
-	var i = jenv.keySet().iterator();
+	var i = _environment.getMap().keySet().iterator();
 	while(i.hasNext()) {
 		var name = String(i.next());
-		var value = String(jenv.get(name));
+		var value = String(_environment.getValue(name));
 		if (isCaseInsensitive) {
 			name = name.toUpperCase();
 		}
 		rv.__defineGetter__(name, getter(value));
 	}
 	return rv;
-})();
-
-//	TODO	Document $context._properties
-var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
-$exports.properties = $exports.Properties.adapt(_properties);
-$api.experimental($exports,"properties");
+};

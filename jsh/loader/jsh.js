@@ -203,10 +203,9 @@ this.jsh = new function() {
 
 	var java = loader.bootstrap(
 		new function() {
+			//	TODO	the below should be $api.experimental, right?
 			this.experimental = function() {};
 			this.globals = true;
-			this._environment = $host.getEnvironment();
-			this._properties = $host.getSystemProperties();
 		},
 		"rhino/host"
 	);
@@ -216,6 +215,8 @@ this.jsh = new function() {
 
 	(function() {
 		var context = {};
+		var environment = jsh.java.Environment($host.getEnvironment());
+		var properties = jsh.java.Properties.adapt($host.getSystemProperties());
 
 		context._streams = new Packages.inonit.script.runtime.io.Streams();
 
@@ -225,8 +226,8 @@ this.jsh = new function() {
 			java: java
 		}
 
-		if (jsh.java.environment.PATHEXT) {
-			context.pathext = jsh.java.environment.PATHEXT.split(";");
+		if (environment.PATHEXT) {
+			context.pathext = environment.PATHEXT.split(";");
 		}
 
 		context.stdio = new function() {
@@ -241,15 +242,15 @@ this.jsh = new function() {
 
 		context.addFinalizer = addFinalizer;
 
-		if ( String(jsh.java.properties.cygwin) != "undefined" ) {
+		if ( String(properties.cygwin) != "undefined" ) {
 			var convert = function(value) {
 				if ( String(value) == "undefined" ) return function(){}();
 				if ( String(value) == "null" ) return null;
 				return String(value);
 			}
 			context.cygwin = {
-				root: convert( jsh.java.properties.cygwin.root ),
-				paths: convert( jsh.java.properties.cygwin.paths )
+				root: convert( properties.cygwin.root ),
+				paths: convert( properties.cygwin.paths )
 			}
 		}
 

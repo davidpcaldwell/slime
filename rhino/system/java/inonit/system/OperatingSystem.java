@@ -13,6 +13,7 @@
 package inonit.system;
 
 import java.io.*;
+import java.util.*;
 
 public class OperatingSystem {
 	private static OperatingSystem singleton = new OperatingSystem();
@@ -35,4 +36,32 @@ public class OperatingSystem {
 	public Subprocess start(Command.Context context, Command.Configuration configuration) throws IOException {
 		return Command.create(configuration).start(context);
 	}
+
+	public static abstract class Environment {
+		public static final Environment SYSTEM = new Environment() {
+			@Override public Map<String, String> getMap() {
+				return System.getenv();
+			}
+
+			@Override
+			public String getValue(String name) {
+				return System.getenv(name);
+			}
+		};
+		
+		public static Environment create(final Map<String,String> map) {
+			return new Environment() {
+				@Override public Map<String, String> getMap() {
+					return map;
+				}
+
+				@Override public String getValue(String name) {
+					return map.get(name);
+				}
+			};
+		}
+
+		public abstract Map<String,String> getMap();
+		public abstract String getValue(String name);
+	}	
 }

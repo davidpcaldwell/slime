@@ -70,7 +70,9 @@ END LICENSE
 				var shell = $jsapi.module("../../rhino/shell/", {
 					api: {
 						java: host
-					}
+					},
+					_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
+					_properties: Packages.java.lang.System.getProperties()
 				});
 				this.api = {
 					js: $jsapi.module("../../js/object/"),

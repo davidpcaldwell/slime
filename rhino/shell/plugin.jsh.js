@@ -6,7 +6,9 @@ plugin({
 		var $shell = $loader.module("module.js", {
 			api: {
 				java: jsh.java
-			}
+			},
+			_properties: $host.getSystemProperties(),
+			_environment: $host.getEnvironment()
 		});
 		
 		var context = {};

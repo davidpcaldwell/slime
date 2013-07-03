@@ -36,7 +36,7 @@ $exports.run = function(p) {
 					return rv;					
 				}
 				
-				return _hashMap( (p.environment) ? p.environment : $context.api.java.environment );
+				return _hashMap( (p.environment) ? p.environment : $exports.environment );
 			};
 
 			this.getWorkingDirectory = function() {
@@ -140,6 +140,6 @@ $exports.run.stdio = (function(p) {
 		};
 	})();
 });
-$exports.environment = $context.api.java.environment;
-$exports.properties = $context.api.java.properties;
+$exports.environment = $context.api.java.Environment($context._environment);
+$exports.properties = $context.api.java.Properties.adapt($context._properties);
 $api.experimental($exports,"properties");

@@ -15,6 +15,7 @@ package inonit.script.jsh;
 import java.io.*;
 import java.util.*;
 
+import inonit.system.*;
 import inonit.script.rhino.*;
 
 public class Main {
@@ -303,8 +304,8 @@ public class Main {
 					return System.getProperties();
 				}
 
-				public Map getEnvironment() {
-					return System.getenv();
+				public OperatingSystem.Environment getEnvironment() {
+					return OperatingSystem.Environment.SYSTEM;
 				}
 
 				public Stdio getStdio() {

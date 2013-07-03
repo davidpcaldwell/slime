@@ -25,7 +25,9 @@ END LICENSE
 			new function() {
 				this.api = {
 					java: $jsapi.module("../../rhino/host/")
-				}
+				};
+				this._properties = Packages.java.lang.System.getProperties();
+				this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
 			}
 		</script>
 		<ul>

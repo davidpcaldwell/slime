@@ -499,13 +499,23 @@ $exports.jsh = function(p) {
 					}
 					return rv;
 				}
+				
+				var _environment = (function() {
+					var _map = new Packages.java.util.HashMap();
+					for (var x in environment) {
+						//	TODO	think through what types might be in environment
+						var value = (function() {
+							if (typeof(environment[x]) == "undefined") return null;
+							if (environment[x] === null) return null;
+							return String(environment[x]);
+						})();
+						_map.put(new Packages.java.lang.String(x),new Packages.java.lang.String(value));
+					}
+					return Packages.inonit.system.OperatingSystem.Environment.create(_map);
+				})();
 
 				this.getEnvironment = function() {
-					var rv = new Packages.java.util.HashMap();
-					for (var x in environment) {
-						rv.put(new Packages.java.lang.String(x),new Packages.java.lang.String(environment[x]));
-					}
-					return rv;
+					return _environment;
 				};
 
 				this.getStdio = function() {
