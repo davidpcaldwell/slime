@@ -231,12 +231,6 @@ if ($exports.environment.PATH) {
 	$exports.PATH = $context.api.file.Searchpath([]);
 }
 
-$exports.os = new function() {
-	this.name = getMandatoryStringProperty("os.name");
-	this.arch = getMandatoryStringProperty("os.arch");
-	this.version = getMandatoryStringProperty("os.version");
-};
-
 $exports.java = function(p) {
 	var launcher = arguments.callee.launcher;
 	var shell = {

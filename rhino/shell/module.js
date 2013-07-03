@@ -150,3 +150,10 @@ $exports.properties = {
 	}
 }
 $api.experimental($exports.properties,"object");
+
+//	TODO	document
+$exports.os = new function() {
+	this.name = $exports.properties.get("os.name");
+	this.arch = $exports.properties.get("os.arch");
+	this.version = $exports.properties.get("os.version");
+};
