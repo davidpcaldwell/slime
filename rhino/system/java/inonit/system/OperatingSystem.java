@@ -48,7 +48,7 @@ public class OperatingSystem {
 				return System.getenv(name);
 			}
 		};
-		
+
 		public static Environment create(final Map<String,String> map) {
 			return new Environment() {
 				@Override public Map<String, String> getMap() {
@@ -63,5 +63,5 @@ public class OperatingSystem {
 
 		public abstract Map<String,String> getMap();
 		public abstract String getValue(String name);
-	}	
+	}
 }

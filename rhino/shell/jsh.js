@@ -294,7 +294,7 @@ $exports.jsh = function(p) {
 							if (value && !value.java) throw new TypeError("value: " + value);
 							return (value) ? value.java.adapt() : otherwise;
 						}
-						
+
 						var stdio = (p.stdio) ? p.stdio : {};
 
 						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(stdio,"input"), Streams.Null.INPUT_STREAM);
@@ -348,7 +348,7 @@ $exports.jsh = function(p) {
 					}
 					return rv;
 				}
-				
+
 				var _environment = (function() {
 					var _map = new Packages.java.util.HashMap();
 					for (var x in environment) {

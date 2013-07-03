@@ -33,9 +33,9 @@ $exports.run = function(p) {
 					for (var x in p) {
 						rv.put( new Packages.java.lang.String(x), new Packages.java.lang.String(p[x]) );
 					}
-					return rv;					
+					return rv;
 				}
-				
+
 				return _hashMap( (p.environment) ? p.environment : $exports.environment );
 			};
 
@@ -133,7 +133,7 @@ $exports.run.evaluate = function(result) {
 $exports.run.stdio = (function(p) {
 	var rv = (function() {
 		if (typeof(p.stdio) != "undefined") return p.stdio;
-		
+
 		if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
 			return $api.deprecate(function() {
 				return {
@@ -143,7 +143,7 @@ $exports.run.stdio = (function(p) {
 				};
 			})();
 		}
-		
+
 		return {};
 	})();
 	if ($exports.stdio && rv) {
@@ -157,22 +157,22 @@ $exports.environment = $context.api.java.Environment($context._environment);
 
 var toLocalPathname = function(osPathname) {
 	var _rv = osPathname.java.adapt();
-	return $context.api.file.filesystem.java.adapt(_rv);		
+	return $context.api.file.filesystem.java.adapt(_rv);
 }
-	
+
 $exports.properties = new function() {
 	this.object = $context.api.java.Properties.adapt($context._properties),
-	
+
 	this.get = function(name) {
 		var rv = $context._properties.getProperty(name);
 		if (!rv) return null;
 		return String(rv);
 	};
-	
+
 	this.directory = function(name) {
 		return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).directory;
 	};
-	
+
 	this.searchpath = function(name) {
 		var string = this.get(name);
 		if (!string) throw new Error("No property: " + name);

@@ -117,7 +117,7 @@ public class Shell {
 		Engine getEngine() {
 			return engine;
 		}
-		
+
 		public static abstract class Stdio {
 			public abstract InputStream getStandardInput();
 			public abstract OutputStream getStandardOutput();
