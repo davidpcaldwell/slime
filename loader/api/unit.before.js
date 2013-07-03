@@ -119,7 +119,7 @@ $exports.Scenario = function(properties) {
 					})();
 				})(assertion);
 			} else if (typeof(assertion) == "undefined") {
-				throw "Assertion is undefined.";
+				throw new TypeError("Assertion is undefined.");
 			} else if (assertion === null) {
 				assertion = function() {
 					return {

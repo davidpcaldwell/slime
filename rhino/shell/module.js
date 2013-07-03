@@ -28,15 +28,15 @@ $exports.run = function(p) {
 			};
 
 			this.getSubprocessEnvironment = function() {
-				if (p.environment) {
+				var _hashMap = function(p) {
 					var rv = new Packages.java.util.HashMap();
-					for (var x in p.environment) {
-						rv.put( x, p.environment[x] );
+					for (var x in p) {
+						rv.put( new Packages.java.lang.String(x), new Packages.java.lang.String(p[x]) );
 					}
-					return rv;
-				} else {
-					return $context._environment;
+					return rv;					
 				}
+				
+				return _hashMap( (p.environment) ? p.environment : $context.api.java.environment );
 			};
 
 			this.getWorkingDirectory = function() {
@@ -140,42 +140,6 @@ $exports.run.stdio = (function(p) {
 		};
 	})();
 });
-
-$exports.environment = (function() {
-	var getter = function(value) {
-		return function() {
-			return value;
-		};
-	};
-
-	var isCaseInsensitive = (function() {
-		var jenv = Packages.java.lang.System.getenv();
-		var i = jenv.keySet().iterator();
-		while(i.hasNext()) {
-			var name = String(i.next());
-			var value = String(jenv.get(name));
-			if (name != name.toUpperCase()) {
-				return String(Packages.java.lang.System.getenv(name.toUpperCase())) == value;
-			}
-		}
-		return function(){}();
-	})();
-
-	var jenv = ($context._environment) ? $context._environment : Packages.java.lang.System.getenv();
-	var rv = {};
-	var i = jenv.keySet().iterator();
-	while(i.hasNext()) {
-		var name = String(i.next());
-		var value = String(jenv.get(name));
-		if (isCaseInsensitive) {
-			name = name.toUpperCase();
-		}
-		rv.__defineGetter__(name, getter(value));
-	}
-	return rv;
-})();
-
-//	TODO	Document $context._properties
-var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
-$exports.properties = $context.api.java.Properties.adapt(_properties);
+$exports.environment = $context.api.java.environment;
+$exports.properties = $context.api.java.properties;
 $api.experimental($exports,"properties");

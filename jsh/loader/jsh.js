@@ -205,25 +205,14 @@ this.jsh = new function() {
 		new function() {
 			this.experimental = function() {};
 			this.globals = true;
+			this._environment = $host.getEnvironment();
+			this._properties = $host.getSystemProperties();
 		},
 		"rhino/host"
 	);
 	jsh.java = java;
 
 	var plugins = {};
-
-	//	For now, until jsh.io and jsh.file are converted to ordinary plugins, they need access to this bootstrap copy of the
-	//	rhino/shell module, so we create it here and then provide it in the plugins namespace for use by jsh.shell
-	var $shell = loader.bootstrap({
-		api: {
-			java: java
-		},
-		_environment: $host.getEnvironment(),
-		_properties: $host.getSystemProperties()
-	},"rhino/shell");
-	plugins.$jsh = {
-		shell: $shell
-	};
 
 	(function() {
 		var context = {};
@@ -236,8 +225,8 @@ this.jsh = new function() {
 			java: java
 		}
 
-		if ($shell.environment.PATHEXT) {
-			context.pathext = $shell.environment.PATHEXT.split(";");
+		if (jsh.java.environment.PATHEXT) {
+			context.pathext = jsh.java.environment.PATHEXT.split(";");
 		}
 
 		context.stdio = new function() {
@@ -252,15 +241,15 @@ this.jsh = new function() {
 
 		context.addFinalizer = addFinalizer;
 
-		if ( String($shell.properties.cygwin) != "undefined" ) {
+		if ( String(jsh.java.properties.cygwin) != "undefined" ) {
 			var convert = function(value) {
 				if ( String(value) == "undefined" ) return function(){}();
 				if ( String(value) == "null" ) return null;
 				return String(value);
 			}
 			context.cygwin = {
-				root: convert( $shell.properties.cygwin.root ),
-				paths: convert( $shell.properties.cygwin.paths )
+				root: convert( jsh.java.properties.cygwin.root ),
+				paths: convert( jsh.java.properties.cygwin.paths )
 			}
 		}
 

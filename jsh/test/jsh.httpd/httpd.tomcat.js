@@ -41,26 +41,30 @@ $exports.Tomcat = function(p) {
 
 		var catalina = function(command,m) {
 			return function() {
-				jsh.shell.shell(
-					jsh.file.Pathname("/bin/sh"),
-					[
+				jsh.shell.shell({
+					command: jsh.file.Pathname("/bin/sh"),
+					arguments: [
 						p.home.getRelativePath("bin/catalina.sh"),
 						command
 					],
-					{
-						environment: jsh.js.Object.set({}, jsh.shell.environment, {
-							//	Strip trailing slashes from path names, which appear to confuse catalina.sh
-							//	TODO	see if it works without the stripping
-							CATALINA_BASE: base.toString().substring(0,base.toString().length-1),
-							CATALINA_HOME: p.home.toString().substring(0,p.home.toString().length-1),
-							SLIME_SCRIPT_DEBUGGER: (m && m.debug && m.debug.script) ? "rhino" : "none",
-							JAVA_HOME: jsh.shell.java.home.toString()
-						}),
-						onExit: function(result) {
-							jsh.shell.echo("Executed " + command + " with status: " + result.status);
+					environment: jsh.js.Object.set({}, jsh.shell.environment, {
+						//	Strip trailing slashes from path names, which appear to confuse catalina.sh
+						//	TODO	see if it works without the stripping
+						CATALINA_BASE: base.toString().substring(0,base.toString().length-1),
+						CATALINA_HOME: p.home.toString().substring(0,p.home.toString().length-1),
+						SLIME_SCRIPT_DEBUGGER: (m && m.debug && m.debug.script) ? "rhino" : "none",
+						JAVA_HOME: jsh.shell.java.home.toString()
+					}),
+					evaluate: function(result) {
+						jsh.shell.echo("Executed " + command + " with status: " + result.status);
+						if (result.status != 0) {
+							jsh.shell.echo("command: " + result.command);
+							jsh.shell.echo("arguments: " + result.arguments);
+							jsh.shell.echo("environment: " + jsh.js.toLiteral(result.environment));
 						}
+						jsh.shell.exit(result.status);
 					}
-				);
+				});
 			}
 		};
 

@@ -10,13 +10,21 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	ordinarily there is no $context.api.shell referring to the module, but with jsapi unit tests, currently the idea
+//			of testing a jsh plugin directly is not supported. So it loads this file as a "module," loads the module.js module
+//			separately, and provides it as $context.api.shell. Normally the module.js module would be $exports and this file
+//			would just be decorating it.
+if ($context.api.shell) {
+	$exports.environment = $context.api.shell.environment;
+	$exports.properties = $context.api.shell.properties;
+	$api.deprecate($exports,"properties");
+	$exports.run = $context.api.shell.run;
+}
+
 $exports.exit = $context.exit;
-$exports.environment = $context.api.shell.environment;
-$exports.properties = $context.api.shell.properties;
-$api.experimental($exports,"properties");
 
 var getProperty = function(name) {
-	var value = eval("$context.api.shell.properties." + name);
+	var value = eval("$exports.properties." + name);
 	if (String(value) == "undefined") return function(){}();
 	if (value == null) return null;
 	return String(value);
@@ -35,8 +43,8 @@ $exports.stdio = $context.stdio;
 	}
 });
 $exports.stdin = $exports.stdio.input;
-$exports.stdout = $context.stdio.output;
-$exports.stderr = $context.stdio.error;
+$exports.stdout = $exports.stdio.output;
+$exports.stderr = $exports.stdio.error;
 $api.deprecate($exports,"stdin");
 $api.deprecate($exports,"stdout");
 $api.deprecate($exports,"stderr");
@@ -122,7 +130,7 @@ $exports.shell = function(p) {
 		throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
 	}
 
-	return $context.api.shell.run({
+	return $exports.run({
 		command: (function() {
 			//	Accept pathname instead of file for command, for compatibility
 			if (p.command.file && !p.command.pathname) {
@@ -178,9 +186,7 @@ $exports.shell = function(p) {
 					error: stream(xformed,"error")
 				};
 			}
-//		stdin: stream(p,"stdin"),
-//		stdout: stream(p,"stdout"),
-//		stderr: stream(p,"stderr")
+			if (typeof(p.stdio) == "undefined") return $exports.stdio;
 		})()
 	});
 }
@@ -215,11 +221,11 @@ $exports.HOME = getDirectoryProperty("user.home");
 if ($context.getSystemProperty("user.dir")) {
 	$exports.PWD = getDirectoryProperty("user.dir");
 }
-if ($context.api.shell.environment.PATH) {
-	$exports.PATH = getSearchpath($context.api.shell.environment.PATH);
-} else if ($context.api.shell.environment.Path) {
+if ($exports.environment.PATH) {
+	$exports.PATH = getSearchpath($exports.environment.PATH);
+} else if ($exports.environment.Path) {
 	//	Windows
-	$exports.PATH = getSearchpath($context.api.shell.environment.Path);
+	$exports.PATH = getSearchpath($exports.environment.Path);
 } else {
 	$exports.PATH = $context.api.file.Searchpath([]);
 }
@@ -358,7 +364,7 @@ $exports.jsh = function(p) {
 			for (var x in from) {
 				if (x != "JSH_LAUNCHER_DEBUG") {
 					if (typeof(rv[x]) == "undefined") {
-						//	Conversion to string is necessary for $context.api.shell.properties.jsh.launcher.environment, which
+						//	Conversion to string is necessary for $exports.properties.jsh.launcher.environment, which
 						//	contains host objects
 						rv[x] = String(from[x]);
 					}
@@ -366,8 +372,8 @@ $exports.jsh = function(p) {
 			}
 		}
 
-		addProperties($context.api.shell.properties.jsh.launcher.environment);
-		addProperties($context.api.shell.environment);
+		addProperties($exports.properties.jsh.launcher.environment);
+		addProperties($exports.environment);
 		return rv;
 	})();
 
@@ -406,7 +412,7 @@ $exports.jsh = function(p) {
 			command: executable,
 			arguments: jargs,
 			environment: environment,
-			stdio: $context.api.shell.run.stdio(p),
+			stdio: $exports.run.stdio(p),
 			evaluate: evaluate
 		};
 
@@ -439,10 +445,12 @@ $exports.jsh = function(p) {
 							if (value && !value.java) throw new TypeError("value: " + value);
 							return (value) ? value.java.adapt() : otherwise;
 						}
+						
+						var stdio = (p.stdio) ? p.stdio : {};
 
-						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(p,"input"), Streams.Null.INPUT_STREAM);
-						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(p,"output"), Streams.Null.OUTPUT_STREAM);
-						var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(p,"error"), Streams.Null.OUTPUT_STREAM);
+						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(stdio,"input"), Streams.Null.INPUT_STREAM);
+						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(stdio,"output"), Streams.Null.OUTPUT_STREAM);
+						var _stderr = ifNonNull(Packages.java.io.OutputStream, stream(stdio,"error"), Streams.Null.OUTPUT_STREAM);
 
 						this.getStandardInput = function() {
 							return _stdin;

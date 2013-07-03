@@ -66,13 +66,16 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				var host = $jsapi.module("../../rhino/host/");
+				debugger;
+				var shell = $jsapi.module("../../rhino/shell/", {
+					api: {
+						java: host
+					}
+				});
 				this.api = {
+					js: $jsapi.module("../../js/object/"),
 					java: host,
-					shell: $jsapi.module("../../rhino/shell/", {
-						api: {
-							java: host
-						}
-					}),
+					shell: shell,
 					file: $jsapi.module("../../rhino/file/", new function() {
 						if (jsh.shell.environment.PATHEXT) {
 							this.pathext = jsh.shell.environment.PATHEXT.split(";");
@@ -164,8 +167,8 @@ END LICENSE
 				<span class="type"><a href="#types.consoleo">console output</a></span>
 				<span>The standard output stream for this shell.</span>
 				<script type="application/x.jsapi#tests">
-					test(typeof(module.stdout.write) == "function");
-					test(typeof(module.stdout.close) == "function");
+					test(typeof(module.stdio.output.write) == "function");
+					test(typeof(module.stdio.output.close) == "function");
 				</script>
 			</li>
 			<li class="value">
@@ -173,8 +176,8 @@ END LICENSE
 				<span class="type"><a href="#types.consoleo">console output</a></span>
 				<span>The standard error stream for this shell.</span>
 				<script type="application/x.jsapi#tests">
-					test(typeof(module.stderr.write) == "function");
-					test(typeof(module.stderr.close) == "function");
+					test(typeof(module.stdio.error.write) == "function");
+					test(typeof(module.stdio.error.close) == "function");
 				</script>
 			</li>
 			<li class="function">
