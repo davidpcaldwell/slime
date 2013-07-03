@@ -58,7 +58,7 @@ jsh.java.tools.javac({
 var jar = jsh.shell.java.home.parent.getFile("bin/jar");
 
 jsh.shell.shell(
-	jar.pathname,
+	jar,
 	[
 		"xf", javassist
 	],
@@ -70,7 +70,7 @@ jsh.shell.shell(
 var manifest = jsh.shell.TMPDIR.createTemporary({ suffix: "mf" });
 manifest.pathname.write("Premain-Class: inonit.tools.Profiler\n", { append: false });
 jsh.shell.shell(
-	jar.pathname,
+	jar,
 	[
 		"cfm", parameters.options.to,
 		manifest,

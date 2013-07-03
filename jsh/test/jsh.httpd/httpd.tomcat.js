@@ -42,7 +42,7 @@ $exports.Tomcat = function(p) {
 		var catalina = function(command,m) {
 			return function() {
 				jsh.shell.shell({
-					command: jsh.file.Pathname("/bin/sh"),
+					command: jsh.file.Pathname("/bin/sh").file,
 					arguments: [
 						p.home.getRelativePath("bin/catalina.sh"),
 						command

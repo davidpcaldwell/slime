@@ -131,14 +131,27 @@ $exports.run.evaluate = function(result) {
 	return result;
 };
 $exports.run.stdio = (function(p) {
-	if (p.stdio) return p.stdio;
-	if (p.stdin || p.stdout || p.stderr) return $api.deprecate(function() {
-		return {
-			input: p.stdin,
-			output: p.stdout,
-			error: p.stderr
-		};
+	var rv = (function() {
+		if (typeof(p.stdio) != "undefined") return p.stdio;
+		
+		if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
+			return $api.deprecate(function() {
+				return {
+					input: p.stdin,
+					output: p.stdout,
+					error: p.stderr
+				};
+			})();
+		}
+		
+		return {};
 	})();
+	if ($exports.stdio && rv) {
+		["input","output","error"].forEach(function(stream) {
+			if (typeof(rv[stream]) == "undefined") rv[stream] = $exports.stdio[stream];
+		});
+	}
+	return rv;
 });
 $exports.environment = $context.api.java.Environment($context._environment);
 

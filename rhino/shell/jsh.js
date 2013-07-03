@@ -121,98 +121,55 @@ $exports.shell = function(p) {
 	if (!p.command) {
 		throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
 	}
+	var run = $context.api.js.Object.set({}, p);
+	(function() {
+		if (run.command.file && !run.command.pathname) {
+			$api.deprecate(function() {
+				//	Pathname given; turn into file
+				run.command = run.command.file;
+			})();
+		}
+		if (typeof(run.command) == "string") {
+			$api.deprecate(function() {
+				//	string given; mark but do nothing
+				var breakpoint = 1;
+			})();
+			return;
+		}
+		if (!run.command.pathname) {
+			throw new TypeError("command property is not a file");
+		}
+	})();
+	(function() {
+		var preprocessor = function(item) {
+			if (run.filesystem) {
+				if (item.java && item.java.adapt && run.filesystem.java && run.filesystem.java.adapt) {
+					var _file = item.java.adapt();
+					return run.filesystem.java.adapt(_file);
+				}
+			}
+			return item;
+		};
+		if (run.arguments) {
+			run.arguments = run.arguments.map(preprocessor);
+		}
+	})();
+	(function() {
+		if (!run.evaluate && run.onExit) {
+			run.evaluate = $api.deprecate(run.onExit);
+		}
+	})();
 
-	return $exports.run({
-		command: (function() {
-			//	Accept pathname instead of file for command, for compatibility
-			if (p.command.file && !p.command.pathname) {
-				$api.deprecate(function() {
-					p.command = p.command.file;
-				})();				
-			}
-			if (typeof(p.command) == "string") return p.command;
-			if (p.command.pathname) return p.command.pathname;
-			throw new TypeError("p.command not string or file");
-		})(),
-		arguments: p.arguments.map((function() {
-			var preprocessor = function(item) { return item; }
-			if ($filesystems.cygwin && p.filesystem == $filesystems.os) {
-				preprocessor = function(item) {
-					return $filesystems.cygwin.toWindows(item);
-				}
-			} else if ($filesystems.cygwin && p.filesystem == $filesystems.cygwin) {
-				preprocessor = function(item) {
-					return $filesystems.cygwin.toUnix(item);
-				}
-			}
-			return preprocessor;
-		})()),
-		environment: p.environment,
-		workingDirectory: (function() {
-			var work = p.workingDirectory;
-			if (!work) return;
-			if (work && work.pathname && work.pathname.directory) {
-				if ($filesystems.cygwin) {
-					return $filesystems.cygwin.toWindows(work.pathname).directory;
-				} else {
-					return work;
-				}
-			}
-			throw new Error("Unknown working directory: " + work);
-		})(),
-		evaluate: (function() {
-			if (p.evaluate) return p.evaluate;
-			if (p.onExit) return $api.deprecate(p.onExit);
-		})(),
-		stdio: (function() {
-			if (p.stdio) return p.stdio;
-			if (p.stdin || p.stdout || p.stderr) {
-				var xformed = {
-					input: p.stdin,
-					output: p.stdout,
-					error: p.stderr
-				}
-				return {
-					input: stream(xformed,"input"),
-					output: stream(xformed,"output"),
-					error: stream(xformed,"error")
-				};
-			}
-			if (typeof(p.stdio) == "undefined") return $exports.stdio;
-		})()
-	});
+	return $exports.run(run);
 }
-
-var getMandatoryStringProperty = function(name) {
-	var rv = $context.getSystemProperty(name);
-	if (!rv) {
-		throw new Error("Missing mandatory system property " + name);
-	}
-	return rv;
-};
 
 //	TODO	is rhino/file.filesystem.$jsh.os(...) still necessary? Was used here.
-
-var getDirectoryProperty = function(name) {
-	var rv = $context.api.file.filesystems.os.Pathname($context.getSystemProperty(name));
-	rv = $context.api.file.filesystem.$jsh.os(rv);
-	return rv.directory;
-}
-
-//	converts OS string into jsh.file.Searchpath object in default filesystem
-var getSearchpath = function(value) {
-	var searchpath = $context.api.file.filesystems.os.Searchpath.parse(value);
-	var rv = searchpath.pathnames.map(function(pathname) {
-		return $context.api.file.filesystem.$jsh.os(pathname);
-	});
-	return $context.api.file.Searchpath(rv);
-}
 
 //	TODO	if not running on Rhino, this property should not appear
 //	TODO	no test coverage for $exports.rhino
 $exports.rhino = new function() {
 	if ($exports.properties.get("jsh.launcher.rhino.classpath")) {
-		this.classpath = getSearchpath($exports.properties.get("jsh.launcher.rhino.classpath"));
+		this.classpath = $exports.properties.searchpath("jsh.launcher.rhino.classpath");
 	}
 };
 

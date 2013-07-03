@@ -159,7 +159,7 @@ if (parameters.options.unix) {
 	//	}
 		var chmod = which("chmod");
 		jsh.shell.shell(
-			chmod.pathname,
+			chmod,
 			[
 				"+x", install.getRelativePath("jsh.bash")
 			]
@@ -176,7 +176,7 @@ if (parameters.options.cygwin) {
 		jsh.shell.echo("Creating cygwin paths helper ...");
 		install.getRelativePath("bin").createDirectory();
 		jsh.shell.shell(
-			gplusplus.pathname,
+			gplusplus,
 			[
 				"-o", install.getRelativePath("bin/inonit.script.runtime.io.cygwin.cygpath.exe"),
 				src.getRelativePath("rhino/file/java/inonit/script/runtime/io/cygwin/cygpath.cpp")
@@ -202,7 +202,7 @@ if (parameters.options.cygwin) {
 		});
 		jsh.shell.echo("Building Cygwin native launcher with environment " + jsh.js.toLiteral(env));
 		jsh.shell.shell(
-			bash.pathname,
+			bash,
 			[
 				src.getRelativePath("jsh/launcher/rhino/native/win32/cygwin.bash")
 			],
@@ -295,7 +295,7 @@ if (parameters.options.cygwin) {
 		}
 		jsh.shell.echo("Invoking gcc " + args.join(" ") + " ...");
 		jsh.shell.shell(
-			gcc.pathname,
+			gcc,
 			args,
 			{
 				workingDirectory: install,
@@ -327,7 +327,7 @@ if (which("chmod")) {
 			if (/\.jsh\.js$/.test(node.pathname.basename)) {
 				jsh.shell.echo("Making executable: " + node.pathname.toString());
 				jsh.shell.shell(
-					arguments.callee.chmod.pathname,
+					arguments.callee.chmod,
 					[
 						"+x", node.pathname.toString()
 					]
