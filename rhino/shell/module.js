@@ -162,7 +162,7 @@ var toLocalPathname = function(osPathname) {
 
 $exports.properties = new function() {
 	var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
-	
+
 	this.object = $context.api.java.Properties.adapt( _properties );
 
 	this.get = function(name) {
