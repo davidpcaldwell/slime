@@ -65,16 +65,26 @@ END LICENSE
 						<div class="name">java</div>
 						<span>The <a href="../host/api.html">rhino/host</a> module.</span>
 					</li>
+					<li class="value">
+						<div class="name">file</div>
+						<span>The <a href="../file/api.html">rhino/file</a> module.</span>
+					</li>
 				</ul>
 			</li>
 			<li class="value">
 				<div class="name">_environment</div>
-				<span class="type">Packages.java.util.Map</span>
+				<span class="type">Packages.inonit.system.OperatingSystem.Environment</span>
 				<span>
-					(optional)
-					A native Java object consisting of a <code>Map&lt;String,String></code> representing the environment variables
-					to use for this shell. If not provided, the environment provided by <code>Packages.java.lang.System.getenv()</code>
-					will be used.
+					(optional: if omitted, the actual operating system environment will be used.)
+					An object representing the operating system environment.
+				</span>
+			</li>
+			<li class="value">
+				<div class="name">_properties</div>
+				<span class="type">Packages.java.util.Properties</span>
+				<span>
+					(optional: if omitted, the actual system properties will be used.)
+					A set of properties representing Java system properties.
 				</span>
 			</li>
 		</ul>

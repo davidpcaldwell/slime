@@ -153,7 +153,7 @@ $exports.run.stdio = (function(p) {
 	}
 	return rv;
 });
-$exports.environment = $context.api.java.Environment($context._environment);
+$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 var toLocalPathname = function(osPathname) {
 	var _rv = osPathname.java.adapt();
@@ -161,10 +161,12 @@ var toLocalPathname = function(osPathname) {
 }
 
 $exports.properties = new function() {
-	this.object = $context.api.java.Properties.adapt($context._properties),
+	var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
+	
+	this.object = $context.api.java.Properties.adapt( _properties );
 
 	this.get = function(name) {
-		var rv = $context._properties.getProperty(name);
+		var rv = _properties.getProperty(name);
 		if (!rv) return null;
 		return String(rv);
 	};
