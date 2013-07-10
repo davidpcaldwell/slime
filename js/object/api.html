@@ -300,7 +300,7 @@ END LICENSE
 						reference: reference
 					};
 					reference.circular = circular;
-					
+
 					var expectError = function(f,filter) {
 						try {
 							f();
@@ -313,7 +313,7 @@ END LICENSE
 							}
 						}
 					}
-					
+
 					expectError(function() {
 						return module.toLiteral(circular);
 					}, function(e) {
