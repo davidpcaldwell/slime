@@ -31,7 +31,11 @@ $exports.run = function(p) {
 				var _hashMap = function(p) {
 					var rv = new Packages.java.util.HashMap();
 					for (var x in p) {
-						rv.put( new Packages.java.lang.String(x), new Packages.java.lang.String(p[x]) );
+						if (p[x] === null) {
+							//	do nothing
+						} else {
+							rv.put( new Packages.java.lang.String(x), new Packages.java.lang.String(p[x]) );
+						}
 					}
 					return rv;
 				}
