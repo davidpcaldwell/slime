@@ -278,47 +278,57 @@ this.jsh = new function() {
 		$api: loader.$api,
 		$rhino: loader.getRhinoLoader()
 	};
-
-	(function loadPlugins() {
-		var _plugins = $host.getLoader().getPlugins();
+	
+	var readPlugin = function(_code,callbacks) {
+		if (_code.getScripts()) {
+			var scope = {};
+			//	TODO	$host is currently *automatically* in scope for these plugins, but that is probably not as it should be; see
+			//			issue 32. $host *should* be in scope, though; we should just have to put it there manually.
+			scope.plugins = plugins;
+			scope.plugin = function(declaration) {
+				if (typeof(declaration.isReady) == "undefined") {
+					declaration.isReady = function() {
+						return true;
+					};
+				}
+				callbacks.script({ _code: _code, declaration: declaration });
+			}
+			scope.global = (function() { return this; })();
+			scope.jsh = jsh;
+			scope.$loader = new (function(_code) {
+				this.file = function(path,context) {
+					return loader.plugin.file(_code,path,context);
+				};
+				this.module = function(path,context) {
+					return loader.plugin.module(_code,path,context);
+				};
+				this.run = function(path,scope,target) {
+					return loader.plugin.run(_code,path,scope,target);
+				};
+				this.classpath = new function() {
+					this.add = function(pathname) {
+						return loader.addClasses(pathname.java.adapt());
+					}
+				}
+			})(_code);
+			loader.plugin.read(_code,scope);
+		} else {
+			callbacks.java({ _code: code });
+		}		
+	};
+	
+	var loadPlugins = function(_plugins) {
 		var list = [];
 		for (var i=0; i<_plugins.length; i++) {
 			var _code = _plugins[i].getCode();
-			if (_code.getScripts()) {
-				var scope = {};
-				//	TODO	$host is currently automatically in scope for these plugins, but that is probably not as it should be; see
-				//			issue 32. $host *should* be in scope, though.
-				scope.plugins = plugins;
-				scope.plugin = function(p) {
-					if (typeof(p.isReady) == "undefined") {
-						p.isReady = function() {
-							return true;
-						};
-					}
-					list.push({ _code: _code, declaration: p });
+			readPlugin(_code,{
+				script: function(v) {
+					list.push(v);
+				},
+				java: function(v) {
+					loader.plugin.addClasses(v._code);
 				}
-				scope.global = (function() { return this; })();
-				scope.jsh = jsh;
-				scope.$loader = new (function(_code) {
-					this.file = function(path,context) {
-						return loader.plugin.file(_code,path,context);
-					};
-					this.module = function(path,context) {
-						return loader.plugin.module(_code,path,context);
-					};
-					this.run = function(path,scope,target) {
-						return loader.plugin.run(_code,path,scope,target);
-					};
-					this.classpath = new function() {
-						this.add = function(pathname) {
-							return loader.addClasses(pathname.java.adapt());
-						}
-					}
-				})(_code);
-				loader.plugin.read(_code,scope);
-			} else {
-				loader.plugin.addClasses(_code);
-			}
+			});
 		}
 
 		var stop = false;
@@ -344,7 +354,17 @@ this.jsh = new function() {
 					jsh.shell.echo("Plugin from " + item._code.getScripts() + " is disabled: " + message, { stream: jsh.io.Streams.stderr });
 				});
 			}
+		}		
+	};
+	
+	this.loader.plugins = function(from) {
+		if (from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
+			loadPlugins($host.getPlugins(from.java.adapt()));
 		}
+	};
+
+	(function() {
+		loadPlugins($host.getLoader().getPlugins());
 	})();
 
 	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {

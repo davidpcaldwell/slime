@@ -73,6 +73,51 @@ public class Shell {
 				return create(Code.jar(jar));
 			}
 
+			static class PluginComparator implements Comparator<File> {
+				private int evaluate(File file) {
+					if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+						return -1;
+					}
+					return 0;
+				}
+
+				public int compare(File o1, File o2) {
+					return evaluate(o1) - evaluate(o2);
+				}
+			}
+
+			static void addPluginsTo(List<Shell.Installation.Plugin> rv, File file) {
+				if (file.exists()) {
+					if (file.isDirectory()) {
+						if (new File(file, "plugin.jsh.js").exists()) {
+							//	interpret as unpacked module
+							rv.add(Shell.Installation.Plugin.unpacked(file));
+						} else {
+							//	interpret as directory of slime
+							File[] list = file.listFiles();
+							Arrays.sort(list, new PluginComparator());
+							for (File f : list) {
+								addPluginsTo(rv, f);
+							}
+						}
+					} else if (file.getName().endsWith(".slime")) {
+						try {
+							Shell.Installation.Plugin p = Shell.Installation.Plugin.slime(file);
+							if (p != null) {
+								rv.add(p);
+							}
+						} catch (IOException e) {
+							//	TODO	probably error message or warning
+						}
+					} else if (file.getName().endsWith(".jar")) {
+						rv.add(Shell.Installation.Plugin.jar(file));
+					} else {
+						//	Ignore, not .slime or directory
+						//	TODO	probably log message of some kind
+					}
+				}
+			}
+
 			public abstract Code getCode();
 		}
 
@@ -364,6 +409,12 @@ public class Shell {
 			public void exit(int status) throws ExitException {
 				Host.this.configuration.getEngine().getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
+			}
+			
+			public Shell.Installation.Plugin[] getPlugins(File file) {
+				List<Shell.Installation.Plugin> rv = new ArrayList<Shell.Installation.Plugin>();
+				Shell.Installation.Plugin.addPluginsTo(rv, file);
+				return rv.toArray(new Shell.Installation.Plugin[rv.size()]);
 			}
 
 			public int jsh(Configuration configuration, final File script, final String[] arguments) {
