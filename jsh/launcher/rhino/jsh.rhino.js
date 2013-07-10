@@ -418,7 +418,7 @@ settings.explicit = new function() {
 	[
 		"JSH_PLUGINS"
 	].forEach( function(name) {
-		self[name] = (env[name]) ? new Searchpath(os(env[name],true)).toPath() : UNDEFINED;
+		self[name] = (typeof(env[name]) != "undefined") ? new Searchpath(os(env[name],true)).toPath() : UNDEFINED;
 	});
 
 	["JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
