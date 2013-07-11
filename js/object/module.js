@@ -105,8 +105,7 @@ var toLiteral = function(value) {
 		} else if (typeof(value) == "xml") {
 			return null;
 		} else if (typeof(value) == "object") {
-			//	TODO	indexOf is not defined if globals is false
-			if (globals.Array.indexOf(references,value) == -1) {
+			if (globals.Array.indexOf.call(references,value) == -1) {
 				references.push(value);
 			} else {
 				debugger;

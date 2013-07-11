@@ -218,7 +218,7 @@ END LICENSE
 					}
 				]]></script>
 			</li>
-			<li class="function">
+			<li class="function" jsapi:id="toLiteral">
 				<div class="name">toLiteral</div>
 				<div>Converts a JavaScript value to a string literal.</div>
 				<div>
@@ -292,6 +292,32 @@ END LICENSE
 							s.test(t[2] === true);
 							s.test(t[3].x == "y");
 						}
+					});
+				</script>
+				<script type="application/x.jsapi#tests">
+					var reference = {};
+					var circular = {
+						reference: reference
+					};
+					reference.circular = circular;
+
+					var expectError = function(f,filter) {
+						try {
+							f();
+							test(false);
+						} catch (e) {
+							if (!filter) {
+								test(true);
+							} else {
+								test(filter(e));
+							}
+						}
+					}
+
+					expectError(function() {
+						return module.toLiteral(circular);
+					}, function(e) {
+						return /^Recursion/.test(e.message);
 					});
 				</script>
 			</li>
