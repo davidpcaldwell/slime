@@ -424,6 +424,10 @@ settings.explicit = new function() {
 	["JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
 		this[name] = env[name];
 	}, this);
+	
+	["JSH_JAVA_LOGGER"].forEach(function(name) {
+		this[name] = (typeof(env[name]) != "undefined") ? new File(os(env[name])) : UNDEFINED;
+	}, this);
 
 	if (!settings.packaged) {
 		var httpUrlPattern = /^http(?:s?)\:\/\/(.*)/;
@@ -633,6 +637,10 @@ try {
 
 	if (settings.get("JSH_TMPDIR")) {
 		command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
+	}
+	
+	if (settings.get("JSH_JAVA_LOGGER")) {
+		command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGER").path);
 	}
 
 	if (platform.cygwin) {

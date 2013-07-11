@@ -14,6 +14,7 @@ package inonit.script.jsh;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 import inonit.system.*;
 import inonit.script.rhino.*;
@@ -33,6 +34,101 @@ public class Main {
 
 		CheckedException(String message, Throwable cause) {
 			super(message, cause);
+		}
+	}
+	
+	private static class LoggingInputStream extends InputStream {
+		private static void log(Level level, String mask, Object... substitutions) {
+			Logging.get().log(LoggingInputStream.class, level, mask, substitutions);
+		}
+		
+		private InputStream in;
+		
+		LoggingInputStream(InputStream in) {
+			this.in = in;
+		}
+		
+		@Override public String toString() {
+			if (in == System.in) {
+				return super.toString() + " delegate=System.in";
+			} else {
+				return super.toString() + " delegate=" + in;
+			}
+		}
+
+		@Override
+		public int read() throws IOException {
+			try {
+				int rv = in.read();
+				log(Level.FINEST, "Read byte: %d", rv);
+				Logging.get().logStackTrace(LoggingInputStream.class, Level.FINEST, "read()");
+				return rv;
+			} catch (IOException e) {
+				Logging.get().log(LoggingInputStream.class, Level.SEVERE, "Error in read()", e);
+				throw e;
+			}
+		}
+
+		@Override
+		public int read(byte[] b) throws IOException {
+			try {
+				int rv = in.read(b);
+				log(Level.FINEST, "Read %d bytes into array.", rv);
+				Logging.get().logStackTrace(LoggingInputStream.class, Level.FINEST, "read(byte[])");
+				for (int i=0; i<rv; i++) {
+					log(Level.FINEST, "Read byte: %d", b[i]);
+				}
+				return rv;
+			} catch (IOException e) {
+				Logging.get().log(LoggingInputStream.class, Level.SEVERE, "Error in read(byte[])", e);
+				throw e;
+			}
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException {
+			try {
+				int rv = in.read(b, off, len);
+				log(Level.FINEST, "Read %d bytes into array.", rv);
+				Logging.get().logStackTrace(LoggingInputStream.class, Level.FINEST, "read(byte[],int,int)");
+				for (int i=0; i<rv; i++) {
+					log(Level.FINEST, "Read byte: %d", b[i+off]);
+				}
+				return rv;
+			} catch (IOException e) {
+				Logging.get().log(LoggingInputStream.class, Level.SEVERE, "Error in read(byte[],int,int)", e);
+				throw e;
+			}
+		}
+
+		@Override
+		public long skip(long n) throws IOException {
+			return in.skip(n);
+		}
+
+		@Override
+		public int available() throws IOException {
+			return in.available();
+		}
+
+		@Override
+		public void close() throws IOException {
+			in.close();
+		}
+
+		@Override
+		public synchronized void mark(int readlimit) {
+			in.mark(readlimit);
+		}
+
+		@Override
+		public synchronized void reset() throws IOException {
+			in.reset();
+		}
+
+		@Override
+		public boolean markSupported() {
+			return in.markSupported();
 		}
 	}
 
@@ -219,6 +315,8 @@ public class Main {
 		return Shell.execute(
 			installation,
 			new Shell.Configuration() {
+				private InputStream stdin = new LoggingInputStream(System.in);
+				
 				public Engine.Log getLog() {
 					return new Engine.Log() {
 						public void println(String message) {
@@ -266,7 +364,7 @@ public class Main {
 				public Stdio getStdio() {
 					return new Stdio() {
 						public InputStream getStandardInput() {
-							return System.in;
+							return stdin;
 						}
 
 						public OutputStream getStandardOutput() {
@@ -292,6 +390,9 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws Throwable {
+		if (!inonit.system.Logging.get().isSpecified()) {
+			inonit.system.Logging.get().initialize(new java.util.Properties());
+		}
 		Main main = new Main();
 		main.args = new ArrayList();
 		main.args.addAll( Arrays.asList(args) );

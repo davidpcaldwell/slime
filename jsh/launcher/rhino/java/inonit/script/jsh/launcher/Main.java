@@ -14,6 +14,7 @@ package inonit.script.jsh.launcher;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 import inonit.system.cygwin.*;
 
@@ -61,6 +62,10 @@ public class Main {
 
 		private boolean debug;
 
+		final Properties getJavaLoggingProperties() throws IOException {
+			Properties rv = new Properties();
+			return rv;
+		}
 		abstract void initializeSystemProperties() throws IOException;
 
 		abstract ClassLoader getMainClassLoader() throws IOException;
@@ -87,7 +92,7 @@ public class Main {
 		final void setLauncherClasspath(String launcherClasspath) {
 			this.launcherClasspath = launcherClasspath;
 		}
-
+		
 		final void initializeSystemProperties() throws java.io.IOException {
 			if (getRhinoClasspath() != null) {
 				System.setProperty("jsh.launcher.rhino.classpath", getRhinoClasspath());
@@ -151,7 +156,7 @@ public class Main {
 		Packaged(String location) {
 			this.location = location;
 		}
-
+		
 		void initializeSystemProperties() {
 			System.setProperty("jsh.launcher.packaged", location);
 		}
@@ -231,6 +236,9 @@ public class Main {
 
 	private void run(String[] args) throws java.io.IOException {
 		Invocation invocation = Invocation.create();
+		if (!inonit.system.Logging.get().isSpecified()) {
+			inonit.system.Logging.get().initialize(invocation.getJavaLoggingProperties());
+		}
 		invocation.initializeSystemProperties();
 		try {
 			Class shell = invocation.getMainClass();

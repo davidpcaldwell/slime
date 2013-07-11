@@ -52,6 +52,8 @@ if (typeof(this.SLIME_SRC) == "undefined") {
 var LAUNCHER_COMMAND;
 if (!LAUNCHER_COMMAND) {
 	var vmargs = [];
+	//	TODO	this hard-coding of -client is not optimal but better than nothing
+	vmargs.push("-client");
 	if (getSystemProperty("jsh.suite.profile")) {
 		vmargs = ["-javaagent:" + getPath(JSH_HOME, "tools/profiler.jar")]
 	}
@@ -115,10 +117,10 @@ var testCommandOutput = function(path,tester,p) {
 		}
 		for (var x in p.env) {
 			if (typeof(p.env[x]) != "undefined") {
-				if (p.env[x]) {
-					rv[x] = p.env[x];
-				} else {
+				if (p.env[x] === null) {
 					delete rv[x];
+				} else {
+					rv[x] = p.env[x];
 				}
 			}
 		}
@@ -149,7 +151,9 @@ var testCommandOutput = function(path,tester,p) {
 
 	console(launcher.concat(command).join(" "));
 	var status = runCommand.apply(this,launcher.concat(command).concat([options]));
-	if (status != 0) throw new Error("Failed with exit status " + status);
+	if (status != 0) {
+		throw new Error("Failed with exit status " + status + ": " + launcher.concat(command).join(" ") + " with options: " + options);
+	}
 	tester(options);
 	console("");
 	console("Passed: " + command.join(" "));
@@ -159,6 +163,8 @@ var testCommandOutput = function(path,tester,p) {
 var checkOutput = function(options,messages) {
 	var expected = messages.join(String(Packages.java.lang.System.getProperty("line.separator")));
 	if (options.output != expected) {
+		Packages.java.lang.System.err.println("Output wrong; dumping stderr:");
+		Packages.java.lang.System.err.println(options.err);
 		throw new Error("Output wrong: it is [" + options.output + "] when expected was [" + expected + "]");
 	}
 }
@@ -438,7 +444,10 @@ testCommandOutput("jsh.shell/stdio.2.jsh.js", function(options) {
 		"ABCDEFGHIJ"
 	]);
 }, {
-	stdin: input_abcdefghij()
+	stdin: input_abcdefghij(),
+	env: {
+		JSH_PLUGINS: ""
+	}
 });
 
 testCommandOutput("jsh.shell/stdio.3.jsh.js", function(options) {
@@ -446,7 +455,10 @@ testCommandOutput("jsh.shell/stdio.3.jsh.js", function(options) {
 		"ABCDEFGHIJ"
 	]);
 }, {
-	stdin: input_abcdefghij()
+	stdin: input_abcdefghij(),
+	env: {
+		JSH_PLUGINS: ""
+	}
 });
 
 //	TODO	correct output for below in an unbuilt shell is "jsh.home=undefined"

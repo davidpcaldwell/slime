@@ -14,6 +14,7 @@ package inonit.script.jsh;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 import org.mozilla.javascript.*;
 
@@ -369,6 +370,7 @@ public class Shell {
 
 			public class Stdio {
 				public InputStream getStandardInput() {
+					Logging.get().log(Stdio.class, Level.CONFIG, "stdin = %s", configuration.getStdio().getStandardInput());
 					return configuration.getStdio().getStandardInput();
 				}
 

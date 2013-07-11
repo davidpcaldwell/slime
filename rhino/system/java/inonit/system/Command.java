@@ -14,6 +14,7 @@ package inonit.system;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 public class Command {
 	public static abstract class Context {
@@ -215,13 +216,14 @@ public class Command {
 		private Thread out;
 
 		private InputStream stdin;
-
+		
 		Process(java.lang.Process delegate, Context context, Configuration configuration) {
 			this.delegate = delegate;
 			String spoolName = configuration.getCommand();
 			this.in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, "stdout: " + spoolName);
 			this.err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
 			this.stdin = context.getStandardInput();
+			Logging.get().log(Process.class, Level.FINEST, "Stack trace", new Throwable("Starting input spooler"));
 			this.out = Spooler.start(this.stdin, delegate.getOutputStream(), true, "stdin from " + this.stdin + ": " + spoolName);
 		}
 
