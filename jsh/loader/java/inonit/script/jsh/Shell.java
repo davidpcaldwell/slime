@@ -412,7 +412,7 @@ public class Shell {
 				Host.this.configuration.getEngine().getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
 			}
-			
+
 			public Shell.Installation.Plugin[] getPlugins(File file) {
 				List<Shell.Installation.Plugin> rv = new ArrayList<Shell.Installation.Plugin>();
 				Shell.Installation.Plugin.addPluginsTo(rv, file);

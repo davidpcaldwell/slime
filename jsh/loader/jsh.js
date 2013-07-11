@@ -278,7 +278,7 @@ this.jsh = new function() {
 		$api: loader.$api,
 		$rhino: loader.getRhinoLoader()
 	};
-	
+
 	var readPlugin = function(_code,callbacks) {
 		if (_code.getScripts()) {
 			var scope = {};
@@ -314,9 +314,9 @@ this.jsh = new function() {
 			loader.plugin.read(_code,scope);
 		} else {
 			callbacks.java({ _code: code });
-		}		
+		}
 	};
-	
+
 	var loadPlugins = function(_plugins) {
 		var list = [];
 		for (var i=0; i<_plugins.length; i++) {
@@ -354,9 +354,9 @@ this.jsh = new function() {
 					jsh.shell.echo("Plugin from " + item._code.getScripts() + " is disabled: " + message, { stream: jsh.io.Streams.stderr });
 				});
 			}
-		}		
+		}
 	};
-	
+
 	this.loader.plugins = function(from) {
 		if (from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
 			loadPlugins($host.getPlugins(from.java.adapt()));

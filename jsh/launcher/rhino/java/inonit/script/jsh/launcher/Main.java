@@ -92,7 +92,7 @@ public class Main {
 		final void setLauncherClasspath(String launcherClasspath) {
 			this.launcherClasspath = launcherClasspath;
 		}
-		
+
 		final void initializeSystemProperties() throws java.io.IOException {
 			if (getRhinoClasspath() != null) {
 				System.setProperty("jsh.launcher.rhino.classpath", getRhinoClasspath());
@@ -156,7 +156,7 @@ public class Main {
 		Packaged(String location) {
 			this.location = location;
 		}
-		
+
 		void initializeSystemProperties() {
 			System.setProperty("jsh.launcher.packaged", location);
 		}

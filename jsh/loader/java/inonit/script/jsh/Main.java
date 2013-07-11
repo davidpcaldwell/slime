@@ -36,18 +36,18 @@ public class Main {
 			super(message, cause);
 		}
 	}
-	
+
 	private static class LoggingInputStream extends InputStream {
 		private static void log(Level level, String mask, Object... substitutions) {
 			Logging.get().log(LoggingInputStream.class, level, mask, substitutions);
 		}
-		
+
 		private InputStream in;
-		
+
 		LoggingInputStream(InputStream in) {
 			this.in = in;
 		}
-		
+
 		@Override public String toString() {
 			if (in == System.in) {
 				return super.toString() + " delegate=System.in";
@@ -316,7 +316,7 @@ public class Main {
 			installation,
 			new Shell.Configuration() {
 				private InputStream stdin = new LoggingInputStream(System.in);
-				
+
 				public Engine.Log getLog() {
 					return new Engine.Log() {
 						public void println(String message) {

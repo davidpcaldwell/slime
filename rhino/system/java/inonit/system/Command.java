@@ -216,7 +216,7 @@ public class Command {
 		private Thread out;
 
 		private InputStream stdin;
-		
+
 		Process(java.lang.Process delegate, Context context, Configuration configuration) {
 			this.delegate = delegate;
 			String spoolName = configuration.getCommand();
