@@ -150,10 +150,21 @@ $exports.run.stdio = (function(p) {
 
 		return {};
 	})();
-	if ($exports.stdio && rv) {
-		["input","output","error"].forEach(function(stream) {
-			if (typeof(rv[stream]) == "undefined") rv[stream] = $exports.stdio[stream];
-		});
+	if (rv) {
+		if ($exports.stdio) {
+			["output","error"].forEach(function(stream) {
+				if (typeof(rv[stream]) == "undefined") rv[stream] = $exports.stdio[stream];
+			});
+		}
+		if (typeof(rv.input) == "undefined") rv.input = null;
+	} else {
+		//	The only way rv should be anything other than an object is if p.stdio was null
+		if (!$exports.stdio) {
+			if (p.stdio === null) {
+			} else {
+				throw new Error("Unreachable");
+			}
+		}
 	}
 	return rv;
 });
