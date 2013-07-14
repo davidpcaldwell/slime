@@ -126,6 +126,12 @@ $exports.run = function(p) {
 	} else {
 		result.status = Number( _listener.getExitStatus().intValue() );
 	}
+	stdio.close();
+	if (stdio.output || stdio.error) {
+		result.stdio = {};
+		if (stdio.output) result.stdio.output = stdio.output;
+		if (stdio.error) result.stdio.error = stdio.error;		
+	} 
 	var evaluate = (p.evaluate) ? p.evaluate : arguments.callee.evaluate;
 	return evaluate(result);
 };
@@ -150,6 +156,27 @@ $exports.run.stdio = (function(p) {
 
 		return {};
 	})();
+	if (rv) {
+		rv.buffers = {};
+		rv.close = function() {
+			for (var x in this.buffers) {
+				this.buffers[x].close();
+				this[x] = this.buffers[x].readText().asString();
+			}
+		};
+		["output","error"].forEach(function(stream) {
+			if (rv[stream] == String) {
+				rv.buffers[stream] = new $context.api.io.Buffer();
+				rv[stream] = rv.buffers[stream].writeBinary();
+			}
+		});
+		if (typeof(rv.input) == "string") {
+			var buffer = new $context.api.io.Buffer();
+			buffer.writeText().write(rv.input);
+			buffer.close();
+			rv.input = buffer.readBinary();
+		}
+	}
 	if (rv) {
 		if ($exports.stdio) {
 			["output","error"].forEach(function(stream) {

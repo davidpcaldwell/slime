@@ -227,10 +227,9 @@ $exports.jsh = function(p) {
 	})();
 
 	if (fork) {
-		debugger;
 		//	TODO	can we use $exports.java.home here?
 		var jdk = $context.api.file.filesystems.os.Pathname($exports.properties.get("java.home")).directory;
-		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java").toString();
+		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java");
 		//	Set defaults from this shell
 		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
 

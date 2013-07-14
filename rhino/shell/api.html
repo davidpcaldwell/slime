@@ -23,14 +23,21 @@ END LICENSE
 		<h1>Context</h1>
 		<script type="application/x.jsapi#context">
 			new function() {
+				var io = $jsapi.module("../../rhino/io/", {
+					api: {
+						java: jsh.java,
+						mime: $jsapi.module("../../js/mime/")
+					}
+				});
 				this.api = {
 					java: $jsapi.module("../../rhino/host/"),
+					io: io,
 					file: $jsapi.module("../../rhino/file/", new function() {
 						if (jsh.shell.environment.PATHEXT) {
 							this.pathext = jsh.shell.environment.PATHEXT.split(";");
 						}
 						this.api = {
-							io: jsh.io,
+							io: io,
 							js: jsh.js,
 							java: jsh.java
 						};
@@ -114,9 +121,9 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
-			<li class="function">
-				<div class="name">run</div>
-				<div>Launches a subprocess using the operating system.</div>
+			<li class="function" jsapi:id="run">
+				<div class="name"><a id="exports.run">run</a></div>
+				<div jsapi:id="description">Launches a subprocess using the operating system.</div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<div class="type">
@@ -126,7 +133,7 @@ END LICENSE
 							to string using the String global function. Otherwise, a TypeError will be thrown.
 						</span>
 					</div>
-					<ol>
+					<ol jsapi:id="arguments">
 						<li class="object">
 							<div class="label">has properties:</div>
 							<ul>
@@ -140,16 +147,82 @@ END LICENSE
 									<span class="type">Array of <a href="#types.token">token</a></span>
 									<span>The command arguments to pass to the underlying operating system.</span>
 								</li>
-								<li class="value">
+								<li class="object">
 									<div class="name">stdio</div>
 									<span class="type"><a href="#types.stdio">stdio</a></span>
 									<span>
-										The streams that will be attached to the subprocess as its standard I/O streams. If
-										any of the streams are omitted, null streams will be
-										supplied for the omitted streams. A zero-byte stream will be supplied for standard input,
-										and streams that ignore written bytes will be supplied for standard output and
-										standard error.
+										(optional: defaults to stream-specific results as specified)
+										The streams that will be attached to the subprocess as its standard I/O streams. If the
+										value is <code>null</code> the subprocess will receive empty input and all output will be
+										discarded. Otherwise, the properties are interpreted for each stream as specified below.
 									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">input</div>
+											<span class="type">__TYPE__</span>
+											<ul>
+												<li>
+													If omitted or <code>null</code>, an empty stream is supplied as
+													input.
+												</li>
+												<li>
+													If a string, the string is supplied as input.
+												</li>
+												<li>
+													If a byte stream, the stream is supplied as input.
+												</li>
+											</ul>
+										</li>
+										<li class="value">
+											<div class="name">output</div>
+											<span class="type">__TYPE__</span>
+											<span>(optional; if omitted, a stream that discards all output is supplied.)</span>
+											<ul>
+												<li>
+													If <code>null</code>, an stream that discards all output is supplied to the
+													subprocess.
+												</li>
+												<li>
+													If the <code>String</code> global function is supplied, subprocess output is 
+													buffered and converted to a string and is returned as the output property of the
+													stdio property of the result of the subprocess.
+												</li>
+												<li>
+													If a byte stream, output from the subprocess is sent to that stream.
+												</li>
+											</ul>
+										</li>
+										<li class="value">
+											<div class="name">error</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+								<li class="value">
+									<span>
+									</span>
+									<script type="application/x.jsapi#tests">
+										var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+										jsh.java.tools.javac({
+											destination: to.pathname,
+											arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/Echo.java")]
+										});
+										var buffer = new jsh.io.Buffer();
+										var output = module.java({
+											classpath: jsh.file.Searchpath([to.pathname]),
+											main: "inonit.jsh.test.Echo",
+											stdio: {
+												input: "Hello, World!",
+												output: String
+											},
+											evaluate: function(result) {
+												return result.stdio.output;
+											}
+										});
+										test(output == "Hello, World!");										
+									</script>
 								</li>
 								<li class="value" jsapi:id="run.environment">
 									<div class="name">environment</div>
@@ -248,7 +321,7 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
-				<div class="returns">
+				<div class="returns" jsapi:id="returns">
 					<div class="label">Returns</div>
 					<span class="type">(any)</span>
 					<span>
@@ -289,6 +362,90 @@ END LICENSE
 					the <code>java.home</code> system property is referenced as <code>properties.java.home</code>. This value can be
 					examined using <code>String(properties.java.home)</code> to obtain its value as a <code>string</code>.
 				</span>
+			</li>
+			<li class="value">
+				<div class="name">TMPDIR</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<span>A temporary directory that may be used by this shell.</span>
+			</li>
+			<li class="value">
+				<div class="name">HOME</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<span>The home directory of the user executing this shell.</span>
+			</li>
+			<li class="value">
+				<div class="name">PWD</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<!--	TODO	can this be changed while the shell is running?	-->
+				<span>The current working directory.</span>
+			</li>
+			<li class="function" jsapi:id="java">
+				<div class="name">java</div>
+				<span>Launches a Java program.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>
+								An argument with the same specification as that for <code>shell</code>, with the following
+								differences:
+							</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">classpath</div>
+									<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
+									<span>The classpath to pass to the Java process.</span>
+								</li>
+								<li class="value">
+									<div class="name">main</div>
+									<span class="type">string</span>
+									<span>The name of the main class to execute.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">(any)</span>
+					<span>The return value of the <code>evaluate</code> property of the argument.</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					debugger;
+					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.java.tools.javac({
+						destination: to.pathname,
+						arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/Program.java")]
+					});
+					var buffer = new jsh.io.Buffer();
+					var output = module.java({
+						classpath: jsh.file.Searchpath([to.pathname]),
+						main: "inonit.jsh.test.Program",
+						stdout: buffer.writeBinary(),
+						evaluate: function(result) {
+							buffer.close();
+							return buffer.readText().asString();
+						}
+					});
+					test(output == "Hello");
+				</script>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">home</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+						<span>The home directory of the Java installation used to run this shell.</span>
+						<script type="application/x.jsapi#tests">
+							test(Boolean(module.java.home));
+						</script>
+					</li>
+					<li class="value">
+						<div class="name">launcher</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+						<span>The Java launcher program, that is, the executable used to launch Java programs.</span>
+					</li>
+				</ul>
 			</li>
 		</ul>
 	</div>

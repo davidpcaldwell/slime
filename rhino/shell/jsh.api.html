@@ -66,7 +66,6 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				var host = $jsapi.module("../../rhino/host/");
-				debugger;
 				var file = $jsapi.module("../../rhino/file/", new function() {
 					if (jsh.shell.environment.PATHEXT) {
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
@@ -96,6 +95,7 @@ END LICENSE
 				var shell = $jsapi.module("../../rhino/shell/", {
 					api: {
 						java: host,
+						io: jsh.io,
 						file: file
 					},
 					_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
@@ -117,9 +117,9 @@ END LICENSE
 				}
 
 				this.stdio = new function() {
-					this.input = jsh.shell.stdin;
-					this.output = jsh.shell.stdout;
-					this.error = jsh.shell.stderr;
+					this.input = (jsh.shell.stdio) ? jsh.shell.stdio.input : jsh.shell.stdin;
+					this.output = (jsh.shell.stdio) ? jsh.shell.stdio.output : jsh.shell.stdout;
+					this.error = (jsh.shell.stdio) ? jsh.shell.stdio.error : jsh.shell.stderr;
 				}
 
 				this.exit = function() {
@@ -140,6 +140,25 @@ END LICENSE
 			<span class="type">supports <a href="../../rhino/io/api.html#types.coutput">character output stream</a></span>
 		</div>
 		<ul>
+			<li class="function">
+				<div class="name">run</div>
+				<span jsapi:reference="getApi('api.html').getElement('run/description')">See <a href="api.html#exports.run">rhino/shell</a>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<span>
+						The arguments are interpreted identically to those in the corresponding 
+						<a href="api.html#exports.run">rhino/shell</a>
+						method except that if the stdio.output or stdio.error properties are omitted, the output from the subprocess
+						will be sent to the corresponding stream for the executing shell.
+					</span>
+					<ol jsapi:reference="getApi('api.html').getElement('run/arguments')">
+					</ol>
+				</div>
+				<div class="returns" jsapi:reference="getApi('api.html').getElement('run/returns')">
+					<div class="label">Returns</div>
+					See <a href="api.html#exports.run">rhino/shell</a>.
+				</div>
+			</li>
 			<li class="function">
 				<div class="name"><a name="$exports.exit">exit</a></div>
 				<span>Exits from this process.</span>
@@ -260,7 +279,7 @@ END LICENSE
 										into pathnames in this filesystem before the subprocess is launched.
 									</span>
 								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run.environment')">
+								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.environment')">
 									<div class="name">environment</div>
 									<span><a href="../../rhino/shell/api.html#run.environment">See rhino/shell</a></span>
 								</li>
@@ -269,11 +288,11 @@ END LICENSE
 									<span class="type">__TYPE__</span>
 									<span>__DESCRIPTION__</span>
 								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run.workingDirectory')">
+								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.workingDirectory')">
 									<div class="name">workingDirectory</div>
 									<span><a href="../../rhino/shell/api.html#run.workingDirectory">See rhino/shell</a></span>
 								</li>
-								<li class="function" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run.evaluate')">
+								<li class="function" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.evaluate')">
 									<div class="name">evaluate</div>
 									<span><a href="../../rhino/shell/api.html#run.evaluate">See rhino/shell</a></span>
 								</li>
@@ -409,7 +428,6 @@ END LICENSE
 					</ol>
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
-					debugger;
 					var unforked = module.jsh({
 						script: $module.getResourcePathname("test/jsh.jsh.js").file,
 						arguments: [],
@@ -431,7 +449,8 @@ END LICENSE
 						fork: true
 					});
 					test(forked.status == 2);
-					test(typeof(forked.command) != "undefined" && typeof(forked.command) == "string");
+					test(typeof(forked.command) != "undefined" && typeof(forked.command) == "object" && forked.command != null);
+					test(forked.command.toString() == jsh.shell.java.launcher.toString());
 					test(typeof(forked.arguments) != "undefined");
 					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
 
@@ -458,90 +477,6 @@ END LICENSE
 					var output = buffer.readText().asString();
 					test(output == $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator"));
 				</script>
-			</li>
-			<li class="function" jsapi:id="java">
-				<div class="name">java</div>
-				<span>Launches a Java program.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<span>
-								An argument with the same specification as that for <code>shell</code>, with the following
-								differences:
-							</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">classpath</div>
-									<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
-									<span>The classpath to pass to the Java process.</span>
-								</li>
-								<li class="value">
-									<div class="name">main</div>
-									<span class="type">string</span>
-									<span>The name of the main class to execute.</span>
-								</li>
-							</ul>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">(any)</span>
-					<span>The return value of the <code>evaluate</code> property of the argument.</span>
-				</div>
-				<script type="application/x.jsapi#tests">
-					debugger;
-					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					jsh.java.tools.javac({
-						destination: to.pathname,
-						arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/Program.java")]
-					});
-					var buffer = new jsh.io.Buffer();
-					var output = module.java({
-						classpath: jsh.file.Searchpath([to.pathname]),
-						main: "inonit.jsh.test.Program",
-						stdout: buffer.writeBinary(),
-						evaluate: function(result) {
-							buffer.close();
-							return buffer.readText().asString();
-						}
-					});
-					test(output == "Hello");
-				</script>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">home</div>
-						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>The home directory of the Java installation used to run this shell.</span>
-						<script type="application/x.jsapi#tests">
-							test(Boolean(module.java.home));
-						</script>
-					</li>
-					<li class="value">
-						<div class="name">launcher</div>
-						<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
-						<span>The Java launcher program, that is, the executable used to launch Java programs.</span>
-					</li>
-				</ul>
-			</li>
-			<li class="value">
-				<div class="name">TMPDIR</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<span>A temporary directory that may be used by this shell.</span>
-			</li>
-			<li class="value">
-				<div class="name">HOME</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<span>The home directory of the user executing this shell.</span>
-			</li>
-			<li class="value">
-				<div class="name">PWD</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<!--	TODO	can this be changed while the shell is running?	-->
-				<span>The current working directory.</span>
 			</li>
 		</ul>
 	</div>
