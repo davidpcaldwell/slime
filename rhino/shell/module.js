@@ -82,7 +82,7 @@ $exports.run = function(p) {
 				var configuration = p.tokens.map(toCommandToken);
 				rv.configuration.command = configuration[0];
 				rv.configuration.arguments = configuration.slice(1);
-				return rv;				
+				return rv;
 			})();
 		} else if (typeof(p.command) != "undefined") {
 			rv.result.command = p.command;
@@ -201,9 +201,9 @@ $exports.run.directory = function(p) {
 	var getDirectoryProperty = function(p) {
 		if (p.directory && p.directory.pathname) {
 			return p.directory;
-		}		
+		}
 	}
-	
+
 	if (p.directory) {
 		return getDirectoryProperty(p);
 	}
