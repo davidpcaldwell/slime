@@ -130,8 +130,8 @@ $exports.run = function(p) {
 	if (stdio.output || stdio.error) {
 		result.stdio = {};
 		if (stdio.output) result.stdio.output = stdio.output;
-		if (stdio.error) result.stdio.error = stdio.error;		
-	} 
+		if (stdio.error) result.stdio.error = stdio.error;
+	}
 	var evaluate = (p.evaluate) ? p.evaluate : arguments.callee.evaluate;
 	return evaluate(result);
 };
