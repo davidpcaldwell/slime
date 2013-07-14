@@ -12,6 +12,7 @@
 
 $exports.run = function(p) {
 	var stdio = arguments.callee.stdio(p);
+	var directory = arguments.callee.directory(p);
 	var context = new JavaAdapter(
 		Packages.inonit.system.Command.Context,
 		new function() {
@@ -74,18 +75,20 @@ $exports.run = function(p) {
 		}
 
 		if (p.tokens) {
-			//	TODO	ensure array
-			if (p.tokens.length == 0) {
-				throw new TypeError("tokens cannot be zero-length.");
-			}
-			//	Use a raw copy of the arguments for the callback
-			rv.result.command = p.tokens[0];
-			rv.result.arguments = p.tokens.slice(1);
-			//	Convert the arguments to strings for invocation
-			var configuration = p.tokens.map(toCommandToken);
-			rv.configuration.command = configuration[0];
-			rv.configuration.arguments = configuration.slice(1);
-			return rv;
+			return $api.deprecate(function() {
+				//	TODO	ensure array
+				if (p.tokens.length == 0) {
+					throw new TypeError("tokens cannot be zero-length.");
+				}
+				//	Use a raw copy of the arguments for the callback
+				rv.result.command = p.tokens[0];
+				rv.result.arguments = p.tokens.slice(1);
+				//	Convert the arguments to strings for invocation
+				var configuration = p.tokens.map(toCommandToken);
+				rv.configuration.command = configuration[0];
+				rv.configuration.arguments = configuration.slice(1);
+				return rv;				
+			})();
 		} else if (typeof(p.command) != "undefined") {
 			rv.result.command = p.command;
 			rv.result.arguments = p.arguments;
@@ -116,8 +119,10 @@ $exports.run = function(p) {
 	if (p.environment) {
 		result.environment = p.environment;
 	}
-	if (p.workingDirectory) {
-		result.workingDirectory = p.workingDirectory;
+	if (directory) {
+		result.directory = directory;
+		result.workingDirectory = directory;
+		$api.deprecate(result,"workingDirectory");
 	}
 
 	var _listener = Packages.inonit.system.OperatingSystem.get().run( context, configuration );
@@ -195,6 +200,21 @@ $exports.run.stdio = (function(p) {
 	}
 	return rv;
 });
+$exports.run.directory = function(p) {
+	var _directory = function(p) {
+		if (p.directory && p.directory.pathname) {
+			return p.directory.pathname.java.adapt();
+		}		
+	}
+	
+	if (p.directory) {
+		return _directory(p.directory);
+	}
+	if (p.workingDirectory) {
+		return $api.deprecate(_directory)({ directory: p.workingDirectory });
+	}
+	return null;
+}
 $exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 var toLocalPathname = function(osPathname) {
