@@ -32,6 +32,7 @@ $exports.zip = function(p) {
 
 	var _getInputStream = function(item) {
 		if (item.$stream) return item.$stream;
+		if (item.node && item.node.read($context.Streams.binary)) return item.node.read($context.Streams.binary).java.adapt();
 		throw "Unimplemented: item lacks input stream: " + item;
 	}
 
@@ -98,7 +99,7 @@ $exports.zip = function(p) {
 	for (var i=0; i<from.length; i++) {
 		//	TODO	Clean this up; this API is not right, just convenient to use for the two use cases in admin project and
 		//			slime.jsh.js for now
-		if (!from[i].directory) {
+		if (!from[i].directory && (!from[i].node || !from[i].node.directory) ) {
 			zipOutputStream.addEntry(from[i].path,_getInputStream(from[i]));
 		} else {
 			zipOutputStream.addDirectory(from[i].directory);
