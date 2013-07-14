@@ -45,12 +45,7 @@ $exports.run = function(p) {
 			};
 
 			this.getWorkingDirectory = function() {
-				if (p.workingDirectory) {
-					if (p.workingDirectory && p.workingDirectory.pathname) {
-						return p.workingDirectory.pathname.java.adapt();
-					}
-				}
-				return null;
+				return (directory) ? directory.pathname.java.adapt() : null;
 			};
 		}
 	);
@@ -120,9 +115,11 @@ $exports.run = function(p) {
 		result.environment = p.environment;
 	}
 	if (directory) {
-		result.directory = directory;
-		result.workingDirectory = directory;
-		$api.deprecate(result,"workingDirectory");
+		if (typeof(directory) != "undefined") {
+			result.directory = directory;
+			result.workingDirectory = directory;
+			$api.deprecate(result,"workingDirectory");
+		}
 	}
 
 	var _listener = Packages.inonit.system.OperatingSystem.get().run( context, configuration );
@@ -201,19 +198,18 @@ $exports.run.stdio = (function(p) {
 	return rv;
 });
 $exports.run.directory = function(p) {
-	var _directory = function(p) {
+	var getDirectoryProperty = function(p) {
 		if (p.directory && p.directory.pathname) {
-			return p.directory.pathname.java.adapt();
+			return p.directory;
 		}		
 	}
 	
 	if (p.directory) {
-		return _directory(p.directory);
+		return getDirectoryProperty(p);
 	}
 	if (p.workingDirectory) {
-		return $api.deprecate(_directory)({ directory: p.workingDirectory });
+		return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
 	}
-	return null;
 }
 $exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
