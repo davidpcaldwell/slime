@@ -18,6 +18,7 @@ plugin({
 		var $shell = $loader.module("module.js", {
 			api: {
 				java: jsh.java,
+				io: jsh.io,
 				file: jsh.file
 			},
 			_properties: $host.getSystemProperties(),

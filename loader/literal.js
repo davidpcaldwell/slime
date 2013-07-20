@@ -270,13 +270,19 @@
 			};
 
 			var runScope = function(initial) {
-				var rv = {};
-				rv.$platform = $platform;
-				rv.$api = $api;
-				for (var x in initial) {
-					rv[x] = initial[x];
+				if (false) {
+					var rv = {};
+					rv.$platform = $platform;
+					rv.$api = $api;
+					for (var x in initial) {
+						rv[x] = initial[x];
+					}
+					return rv;
+				} else {
+					initial.$platform = $platform;
+					initial.$api = $api;
+					return initial;
 				}
-				return rv;
 			}
 
 			var fixed = runScope(scope);

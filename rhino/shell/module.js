@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!$context.api.io) {
+	throw new Error("Missing: $context.api.io");
+}
+
 $exports.run = function(p) {
 	var stdio = arguments.callee.stdio(p);
 	var directory = arguments.callee.directory(p);
