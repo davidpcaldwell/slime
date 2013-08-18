@@ -133,11 +133,14 @@ $exports.run = function(p) {
 		result.status = Number( _listener.getExitStatus().intValue() );
 	}
 	stdio.close();
-	if (stdio.output || stdio.error) {
-		result.stdio = {};
-		if (stdio.output) result.stdio.output = stdio.output;
-		if (stdio.error) result.stdio.error = stdio.error;
-	}
+	//	TODO	this returning of stdio values is currently undocumented. Certainly they should be returned if String were specified
+	//			as their type; not sure what should happen otherwise.
+	["output","error"].forEach(function(stream) {
+		if (typeof(stdio[stream]) == "string") {
+			if (!result.stdio) result.stdio = {};
+			result.stdio[stream] = stdio[stream];
+		}
+	});
 	var evaluate = (p.evaluate) ? p.evaluate : arguments.callee.evaluate;
 	return evaluate(result);
 };
