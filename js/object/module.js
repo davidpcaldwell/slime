@@ -453,7 +453,7 @@ $exports.Order = new function() {
 $exports.Array = new function() {
 	this.choose = function(array,filter) {
 		var select = (filter) ? globals.Array.filter.call(array, filter) : array;
-		if (select.length > 1) throw "Too many matches for filter " + filter + " in " + array;
+		if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + array);
 		if (select.length == 0) return null;
 		return select[0];
 	}
