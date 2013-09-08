@@ -109,7 +109,7 @@ var toLiteral = function(value) {
 				references.push(value);
 			} else {
 				debugger;
-				throw new Error("Recursion in toLiteral()");
+				throw new Error("Recursion in toLiteral(): trying to reserialize " + value);
 			}
 
 			var isAnArray = function(object) {
