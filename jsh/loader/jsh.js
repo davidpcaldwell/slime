@@ -313,7 +313,7 @@ this.jsh = new function() {
 			})(_code);
 			loader.plugin.read(_code,scope);
 		} else {
-			callbacks.java({ _code: code });
+			callbacks.java({ _code: _code });
 		}
 	};
 
