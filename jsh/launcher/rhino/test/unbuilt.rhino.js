@@ -162,11 +162,9 @@ var runCommand = function() {
 
 		this.environment = function(_environment) {
 			if (mode.env) {
-				Packages.java.lang.System.err.println("Setting environment variables:");
 				_environment.clear();
 				for (var x in mode.env) {
 					if (mode.env[x]) {
-						Packages.java.lang.System.err.println("Setting environment variable: " + x + " = " + mode.env[x]);
 						_environment.put(new Packages.java.lang.String(x), new Packages.java.lang.String(mode.env[x]));
 					}
 				}
@@ -201,7 +199,6 @@ var runCommand = function() {
 		} else if (i < arguments.length-1) {
 			list.add(new Packages.java.lang.String(String(arguments[i])));
 		} else {
-			Packages.java.lang.System.err.println("Setting mode to " + arguments[i]);
 			//	TODO	in Rhino-compatible runCommand this should only work if it is the last argument
 			context.setMode(arguments[i]);
 		}
@@ -247,7 +244,6 @@ var runCommand = function() {
 	var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
 	var _stdin = context.getStandardInput();
 	var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, "stdin from " + _stdin + ": " + spoolName);
-	Packages.java.lang.System.err.println("Launching: " + list);
 	var rv = delegate.waitFor();
 	_in.join();
 	_err.join();
