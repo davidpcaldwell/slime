@@ -143,6 +143,7 @@ args.push(
 			this.JSH_LIBRARY_SCRIPTS_JSH = JSH_SLIME_SRC.getPath("jsh/loader");
 			this.JSH_LIBRARY_MODULES = JSH_SLIME_SRC.getPath(".");
 		})()
+		,input: Packages.java.lang.System["in"]
 	}
 );
 exit(runCommand.apply(null, args));
