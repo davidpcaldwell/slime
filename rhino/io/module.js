@@ -333,6 +333,7 @@ var Resource = function(p) {
 		if (text) {
 			if (mode == Streams.text) return text();
 			if (mode == XML) return text().asXml();
+			if (/^function XML\(\)/.test(String(mode))) return text().asXml();
 			if (mode == String) return text().asString();
 		}
 		var parameters = (function() {
