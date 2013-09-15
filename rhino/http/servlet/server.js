@@ -32,6 +32,18 @@ var Request = function(_request) {
 			this.parameters = parameters;
 		}
 	}
+	
+	var headers = [];
+	var _names = _request.getHeaderNames();
+	while(_names.hasMoreElements()) {
+		var _name = _names.nextElement();
+		var _values = _request.getHeaders(_name);
+		while(_values.hasMoreElements()) {
+			var _value = _values.nextElement();
+			headers.push({ name: String(_name), value: String(_value) });
+		}
+	}
+	this.headers = headers;
 
 	//	TODO	it would make more sense for this property to be absent if there is no content
 	this.body = new function() {
