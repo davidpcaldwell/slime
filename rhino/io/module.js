@@ -340,7 +340,12 @@ var Resource = function(p) {
 			if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
 			return String(p);
 		})();
-		throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode);
+		throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
+			+ " Streams.binary " + (mode == Streams.binary)
+			+ " Streams.text " + (mode == Streams.text)
+			+ " XML " + (mode == XML)
+			+ " String " + (mode == String)
+		);
 	}
 
 	//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
