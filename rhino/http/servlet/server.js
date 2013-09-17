@@ -32,7 +32,7 @@ var Request = function(_request) {
 			this.parameters = parameters;
 		}
 	}
-	
+
 	var headers = [];
 	var _names = _request.getHeaderNames();
 	while(_names.hasMoreElements()) {
