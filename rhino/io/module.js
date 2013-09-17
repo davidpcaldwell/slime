@@ -333,9 +333,20 @@ var Resource = function(p) {
 		if (text) {
 			if (mode == Streams.text) return text();
 			if (mode == XML) return text().asXml();
+			if (/^function XML\(\)/.test(String(mode))) return text().asXml();
 			if (mode == String) return text().asString();
 		}
-		throw new TypeError("No compatible read() mode specified: argument was " + mode);
+		var parameters = (function() {
+			if (!p) return String(p);
+			if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
+			return String(p);
+		})();
+		throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
+			+ " Streams.binary " + (mode == Streams.binary)
+			+ " Streams.text " + (mode == Streams.text)
+			+ " XML " + (mode == XML)
+			+ " String " + (mode == String)
+		);
 	}
 
 	//	We provide the optional operations read.binary and read.text, even though they are semantically equivalent to read(),
