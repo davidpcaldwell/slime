@@ -458,6 +458,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			subenv.JSH_LAUNCHER_DEBUG = "true";
 			subenv.JSH_SCRIPT_DEBUGGER = "rhino";
 		}
+		subenv.JSH_PLUGINS = "";
 		command.add({
 			env: subenv
 		});
@@ -495,6 +496,14 @@ if (getSetting("jsh.build.javassist.jar")) {
 		command.push(getPath(new File(SLIME_SRC, "rhino/tools/profiler/build.jsh.js")));
 		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
 		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
+		var subenv = {};
+		for (var x in env) {
+			subenv[x] = env[x];
+		}
+		subenv.JSH_PLUGINS = "";
+		command.push({
+			env: subenv
+		});
 		var status = runCommand.apply(this,command);
 		if (status != 0) {
 			throw new Error("Exit status when building profile: " + status);

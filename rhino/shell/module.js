@@ -16,6 +16,7 @@ if (!$context.api.io) {
 
 $exports.run = function(p) {
 	var stdio = arguments.callee.stdio(p);
+	var directory = arguments.callee.directory(p);
 	var context = new JavaAdapter(
 		Packages.inonit.system.Command.Context,
 		new function() {
@@ -48,12 +49,7 @@ $exports.run = function(p) {
 			};
 
 			this.getWorkingDirectory = function() {
-				if (p.workingDirectory) {
-					if (p.workingDirectory && p.workingDirectory.pathname) {
-						return p.workingDirectory.pathname.java.adapt();
-					}
-				}
-				return null;
+				return (directory) ? directory.pathname.java.adapt() : null;
 			};
 		}
 	);
@@ -78,18 +74,20 @@ $exports.run = function(p) {
 		}
 
 		if (p.tokens) {
-			//	TODO	ensure array
-			if (p.tokens.length == 0) {
-				throw new TypeError("tokens cannot be zero-length.");
-			}
-			//	Use a raw copy of the arguments for the callback
-			rv.result.command = p.tokens[0];
-			rv.result.arguments = p.tokens.slice(1);
-			//	Convert the arguments to strings for invocation
-			var configuration = p.tokens.map(toCommandToken);
-			rv.configuration.command = configuration[0];
-			rv.configuration.arguments = configuration.slice(1);
-			return rv;
+			return $api.deprecate(function() {
+				//	TODO	ensure array
+				if (p.tokens.length == 0) {
+					throw new TypeError("tokens cannot be zero-length.");
+				}
+				//	Use a raw copy of the arguments for the callback
+				rv.result.command = p.tokens[0];
+				rv.result.arguments = p.tokens.slice(1);
+				//	Convert the arguments to strings for invocation
+				var configuration = p.tokens.map(toCommandToken);
+				rv.configuration.command = configuration[0];
+				rv.configuration.arguments = configuration.slice(1);
+				return rv;
+			})();
 		} else if (typeof(p.command) != "undefined") {
 			rv.result.command = p.command;
 			rv.result.arguments = p.arguments;
@@ -120,8 +118,12 @@ $exports.run = function(p) {
 	if (p.environment) {
 		result.environment = p.environment;
 	}
-	if (p.workingDirectory) {
-		result.workingDirectory = p.workingDirectory;
+	if (directory) {
+		if (typeof(directory) != "undefined") {
+			result.directory = directory;
+			result.workingDirectory = directory;
+			$api.deprecate(result,"workingDirectory");
+		}
 	}
 
 	var _listener = Packages.inonit.system.OperatingSystem.get().run( context, configuration );
@@ -131,11 +133,14 @@ $exports.run = function(p) {
 		result.status = Number( _listener.getExitStatus().intValue() );
 	}
 	stdio.close();
-	if (stdio.output || stdio.error) {
-		result.stdio = {};
-		if (stdio.output) result.stdio.output = stdio.output;
-		if (stdio.error) result.stdio.error = stdio.error;
-	}
+	//	TODO	this returning of stdio values is currently undocumented. Certainly they should be returned if String were specified
+	//			as their type; not sure what should happen otherwise.
+	["output","error"].forEach(function(stream) {
+		if (typeof(stdio[stream]) == "string") {
+			if (!result.stdio) result.stdio = {};
+			result.stdio[stream] = stdio[stream];
+		}
+	});
 	var evaluate = (p.evaluate) ? p.evaluate : arguments.callee.evaluate;
 	return evaluate(result);
 };
@@ -199,6 +204,20 @@ $exports.run.stdio = (function(p) {
 	}
 	return rv;
 });
+$exports.run.directory = function(p) {
+	var getDirectoryProperty = function(p) {
+		if (p.directory && p.directory.pathname) {
+			return p.directory;
+		}
+	}
+
+	if (p.directory) {
+		return getDirectoryProperty(p);
+	}
+	if (p.workingDirectory) {
+		return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory });
+	}
+}
 $exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 var toLocalPathname = function(osPathname) {

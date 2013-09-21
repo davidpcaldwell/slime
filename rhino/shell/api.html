@@ -97,6 +97,19 @@ END LICENSE
 		</ul>
 	</div>
 	<div>
+		<script type="application/x.jsapi#initialize" jsapi:id="script.initialize">
+			scope.getJavaProgram = function(name) {
+				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				jsh.java.tools.javac({
+					destination: to.pathname,
+					arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/" + name + ".java")]
+				});
+				return {
+					classpath: jsh.file.Searchpath([to.pathname]),
+					main: "inonit.jsh.test." + name
+				}
+			};
+		</script>
 		<h1>Exports</h1>
 		<ul>
 			<div class="type">
@@ -239,8 +252,8 @@ END LICENSE
 										-->
 									</span>
 								</li>
-								<li class="value" jsapi:id="run.workingDirectory">
-									<div class="name">workingDirectory</div>
+								<li class="value" jsapi:id="run.directory">
+									<div class="name">directory</div>
 									<span class="type"><a href="../file/api.html#types.directory">directory</a></span>
 									<span>
 										(optional)
@@ -251,6 +264,22 @@ END LICENSE
 										TODO	if this property is null, we should error, assuming the caller made a mistake
 										passing a non-existent directory.
 									-->
+									<script type="application/x.jsapi#tests">
+										var program = getJavaProgram("Directory");
+										var dir = $jsapi.newTemporaryDirectory();
+										var workdir = module.java({
+											classpath: program.classpath,
+											main: program.main,
+											stdio: {
+												output: String
+											},
+											directory: dir,
+											evaluate: function(result) {
+												return result.stdio.output;
+											}
+										});
+										test(workdir == dir.toString());
+									</script>
 								</li>
 								<li class="function" jsapi:id="run.evaluate">
 									<div class="name"><a name="run.evaluate">evaluate</a></div>
@@ -299,7 +328,7 @@ END LICENSE
 														</span>
 													</li>
 													<li class="value">
-														<div class="name">workingDirectory</div>
+														<div class="name">directory</div>
 														<span>
 															(optional)
 															The working directory that was specified for running the
