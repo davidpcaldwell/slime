@@ -220,6 +220,7 @@
 		};
 
 		this.Loader.getCode = fetcher.getCode;
+		this.Loader.fetch = fetcher.fetch;
 
 		this.script = platform.$api.deprecate(this.file);
 
