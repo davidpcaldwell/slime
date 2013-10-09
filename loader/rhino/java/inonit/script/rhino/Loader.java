@@ -84,10 +84,12 @@ public abstract class Loader {
 
 			public String toString() {
 				String rv = getClass().getName() + ": locations=[";
-				for (int i=0; i<locations.size(); i++) {
-					rv += locations.get(i);
-					if (i+1 != locations.size()) {
-						rv += ",";
+				synchronized(locations) {
+					for (int i=0; i<locations.size(); i++) {
+						rv += locations.get(i);
+						if (i+1 != locations.size()) {
+							rv += ",";
+						}
 					}
 				}
 				rv += "]";
@@ -101,30 +103,34 @@ public abstract class Loader {
 				for (int i=1; i<tokens.length-1; i++) {
 					packageName += "." + tokens[i];
 				}
-				for (Code.Source source : locations) {
-					try {
-						InputStream in = source.getResourceAsStream(path);
-						if (in != null) {
-							if (getPackage(packageName) == null) {
-								definePackage(packageName,null,null,null,null,null,null,null);
+				synchronized(locations) {
+					for (Code.Source source : locations) {
+						try {
+							InputStream in = source.getResourceAsStream(path);
+							if (in != null) {
+								if (getPackage(packageName) == null) {
+									definePackage(packageName,null,null,null,null,null,null,null);
+								}
+								byte[] b = streams.readBytes(in);
+								return defineClass(name, b, 0, b.length);
 							}
-							byte[] b = streams.readBytes(in);
-							return defineClass(name, b, 0, b.length);
+						} catch (IOException e) {
+							//	do nothing
 						}
-					} catch (IOException e) {
-						//	do nothing
 					}
 				}
 				throw new ClassNotFoundException(name);
 			}
 
 			protected URL findResource(String name) {
-				for (Code.Source source : locations) {
-					Code.Classes classes = source.getClasses();
-					if (classes != null) {
-						URL url = classes.getResource(name);
-						if (url != null) {
-							return url;
+				synchronized(locations) {
+					for (Code.Source source : locations) {
+						Code.Classes classes = source.getClasses();
+						if (classes != null) {
+							URL url = classes.getResource(name);
+							if (url != null) {
+								return url;
+							}
 						}
 					}
 				}
@@ -133,12 +139,14 @@ public abstract class Loader {
 
 			protected Enumeration<URL> findResources(String name) {
 				java.util.Vector rv = new java.util.Vector();
-				for (Code.Source source : locations) {
-					Code.Classes classes = source.getClasses();
-					if (classes != null) {
-						URL url = classes.getResource(name);
-						if (url != null) {
-							rv.add(url);
+				synchronized(locations) {
+					for (Code.Source source : locations) {
+						Code.Classes classes = source.getClasses();
+						if (classes != null) {
+							URL url = classes.getResource(name);
+							if (url != null) {
+								rv.add(url);
+							}
 						}
 					}
 				}
@@ -152,7 +160,9 @@ public abstract class Loader {
 					}
 
 					@Override public void append(Code.Source code) {
-						locations.add(code);
+						synchronized(locations) {
+							locations.add(code);
+						}
 					}
 
 					@Override public Class getClass(String name) {

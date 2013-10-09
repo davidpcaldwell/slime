@@ -187,7 +187,7 @@ experimental("toJavaArray");
 
 var Thread = function(p) {
 	var synchronize = function(f) {
-		return Packages.inonit.script.runtime.Threads.synchronizeOn(arguments.callee.lock,f);
+		return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(arguments.callee.lock,f);
 	};
 	synchronize.lock = new Packages.java.lang.Object();
 
@@ -320,7 +320,7 @@ $exports.Thread.Monitor = function() {
 	var lock = new Packages.java.lang.Object();
 
 	this.Waiter = function(c) {
-		return Packages.inonit.script.runtime.Threads.synchronizeOn(lock, function() {
+		return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, function() {
 			while(!c.until.apply(this,arguments)) {
 				lock.wait();
 			}

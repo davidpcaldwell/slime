@@ -15,7 +15,7 @@ package inonit.script.runtime;
 import org.mozilla.javascript.*;
 
 public class Threads {
-	public static Function synchronizeOn(final Object lock, final Function callable) {
+	public static Function createSynchronizedFunction(final Object lock, final Function callable) {
 		return new Function() {
 			public Object call(Context cntxt, Scriptable s, Scriptable s1, Object[] os) {
 				synchronized(lock) {
@@ -30,69 +30,71 @@ public class Threads {
 			}
 
 			public String getClassName() {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.getClassName();
 			}
 
 			public Object get(String string, Scriptable s) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.get(string, s);
 			}
 
 			public Object get(int i, Scriptable s) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.get(i, s);
 			}
 
 			public boolean has(String string, Scriptable s) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.has(string, s);
 			}
 
 			public boolean has(int i, Scriptable s) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.has(i, s);
 			}
 
 			public void put(String string, Scriptable s, Object o) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				callable.put(string, s, o);
 			}
 
 			public void put(int i, Scriptable s, Object o) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				callable.put(i, s, o);
 			}
 
 			public void delete(String string) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				callable.delete(string);
 			}
 
 			public void delete(int i) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				callable.delete(i);
 			}
 
 			public Scriptable getPrototype() {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.getPrototype();
 			}
 
 			public void setPrototype(Scriptable s) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				callable.setPrototype(s);
 			}
 
-			private Scriptable parentScope;
+//			private Scriptable parentScope;
 
 			public Scriptable getParentScope() {
-				return parentScope;
+				return callable.getParentScope();
+//				return parentScope;
 			}
 
 			public void setParentScope(Scriptable s) {
-				this.parentScope = s;
+				callable.setParentScope(s);
+//				this.parentScope = s;
 			}
 
 			public Object[] getIds() {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.getIds();
 			}
 
 			public Object getDefaultValue(Class<?> type) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.getDefaultValue(type);
 			}
 
 			public boolean hasInstance(Scriptable s) {
-				throw new UnsupportedOperationException("Not supported yet.");
+				return callable.hasInstance(s);
 			}
 		};
 	}
