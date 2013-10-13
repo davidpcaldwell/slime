@@ -19,9 +19,29 @@ END LICENSE
 </head>
 <body>
 	<div>
+		<h1>Context</h1>
+		<script type="application/x.jsapi#initialize">
+			scope.Context = function(p) {
+			}
+		</script>
+		<script type="application/x.jsapi#context">
+			(function() {
+				var Context = function(p) {
+					this.integer = p;
+				}
+
+				return new Context(1);
+			})()
+		</script>
+	</div>
+	<div>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#tests">
 			test(module.answer == 42);
+		</script>
+		<script type="application/x.jsapi#tests">
+			test(module.integer == 1);
+			test(module.integer == context.integer);
 		</script>
 		<div jsapi:reference="getApi('foo.api.html').getElement('top')">
 			Subtest

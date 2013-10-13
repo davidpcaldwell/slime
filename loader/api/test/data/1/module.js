@@ -12,3 +12,4 @@
 
 $exports.answer = 42;
 $exports.foo = "bar";
+$exports.integer = $context.integer;
