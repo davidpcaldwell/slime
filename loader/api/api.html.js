@@ -202,9 +202,10 @@ $exports.ApiHtmlTests = function(html,name) {
 			for (var x in scope) {
 				myscope[x] = scope[x];
 			}
+			myscope.scope = myscope;
 			var container = getContainer(contextScripts[i]);
 			for (var j=0; j<container.initializes.length; j++) {
-				run(container.initializes[j].getContentString(), { scope: myscope });
+				run(container.initializes[j].getContentString(), myscope);
 			}
 			var id = (contextScripts[i].getJsapiAttribute("id")) ? contextScripts[i].getJsapiAttribute("id") : "";
 			with(myscope) {
