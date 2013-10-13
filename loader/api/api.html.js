@@ -106,7 +106,7 @@ var getElement = function(root,path) {
 		}
 	}
 	return rv;
-}
+};
 
 //	Creates an object representing an api.html given its HTML and a 'name' used to name the top-level scenario; this object can:
 //		.getContexts(scope): produce the list of contexts declared on the page
@@ -169,7 +169,21 @@ $exports.ApiHtmlTests = function(html,name) {
 
 	var getScripts = function(element,type) {
 		return filter(element.getChildren(),getScriptFilter(type));
-	}
+	};
+
+	var getContainer = function(element) {
+		var container = {
+			initializes: [],
+			destroys: []
+		}
+		var ancestor = element;
+		while(ancestor.parent) {
+			container.initializes.unshift.apply(container.initializes,getScripts(ancestor.parent,"initialize"));
+			container.destroys.push.apply(container.destroys,getScripts(ancestor.parent,"destroy"));
+			ancestor = ancestor.parent;
+		}
+		return container;
+	};
 
 	var getDescendantScripts = function(element,type) {
 		return filter(getDescendants(element),getScriptFilter(type));
@@ -184,8 +198,16 @@ $exports.ApiHtmlTests = function(html,name) {
 
 		var contexts = [];
 		for (var i=0; i<contextScripts.length; i++) {
+			var myscope = {};
+			for (var x in scope) {
+				myscope[x] = scope[x];
+			}
+			var container = getContainer(contextScripts[i]);
+			for (var j=0; j<container.initializes.length; j++) {
+				run(container.initializes[j].getContentString(), { scope: myscope });
+			}
 			var id = (contextScripts[i].getJsapiAttribute("id")) ? contextScripts[i].getJsapiAttribute("id") : "";
-			with(scope) {
+			with(myscope) {
 				try {
 					var value = eval("(" + contextScripts[i].getContentString() + ")");
 				} catch (e) {
@@ -338,19 +360,8 @@ $exports.ApiHtmlTests = function(html,name) {
 				return html.top;
 			}
 		})();
-		var container = {
-			initializes: [],
-			destroys: []
-		}
-		if (unit) {
-			var ancestor = element;
-			while(ancestor.parent) {
-				container.initializes.unshift.apply(container.initializes,getScripts(ancestor.parent,"initialize"));
-				container.destroys.push.apply(container.destroys,getScripts(ancestor.parent,"destroy"));
-				ancestor = ancestor.parent;
-			}
-		}
-		if (!element) throw new Error("Unit test not found: " + unit);
+		//	TODO	is the blank object really expected if !unit?
+		var container = (unit) ? getContainer(element) : { initializes: [], destroys: [] };
 		return getScenario(scope,element,container);
 	}
 }

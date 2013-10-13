@@ -22,14 +22,11 @@ END LICENSE
 		<h1>Context</h1>
 		<script type="application/x.jsapi#initialize">
 			scope.Context = function(p) {
+				this.integer = p;
 			}
 		</script>
 		<script type="application/x.jsapi#context">
 			(function() {
-				var Context = function(p) {
-					this.integer = p;
-				}
-
 				return new Context(1);
 			})()
 		</script>
