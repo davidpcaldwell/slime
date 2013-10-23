@@ -10,7 +10,16 @@
 //	Contributor(s):
 //	END LICENSE
 
+var log = function(message) {
+	Packages.java.lang.System.out.println(message);
+};
+
+var debug = function(message) {
+	//	log(message);
+}
+
 var Request = function(_request) {
+	debug("Creating request peer for " + _request);
 	this.method = String(_request.getMethod()).toUpperCase();
 	this.path = String(_request.getPathInfo()).substring(1);
 
@@ -46,11 +55,22 @@ var Request = function(_request) {
 	this.headers = headers;
 
 	//	TODO	it would make more sense for this property to be absent if there is no content
+	debug("Creating request body.");
 	this.body = new function() {
 		//	TODO	what happens if there is no content? Presumably type is null, and is stream empty?
-		this.type = (_request.getContentType()) ? $context.api.io.mime.Type.parse(String(_request.getContentType())) : null;
+		debug("Creating request type.");
+		debug("Content type: " + String(_request.getContentType()));
+		debug("mime module: " + $context.api.io.mime);
+		try {
+			this.type = (_request.getContentType()) ? $context.api.io.mime.Type.parse(String(_request.getContentType())) : null;
+		} catch (e) {
+			log("Error creating request type.");
+			throw e;
+		}
+		debug("Created request type.");
 		this.stream = $context.api.io.java.adapt(_request.getInputStream());
 	}
+	debug("Created request body.");
 }
 
 $exports.Servlet = function(delegate) {
@@ -62,8 +82,11 @@ $exports.Servlet = function(delegate) {
 	};
 
 	this.service = function(_request,_response) {
+		log("Received request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
 		try {
-			var response = script.handle(new Request(_request));
+			var request = new Request(_request);
+			debug("Received request: " + request);			
+			var response = script.handle(request);
 			if (typeof(response) == "undefined") {
 				//	TODO	What would it take to write our own error page? Should we try to throw ServletException, for example?
 				//			Should we use setStatus and write some sort of error page normally?
