@@ -85,7 +85,7 @@ $exports.Servlet = function(delegate) {
 		log("Received request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
 		try {
 			var request = new Request(_request);
-			debug("Received request: " + request);			
+			debug("Received request: " + request);
 			var response = script.handle(request);
 			if (typeof(response) == "undefined") {
 				//	TODO	What would it take to write our own error page? Should we try to throw ServletException, for example?
