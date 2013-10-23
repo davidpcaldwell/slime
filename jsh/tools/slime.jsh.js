@@ -15,6 +15,7 @@ var parameters = jsh.shell.getopts({
 	options: {
 		from: jsh.file.Pathname,
 		to: jsh.file.Pathname,
+		version: String,
 		format: "zip"
 	}
 });
@@ -33,7 +34,10 @@ var build = (function() {
 	}
 })();
 
-jsh.loader.file(jsh.script.getRelativePath("slime.js")).slime.build.jsh(from,build);
+jsh.loader.file(jsh.script.getRelativePath("slime.js")).slime.build.jsh(from,build,{},{
+	source: parameters.options.version,
+	target: parameters.options.version
+});
 
 if (format == "zip") {
 	jsh.file.zip({ from: build.pathname, to: parameters.options.to });

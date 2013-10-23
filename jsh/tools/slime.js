@@ -77,7 +77,7 @@ slime.build.rhino = function(from,build,api,javac) {
 }
 
 //	Build using jsh shell; used by slime.jsh.js
-slime.build.jsh = function(from,build) {
+slime.build.jsh = function(from,build,api,javac) {
 	var toCopy = from
 		.list({ recursive: true, type: from.list.RESOURCE })
 		.filter(function(item) {
@@ -115,6 +115,19 @@ slime.build.jsh = function(from,build) {
 		}
 		jsh.shell.echo("Compiling to " + d.toString());
 		var args = [ "-d", d.toString() ];
+		//	TODO	repeated above
+		if (javac && javac.classpath) {
+			args = args.concat(["-classpath", javac.classpath]);
+		}
+		if (javac && javac.nowarn) {
+			args = args.concat(["-nowarn"]);
+		}
+		if (javac && javac.source) {
+			args = args.concat(["-source",javac.source]);
+		}
+		if (javac && javac.target) {
+			args = args.concat(["-target",javac.target]);
+		}
 		var args = args.concat( toCompile.map( function(item) { return item.toString() } ) );
 		Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
 			Packages.java.lang.System["in"],

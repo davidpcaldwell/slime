@@ -216,7 +216,9 @@ var jshPackage = function(p) {
 	run(LAUNCHER_COMMAND.concat([
 		getSourceFilePath("jsh/tools/slime.jsh.js"),
 		"-from", getPath(SLIME_SRC,"loader/rhino/test/data/1"),
-		"-to", getPath(tmp,"1.slime")
+		"-to", getPath(tmp,"1.slime"),
+		//	TODO	the below should match the version from the build
+		"-version", "1.6"
 	]));
 
 	var mymode = {
@@ -329,10 +331,21 @@ var packaged_JSH_SHELL_CLASSPATH = jshPackage({
 
 console("Running JSH_SHELL_CLASSPATH package ... ")
 testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
-	checkOutput(options,[
-		String(packaged_JSH_SHELL_CLASSPATH.toURI()),
-		""
-	]);
+	var outputUri = options.output.split(String(Packages.java.lang.System.getProperty("line.separator")))[0];
+	var _outputFile = new Packages.java.io.File(new Packages.java.net.URI(outputUri));
+	if (String(_outputFile.getCanonicalPath()) == String(packaged_JSH_SHELL_CLASSPATH.getCanonicalPath())) {
+		Packages.java.lang.System.err.println("Same URI: " + outputUri + " and " + packaged_JSH_SHELL_CLASSPATH.toURI());
+	} else {
+		Packages.java.lang.System.err.println("Output wrong; dumping stderr:");
+		Packages.java.lang.System.err.println(options.err);
+		Packages.java.lang.System.err.println("Output file: " + _outputFile + " canonical: " + _outputFile.getCanonicalPath());
+		Packages.java.lang.System.err.println("Correct file: " + packaged_JSH_SHELL_CLASSPATH);
+		throw new Error("Output wrong; different URI: it is [" + options.output + "] when expected was [" + packaged_JSH_SHELL_CLASSPATH.toURI() + "]");
+	}
+//	checkOutput(options,[
+//		String(packaged_JSH_SHELL_CLASSPATH.toURI()),
+//		""
+//	]);
 });
 
 //	Test was disabled as failing, attempting to re-enable to fix issue 79
