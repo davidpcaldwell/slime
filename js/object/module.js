@@ -395,37 +395,73 @@ var Map = new function() {
 }
 
 var Categorizer = function(p) {
-	var getKey = p.key;
-	var keyToString = p.property;
-	var categoryFactory = p.category;
+	var Old = $api.deprecate(function(p) {
+		var categories = {};
 
+		this.categorize = function(o) {
+			var key = p.key(o);
+			var name = (p.property) ? p.property(key) : key;
+			if (!categories[name]) {
+				categories[name] = {
+					key: key,
+					category: p.category(key)
+				}
+			}
+			if (categories[name].category.categorized) {
+				categories[name].category.categorized(o);
+			}
+		}
+
+		this.get = function(key) {
+			var name = (p.property) ? p.property(key) : key;
+			return categories[name].category.value;
+		}
+
+		this.getKeys = function() {
+			return properties.values(categories).map(Map.property("key"));
+		}
+
+		this.getCategories = function() {
+			return properties.values(categories).map(Map.property("category"));
+		}
+	});
+	
+	if (p.key && p.category) {
+		return new Old(p);
+	}
+	
 	var categories = {};
-
+	
+	var toProperty = function(key) {
+		return (p.property) ? p.property(key) : key;
+	}
+	
 	this.categorize = function(o) {
-		var key = getKey(o);
-		var name = (keyToString) ? keyToString(key) : key;
+		var key = p.key(o);
+		var name = toProperty(key);
 		if (!categories[name]) {
 			categories[name] = {
 				key: key,
-				category: categoryFactory(key)
-			}
+				value: new p.Category(key)
+			};
 		}
-		if (categories[name].category.categorized) {
-			categories[name].category.categorized(o);
+		if (categories[name].value.add) {
+			categories[name].value.add(o);
 		}
-	}
-
+	};
+	
 	this.get = function(key) {
-		var name = (keyToString) ? keyToString(key) : key;
-		return categories[name].category.value;
-	}
-
+		var entry = categories[toProperty(key)];
+		if (entry) return entry.value;
+		return null;
+	};
+	
 	this.getKeys = function() {
 		return properties.values(categories).map(Map.property("key"));
 	}
 
 	this.getCategories = function() {
-		return properties.values(categories).map(Map.property("category"));
+		return properties.values(categories).map(Map.property("value"));
 	}
 }
 
