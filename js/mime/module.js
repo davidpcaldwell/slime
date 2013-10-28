@@ -88,7 +88,7 @@ $exports.Type.parse = function(string) {
 				}
 				string = rest.substring(1);
 			} else {
-				while(rest.substring(0,1) != ";") {
+				while(rest.length > 0 && rest.substring(0,1) != ";") {
 					value += rest.substring(0,1);
 					rest = rest.substring(1);
 				}

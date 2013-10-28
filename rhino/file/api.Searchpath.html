@@ -117,11 +117,24 @@ END LICENSE
 						if (typeof(pathelements[1]) == "undefined") throw "No/1";
 						var searchpath = Searchpath(pathelements);
 						scope.test(
-							searchpath.toString()
-							== (
-								dir.getRelativePath("c").toString()
-								+ String( filesystem.$unit.getSearchpathSeparator() )
-								+ dir.getRelativePath("e").toString()
+							(
+								searchpath.toString()
+								== (
+									dir.getRelativePath("c").toString()
+									+ String( filesystem.$unit.getSearchpathSeparator() )
+									+ dir.getRelativePath("e").toString()
+								)
+							)
+							||
+							//	TODO	the below branch is necessary for Mac OS X, which somehow is confusing /var and
+							//			/private/var ... this could be a bug having to do with canonical paths, symlinks, etc.
+							(
+								searchpath.toString()
+								== (
+									String(dir.getRelativePath("c").java.adapt())
+									+ String(filesystem.$unit.getSearchpathSeparator())
+									+ String(dir.getRelativePath("e").java.adapt())
+								)
 							)
 						);
 						if (module.filesystems.cygwin) {
