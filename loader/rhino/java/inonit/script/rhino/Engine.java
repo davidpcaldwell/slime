@@ -405,12 +405,17 @@ public class Engine {
 			@Override public ClassLoader getApplicationClassLoader() {
 				return null;
 			}
+			
+			@Override public boolean createClassLoader() {
+				return true;
+			}
 
 			@Override public int getOptimizationLevel() {
 				return -1;
 			}
 		};
 
+		public abstract boolean createClassLoader();
 		public abstract ClassLoader getApplicationClassLoader();
 		public abstract int getOptimizationLevel();
 
@@ -433,11 +438,18 @@ public class Engine {
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
-			private Loader.Classes classes = Loader.Classes.create(Configuration.this.getApplicationClassLoader());
+			private ClassLoader classLoader;
+			private Loader.Classes classes;
 
 			ContextFactoryInner() {
-				ClassLoader parent = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
-				this.classes = Loader.Classes.create(parent);
+				ClassLoader classLoader = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+				if (Configuration.this.createClassLoader()) {
+					this.classes = Loader.Classes.create(classLoader);
+					this.classLoader = this.classes;
+				} else {
+					this.classes = null;
+					this.classLoader = classLoader;
+				}
 			}
 
 			final Loader.Classes getLoaderClasses() {
@@ -446,7 +458,7 @@ public class Engine {
 
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
-				rv.setApplicationClassLoader(classes);
+				rv.setApplicationClassLoader(classLoader);
 				rv.setErrorReporter(new Engine.Errors().getErrorReporter());
 				rv.setOptimizationLevel(getOptimizationLevel());
 				return rv;
