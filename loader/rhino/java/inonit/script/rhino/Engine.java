@@ -268,7 +268,17 @@ public class Engine {
 	}
 
 	public static class RhinoDebugger extends Debugger {
-		public static class Configuration {
+		public static abstract class Ui {
+			public abstract void setExitAction(Runnable action);
+			public abstract void setVisible(boolean visible);
+			public abstract void pack();
+			
+			public static abstract class Factory {
+				public abstract Ui create(org.mozilla.javascript.tools.debugger.Dim dim, String title);
+			}
+		}
+		
+		public static abstract class Configuration {
 			//	If true, we stop executing before we start, on the first line, and allow breakpoints to be set, etc.  If false,
 			//	we stop at the first specified breakpoint.
 			private boolean startWithBreak = true;
@@ -283,10 +293,18 @@ public class Engine {
 			};
 
 			private Log log = Log.NULL;
+			
+			private Ui.Factory uiFactory;
 
 			public Configuration() {
 			}
+			
+			public abstract Ui.Factory getUiFactory();
 
+			public void setUiFactory(Ui.Factory uiFactory) {
+				this.uiFactory = uiFactory;
+			}
+		
 			public void setExit(Runnable exit) {
 				if (exit == null) {
 					exit = new Runnable() {
@@ -315,7 +333,7 @@ public class Engine {
 		private boolean breakOnExceptions = false;
 
 		private org.mozilla.javascript.tools.debugger.Dim dim;
-		private org.mozilla.javascript.tools.debugger.SwingGui gui;
+		private Ui gui;
 
 		private RhinoDebugger() {
 		}
@@ -354,7 +372,7 @@ public class Engine {
 				breakOnExceptions = true;
 			}
 
-			this.gui = new org.mozilla.javascript.tools.debugger.SwingGui(dim, title);
+			this.gui = configuration.getUiFactory().create(dim, title);
 			gui.setExitAction(new ExitAction(this.dim, configuration.exit));
 			contexts.attach(dim);
 		}
@@ -442,23 +460,37 @@ public class Engine {
 			private Loader.Classes classes;
 
 			ContextFactoryInner() {
-				ClassLoader classLoader = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
-				if (Configuration.this.createClassLoader()) {
-					this.classes = Loader.Classes.create(classLoader);
-					this.classLoader = this.classes;
-				} else {
-					this.classes = null;
-					this.classLoader = classLoader;
+			}
+			
+			private boolean initialized = false;
+			
+			private synchronized void initializeClassLoaders() {
+				if (!initialized) {
+					ClassLoader classLoader = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+					if (Configuration.this.createClassLoader()) {
+						this.classes = Loader.Classes.create(classLoader);
+						this.classLoader = this.classes;
+					} else {
+						this.classes = null;
+						this.classLoader = classLoader;
+					}
+					initialized = true;
 				}
+			}
+			
+			private synchronized ClassLoader getContextApplicationClassLoader() {
+				initializeClassLoaders();
+				return this.classLoader;
 			}
 
 			final Loader.Classes getLoaderClasses() {
-				return classes;
+				initializeClassLoaders();
+				return this.classes;
 			}
 
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
-				rv.setApplicationClassLoader(classLoader);
+				rv.setApplicationClassLoader(getContextApplicationClassLoader());
 				rv.setErrorReporter(new Engine.Errors().getErrorReporter());
 				rv.setOptimizationLevel(getOptimizationLevel());
 				return rv;
@@ -721,6 +753,19 @@ public class Engine {
 				return t;
 			}
 		}
+	}
+	
+	public Scriptable createHostObject(final Object javaHostObject) {
+		ContextFactory.GlobalSetter global = ContextFactory.getGlobalSetter();
+		ContextFactory before = global.getContextFactoryGlobal();
+		global.setContextFactoryGlobal(contexts.factory);
+		Context owned = contexts.factory.enterContext();
+		Scriptable scope = this.getGlobalScope(owned);
+		Scriptable rv = (Scriptable)Context.javaToJS(javaHostObject, scope);
+		global.setContextFactoryGlobal(before);
+		return rv;
+//		Context context = contexts.factory.enterContext();
+//		return context.getWrapFactory().wrapAsJavaObject(context, this.getGlobalScope(context), javaHostObject, null);
 	}
 
 	public Object execute(Program program) {
