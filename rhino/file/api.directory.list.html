@@ -16,16 +16,6 @@
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="value">
-							<div class="name">recursive</div>
-							<span class="type">boolean</span>
-							<span>
-								Whether to recursively list directories underneath this directory; if this
-								directory contains directories, this method will return those directories, any
-								directories and files they contain, any directories and files those directories
-								contain, and so forth.
-							</span>
-						</li>
-						<li class="value">
 							<div class="name">filter</div>
 							<span class="type">function</span>
 							-OR-
@@ -64,6 +54,16 @@
 								<code>RegExp</code> and only those that match will be returned; those that do
 								not match will be excluded.
 							</div>
+						</li>
+						<li class="value">
+							<div class="name">recursive</div>
+							<span class="type">boolean</span>
+							<span>
+								Whether to recursively list directories underneath this directory; if this
+								directory contains directories, this method will return those directories, any
+								directories and files they contain, any directories and files those directories
+								contain, and so forth.
+							</span>
 						</li>
 						<li class="value">
 							<div class="name">type</div>
@@ -207,6 +207,17 @@
 			resourcef = resourcef[0];
 			test(resourcef.resource.read(String) == "");
 
+			test(
+				dir.list({
+					filter: function(node) {
+						return true;
+					},
+					descendants: function(node) {
+						return true;
+					}
+				}).length == 7
+			);
+			
 			if (context.cygwin) {
 				debugger;
 				var link = function(target,link) {
