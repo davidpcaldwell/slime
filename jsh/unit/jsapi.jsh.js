@@ -68,13 +68,19 @@ parameters.options.classpath.forEach( function(pathname) {
 var ENVIRONMENT = (function() {
 	var rv = {};
 	parameters.options.environment.forEach( function(item) {
-		var tokens = item.split("=");
-		if (tokens.length == 2) {
-			jsh.js.Object.expando.set(rv,tokens[0],jsh.loader.module(jsh.file.Pathname(tokens[1])));
-		} else if (tokens.length == 1) {
-			jsh.js.Object.expando.set(rv,item,{});
+		if (item.split("=").length == 2) {
+			//	Interpret as assignment of string property to environment
+			var tokens = item.split("=");
+			jsh.shell.echo("Setting environment value " + tokens[0] + " to '" + tokens[1] + "'");
+			jsh.js.Object.expando.set(rv,tokens[0],tokens[1]);
+		} else if (item.split(":").length > 1) {
+			var coloned = item.split(":");
+			var pathname = jsh.file.Pathname(coloned.slice(1).join(":"));
+			jsh.shell.echo("Loading environment value " + coloned[0] + " from " + pathname);
+			jsh.js.Object.expando.set(rv,coloned[0],jsh.loader.module(pathname));
 		} else {
-			throw "Bad -environment: " + item;
+			jsh.shell.echo("Setting environment value " + item);
+			jsh.js.Object.expando.set(rv,item,{});			
 		}
 	});
 	return rv;
