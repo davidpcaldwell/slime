@@ -45,7 +45,11 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	@Override public final void init() {
 		Engine.Debugger debugger = null;
 		if (System.getenv("SLIME_SCRIPT_DEBUGGER") != null && System.getenv("SLIME_SCRIPT_DEBUGGER").equals("rhino")) {
-			Engine.RhinoDebugger.Configuration configuration = new Engine.RhinoDebugger.Configuration();
+			Engine.RhinoDebugger.Configuration configuration = new Engine.RhinoDebugger.Configuration() {
+				@Override public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
+					return inonit.script.rhino.Gui.RHINO_UI_FACTORY;
+				}				
+			};
 			configuration.setExit(new Runnable() {
 				public void run() {
 				}

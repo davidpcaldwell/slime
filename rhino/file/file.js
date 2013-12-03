@@ -512,6 +512,22 @@ var Pathname = function(parameters) {
 				add(this);
 
 				return toReturn(rv);
+			} else if (typeof(mode.descendants) != "undefined") {
+				rv = [];
+				var descendants = mode.descendants;
+				var add = function(dir) {
+					var items = dir.list();
+					items.forEach(function(item) {
+						 if (filter(item)) {
+							rv.push(item); 
+						 }
+						 if (item.directory && descendants(item)) {
+							 add(item);
+						 }
+					})
+				};
+				add(this);
+				return toReturn(rv);
 			} else {
 				var createNodesFromPeers = function(peers) {
 					//	This function is written with this kind of for loop to allow accessing a Java array directly

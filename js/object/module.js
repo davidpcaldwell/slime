@@ -425,17 +425,17 @@ var Categorizer = function(p) {
 			return properties.values(categories).map(Map.property("category"));
 		}
 	});
-	
+
 	if (p.key && p.category) {
 		return new Old(p);
 	}
-	
+
 	var categories = {};
-	
+
 	var toProperty = function(key) {
 		return (p.property) ? p.property(key) : key;
 	}
-	
+
 	this.categorize = function(o) {
 		var key = p.key(o);
 		var name = toProperty(key);
@@ -449,13 +449,13 @@ var Categorizer = function(p) {
 			categories[name].value.add(o);
 		}
 	};
-	
+
 	this.get = function(key) {
 		var entry = categories[toProperty(key)];
 		if (entry) return entry.value;
 		return null;
 	};
-	
+
 	this.getKeys = function() {
 		return properties.values(categories).map(Map.property("key"));
 	}

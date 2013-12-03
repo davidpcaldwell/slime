@@ -18,6 +18,10 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 	if (!javac) return function(){}();
 	return function(p) {
 		var args = [];
+		//	TODO	add documentation and test
+		if (p.debug === true) {
+			args.push("-g");
+		}
 		//	TODO	accept destination that is directory object, not just Pathname
 		if (p.destination) {
 			//	TODO	figure out what to do with recursive

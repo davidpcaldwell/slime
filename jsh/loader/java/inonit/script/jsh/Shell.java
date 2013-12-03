@@ -153,6 +153,10 @@ public class Shell {
 					return Configuration.this.getClassLoader();
 				}
 
+				@Override public boolean createClassLoader() {
+					return true;
+				}
+
 				@Override public int getOptimizationLevel() {
 					return Configuration.this.getOptimizationLevel();
 				}

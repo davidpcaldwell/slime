@@ -329,7 +329,11 @@ public class Main {
 					String id = System.getProperty("jsh.script.debugger");
 					if (id == null) return null;
 					if (id.equals("rhino")) {
-						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
+						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
+							public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
+								return Gui.RHINO_UI_FACTORY;
+							}
+						});
 					} else if (id.equals("profiler")) {
 						return new Engine.Profiler();
 					} else if (id.startsWith("profiler:")) {

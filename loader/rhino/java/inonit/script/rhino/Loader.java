@@ -37,6 +37,7 @@ public abstract class Loader {
 		}
 
 		public Classpath getClasspath() {
+			if (engine.getApplicationClassLoader() == null) return null;
 			return engine.getApplicationClassLoader().toScriptClasspath();
 		}
 
