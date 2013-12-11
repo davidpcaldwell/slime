@@ -70,11 +70,16 @@ public class Engine {
 	public static class Profiler extends Debugger {
 		private org.mozilla.javascript.debug.Debugger debugger = new MyDebugger();
 		private Listener listener;
+		private boolean useStringNodes;
 
 		//	TODO	should not be public
 		public Profiler() {
 			this.listener = AgentListener.get();
 			//System.err.println("Profiler listener: " + this.listener);
+		}
+		
+		public final void useStringNodes() {
+			this.useStringNodes = true;
 		}
 
 		private static abstract class Listener {
@@ -200,14 +205,22 @@ public class Engine {
 				public void onEnter(Context cntxt, Scriptable s, Scriptable s1, Object[] os) {
 					//System.err.println("Script enter: " + code);
 					if (listener != null) {
-						listener.start(code);
+						if (useStringNodes) {
+							listener.start(code.toString());
+						} else {
+							listener.start(code);
+						}
 					}
 				}
 
 				public void onExit(Context cntxt, boolean byThrow, Object resultOrException) {
 					//System.err.println("Script exit: " + code);
 					if (listener != null) {
-						listener.end(code);
+						if (useStringNodes) {
+							listener.end(code.toString());
+						} else {
+							listener.end(code);
+						}
 					}
 				}
 

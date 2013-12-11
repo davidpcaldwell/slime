@@ -394,6 +394,16 @@ this.jsh = new function() {
 									this.className = String(_peer.getClassName());
 									this.methodName = String(_peer.getMethodName());
 									this.signature = String(_peer.getSignature());
+								} else if (_peer && _peer.getClass() && String(_peer.getClass().getName()) == "java.lang.String") {
+									//	TODO	if we want to keep using this we should fix its idiosyncrasies, like the lack of all line numbers
+									var parser = /^(.*) \[(.*)\-(.*)\](?: (.*)\(\))?$/.exec(String(_peer));
+									if (!parser) throw new TypeError("No match for " + String(_peer));
+									var tokens = String(_peer).split(" ");
+									this.sourceName = parser[1];
+									this.lineNumbers = [Number(parser[2]),Number(parser[3])];
+									if (parser[4]) {
+										this.functionName = parser[4];
+									}
 								} else {
 								}
 							}
