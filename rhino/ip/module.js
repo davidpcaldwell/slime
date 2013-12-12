@@ -5,4 +5,45 @@ $exports.tcp = new function() {
 		_socket.close();
 		return rv;
 	};
+};
+
+$exports.Port = function(number) {
+	this.__defineGetter__("number", function() {
+		return number;
+	});
+	
+	this.isOpen = function() {
+		var debug = function(message) {
+			//Packages.java.lang.System.err.println(message);
+		}
+		
+		var _server;
+		var _client;
+		try {
+			_server = new Packages.java.net.ServerSocket(number);
+			debug("Opened server socket for " + number);
+			_server.close();
+			_server = null;
+			try {
+				_client = new Packages.java.net.Socket("localhost",number);
+				debug("Opened client socket for " + number);
+				return false;
+			} catch (e) {
+				debug("Did not open client socket for " + number);
+				e.rhinoException.printStackTrace();
+				return true;
+			}
+		} catch (e) {
+			debug("Did not open server socket for " + number);
+			e.rhinoException.printStackTrace();
+			return false;
+		} finally {
+			if (_server) _server.close();
+			if (_client) _client.close();
+		}
+	}
+};
+
+$exports.getEphemeralPort = function() {
+	return new $exports.Port($exports.tcp.getEphemeralPortNumber());
 }
