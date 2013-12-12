@@ -12,7 +12,12 @@
 
 plugin({
 	isReady: function() {
-		return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined" && Packages.javax.tools.ToolProvider.getSystemToolClassLoader() != null;
+		return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined" 
+			&& (
+				Packages.javax.tools.ToolProvider.getSystemToolClassLoader() != null
+				|| jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]).getCommand("javac")
+			)
+		;
 	},
 	load: function() {
 		jsh.java.tools = $loader.module("module.js", {

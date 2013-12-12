@@ -14,7 +14,40 @@
 //	TODO	verify that this setup does not load it
 $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(function() {
 	debugger;
-	var javac = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+	var javac = (function() {
+		if (Packages.javax.tools.ToolProvider.getSystemJavaCompiler()) {
+			return new function() {
+				this.command = function(args) {
+					Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
+						null, null, null, 
+						$context.api.java.toJavaArray(
+							args
+							,Packages.java.lang.String
+							,function(s) {
+								return new Packages.java.lang.String(s)
+							}
+						)
+					)
+				}
+			};
+		} else {
+			var toolpath = jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]);
+			if (toolpath.getCommand("javac")) {
+				return new function() {
+					this.command = function(args) {
+						return jsh.shell.run({
+							command: toolpath.getCommand("javac"),
+							arguments: args,
+							evaluate: function(result) {
+								return result.status;
+							}
+						});
+					}
+				}
+			}
+		}
+	})();
+//	var javac = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
 	if (!javac) return function(){}();
 	return function(p) {
 		var args = [];
@@ -46,16 +79,7 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 				return file.toString();
 			}));
 		}
-		var status = javac.run(
-			null, null, null,
-			$context.api.java.toJavaArray(
-				args
-				,Packages.java.lang.String
-				,function(s) {
-					return new Packages.java.lang.String(s)
-				}
-			)
-		);
+		var status = javac.command(args);
 		var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 			if (status) {
 				if (p && p.on && p.on.exit) {
