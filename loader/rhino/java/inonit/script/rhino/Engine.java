@@ -292,6 +292,15 @@ public class Engine {
 		}
 		
 		public static abstract class Configuration {
+			public static Configuration create(final Ui.Factory uiFactory) {
+				return new Configuration() {
+					@Override
+					public Ui.Factory getUiFactory() {
+						return uiFactory;
+					}
+				};
+			}
+			
 			//	If true, we stop executing before we start, on the first line, and allow breakpoints to be set, etc.  If false,
 			//	we stop at the first specified breakpoint.
 			private boolean startWithBreak = true;
@@ -307,16 +316,10 @@ public class Engine {
 
 			private Log log = Log.NULL;
 			
-			private Ui.Factory uiFactory;
-
 			public Configuration() {
 			}
 			
 			public abstract Ui.Factory getUiFactory();
-
-			public void setUiFactory(Ui.Factory uiFactory) {
-				this.uiFactory = uiFactory;
-			}
 		
 			public void setExit(Runnable exit) {
 				if (exit == null) {

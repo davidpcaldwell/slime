@@ -70,7 +70,7 @@ var toLiteral = function(value) {
 			string = string.replace(/\"/g, "\\\"");
 			string = string.replace(/\t/g, "\\t");
 			string = string.replace(/\n/g, "\\n");
-			string = string.replace(/\r/g, "");
+			string = string.replace(/\r/g, "\\r");
 			return string;
 		}
 

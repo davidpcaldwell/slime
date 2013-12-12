@@ -277,7 +277,9 @@ $exports.jsh = function(p) {
 					//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
 					if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
 						var Engine = Packages.inonit.script.rhino.Engine;
-						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration());
+						return Engine.RhinoDebugger.create(Engine.RhinoDebugger.Configuration.create(
+							Packages.inonit.script.rhino.Gui.RHINO_UI_FACTORY
+						));
 					} else {
 						return null;
 					}
