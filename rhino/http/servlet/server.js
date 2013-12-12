@@ -87,7 +87,7 @@ $exports.Servlet = function(delegate) {
 	};
 
 	this.service = function(_request,_response) {
-		log("Received request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
+		debug("Received request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
 		try {
 			var request = new Request(_request);
 			debug("Received request: " + request);
