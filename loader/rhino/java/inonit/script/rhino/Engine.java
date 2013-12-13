@@ -355,6 +355,9 @@ public class Engine {
 			}
 
 			this.gui = new org.mozilla.javascript.tools.debugger.SwingGui(dim, title);
+			java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+			java.awt.Dimension size = new java.awt.Dimension((int)screenSize.getWidth() * 3/4, (int)screenSize.getHeight() * 3/4);
+			this.gui.setPreferredSize(size);
 			gui.setExitAction(new ExitAction(this.dim, configuration.exit));
 			contexts.attach(dim);
 		}
