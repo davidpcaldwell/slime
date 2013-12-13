@@ -35,8 +35,14 @@ var file = $loader.file("file.js", {
 });
 file.Searchpath.prototype = prototypes.Searchpath;
 
+var spi = $loader.file("spi.js", {
+	Searchpath: file.Searchpath
+});
+
 //	TODO	separate out Cygwin and make it less tightly bound with the rest of this
 var os = $loader.file("os.js", new function() {
+	this.Filesystem = spi.Filesystem;
+	
 	this.cygwin = $context.cygwin;
 
 	this.api = new function() {
