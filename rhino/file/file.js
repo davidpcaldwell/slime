@@ -34,7 +34,7 @@ var Pathname = function(parameters) {
 	$api.deprecate(parameters,"path");
 
 	var $filesystem = firstDefined(parameters,"filesystem","$filesystem");
-	if (!$filesystem.peerToString) fail("Internal error; Pathname constructed incorrectly: " + parameters.toSource());
+	if (!$filesystem.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
 
 	var peer = (function() {
 		var peer = firstDefined(parameters,"peer","$peer");
@@ -42,11 +42,7 @@ var Pathname = function(parameters) {
 		var path = firstDefined(parameters,"path","$path");
 		//	TODO	below line appears to invoke nonexistent method
 		if (path) return $filesystem.getPeer(path);
-		if (parameters.toSource) {
-			fail("Missing new Pathname() arguments: " + parameters.toSource());
-		} else {
-			fail("Missing new Pathname() arguments: " + parameters);
-		}
+		fail("Missing new Pathname() arguments: " + parameters);
 	})();
 
 	var toString = constant(function() {
