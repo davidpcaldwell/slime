@@ -45,7 +45,6 @@ var errors = new function() {
 	}
 
 	this.decorate = function(implementation) {
-		var prototype = implementation.prototype;
 		var rv = function() {
 			//	TODO	what if called as function?
 			var literals = Array.prototype.map.call(arguments,function(a,i) {
@@ -94,7 +93,7 @@ var errors = new function() {
 			created.stack = stack;
 			return created;
 		}
-		rv.prototype = prototype;
+		rv.prototype = implementation.prototype;
 		return rv;
 	};
 }
