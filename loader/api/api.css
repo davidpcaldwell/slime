@@ -47,7 +47,7 @@ li.function, li.constructor { border: 1px solid; padding: 0.2em; }
 */
 div.function { border: 1px solid; padding: 0.2em; }
 
-li.function>div.name { background: #c00000; color: #ffffff; }
+li.function>div.name, div.function>div.name { background: #c00000; color: #ffffff; }
 li.constructor>div.name { background: #a0a000; color: #ffffff; }
 li.object>div.name, li.value>div.name { background: #0040c0; color: #ffffff; }
 

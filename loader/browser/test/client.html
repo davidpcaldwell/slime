@@ -261,8 +261,13 @@ END LICENSE
 									//	TODO	probable bug here; probably works when module path ends in /, but for module path
 									//			that has a terminal file name, probably needs to strip that file name to find the
 									//			base from which to load the module at 'path'
+									var base = (function() {
+										var tokens = module.split("/");
+										if (tokens[tokens.length-1].length == 0) return module;
+										return tokens.slice(0,tokens.length-1).join("/") + "/";
+									})();
 									return inonit.loader.module(
-										module + self.top + path,
+										base + self.top + path,
 										context
 									);
 								}

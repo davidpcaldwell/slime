@@ -20,6 +20,11 @@ var debug = function(message) {
 
 var Request = function(_request) {
 	debug("Creating request peer for " + _request);
+	
+	this.source = new function() {
+		this.ip = String(_request.getRemoteAddr());
+	};
+	
 	this.method = String(_request.getMethod()).toUpperCase();
 	this.path = String(_request.getPathInfo()).substring(1);
 
@@ -82,7 +87,7 @@ $exports.Servlet = function(delegate) {
 	};
 
 	this.service = function(_request,_response) {
-		log("Received request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
+		debug("Received request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
 		try {
 			var request = new Request(_request);
 			debug("Received request: " + request);

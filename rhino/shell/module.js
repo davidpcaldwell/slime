@@ -126,11 +126,36 @@ $exports.run = function(p) {
 		}
 	}
 
-	var _listener = Packages.inonit.system.OperatingSystem.get().run( context, configuration );
-	if (_listener.getLaunchException()) {
-		result.error = _listener.getLaunchException();
+	if (p.on && p.on.start) {
+		//	TODO	could throw exception on launch; should deal with it
+		var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
+		p.on.start.call({}, new function() {
+			this.kill = function() {
+				_subprocess.terminate();
+			}
+		});
+		var listener = new function() {
+			this.finished = function(status) {
+				this.status = status;
+			};
+
+			this.interrupted = function(_exception) {
+				//	who knows what we should do here. Kill the process?
+				throw new Error("Unhandled Java thread interruption.");
+			};
+		};
+		_subprocess.wait(new JavaAdapter(
+			Packages.inonit.system.Subprocess.Listener,
+			listener
+		));
+		result.status = listener.status;
 	} else {
-		result.status = Number( _listener.getExitStatus().intValue() );
+		var _listener = Packages.inonit.system.OperatingSystem.get().run( context, configuration );
+		if (_listener.getLaunchException()) {
+			result.error = _listener.getLaunchException();
+		} else {
+			result.status = Number( _listener.getExitStatus().intValue() );
+		}
 	}
 	stdio.close();
 	//	TODO	this returning of stdio values is currently undocumented. Certainly they should be returned if String were specified

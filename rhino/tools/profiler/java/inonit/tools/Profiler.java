@@ -249,10 +249,32 @@ public class Profiler {
 	}
 
 	private static class Configuration {
+		private HashMap<String,Boolean> filters = new HashMap<String,Boolean>();
+		
+		Configuration() {
+			filters.put("org.mozilla.javascript", false);
+			filters.put("org.mozilla.classfile", false);
+			filters.put("inonit.script.rhino.Engine$Profiler", false);
+		}
+		
+		final void exclude(String value) {
+			filters.put(value, Boolean.FALSE);
+		}
+
 		public boolean profile(String className) {
-			if (className.startsWith("org/mozilla/javascript/")) return false;
-			if (className.startsWith("org/mozilla/classfile/")) return false;
-			if (className.startsWith("inonit/script/rhino/Engine$Profiler")) return false;
+			String filterKey = className.replaceAll("\\/", ".");
+			while(filterKey.length() > 0) {
+				if (filters.get(filterKey) != null) {
+					return filters.get(filterKey).booleanValue();
+				}
+				if (filterKey.lastIndexOf("$") != -1) {
+					filterKey = filterKey.substring(0, filterKey.lastIndexOf("$"));
+				} else if (filterKey.lastIndexOf(".") != -1) {
+					filterKey = filterKey.substring(0, filterKey.lastIndexOf("."));
+				} else {
+					filterKey = "";
+				}
+			}
 			return true;
 		}
 
@@ -282,6 +304,7 @@ public class Profiler {
 			//	change; just do not know enough about the definition of ProtectionDomain
 			if (protectionDomain.equals(Profiler.class.getProtectionDomain())) return null;
 			if (configuration.profile(className)) {
+//				System.err.println("Profiling " + className);
 				try {
 					if (!added.contains(loader)) {
 						added.add(loader);
@@ -311,6 +334,7 @@ public class Profiler {
 							} catch (javassist.CannotCompileException e) {
 								System.err.println("CannotCompileException: " + e.getMessage() + ": " + b.getDeclaringClass().getName() + "." + b.getName() + "(" + b.getSignature() + ")");
 							}
+						} else {
 						}
 					}
 					return c.toBytecode();
@@ -325,6 +349,7 @@ public class Profiler {
 					throw new RuntimeException(e);
 				}
 			} else {
+//				System.err.println("Not profiling " + className);
 				return null;
 			}
 		}
@@ -393,9 +418,17 @@ public class Profiler {
 	}
 
 	public static void premain(String agentArgs, Instrumentation inst) {
+		Configuration configuration = new Configuration();
+		String[] args = agentArgs.split(",");
+		for (String arg : args) {
+			if (arg.startsWith("exclude=")) {
+				String value = arg.substring(arg.indexOf("=")+1);
+				configuration.exclude(value);
+			}
+		}
 		javaagent = new Profiler();
 		System.err.println("Starting profiler ...");
-		inst.addTransformer(new Transformer(new Configuration()));
+		inst.addTransformer(new Transformer(configuration));
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
 				ArrayList<Profile> profiles = new ArrayList<Profile>();
