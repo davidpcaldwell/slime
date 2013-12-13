@@ -519,7 +519,7 @@ var Pathname = function(parameters) {
 					var items = dir.list();
 					items.forEach(function(item) {
 						 if (filter(item)) {
-							rv.push(item); 
+							rv.push(item);
 						 }
 						 if (item.directory && descendants(item)) {
 							 add(item);
