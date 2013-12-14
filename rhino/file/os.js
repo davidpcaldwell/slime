@@ -10,9 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-var Filesystem = $context.Filesystem;
+var FilesystemProvider = $context.FilesystemProvider;
 
-var System = function(peer,PARENT) {
+var JavaFilesystemProvider = function(peer) {
 	this.PATHNAME_SEPARATOR = String( peer.getPathnameSeparator() );
 	this.SEARCHPATH_SEPARATOR = String( peer.getSearchpathSeparator() );
 
@@ -64,7 +64,7 @@ var System = function(peer,PARENT) {
 			}
 		}
 		if (isAbsolute(path)) {
-			path = Filesystem.Implementation.canonicalize(path, SELF.PATHNAME_SEPARATOR);
+			path = FilesystemProvider.Implementation.canonicalize(path, SELF.PATHNAME_SEPARATOR);
 			return PARENT_PEER.getNode(path);
 		} else {
 			return PARENT_PEER.getNode(new Packages.java.io.File(path));
@@ -192,40 +192,6 @@ var System = function(peer,PARENT) {
 		}
 	}
 
-	var mapPathnameFunction = function(filesystem) {
-		return function(pathname) {
-			var pathnameType;
-			if ($context.api.isJavaType(Packages.inonit.script.runtime.io.Filesystem.NativeFilesystem.NodeImpl)(pathname.java.getPeer())) {
-				pathnameType = "os";
-			} else if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.NodeImpl)(pathname.java.getPeer())) {
-				pathnameType = "cygwin";
-			}
-			if (pathnameType == "cygwin" && filesystem == filesystems.os) {
-				return filesystems.cygwin.toWindows(pathname);
-			} else if (pathnameType == "os" && filesystem == filesystems.cygwin) {
-				return filesystems.cygwin.toUnix(pathname);
-			} else {
-				return pathname;
-			}
-		};
-	}
-
-	//	TODO	If not getting rid of this, merge with mapPathnameFunction?
-	this.$inFilesystem = function(pathname) {
-		if (pathname.$filesystem == filesystems.cygwin && PARENT == filesystems.os) {
-			return filesystems.cygwin.toWindows(this);
-		} else if (pathname.$filesystem == filesystems.os && PARENT == filesystems.cygwin) {
-			return filesystems.cygwin.toUnix(this);
-		} else {
-			return pathname;
-		}
-	}
-	$api.deprecate(this,"$inFilesystem");
-
-	this.$Searchpath = {
-		mapPathname: mapPathnameFunction(PARENT)
-	}
-
 	this.java = new function() {
 		this.adapt = function(_jfile) {
 			//	TODO	if no arguments, may want to someday consider returning the native peer of this object
@@ -240,13 +206,44 @@ var JavaFilesystem = function(_peer,os) {
 		return "JavaFilesystem: peer=" + _peer;
 	}
 
-	var system = new System(_peer,this);
+	var system = new JavaFilesystemProvider(_peer);
 
 	if (os) {
-		System.os = system;
+		JavaFilesystemProvider.os = system;
 	}
 
-	Filesystem.call(this,system);
+	this.Searchpath = function(array) {
+		return new $context.Searchpath({ filesystem: system, array: array });
+	}
+	this.Searchpath.prototype = $context.Searchpath.prototype;
+	this.Searchpath.parse = function(string) {
+		if (!string) {
+			throw new Error("No string to parse in Searchpath.parse");
+		}
+		var elements = string.split(system.SEARCHPATH_SEPARATOR);
+		var array = elements.map(function(element) {
+			return system.newPathname(element);
+		});
+		return new $context.Searchpath({ filesystem: system, array: array });
+	}
+
+	this.Pathname = function(string) {
+		return system.newPathname(string);
+	}
+
+	this.$unit = new function() {
+		//	Used by unit tests for getopts as well as unit tests for this module
+		this.getSearchpathSeparator = function() {
+			return system.SEARCHPATH_SEPARATOR;
+		}
+		this.getPathnameSeparator = function() {
+			return system.PATHNAME_SEPARATOR;
+		}
+		this.temporary = function() {
+			return system.temporary.apply(system,arguments);
+		}
+	}
+//	FilesystemProvider.call(this,system);
 
 	var self = this;
 
@@ -301,13 +298,13 @@ var JavaFilesystem = function(_peer,os) {
 				if (item.file == null && this.Pathname( item.toString() + ".exe" ).file != null ) {
 					item = this.Pathname( item.toString() + ".exe" );
 				}
-				return System.os.importPathname( item );
+				return JavaFilesystemProvider.os.importPathname( item );
 			}
 			//	Searchpath currently sets the constructor property to this module-level function; would this make this instanceof
 			//	work?
 			if (item instanceof $context.Searchpath) {
 				//	TODO	convert underlying pathnames
-				return new $context.Searchpath({ filesystem: System.os, array: item.pathnames });
+				return new $context.Searchpath({ filesystem: JavaFilesystemProvider.os, array: item.pathnames });
 			}
 			return item;
 		}
@@ -339,4 +336,5 @@ if ( $context.cygwin ) {
 }
 
 $exports.filesystems = filesystems;
-$exports.Filesystem = Filesystem;
+$exports.Filesystem = $context.FilesystemProvider;
+$api.deprecate($exports,"Filesystem");
