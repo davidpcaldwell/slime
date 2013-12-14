@@ -201,15 +201,9 @@ var JavaFilesystemProvider = function(peer) {
 	};
 }
 
-var JavaFilesystem = function(_peer,os) {
+var JavaFilesystem = function(system,o) {
 	this.toString = function() {
-		return "JavaFilesystem: peer=" + _peer;
-	}
-
-	var system = new JavaFilesystemProvider(_peer);
-
-	if (os) {
-		JavaFilesystemProvider.os = system;
+		return "JavaFilesystem: provider=" + system;
 	}
 
 	this.Searchpath = function(array) {
@@ -243,70 +237,25 @@ var JavaFilesystem = function(_peer,os) {
 			return system.temporary.apply(system,arguments);
 		}
 	}
-//	FilesystemProvider.call(this,system);
 
 	var self = this;
 
 	this.java = system.java;
-//	this.java = new function() {
-//		this.adapt = function(_jfile) {
-//			//	TODO	if no arguments, may want to someday consider returning the native peer of this object
-//			//	TODO	document this and write unit tests for it
-//			return new $context.Pathname({ filesystem: system, peer: peer.getNode(_jfile) });
-//		}
-//	};
 
 	this.$jsh = new function() {
 		//	Currently used by jsh.shell.getopts for Pathname
 		this.PATHNAME_SEPARATOR = system.PATHNAME_SEPARATOR;
 
-		//	TODO	probably can be replaced by .java.adapt() above
-		this.Pathname = function($jfile) {
-			return new $context.Pathname({ filesystem: system, peer: _peer.getNode($jfile) });
-		}
-
 		//	Interprets a native OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
-		if (os) {
+		//	TODO	could this be replaced with something that uses a java.io.File?
+		if (!o || !o.interpretNativePathname) {
 			this.os = function(pathname) {
 				return pathname;
 			}
 		} else if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(_peer)) {
 			this.os = function(pathname) {
-				return self.toUnix(pathname);
+				return o.interpretNativePathname.call(self,pathname);
 			}
-		}
-	}
-
-	if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(_peer)) {
-		var isPathname = $context.isPathname;
-
-		this.toUnix = function(item) {
-			if (isPathname(item)) {
-				return new $context.Pathname({ filesystem: system, peer: _peer.getNode( item.java.adapt() ) });
-			}
-			if (item instanceof $context.Searchpath) {
-				return new $context.Searchpath({ filesystem: system, array: item.pathnames });
-			}
-			return item;
-		}
-
-		this.toWindows = function(item) {
-			if (isPathname(item)) {
-				//	Unbelievably horrendous workaround, but seems to work
-				//	When creating a softlink to an exe in Windows, the softlink gets the .exe suffix added to it even if it is not on the
-				//	command line.
-				if (item.file == null && this.Pathname( item.toString() + ".exe" ).file != null ) {
-					item = this.Pathname( item.toString() + ".exe" );
-				}
-				return JavaFilesystemProvider.os.importPathname( item );
-			}
-			//	Searchpath currently sets the constructor property to this module-level function; would this make this instanceof
-			//	work?
-			if (item instanceof $context.Searchpath) {
-				//	TODO	convert underlying pathnames
-				return new $context.Searchpath({ filesystem: JavaFilesystemProvider.os, array: item.pathnames });
-			}
-			return item;
 		}
 	}
 
@@ -319,18 +268,71 @@ var JavaFilesystem = function(_peer,os) {
 }
 
 var filesystems = {};
-filesystems.os = new JavaFilesystem( Packages.inonit.script.runtime.io.Filesystem.create(), true );
-if ( $context.cygwin ) {
-	var $delegate;
-	if ($context.cygwin.root && !$context.cygwin.paths) {
-		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root)
-	} else {
-		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root,$context.cygwin.paths)
+
+var addPeerMethods = function(filesystem,provider,_peer) {
+	filesystem.$unit.getNode = function() {
+		return _peer.getNode.apply(_peer,arguments);
+	};
+	
+	//	TODO	probably can be replaced by .java.adapt() above
+	filesystem.$jsh.Pathname = function($jfile) {
+		return new $context.Pathname({ filesystem: provider, peer: _peer.getNode($jfile) });
 	}
-	filesystems.cygwin = new JavaFilesystem($delegate);
+}
+
+var _ospeer = Packages.inonit.script.runtime.io.Filesystem.create();
+JavaFilesystemProvider.os = new JavaFilesystemProvider(_ospeer);
+filesystems.os = new JavaFilesystem( JavaFilesystemProvider.os );
+addPeerMethods(filesystems.os,JavaFilesystemProvider.os,_ospeer);
+
+if ( $context.cygwin ) {
+	var _cygwinProvider;
+	if ($context.cygwin.root && !$context.cygwin.paths) {
+		_cygwinProvider = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root)
+	} else {
+		_cygwinProvider = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root,$context.cygwin.paths)
+	}
+	var cygwinProvider = new JavaFilesystemProvider(_cygwinProvider);
+	filesystems.cygwin = new JavaFilesystem(cygwinProvider, {
+		interpretNativePathname: function(pathname) {
+			return this.toUnix(pathname);
+		}
+	});
+	
+	addGetNode(filesystems.cygwin,cygwinProvider,_cygwinProvider);
+	
+	filesystems.cygwin.toUnix = function(item) {
+		if (isPathname(item)) {
+			return new $context.Pathname({ filesystem: system, peer: _peer.getNode( item.java.adapt() ) });
+		}
+		if (item instanceof $context.Searchpath) {
+			return new $context.Searchpath({ filesystem: system, array: item.pathnames });
+		}
+		return item;
+	}
+
+	filesystems.cygwin.toWindows = function(item) {
+		if ($context.isPathname(item)) {
+			//	Unbelievably horrendous workaround, but seems to work
+			//	When creating a softlink to an exe in Windows, the softlink gets the .exe suffix added to it even if it is not on the
+			//	command line.
+			if (item.file == null && this.Pathname( item.toString() + ".exe" ).file != null ) {
+				item = this.Pathname( item.toString() + ".exe" );
+			}
+			return JavaFilesystemProvider.os.importPathname( item );
+		}
+		//	Searchpath currently sets the constructor property to this module-level function; would this make this instanceof
+		//	work?
+		if (item instanceof $context.Searchpath) {
+			//	TODO	convert underlying pathnames
+			return new $context.Searchpath({ filesystem: JavaFilesystemProvider.os, array: item.pathnames });
+		}
+		return item;
+	}
+
 	if ($context.addFinalizer) {
 		$context.addFinalizer(function() {
-			$delegate.finalize();
+			_cygwinProvider.finalize();
 		});
 	}
 }
