@@ -262,22 +262,20 @@ var JavaFilesystem = function(system,o) {
 	this.$unit.Pathname = function(peer) {
 		return new $context.Pathname({ filesystem: system, peer: peer });
 	}
-	this.$unit.getNode = function() {
-		return _peer.getNode.apply(_peer,arguments);
-	}
 }
 
 var filesystems = {};
 
 var addPeerMethods = function(filesystem,provider,_peer) {
+	//	TODO	figure out how this is used and whether it can be eliminated
 	filesystem.$unit.getNode = function() {
 		return _peer.getNode.apply(_peer,arguments);
 	};
 	
 	//	TODO	probably can be replaced by .java.adapt() above
-	filesystem.$jsh.Pathname = function($jfile) {
-		return new $context.Pathname({ filesystem: provider, peer: _peer.getNode($jfile) });
-	}
+	filesystem.$jsh.Pathname = $api.deprecate(function($jfile) {
+		return filesystem.java.adapt($jfile);
+	});
 }
 
 var _ospeer = Packages.inonit.script.runtime.io.Filesystem.create();
@@ -299,7 +297,7 @@ if ( $context.cygwin ) {
 		}
 	});
 	
-	addGetNode(filesystems.cygwin,cygwinProvider,_cygwinProvider);
+	addPeerMethods(filesystems.cygwin,cygwinProvider,_cygwinProvider);
 	
 	filesystems.cygwin.toUnix = function(item) {
 		if (isPathname(item)) {
