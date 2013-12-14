@@ -235,12 +235,12 @@ var System = function(peer,PARENT) {
 	};
 }
 
-var SystemFilesystem = function(peer,os) {
+var JavaFilesystem = function(_peer,os) {
 	this.toString = function() {
-		return "SystemFilesystem: peer=" + peer;
+		return "JavaFilesystem: peer=" + _peer;
 	}
 
-	var system = new System(peer,this);
+	var system = new System(_peer,this);
 
 	if (os) {
 		System.os = system;
@@ -265,7 +265,7 @@ var SystemFilesystem = function(peer,os) {
 
 		//	TODO	probably can be replaced by .java.adapt() above
 		this.Pathname = function($jfile) {
-			return new $context.Pathname({ filesystem: system, peer: peer.getNode($jfile) });
+			return new $context.Pathname({ filesystem: system, peer: _peer.getNode($jfile) });
 		}
 
 		//	Interprets a native OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
@@ -273,19 +273,19 @@ var SystemFilesystem = function(peer,os) {
 			this.os = function(pathname) {
 				return pathname;
 			}
-		} else if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
+		} else if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(_peer)) {
 			this.os = function(pathname) {
 				return self.toUnix(pathname);
 			}
 		}
 	}
 
-	if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(peer)) {
+	if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(_peer)) {
 		var isPathname = $context.isPathname;
 
 		this.toUnix = function(item) {
 			if (isPathname(item)) {
-				return new $context.Pathname({ filesystem: system, peer: peer.getNode( item.java.adapt() ) });
+				return new $context.Pathname({ filesystem: system, peer: _peer.getNode( item.java.adapt() ) });
 			}
 			if (item instanceof $context.Searchpath) {
 				return new $context.Searchpath({ filesystem: system, array: item.pathnames });
@@ -317,12 +317,12 @@ var SystemFilesystem = function(peer,os) {
 		return new $context.Pathname({ filesystem: system, peer: peer });
 	}
 	this.$unit.getNode = function() {
-		return peer.getNode.apply(peer,arguments);
+		return _peer.getNode.apply(_peer,arguments);
 	}
 }
 
 var filesystems = {};
-filesystems.os = new SystemFilesystem( Packages.inonit.script.runtime.io.Filesystem.create(), true );
+filesystems.os = new JavaFilesystem( Packages.inonit.script.runtime.io.Filesystem.create(), true );
 if ( $context.cygwin ) {
 	var $delegate;
 	if ($context.cygwin.root && !$context.cygwin.paths) {
@@ -330,7 +330,7 @@ if ( $context.cygwin ) {
 	} else {
 		$delegate = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root,$context.cygwin.paths)
 	}
-	filesystems.cygwin = new SystemFilesystem($delegate);
+	filesystems.cygwin = new JavaFilesystem($delegate);
 	if ($context.addFinalizer) {
 		$context.addFinalizer(function() {
 			$delegate.finalize();
