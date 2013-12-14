@@ -28,7 +28,7 @@ plugin({
 			script: (function() {
 				var uri = $host.getInvocation().getScript().getUri();
 				if (uri  && uri.getScheme() && String(uri.getScheme()) == "file") {
-					return jsh.file.filesystem.$jsh.Pathname(new Packages.java.io.File(uri)).file;
+					return jsh.file.filesystem.java.adapt(new Packages.java.io.File(uri)).file;
 				}
 			})(),
 			uri: (function() {
@@ -44,7 +44,7 @@ plugin({
 			packaged: (function() {
 				//	TODO	push back into Invocation
 				if ($host.getSystemProperties().getProperty("jsh.launcher.packaged")) {
-					return jsh.file.filesystem.$jsh.Pathname(
+					return jsh.file.filesystem.java.adapt(
 						new Packages.java.io.File(
 							$host.getSystemProperties().getProperty("jsh.launcher.packaged")
 						)

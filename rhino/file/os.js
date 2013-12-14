@@ -247,12 +247,12 @@ var JavaFilesystem = function(system,o) {
 		this.PATHNAME_SEPARATOR = system.PATHNAME_SEPARATOR;
 
 		//	Interprets a native OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
-		//	TODO	could this be replaced with something that uses a java.io.File?
+		//	TODO	could/should this be replaced with something that uses a java.io.File?
 		if (!o || !o.interpretNativePathname) {
 			this.os = function(pathname) {
 				return pathname;
 			}
-		} else if ($context.api.isJavaType(Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem)(_peer)) {
+		} else {
 			this.os = function(pathname) {
 				return o.interpretNativePathname.call(self,pathname);
 			}
@@ -266,22 +266,17 @@ var JavaFilesystem = function(system,o) {
 
 var filesystems = {};
 
-var addPeerMethods = function(filesystem,provider,_peer) {
+var addPeerMethods = function(filesystem,_peer) {
 	//	TODO	figure out how this is used and whether it can be eliminated
 	filesystem.$unit.getNode = function() {
 		return _peer.getNode.apply(_peer,arguments);
 	};
-	
-	//	TODO	probably can be replaced by .java.adapt() above
-	filesystem.$jsh.Pathname = $api.deprecate(function($jfile) {
-		return filesystem.java.adapt($jfile);
-	});
 }
 
 var _ospeer = Packages.inonit.script.runtime.io.Filesystem.create();
 JavaFilesystemProvider.os = new JavaFilesystemProvider(_ospeer);
 filesystems.os = new JavaFilesystem( JavaFilesystemProvider.os );
-addPeerMethods(filesystems.os,JavaFilesystemProvider.os,_ospeer);
+addPeerMethods(filesystems.os,_ospeer);
 
 if ( $context.cygwin ) {
 	var _cygwinProvider;
@@ -297,7 +292,7 @@ if ( $context.cygwin ) {
 		}
 	});
 	
-	addPeerMethods(filesystems.cygwin,cygwinProvider,_cygwinProvider);
+	addPeerMethods(filesystems.cygwin,_cygwinProvider);
 	
 	filesystems.cygwin.toUnix = function(item) {
 		if (isPathname(item)) {
