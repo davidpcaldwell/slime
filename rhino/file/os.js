@@ -21,11 +21,6 @@ var JavaFilesystemProvider = function(peer) {
 	
 	this.separators = separators;
 	
-	this.PATHNAME_SEPARATOR = separators.pathname;
-	this.SEARCHPATH_SEPARATOR = separators.searchpath;
-	$api.deprecate(this,"PATHNAME_SEPARATOR");
-	$api.deprecate(this,"SEARCHPATH_SEPARATOR");
-
 	var SELF = this;
 	var PARENT_PEER = peer;
 
