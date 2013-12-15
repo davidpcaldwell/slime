@@ -266,17 +266,8 @@ var JavaFilesystem = function(system,o) {
 
 var filesystems = {};
 
-var addPeerMethods = function(filesystem,_peer) {
-	//	TODO	figure out how this is used and whether it can be eliminated
-	filesystem.$unit.getNode = function() {
-		return _peer.getNode.apply(_peer,arguments);
-	};
-}
-
-var _ospeer = Packages.inonit.script.runtime.io.Filesystem.create();
-JavaFilesystemProvider.os = new JavaFilesystemProvider(_ospeer);
+JavaFilesystemProvider.os = new JavaFilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
 filesystems.os = new JavaFilesystem( JavaFilesystemProvider.os );
-addPeerMethods(filesystems.os,_ospeer);
 
 if ( $context.cygwin ) {
 	var _cygwinProvider;
@@ -285,18 +276,15 @@ if ( $context.cygwin ) {
 	} else {
 		_cygwinProvider = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root,$context.cygwin.paths)
 	}
-	var cygwinProvider = new JavaFilesystemProvider(_cygwinProvider);
-	filesystems.cygwin = new JavaFilesystem(cygwinProvider, {
+	filesystems.cygwin = new JavaFilesystem(new JavaFilesystemProvider(_cygwinProvider), {
 		interpretNativePathname: function(pathname) {
 			return this.toUnix(pathname);
 		}
 	});
 	
-	addPeerMethods(filesystems.cygwin,_cygwinProvider);
-	
 	filesystems.cygwin.toUnix = function(item) {
 		if (isPathname(item)) {
-			return new $context.Pathname({ filesystem: system, peer: _peer.getNode( item.java.adapt() ) });
+			return new $context.Pathname({ filesystem: system, peer: _cygwinProvider.getNode( item.java.adapt() ) });
 		}
 		if (item instanceof $context.Searchpath) {
 			return new $context.Searchpath({ filesystem: system, array: item.pathnames });
