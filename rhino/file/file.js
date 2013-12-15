@@ -47,8 +47,8 @@ var Pathname = function(parameters) {
 
 	var toString = constant(function() {
 		var rv = $filesystem.peerToString(peer);
-		if (parameters.directory && (rv.substring(rv.length-$filesystem.PATHNAME_SEPARATOR.length) != $filesystem.PATHNAME_SEPARATOR)) {
-			rv += $filesystem.PATHNAME_SEPARATOR;
+		if (parameters.directory && (rv.substring(rv.length-$filesystem.separators.pathname.length) != $filesystem.separators.pathname)) {
+			rv += $filesystem.separators.pathname;
 		}
 		return rv;
 	});
@@ -58,10 +58,10 @@ var Pathname = function(parameters) {
 	var getBasename = constant(function() {
 		var path = toString();
 		if ($filesystem.isRootPath(path)) return path;
-		if (path.substring(path.length-1) == $filesystem.PATHNAME_SEPARATOR) {
+		if (path.substring(path.length-1) == $filesystem.separators.pathname) {
 			path = path.substring(0,path.length-1);
 		}
-		var tokens = path.split($filesystem.PATHNAME_SEPARATOR);
+		var tokens = path.split($filesystem.separators.pathname);
 		return tokens.pop();
 	});
 	this.__defineGetter__("basename", getBasename);
@@ -220,8 +220,8 @@ var Pathname = function(parameters) {
 
 		var getRelativePath = function(pathString) {
 			var directoryPath = pathname.toString() + prefix;
-			if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.PATHNAME_SEPARATOR)
-				directoryPath += $filesystem.PATHNAME_SEPARATOR;
+			if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)
+				directoryPath += $filesystem.separators.pathname;
 			return $filesystem.newPathname( directoryPath + pathString );
 		}
 		this.getRelativePath = getRelativePath;
@@ -361,7 +361,7 @@ var Pathname = function(parameters) {
 	}
 
 	var File = function(pathname,peer) {
-		Node.call(this,pathname,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+		Node.call(this,pathname,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
 		this.directory = false;
 
@@ -386,7 +386,7 @@ var Pathname = function(parameters) {
 			return resource.read.lines.apply(resource,arguments);
 		}
 	}
-//	File.prototype = new Node(this,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+//	File.prototype = new Node(this,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
 	var Directory = function(pathname,peer) {
 		Node.call(this,pathname,"");
@@ -589,7 +589,7 @@ var Searchpath = function(parameters) {
 			}
 			var mapped = filesystem.java.adapt(pathname.java.adapt());
 			return mapped.toString();
-		} ).join(filesystem.SEARCHPATH_SEPARATOR);
+		} ).join(filesystem.separators.searchpath);
 	}
 }
 Searchpath.createEmpty = function() {

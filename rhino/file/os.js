@@ -13,36 +13,46 @@
 var FilesystemProvider = $context.FilesystemProvider;
 
 var JavaFilesystemProvider = function(peer) {
-	this.PATHNAME_SEPARATOR = String( peer.getPathnameSeparator() );
-	this.SEARCHPATH_SEPARATOR = String( peer.getSearchpathSeparator() );
+	var separators = {
+		pathname: String(peer.getPathnameSeparator()),
+		searchpath: String(peer.getSearchpathSeparator()),
+		line: String(peer.getLineSeparator())
+	};
+	
+	this.separators = separators;
+	
+	this.PATHNAME_SEPARATOR = separators.pathname;
+	this.SEARCHPATH_SEPARATOR = separators.searchpath;
+	$api.deprecate(this,"PATHNAME_SEPARATOR");
+	$api.deprecate(this,"SEARCHPATH_SEPARATOR");
 
 	var SELF = this;
 	var PARENT_PEER = peer;
 
 	//	TODO	Build this into each separate filesystem separately
 	var isAbsolute = function(string) {
-		if (SELF.PATHNAME_SEPARATOR == "/") {
+		if (separators.pathname == "/") {
 			if (string.substring(0,1) != "/") {
 				return false;
 			} else {
 				return true;
 			}
-		} else if (SELF.PATHNAME_SEPARATOR == "\\") {
+		} else if (separators.pathname == "\\") {
 			if (string[1] == ":" || string.substring(0,2) == "\\\\") {
 				return true;
 			} else {
 				return false;
 			}
 		} else {
-			throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
+			throw "Unreachable: separators.pathname = " + separators.pathname;
 		}
 	}
 
 	//	TODO	Build this into each separate filesystem separately
 	var isRootPath = function(string) {
-		if (SELF.PATHNAME_SEPARATOR == "/") {
+		if (separators.pathname == "/") {
 			return ( string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
-		} else if (SELF.PATHNAME_SEPARATOR == "\\") {
+		} else if (separators.pathname == "\\") {
 			if (string[1] == ":") {
 				return string.length == 3 && string[2] == "\\";
 			} else if (string.substring(0,2) == "\\\\") {
@@ -51,12 +61,12 @@ var JavaFilesystemProvider = function(peer) {
 				throw "Unreachable: path is " + string;
 			}
 		} else {
-			throw "Unreachable: PATHNAME_SEPARATOR = " + SELF.PATHNAME_SEPARATOR;
+			throw "Unreachable: separators.pathname = " + separators.pathname;
 		}
 	}
 
 	var newPeer = function(path) {
-		if (path.substring(path.length-1) == SELF.PATHNAME_SEPARATOR) {
+		if (path.substring(path.length-1) == separators.pathname) {
 			if (isRootPath(path)) {
 				//	ok then
 			} else {
@@ -64,7 +74,7 @@ var JavaFilesystemProvider = function(peer) {
 			}
 		}
 		if (isAbsolute(path)) {
-			path = FilesystemProvider.Implementation.canonicalize(path, SELF.PATHNAME_SEPARATOR);
+			path = FilesystemProvider.Implementation.canonicalize(path, separators.pathname);
 			return PARENT_PEER.getNode(path);
 		} else {
 			return PARENT_PEER.getNode(new Packages.java.io.File(path));
@@ -101,16 +111,16 @@ var JavaFilesystemProvider = function(peer) {
 		} else {
 			//	TODO	Factor these implementations out by filesystem
 			var newpath = function() {
-				var tokens = path.split(SELF.PATHNAME_SEPARATOR);
+				var tokens = path.split(separators.pathname);
 				tokens.pop();
 				if (tokens.length == 1) {
-					if (SELF.PATHNAME_SEPARATOR == "/") {
+					if (separators.pathname == "/") {
 						return "/";
 					} else {
-						return tokens[0] + SELF.PATHNAME_SEPARATOR;
+						return tokens[0] + separators.pathname;
 					}
 				} else {
-					return tokens.join(SELF.PATHNAME_SEPARATOR);
+					return tokens.join(separators.pathname);
 				}
 			}
 			return this.newPathname(newpath());
@@ -127,7 +137,7 @@ var JavaFilesystemProvider = function(peer) {
 		}
 
 		this.character = function(peer) {
-			return new $context.api.io.Reader(peer.readText(), {LINE_SEPARATOR: String(PARENT_PEER.getLineSeparator())});
+			return new $context.api.io.Reader(peer.readText(), {LINE_SEPARATOR: separators.line});
 		}
 	}
 
@@ -214,7 +224,7 @@ var JavaFilesystem = function(system,o) {
 		if (!string) {
 			throw new Error("No string to parse in Searchpath.parse");
 		}
-		var elements = string.split(system.SEARCHPATH_SEPARATOR);
+		var elements = string.split(system.separators.searchpath);
 		var array = elements.map(function(element) {
 			return system.newPathname(element);
 		});
@@ -228,10 +238,10 @@ var JavaFilesystem = function(system,o) {
 	this.$unit = new function() {
 		//	Used by unit tests for getopts as well as unit tests for this module
 		this.getSearchpathSeparator = function() {
-			return system.SEARCHPATH_SEPARATOR;
+			return system.separators.searchpath;
 		}
 		this.getPathnameSeparator = function() {
-			return system.PATHNAME_SEPARATOR;
+			return system.separators.pathname;
 		}
 		this.temporary = function() {
 			return system.temporary.apply(system,arguments);
@@ -244,7 +254,7 @@ var JavaFilesystem = function(system,o) {
 
 	this.$jsh = new function() {
 		//	Currently used by jsh.shell.getopts for Pathname
-		this.PATHNAME_SEPARATOR = system.PATHNAME_SEPARATOR;
+		this.PATHNAME_SEPARATOR = system.separators.pathname;
 
 		//	Interprets a native OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
 		//	TODO	could/should this be replaced with something that uses a java.io.File?
