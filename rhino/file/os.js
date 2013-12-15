@@ -12,18 +12,15 @@
 
 var FilesystemProvider = $context.FilesystemProvider;
 
-var JavaFilesystemProvider = function(peer) {
+var JavaFilesystemProvider = function(_peer) {
 	var separators = {
-		pathname: String(peer.getPathnameSeparator()),
-		searchpath: String(peer.getSearchpathSeparator()),
-		line: String(peer.getLineSeparator())
+		pathname: String(_peer.getPathnameSeparator()),
+		searchpath: String(_peer.getSearchpathSeparator()),
+		line: String(_peer.getLineSeparator())
 	};
 	
 	this.separators = separators;
 	
-	var SELF = this;
-	var PARENT_PEER = peer;
-
 	//	TODO	Build this into each separate filesystem separately
 	var isAbsolute = function(string) {
 		if (separators.pathname == "/") {
@@ -70,9 +67,9 @@ var JavaFilesystemProvider = function(peer) {
 		}
 		if (isAbsolute(path)) {
 			path = FilesystemProvider.Implementation.canonicalize(path, separators.pathname);
-			return PARENT_PEER.getNode(path);
+			return _peer.getNode(path);
 		} else {
-			return PARENT_PEER.getNode(new Packages.java.io.File(path));
+			return _peer.getNode(new Packages.java.io.File(path));
 		}
 	}
 
@@ -169,7 +166,7 @@ var JavaFilesystemProvider = function(peer) {
 			debugger;
 			toPathname.java.invalidate();
 		}
-		var toPeer = peer.getNode(toPathname.java.adapt());
+		var toPeer = _peer.getNode(toPathname.java.adapt());
 		fromPeer.move(toPeer);
 	}
 
@@ -189,7 +186,7 @@ var JavaFilesystemProvider = function(peer) {
 			jfile["delete"]();
 			jfile.mkdir();
 		}
-		var path = new $context.Pathname({ filesystem: SELF, peer: PARENT_PEER.getNode(jfile) });
+		var path = new $context.Pathname({ filesystem: this, peer: _peer.getNode(jfile) });
 		if (directory) {
 			return path.directory;
 		} else {
@@ -197,13 +194,13 @@ var JavaFilesystemProvider = function(peer) {
 		}
 	}
 
-	this.java = new function() {
+	this.java = new (function(self) {
 		this.adapt = function(_jfile) {
 			//	TODO	if no arguments, may want to someday consider returning the native peer of this object
 			//	TODO	document this and write unit tests for it
-			return new $context.Pathname({ filesystem: SELF, peer: PARENT_PEER.getNode(_jfile) });
+			return new $context.Pathname({ filesystem: self, peer: _peer.getNode(_jfile) });
 		}
-	};
+	})(this);
 }
 
 var JavaFilesystem = function(system,o) {
