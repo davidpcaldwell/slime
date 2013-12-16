@@ -16,6 +16,9 @@ $exports.Port = function(number) {
 		var debug = function(message) {
 			//Packages.java.lang.System.err.println(message);
 		}
+		debug.exception = function(e) {
+			//e.rhinoException.printStackTrace();
+		}
 		
 		var _server;
 		var _client;
@@ -30,12 +33,12 @@ $exports.Port = function(number) {
 				return false;
 			} catch (e) {
 				debug("Did not open client socket for " + number);
-				e.rhinoException.printStackTrace();
+				debug.exception(e);
 				return true;
 			}
 		} catch (e) {
 			debug("Did not open server socket for " + number);
-			e.rhinoException.printStackTrace();
+			debug.exception(e);
 			return false;
 		} finally {
 			if (_server) _server.close();
