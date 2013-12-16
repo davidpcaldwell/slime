@@ -1,8 +1,4 @@
-var FilesystemProvider = function() {
-}
-FilesystemProvider.Implementation = function() {
-}
-FilesystemProvider.Implementation.canonicalize = function(string,separator) {
+$exports.canonicalize = function(string,separator) {
 	var tokens = string.split(separator);
 	var rv = [];
 	for (var i=0; i<tokens.length; i++) {
@@ -16,5 +12,4 @@ FilesystemProvider.Implementation.canonicalize = function(string,separator) {
 		}
 	}
 	return rv.join(separator);
-}
-$exports.FilesystemProvider = FilesystemProvider;
+};

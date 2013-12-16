@@ -10,8 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-var FilesystemProvider = $context.FilesystemProvider;
-
 var JavaFilesystemProvider = function(_peer) {
 	var separators = {
 		pathname: String(_peer.getPathnameSeparator()),
@@ -66,7 +64,7 @@ var JavaFilesystemProvider = function(_peer) {
 			}
 		}
 		if (isAbsolute(path)) {
-			path = FilesystemProvider.Implementation.canonicalize(path, separators.pathname);
+			path = $context.spi.canonicalize(path, separators.pathname);
 			return _peer.getNode(path);
 		} else {
 			return _peer.getNode(new Packages.java.io.File(path));
@@ -285,6 +283,8 @@ if ( $context.cygwin ) {
 	});
 	
 	filesystems.cygwin.toUnix = function(item) {
+		//	TODO	the below is almost certainly wrong; unclear what the system variable should be put it probably should be
+		//			the anonymous filesystem provider created above
 		if (isPathname(item)) {
 			return new $context.Pathname({ filesystem: system, peer: _cygwinProvider.getNode( item.java.adapt() ) });
 		}

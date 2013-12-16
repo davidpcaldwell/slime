@@ -41,7 +41,7 @@ var spi = $loader.file("spi.js", {
 
 //	TODO	separate out Cygwin and make it less tightly bound with the rest of this
 var os = $loader.file("os.js", new function() {
-	this.FilesystemProvider = spi.FilesystemProvider;
+	this.spi = spi;
 	
 	this.cygwin = $context.cygwin;
 
