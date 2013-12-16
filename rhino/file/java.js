@@ -187,5 +187,9 @@ $exports.FilesystemProvider = function(_peer) {
 			return new $context.Pathname({ filesystem: self, peer: _peer.getNode(_jfile) });
 		}
 	})(this);
+	
+	this.decorate = function(filesystem) {
+		filesystem.java = this.java;
+	}
 }
 

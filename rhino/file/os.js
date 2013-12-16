@@ -10,9 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-var JavaFilesystem = function(system,o) {
+var Filesystem = function(system,o) {
 	this.toString = function() {
-		return "JavaFilesystem: provider=" + system;
+		return "Filesystem: provider=" + system;
 	}
 
 	this.Searchpath = function(array) {
@@ -45,6 +45,9 @@ var JavaFilesystem = function(system,o) {
 		this.temporary = function() {
 			return system.temporary.apply(system,arguments);
 		}
+		this.Pathname = function(peer) {
+			return new $context.Pathname({ filesystem: system, peer: peer });
+		}
 	}
 
 	var self = this;
@@ -67,16 +70,14 @@ var JavaFilesystem = function(system,o) {
 			}
 		}
 	}
-
-	this.$unit.Pathname = function(peer) {
-		return new $context.Pathname({ filesystem: system, peer: peer });
-	}
+	
+	if (system.decorate) system.decorate(this);
 }
 
 var filesystems = {};
 
 $context.java.FilesystemProvider.os = new $context.java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
-filesystems.os = new JavaFilesystem( $context.java.FilesystemProvider.os );
+filesystems.os = new Filesystem( $context.java.FilesystemProvider.os );
 
 if ( $context.cygwin ) {
 	var _cygwinProvider;
@@ -85,7 +86,7 @@ if ( $context.cygwin ) {
 	} else {
 		_cygwinProvider = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root,$context.cygwin.paths)
 	}
-	filesystems.cygwin = new JavaFilesystem(new $context.java.FilesystemProvider(_cygwinProvider), {
+	filesystems.cygwin = new Filesystem(new $context.java.FilesystemProvider(_cygwinProvider), {
 		interpretNativePathname: function(pathname) {
 			return this.toUnix(pathname);
 		}
