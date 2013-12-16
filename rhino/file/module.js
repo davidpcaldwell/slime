@@ -39,20 +39,31 @@ var spi = $loader.file("spi.js", {
 	Searchpath: file.Searchpath
 });
 
-//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
-var os = $loader.file("os.js", new function() {
+var java = $loader.file("java.js", new function() {
 	this.spi = spi;
 	
-	this.cygwin = $context.cygwin;
+	this.Pathname = file.Pathname;
+	
+	this.api = {
+		defined: $context.api.js.defined,
+		io: $context.api.io
+	};
+});
 
+//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
+var os = $loader.file("os.js", new function() {
+	this.java = java;
+	
+	this.Pathname = file.Pathname;
+	
 	this.api = new function() {
 		this.io = $context.api.io;
-		this.isJavaType = $context.api.java.isJavaType;
 		this.defined = $context.api.js.defined;
 	};
 
+	this.cygwin = $context.cygwin;
+
 	this.Searchpath = file.Searchpath;
-	this.Pathname = file.Pathname;
 	this.isPathname = isPathname;
 
 	this.addFinalizer = $context.addFinalizer;
