@@ -51,7 +51,7 @@ var java = $loader.file("java.js", new function() {
 });
 
 //	TODO	separate out Cygwin and make it less tightly bound with the rest of this
-var os = $loader.file("os.js", new function() {
+var os = $loader.file("filesystem.js", new function() {
 	this.java = java;
 	
 	this.Pathname = file.Pathname;
