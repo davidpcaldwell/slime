@@ -16,6 +16,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
+import inonit.system.*;
 import inonit.system.cygwin.*;
 
 public class Main {
@@ -239,6 +240,10 @@ public class Main {
 		if (!inonit.system.Logging.get().isSpecified()) {
 			inonit.system.Logging.get().initialize(invocation.getJavaLoggingProperties());
 		}
+		Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(args));
+		System.setIn(new Logging.InputStream(System.in));
+		System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
+		System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
 		invocation.initializeSystemProperties();
 		try {
 			Class shell = invocation.getMainClass();

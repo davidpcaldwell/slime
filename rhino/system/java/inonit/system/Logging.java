@@ -78,4 +78,152 @@ public class Logging {
 			logger.log(level, message, new StackTraceThrowable());
 		}
 	}
+	
+	public static class InputStream extends java.io.InputStream {
+		private static void log(Level level, String mask, Object... substitutions) {
+			Logging.get().log(InputStream.class, level, mask, substitutions);
+		}
+
+		private java.io.InputStream in;
+
+		public InputStream(java.io.InputStream in) {
+			this.in = in;
+		}
+
+		@Override public String toString() {
+			if (in == System.in) {
+				return super.toString() + " delegate=System.in";
+			} else {
+				return super.toString() + " delegate=" + in;
+			}
+		}
+
+		@Override
+		public int read() throws IOException {
+			try {
+				int rv = in.read();
+				log(Level.FINEST, "Read byte: %d", rv);
+				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read()");
+				return rv;
+			} catch (IOException e) {
+				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
+				throw e;
+			}
+		}
+
+		@Override
+		public int read(byte[] b) throws IOException {
+			try {
+				int rv = in.read(b);
+				log(Level.FINEST, "Read %d bytes into array.", rv);
+				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read(byte[])");
+				for (int i=0; i<rv; i++) {
+					log(Level.FINEST, "Read byte: %d", b[i]);
+				}
+				return rv;
+			} catch (IOException e) {
+				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read(byte[])", e);
+				throw e;
+			}
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException {
+			try {
+				int rv = in.read(b, off, len);
+				log(Level.FINEST, "Read %d bytes into array.", rv);
+				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read(byte[],int,int)");
+				for (int i=0; i<rv; i++) {
+					log(Level.FINEST, "Read byte: %d", b[i+off]);
+				}
+				return rv;
+			} catch (IOException e) {
+				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read(byte[],int,int)", e);
+				throw e;
+			}
+		}
+
+		@Override
+		public long skip(long n) throws IOException {
+			return in.skip(n);
+		}
+
+		@Override
+		public int available() throws IOException {
+			return in.available();
+		}
+
+		@Override
+		public void close() throws IOException {
+			in.close();
+		}
+
+		@Override
+		public synchronized void mark(int readlimit) {
+			in.mark(readlimit);
+		}
+
+		@Override
+		public synchronized void reset() throws IOException {
+			in.reset();
+		}
+
+		@Override
+		public boolean markSupported() {
+			return in.markSupported();
+		}
+	}
+
+	public static class OutputStream extends java.io.OutputStream {
+		private java.io.OutputStream delegate;
+		private String name;
+
+		public OutputStream(java.io.OutputStream delegate, String name) {
+			this.delegate = delegate;
+			this.name = name;
+		}
+
+		private void log(Level level, String mask, Object... substitutions) {
+			Logging.get().log(OutputStream.class, level, name + ": " + mask, substitutions);
+		}
+
+		@Override public void write(int b) throws IOException {
+			delegate.write(b);
+			log(Level.FINEST, "Wrote byte %d.", b);
+		}
+
+		@Override
+		public void close() throws IOException {
+			log(Level.FINEST, "Closing...");
+			delegate.close();
+			log(Level.FINE, "Closed.");
+		}
+
+		@Override
+		public void flush() throws IOException {
+			log(Level.FINEST, "Flushing ...");
+			delegate.flush();
+			log(Level.FINEST, "Flushed.");
+		}
+
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+			log(Level.FINEST, "Writing %d bytes starting with %d in array of length %d.", len, off, b.length);
+			for (int i=0; i<len; i++) {
+				log(Level.FINEST, "Byte %d/%d: %d", i, len, b[off+i]);
+			}
+			delegate.write(b, off, len);
+			log(Level.FINEST, "Wrote %d bytes from buffer.");
+		}
+
+		@Override
+		public void write(byte[] b) throws IOException {
+			log(Level.FINEST, "Writing %d bytes", b.length);
+			for (int i=0; i<b.length; i++) {
+				log(Level.FINEST, "Byte %d/%d: %d", i, b.length, b[i]);
+			}
+			delegate.write(b);
+			log(Level.FINEST, "Wrote %d bytes", b.length);
+		}
+	}
 }
