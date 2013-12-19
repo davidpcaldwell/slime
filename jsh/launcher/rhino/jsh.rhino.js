@@ -527,7 +527,12 @@ try {
 		//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
 		//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
 		if (settings.get("profiler")) {
-			command.add("-javaagent:" + settings.get("profiler").path);
+			var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
+			if (withParameters) {
+				command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
+			} else {
+				command.add("-javaagent:" + settings.get("profiler").path);
+			}
 		} else {
 			//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
 			//	emit warning message?
