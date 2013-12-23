@@ -300,7 +300,7 @@ var Element = function(p) {
 		rv.attributes = (function() {
 			if (this.element.attributes.length == 0) return "";
 			return " " + this.element.attributes.map(function(attribute) {
-				if (attribute.namespace && typeof(scope[attribute.namespace]) == "undefined") {
+				if (attribute.namespace && typeof(scope[attribute.namespace]) == "undefined" && !/^(xX)(mM)(lL)/.test(attribute.namespace)) {
 					var hasPrefix = function(prefix) {
 						for (var i=0; i<namespaces.length; i++) {
 							if (namespaces[i].prefix == prefix) return true;
@@ -330,8 +330,12 @@ var Element = function(p) {
 			return child.serialize(params);
 		}).join("");
 		rv.namespaces = (function() {
-			if (namespaces.length == 0) return "";
-			return " " + namespaces.map(function(namespace) {
+			var toDeclare = namespaces.filter(function(item) {
+				if (m.namespaces[item.uri] === item.prefix) return false;
+				return true;
+			});
+			if (toDeclare.length == 0) return "";
+			return " " + toDeclare.map(function(namespace) {
 				return ((namespace.prefix) ? "xmlns:" + namespace.prefix : "xmlns")
 					+ "=" + "\"" + namespace.uri + "\""
 				;
