@@ -230,10 +230,18 @@ if (parameters.options.cygwin) {
 						if (jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm)) {
 							rv = jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm);
 						}
+						//	On JDK 7+ on Mac OS X the architecture-specific subdirectories do not appear to be present
+						if (jdk.getSubdirectory("jre/lib/" + vm)) {
+							rv = jdk.getSubdirectory("jre/lib/" + vm);
+						}
 					}
 				});
 				return rv;
 			})();
+			
+			if (!vmpath) {
+				throw new Error("Did not find VM under " + jdk);
+			}
 
 			return {
 				include: [
@@ -261,12 +269,16 @@ if (parameters.options.cygwin) {
 		} else if (jsh.shell.os.name == "Linux") {
 			return jni("linux", rpath);
 		} else if (jsh.shell.os.name == "Mac OS X") {
-			return {
-				include: [
-					"/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
-				],
-				library: {
-					command: ["-framework", "JavaVM"]
+			if (jdk.getSubdirectory("include")) {
+				return jni("darwin", rpath);
+			} else {
+				return {
+					include: [
+						"/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
+					],
+					library: {
+						command: ["-framework", "JavaVM"]
+					}
 				}
 			}
 		} else {
