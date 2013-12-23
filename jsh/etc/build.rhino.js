@@ -14,7 +14,7 @@
 //
 //	The best way to execute this script is to execute it in the Rhino shell via the jsh/etc/unbuilt.rhino.js helper script:
 //
-//	java -jar /path/to/rhino/js.jar /path/to/source/jsh/etc/unbuilt.rhino.js build <arguments>
+//	java -jar /path/to/rhino/js.jar -opt -1 /path/to/source/jsh/etc/unbuilt.rhino.js build <arguments>
 //
 //	It can also be executed directly using the Rhino shell, but it then needs assistance finding the source code, as Rhino scripts
 //	do not know their own location. This can be done by changing the working directory to the source root:
@@ -389,7 +389,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 				this.push(arguments[i]);
 			}
 		}
-		command.add("jsh/unit/jsapi.jsh.js");
+		command.add(new File(SLIME_SRC, "jsh/unit/jsapi.jsh.js").getCanonicalPath());
 		var JSH_JSAPI_BASE = String(SLIME_SRC.getCanonicalPath());
 		if (platform.cygwin) {
 			JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
