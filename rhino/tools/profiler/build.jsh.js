@@ -53,9 +53,14 @@ jsh.java.tools.javac({
 	arguments: [
 		jsh.script.file.getRelativePath("java/inonit/tools/Test.java")
 	]
-})
+});
 
-var jar = jsh.shell.java.home.parent.getFile("bin/jar");
+var bins = [];
+if (jsh.shell.java.home.parent.getSubdirectory("bin")) bins.push(jsh.shell.java.home.parent.getRelativePath("bin"));
+if (jsh.shell.java.home.getSubdirectory("bin")) bins.push(jsh.shell.java.home.getRelativePath("bin"));
+var searchpath = jsh.file.Searchpath(bins);
+
+var jar = searchpath.getCommand("jar");
 
 jsh.shell.shell(
 	jar,
