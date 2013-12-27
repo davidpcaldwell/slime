@@ -347,7 +347,7 @@ var Pathname = function(parameters) {
 				if (mode.recursive) {
 					to.parent.createDirectory({ recursive: true });
 				} else {
-					throw new Error();
+					throw new Error("Could not create " + to + "; parent directory does not exist (use 'recursive' property to override)");
 				}
 			}
 

@@ -560,8 +560,8 @@ try {
 		command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
 	}
 
-	if (settings.get("JSH_JAVA_LOGGER")) {
-		command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGER").path);
+	if (settings.get("JSH_JAVA_LOGGING_PROPERTIES")) {
+		command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGING_PROPERTIES").path);
 	}
 
 	if (platform.cygwin) {
