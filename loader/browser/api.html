@@ -30,18 +30,19 @@ END LICENSE
 		<ul>
 			<li class="function">
 				<div class="name">module</div>
-				<span>Invokes the platform loader's <code>module</code> method.</span>
+				<span>
+					Invokes the platform loader's <a href="../api.html#exports.module"><code>module</code></a> method with an
+					argument suitable for locating and loading code in a browser environment.
+				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
-						<li>
-							<div class="value">
-								<span class="type">string</span>
-								<span>
-									The path of the module's main file. Other files the main file may load will be loaded from the
-									base location of the main file.
-								</span>
-							</div>
+						<li class="value">
+							<span class="type">string</span>
+							<span>
+								The path of the module's main file. Other files the main file may load will be loaded from the
+								base location of the main file.
+							</span>
 						</li>
 						<li class="object">
 							<span>
