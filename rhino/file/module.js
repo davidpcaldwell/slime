@@ -35,27 +35,60 @@ var file = $loader.file("file.js", {
 });
 file.Searchpath.prototype = prototypes.Searchpath;
 
-//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
-var os = $loader.file("os.js", new function() {
-	this.cygwin = $context.cygwin;
+var spi = $loader.file("spi.js", {
+	Searchpath: file.Searchpath
+});
 
+var java = $loader.file("java.js", new function() {
+	this.spi = spi;
+	
+	this.Pathname = file.Pathname;
+	
+	this.api = {
+		defined: $context.api.js.defined,
+		io: $context.api.io
+	};
+});
+
+//	TODO	separate out Cygwin and make it less tightly bound with the rest of this
+var os = $loader.file("filesystem.js", new function() {
+	this.java = java;
+	
+	this.Pathname = file.Pathname;
+	
 	this.api = new function() {
 		this.io = $context.api.io;
-		this.isJavaType = $context.api.java.isJavaType;
 		this.defined = $context.api.js.defined;
 	};
 
+	this.cygwin = $context.cygwin;
+
 	this.Searchpath = file.Searchpath;
-	this.Pathname = file.Pathname;
 	this.isPathname = isPathname;
 
 	this.addFinalizer = $context.addFinalizer;
 });
 
-//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
-$exports.filesystem = (os.filesystems.cygwin) ? os.filesystems.cygwin : os.filesystems.os;
+var filesystems = {};
 
-$exports.filesystems = os.filesystems;
+java.FilesystemProvider.os = new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
+filesystems.os = new os.Filesystem( java.FilesystemProvider.os );
+
+$exports.filesystems = filesystems;
+
+if ($context.cygwin) {
+	$exports.filesystems.cygwin = $loader.file("cygwin.js", {
+		cygwin: $context.cygwin,
+		Filesystem: os.Filesystem,
+		java: java,
+		isPathname: isPathname,
+		Searchpath: file.Searchpath,
+		addFinalizer: $context.addFinalizer
+	});
+}
+
+//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
+$exports.filesystem = ($exports.filesystems.cygwin) ? $exports.filesystems.cygwin : $exports.filesystems.os;
 
 //	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
 $exports.Pathname = function(parameters) {
@@ -157,9 +190,9 @@ $api.experimental($exports, "unzip");
 var workingDirectory = function() {
 	//	TODO	the call used by jsh.shell to translate native paths to paths from this package can probably be used here
 	if ($context.$pwd) {
-		var osdir = os.filesystems.os.Pathname($context.$pwd);
-		if ($exports.filesystem == os.filesystems.cygwin) {
-			osdir = os.filesystems.cygwin.toUnix(osdir);
+		var osdir = $exports.filesystems.os.Pathname($context.$pwd);
+		if ($exports.filesystem == $exports.filesystems.cygwin) {
+			osdir = $exports.filesystems.cygwin.toUnix(osdir);
 		}
 		return osdir.directory;
 	}

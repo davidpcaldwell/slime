@@ -48,7 +48,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			Engine.RhinoDebugger.Configuration configuration = new Engine.RhinoDebugger.Configuration() {
 				@Override public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
 					return inonit.script.rhino.Gui.RHINO_UI_FACTORY;
-				}				
+				}
 			};
 			configuration.setExit(new Runnable() {
 				public void run() {

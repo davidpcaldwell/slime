@@ -51,8 +51,8 @@ if (!parameters.options.to && zip) {
 }
 
 var realpath = function(pathname) {
-	//	TODO	should not use private API; should either use public one or develop public one
-	return new jsh.file.filesystem.$jsh.Pathname(pathname.java.adapt());
+	//	TODO	is this really the simplest way to do this?
+	return new jsh.file.filesystem.java.adapt(pathname.java.adapt());
 }
 
 var destinationIsSoftlink = function() {

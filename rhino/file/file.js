@@ -34,7 +34,7 @@ var Pathname = function(parameters) {
 	$api.deprecate(parameters,"path");
 
 	var $filesystem = firstDefined(parameters,"filesystem","$filesystem");
-	if (!$filesystem.peerToString) fail("Internal error; Pathname constructed incorrectly: " + parameters.toSource());
+	if (!$filesystem.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
 
 	var peer = (function() {
 		var peer = firstDefined(parameters,"peer","$peer");
@@ -42,17 +42,13 @@ var Pathname = function(parameters) {
 		var path = firstDefined(parameters,"path","$path");
 		//	TODO	below line appears to invoke nonexistent method
 		if (path) return $filesystem.getPeer(path);
-		if (parameters.toSource) {
-			fail("Missing new Pathname() arguments: " + parameters.toSource());
-		} else {
-			fail("Missing new Pathname() arguments: " + parameters);
-		}
+		fail("Missing new Pathname() arguments: " + parameters);
 	})();
 
 	var toString = constant(function() {
 		var rv = $filesystem.peerToString(peer);
-		if (parameters.directory && (rv.substring(rv.length-$filesystem.PATHNAME_SEPARATOR.length) != $filesystem.PATHNAME_SEPARATOR)) {
-			rv += $filesystem.PATHNAME_SEPARATOR;
+		if (parameters.directory && (rv.substring(rv.length-$filesystem.separators.pathname.length) != $filesystem.separators.pathname)) {
+			rv += $filesystem.separators.pathname;
 		}
 		return rv;
 	});
@@ -62,10 +58,10 @@ var Pathname = function(parameters) {
 	var getBasename = constant(function() {
 		var path = toString();
 		if ($filesystem.isRootPath(path)) return path;
-		if (path.substring(path.length-1) == $filesystem.PATHNAME_SEPARATOR) {
+		if (path.substring(path.length-1) == $filesystem.separators.pathname) {
 			path = path.substring(0,path.length-1);
 		}
-		var tokens = path.split($filesystem.PATHNAME_SEPARATOR);
+		var tokens = path.split($filesystem.separators.pathname);
 		return tokens.pop();
 	});
 	this.__defineGetter__("basename", getBasename);
@@ -193,56 +189,6 @@ var Pathname = function(parameters) {
 		}
 	}
 
-//	this.getBasename = getBasename;
-//	$api.deprecate(this, "getBasename");
-
-//	this.getParent = getParent;
-//	$api.deprecate(this, "getParent");
-
-//	this.getFile = getFile;
-//	$api.deprecate(this, "getFile");
-
-//	this.getDirectory = getDirectory;
-//	$api.deprecate(this, "getDirectory");
-
-//	this.writeBinary = function() {
-//		var args = [Streams.binary];
-//		for (var i=0; i<arguments.length; i++) {
-//			args.push(arguments[i]);
-//		}
-//		return write.apply(null,args);
-//	};
-//	this.writeText = function() {
-//		var args = [Streams.text];
-//		for (var i=0; i<arguments.length; i++) {
-//			args.push(arguments[i]);
-//		}
-//		return write.apply(null,args);
-//	};
-//	$api.deprecate(this, "writeBinary");
-//	$api.deprecate(this, "writeText");
-
-//	this.__defineGetter__("$peer", function() {
-//		return peer;
-//	});
-//	this.__defineGetter__("$filesystem", function() {
-//		return $filesystem;
-//	});
-//	this.$getPeer = function() {
-//		return peer;
-//	};
-//	this.$getFilesystem = function() {
-//		return $filesystem;
-//	};
-//	this.$inFilesystem = function(filesystem) {
-//		return filesystem.$system.$inFilesystem(this);
-//	}
-//	$api.deprecate(this, "$peer");
-//	$api.deprecate(this, "$filesystem");
-//	$api.deprecate(this, "$getPeer");
-//	$api.deprecate(this, "$getFilesystem");
-//	$api.deprecate(this, "$inFilesystem");
-
 	var Node = function(pathname,prefix) {
 		this.toString = function() {
 			return pathname.toString();
@@ -274,8 +220,8 @@ var Pathname = function(parameters) {
 
 		var getRelativePath = function(pathString) {
 			var directoryPath = pathname.toString() + prefix;
-			if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.PATHNAME_SEPARATOR)
-				directoryPath += $filesystem.PATHNAME_SEPARATOR;
+			if (directoryPath.length > 0 && directoryPath.substring( directoryPath.length - 1 ) != $filesystem.separators.pathname)
+				directoryPath += $filesystem.separators.pathname;
 			return $filesystem.newPathname( directoryPath + pathString );
 		}
 		this.getRelativePath = getRelativePath;
@@ -415,7 +361,7 @@ var Pathname = function(parameters) {
 	}
 
 	var File = function(pathname,peer) {
-		Node.call(this,pathname,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+		Node.call(this,pathname,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
 		this.directory = false;
 
@@ -440,7 +386,7 @@ var Pathname = function(parameters) {
 			return resource.read.lines.apply(resource,arguments);
 		}
 	}
-//	File.prototype = new Node(this,$filesystem.PATHNAME_SEPARATOR + ".." + $filesystem.PATHNAME_SEPARATOR);
+//	File.prototype = new Node(this,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
 	var Directory = function(pathname,peer) {
 		Node.call(this,pathname,"");
@@ -519,7 +465,7 @@ var Pathname = function(parameters) {
 					var items = dir.list();
 					items.forEach(function(item) {
 						 if (filter(item)) {
-							rv.push(item); 
+							rv.push(item);
 						 }
 						 if (item.directory && descendants(item)) {
 							 add(item);
@@ -643,7 +589,7 @@ var Searchpath = function(parameters) {
 			}
 			var mapped = filesystem.java.adapt(pathname.java.adapt());
 			return mapped.toString();
-		} ).join(filesystem.SEARCHPATH_SEPARATOR);
+		} ).join(filesystem.separators.searchpath);
 	}
 }
 Searchpath.createEmpty = function() {

@@ -285,12 +285,12 @@ public class Engine {
 			public abstract void setExitAction(Runnable action);
 			public abstract void setVisible(boolean visible);
 			public abstract void pack();
-			
+
 			public static abstract class Factory {
 				public abstract Ui create(org.mozilla.javascript.tools.debugger.Dim dim, String title);
 			}
 		}
-		
+
 		public static abstract class Configuration {
 			public static Configuration create(final Ui.Factory uiFactory) {
 				return new Configuration() {
@@ -315,12 +315,13 @@ public class Engine {
 			};
 
 			private Log log = Log.NULL;
-			
+
 			public Configuration() {
 			}
-			
+
 			public abstract Ui.Factory getUiFactory();
 		
+
 			public void setExit(Runnable exit) {
 				if (exit == null) {
 					exit = new Runnable() {
@@ -439,7 +440,7 @@ public class Engine {
 			@Override public ClassLoader getApplicationClassLoader() {
 				return null;
 			}
-			
+
 			@Override public boolean createClassLoader() {
 				return true;
 			}
@@ -477,9 +478,9 @@ public class Engine {
 
 			ContextFactoryInner() {
 			}
-			
+
 			private boolean initialized = false;
-			
+
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
 					ClassLoader classLoader = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
@@ -493,7 +494,7 @@ public class Engine {
 					initialized = true;
 				}
 			}
-			
+
 			private synchronized ClassLoader getContextApplicationClassLoader() {
 				initializeClassLoaders();
 				return this.classLoader;
@@ -770,7 +771,7 @@ public class Engine {
 			}
 		}
 	}
-	
+
 	public Scriptable createHostObject(final Object javaHostObject) {
 		ContextFactory.GlobalSetter global = ContextFactory.getGlobalSetter();
 		ContextFactory before = global.getContextFactoryGlobal();

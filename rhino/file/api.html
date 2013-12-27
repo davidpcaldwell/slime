@@ -137,7 +137,8 @@ END LICENSE
 				//	calls to go to the module being tested, not the module executing the test environment
 				this.newTemporaryDirectory = function() {
 					var $dir = scope.$java.io.newTemporaryDirectory();
-					return scope.filesystem.$unit.Pathname(scope.filesystem.$unit.getNode($dir)).directory;
+					return scope.filesystem.java.adapt($dir).directory;
+//					return scope.filesystem.$unit.Pathname(scope.filesystem.$unit.getNode($dir)).directory;
 				}
 
 				this.createFile = function(base,name,length) {
@@ -1255,7 +1256,8 @@ END LICENSE
 
 								createFile(new Packages.java.io.File(hostdir, "target"), 1112);
 
-								dir = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
+								dir = filesystem.java.adapt(hostdir).directory;
+//								dir = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
 							}
 
 							this.execute = function(scope) {
@@ -1280,8 +1282,8 @@ END LICENSE
 										Packages.inonit.system.OperatingSystem.get().execute( command, args ).evaluate();
 									}
 
-									var linkpathname = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(linkdir));
-									var hostpathname = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir));
+									var linkpathname = filesystem.java.adapt(linkdir);
+									var hostpathname = filesystem.java.adapt(hostdir);
 									var LN_PATH;
 									if (module.filesystems.cygwin) {
 										LN_PATH="c:/cygwin/bin/ln";
@@ -1388,7 +1390,8 @@ END LICENSE
 			aWriter.print("Finished.");
 			aWriter.flush();
 			aWriter.close();
-			scope.streamdir = scope.module.filesystem.$unit.Pathname(scope.module.filesystem.$unit.getNode(hostdir)).directory;
+			scope.streamdir = scope.module.filesystem.java.adapt(hostdir).directory;
+//			scope.streamdir = scope.module.filesystem.$unit.Pathname(scope.module.filesystem.$unit.getNode(hostdir)).directory;
 		</script>
 		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
 			var fileA = streamdir.getFile("a");

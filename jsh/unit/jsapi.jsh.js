@@ -80,7 +80,7 @@ var ENVIRONMENT = (function() {
 			jsh.js.Object.expando.set(rv,coloned[0],jsh.loader.module(pathname));
 		} else {
 			jsh.shell.echo("Setting environment value " + item);
-			jsh.js.Object.expando.set(rv,item,{});			
+			jsh.js.Object.expando.set(rv,item,{});
 		}
 	});
 	return rv;
