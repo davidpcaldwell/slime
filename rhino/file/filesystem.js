@@ -70,7 +70,7 @@ var Filesystem = function(system,o) {
 			}
 		}
 	}
-	
+
 	if (system.decorate) system.decorate(this);
 }
 

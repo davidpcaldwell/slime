@@ -238,7 +238,7 @@ if (parameters.options.cygwin) {
 				});
 				return rv;
 			})();
-			
+
 			if (!vmpath) {
 				throw new Error("Did not find VM under " + jdk);
 			}

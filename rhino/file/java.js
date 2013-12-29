@@ -1,12 +1,24 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the rhino/file SLIME module.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 $exports.FilesystemProvider = function(_peer) {
 	var separators = {
 		pathname: String(_peer.getPathnameSeparator()),
 		searchpath: String(_peer.getSearchpathSeparator()),
 		line: String(_peer.getLineSeparator())
 	};
-	
+
 	this.separators = separators;
-	
+
 	//	TODO	Build this into each separate filesystem separately
 	var isAbsolute = function(string) {
 		if (separators.pathname == "/") {
@@ -187,9 +199,8 @@ $exports.FilesystemProvider = function(_peer) {
 			return new $context.Pathname({ filesystem: self, peer: _peer.getNode(_jfile) });
 		}
 	})(this);
-	
+
 	this.decorate = function(filesystem) {
 		filesystem.java = this.java;
 	}
 }
-

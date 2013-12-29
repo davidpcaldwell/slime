@@ -11,7 +11,7 @@ $exports.Port = function(number) {
 	this.__defineGetter__("number", function() {
 		return number;
 	});
-	
+
 	this.isOpen = function() {
 		var debug = function(message) {
 			//Packages.java.lang.System.err.println(message);
@@ -19,7 +19,7 @@ $exports.Port = function(number) {
 		debug.exception = function(e) {
 			//e.rhinoException.printStackTrace();
 		}
-		
+
 		var _server;
 		var _client;
 		try {

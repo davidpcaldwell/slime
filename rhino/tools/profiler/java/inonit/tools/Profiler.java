@@ -250,13 +250,13 @@ public class Profiler {
 
 	private static class Configuration {
 		private HashMap<String,Boolean> filters = new HashMap<String,Boolean>();
-		
+
 		Configuration() {
 			filters.put("org.mozilla.javascript", false);
 			filters.put("org.mozilla.classfile", false);
 			filters.put("inonit.script.rhino.Engine$Profiler", false);
 		}
-		
+
 		final void exclude(String value) {
 			filters.put(value, Boolean.FALSE);
 		}

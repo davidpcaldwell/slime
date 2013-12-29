@@ -41,9 +41,9 @@ var spi = $loader.file("spi.js", {
 
 var java = $loader.file("java.js", new function() {
 	this.spi = spi;
-	
+
 	this.Pathname = file.Pathname;
-	
+
 	this.api = {
 		defined: $context.api.js.defined,
 		io: $context.api.io
@@ -53,9 +53,9 @@ var java = $loader.file("java.js", new function() {
 //	TODO	separate out Cygwin and make it less tightly bound with the rest of this
 var os = $loader.file("filesystem.js", new function() {
 	this.java = java;
-	
+
 	this.Pathname = file.Pathname;
-	
+
 	this.api = new function() {
 		this.io = $context.api.io;
 		this.defined = $context.api.js.defined;

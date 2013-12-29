@@ -78,7 +78,7 @@ public class Logging {
 			logger.log(level, message, new StackTraceThrowable());
 		}
 	}
-	
+
 	public static class InputStream extends java.io.InputStream {
 		private static void log(Level level, String mask, Object... substitutions) {
 			Logging.get().log(InputStream.class, level, mask, substitutions);

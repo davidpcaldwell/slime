@@ -77,7 +77,7 @@ public class Engine {
 			this.listener = AgentListener.get();
 			//System.err.println("Profiler listener: " + this.listener);
 		}
-		
+
 		public final void useStringNodes() {
 			this.useStringNodes = true;
 		}
@@ -300,7 +300,7 @@ public class Engine {
 					}
 				};
 			}
-			
+
 			//	If true, we stop executing before we start, on the first line, and allow breakpoints to be set, etc.  If false,
 			//	we stop at the first specified breakpoint.
 			private boolean startWithBreak = true;
@@ -320,7 +320,7 @@ public class Engine {
 			}
 
 			public abstract Ui.Factory getUiFactory();
-		
+
 
 			public void setExit(Runnable exit) {
 				if (exit == null) {

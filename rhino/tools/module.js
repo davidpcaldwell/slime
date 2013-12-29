@@ -19,7 +19,7 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 			return new function() {
 				this.command = function(args) {
 					Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
-						null, null, null, 
+						null, null, null,
 						$context.api.java.toJavaArray(
 							args
 							,Packages.java.lang.String
