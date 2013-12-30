@@ -177,7 +177,6 @@ END LICENSE
 									<ul>
 										<li class="value">
 											<div class="name">input</div>
-											<span class="type">__TYPE__</span>
 											<ul>
 												<li>
 													If omitted or <code>null</code>, an empty stream is supplied as
@@ -187,13 +186,12 @@ END LICENSE
 													If a string, the string is supplied as input.
 												</li>
 												<li>
-													If a byte stream, the stream is supplied as input.
+													If a <a href="../io/api.html#types.binput">byte stream</a>, the stream is supplied as input.
 												</li>
 											</ul>
 										</li>
 										<li class="value">
 											<div class="name">output</div>
-											<span class="type">__TYPE__</span>
 											<span>(optional; if omitted, a stream that discards all output is supplied.)</span>
 											<ul>
 												<li>
@@ -206,14 +204,13 @@ END LICENSE
 													stdio property of the result of the subprocess.
 												</li>
 												<li>
-													If a byte stream, output from the subprocess is sent to that stream.
+													If a <a href="../io/api.html#types.boutput">byte stream</a>, output from the subprocess is sent to that stream.
 												</li>
 											</ul>
 										</li>
 										<li class="value">
 											<div class="name">error</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
+											<span>See the <code>output</code> property for detailed specification.</span>
 										</li>
 									</ul>
 								</li>
@@ -338,6 +335,34 @@ END LICENSE
 															The working directory that was specified for running the
 															program, if any.
 														</span>
+													</li>
+													<li class="object">
+														<div class="name">stdio</div>
+														<span>
+															(optional)
+															The output of the subprocess, if the caller specified that it should be
+															buffered and returned.
+														</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">output</div>
+																<span class="type">string</span>
+																<span>
+																	(optional)
+																	The output of the subprocess, if it was buffered.
+																</span>
+															</li>
+															<li class="value">
+																<div class="name">error</div>
+																<span class="type">string</span>
+																<span>
+																	(optional)
+																	The output of the subprocess that was written to the error
+																	stream, if it was buffered.
+																</span>
+															</li>
+														</ul>
 													</li>
 													<!--	TODO	is there any reason not to return stdio?	-->
 												</ul>
