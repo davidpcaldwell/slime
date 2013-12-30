@@ -303,6 +303,15 @@ if ($exports.environment.PATH) {
 	$exports.PATH = $context.api.file.Searchpath([]);
 }
 
+$loader.run("os.js", {
+	$context: {
+		PATH: $exports.PATH,
+		os: $exports.os,
+		run: $exports.run
+	},
+	$exports: $exports.os
+});
+
 $exports.java = function(p) {
 	var launcher = arguments.callee.launcher;
 	var shell = {
