@@ -123,6 +123,8 @@ if ($context.globals) {
 			}
 			return rv;
 		} else {
+			//	TODO	What is ConversionError? Does not seem to appear in the ECMA standard; is it a Rhino thing?
+			//	TODO	What is InternalError? Does not seem to appear in the ECMA standard; is it a Rhino thing?
 			return [
 				"Error","ConversionError","EvalError","InternalError","RangeError","ReferenceError","SyntaxError","TypeError"
 				,"URIError"
