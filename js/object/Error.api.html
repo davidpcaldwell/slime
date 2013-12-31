@@ -33,17 +33,34 @@ END LICENSE
 		<ul>
 		</ul>
 		<script type="application/x.jsapi#tests">
-			var Unimplemented = new module.Error.Type("Unimplemented");
-			try {
-				throw new Unimplemented("Some API");
-			} catch (e) {
-				//	Work around Rhino bug in which e is not in scope in debugger
-				var error = e;
-				test(e instanceof Error);
-				test(e instanceof Unimplemented);
-				test(e.name == "Unimplemented");
-				test(e.message == "Some API");
-				debugger;
+			var throwType = function(Unimplemented) {
+				try {
+					throw new Unimplemented("Some API");
+				} catch (e) {
+					//	Work around Rhino bug in which e is not in scope in debugger
+					var error = e;
+					test(e instanceof Error);
+					test(e instanceof Unimplemented);
+					test(e.name == "Unimplemented");
+					test(e.message == "Some API");
+					//	Manually examine stack property, which is non-standard and thus not consistent
+					debugger;
+				}			
+			}
+			
+			throwType(new module.Error.Type("Unimplemented"));
+			throwType(module.Error.Type("Unimplemented"));
+			
+			if (false) {
+				//	TODO	what should this do?
+				try {
+					throw Unimplemented("Some API");
+				} catch (e) {
+					test(e instanceof Error);
+					test(e instanceof Unimplemented);
+					test(e.name == "Unimplemented");
+					test(e.message == "Some API");
+				}
 			}
 		</script>
 	</div>
