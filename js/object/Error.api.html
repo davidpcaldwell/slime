@@ -60,6 +60,25 @@ END LICENSE
 				test(e.name == "Unimplemented");
 				test(e.message == "Some API");
 			}
+			
+			try {
+				throw new Unimplemented("Some API with data", { foo: "bar" });
+			} catch (e) {
+				test(e instanceof Error);
+				test(e instanceof Unimplemented);
+				test(e.name == "Unimplemented");
+				test(e.message == "Some API with data");
+				test(e.foo == "bar");
+			}
+			
+			try {
+				throw new Unimplemented("Some API with data", null);
+			} catch (e) {
+				test(e instanceof Error);
+				test(e instanceof Unimplemented);
+				test(e.name == "Unimplemented");
+				test(e.message == "Some API with data");
+			}
 		</script>
 	</div>
 </body>
