@@ -47,20 +47,18 @@ END LICENSE
 					debugger;
 				}			
 			}
-			
-			throwType(new module.Error.Type("Unimplemented"));
+
+			var Unimplemented = new module.Error.Type("Unimplemented");
+			throwType(Unimplemented);
 			throwType(module.Error.Type("Unimplemented"));
 			
-			if (false) {
-				//	TODO	what should this do?
-				try {
-					throw Unimplemented("Some API");
-				} catch (e) {
-					test(e instanceof Error);
-					test(e instanceof Unimplemented);
-					test(e.name == "Unimplemented");
-					test(e.message == "Some API");
-				}
+			try {
+				throw Unimplemented("Some API");
+			} catch (e) {
+				test(e instanceof Error);
+				test(e instanceof Unimplemented);
+				test(e.name == "Unimplemented");
+				test(e.message == "Some API");
 			}
 		</script>
 	</div>
