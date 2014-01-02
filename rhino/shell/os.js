@@ -88,3 +88,63 @@ if ($context.os.name == "Mac OS X") {
 		return result;
 	}
 }
+
+if ($context.os.name == "Mac OS X") {
+	var correctPassword;
+	var sudo = function(p) {
+		if (!correctPassword) {
+			if (p.password) {
+				if (typeof(p.password) == "string") {
+					arguments.callee.initialize(p.password);
+				} else if (typeof(p.password) == "function") {
+					arguments.callee.initialize(p.password());
+				} else {
+					throw new TypeError("p.password is incorrect type: " + typeof(p.password));
+				}
+			} else {
+				throw new arguments.callee.PasswordRequired("Password required for sudo.");
+			}
+		}
+		var args = [p.command];
+		if (p.arguments) {
+			args.push.apply(args,p.arguments);
+		}
+		$context.run($context.api.js.Object.set({}, p, {
+			command: "sudo",
+			arguments: args
+		}));
+	};
+	sudo.PasswordIncorrect = $context.api.js.Error.Type("PasswordIncorrect");
+	sudo.PasswordRequired = $context.api.js.Error.Type("PasswordRequired");
+	sudo.initialize = function(password) {
+		var script = $context.TMPDIR.createTemporary({ prefix: "askpass", suffix: ".bash" });
+		script.remove();
+		var writer = script.pathname.write($context.api.io.Streams.text);
+		writer.write("#!/bin/bash\n")
+		writer.write("echo " + password);
+		writer.close();
+		$context.run({
+			command: "chmod",
+			arguments: ["+x", script.pathname]
+		});
+		$context.run({
+			command: "sudo",
+			arguments: ["-A", "sleep", "0"],
+			environment: $context.api.js.Object.set({}, $context.environment, {
+				SUDO_ASKPASS: script.pathname.toString()
+			}),
+			stdio: {
+				error: null
+			},
+			evaluate: function(result) {
+				debugger;
+				if (result.status == 1) {
+					throw new sudo.PasswordIncorrect("Incorrect password.");
+				}
+			}
+		});
+		script.remove();
+		correctPassword = password;
+	};
+	$exports.sudo = sudo;
+}

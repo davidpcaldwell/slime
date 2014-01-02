@@ -306,8 +306,14 @@ if ($exports.environment.PATH) {
 $loader.run("os.js", {
 	$context: {
 		PATH: $exports.PATH,
+		TMPDIR: $exports.TMPDIR,
 		os: $exports.os,
-		run: $exports.run
+		run: $exports.run,
+		environment: $exports.environment,
+		api: {
+			js: $context.api.js,
+			io: $context.api.io
+		}
 	},
 	$exports: $exports.os
 });
