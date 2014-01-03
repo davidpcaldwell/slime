@@ -117,10 +117,12 @@ END LICENSE
 				loaded.client = true;
 				loaded.go();
 			}
-			window.onload = function() {
-				loaded.page = true;
-				loaded.go();
-			}
+			window.addEventListener("load", function() {
+				if (!loaded.page) {
+					loaded.page = true;
+					loaded.go();
+				}
+			});
 			var script = document.createElement("script");
 			script.src = (function() {
 				if (parameters && parameters.platform) return parameters.platform + "browser/client.js";
@@ -351,9 +353,10 @@ END LICENSE
 								this.toString = function() {
 									return node.toString();
 								}
-							}
+							};
+							var topElement = (root.documentElement) ? root.documentElement : root;
 
-							this.top = new Element(root);
+							this.top = new Element(topElement);
 							this.$dom = {
 								root: root
 							};
@@ -364,20 +367,29 @@ END LICENSE
 
 						var getLoaderApiDom = function(location) {
 							var unparsed = inonit.loader.$sdk.fetch(location);
-							var div = document.createElement("div");
-							//	TODO	there may be a more complex, robust, standards-compliant way of doing this
-							//			maybe with DocumentObjectModel or whatever
-							div.innerHTML = unparsed;
-							var root = (function() {
-								for (var i=0; i<div.childNodes.length; i++) {
-									if (div.childNodes[i].tagName == "html") {
-										return div.childNodes[i];
+							if (false) {
+								var div = document.createElement("div");
+								//	TODO	there may be a more complex, robust, standards-compliant way of doing this
+								//			maybe with DocumentObjectModel or whatever
+								div.innerHTML = unparsed;
+								var root = (function() {
+									for (var i=0; i<div.childNodes.length; i++) {
+										if (div.childNodes[i].tagName == "html") {
+											return div.childNodes[i];
+										}
 									}
-								}
-								//	browser does not preserve html element under div, at least in Chrome, rather putting title
-								//	and other body content under div
-								return div;
-							})();
+									//	browser does not preserve html element under div, at least in Chrome, rather putting title
+									//	and other body content under div
+									return div;
+								})();
+							} else {
+								var doc = document.implementation.createHTMLDocument("");
+								doc.open();
+								doc.write(unparsed);
+								doc.close();
+								var root = doc;
+//								var root = doc.documentElement;
+							}
 							var base = (function() {
 								if (location.substring(location.length-1) == "/") return location;
 								return location.split("/").slice(0,-1).join("/") + "/";
