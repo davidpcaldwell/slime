@@ -94,6 +94,7 @@ END LICENSE
 				});
 				var shell = $jsapi.module("../../rhino/shell/", {
 					api: {
+						js: $jsapi.module("../../js/object/"),
 						java: host,
 						io: jsh.io,
 						file: file

@@ -509,5 +509,7 @@ $exports.Array = new function() {
 	deprecate(this,"toValue");
 }
 
+$exports.Error = $loader.file("Error.js").Error;
+
 $exports.deprecate = deprecate;
 $api.deprecate($exports,"deprecate");

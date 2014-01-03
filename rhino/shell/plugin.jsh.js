@@ -17,6 +17,7 @@ plugin({
 	load: function() {
 		var $shell = $loader.module("module.js", {
 			api: {
+				js: jsh.js,
 				java: jsh.java,
 				io: jsh.io,
 				file: jsh.file

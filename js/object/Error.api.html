@@ -1,0 +1,85 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Error</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<div>Relies upon the global <code>Error</code> object.</div>
+		<!--
+		<ul>
+		</ul>
+		-->
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+		</ul>
+		<script type="application/x.jsapi#tests">
+			var throwType = function(Unimplemented) {
+				try {
+					throw new Unimplemented("Some API");
+				} catch (e) {
+					//	Work around Rhino bug in which e is not in scope in debugger
+					var error = e;
+					test(e instanceof Error);
+					test(e instanceof Unimplemented);
+					test(e.name == "Unimplemented");
+					test(e.message == "Some API");
+					//	Manually examine stack property, which is non-standard and thus not consistent
+					debugger;
+				}			
+			}
+
+			var Unimplemented = new module.Error.Type("Unimplemented");
+			throwType(Unimplemented);
+			throwType(module.Error.Type("Unimplemented"));
+			
+			try {
+				throw Unimplemented("Some API");
+			} catch (e) {
+				test(e instanceof Error);
+				test(e instanceof Unimplemented);
+				test(e.name == "Unimplemented");
+				test(e.message == "Some API");
+			}
+			
+			try {
+				throw new Unimplemented("Some API with data", { foo: "bar" });
+			} catch (e) {
+				test(e instanceof Error);
+				test(e instanceof Unimplemented);
+				test(e.name == "Unimplemented");
+				test(e.message == "Some API with data");
+				test(e.foo == "bar");
+			}
+			
+			try {
+				throw new Unimplemented("Some API with data", null);
+			} catch (e) {
+				test(e instanceof Error);
+				test(e instanceof Unimplemented);
+				test(e.name == "Unimplemented");
+				test(e.message == "Some API with data");
+			}
+		</script>
+	</div>
+</body>
+</html>
