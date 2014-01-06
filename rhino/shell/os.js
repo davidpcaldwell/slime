@@ -128,13 +128,20 @@ if ($context.os.name == "Mac OS X") {
 	};
 	sudo.PasswordIncorrect = $context.api.js.Error.Type("PasswordIncorrect");
 	sudo.PasswordRequired = $context.api.js.Error.Type("PasswordRequired");
+	//	TODO	the below method results in 3 failures from OS point of view; apparently askpass program is run three times before
+	//			giving up. Is there a way to verify password in one try and then use it?
 	sudo.initialize = function(password) {
+		$context.run({
+			command: "sudo",
+			arguments: ["-k"]
+		});
 		var script = $context.TMPDIR.createTemporary({ prefix: "askpass", suffix: ".bash" });
 		script.remove();
 		var writer = script.pathname.write($context.api.io.Streams.text);
 		writer.write("#!/bin/bash\n")
 		writer.write("echo " + password);
 		writer.close();
+		//	TODO	should somehow attach this to rhino/file/ file object
 		$context.run({
 			command: "chmod",
 			arguments: ["+x", script.pathname]
