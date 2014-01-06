@@ -156,7 +156,6 @@ if ($context.os.name == "Mac OS X") {
 				error: null
 			},
 			evaluate: function(result) {
-				debugger;
 				if (result.status == 1) {
 					throw new sudo.PasswordIncorrect("Incorrect password.");
 				}
