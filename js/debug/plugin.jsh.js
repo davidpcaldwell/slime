@@ -12,7 +12,7 @@
 
 plugin({
 	isReady: function() {
-		return true;
+		return Boolean(jsh.js);
 	},
 	load: function() {
 		jsh.debug = $loader.module("module.js", $loader.file("context.java.js"));
@@ -97,5 +97,7 @@ plugin({
 				}
 			}
 		}
+		
+		jsh.js.Error.Type = jsh.debug.disableBreakOnExceptionsFor(jsh.js.Error.Type);
 	}
 })
