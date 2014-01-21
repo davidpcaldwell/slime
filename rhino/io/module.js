@@ -426,12 +426,18 @@ $exports.Loader = function(p) {
 	//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
 	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
 	//			.resource decoration?
-	var decorate = function() {
+	var decorate = function(prefix) {
+		if (p.resources) {
+			debugger;
+		}
 		if (this._stream) {
 			this.resource = function(path) {
 				var target = this;
 				if (p.resources) {
-					return p.resources.get(path);
+					//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
+					//			child would need to call the parent loader with the prefix, which probably means we'd have to
+					//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
+					return p.resources.get((prefix) ? (prefix+path) : path);
 				} else {
 					//	Test for existence so that we can return null if not found
 					var _in = this._stream(path);

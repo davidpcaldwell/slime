@@ -110,7 +110,9 @@
 				this.Child = function(prefix) {
 					var c = {
 						_source: p._source.child(prefix),
-						Loader: p.Loader
+						Loader: (p.Loader) ? function() {
+							return p.Loader.call(this,prefix);
+						} : null
 					};
 					return new Callee(c);
 				}
@@ -122,7 +124,7 @@
 			};
 			rv._resource = loader.$api.deprecate(rv._stream);
 			if (p.Loader) {
-				var returned = p.Loader.call(rv,p);
+				var returned = p.Loader.call(rv);
 				if (typeof(returned) == "object" && returned != null) {
 					rv = returned;
 				}

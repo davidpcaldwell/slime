@@ -911,6 +911,13 @@ END LICENSE
 					});
 					var api = loader.resource("api.html");
 					test(api.type.toString() == "text/html");
+					
+					test(1 == 1);
+					debugger;
+					var loaderModule = loader.module("test/Loader.js");
+					test(loaderModule.file.foo == "bar");
+					test(loaderModule.resource("Loader.js") != null);
+					test(loaderModule.resource("test/Loader.js") == null);
 				</script>
 			</li>
 
