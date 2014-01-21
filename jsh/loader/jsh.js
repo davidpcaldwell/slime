@@ -259,6 +259,7 @@ this.jsh = new function() {
 			,$rhino: loader.getRhinoLoader()
 			,stdio: context.stdio
 			,api: {
+				js: js,
 				java: java,
 				mime: loader.bootstrap({}, "js/mime")
 			}

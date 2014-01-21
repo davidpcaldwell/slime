@@ -423,13 +423,29 @@ $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
 $exports.Loader = function(p) {
+	var Child = function(prefix) {
+		var parameter = $context.api.js.Object.set({}, p);
+		if (parameter.resources) {
+			parameter.resources = new function() {
+				this.get = function(path) {
+					return p.resources.get(prefix + path);
+				}
+			}
+		}
+		var rv = new $exports.Loader(parameter);
+		if (p.Loader) {
+			//	TODO	probably should treat this like constructor: if it returns a value, replace the return value rather than
+			//			simply modifying it
+			var returned = p.Loader.apply(rv,arguments);
+			if (returned && typeof(returned) == "object") return returned;
+		}
+		return rv;
+	};
+	
 	//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
 	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
 	//			.resource decoration?
-	var decorate = function(prefix) {
-		if (p.resources) {
-			debugger;
-		}
+	var decorate = function() {
 		if (this._stream) {
 			this.resource = function(path) {
 				var target = this;
@@ -437,7 +453,7 @@ $exports.Loader = function(p) {
 					//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
 					//			child would need to call the parent loader with the prefix, which probably means we'd have to
 					//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
-					return p.resources.get((prefix) ? (prefix+path) : path);
+					return p.resources.get(path);
 				} else {
 					//	Test for existence so that we can return null if not found
 					var _in = this._stream(path);
@@ -460,14 +476,9 @@ $exports.Loader = function(p) {
 					});
 				}
 			};
-		}
-		if (p.Loader) {
-			//	TODO	probably should treat this like constructor: if it returns a value, replace the return value rather than
-			//			simply modifying it
-			var returned = p.Loader.apply(this,arguments);
-			if (returned && typeof(returned) == "object") return returned;
-		}
+		}		
 	}
+	
 	if (p.resources) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it
@@ -488,17 +499,21 @@ $exports.Loader = function(p) {
 				}
 			}
 		);
-		return new $context.$rhino.Loader({
+		var rv = new $context.$rhino.Loader({
 			_source: Packages.inonit.script.rhino.Code.Source.create(_resources),
-			Loader: decorate
+			Loader: Child
 		});
+		decorate.call(rv);
+		return rv;
 	} else {
 		var parameter = {};
 		for (var x in p) {
 			parameter[x] = p[x];
 		}
-		parameter.Loader = decorate;
-		return new $context.$rhino.Loader(parameter);
+		parameter.Loader = Child;
+		var rv = new $context.$rhino.Loader(parameter);
+		decorate.call(rv);
+		return rv;
 	}
 };
 $exports.Loader.decorate = function(rv) {

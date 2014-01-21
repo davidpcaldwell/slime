@@ -81,6 +81,7 @@ END LICENSE
 				if (!java) throw new Error("Not found: rhino/host/");
 
 				this.api = {
+					js:  $jsapi.module("../../js/object/", { globals: true }),
 					java: java,
 					mime: $jsapi.module("../../js/mime/", {})
 				};
@@ -913,11 +914,13 @@ END LICENSE
 					test(api.type.toString() == "text/html");
 					
 					test(1 == 1);
-					debugger;
 					var loaderModule = loader.module("test/Loader.js");
 					test(loaderModule.file.foo == "bar");
 					test(loaderModule.resource("Loader.js") != null);
 					test(loaderModule.resource("test/Loader.js") == null);
+					test(loaderModule.grandchildResource("file.js") != null);
+					test(loaderModule.grandchildResource("Loader/file.js") == null);
+					test(loaderModule.grandchildResource("test/Loader/file.js") == null);
 				</script>
 			</li>
 

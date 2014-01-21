@@ -114,7 +114,14 @@
 							return p.Loader.call(this,prefix);
 						} : null
 					};
-					return new Callee(c);
+					var rv = new Callee(c);
+					if (p.Loader) {
+						var returned = p.Loader.call(rv,prefix);
+						if (typeof(returned) == "object" && returned != null) {
+							rv = returned;
+						}
+					}
+					return rv;
 				}
 			};
 
@@ -123,12 +130,6 @@
 				return p._source.getResourceAsStream(path);
 			};
 			rv._resource = loader.$api.deprecate(rv._stream);
-			if (p.Loader) {
-				var returned = p.Loader.call(rv);
-				if (typeof(returned) == "object" && returned != null) {
-					rv = returned;
-				}
-			}
 			return rv;
 		}
 
