@@ -316,12 +316,8 @@ public class Shell {
 
 			public Scriptable getRhinoLoader() throws IOException {
 				return inonit.script.rhino.Loader.load(configuration.getEngine(), new inonit.script.rhino.Loader() {
-					@Override public String getPlatformCode(String path) throws IOException {
+					@Override public String getLoaderCode(String path) throws IOException {
 						return new Streams().readString(installation.getPlatformLoader(path).getReader());
-					}
-
-					@Override public String getRhinoCode() throws IOException {
-						return new Streams().readString(installation.getRhinoLoader().getReader());
 					}
 				});
 			}

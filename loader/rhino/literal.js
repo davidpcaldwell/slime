@@ -33,10 +33,10 @@
 			})();
 			var $slime = {
 				getCode: function(path) {
-					return String($rhino.getPlatformCode(path));
+					return String($rhino.getLoaderCode(path));
 				}
 			}
-			return eval(String($rhino.getPlatformCode("literal.js")));
+			return eval(String($rhino.getLoaderCode("literal.js")));
 		})();
 
 		var getCode = function(code) {
