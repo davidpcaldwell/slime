@@ -180,7 +180,7 @@ public abstract class Loader {
 
 	public static Scriptable load(Engine engine, Loader loader) throws IOException {
 		Engine.Program program = new Engine.Program();
-		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
+		program.set(Engine.Program.Variable.create("$rhino", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
 		program.add(Engine.Source.create("<rhino loader>", loader.getRhinoCode()));
 		return (Scriptable)engine.execute(program);
 	}
