@@ -109,8 +109,14 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 })();
 
 (function() {
-	SLIME.getFile("loader/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader.platform.js"));
-	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader.rhino.js"));
+	SLIME.getSubdirectory("loader").list().forEach(function(node) {
+		if (!node.directory) {
+			node.copy(WEBAPP.getRelativePath("WEB-INF/loader/" + node.pathname.basename), { recursive: true });
+		}
+	});
+//	SLIME.getFile("loader/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/literal.js"));
+//	SLIME.getFile("loader/api.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/api.js"));
+	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/literal.js"), { recursive: true });
 	SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 

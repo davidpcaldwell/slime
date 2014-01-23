@@ -19,7 +19,7 @@ import java.net.*;
 import org.mozilla.javascript.*;
 
 public abstract class Loader {
-	public abstract String getPlatformCode() throws IOException;
+	public abstract String getPlatformCode(String path) throws IOException;
 	public abstract String getRhinoCode() throws IOException;
 
 	//	TODO	verify whether this class needs to be public in order to be used by script calls
@@ -32,8 +32,8 @@ public abstract class Loader {
 			this.loader = loader;
 		}
 
-		public String getPlatformCode() throws IOException {
-			return loader.getPlatformCode();
+		public String getPlatformCode(String path) throws IOException {
+			return loader.getPlatformCode(path);
 		}
 
 		public Classpath getClasspath() {

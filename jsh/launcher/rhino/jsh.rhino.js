@@ -286,8 +286,8 @@ if (getProperty("jsh.launcher.home")) {
 
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
-		this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_HOME.getDirectory("script/platform");
-		this.JSH_LIBRARY_SCRIPTS_RHINO = JSH_HOME.getDirectory("script/rhino");
+		this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_HOME.getDirectory("script/loader");
+//		this.JSH_LIBRARY_SCRIPTS_RHINO = JSH_HOME.getDirectory("script/rhino");
 		this.JSH_LIBRARY_SCRIPTS_JSH = JSH_HOME.getDirectory("script/jsh");
 		this.JSH_LIBRARY_MODULES = JSH_HOME.getDirectory("modules");
 

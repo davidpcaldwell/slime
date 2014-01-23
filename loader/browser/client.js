@@ -129,6 +129,11 @@
 		}
 
 		var platform = (function() {
+			var $slime = {
+				getCode: function(path) {
+					return fetcher.getCode(bootstrap.getRelativePath(path));
+				}
+			};
 			return eval(fetcher.getCode(bootstrap.getRelativePath("literal.js")));
 		})();
 		platform.$api.deprecate.warning = function(access) {

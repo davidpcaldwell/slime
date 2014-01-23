@@ -125,12 +125,12 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 				this.rhinoLoader = inonit.script.rhino.Loader.load(engine, new inonit.script.rhino.Loader() {
 					private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
-					@Override public String getPlatformCode() throws IOException {
-						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader.platform.js"));
+					@Override public String getPlatformCode(String path) throws IOException {
+						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
 					}
 
 					@Override public String getRhinoCode() throws IOException {
-						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader.rhino.js"));
+						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader/rhino/literal.js"));
 					}
 				});
 			} catch (IOException e) {

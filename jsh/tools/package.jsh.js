@@ -69,8 +69,9 @@ to.getRelativePath("$jsh/jsh.rhino.js").write(JSH.getFile("script/launcher/jsh.r
 
 jsh.file.unzip({ zip: JSH.getFile("lib/jsh.jar"), to: to });
 
-to.getRelativePath("$jsh/loader.js").write(JSH.getFile("script/platform/literal.js").read(String), { recursive: true });
-to.getRelativePath("$jsh/rhino.js").write(JSH.getFile("script/rhino/literal.js").read(String), { recursive: true });
+JSH.getSubdirectory("script/loader").copy(to.getRelativePath("$jsh/loader"), { recursive: true });
+//to.getRelativePath("$jsh/loader.js").write(JSH.getFile("script/loader/literal.js").read(String), { recursive: true });
+//to.getRelativePath("$jsh/rhino.js").write(JSH.getFile("script/loader/rhino/literal.js").read(String), { recursive: true });
 to.getRelativePath("$jsh/jsh.js").write(JSH.getFile("script/jsh/jsh.js").read(String), { recursive: true });
 
 JSH.getSubdirectory("modules").list().forEach( function(module) {

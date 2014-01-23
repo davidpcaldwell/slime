@@ -31,7 +31,12 @@
 					return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
 				}
 			})();
-			return eval(String($rhino.getPlatformCode()));
+			var $slime = {
+				getCode: function(path) {
+					return String($rhino.getPlatformCode(path));
+				}
+			}
+			return eval(String($rhino.getPlatformCode("literal.js")));
 		})();
 
 		var getCode = function(code) {
