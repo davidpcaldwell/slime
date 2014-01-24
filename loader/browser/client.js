@@ -54,10 +54,8 @@
 	if (!modes.module) modes.module = "evalScope";
 	if (!modes.execute) modes.execute = "call";
 
-	var Bootstrap = function(src) {
-		this.base = src.split("/").slice(0,-1).join("/") + "/";
-
-		this.src = src;
+	var Bootstrap = function(base) {
+		this.base = base;
 
 		this.getRelativePath = function(path) {
 			return this.base + path;
@@ -70,8 +68,10 @@
 			var url = scripts[scripts.length-1].getAttribute("src");
 			return url;
 		}
+		
+		var current = getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
 
-		return new Bootstrap(getCurrentScriptSrc());
+		return new Bootstrap(current);
 	}
 
 	var bootstrap = (function() {
@@ -121,7 +121,7 @@
 				for (var i=0; i<arguments.callee.preprocessors.length; i++) {
 					code = arguments.callee.preprocessors[i](code);
 				}
-				//	Add sourceURL for Firebug
+				//	Add sourceURL for JavaScript debuggers
 				code = code + "//@ sourceURL=" + path;
 				return code;
 			}
