@@ -221,6 +221,13 @@
 		};
 
 		this.Loader = function(p) {
+			if (typeof(p) == "string") {
+				return new platform.Loader({
+					getCode: function(path) {
+						return fetcher.getCode(p+path);
+					}
+				});
+			}
 			return new platform.Loader(p);
 		};
 
@@ -246,7 +253,10 @@
 
 			//	DRY:	Other scripts may want to use this (already have examples)
 			this.getCurrentScript = getCurrentScript;
-		}
+		};
+		
+		//	For use in scripts that are loaded directly by the browser rather than via this loader
+		this.$api = platform.$api;
 
 		var sdk = new function() {
 			var getCachePath = function(string) {
@@ -275,6 +285,7 @@
 
 			//	used by unit tests
 			this.platform = platform.$platform;
+			//	this variable is now public above
 			this.api = platform.$api;
 		}
 
