@@ -198,9 +198,10 @@ $exports.ApiHtmlTests = function(html,name) {
 
 		var contexts = [];
 		for (var i=0; i<contextScripts.length; i++) {
-			var myscope = {
-				document: html.$dom.root
-			};
+			var myscope = {};
+			if (html.$dom) {
+				myscope.document = html.$dom.root;
+			}
 			for (var x in scope) {
 				myscope[x] = scope[x];
 			}

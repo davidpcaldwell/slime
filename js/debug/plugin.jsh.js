@@ -97,7 +97,7 @@ plugin({
 				}
 			}
 		}
-		
+
 		jsh.js.Error.Type = jsh.debug.disableBreakOnExceptionsFor(jsh.js.Error.Type);
 	}
 })
