@@ -45,6 +45,7 @@ plugin({
 					[
 						"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
 						"lib/catalina.jar"
+						,"lib/annotations-api.jar"
 					].forEach(function(path) {
 						$loader.classpath.add(CATALINA_HOME.getRelativePath(path));
 					});
@@ -138,7 +139,7 @@ plugin({
 							context.addServletMapping(pattern,servletName);
 						}
 					} else if (typeof(m.path) == "string" && m.webapp) {
-						throw new Error("Currently does not work, apparently, due to issues with ClassLoaders");
+						tomcat.getEngine().setParentClassLoader(tomcat.getEngine().getClass().getClassLoader());
 						var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());
 						jsh.shell.echo("Added " + context);
 					}

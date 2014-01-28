@@ -61,7 +61,21 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			});
 			debugger = Engine.RhinoDebugger.create(configuration);
 		}
-		Engine engine = Engine.create(debugger, Engine.Configuration.DEFAULT);
+		Engine engine = Engine.create(debugger, new Engine.Configuration() {
+			@Override public boolean createClassLoader() {
+				return true;
+			}
+
+			@Override
+			public ClassLoader getApplicationClassLoader() {
+				return Servlet.class.getClassLoader();
+			}
+
+			@Override
+			public int getOptimizationLevel() {
+				return -1;
+			}			
+		});
 
 		Engine.Program program = new Engine.Program();
 
