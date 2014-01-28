@@ -54,10 +54,8 @@
 	if (!modes.module) modes.module = "evalScope";
 	if (!modes.execute) modes.execute = "call";
 
-	var Bootstrap = function(src) {
-		this.base = src.split("/").slice(0,-1).join("/") + "/";
-
-		this.src = src;
+	var Bootstrap = function(base) {
+		this.base = base;
 
 		this.getRelativePath = function(path) {
 			return this.base + path;
@@ -70,8 +68,10 @@
 			var url = scripts[scripts.length-1].getAttribute("src");
 			return url;
 		}
+		
+		var current = getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
 
-		return new Bootstrap(getCurrentScriptSrc());
+		return new Bootstrap(current);
 	}
 
 	var bootstrap = (function() {
@@ -121,7 +121,7 @@
 				for (var i=0; i<arguments.callee.preprocessors.length; i++) {
 					code = arguments.callee.preprocessors[i](code);
 				}
-				//	Add sourceURL for Firebug
+				//	Add sourceURL for JavaScript debuggers
 				code = code + "//@ sourceURL=" + path;
 				return code;
 			}
@@ -129,6 +129,11 @@
 		}
 
 		var platform = (function() {
+			var $slime = {
+				getCode: function(path) {
+					return fetcher.getCode(bootstrap.getRelativePath(path));
+				}
+			};
 			return eval(fetcher.getCode(bootstrap.getRelativePath("literal.js")));
 		})();
 		platform.$api.deprecate.warning = function(access) {
@@ -216,6 +221,13 @@
 		};
 
 		this.Loader = function(p) {
+			if (typeof(p) == "string") {
+				return new platform.Loader({
+					getCode: function(path) {
+						return fetcher.getCode(p+path);
+					}
+				});
+			}
 			return new platform.Loader(p);
 		};
 
@@ -241,7 +253,10 @@
 
 			//	DRY:	Other scripts may want to use this (already have examples)
 			this.getCurrentScript = getCurrentScript;
-		}
+		};
+		
+		//	For use in scripts that are loaded directly by the browser rather than via this loader
+		this.$api = platform.$api;
 
 		var sdk = new function() {
 			var getCachePath = function(string) {
@@ -270,6 +285,7 @@
 
 			//	used by unit tests
 			this.platform = platform.$platform;
+			//	this variable is now public above
 			this.api = platform.$api;
 		}
 

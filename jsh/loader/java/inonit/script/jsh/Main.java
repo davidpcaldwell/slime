@@ -46,12 +46,12 @@ public class Main {
 					return getClass().getName() + " [packaged]";
 				}
 
-				public Engine.Source getPlatformLoader() {
-					return Engine.Source.create("loader.js", ClassLoader.getSystemResourceAsStream("$jsh/loader.js"));
+				public Engine.Source getPlatformLoader(String path) {
+					return Engine.Source.create("[slime]:" + path, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
 				}
 
 				public Engine.Source getRhinoLoader() {
-					return Engine.Source.create("rhino.js", ClassLoader.getSystemResourceAsStream("$jsh/rhino.js"));
+					return Engine.Source.create("rhino.js", ClassLoader.getSystemResourceAsStream("$jsh/loader/rhino/literal.js"));
 				}
 
 				public Engine.Source getJshLoader() {
@@ -122,12 +122,12 @@ public class Main {
 					throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
 				}
 
-				public Engine.Source getPlatformLoader() {
-					return Engine.Source.create(getFile("loader", "literal.js"));
+				public Engine.Source getPlatformLoader(String path) {
+					return Engine.Source.create(getFile("loader", path));
 				}
 
 				public Engine.Source getRhinoLoader() {
-					return Engine.Source.create(getFile("rhino", "literal.js"));
+					return Engine.Source.create(getFile("loader", "rhino/literal.js"));
 				}
 
 				public Engine.Source getJshLoader() {

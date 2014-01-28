@@ -12,16 +12,6 @@
 
 (function() {
 	return new function() {
-		var $loader = new function() {
-			this.code = String($bootstrap.getPlatformCode());
-			this.script = function(name,$in,scope,target) {
-				if (!target) target = null;
-				$bootstrap.script(name,$in,scope,target);
-				$in.close();
-			}
-			this.classpath = $bootstrap.getClasspath();
-		};
-
 		var loader = (function() {
 			var $engine = {
 				Object: {
@@ -41,18 +31,29 @@
 					return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
 				}
 			})();
-			return eval($loader.code);
+			var $slime = {
+				getCode: function(path) {
+					return String($rhino.getLoaderCode(path));
+				}
+			}
+			return eval(String($rhino.getLoaderCode("literal.js")));
 		})();
 
 		var getCode = function(code) {
+			var script = function(name,_in,scope,target) {
+				if (!target) target = null;
+				$rhino.script(name,_in,scope,target);
+				_in.close();
+			};
+			
 			if (typeof(code) == "object" && typeof(code.name) != "undefined" && typeof(code._in) != "undefined") {
 				if (!code._in) {
 					//	TODO	decide semantics of this
 					throw new Error("code._in is null for name = " + code.name);
 				}
-				if ($loader.script) {
+				if (script) {
 					return function() {
-						$loader.script(code.name,code._in,arguments[0],arguments[1]);
+						script(code.name,code._in,arguments[0],arguments[1]);
 					};
 				} else {
 					return String(
@@ -136,7 +137,7 @@
 			} else if (p._code) {
 				//	TODO	this is probably a bad place to do this, but it will do for now; should this move into the Loader
 				//			constructor?
-				$loader.classpath.append(p._code);
+				$rhino.getClasspath().append(p._code);
 				return new Loader({
 					_source: p._code.getScripts(),
 					Loader: p.Loader
@@ -187,7 +188,7 @@
 			}
 
 			if (format._code) {
-				$loader.classpath.append(format._code);
+				$rhino.getClasspath().append(format._code);
 				return loader.module(engineModuleCodeLoader(format._code, format.main),p);
 			} else {
 				return loader.module.apply(loader,arguments);
@@ -196,11 +197,11 @@
 
 		this.classpath = new function() {
 			this.add = function(_source) {
-				$loader.classpath.append(_source);
+				$rhino.getClasspath().append(_source);
 			}
 
 			this.getClass = function(name) {
-				return $loader.classpath.getClass(name);
+				return $rhino.getClasspath().getClass(name);
 			}
 		}
 

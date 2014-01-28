@@ -288,7 +288,7 @@ debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
 zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
 
 console("Copying script implementations ...")
-copyFile(new File(SLIME_SRC,"loader"), new File(JSH_HOME,"script/platform"), [
+copyFile(new File(SLIME_SRC,"loader"), new File(JSH_HOME,"script/loader"), [
 	{
 		accept: function(f) {
 			return (f.isDirectory() && f.getName() == ".hg")
@@ -303,7 +303,7 @@ copyFile(new File(SLIME_SRC,"loader"), new File(JSH_HOME,"script/platform"), [
 		}
 	}
 ]);
-copyFile(new File(SLIME_SRC,"loader/rhino"), new File(JSH_HOME,"script/rhino"), [
+copyFile(new File(SLIME_SRC,"loader/rhino"), new File(JSH_HOME,"script/loader/rhino"), [
 	{
 		accept: function(f) {
 			return f.isDirectory() && f.getName() == "test"
