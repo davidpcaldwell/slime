@@ -336,21 +336,34 @@ $exports.Function.returning = function(v) {
 		return v;
 	};
 };
-$exports.Function.evaluator = $api.deprecate(function() {
+$exports.Function.evaluator = function() {
 	//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
 	//	undefined
 	var components = arguments;
 	return function() {
 		var rv;
+		var invocation = {
+			target: this,
+			arguments: Array.prototype.slice.call(arguments)
+		};
 		for (var i=0; i<components.length; i++) {
-			rv = components[i].apply(this,arguments);
+			if (typeof(components[i]) == "function") {
+				rv = components[i].apply(this,arguments);
+			} else if (typeof(components[i]) == "object") {
+				rv = components[i].get(invocation);
+			}
 			if (typeof(rv) != "undefined") {
+				for (var j=i; j>=0; j--) {
+					if (typeof(components[j]) == "object") {
+						components[j].set(invocation,rv);
+					}
+				}
 				return rv;
 			}
 		}
 		return rv;
-	}
-});
+	};
+};
 
 $exports.Filter = new function() {
 	this.property = function(name,filter) {
