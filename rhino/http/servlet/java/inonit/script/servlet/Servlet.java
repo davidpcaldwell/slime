@@ -61,7 +61,21 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			});
 			debugger = Engine.RhinoDebugger.create(configuration);
 		}
-		Engine engine = Engine.create(debugger, Engine.Configuration.DEFAULT);
+		Engine engine = Engine.create(debugger, new Engine.Configuration() {
+			@Override public boolean createClassLoader() {
+				return true;
+			}
+
+			@Override
+			public ClassLoader getApplicationClassLoader() {
+				return Servlet.class.getClassLoader();
+			}
+
+			@Override
+			public int getOptimizationLevel() {
+				return -1;
+			}			
+		});
 
 		Engine.Program program = new Engine.Program();
 
@@ -125,12 +139,8 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 				this.rhinoLoader = inonit.script.rhino.Loader.load(engine, new inonit.script.rhino.Loader() {
 					private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
-					@Override public String getPlatformCode() throws IOException {
-						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader.platform.js"));
-					}
-
-					@Override public String getRhinoCode() throws IOException {
-						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader.rhino.js"));
+					@Override public String getLoaderCode(String path) throws IOException {
+						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
 					}
 				});
 			} catch (IOException e) {

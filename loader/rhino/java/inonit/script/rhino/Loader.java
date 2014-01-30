@@ -19,8 +19,8 @@ import java.net.*;
 import org.mozilla.javascript.*;
 
 public abstract class Loader {
-	public abstract String getPlatformCode() throws IOException;
-	public abstract String getRhinoCode() throws IOException;
+	public abstract String getLoaderCode(String path) throws IOException;
+//	public abstract String getRhinoCode() throws IOException;
 
 	//	TODO	verify whether this class needs to be public in order to be used by script calls
 	public static class Bootstrap {
@@ -31,9 +31,9 @@ public abstract class Loader {
 			this.engine = engine;
 			this.loader = loader;
 		}
-
-		public String getPlatformCode() throws IOException {
-			return loader.getPlatformCode();
+		
+		public String getLoaderCode(String path) throws IOException {
+			return loader.getLoaderCode(path);			
 		}
 
 		public Classpath getClasspath() {
@@ -180,8 +180,8 @@ public abstract class Loader {
 
 	public static Scriptable load(Engine engine, Loader loader) throws IOException {
 		Engine.Program program = new Engine.Program();
-		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
-		program.add(Engine.Source.create("<rhino loader>", loader.getRhinoCode()));
+		program.set(Engine.Program.Variable.create("$rhino", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
+		program.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/literal.js")));
 		return (Scriptable)engine.execute(program);
 	}
 }

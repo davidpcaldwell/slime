@@ -74,6 +74,53 @@ END LICENSE
 				this.undefinedCalculator = undefinedCalculator;
 			}
 		</script>
+		<div class="type">
+			<a class="type" name="types.cache">cache</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">get</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.Function.invocation">invocation</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">set</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.Function.invocation">invocation</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<span class="type">(any)</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+		</div>
 		<ul>
 			<li class="value">
 				<div class="name">undefined</div>
@@ -489,6 +536,122 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
+			<li class="object" jsapi:id="Function">
+				<div class="name">Function</div>
+				<span>Contains properties that pertain to JavaScript functions.</span>
+				<div class="type">
+					<a class="type" name="types.Function.invocation">invocation</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">target</div>
+							<span class="type">object</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">arguments</div>
+							<span class="type">Array</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</div>
+
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">evaluator</div>
+						<div>
+							Creates a function which invokes a series of operations, in order, and returns the first
+							non-<code>undefined</code> value returned by one of them. 
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<div>
+								A series of arguments of one of the following types:
+								<ul>
+									<li><code>function</code>,</li>
+									<li><a href="#types.cache">cache</a>.</li>
+								</ul>
+								Upon invocation, each argument is used, in order, until one of them produces a value other than
+								<code>undefined</code>.
+								<ul>
+									<li>
+										If it is a <code>function</code>, the function
+										is invoked with the same arguments (and <code>this</code>), and the return value is used.
+									</li>
+									<li>
+										If it is a <a href="#types.cache">cache</a>, the <code>get</code> method of the cache is
+										invoked with an <a href="#types.Function.invocation">invocation</a> representing the
+										invocation of the function, and the return value of <code>get</code> is used. 
+									</li>
+								</ul>
+								Once an operation produces a value other than <code>undefined</code>, that value will be used as the
+								return value of the function. Before returning that value:
+								<ul>
+									<li>
+										If the operation that produced the value is a <a href="#types.cache">cache</a>, its
+										<code>set</code> method is invoked with the
+										<a href="#types.Function.invocation">invocation</a> and the value.
+									</li>
+									<li>
+										Any caches <i>preceding</i> the operation that produced the value will have their 
+										<code>set</code> methods invoked with the
+										<a href="#types.Function.invocation">invocation</a> and the value.
+									</li>
+								</ul>
+							</div>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">function</span>
+							<span>A function that implements the algorithm described above.</span>
+						</div>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					var one = function(n) {
+						arguments.callee.calls++;
+						return n*2;
+					};
+					one.calls = 0;
+					var two = new function() {
+						var values = {};
+					
+						this.get = function(p) {
+							return values[p.arguments[0]];
+						};
+						
+						this.set = function(p,v) {
+							values[p.arguments[0]] = v;
+						};
+						
+						this.test = {};
+						this.test.get = function(v) {
+							return values[v];
+						};
+					};
+					var evaluator = module.Function.evaluator(two,one);
+					
+					test(one.calls == 0);
+					test(typeof(two.test.get(2)) == "undefined");
+					
+					test(evaluator(2) == 4);
+					
+					test(one.calls == 1);
+					test(two.test.get(2) == 4);
+					
+					test(evaluator(2) == 4);
+					test(one.calls == 1);
+					test(two.test.get(2) == 4);
+					
+					test(evaluator(3) == 6);
+					test(one.calls == 2);
+					test(two.test.get(3) == 6);
+					//	TODO	write tests for top-level also being a cache: in other words, a convenience cache that receives
+					//			a callback to store each time it calculates a value
+				</script>
+			</li>
 			<li class="object" jsapi:id="Filter">
 				<script type="application/x.jsapi#initialize"><![CDATA[
 					//	TODO	load this from globals.js somehow?
@@ -595,6 +758,7 @@ END LICENSE
 					test(matches[0] == array[0]);
 				</script>
 			</li>
+			<!--	TODO	convert Map/Order to types	-->
 			<li class="object" jsapi:id="Map">
 				<div class="name">Map</div>
 				<span>
@@ -646,9 +810,9 @@ END LICENSE
 			<li class="object" jsapi:id="Order">
 				<div class="name">Order</div>
 				<span>
-					An <i>Order</i> implements a specific interface, intended for sorting: it takes two arguments and returns
-					a value less than zero if the first argument belongs before the second argument, and a value greater than zero
-					if the second argument belongs before the first argument. This is commensurate with the
+					An <i>Order</i> is a function that implements a specific interface, intended for sorting: it takes two 
+					arguments and returns a value less than zero if the first argument belongs before the second argument, and a
+					value greater than zero if the second argument belongs before the first argument. This is commensurate with the
 					<code>Array.prototype.sort</code> method.
 				</span>
 				<div class="label">has properties:</div>

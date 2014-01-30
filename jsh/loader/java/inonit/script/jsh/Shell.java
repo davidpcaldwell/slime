@@ -34,7 +34,7 @@ public class Shell {
 	}
 
 	public static abstract class Installation {
-		public abstract Engine.Source getPlatformLoader();
+		public abstract Engine.Source getPlatformLoader(String path);
 		public abstract Engine.Source getRhinoLoader();
 		public abstract Engine.Source getJshLoader();
 
@@ -316,12 +316,8 @@ public class Shell {
 
 			public Scriptable getRhinoLoader() throws IOException {
 				return inonit.script.rhino.Loader.load(configuration.getEngine(), new inonit.script.rhino.Loader() {
-					@Override public String getPlatformCode() throws IOException {
-						return new Streams().readString(installation.getPlatformLoader().getReader());
-					}
-
-					@Override public String getRhinoCode() throws IOException {
-						return new Streams().readString(installation.getRhinoLoader().getReader());
+					@Override public String getLoaderCode(String path) throws IOException {
+						return new Streams().readString(installation.getPlatformLoader(path).getReader());
 					}
 				});
 			}
