@@ -360,9 +360,13 @@ var Client = function(mode) {
 			//	rv.body is undefined
 			return arguments.callee(rv);
 		} else {
-			var parser = (p.parse) ? p.parse : function(response) {
-				return response;
-			};
+			var parser = (function() {
+				if (p.evaluate) return p.evaluate;
+				if (p.parse) return $api.deprecate(p.parse);
+				return function(response) {
+					return response;
+				};
+			})();
 			try {
 				var $input = $urlConnection.getInputStream();
 			} catch (e) {
