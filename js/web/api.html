@@ -1,0 +1,149 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME Web API</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div class="type">
+		<a class="type" name="types.pair">pair</a>
+		<span>An object representing a name-value pair.</span>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="value">
+				<div class="name">name</div>
+				<span class="type">string</span>
+				<span></span>
+			</li>
+			<li class="value">
+				<div class="name">value</div>
+				<span class="type">string</span>
+				<span></span>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Context</h1>
+		<script type="application/x.jsapi#context">
+			(function() {
+				var rv = [];
+				var global = (function() {
+					return this;
+				})();
+				if (global == global.window) {
+					rv.push({
+						escaper: {
+							encode: window.escape,
+							decode: window.unescape
+						}
+					});
+				}
+				if (global.jsh) {
+					rv.push({
+						escaper: {
+							encode: function(s) {
+								return Packages.java.net.URLEncoder.encode(s);
+							},
+							decode: function(s) {
+								return Packages.java.net.URLDecoder.decode(s);
+							}
+						}
+					});
+				}
+				return rv;
+			})()
+		</script>
+		<ul>
+			<li class="object">
+				<div class="name">escaper</div>
+				<span>
+					An object capable of handling the <a href="http://tools.ietf.org/html/rfc3986#section-2.1">percent-encoding</a>
+					or "URL-encoding") algorithm.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">encode</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">decode</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="constructor">
+				<div class="name">Url</div>
+				<span>See <a href="http://tools.ietf.org/html/rfc3986">RFC 3986</a>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="name">__NAME__</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var one = new module.Url({
+						path: "path",
+						query: [
+							{ name: "foo", value: "bar" }
+						]
+					});
+					test(one.toString() == "path?foo=bar");
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>
