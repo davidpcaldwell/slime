@@ -75,6 +75,72 @@ END LICENSE
 			}
 		</script>
 		<div class="type">
+			<a class="type" name="types.task">task</a>
+			<span>
+				A JavaScript function representing an operation that can be scheduled. Although it is both a function, and
+				represents a function-like operation (it can return a value), it does not receive arguments in the ordinary
+				sense; it can receive a single argument called a <i>tell</i> to which its results will be sent, or it can
+				return them directly to the caller.
+			</span>
+			<div class="type">
+				<a class="type" name="types.task.tell">tell</a>
+				<span>An object to notify with the results of an <a href="#types.task">task</a>.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">returned</div>
+						<span>A function that will be invoked when the task completes.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span>The value returned by the <a href="#types.task">task</a>.</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">threw</div>
+						<span>A function that will be invoked if the task does not complete successfully.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span>The error (or value) thrown by the <a href="#types.task">task</a>.</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+					<li class="object">
+						<div class="name">target</div>
+						<span>
+							(optional)
+							An object that will be <code>this</code> when the <code>returned</code> or <code>threw</code> functions
+							are invoked upon completion of the task.
+						</span>
+					</li>
+				</ul>
+			</div>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="value">
+						<span class="type"><a href="#types.task.tell">tell</a></span>
+						<span>
+							(optional)
+							A recipient for the result of this task.
+						</span>
+					</li>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span>
+					If no <a href="#types.task.tell">tell</a> was supplied, the value returned by the task.
+				</span>
+			</div>
+		</div>
+		<div class="type">
 			<a class="type" name="types.cache">cache</a>
 			<span>__DESCRIPTION__</span>
 			<div class="label">has properties:</div>
