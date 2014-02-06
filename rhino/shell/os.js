@@ -130,6 +130,7 @@ if ($context.os.name == "Mac OS X") {
 	sudo.PasswordRequired = $context.api.js.Error.Type("PasswordRequired");
 	//	TODO	the below method results in 3 failures from OS point of view; apparently askpass program is run three times before
 	//			giving up. Is there a way to verify password in one try and then use it?
+	//	TODO	developing a true graphical program would be one way to deal with the above
 	sudo.initialize = function(password) {
 		$context.run({
 			command: "sudo",
