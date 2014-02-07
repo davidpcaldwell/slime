@@ -138,7 +138,7 @@ var toLiteral = function(value) {
 				for (var x in value) {
 					var source = sourceify(value[x],references);
 					if (source) {
-						properties.push( "'" + x + "':" + source);
+						properties.push( "\"" + x + "\":" + source);
 					}
 				}
 				return "{" + properties.join(",") + "}";
