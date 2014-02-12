@@ -67,9 +67,11 @@
 			var scripts = document.getElementsByTagName("script");
 			var url = scripts[scripts.length-1].getAttribute("src");
 			return url;
-		}
+		};
 		
-		var current = getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
+		var base = window.location.href.split("/").slice(0,-1).join("/") + "/";
+		
+		var current = base + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
 
 		return new Bootstrap(current);
 	}
