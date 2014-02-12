@@ -26,6 +26,12 @@ $exports.addJshPluginTo = function(jsh) {
 
 		this.loader = new jsh.io.Loader({
 			resources: new function() {
+				this.toString = function() {
+					return "jsh.httpd.Resources [" + mapping.map(function(item) {
+						return item.prefix + "->" + item.pathname;
+					}).join(", ") + "]";
+				};
+				
 				this.get = function(path) {
 					for (var i=0; i<mapping.length; i++) {
 						var prefix = mapping[i].prefix;
@@ -90,7 +96,7 @@ $exports.addJshPluginTo = function(jsh) {
 			});
 		}
 	}
-	jsh.httpd.Resources.script = function(mappingFiles) {
+	jsh.httpd.Resources.script = function(/* mapping files */) {
 		var rv = new jsh.httpd.Resources();
 
 		for (var i=0; i<arguments.length; i++) {
