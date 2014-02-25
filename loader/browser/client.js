@@ -69,7 +69,17 @@
 			return url;
 		};
 		
-		var base = window.location.href.split("/").slice(0,-1).join("/") + "/";
+		var getBasePath = function(pathname) {
+			var path = pathname.substring(1);
+			var tokens = path.split("/");
+			if (tokens.length > 1) {
+				return tokens.slice(0,-1).join("/") + "/";
+			} else {
+				return "";
+			}			
+		};
+		
+		var base = window.location.protocol + "//" + window.location.host + "/" + getBasePath(window.location.pathname);
 		
 		var current = base + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
 
