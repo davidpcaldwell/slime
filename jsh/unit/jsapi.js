@@ -231,6 +231,21 @@ $exports.tests = new function() {
 								return jsh.loader.module(suite.getRelativePath(name),context);
 							}
 						},
+						test: function(path,p) {
+							var apifile = getApiHtml(suite.getRelativePath(path));
+							var page = loadApiHtml(apifile);
+							var name = path;
+							var tests = new $context.html.ApiHtmlTests(page,name);
+							var subscope = {
+								$jsapi: {
+									newTemporaryDirectory: scope.$jsapi.newTemporaryDirectory
+								},
+								module: p.module
+							};
+							var scenario = tests.getScenario(subscope);
+							return scenario;
+//							throw new Error("Unimplemented: $jsapi.test");
+						},
 						loader: {
 							file: function(name,context) {
 								return jsh.loader.file(suite.getRelativePath(name),context);
