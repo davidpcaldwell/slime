@@ -191,6 +191,88 @@ $exports.tests = new function() {
 	this.add = function(module,unit) {
 		testGroups.push(moduleToItem(module,unit));
 	}
+	
+	var Scope = function(suite) {
+		var $newTemporaryDirectory = function() {
+			var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
+			var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
+			var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
+			dir.mkdirs();
+			return dir;
+		};
+
+		//	TODO	it appears that for the purpose of this method suite must just support getRelativePath()
+		return {
+			$jsapi: {
+				module: function(name,context) {
+					if (typeof(name) == "object" && typeof(context) == "string") {
+						jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
+						return arguments.callee.call(this,arguments[1],arguments[0]);
+					}
+					if (false) {
+						var MODULES = $context.MODULES;
+						if (MODULES[name+"/"]) {
+							//	Forgot trailing slash; fix; this ability may later be removed
+							debugger;
+							name += "/";
+						}
+						if (!MODULES[name]) {
+							debugger;
+							return null;
+						}
+						return jsh.loader.module(MODULES[name].location,context);
+					} else {
+						return jsh.loader.module(suite.getRelativePath(name),context);
+					}
+				},
+				test: function(path,p) {
+					var apifile = getApiHtml(suite.getRelativePath(path));
+					var page = loadApiHtml(apifile);
+					var name = path;
+					var tests = new $context.html.ApiHtmlTests(page,name);
+					var subscope = new Scope(apifile);
+					subscope.module = p.module;
+					//	TODO	we wish we could set context but we may not be able to do that
+					var scenario = tests.getScenario(subscope);
+					return scenario;
+//							throw new Error("Unimplemented: $jsapi.test");
+				},
+				loader: {
+					file: function(name,context) {
+						return jsh.loader.file(suite.getRelativePath(name),context);
+					}
+				},
+				environment: $context.ENVIRONMENT,
+				newTemporaryDirectory: function() {
+					var $path = $newTemporaryDirectory();
+					var pathstring = String($path.getCanonicalPath());
+					var os = jsh.file.filesystems.os.Pathname(pathstring);
+					return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
+				},
+				disableBreakOnExceptions: function(f) {
+					return function() {
+						var isBreak = $host.getDebugger().isBreakOnExceptions();
+						$host.getDebugger().setBreakOnExceptions(false);
+						var rv = f.apply(this,arguments);
+						$host.getDebugger().setBreakOnExceptions(isBreak);
+						return rv;
+					}
+				}
+			},
+			$java: {
+				io: {
+					newTemporaryDirectory: $newTemporaryDirectory
+				}
+			},
+			$module: new function() {
+				this.getResourcePathname = function(path) {
+					return suite.getResourcePathname(path);
+				}
+			},
+			$platform: jsh.$jsapi.$platform,
+			$api: jsh.$jsapi.$api
+		};
+	}
 
 	this.run = function(successWas) {
 		var $scenario = {};
@@ -200,88 +282,7 @@ $exports.tests = new function() {
 			jsh.shell.echo("Environments present: " + Object.keys($context.ENVIRONMENT));
 			//	var item is expected to be $scope.$unit
 			suites.forEach( function(suite) {
-				var $newTemporaryDirectory = function() {
-					var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
-					var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
-					var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
-					dir.mkdirs();
-					return dir;
-				}
-
-				var scope = {
-					$jsapi: {
-						module: function(name,context) {
-							if (typeof(name) == "object" && typeof(context) == "string") {
-								jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
-								return arguments.callee.call(this,arguments[1],arguments[0]);
-							}
-							if (false) {
-								var MODULES = $context.MODULES;
-								if (MODULES[name+"/"]) {
-									//	Forgot trailing slash; fix; this ability may later be removed
-									debugger;
-									name += "/";
-								}
-								if (!MODULES[name]) {
-									debugger;
-									return null;
-								}
-								return jsh.loader.module(MODULES[name].location,context);
-							} else {
-								return jsh.loader.module(suite.getRelativePath(name),context);
-							}
-						},
-						test: function(path,p) {
-							var apifile = getApiHtml(suite.getRelativePath(path));
-							var page = loadApiHtml(apifile);
-							var name = path;
-							var tests = new $context.html.ApiHtmlTests(page,name);
-							var subscope = {
-								$jsapi: {
-									newTemporaryDirectory: scope.$jsapi.newTemporaryDirectory
-								},
-								module: p.module
-							};
-							var scenario = tests.getScenario(subscope);
-							return scenario;
-//							throw new Error("Unimplemented: $jsapi.test");
-						},
-						loader: {
-							file: function(name,context) {
-								return jsh.loader.file(suite.getRelativePath(name),context);
-							}
-						},
-						environment: $context.ENVIRONMENT,
-						newTemporaryDirectory: function() {
-							var $path = $newTemporaryDirectory();
-							var pathstring = String($path.getCanonicalPath());
-							var os = jsh.file.filesystems.os.Pathname(pathstring);
-							return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
-						},
-						disableBreakOnExceptions: function(f) {
-							return function() {
-								var isBreak = $host.getDebugger().isBreakOnExceptions();
-								$host.getDebugger().setBreakOnExceptions(false);
-								var rv = f.apply(this,arguments);
-								$host.getDebugger().setBreakOnExceptions(isBreak);
-								return rv;
-							}
-						}
-					},
-					$java: {
-						io: {
-							newTemporaryDirectory: $newTemporaryDirectory
-						}
-					},
-					$module: new function() {
-						this.getResourcePathname = function(path) {
-							return suite.getResourcePathname(path);
-						}
-					},
-					$platform: jsh.$jsapi.$platform,
-					$api: jsh.$jsapi.$api
-				};
-
+				var scope = new Scope(suite);
 				var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
 
 				for (var i=0; i<contexts.length; i++) {
