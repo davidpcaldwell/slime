@@ -10,24 +10,24 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	TODO	replace 'warning' with standard tools like $api.deprecate
-var warning = ($context.warning) ? $context.warning : function(s) {
-	debugger;
-	Packages.java.lang.System.err.println("rhino/host WARNING: " + s);
+//	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
+//	script objects to wrap Java classes, which may be a better approach
+var getJavaClass = function(object) {
+	return Packages[object["class"].name];
 };
 
-var items = $loader.file("java.js", {
-	//	TODO	replace 'warning' with standard tools like $api.deprecate
-	warning: (function() {
-		if ($context.warning) return $context.warning;
-		return function(message) {
-			debugger;
-			Packages.java.lang.System.err.println(message);
-		}
-	})()
-});
-$exports.isJavaObject = items.isJavaObject;
-$exports.toJsArray = items.toJsArray;
+var isJavaObject = function(object) {
+	if (typeof(object) == "undefined") return false;
+	if (typeof(object) == "string") return false;
+	if (typeof(object) == "number") return false;
+	if (typeof(object) == "boolean") return false;
+	if (object == null) return false;
+	//	TODO	Is the next line superfluous now?
+	if ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) ) return true;
+	//	TODO	is this really the best way to do this?
+	return (String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n");
+}
+$exports.isJavaObject = isJavaObject;
 
 $exports.Properties = function($properties) {
 	return Packages.inonit.script.runtime.Properties.create($properties);
@@ -170,7 +170,7 @@ var $isJavaType = function(javaclass,object) {
 
 	var className = getJavaClassName(javaclass);
 	if (className == null) throw new TypeError("Not a class: " + javaclass);
-	if (!items.isJavaObject(object)) return false;
+	if (!isJavaObject(object)) return false;
 	var loaded = getNamedJavaClass(className);
 	return loaded.isInstance(object);
 }
@@ -184,7 +184,98 @@ $exports.isJavaType = function(javaclass) {
 	}
 };
 $api.experimental($exports,"isJavaType");
-experimental("toJavaArray");
+
+$exports.Array = new function() {
+	this.create = function(p) {
+		var type = (p.type) ? p.type : Packages.java.lang.Object;
+		var rv = Packages.java.lang.reflect.Array.newInstance(type,p.array.length);
+		for (var i=0; i<p.array.length; i++) {
+			rv[i] = p.array[i];
+		}
+		return rv;		
+	};
+	
+	this.adapt = function(_p) {
+		//	TODO	probably can be done with Array.prototype.slice()
+		var rv = [];
+		for (var i=0; i<_p.length; i++) {
+			rv[i] = _p[i];
+		}
+		return rv;
+	}
+};
+
+var toJsArray = function(javaArray,scriptValueFactory) {
+	if (typeof(javaArray) == "undefined" || javaArray == null) throw "Required: the Java array must not be null or undefined.";
+	if (typeof(scriptValueFactory) == "undefined" || scriptValueFactory == null)
+		throw "Required: the function to convert Java objects to ECMAScript objects must not be null or undefined.";
+	var rv = new Array(javaArray.length);
+	for (var i=0; i<javaArray.length; i++) {
+		rv[i] = scriptValueFactory(javaArray[i]);
+	}
+	return rv;
+}
+$exports.toJsArray = $api.deprecate(toJsArray);
+
+//	TODO	at least implement this in terms of $exports.Array.create
+var toJavaArray = function(jsArray,javaclass,adapter) {
+	if (!adapter) adapter = function(x) { return x; }
+	var rv = Packages.java.lang.reflect.Array.newInstance(javaclass,jsArray.length);
+	for (var i=0; i<jsArray.length; i++) {
+		rv[i] = adapter(jsArray[i]);
+	}
+	return rv;
+};
+$exports.toJavaArray = $api.deprecate(toJavaArray);
+
+if ($context.globals && $context.globals.Array) {
+	Array.java = {};
+	deprecate(Array, "java");
+	//	TODO	Review whether having the second argument be required makes sense
+	Array.java.toScript = items.toJsArray;
+
+	Array.prototype.toJava = $api.deprecate(function(javaclass) {
+		return toJavaArray(this,javaclass);
+	});
+}
+
+//	TODO	Below seems to be some kind of elaborate error-handling attempt; it merits examination at some point
+//var execute = function(pathname) {
+//	try {
+//		jsh.execute(scope,pathname);
+//	} catch (e) {
+//		scope.$jsunit.success = false;
+//		var context = Packages.org.mozilla.javascript.Context.getCurrentContext();
+//		var errors = Packages.inonit.script.rhino.Engine.Errors.get(context);
+//		var array = errors.getErrors();
+//		var printedSomething = false;
+//		for (var i=0; i<array.length; i++) {
+//			var boilerplate = function(error) {
+//				if (String(error.getMessage()).indexOf("Compilation produced") == 0) {
+//					return true;
+//				}
+//				return false;
+//			}
+//			var error = array[i];
+//			if (!boilerplate(error)) {
+//				Packages.java.lang.System.err.println(
+//					error.getSourceName()
+//					+ ":" + error.getLineNumber()
+//					+ ": " + error.getMessage()
+//					+ "\n" + error.getLineSource()
+//				);
+//				printedSomething = true;
+//			}
+//		}
+//		if (!printedSomething) {
+//			Packages.java.lang.System.err.println(e);
+//			for (var x in e) {
+//				Packages.java.lang.System.err.println("e[" + x + "] = " + e[x]);
+//			}
+//		}
+//		throw "Compilation errors in " + pathname;
+//	}
+//}
 
 var Thread = function(p) {
 	var synchronize = function(f) {

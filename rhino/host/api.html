@@ -22,26 +22,10 @@ END LICENSE
 	<div>
 		<h1>Context</h1>
 		<ul>
-			<li class="function">
-				<div class="name">warning</div>
-				<span>
-					(optional) A function that will be invoked when this module wishes to emit a warning. The default
-					implementation pops up the debugger if one is available and writes the given message to
-					<code>java.lang.System.err</code>.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li><span class="type">string</span> A warning message.</li>
-					</ol>
-				</div>
-			</li>
 			<li class="value">
-				<div class="name">loadClass</div>
-				<span class="type">java.lang.ClassLoader</span>
-				<span>
-					(optional) A <code>ClassLoader</code> that should be used when this module attempts to locate classes by name.
-				</span>
+				<div class="name">globals</div>
+				<!--	<span class="type"></span>	-->
+				<span>If <code>true</code>, this module modifies global JavaScript objects.</span>
 			</li>
 		</ul>
 		<script type="application/x.jsapi#context">
@@ -87,21 +71,32 @@ END LICENSE
 					test(isJavaObject(javaArray));
 				</script>
 			</li>
-			<li class="function">
-				<div class="name">toJsArray</div>
-				<span>Converts a native Java array into an <code>Array</code>.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li><span class="type">java.lang.Object[]</span> A Java array to be converted.</li>
-						<li><span class="type">function</span> A function to convert the Java values into script objects.</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">Array</span> An <code>Array</code> containing the elements produced by the function
-					argument given the elements in the Java array.
-				</div>
+			<li class="object">
+				<div class="name">Array</div>
+				<span>Contains methods that operate on Java arrays.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">adapt</div>
+						<span>Creates a JavaScript array with the same contents as the given Java array.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">java.lang.Object[]</span>
+									<span>A Java array.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">Array</span>
+							<span>
+								<!--	TODO	what if null?	-->
+							</span>
+						</div>
+					</li>
+				</ul>
 				<script type="application/x.jsapi#tests" jsapi:id="toJsArray"><![CDATA[
 					var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.String, 3 );
 					javaArray[0] = "Hello";
@@ -111,15 +106,14 @@ END LICENSE
 					var isWord = function(s) { return s + " is a word."; }
 					var stringLength = function(s) { return s.length(); }
 
-					var words = module.toJsArray( javaArray, isWord );
-					var lengths = module.toJsArray( javaArray, stringLength );
-					var scriptStrings = module.toJsArray( javaArray, function(s) { return String(s); } );
+					var words = module.Array.adapt( javaArray ).map( isWord );
+					var lengths = module.Array.adapt( javaArray ).map( stringLength );
+					var scriptStrings = module.Array.adapt( javaArray ).map( function(s) { return String(s); } );
 
 					test( words[1] == "World is a word." );
 					test( lengths[1] == 5 );
 					test( typeof(scriptStrings[0]) == "string" && scriptStrings[0] == "Hello" );
 				]]></script>
-				<!--	TODO	-->
 			</li>
 			<script type="application/x.jsapi#tests" jsapi:id="Properties"><![CDATA[
 				var $p = new Packages.java.util.Properties();
