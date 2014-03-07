@@ -112,6 +112,69 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.Url">Url</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">scheme</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">host</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">port</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">path</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">query</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">fragment</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="function">
+					<div class="name">resolve</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A reference.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.Url">Url</a></span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests"><![CDATA[
+						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
+						(function() {
+							var relative = base.resolve("../foo.js");
+							test(relative.toString() == "http://www.example.com/path/foo.js");
+						})();
+					]]></script>
+				</li>
+			</ul>
+		</div>
+
 		<ul>
 			<li class="constructor">
 				<div class="name">Url</div>
