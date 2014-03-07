@@ -1,5 +1,5 @@
 $exports.Url = function(o) {
-	["scheme","server","port","path","query","fragment"].forEach(function(item) {
+	["scheme","host","port","path","query","fragment"].forEach(function(item) {
 		if (o[item]) {
 			this[item] = o[item];
 		}
@@ -37,4 +37,16 @@ $exports.Url = function(o) {
 		}
 		return rv;
 	}
+};
+$exports.Url.parse = function(string) {
+	var matcher = /(?:(.*)\:\/\/)([\w\.]+)(?:\:(\d+))?(\/.*)\?(.*)\#(.*)/;
+	var match = matcher.exec(string);
+	return new $exports.Url({
+		scheme: match[1],
+		host: match[2],
+		port: Number(match[3]),
+		path: match[4],
+		query: match[5],
+		fragment: match[6]
+	})
 }

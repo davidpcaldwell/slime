@@ -142,6 +142,52 @@ END LICENSE
 					});
 					test(one.toString() == "path?foo=bar");
 				</script>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">parse</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var one = module.Url.parse("scheme://server.com:999/path?q=query#section");
+							test(one.scheme == "scheme");
+							test(one.host == "server.com");
+							test(one.port === 999);
+							test(one.path == "/path");
+							test(one.query == "q=query");
+							test(one.fragment == "section");
+							
+							(function() {
+								var url = module.Url.parse("scheme://server.com/path?q=query#section");
+								//	TODO	test optional port, since it is a number
+								test(url.scheme == "scheme");
+								test(url.host == "server.com");
+								//	TODO	should port be null or undefined
+								test(url.path == "/path");
+								test(url.query == "q=query");
+								test(url.fragment == "section");
+							})();
+							
+							if (false) {
+								var relative = module.Url.parse("hello.html");
+								test(one.path == "hello.html");
+							}
+						</script>
+					</li>
+				</ul>
 			</li>
 		</ul>
 	</div>
