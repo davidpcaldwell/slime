@@ -39,7 +39,7 @@ $exports.Url = function(o) {
 	}
 };
 $exports.Url.parse = function(string) {
-	var matcher = /(?:([^\:\/\?\#]+)\:)?(?:\/\/([^\:\/\?\#]+))?(?:\:(\d+))?(\/[^\?\#]*)\?(.*)\#(.*)/;
+	var matcher = /(?:([^\:\/\?\#]+)\:)?(?:\/\/([^\:\/\?\#]+))?(?:\:(\d+))?(\/[^\?\#]*)(?:\?([^#]*))?(?:\#(.*))?/;
 	var match = matcher.exec(string);
 	return new $exports.Url({
 		scheme: match[1],
