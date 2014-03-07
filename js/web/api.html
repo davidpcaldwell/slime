@@ -181,10 +181,10 @@ END LICENSE
 								test(url.fragment == "section");
 							})();
 							
-							if (false) {
-								var relative = module.Url.parse("hello.html");
-								test(one.path == "hello.html");
-							}
+							(function() {
+								var url = module.Url.parse("hello.html");
+								test(url.path == "hello.html");
+							})();
 						</script>
 					</li>
 				</ul>
