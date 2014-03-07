@@ -55,16 +55,7 @@ END LICENSE
 					});
 				}
 				if (global.jsh) {
-					rv.push({
-						escaper: {
-							encode: function(s) {
-								return Packages.java.net.URLEncoder.encode(s);
-							},
-							decode: function(s) {
-								return Packages.java.net.URLDecoder.decode(s);
-							}
-						}
-					});
+					rv.push($jsapi.loader.file("context.java.js"));
 				}
 				return rv;
 			})()
