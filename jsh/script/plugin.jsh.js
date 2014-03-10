@@ -52,7 +52,7 @@ plugin({
 				}
 				return null;
 			})(),
-			arguments: jsh.java.toJsArray($host.getInvocation().getArguments(), function(s) { return String(s); }),
+			arguments: jsh.java.Array.adapt($host.getInvocation().getArguments()).map(function(s) { return String(s); }),
 			loader: (function() {
 				if ($host.getLoader().getPackagedCode()) {
 					return new jsh.io.Loader({ _source: $host.getLoader().getPackagedCode() });
