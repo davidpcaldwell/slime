@@ -44,7 +44,7 @@ this.jsh = new function() {
 		this.$platform = rhinoLoader.$platform;
 		this.$api = rhinoLoader.$api;
 
-		this.bootstrap = function(context,path) {
+		this.bootstrap = function(path,context) {
 			var loader = new rhinoLoader.Loader({
 				_code: $host.getLoader().getBootstrapModule(path)
 			});
@@ -198,17 +198,10 @@ this.jsh = new function() {
 	//			startup/configuration
 
 	//	TODO	Lazy-loading
-	var js = loader.bootstrap({ globals: true },"js/object");
+	var js = loader.bootstrap("js/object",{ globals: true });
 	jsh.js = js;
 
-	var java = loader.bootstrap(
-		new function() {
-			//	TODO	the below should be $api.experimental, right?
-			this.experimental = function() {};
-			this.globals = true;
-		},
-		"rhino/host"
-	);
+	var java = loader.bootstrap("rhino/host", { globals: true });
 	jsh.java = java;
 
 	var plugins = {};
@@ -254,24 +247,21 @@ this.jsh = new function() {
 			}
 		}
 
-		var io = loader.bootstrap({
+		var io = loader.bootstrap("rhino/io", {
 			$java: context._streams
 			,$rhino: loader.getRhinoLoader()
 			,stdio: context.stdio
 			,api: {
 				js: js,
 				java: java,
-				mime: loader.bootstrap({}, "js/mime")
+				mime: loader.bootstrap("js/mime",{})
 			}
-		}, "rhino/io");
+		});
 
 		jsh.io = io;
 		context.api.io = io;
 
-		jsh.file = loader.bootstrap(
-			context,
-			"rhino/file"
-		);
+		jsh.file = loader.bootstrap("rhino/file", context);
 	})();
 
 	jsh.$jsapi = {
@@ -359,7 +349,7 @@ this.jsh = new function() {
 	};
 
 	this.loader.plugins = function(from) {
-		if (from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
+		if (from && from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
 			loadPlugins($host.getPlugins(from.java.adapt()));
 		}
 	};
