@@ -12,7 +12,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.java && jsh.io && jsh.io.mime && jsh.loader.$getClass("javax.mail.Session") != null;
+		return jsh.java && jsh.io && jsh.io.mime && jsh.java.getClass("javax.mail.Session");
 	},
 	load: function() {
 		jsh.mail = $loader.module("module.js", {

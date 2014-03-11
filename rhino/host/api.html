@@ -30,12 +30,31 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
+				this.$rhino = jsh.$jsapi.$rhino;
 			}
 		</script>
 	</div>
 	<div>
 		<h1>Exports</h1>
 		<ul>
+			<li class="function" jsapi:id="getClass">
+				<div class="name">getClass</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					test(Boolean(module.getClass("java.lang.Object")));
+					test(!Boolean(module.getClass("foo.bar.baz")));
+				</script>
+			</li>
 			<li class="function">
 				<div class="name">isJavaObject</div>
 				<div class="arguments">

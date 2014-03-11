@@ -151,9 +151,15 @@ this.jsh = new function() {
 				throw "Unreachable code: format.slime and format.base null in jsh loader's module()";
 			}
 		}
-
-		this.addClasses = function(file) {
-			rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(file));
+		
+		this.classpath = new function() {
+			this.add = function(_file) {
+				rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(_file));				
+			};
+			
+			this.get = function(name) {
+				return rhinoLoader.classpath.getClass(name);
+			}
 		}
 
 		this.getClass = function(name) {
@@ -181,17 +187,23 @@ this.jsh = new function() {
 		}
 
 		this.script = loader.$api.deprecate(loader.file);
-
-		this.addClasses = function(pathname) {
-			if (!pathname.directory && !pathname.file) {
-				throw "Classes not found: " + pathname;
-			}
-			loader.addClasses(pathname.java.adapt());
+		
+		this.java = new function() {
+			this.add = function(pathname) {
+				if (!pathname.directory && !pathname.file) {
+					throw new Error("Classes not found: " + pathname);
+				}
+				loader.classpath.add(pathname.java.adapt());				
+			};
 		}
 
-		this.$getClass = function(name) {
-			return loader.getClass(name);
-		};
+		this.addClasses = loader.$api.deprecate(function(pathname) {
+			this.java.add(pathname);
+		});
+
+		this.$getClass = loader.$api.deprecate(function(name) {
+			return loader.classpath.get(name);
+		});
 	};
 
 	//	TODO	should separate everything above/below into two files; above is loader implementation, below is
@@ -201,7 +213,7 @@ this.jsh = new function() {
 	var js = loader.bootstrap("js/object",{ globals: true });
 	jsh.js = js;
 
-	var java = loader.bootstrap("rhino/host", { globals: true });
+	var java = loader.bootstrap("rhino/host", { globals: true, $rhino: loader.getRhinoLoader() });
 	jsh.java = java;
 
 	var plugins = {};
@@ -298,7 +310,7 @@ this.jsh = new function() {
 				};
 				this.classpath = new function() {
 					this.add = function(pathname) {
-						return loader.addClasses(pathname.java.adapt());
+						return loader.classpath.add(pathname.java.adapt());
 					}
 				}
 			})(_code);

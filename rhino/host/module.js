@@ -16,6 +16,13 @@ var getJavaClass = function(object) {
 	return Packages[object["class"].name];
 };
 
+$exports.getClass = function(name) {
+	if ($context.$rhino.classpath.getClass(name)) {
+		return Packages[name];
+	}
+	return null;
+};
+
 var isJavaObject = function(object) {
 	if (typeof(object) == "undefined") return false;
 	if (typeof(object) == "string") return false;
