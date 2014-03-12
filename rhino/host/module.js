@@ -16,12 +16,15 @@ var getJavaClass = function(object) {
 	return Packages[object["class"].name];
 };
 
-$exports.getClass = function(name) {
-	if ($context.$rhino.classpath.getClass(name)) {
-		return Packages[name];
+$exports.getClass = $api.Function({
+	before: $api.Function.argument.isString({ index: 0, name: "name" }),
+	call: function(name) {
+		if ($context.$rhino.classpath.getClass(name)) {
+			return Packages[name];
+		}
+		return null;
 	}
-	return null;
-};
+});
 
 var isJavaObject = function(object) {
 	if (typeof(object) == "undefined") return false;
