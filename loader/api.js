@@ -128,43 +128,85 @@
 
 	$exports.deprecate = deprecate;
 	$exports.experimental = experimental;
+	
+	var UNDEFINED = {};
 
 	$exports.Function = function(p) {
-		return function() {
-			var called = {
-				target: this,
-				arguments: Array.prototype.slice.call(arguments)
-			};
-			var before = [];
-			if (p.before && p.before.sort) {
-				before = p.before;
-			} else if (p.before && p.before.call) {
-				before = [p.before];
-			}
-			//	TODO	should we allow replacement of 'this' as well as arguments?
-			for (var i=0; i<before.length; i++) {
-				before[i].call(null,called);
-			}
-			called.returned = p.call.apply(called.target,called.arguments);
-			var after = [];
-			if (p.after && p.after.sort) {
-				after = p.after;
-			} else if (p.after && p.after.call) {
-				after = [p.after];
-			}
-			for (var i=0; i<after.length; i++) {
-				after[i].call(null,called);
-			}
-			return called.returned;
+		var toArray = function(p) {
+			if (p && p.sort) {
+				return p;
+			} else if (p && p.call) {
+				return [p];
+			} else {
+				return [];
+			}		
 		};
+		
+		var runDecorators = function(declared,situation) {
+			var array = toArray(declared);
+			for (var i=0; i<array.length; i++) {
+				try {
+					var rv = array[i].call(situation);
+					if (typeof(rv) != "undefined") {
+						return { error: false, returning: rv };
+					}
+				} catch (e) {
+					return { error: true, throwing: e };
+				}
+			}
+		};
+
+		var resolve = function() {
+			if (this.error) {
+				throw this.throwing;
+			} else {
+				if (this.returning === UNDEFINED) return void(0);
+				return this.returning;
+			}
+		};
+		
+		return function() {
+			var result = new function() {
+				this.resolve = resolve;
+			};
+
+			var situation = new (function() {
+				this.target = arguments[0];
+				this.arguments = arguments[1];
+				
+				this.setReturn = function(v) {
+					result.error = false;
+					result.returning = v;
+				};
+				
+				this.setThrow = function(v) {
+					result.error = true;
+					result.throwing = v;
+				};
+			})(this,Array.prototype.slice.call(arguments));
+
+			var decoratorResult = runDecorators(p.before,situation);
+			if (decoratorResult) return resolve.call(decoratorResult);
+			try {
+				situation.setReturn(p.call.apply(situation.target,situation.arguments));
+			} catch (e) {
+				situation.setThrow(e);
+			}
+			decoratorResult = runDecorators(p.after,situation);
+			if (decoratorResult) return resolve.call(decoratorResult);
+			return result.resolve();
+		};
+	};
+	$exports.Function.UNDEFINED = function() {
+		return UNDEFINED;
 	};
 	$exports.Function.argument = {};
 	$exports.Function.argument.isString = function(p) {
 		var reference = (p.name) ? "arguments[" + p.index + "]" : "arguments[" + p.index + "] (" + p.name + ")";
-		return function(m) {
-			if (typeof(m.arguments[p.index]) == "undefined" && !p.undefined) throw new TypeError(reference + " must be a string, not undefined.");
-			if (m.arguments[p.index] === null && !p["null"]) throw new TypeError(reference + " must be a string, not null.");
-			if (typeof(m.arguments[p.index]) != "string") throw new TypeError(reference + " must be a string, not " + typeof(m.arguments[p.index]));
+		return function() {
+			if (typeof(this.arguments[p.index]) == "undefined" && !p.undefined) throw new TypeError(reference + " must be a string, not undefined.");
+			if (this.arguments[p.index] === null && !p["null"]) throw new TypeError(reference + " must be a string, not null.");
+			if (typeof(this.arguments[p.index]) != "string") throw new TypeError(reference + " must be a string, not " + typeof(this.arguments[p.index]));
 		};
 	};
 

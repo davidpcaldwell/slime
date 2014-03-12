@@ -106,6 +106,9 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#tests">
 					var throwsError = function(b,f,message) {
+						if ($jsapi.disableBreakOnExceptions) {
+							f = $jsapi.disableBreakOnExceptions(f);
+						}
 						return new function() {
 							this.success = function() {
 								try {
