@@ -38,21 +38,33 @@ END LICENSE
 		<h1>Exports</h1>
 		<ul>
 			<li class="function" jsapi:id="getClass">
+				<!--	TODO	Semantics for inner classes unclear	-->
 				<div class="name">getClass</div>
-				<span>__DESCRIPTION__</span>
+				<span>
+					Returns a Java class given its name. Note that the name expected is the VM-level class name, not the
+					source-level class name. So for inner class <code>Baz</code> of class <code>foo.Bar</code>, the argument given
+					should be <code>"foo.Bar$Baz"</code>.
+				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A class name.</span>
+						</li>
 					</ol>
 				</div>
 				<div class="returns">
 					<div class="label">Returns</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type">JavaClass</span>
+					<span>The JavaClass object with the given name, or <code>null</code> if one does not exist.</span>
 				</div>
 				<script type="application/x.jsapi#tests">
 					test(Boolean(module.getClass("java.lang.Object")));
 					test(!Boolean(module.getClass("foo.bar.baz")));
+					test(Boolean(module.getClass("inonit.script.runtime.io.Streams")));
+					test(Boolean(module.getClass("inonit.script.runtime.io.Streams$Null")));
+					test(String(module.getClass("inonit.script.runtime.io.Streams$Null")) == "[JavaClass inonit.script.runtime.io.Streams$Null]");
 				</script>
 			</li>
 			<li class="function">

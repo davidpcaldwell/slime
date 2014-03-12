@@ -160,11 +160,7 @@ this.jsh = new function() {
 			this.get = function(name) {
 				return rhinoLoader.classpath.getClass(name);
 			}
-		}
-
-		this.getClass = function(name) {
-			return rhinoLoader.classpath.getClass(name);
-		}
+		};
 
 		this.namespace = function(name) {
 			return rhinoLoader.namespace(name);
@@ -176,11 +172,6 @@ this.jsh = new function() {
 		this.file = loader.file;
 		this.module = loader.module;
 		this.namespace = loader.namespace;
-
-//		if (loader.bundled) {
-//			this.bundled = loader.bundled;
-//			loader.$api.deprecate(this,"bundled");
-//		}
 
 		this.addFinalizer = function(f) {
 			addFinalizer(f);
