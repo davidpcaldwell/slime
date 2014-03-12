@@ -181,6 +181,12 @@ $exports.Scenario = function(properties) {
 					//	TODO	this may be an expensive operation, which is why it is a function in the first place; should cache
 					//			the value in case callers invoke it multiple times
 					try {
+						if (assertion.messages && !assertion.message) {
+							assertion.message = function(success) {
+								if (success) return assertion.messages.success();
+								return assertion.messages.failure();
+							}
+						}
 						return assertion.message(success);
 					} catch (e) {
 						return "Error occurred when trying to generate message: " + e;
