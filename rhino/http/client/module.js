@@ -289,8 +289,10 @@ var Client = function(mode) {
 	this.request = function(p) {
 		var method = (p.method) ? p.method.toUpperCase() : "GET";
 		if (p.params && !p.parameters) {
-			p.parameters = p.params;
-			delete p.params;
+			$api.deprecate(function() {
+				p.parameters = p.params;
+				delete p.params;				
+			})();
 		}
 		var url = new Url(p.url);
 		if (p.parameters) {
