@@ -129,21 +129,28 @@ END LICENSE
 				<div class="name">namespace</div>
 				Invokes the Rhino loader's <code>namespace</code> method.
 			</li>
-			<li class="function">
-				<div class="name">addClasses</div>
-				<span>Adds a directory or JAR file to the Java classpath of this script.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">jsh.file.Pathname</span>
-							<span>
-								A <code>jsh.file.Pathname</code> pointing to a directory or a JAR file containing Java
-								classes.
-							</span>
-						</li>
-					</ol>
-				</div>
+			<li class="object">
+				<div class="name">java</div>
+				<span>The Java code available to the script.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">add</div>
+						<span>Adds a directory or JAR file to the Java classpath of this script.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">jsh.file.Pathname</span>
+									<span>
+										A <code>jsh.file.Pathname</code> pointing to a directory or a JAR file containing Java
+										classes.
+									</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
 			</li>
 		</ul>
 	</div>
