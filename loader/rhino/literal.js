@@ -199,6 +199,10 @@
 		}
 
 		this.classpath = new function() {
+			this.toString = function() {
+				return String($rhino.getClasspath());
+			}
+			
 			this.add = function(_source) {
 				$rhino.getClasspath().append(_source);
 			}
