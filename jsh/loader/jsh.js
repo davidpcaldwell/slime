@@ -153,6 +153,10 @@ this.jsh = new function() {
 		}
 		
 		this.classpath = new function() {
+			this.toString = function() {
+				return rhinoLoader.classpath.toString();
+			}
+			
 			this.add = function(_file) {
 				rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(_file));				
 			};
@@ -180,6 +184,10 @@ this.jsh = new function() {
 		this.script = loader.$api.deprecate(loader.file);
 		
 		this.java = new function() {
+			this.toString = function() {
+				return loader.classpath.toString();
+			}
+			
 			this.add = function(pathname) {
 				if (!pathname.directory && !pathname.file) {
 					throw new Error("Classes not found: " + pathname);
