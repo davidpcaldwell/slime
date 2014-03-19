@@ -35,6 +35,8 @@ public abstract class Code {
 
 	public static abstract class Source {
 		public static Source NULL = new ResourceBased() {
+			@Override public String toString() { return "Code.Source.NULL"; }
+			
 			public InputStream getResourceAsStream(String path) {
 				return null;
 			}
