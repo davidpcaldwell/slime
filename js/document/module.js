@@ -366,15 +366,19 @@ var Doctype = function(p) {
 	//	TODO	implement notations
 	//	TODO	implement internal subset
 	if (p.name === null) throw new TypeError();
-	if (p.publicId === null) throw new TypeError();
-	if (p.systemId === null) throw new TypeError();
-
+	
 	this.doctype = {
-		name: p.name,
-		publicId: p.publicId,
-		systemId: p.systemId
+		name: p.name
 	};
 
+	//	TODO	verify how these are supposed to work; are they optional? We used to enforce their presence but NekoHTML does not
+	//			provide them for at least some parsed HTML pages
+	["publicId","systemId"].forEach(function(property) {
+		if (typeof(p[property]) != "undefined" && p[property] !== null) {
+			this.doctype[property] = p[property];
+		}		
+	}, this);
+	
 	this.serialize = function() {
 		var quote = function(s) {
 			return "\"" + s + "\"";
