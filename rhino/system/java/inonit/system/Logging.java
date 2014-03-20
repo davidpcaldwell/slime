@@ -213,7 +213,7 @@ public class Logging {
 				log(Level.FINEST, "Byte %d/%d: %d", i, len, b[off+i]);
 			}
 			delegate.write(b, off, len);
-			log(Level.FINEST, "Wrote %d bytes from buffer.");
+			log(Level.FINEST, "Wrote %d bytes from buffer.", len);
 		}
 
 		@Override
