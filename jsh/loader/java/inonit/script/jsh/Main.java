@@ -221,7 +221,12 @@ public class Main {
 			installation,
 			new Shell.Configuration() {
 				private InputStream stdin = new Logging.InputStream(System.in);
-				private OutputStream stdout = new Logging.OutputStream(System.out, "stdout");
+				//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
+				//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
+				//	ultimately buffering the stdout to the console or other ultimate destination.
+				private OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
+				//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
+				//	device and bytes will never need to be immediately available
 				private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
 
 				public Engine.Log getLog() {
@@ -304,8 +309,6 @@ public class Main {
 	}
 	
 	private static void exit(int status) {
-		System.out.flush();
-		System.err.flush();
 		System.exit(status);
 	}
 

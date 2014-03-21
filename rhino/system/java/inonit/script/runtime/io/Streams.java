@@ -221,6 +221,78 @@ public class Streams {
 				b.write(i);
 			}
 		}
+		
+		public static abstract class Flusher {
+			public abstract void initialize(OutputStream out);
+			public abstract void writing(OutputStream out, byte[] bytes);
+			public abstract void wrote(OutputStream out, byte[] bytes) throws IOException;
+			public abstract void flushing(OutputStream out);
+			public abstract void flushed(OutputStream out);
+			public abstract void closing(OutputStream out);
+			public abstract void closed(OutputStream out);
+			
+			public static final Flusher ALWAYS = new Flusher() {
+				@Override public void initialize(OutputStream out) {
+				}
+
+				@Override public void writing(OutputStream out, byte[] bytes) {
+				}
+
+				@Override public void wrote(OutputStream out, byte[] bytes) throws IOException {
+					out.flush();
+				}
+
+				@Override public void flushing(OutputStream out) {
+				}
+
+				@Override public void flushed(OutputStream out) {
+				}
+
+				@Override public void closing(OutputStream out) {
+				}
+
+				@Override public void closed(OutputStream out) {
+				}
+			};
+			
+			public final OutputStream decorate(final OutputStream out) {
+				this.initialize(out);
+				return new OutputStream() {
+					@Override public void write(int i) throws IOException {
+						out.write(i);
+						Flusher.this.wrote(out, new byte[] { (byte)i });
+					}
+
+					@Override public void close() throws IOException {
+						Flusher.this.closing(out);
+						out.close();
+						Flusher.this.closed(out);
+					}
+
+					@Override public void flush() throws IOException {
+						Flusher.this.flushing(out);
+						out.flush();
+						Flusher.this.flushed(out);
+					}
+
+					@Override public void write(byte[] bytes, int off, int len) throws IOException {
+						byte[] portion = new byte[len];
+						for (int i=off; i<off+len; i++) {
+							portion[i] = bytes[off+i];
+						}
+						Flusher.this.writing(out, portion);
+						out.write(bytes, off, len);
+						Flusher.this.wrote(out, portion);
+					}
+
+					@Override public void write(byte[] bytes) throws IOException {
+						Flusher.this.writing(out, bytes);
+						out.write(bytes);
+						Flusher.this.wrote(out, bytes);
+					}
+ 				};
+			}
+		}
 	}
 
 	public static class Characters {

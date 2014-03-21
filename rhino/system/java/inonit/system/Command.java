@@ -313,7 +313,6 @@ public class Command {
 		private OutputStream out;
 
 		private boolean closeOnEnd;
-		private boolean flush;
 
 		private IOException e;
 
@@ -321,7 +320,6 @@ public class Command {
 			this.in = in;
 			this.out = out;
 			this.closeOnEnd = closeOnEnd;
-			this.flush = false;
 		}
 
 		IOException failure() {
@@ -333,11 +331,6 @@ public class Command {
 			try {
 				while( (i = in.read()) != -1 ) {
 					out.write(i);
-					//	If we do not flush here, then when the underlying process writes to the parent process console, for example,
-					//	-that- write will not flush, and so the output will not appear.
-					if (flush) {
-						out.flush();
-					}
 				}
 				if (closeOnEnd) {
 					out.close();
