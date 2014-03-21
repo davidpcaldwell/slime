@@ -10,9 +10,15 @@
 //	Contributor(s):
 //	END LICENSE
 
+var setExitStatus = function(status) {
+	var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
+	_field.setAccessible(true);
+	_field.set(null, new Packages.java.lang.Integer(status));
+}
+
 if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	console("Usage: jsh.rhino.js <script-path> [arguments]");
-	exit(1);
+	Packages.java.lang.System.exit(1);
 }
 
 //	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.rhino.js
@@ -594,7 +600,7 @@ try {
 	var shellClasspath = settings.get("shellClasspath");
 	if (!shellClasspath) {
 		console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
-		exit(1);
+		Packages.java.lang.System.exit(1);
 	}
 	command.add(
 		settings.get("rhinoClasspath")
@@ -619,7 +625,7 @@ try {
 		err: Packages.java.lang.System["err"]
 	};
 	debug("Running command ...");
-	exit(command.run(mode));
+	setExitStatus(command.run(mode));
 	debug("Command returned.");
 } catch (e) {
 	debug("Error:");
@@ -635,5 +641,5 @@ try {
 	}
 	var error = e;
 	debugger;
-	exit(1);
+	setExitStatus(1);
 }

@@ -150,7 +150,7 @@ debug("java.io.tmpdir = " + System.getProperty("java.io.tmpdir"));
 if (!platform.jdk.compile) {
 	console("Java compiler not found (running in a JRE, rather than a JDK?)");
 	console("A Java compiler is required for executing this script.");
-	exit(1);
+	System.exit(1);
 }
 
 var destination = (function() {
@@ -172,7 +172,7 @@ var destination = (function() {
 			console("build.rhino.js <build-destination>");
 			console("-or-");
 			console("build.rhino.js -installer <installer-jar-location>");
-			exit(1);
+			System.exit(1);
 		}
 		return {
 			shell: new File(toNativePath(arguments[0]))

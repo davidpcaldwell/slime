@@ -250,4 +250,4 @@ var runCommand = function() {
 	return rv;
 };
 
-exit(runCommand.apply(null, args));
+Packages.java.lang.System.exit(runCommand.apply(null, args));

@@ -71,10 +71,20 @@ public class Main {
 
 		abstract ClassLoader getMainClassLoader() throws IOException;
 
-		final Class getMainClass() throws IOException, ClassNotFoundException {
+		final int getRhinoShellExitStatus() throws IOException, ClassNotFoundException, IllegalAccessException, NoSuchFieldException {
+			Class c = getMainClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
+			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
+			field.setAccessible(true);
+			return field.getInt(null);
+		}
+
+		final java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
 			ClassLoader loader = getMainClassLoader();
 			String mainClassName = (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
-			return loader.loadClass(mainClassName);
+			Class shell = loader.loadClass(mainClassName);
+			String mainMethodName = (debug) ? "main" : "exec";
+			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
+			return main;
 		}
 
 		abstract void addScriptArguments(List<String> strings) throws IOException;
@@ -249,8 +259,7 @@ public class Main {
 		invocation.initializeSystemProperties();
 		Integer status = null;
 		try {
-			Class shell = invocation.getMainClass();
-			java.lang.reflect.Method main = shell.getMethod("exec", new Class[] { String[].class });
+			java.lang.reflect.Method main = invocation.getMainMethod();
 			invocation.debug("Rhino shell main = " + main);
 			List<String> arguments = new ArrayList();
 			arguments.add("-opt");
@@ -262,12 +271,16 @@ public class Main {
 				invocation.debug("Rhino shell argument = " + arguments.get(i));
 			}
 			Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
-			status = (Integer)main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
+			main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
+			status = new Integer(invocation.getRhinoShellExitStatus());
 			Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			status = new Integer(127);
 		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+			status = new Integer(127);
+		} catch (NoSuchFieldException e) {
 			e.printStackTrace();
 			status = new Integer(127);
 		} catch (IllegalAccessException e) {

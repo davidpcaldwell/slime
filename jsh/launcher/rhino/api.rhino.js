@@ -18,13 +18,6 @@ var console = function(message) {
 	Packages.java.lang.System.err.println(message);
 }
 
-var exit = function(code) {
-	Packages.java.lang.System.out.flush();
-	Packages.java.lang.System.err.flush();
-	//	TODO	we also try to exit from the launcher Java process, so this should be redesigned
-	Packages.java.lang.System.exit(code);
-}
-
 var slash = String(Packages.java.io.File.separator);
 var colon = String(Packages.java.io.File.pathSeparator);
 
