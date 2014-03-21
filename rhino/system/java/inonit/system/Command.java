@@ -224,7 +224,7 @@ public class Command {
 			this.err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
 			this.stdin = context.getStandardInput();
 			Logging.get().log(Process.class, Level.FINEST, "Stack trace", new Throwable("Starting input spooler"));
-			this.out = Spooler.start(this.stdin, delegate.getOutputStream(), true, "stdin from " + this.stdin + ": " + spoolName);
+			this.out = Spooler.start(this.stdin, inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(delegate.getOutputStream()), true, "stdin from " + this.stdin + ": " + spoolName);
 		}
 
 		int waitFor() throws InterruptedException {
