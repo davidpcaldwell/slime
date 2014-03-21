@@ -321,7 +321,7 @@ public class Command {
 			this.in = in;
 			this.out = out;
 			this.closeOnEnd = closeOnEnd;
-			this.flush = true;
+			this.flush = false;
 		}
 
 		IOException failure() {

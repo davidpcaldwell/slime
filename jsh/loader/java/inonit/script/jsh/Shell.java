@@ -277,8 +277,11 @@ public class Shell {
 				Object ignore = configuration.getEngine().execute(createProgram());
 				return 0;
 			} catch (Engine.Errors e) {
+				Logging.get().log(Shell.class, Level.SEVERE, "Engine.Errors thrown.", e);
 				Engine.Errors.ScriptError[] errors = e.getErrors();
+				Logging.get().log(Shell.class, Level.SEVERE, "Engine.Errors length: %d", errors.length);
 				for (int i=0; i<errors.length; i++) {
+					Logging.get().log(Shell.class, Level.SEVERE, "Engine.Errors errors[%d]: %s", i, errors[i].getThrowable());
 					Throwable t = errors[i].getThrowable();
 					if (t instanceof WrappedException) {
 						WrappedException wrapper = (WrappedException)t;
@@ -287,6 +290,7 @@ public class Shell {
 						}
 					}
 				}
+				Logging.get().log(Shell.class, Level.SEVERE, "Logging errors to %s.", configuration.getLog());
 				e.dump(configuration.getLog(), "[jsh] ");
 				return -1;
 			} finally {

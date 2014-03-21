@@ -19,6 +19,9 @@ var console = function(message) {
 }
 
 var exit = function(code) {
+	Packages.java.lang.System.out.flush();
+	Packages.java.lang.System.err.flush();
+	//	TODO	we also try to exit from the launcher Java process, so this should be redesigned
 	Packages.java.lang.System.exit(code);
 }
 

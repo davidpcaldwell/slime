@@ -222,12 +222,15 @@ public class Main {
 			new Shell.Configuration() {
 				private InputStream stdin = new Logging.InputStream(System.in);
 				private OutputStream stdout = new Logging.OutputStream(System.out, "stdout");
-				private OutputStream stderr = new Logging.OutputStream(System.err, "stderr");
+				private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
 
 				public Engine.Log getLog() {
 					return new Engine.Log() {
+						public String toString() { return "Engine.Log: System.err"; }
+						
 						public void println(String message) {
-							System.err.println(message);
+							Logging.get().log(Main.class, Level.FINER, "Logging: " + message + " to System.err ...");
+							((PrintStream)stderr).println(message);
 						}
 					};
 				}
@@ -299,6 +302,12 @@ public class Main {
 			invocation
 		);
 	}
+	
+	private static void exit(int status) {
+		System.out.flush();
+		System.err.flush();
+		System.exit(status);
+	}
 
 	public static void main(String[] args) throws Throwable {
 		if (!inonit.system.Logging.get().isSpecified()) {
@@ -310,11 +319,14 @@ public class Main {
 		main.args.addAll( Arrays.asList(args) );
 		try {
 			int status = main.run();
-			System.exit(status);
+			Logging.get().log(Main.class, Level.INFO, "Exiting normally with status %d.", status);
+			exit(status);
 		} catch (CheckedException e) {
+			Logging.get().log(Main.class, Level.INFO, "Exiting with checked exception.", e);
 			System.err.println(e.getMessage());
-			System.exit(1);
+			exit(1);
 		} catch (Throwable t) {
+			Logging.get().log(Main.class, Level.SEVERE, "Exiting with throwable.", t);
 			Throwable target = t;
 			System.err.println("Error executing " + Main.class.getName());
 			String argsString = "";
@@ -341,7 +353,7 @@ public class Main {
 				}
 				target = target.getCause();
 			}
-			System.exit(1);
+			exit(1);
 		}
 	}
 }

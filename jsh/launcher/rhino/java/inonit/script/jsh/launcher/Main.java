@@ -241,13 +241,16 @@ public class Main {
 			inonit.system.Logging.get().initialize(invocation.getJavaLoggingProperties());
 		}
 		Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(args));
+		Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 		System.setIn(new Logging.InputStream(System.in));
 		System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
 		System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
+		Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 		invocation.initializeSystemProperties();
+		Integer status = null;
 		try {
 			Class shell = invocation.getMainClass();
-			java.lang.reflect.Method main = shell.getMethod("main", new Class[] { String[].class });
+			java.lang.reflect.Method main = shell.getMethod("exec", new Class[] { String[].class });
 			invocation.debug("Rhino shell main = " + main);
 			List<String> arguments = new ArrayList();
 			arguments.add("-opt");
@@ -258,18 +261,27 @@ public class Main {
 			for (int i=0; i<arguments.size(); i++) {
 				invocation.debug("Rhino shell argument = " + arguments.get(i));
 			}
-			main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
+			Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
+			status = (Integer)main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
+			Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+			status = new Integer(127);
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
+			status = new Integer(127);
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
+			status = new Integer(127);
 		} catch (java.lang.reflect.InvocationTargetException e) {
 			e.printStackTrace();
+			status = new Integer(127);
 		} finally {
 			//	Ensure the VM exits even if the debugger is displayed
-			System.exit(0);
+			System.out.flush();
+			Logging.get().log(Main.class, Level.INFO, "Exit status: %d", status);
+			System.err.flush();
+			System.exit(status.intValue());
 		}
 	}
 

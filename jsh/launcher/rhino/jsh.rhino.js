@@ -326,7 +326,8 @@ settings.explicit = new function() {
 		"JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH",
 		"JSH_LIBRARY_MODULES",
 		"JSH_LIBRARY_NATIVE",
-		"JSH_TMPDIR"
+		"JSH_TMPDIR",
+		"JSH_JAVA_LOGGING_PROPERTIES"
 	].forEach( function(name) {
 		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
 	});
@@ -561,6 +562,7 @@ try {
 	}
 
 	if (settings.get("JSH_JAVA_LOGGING_PROPERTIES")) {
+		Packages.java.lang.System.err.println("has logging properties in launcher.");
 		command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGING_PROPERTIES").path);
 	}
 
