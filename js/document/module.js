@@ -57,17 +57,16 @@ var Parent = function(p) {
 			return search;
 		}
 	}
+	
+	this.search = function(search) {
+		search = asSearch(search);
+		var rv = [];
+		traverse(rv,this.children,search);
+		return rv;		
+	};
 
 	this.identify = function(search) {
 		search = asSearch(search);
-		if (typeof(search) == "function") {
-			search = {
-				filter: search,
-				descendants: function(n) {
-					return true;
-				}
-			};
-		}
 		var rv = [];
 		traverse(rv,this.children,search);
 		return choose(rv);
