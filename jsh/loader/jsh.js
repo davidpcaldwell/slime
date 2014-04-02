@@ -189,8 +189,9 @@ this.jsh = new function() {
 			}
 			
 			this.add = function(pathname) {
+				if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
 				if (!pathname.directory && !pathname.file) {
-					throw new Error("Classes not found: " + pathname);
+					return;
 				}
 				loader.classpath.add(pathname.java.adapt());				
 			};

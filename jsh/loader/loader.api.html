@@ -136,6 +136,13 @@ END LICENSE
 				<ul>
 					<li class="function">
 						<div class="name">add</div>
+						<!--	TODO	should accept a file or directory as well, and probably should ignore null	-->
+						<!--
+								TODO	write tests: need to be able to compile Java classes and add them to the classpath. They
+										probably must be jsh/test tests. Also we need to test whether the Packages variable still
+										behaves "incorrectly," i.e., caches failed lookups, preventing new classes from being found
+										once they've been sought.
+						-->
 						<span>Adds a directory or JAR file to the Java classpath of this script.</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
