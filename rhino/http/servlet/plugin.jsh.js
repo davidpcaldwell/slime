@@ -14,9 +14,6 @@ plugin({
 	isReady: function() {
 		return jsh.java && jsh.shell && jsh.file;
 	},
-	disabled: function() {
-		return "Environment variable CATALINA_HOME is not defined.";
-	},
 	load: function() {
 		if (!jsh.httpd) {
 			jsh.httpd = {};
