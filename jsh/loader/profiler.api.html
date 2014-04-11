@@ -166,6 +166,13 @@ END LICENSE
 					<code>output</code>: specifies the path in the filesystem to an HTML page that will allow browsing the data
 					collected by the profiler.
 				</li>
+				<li>
+					<!--	TODO	allow filtering of scripts?	-->
+					<!--	TODO	allow filtering other than via literal prefix?	-->
+					<code>exclude</code>: specifies a prefix describing Java classes to exclude. This path is used literally; if
+					a class name starts with the value given, its profiling data will not be collected and will be excluded from
+					the output.
+				</li>
 			</ul>
 		</div>
 	</div>
