@@ -34,8 +34,8 @@ END LICENSE
 							-OR-
 							<span class="type">RegExp</span>
 							(optional) Used to filter the results of listing this directory.
-							Nodes that the filter does not accept will not be returned (nor will their contents,
-							if they are directories; but see the special <code>CONTENTS</code> return value).
+							Nodes that the filter does not accept will not be returned (but if they are directories, their contents
+							may still be returned; see <code>descendants</code>).
 							<div class="function">
 								If this property is a <code>function</code>, it will be invoked for each node
 								found:
@@ -43,7 +43,7 @@ END LICENSE
 									<div class="label">Arguments</div>
 									<ol>
 										<li class="value">
-											<span class="type"><a href="#types.node">node</a></span>
+											<span class="type"><a href="api.html#types.node">node</a></span>
 											<span>A node found when listing this directory.</span>
 										</li>
 									</ol>
@@ -51,14 +51,7 @@ END LICENSE
 								<div class="returns">
 									<div class="label">Returns</div>
 									<span class="type">boolean</span>
-									-OR-
-									<span class="type"><code>CONTENTS</code> property of this function</span>
-									<span>
-										<code>true</code> to accept this node, <code>false</code> to exclude
-										it. The CONTENTS property indicates that the filter should exclude
-										a directory but evaluate its contents for inclusion.
-										<!--	TODO	define CONTENTS with respect to files	-->
-									</span>
+									<span><code>true</code> to include this node, <code>false</code> to exclude it.</span>
 								</div>
 							</div>
 							<div>
@@ -68,21 +61,35 @@ END LICENSE
 								not match will be excluded.
 							</div>
 						</li>
-						<li class="value">
-							<div class="name">recursive</div>
-							<span class="type">boolean</span>
+						<li class="function">
+							<div class="name">descendants</div>
 							<span>
-								Whether to recursively list directories underneath this directory; if this
-								directory contains directories, this method will return those directories, any
-								directories and files they contain, any directories and files those directories
-								contain, and so forth.
+								(optional; if absent, subdirectories will not be searched)
+								Specifies whether to search descendant directories when listing this directory.
 							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type"><a href="api.html#types.directory">directory</a></span>
+										<span>A directory.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">boolean</span>
+								<span>
+									<code>true</code> to indicate the contents of this directory should be processed;
+									<code>false</code> to indicate the directory should not be processed.
+								</span>
+							</div>
 						</li>
 						<li class="value">
 							<div class="name">type</div>
 							<span class="type">property of this function</span>
 							<span>
-								Specifies whether to return <a href="#types.node">node</a> objects from this
+								Specifies whether to return <a href="api.html#types.node">node</a> objects from this
 								method, or to return objects describing the directory contents more fully
 								(see below).
 							</span>
@@ -93,13 +100,13 @@ END LICENSE
 		</div>
 		<div class="returns">
 			<div class="label">Returns</div>
-			<span class="type">Array of specified type: <a href="#types.node">node</a> or entry.</span>
+			<span class="type">Array of specified type: <a href="api.html#types.node">node</a> or entry.</span>
 		</div>
 		<div class="label">has properties:</div>
 		<ul>
 			<li class="value">
 				<div class="name">NODE</div>
-				<span>The method should return objects of type <a href="#types.node">node</a>.</span>
+				<span>The method should return objects of type <a href="api.html#types.node">node</a>.</span>
 			</li>
 			<li class="value">
 				<div class="name">ENTRY</div>
@@ -113,7 +120,7 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">node</div>
-						<span class="type"><a href="#types.node">node</a></span>
+						<span class="type"><a href="api.html#types.node">node</a></span>
 					</li>
 				</ul>
 			</li>
@@ -136,17 +143,10 @@ END LICENSE
 							<a href="../../rhino/io/api.html#Resource">Resource</a>
 							with second argument to write having semantics of
 							the second argument to
-							<a href="#types.Pathname">Pathname</a>.write()
+							<a href="api.html#types.Pathname">Pathname</a>.write()
 						</span>
 					</li>
 				</ul>
-			</li>
-			<li class="value">
-				<div class="name">CONTENTS</div>
-				<span>
-					A value for the <code>filter</code> return value indicating that a directory should be
-					excluded from the results but its contents should be evaluated for inclusion.
-				</span>
 			</li>
 			<!--
 					TODO	add RESOURCE that returns an array of path/resource? easy descriptor, would
