@@ -207,8 +207,6 @@ $exports.jsh = function(p) {
 	})();
 
 	var environment = (function() {
-		var rv = (p.environment) ? p.environment : {};
-
 		var addProperties = function(from) {
 			for (var x in from) {
 				if (x != "JSH_LAUNCHER_DEBUG") {
@@ -221,8 +219,11 @@ $exports.jsh = function(p) {
 			}
 		}
 
+		var rv = {};
 		addProperties($exports.properties.object.jsh.launcher.environment);
 		addProperties($exports.environment);
+		addProperties((p.environment) ? p.environment : {});
+
 		return rv;
 	})();
 
@@ -234,6 +235,11 @@ $exports.jsh = function(p) {
 		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
 
 		var jargs = [];
+		if (p.properties) {
+			for (var x in p.properties) {
+				jargs.push("-D" + x + "=" + p.properties[x]);
+			}
+		}
 		jargs.push("-classpath");
 		jargs.push(LAUNCHER_CLASSPATH);
 		jargs.push("inonit.script.jsh.launcher.Main");
