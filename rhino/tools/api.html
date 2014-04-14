@@ -37,8 +37,25 @@ END LICENSE
 			<li class="function">
 				<div class="name">javac</div>
 				<span><strong>(experimental: API likely to evolve in future versions)</strong></span>
+				<div class="type">
+					<a class="type" name="types.javac.result">result</a>
+					<span>The result of a compilation.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">arguments</div>
+							<span class="type">Array of string</span>
+							<span>The set of arguments sent to the <code>javac</code> command.</span>
+						</li>
+						<li class="value">
+							<div class="name">status</div>
+							<span class="type">number</span>
+							<span>The exit status returned by <code>javac</code>.</span>
+						</li>
+					</ul>
+				</div>
 				<span>
-					(contingent: present only if the Java compiler is available because the execution environment is a JDK rather
+					(conditional: present only if the Java compiler is available because the execution environment is a JDK rather
 					than a JRE)
 					Executes the Java compiler. See the documentation for
 					<a href="http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/javac.html">UNIX</a> and
@@ -51,6 +68,14 @@ END LICENSE
 						<li class="object">
 							<div class="label">has properties:</div>
 							<ul>
+								<li class="value">
+									<div class="name">debug</div>
+									<span class="type">boolean</span>
+									<span>
+										If <code>true</code>, debugging information is emitted by the compiler using the
+										<code>-g</code> flag.
+									</span>
+								</li>
 								<li class="value">
 									<div class="name">destination</div>
 									<span class="type"><a href="../file/api.html#types.Pathname">Pathname</a></span>
@@ -115,21 +140,9 @@ END LICENSE
 									<div class="arguments">
 										<div class="label">Arguments</div>
 										<ol>
-											<li class="object">
-												<span>An argument describing the compilation and its result.</span>
-												<div class="label">has properties:</div>
-												<ul>
-													<li class="value">
-														<div class="name">arguments</div>
-														<span class="type">Array of string</span>
-														<span>The set of arguments sent to the <code>javac</code> command.</span>
-													</li>
-													<li class="value">
-														<div class="name">status</div>
-														<span class="type">number</span>
-														<span>The exit status returned by <code>javac</code>.</span>
-													</li>
-												</ul>
+											<li class="value">
+												<span class="type"><a href="#types.javac.result">result</a></span>
+												<span>The result of the compilation.</span>
 											</li>
 										</ol>
 									</div>
@@ -145,8 +158,13 @@ END LICENSE
 				</div>
 				<div class="returns">
 					<div class="label">Returns</div>
+					<span class="type"><a href="#types.javac.result">result</a></span>
+					-OR-
 					<span class="type">(any)</span>
-					<span>The value returned by the <code>evaluate</code> function.</span>
+					<span>
+						The value returned by the <code>evaluate</code> function if one is supplied; otherwise, the
+						<a href="#types.javac.result">result</a> of the compilation.
+					</span>
 				</div>
 				<script type="application/x.jsapi#tests">
 					var source = $module.getResourcePathname("test/java/Hello.java");
