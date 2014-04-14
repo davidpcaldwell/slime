@@ -286,8 +286,11 @@ public class Shell {
 					if (t instanceof WrappedException) {
 						WrappedException wrapper = (WrappedException)t;
 						if (wrapper.getWrappedException() instanceof ExitException) {
-							int status = ((ExitException)wrapper.getWrappedException()).getStatus();
+							ExitException exit = (ExitException)wrapper.getWrappedException();
+							int status = exit.getStatus();
 							Logging.get().log(Shell.class, Level.INFO, "Engine.Errors errors[%d] is ExitException with status %d", i, status);
+							Logging.get().log(Shell.class, Level.INFO, "Engine.Errors element stack trace", exit);
+							Logging.get().log(Shell.class, Level.INFO, "Script stack trace: %s", wrapper.getScriptStackTrace());
 							return status;
 						}
 					}
