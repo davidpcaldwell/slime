@@ -232,7 +232,7 @@ public class Main {
 				public Engine.Log getLog() {
 					return new Engine.Log() {
 						public String toString() { return "Engine.Log: System.err"; }
-						
+
 						public void println(String message) {
 							Logging.get().log(Main.class, Level.FINER, "Logging: " + message + " to System.err ...");
 							((PrintStream)stderr).println(message);
@@ -307,7 +307,7 @@ public class Main {
 			invocation
 		);
 	}
-	
+
 	private static void exit(int status) {
 		System.exit(status);
 	}

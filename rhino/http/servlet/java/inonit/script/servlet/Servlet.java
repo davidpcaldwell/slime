@@ -74,7 +74,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			@Override
 			public int getOptimizationLevel() {
 				return -1;
-			}			
+			}
 		});
 
 		Engine.Program program = new Engine.Program();

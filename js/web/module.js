@@ -24,7 +24,7 @@ $exports.Url = function(o) {
 			}
 		}, this);
 	}
-	
+
 	if (typeof(this.query) == "object" && typeof(this.query.length) == "number") {
 		this.query = (function(array) {
 			return array.map(function(item) {
@@ -32,18 +32,18 @@ $exports.Url = function(o) {
 			}).join("&");
 		})(this.query);
 	}
-	
+
 	this.resolve = function(reference) {
 		//	See http://tools.ietf.org/html/rfc3986#section-5.2
 		//	particularly 5.2.2 for this pseudocode
 		var R = parse(reference);
 		var T = {};
 		var Base = o;
-		
+
 		var defined = function(v) {
 			return typeof(v) != "undefined";
 		};
-		
+
 		var remove_dot_segments = function(s) {
 			var tokens = s.split("/");
 			var rv = [];
@@ -57,13 +57,13 @@ $exports.Url = function(o) {
 			}
 			return rv.join("/");
 		};
-		
+
 		var merge = function(base,relative) {
 			if (base == "") return "/" + relative;
 			var dir = base.substring(0,base.lastIndexOf("/")+1);
 			return dir + relative;
 		}
-		
+
 		if (defined(R.scheme)) {
 			T.scheme = R.scheme;
 			T.authority = R.authority;
@@ -98,7 +98,7 @@ $exports.Url = function(o) {
 		T.fragment = R.fragment;
 		return new $exports.Url(T);
 	}
-	
+
 	this.toString = function() {
 		var rv = "";
 		if (this.scheme) {

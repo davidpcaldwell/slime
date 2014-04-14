@@ -441,7 +441,7 @@ $exports.Loader = function(p) {
 		}
 		return rv;
 	};
-	
+
 	//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
 	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
 	//			.resource decoration?
@@ -476,9 +476,9 @@ $exports.Loader = function(p) {
 					});
 				}
 			};
-		}		
+		}
 	}
-	
+
 	if (p.resources) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it

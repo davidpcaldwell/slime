@@ -31,9 +31,9 @@ public abstract class Loader {
 			this.engine = engine;
 			this.loader = loader;
 		}
-		
+
 		public String getLoaderCode(String path) throws IOException {
-			return loader.getLoaderCode(path);			
+			return loader.getLoaderCode(path);
 		}
 
 		public Classpath getClasspath() {

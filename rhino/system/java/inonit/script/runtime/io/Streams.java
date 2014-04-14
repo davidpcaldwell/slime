@@ -221,7 +221,7 @@ public class Streams {
 				b.write(i);
 			}
 		}
-		
+
 		public static abstract class Flusher {
 			public abstract void initialize(OutputStream out);
 			public abstract void writing(OutputStream out, byte[] bytes);
@@ -230,7 +230,7 @@ public class Streams {
 			public abstract void flushed(OutputStream out);
 			public abstract void closing(OutputStream out);
 			public abstract void closed(OutputStream out);
-			
+
 			public static final Flusher ALWAYS = new Flusher() {
 				@Override public void initialize(OutputStream out) {
 				}
@@ -254,7 +254,7 @@ public class Streams {
 				@Override public void closed(OutputStream out) {
 				}
 			};
-			
+
 			public final OutputStream decorate(final OutputStream out) {
 				this.initialize(out);
 				return new OutputStream() {

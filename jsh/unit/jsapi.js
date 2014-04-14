@@ -191,7 +191,7 @@ $exports.tests = new function() {
 	this.add = function(module,unit) {
 		testGroups.push(moduleToItem(module,unit));
 	}
-	
+
 	var Scope = function(suite) {
 		var $newTemporaryDirectory = function() {
 			var path = Packages.java.lang.System.getProperty("java.io.tmpdir");

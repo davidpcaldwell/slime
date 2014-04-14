@@ -291,7 +291,7 @@ var Client = function(mode) {
 		if (p.params && !p.parameters) {
 			$api.deprecate(function() {
 				p.parameters = p.params;
-				delete p.params;				
+				delete p.params;
 			})();
 		}
 		var url = new Url(p.url);

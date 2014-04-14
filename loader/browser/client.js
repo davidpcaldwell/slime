@@ -68,7 +68,7 @@
 			var url = scripts[scripts.length-1].getAttribute("src");
 			return url;
 		};
-		
+
 		var getBasePath = function(pathname) {
 			var path = pathname.substring(1);
 			var tokens = path.split("/");
@@ -76,11 +76,11 @@
 				return tokens.slice(0,-1).join("/") + "/";
 			} else {
 				return "";
-			}			
+			}
 		};
-		
+
 		var base = window.location.protocol + "//" + window.location.host + "/" + getBasePath(window.location.pathname);
-		
+
 		var current = base + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
 
 		return new Bootstrap(current);
@@ -266,7 +266,7 @@
 			//	DRY:	Other scripts may want to use this (already have examples)
 			this.getCurrentScript = getCurrentScript;
 		};
-		
+
 		//	For use in scripts that are loaded directly by the browser rather than via this loader
 		this.$api = platform.$api;
 

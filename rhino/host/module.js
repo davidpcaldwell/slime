@@ -202,9 +202,9 @@ $exports.Array = new function() {
 		for (var i=0; i<p.array.length; i++) {
 			rv[i] = p.array[i];
 		}
-		return rv;		
+		return rv;
 	};
-	
+
 	this.adapt = function(_p) {
 		//	TODO	probably can be done with Array.prototype.slice()
 		var rv = [];

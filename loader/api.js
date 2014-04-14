@@ -128,7 +128,7 @@
 
 	$exports.deprecate = deprecate;
 	$exports.experimental = experimental;
-	
+
 	var UNDEFINED = {};
 
 	$exports.Function = function(p) {
@@ -139,9 +139,9 @@
 				return [p];
 			} else {
 				return [];
-			}		
+			}
 		};
-		
+
 		var runDecorators = function(declared,situation) {
 			var array = toArray(declared);
 			for (var i=0; i<array.length; i++) {
@@ -164,7 +164,7 @@
 				return this.returning;
 			}
 		};
-		
+
 		return function() {
 			var result = new function() {
 				this.resolve = resolve;
@@ -173,12 +173,12 @@
 			var situation = new (function() {
 				this.target = arguments[0];
 				this.arguments = arguments[1];
-				
+
 				this.setReturn = function(v) {
 					result.error = false;
 					result.returning = v;
 				};
-				
+
 				this.setThrow = function(v) {
 					result.error = true;
 					result.throwing = v;

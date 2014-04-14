@@ -151,16 +151,16 @@ this.jsh = new function() {
 				throw "Unreachable code: format.slime and format.base null in jsh loader's module()";
 			}
 		}
-		
+
 		this.classpath = new function() {
 			this.toString = function() {
 				return rhinoLoader.classpath.toString();
 			}
-			
+
 			this.add = function(_file) {
-				rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(_file));				
+				rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(_file));
 			};
-			
+
 			this.get = function(name) {
 				return rhinoLoader.classpath.getClass(name);
 			}
@@ -182,18 +182,18 @@ this.jsh = new function() {
 		}
 
 		this.script = loader.$api.deprecate(loader.file);
-		
+
 		this.java = new function() {
 			this.toString = function() {
 				return loader.classpath.toString();
 			}
-			
+
 			this.add = function(pathname) {
 				if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
 				if (!pathname.directory && !pathname.file) {
 					return;
 				}
-				loader.classpath.add(pathname.java.adapt());				
+				loader.classpath.add(pathname.java.adapt());
 			};
 		}
 

@@ -57,12 +57,12 @@ var Parent = function(p) {
 			return search;
 		}
 	}
-	
+
 	this.search = function(search) {
 		search = asSearch(search);
 		var rv = [];
 		traverse(rv,this.children,search);
-		return rv;		
+		return rv;
 	};
 
 	this.identify = function(search) {
@@ -365,7 +365,7 @@ var Doctype = function(p) {
 	//	TODO	implement notations
 	//	TODO	implement internal subset
 	if (p.name === null) throw new TypeError();
-	
+
 	this.doctype = {
 		name: p.name
 	};
@@ -375,9 +375,9 @@ var Doctype = function(p) {
 	["publicId","systemId"].forEach(function(property) {
 		if (typeof(p[property]) != "undefined" && p[property] !== null) {
 			this.doctype[property] = p[property];
-		}		
+		}
 	}, this);
-	
+
 	this.serialize = function() {
 		var quote = function(s) {
 			return "\"" + s + "\"";

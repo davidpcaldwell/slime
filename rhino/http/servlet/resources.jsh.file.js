@@ -31,7 +31,7 @@ $exports.addJshPluginTo = function(jsh) {
 						return item.prefix + "->" + item.pathname;
 					}).join(", ") + "]";
 				};
-				
+
 				this.get = function(path) {
 					for (var i=0; i<mapping.length; i++) {
 						var prefix = mapping[i].prefix;

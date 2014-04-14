@@ -45,7 +45,7 @@
 				$rhino.script(name,_in,scope,target);
 				_in.close();
 			};
-			
+
 			if (typeof(code) == "object" && typeof(code.name) != "undefined" && typeof(code._in) != "undefined") {
 				if (!code._in) {
 					//	TODO	decide semantics of this
@@ -202,7 +202,7 @@
 			this.toString = function() {
 				return String($rhino.getClasspath());
 			}
-			
+
 			this.add = function(_source) {
 				$rhino.getClasspath().append(_source);
 			}

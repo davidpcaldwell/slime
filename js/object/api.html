@@ -629,7 +629,7 @@ END LICENSE
 						<div class="name">evaluator</div>
 						<div>
 							Creates a function which invokes a series of operations, in order, and returns the first
-							non-<code>undefined</code> value returned by one of them. 
+							non-<code>undefined</code> value returned by one of them.
 						</div>
 						<div class="arguments">
 							<div class="label">Arguments</div>
@@ -649,7 +649,7 @@ END LICENSE
 									<li>
 										If it is a <a href="#types.cache">cache</a>, the <code>get</code> method of the cache is
 										invoked with an <a href="#types.Function.invocation">invocation</a> representing the
-										invocation of the function, and the return value of <code>get</code> is used. 
+										invocation of the function, and the return value of <code>get</code> is used.
 									</li>
 								</ul>
 								Once an operation produces a value other than <code>undefined</code>, that value will be used as the
@@ -661,7 +661,7 @@ END LICENSE
 										<a href="#types.Function.invocation">invocation</a> and the value.
 									</li>
 									<li>
-										Any caches <i>preceding</i> the operation that produced the value will have their 
+										Any caches <i>preceding</i> the operation that produced the value will have their
 										<code>set</code> methods invoked with the
 										<a href="#types.Function.invocation">invocation</a> and the value.
 									</li>
@@ -683,34 +683,34 @@ END LICENSE
 					one.calls = 0;
 					var two = new function() {
 						var values = {};
-					
+
 						this.get = function(p) {
 							return values[p.arguments[0]];
 						};
-						
+
 						this.set = function(p,v) {
 							values[p.arguments[0]] = v;
 						};
-						
+
 						this.test = {};
 						this.test.get = function(v) {
 							return values[v];
 						};
 					};
 					var evaluator = module.Function.evaluator(two,one);
-					
+
 					test(one.calls == 0);
 					test(typeof(two.test.get(2)) == "undefined");
-					
+
 					test(evaluator(2) == 4);
-					
+
 					test(one.calls == 1);
 					test(two.test.get(2) == 4);
-					
+
 					test(evaluator(2) == 4);
 					test(one.calls == 1);
 					test(two.test.get(2) == 4);
-					
+
 					test(evaluator(3) == 6);
 					test(one.calls == 2);
 					test(two.test.get(3) == 6);
@@ -876,7 +876,7 @@ END LICENSE
 			<li class="object" jsapi:id="Order">
 				<div class="name">Order</div>
 				<span>
-					An <i>Order</i> is a function that implements a specific interface, intended for sorting: it takes two 
+					An <i>Order</i> is a function that implements a specific interface, intended for sorting: it takes two
 					arguments and returns a value less than zero if the first argument belongs before the second argument, and a
 					value greater than zero if the second argument belongs before the first argument. This is commensurate with the
 					<code>Array.prototype.sort</code> method.

@@ -458,7 +458,7 @@ var Pathname = function(parameters) {
 
 					add(this);
 
-					return toReturn(rv);					
+					return toReturn(rv);
 				}).call(this);
 			} else if (typeof(mode.descendants) != "undefined") {
 				rv = [];

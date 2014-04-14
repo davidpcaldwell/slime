@@ -223,7 +223,7 @@ END LICENSE
 							test(one.path == "/path");
 							test(one.query == "q=query");
 							test(one.fragment == "section");
-							
+
 							(function() {
 								var url = module.Url.parse("scheme://server.com/path?q=query#section");
 								//	TODO	test optional port, since it is a number
@@ -234,7 +234,7 @@ END LICENSE
 								test(url.query == "q=query");
 								test(url.fragment == "section");
 							})();
-							
+
 							(function() {
 								var url = module.Url.parse("hello.html");
 								test(url.path == "hello.html");

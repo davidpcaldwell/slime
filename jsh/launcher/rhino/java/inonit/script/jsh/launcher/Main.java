@@ -124,7 +124,7 @@ public class Main {
 		abstract File getJshHome() throws java.io.IOException;
 
 		abstract String getRhinoClasspath() throws java.io.IOException;
-		
+
 		private ClassLoader mainClassLoader;
 
 		final ClassLoader getMainClassLoader() throws IOException {
