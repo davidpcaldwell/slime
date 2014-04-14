@@ -124,22 +124,27 @@ public class Main {
 		abstract File getJshHome() throws java.io.IOException;
 
 		abstract String getRhinoClasspath() throws java.io.IOException;
+		
+		private ClassLoader mainClassLoader;
 
 		final ClassLoader getMainClassLoader() throws IOException {
-			FileInvocation invocation = this;
-			String JSH_RHINO_CLASSPATH = invocation.getRhinoClasspath();
-			debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
-			List<String> pathElements = new ArrayList<String>();
-			pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
-			java.net.URL[] urls = new java.net.URL[pathElements.size()];
-			for (int i=0; i<pathElements.size(); i++) {
-				debug("Path element = " + pathElements.get(i));
-				try {
-					urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
-				} catch (java.net.MalformedURLException e) {
+			if (mainClassLoader == null) {
+				FileInvocation invocation = this;
+				String JSH_RHINO_CLASSPATH = invocation.getRhinoClasspath();
+				debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
+				List<String> pathElements = new ArrayList<String>();
+				pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
+				java.net.URL[] urls = new java.net.URL[pathElements.size()];
+				for (int i=0; i<pathElements.size(); i++) {
+					debug("Path element = " + pathElements.get(i));
+					try {
+						urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
+					} catch (java.net.MalformedURLException e) {
+					}
 				}
+				mainClassLoader = new java.net.URLClassLoader(urls);
 			}
-			return new java.net.URLClassLoader(urls);
+			return mainClassLoader;
 		}
 
 		abstract String getRhinoScript() throws java.io.IOException;
