@@ -180,13 +180,13 @@ END LICENSE
 			test( dir.list({ filter: /foobar/ }).length == 0 );
 
 			var descendants = {
-				recursive: function(dir) {
+				all: function(dir) {
 					return true;
 				}
 			}
-			test( dir.list({ descendants: descendants.recursive }).length == 7 );
-			test( dir.list({ filter: /c/, descendants: descendants.recursive }).length == 1 );
-			test( dir.list({ filter: /d/, descendants: descendants.recursive }).length == 1 );
+			test( dir.list({ descendants: descendants.all }).length == 7 );
+			test( dir.list({ filter: /c/, descendants: descendants.all }).length == 1 );
+			test( dir.list({ filter: /d/, descendants: descendants.all }).length == 1 );
 
 			var filter = function(node) {
 				var basename = node.pathname.basename;
@@ -198,18 +198,17 @@ END LICENSE
 				if (basename == "f") return true;
 				if (basename == "target") return false;
 			};
-			var descendants = function(dir) {
+			test(dir.list({ filter: filter, descendants: function(dir) {
 				if (dir.pathname.basename == "c") return true;
 				return filter(dir);
-			};
-			test(dir.list({ filter: filter, descendants: descendants }).length == 3);
+			} }).length == 3);
 
 			var e_entries = filee.list({ type: ENTRY });
 			test(e_entries.length == 1);
 			test(e_entries[0].node.pathname.basename == "f");
 			test(e_entries[0].path == "f");
 
-			var entries = dir.list({ type: ENTRY, recursive: true });
+			var entries = dir.list({ type: ENTRY, descendants: descendants.all });
 			var entryf = entries.filter( function(entry) {
 				return entry.path == ["e","f"].join(filesystem.$unit.getPathnameSeparator());
 			} );
@@ -221,7 +220,7 @@ END LICENSE
 			entryf = entryf[0];
 			test(entryf.node.pathname.basename == "f");
 
-			var resources = dir.list({ type: RESOURCE, recursive: true });
+			var resources = dir.list({ type: RESOURCE, descendants: descendants.all });
 			var resourcef = resources.filter( function(resource) {
 				return resource.path == "e/f";
 			} );
