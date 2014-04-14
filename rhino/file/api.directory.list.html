@@ -179,21 +179,30 @@ END LICENSE
 			test( dir.list({ filter: /ar/ }).length == 1 );
 			test( dir.list({ filter: /foobar/ }).length == 0 );
 
-			test( dir.list({ recursive: true }).length == 7 );
-			test( dir.list({ recursive: true, filter: /c/ }).length == 1 );
-			test( dir.list({ recursive: true, filter: /d/ }).length == 0 );
+			var descendants = {
+				recursive: function(dir) {
+					return true;
+				}
+			}
+			test( dir.list({ descendants: descendants.recursive }).length == 7 );
+			test( dir.list({ filter: /c/, descendants: descendants.recursive }).length == 1 );
+			test( dir.list({ filter: /d/, descendants: descendants.recursive }).length == 1 );
 
 			var filter = function(node) {
 				var basename = node.pathname.basename;
 				if (basename == "a") return true;
 				if (basename == "b") return true;
-				if (basename == "c") return dir.list.CONTENTS;
+				if (basename == "c") return false;
 				if (basename == "d") return true;
 				if (basename == "e") return false;
 				if (basename == "f") return true;
 				if (basename == "target") return false;
 			};
-			test(dir.list({ recursive: true, filter: filter }).length == 3);
+			var descendants = function(dir) {
+				if (dir.pathname.basename == "c") return true;
+				return filter(dir);
+			};
+			test(dir.list({ filter: filter, descendants: descendants }).length == 3);
 
 			var e_entries = filee.list({ type: ENTRY });
 			test(e_entries.length == 1);

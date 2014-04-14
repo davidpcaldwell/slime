@@ -433,41 +433,42 @@ var Pathname = function(parameters) {
 
 			var rv;
 			if (mode.recursive) {
-				rv = [];
-				var add = function(dir) {
-					var items = dir.list();
-					items.forEach( function(item) {
-						var include = filter(item);
-						if (include) {
-							if (!item.directory) {
-								rv.push(item);
-							} else {
-								var includeContents = (include === true) || (include && include.contents);
-								var includeDir = (include === true);
-								if (includeDir) {
+				return $api.deprecate(function() {
+					rv = [];
+					var add = function(dir) {
+						var items = dir.list();
+						items.forEach( function(item) {
+							var include = filter(item);
+							if (include) {
+								if (!item.directory) {
 									rv.push(item);
-								}
-								if (includeContents) {
-									add(item.pathname.directory);
+								} else {
+									var includeContents = (include === true) || (include && include.contents);
+									var includeDir = (include === true);
+									if (includeDir) {
+										rv.push(item);
+									}
+									if (includeContents) {
+										add(item.pathname.directory);
+									}
 								}
 							}
-						}
-					} );
-				}
+						} );
+					}
 
-				add(this);
+					add(this);
 
-				return toReturn(rv);
+					return toReturn(rv);					
+				}).call(this);
 			} else if (typeof(mode.descendants) != "undefined") {
 				rv = [];
-				var descendants = mode.descendants;
 				var add = function(dir) {
 					var items = dir.list();
 					items.forEach(function(item) {
 						 if (filter(item)) {
 							rv.push(item);
 						 }
-						 if (item.directory && descendants(item)) {
+						 if (item.directory && mode.descendants(item)) {
 							 add(item);
 						 }
 					})
