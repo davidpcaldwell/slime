@@ -347,9 +347,6 @@ $exports.doc = function(p) {
 		destination.getRelativePath(name).write($context.api.getFile(name).read(jsh.io.Streams.binary));
 	});
 
-	XML.ignoreWhitespace = false;
-	XML.prettyPrinting = false;
-
 	var index = new $context.jsdom.Rhino.Document({
 		stream: $context.jsapi.getFile("index.html").read(jsh.io.Streams.binary)
 	});
@@ -371,15 +368,6 @@ $exports.doc = function(p) {
 		filter: $context.jsdom.filter({ name: "tbody" }),
 		recursive: true
 	})[0].set([]);
-
-	//	TODO	find a way to deprecate this object, which is being used in eval() using hard-coded "absolute" paths in
-	//			jsapi:reference expressions
-	var doc = {};
-
-	modules.forEach( function(item) {
-		var xhtml = getApiHtml(item.location).read(XML);
-		doc[item.path] = xhtml;
-	});
 
 	var ApiHtml = function(p) {
 		//	TODO	disentangle all this recursion and 'this'-manipulation
