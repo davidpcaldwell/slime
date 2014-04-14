@@ -207,6 +207,8 @@ $exports.jsh = function(p) {
 	})();
 
 	var environment = (function() {
+		//	TODO	this code below is counter-intuitive and should be cleaned up and/or documented; order is reverse of what you'd
+		//			think (and what jsh.js.Object.set(...) for example would do).
 		var addProperties = function(from) {
 			for (var x in from) {
 				if (x != "JSH_LAUNCHER_DEBUG") {
@@ -220,9 +222,9 @@ $exports.jsh = function(p) {
 		}
 
 		var rv = {};
+		addProperties((p.environment) ? p.environment : {});
 		addProperties($exports.properties.object.jsh.launcher.environment);
 		addProperties($exports.environment);
-		addProperties((p.environment) ? p.environment : {});
 
 		return rv;
 	})();

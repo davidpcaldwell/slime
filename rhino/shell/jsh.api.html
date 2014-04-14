@@ -479,7 +479,8 @@ END LICENSE
 					});
 					buffer.close();
 					var output = buffer.readText().asString();
-					test(output == $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator"));
+					var expected = $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator");
+					test(output == expected);
 				</script>
 			</li>
 		</ul>
