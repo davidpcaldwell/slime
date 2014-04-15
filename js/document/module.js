@@ -259,7 +259,9 @@ var Element = function(p) {
 	this.serialize = function(m) {
 		if (!m) m = {};
 		if (!m.namespaces) m.namespaces = {};
-		var scope = {};
+		var scope = {
+			"http://www.w3.org/XML/1998/namespace": "xml"
+		};
 		var xmlns = "";
 		for (var x in m.namespaces) {
 			scope[x] = m.namespaces[x];
