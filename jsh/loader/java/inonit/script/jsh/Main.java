@@ -92,12 +92,13 @@ public class Main {
 				public String toString() {
 					return getClass().getName()
 						+ " jsh.library.scripts=" + System.getProperty("jsh.library.scripts")
+						+ " jsh.library.scripts.loader=" + System.getProperty("jsh.library.scripts.loader")
 						+ " jsh.library.scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
 					;
 				}
 
 				File getFile(String prefix, String name) {
-					String propertyName = "jsh.library.scripts." + prefix.replace('/', '.');
+					String propertyName = "jsh.library.scripts." + prefix;
 					if (System.getProperty(propertyName) != null) {
 						File dir = new File(System.getProperty(propertyName));
 						return new File(dir, name);

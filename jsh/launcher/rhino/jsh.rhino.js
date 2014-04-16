@@ -293,7 +293,6 @@ if (getProperty("jsh.launcher.home")) {
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
 		this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_HOME.getDirectory("script/loader");
-//		this.JSH_LIBRARY_SCRIPTS_RHINO = JSH_HOME.getDirectory("script/rhino");
 		this.JSH_LIBRARY_SCRIPTS_JSH = JSH_HOME.getDirectory("script/jsh");
 		this.JSH_LIBRARY_MODULES = JSH_HOME.getDirectory("modules");
 
@@ -329,11 +328,10 @@ settings.explicit = new function() {
 
 	var self = this;
 	[
-		"JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH",
+		"JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_JSH",
 		"JSH_LIBRARY_MODULES",
 		"JSH_LIBRARY_NATIVE",
-		"JSH_TMPDIR",
-		"JSH_JAVA_LOGGING_PROPERTIES"
+		"JSH_TMPDIR"
 	].forEach( function(name) {
 		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
 	});
@@ -348,7 +346,7 @@ settings.explicit = new function() {
 		this[name] = env[name];
 	}, this);
 
-	["JSH_JAVA_LOGGER"].forEach(function(name) {
+	["JSH_JAVA_LOGGING_PROPERTIES"].forEach(function(name) {
 		this[name] = (typeof(env[name]) != "undefined") ? new File(os(env[name])) : UNDEFINED;
 	}, this);
 
@@ -554,7 +552,7 @@ try {
 
 	[
 		"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
-		,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_RHINO","JSH_LIBRARY_SCRIPTS_JSH"
+		,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
 		,"JSH_LIBRARY_MODULES"
 		,"JSH_PLUGINS"
 		,"JSH_OS_ENV_UNIX"
@@ -568,7 +566,6 @@ try {
 	}
 
 	if (settings.get("JSH_JAVA_LOGGING_PROPERTIES")) {
-		Packages.java.lang.System.err.println("has logging properties in launcher.");
 		command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGING_PROPERTIES").path);
 	}
 
