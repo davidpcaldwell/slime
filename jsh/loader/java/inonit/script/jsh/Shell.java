@@ -25,7 +25,7 @@ import inonit.script.runtime.io.*;
 public class Shell {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	public static int execute(Installation installation, Configuration configuration, Invocation invocation) {
+	public static Integer execute(Installation installation, Configuration configuration, Invocation invocation) {
 		return Host.create(installation, configuration, invocation).execute();
 	}
 
@@ -272,10 +272,10 @@ public class Shell {
 			return program;
 		}
 
-		int execute() {
+		Integer execute() {
 			try {
 				Object ignore = configuration.getEngine().execute(createProgram());
-				return 0;
+				return null;
 			} catch (Engine.Errors e) {
 				Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
 				Engine.Errors.ScriptError[] errors = e.getErrors();

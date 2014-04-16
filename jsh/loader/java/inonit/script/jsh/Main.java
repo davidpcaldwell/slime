@@ -37,7 +37,7 @@ public class Main {
 		}
 	}
 
-	private int run() throws CheckedException {
+	private Integer run() throws CheckedException {
 		Shell.Installation installation = null;
 		Shell.Invocation invocation = null;
 		if (System.getProperty("jsh.launcher.packaged") != null) {
@@ -322,9 +322,13 @@ public class Main {
 		main.args = new ArrayList();
 		main.args.addAll( Arrays.asList(args) );
 		try {
-			int status = main.run();
+			Integer status = main.run();
 			Logging.get().log(Main.class, Level.INFO, "Exiting normally with status %d.", status);
-			exit(status);
+			if (status != null) {
+				exit(status.intValue());
+			} else {
+				//	JVM will exit normally when non-daemon threads complete.
+			}
 		} catch (CheckedException e) {
 			Logging.get().log(Main.class, Level.INFO, "Exiting with checked exception.", e);
 			System.err.println(e.getMessage());

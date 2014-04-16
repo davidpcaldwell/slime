@@ -35,3 +35,4 @@ fork(function() {
 fork(function() {
 	writeTo(jsh.shell.stderr,"errerrerr",100);
 });
+jsh.shell.echo("Reached end of script.");
