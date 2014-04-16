@@ -438,7 +438,9 @@ public class Shell {
 						return arguments;
 					}
 				};
-				return Shell.execute(installation, configuration, invocation);
+				Integer rv = Shell.execute(installation, configuration, invocation);
+				if (rv == null) return 0;
+				return rv.intValue();
 			}
 
 //			//
