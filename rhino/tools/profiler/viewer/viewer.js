@@ -121,7 +121,11 @@ var render = function(profiles,settings) {
 		var map = {};
 
 		var addToHotspots = function(node) {
-			var key = nodeName(node);
+			var key = (function() {
+				if (!node.code.self) return nodeName(node);
+				if (node.code.self) return nodeName({ code: node.code.self });
+//				return nodeName({ code: node.self.code.self })
+			})();
 			if (!map[key]) {
 				map[key] = {
 					count: 0,
@@ -129,8 +133,7 @@ var render = function(profiles,settings) {
 				};
 			}
 			if (node.self) {
-				map[key].count += node.self.statistics.count;
-				map[key].elapsed += node.self.statistics.elapsed;
+				//	Do nothing; self is also included in children
 			} else {
 				map[key].count += node.statistics.count;
 				map[key].elapsed += node.statistics.elapsed;

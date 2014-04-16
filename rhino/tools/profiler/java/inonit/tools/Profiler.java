@@ -104,6 +104,14 @@ public class Profiler {
 		void stop() {
 			stop(stack.peek());
 		}
+		
+		void finish() {
+			while(stack.peek() != null) {
+				stack.peek().stop();
+				stack.pop();
+			}
+			root.finish();
+		}
 
 		public Node getRoot() {
 			return root;
@@ -115,22 +123,28 @@ public class Profiler {
 		//	TODO	unused instance variable
 		private Code code;
 
-		protected Statistics statistics = new Statistics();
+		protected Statistics statistics;
 		private HashMap<Code,Node> children = new HashMap<Code,Node>();
 
 		Node(Timing parent, Code code) {
 			this.parent = parent;
 			this.code = code;
+			this.statistics = new CountingStatistics();
 		}
 
 		Node(Timing parent) {
 			this.parent = parent;
+			this.statistics = new TimingStatistics();
+		}
+		
+		Node(Timing parent, Statistics statistics) {
+			this.parent = parent;
+			this.statistics = statistics;
 		}
 
 		static class Self extends Node {
 			Self(Timing parent, int time) {
-				super(parent);
-				this.statistics.elapsed = time;
+				super(parent, new SelfStatistics(time));
 			}
 		}
 
@@ -149,6 +163,10 @@ public class Profiler {
 
 		void stop() {
 			statistics.stop();
+		}
+		
+		void finish() {
+			statistics.finish(children.values());
 		}
 
 		public Object getCode() {
@@ -224,8 +242,16 @@ public class Profiler {
 			return signature;
 		}
 	}
+	
+	public static abstract class Statistics {
+		abstract void start();
+		abstract void stop();
+		abstract void finish(Collection<Node> children);
+		public abstract int getCount();
+		public abstract long getElapsed();
+	}
 
-	public static class Statistics {
+	public static class CountingStatistics extends Statistics {
 		private int count;
 		private long elapsed;
 		private long start;
@@ -238,11 +264,63 @@ public class Profiler {
 		void stop() {
 			elapsed += System.currentTimeMillis() - start;
 		}
+		
+		void finish(Collection<Node> nodes) {
+		}
 
 		public int getCount() {
 			return count;
 		}
 
+		public long getElapsed() {
+			return elapsed;
+		}
+	}
+	
+	public static class TimingStatistics extends Statistics {
+		private long elapsed;
+		
+		void start() {
+		}
+		
+		void stop() {
+		}
+		
+		void finish(Collection<Node> children) {
+			for (Node node : children) {
+				elapsed += node.getStatistics().getElapsed();
+			}
+		}
+		
+		public int getCount() {
+			return 1;
+		}
+		
+		public long getElapsed() {
+			return elapsed;
+		}
+	}
+	
+	public static class SelfStatistics extends Statistics {
+		private long elapsed;
+		
+		SelfStatistics(long elapsed) {
+			this.elapsed = elapsed;
+		}
+		
+		void start() {
+		}
+		
+		void stop() {
+		}
+		
+		void finish(Collection<Node> children) {
+		}
+		
+		public int getCount() {
+			return 0;
+		}
+		
 		public long getElapsed() {
 			return elapsed;
 		}
@@ -377,21 +455,21 @@ public class Profiler {
 			private void dump(java.io.PrintWriter writer, String indent, Timing parent, Node node) {
 				Statistics statistics = node.getStatistics();
 				Code code = node.code;
-				writer.println(indent + "elapsed=" + statistics.elapsed + " calls=" + statistics.count + " " + getCaption(code, node.getChildren()));
+				writer.println(indent + "elapsed=" + statistics.getElapsed() + " calls=" + statistics.getCount() + " " + getCaption(code, node.getChildren()));
 				ArrayList<Node> list = new ArrayList<Node>(Arrays.asList(node.getChildren()));
-				if (node.getChildren().length > 0 && statistics.elapsed > 0) {
+				if (node.getChildren().length > 0 && statistics.getElapsed() > 0) {
 					int sum = 0;
 					for (Node n : list) {
-						sum += n.statistics.elapsed;
+						sum += n.statistics.getElapsed();
 					}
-					int self = (int)statistics.elapsed - sum;
+					int self = (int)statistics.getElapsed() - sum;
 					if (self > 0) {
 						list.add(new Node.Self(parent,self));
 					}
 				}
 				Collections.sort(list, new Comparator<Node>() {
 					public int compare(Node o1, Node o2) {
-						return (int)(o2.statistics.elapsed - o1.statistics.elapsed);
+						return (int)(o2.statistics.getElapsed() - o1.statistics.getElapsed());
 					}
 				});
 				for (Node child : list) {
@@ -431,6 +509,10 @@ public class Profiler {
 		inst.addTransformer(new Transformer(configuration));
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
+				for (Timing timing : javaagent.profiles.values()) {
+					timing.finish();
+				}
+				
 				ArrayList<Profile> profiles = new ArrayList<Profile>();
 				for (final Map.Entry<Thread,Timing> entry : javaagent.profiles.entrySet()) {
 					profiles.add(new Profile() {
