@@ -346,18 +346,33 @@ var Element = function(p) {
 		if (!rv.content) {
 			if (m.empty) {
 				var format = m.empty(this);
+				
+				var deprecatedForm = function(string) {
+					return $api.deprecate(function() {
+						return string;
+					})();
+				}
+				
 				if (!format || (format && format.empty)) {
-					return start + "/>";
+					return deprecatedForm(start + "/>");
 				} else if (format && format.xhtml) {
-					return start + " />";
+					return deprecatedForm(start + " />");
+				} else if (typeof(format.selfclose) != "undefined") {
+					if (typeof(format.selfclose) == "object" && format.selfclose.xhtml) {
+						return start + " />";
+					} else if (format.selfclose === true) {
+						return start + "/>";
+					} else {
+						return start + ">" + "</" + rv.name + ">";
+					}
 				}
 				//	If object that is not empty and not xhtml, fall through to start-end model
 			} else {
 				return start + "/>";
 			}
+		} else {
+			return start + ">" + rv.content + "</" + rv.name + ">";
 		}
-		//	TODO	allow empty element model
-		return start + ">" + rv.content + "</" + rv.name + ">";
 	};
 };
 
@@ -380,11 +395,28 @@ var Doctype = function(p) {
 		}
 	}, this);
 
-	this.serialize = function() {
+	this.serialize = function(m) {
 		var quote = function(s) {
 			return "\"" + s + "\"";
 		};
 		return "<!DOCTYPE " + this.doctype.name + " " + quote(this.doctype.publicId) + " " + quote(this.doctype.systemId) + ">";
+	};
+};
+
+var emptySerializers = new function() {
+	//	See HTML4 "Index of Elements"
+	var html4empty = ["area","base","basefont","br","col","frame","hr","img","input","isindex","link","meta","param"];
+	//	See HTML5 section 8.1.2
+	var html5void = ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "menuitem", "meta", "param", "source", "track", "wbr"];
+	this.xhtml = function(element) {
+		var empty = html4empty.indexOf(element.element.type.name) != -1 && html5void.indexOf(element.element.type.name) != -1;
+		if (empty) {
+			return { selfclose: { xhtml: true } };
+		} else if (element.element.type.namespace == "http://www.w3.org/1999/xhtml") {
+			return { selfclose: false };
+		} else {
+			return { selfclose: { xhtml: true } };
+		}
 	};
 };
 
@@ -407,10 +439,20 @@ var Document = function(p) {
 			});
 		}
 	};
-
+	
 	//	TODO	decide whether to emit XML prologue
 	this.serialize = function(m) {
-		return this.children.map(function(child) { return child.serialize(m); }).join("");
+		if (!m) m = {};
+		var parameters = {};
+		for (var x in m) {
+			parameters[x] = m[x];
+		}
+		if (!parameters.empty) {
+			if (this.document.getElement().element.type.namespace == "http://www.w3.org/1999/xhtml") {
+				parameters.empty = emptySerializers.xhtml;
+			}
+		}
+		return this.children.map(function(child) { return child.serialize(parameters); }).join("");
 	}
 };
 

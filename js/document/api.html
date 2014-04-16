@@ -57,66 +57,20 @@ END LICENSE
 			<ul>
 				<li class="function">
 					<div class="name">serialize</div>
-					<span>Converts a node to a string.</span>
+					<span>
+						Converts a node to a string. The current implementation outputs ordinary XML unless the document is detected
+						to be XHTML; if it is XHTML, the implementation adds some special XHTML handling; it does not use
+						self-closing tags for some empty elements and adds whitespace in self-closing tags per the XHTML 1.0
+						compatibility guidelines.
+					</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="object">
 								<span>
-									An object that specifies various parameters about how to serialize a node. Some of these
-									parameters are internal and undocumented.
+									An object that specifies various parameters about how to serialize a node. The
+									parameters are currently internal and undocumented.
 								</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="function">
-										<div class="name">empty</div>
-										<span>
-											(optional)
-											A function specifying how to serialize empty elements.
-										</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="value">
-													<span class="type"><a href="#types.element">element</a></span>
-													<span>The empty element.</span>
-												</li>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">object</span>
-											<span>
-												An object specifying how to render the element.
-											</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="value">
-													<div class="name">empty</div>
-													<span class="type">boolean</span>
-													<span>
-														If <code>true</code>, the element is rendered with an empty element tag,
-														like <code>&lt;x/></code>.
-													</span>
-												</li>
-												<li class="value">
-													<div class="name">xhtml</div>
-													<span class="type">boolean</span>
-													<span>
-														If <code>true</code>, the element is rendered with an empty element tag
-														containing a space,
-														like <code>&lt;x /></code>.
-													</span>
-												</li>
-											</ul>
-											<span>
-												If neither <code>empty</code> nor <code>xhtml</code> is true, or if
-												<code>undefined</code> is returned, the element is rendered with a start and end
-												tag, like <code>&lt;x>&lt;/x></code>.
-											</span>
-										</div>
-									</li>
-								</ul>
 							</li>
 						</ol>
 					</div>
@@ -124,6 +78,51 @@ END LICENSE
 						<div class="label">Returns</div>
 						<span class="type">string</span>
 					</div>
+					<script type="application/x.jsapi#tests"><![CDATA[
+						var buildTestDocument = function(p) {
+							var document = new module.Document();
+							
+							var element = function(tag) {
+								if (!p || !p.namespace) {
+									return new module.Element({
+										type: {
+											name: tag
+										}
+									});
+								} else {
+									return new module.Element({
+										type: {
+											namespace: p.namespace,
+											name: tag
+										}
+									});
+								}
+							}
+							
+							var html = element("html");
+							document.children.push(html);
+							var head = element("head");
+							var link = element("link");
+							html.children.push(head);
+							head.children.push(link);
+							var body = element("body");
+							if (p && p.namespace == "http://www.w3.org/1999/xhtml") {
+								body.children.push(new module.Element({
+									type: {
+										namespace: "http://www.inonit.com/test",
+										name: "nstest"
+									}
+								}));
+							}
+							html.children.push(body);
+							return document;
+						};
+
+						var xml = buildTestDocument();
+						test(xml.serialize() == "<html><head><link/></head><body/></html>");
+						var xhtml = buildTestDocument({ namespace: "http://www.w3.org/1999/xhtml" });
+						test(xhtml.serialize() == "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><link /></head><body><nstest xmlns=\"http://www.inonit.com/test\" /></body></html>");
+					]]></script>
 				</li>
 			</ul>
 		</div>
