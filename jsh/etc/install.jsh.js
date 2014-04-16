@@ -19,6 +19,7 @@ var parameters = jsh.script.getopts({
 		replace: false,
 		//	below three arguments all are auto-detected later in the code
 		//	TODO	review whether this should be able to be specified on the command line and how it works if it is
+		native: false,
 		src: jsh.file.Pathname,
 		//	TODO	-unix and -cygwin cannot be turned off currently; if unspecified and autodetected, they will be added anyway
 		unix: false,
@@ -32,9 +33,10 @@ debugger;
 var zip = (jsh.script.loader.resource) ? jsh.script.loader.resource("build.zip") : null;
 
 if (!parameters.options.to && zip) {
-	jsh.shell.echo("Usage: " + jsh.script.file.pathname.basename + " -to <destination> [-replace]");
+	jsh.shell.echo("Usage: " + jsh.script.file.pathname.basename + " -to <destination> [-replace] [-native]");
 	jsh.shell.echo("If <destination> does not exist, it will be created, recursively if necessary.");
 	jsh.shell.echo("If <destination> does exist, -replace will overwrite it; otherwise, the installation will abort.");
+	jsh.shell.echo("-native will attempt to create a native launcher linked to the Java executing this script at <destination>/jsh");
 	//	TODO	what if it exists and is an ordinary file?
 	//	TODO	if it is a symlink to a directory with -replace, the symlink *target* will be removed ... and then what will happen?
 	//	TODO	if it is a symlink to a non-existent directory, what will happen?
@@ -144,6 +146,7 @@ if (!parameters.options.src) {
 }
 var src = parameters.options.src.directory;
 
+//	Build bash launcher
 if (parameters.options.unix) {
 	var bash = which("bash");
 	if (bash) {
@@ -152,11 +155,6 @@ if (parameters.options.unix) {
 		var path = bash.parent.getRelativePath("bash").toString();
 		var rewritten = ["#!" + path].concat(lines).join("\n");
 		install.getRelativePath("jsh.bash").write(rewritten, { append: false });
-	//	copyFile(new File(BASE,"jsh/launcher/rhino/jsh.bash"), new File(JSH_HOME,"jsh.bash"));
-	//	var path = String(new File(JSH_HOME,"jsh.bash").getCanonicalPath());
-	//	if (platform.cygwin) {
-	//		path = platform.cygwin.cygpath.unix(path);
-	//	}
 		var chmod = which("chmod");
 		jsh.shell.shell(
 			chmod,
@@ -170,6 +168,7 @@ if (parameters.options.unix) {
 	}
 }
 
+//	Build Cygwin paths helper
 if (parameters.options.cygwin) {
 	var gplusplus = which("g++");
 	if (gplusplus) {
@@ -188,143 +187,147 @@ if (parameters.options.cygwin) {
 	}
 }
 
-if (parameters.options.cygwin) {
-	//	TODO	use LoadLibrary call to locate jvm.dll
-	//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
-	var bash = which("bash");
-	if (bash) {
-		var env = jsh.js.Object.set({}, jsh.shell.environment, {
-			//	We assume we are running in a JDK, so the java.home is [jdk]/jre, so we look at parent
-			//	TODO	improve this check
-			JAVA_HOME: jsh.shell.java.home.parent.pathname.toString(),
-			LIB_TMP: jsh.shell.TMPDIR.pathname.toString(),
-			TO: install.pathname.toString()
-		});
-		jsh.shell.echo("Building Cygwin native launcher with environment " + jsh.js.toLiteral(env));
-		jsh.shell.shell(
-			bash,
-			[
-				src.getRelativePath("jsh/launcher/rhino/native/win32/cygwin.bash")
-			],
-			{
-				environment: env
-			}
-		);
-	} else {
-		jsh.shell.echo("bash not found on Cygwin; not building native launcher.");
-	}
-} else if (parameters.options.unix) {
-	var gcc = which("gcc");
-	if (!gcc) {
-		jsh.shell.echo("Cannot find gcc in PATH; not building native launcher.");
-	}
-	var unix = (function() {
-		var jdk = jsh.shell.java.home.parent;
-
-		var jni = function(include,rpath) {
-			var vmpath = (function() {
-				var rv;
-				//	Prefer client VM to server VM
-				["client", "server"].forEach(function(vm) {
-					if (!rv) {
-						if (jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm)) {
-							rv = jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm);
-						}
-						//	On JDK 7+ on Mac OS X the architecture-specific subdirectories do not appear to be present
-						if (jdk.getSubdirectory("jre/lib/" + vm)) {
-							rv = jdk.getSubdirectory("jre/lib/" + vm);
-						}
-					}
-				});
-				return rv;
-			})();
-
-			if (!vmpath) {
-				throw new Error("Did not find VM under " + jdk);
-			}
-
-			return {
-				include: [
-					jdk.getRelativePath("include"),
-					jdk.getRelativePath("include/" + include)
+//	Build native launcher
+if (parameters.options.native) {
+	if (parameters.options.cygwin) {
+		//	TODO	use LoadLibrary call to locate jvm.dll
+		//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
+		var bash = which("bash");
+		if (bash) {
+			var env = jsh.js.Object.set({}, jsh.shell.environment, {
+				//	We assume we are running in a JDK, so the java.home is [jdk]/jre, so we look at parent
+				//	TODO	improve this check
+				JAVA_HOME: jsh.shell.java.home.parent.pathname.toString(),
+				LIB_TMP: jsh.shell.TMPDIR.pathname.toString(),
+				TO: install.pathname.toString()
+			});
+			jsh.shell.echo("Building Cygwin native launcher with environment " + jsh.js.toLiteral(env));
+			jsh.shell.shell(
+				bash,
+				[
+					src.getRelativePath("jsh/launcher/rhino/native/win32/cygwin.bash")
 				],
-				library: {
-					name: "jvm",
-					path: vmpath
-				},
-				rpath: rpath
-			}
+				{
+					environment: env
+				}
+			);
+		} else {
+			jsh.shell.echo("bash not found on Cygwin; not building native launcher.");
 		}
+	} else if (parameters.options.unix) {
+		var gcc = which("gcc");
+		if (!gcc) {
+			jsh.shell.echo("Cannot find gcc in PATH; not building native launcher.");
+		}
+		var unix = (function() {
+			var jdk = jsh.shell.java.home.parent;
 
-		var rpath = function(path) {
-			return ["-Wl,-rpath," + path.toString()];
-		};
+			var jni = function(include,rpath) {
+				var vmpath = (function() {
+					var rv;
+					//	Prefer client VM to server VM
+					["client", "server"].forEach(function(vm) {
+						if (!rv) {
+							if (jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm)) {
+								rv = jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm);
+							}
+							//	On JDK 7+ on Mac OS X the architecture-specific subdirectories do not appear to be present
+							if (jdk.getSubdirectory("jre/lib/" + vm)) {
+								rv = jdk.getSubdirectory("jre/lib/" + vm);
+							}
+						}
+					});
+					return rv;
+				})();
 
-		if (jsh.shell.os.name == "FreeBSD") {
-			//	The below also works on FreeBSD 9.0 with gcc, but the above seems more portable
-//			return jni("freebsd", function(path) {
-//				return ["-rpath", path.toString()];
-//			});
-			return jni("freebsd", rpath);
-		} else if (jsh.shell.os.name == "Linux") {
-			return jni("linux", rpath);
-		} else if (jsh.shell.os.name == "Mac OS X") {
-			if (jdk.getSubdirectory("include")) {
-				return jni("darwin", rpath);
-			} else {
+				if (!vmpath) {
+					throw new Error("Did not find VM under " + jdk);
+				}
+
 				return {
 					include: [
-						"/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
+						jdk.getRelativePath("include"),
+						jdk.getRelativePath("include/" + include)
 					],
 					library: {
-						command: ["-framework", "JavaVM"]
-					}
+						name: "jvm",
+						path: vmpath
+					},
+					rpath: rpath
 				}
 			}
-		} else {
-			jsh.shell.echo("Unsupported Unix-like OS: " + jsh.shell.os.name + "; not building native launcher.");
-		}
-	})();
-	if (gcc && unix) {
-		//	Assume we are running in JRE
-		//	Mac OS X:
-		//	gcc -o core/jsh -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers
-		//		core/src/jsh/launcher/rhino/native/jsh.c
-		//		-framework JavaVM
-		var args = ["-o", "jsh"];
-		unix.include.forEach(function(directory) {
-			args.push("-I" + directory);
-		});
-		args.push("src/jsh/launcher/rhino/native/jsh.c");
-		if (unix.library.path && unix.library.name) {
-			args.push("-L" + unix.library.path);
-			args.push("-l" + unix.library.name);
-		} else if (unix.library.command) {
-			args.push.apply(args, unix.library.command);
-		}
-		if (unix.rpath) {
-			args.push.apply(args, unix.rpath(unix.library.path));
-		}
-		jsh.shell.echo("Invoking gcc " + args.join(" ") + " ...");
-		jsh.shell.shell(
-			gcc,
-			args,
-			{
-				workingDirectory: install,
-				onExit: function(result) {
-					if (result.status == 0) {
-						jsh.shell.echo("Built native launcher to " + install.getRelativePath("jsh"));
-					} else {
-						throw new Error("Failed to build native launcher.");
+
+			var rpath = function(path) {
+				return ["-Wl,-rpath," + path.toString()];
+			};
+
+			if (jsh.shell.os.name == "FreeBSD") {
+				//	The below also works on FreeBSD 9.0 with gcc, but the above seems more portable
+	//			return jni("freebsd", function(path) {
+	//				return ["-rpath", path.toString()];
+	//			});
+				return jni("freebsd", rpath);
+			} else if (jsh.shell.os.name == "Linux") {
+				return jni("linux", rpath);
+			} else if (jsh.shell.os.name == "Mac OS X") {
+				if (jdk.getSubdirectory("include")) {
+					return jni("darwin", rpath);
+				} else {
+					return {
+						include: [
+							"/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
+						],
+						library: {
+							command: ["-framework", "JavaVM"]
+						}
 					}
 				}
+			} else {
+				jsh.shell.echo("Unsupported Unix-like OS: " + jsh.shell.os.name + "; not building native launcher.");
 			}
-		);
+		})();
+		if (gcc && unix) {
+			//	Assume we are running in JRE
+			//	Mac OS X:
+			//	gcc -o core/jsh -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers
+			//		core/src/jsh/launcher/rhino/native/jsh.c
+			//		-framework JavaVM
+			var args = ["-o", "jsh"];
+			unix.include.forEach(function(directory) {
+				args.push("-I" + directory);
+			});
+			args.push("src/jsh/launcher/rhino/native/jsh.c");
+			if (unix.library.path && unix.library.name) {
+				args.push("-L" + unix.library.path);
+				args.push("-l" + unix.library.name);
+			} else if (unix.library.command) {
+				args.push.apply(args, unix.library.command);
+			}
+			if (unix.rpath) {
+				args.push.apply(args, unix.rpath(unix.library.path));
+			}
+			jsh.shell.echo("Invoking gcc " + args.join(" ") + " ...");
+			jsh.shell.shell(
+				gcc,
+				args,
+				{
+					workingDirectory: install,
+					onExit: function(result) {
+						if (result.status == 0) {
+							jsh.shell.echo("Built native launcher to " + install.getRelativePath("jsh"));
+						} else {
+							throw new Error("Failed to build native launcher.");
+						}
+					}
+				}
+			);
+		}
 	}
 }
 
 //	TODO	run test cases given in jsh.c
 
+//	Make tools executable
 if (which("chmod")) {
 	var makeExecutable = function(node) {
 		if (!arguments.callee.chmod) {
@@ -348,6 +351,5 @@ if (which("chmod")) {
 		}
 	};
 
-	//	TODO	this may not be necessary now; these scripts are only being run by the launcher
-	makeExecutable(install.getSubdirectory("tools"));
+	if (false) makeExecutable(install.getSubdirectory("tools"));
 }
