@@ -1400,13 +1400,14 @@ END LICENSE
 						this.name = "Softlink deletion.";
 						this.initialize = function() {
 							filelink.remove();
-							dirlink.remove();
 						}
 						this.execute = function(scope) {
 							var dir = filesystem.java.adapt(hostdir).directory;
 							scope.test( linkdir.getRelativePath("to_target").file == null );
 							scope.test( dir.getRelativePath("target").file != null );
-							scope.test( dirlink.getRelativePath("to_c").directory == null );
+							scope.test( linkdir.getRelativePath("to_c").directory != null );
+							linkdir.getRelativePath("to_c").directory.remove();
+							scope.test( linkdir.getRelativePath("to_c").directory == null );
 							scope.test( dir.getRelativePath("c").directory != null );
 						}
 					} );
