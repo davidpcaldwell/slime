@@ -1269,106 +1269,6 @@ END LICENSE
 								var filef = filee.getFile("f");
 							}
 						} );
-
-						if (UNIX) {
-							scope.scenario( new function() {
-								this.name = "Soft links";
-
-								this.initialize = function() {
-									var linkdir = new Packages.java.io.File( tmpdir, "softlinks" );
-									linkdir.mkdirs();
-
-									var shell = function(command,args) {
-										Packages.inonit.system.OperatingSystem.get().execute( command, args ).evaluate();
-									}
-
-									var linkpathname = filesystem.java.adapt(linkdir);
-									var hostpathname = filesystem.java.adapt(hostdir);
-									var LN_PATH;
-									if (module.filesystems.cygwin) {
-										LN_PATH="c:/cygwin/bin/ln";
-									} else {
-										LN_PATH="/bin/ln";
-									}
-									shell(LN_PATH, [ "-s",
-										hostpathname.directory.getRelativePath("target").toString(),
-										linkpathname.directory.getRelativePath("to_target").toString()
-									] );
-									shell(LN_PATH, [ "-s",
-										hostpathname.directory.getRelativePath("c").toString(),
-										linkpathname.directory.getRelativePath("to_c").toString()
-									] );
-									shell(LN_PATH, [ "-s",
-										linkpathname.directory.getRelativePath("to_c").toString(),
-										linkpathname.directory.getRelativePath("to_to_c").toString()
-									] );
-								}
-
-								this.execute = function(scope) {
-									var linkdir = dir.getRelativePath("../softlinks").directory;
-									var filelink = linkdir.getRelativePath("to_target").file;
-									var dirlink = linkdir.getRelativePath("to_c").directory;
-
-									scope.test( linkdir != null );
-									scope.test( linkdir.directory );
-
-									scope.test( linkdir.getRelativePath("to_target").file != null );
-
-									scope.test( function() {
-											var reader = filelink.read(context.$Context.api.io.Streams.binary);
-											var instream = reader.java.adapt();
-											var len = 0;
-											while( instream.read() != -1 ) {
-												len++;
-											}
-											instream.close();
-											return len == 1112;
-										},
-										"file is of correct size."
-									);
-									scope.test( function() {
-											return filelink.parent.toString() == linkdir.toString();
-										},
-										"Softlink parent works correctly."
-									);
-									scope.test( !filelink.directory );
-
-									scope.test(linkdir.getRelativePath("to_c").directory != null);
-
-									var before = linkdir.getRelativePath("to_c").directory.list().length;
-
-									scope.scenario( new function() {
-										this.name = "Changes to underlying directory reflected in linked directory";
-										this.initialize = function() {
-											var File = Packages.java.io.File;
-											createFile( new File(hostdir, "c/c1") );
-											createFile( new File(hostdir, "c/c2") );
-										}
-										this.execute = function() {
-											scope.test(linkdir.getRelativePath("to_c").directory.list().length == before+2);
-										}
-									} );
-
-									var linkToLink = linkdir.getRelativePath("to_to_c").directory;
-									scope.test( linkToLink != null );
-
-									scope.scenario( new function() {
-										this.name = "Softlink deletion.";
-										this.initialize = function() {
-											filelink.remove();
-											dirlink.remove();
-										}
-										this.execute = function(scope) {
-											scope.test( linkdir.getRelativePath("to_target").file == null );
-											scope.test( dir.getRelativePath("target").file != null );
-											scope.test( dirlink.getRelativePath("to_c").directory == null );
-											scope.test( dir.getRelativePath("c").directory != null );
-										}
-									} );
-								}
-							} );
-
-						}
 					}
 				}
 				scenario(_scenario);
@@ -1403,6 +1303,116 @@ END LICENSE
 			test( lines.length == 3 );
 			test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
 		</script>
+		<div jsapi:id="softlink">
+			<script type="application/x.jsapi#initialize">
+				if (jsh.shell.PATH.getCommand("ln")) {
+					var tmpdir = scope.$java.io.newTemporaryDirectory();
+					var hostdir = new Packages.java.io.File(tmpdir, "hostdir");
+					hostdir.mkdirs();
+					var linkdir = new Packages.java.io.File( tmpdir, "linkdir" );
+					linkdir.mkdirs();
+					var linkpathname = filesystem.java.adapt(linkdir);
+					var hostpathname = filesystem.java.adapt(hostdir);
+					var target = createFile(hostpathname.directory,"target",1112);
+					var c = createDirectory(hostpathname.directory,"c");
+
+					var shell = function(command,args) {
+						Packages.inonit.system.OperatingSystem.get().execute( command, args ).evaluate();
+					}
+
+					var LN_PATH;
+					if (module.filesystems.cygwin) {
+						LN_PATH="c:/cygwin/bin/ln";
+					} else {
+						LN_PATH="/bin/ln";
+					}
+					shell(LN_PATH, [ "-s",
+						hostpathname.directory.getRelativePath("target").toString(),
+						linkpathname.directory.getRelativePath("to_target").toString()
+					] );
+					shell(LN_PATH, [ "-s",
+						hostpathname.directory.getRelativePath("c").toString(),
+						linkpathname.directory.getRelativePath("to_c").toString()
+					] );
+					shell(LN_PATH, [ "-s",
+						linkpathname.directory.getRelativePath("to_c").toString(),
+						linkpathname.directory.getRelativePath("to_to_c").toString()
+					] );
+					scope._linkdir = linkdir;
+					scope.hostdir = hostdir;
+				}
+			</script>
+			<script type="application/x.jsapi#tests" jsapi:id="Softlinks">
+				if (jsh.shell.PATH.getCommand("ln")) {
+					var linkdir = filesystem.java.adapt(_linkdir).directory;
+					var filelink = linkdir.getRelativePath("to_target").file;
+					var dirlink = linkdir.getRelativePath("to_c").directory;
+
+					test( linkdir != null );
+					test( linkdir.directory );
+
+					test( linkdir.getRelativePath("to_target").file != null );
+
+					test( function() {
+							var reader = filelink.read(context.$Context.api.io.Streams.binary);
+							var instream = reader.java.adapt();
+							var len = 0;
+							while( instream.read() != -1 ) {
+								len++;
+							}
+							instream.close();
+							return len == 1112;
+						},
+						"file is of correct size."
+					);
+					test( function() {
+							return filelink.parent.toString() == linkdir.toString();
+						},
+						"Softlink parent works correctly."
+					);
+					test( !filelink.directory );
+
+					test(linkdir.getRelativePath("to_c").directory != null);
+
+					var before = linkdir.getRelativePath("to_c").directory.list().length;
+					
+					var _createFile = function(_dir,path) {
+						var dir = filesystem.java.adapt(_dir).directory;
+						createFile(dir,path);
+					}
+					
+					scenario( new function() {
+						this.name = "Changes to underlying directory reflected in linked directory";
+						this.initialize = function() {
+							var File = Packages.java.io.File;
+							_createFile( hostdir, "c/c1" );
+							_createFile( hostdir, "c/c2" );
+						}
+						this.execute = function(scope) {
+							scope.test(linkdir.getRelativePath("to_c").directory.list().length == before+2);
+						}
+					} );
+
+					var linkToLink = linkdir.getRelativePath("to_to_c").directory;
+					test( linkToLink != null );
+
+					scenario( new function() {
+						this.name = "Softlink deletion.";
+						this.initialize = function() {
+							filelink.remove();
+							dirlink.remove();
+						}
+						this.execute = function(scope) {
+							var dir = filesystem.java.adapt(hostdir).directory;
+							scope.test( linkdir.getRelativePath("to_target").file == null );
+							scope.test( dir.getRelativePath("target").file != null );
+							scope.test( dirlink.getRelativePath("to_c").directory == null );
+							scope.test( dir.getRelativePath("c").directory != null );
+						}
+					} );
+				}	
+			</script>
+		</div>
 	</div>
 </body>
 </html>
