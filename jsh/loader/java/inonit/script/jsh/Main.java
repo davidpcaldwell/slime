@@ -23,6 +23,8 @@ public class Main {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
 	private List<String> args;
+	
+	private Shell.Configuration configuration;
 
 	private Main() {
 	}
@@ -218,95 +220,116 @@ public class Main {
 				};
 			}
 		}
-		return Shell.execute(
-			installation,
-			new Shell.Configuration() {
-				private InputStream stdin = new Logging.InputStream(System.in);
-				//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
-				//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
-				//	ultimately buffering the stdout to the console or other ultimate destination.
-				private OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
-				//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
-				//	device and bytes will never need to be immediately available
-				private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
+		
+		this.configuration = new Shell.Configuration() {
+			private InputStream stdin = new Logging.InputStream(System.in);
+			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
+			//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
+			//	ultimately buffering the stdout to the console or other ultimate destination.
+			private OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
+			//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
+			//	device and bytes will never need to be immediately available
+			private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
 
-				public Engine.Log getLog() {
-					return new Engine.Log() {
-						public String toString() { return "Engine.Log: System.err"; }
+			public Engine.Log getLog() {
+				return new Engine.Log() {
+					public String toString() { return "Engine.Log: System.err"; }
 
-						public void println(String message) {
-							Logging.get().log(Main.class, Level.FINER, "Logging: " + message + " to System.err ...");
-							((PrintStream)stderr).println(message);
-						}
-					};
-				}
+					public void println(String message) {
+						Logging.get().log(Main.class, Level.FINER, "Logging: " + message + " to System.err ...");
+						((PrintStream)stderr).println(message);
+					}
+				};
+			}
+			
+			private Engine.Debugger debugger;
 
-				public Engine.Debugger getDebugger() {
+			public Engine.Debugger getDebugger() {
+				if (debugger == null) {
 					String id = System.getProperty("jsh.script.debugger");
 					if (id == null) return null;
 					if (id.equals("rhino")) {
-						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
+						Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+							@Override
+							public void uncaughtException(Thread t, Throwable e) {
+								if (t.getName().startsWith("AWT")) {
+									//	do nothing
+									Logging.get().log(Main.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
+								} else {
+									System.err.print("Exception in thread \"" + t.getName() + "\"");
+									e.printStackTrace();
+								}
+							}
+						});
+						debugger = Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
 							public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
 								return Gui.RHINO_UI_FACTORY;
 							}
 						});
 					} else if (id.equals("profiler")) {
-						return new Engine.Profiler();
+						debugger = new Engine.Profiler();
 					} else if (id.startsWith("profiler:")) {
-						return new Engine.Profiler();
+						debugger = new Engine.Profiler();
 					} else {
 						//	TODO	emit some kind of error?
 					}
+				}
+				return debugger;
+			}
+
+			public int getOptimizationLevel() {
+				int optimization = -1;
+				if (System.getProperty("jsh.optimization") != null) {
+					//	TODO	validate this value
+					optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
+				}
+				return optimization;
+			}
+
+			public ClassLoader getClassLoader() {
+				return ClassLoader.getSystemClassLoader();
+			}
+
+			public Properties getSystemProperties() {
+				return System.getProperties();
+			}
+
+			public OperatingSystem.Environment getEnvironment() {
+				return OperatingSystem.Environment.SYSTEM;
+			}
+
+			public Stdio getStdio() {
+				return new Stdio() {
+					public InputStream getStandardInput() {
+						return stdin;
+					}
+
+					public OutputStream getStandardOutput() {
+						return stdout;
+					}
+
+					public OutputStream getStandardError() {
+						return stderr;
+					}
+				};
+			}
+
+			@Override public Code.Source getPackagedCode() {
+				if (System.getProperty("jsh.launcher.packaged") != null) {
+					return Code.Source.system("$packaged/");
+				} else {
 					return null;
 				}
+			}
+		};
 
-				public int getOptimizationLevel() {
-					int optimization = -1;
-					if (System.getProperty("jsh.optimization") != null) {
-						//	TODO	validate this value
-						optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
-					}
-					return optimization;
-				}
-
-				public ClassLoader getClassLoader() {
-					return ClassLoader.getSystemClassLoader();
-				}
-
-				public Properties getSystemProperties() {
-					return System.getProperties();
-				}
-
-				public OperatingSystem.Environment getEnvironment() {
-					return OperatingSystem.Environment.SYSTEM;
-				}
-
-				public Stdio getStdio() {
-					return new Stdio() {
-						public InputStream getStandardInput() {
-							return stdin;
-						}
-
-						public OutputStream getStandardOutput() {
-							return stdout;
-						}
-
-						public OutputStream getStandardError() {
-							return stderr;
-						}
-					};
-				}
-
-				@Override public Code.Source getPackagedCode() {
-					if (System.getProperty("jsh.launcher.packaged") != null) {
-						return Code.Source.system("$packaged/");
-					} else {
-						return null;
-					}
-				}
-			},
+		Integer rv = Shell.execute(
+			installation,
+			this.configuration,
 			invocation
 		);
+		
+		return rv;
 	}
 
 	private static void exit(int status) {
@@ -327,6 +350,7 @@ public class Main {
 			if (status != null) {
 				exit(status.intValue());
 			} else {
+				main.configuration.getDebugger().destroy();
 				//	JVM will exit normally when non-daemon threads complete.
 			}
 		} catch (CheckedException e) {

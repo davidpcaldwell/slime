@@ -43,6 +43,7 @@ public class Engine {
 
 		public abstract boolean isBreakOnExceptions();
 		public abstract void setBreakOnExceptions(boolean breakOnExceptions);
+		public abstract void destroy();
 	}
 
 	private static class NoDebugger extends Debugger {
@@ -64,6 +65,9 @@ public class Engine {
 		}
 
 		public void setBreakOnExceptions(boolean breakOnExceptions) {
+		}
+		
+		public void destroy() {
 		}
 	}
 
@@ -278,6 +282,9 @@ public class Engine {
 
 		public void setBreakOnExceptions(boolean breakOnExceptions) {
 		}
+		
+		public void destroy() {
+		}
 	}
 
 	public static class RhinoDebugger extends Debugger {
@@ -285,6 +292,8 @@ public class Engine {
 			public abstract void setExitAction(Runnable action);
 			public abstract void setVisible(boolean visible);
 			public abstract void pack();
+			
+			abstract void destroy();
 
 			public static abstract class Factory {
 				public abstract Ui create(org.mozilla.javascript.tools.debugger.Dim dim, String title);
@@ -432,6 +441,14 @@ public class Engine {
 			public Scriptable getScope() {
 				return scope;
 			}
+		}
+		
+		public void destroy() {
+			if (this.dim == null) {
+				throw new NullPointerException("dim is null");
+			}
+			dim.dispose();
+			gui.destroy();
 		}
 	}
 

@@ -40,6 +40,10 @@ public class Gui {
 		public void setVisible(boolean visible) {
 			this.delegate.setVisible(visible);
 		}
+		
+		public void destroy() {
+			this.delegate.dispose();
+		}
 	}
 
 	public static final Engine.RhinoDebugger.Ui.Factory RHINO_UI_FACTORY = new Engine.RhinoDebugger.Ui.Factory() {
