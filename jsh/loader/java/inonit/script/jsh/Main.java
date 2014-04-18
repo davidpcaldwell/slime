@@ -242,39 +242,35 @@ public class Main {
 				};
 			}
 			
-			private Engine.Debugger debugger;
-
 			public Engine.Debugger getDebugger() {
-				if (debugger == null) {
-					String id = System.getProperty("jsh.script.debugger");
-					if (id == null) return null;
-					if (id.equals("rhino")) {
-						Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-							@Override
-							public void uncaughtException(Thread t, Throwable e) {
-								if (t.getName().startsWith("AWT")) {
-									//	do nothing
-									Logging.get().log(Main.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
-								} else {
-									System.err.print("Exception in thread \"" + t.getName() + "\"");
-									e.printStackTrace();
-								}
+				String id = System.getProperty("jsh.script.debugger");
+				if (id == null) return null;
+				if (id.equals("rhino")) {
+					Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+						@Override
+						public void uncaughtException(Thread t, Throwable e) {
+							if (t.getName().startsWith("AWT")) {
+								//	do nothing
+								Logging.get().log(Main.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
+							} else {
+								System.err.print("Exception in thread \"" + t.getName() + "\"");
+								e.printStackTrace();
 							}
-						});
-						debugger = Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
-							public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
-								return Gui.RHINO_UI_FACTORY;
-							}
-						});
-					} else if (id.equals("profiler")) {
-						debugger = new Engine.Profiler();
-					} else if (id.startsWith("profiler:")) {
-						debugger = new Engine.Profiler();
-					} else {
-						//	TODO	emit some kind of error?
-					}
+						}
+					});
+					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
+						public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
+							return Gui.RHINO_UI_FACTORY;
+						}
+					});
+				} else if (id.equals("profiler")) {
+					return new Engine.Profiler();
+				} else if (id.startsWith("profiler:")) {
+					return new Engine.Profiler();
+				} else {
+					//	TODO	emit some kind of error?
+					return null;
 				}
-				return debugger;
 			}
 
 			public int getOptimizationLevel() {
@@ -350,7 +346,7 @@ public class Main {
 			if (status != null) {
 				exit(status.intValue());
 			} else {
-				main.configuration.getDebugger().destroy();
+				main.configuration.getEngine().getDebugger().destroy();
 				//	JVM will exit normally when non-daemon threads complete.
 			}
 		} catch (CheckedException e) {
