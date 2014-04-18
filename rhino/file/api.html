@@ -1338,6 +1338,10 @@ END LICENSE
 						linkpathname.directory.getRelativePath("to_c").toString(),
 						linkpathname.directory.getRelativePath("to_to_c").toString()
 					] );
+					shell(LN_PATH, [ "-s", 
+						hostpathname.directory.getRelativePath("does_not_exist").toString(),
+						linkpathname.directory.getRelativePath("to_nowhere").toString()
+					] );
 					scope._linkdir = linkdir;
 					scope.hostdir = hostdir;
 				}
@@ -1411,7 +1415,18 @@ END LICENSE
 							scope.test( dir.getRelativePath("c").directory != null );
 						}
 					} );
-				}	
+					
+					scenario( new function() {
+						this.name = "Softlink to nowhere.";
+						
+						this.execute = function(scope) {
+							scope.test( linkdir.getRelativePath("to_nowhere").file == null );
+							scope.test( linkdir.getRelativePath("to_nowhere").directory == null );
+							var list = linkdir.list();
+							//	both elements of this array are null, leading to issue #40
+						}
+					})
+				}
 			</script>
 		</div>
 	</div>
