@@ -40,7 +40,7 @@ public class Gui {
 		public void setVisible(boolean visible) {
 			this.delegate.setVisible(visible);
 		}
-		
+
 		public void destroy() {
 			this.delegate.dispose();
 		}

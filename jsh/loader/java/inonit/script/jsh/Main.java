@@ -23,7 +23,7 @@ public class Main {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
 	private List<String> args;
-	
+
 	private Shell.Configuration configuration;
 
 	private Main() {
@@ -220,7 +220,7 @@ public class Main {
 				};
 			}
 		}
-		
+
 		this.configuration = new Shell.Configuration() {
 			private InputStream stdin = new Logging.InputStream(System.in);
 			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
@@ -241,7 +241,7 @@ public class Main {
 					}
 				};
 			}
-			
+
 			public Engine.Debugger getDebugger() {
 				String id = System.getProperty("jsh.script.debugger");
 				if (id == null) return null;
@@ -324,7 +324,7 @@ public class Main {
 			this.configuration,
 			invocation
 		);
-		
+
 		return rv;
 	}
 

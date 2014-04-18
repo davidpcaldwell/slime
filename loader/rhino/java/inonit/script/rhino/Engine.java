@@ -66,7 +66,7 @@ public class Engine {
 
 		public void setBreakOnExceptions(boolean breakOnExceptions) {
 		}
-		
+
 		public void destroy() {
 		}
 	}
@@ -282,7 +282,7 @@ public class Engine {
 
 		public void setBreakOnExceptions(boolean breakOnExceptions) {
 		}
-		
+
 		public void destroy() {
 		}
 	}
@@ -292,7 +292,7 @@ public class Engine {
 			public abstract void setExitAction(Runnable action);
 			public abstract void setVisible(boolean visible);
 			public abstract void pack();
-			
+
 			abstract void destroy();
 
 			public static abstract class Factory {
@@ -442,7 +442,7 @@ public class Engine {
 				return scope;
 			}
 		}
-		
+
 		public void destroy() {
 			if (this.dim == null) {
 				throw new NullPointerException("dim is null");
