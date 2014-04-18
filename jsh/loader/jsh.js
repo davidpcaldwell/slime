@@ -349,12 +349,15 @@ this.jsh = new function() {
 			}
 			if (list.length > 0 && !marked) {
 				//	Some plugin was never ready
-				debugger;
 				stop = true;
 				//	TODO	think harder about what to do
 				list.forEach(function(item) {
 					var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
-					jsh.shell.echo("Plugin from " + item._code.getScripts() + " is disabled: " + message, { stream: jsh.io.Streams.stderr });
+					Packages.inonit.system.Logging.get().log(
+						Packages.inonit.script.jsh.Main,
+						Packages.java.util.logging.Level.WARNING,
+						"Plugin from " + item._code.getScripts() + " is disabled: " + message
+					);
 				});
 			}
 		}
