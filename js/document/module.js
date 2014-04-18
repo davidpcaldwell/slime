@@ -346,13 +346,13 @@ var Element = function(p) {
 		if (!rv.content) {
 			if (m.empty) {
 				var format = m.empty(this);
-				
+
 				var deprecatedForm = function(string) {
 					return $api.deprecate(function() {
 						return string;
 					})();
 				}
-				
+
 				if (!format || (format && format.empty)) {
 					return deprecatedForm(start + "/>");
 				} else if (format && format.xhtml) {
@@ -439,7 +439,7 @@ var Document = function(p) {
 			});
 		}
 	};
-	
+
 	//	TODO	decide whether to emit XML prologue
 	this.serialize = function(m) {
 		if (!m) m = {};

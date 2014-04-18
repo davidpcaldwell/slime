@@ -104,7 +104,7 @@ public class Profiler {
 		void stop() {
 			stop(stack.peek());
 		}
-		
+
 		void finish() {
 			while(stack.peek() != null) {
 				stack.peek().stop();
@@ -136,7 +136,7 @@ public class Profiler {
 			this.parent = parent;
 			this.statistics = new TimingStatistics();
 		}
-		
+
 		Node(Timing parent, Statistics statistics) {
 			this.parent = parent;
 			this.statistics = statistics;
@@ -164,7 +164,7 @@ public class Profiler {
 		void stop() {
 			statistics.stop();
 		}
-		
+
 		void finish() {
 			statistics.finish(children.values());
 		}
@@ -242,7 +242,7 @@ public class Profiler {
 			return signature;
 		}
 	}
-	
+
 	public static abstract class Statistics {
 		abstract void start();
 		abstract void stop();
@@ -264,7 +264,7 @@ public class Profiler {
 		void stop() {
 			elapsed += System.currentTimeMillis() - start;
 		}
-		
+
 		void finish(Collection<Node> nodes) {
 		}
 
@@ -276,51 +276,51 @@ public class Profiler {
 			return elapsed;
 		}
 	}
-	
+
 	public static class TimingStatistics extends Statistics {
 		private long elapsed;
-		
+
 		void start() {
 		}
-		
+
 		void stop() {
 		}
-		
+
 		void finish(Collection<Node> children) {
 			for (Node node : children) {
 				elapsed += node.getStatistics().getElapsed();
 			}
 		}
-		
+
 		public int getCount() {
 			return 1;
 		}
-		
+
 		public long getElapsed() {
 			return elapsed;
 		}
 	}
-	
+
 	public static class SelfStatistics extends Statistics {
 		private long elapsed;
-		
+
 		SelfStatistics(long elapsed) {
 			this.elapsed = elapsed;
 		}
-		
+
 		void start() {
 		}
-		
+
 		void stop() {
 		}
-		
+
 		void finish(Collection<Node> children) {
 		}
-		
+
 		public int getCount() {
 			return 0;
 		}
-		
+
 		public long getElapsed() {
 			return elapsed;
 		}
@@ -512,7 +512,7 @@ public class Profiler {
 				for (Timing timing : javaagent.profiles.values()) {
 					timing.finish();
 				}
-				
+
 				ArrayList<Profile> profiles = new ArrayList<Profile>();
 				for (final Map.Entry<Thread,Timing> entry : javaagent.profiles.entrySet()) {
 					profiles.add(new Profile() {

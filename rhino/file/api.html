@@ -1338,7 +1338,7 @@ END LICENSE
 						linkpathname.directory.getRelativePath("to_c").toString(),
 						linkpathname.directory.getRelativePath("to_to_c").toString()
 					] );
-					shell(LN_PATH, [ "-s", 
+					shell(LN_PATH, [ "-s",
 						hostpathname.directory.getRelativePath("does_not_exist").toString(),
 						linkpathname.directory.getRelativePath("to_nowhere").toString()
 					] );
@@ -1379,12 +1379,12 @@ END LICENSE
 					test(linkdir.getRelativePath("to_c").directory != null);
 
 					var before = linkdir.getRelativePath("to_c").directory.list().length;
-					
+
 					var _createFile = function(_dir,path) {
 						var dir = filesystem.java.adapt(_dir).directory;
 						createFile(dir,path);
 					}
-					
+
 					scenario( new function() {
 						this.name = "Changes to underlying directory reflected in linked directory";
 						this.initialize = function() {
@@ -1415,10 +1415,10 @@ END LICENSE
 							scope.test( dir.getRelativePath("c").directory != null );
 						}
 					} );
-					
+
 					scenario( new function() {
 						this.name = "Softlink to nowhere.";
-						
+
 						this.execute = function(scope) {
 							scope.test( linkdir.getRelativePath("to_nowhere").file == null );
 							scope.test( linkdir.getRelativePath("to_nowhere").directory == null );

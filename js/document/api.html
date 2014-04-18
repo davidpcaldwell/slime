@@ -81,7 +81,7 @@ END LICENSE
 					<script type="application/x.jsapi#tests"><![CDATA[
 						var buildTestDocument = function(p) {
 							var document = new module.Document();
-							
+
 							var element = function(tag) {
 								if (!p || !p.namespace) {
 									return new module.Element({
@@ -98,7 +98,7 @@ END LICENSE
 									});
 								}
 							}
-							
+
 							var html = element("html");
 							document.children.push(html);
 							var head = element("head");
