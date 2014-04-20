@@ -365,8 +365,10 @@ var Element = function(p) {
 					} else {
 						return start + ">" + "</" + rv.name + ">";
 					}
+				} else {
+					//	If object that is not empty and not xhtml, fall through to start-end model
+					return start + ">" + rv.content + "</" + rv.name + ">";
 				}
-				//	If object that is not empty and not xhtml, fall through to start-end model
 			} else {
 				return start + "/>";
 			}
