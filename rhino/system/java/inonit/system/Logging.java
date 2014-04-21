@@ -85,13 +85,15 @@ public class Logging {
 		}
 
 		private java.io.InputStream in;
+		private boolean wasSystemIn = false;
 
 		public InputStream(java.io.InputStream in) {
 			this.in = in;
+			this.wasSystemIn = (this.in == System.in);
 		}
 
 		@Override public String toString() {
-			if (in == System.in) {
+			if (wasSystemIn) {
 				return super.toString() + " delegate=System.in";
 			} else {
 				return super.toString() + " delegate=" + in;
@@ -155,7 +157,9 @@ public class Logging {
 
 		@Override
 		public void close() throws IOException {
+			log(Level.FINEST, "Closing %s with delegate %s", this, this.in);
 			in.close();
+			log(Level.FINEST, "Closed %s with delegate %s", this, this.in);
 		}
 
 		@Override

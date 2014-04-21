@@ -220,6 +220,9 @@ public class Command {
 		Process(java.lang.Process delegate, Context context, Configuration configuration) {
 			this.delegate = delegate;
 			String spoolName = configuration.getCommand();
+			for (String argument : configuration.getArguments()) {
+				spoolName += " " + argument;
+			}
 			this.in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, "stdout: " + spoolName);
 			this.err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
 			this.stdin = context.getStandardInput();
@@ -229,8 +232,24 @@ public class Command {
 
 		int waitFor() throws InterruptedException {
 			int rv = delegate.waitFor();
+			//	If we were passing our own System.in to a subprocess directly, it does not make sense to close it just because the
+			//	subprocess ended. On the other hand, if we are sending another input stream, we should close it, both to save
+			//	resources and because there may be a non-daemon thread reading it.
+			if (this.stdin != System.in) {
+				try {
+					Logging.get().log(Process.class, Level.FINEST, "Closing input stream being sent to subprocess: %s", this.stdin);
+					this.stdin.close();
+					Logging.get().log(Process.class, Level.FINEST, "Closed input stream being sent to subprocess: %s", this.stdin);
+				} catch (IOException e) {
+					Logging.get().log(Process.class, Level.FINEST, "Error closing input stream being sent to subprocess: %s %s", this.stdin, e);
+					throw new RuntimeException(e);
+				}
+			}
+			Logging.get().log(Process.class, Level.FINEST, "Joining output threads ...");
 			this.in.join();
+			Logging.get().log(Process.class, Level.FINEST, "Exhausted output stream");
 			this.err.join();
+			Logging.get().log(Process.class, Level.FINEST, "Exhausted error stream; returning subprocess exit status: %d", rv);
 			return rv;
 		}
 

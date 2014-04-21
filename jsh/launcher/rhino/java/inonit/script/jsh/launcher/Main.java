@@ -257,7 +257,10 @@ public class Main {
 		}
 		Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(args));
 		Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-		System.setIn(new Logging.InputStream(System.in));
+		Logging.get().log(Main.class, Level.FINEST, "System.in = %s", System.in);
+		InputStream stdin = new Logging.InputStream(System.in);
+		System.setIn(stdin);
+		Logging.get().log(Main.class, Level.CONFIG, "Set System.in to %s.", stdin);
 		System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
 		System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
 		Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
