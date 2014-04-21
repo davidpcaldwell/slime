@@ -106,6 +106,8 @@ END LICENSE
 							html.children.push(head);
 							head.children.push(link);
 							var body = element("body");
+							var div = element("div");
+							body.children.push(div);
 							if (p && p.namespace == "http://www.w3.org/1999/xhtml") {
 								body.children.push(new module.Element({
 									type: {
@@ -119,9 +121,9 @@ END LICENSE
 						};
 
 						var xml = buildTestDocument();
-						test(xml.serialize() == "<html><head><link/></head><body/></html>");
+						test(xml.serialize() == "<html><head><link/></head><body><div/></body></html>");
 						var xhtml = buildTestDocument({ namespace: "http://www.w3.org/1999/xhtml" });
-						test(xhtml.serialize() == "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><link /></head><body><nstest xmlns=\"http://www.inonit.com/test\" /></body></html>");
+						test(xhtml.serialize() == "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><link /></head><body><div></div><nstest xmlns=\"http://www.inonit.com/test\" /></body></html>");
 					]]></script>
 				</li>
 			</ul>
