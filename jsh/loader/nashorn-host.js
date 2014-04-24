@@ -7,7 +7,6 @@ var $host = new function() {
 		var _Streams = Java.type("inonit.script.runtime.io.Streams");
 		var _streams = new _Streams();
 		
-		//	Try to port inonit.script.rhino.Loader.Bootstrap
 		var getLoaderCode = function(path) {
 			var loaderPath = Java.type("java.lang.System").getProperty("jsh.library.scripts.loader");
 			var _File = Java.type("java.io.File");
@@ -55,13 +54,25 @@ var $host = new function() {
 			}
 		}
 		
+		//	Try to port inonit.script.rhino.Loader.Bootstrap
 		var $rhino = new function() {
 			this.getLoaderCode = function(path) {
 				return getLoaderCode(path);
 			};
+			
+			var classpath = new function() {
+				this.append = function(code) {
+					throw new Error("Cannot append " + code.getClasses());
+				}
+			}
 
 			this.getClasspath = function() {
-				throw new Error();
+				//	TODO	implement modifications if possible
+				//	This value, I believe, is interpreted to mean that the classpath cannot be modified, or something
+				//	The Java code appears to allow it but the Rhino loader blows up on the Hello World case so it probably is not
+				//	OK at least in jsh (remember dimly that another embedding might have somehow handled the no class loader case)
+				//	return null;
+				return classpath;
 			};
 
 			this.script = function(name,input,scope,target) {
@@ -81,11 +92,14 @@ var $host = new function() {
 		return script("<nashorn loader>", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
 	};
 	
+	var installation = Java.type("inonit.script.jsh.Installation").unpackaged();
+	
 	//	Returns port of inonit.script.jsh.Shell.Host.Interface.Loader
 	this.getLoader = function() {
 		return new function() {
+			//	implementation duplicates original
 			this.getBootstrapModule = function(path) {
-				throw new Error("Unimplemented: $host.getLoader().getBootstrapModule(" + path + ")");
+				return installation.getShellModuleCode(path);
 			};
 		}
 	}
