@@ -22,31 +22,6 @@ import inonit.script.engine.*;
 
 public abstract class Loader {
 	public abstract String getLoaderCode(String path) throws IOException;
-//	public abstract String getRhinoCode() throws IOException;
-
-	//	TODO	verify whether this class needs to be public in order to be used by script calls
-	public static class Bootstrap {
-		private Engine engine;
-		private Loader loader;
-
-		Bootstrap(Engine engine, Loader loader) {
-			this.engine = engine;
-			this.loader = loader;
-		}
-
-		public String getLoaderCode(String path) throws IOException {
-			return loader.getLoaderCode(path);
-		}
-
-		public Classpath getClasspath() {
-			if (engine.getApplicationClassLoader() == null) return null;
-			return engine.getApplicationClassLoader().toScriptClasspath();
-		}
-
-		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
-			engine.script(name, in, scope, target);
-		}
-	}
 
 	//	Used in literal.js to support operations on the class loader
 	public static abstract class Classpath {
@@ -178,12 +153,5 @@ public abstract class Loader {
 				};
 			}
 		}
-	}
-
-	public static Scriptable load(Engine engine, Loader loader) throws IOException {
-		Engine.Program program = new Engine.Program();
-		program.set(Engine.Program.Variable.create("$rhino", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
-		program.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/literal.js")));
-		return (Scriptable)engine.execute(program);
 	}
 }

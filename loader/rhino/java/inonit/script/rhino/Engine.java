@@ -19,7 +19,38 @@ import org.mozilla.javascript.*;
 
 import inonit.script.engine.*;
 
-public class Engine {	
+public class Engine {
+	public static Scriptable load(Engine engine, Loader loader) throws IOException {
+		Engine.Program program = new Engine.Program();
+		program.set(Engine.Program.Variable.create("$rhino", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
+		program.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/literal.js")));
+		return (Scriptable)engine.execute(program);
+	}
+	
+	//	TODO	verify whether this class needs to be public in order to be used by script calls
+	public static class Bootstrap {
+		private Engine engine;
+		private Loader loader;
+
+		Bootstrap(Engine engine, Loader loader) {
+			this.engine = engine;
+			this.loader = loader;
+		}
+
+		public String getLoaderCode(String path) throws IOException {
+			return loader.getLoaderCode(path);
+		}
+
+		public Loader.Classpath getClasspath() {
+			if (engine.getApplicationClassLoader() == null) return null;
+			return engine.getApplicationClassLoader().toScriptClasspath();
+		}
+
+		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
+			engine.script(name, in, scope, target);
+		}
+	}
+
 	public static abstract class Log {
 		public static final Log NULL = new Log() {
 			public void println(String message) {
