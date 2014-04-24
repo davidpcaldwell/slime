@@ -1,7 +1,5 @@
 package inonit.script.engine;
 
-import inonit.script.rhino.Loader;
-
 public abstract class Classes {
 	public static abstract class Configuration {
 		public abstract boolean canCreateClassLoaders();

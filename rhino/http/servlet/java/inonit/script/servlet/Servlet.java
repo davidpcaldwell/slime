@@ -137,7 +137,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 
 		Host(Engine engine) {
 			try {
-				this.rhinoLoader = inonit.script.rhino.Engine.load(engine, new inonit.script.rhino.Loader() {
+				this.rhinoLoader = inonit.script.rhino.Engine.load(engine, new inonit.script.engine.Loader() {
 					private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
 					@Override public String getLoaderCode(String path) throws IOException {
