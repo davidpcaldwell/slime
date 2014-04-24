@@ -588,14 +588,26 @@ try {
 		}
 	}
 	
+	var shellClasspath = settings.get("shellClasspath");
+	if (!shellClasspath) {
+		console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
+		Packages.java.lang.System.exit(1);
+	}
+	
+	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
+	
 	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
 	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && false) {
 		//	Nashorn
 		command.add(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
+		//	TODO	handle JSH_JAVA_DEBUGGER
+		//	TODO	handle JSH_SCRIPT_DEBUGGER == "profiler"
+		//	TODO	decide about client-vs.-server VM, probably not needed
 		if (jvmOptions.length) {
 			throw new Error("Unimplemented: Nashorn options");
 		}
 		environmentAndProperties();
+		
 	} else {
 		//	Rhino
 		command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));
@@ -624,41 +636,36 @@ try {
 		command.add(jvmOptions);
 		environmentAndProperties();
 		command.add("-classpath");
-		var shellClasspath = settings.get("shellClasspath");
-		if (!shellClasspath) {
-			console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
-			Packages.java.lang.System.exit(1);
-		}
 		command.add(
 			settings.get("rhinoClasspath")
-			.append(settings.get("shellClasspath"))
-			.append(new Searchpath(settings.combine("scriptClasspath")))
+			.append(shellClasspath)
+			.append(scriptClasspath)
 			.toPath()
 		);
 		command.add("inonit.script.jsh.Main");
-		command.add(settings.get("script"));
-		var index = (settings.get("script")) ? 1 : 0;
-		for (var i=index; i<arguments.length; i++) {
-			command.add(arguments[i]);
-		}
-		debug("Environment:");
-		debug(env.toSource());
-		debug("Command:");
-		debug(command.line());
-		debugger;
-		var mode = {
-			input: Packages.java.lang.System["in"],
-			output: Packages.java.lang.System["out"],
-			err: Packages.java.lang.System["err"]
-		};
-		debug("Running command ...");
-		var status = command.run(mode);
-		if (status === null) {
-			throw new Error("Exit status null.");
-		}
-		setExitStatus(status);
-		debug("Command returned.");
 	}
+	command.add(settings.get("script"));
+	var index = (settings.get("script")) ? 1 : 0;
+	for (var i=index; i<arguments.length; i++) {
+		command.add(arguments[i]);
+	}
+	debug("Environment:");
+	debug(env.toSource());
+	debug("Command:");
+	debug(command.line());
+	debugger;
+	var mode = {
+		input: Packages.java.lang.System["in"],
+		output: Packages.java.lang.System["out"],
+		err: Packages.java.lang.System["err"]
+	};
+	debug("Running command ...");
+	var status = command.run(mode);
+	if (status === null) {
+		throw new Error("Exit status null.");
+	}
+	setExitStatus(status);
+	debug("Command returned.");
 } catch (e) {
 	debug("Error:");
 	debug(e);
