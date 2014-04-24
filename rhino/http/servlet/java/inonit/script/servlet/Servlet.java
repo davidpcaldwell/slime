@@ -19,6 +19,7 @@ import javax.servlet.http.*;
 
 import org.mozilla.javascript.*;
 
+import inonit.script.engine.*;
 import inonit.script.rhino.*;
 
 public class Servlet extends javax.servlet.http.HttpServlet {

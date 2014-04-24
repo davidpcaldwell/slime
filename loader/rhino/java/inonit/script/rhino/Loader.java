@@ -18,6 +18,8 @@ import java.net.*;
 
 import org.mozilla.javascript.*;
 
+import inonit.script.engine.*;
+
 public abstract class Loader {
 	public abstract String getLoaderCode(String path) throws IOException;
 //	public abstract String getRhinoCode() throws IOException;

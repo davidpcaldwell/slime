@@ -158,7 +158,7 @@ this.jsh = new function() {
 			}
 
 			this.add = function(_file) {
-				rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(_file));
+				rhinoLoader.classpath.add(Packages.inonit.script.engine.Code.Source.create(_file));
 			};
 
 			this.get = function(name) {
@@ -450,7 +450,7 @@ this.jsh = new function() {
 									var _listener = new Packages.java.io.File(options.listener);
 									var pathname = jsh.file.filesystems.os.Pathname(String(_listener.getCanonicalPath()));
 									jsh.loader.run(pathname, {
-										$loader: new loader.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(_listener.getParentFile()) }),
+										$loader: new loader.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(_listener.getParentFile()) }),
 										jsh: jsh,
 										profiles: profiles
 									});
@@ -469,7 +469,7 @@ this.jsh = new function() {
 										});
 									} else {
 										jsh.loader.run(pathname, {
-											$loader: new loader.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(pathname.parent.java.adapt()) }),
+											$loader: new loader.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(pathname.parent.java.adapt()) }),
 											jsh: jsh,
 											profiles: profiles,
 											to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))

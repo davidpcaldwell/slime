@@ -483,7 +483,7 @@ $exports.Loader = function(p) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it
 		var _resources = new JavaAdapter(
-			Packages.inonit.script.rhino.Code.Source.Resources,
+			Packages.inonit.script.engine.Code.Source.Resources,
 			new function() {
 				this.toString = function() {
 					return p.resources.toString();
@@ -500,7 +500,7 @@ $exports.Loader = function(p) {
 			}
 		);
 		var rv = new $context.$rhino.Loader({
-			_source: Packages.inonit.script.rhino.Code.Source.create(_resources),
+			_source: Packages.inonit.script.engine.Code.Source.create(_resources),
 			Loader: Child
 		});
 		decorate.call(rv);

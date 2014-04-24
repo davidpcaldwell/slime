@@ -1,8 +1,9 @@
 package inonit.script.jsh;
 
-import inonit.script.rhino.*;
 import java.io.*;
 import java.util.*;
+
+import inonit.script.engine.*;
 
 public abstract class Installation {
 	public abstract Code.Source.File getPlatformLoader(String path);

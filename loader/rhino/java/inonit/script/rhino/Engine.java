@@ -17,6 +17,8 @@ import java.util.*;
 
 import org.mozilla.javascript.*;
 
+import inonit.script.engine.*;
+
 public class Engine {
 	public static abstract class Classes {
 		public static abstract class Configuration {

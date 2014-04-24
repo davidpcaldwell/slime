@@ -85,7 +85,7 @@
 		}
 
 		this.Module = new function() {
-			var Code = Packages.inonit.script.rhino.Code;
+			var Code = Packages.inonit.script.engine.Code;
 
 			//	java.io.File, string
 			this.unpacked = function(_base,main) {

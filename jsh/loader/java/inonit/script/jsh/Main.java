@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import inonit.system.*;
+import inonit.script.engine.*;
 import inonit.script.rhino.*;
 
 public class Main {

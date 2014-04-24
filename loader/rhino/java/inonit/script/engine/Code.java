@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-package inonit.script.rhino;
+package inonit.script.engine;
 
 import java.io.*;
 import java.net.*;
