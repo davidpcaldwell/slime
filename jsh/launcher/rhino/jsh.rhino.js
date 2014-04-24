@@ -597,7 +597,7 @@ try {
 	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
 	
 	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
-	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && false) {
+	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE == "nashorn") {
 		//	Nashorn
 		command.add(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
 		//	TODO	handle JSH_JAVA_DEBUGGER
@@ -607,7 +607,11 @@ try {
 			throw new Error("Unimplemented: Nashorn options");
 		}
 		environmentAndProperties();
-		
+		command.add("-classpath");
+		command.add(shellClasspath.append(scriptClasspath).toPath());
+		command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("nashorn-host.js").path);
+		command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("jsh.js").path);
+		command.add("--");
 	} else {
 		//	Rhino
 		command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));

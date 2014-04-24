@@ -19,9 +19,11 @@
 				}
 			};
 			(function() {
-				var $objects = new Packages.inonit.script.rhino.Objects();
-				$engine.Object.defineProperty.setReadOnly = function(object,name,value) {
-					$objects.setReadOnly(object,name,value);
+				$engine.Object.defineProperty.setReadOnly = ($rhino.setReadOnly) ? $rhino.setReadOnly : function(object,name,value) {
+					if (!arguments.callee.objects) {
+						arguments.callee.objects = new Packages.inonit.script.rhino.Objects();
+					}
+					arguments.callee.objects.setReadOnly(object,name,value);
 				}
 
 				$engine.MetaObject = function(p) {
