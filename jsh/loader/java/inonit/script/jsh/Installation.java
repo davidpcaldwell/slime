@@ -5,9 +5,8 @@ import java.io.*;
 import java.util.*;
 
 public abstract class Installation {
-	public abstract Engine.Source getPlatformLoader(String path);
-	public abstract Engine.Source getRhinoLoader();
-	public abstract Engine.Source getJshLoader();
+	public abstract Code.Source.File getPlatformLoader(String path);
+	public abstract Code.Source.File getJshLoader();
 
 	/**
 	 *	Specifies where code for "shell modules" -- modules included with jsh itself -- can be found.
@@ -132,16 +131,12 @@ public abstract class Installation {
 				throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
 			}
 
-			public Engine.Source getPlatformLoader(String path) {
-				return Engine.Source.create(getFile("loader", path));
+			public Code.Source.File getPlatformLoader(String path) {
+				return Code.Source.File.create(getFile("loader", path));
 			}
 
-			public Engine.Source getRhinoLoader() {
-				return Engine.Source.create(getFile("loader", "rhino/literal.js"));
-			}
-
-			public Engine.Source getJshLoader() {
-				return Engine.Source.create(getFile("jsh", "jsh.js"));
+			public Code.Source.File getJshLoader() {
+				return Code.Source.File.create(getFile("jsh", "jsh.js"));
 			}
 
 			public Code getShellModuleCode(String path) {

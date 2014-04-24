@@ -862,6 +862,10 @@ public class Engine {
 				throw new RuntimeException("Cannot get canonical path of " + file);
 			}
 		}
+		
+		public static Source create(Code.Source.File file) {
+			return new ReaderSource(file.getSourceName(), file.getReader());
+		}
 
 		private boolean debug = true;
 

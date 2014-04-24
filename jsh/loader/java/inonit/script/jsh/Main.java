@@ -48,20 +48,16 @@ public class Main {
 					return getClass().getName() + " [packaged]";
 				}
 
-				public Engine.Source getPlatformLoader(String path) {
-					return Engine.Source.create("[slime]:" + path, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
+				public Code.Source.File getPlatformLoader(String path) {
+					return Code.Source.File.create("[slime]:" + path, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
 				}
 
-				public Engine.Source getRhinoLoader() {
-					return Engine.Source.create("rhino.js", ClassLoader.getSystemResourceAsStream("$jsh/loader/rhino/literal.js"));
-				}
-
-				public Engine.Source getJshLoader() {
+				public Code.Source.File getJshLoader() {
 					InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/jsh.js");
 					if (in == null) {
 						throw new RuntimeException("Not found in system class loader: $jsh/jsh.js" + "; system class path is " + System.getProperty("java.class.path"));
 					}
-					return Engine.Source.create("jsh.js", in);
+					return Code.Source.File.create("jsh.js", in);
 				}
 
 				public Code getShellModuleCode(String path) {

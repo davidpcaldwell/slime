@@ -34,6 +34,43 @@ public abstract class Code {
 //	}
 
 	public static abstract class Source {
+		public static abstract class File {
+			public abstract String getSourceName();
+			public abstract Reader getReader();
+			
+			public static File create(final java.io.File file) {
+				return new File() {
+					@Override public String getSourceName() {
+						try {
+							return file.getCanonicalPath();
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+
+					@Override public Reader getReader() {
+						try {
+							return new FileReader(file);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				};
+			}
+			
+			public static File create(final String name, final InputStream in) {
+				return new File() {
+					@Override public String getSourceName() {
+						return name;
+					}
+
+					@Override public Reader getReader() {
+						return new InputStreamReader(in);
+					}
+				};
+			}
+		}
+
 		public static Source NULL = new ResourceBased() {
 			@Override public String toString() { return "Code.Source.NULL"; }
 
@@ -83,7 +120,7 @@ public abstract class Code {
 			return new UrlBased(url);
 		}
 
-		public static Source create(File file) {
+		public static Source create(java.io.File file) {
 			try {
 				return create(file.toURI().toURL());
 			} catch (java.net.MalformedURLException e) {
