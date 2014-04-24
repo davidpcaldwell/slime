@@ -40,10 +40,10 @@ public class Main {
 	}
 
 	private Integer run() throws CheckedException {
-		Shell.Installation installation = null;
+		Installation installation = null;
 		Shell.Invocation invocation = null;
 		if (System.getProperty("jsh.launcher.packaged") != null) {
-			installation = new Shell.Installation() {
+			installation = new Installation() {
 				public String toString() {
 					return getClass().getName() + " [packaged]";
 				}
@@ -90,76 +90,7 @@ public class Main {
 				}
 			};
 		} else {
-			installation = new Shell.Installation() {
-				public String toString() {
-					return getClass().getName()
-						+ " jsh.library.scripts=" + System.getProperty("jsh.library.scripts")
-						+ " jsh.library.scripts.loader=" + System.getProperty("jsh.library.scripts.loader")
-						+ " jsh.library.scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
-					;
-				}
-
-				File getFile(String prefix, String name) {
-					String propertyName = "jsh.library.scripts." + prefix;
-					if (System.getProperty(propertyName) != null) {
-						File dir = new File(System.getProperty(propertyName));
-						return new File(dir, name);
-					} else if (System.getProperty("jsh.library.scripts") != null) {
-						File root = new File(System.getProperty("jsh.library.scripts"));
-						File dir = new File(root, prefix);
-						return new File(dir, name);
-					} else {
-						throw new RuntimeException("Script not found: " + prefix + "/" + name);
-					}
-				}
-
-				private File getModulePath(String path) {
-					String property = System.getProperty("jsh.library.modules");
-					File directory = new File(property + "/" + path);
-					File file = new File(property + "/" + path.replace('/', '.') + ".slime");
-					if (directory.exists() && directory.isDirectory()) {
-						return directory;
-					} else if (file.exists()) {
-						return file;
-					}
-					throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
-				}
-
-				public Engine.Source getPlatformLoader(String path) {
-					return Engine.Source.create(getFile("loader", path));
-				}
-
-				public Engine.Source getRhinoLoader() {
-					return Engine.Source.create(getFile("loader", "rhino/literal.js"));
-				}
-
-				public Engine.Source getJshLoader() {
-					return Engine.Source.create(getFile("jsh", "jsh.js"));
-				}
-
-				public Code getShellModuleCode(String path) {
-					return Code.slime(getModulePath(path));
-				}
-
-				private void addPluginsTo(List<Plugin> rv, String property) {
-					if (property != null) {
-						String[] tokens = property.split(File.pathSeparator);
-						for (String token : tokens) {
-							File file = new File(token);
-							Plugin.addPluginsTo(rv, file);
-						}
-					}
-				}
-
-				public Plugin[] getPlugins() {
-					ArrayList<Plugin> rv = new ArrayList<Plugin>();
-					addPluginsTo(rv, System.getProperty("jsh.library.modules"));
-					//	Defaults for jsh.plugins: installation modules directory? Probably obsolete given that we will be loading
-					//	them. $HOME/.jsh/plugins?
-					addPluginsTo(rv, System.getProperty("jsh.plugins"));
-					return rv.toArray(new Plugin[rv.size()]);
-				}
-			};
+			installation = Installation.unpackaged();
 
 			final String scriptPath = args.remove(0);
 

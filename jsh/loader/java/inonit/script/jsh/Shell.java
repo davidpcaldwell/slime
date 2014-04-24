@@ -33,97 +33,6 @@ public class Shell {
 		return Host.create(installation, configuration, invocation).load();
 	}
 
-	public static abstract class Installation {
-		public abstract Engine.Source getPlatformLoader(String path);
-		public abstract Engine.Source getRhinoLoader();
-		public abstract Engine.Source getJshLoader();
-
-		/**
-		 *	Specifies where code for "shell modules" -- modules included with jsh itself -- can be found.
-		 *
-		 *	@param path A logical path to the module; e.g., js/object for the jsh.js module.
-		 *
-		 *	@return An object that can load the specified module.
-		 */
-		public abstract Code getShellModuleCode(String path);
-
-		public static abstract class Plugin {
-			private static Plugin create(final Code code) {
-				return new Plugin() {
-					@Override public Code getCode() {
-						return code;
-					}
-				};
-			}
-
-			static Plugin unpacked(final File directory) {
-				return create(Code.unpacked(directory));
-			}
-
-			static Plugin slime(final File slime) throws IOException {
-				//	TODO	what if this .slime contains classes? Should we load them? Right now, we do not
-				Plugin rv = create(Code.slime(slime));
-				if (rv.getCode().getScripts().getResourceAsStream("plugin.jsh.js") != null) {
-					return rv;
-				} else {
-					return null;
-				}
-			}
-
-			static Plugin jar(final File jar) {
-				return create(Code.jar(jar));
-			}
-
-			static class PluginComparator implements Comparator<File> {
-				private int evaluate(File file) {
-					if (!file.isDirectory() && file.getName().endsWith(".jar")) {
-						return -1;
-					}
-					return 0;
-				}
-
-				public int compare(File o1, File o2) {
-					return evaluate(o1) - evaluate(o2);
-				}
-			}
-
-			static void addPluginsTo(List<Shell.Installation.Plugin> rv, File file) {
-				if (file.exists()) {
-					if (file.isDirectory()) {
-						if (new File(file, "plugin.jsh.js").exists()) {
-							//	interpret as unpacked module
-							rv.add(Shell.Installation.Plugin.unpacked(file));
-						} else {
-							//	interpret as directory of slime
-							File[] list = file.listFiles();
-							Arrays.sort(list, new PluginComparator());
-							for (File f : list) {
-								addPluginsTo(rv, f);
-							}
-						}
-					} else if (file.getName().endsWith(".slime")) {
-						try {
-							Shell.Installation.Plugin p = Shell.Installation.Plugin.slime(file);
-							if (p != null) {
-								rv.add(p);
-							}
-						} catch (IOException e) {
-							//	TODO	probably error message or warning
-						}
-					} else if (file.getName().endsWith(".jar")) {
-						rv.add(Shell.Installation.Plugin.jar(file));
-					} else {
-						//	Ignore, not .slime or directory
-						//	TODO	probably log message of some kind
-					}
-				}
-			}
-
-			public abstract Code getCode();
-		}
-
-		public abstract Plugin[] getPlugins();
-	}
 
 	public static abstract class Configuration {
 		public abstract int getOptimizationLevel();
@@ -422,10 +331,10 @@ public class Shell {
 				throw new ExitException(status);
 			}
 
-			public Shell.Installation.Plugin[] getPlugins(File file) {
-				List<Shell.Installation.Plugin> rv = new ArrayList<Shell.Installation.Plugin>();
-				Shell.Installation.Plugin.addPluginsTo(rv, file);
-				return rv.toArray(new Shell.Installation.Plugin[rv.size()]);
+			public Installation.Plugin[] getPlugins(File file) {
+				List<Installation.Plugin> rv = new ArrayList<Installation.Plugin>();
+				Installation.Plugin.addPluginsTo(rv, file);
+				return rv.toArray(new Installation.Plugin[rv.size()]);
 			}
 
 			public int jsh(Configuration configuration, final File script, final String[] arguments) {
