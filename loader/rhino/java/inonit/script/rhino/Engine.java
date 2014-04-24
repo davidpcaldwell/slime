@@ -18,6 +18,42 @@ import java.util.*;
 import org.mozilla.javascript.*;
 
 public class Engine {
+	public static abstract class Classes {
+		public static abstract class Configuration {
+			public abstract boolean canCreateClassLoaders();
+			public abstract ClassLoader getApplicationClassLoader();
+		}
+		
+		public static Classes create(Configuration configuration) {
+			if (configuration.canCreateClassLoaders()) {
+				final Loader.Classes loaderClasses = Loader.Classes.create(configuration.getApplicationClassLoader());
+				return new Classes() {
+					@Override public ClassLoader getApplicationClassLoader() {
+						return loaderClasses;
+					}
+
+					@Override public Loader.Classes getScriptClasses() {
+						return loaderClasses;
+					}
+				};
+			} else {
+				final ClassLoader loader = configuration.getApplicationClassLoader();
+				return new Classes() {
+					@Override public ClassLoader getApplicationClassLoader() {
+						return loader;
+					}
+
+					@Override public Loader.Classes getScriptClasses() {
+						return null;
+					}
+				};
+			}
+		}
+		
+		public abstract ClassLoader getApplicationClassLoader();
+		public abstract Loader.Classes getScriptClasses();
+	}
+	
 	public static abstract class Log {
 		public static final Log NULL = new Log() {
 			public void println(String message) {
@@ -490,8 +526,9 @@ public class Engine {
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
-			private ClassLoader classLoader;
-			private Loader.Classes classes;
+			private Classes classes;
+//			private ClassLoader classLoader;
+//			private Loader.Classes classes;
 
 			ContextFactoryInner() {
 			}
@@ -500,26 +537,27 @@ public class Engine {
 
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
-					ClassLoader classLoader = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
-					if (Configuration.this.createClassLoader()) {
-						this.classes = Loader.Classes.create(classLoader);
-						this.classLoader = this.classes;
-					} else {
-						this.classes = null;
-						this.classLoader = classLoader;
-					}
+					this.classes = Classes.create(new Classes.Configuration() {
+						@Override public boolean canCreateClassLoaders() {
+							return Configuration.this.createClassLoader();
+						}
+
+						@Override public ClassLoader getApplicationClassLoader() {
+							return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+						}
+					});
 					initialized = true;
 				}
 			}
 
 			private synchronized ClassLoader getContextApplicationClassLoader() {
 				initializeClassLoaders();
-				return this.classLoader;
+				return this.classes.getApplicationClassLoader();
 			}
 
 			final Loader.Classes getLoaderClasses() {
 				initializeClassLoaders();
-				return this.classes;
+				return this.classes.getScriptClasses();
 			}
 
 			@Override protected synchronized Context makeContext() {
