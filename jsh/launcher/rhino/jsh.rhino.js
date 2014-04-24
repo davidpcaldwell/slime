@@ -41,6 +41,23 @@ var Directory = function(path) {
 	var peer = new Packages.java.io.File(path);
 
 	this.path = String(peer.getCanonicalPath());
+	
+	this.getCommand = function(relative) {
+		var getWithSuffix = function(name,suffix) {
+			if (new Packages.java.io.File(peer,name + suffix).exists()) {
+				return new File(String(new Packages.java.io.File(peer,name + suffix).getCanonicalPath()))
+			}
+			return null;
+		}
+		
+		//	TODO	should use more complex logic than this but it works for the java and jjs cases
+		if (env.PATHEXT) {
+			if (getWithSuffix(relative,".exe")) {
+				return getWithSuffix(relative,".exe");
+			}
+		}
+		return getWithSuffix(relative,"");
+	}
 
 	this.getFile = function(relative) {
 		var file = new Packages.java.io.File(peer,relative);
@@ -523,107 +540,125 @@ try {
 			}
 		}
 	}
-	command.add(JAVA_HOME.getFile("bin/java"));
-	if (env.JSH_JAVA_DEBUGGER) {
-		//	TODO	this option seems to have changed as of Java 5 or Java 6 to agentlib or agentpath
-		//			see http://docs.oracle.com/javase/6/docs/technotes/guides/jpda/conninv.html
-		command.add("-Xrunjdwp:transport=dt_shmem,server=y");
-	} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
-		//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
-		//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
-		if (settings.get("profiler")) {
-			var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
-			if (withParameters) {
-				command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
-			} else {
-				command.add("-javaagent:" + settings.get("profiler").path);
-			}
-		} else {
-			//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
-			//	emit warning message?
-		}
-	}
-	var jvmOptions = settings.combine("jvmOptions");
-	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
-	if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
-		jvmOptions.unshift("-client");
-	}
-	command.add(jvmOptions);
-
-	[
-		"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
-		,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
-		,"JSH_LIBRARY_MODULES"
-		,"JSH_PLUGINS"
-		,"JSH_OS_ENV_UNIX"
-	].forEach(function(name) {
-		var property = name.toLowerCase().split("_").join(".");
-		command.jvmProperty(property,settings.get(name));
-	});
-
-	if (settings.get("JSH_TMPDIR")) {
-		command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
-	}
-
-	if (settings.get("JSH_JAVA_LOGGING_PROPERTIES")) {
-		command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGING_PROPERTIES").path);
-	}
-
-	if (platform.cygwin) {
-		command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
-		//	TODO	check for existence of the executable?
-		if (!settings.get("JSH_LIBRARY_NATIVE")) {
-			console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
-			console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
-		} else {
-			command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
-		}
-	}
-
-	[
-		"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
-	].forEach( function(property) {
-		if (getProperty(property)) {
-			command.jvmProperty(property, getProperty(property));
-		}
-	} );
-	for (var x in env) {
-		if (x.substring(0,4) == "JSH_" || x == "PATH") {
-			command.jvmProperty("jsh.launcher.environment." + x, env[x]);
-		}
-	}
-
-	command.add("-classpath");
-	var shellClasspath = settings.get("shellClasspath");
-	if (!shellClasspath) {
-		console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
-		Packages.java.lang.System.exit(1);
-	}
-	command.add(
-		settings.get("rhinoClasspath")
-		.append(settings.get("shellClasspath"))
-		.append(new Searchpath(settings.combine("scriptClasspath")))
-		.toPath()
-	);
-	command.add("inonit.script.jsh.Main");
-	command.add(settings.get("script"));
-	var index = (settings.get("script")) ? 1 : 0;
-	for (var i=index; i<arguments.length; i++) {
-		command.add(arguments[i]);
-	}
-	debug("Environment:");
-	debug(env.toSource());
-	debug("Command:");
-	debug(command.line());
 	debugger;
-	var mode = {
-		input: Packages.java.lang.System["in"],
-		output: Packages.java.lang.System["out"],
-		err: Packages.java.lang.System["err"]
-	};
-	debug("Running command ...");
-	setExitStatus(command.run(mode));
-	debug("Command returned.");
+	var jvmOptions = settings.combine("jvmOptions");
+	
+	var environmentAndProperties = function() {
+		[
+			"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
+			,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
+			,"JSH_LIBRARY_MODULES"
+			,"JSH_PLUGINS"
+			,"JSH_OS_ENV_UNIX"
+		].forEach(function(name) {
+			var property = name.toLowerCase().split("_").join(".");
+			command.jvmProperty(property,settings.get(name));
+		});
+
+		if (settings.get("JSH_TMPDIR")) {
+			command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
+		}
+
+		if (settings.get("JSH_JAVA_LOGGING_PROPERTIES")) {
+			command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGING_PROPERTIES").path);
+		}
+
+		if (platform.cygwin) {
+			command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
+			//	TODO	check for existence of the executable?
+			if (!settings.get("JSH_LIBRARY_NATIVE")) {
+				console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
+				console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
+			} else {
+				command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
+			}
+		}
+
+		[
+			"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
+		].forEach( function(property) {
+			if (getProperty(property)) {
+				command.jvmProperty(property, getProperty(property));
+			}
+		} );
+		for (var x in env) {
+			if (x.substring(0,4) == "JSH_" || x == "PATH") {
+				command.jvmProperty("jsh.launcher.environment." + x, env[x]);
+			}
+		}
+	}
+	
+	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
+	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && false) {
+		//	Nashorn
+		command.add(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
+		if (jvmOptions.length) {
+			throw new Error("Unimplemented: Nashorn options");
+		}
+		environmentAndProperties();
+	} else {
+		//	Rhino
+		command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));
+		if (env.JSH_JAVA_DEBUGGER) {
+			//	TODO	this option seems to have changed as of Java 5 or Java 6 to agentlib or agentpath
+			//			see http://docs.oracle.com/javase/6/docs/technotes/guides/jpda/conninv.html
+			command.add("-Xrunjdwp:transport=dt_shmem,server=y");
+		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
+			//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
+			//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
+			if (settings.get("profiler")) {
+				var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
+				if (withParameters) {
+					command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
+				} else {
+					command.add("-javaagent:" + settings.get("profiler").path);
+				}
+			} else {
+				//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
+				//	emit warning message?
+			}
+		}
+		if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
+			jvmOptions.unshift("-client");
+		}
+		command.add(jvmOptions);
+		environmentAndProperties();
+		command.add("-classpath");
+		var shellClasspath = settings.get("shellClasspath");
+		if (!shellClasspath) {
+			console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
+			Packages.java.lang.System.exit(1);
+		}
+		command.add(
+			settings.get("rhinoClasspath")
+			.append(settings.get("shellClasspath"))
+			.append(new Searchpath(settings.combine("scriptClasspath")))
+			.toPath()
+		);
+		command.add("inonit.script.jsh.Main");
+		command.add(settings.get("script"));
+		var index = (settings.get("script")) ? 1 : 0;
+		for (var i=index; i<arguments.length; i++) {
+			command.add(arguments[i]);
+		}
+		debug("Environment:");
+		debug(env.toSource());
+		debug("Command:");
+		debug(command.line());
+		debugger;
+		var mode = {
+			input: Packages.java.lang.System["in"],
+			output: Packages.java.lang.System["out"],
+			err: Packages.java.lang.System["err"]
+		};
+		debug("Running command ...");
+		var status = command.run(mode);
+		if (status === null) {
+			throw new Error("Exit status null.");
+		}
+		setExitStatus(status);
+		debug("Command returned.");
+	}
 } catch (e) {
 	debug("Error:");
 	debug(e);
