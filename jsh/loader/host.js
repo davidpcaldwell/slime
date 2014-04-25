@@ -5,34 +5,16 @@ var $host = new function() {
 			Packages.java.lang.System.err.println(string);
 		}
 		
-		var _Streams = Java.type("inonit.script.runtime.io.Streams");
+		var _Streams = Packages.inonit.script.runtime.io.Streams;
 		var _streams = new _Streams();
 		
 		var getLoaderCode = function(path) {
-			var loaderPath = Java.type("java.lang.System").getProperty("jsh.library.scripts.loader");
-			var _File = Java.type("java.io.File");
-			var _FileReader = Java.type("java.io.FileReader");
+			var loaderPath = Packages.java.lang.System.getProperty("jsh.library.scripts.loader");
+			var _File = Packages.java.io.File;
+			var _FileReader = Packages.java.io.FileReader;
 			var rv = _streams.readString(new _FileReader(new _File(new _File(loaderPath), path)));
 			return rv;
 		}
-		
-		var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-		var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);
-		var Source = Java.type("jdk.nashorn.internal.runtime.Source");
-		var ScriptObject = Java.type("jdk.nashorn.internal.runtime.ScriptObject");
-		evaluateSourceSignature[0] = Source.class;
-		evaluateSourceSignature[1] = ScriptObject.class;
-		evaluateSourceSignature[2] = ScriptObject.class;
-		var evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
-		evaluateSource.setAccessible(true);
-		var script = function(name,code,scope,target) {
-			var context = Context.getContext();
-//			return context.evaluateSource(new Source(name,code), scope, target);
-			var notNull = function(o) {
-				return (o) ? o : {};
-			}
-			return evaluateSource.invoke(context, new Source(name,code), notNull(scope), notNull(target));
-		};
 		
 		var toScope = function(scope) {
 			var global = (function() { return this; })();
@@ -60,7 +42,7 @@ var $host = new function() {
 //			var classpath = $nashorn.getClasspath();
 			var classpath = new function() {
 				this.append = function(code) {
-					$nashorn.getClasspath().append(code);
+					$engine.getClasspath().append(code);
 				}
 			};
 //			var classpath = new function() {
@@ -79,7 +61,7 @@ var $host = new function() {
 			};
 
 			this.script = function(name,input,scope,target) {
-				return script(name,_streams.readString(input),toScope(scope),target);
+				return $engine.script(name,_streams.readString(input),toScope(scope),target);
 			};
 			
 			this.setReadOnly = function(object,name,value) {
@@ -87,12 +69,12 @@ var $host = new function() {
 			}
 		};
 		
-		return script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
+		return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
 	};
 	
-	var installation = Java.type("inonit.script.jsh.Installation").unpackaged();
+	var installation = Packages.inonit.script.jsh.Installation.unpackaged();
 	
-	var invocation = Java.type("inonit.script.jsh.Invocation").create($nashorn.getArguments());
+	var invocation = Packages.inonit.script.jsh.Invocation.create($engine.getArguments());
 	
 	this.getInvocation = function() {
 		return invocation;
@@ -140,17 +122,7 @@ var $host = new function() {
 		return stdio;
 	}
 	
-	var fakeDebugger = new function() {
-		this.setBreakOnExceptions = function(b) {
-			
-		};
-		
-		this.isBreakOnExceptions = function() {
-			return false;
-		}
-	};
-	
 	this.getDebugger = function() {
-		return fakeDebugger;
+		return $engine.getDebugger();
 	}
 };
