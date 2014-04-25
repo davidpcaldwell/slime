@@ -23,6 +23,22 @@ public abstract class Shell {
 	public abstract Configuration getConfiguration();
 	public abstract Invocation getInvocation() throws Invocation.CheckedException;
 	
+	public static Shell create(final Installation installation, final Configuration configuration, final Invocation invocation) {
+		return new Shell() {
+			@Override public Installation getInstallation() {
+				return installation;
+			}
+
+			@Override public Configuration getConfiguration() {
+				return configuration;
+			}
+
+			@Override public Invocation getInvocation() throws Invocation.CheckedException {
+				return invocation;
+			}
+		};
+	}
+	
 	public static Shell main(final String[] arguments) {
 		final Configuration configuration = Configuration.main();
 		if (System.getProperty("jsh.launcher.packaged") != null) {

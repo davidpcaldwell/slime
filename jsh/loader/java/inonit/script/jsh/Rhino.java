@@ -287,21 +287,8 @@ public class Rhino {
 		}
 
 		public int jsh(final Shell.Configuration configuration, final Invocation invocation) throws IOException, Invocation.CheckedException {
-			System.err.println("Invocation: " + invocation);
 			boolean breakOnExceptions = debugger.isBreakOnExceptions();
-			Shell subshell = new Shell() {
-				@Override public Installation getInstallation() {
-					return installation;
-				}
-
-				@Override public Shell.Configuration getConfiguration() {
-					return configuration;
-				}
-
-				@Override public Invocation getInvocation() throws Invocation.CheckedException {
-					return invocation;
-				}
-			};
+			Shell subshell = Shell.create(installation, configuration, invocation);
 			Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
 			debugger.setBreakOnExceptions(breakOnExceptions);
 			if (rv == null) return 0;

@@ -49,4 +49,17 @@ var $engine = new function() {
 			return scope;
 		}
 	}
+	
+	this.jsh = function(configuration,invocation) {
+		var subshell = Packages.inonit.script.jsh.Shell.create(
+			$shell.getInstallation(),
+			configuration,
+			invocation
+		);
+		throw new Error("Unimplemented: Nashorn subshell.");
+//		Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
+//		debugger.setBreakOnExceptions(breakOnExceptions);
+//		if (rv == null) return 0;
+//		return rv.intValue();		
+	}
 }
