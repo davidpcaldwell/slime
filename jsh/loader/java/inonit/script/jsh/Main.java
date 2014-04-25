@@ -196,7 +196,8 @@ public class Main {
 			engine.setDontenum(true);
 			program.set(engine);
 
-			if (true) {
+			boolean USE_JAVASCRIPT_HOST = true;
+			if (!USE_JAVASCRIPT_HOST) {
 				Engine.Program.Variable jsh = Engine.Program.Variable.create(
 					"$host",
 					Engine.Program.Variable.Value.create(new Interface())
