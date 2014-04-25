@@ -91,6 +91,12 @@ public abstract class Installation {
 			}
 		}
 
+		public static Plugin[] get(File file) {
+			List<Plugin> rv = new ArrayList<Plugin>();
+			addPluginsTo(rv, file);
+			return rv.toArray(new Plugin[rv.size()]);
+		}
+
 		public abstract Code getCode();
 	}
 

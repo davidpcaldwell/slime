@@ -423,9 +423,7 @@ public class Main {
 			}
 
 			public Installation.Plugin[] getPlugins(File file) {
-				List<Installation.Plugin> rv = new ArrayList<Installation.Plugin>();
-				Installation.Plugin.addPluginsTo(rv, file);
-				return rv.toArray(new Installation.Plugin[rv.size()]);
+				return Installation.Plugin.get(file);
 			}
 
 //			//
