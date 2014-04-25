@@ -620,12 +620,7 @@ public class Engine {
 	}
 
 	private Scriptable getGlobalScope(Context context) {
-		Scriptable rv = (Scriptable)globals.get(context);
-		if (rv == null) {
-			rv = context.initStandardObjects();
-			globals.put(context, rv);
-		}
-		return rv;
+		return context.initStandardObjects();
 	}
 
 	void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {

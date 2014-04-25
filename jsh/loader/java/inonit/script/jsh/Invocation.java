@@ -62,6 +62,14 @@ public abstract class Invocation {
 	
 	public static Invocation jsh(final File script, final String[] arguments) {
 		return new Invocation() {
+			@Override public String toString() {
+				String rv = String.valueOf(script);
+				for (String s : arguments) {
+					rv += " " + s;
+				}
+				return rv;
+			}
+			
 			@Override public Invocation.Script getScript() {
 				return Invocation.Script.create(script);
 			}

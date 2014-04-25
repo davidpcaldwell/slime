@@ -26,9 +26,9 @@ public class Rhino {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
-		private Host.Interface $engine;
+		private Interface $engine;
 		
-		ExecutionImpl(Engine engine, Host.Interface $engine) {
+		ExecutionImpl(Engine engine, Interface $engine) {
 			this.engine = engine;
 			this.$engine = $engine;
 		}
@@ -171,7 +171,7 @@ public class Rhino {
 		return Host.create(shell, rhino).execute();
 	}
 	
-	private static Integer execute(Shell shell, Configuration rhino, Host.Interface $engine, ArrayList<Runnable> finalizers) throws Invocation.CheckedException {
+	private static Integer execute(Shell shell, Configuration rhino, Interface $engine) throws Invocation.CheckedException {
 		try {
 			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $engine);
 			Object ignore = shell.execute(execution);
@@ -185,8 +185,8 @@ public class Rhino {
 				Throwable t = errors[i].getThrowable();
 				if (t instanceof WrappedException) {
 					WrappedException wrapper = (WrappedException)t;
-					if (wrapper.getWrappedException() instanceof Host.ExitException) {
-						Host.ExitException exit = (Host.ExitException)wrapper.getWrappedException();
+					if (wrapper.getWrappedException() instanceof ExitException) {
+						ExitException exit = (ExitException)wrapper.getWrappedException();
 						int status = exit.getStatus();
 						Logging.get().log(Shell.class, Level.INFO, "Engine.Errors errors[%d] is ExitException with status %d", i, status);
 						Logging.get().log(Shell.class, Level.INFO, "Engine.Errors element stack trace", exit);
@@ -199,14 +199,7 @@ public class Rhino {
 			e.dump(rhino.getLog(), "[jsh] ");
 			return -1;
 		} finally {
-			for (int i=0; i<finalizers.size(); i++) {
-				try {
-					finalizers.get(i).run();
-				} catch (Throwable t) {
-					//	TODO	log something about the exception
-					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
-				}
-			}
+			$engine.destroy();
 		}		
 	}
 
@@ -214,11 +207,111 @@ public class Rhino {
 //		return Host.create(installation, configuration, rhino, invocation).load();
 //	}
 	
+	static class ExitException extends Exception {
+		private int status;
+
+		ExitException(int status) {
+			this.status = status;
+		}
+
+		int getStatus() {
+			return status;
+		}
+	}
+
+	public static class Interface {
+		private Installation installation;
+		private Configuration rhino;
+		private Engine.Debugger debugger;
+		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
+		
+		Interface(Installation installation, Rhino.Configuration rhino) {
+			this.installation = installation;
+			this.rhino = rhino;
+			this.debugger = rhino.getEngine().getDebugger();
+		}
+		
+		private Interface(Installation installation, Rhino.Configuration rhino, Engine.Debugger debugger) {
+			this.installation = installation;
+			this.rhino = rhino;
+			this.debugger = debugger;
+		}
+		
+		//	TODO	can this level of indirection surrounding debugger be removed?
+		
+		public class Debugger {
+			public boolean isBreakOnExceptions() {
+				return debugger.isBreakOnExceptions();
+			}
+
+			public void setBreakOnExceptions(boolean b) {
+				debugger.setBreakOnExceptions(b);
+			}
+		}
+
+		public Debugger getDebugger() {
+			return new Debugger();
+		}
+		
+		public void addFinalizer(Runnable finalizer) {
+			finalizers.add(finalizer);
+		}
+		
+		public void destroy() {
+			for (int i=0; i<finalizers.size(); i++) {
+				try {
+					finalizers.get(i).run();
+				} catch (Throwable t) {
+					//	TODO	log something about the exception
+					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
+				}
+			}			
+		}
+
+		public Loader.Classpath getClasspath() {
+			return rhino.getEngine().getApplicationClassLoader().toScriptClasspath();
+		}
+
+		public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+			return rhino.getEngine().script(name, code, scope, target);
+		}
+
+		public void exit(int status) throws ExitException {
+			debugger.setBreakOnExceptions(false);
+			throw new ExitException(status);
+		}
+		
+		private Interface subinterface() {
+			//	TODO	provide separate classloader for child script
+			return new Interface(installation,rhino,debugger);
+		}
+
+		public int jsh(final Shell.Configuration configuration, final Invocation invocation) throws IOException, Invocation.CheckedException {
+			System.err.println("Invocation: " + invocation);
+			boolean breakOnExceptions = debugger.isBreakOnExceptions();
+			Shell subshell = new Shell() {
+				@Override public Installation getInstallation() {
+					return installation;
+				}
+
+				@Override public Shell.Configuration getConfiguration() {
+					return configuration;
+				}
+
+				@Override public Invocation getInvocation() throws Invocation.CheckedException {
+					return invocation;
+				}
+			};
+			Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
+			debugger.setBreakOnExceptions(breakOnExceptions);
+			if (rv == null) return 0;
+			return rv.intValue();
+		}
+	}
+
 	static class Host {
 		private Shell shell;
 		private Rhino.Configuration rhino;
-
-		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
 
 		static Host create(Shell shell, Rhino.Configuration rhino) {
 			Host rv = new Host();
@@ -228,76 +321,14 @@ public class Rhino {
 			return rv;
 		}
 
-		static class ExitException extends Exception {
-			private int status;
-
-			ExitException(int status) {
-				this.status = status;
-			}
-
-			int getStatus() {
-				return status;
-			}
-		}
-
 		Integer execute() throws Invocation.CheckedException {
-			return Rhino.execute(shell, rhino, new Interface(), finalizers);
+			return Rhino.execute(shell, rhino, new Interface(shell.getInstallation(), rhino));
 		}
 
 		Scriptable load() throws Invocation.CheckedException {
 			throw new UnsupportedOperationException("Unimplemented");
 //			return rhino.getEngine().load(createProgram());
-		}
-		
-		public class Interface {
-			public class Debugger {
-				private Engine.Debugger implementation = Host.this.rhino.getEngine().getDebugger();
-
-				public boolean isBreakOnExceptions() {
-					return implementation.isBreakOnExceptions();
-				}
-
-				public void setBreakOnExceptions(boolean b) {
-					implementation.setBreakOnExceptions(b);
-				}
-			}
-
-			public Debugger getDebugger() {
-				return new Debugger();
-			}
-			
-			public Loader.Classpath getClasspath() {
-				return Host.this.rhino.getEngine().getApplicationClassLoader().toScriptClasspath();
-			}
-			
-			public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
-				return Host.this.rhino.getEngine().script(name, code, scope, target);
-			}
-
-			public void exit(int status) throws ExitException {
-				Host.this.rhino.getEngine().getDebugger().setBreakOnExceptions(false);
-				throw new ExitException(status);
-			}
-
-			public int jsh(final Shell.Configuration configuration, final Invocation invocation) throws IOException, Invocation.CheckedException {
-				Shell subshell = new Shell() {
-					@Override public Installation getInstallation() {
-						return shell.getInstallation();
-					}
-
-					@Override public Shell.Configuration getConfiguration() {
-						return configuration;
-					}
-
-					@Override public Invocation getInvocation() throws Invocation.CheckedException {
-						return invocation;
-					}
-				};
-				Integer rv = Rhino.execute(subshell, Host.this.rhino);
-				if (rv == null) return 0;
-				return rv.intValue();
-			}
-		}
+		}		
 	}
 	private static void exit(int status) {
 		System.exit(status);
