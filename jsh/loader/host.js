@@ -1,4 +1,18 @@
 var $host = new function() {
+	var installation;
+	var invocation;
+	
+	if (Packages.java.lang.System.getProperty("jsh.launcher.packaged") != null) {
+		installation = Packages.inonit.script.jsh.Installation.packaged();
+		invocation = Packages.inonit.script.jsh.Invocation.packaged($engine.getArguments());
+	} else {
+		installation = Packages.inonit.script.jsh.Installation.unpackaged();
+		if ($engine.getArguments().length == 0) {
+			throw new Error("No arguments supplied; is this actually a packaged application? system properties = " + Packages.java.lang.System.getProperties());
+		}
+		invocation = Packages.inonit.script.jsh.Invocation.create($engine.getArguments());
+	}
+	
 	this.getRhinoLoader = function() {
 		var debug = function(string) {
 			Packages.java.lang.System.err.println(string);
@@ -8,28 +22,20 @@ var $host = new function() {
 		var _streams = new _Streams();
 		
 		var getLoaderCode = function(path) {
-			var loaderPath = Packages.java.lang.System.getProperty("jsh.library.scripts.loader");
-			var _File = Packages.java.io.File;
-			var _FileReader = Packages.java.io.FileReader;
-			var rv = _streams.readString(new _FileReader(new _File(new _File(loaderPath), path)));
+//			return installation
+//			var loaderPath = Packages.java.lang.System.getProperty("jsh.library.scripts.loader");
+//			if (!loaderPath && Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
+//				throw new Error("getLoaderCode not implemented correctly for packaged applications; loading " + path);
+//			}
+//			var _File = Packages.java.io.File;
+//			var _FileReader = Packages.java.io.FileReader;
+			var rv = _streams.readString(installation.getPlatformLoader(path).getReader());
 			return rv;
 		}
 		
-		var toScope = function(scope) {
-			var global = (function() { return this; })();
-			if (false) {
-				var rv = {};
-				for (var x in global) {
-					rv[x] = global[x];
-				}
-				for (var x in scope) {
-					rv[x] = scope[x];
-				}
-				return rv;
-			} else {
-				scope.__proto__ = global;
-				return scope;
-			}
+		var toScope = function(object) {
+			if ($engine.toScope) return $engine.toScope(object);
+			return object;
 		}
 		
 		//	Try to port inonit.script.rhino.Loader.Bootstrap
@@ -42,6 +48,10 @@ var $host = new function() {
 			var classpath = new function() {
 				this.append = function(code) {
 					$engine.getClasspath().append(code);
+				};
+				
+				this.getClass = function(name) {
+					return $engine.getClasspath().getClass(name);
 				}
 			};
 
@@ -60,17 +70,6 @@ var $host = new function() {
 		
 		return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
 	};
-	
-	var installation;
-	var invocation;
-	
-	if (Packages.java.lang.System.getProperty("jsh.launcher.packaged") != null) {
-		installation = Packages.inonit.script.jsh.Installation.packaged();
-		invocation = Packages.inonit.script.jsh.Invocation.packaged($engine.getArguments());
-	} else {
-		installation = Packages.inonit.script.jsh.Installation.unpackaged();
-		invocation = Packages.inonit.script.jsh.Invocation.create($engine.getArguments());
-	}
 	
 	var configuration = Packages.inonit.script.jsh.Shell.Configuration.main();
 	

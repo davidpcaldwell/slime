@@ -34,5 +34,22 @@ var $engine = new function() {
 	
 	this.getDebugger = function() {
 		return fakeDebugger;
-	}	
+	}
+	
+	this.toScope = function(scope) {
+		var global = (function() { return this; })();
+		if (false) {
+			var rv = {};
+			for (var x in global) {
+				rv[x] = global[x];
+			}
+			for (var x in scope) {
+				rv[x] = scope[x];
+			}
+			return rv;
+		} else {
+			scope.__proto__ = global;
+			return scope;
+		}
+	}
 }

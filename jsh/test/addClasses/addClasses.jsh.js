@@ -34,7 +34,7 @@ var verify = function(b,message) {
 
 var getClass = function(name) {
 	try {
-		return $host.getLoader().getJavaClass(name);
+		return jsh.java.getClass(name);
 	} catch (e) {
 		return null;
 	}

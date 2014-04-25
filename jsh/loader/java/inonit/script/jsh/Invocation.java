@@ -61,7 +61,7 @@ public abstract class Invocation {
 		}
 	}
 	
-	static Invocation packaged(final String[] arguments) {
+	public static Invocation packaged(final String[] arguments) {
 		return new Invocation() {
 			public Script getScript() {
 				return Script.create(Code.Source.File.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
@@ -74,6 +74,9 @@ public abstract class Invocation {
 	}
 
 	public static Invocation create(String[] arguments) throws CheckedException {
+		if (arguments.length == 0) {
+			throw new IllegalArgumentException("At least one argument, representing the script, is required.");
+		}
 		final List<String> args = new ArrayList<String>();
 		args.addAll(Arrays.asList(arguments));
 		final String scriptPath = args.remove(0);

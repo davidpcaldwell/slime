@@ -196,7 +196,7 @@ public class Main {
 			engine.setDontenum(true);
 			program.set(engine);
 
-			boolean USE_JAVASCRIPT_HOST = false;
+			boolean USE_JAVASCRIPT_HOST = true;
 			if (!USE_JAVASCRIPT_HOST) {
 				Engine.Program.Variable jsh = Engine.Program.Variable.create(
 					"$host",
@@ -291,8 +291,12 @@ public class Main {
 				return new Debugger();
 			}
 			
-			public void script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
-				Host.this.rhino.getEngine().script(name, code, scope, target);
+			public Loader.Classpath getClasspath() {
+				return Host.this.rhino.getEngine().getApplicationClassLoader().toScriptClasspath();
+			}
+			
+			public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+				return Host.this.rhino.getEngine().script(name, code, scope, target);
 			}
 
 			public void exit(int status) throws ExitException {
@@ -301,7 +305,7 @@ public class Main {
 			}
 
 			//	TODO	this is really intended to include a Main.Configuration as well but we are in the middle of refactoring
-			public int jsh(Shell.Configuration configuration, final File script, final String[] arguments) {
+			public int jsh(Shell.Configuration configuration, final File script, final String[] arguments) throws IOException {
 				Invocation invocation = new Invocation() {
 					@Override public Invocation.Script getScript() {
 						return Invocation.Script.create(script);
@@ -311,7 +315,11 @@ public class Main {
 						return arguments;
 					}
 				};
-				Integer rv = Main.execute(installation, configuration, rhino, invocation, arguments);
+				//	TODO	this temporary workaround is for refactoring purposes
+				ArrayList<String> restoreArguments = new ArrayList<String>();
+				restoreArguments.add(script.getCanonicalPath());
+				restoreArguments.addAll(Arrays.asList(arguments));
+				Integer rv = Main.execute(installation, configuration, rhino, invocation, restoreArguments.toArray(new String[0]));
 				if (rv == null) return 0;
 				return rv.intValue();
 			}

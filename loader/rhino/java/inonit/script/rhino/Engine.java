@@ -633,9 +633,11 @@ public class Engine {
 		source.evaluate(debugger, contexts, scope, target);
 	}
 	
-	public void script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+	public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name,code);
-		source.evaluate(debugger, contexts, scope, target);
+		Object rv = source.evaluate(debugger, contexts, scope, target);
+		if (rv instanceof Scriptable) return (Scriptable)rv;
+		return null;
 	}
 
 	public static class Errors extends RuntimeException {
