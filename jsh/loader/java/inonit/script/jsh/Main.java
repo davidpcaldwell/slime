@@ -55,6 +55,61 @@ public class Main {
 		Engine getEngine() {
 			return engine;
 		}
+		
+		static Configuration main(final Shell.Configuration shell) {
+			return new Configuration() {
+				public int getOptimizationLevel() {
+					int optimization = -1;
+					if (System.getProperty("jsh.optimization") != null) {
+						//	TODO	validate this value
+						optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
+					}
+					return optimization;
+				}
+
+				public Engine.Debugger getDebugger() {
+					String id = System.getProperty("jsh.script.debugger");
+					if (id == null) return null;
+					if (id.equals("rhino")) {
+						Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+							@Override
+							public void uncaughtException(Thread t, Throwable e) {
+								if (t.getName().startsWith("AWT")) {
+									//	do nothing
+									Logging.get().log(Main.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
+								} else {
+									System.err.print("Exception in thread \"" + t.getName() + "\"");
+									e.printStackTrace();
+								}
+							}
+						});
+						return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
+							public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
+								return Gui.RHINO_UI_FACTORY;
+							}
+						});
+					} else if (id.equals("profiler")) {
+						return new Engine.Profiler();
+					} else if (id.startsWith("profiler:")) {
+						return new Engine.Profiler();
+					} else {
+						//	TODO	emit some kind of error?
+						return null;
+					}
+				}
+
+				public Engine.Log getLog() {
+					return new Engine.Log() {
+						public String toString() { return "Engine.Log: System.err"; }
+
+						public void println(String message) {
+							Logging.get().log(Main.class, Level.FINER, "Logging: " + message + " to System.err ...");
+							((PrintStream)shell.getStdio().getStandardError()).println(message);
+						}
+					};
+				}
+			};
+		}
 	}
 
 	private String[] arguments;
@@ -77,58 +132,7 @@ public class Main {
 
 		final Shell.Configuration configuration = Shell.Configuration.main();
 		
-		this.rhino = new Configuration() {
-			public int getOptimizationLevel() {
-				int optimization = -1;
-				if (System.getProperty("jsh.optimization") != null) {
-					//	TODO	validate this value
-					optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
-				}
-				return optimization;
-			}
-
-			public Engine.Debugger getDebugger() {
-				String id = System.getProperty("jsh.script.debugger");
-				if (id == null) return null;
-				if (id.equals("rhino")) {
-					Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-						@Override
-						public void uncaughtException(Thread t, Throwable e) {
-							if (t.getName().startsWith("AWT")) {
-								//	do nothing
-								Logging.get().log(Main.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
-							} else {
-								System.err.print("Exception in thread \"" + t.getName() + "\"");
-								e.printStackTrace();
-							}
-						}
-					});
-					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
-						public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
-							return Gui.RHINO_UI_FACTORY;
-						}
-					});
-				} else if (id.equals("profiler")) {
-					return new Engine.Profiler();
-				} else if (id.startsWith("profiler:")) {
-					return new Engine.Profiler();
-				} else {
-					//	TODO	emit some kind of error?
-					return null;
-				}
-			}
-
-			public Engine.Log getLog() {
-				return new Engine.Log() {
-					public String toString() { return "Engine.Log: System.err"; }
-
-					public void println(String message) {
-						Logging.get().log(Main.class, Level.FINER, "Logging: " + message + " to System.err ...");
-						((PrintStream)configuration.getStdio().getStandardError()).println(message);
-					}
-				};
-			}
-		};
+		this.rhino = Configuration.main(configuration);
 
 		Integer rv = Main.execute(
 			installation,
