@@ -21,7 +21,6 @@ import org.mozilla.javascript.*;
 import inonit.system.*;
 import inonit.script.engine.*;
 import inonit.script.rhino.*;
-import inonit.script.runtime.io.*;
 
 public class Rhino {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
