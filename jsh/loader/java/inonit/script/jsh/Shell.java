@@ -142,6 +142,7 @@ public abstract class Shell {
 		public abstract void host(String name, Object value);
 		public abstract void addEngine();
 		public abstract void script(Code.Source.File script);
+		//	TODO	throw exception?
 		public abstract Object execute();
 	}	
 }

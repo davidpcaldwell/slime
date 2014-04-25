@@ -19,9 +19,6 @@ var $engine = new function() {
 	this.getClasspath = function() {
 		return $nashorn.getClasspath();
 	}
-	this.getArguments = function() {
-		return $nashorn.getArguments();
-	}
 	
 	var fakeDebugger = new function() {
 		this.setBreakOnExceptions = function(b) {

@@ -1,6 +1,6 @@
 package inonit.script.jsh;
 
-import java.io.*;
+import java.util.*;
 
 import javax.script.*;
 
@@ -10,47 +10,67 @@ import java.util.List;
 public class Nashorn {
 	public static abstract class Host {
 		public abstract Loader.Classpath getClasspath();
-		public abstract String[] getArguments();
 	}
 	
-	private static Object eval(ScriptEngine engine, Code.Source.File file) throws ScriptException {
-//		ScriptContext c = new SimpleScriptContext();
-		ScriptContext c = engine.getContext();
-		c.setAttribute(ScriptEngine.FILENAME, file.getSourceName(), ScriptContext.ENGINE_SCOPE);
-		return engine.eval(file.getReader(), c);
-	}
-	
-	public static void main(final String[] args) {
-		final Classes classes = Classes.create(new Classes.Configuration() {
-			@Override public boolean canCreateClassLoaders() {
-				return true;
-			}
+	private static class ExecutionImpl extends Shell.Execution {
+		private Code.Source.File nashornJs;
+		private Classes classes;
+		private ScriptEngineManager factory;
+		private ScriptEngine engine;
+		
+		ExecutionImpl(Code.Source.File nashornJs) {
+			this.nashornJs = nashornJs;
+			this.classes = Classes.create(new Classes.Configuration() {
+				@Override public boolean canCreateClassLoaders() {
+					return true;
+				}
 
-			@Override public ClassLoader getApplicationClassLoader() {
-				return Nashorn.class.getClassLoader();
-			}
-		});
-		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
-		ScriptEngineManager factory = new ScriptEngineManager();
-		factory.getBindings().put("$shell", Shell.main(args));
-		factory.getBindings().put("$nashorn", new Host() {
-			@Override public Loader.Classpath getClasspath() {
-				return classes.getScriptClasses().toScriptClasspath();
-			}
-			
-			@Override public String[] getArguments() {
-				return args;
-			}
-		});
-		ScriptEngine engine = factory.getEngineByName("nashorn");
-		Installation installation = Installation.unpackaged();
-		try {
-			eval(engine, installation.getJshLoader("nashorn.js"));
-			eval(engine, installation.getJshLoader("host.js"));
-			eval(engine, installation.getJshLoader("jsh.js"));
-			eval(engine, Code.Source.File.create(new File(args[0])));
-		} catch (ScriptException e) {
-			throw new RuntimeException(e);
+				@Override public ClassLoader getApplicationClassLoader() {
+					return Nashorn.class.getClassLoader();
+				}
+			});
+			Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
+			this.factory = new ScriptEngineManager();
+			this.engine = factory.getEngineByName("nashorn");
 		}
+		
+		@Override public void host(String name, Object value) {
+			factory.getBindings().put(name, value);
+		}
+
+		@Override public void addEngine() {
+			host("$nashorn", new Host() {
+				@Override public Loader.Classpath getClasspath() {
+					return classes.getScriptClasses().toScriptClasspath();
+				}
+			});
+			scripts.add(nashornJs);
+		}
+		
+		private List<Code.Source.File> scripts = new ArrayList<Code.Source.File>();
+
+		@Override public void script(Code.Source.File script) {
+			scripts.add(script);
+		}
+
+		@Override public Object execute() {
+			try {
+				for (Code.Source.File file : scripts) {
+					ScriptContext c = engine.getContext();
+					c.setAttribute(ScriptEngine.FILENAME, file.getSourceName(), ScriptContext.ENGINE_SCOPE);
+					engine.eval(file.getReader(), c);
+				}
+				//	TODO	global object?
+				return null;
+			} catch (ScriptException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	} 
+	
+	public static void main(final String[] args) throws Invocation.CheckedException {
+		Shell shell = Shell.main(args);
+		Shell.Execution execution = new ExecutionImpl(shell.getInstallation().getJshLoader("nashorn.js"));
+		shell.execute(execution);
 	}
 }
