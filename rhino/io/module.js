@@ -162,7 +162,7 @@ var Writer = function(peer) {
 			peer.write( string.toXMLString() );
 			peer.flush();
 		} else if (typeof(string) == "string") {
-			peer.write( string );
+			peer.write( String(string) );
 			peer.flush();
 		} else {
 			throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);

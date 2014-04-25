@@ -45,7 +45,6 @@ public class Nashorn {
 		Installation installation = Installation.unpackaged();
 		try {
 			Object host = eval(engine, installation.getJshLoader("nashorn-host.js"));
-			System.err.println(host);
 			eval(engine, installation.getJshLoader("jsh.js"));
 			eval(engine, Code.Source.File.create(new File(args[0])));
 		} catch (ScriptException e) {

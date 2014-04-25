@@ -12,9 +12,7 @@ var $host = new function() {
 			var loaderPath = Java.type("java.lang.System").getProperty("jsh.library.scripts.loader");
 			var _File = Java.type("java.io.File");
 			var _FileReader = Java.type("java.io.FileReader");
-			debug(loaderPath);
 			var rv = _streams.readString(new _FileReader(new _File(new _File(loaderPath), path)));
-			Packages.java.lang.System.err.println(rv);
 			return rv;
 		}
 		
@@ -27,11 +25,9 @@ var $host = new function() {
 		evaluateSourceSignature[2] = ScriptObject.class;
 		var evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
 		evaluateSource.setAccessible(true);
-		debug("evaluateSource = " + evaluateSource);
 		var script = function(name,code,scope,target) {
 			var context = Context.getContext();
 //			return context.evaluateSource(new Source(name,code), scope, target);
-			debug("scope = " + scope + " target = " + target);
 			var notNull = function(o) {
 				return (o) ? o : {};
 			}
@@ -64,7 +60,6 @@ var $host = new function() {
 //			var classpath = $nashorn.getClasspath();
 			var classpath = new function() {
 				this.append = function(code) {
-					debug("appending: " + code);
 					$nashorn.getClasspath().append(code);
 				}
 			};
@@ -84,7 +79,6 @@ var $host = new function() {
 			};
 
 			this.script = function(name,input,scope,target) {
-				debug("loading: " + name);
 				return script(name,_streams.readString(input),toScope(scope),target);
 			};
 			
@@ -95,8 +89,6 @@ var $host = new function() {
 		
 		var Context = Java.type("jdk.nashorn.internal.runtime.Context");
 		var context = Context.getContext();
-		debug("context = " + context);
-		debug("eval = " + eval);
 		return script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
 	};
 	
@@ -118,6 +110,10 @@ var $host = new function() {
 			
 			this.getPlugins = function() {
 				return installation.getPlugins();
+			}
+			
+			this.getPackagedCode = function() {
+				return null;
 			}
 		}
 	};
