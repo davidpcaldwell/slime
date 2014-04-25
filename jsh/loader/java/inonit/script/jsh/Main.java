@@ -226,6 +226,15 @@ public class Main {
 		private Engine.Program createProgram() {
 			Engine.Program program = new Engine.Program();
 
+			Engine.Program.Variable engine = Engine.Program.Variable.create(
+				"$engine",
+				Engine.Program.Variable.Value.create(new EngineInterface())
+			);
+			engine.setReadonly(true);
+			engine.setPermanent(true);
+			engine.setDontenum(true);
+			program.set(engine);
+
 			Engine.Program.Variable jsh = Engine.Program.Variable.create(
 				"$host",
 				Engine.Program.Variable.Value.create(new Interface())
@@ -285,6 +294,24 @@ public class Main {
 
 		Scriptable load() {
 			return rhino.getEngine().load(createProgram());
+		}
+		
+		public class EngineInterface {
+			public class Debugger {
+				private Engine.Debugger implementation = Host.this.rhino.getEngine().getDebugger();
+
+				public boolean isBreakOnExceptions() {
+					return implementation.isBreakOnExceptions();
+				}
+
+				public void setBreakOnExceptions(boolean b) {
+					implementation.setBreakOnExceptions(b);
+				}
+			}
+
+			public Debugger getDebugger() {
+				return new Debugger();
+			}			
 		}
 
 		public class Interface {
@@ -367,22 +394,6 @@ public class Main {
 
 			public Stdio getStdio() {
 				return new Stdio();
-			}
-
-			public class Debugger {
-				private Engine.Debugger implementation = Host.this.rhino.getEngine().getDebugger();
-
-				public boolean isBreakOnExceptions() {
-					return implementation.isBreakOnExceptions();
-				}
-
-				public void setBreakOnExceptions(boolean b) {
-					implementation.setBreakOnExceptions(b);
-				}
-			}
-
-			public Debugger getDebugger() {
-				return new Debugger();
 			}
 
 			//	Contains information used by jsh.script, like arguments and the base file invoked

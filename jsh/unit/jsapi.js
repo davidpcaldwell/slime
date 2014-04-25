@@ -251,10 +251,10 @@ $exports.tests = new function() {
 				},
 				disableBreakOnExceptions: function(f) {
 					return function() {
-						var isBreak = $host.getDebugger().isBreakOnExceptions();
-						$host.getDebugger().setBreakOnExceptions(false);
+						var isBreak = $engine.getDebugger().isBreakOnExceptions();
+						$engine.getDebugger().setBreakOnExceptions(false);
 						var rv = f.apply(this,arguments);
-						$host.getDebugger().setBreakOnExceptions(isBreak);
+						$engine.getDebugger().setBreakOnExceptions(isBreak);
 						return rv;
 					}
 				}

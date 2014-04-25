@@ -84,15 +84,15 @@ plugin({
 
 		jsh.debug.disableBreakOnExceptionsFor = function(f) {
 			return function() {
-				var enabled = $host.getDebugger().isBreakOnExceptions();
+				var enabled = $engine.getDebugger().isBreakOnExceptions();
 				if (enabled) {
-					$host.getDebugger().setBreakOnExceptions(false);
+					$engine.getDebugger().setBreakOnExceptions(false);
 				}
 				try {
 					return f.apply(this,arguments);
 				} finally {
 					if (enabled) {
-						$host.getDebugger().setBreakOnExceptions(true);
+						$engine.getDebugger().setBreakOnExceptions(true);
 					}
 				}
 			}
