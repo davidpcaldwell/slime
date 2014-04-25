@@ -57,7 +57,7 @@ public class Main {
 		}
 	}
 
-	private List<String> args;
+	private String[] arguments;
 
 	private Configuration rhino;
 
@@ -68,51 +68,11 @@ public class Main {
 		Installation installation = null;
 		Invocation invocation = null;
 		if (System.getProperty("jsh.launcher.packaged") != null) {
-			installation = new Installation() {
-				public String toString() {
-					return getClass().getName() + " [packaged]";
-				}
-
-				public Code.Source.File getPlatformLoader(String path) {
-					return Code.Source.File.create("[slime]:" + path, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
-				}
-
-				public Code.Source.File getJshLoader(String path) {
-					InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/" + path);
-					if (in == null) {
-						throw new RuntimeException("Not found in system class loader: $jsh/" + path + "; system class path is " + System.getProperty("java.class.path"));
-					}
-					return Code.Source.File.create("jsh/" + path, in);
-				}
-
-				public Code getShellModuleCode(String path) {
-					return Code.system(
-						"$jsh/modules/" + path + "/"
-					);
-				}
-
-				public Plugin[] getPlugins() {
-					String[] paths = System.getProperty("jsh.plugins").split("\\" + java.io.File.pathSeparator);
-					ArrayList<Plugin> rv = new ArrayList<Plugin>();
-					for (int i=0; i<paths.length; i++) {
-						Plugin.addPluginsTo(rv, new File(paths[i]));
-					}
-					return rv.toArray(new Plugin[rv.size()]);
-				}
-			};
-
-			invocation = new Invocation() {
-				public Script getScript() {
-					return Script.create(Code.Source.File.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
-				}
-
-				public String[] getArguments() {
-					return (String[])args.toArray(new String[0]);
-				}
-			};
+			installation = Installation.packaged();
+			invocation = Invocation.packaged(arguments);
 		} else {
 			installation = Installation.unpackaged();
-			invocation = Invocation.create(args.toArray(new String[0]));
+			invocation = Invocation.create(arguments);
 		}
 
 		final Shell.Configuration configuration = Shell.Configuration.main();
@@ -174,7 +134,8 @@ public class Main {
 			installation,
 			configuration,
 			this.rhino,
-			invocation
+			invocation,
+			arguments
 		);
 
 		return rv;
@@ -182,8 +143,8 @@ public class Main {
 
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	public static Integer execute(Installation installation, Shell.Configuration configuration, Main.Configuration rhino, Invocation invocation) {
-		return Host.create(installation, configuration, rhino, invocation).execute();
+	public static Integer execute(Installation installation, Shell.Configuration configuration, Main.Configuration rhino, Invocation invocation, String[] arguments) {
+		return Host.create(installation, configuration, rhino, invocation).execute(arguments);
 	}
 
 	public static Scriptable load(Installation installation, Shell.Configuration configuration, Main.Configuration rhino, Invocation invocation) {
@@ -223,26 +184,31 @@ public class Main {
 			}
 		}
 
-		private Engine.Program createProgram() {
+		private Engine.Program createProgram(String[] arguments) {
 			Engine.Program program = new Engine.Program();
 
 			Engine.Program.Variable engine = Engine.Program.Variable.create(
 				"$engine",
-				Engine.Program.Variable.Value.create(new EngineInterface())
+				Engine.Program.Variable.Value.create(new EngineInterface(arguments))
 			);
 			engine.setReadonly(true);
 			engine.setPermanent(true);
 			engine.setDontenum(true);
 			program.set(engine);
 
-			Engine.Program.Variable jsh = Engine.Program.Variable.create(
-				"$host",
-				Engine.Program.Variable.Value.create(new Interface())
-			);
-			jsh.setReadonly(true);
-			jsh.setPermanent(true);
-			jsh.setDontenum(true);
-			program.set(jsh);
+			if (true) {
+				Engine.Program.Variable jsh = Engine.Program.Variable.create(
+					"$host",
+					Engine.Program.Variable.Value.create(new Interface())
+				);
+				jsh.setReadonly(true);
+				jsh.setPermanent(true);
+				jsh.setDontenum(true);
+				program.set(jsh);
+			} else {
+				Engine.Source hostJs = Engine.Source.create(installation.getJshLoader("host.js"));
+				program.add(hostJs);				
+			}
 
 			Engine.Source jshJs = Engine.Source.create(installation.getJshLoader("jsh.js"));
 			if (jshJs == null) {
@@ -254,9 +220,9 @@ public class Main {
 			return program;
 		}
 
-		Integer execute() {
+		Integer execute(String[] arguments) {
 			try {
-				Object ignore = rhino.getEngine().execute(createProgram());
+				Object ignore = rhino.getEngine().execute(createProgram(arguments));
 				return null;
 			} catch (Engine.Errors e) {
 				Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
@@ -293,10 +259,21 @@ public class Main {
 		}
 
 		Scriptable load() {
-			return rhino.getEngine().load(createProgram());
+			if (true) throw new UnsupportedOperationException("Broken.");
+			return rhino.getEngine().load(createProgram(null));
 		}
 		
 		public class EngineInterface {
+			private String[] arguments;
+			
+			EngineInterface(String[] arguments) {
+				this.arguments = arguments;
+			}
+			
+			public String[] getArguments() {
+				return arguments;
+			}
+			
 			public class Debugger {
 				private Engine.Debugger implementation = Host.this.rhino.getEngine().getDebugger();
 
@@ -311,7 +288,11 @@ public class Main {
 
 			public Debugger getDebugger() {
 				return new Debugger();
-			}			
+			}
+			
+			public void script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+				Host.this.rhino.getEngine().script(name, code, scope, target);
+			}
 
 			public void exit(int status) throws ExitException {
 				Host.this.rhino.getEngine().getDebugger().setBreakOnExceptions(false);
@@ -329,7 +310,7 @@ public class Main {
 						return arguments;
 					}
 				};
-				Integer rv = Main.execute(installation, configuration, rhino, invocation);
+				Integer rv = Main.execute(installation, configuration, rhino, invocation, arguments);
 				if (rv == null) return 0;
 				return rv.intValue();
 			}
@@ -451,8 +432,7 @@ public class Main {
 		}
 		Logging.get().log(Main.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
 		Main main = new Main();
-		main.args = new ArrayList();
-		main.args.addAll( Arrays.asList(args) );
+		main.arguments = args;
 		try {
 			Integer status = main.run();
 			Logging.get().log(Main.class, Level.INFO, "Exiting normally with status %d.", status);

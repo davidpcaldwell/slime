@@ -71,9 +71,18 @@ var $host = new function() {
 		return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
 	};
 	
-	var installation = Packages.inonit.script.jsh.Installation.unpackaged();
+	var installation;
+	var invocation;
+	
+	if (Packages.java.lang.System.getProperty("jsh.launcher.packaged") != null) {
+		installation = Packages.inonit.script.jsh.Installation.packaged();
+		invocation = Packages.inonit.script.jsh.Invocation.packaged($engine.getArguments());
+	} else {
+		installation = Packages.inonit.script.jsh.Installation.unpackaged();
+		invocation = Packages.inonit.script.jsh.Invocation.create($engine.getArguments());
+	}
+	
 	var configuration = Packages.inonit.script.jsh.Shell.Configuration.main();
-	var invocation = Packages.inonit.script.jsh.Invocation.create($engine.getArguments());
 	
 	this.getInvocation = function() {
 		return invocation;
@@ -92,7 +101,7 @@ var $host = new function() {
 			}
 			
 			this.getPackagedCode = function() {
-				return null;
+				return configuration.getPackagedCode();
 			}
 		}
 	};
@@ -126,7 +135,7 @@ var $host = new function() {
 		return stdio;
 	}
 	
-	this.getDebugger = function() {
-		return $engine.getDebugger();
+	this.getPlugins = function(file) {
+		return Packages.inonit.script.jsh.Installation.Plugin.get(file);
 	}
 };

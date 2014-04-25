@@ -632,6 +632,11 @@ public class Engine {
 		Source source = Engine.Source.create(name,new InputStreamReader(code));
 		source.evaluate(debugger, contexts, scope, target);
 	}
+	
+	public void script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+		Source source = Engine.Source.create(name,code);
+		source.evaluate(debugger, contexts, scope, target);
+	}
 
 	public static class Errors extends RuntimeException {
 		public static Errors get(Context context) {

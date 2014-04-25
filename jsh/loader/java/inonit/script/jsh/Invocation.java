@@ -60,6 +60,18 @@ public abstract class Invocation {
 			super(message, cause);
 		}
 	}
+	
+	static Invocation packaged(final String[] arguments) {
+		return new Invocation() {
+			public Script getScript() {
+				return Script.create(Code.Source.File.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
+			}
+
+			public String[] getArguments() {
+				return arguments;
+			}
+		};
+	}
 
 	public static Invocation create(String[] arguments) throws CheckedException {
 		final List<String> args = new ArrayList<String>();

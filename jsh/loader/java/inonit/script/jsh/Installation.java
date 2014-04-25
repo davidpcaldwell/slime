@@ -170,4 +170,39 @@ public abstract class Installation {
 			}
 		};
 	}
+	
+	public static Installation packaged() {
+		return new Installation() {
+			public String toString() {
+				return getClass().getName() + " [packaged]";
+			}
+
+			public Code.Source.File getPlatformLoader(String path) {
+				return Code.Source.File.create("[slime]:" + path, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
+			}
+
+			public Code.Source.File getJshLoader(String path) {
+				InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/" + path);
+				if (in == null) {
+					throw new RuntimeException("Not found in system class loader: $jsh/" + path + "; system class path is " + System.getProperty("java.class.path"));
+				}
+				return Code.Source.File.create("jsh/" + path, in);
+			}
+
+			public Code getShellModuleCode(String path) {
+				return Code.system(
+					"$jsh/modules/" + path + "/"
+				);
+			}
+
+			public Plugin[] getPlugins() {
+				String[] paths = System.getProperty("jsh.plugins").split("\\" + java.io.File.pathSeparator);
+				ArrayList<Plugin> rv = new ArrayList<Plugin>();
+				for (int i=0; i<paths.length; i++) {
+					Plugin.addPluginsTo(rv, new File(paths[i]));
+				}
+				return rv.toArray(new Plugin[rv.size()]);
+			}
+		};		
+	}
 }
