@@ -599,7 +599,12 @@ try {
 	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
 	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE == "nashorn") {
 		//	Nashorn
-		command.add(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
+		var JJS = false;
+		if (JJS) {
+			command.add(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
+		} else {
+			command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));			
+		}
 		//	TODO	handle JSH_JAVA_DEBUGGER
 		//	TODO	handle JSH_SCRIPT_DEBUGGER == "profiler"
 		//	TODO	decide about client-vs.-server VM, probably not needed
@@ -609,9 +614,13 @@ try {
 		environmentAndProperties();
 		command.add("-classpath");
 		command.add(shellClasspath.append(scriptClasspath).toPath());
-		command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("nashorn-host.js").path);
-		command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("jsh.js").path);
-		command.add("--");
+		if (JJS) {
+			command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("nashorn-host.js").path);
+			command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("jsh.js").path);
+			command.add("--");
+		} else {
+			command.add("inonit.script.jsh.Nashorn");
+		}
 	} else {
 		//	Rhino
 		command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));

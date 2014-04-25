@@ -7,7 +7,7 @@ import inonit.script.engine.*;
 
 public abstract class Installation {
 	public abstract Code.Source.File getPlatformLoader(String path);
-	public abstract Code.Source.File getJshLoader();
+	public abstract Code.Source.File getJshLoader(String path);
 
 	/**
 	 *	Specifies where code for "shell modules" -- modules included with jsh itself -- can be found.
@@ -136,8 +136,8 @@ public abstract class Installation {
 				return Code.Source.File.create(getFile("loader", path));
 			}
 
-			public Code.Source.File getJshLoader() {
-				return Code.Source.File.create(getFile("jsh", "jsh.js"));
+			public Code.Source.File getJshLoader(String path) {
+				return Code.Source.File.create(getFile("jsh", path));
 			}
 
 			public Code getShellModuleCode(String path) {

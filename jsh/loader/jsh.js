@@ -235,9 +235,10 @@ this.jsh = new function() {
 			context.pathext = environment.PATHEXT.split(";");
 		}
 
+		//	TODO	check to see whether this is used, because if it is, it had a longstanding copy-paste bug
 		context.stdio = new function() {
 			this.$out = $host.getStdio().getStandardOutput();
-			this.$in = $host.getStdio().getStandardError();
+			this.$in = $host.getStdio().getStandardInput();
 			this.$err = $host.getStdio().getStandardError();
 		}
 

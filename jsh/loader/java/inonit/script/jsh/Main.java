@@ -53,12 +53,12 @@ public class Main {
 					return Code.Source.File.create("[slime]:" + path, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
 				}
 
-				public Code.Source.File getJshLoader() {
-					InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/jsh.js");
+				public Code.Source.File getJshLoader(String path) {
+					InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/" + path);
 					if (in == null) {
-						throw new RuntimeException("Not found in system class loader: $jsh/jsh.js" + "; system class path is " + System.getProperty("java.class.path"));
+						throw new RuntimeException("Not found in system class loader: $jsh/" + path + "; system class path is " + System.getProperty("java.class.path"));
 					}
-					return Code.Source.File.create("jsh.js", in);
+					return Code.Source.File.create("jsh/" + path, in);
 				}
 
 				public Code getShellModuleCode(String path) {

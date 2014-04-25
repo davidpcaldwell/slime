@@ -33,14 +33,50 @@ var isJavaObject = function(object) {
 	if (typeof(object) == "boolean") return false;
 	if (object == null) return false;
 	//	TODO	Is the next line superfluous now?
-	if ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) ) return true;
-	//	TODO	is this really the best way to do this?
-	return (String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n");
+	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+		if ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) ) return true;		
+		//	TODO	is this really the best way to do this?
+		return (String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n");
+	} else {
+		if (Java.type("java.lang.Object[]").class.isInstance(object)) return true;
+		if (typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class) return true;
+	}
 }
 $exports.isJavaObject = isJavaObject;
 
-$exports.Properties = function($properties) {
-	return Packages.inonit.script.runtime.Properties.create($properties);
+if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+	$exports.Properties = function($properties) {
+		return Packages.inonit.script.runtime.Properties.create($properties);
+	}
+} else {
+	//	TODO	this is completely untested
+	$exports.Properties = function($properties) {
+		var rv = {};
+		var keys = $properties.propertyNames();
+		while(keys.hasMoreElements()) {
+			var name = keys.nextElement();
+			var value = $properties.getProperty(name);
+			var tokens = name.split(".");
+			var target = rv;
+			for (var i=0; i<tokens.length-1; i++) {
+				if (!target[tokens[i]]) {
+					target[tokens[i]] = {
+						toString: function() {
+							return null;
+						}
+					};
+				}
+			}
+			if (!target[tokens[i].length-1]) {
+				target[tokens[i].length-1] = value;
+			} else {
+				target[tokens[i].length-1].toString = function() {
+					return value;
+				}
+			}
+		}
+		return rv;
+	};
 }
 $api.experimental($exports,"Properties");
 $exports.Properties.adapt = function($properties) {
@@ -143,7 +179,12 @@ if ($context.globals) {
 	})();
 
 	errorNames.forEach( function(name) {
-		global[name] = errors.decorate(global[name]);
+		if (!global[name]) {
+			//	Probably just not defined in this engine
+			//	TODO	log message or synthesize error or something
+		} else {
+			global[name] = errors.decorate(global[name]);
+		}
 	});
 }
 

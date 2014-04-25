@@ -1,3 +1,4 @@
+load("nashorn:mozilla_compat.js");
 var $host = new function() {
 	this.getRhinoLoader = function() {
 		var debug = function(string) {
@@ -59,12 +60,19 @@ var $host = new function() {
 			this.getLoaderCode = function(path) {
 				return getLoaderCode(path);
 			};
-			
+
+//			var classpath = $nashorn.getClasspath();
 			var classpath = new function() {
 				this.append = function(code) {
-					throw new Error("Cannot append " + code.getClasses());
+					debug("appending: " + code);
+					$nashorn.getClasspath().append(code);
 				}
-			}
+			};
+//			var classpath = new function() {
+//				this.append = function(code) {
+//					throw new Error("Cannot append " + code.getClasses());
+//				}
+//			}
 
 			this.getClasspath = function() {
 				//	TODO	implement modifications if possible
@@ -77,7 +85,7 @@ var $host = new function() {
 
 			this.script = function(name,input,scope,target) {
 				debug("loading: " + name);
-				return script(name,_streams.readString(input),scope,target);
+				return script(name,_streams.readString(input),toScope(scope),target);
 			};
 			
 			this.setReadOnly = function(object,name,value) {
@@ -89,7 +97,7 @@ var $host = new function() {
 		var context = Context.getContext();
 		debug("context = " + context);
 		debug("eval = " + eval);
-		return script("<nashorn loader>", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
+		return script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
 	};
 	
 	var installation = Java.type("inonit.script.jsh.Installation").unpackaged();
@@ -101,6 +109,48 @@ var $host = new function() {
 			this.getBootstrapModule = function(path) {
 				return installation.getShellModuleCode(path);
 			};
+			
+			this.getPlugins = function() {
+				return installation.getPlugins();
+			}
 		}
+	};
+	
+	this.getEnvironment = function() {
+		return Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
+	};
+	
+	this.getSystemProperties = function() {
+		return Packages.java.lang.System.getProperties();
+	}
+	
+	var stdio = new function() {
+		this.getStandardInput = function() {
+			return Packages.java.lang.System.in;
+		}
+		this.getStandardOutput = function() {
+			return Packages.java.lang.System.out;
+		}
+		this.getStandardError = function() {
+			return Packages.java.lang.System.err;
+		}
+	};
+	
+	this.getStdio = function() {
+		return stdio;
+	}
+	
+	var fakeDebugger = new function() {
+		this.setBreakOnExceptions = function(b) {
+			
+		};
+		
+		this.isBreakOnExceptions = function() {
+			return false;
+		}
+	};
+	
+	this.getDebugger = function() {
+		return fakeDebugger;
 	}
 };

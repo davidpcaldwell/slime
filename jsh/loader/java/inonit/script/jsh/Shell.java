@@ -172,7 +172,7 @@ public class Shell {
 			jsh.setDontenum(true);
 			program.set(jsh);
 
-			Engine.Source jshJs = Engine.Source.create(installation.getJshLoader());
+			Engine.Source jshJs = Engine.Source.create(installation.getJshLoader("jsh.js"));
 			if (jshJs == null) {
 				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
 			}
