@@ -48,7 +48,7 @@ plugin({
 			return $host.getSystemProperties();
 		};
 		context.exit = function(code) {
-			$host.exit(code);
+			$engine.exit(code);
 		}
 		$loader.run(
 			"jsh.js",

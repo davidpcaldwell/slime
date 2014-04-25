@@ -313,6 +313,11 @@ public class Main {
 				return new Debugger();
 			}			
 
+			public void exit(int status) throws ExitException {
+				Host.this.rhino.getEngine().getDebugger().setBreakOnExceptions(false);
+				throw new ExitException(status);
+			}
+
 			//	TODO	this is really intended to include a Main.Configuration as well but we are in the middle of refactoring
 			public int jsh(Shell.Configuration configuration, final File script, final String[] arguments) {
 				Invocation invocation = new Invocation() {
@@ -415,11 +420,6 @@ public class Main {
 			//	Contains information used by jsh.script, like arguments and the base file invoked
 			public Invocation getInvocation() {
 				return invocation;
-			}
-
-			public void exit(int status) throws ExitException {
-				Host.this.rhino.getEngine().getDebugger().setBreakOnExceptions(false);
-				throw new ExitException(status);
 			}
 
 			public Installation.Plugin[] getPlugins(File file) {
