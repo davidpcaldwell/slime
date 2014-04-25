@@ -390,7 +390,7 @@ $exports.jsh = function(p) {
 			throw new TypeError("Expected script " + p.script + " to have pathname.java.adapt()");
 		}
 		//	TODO	Does Rhino 1.7R3 obviate the need for the Java array conversion stuff?
-		var status = $host.jsh(configuration,p.script.pathname.java.adapt(),$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
+		var status = $engine.jsh(configuration,p.script.pathname.java.adapt(),$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
 			return new Packages.java.lang.String(s);
 		}));
 		var evaluate = (p.evaluate) ? p.evaluate : function(result) {

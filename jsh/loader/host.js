@@ -72,7 +72,7 @@ var $host = new function() {
 	};
 	
 	var installation = Packages.inonit.script.jsh.Installation.unpackaged();
-	
+	var configuration = Packages.inonit.script.jsh.Shell.Configuration.main();
 	var invocation = Packages.inonit.script.jsh.Invocation.create($engine.getArguments());
 	
 	this.getInvocation = function() {
@@ -98,23 +98,28 @@ var $host = new function() {
 	};
 	
 	this.getEnvironment = function() {
-		return Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
+		return configuration.getEnvironment();
 	};
 	
 	this.getSystemProperties = function() {
-		return Packages.java.lang.System.getProperties();
+		return configuration.getSystemProperties();
 	}
 	
 	var stdio = new function() {
+		var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());
+		var err = new Packages.java.io.PrintStream(configuration.getStdio().getStandardError());
+		
 		this.getStandardInput = function() {
-			return Packages.java.lang.System.in;
-		}
+			return configuration.getStdio().getStandardInput();
+		};
+		
 		this.getStandardOutput = function() {
-			return Packages.java.lang.System.out;
-		}
+			return out;
+		};
+		
 		this.getStandardError = function() {
-			return Packages.java.lang.System.err;
-		}
+			return err;
+		};
 	};
 	
 	this.getStdio = function() {

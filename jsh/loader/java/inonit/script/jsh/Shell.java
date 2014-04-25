@@ -39,7 +39,7 @@ public class Shell {
 			public abstract OutputStream getStandardError();
 		}
 		
-		static Configuration main() {
+		public static Configuration main() {
 			return new Shell.Configuration() {
 				private InputStream stdin = new Logging.InputStream(System.in);
 				//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout

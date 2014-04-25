@@ -312,6 +312,22 @@ public class Main {
 			public Debugger getDebugger() {
 				return new Debugger();
 			}			
+
+			//	TODO	this is really intended to include a Main.Configuration as well but we are in the middle of refactoring
+			public int jsh(Shell.Configuration configuration, final File script, final String[] arguments) {
+				Invocation invocation = new Invocation() {
+					@Override public Invocation.Script getScript() {
+						return Invocation.Script.create(script);
+					}
+
+					@Override public String[] getArguments() {
+						return arguments;
+					}
+				};
+				Integer rv = Main.execute(installation, configuration, rhino, invocation);
+				if (rv == null) return 0;
+				return rv.intValue();
+			}
 		}
 
 		public class Interface {
@@ -410,22 +426,6 @@ public class Main {
 				List<Installation.Plugin> rv = new ArrayList<Installation.Plugin>();
 				Installation.Plugin.addPluginsTo(rv, file);
 				return rv.toArray(new Installation.Plugin[rv.size()]);
-			}
-
-			//	TODO	this is really intended to include a Main.Configuration as well but we are in the middle of refactoring
-			public int jsh(Shell.Configuration configuration, final File script, final String[] arguments) {
-				Invocation invocation = new Invocation() {
-					@Override public Invocation.Script getScript() {
-						return Invocation.Script.create(script);
-					}
-
-					@Override public String[] getArguments() {
-						return arguments;
-					}
-				};
-				Integer rv = Main.execute(installation, configuration, rhino, invocation);
-				if (rv == null) return 0;
-				return rv.intValue();
 			}
 
 //			//
