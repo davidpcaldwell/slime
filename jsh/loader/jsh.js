@@ -243,7 +243,7 @@ this.jsh = new function() {
 		}
 
 		//	TODO	both jsh.file and jsh.shell use this property; consider making it part of host object and/or shell configuration
-		//			and pushing property-mapping back into inonit.script.jsh.Main
+		//			and pushing property-mapping back into inonit.script.jsh.Shell
 		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
 
 		context.addFinalizer = addFinalizer;
@@ -355,7 +355,7 @@ this.jsh = new function() {
 				list.forEach(function(item) {
 					var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
 					Packages.inonit.system.Logging.get().log(
-						Packages.inonit.script.jsh.Main,
+						Packages.inonit.script.jsh.Shell,
 						Packages.java.util.logging.Level.WARNING,
 						"Plugin from " + item._code.getScripts() + " is disabled: " + message
 					);

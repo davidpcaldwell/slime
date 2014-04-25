@@ -655,7 +655,7 @@ try {
 			.append(scriptClasspath)
 			.toPath()
 		);
-		command.add("inonit.script.jsh.Main");
+		command.add("inonit.script.jsh.Rhino");
 	}
 	command.add(settings.get("script"));
 	var index = (settings.get("script")) ? 1 : 0;
