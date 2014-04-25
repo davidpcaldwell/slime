@@ -30,9 +30,9 @@ public class Main {
 	private Main() {
 	}
 
-	private Integer run() throws Shell.Invocation.CheckedException {
+	private Integer run() throws Invocation.CheckedException {
 		Installation installation = null;
-		Shell.Invocation invocation = null;
+		Invocation invocation = null;
 		if (System.getProperty("jsh.launcher.packaged") != null) {
 			installation = new Installation() {
 				public String toString() {
@@ -67,9 +67,9 @@ public class Main {
 				}
 			};
 
-			invocation = new Shell.Invocation() {
+			invocation = new Invocation() {
 				public Script getScript() {
-					return Script.create(Engine.Source.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
+					return Script.create(Code.Source.File.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
 				}
 
 				public String[] getArguments() {
@@ -78,7 +78,7 @@ public class Main {
 			};
 		} else {
 			installation = Installation.unpackaged();
-			invocation = Shell.Invocation.create(args.toArray(new String[0]));
+			invocation = Invocation.create(args.toArray(new String[0]));
 		}
 
 		this.configuration = new Shell.Configuration() {
@@ -209,7 +209,7 @@ public class Main {
 				main.configuration.getEngine().getDebugger().destroy();
 				//	JVM will exit normally when non-daemon threads complete.
 			}
-		} catch (Shell.Invocation.CheckedException e) {
+		} catch (Invocation.CheckedException e) {
 			Logging.get().log(Main.class, Level.INFO, "Exiting with checked exception.", e);
 			System.err.println(e.getMessage());
 			exit(1);

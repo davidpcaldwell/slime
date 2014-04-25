@@ -85,123 +85,6 @@ public class Shell {
 		}
 	}
 
-	public static abstract class Invocation {
-		public static abstract class Script {
-			private static Script create(final Engine.Source delegate, final java.net.URI uri) {
-				return new Script() {
-					@Override
-					public java.net.URI getUri() {
-						return uri;
-					}
-
-					public Engine.Source getSource() {
-						return delegate;
-					}
-				};
-			}
-
-			static Script create(File file) {
-				return create(Engine.Source.create(file), file.toURI());
-			}
-
-			static Script create(final Engine.Source delegate) {
-				return create(delegate, null);
-			}
-
-			public abstract java.net.URI getUri();
-
-
-			//			substitute; currently, it appears to only be used in jsh.js, to set the script property
-			public final File getFile() {
-				java.net.URI uri = getUri();
-				if (uri != null && uri.getScheme() != null && uri.getScheme().equals("file")) {
-					return new java.io.File(uri);
-				} else {
-					return null;
-				}
-			}
-
-			public abstract Engine.Source getSource();
-		}
-
-		public abstract Script getScript();
-		public abstract String[] getArguments();
-		
-		static class CheckedException extends Exception {
-			CheckedException(String message) {
-				super(message);
-			}
-
-			CheckedException(String message, Throwable cause) {
-				super(message, cause);
-			}
-		}
-
-		public static Invocation create(String[] arguments) throws CheckedException {
-			final List<String> args = new ArrayList<String>();
-			args.addAll(Arrays.asList(arguments));
-			final String scriptPath = args.remove(0);
-
-			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
-				final java.net.URL url;
-				final java.io.InputStream stream;
-				try {
-					url = new java.net.URL(scriptPath);
-					stream = url.openStream();
-				} catch (java.net.MalformedURLException e) {
-					throw new CheckedException("Malformed URL: " + scriptPath, e);
-				} catch (IOException e) {
-					throw new CheckedException("Could not open: " + scriptPath, e);
-				}
-				return new Invocation() {
-					public Script getScript() {
-						return new Script() {
-							@Override
-							public java.net.URI getUri() {
-								try {
-									return url.toURI();
-								} catch (java.net.URISyntaxException e) {
-									//	TODO	when can this happen? Probably should refactor to do this parsing earlier and use
-									//			CheckedException
-									throw new RuntimeException(e);
-								}
-							}
-
-							@Override
-							public Engine.Source getSource() {
-								return Engine.Source.create(scriptPath, stream);
-							}
-						};
-					}
-
-					public String[] getArguments() {
-						return args.toArray(new String[args.size()]);
-					}
-				};
-			} else {
-				final File mainScript = new File(scriptPath);
-				if (!mainScript.exists()) {
-					//	TODO	this really should not happen if the launcher is launching this
-					throw new CheckedException("File not found: " + scriptPath);
-				}
-				if (mainScript.isDirectory()) {
-					throw new CheckedException("Filename: " + scriptPath + " is a directory");
-				}
-
-				return new Invocation() {
-					public Script getScript() {
-						return Script.create(mainScript);
-					}
-
-					public String[] getArguments() {
-						return (String[])args.toArray(new String[0]);
-					}
-				};
-			}
-			
-		}
-	}
-
 	static class Host {
 		private Installation installation;
 		private Configuration configuration;
@@ -251,7 +134,7 @@ public class Shell {
 			}
 			program.add(jshJs);
 			//	TODO	jsh could execute this below
-			program.add(invocation.getScript().getSource());
+			program.add(Engine.Source.create(invocation.getScript().getSource()));
 			return program;
 		}
 

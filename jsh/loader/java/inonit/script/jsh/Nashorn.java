@@ -10,6 +10,7 @@ import java.util.List;
 public class Nashorn {
 	public static abstract class Host {
 		public abstract Loader.Classpath getClasspath();
+		public abstract String[] getArguments();
 	}
 	
 	private static Object eval(ScriptEngine engine, Code.Source.File file) throws ScriptException {
@@ -19,7 +20,7 @@ public class Nashorn {
 		return engine.eval(file.getReader(), c);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		final Classes classes = Classes.create(new Classes.Configuration() {
 			@Override public boolean canCreateClassLoaders() {
 				return true;
@@ -34,6 +35,10 @@ public class Nashorn {
 		factory.getBindings().put("$nashorn", new Host() {
 			@Override public Loader.Classpath getClasspath() {
 				return classes.getScriptClasses().toScriptClasspath();
+			}
+			
+			@Override public String[] getArguments() {
+				return args;
 			}
 		});
 		ScriptEngine engine = factory.getEngineByName("nashorn");

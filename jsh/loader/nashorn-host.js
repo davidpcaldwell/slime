@@ -102,6 +102,12 @@ var $host = new function() {
 	
 	var installation = Java.type("inonit.script.jsh.Installation").unpackaged();
 	
+	var invocation = Java.type("inonit.script.jsh.Invocation").create($nashorn.getArguments());
+	
+	this.getInvocation = function() {
+		return invocation;
+	}
+	
 	//	Returns port of inonit.script.jsh.Shell.Host.Interface.Loader
 	this.getLoader = function() {
 		return new function() {
