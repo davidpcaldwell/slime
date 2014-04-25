@@ -38,24 +38,14 @@ var $host = new function() {
 				return getLoaderCode(path);
 			};
 
-//			var classpath = $nashorn.getClasspath();
+			//	TODO	is this indirection object unnecessary?
 			var classpath = new function() {
 				this.append = function(code) {
 					$engine.getClasspath().append(code);
 				}
 			};
-//			var classpath = new function() {
-//				this.append = function(code) {
-//					throw new Error("Cannot append " + code.getClasses());
-//				}
-//			}
 
 			this.getClasspath = function() {
-				//	TODO	implement modifications if possible
-				//	This value, I believe, is interpreted to mean that the classpath cannot be modified, or something
-				//	The Java code appears to allow it but the Rhino loader blows up on the Hello World case so it probably is not
-				//	OK at least in jsh (remember dimly that another embedding might have somehow handled the no class loader case)
-				//	return null;
 				return classpath;
 			};
 
