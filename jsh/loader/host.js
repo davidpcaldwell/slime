@@ -1,17 +1,7 @@
 var $host = new function() {
-	var installation;
-	var invocation;
-	
-	if (Packages.java.lang.System.getProperty("jsh.launcher.packaged") != null) {
-		installation = Packages.inonit.script.jsh.Installation.packaged();
-		invocation = Packages.inonit.script.jsh.Invocation.packaged($engine.getArguments());
-	} else {
-		installation = Packages.inonit.script.jsh.Installation.unpackaged();
-		if ($engine.getArguments().length == 0) {
-			throw new Error("No arguments supplied; is this actually a packaged application? system properties = " + Packages.java.lang.System.getProperties());
-		}
-		invocation = Packages.inonit.script.jsh.Invocation.create($engine.getArguments());
-	}
+	var installation = $shell.getInstallation();
+	var configuration = $shell.getConfiguration();	
+	var invocation = $shell.getInvocation();
 	
 	this.getRhinoLoader = function() {
 		var debug = function(string) {
@@ -70,8 +60,6 @@ var $host = new function() {
 		
 		return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
 	};
-	
-	var configuration = Packages.inonit.script.jsh.Shell.Configuration.main();
 	
 	this.getInvocation = function() {
 		return invocation;

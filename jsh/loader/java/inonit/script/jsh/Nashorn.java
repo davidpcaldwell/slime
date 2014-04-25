@@ -32,6 +32,7 @@ public class Nashorn {
 		});
 		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
 		ScriptEngineManager factory = new ScriptEngineManager();
+		factory.getBindings().put("$shell", Shell.main(args));
 		factory.getBindings().put("$nashorn", new Host() {
 			@Override public Loader.Classpath getClasspath() {
 				return classes.getScriptClasses().toScriptClasspath();

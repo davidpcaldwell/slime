@@ -18,7 +18,47 @@ import java.util.*;
 import inonit.system.*;
 import inonit.script.engine.*;
 
-public class Shell {
+public abstract class Shell {
+	public abstract Installation getInstallation();
+	public abstract Configuration getConfiguration();
+	public abstract Invocation getInvocation() throws Invocation.CheckedException;
+	
+	public static Shell main(final String[] arguments) {
+		final Configuration configuration = Configuration.main();
+		if (System.getProperty("jsh.launcher.packaged") != null) {
+			return new Shell() {
+				@Override public Installation getInstallation() {
+					return Installation.packaged();
+				}
+				
+				@Override public Configuration getConfiguration() {
+					return configuration;
+				}
+
+				@Override public Invocation getInvocation() {
+					return Invocation.packaged(arguments);
+				}
+			};
+		} else {
+			if (arguments.length == 0) {
+				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
+			}
+			return new Shell() {
+				@Override public Installation getInstallation() {
+					return Installation.unpackaged();
+				}
+				
+				@Override public Configuration getConfiguration() {
+					return configuration;
+				}
+
+				@Override public Invocation getInvocation() throws Invocation.CheckedException {
+					return Invocation.create(arguments);
+				}
+			};
+		}		
+	}
+	
 	public static abstract class Configuration {
 		public abstract ClassLoader getClassLoader();
 

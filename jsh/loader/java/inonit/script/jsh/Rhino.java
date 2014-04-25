@@ -119,26 +119,13 @@ public class Rhino {
 	}
 
 	private Integer run() throws Invocation.CheckedException {
-		Installation installation = null;
-		Invocation invocation = null;
-		if (System.getProperty("jsh.launcher.packaged") != null) {
-			installation = Installation.packaged();
-			invocation = Invocation.packaged(arguments);
-		} else {
-			installation = Installation.unpackaged();
-			invocation = Invocation.create(arguments);
-		}
-
-		final Shell.Configuration configuration = Shell.Configuration.main();
+		Shell shell = Shell.main(arguments);
 		
-		this.rhino = Configuration.main(configuration);
+		this.rhino = Configuration.main(shell.getConfiguration());
 
 		Integer rv = Rhino.execute(
-			installation,
-			configuration,
-			this.rhino,
-			invocation,
-			arguments
+			shell,
+			this.rhino
 		);
 
 		return rv;
@@ -146,32 +133,25 @@ public class Rhino {
 
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	public static Integer execute(Installation installation, Shell.Configuration configuration, Rhino.Configuration rhino, Invocation invocation, String[] arguments) {
-		return Host.create(installation, configuration, rhino, invocation).execute(arguments);
+	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Invocation.CheckedException {
+		return Host.create(shell, rhino).execute();
 	}
 
-	public static Scriptable load(Installation installation, Shell.Configuration configuration, Rhino.Configuration rhino, Invocation invocation) {
-		return Host.create(installation, configuration, rhino, invocation).load();
-	}
+//	public static Scriptable load(Installation installation, Shell.Configuration configuration, Rhino.Configuration rhino, Invocation invocation) {
+//		return Host.create(installation, configuration, rhino, invocation).load();
+//	}
 	
 	static class Host {
-		private Installation installation;
-		private Shell.Configuration configuration;
+		private Shell shell;
 		private Rhino.Configuration rhino;
-		private Invocation invocation;
-
-//		private Engine engine;
 
 		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
 
-		static Host create(Installation installation, Shell.Configuration configuration, Rhino.Configuration rhino, Invocation invocation) {
+		static Host create(Shell shell, Rhino.Configuration rhino) {
 			Host rv = new Host();
-			rv.installation = installation;
-			rv.configuration = configuration;
+			rv.shell = shell;
 			rv.rhino = rhino;
-			rv.rhino.initialize(rv.configuration);
-			rv.invocation = invocation;
-//			rv.engine = configuration.getEngine();
+			rv.rhino.initialize(rv.shell.getConfiguration());
 			return rv;
 		}
 
@@ -187,34 +167,43 @@ public class Rhino {
 			}
 		}
 
-		private Engine.Program createProgram(String[] arguments) {
+		private Engine.Program createProgram() throws Invocation.CheckedException {
 			Engine.Program program = new Engine.Program();
 
+			Engine.Program.Variable shell = Engine.Program.Variable.create(
+				"$shell",
+				Engine.Program.Variable.Value.create(this.shell)
+			);
+			shell.setReadonly(true);
+			shell.setPermanent(true);
+			shell.setDontenum(true);
+			program.set(shell);
+			
 			Engine.Program.Variable engine = Engine.Program.Variable.create(
 				"$engine",
-				Engine.Program.Variable.Value.create(new Interface(arguments))
+				Engine.Program.Variable.Value.create(new Interface())
 			);
 			engine.setReadonly(true);
 			engine.setPermanent(true);
 			engine.setDontenum(true);
 			program.set(engine);
 
-			Engine.Source hostJs = Engine.Source.create(installation.getJshLoader("host.js"));
+			Engine.Source hostJs = Engine.Source.create(this.shell.getInstallation().getJshLoader("host.js"));
 			program.add(hostJs);				
 
-			Engine.Source jshJs = Engine.Source.create(installation.getJshLoader("jsh.js"));
+			Engine.Source jshJs = Engine.Source.create(this.shell.getInstallation().getJshLoader("jsh.js"));
 			if (jshJs == null) {
-				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + installation);
+				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + this.shell.getInstallation());
 			}
 			program.add(jshJs);
 			//	TODO	jsh could execute this below
-			program.add(Engine.Source.create(invocation.getScript().getSource()));
+			program.add(Engine.Source.create(this.shell.getInvocation().getScript().getSource()));
 			return program;
 		}
 
-		Integer execute(String[] arguments) {
+		Integer execute() throws Invocation.CheckedException {
 			try {
-				Object ignore = rhino.getEngine().execute(createProgram(arguments));
+				Object ignore = rhino.getEngine().execute(createProgram());
 				return null;
 			} catch (Engine.Errors e) {
 				Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
@@ -250,22 +239,11 @@ public class Rhino {
 			}
 		}
 
-		Scriptable load() {
-			if (true) throw new UnsupportedOperationException("Broken.");
-			return rhino.getEngine().load(createProgram(null));
+		Scriptable load() throws Invocation.CheckedException {
+			return rhino.getEngine().load(createProgram());
 		}
 		
 		public class Interface {
-			private String[] arguments;
-			
-			Interface(String[] arguments) {
-				this.arguments = arguments;
-			}
-			
-			public String[] getArguments() {
-				return arguments;
-			}
-			
 			public class Debugger {
 				private Engine.Debugger implementation = Host.this.rhino.getEngine().getDebugger();
 
@@ -296,8 +274,8 @@ public class Rhino {
 			}
 
 			//	TODO	this is really intended to include a Main.Configuration as well but we are in the middle of refactoring
-			public int jsh(Shell.Configuration configuration, final File script, final String[] arguments) throws IOException {
-				Invocation invocation = new Invocation() {
+			public int jsh(final Shell.Configuration configuration, final File script, final String[] arguments) throws IOException, Invocation.CheckedException {
+				final Invocation invocation = new Invocation() {
 					@Override public Invocation.Script getScript() {
 						return Invocation.Script.create(script);
 					}
@@ -310,7 +288,20 @@ public class Rhino {
 				ArrayList<String> restoreArguments = new ArrayList<String>();
 				restoreArguments.add(script.getCanonicalPath());
 				restoreArguments.addAll(Arrays.asList(arguments));
-				Integer rv = Rhino.execute(installation, configuration, rhino, invocation, restoreArguments.toArray(new String[0]));
+				Shell subshell = new Shell() {
+					@Override public Installation getInstallation() {
+						return shell.getInstallation();
+					}
+
+					@Override public Shell.Configuration getConfiguration() {
+						return configuration;
+					}
+
+					@Override public Invocation getInvocation() throws Invocation.CheckedException {
+						return invocation;
+					}
+				};
+				Integer rv = Rhino.execute(subshell, Host.this.rhino);
 				if (rv == null) return 0;
 				return rv.intValue();
 			}
