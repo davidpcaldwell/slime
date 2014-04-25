@@ -189,27 +189,15 @@ public class Main {
 
 			Engine.Program.Variable engine = Engine.Program.Variable.create(
 				"$engine",
-				Engine.Program.Variable.Value.create(new EngineInterface(arguments))
+				Engine.Program.Variable.Value.create(new Interface(arguments))
 			);
 			engine.setReadonly(true);
 			engine.setPermanent(true);
 			engine.setDontenum(true);
 			program.set(engine);
 
-			boolean USE_JAVASCRIPT_HOST = true;
-			if (!USE_JAVASCRIPT_HOST) {
-				Engine.Program.Variable jsh = Engine.Program.Variable.create(
-					"$host",
-					Engine.Program.Variable.Value.create(new Interface())
-				);
-				jsh.setReadonly(true);
-				jsh.setPermanent(true);
-				jsh.setDontenum(true);
-				program.set(jsh);
-			} else {
-				Engine.Source hostJs = Engine.Source.create(installation.getJshLoader("host.js"));
-				program.add(hostJs);				
-			}
+			Engine.Source hostJs = Engine.Source.create(installation.getJshLoader("host.js"));
+			program.add(hostJs);				
 
 			Engine.Source jshJs = Engine.Source.create(installation.getJshLoader("jsh.js"));
 			if (jshJs == null) {
@@ -264,10 +252,10 @@ public class Main {
 			return rhino.getEngine().load(createProgram(null));
 		}
 		
-		public class EngineInterface {
+		public class Interface {
 			private String[] arguments;
 			
-			EngineInterface(String[] arguments) {
+			Interface(String[] arguments) {
 				this.arguments = arguments;
 			}
 			
@@ -323,112 +311,6 @@ public class Main {
 				if (rv == null) return 0;
 				return rv.intValue();
 			}
-		}
-
-		public class Interface {
-			public String toString() {
-				return getClass().getName()
-					+ " engine=" + rhino.getEngine()
-					+ " installation=" + installation
-					+ " classpath=" + rhino.getEngine().getApplicationClassLoader()
-				;
-			}
-
-			public Scriptable getRhinoLoader() throws IOException {
-				return inonit.script.rhino.Engine.load(rhino.getEngine(), new inonit.script.engine.Loader() {
-					@Override public String getLoaderCode(String path) throws IOException {
-						return new Streams().readString(installation.getPlatformLoader(path).getReader());
-					}
-				});
-			}
-
-			public class Loader {
-				public Code getBootstrapModule(String path) {
-					return installation.getShellModuleCode(path);
-				}
-
-				public Installation.Plugin[] getPlugins() {
-					return installation.getPlugins();
-				}
-
-				public Code.Source getPackagedCode() {
-					return configuration.getPackagedCode();
-				}
-
-				public void addFinalizer(Runnable runnable) {
-					finalizers.add(runnable);
-				}
-
-				//	TODO	only known use of this is in addClasses.jsh.js test script; replace that with access to rhino/host
-				//			module and remove this?
-				public Class getJavaClass(String name) {
-					try {
-						return rhino.getEngine().getApplicationClassLoader().loadClass(name);
-					} catch (ClassNotFoundException e) {
-						return null;
-					}
-				}
-
-				//	TODO	Currently used in httpd unit testing in embedded server, possibly; may be able to get rid of it
-				//			given the new architecture running httpd unit tests in jsh subshell
-				public ClassLoader getClassLoader() {
-					return rhino.getEngine().getApplicationClassLoader();
-				}
-			}
-
-			public Loader getLoader() {
-				return new Loader();
-			}
-
-			public Properties getSystemProperties() {
-				return configuration.getSystemProperties();
-			}
-
-			public OperatingSystem.Environment getEnvironment() {
-				return configuration.getEnvironment();
-			}
-
-			public class Stdio {
-				public InputStream getStandardInput() {
-					Logging.get().log(Stdio.class, Level.CONFIG, "stdin = %s", configuration.getStdio().getStandardInput());
-					return configuration.getStdio().getStandardInput();
-				}
-
-				public PrintStream getStandardOutput() {
-					return new PrintStream(configuration.getStdio().getStandardOutput());
-				}
-
-				public PrintStream getStandardError() {
-					return new PrintStream(configuration.getStdio().getStandardError());
-				}
-			}
-
-			public Stdio getStdio() {
-				return new Stdio();
-			}
-
-			//	Contains information used by jsh.script, like arguments and the base file invoked
-			public Invocation getInvocation() {
-				return invocation;
-			}
-
-			public Installation.Plugin[] getPlugins(File file) {
-				return Installation.Plugin.get(file);
-			}
-
-//			//
-//			//	Not used by shell, but useful to specialized scripts that do various kinds of embedding
-//			//
-//
-//			public Engine getEngine() {
-//				return Interface.this.engine;
-//			}
-//
-//			public class Engine {
-//				public Module load(Code code) {
-//					return Host.this.engine.load(code);
-//				}
-//			}
 		}
 	}
 	private static void exit(int status) {
