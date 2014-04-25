@@ -170,6 +170,45 @@ public class Rhino {
 	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Invocation.CheckedException {
 		return Host.create(shell, rhino).execute();
 	}
+	
+	private static Integer execute(Shell shell, Configuration rhino, Host.Interface $engine, ArrayList<Runnable> finalizers) throws Invocation.CheckedException {
+		try {
+			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $engine);
+			Object ignore = shell.execute(execution);
+			return null;
+		} catch (Engine.Errors e) {
+			Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
+			Engine.Errors.ScriptError[] errors = e.getErrors();
+			Logging.get().log(Shell.class, Level.FINER, "Engine.Errors length: %d", errors.length);
+			for (int i=0; i<errors.length; i++) {
+				Logging.get().log(Shell.class, Level.FINER, "Engine.Errors errors[%d]: %s", i, errors[i].getThrowable());
+				Throwable t = errors[i].getThrowable();
+				if (t instanceof WrappedException) {
+					WrappedException wrapper = (WrappedException)t;
+					if (wrapper.getWrappedException() instanceof Host.ExitException) {
+						Host.ExitException exit = (Host.ExitException)wrapper.getWrappedException();
+						int status = exit.getStatus();
+						Logging.get().log(Shell.class, Level.INFO, "Engine.Errors errors[%d] is ExitException with status %d", i, status);
+						Logging.get().log(Shell.class, Level.INFO, "Engine.Errors element stack trace", exit);
+						Logging.get().log(Shell.class, Level.INFO, "Script stack trace: %s", wrapper.getScriptStackTrace());
+						return status;
+					}
+				}
+			}
+			Logging.get().log(Shell.class, Level.FINE, "Logging errors to %s.", rhino.getLog());
+			e.dump(rhino.getLog(), "[jsh] ");
+			return -1;
+		} finally {
+			for (int i=0; i<finalizers.size(); i++) {
+				try {
+					finalizers.get(i).run();
+				} catch (Throwable t) {
+					//	TODO	log something about the exception
+					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
+				}
+			}
+		}		
+	}
 
 //	public static Scriptable load(Installation installation, Shell.Configuration configuration, Rhino.Configuration rhino, Invocation invocation) {
 //		return Host.create(installation, configuration, rhino, invocation).load();
@@ -189,7 +228,7 @@ public class Rhino {
 			return rv;
 		}
 
-		private static class ExitException extends Exception {
+		static class ExitException extends Exception {
 			private int status;
 
 			ExitException(int status) {
@@ -202,42 +241,7 @@ public class Rhino {
 		}
 
 		Integer execute() throws Invocation.CheckedException {
-			try {
-				ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), new Interface());
-				Object ignore = shell.execute(execution);
-				return null;
-			} catch (Engine.Errors e) {
-				Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
-				Engine.Errors.ScriptError[] errors = e.getErrors();
-				Logging.get().log(Shell.class, Level.FINER, "Engine.Errors length: %d", errors.length);
-				for (int i=0; i<errors.length; i++) {
-					Logging.get().log(Shell.class, Level.FINER, "Engine.Errors errors[%d]: %s", i, errors[i].getThrowable());
-					Throwable t = errors[i].getThrowable();
-					if (t instanceof WrappedException) {
-						WrappedException wrapper = (WrappedException)t;
-						if (wrapper.getWrappedException() instanceof ExitException) {
-							ExitException exit = (ExitException)wrapper.getWrappedException();
-							int status = exit.getStatus();
-							Logging.get().log(Shell.class, Level.INFO, "Engine.Errors errors[%d] is ExitException with status %d", i, status);
-							Logging.get().log(Shell.class, Level.INFO, "Engine.Errors element stack trace", exit);
-							Logging.get().log(Shell.class, Level.INFO, "Script stack trace: %s", wrapper.getScriptStackTrace());
-							return status;
-						}
-					}
-				}
-				Logging.get().log(Shell.class, Level.FINE, "Logging errors to %s.", rhino.getLog());
-				e.dump(rhino.getLog(), "[jsh] ");
-				return -1;
-			} finally {
-				for (int i=0; i<finalizers.size(); i++) {
-					try {
-						finalizers.get(i).run();
-					} catch (Throwable t) {
-						//	TODO	log something about the exception
-						rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
-					}
-				}
-			}
+			return Rhino.execute(shell, rhino, new Interface(), finalizers);
 		}
 
 		Scriptable load() throws Invocation.CheckedException {
@@ -275,21 +279,7 @@ public class Rhino {
 				throw new ExitException(status);
 			}
 
-			//	TODO	this is really intended to include a Main.Configuration as well but we are in the middle of refactoring
-			public int jsh(final Shell.Configuration configuration, final File script, final String[] arguments) throws IOException, Invocation.CheckedException {
-				final Invocation invocation = new Invocation() {
-					@Override public Invocation.Script getScript() {
-						return Invocation.Script.create(script);
-					}
-
-					@Override public String[] getArguments() {
-						return arguments;
-					}
-				};
-				//	TODO	this temporary workaround is for refactoring purposes
-				ArrayList<String> restoreArguments = new ArrayList<String>();
-				restoreArguments.add(script.getCanonicalPath());
-				restoreArguments.addAll(Arrays.asList(arguments));
+			public int jsh(final Shell.Configuration configuration, final Invocation invocation) throws IOException, Invocation.CheckedException {
 				Shell subshell = new Shell() {
 					@Override public Installation getInstallation() {
 						return shell.getInstallation();

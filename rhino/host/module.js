@@ -276,7 +276,14 @@ $exports.toJsArray = $api.deprecate(toJsArray);
 //	TODO	at least implement this in terms of $exports.Array.create
 var toJavaArray = function(jsArray,javaclass,adapter) {
 	if (!adapter) adapter = function(x) { return x; }
-	var rv = Packages.java.lang.reflect.Array.newInstance(javaclass,jsArray.length);
+	var _class = (function() {
+		if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+			return javaclass;
+		} else {
+			return javaclass.class;
+		}
+	})();
+	var rv = Packages.java.lang.reflect.Array.newInstance(_class,jsArray.length);
 	for (var i=0; i<jsArray.length; i++) {
 		rv[i] = adapter(jsArray[i]);
 	}

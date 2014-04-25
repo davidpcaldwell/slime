@@ -51,7 +51,6 @@ public abstract class Invocation {
 	public abstract String[] getArguments();
 
 	static class CheckedException extends Exception {
-
 		CheckedException(String message) {
 			super(message);
 		}
@@ -59,6 +58,18 @@ public abstract class Invocation {
 		CheckedException(String message, Throwable cause) {
 			super(message, cause);
 		}
+	}
+	
+	public static Invocation jsh(final File script, final String[] arguments) {
+		return new Invocation() {
+			@Override public Invocation.Script getScript() {
+				return Invocation.Script.create(script);
+			}
+
+			@Override public String[] getArguments() {
+				return arguments;
+			}
+		};
 	}
 	
 	public static Invocation packaged(final String[] arguments) {

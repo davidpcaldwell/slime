@@ -277,21 +277,21 @@ $exports.jsh = function(p) {
 		var configuration = new JavaAdapter(
 			Packages.inonit.script.jsh.Shell.Configuration,
 			new function() {
-				this.getOptimizationLevel = function() {
-					return -1;
-				};
-
-				this.getDebugger = function() {
-					//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
-					if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
-						var Engine = Packages.inonit.script.rhino.Engine;
-						return Engine.RhinoDebugger.create(Engine.RhinoDebugger.Configuration.create(
-							Packages.inonit.script.rhino.Gui.RHINO_UI_FACTORY
-						));
-					} else {
-						return null;
-					}
-				}
+//				this.getOptimizationLevel = function() {
+//					return -1;
+//				};
+//
+//				this.getDebugger = function() {
+//					//	TODO	an alternative would be to re-use the debugger from this shell; neither seems to work as expected
+//					if (environment.JSH_SCRIPT_DEBUGGER == "rhino") {
+//						var Engine = Packages.inonit.script.rhino.Engine;
+//						return Engine.RhinoDebugger.create(Engine.RhinoDebugger.Configuration.create(
+//							Packages.inonit.script.rhino.Gui.RHINO_UI_FACTORY
+//						));
+//					} else {
+//						return null;
+//					}
+//				}
 
 				var stdio = new JavaAdapter(
 					Packages.inonit.script.jsh.Shell.Configuration.Stdio,
@@ -324,20 +324,20 @@ $exports.jsh = function(p) {
 					}
 				);
 
-				//	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
-				//	possible we should revisit this
-				var log = new JavaAdapter(
-					Packages.inonit.script.rhino.Engine.Log,
-					new function() {
-						this.println = function(message) {
-							new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
-						}
-					}
-				);
+//				//	For now, we supply an implementation that logs to stderr, just like the launcher-based jsh does, although it is
+//				//	possible we should revisit this
+//				var log = new JavaAdapter(
+//					Packages.inonit.script.rhino.Engine.Log,
+//					new function() {
+//						this.println = function(message) {
+//							new Packages.java.io.PrintStream(stdio.getStandardError()).println(message);
+//						}
+//					}
+//				);
 
-				this.getLog = function() {
-					return log;
-				}
+//				this.getLog = function() {
+//					return log;
+//				}
 
 				this.getClassLoader = function() {
 					return Packages.java.lang.ClassLoader.getSystemClassLoader();
@@ -390,9 +390,16 @@ $exports.jsh = function(p) {
 			throw new TypeError("Expected script " + p.script + " to have pathname.java.adapt()");
 		}
 		//	TODO	Does Rhino 1.7R3 obviate the need for the Java array conversion stuff?
-		var status = $engine.jsh(configuration,p.script.pathname.java.adapt(),$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
-			return new Packages.java.lang.String(s);
-		}));
+		if (!$engine.jsh) throw new Error("$engine.jsh undefined");
+		var status = $engine.jsh(
+			configuration
+			,Packages.inonit.script.jsh.Invocation.jsh(
+				p.script.pathname.java.adapt(),
+				$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
+					return new Packages.java.lang.String(s);
+				})
+			)
+		);
 		var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 			if (result.status != 0) {
 				throw new Error("Exit status: " + result.status);

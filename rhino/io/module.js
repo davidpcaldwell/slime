@@ -325,6 +325,8 @@ var Resource = function(p) {
 		//	TODO	may want to do some sort of "cast" here
 		this.type = p.type;
 	}
+	
+	var global = (function() { return this; })();
 
 	this.read = function(mode) {
 		if (binary) {
@@ -332,8 +334,10 @@ var Resource = function(p) {
 		}
 		if (text) {
 			if (mode == Streams.text) return text();
-			if (mode == XML) return text().asXml();
-			if (/^function XML\(\)/.test(String(mode))) return text().asXml();
+			if (typeof(global.XML) != "undefined") {
+				if (mode == XML) return text().asXml();
+				if (/^function XML\(\)/.test(String(mode))) return text().asXml();
+			}
 			if (mode == String) return text().asString();
 		}
 		var parameters = (function() {
