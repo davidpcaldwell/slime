@@ -65,12 +65,13 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
 							return null;
 						}
 					};
+					target = target[tokens[i]];
 				}
 			}
-			if (!target[tokens[i].length-1]) {
-				target[tokens[i].length-1] = value;
+			if (!target[tokens[tokens.length-1]]) {
+				target[tokens[tokens.length-1]] = value;
 			} else {
-				target[tokens[i].length-1].toString = function() {
+				target[tokens[tokens.length-1]].toString = function() {
 					return value;
 				}
 			}
@@ -216,7 +217,11 @@ var getJavaClassName = function(javaclass) {
 
 var $isJavaType = function(javaclass,object) {
 	var getNamedJavaClass = function(name) {
-		return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
+		if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
+		} else {
+			return Java.type(name).class;
+		}
 	};
 
 	var className = getJavaClassName(javaclass);

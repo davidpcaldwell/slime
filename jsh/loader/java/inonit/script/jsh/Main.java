@@ -30,17 +30,7 @@ public class Main {
 	private Main() {
 	}
 
-	private static class CheckedException extends Exception {
-		CheckedException(String message) {
-			super(message);
-		}
-
-		CheckedException(String message, Throwable cause) {
-			super(message, cause);
-		}
-	}
-
-	private Integer run() throws CheckedException {
+	private Integer run() throws Shell.Invocation.CheckedException {
 		Installation installation = null;
 		Shell.Invocation invocation = null;
 		if (System.getProperty("jsh.launcher.packaged") != null) {
@@ -88,65 +78,7 @@ public class Main {
 			};
 		} else {
 			installation = Installation.unpackaged();
-
-			final String scriptPath = args.remove(0);
-
-			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
-				final java.net.URL url;
-				final java.io.InputStream stream;
-				try {
-					url = new java.net.URL(scriptPath);
-					stream = url.openStream();
-				} catch (java.net.MalformedURLException e) {
-					throw new CheckedException("Malformed URL: " + scriptPath, e);
-				} catch (IOException e) {
-					throw new CheckedException("Could not open: " + scriptPath, e);
-				}
-				invocation = new Shell.Invocation() {
-					public Script getScript() {
-						return new Script() {
-							@Override
-							public java.net.URI getUri() {
-								try {
-									return url.toURI();
-								} catch (java.net.URISyntaxException e) {
-									//	TODO	when can this happen? Probably should refactor to do this parsing earlier and use
-									//			CheckedException
-									throw new RuntimeException(e);
-								}
-							}
-
-							@Override
-							public Engine.Source getSource() {
-								return Engine.Source.create(scriptPath, stream);
-							}
-						};
-					}
-
-					public String[] getArguments() {
-						return args.toArray(new String[args.size()]);
-					}
-				};
-			} else {
-				final File mainScript = new File(scriptPath);
-				if (!mainScript.exists()) {
-					//	TODO	this really should not happen if the launcher is launching this
-					throw new CheckedException("File not found: " + scriptPath);
-				}
-				if (mainScript.isDirectory()) {
-					throw new CheckedException("Filename: " + scriptPath + " is a directory");
-				}
-
-				invocation = new Shell.Invocation() {
-					public Script getScript() {
-						return Script.create(mainScript);
-					}
-
-					public String[] getArguments() {
-						return (String[])args.toArray(new String[0]);
-					}
-				};
-			}
+			invocation = Shell.Invocation.create(args.toArray(new String[0]));
 		}
 
 		this.configuration = new Shell.Configuration() {
@@ -277,7 +209,7 @@ public class Main {
 				main.configuration.getEngine().getDebugger().destroy();
 				//	JVM will exit normally when non-daemon threads complete.
 			}
-		} catch (CheckedException e) {
+		} catch (Shell.Invocation.CheckedException e) {
 			Logging.get().log(Main.class, Level.INFO, "Exiting with checked exception.", e);
 			System.err.println(e.getMessage());
 			exit(1);
