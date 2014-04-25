@@ -22,10 +22,41 @@ import inonit.script.rhino.*;
 
 public class Main {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
+	
+	public static abstract class Configuration {
+		public abstract int getOptimizationLevel();
+		public abstract Engine.Debugger getDebugger();
+
+		//	TODO	consider: should this log implementation be supplied, and just log to stderr?
+		public abstract Engine.Log getLog();
+
+		private Engine engine;
+
+		final void initialize(final Shell.Configuration shell) {
+			Engine.Configuration contexts = new Engine.Configuration() {
+				@Override public ClassLoader getApplicationClassLoader() {
+					return shell.getClassLoader();
+				}
+
+				@Override public boolean createClassLoader() {
+					return true;
+				}
+
+				@Override public int getOptimizationLevel() {
+					return Configuration.this.getOptimizationLevel();
+				}
+			};
+			this.engine = Engine.create(Configuration.this.getDebugger(), contexts);
+		}
+
+		Engine getEngine() {
+			return engine;
+		}
+	}
 
 	private List<String> args;
 
-	private Shell.Configuration configuration;
+	private Configuration rhino;
 
 	private Main() {
 	}
@@ -81,7 +112,7 @@ public class Main {
 			invocation = Invocation.create(args.toArray(new String[0]));
 		}
 
-		this.configuration = new Shell.Configuration() {
+		final Shell.Configuration configuration = new Shell.Configuration() {
 			private InputStream stdin = new Logging.InputStream(System.in);
 			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
 			//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
@@ -90,57 +121,6 @@ public class Main {
 			//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
 			//	device and bytes will never need to be immediately available
 			private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
-
-			public Engine.Log getLog() {
-				return new Engine.Log() {
-					public String toString() { return "Engine.Log: System.err"; }
-
-					public void println(String message) {
-						Logging.get().log(Main.class, Level.FINER, "Logging: " + message + " to System.err ...");
-						((PrintStream)stderr).println(message);
-					}
-				};
-			}
-
-			public Engine.Debugger getDebugger() {
-				String id = System.getProperty("jsh.script.debugger");
-				if (id == null) return null;
-				if (id.equals("rhino")) {
-					Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-						@Override
-						public void uncaughtException(Thread t, Throwable e) {
-							if (t.getName().startsWith("AWT")) {
-								//	do nothing
-								Logging.get().log(Main.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
-							} else {
-								System.err.print("Exception in thread \"" + t.getName() + "\"");
-								e.printStackTrace();
-							}
-						}
-					});
-					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
-						public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
-							return Gui.RHINO_UI_FACTORY;
-						}
-					});
-				} else if (id.equals("profiler")) {
-					return new Engine.Profiler();
-				} else if (id.startsWith("profiler:")) {
-					return new Engine.Profiler();
-				} else {
-					//	TODO	emit some kind of error?
-					return null;
-				}
-			}
-
-			public int getOptimizationLevel() {
-				int optimization = -1;
-				if (System.getProperty("jsh.optimization") != null) {
-					//	TODO	validate this value
-					optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
-				}
-				return optimization;
-			}
 
 			public ClassLoader getClassLoader() {
 				return ClassLoader.getSystemClassLoader();
@@ -178,10 +158,64 @@ public class Main {
 				}
 			}
 		};
+		
+		this.rhino = new Configuration() {
+			public int getOptimizationLevel() {
+				int optimization = -1;
+				if (System.getProperty("jsh.optimization") != null) {
+					//	TODO	validate this value
+					optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
+				}
+				return optimization;
+			}
+
+			public Engine.Debugger getDebugger() {
+				String id = System.getProperty("jsh.script.debugger");
+				if (id == null) return null;
+				if (id.equals("rhino")) {
+					Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+						@Override
+						public void uncaughtException(Thread t, Throwable e) {
+							if (t.getName().startsWith("AWT")) {
+								//	do nothing
+								Logging.get().log(Main.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
+							} else {
+								System.err.print("Exception in thread \"" + t.getName() + "\"");
+								e.printStackTrace();
+							}
+						}
+					});
+					return Engine.RhinoDebugger.create(new Engine.RhinoDebugger.Configuration() {
+						public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
+							return Gui.RHINO_UI_FACTORY;
+						}
+					});
+				} else if (id.equals("profiler")) {
+					return new Engine.Profiler();
+				} else if (id.startsWith("profiler:")) {
+					return new Engine.Profiler();
+				} else {
+					//	TODO	emit some kind of error?
+					return null;
+				}
+			}
+
+			public Engine.Log getLog() {
+				return new Engine.Log() {
+					public String toString() { return "Engine.Log: System.err"; }
+
+					public void println(String message) {
+						Logging.get().log(Main.class, Level.FINER, "Logging: " + message + " to System.err ...");
+						((PrintStream)configuration.getStdio().getStandardError()).println(message);
+					}
+				};
+			}
+		};
 
 		Integer rv = Shell.execute(
 			installation,
-			this.configuration,
+			configuration,
+			this.rhino,
 			invocation
 		);
 
@@ -206,7 +240,7 @@ public class Main {
 			if (status != null) {
 				exit(status.intValue());
 			} else {
-				main.configuration.getEngine().getDebugger().destroy();
+				main.rhino.getEngine().getDebugger().destroy();
 				//	JVM will exit normally when non-daemon threads complete.
 			}
 		} catch (Invocation.CheckedException e) {

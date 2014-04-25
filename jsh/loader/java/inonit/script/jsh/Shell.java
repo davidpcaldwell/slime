@@ -26,22 +26,16 @@ import inonit.script.runtime.io.*;
 public class Shell {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	public static Integer execute(Installation installation, Configuration configuration, Invocation invocation) {
-		return Host.create(installation, configuration, invocation).execute();
+	public static Integer execute(Installation installation, Configuration configuration, Main.Configuration rhino, Invocation invocation) {
+		return Host.create(installation, configuration, rhino, invocation).execute();
 	}
 
-	public static Scriptable load(Installation installation, Configuration configuration, Invocation invocation) {
-		return Host.create(installation, configuration, invocation).load();
+	public static Scriptable load(Installation installation, Configuration configuration, Main.Configuration rhino, Invocation invocation) {
+		return Host.create(installation, configuration, rhino, invocation).load();
 	}
 
 
 	public static abstract class Configuration {
-		public abstract int getOptimizationLevel();
-		public abstract Engine.Debugger getDebugger();
-
-		//	TODO	consider: should this log implementation be supplied, and just log to stderr?
-		public abstract Engine.Log getLog();
-
 		public abstract ClassLoader getClassLoader();
 
 		public abstract Properties getSystemProperties();
@@ -55,51 +49,30 @@ public class Shell {
 		 */
 		public abstract Code.Source getPackagedCode();
 
-		private Engine engine;
-
-		final void initialize() {
-			Engine.Configuration contexts = new Engine.Configuration() {
-				@Override public ClassLoader getApplicationClassLoader() {
-					return Configuration.this.getClassLoader();
-				}
-
-				@Override public boolean createClassLoader() {
-					return true;
-				}
-
-				@Override public int getOptimizationLevel() {
-					return Configuration.this.getOptimizationLevel();
-				}
-			};
-			this.engine = Engine.create(Configuration.this.getDebugger(), contexts);
-		}
-
-		Engine getEngine() {
-			return engine;
-		}
-
 		public static abstract class Stdio {
 			public abstract InputStream getStandardInput();
 			public abstract OutputStream getStandardOutput();
 			public abstract OutputStream getStandardError();
 		}
 	}
-
+	
 	static class Host {
 		private Installation installation;
 		private Configuration configuration;
+		private Main.Configuration rhino;
 		private Invocation invocation;
 
 //		private Engine engine;
 
 		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
 
-		static Host create(Installation installation, Configuration configuration, Invocation invocation) {
+		static Host create(Installation installation, Configuration configuration, Main.Configuration rhino, Invocation invocation) {
 			Host rv = new Host();
 			rv.installation = installation;
 			rv.configuration = configuration;
+			rv.rhino = rhino;
+			rv.rhino.initialize(rv.configuration);
 			rv.invocation = invocation;
-			configuration.initialize();
 //			rv.engine = configuration.getEngine();
 			return rv;
 		}
@@ -140,7 +113,7 @@ public class Shell {
 
 		Integer execute() {
 			try {
-				Object ignore = configuration.getEngine().execute(createProgram());
+				Object ignore = rhino.getEngine().execute(createProgram());
 				return null;
 			} catch (Engine.Errors e) {
 				Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
@@ -161,8 +134,8 @@ public class Shell {
 						}
 					}
 				}
-				Logging.get().log(Shell.class, Level.FINE, "Logging errors to %s.", configuration.getLog());
-				e.dump(configuration.getLog(), "[jsh] ");
+				Logging.get().log(Shell.class, Level.FINE, "Logging errors to %s.", rhino.getLog());
+				e.dump(rhino.getLog(), "[jsh] ");
 				return -1;
 			} finally {
 				for (int i=0; i<finalizers.size(); i++) {
@@ -170,27 +143,27 @@ public class Shell {
 						finalizers.get(i).run();
 					} catch (Throwable t) {
 						//	TODO	log something about the exception
-						configuration.getLog().println("Error running finalizer: " + finalizers.get(i));
+						rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
 					}
 				}
 			}
 		}
 
 		Scriptable load() {
-			return configuration.getEngine().load(createProgram());
+			return rhino.getEngine().load(createProgram());
 		}
 
 		public class Interface {
 			public String toString() {
 				return getClass().getName()
-					+ " engine=" + configuration.getEngine()
+					+ " engine=" + rhino.getEngine()
 					+ " installation=" + installation
-					+ " classpath=" + configuration.getEngine().getApplicationClassLoader()
+					+ " classpath=" + rhino.getEngine().getApplicationClassLoader()
 				;
 			}
 
 			public Scriptable getRhinoLoader() throws IOException {
-				return inonit.script.rhino.Engine.load(configuration.getEngine(), new inonit.script.engine.Loader() {
+				return inonit.script.rhino.Engine.load(rhino.getEngine(), new inonit.script.engine.Loader() {
 					@Override public String getLoaderCode(String path) throws IOException {
 						return new Streams().readString(installation.getPlatformLoader(path).getReader());
 					}
@@ -218,7 +191,7 @@ public class Shell {
 				//			module and remove this?
 				public Class getJavaClass(String name) {
 					try {
-						return configuration.getEngine().getApplicationClassLoader().loadClass(name);
+						return rhino.getEngine().getApplicationClassLoader().loadClass(name);
 					} catch (ClassNotFoundException e) {
 						return null;
 					}
@@ -227,7 +200,7 @@ public class Shell {
 				//	TODO	Currently used in httpd unit testing in embedded server, possibly; may be able to get rid of it
 				//			given the new architecture running httpd unit tests in jsh subshell
 				public ClassLoader getClassLoader() {
-					return configuration.getEngine().getApplicationClassLoader();
+					return rhino.getEngine().getApplicationClassLoader();
 				}
 			}
 
@@ -263,7 +236,7 @@ public class Shell {
 			}
 
 			public class Debugger {
-				private Engine.Debugger implementation = Host.this.configuration.getEngine().getDebugger();
+				private Engine.Debugger implementation = Host.this.rhino.getEngine().getDebugger();
 
 				public boolean isBreakOnExceptions() {
 					return implementation.isBreakOnExceptions();
@@ -284,7 +257,7 @@ public class Shell {
 			}
 
 			public void exit(int status) throws ExitException {
-				Host.this.configuration.getEngine().getDebugger().setBreakOnExceptions(false);
+				Host.this.rhino.getEngine().getDebugger().setBreakOnExceptions(false);
 				throw new ExitException(status);
 			}
 
@@ -294,6 +267,7 @@ public class Shell {
 				return rv.toArray(new Installation.Plugin[rv.size()]);
 			}
 
+			//	TODO	this is really intended to include a Main.Configuration as well but we are in the middle of refactoring
 			public int jsh(Configuration configuration, final File script, final String[] arguments) {
 				Invocation invocation = new Invocation() {
 					@Override public Invocation.Script getScript() {
@@ -304,7 +278,7 @@ public class Shell {
 						return arguments;
 					}
 				};
-				Integer rv = Shell.execute(installation, configuration, invocation);
+				Integer rv = Shell.execute(installation, configuration, rhino, invocation);
 				if (rv == null) return 0;
 				return rv.intValue();
 			}

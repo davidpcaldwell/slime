@@ -1,3 +1,4 @@
+load("nashorn:mozilla_compat.js");
 var $engine = new function() {
 	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
 	var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);

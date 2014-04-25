@@ -1,4 +1,3 @@
-load("nashorn:mozilla_compat.js");
 var $host = new function() {
 	this.getRhinoLoader = function() {
 		var debug = function(string) {
