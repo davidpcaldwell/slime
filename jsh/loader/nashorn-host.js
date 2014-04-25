@@ -87,8 +87,6 @@ var $host = new function() {
 			}
 		};
 		
-		var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-		var context = Context.getContext();
 		return script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
 	};
 	
