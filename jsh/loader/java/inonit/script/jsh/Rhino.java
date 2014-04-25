@@ -168,7 +168,8 @@ public class Rhino {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
 	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Invocation.CheckedException {
-		return Host.create(shell, rhino).execute();
+		rhino.initialize(shell.getConfiguration());
+		return Rhino.execute(shell, rhino, new Interface(shell.getInstallation(), rhino));
 	}
 	
 	private static Integer execute(Shell shell, Configuration rhino, Interface $engine) throws Invocation.CheckedException {
@@ -309,27 +310,27 @@ public class Rhino {
 		}
 	}
 
-	static class Host {
-		private Shell shell;
-		private Rhino.Configuration rhino;
-
-		static Host create(Shell shell, Rhino.Configuration rhino) {
-			Host rv = new Host();
-			rv.shell = shell;
-			rv.rhino = rhino;
-			rv.rhino.initialize(rv.shell.getConfiguration());
-			return rv;
-		}
-
-		Integer execute() throws Invocation.CheckedException {
-			return Rhino.execute(shell, rhino, new Interface(shell.getInstallation(), rhino));
-		}
-
-		Scriptable load() throws Invocation.CheckedException {
-			throw new UnsupportedOperationException("Unimplemented");
-//			return rhino.getEngine().load(createProgram());
-		}		
-	}
+//	static class Host {
+//		private Shell shell;
+//		private Rhino.Configuration rhino;
+//
+//		static Host create(Shell shell, Rhino.Configuration rhino) {
+//			Host rv = new Host();
+//			rv.shell = shell;
+//			rv.rhino = rhino;
+//			rv.rhino.initialize(rv.shell.getConfiguration());
+//			return rv;
+//		}
+//
+//		Integer execute() throws Invocation.CheckedException {
+//			return Rhino.execute(shell, rhino, new Interface(shell.getInstallation(), rhino));
+//		}
+//
+//		Scriptable load() throws Invocation.CheckedException {
+//			throw new UnsupportedOperationException("Unimplemented");
+////			return rhino.getEngine().load(createProgram());
+//		}		
+//	}
 	private static void exit(int status) {
 		System.exit(status);
 	}
