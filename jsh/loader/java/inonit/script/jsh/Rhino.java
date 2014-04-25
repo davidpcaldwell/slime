@@ -24,6 +24,34 @@ import inonit.script.rhino.*;
 
 public class Rhino {
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
+	private static class ExecutionImpl extends Shell.Execution {
+		private Engine engine;
+		
+		ExecutionImpl(Engine engine) {
+			this.engine = engine;
+		}
+		
+		private Engine.Program program = new Engine.Program();
+		
+		@Override public void host(String name, Object value) {
+			Engine.Program.Variable variable = Engine.Program.Variable.create(
+				name,
+				Engine.Program.Variable.Value.create(value)
+			);
+			variable.setReadonly(true);
+			variable.setPermanent(true);
+			variable.setDontenum(true);
+			program.set(variable);
+		}
+
+		@Override public void script(Code.Source.File script) {
+			program.add(Engine.Source.create(script));
+		}
+
+		@Override public Object execute() {
+			return engine.execute(program);
+		}
+	}
 	
 	public static abstract class Configuration {
 		public abstract int getOptimizationLevel();
@@ -167,43 +195,49 @@ public class Rhino {
 			}
 		}
 
-		private Engine.Program createProgram() throws Invocation.CheckedException {
-			Engine.Program program = new Engine.Program();
-
-			Engine.Program.Variable shell = Engine.Program.Variable.create(
-				"$shell",
-				Engine.Program.Variable.Value.create(this.shell)
-			);
-			shell.setReadonly(true);
-			shell.setPermanent(true);
-			shell.setDontenum(true);
-			program.set(shell);
-			
-			Engine.Program.Variable engine = Engine.Program.Variable.create(
-				"$engine",
-				Engine.Program.Variable.Value.create(new Interface())
-			);
-			engine.setReadonly(true);
-			engine.setPermanent(true);
-			engine.setDontenum(true);
-			program.set(engine);
-
-			Engine.Source hostJs = Engine.Source.create(this.shell.getInstallation().getJshLoader("host.js"));
-			program.add(hostJs);				
-
-			Engine.Source jshJs = Engine.Source.create(this.shell.getInstallation().getJshLoader("jsh.js"));
-			if (jshJs == null) {
-				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + this.shell.getInstallation());
-			}
-			program.add(jshJs);
-			//	TODO	jsh could execute this below
-			program.add(Engine.Source.create(this.shell.getInvocation().getScript().getSource()));
-			return program;
-		}
+//		private Engine.Program createProgram() throws Invocation.CheckedException {
+//			Engine.Program program = new Engine.Program();
+//
+//			Engine.Program.Variable shell = Engine.Program.Variable.create(
+//				"$shell",
+//				Engine.Program.Variable.Value.create(this.shell)
+//			);
+//			shell.setReadonly(true);
+//			shell.setPermanent(true);
+//			shell.setDontenum(true);
+//			program.set(shell);
+//			
+//			Engine.Program.Variable engine = Engine.Program.Variable.create(
+//				"$engine",
+//				Engine.Program.Variable.Value.create(new Interface())
+//			);
+//			engine.setReadonly(true);
+//			engine.setPermanent(true);
+//			engine.setDontenum(true);
+//			program.set(engine);
+//
+//			Engine.Source hostJs = Engine.Source.create(this.shell.getInstallation().getJshLoader("host.js"));
+//			program.add(hostJs);				
+//
+//			Engine.Source jshJs = Engine.Source.create(this.shell.getInstallation().getJshLoader("jsh.js"));
+//			if (jshJs == null) {
+//				throw new RuntimeException("Could not locate jsh.js bootstrap file using " + this.shell.getInstallation());
+//			}
+//			program.add(jshJs);
+//			//	TODO	jsh could execute this below
+//			program.add(Engine.Source.create(this.shell.getInvocation().getScript().getSource()));
+//			return program;
+//		}
 
 		Integer execute() throws Invocation.CheckedException {
 			try {
-				Object ignore = rhino.getEngine().execute(createProgram());
+				ExecutionImpl execution = new ExecutionImpl(rhino.getEngine());
+				execution.host("$shell", this.shell);
+				execution.host("$engine", new Interface());
+				execution.script(this.shell.getInstallation().getJshLoader("host.js"));
+				execution.script(this.shell.getInstallation().getJshLoader("jsh.js"));
+				execution.script(this.shell.getInvocation().getScript().getSource());
+				Object ignore = execution.execute();
 				return null;
 			} catch (Engine.Errors e) {
 				Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
@@ -240,7 +274,8 @@ public class Rhino {
 		}
 
 		Scriptable load() throws Invocation.CheckedException {
-			return rhino.getEngine().load(createProgram());
+			throw new UnsupportedOperationException("Unimplemented");
+//			return rhino.getEngine().load(createProgram());
 		}
 		
 		public class Interface {

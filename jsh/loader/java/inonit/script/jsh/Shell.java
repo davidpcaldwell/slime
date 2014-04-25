@@ -128,4 +128,10 @@ public abstract class Shell {
 			};
 		}
 	}
+	
+	public static abstract class Execution {
+		public abstract void host(String name, Object value);
+		public abstract void script(Code.Source.File script);
+		public abstract Object execute();
+	}	
 }
