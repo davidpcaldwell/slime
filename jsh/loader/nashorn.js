@@ -50,16 +50,38 @@ var $engine = new function() {
 		}
 	}
 	
+	this.exit = function(status) {
+		if ($nashorn.isTop()) {
+			exit(status);
+		} else {
+			//	NASHORN	Throwing object with toString() causes [object Object] to be error rather than toString()
+			throw new Packages.inonit.script.jsh.Nashorn.ExitException(status);
+		}
+	}
+	
 	this.jsh = function(configuration,invocation) {
 		var subshell = Packages.inonit.script.jsh.Shell.create(
 			$shell.getInstallation(),
 			configuration,
 			invocation
 		);
-		throw new Error("Unimplemented: Nashorn subshell.");
+		var global = (function() { return this; })();
+		var subglobal = Context.getContext().createGlobal();
+		Context.setGlobal(subglobal);
+		try {
+			return Packages.inonit.script.jsh.Nashorn.execute(subshell);
+		} catch (e) {
+			return 255;
+		} finally {
+			Context.setGlobal(global);
+		}
 //		Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
 //		debugger.setBreakOnExceptions(breakOnExceptions);
 //		if (rv == null) return 0;
 //		return rv.intValue();		
+	}
+	
+	this.setReadOnly = function(object,name,value) {
+		//	TODO	implement
 	}
 }

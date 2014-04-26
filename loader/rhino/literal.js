@@ -19,6 +19,7 @@
 				}
 			};
 			(function() {
+				//	TODO	move Rhino setReadOnly implementation into Rhino $engine implementation
 				$engine.Object.defineProperty.setReadOnly = ($rhino.setReadOnly) ? $rhino.setReadOnly : function(object,name,value) {
 					if (!arguments.callee.objects) {
 						arguments.callee.objects = new Packages.inonit.script.rhino.Objects();

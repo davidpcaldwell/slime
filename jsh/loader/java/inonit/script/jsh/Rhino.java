@@ -53,8 +53,9 @@ public class Rhino {
 			program.add(Engine.Source.create(script));
 		}
 
-		@Override public Object execute() {
-			return engine.execute(program);
+		@Override public Integer execute() {
+			engine.execute(program);
+			return null;
 		}
 	}
 	

@@ -33,19 +33,17 @@ var verify = function(b,message) {
 }
 
 var getClass = function(name) {
-	try {
-		return jsh.java.getClass(name);
-	} catch (e) {
-		return null;
-	}
+	return jsh.java.getClass(name);
 }
 
-//	The below line causes the caching behavior of AddClasses to kick in, which makes the final verification (after adding the class)
+var global = (function() { return this; })();
+
+//	The below line causes the caching behavior of Packages to kick in, which makes the final verification (after adding the class)
 //	to fail, at least under Rhino 1.7R2
 //verify(typeof(Packages.test.AddClasses) == "object", "typeof(Packages.test.AddClasses) == object");
 verify(getClass("test.AddClasses") == null, "Class not found");
 jsh.loader.addClasses(parameters.options.classes);
-jsh.shell.echo("Classes added: " + parameters.options.classes);
+verify($engine.getClasspath().getClass("test.AddClasses") != null, "Class found through loader");
 verify(getClass("test.AddClasses") != null, "Class found");
 verify(typeof(Packages.test.AddClasses) == "function", "typeof(Packages.test.AddClasses) == function");
 verify(new Packages.test.AddClasses().toString() == "Loaded");

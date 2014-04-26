@@ -139,7 +139,7 @@ var testCommandOutput = function(path,tester,p) {
 		];
 		launcher = PACKAGED_LAUNCHER;
 	}
-	debug("Environment: " + env.toSource());
+	debug("Environment: " + JSON.stringify(env));
 	var options = {
 		output: "",
 		err: "",
@@ -208,6 +208,9 @@ var jshPackage = function(p) {
 	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
 	invocation.push("-to",getJshPathname(to));
 	run(LAUNCHER_COMMAND.concat(invocation));
+	if (!to.exists()) {
+		throw new Error("Packaged file not created: " + to + " using " + LAUNCHER_COMMAND.concat(invocation));
+	}
 	return to;
 };
 

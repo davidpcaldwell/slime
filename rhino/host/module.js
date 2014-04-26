@@ -12,15 +12,46 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
-var getJavaClass = function(object) {
-	return Packages[object["class"].name];
-};
+var engine = (function() {
+	var global = (function() { return this; })();
+	var rv = {};
+	if (global.$nashorn) {
+		rv.isJavaObjectArray = function(object) {
+			return (Java.type("java.lang.Object[]").class.isInstance(object));
+		};
+		rv.isJavaInstance = function(object) {
+			//	TODO	untested
+			return (typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class);
+		}
+		rv.getNamedJavaClass = function(name) {
+			return Java.type(name).class;
+		}
+		rv.getJavaPackagesReference = function(name) {
+			return eval("Packages." + name);
+		}
+	} else {
+		rv.isJavaObjectArray = function(object) {
+			//	TODO	would this work with Nashorn?
+			return ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) );
+		}
+		rv.isJavaInstance = function(object) {
+			return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
+		}
+		rv.getNamedJavaClass = function(name) {
+			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
+		}
+		rv.getJavaPackagesReference = function(name) {
+			return Packages[name];
+		}
+	}
+	return rv;
+})();
 
 $exports.getClass = $api.Function({
 	before: $api.Function.argument.isString({ index: 0, name: "name" }),
 	call: function(name) {
 		if ($context.$rhino.classpath.getClass(name)) {
-			return Packages[name];
+			return engine.getJavaPackagesReference(name);
 		}
 		return null;
 	}
@@ -33,40 +64,45 @@ var isJavaObject = function(object) {
 	if (typeof(object) == "boolean") return false;
 	if (object == null) return false;
 	//	TODO	Is the next line superfluous now?
-	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-		if ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) ) return true;		
-		//	TODO	is this really the best way to do this?
-		return (String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n");
-	} else {
-		if (Java.type("java.lang.Object[]").class.isInstance(object)) return true;
-		if (typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class) return true;
-	}
+	if (engine.isJavaObjectArray(object)) return true;
+	if (engine.isJavaInstance(object)) return true;
+	return false;
 }
 $exports.isJavaObject = isJavaObject;
 
-if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 	$exports.Properties = function($properties) {
 		return Packages.inonit.script.runtime.Properties.create($properties);
 	}
 } else {
 	//	TODO	this is completely untested
+	var PropertyParent = function() {
+	}
+	PropertyParent.prototype.toString = function() {
+		return null;
+	}
+	
 	$exports.Properties = function($properties) {
 		var rv = {};
 		var keys = $properties.propertyNames();
 		while(keys.hasMoreElements()) {
-			var name = keys.nextElement();
-			var value = $properties.getProperty(name);
+			var name = String(keys.nextElement());
+			var value = String($properties.getProperty(name));
 			var tokens = name.split(".");
 			var target = rv;
 			for (var i=0; i<tokens.length-1; i++) {
 				if (!target[tokens[i]]) {
-					target[tokens[i]] = {
-						toString: function() {
-							return null;
+					target[tokens[i]] = new PropertyParent();
+				} else if (typeof(target[tokens[i]]) == "string") {
+					var toString = (function(value) {
+						return function() {
+							return value;
 						}
-					};
-					target = target[tokens[i]];
+					})(target[tokens[i]]);
+					target[tokens[i]] = new PropertyParent();
+					target[tokens[i]].toString = toString;
 				}
+				target = target[tokens[i]];
 			}
 			if (!target[tokens[tokens.length-1]]) {
 				target[tokens[tokens.length-1]] = value;
@@ -216,18 +252,10 @@ var getJavaClassName = function(javaclass) {
 }
 
 var $isJavaType = function(javaclass,object) {
-	var getNamedJavaClass = function(name) {
-		if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
-		} else {
-			return Java.type(name).class;
-		}
-	};
-
 	var className = getJavaClassName(javaclass);
 	if (className == null) throw new TypeError("Not a class: " + javaclass);
 	if (!isJavaObject(object)) return false;
-	var loaded = getNamedJavaClass(className);
+	var loaded = engine.getNamedJavaClass(className);
 	return loaded.isInstance(object);
 }
 $exports.isJavaType = function(javaclass) {

@@ -502,6 +502,7 @@ END LICENSE
 														buffer.close();
 													}
 													this.execute = function(scope) {
+														debugger;
 														var props = buffer.readBinary().asProperties();
 														scope.test( props.yes == "i do" );
 														scope.test( props.laptop == "inonit" );

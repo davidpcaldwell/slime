@@ -9,7 +9,35 @@ import java.util.List;
 
 public class Nashorn {
 	public static abstract class Host {
+		public abstract boolean isTop();
 		public abstract Loader.Classpath getClasspath();
+	}
+	
+	public static class ExitException extends RuntimeException {
+		private int status;
+		
+		public ExitException(int status) {
+			this.status = status;
+		}
+		
+		public int getExitStatus() {
+			return status;
+		}
+	}
+	
+	public static void execute(Shell shell) throws Invocation.CheckedException {
+		Shell.Execution execution = new ExecutionImpl(shell.getInstallation().getJshLoader("nashorn.js"), false);
+		shell.execute(execution);
+	}
+	
+	private static void main(Shell shell) throws Invocation.CheckedException {
+		Shell.Execution execution = new ExecutionImpl(shell.getInstallation().getJshLoader("nashorn.js"), true);
+		Integer rv = shell.execute(execution);
+		if (rv == null) {
+		} else if (rv.intValue() == 0) {
+		} else {
+			System.exit(rv.intValue());
+		}
 	}
 	
 	private static class ExecutionImpl extends Shell.Execution {
@@ -17,8 +45,9 @@ public class Nashorn {
 		private Classes classes;
 		private ScriptEngineManager factory;
 		private ScriptEngine engine;
+		private boolean top;
 		
-		ExecutionImpl(Code.Source.File nashornJs) {
+		ExecutionImpl(Code.Source.File nashornJs, boolean top) {
 			this.nashornJs = nashornJs;
 			this.classes = Classes.create(new Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
@@ -32,6 +61,7 @@ public class Nashorn {
 			Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
 			this.factory = new ScriptEngineManager();
 			this.engine = factory.getEngineByName("nashorn");
+			this.top = top;
 		}
 		
 		@Override public void host(String name, Object value) {
@@ -43,6 +73,10 @@ public class Nashorn {
 				@Override public Loader.Classpath getClasspath() {
 					return classes.getScriptClasses().toScriptClasspath();
 				}
+				
+				@Override public boolean isTop() {
+					return top;
+				}
 			});
 			scripts.add(nashornJs);
 		}
@@ -53,7 +87,7 @@ public class Nashorn {
 			scripts.add(script);
 		}
 
-		@Override public Object execute() {
+		@Override public Integer execute() {
 			try {
 				for (Code.Source.File file : scripts) {
 					ScriptContext c = engine.getContext();
@@ -63,14 +97,17 @@ public class Nashorn {
 				//	TODO	global object?
 				return null;
 			} catch (ScriptException e) {
-				throw new RuntimeException(e);
+				if (e.getCause() != null && e.getCause() instanceof ExitException) {
+					return ((ExitException)e.getCause()).getExitStatus();
+				} else {
+//					e.printStackTrace();
+					return 255;
+				}
 			}
 		}
-	} 
+	}
 	
 	public static void main(final String[] args) throws Invocation.CheckedException {
-		Shell shell = Shell.main(args);
-		Shell.Execution execution = new ExecutionImpl(shell.getInstallation().getJshLoader("nashorn.js"));
-		shell.execute(execution);
+		main(Shell.main(args));
 	}
 }

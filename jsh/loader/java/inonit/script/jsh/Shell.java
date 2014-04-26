@@ -145,7 +145,7 @@ public abstract class Shell {
 		}
 	}
 	
-	public Object execute(Execution execution) throws Invocation.CheckedException {
+	public Integer execute(Execution execution) throws Invocation.CheckedException {
 		execution.host("$shell", this);
 		execution.addEngine();
 		execution.script(this.getInstallation().getJshLoader("host.js"));
@@ -158,7 +158,6 @@ public abstract class Shell {
 		public abstract void host(String name, Object value);
 		public abstract void addEngine();
 		public abstract void script(Code.Source.File script);
-		//	TODO	throw exception?
-		public abstract Object execute();
+		public abstract Integer execute();
 	}	
 }

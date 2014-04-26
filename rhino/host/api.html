@@ -152,16 +152,8 @@ END LICENSE
 				$p.setProperty("a.b", "b");
 				$p.setProperty("a.c", "c");
 				var p = new module.Properties($p);
-				var count = 0;
-				try {
-					for (var x in p.a) {
-						count++;
-					}
-				} catch (e) {
-					var error = e;
-					debugger;
-				}
-				test(count == 3);
+				//	Note that for-in loop would yield four properties, including toString(), but this seems fine
+				test(Object.keys(p.a).length == 3);
 			]]></script>
 			<li class="object">
 				<div class="name">Thread</div>

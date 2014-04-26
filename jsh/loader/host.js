@@ -53,8 +53,8 @@ var $host = new function() {
 				return $engine.script(name,_streams.readString(input),toScope(scope),target);
 			};
 			
-			this.setReadOnly = function(object,name,value) {
-				//	TODO	implement
+			if ($engine.setReadOnly) this.setReadOnly = function(object,name,value) {
+				$engine.setReadOnly(object,name,value);
 			}
 		};
 		

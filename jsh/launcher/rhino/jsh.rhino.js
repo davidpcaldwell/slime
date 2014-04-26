@@ -597,8 +597,8 @@ try {
 	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
 	
 	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
-//	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE != "rhino") {
-	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE == "nashorn") {
+	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE != "rhino") {
+//	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE == "nashorn") {
 		//	Nashorn
 		var JJS = false;
 		if (JJS) {

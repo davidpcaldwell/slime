@@ -458,6 +458,9 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			subenv.JSH_LAUNCHER_DEBUG = "true";
 			subenv.JSH_SCRIPT_DEBUGGER = "rhino";
 		}
+		if (env.JSH_ENGINE) {
+			subenv.JSH_ENGINE = env.JSH_ENGINE;
+		}
 		subenv.JSH_PLUGINS = "";
 		command.add({
 			env: subenv
