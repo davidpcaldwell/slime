@@ -20,15 +20,7 @@ var engine = (function() {
 			return (Java.type("java.lang.Object[]").class.isInstance(object));
 		};
 		rv.isJavaInstance = function(object) {
-			//	TODO	untested
-			Packages.java.lang.System.err.println("typeof(object.getClass) = " + typeof(object.getClass));
-			if (object.getClass) {
-				Packages.java.lang.System.err.println("object.getClass() = " + object.getClass());
-				Packages.java.lang.System.err.println("Java.type(object.getClass().getName()).class = " + Java.type(object.getClass().getName()).class);
-			}
-			var rv = (typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class);
-			Packages.java.lang.System.err.println("returning: " + rv);
-			return rv;
+			return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
 		}
 		rv.getNamedJavaClass = function(name) {
 			return Java.type(name).class;
@@ -457,67 +449,71 @@ var Thread = function(p) {
 		debug("Done waiting for " + thread);
 	};
 };
-$exports.Thread = {};
-$exports.Thread.start = function(p) {
-	return new Thread(p);
-}
-$exports.Thread.run = function(p) {
-	var callee = arguments.callee;
-	var on = new function() {
-		var result = {};
 
-		this.result = function(rv) {
-			result.returned = { value: rv };
-		}
-
-		this.error = function(t) {
-			result.threw = t;
-		}
-
-		this.timeout = function() {
-			result.timedOut = true;
-		}
-
-		this.evaluate = function() {
-			if (result.returned) return result.returned.value;
-			if (result.threw) throw result.threw;
-			if (result.timedOut) throw callee.TIMED_OUT;
-		}
-	};
-	var o = {};
-	for (var x in p) {
-		o[x] = p[x];
+//	TODO	implement for Nashorn
+if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+	$exports.Thread = {};
+	$exports.Thread.start = function(p) {
+		return new Thread(p);
 	}
-	o.on = on;
-	var t = new Thread(o);
-	t.join();
-	return on.evaluate();
-};
-//	TODO	make the below a subtype of Error
-//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
-$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
-	if (!arguments.callee.cached) {
-		arguments.callee.cached = new Error("Timed out.");
-	}
-	return arguments.callee.cached;
-});
-$exports.Thread.thisSynchronize = function(f) {
-	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
-	//			synchronize()
-	return new Packages.org.mozilla.javascript.Synchronizer(f);
-};
-$exports.Thread.Monitor = function() {
-	var lock = new Packages.java.lang.Object();
+	$exports.Thread.run = function(p) {
+		var callee = arguments.callee;
+		var on = new function() {
+			var result = {};
 
-	this.Waiter = function(c) {
-		return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, function() {
-			while(!c.until.apply(this,arguments)) {
-				lock.wait();
+			this.result = function(rv) {
+				result.returned = { value: rv };
 			}
-			var rv = c.then.apply(this,arguments);
-			lock.notifyAll();
-			return rv;
-		});
+
+			this.error = function(t) {
+				result.threw = t;
+			}
+
+			this.timeout = function() {
+				result.timedOut = true;
+			}
+
+			this.evaluate = function() {
+				if (result.returned) return result.returned.value;
+				if (result.threw) throw result.threw;
+				if (result.timedOut) throw callee.TIMED_OUT;
+			}
+		};
+		var o = {};
+		for (var x in p) {
+			o[x] = p[x];
+		}
+		o.on = on;
+		var t = new Thread(o);
+		t.join();
+		return on.evaluate();
+	};
+	//	TODO	make the below a subtype of Error
+	//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
+	$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
+		if (!arguments.callee.cached) {
+			arguments.callee.cached = new Error("Timed out.");
+		}
+		return arguments.callee.cached;
+	});
+	$exports.Thread.thisSynchronize = function(f) {
+		//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
+		//			synchronize()
+		return new Packages.org.mozilla.javascript.Synchronizer(f);
+	};
+	$exports.Thread.Monitor = function() {
+		var lock = new Packages.java.lang.Object();
+
+		this.Waiter = function(c) {
+			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, function() {
+				while(!c.until.apply(this,arguments)) {
+					lock.wait();
+				}
+				var rv = c.then.apply(this,arguments);
+				lock.notifyAll();
+				return rv;
+			});
+		}
 	}
 }
 

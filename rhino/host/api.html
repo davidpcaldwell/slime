@@ -187,7 +187,10 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-				<span>__DESCRIPTION__</span>
+				<span>
+					(conditional; not implemented for Nashorn)
+					__DESCRIPTION__
+				</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="function">
@@ -360,55 +363,57 @@ END LICENSE
 							</ul>
 						</div>
 						<script type="application/x.jsapi#tests" jsapi:id="Monitor"><![CDATA[
-							var lock = new module.Thread.Monitor();
+							if (module.Thread) {
+								var lock = new module.Thread.Monitor();
 
-							var count = 0;
+								var count = 0;
 
-							var waiter = function() {
-								return new lock.Waiter({
-									//	TODO	make optional in API with this default implementation
-									until: function() {
-										return true;
-									},
-									then: function() {
-										test(count == 0);
-										count++;
-										test(count == 1);
-										Packages.java.lang.Thread.sleep(Packages.java.lang.Math.random() * 100);
-										count--;
-										test(count == 0);
-//											jsh.shell.echo("Success.");
-									}
-								});
-							}
-
-							var waiters = [];
-							for (var i=0; i<10; i++) {
-								waiters.push(waiter());
-							}
-
-							var joiners = [];
-							waiters.forEach(function(element) {
-								//	jsh.shell.echo("Starting ...");
-								var t = module.Thread.start({
-									call: element,
-									on: {
-										result: function(o) {
-											//	jsh.shell.echo("Finished.");
-											test(true);
+								var waiter = function() {
+									return new lock.Waiter({
+										//	TODO	make optional in API with this default implementation
+										until: function() {
+											return true;
 										},
-										error: function(t) {
-											//	jsh.shell.echo("Threw.");
-											throw t;
+										then: function() {
+											test(count == 0);
+											count++;
+											test(count == 1);
+											Packages.java.lang.Thread.sleep(Packages.java.lang.Math.random() * 100);
+											count--;
+											test(count == 0);
+	//											jsh.shell.echo("Success.");
 										}
-									}
-								});
-								joiners.push(t);
-							});
+									});
+								}
 
-							joiners.forEach(function(t) {
-								t.join();
-							});
+								var waiters = [];
+								for (var i=0; i<10; i++) {
+									waiters.push(waiter());
+								}
+
+								var joiners = [];
+								waiters.forEach(function(element) {
+									//	jsh.shell.echo("Starting ...");
+									var t = module.Thread.start({
+										call: element,
+										on: {
+											result: function(o) {
+												//	jsh.shell.echo("Finished.");
+												test(true);
+											},
+											error: function(t) {
+												//	jsh.shell.echo("Threw.");
+												throw t;
+											}
+										}
+									});
+									joiners.push(t);
+								});
+
+								joiners.forEach(function(t) {
+									t.join();
+								});
+							}
 						]]></script>
 					</li>
 					<li class="function">
@@ -434,129 +439,133 @@ END LICENSE
 							</span>
 						</div>
 						<script type="application/x.jsapi#tests" jsapi:id="thisSynchronize"><![CDATA[
-							var f = function(x) {
-								return 2*x;
-							};
+							if (module.Thread) {
+								var f = function(x) {
+									return 2*x;
+								};
 
-							var s = module.Thread.thisSynchronize(f);
+								var s = module.Thread.thisSynchronize(f);
 
-							//	TODO	actually test synchronization
+								//	TODO	actually test synchronization
 
-							test(s(2) == 4);
-							test(s(4) == 8);
+								test(s(2) == 4);
+								test(s(4) == 8);
 
-							var debug = function(s) {
-	//								Packages.java.lang.System.err.println(s);
-							}
+								var debug = function(s) {
+		//								Packages.java.lang.System.err.println(s);
+								}
 
-							var lock = new Packages.java.lang.Object();
+								var lock = new Packages.java.lang.Object();
 
-							var finished = 0;
+								var finished = 0;
 
-							var inner = function() {
-								inner.count++;
-								Packages.java.lang.Thread.sleep(100);
-								inner.count--;
-								finished++;
-								this.notifyAll();
-							}
-							inner.count = 0;
+								var inner = function() {
+									inner.count++;
+									Packages.java.lang.Thread.sleep(100);
+									inner.count--;
+									finished++;
+									this.notifyAll();
+								}
+								inner.count = 0;
 
-							var nested = module.Thread.thisSynchronize(inner);
+								var nested = module.Thread.thisSynchronize(inner);
 
-							var outer = function() {
-								outer.count++;
-								nested.call(lock);
-								outer.count--;
-							}
-							outer.count = 0;
+								var outer = function() {
+									outer.count++;
+									nested.call(lock);
+									outer.count--;
+								}
+								outer.count = 0;
 
-							var getCount = module.Thread.thisSynchronize(function() {
-								return inner.count;
-							});
+								var getCount = module.Thread.thisSynchronize(function() {
+									return inner.count;
+								});
 
-							var threads = [];
-							for (var i=0; i<10; i++) {
-								threads.push(module.Thread.start({
-									call: outer,
-									on: new function() {
-										this.returned = function(rv) {
-											debug("outer = " + outer.count);
-											test(getCount.call(lock) == 0);
+								var threads = [];
+								for (var i=0; i<10; i++) {
+									threads.push(module.Thread.start({
+										call: outer,
+										on: new function() {
+											this.returned = function(rv) {
+												debug("outer = " + outer.count);
+												test(getCount.call(lock) == 0);
+											}
+
+											this.threw = function(e) {
+												debug("threw = " + e);
+												throw e;
+											}
 										}
+									}));
+								}
 
-										this.threw = function(e) {
-											debug("threw = " + e);
-											throw e;
-										}
-									}
-								}));
+								threads.forEach( function(thread) {
+									thread.join();
+								});
+
+								test(finished == 10);
 							}
-
-							threads.forEach( function(thread) {
-								thread.join();
-							});
-
-							test(finished == 10);
 						]]></script>
 					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
-					var f = function() {
-						Packages.java.lang.Thread.sleep(100);
-						return 1;
-					};
-
-					var Callbacks = function() {
-						var result;
-
-						this.result = function(v) {
-							result = v;
+					if (module.Thread) {
+						var f = function() {
+							Packages.java.lang.Thread.sleep(100);
+							return 1;
 						};
 
-						this.error = function(t) {
-							throw t;
+						var Callbacks = function() {
+							var result;
+
+							this.result = function(v) {
+								result = v;
+							};
+
+							this.error = function(t) {
+								throw t;
+							};
+
+							this.timeout = function() {
+								result = "Timed out.";
+							}
+
+							this.evaluate = function() {
+								return result;
+							}
 						};
 
-						this.timeout = function() {
-							result = "Timed out.";
-						}
-
-						this.evaluate = function() {
-							return result;
-						}
-					};
-
-					var c1 = new Callbacks();
-					var t1 = module.Thread.start({
-						call: f,
-						timeout: 150,
-						on: c1
-					});
-					t1.join();
-					test(c1.evaluate() == 1);
-					var c2 = new Callbacks();
-					var t2 = module.Thread.start({
-						call: f,
-						timeout: 50,
-						on: c2
-					});
-					t2.join();
-					test(c2.evaluate() == "Timed out.");
-
-					var r3 = module.Thread.run({
-						call: f,
-						timeout: 150
-					});
-					test(r3 == 1);
-					try {
-						var r4 = module.Thread.run({
+						var c1 = new Callbacks();
+						var t1 = module.Thread.start({
 							call: f,
-							timeout: 50
+							timeout: 150,
+							on: c1
 						});
-						test(false);
-					} catch (e) {
-						test(e == module.Thread.run.TIMED_OUT);
+						t1.join();
+						test(c1.evaluate() == 1);
+						var c2 = new Callbacks();
+						var t2 = module.Thread.start({
+							call: f,
+							timeout: 50,
+							on: c2
+						});
+						t2.join();
+						test(c2.evaluate() == "Timed out.");
+
+						var r3 = module.Thread.run({
+							call: f,
+							timeout: 150
+						});
+						test(r3 == 1);
+						try {
+							var r4 = module.Thread.run({
+								call: f,
+								timeout: 50
+							});
+							test(false);
+						} catch (e) {
+							test(e == module.Thread.run.TIMED_OUT);
+						}
 					}
 				</script>
 			</li>
