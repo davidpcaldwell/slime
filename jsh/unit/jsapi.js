@@ -102,8 +102,7 @@ var Jsdom = function(base,dom) {
 		//	Unclear whether below used
 
 		this.toString = function() {
-			throw new Error();
-			return xml.toXMLString();
+			return "jsapi.js Element content=" + this.getContentString();
 		}
 	}
 
@@ -164,6 +163,10 @@ $exports.tests = new function() {
 				this.getScenario = function(scope) {
 					return this.html.getScenario(scope,unit);
 				}
+			}
+			
+			this.toString = function() {
+				return "moduleToItem: name=" + this.name + " page=" + page + " this.html = " + this.html;
 			}
 
 			this.namespace = moduleDescriptor.namespace;

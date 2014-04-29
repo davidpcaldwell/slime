@@ -113,6 +113,15 @@ var getElement = function(root,path) {
 //		.getScenario(scope,unit): produce a unit.before.js/Scenario given a scope and a test path
 //
 $exports.ApiHtmlTests = function(html,name) {
+	//	NASHORN	next two lines only needed because of Nashorn; see below
+	var nameParameter = name;
+	this.html = html;
+	
+	this.toString = function() {
+		return "ApiHtmlTests: " + name;
+	}
+	
+	//Packages.java.lang.System.err.println("Created html tests " + name + " with top " + html.top.toString().substring(0,1000));
 	var jsapiReferenceFilter = function(element) {
 		return element.getJsapiAttribute("reference") != null;
 	}
@@ -194,10 +203,22 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	this.getContexts = function(scope) {
-		var contextScripts = getDescendantScripts(html.top,"context");
+		//Packages.java.lang.System.err.println("in getContexts(), this: " + this);
+		//Packages.java.lang.System.err.println("in getContexts(), this.html: " + this.html.top.toString());
+		//Packages.java.lang.System.err.println("in getContexts(), name: " + name);
+		//Packages.java.lang.System.err.println("in getContexts(), nameParameter: " + nameParameter);
+		//Packages.java.lang.System.err.println("html.top: " + typeof(html.top) + " keys: " + Object.keys(html.top));
+		//Packages.java.lang.System.err.println("html.top.toString: " + html.top.toString);
+//		Packages.java.lang.System.err.println("html.top.toString(): " + html.top.toString());
+		//	NASHORN	Under Nashorn, this specific call does not work with html.top, although under Rhino it did (and it appears
+		//			that it should). Somehow the scope is getting confused and the arguments from the constructor are not available;
+		//			not only that, but even reassigning them (see nameParameter above) to local variables does not work.
+		
+		var contextScripts = getDescendantScripts(this.html.top,"context");
 
 		var contexts = [];
 		for (var i=0; i<contextScripts.length; i++) {
+			//Packages.java.lang.System.err.println("Context content string: " + contextScripts[i].getContentString());
 			var myscope = {};
 			if (html.$dom) {
 				myscope.document = html.$dom.root;
