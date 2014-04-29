@@ -41,7 +41,7 @@ var InputStream = function(peer) {
 		return new Resource(new function() {
 			this.read = new function() {
 				this.binary = function() {
-					return new InputStream(Packages.java.io.ByteArrayInputStream($bytes));
+					return new InputStream(new Packages.java.io.ByteArrayInputStream($bytes));
 				}
 			}
 		});
@@ -54,7 +54,7 @@ var InputStream = function(peer) {
 
 			this.read = new function() {
 				this.binary = function() {
-					return new InputStream(Packages.java.io.ByteArrayInputStream(_bytes));
+					return new InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
 				}
 			}
 		});
