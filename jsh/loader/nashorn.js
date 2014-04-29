@@ -81,7 +81,7 @@ var $engine = new function() {
 //		return rv.intValue();		
 	}
 	
-	this.setReadOnly = function(object,name,value) {
+	if (false) this.setReadOnly = function(object,name,value) {
 		//	TODO	implement
 	}
 }

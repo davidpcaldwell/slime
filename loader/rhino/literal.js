@@ -19,20 +19,8 @@
 				}
 			};
 			(function() {
-				//	TODO	move Rhino setReadOnly implementation into Rhino $engine implementation
-				$engine.Object.defineProperty.setReadOnly = ($rhino.setReadOnly) ? $rhino.setReadOnly : function(object,name,value) {
-					if (!arguments.callee.objects) {
-						arguments.callee.objects = new Packages.inonit.script.rhino.Objects();
-					}
-					arguments.callee.objects.setReadOnly(object,name,value);
-				}
-
-				$engine.MetaObject = function(p) {
-					var delegate = (p.delegate) ? p.delegate : {};
-					var get = (p.get) ? p.get : function(){};
-					var set = (p.set) ? p.set : function(){};
-					return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
-				}
+				if ($rhino.setReadOnly) $engine.Object.defineProperty.setReadOnly = $rhino.setReadOnly;
+				if ($rhino.MetaObject) $engine.MetaObject = $rhino.MetaObject;
 			})();
 			var $slime = {
 				getCode: function(path) {
