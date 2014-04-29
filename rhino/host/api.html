@@ -35,6 +35,9 @@ END LICENSE
 		</script>
 	</div>
 	<div>
+		<script type="application/x.jsapi#initialize">
+			scope.isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function";
+		</script>
 		<h1>Exports</h1>
 		<ul>
 			<li class="function" jsapi:id="getClass">
@@ -86,9 +89,17 @@ END LICENSE
 					var isJavaObject = module.isJavaObject;
 					test(isJavaObject(Packages.java.lang.Runtime.getRuntime()));
 					test(isJavaObject(new Packages.java.lang.Object()));
-					test(isJavaObject(new Packages.java.lang.String("hello world")));
-					test(isJavaObject(new Packages.java.lang.Integer(4)));
-					test(isJavaObject(new Packages.java.lang.Boolean(true)));
+					if (isRhino) {
+						test(isJavaObject(new Packages.java.lang.String("hello world")));
+						test(isJavaObject(new Packages.java.lang.Integer(4)));						
+						test(isJavaObject(new Packages.java.lang.Boolean(true)));
+					} else {
+						//	Nashorn appears to map these to JavaScript types
+						//	TODO	clarify and document this
+						test(!isJavaObject(new Packages.java.lang.String("hello world")));
+						test(!isJavaObject(new Packages.java.lang.Integer(4)));						
+						test(!isJavaObject(new Packages.java.lang.Boolean(true)));
+					}
 					test(isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK));
 					test(!isJavaObject("hello world"));
 					test(!isJavaObject(2));
@@ -98,8 +109,13 @@ END LICENSE
 					test(!isJavaObject(x.myUndefinedMember));
 					test(!isJavaObject(null));
 					test(!isJavaObject({}));
-					var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.Object, 4 );
-					test(isJavaObject(javaArray));
+					if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+						var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.Object, 4 );
+						test(isJavaObject(javaArray));						
+					} else {
+						var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.Object.class, 4 );
+						test(isJavaObject(javaArray));						
+					}
 				</script>
 			</li>
 			<li class="object">
@@ -129,7 +145,8 @@ END LICENSE
 					</li>
 				</ul>
 				<script type="application/x.jsapi#tests" jsapi:id="toJsArray"><![CDATA[
-					var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.String, 3 );
+					var StringClass = (isRhino) ? Packages.java.lang.String : Packages.java.lang.String.class;
+					var javaArray = Packages.java.lang.reflect.Array.newInstance( StringClass, 3 );
 					javaArray[0] = "Hello";
 					javaArray[1] = "World";
 					javaArray[2] = "David";

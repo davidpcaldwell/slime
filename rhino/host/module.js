@@ -21,7 +21,14 @@ var engine = (function() {
 		};
 		rv.isJavaInstance = function(object) {
 			//	TODO	untested
-			return (typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class);
+			Packages.java.lang.System.err.println("typeof(object.getClass) = " + typeof(object.getClass));
+			if (object.getClass) {
+				Packages.java.lang.System.err.println("object.getClass() = " + object.getClass());
+				Packages.java.lang.System.err.println("Java.type(object.getClass().getName()).class = " + Java.type(object.getClass().getName()).class);
+			}
+			var rv = (typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class);
+			Packages.java.lang.System.err.println("returning: " + rv);
+			return rv;
 		}
 		rv.getNamedJavaClass = function(name) {
 			return Java.type(name).class;
