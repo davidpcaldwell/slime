@@ -319,6 +319,7 @@ $loader.run("os.js", {
 });
 
 $exports.java = function(p) {
+	//	TODO	check for both p.classpath and p.jar being defined and decide what to do
 	var launcher = arguments.callee.launcher;
 	var shell = {
 		command: launcher
@@ -329,12 +330,16 @@ $exports.java = function(p) {
 	for (var x in p) {
 		if (x == "classpath") {
 			args.push("-classpath", p[x]);
+		} else if (x == "jar") {
+			args.push("-jar", p[x]);
 		} else {
 			shell[x] = p[x];
 		}
 	}
 	//	TODO	some way of specifying VM arguments
-	args.push(p.main);
+	if (!p.jar) {
+		args.push(p.main);
+	}
 	shell.arguments = args.concat( (p.arguments) ? p.arguments : [] );
 	return $exports.run(shell);
 };
