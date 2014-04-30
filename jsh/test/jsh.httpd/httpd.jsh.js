@@ -153,7 +153,7 @@ var plugin = new function() {
 
 var server = (function() {
 	if (!jsh.file.Pathname("/bin/sh").file) {
-		jsh.shell.echo("No Bourne shell; cannot run automated inside-Tomcat tests");
+		jsh.shell.echo("No Bourne shell at /bin/sh; cannot run automated inside-Tomcat tests");
 		return;
 	}
 	if (!jsh.shell.environment.CATALINA_HOME) {
