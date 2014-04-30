@@ -136,6 +136,10 @@ $exports.Scenario = function(properties) {
 						this.success = function() {
 							return object.success;
 						};
+						
+						if (object.error) {
+							this.error = object.error;
+						}
 
 						if (object.messages) {
 							this.message = MESSAGE_FOR_MESSAGES(object.messages);
@@ -193,6 +197,9 @@ $exports.Scenario = function(properties) {
 					}
 				}
 			};
+			if (assertion.error) {
+				result.error = assertion.error;
+			}
 			if (console.test) console.test(result);
 			if (next) {
 				if ($context.asynchronous && $context.asynchronous.test) {

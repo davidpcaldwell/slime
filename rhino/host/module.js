@@ -98,6 +98,9 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 							return value;
 						}
 					})(target[tokens[i]]);
+					if (typeof(PropertyParent) == "undefined") {
+						throw new TypeError("In Nashorn, PropertyParent is undefined.");
+					}
 					target[tokens[i]] = new PropertyParent();
 					target[tokens[i]].toString = toString;
 				}

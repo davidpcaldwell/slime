@@ -129,25 +129,27 @@ $exports.ApiHtmlTests = function(html,name) {
 	//	Cannot have reference at top level, currently
 
 	var references = filter(getDescendants(html.top), jsapiReferenceFilter);
-	for (var i=0; i<references.length; i++) {
-		var scope = new function() {
-			this.getApi = function(path) {
-				var otherhtml = html.load(path);
-				var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
-				rv.getElement = function(path) {
-					return getElement(otherhtml.top,path);
-				}
-				return rv;
+	
+	//	NASHORN	similarly under Nashorn the referenceScope is required to be "public"
+	this.referenceScope = new function() {
+		this.getApi = function(path) {
+			var otherhtml = html.load(path);
+			var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
+			rv.getElement = function(path) {
+				return getElement(otherhtml.top,path);
 			}
-		};
+			return rv;
+		}
+	};
+	for (var i=0; i<references.length; i++) {
 		var reference = references[i].getJsapiAttribute("reference");
 		var element = (function() {
 			var rv;
-			with(scope) {
+			with(this.referenceScope) {
 				rv = eval(reference);
 			}
 			return rv;
-		})();
+		}).call(this);
 		references[i].replaceContentWithContentOf(element);
 		//	TODO	is the next line necessary? If not, can also remove this call in the DOM/E4X implementations
 		references[i].removeJsapiAttribute("reference");
@@ -289,16 +291,27 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
+		
+		var runInitializer = function(initializer) {
+			try {
+				run(initializer.getContentString(), createTestScope(scope));
+			} catch (e) {
+				var error = new Error("Error executing scenario initialization.");
+				error.code = initializer.getContentString();
+				error.cause = e;
+				throw error;
+			}
+		}
 
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
-					run(container.initializes[i].getContentString(), createTestScope(scope));
+					runInitializer(container.initializes[i]);
 				}
 			}
 			var initializes = getScripts(element,"initialize");
 			for (var i=0; i<initializes.length; i++) {
-				run(initializes[i].getContentString(), createTestScope(scope));
+				runInitializer(initializes[i]);
 			}
 		};
 
