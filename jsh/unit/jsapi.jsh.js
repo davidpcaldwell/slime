@@ -103,7 +103,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 					_in: (function() {
 						var out = new Packages.java.io.ByteArrayOutputStream();
 						var writer = new Packages.java.io.OutputStreamWriter(out);
-						writer.write(code);
+						writer.write(String(code));
 						writer.flush();
 						writer.close();
 						return new Packages.java.io.ByteArrayInputStream(out.toByteArray());
@@ -111,6 +111,13 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 				}
 			}
 			jsh.loader.run(source,scope);
+		}
+		
+		var global = (function() { return this; })();
+		if (global.$nashorn) {
+			this.script = function(name,code,scope) {
+				return $engine.script(name, String(code), scope);
+			}
 		}
 	} ),
 	jsdom: jsh.script.loader.file("jsdom.js"),

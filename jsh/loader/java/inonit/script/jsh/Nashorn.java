@@ -17,6 +17,7 @@ public class Nashorn {
 		private int status;
 		
 		public ExitException(int status) {
+			super("Exit with status: " + status);
 			this.status = status;
 		}
 		
@@ -25,9 +26,9 @@ public class Nashorn {
 		}
 	}
 	
-	public static void execute(Shell shell) throws Invocation.CheckedException {
+	public static Integer execute(Shell shell) throws Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(shell.getInstallation().getJshLoader("nashorn.js"), false);
-		shell.execute(execution);
+		return shell.execute(execution);
 	}
 	
 	private static void main(Shell shell) throws Invocation.CheckedException {
@@ -94,13 +95,11 @@ public class Nashorn {
 					c.setAttribute(ScriptEngine.FILENAME, file.getSourceName(), ScriptContext.ENGINE_SCOPE);
 					engine.eval(file.getReader(), c);
 				}
-				//	TODO	global object?
 				return null;
 			} catch (ScriptException e) {
-				if (e.getCause() != null && e.getCause() instanceof ExitException) {
-					return ((ExitException)e.getCause()).getExitStatus();
+				if (e.getCause() != null && e.getCause().getCause() != null && e.getCause().getCause() instanceof ExitException) {
+					return ((ExitException)e.getCause().getCause()).getExitStatus();
 				} else {
-//					e.printStackTrace();
 					return 255;
 				}
 			}

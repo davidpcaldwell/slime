@@ -238,10 +238,24 @@ $exports.ApiHtmlTests = function(html,name) {
 				try {
 					var value = eval("(" + contextScripts[i].getContentString() + ")");
 				} catch (e) {
-					var error = new Error("Error instantiating context");
-					error.cause = e;
-					error.code = contextScripts[i].getContentString();
-					throw error;
+					if ($context.script) {
+						value = $context.script(this.toString() + " contexts[" + i + "]","(" + contextScripts[i].getContentString() + ")", myscope);
+					} else if ($context.run) {
+						try {
+							if (e.printStackTrace) e.printStackTrace();
+							value = $context.run("(" + contextScripts[i].getContentString() + ")", myscope);
+						} catch (e) {
+							var error = new Error("Error instantiating context");
+							error.cause = e;
+							error.code = contextScripts[i].getContentString();
+							throw error;							
+						}
+					} else {
+						var error = new Error("Error instantiating context");
+						error.cause = e;
+						error.code = contextScripts[i].getContentString();
+						throw error;
+					}
 				}
 			}
 			//	If the value produced is null or undefined, this context is not used

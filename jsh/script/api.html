@@ -199,12 +199,10 @@ END LICENSE
 				</span>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#context">
+		<script type="application/x.jsapi#context"><![CDATA[
 			(function() {
 				var host = $jsapi.module("../../rhino/host/", {
-					loadClass: function(name) {
-						return $host.getLoader().getJavaClass(name)
-					}
+					$rhino: jsh.$jsapi.$rhino
 				});
 				var context = {
 					api: {
@@ -251,9 +249,9 @@ END LICENSE
 					//	TODO	what are the next two for?
 					this.$filesystem = $filesystem;
 					this.FILE = file;
-				}
+				};
 			})()
-		</script>
+		]]></script>
 	</div>
 	<div>
 		<h1>Exports</h1>
