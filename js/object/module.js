@@ -21,6 +21,10 @@ if ($context.globals) {
 		}
 	};
 
+	if (typeof(globals) == "undefined") {
+		//	NASHORN
+		globals = $loader.file("global.js");
+	}
 	copyGlobals(globals.Array,Array);
 	copyGlobals(globals.String,String);
 }
