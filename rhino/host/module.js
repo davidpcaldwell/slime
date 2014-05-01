@@ -12,8 +12,8 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
+var global = (function() { return this; })();
 var engine = (function() {
-	var global = (function() { return this; })();
 	var rv = {};
 	if (global.$nashorn) {
 		rv.isJavaObjectArray = function(object) {
@@ -74,7 +74,7 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 		return Packages.inonit.script.runtime.Properties.create($properties);
 	}
 } else {
-	//	TODO	this is completely untested
+	//	NASHORN	PropertyParent sometimes disappears in Nashorn so replacing it with an equivalent literal notation below for now.
 	var PropertyParent = function() {
 	}
 	PropertyParent.prototype.toString = function() {
@@ -82,38 +82,60 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 	}
 	
 	$exports.Properties = function($properties) {
+		var nashornTrace = function(s) {
+			//Packages.java.lang.System.err.println(s);
+		}
+		nashornTrace("Properties constructor");
 		var rv = {};
 		var keys = $properties.propertyNames();
 		while(keys.hasMoreElements()) {
+			nashornTrace("key");
 			var name = String(keys.nextElement());
 			var value = String($properties.getProperty(name));
+			nashornTrace(name + "=" + value);
 			var tokens = name.split(".");
 			var target = rv;
 			for (var i=0; i<tokens.length-1; i++) {
 				if (!target[tokens[i]]) {
-					target[tokens[i]] = new PropertyParent();
+					nashornTrace("token: " + tokens[i] + " is PropertyParent");
+					target[tokens[i]] = {
+						toString: function() {
+							return null;
+						}
+					};
 				} else if (typeof(target[tokens[i]]) == "string") {
+					nashornTrace("token: " + tokens[i] + " is currently string; replacing with PropertyParent");
 					var toString = (function(value) {
 						return function() {
 							return value;
 						}
 					})(target[tokens[i]]);
-					if (typeof(PropertyParent) == "undefined") {
+					if (false && typeof(PropertyParent) == "undefined") {
+						nashornTrace("PropertyParent undefined");
 						throw new TypeError("In Nashorn, PropertyParent is undefined.");
 					}
-					target[tokens[i]] = new PropertyParent();
+					target[tokens[i]] = {
+						toString: function() {
+							return null;
+						}
+					};
 					target[tokens[i]].toString = toString;
+				} else {
+					nashornTrace("target: " + tokens[i] + " found.");
 				}
 				target = target[tokens[i]];
 			}
 			if (!target[tokens[tokens.length-1]]) {
+				nashornTrace("Last token: " + tokens[tokens.length-1] + " is string");
 				target[tokens[tokens.length-1]] = value;
 			} else {
+				nashornTrace("Last token: " + tokens[tokens.length-1] + " is toString");
 				target[tokens[tokens.length-1]].toString = function() {
 					return value;
 				}
 			}
 		}
+		nashornTrace("Properties constructor returning");
 		return rv;
 	};
 }

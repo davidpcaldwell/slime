@@ -239,19 +239,26 @@ $exports.ApiHtmlTests = function(html,name) {
 					var value = eval("(" + contextScripts[i].getContentString() + ")");
 				} catch (e) {
 					if ($context.script) {
-						value = $context.script(this.toString() + " contexts[" + i + "]","(" + contextScripts[i].getContentString() + ")", myscope);
+						try {
+							value = $context.script(this.toString() + " contexts[" + i + "]","(" + contextScripts[i].getContentString() + ")", myscope);
+						} catch (e) {
+							var error = new Error("Error instantiating context via $context.script");
+							error.cause = e;
+							error.code = contextScripts[i].getContentString();
+							throw error;
+						}
 					} else if ($context.run) {
 						try {
 							if (e.printStackTrace) e.printStackTrace();
 							value = $context.run("(" + contextScripts[i].getContentString() + ")", myscope);
 						} catch (e) {
-							var error = new Error("Error instantiating context");
+							var error = new Error("Error instantiating context via $context.run");
 							error.cause = e;
 							error.code = contextScripts[i].getContentString();
 							throw error;							
 						}
 					} else {
-						var error = new Error("Error instantiating context");
+						var error = new Error("Error instantiating context via eval()");
 						error.cause = e;
 						error.code = contextScripts[i].getContentString();
 						throw error;
