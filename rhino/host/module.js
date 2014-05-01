@@ -12,39 +12,7 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
-var global = (function() { return this; })();
-var engine = (function() {
-	var rv = {};
-	if (global.$nashorn) {
-		rv.isJavaObjectArray = function(object) {
-			return (Java.type("java.lang.Object[]").class.isInstance(object));
-		};
-		rv.isJavaInstance = function(object) {
-			return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
-		}
-		rv.getNamedJavaClass = function(name) {
-			return Java.type(name).class;
-		}
-		rv.getJavaPackagesReference = function(name) {
-			return eval("Packages." + name);
-		}
-	} else {
-		rv.isJavaObjectArray = function(object) {
-			//	TODO	would this work with Nashorn?
-			return ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) );
-		}
-		rv.isJavaInstance = function(object) {
-			return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
-		}
-		rv.getNamedJavaClass = function(name) {
-			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
-		}
-		rv.getJavaPackagesReference = function(name) {
-			return Packages[name];
-		}
-	}
-	return rv;
-})();
+var engine = $host.java;
 
 $exports.getClass = $api.Function({
 	before: $api.Function.argument.isString({ index: 0, name: "name" }),
