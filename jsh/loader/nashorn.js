@@ -81,6 +81,21 @@ var $engine = new function() {
 //		return rv.intValue();		
 	}
 	
+	this.java = new function() {
+		this.isJavaObjectArray = function(object) {
+			return (Java.type("java.lang.Object[]").class.isInstance(object));
+		};
+		this.isJavaInstance = function(object) {
+			return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
+		}
+		this.getNamedJavaClass = function(name) {
+			return Java.type(name).class;
+		}
+		this.getJavaPackagesReference = function(name) {
+			return eval("Packages." + name);
+		}
+	}
+	
 	//	TODO	setReadOnly?
 	//	TODO	MetaObject?
 }

@@ -13,7 +13,7 @@
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
 try {
-	var engine = $host.java;
+	var engine = $engine.java;
 } catch (e) {
 	//	TODO	atrocious temporary workaround to support Rhino servlets; copied-pasted from host.js; push back into
 	//			some engine-specific file for non-jsh implementations
