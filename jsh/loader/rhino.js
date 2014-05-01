@@ -22,7 +22,10 @@ var $engine = new function() {
 	};
 	
 	this.setReadOnly = function(object,name,value) {
-		$rhino.setReadOnly(object,name,value);
+		if (!arguments.callee.objects) {
+			arguments.callee.objects = new Packages.inonit.script.rhino.Objects();
+		}
+		arguments.callee.objects.setReadOnly(object,name,value);							
 	};
 	
 	//	TODO	addFinalizer

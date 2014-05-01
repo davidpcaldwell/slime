@@ -58,18 +58,9 @@ var $host = new function() {
 					return $engine.script(name,_streams.readString(input),toScope(scope),target);
 				};
 
-				this.setReadOnly = (function() {
-					if (isRhino) {
-						return function(object,name,value) {
-							if (!arguments.callee.objects) {
-								arguments.callee.objects = new Packages.inonit.script.rhino.Objects();
-							}
-							arguments.callee.objects.setReadOnly(object,name,value);							
-						};
-					} else {
-						//	TODO	can Nashorn implement?
-					}
-				})();
+				if ($engine.setReadOnly) {
+					this.setReadOnly = $engine.setReadOnly;
+				}
 
 				if (isRhino) {
 					$engine.MetaObject = function(p) {
