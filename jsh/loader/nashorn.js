@@ -81,5 +81,6 @@ var $engine = new function() {
 //		return rv.intValue();		
 	}
 	
-	//	TODO	setReadOnly
+	//	TODO	setReadOnly?
+	//	TODO	MetaObject?
 }

@@ -1,6 +1,4 @@
 var $host = new function() {
-	var isRhino = typeof(Packages.org.mozilla.javascript.Context) == "rhino";
-		
 	var installation = $shell.getInstallation();
 	var configuration = $shell.getConfiguration();	
 	var invocation = $shell.getInvocation();
@@ -61,16 +59,9 @@ var $host = new function() {
 				if ($engine.setReadOnly) {
 					this.setReadOnly = $engine.setReadOnly;
 				}
-
-				if (isRhino) {
-					$engine.MetaObject = function(p) {
-						var delegate = (p.delegate) ? p.delegate : {};
-						var get = (p.get) ? p.get : function(){};
-						var set = (p.set) ? p.set : function(){};
-						return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
-					};
-				} else {
-					//	TODO	can Nashorn implement?
+				
+				if ($engine.MetaObject) {
+					this.MetaObject = $engine.MetaObject;
 				}
 			};
 

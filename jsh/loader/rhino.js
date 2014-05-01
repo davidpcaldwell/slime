@@ -28,6 +28,13 @@ var $engine = new function() {
 		arguments.callee.objects.setReadOnly(object,name,value);							
 	};
 	
+	this.MetaObject = function(p) {
+		var delegate = (p.delegate) ? p.delegate : {};
+		var get = (p.get) ? p.get : function(){};
+		var set = (p.set) ? p.set : function(){};
+		return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
+	};
+	
 	//	TODO	addFinalizer
 	//	TODO	destroy
 };
