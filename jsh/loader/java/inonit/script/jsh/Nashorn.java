@@ -27,12 +27,12 @@ public class Nashorn {
 	}
 	
 	public static Integer execute(Shell shell) throws Invocation.CheckedException {
-		Shell.Execution execution = new ExecutionImpl(shell.getInstallation().getJshLoader("nashorn.js"), false);
+		Shell.Execution execution = new ExecutionImpl(false);
 		return shell.execute(execution);
 	}
 	
 	private static void main(Shell shell) throws Invocation.CheckedException {
-		Shell.Execution execution = new ExecutionImpl(shell.getInstallation().getJshLoader("nashorn.js"), true);
+		Shell.Execution execution = new ExecutionImpl(true);
 		Integer rv = shell.execute(execution);
 		if (rv == null) {
 		} else if (rv.intValue() == 0) {
@@ -42,14 +42,12 @@ public class Nashorn {
 	}
 	
 	private static class ExecutionImpl extends Shell.Execution {
-		private Code.Source.File nashornJs;
 		private Classes classes;
 		private ScriptEngineManager factory;
 		private ScriptEngine engine;
 		private boolean top;
 		
-		ExecutionImpl(Code.Source.File nashornJs, boolean top) {
-			this.nashornJs = nashornJs;
+		ExecutionImpl(boolean top) {
 			this.classes = Classes.create(new Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
@@ -79,7 +77,7 @@ public class Nashorn {
 					return top;
 				}
 			});
-			scripts.add(nashornJs);
+			scripts.add(this.getShell().getInstallation().getJshLoader("nashorn.js"));
 		}
 		
 		private List<Code.Source.File> scripts = new ArrayList<Code.Source.File>();

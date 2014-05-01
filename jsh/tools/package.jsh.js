@@ -72,9 +72,11 @@ jsh.file.unzip({ zip: JSH.getFile("lib/jsh.jar"), to: to });
 JSH.getSubdirectory("script/loader").copy(to.getRelativePath("$jsh/loader"), { recursive: true });
 //to.getRelativePath("$jsh/loader.js").write(JSH.getFile("script/loader/literal.js").read(String), { recursive: true });
 //to.getRelativePath("$jsh/rhino.js").write(JSH.getFile("script/loader/rhino/literal.js").read(String), { recursive: true });
-to.getRelativePath("$jsh/nashorn.js").write(JSH.getFile("script/jsh/nashorn.js").read(String), { recursive: true });
-to.getRelativePath("$jsh/host.js").write(JSH.getFile("script/jsh/host.js").read(String), { recursive: true });
-to.getRelativePath("$jsh/jsh.js").write(JSH.getFile("script/jsh/jsh.js").read(String), { recursive: true });
+JSH.getSubdirectory("script/jsh").list().forEach(function(node) {
+	if (/\.js/.test(node.pathname.basename)) {
+		to.getRelativePath("$jsh/" + node.pathname.basename).write(node.read(String));
+	}
+});
 
 JSH.getSubdirectory("modules").list().forEach( function(module) {
 	var tokens = module.pathname.basename.split(".");

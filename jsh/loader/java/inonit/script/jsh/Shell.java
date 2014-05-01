@@ -146,7 +146,7 @@ public abstract class Shell {
 	}
 	
 	public Integer execute(Execution execution) throws Invocation.CheckedException {
-		execution.host("$shell", this);
+		execution.initialize(this);
 		execution.addEngine();
 		execution.script(this.getInstallation().getJshLoader("host.js"));
 		execution.script(this.getInstallation().getJshLoader("jsh.js"));
@@ -155,6 +155,17 @@ public abstract class Shell {
 	}
 	
 	public static abstract class Execution {
+		private Shell shell;
+		
+		public final void initialize(Shell shell) {
+			this.shell = shell;
+			this.host("$shell", shell);
+		}
+		
+		protected final Shell getShell() {
+			return this.shell;
+		}
+		
 		public abstract void host(String name, Object value);
 		public abstract void addEngine();
 		public abstract void script(Code.Source.File script);

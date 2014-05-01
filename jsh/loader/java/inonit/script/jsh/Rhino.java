@@ -25,11 +25,11 @@ import inonit.script.rhino.*;
 public class Rhino {
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
-		private Interface $engine;
+		private Interface $rhino;
 		
-		ExecutionImpl(Engine engine, Interface $engine) {
+		ExecutionImpl(Engine engine, Interface $rhino) {
 			this.engine = engine;
-			this.$engine = $engine;
+			this.$rhino = $rhino;
 		}
 		
 		private Engine.Program program = new Engine.Program();
@@ -46,7 +46,8 @@ public class Rhino {
 		}
 		
 		@Override public void addEngine() {
-			host("$engine", $engine);
+			host("$rhino", $rhino);
+			script(this.getShell().getInstallation().getJshLoader("rhino.js"));
 		}
 
 		@Override public void script(Code.Source.File script) {
@@ -240,6 +241,14 @@ public class Rhino {
 		
 		//	TODO	can this level of indirection surrounding debugger be removed?
 		
+		public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+			return rhino.getEngine().script(name, code, scope, target);
+		}
+
+		public Loader.Classpath getClasspath() {
+			return rhino.getEngine().getApplicationClassLoader().toScriptClasspath();
+		}
+
 		public class Debugger {
 			public boolean isBreakOnExceptions() {
 				return debugger.isBreakOnExceptions();
@@ -252,29 +261,6 @@ public class Rhino {
 
 		public Debugger getDebugger() {
 			return new Debugger();
-		}
-		
-		public void addFinalizer(Runnable finalizer) {
-			finalizers.add(finalizer);
-		}
-		
-		public void destroy() {
-			for (int i=0; i<finalizers.size(); i++) {
-				try {
-					finalizers.get(i).run();
-				} catch (Throwable t) {
-					//	TODO	log something about the exception
-					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
-				}
-			}			
-		}
-
-		public Loader.Classpath getClasspath() {
-			return rhino.getEngine().getApplicationClassLoader().toScriptClasspath();
-		}
-
-		public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
-			return rhino.getEngine().script(name, code, scope, target);
 		}
 
 		public void exit(int status) throws ExitException {
@@ -294,6 +280,21 @@ public class Rhino {
 			debugger.setBreakOnExceptions(breakOnExceptions);
 			if (rv == null) return 0;
 			return rv.intValue();
+		}
+		
+		public void addFinalizer(Runnable finalizer) {
+			finalizers.add(finalizer);
+		}
+		
+		public void destroy() {
+			for (int i=0; i<finalizers.size(); i++) {
+				try {
+					finalizers.get(i).run();
+				} catch (Throwable t) {
+					//	TODO	log something about the exception
+					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
+				}
+			}			
 		}
 	}
 
