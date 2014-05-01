@@ -387,10 +387,20 @@ $exports.Filter = new function() {
 			return v == value;
 		}
 	}
-}
+};
 $exports.Filter.not = function(filter) {
 	return function() {
 		return !Boolean(filter.apply(this,arguments));
+	}
+};
+$exports.Filter.or = function() {
+	if (arguments.length == 0) throw new TypeError();
+	var items = Array.prototype.slice.call(arguments);
+	return function() {
+		for (var i=0; i<items.length; i++) {
+			if (items[i].apply(this,arguments)) return true;
+		}
+		return false;
 	}
 }
 
