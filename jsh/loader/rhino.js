@@ -48,7 +48,10 @@ var $engine = new function() {
 		}
 		this.getJavaPackagesReference = function(name) {
 			return Packages[name];
-		}		
+		}
+		this.Array = function(JavaClass,length) {
+			return Packages.java.lang.reflect.Array.newInstance(JavaClass,length);
+		}
 	}
 	
 	//	TODO	addFinalizer

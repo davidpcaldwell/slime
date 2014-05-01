@@ -32,6 +32,9 @@ try {
 		rv.getJavaPackagesReference = function(name) {
 			return Packages[name];
 		}
+		rv.Array = function(javaclass,length) {
+			return Packages.java.lang.reflect.Array.newInstance(javaclass,length);
+		}
 		return rv;
 	})();
 }
@@ -325,14 +328,7 @@ $exports.toJsArray = $api.deprecate(toJsArray);
 //	TODO	at least implement this in terms of $exports.Array.create
 var toJavaArray = function(jsArray,javaclass,adapter) {
 	if (!adapter) adapter = function(x) { return x; }
-	var _class = (function() {
-		if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-			return javaclass;
-		} else {
-			return javaclass.class;
-		}
-	})();
-	var rv = Packages.java.lang.reflect.Array.newInstance(_class,jsArray.length);
+	var rv = new $engine.java.Array(javaclass,jsArray.length);
 	for (var i=0; i<jsArray.length; i++) {
 		rv[i] = adapter(jsArray[i]);
 	}

@@ -94,6 +94,9 @@ var $engine = new function() {
 		this.getJavaPackagesReference = function(name) {
 			return eval("Packages." + name);
 		}
+		this.Array = function(JavaClass,length) {
+			return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
+		}
 	}
 	
 	//	TODO	setReadOnly?

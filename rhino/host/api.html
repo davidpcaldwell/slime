@@ -109,7 +109,7 @@ END LICENSE
 					test(!isJavaObject(x.myUndefinedMember));
 					test(!isJavaObject(null));
 					test(!isJavaObject({}));
-					if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+					if (isRhino) {
 						var javaArray = Packages.java.lang.reflect.Array.newInstance( Packages.java.lang.Object, 4 );
 						test(isJavaObject(javaArray));						
 					} else {
