@@ -12,7 +12,29 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
-var engine = $host.java;
+try {
+	var engine = $host.java;
+} catch (e) {
+	//	TODO	atrocious temporary workaround to support Rhino servlets; copied-pasted from host.js; push back into
+	//			some engine-specific file for non-jsh implementations
+	var engine = (function() {
+		var rv = {};
+		rv.isJavaObjectArray = function(object) {
+			//	TODO	would this work with Nashorn?
+			return ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) );
+		}
+		rv.isJavaInstance = function(object) {
+			return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
+		}
+		rv.getNamedJavaClass = function(name) {
+			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
+		}
+		rv.getJavaPackagesReference = function(name) {
+			return Packages[name];
+		}
+		return rv;
+	})();
+}
 
 $exports.getClass = $api.Function({
 	before: $api.Function.argument.isString({ index: 0, name: "name" }),
@@ -234,23 +256,29 @@ var experimental = function(name) {
 	$api.experimental($exports, name);
 }
 
-var getJavaClassName = function(javaclass) {
-	var toString = "" + javaclass;
-	if (/\[JavaClass /.test(toString)) {
-		return toString.substring("[JavaClass ".length, toString.length-1);
-	} else {
-		return null;
-	}
-}
-
-var $isJavaType = function(javaclass,object) {
-	var className = getJavaClassName(javaclass);
-	if (className == null) throw new TypeError("Not a class: " + javaclass);
-	if (!isJavaObject(object)) return false;
-	var loaded = engine.getNamedJavaClass(className);
-	return loaded.isInstance(object);
-}
 $exports.isJavaType = function(javaclass) {
+	//	NASHORN	Used to have this function outside isJavaType but because of strange Nashorn issues with code loading it caused
+	//			unit tests to fail at times
+	var getJavaClassName = function(javaclass) {
+		var toString = "" + javaclass;
+		if (/\[JavaClass /.test(toString)) {
+			return toString.substring("[JavaClass ".length, toString.length-1);
+		} else {
+			return null;
+		}
+	}
+
+	//	NASHORN	Used to have this function outside isJavaType but because of strange Nashorn issues with code loading it caused
+	//			unit tests to fail at times
+	var $isJavaType = function(javaclass,object) {
+		var className = getJavaClassName(javaclass);
+		if (className == null) throw new TypeError("Not a class: " + javaclass);
+		//	NASHORN	Used to call isJavaObject rather than $exports.isJavaObject
+		if (!$exports.isJavaObject(object)) return false;
+		var loaded = $exports.isJavaType.getNamedJavaClass(className);
+		return loaded.isInstance(object);
+	};
+	
 	if (arguments.length == 2) {
 		warning("WARNING: Use of deprecated 2-argument form of isJavaType.");
 		return $isJavaType(javaclass,arguments[1]);
@@ -259,6 +287,7 @@ $exports.isJavaType = function(javaclass) {
 		return $isJavaType(javaclass,object);
 	}
 };
+$exports.isJavaType.getNamedJavaClass = engine.getNamedJavaClass;
 $api.experimental($exports,"isJavaType");
 
 $exports.Array = new function() {

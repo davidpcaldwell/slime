@@ -177,4 +177,12 @@ var $host = new function() {
 		}
 		return rv;
 	})();
+	
+	this.jsapi = new function() {
+		if (global.$nashorn) {
+			this.script = function(name,code,scope) {
+				return $engine.script(name, String(code), scope);
+			}
+		}		
+	};
 };

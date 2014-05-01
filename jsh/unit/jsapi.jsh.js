@@ -113,8 +113,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 			jsh.loader.run(source,scope);
 		}
 		
-		var global = (function() { return this; })();
-		if (global.$nashorn) {
+		if ($host.jsapi.script) {
 			this.script = function(name,code,scope) {
 				return $engine.script(name, String(code), scope);
 			}
