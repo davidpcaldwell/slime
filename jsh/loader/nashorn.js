@@ -1,4 +1,5 @@
 load("nashorn:mozilla_compat.js");
+
 var $engine = new function() {
 	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
 	var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);
@@ -101,4 +102,58 @@ var $engine = new function() {
 	
 	//	TODO	setReadOnly?
 	//	TODO	MetaObject?
-}
+};
+
+var $javaloader = (function() {
+	var _Streams = Packages.inonit.script.runtime.io.Streams;
+	var _streams = new _Streams();
+
+	var getLoaderCode = function(path) {
+		var rv = _streams.readString($shell.getInstallation().getPlatformLoader(path).getReader());
+		return rv;
+	}
+
+	var toScope = function(object) {
+		if ($engine.toScope) return $engine.toScope(object);
+		return object;
+	}
+
+	//	Try to port inonit.script.rhino.Loader.Bootstrap
+	var $javahost = new function() {
+		this.getLoaderCode = function(path) {
+			return getLoaderCode(path);
+		};
+
+		//	TODO	is this indirection object unnecessary?
+		var classpath = new function() {
+			this.append = function(code) {
+				$engine.getClasspath().append(code);
+			};
+
+			this.getClass = function(name) {
+				return $engine.getClasspath().getClass(name);
+			}
+		};
+
+		this.getClasspath = function() {
+			return classpath;
+		};
+
+		this.script = function(name,input,scope,target) {
+			return $engine.script(name,_streams.readString(input),toScope(scope),target);
+		};
+
+		if ($engine.setReadOnly) {
+			this.setReadOnly = $engine.setReadOnly;
+		}
+
+		if ($engine.MetaObject) {
+			this.MetaObject = $engine.MetaObject;
+		}
+	};
+
+	return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);	
+})();
+
+$engine.$javaloader = $javaloader;
+

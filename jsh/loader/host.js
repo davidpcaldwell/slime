@@ -6,6 +6,7 @@ var $host = new function() {
 	var loader;
 	
 	this.getRhinoLoader = function() {
+		if ($engine.$javaloader) return $engine.$javaloader;
 		if (!loader) {
 			var debug = function(string) {
 				Packages.java.lang.System.err.println(string);
@@ -68,6 +69,7 @@ var $host = new function() {
 			loader = $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);
 		}
 		return loader;
+		return $javaloader;
 	};
 	
 	this.getInvocation = function() {
