@@ -26,7 +26,7 @@ public class Engine {
 		rhino.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));		
 		rhino.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/rhino.js")));
 		Scriptable javahost = (Scriptable)engine.execute(rhino);
-		program.set(Engine.Program.Variable.create("$rhino", Engine.Program.Variable.Value.create(javahost)));
+		program.set(Engine.Program.Variable.create("$javahost", Engine.Program.Variable.Value.create(javahost)));
 		program.add(Engine.Source.create("<java loader>", loader.getLoaderCode("rhino/literal.js")));
 		return (Scriptable)engine.execute(program);
 	}

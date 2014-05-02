@@ -32,7 +32,7 @@ var $host = new function() {
 			}
 
 			//	Try to port inonit.script.rhino.Loader.Bootstrap
-			var $rhino = new function() {
+			var $javahost = new function() {
 				this.getLoaderCode = function(path) {
 					return getLoaderCode(path);
 				};
@@ -65,7 +65,7 @@ var $host = new function() {
 				}
 			};
 
-			loader = $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $rhino: $rhino }), null);
+			loader = $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);
 		}
 		return loader;
 	};
