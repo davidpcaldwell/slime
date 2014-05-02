@@ -22,8 +22,9 @@ import inonit.script.engine.*;
 public class Engine {
 	public static Scriptable load(Engine engine, Loader loader) throws IOException {
 		Engine.Program program = new Engine.Program();
-		program.set(Engine.Program.Variable.create("$rhino", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));
-		program.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/literal.js")));
+		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));		
+		program.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/rhino.js")));
+		program.add(Engine.Source.create("<java loader>", loader.getLoaderCode("rhino/literal.js")));
 		return (Scriptable)engine.execute(program);
 	}
 	
