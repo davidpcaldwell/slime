@@ -62,6 +62,10 @@ public class Nashorn {
 			this.engine = factory.getEngineByName("nashorn");
 			this.top = top;
 		}
+
+		@Override protected Object createLoader(Shell shell) {
+			return null;
+		}
 		
 		@Override public void host(String name, Object value) {
 			factory.getBindings().put(name, value);

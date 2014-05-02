@@ -18,6 +18,7 @@ import java.util.logging.*;
 
 import org.mozilla.javascript.*;
 
+import inonit.script.runtime.io.*;
 import inonit.system.*;
 import inonit.script.engine.*;
 import inonit.script.rhino.*;
@@ -26,6 +27,7 @@ public class Rhino {
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
 		private Interface $rhino;
+		private Streams streams = new Streams();
 		
 		ExecutionImpl(Engine engine, Interface $rhino) {
 			this.engine = engine;
@@ -33,6 +35,19 @@ public class Rhino {
 		}
 		
 		private Engine.Program program = new Engine.Program();
+
+		@Override protected Object createLoader(final Shell shell) {
+			try {
+				return Engine.load(engine, new Loader() {
+					@Override public String getLoaderCode(String path) throws IOException {
+						return streams.readString(shell.getInstallation().getPlatformLoader(path).getReader());
+					}
+				});
+			} catch (IOException e) {
+				//	TODO	Think about whether to throw IOException instead
+				throw new RuntimeException("Unimplemented", e);
+			}
+		}
 		
 		@Override public void host(String name, Object value) {
 			Engine.Program.Variable variable = Engine.Program.Variable.create(
