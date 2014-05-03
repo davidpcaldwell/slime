@@ -57,3 +57,64 @@ var $engine = new function() {
 	//	TODO	addFinalizer
 	//	TODO	destroy
 };
+$engine.$javaloader = (function() {
+	var debug = function(string) {
+		Packages.java.lang.System.err.println(string);
+	}
+
+	var _Streams = Packages.inonit.script.runtime.io.Streams;
+	var _streams = new _Streams();
+
+	var getLoaderCode = function(path) {
+	//			return installation
+	//			var loaderPath = Packages.java.lang.System.getProperty("jsh.library.scripts.loader");
+	//			if (!loaderPath && Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
+	//				throw new Error("getLoaderCode not implemented correctly for packaged applications; loading " + path);
+	//			}
+	//			var _File = Packages.java.io.File;
+	//			var _FileReader = Packages.java.io.FileReader;
+		var rv = _streams.readString($shell.getInstallation().getPlatformLoader(path).getReader());
+		return rv;
+	}
+
+	var toScope = function(object) {
+		if ($engine.toScope) return $engine.toScope(object);
+		return object;
+	}
+
+	//	Try to port inonit.script.rhino.Loader.Bootstrap
+	var $javahost = new function() {
+		this.getLoaderCode = function(path) {
+			return getLoaderCode(path);
+		};
+
+		//	TODO	is this indirection object unnecessary?
+		var classpath = new function() {
+			this.append = function(code) {
+				$engine.getClasspath().append(code);
+			};
+
+			this.getClass = function(name) {
+				return $engine.getClasspath().getClass(name);
+			}
+		};
+
+		this.getClasspath = function() {
+			return classpath;
+		};
+
+		this.script = function(name,input,scope,target) {
+			return $engine.script(name,_streams.readString(input),toScope(scope),target);
+		};
+
+		if ($engine.setReadOnly) {
+			this.setReadOnly = $engine.setReadOnly;
+		}
+
+		if ($engine.MetaObject) {
+			this.MetaObject = $engine.MetaObject;
+		}
+	};
+
+	return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);	
+})();
