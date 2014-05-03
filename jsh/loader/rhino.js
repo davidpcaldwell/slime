@@ -58,31 +58,14 @@ var $engine = new function() {
 	//	TODO	destroy
 };
 $engine.$javaloader = (function() {
-	var debug = function(string) {
-		Packages.java.lang.System.err.println(string);
-	}
-
-	var _Streams = Packages.inonit.script.runtime.io.Streams;
-	var _streams = new _Streams();
-
-	var getLoaderCode = function(path) {
-	//			return installation
-	//			var loaderPath = Packages.java.lang.System.getProperty("jsh.library.scripts.loader");
-	//			if (!loaderPath && Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
-	//				throw new Error("getLoaderCode not implemented correctly for packaged applications; loading " + path);
-	//			}
-	//			var _File = Packages.java.io.File;
-	//			var _FileReader = Packages.java.io.FileReader;
-		var rv = _streams.readString($shell.getInstallation().getPlatformLoader(path).getReader());
-		return rv;
-	}
+	var _streams = new Packages.inonit.script.runtime.io.Streams();
 
 	var $bootstrap = new function() {
 		this.getLoaderCode = function(path) {
-			return getLoaderCode(path);
+			return _streams.readString($shell.getInstallation().getPlatformLoader(path).getReader());
 		};
 	}
 
 	//	Try to port inonit.script.rhino.Loader.Bootstrap
-	return $engine.script("rhino/rhino.js", getLoaderCode("rhino/rhino.js"), { $loader: $bootstrap, $engine: $rhino }, null);
+	return $engine.script("rhino/rhino.js", $bootstrap.getLoaderCode("rhino/rhino.js"), { $loader: $bootstrap, $engine: $rhino }, null);
 })();
