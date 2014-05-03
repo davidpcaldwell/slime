@@ -20,6 +20,7 @@ var $servlet = (function() {
 	if ($host.getServlet) {
 		var rv = {};
 		rv.resources = Packages.inonit.script.engine.Code.Source.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
+		rv.path = $host.getServlet().getServletConfig().getInitParameter("script");
 		return rv;
 	}
 })();
@@ -68,9 +69,9 @@ var api = (function() {
 })();
 
 var loaders = (function() {
-	if ($loader && $servlet && $host.getServletScriptPath) {
+	if ($loader && $servlet) {
 		//	servlet container, determine webapp path and load relative to that
-		var path = String($host.getServletScriptPath());
+		var path = String($servlet.path);
 		var tokens = path.split("/");
 		var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
 		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
@@ -114,8 +115,8 @@ var $parameters = (function() {
 })();
 
 var $code = (function() {
-	if ($servlet && $host.getServletScriptPath) {
-		var path = String($host.getServletScriptPath());
+	if ($servlet) {
+		var path = String($servlet.path);
 		var tokens = path.split("/");
 		var path = tokens[tokens.length-1];
 		return function(scope) {

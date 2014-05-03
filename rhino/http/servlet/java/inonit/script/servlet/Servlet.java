@@ -163,18 +163,6 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			return Servlet.this;
 		}
 
-		public Code.Source getServletResources() {
-			try {
-				return Code.Source.create(getServletConfig().getServletContext().getResource("/"));
-			} catch (java.net.MalformedURLException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		public String getServletScriptPath() {
-			return getServletConfig().getInitParameter("script");
-		}
-
 		public Map<String,String> getServletInitParameters() {
 			Map<String,String> rv = new HashMap<String,String>();
 			Enumeration<String> e = getServletConfig().getInitParameterNames();
