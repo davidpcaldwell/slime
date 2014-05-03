@@ -163,15 +163,6 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			return Servlet.this;
 		}
 
-		public Map<String,String> getServletInitParameters() {
-			Map<String,String> rv = new HashMap<String,String>();
-			Enumeration<String> e = getServletConfig().getInitParameterNames();
-			for (String k : Collections.list(e)) {
-				rv.put(k, getServletConfig().getInitParameter(k));
-			}
-			return rv;
-		}
-
 		public String getMimeType(String path) {
 			return getServletConfig().getServletContext().getMimeType(path);
 		}

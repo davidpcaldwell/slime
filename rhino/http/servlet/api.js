@@ -21,6 +21,15 @@ var $servlet = (function() {
 		var rv = {};
 		rv.resources = Packages.inonit.script.engine.Code.Source.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
 		rv.path = $host.getServlet().getServletConfig().getInitParameter("script");
+		rv.parameters = (function() {
+			var rv = {};
+			var _enumeration = $host.getServlet().getServletConfig().getInitParameterNames();
+			while(_enumeration.hasMoreElements()) {
+				var _key = _enumeration.nextElement();
+				rv[_key] = $host.getServlet().getServletConfig().getInitParameter(_key);
+			}
+			return rv;
+		})();
 		return rv;
 	}
 })();
@@ -101,12 +110,10 @@ var loaders = (function() {
 })();
 
 var $parameters = (function() {
-	if ($host.getServletInitParameters) {
-		var _map = $host.getServletInitParameters();
+	if ($servlet) {
 		var rv = {};
-		var _entries = _map.entrySet().toArray();
-		for (var i=0; i<_entries.length; i++) {
-			rv[String(_entries[i].getKey())] = String(_entries[i].getValue());
+		for (var x in $servlet.parameters) {
+			rv[x] = String($servlet.parameters[x]);
 		}
 		return rv;
 	} else if ($host.parameters) {
