@@ -158,6 +158,10 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		public Loader getLoader() {
 			return this.loader;
 		}
+		
+		public Servlet getServlet() {
+			return Servlet.this;
+		}
 
 		public Code.Source getServletResources() {
 			try {

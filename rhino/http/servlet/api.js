@@ -16,15 +16,23 @@ var $loader = (function() {
 	}	
 })();
 
+var $servlet = (function() {
+	if ($host.getServlet) {
+		var rv = {};
+		rv.resources = Packages.inonit.script.engine.Code.Source.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
+		return rv;
+	}
+})();
+
 var scope = {
 	$exports: {}
 };
 
 var bootstrap = (function() {
-	if ($loader && $host.getServletResources) {
+	if ($loader && $servlet) {
 		var $rhino = $loader;
 		var loader = new $rhino.Loader({
-			_source: $host.getServletResources()
+			_source: $servlet.resources
 		});
 		var rv = {};
 		rv.js = loader.module("WEB-INF/slime/js/object/", {
@@ -60,7 +68,7 @@ var api = (function() {
 })();
 
 var loaders = (function() {
-	if ($loader && $host.getServletResources && $host.getServletScriptPath) {
+	if ($loader && $servlet && $host.getServletScriptPath) {
 		//	servlet container, determine webapp path and load relative to that
 		var path = String($host.getServletScriptPath());
 		var tokens = path.split("/");
@@ -68,7 +76,7 @@ var loaders = (function() {
 		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
 		return {
 			script: new Loader({
-				_source: $host.getServletResources().child(prefix),
+				_source: $servlet.resources.child(prefix),
 				type: function(path) {
 					var _type = $host.getMimeType(path);
 					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
@@ -76,7 +84,7 @@ var loaders = (function() {
 				}
 			}),
 			container: new Loader({
-				_source: $host.getServletResources(),
+				_source: $servlet.resources,
 				type: function(path) {
 					var _type = $host.getMimeType(path);
 					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
@@ -106,7 +114,7 @@ var $parameters = (function() {
 })();
 
 var $code = (function() {
-	if ($host.getServletResources && $host.getServletScriptPath) {
+	if ($servlet && $host.getServletScriptPath) {
 		var path = String($host.getServletScriptPath());
 		var tokens = path.split("/");
 		var path = tokens[tokens.length-1];
@@ -114,10 +122,6 @@ var $code = (function() {
 			Packages.java.lang.System.err.println("Loading servlet from " + path);
 			loaders.script.run(path,scope);
 		};
-//		return {
-//			name: String($host.getServletScriptPath()),
-//			_in: $host.getServletResources().getResourceAsStream($host.getServletScriptPath())
-//		};
 	} else if ($host.getCode) {
 		return $host.getCode;
 	} else {
@@ -136,7 +140,7 @@ scope.httpd.io = api.io;
 var server = (function() {
 	if ($host.server) {
 		return $host.server;
-	} else if ($host.getServletResources) {
+	} else if ($servlet) {
 		return loaders.container.file("WEB-INF/server.js", {
 			api: api
 		});
