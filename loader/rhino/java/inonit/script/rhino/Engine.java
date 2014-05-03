@@ -22,12 +22,8 @@ import inonit.script.engine.*;
 public class Engine {
 	public static Scriptable load(Engine engine, Loader loader) throws IOException {
 		Engine.Program program = new Engine.Program();
-		Engine.Program rhino = new Engine.Program();
-		rhino.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));		
-		rhino.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/rhino.js")));
-		Scriptable javahost = (Scriptable)engine.execute(rhino);
-		program.set(Engine.Program.Variable.create("$javahost", Engine.Program.Variable.Value.create(javahost)));
-		program.add(Engine.Source.create("<java loader>", loader.getLoaderCode("rhino/literal.js")));
+		program.set(Engine.Program.Variable.create("$bootstrap", Engine.Program.Variable.Value.create(new Bootstrap(engine,loader))));		
+		program.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/rhino.js")));
 		return (Scriptable)engine.execute(program);
 	}
 	
@@ -50,8 +46,8 @@ public class Engine {
 			return engine.getApplicationClassLoader().toScriptClasspath();
 		}
 
-		public void script(String name, InputStream in, Scriptable scope, Scriptable target) throws IOException {
-			engine.script(name, in, scope, target);
+		public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+			return engine.script(name, code, scope, target);
 		}
 	}
 
@@ -629,6 +625,11 @@ public class Engine {
 
 	void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name,new InputStreamReader(code));
+		source.evaluate(debugger, contexts, scope, target);
+	}
+	
+	void script(String name, Reader code, Scriptable scope, Scriptable target) throws IOException {
+		Source source = Engine.Source.create(name, code);
 		source.evaluate(debugger, contexts, scope, target);
 	}
 	

@@ -97,13 +97,11 @@ $engine.$javaloader = (function() {
 			return classpath;
 		};
 
-		this.script = function(name,input,scope,target) {
-			return $engine.script(name,_streams.readString(input),scope,target);
+		this.script = function(name,code,scope,target) {
+			return $engine.script(name,code,scope,target);
 		};		
 	}
 
 	//	Try to port inonit.script.rhino.Loader.Bootstrap
-	var $javahost = $engine.script("rhino/rhino.js", getLoaderCode("rhino/rhino.js"), { $bootstrap: $bootstrap }, null);
-
-	return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);	
+	return $engine.script("rhino/rhino.js", getLoaderCode("rhino/rhino.js"), { $bootstrap: $bootstrap }, null);
 })();

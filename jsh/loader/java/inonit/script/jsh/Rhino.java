@@ -36,19 +36,6 @@ public class Rhino {
 		
 		private Engine.Program program = new Engine.Program();
 
-		@Override protected Object createLoader(final Shell shell) {
-			try {
-				return Engine.load(engine, new Loader() {
-					@Override public String getLoaderCode(String path) throws IOException {
-						return streams.readString(shell.getInstallation().getPlatformLoader(path).getReader());
-					}
-				});
-			} catch (IOException e) {
-				//	TODO	Think about whether to throw IOException instead
-				throw new RuntimeException("Unimplemented", e);
-			}
-		}
-		
 		@Override public void host(String name, Object value) {
 			Engine.Program.Variable variable = Engine.Program.Variable.create(
 				name,

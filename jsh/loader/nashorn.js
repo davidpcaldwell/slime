@@ -139,8 +139,8 @@ var $javaloader = (function() {
 			return classpath;
 		};
 
-		this.script = function(name,input,scope,target) {
-			return $engine.script(name,_streams.readString(input),toScope(scope),target);
+		this.script = function(name,code,scope,target) {
+			return $engine.script(name,code,toScope(scope),target);
 		};
 
 		if ($engine.setReadOnly) {

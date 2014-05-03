@@ -1,5 +1,5 @@
 (function() {
-	return new function() {
+	var $javahost = new function() {
 		this.setReadOnly = function(object,name,value) {
 			if (!arguments.callee.objects) {
 				arguments.callee.objects = new Packages.inonit.script.rhino.Objects();
@@ -26,4 +26,6 @@
 			return $bootstrap.getClasspath();
 		};
 	};
-})();
+
+	return $bootstrap.script("rhino/literal.js", $bootstrap.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
+})()

@@ -12,6 +12,8 @@
 
 (function() {
 	return new function() {
+		var _streams = new Packages.inonit.script.runtime.io.Streams();
+		
 		var loader = (function() {
 			var $engine = {
 				Object: {
@@ -34,7 +36,6 @@
 			var script = function(name,_in,scope,target) {
 				if (!target) target = null;
 				$javahost.script(name,_in,scope,target);
-				_in.close();
 			};
 
 			if (typeof(code) == "object" && typeof(code.name) != "undefined" && typeof(code._in) != "undefined") {
@@ -44,11 +45,11 @@
 				}
 				if (script) {
 					return function() {
-						script(code.name,code._in,arguments[0],arguments[1]);
+						script(code.name,_streams.readString(code._in),arguments[0],arguments[1]);
 					};
 				} else {
 					return String(
-						new Packages.inonit.script.runtime.io.Streams().readString(code._in)
+						_streams.readString(code._in)
 					);
 				}
 			} else if (typeof(code) == "object" && code._source && code.path) {

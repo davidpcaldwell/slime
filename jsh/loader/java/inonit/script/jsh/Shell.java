@@ -158,7 +158,6 @@ public abstract class Shell {
 		private Shell shell;
 		
 		final void initialize(Shell shell) {
-			this.host("$javaloader", createLoader(shell));
 			this.shell = shell;
 			this.host("$shell", shell);
 		}
@@ -167,7 +166,6 @@ public abstract class Shell {
 			return this.shell;
 		}
 
-		protected abstract Object createLoader(Shell shell);
 		protected abstract void host(String name, Object value);
 		protected abstract void addEngine();
 		protected abstract void script(Code.Source.File script);
