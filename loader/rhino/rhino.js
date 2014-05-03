@@ -15,18 +15,18 @@
 		};
 
 		this.getLoaderCode = function(path) {
-			return $bootstrap.getLoaderCode(path);
+			return $loader.getLoaderCode(path);
 		}
 
 		this.script = function(name,code,scope,target) {
-			return $rhino.script(name,code,scope,target);
+			return $engine.script(name,code,scope,target);
 		};
 
 		this.getClasspath = function() {
-			if (!$rhino.getApplicationClassLoader()) return null;
-			return $rhino.getApplicationClassLoader().toScriptClasspath();
+			if (!$engine.getApplicationClassLoader()) return null;
+			return $engine.getApplicationClassLoader().toScriptClasspath();
 		};
 	};
 
-	return $rhino.script("rhino/literal.js", $bootstrap.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
+	return $engine.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
 })()

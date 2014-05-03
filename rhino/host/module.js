@@ -12,12 +12,15 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
+var engine;
 try {
-	var engine = $engine.java;
+	engine = $engine.java;
 } catch (e) {
 	//	TODO	atrocious temporary workaround to support Rhino servlets; copied-pasted from host.js; push back into
 	//			some engine-specific file for non-jsh implementations
-	var engine = (function() {
+}
+if (!engine) {
+	engine = (function() {
 		var rv = {};
 		rv.isJavaObjectArray = function(object) {
 			//	TODO	would this work with Nashorn?
@@ -36,7 +39,7 @@ try {
 			return Packages.java.lang.reflect.Array.newInstance(javaclass,length);
 		}
 		return rv;
-	})();
+	})();	
 }
 
 $exports.getClass = $api.Function({
