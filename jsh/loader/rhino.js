@@ -77,13 +77,7 @@ $engine.$javaloader = (function() {
 		return rv;
 	}
 
-	var toScope = function(object) {
-		if ($engine.toScope) return $engine.toScope(object);
-		return object;
-	}
-
-	//	Try to port inonit.script.rhino.Loader.Bootstrap
-	var $javahost = new function() {
+	var $bootstrap = new function() {
 		this.getLoaderCode = function(path) {
 			return getLoaderCode(path);
 		};
@@ -104,17 +98,12 @@ $engine.$javaloader = (function() {
 		};
 
 		this.script = function(name,input,scope,target) {
-			return $engine.script(name,_streams.readString(input),toScope(scope),target);
-		};
+			return $engine.script(name,_streams.readString(input),scope,target);
+		};		
+	}
 
-		if ($engine.setReadOnly) {
-			this.setReadOnly = $engine.setReadOnly;
-		}
+	//	Try to port inonit.script.rhino.Loader.Bootstrap
+	var $javahost = $engine.script("rhino/rhino.js", getLoaderCode("rhino/rhino.js"), { $bootstrap: $bootstrap }, null);
 
-		if ($engine.MetaObject) {
-			this.MetaObject = $engine.MetaObject;
-		}
-	};
-
-	return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);	
+	return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);	
 })();
