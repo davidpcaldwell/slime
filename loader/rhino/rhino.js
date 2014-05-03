@@ -19,13 +19,14 @@
 		}
 
 		this.script = function(name,code,scope,target) {
-			return $bootstrap.script(name,code,scope,target);
+			return $rhino.script(name,code,scope,target);
 		};
 
 		this.getClasspath = function() {
-			return $bootstrap.getClasspath();
+			if (!$rhino.getApplicationClassLoader()) return null;
+			return $rhino.getApplicationClassLoader().toScriptClasspath();
 		};
 	};
 
-	return $bootstrap.script("rhino/literal.js", $bootstrap.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
+	return $rhino.script("rhino/literal.js", $bootstrap.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
 })()

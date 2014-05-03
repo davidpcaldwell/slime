@@ -81,27 +81,8 @@ $engine.$javaloader = (function() {
 		this.getLoaderCode = function(path) {
 			return getLoaderCode(path);
 		};
-
-		//	TODO	is this indirection object unnecessary?
-		var classpath = new function() {
-			this.append = function(code) {
-				$engine.getClasspath().append(code);
-			};
-
-			this.getClass = function(name) {
-				return $engine.getClasspath().getClass(name);
-			}
-		};
-
-		this.getClasspath = function() {
-			return classpath;
-		};
-
-		this.script = function(name,code,scope,target) {
-			return $engine.script(name,code,scope,target);
-		};		
 	}
 
 	//	Try to port inonit.script.rhino.Loader.Bootstrap
-	return $engine.script("rhino/rhino.js", getLoaderCode("rhino/rhino.js"), { $bootstrap: $bootstrap }, null);
+	return $engine.script("rhino/rhino.js", getLoaderCode("rhino/rhino.js"), { $bootstrap: $bootstrap, $rhino: $rhino }, null);
 })();

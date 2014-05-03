@@ -251,6 +251,10 @@ public class Rhino {
 			return rhino.getEngine().getApplicationClassLoader().toScriptClasspath();
 		}
 
+		public Loader.Classes getApplicationClassLoader() {
+			return rhino.getEngine().getApplicationClassLoader();
+		}
+
 		public class Debugger {
 			public boolean isBreakOnExceptions() {
 				return debugger.isBreakOnExceptions();
