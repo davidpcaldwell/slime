@@ -133,28 +133,30 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 
 	public class Host {
-		private Scriptable rhinoLoader;
+		private Engine engine;
+		private Loader loader;
 
 		Host(Engine engine) {
-			try {
-				this.rhinoLoader = inonit.script.rhino.Engine.load(engine, new inonit.script.engine.Loader() {
-					private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
+			this.engine = engine;
+			this.loader = new inonit.script.engine.Loader() {
+				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
-					@Override public String getLoaderCode(String path) throws IOException {
-						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
-					}
-				});
-			} catch (IOException e) {
-				throw new RuntimeException("Could not load Slime rhino loader.", e);
-			}
+				@Override public String getLoaderCode(String path) throws IOException {
+					return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
+				}
+			};
 		}
 
 		public void register(Script script) {
 			Servlet.this.script = script;
 		}
 
-		public Scriptable getRhinoLoader() throws IOException {
-			return this.rhinoLoader;
+		public Engine getEngine() {
+			return this.engine;
+		}
+		
+		public Loader getLoader() {
+			return this.loader;
 		}
 
 		public Code.Source getServletResources() {

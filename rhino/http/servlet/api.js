@@ -10,13 +10,19 @@
 //	Contributor(s):
 //	END LICENSE
 
+var $loader = (function() {
+	if ($host.getLoader && $host.getEngine) {
+		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $engine: $host.getEngine }, null);
+	}	
+})();
+
 var scope = {
 	$exports: {}
 };
 
 var bootstrap = (function() {
-	if ($host.getRhinoLoader && $host.getServletResources) {
-		var $rhino = $host.getRhinoLoader();
+	if ($loader && $host.getServletResources) {
+		var $rhino = $loader;
 		var loader = new $rhino.Loader({
 			_source: $host.getServletResources()
 		});
@@ -54,7 +60,7 @@ var api = (function() {
 })();
 
 var loaders = (function() {
-	if ($host.getRhinoLoader && $host.getServletResources && $host.getServletScriptPath) {
+	if ($loader && $host.getServletResources && $host.getServletScriptPath) {
 		//	servlet container, determine webapp path and load relative to that
 		var path = String($host.getServletScriptPath());
 		var tokens = path.split("/");
