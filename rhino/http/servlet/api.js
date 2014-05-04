@@ -30,6 +30,9 @@ var $servlet = (function() {
 			}
 			return rv;
 		})();
+		rv.getMimeType = function(path) {
+			return $host.getServlet().getServletConfig().getServletContext().getMimeType(path);
+		};
 		return rv;
 	}
 })();
@@ -88,7 +91,7 @@ var loaders = (function() {
 			script: new Loader({
 				_source: $servlet.resources.child(prefix),
 				type: function(path) {
-					var _type = $host.getMimeType(path);
+					var _type = $servlet.getMimeType(path);
 					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
 					return null;
 				}
@@ -96,7 +99,7 @@ var loaders = (function() {
 			container: new Loader({
 				_source: $servlet.resources,
 				type: function(path) {
-					var _type = $host.getMimeType(path);
+					var _type = $servlet.getMimeType(path);
 					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
 					return null;
 				}
