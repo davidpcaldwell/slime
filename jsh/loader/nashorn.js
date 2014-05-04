@@ -117,40 +117,6 @@ var $javaloader = (function() {
 		if ($engine.toScope) return $engine.toScope(object);
 		return object;
 	}
-
-	//	Try to port inonit.script.rhino.Loader.Bootstrap
-	var $javahost = new function() {
-		this.getLoaderCode = function(path) {
-			return getLoaderCode(path);
-		};
-
-		//	TODO	is this indirection object unnecessary?
-		var classpath = new function() {
-			this.append = function(code) {
-				$engine.getClasspath().append(code);
-			};
-
-			this.getClass = function(name) {
-				return $engine.getClasspath().getClass(name);
-			}
-		};
-
-		this.getClasspath = function() {
-			return classpath;
-		};
-
-		this.script = function(name,code,scope,target) {
-			return $engine.script(name,code,toScope(scope),target);
-		};
-
-		if ($engine.setReadOnly) {
-			this.setReadOnly = $engine.setReadOnly;
-		}
-
-		if ($engine.MetaObject) {
-			this.MetaObject = $engine.MetaObject;
-		}
-	};
 	
 	var $loader = {
 		getLoaderCode: getLoaderCode
@@ -159,7 +125,7 @@ var $javaloader = (function() {
 	return $engine.script(
 		"rhino/nashorn.js",
 		getLoaderCode("rhino/nashorn.js"),
-		toScope({ $loader: $loader, $javahost: $javahost }),
+		toScope({ $loader: $loader, $engine: $engine }),
 		null
 	);
 })();
