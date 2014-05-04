@@ -151,8 +151,17 @@ var $javaloader = (function() {
 			this.MetaObject = $engine.MetaObject;
 		}
 	};
+	
+	var $loader = {
+		getLoaderCode: getLoaderCode
+	};
 
-	return $engine.script("rhino/literal.js", getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);	
+	return $engine.script(
+		"rhino/nashorn.js",
+		getLoaderCode("rhino/nashorn.js"),
+		toScope({ $javahost: $javahost }),
+		null
+	);
 })();
 
 $engine.$javaloader = $javaloader;
