@@ -159,7 +159,7 @@ var $javaloader = (function() {
 	return $engine.script(
 		"rhino/nashorn.js",
 		getLoaderCode("rhino/nashorn.js"),
-		toScope({ $javahost: $javahost }),
+		toScope({ $loader: $loader, $javahost: $javahost }),
 		null
 	);
 })();
