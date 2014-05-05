@@ -111,24 +111,13 @@ var $javaloader = (function() {
 		null
 	);
 	
+	rv.exit = function(status) {
+		$engine.exit(status);
+	}
 	
-	rv.java = new function() {
-		this.isJavaObjectArray = function(object) {
-			return (Java.type("java.lang.Object[]").class.isInstance(object));
-		};
-		this.isJavaInstance = function(object) {
-			return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
-		}
-		this.getNamedJavaClass = function(name) {
-			return Java.type(name).class;
-		}
-		this.getJavaPackagesReference = function(name) {
-			return eval("Packages." + name);
-		}
-		this.Array = function(JavaClass,length) {
-			return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
-		}
-	};
+	rv.jsh = function(configuration,invocation) {
+		return $engine.jsh(configuration,invocation);
+	}
 	
 	return rv;
 })();
