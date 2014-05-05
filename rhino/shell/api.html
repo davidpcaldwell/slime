@@ -23,15 +23,18 @@ END LICENSE
 		<h1>Context</h1>
 		<script type="application/x.jsapi#context">
 			new function() {
+				var java = $jsapi.module("../../rhino/host/", {
+					$rhino: jsh.$jsapi.$rhino
+				});
 				var io = $jsapi.module("../../rhino/io/", {
 					api: {
-						java: jsh.java,
+						java: java,
 						mime: $jsapi.module("../../js/mime/")
 					}
 				});
 				this.api = {
 					js: $jsapi.module("../../js/object/"),
-					java: $jsapi.module("../../rhino/host/"),
+					java: java,
 					io: io,
 					file: $jsapi.module("../../rhino/file/", new function() {
 						if (jsh.shell.environment.PATHEXT) {

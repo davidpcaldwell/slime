@@ -82,24 +82,6 @@ var $engine = new function() {
 //		return rv.intValue();		
 	}
 	
-	this.java = new function() {
-		this.isJavaObjectArray = function(object) {
-			return (Java.type("java.lang.Object[]").class.isInstance(object));
-		};
-		this.isJavaInstance = function(object) {
-			return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
-		}
-		this.getNamedJavaClass = function(name) {
-			return Java.type(name).class;
-		}
-		this.getJavaPackagesReference = function(name) {
-			return eval("Packages." + name);
-		}
-		this.Array = function(JavaClass,length) {
-			return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
-		}
-	}
-	
 	//	TODO	setReadOnly?
 	//	TODO	MetaObject?
 };
@@ -122,12 +104,33 @@ var $javaloader = (function() {
 		getLoaderCode: getLoaderCode
 	};
 
-	return $engine.script(
+	var rv = $engine.script(
 		"rhino/nashorn.js",
 		getLoaderCode("rhino/nashorn.js"),
 		toScope({ $loader: $loader, $engine: $engine }),
 		null
 	);
+	
+	
+	rv.java = new function() {
+		this.isJavaObjectArray = function(object) {
+			return (Java.type("java.lang.Object[]").class.isInstance(object));
+		};
+		this.isJavaInstance = function(object) {
+			return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
+		}
+		this.getNamedJavaClass = function(name) {
+			return Java.type(name).class;
+		}
+		this.getJavaPackagesReference = function(name) {
+			return eval("Packages." + name);
+		}
+		this.Array = function(JavaClass,length) {
+			return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
+		}
+	};
+	
+	return rv;
 })();
 
 $engine.$javaloader = $javaloader;

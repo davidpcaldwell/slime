@@ -12,16 +12,11 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
-var engine = (function() {
-	if ($context.$rhino && $context.$rhino.java) return $context.$rhino.java;
-	return $engine.java;	
-})();
-
 $exports.getClass = $api.Function({
 	before: $api.Function.argument.isString({ index: 0, name: "name" }),
 	call: function(name) {
 		if ($context.$rhino.classpath.getClass(name)) {
-			return engine.getJavaPackagesReference(name);
+			return $context.$rhino.java.getJavaPackagesReference(name);
 		}
 		return null;
 	}
@@ -34,8 +29,8 @@ var isJavaObject = function(object) {
 	if (typeof(object) == "boolean") return false;
 	if (object == null) return false;
 	//	TODO	Is the next line superfluous now?
-	if (engine.isJavaObjectArray(object)) return true;
-	if (engine.isJavaInstance(object)) return true;
+	if ($context.$rhino.java.isJavaObjectArray(object)) return true;
+	if ($context.$rhino.java.isJavaInstance(object)) return true;
 	return false;
 }
 $exports.isJavaObject = isJavaObject;
@@ -268,7 +263,7 @@ $exports.isJavaType = function(javaclass) {
 		return $isJavaType(javaclass,object);
 	}
 };
-$exports.isJavaType.getNamedJavaClass = engine.getNamedJavaClass;
+$exports.isJavaType.getNamedJavaClass = $context.$rhino.java.getNamedJavaClass;
 $api.experimental($exports,"isJavaType");
 
 $exports.Array = new function() {
@@ -306,7 +301,7 @@ $exports.toJsArray = $api.deprecate(toJsArray);
 //	TODO	at least implement this in terms of $exports.Array.create
 var toJavaArray = function(jsArray,javaclass,adapter) {
 	if (!adapter) adapter = function(x) { return x; }
-	var rv = new $engine.java.Array(javaclass,jsArray.length);
+	var rv = new $context.$rhino.java.Array(javaclass,jsArray.length);
 	for (var i=0; i<jsArray.length; i++) {
 		rv[i] = adapter(jsArray[i]);
 	}

@@ -109,7 +109,7 @@ END LICENSE
 					test(!isJavaObject(x.myUndefinedMember));
 					test(!isJavaObject(null));
 					test(!isJavaObject({}));
-					var javaArray = $engine.java.Array(Packages.java.lang.Object,4);
+					var javaArray = context.$rhino.java.Array(Packages.java.lang.Object,4);
 					test(isJavaObject(javaArray));						
 				</script>
 			</li>
