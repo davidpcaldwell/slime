@@ -297,6 +297,7 @@ this.jsh = new function() {
 				}
 				callbacks.script({ _code: _code, declaration: declaration });
 			}
+			scope.$jsh = loader.getRhinoLoader();
 			scope.global = (function() { return this; })();
 			scope.jsh = jsh;
 			scope.$loader = new (function(_code) {

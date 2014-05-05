@@ -127,6 +127,10 @@ END LICENSE
 
 				this.exit = function() {
 				}
+				
+				this.jsh = function(configuration,invocation) {
+					return $engine.$javaloader.jsh(configuration,invocation);
+				}
 			}
 		</script>
 	</div>
