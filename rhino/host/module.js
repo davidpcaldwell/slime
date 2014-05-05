@@ -12,7 +12,10 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
-var engine = $engine.java;
+var engine = (function() {
+	if ($context.$rhino && $context.$rhino.java) return $context.$rhino.java;
+	return $engine.java;	
+})();
 
 $exports.getClass = $api.Function({
 	before: $api.Function.argument.isString({ index: 0, name: "name" }),
