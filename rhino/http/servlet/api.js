@@ -51,8 +51,15 @@ var bootstrap = (function() {
 		rv.js = loader.module("WEB-INF/slime/js/object/", {
 			globals: true
 		});
-		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
-			globals: true
+		rv.java = {};
+		loader.run("WEB-INF/slime/rhino/host/module.js", {
+			$context: {
+				globals: true
+			},
+			$engine: {
+				java: $loader.java
+			},
+			$exports: rv.java
 		});
 		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
 			$rhino: $rhino,

@@ -28,5 +28,26 @@
 		};
 	};
 
-	return $engine.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
+	var rv = $engine.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
+	
+	rv.java = new function() {
+		this.isJavaObjectArray = function(object) {
+			//	TODO	would this work with Nashorn?
+			return ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) );
+		}
+		this.isJavaInstance = function(object) {
+			return String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n";
+		}
+		this.getNamedJavaClass = function(name) {
+			return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
+		}
+		this.getJavaPackagesReference = function(name) {
+			return Packages[name];
+		}
+		this.Array = function(JavaClass,length) {
+			return Packages.java.lang.reflect.Array.newInstance(JavaClass,length);
+		}
+	};
+	
+	return rv;
 })()
