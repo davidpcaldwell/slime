@@ -4,5 +4,4 @@ var $loader = new function() {
 	this.getLoaderCode = function(path) {
 		return _streams.readString($shell.getInstallation().getPlatformLoader(path).getReader());
 	};
-}
-
+};

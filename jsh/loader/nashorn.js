@@ -87,26 +87,14 @@ var $engine = new function() {
 };
 
 var $javaloader = (function() {
-	var _Streams = Packages.inonit.script.runtime.io.Streams;
-	var _streams = new _Streams();
-
-	var getLoaderCode = function(path) {
-		var rv = _streams.readString($shell.getInstallation().getPlatformLoader(path).getReader());
-		return rv;
-	}
-
 	var toScope = function(object) {
 		if ($engine.toScope) return $engine.toScope(object);
 		return object;
 	}
 	
-	var $loader = {
-		getLoaderCode: getLoaderCode
-	};
-
 	var rv = $engine.script(
 		"rhino/nashorn.js",
-		getLoaderCode("rhino/nashorn.js"),
+		$loader.getLoaderCode("rhino/nashorn.js"),
 		toScope({ $loader: $loader, $engine: $engine }),
 		null
 	);
