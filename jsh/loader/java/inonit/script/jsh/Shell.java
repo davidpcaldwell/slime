@@ -160,6 +160,7 @@ public abstract class Shell {
 		final void initialize(Shell shell) {
 			this.shell = shell;
 			this.host("$shell", shell);
+			this.script(shell.getInstallation().getJshLoader("bootstrap.js"));
 		}
 		
 		protected final Shell getShell() {
