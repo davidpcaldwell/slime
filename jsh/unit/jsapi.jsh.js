@@ -113,9 +113,9 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 			jsh.loader.run(source,scope);
 		}
 		
-		if ($host.jsapi.script) {
+		if (jsh.$jsapi.$rhino.jsapi && jsh.$jsapi.$rhino.jsapi.script) {
 			this.script = function(name,code,scope) {
-				return $engine.script(name, String(code), scope);
+				return jsh.$jsapi.$rhino.jsapi.script(name, String(code), scope);
 			}
 		}
 	} ),

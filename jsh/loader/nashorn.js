@@ -111,6 +111,12 @@ var $javaloader = (function() {
 		null
 	);
 	
+	rv.jsapi = new function() {
+		this.script = function(name,code,scope) {
+			return $engine.script(name, String(code), scope);
+		}
+	}
+	
 	rv.exit = function(status) {
 		$engine.exit(status);
 	}
