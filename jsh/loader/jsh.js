@@ -38,10 +38,6 @@ this.jsh = new function() {
 		};		
 	})();
 	
-	for (var x in host) {
-		$engine.$javaloader[x] = host[x];
-	}
-	
 	var jsh = this;
 
 	var addFinalizer = function(f) {
