@@ -43,7 +43,7 @@ var global = (function() { return this; })();
 //verify(typeof(Packages.test.AddClasses) == "object", "typeof(Packages.test.AddClasses) == object");
 verify(getClass("test.AddClasses") == null, "Class not found");
 jsh.loader.addClasses(parameters.options.classes);
-verify($engine.getClasspath().getClass("test.AddClasses") != null, "Class found through loader");
+verify(jsh.$jsapi.$rhino.classpath.getClass("test.AddClasses") != null, "Class found through loader");
 verify(getClass("test.AddClasses") != null, "Class found");
 verify(typeof(Packages.test.AddClasses) == "function", "typeof(Packages.test.AddClasses) == function");
 verify(new Packages.test.AddClasses().toString() == "Loaded");
