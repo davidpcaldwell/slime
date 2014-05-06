@@ -253,13 +253,7 @@ $exports.tests = new function() {
 					return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
 				},
 				disableBreakOnExceptions: function(f) {
-					return function() {
-						var isBreak = $engine.getDebugger().isBreakOnExceptions();
-						$engine.getDebugger().setBreakOnExceptions(false);
-						var rv = f.apply(this,arguments);
-						$engine.getDebugger().setBreakOnExceptions(isBreak);
-						return rv;
-					}
+					return jsh.debug.disableBreakOnExceptionsFor(f);
 				}
 			},
 			$java: {

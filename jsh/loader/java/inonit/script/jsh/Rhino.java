@@ -175,9 +175,9 @@ public class Rhino {
 		return Rhino.execute(shell, rhino, new Interface(shell.getInstallation(), rhino));
 	}
 	
-	private static Integer execute(Shell shell, Configuration rhino, Interface $engine) throws Invocation.CheckedException {
+	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Invocation.CheckedException {
 		try {
-			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $engine);
+			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $rhino);
 			Object ignore = shell.execute(execution);
 			return null;
 		} catch (Engine.Errors e) {
@@ -203,7 +203,7 @@ public class Rhino {
 			e.dump(rhino.getLog(), "[jsh] ");
 			return -1;
 		} finally {
-			$engine.destroy();
+			$rhino.destroy();
 		}		
 	}
 

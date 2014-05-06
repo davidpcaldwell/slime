@@ -83,18 +83,23 @@ plugin({
 		})(jsh.debug.profile.cpu.dump);
 
 		jsh.debug.disableBreakOnExceptionsFor = function(f) {
-			return function() {
-				var enabled = $engine.getDebugger().isBreakOnExceptions();
-				if (enabled) {
-					$engine.getDebugger().setBreakOnExceptions(false);
-				}
-				try {
-					return f.apply(this,arguments);
-				} finally {
+			if ($jsh.getDebugger) {
+				return function() {
+					var enabled = $jsh.getDebugger().isBreakOnExceptions();
 					if (enabled) {
-						$engine.getDebugger().setBreakOnExceptions(true);
+						$jsh.getDebugger().setBreakOnExceptions(false);
+					}
+					try {
+						return f.apply(this,arguments);
+					} finally {
+						if (enabled) {
+							$jsh.getDebugger().setBreakOnExceptions(true);
+						}
 					}
 				}
+			} else {
+				debugger;
+				return f;
 			}
 		}
 

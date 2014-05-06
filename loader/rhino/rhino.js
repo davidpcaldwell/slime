@@ -49,5 +49,9 @@
 		}
 	};
 	
+	rv.getDebugger = function() {
+		return $engine.getDebugger();
+	};
+	
 	return rv;
 })()
