@@ -54,8 +54,8 @@ plugin({
 			})(),
 			arguments: jsh.java.Array.adapt($host.getInvocation().getArguments()).map(function(s) { return String(s); }),
 			loader: (function() {
-				if ($host.getLoader().getPackagedCode()) {
-					return new jsh.io.Loader({ _source: $host.getLoader().getPackagedCode() });
+				if ($jsh.getLoader().getPackagedCode()) {
+					return new jsh.io.Loader({ _source: $jsh.getLoader().getPackagedCode() });
 				} else {
 					return function(){}();
 				}

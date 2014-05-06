@@ -10,13 +10,42 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	HOST VARIABLE: $host (Java class: inonit.script.jsh.Shell.Host.Interface)
-
 this.jsh = new function() {
+	var host = (function() {
+		var installation = $shell.getInstallation();
+		var configuration = $shell.getConfiguration();	
+		var invocation = $shell.getInvocation();
+		
+		var loader = new function() {
+			//	implementation duplicates original
+			this.getBootstrapModule = function(path) {
+				return installation.getShellModuleCode(path);
+			};
+			
+			this.getPlugins = function() {
+				return installation.getPlugins();
+			}
+			
+			this.getPackagedCode = function() {
+				return configuration.getPackagedCode();
+			}
+		};
+
+		return {
+			getLoader: function() {
+				return loader;
+			}
+		};		
+	})();
+	
+	for (var x in host) {
+		$engine.$javaloader[x] = host[x];
+	}
+	
 	var jsh = this;
 
 	var addFinalizer = function(f) {
-		$host.getLoader().addFinalizer(new JavaAdapter(
+		host.getLoader().addFinalizer(new JavaAdapter(
 			Packages.java.lang.Runnable,
 			{
 				run: function() {
@@ -46,7 +75,7 @@ this.jsh = new function() {
 
 		this.bootstrap = function(path,context) {
 			var loader = new rhinoLoader.Loader({
-				_code: $host.getLoader().getBootstrapModule(path)
+				_code: host.getLoader().getBootstrapModule(path)
 			});
 			return loader.module("module.js", { $context: context });
 		}
@@ -372,7 +401,7 @@ this.jsh = new function() {
 	};
 
 	(function() {
-		loadPlugins($host.getLoader().getPlugins());
+		loadPlugins(host.getLoader().getPlugins());
 	})();
 
 	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
