@@ -248,25 +248,11 @@ public class Rhino {
 		}
 
 		public Loader.Classpath getClasspath() {
-			return rhino.getEngine().getApplicationClassLoader().toScriptClasspath();
+			return rhino.getEngine().getClasspath();
 		}
 
-		public Loader.Classes getApplicationClassLoader() {
-			return rhino.getEngine().getApplicationClassLoader();
-		}
-
-		public class Debugger {
-			public boolean isBreakOnExceptions() {
-				return debugger.isBreakOnExceptions();
-			}
-
-			public void setBreakOnExceptions(boolean b) {
-				debugger.setBreakOnExceptions(b);
-			}
-		}
-
-		public Debugger getDebugger() {
-			return new Debugger();
+		public Engine.Debugger getDebugger() {
+			return debugger;
 		}
 
 		public void exit(int status) throws ExitException {

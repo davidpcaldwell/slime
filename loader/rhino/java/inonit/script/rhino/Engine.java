@@ -1409,7 +1409,12 @@ public class Engine {
 		return this.debugger;
 	}
 
-	public Loader.Classes getApplicationClassLoader() {
-		return this.contexts.getLoaderClasses();
+//	public Loader.Classes getApplicationClassLoader() {
+//		return this.contexts.getLoaderClasses();
+//	}
+	
+	public Loader.Classpath getClasspath() {
+		if (this.contexts.getLoaderClasses() == null) return null;
+		return this.contexts.getLoaderClasses().toScriptClasspath();
 	}
 }

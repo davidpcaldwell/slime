@@ -23,8 +23,7 @@
 		};
 
 		this.getClasspath = function() {
-			if (!$rhino.getApplicationClassLoader()) return null;
-			return $rhino.getApplicationClassLoader().toScriptClasspath();
+			return $rhino.getClasspath();
 		};
 	};
 
