@@ -129,7 +129,7 @@ END LICENSE
 				}
 				
 				this.jsh = function(configuration,invocation) {
-					return $engine.$javaloader.jsh(configuration,invocation);
+					return jsh.$jsapi.$rhino.jsh(configuration,invocation);
 				}
 			}
 		</script>
