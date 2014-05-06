@@ -13,24 +13,6 @@ var $host = new function() {
 		return invocation;
 	}
 	
-//	//	Returns port of inonit.script.jsh.Shell.Host.Interface.Loader
-//	this.getLoader = function() {
-//		return new function() {
-//			//	implementation duplicates original
-//			this.getBootstrapModule = function(path) {
-//				return installation.getShellModuleCode(path);
-//			};
-//			
-//			this.getPlugins = function() {
-//				return installation.getPlugins();
-//			}
-//			
-//			this.getPackagedCode = function() {
-//				return configuration.getPackagedCode();
-//			}
-//		}
-//	};
-	
 	this.getEnvironment = function() {
 		return configuration.getEnvironment();
 	};
