@@ -43,10 +43,10 @@ plugin({
 			})(),
 			packaged: (function() {
 				//	TODO	push back into Invocation
-				if ($host.getSystemProperties().getProperty("jsh.launcher.packaged")) {
+				if ($jsh.getSystemProperties().getProperty("jsh.launcher.packaged")) {
 					return jsh.file.filesystem.java.adapt(
 						new Packages.java.io.File(
-							$host.getSystemProperties().getProperty("jsh.launcher.packaged")
+							$jsh.getSystemProperties().getProperty("jsh.launcher.packaged")
 						)
 					).file;
 				}

@@ -210,13 +210,13 @@ END LICENSE
 						java: host,
 						io: $jsapi.module("../../rhino/io/", {
 							$java: new Packages.inonit.script.runtime.io.Streams(),
-							$rhino: $host.getRhinoLoader(),
+							$rhino: jsh.$jsapi.$rhino,
 							api: {
 								java: host,
 								mime: $jsapi.module("../../js/mime/", {})
 							}
 						}),
-						loader: $host.getRhinoLoader()
+						loader: jsh.$jsapi.$rhino
 					},
 					$pwd: String(jsh.shell.properties.object.user.dir)
 				};

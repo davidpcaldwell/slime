@@ -22,8 +22,8 @@ plugin({
 				io: jsh.io,
 				file: jsh.file
 			},
-			_properties: $host.getSystemProperties(),
-			_environment: $host.getEnvironment()
+			_properties: $jsh.getSystemProperties(),
+			_environment: $jsh.getEnvironment()
 		});
 
 		var context = {};
@@ -40,12 +40,12 @@ plugin({
 		}
 		//	TODO	properties methods should go away; should not be necessary now
 		context.getSystemProperty = function(name) {
-			var rv = $host.getSystemProperties().getProperty(name);
+			var rv = $jsh.getSystemProperties().getProperty(name);
 			if (rv == null) return null;
 			return String(rv);
 		};
 		context._getSystemProperties = function() {
-			return $host.getSystemProperties();
+			return $jsh.getSystemProperties();
 		};
 		context.exit = function(code) {
 			$jsh.exit(code);

@@ -11,6 +11,8 @@
 //	END LICENSE
 
 this.jsh = new function() {
+	var $jsh = $engine.$javaloader;
+
 	var host = (function() {
 		var installation = $shell.getInstallation();
 		var configuration = $shell.getConfiguration();	
@@ -31,6 +33,13 @@ this.jsh = new function() {
 			}
 		};
 
+		$jsh.getSystemProperties = function() {
+			return configuration.getSystemProperties();
+		}
+		$jsh.getEnvironment = function() {
+			return configuration.getEnvironment();
+		};
+	
 		return {
 			getLoader: function() {
 				return loader;
@@ -322,7 +331,7 @@ this.jsh = new function() {
 				}
 				callbacks.script({ _code: _code, declaration: declaration });
 			}
-			scope.$jsh = loader.getRhinoLoader();
+			scope.$jsh = $jsh;
 			scope.global = (function() { return this; })();
 			scope.jsh = jsh;
 			scope.$loader = new (function(_code) {
