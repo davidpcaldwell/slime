@@ -12,7 +12,7 @@
 
 var $loader = (function() {
 	if ($host.getLoader && $host.getEngine) {
-		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $engine: $host.getEngine() }, null);
+		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
 	}	
 })();
 

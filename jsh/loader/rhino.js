@@ -48,7 +48,7 @@ $engine.$javaloader = (function() {
 	}
 
 	//	Try to port inonit.script.rhino.Loader.Bootstrap
-	var rv = $engine.script("rhino/rhino.js", $bootstrap.getLoaderCode("rhino/rhino.js"), { $loader: $bootstrap, $engine: $rhino }, null);
+	var rv = $engine.script("rhino/rhino.js", $bootstrap.getLoaderCode("rhino/rhino.js"), { $loader: $bootstrap, $rhino: $rhino }, null);
 	
 	rv.exit = function(status) {
 		return $rhino.exit(status);

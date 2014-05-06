@@ -20,14 +20,6 @@ import org.mozilla.javascript.*;
 import inonit.script.engine.*;
 
 public class Engine {
-	public static Scriptable load(Engine engine, Loader loader) throws IOException {
-		Engine.Program program = new Engine.Program();
-		program.set(Engine.Program.Variable.create("$loader", Engine.Program.Variable.Value.create(loader)));		
-		program.set(Engine.Program.Variable.create("$engine", Engine.Program.Variable.Value.create(engine)));		
-		program.add(Engine.Source.create("<rhino loader>", loader.getLoaderCode("rhino/rhino.js")));
-		return (Scriptable)engine.execute(program);
-	}
-
 	public static abstract class Log {
 		public static final Log NULL = new Log() {
 			public void println(String message) {

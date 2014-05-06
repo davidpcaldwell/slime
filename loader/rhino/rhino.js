@@ -19,16 +19,16 @@
 		}
 
 		this.script = function(name,code,scope,target) {
-			return $engine.script(name,code,scope,target);
+			return $rhino.script(name,code,scope,target);
 		};
 
 		this.getClasspath = function() {
-			if (!$engine.getApplicationClassLoader()) return null;
-			return $engine.getApplicationClassLoader().toScriptClasspath();
+			if (!$rhino.getApplicationClassLoader()) return null;
+			return $rhino.getApplicationClassLoader().toScriptClasspath();
 		};
 	};
 
-	var rv = $engine.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
+	var rv = $rhino.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
 	
 	rv.java = new function() {
 		this.isJavaObjectArray = function(object) {
@@ -50,7 +50,7 @@
 	};
 	
 	rv.getDebugger = function() {
-		return $engine.getDebugger();
+		return $rhino.getDebugger();
 	};
 	
 	return rv;
