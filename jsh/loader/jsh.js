@@ -18,7 +18,8 @@ this.jsh = new function() {
 
 		$host.getSystemProperties = function() {
 			return configuration.getSystemProperties();
-		}
+		};
+		
 		$host.getEnvironment = function() {
 			return configuration.getEnvironment();
 		};
