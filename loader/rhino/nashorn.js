@@ -36,7 +36,7 @@ load("nashorn:mozilla_compat.js");
 		return evaluateSource.invoke(context, new Source(name,code), toScope(notNull(scope)), notNull(target));
 	};
 	
-	if (!$engine) {
+	if (typeof($classpath) == "undefined") {
 		return {
 			script: script,
 			subshell: function(f) {
@@ -57,7 +57,7 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.getClasspath = function() {
-				return $engine.getClasspath();
+				return $classpath;
 			};
 
 			this.script = function(name,code,scope,target) {

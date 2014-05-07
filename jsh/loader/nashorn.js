@@ -12,7 +12,7 @@ var $javaloader = (function() {
 	var rv = scripts.script(
 		"rhino/nashorn.js",
 		$loader.getLoaderCode("rhino/nashorn.js"),
-		{ $loader: $loader, $engine: $engine },
+		{ $loader: $loader, $classpath: $nashorn.getClasspath() },
 		null
 	);
 	
