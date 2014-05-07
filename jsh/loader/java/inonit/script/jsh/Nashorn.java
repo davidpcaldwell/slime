@@ -41,12 +41,11 @@ public class Nashorn {
 	}
 	
 	private static class ExecutionImpl extends Shell.Execution {
-		private Classes classes;
 		private inonit.script.nashorn.Host host;
 		private boolean top;
 		
 		ExecutionImpl(boolean top) {
-			this.classes = Classes.create(new Classes.Configuration() {
+			Classes classes = Classes.create(new Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
 				}
@@ -66,7 +65,7 @@ public class Nashorn {
 		@Override public void addEngine() {
 			host("$nashorn", new Host() {
 				@Override public Loader.Classpath getClasspath() {
-					return classes.getScriptClasses().toScriptClasspath();
+					return host.getClasspath();
 				}
 				
 				@Override public boolean isTop() {

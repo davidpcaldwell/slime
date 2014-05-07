@@ -31,6 +31,10 @@ public class Host {
 		scripts.add(script);
 	}
 	
+	public Loader.Classpath getClasspath() {
+		return classes.getScriptClasses().toScriptClasspath();
+	}
+	
 	public Object run() throws ScriptException {
 		Object rv = null;
 		for (Code.Source.File file : scripts) {
