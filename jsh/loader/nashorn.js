@@ -7,9 +7,6 @@ var $javaloader = (function() {
 		this.getClasspath = function() {
 			return $nashorn.getClasspath();
 		}
-
-		//	TODO	setReadOnly?
-		//	TODO	MetaObject?
 	};
 
 	var rv = scripts.script(
