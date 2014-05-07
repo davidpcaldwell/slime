@@ -275,8 +275,8 @@ this.jsh = new function() {
 
 	(function() {
 		var context = {};
-		var environment = jsh.java.Environment($host.getEnvironment());
-		var properties = jsh.java.Properties.adapt($host.getSystemProperties());
+		var environment = jsh.java.Environment($jsh.getEnvironment());
+		var properties = jsh.java.Properties.adapt($jsh.getSystemProperties());
 
 		context._streams = new Packages.inonit.script.runtime.io.Streams();
 
@@ -299,7 +299,7 @@ this.jsh = new function() {
 
 		//	TODO	both jsh.file and jsh.shell use this property; consider making it part of host object and/or shell configuration
 		//			and pushing property-mapping back into inonit.script.jsh.Shell
-		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
+		context.$pwd = String( $jsh.getSystemProperties().getProperty("user.dir") );
 
 		context.addFinalizer = addFinalizer;
 
@@ -430,9 +430,9 @@ this.jsh = new function() {
 		loadPlugins(host.getLoader().getPlugins());
 	})();
 
-	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
+	if ($jsh.getSystemProperties().getProperty("jsh.script.debugger")) {
 		(function() {
-			var property = String($host.getSystemProperties().getProperty("jsh.script.debugger"));
+			var property = String($jsh.getSystemProperties().getProperty("jsh.script.debugger"));
 			var parser = /^profiler\:(.*)$/;
 			if (parser.test(property)) {
 				var options = {};
