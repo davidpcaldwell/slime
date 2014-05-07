@@ -11,7 +11,7 @@
 //	END LICENSE
 
 this.jsh = new function() {
-	var $jsh = $engine.$javaloader;
+	var $jsh = $host;
 
 	var host = (function() {
 		var installation = $shell.getInstallation();
@@ -88,7 +88,7 @@ this.jsh = new function() {
 		//	TODO	naming conventions are inconsistent in this stuff; look at how there are addClasses methods and classpath.add().
 		//			generally speaking, should probably match the rhinoLoader API across all of these representations of it
 		var rhinoLoader = (function() {
-			var rv = $engine.$javaloader;
+			var rv = $host;
 			rv.$api.deprecate.warning = function(o) {
 				debugger;
 			}

@@ -1,6 +1,4 @@
-var $engine = new function() {
-};
-$engine.$javaloader = (function() {
+var $host = (function() {
 	//	Try to port inonit.script.rhino.Loader.Bootstrap
 	var $loader = eval(String($shell.getLoaderCode()));
 	

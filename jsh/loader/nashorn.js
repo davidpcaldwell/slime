@@ -1,5 +1,4 @@
-var $engine = {};
-var $javaloader = (function() {
+var $host = (function() {
 	var $loader = eval($shell.getLoaderCode());
 	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 	
@@ -42,6 +41,4 @@ var $javaloader = (function() {
 	
 	return rv;
 })();
-
-$engine.$javaloader = $javaloader;
 
