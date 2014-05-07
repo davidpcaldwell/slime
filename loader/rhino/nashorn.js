@@ -28,12 +28,19 @@ load("nashorn:mozilla_compat.js");
 		}
 	};
 
+	var script = function(name,code,scope,target) {
+		var context = Context.getContext();
+		var notNull = function(o) {
+			return (o) ? o : {};
+		}
+		return evaluateSource.invoke(context, new Source(name,code), notNull(scope), notNull(target));
+	};
+	
 	if (!$engine) {
 		return {
 			Context: Context,
-			Source: Source,
-			evaluateSource: evaluateSource,
-			toScope: toScope
+			toScope: toScope,
+			script: script
 		};
 	} else {
 		var $javahost = new function() {
@@ -46,7 +53,7 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.script = function(name,code,scope,target) {
-				return $engine.script(name,code,toScope(scope),target);
+				return script(name,code,toScope(scope),target);
 			};
 		};
 

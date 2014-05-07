@@ -1,14 +1,8 @@
 var $engine = {};
 var $javaloader = (function() {
 	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
+	
 	var $engine = new function() {
-		this.script = function(name,code,scope,target) {
-			var context = scripts.Context.getContext();
-			var notNull = function(o) {
-				return (o) ? o : {};
-			}
-			return scripts.evaluateSource.invoke(context, new scripts.Source(name,code), notNull(scope), notNull(target));
-		};
 		this.getClasspath = function() {
 			return $nashorn.getClasspath();
 		}
@@ -61,7 +55,7 @@ var $javaloader = (function() {
 		//	TODO	MetaObject?
 	};
 
-	var rv = $engine.script(
+	var rv = scripts.script(
 		"rhino/nashorn.js",
 		$loader.getLoaderCode("rhino/nashorn.js"),
 		scripts.toScope({ $loader: $loader, $engine: $engine }),
@@ -70,7 +64,7 @@ var $javaloader = (function() {
 	
 	rv.jsapi = new function() {
 		this.script = function(name,code,scope) {
-			return $engine.script(name, String(code), scope);
+			return scripts.script(name, String(code), scope);
 		}
 	}
 	
