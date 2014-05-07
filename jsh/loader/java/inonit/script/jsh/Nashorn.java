@@ -90,7 +90,7 @@ public class Nashorn {
 			} catch (ExitException e) {
 				return e.getExitStatus();
 			} catch (ScriptException e) {
-				return 255;
+				throw new RuntimeException(e);
 			}
 		}
 	}

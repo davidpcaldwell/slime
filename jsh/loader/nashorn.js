@@ -17,7 +17,7 @@ var $javaloader = (function() {
 	
 	rv.jsapi = new function() {
 		this.script = function(name,code,scope) {
-			return scripts.script(name, String(code), scope);
+			return scripts.script(name, code, scope);
 		}
 	}
 	
@@ -40,7 +40,6 @@ var $javaloader = (function() {
 			try {
 				return Packages.inonit.script.jsh.Nashorn.execute(subshell);				
 			} catch (e) {
-				Packages.java.lang.System.err.println(e);
 				return 255;
 			}
 		});
