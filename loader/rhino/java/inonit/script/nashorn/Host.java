@@ -7,17 +7,19 @@ import javax.script.*;
 import inonit.script.engine.*;
 
 public class Host {
-	public static Host create() {
-		return new Host();
+	public static Host create(Classes classes) {
+		return new Host(classes);
 	}
 	
 	private ScriptEngineManager factory;
 	private ScriptEngine engine;
+	private Classes classes;
 	private List<Code.Source.File> scripts = new ArrayList<Code.Source.File>();
 	
-	private Host() {
+	private Host(Classes classes) {
 		this.factory = new ScriptEngineManager();
 		this.engine = factory.getEngineByName("nashorn");
+		this.classes = classes;
 	}
 	
 	public void set(String name, Object value) {
