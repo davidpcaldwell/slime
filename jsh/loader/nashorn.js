@@ -7,19 +7,6 @@ var $javaloader = (function() {
 			return $nashorn.getClasspath();
 		}
 
-		var fakeDebugger = new function() {
-			this.setBreakOnExceptions = function(b) {
-			};
-
-			this.isBreakOnExceptions = function() {
-				return false;
-			}
-		};
-
-		this.getDebugger = function() {
-			return fakeDebugger;
-		}
-
 		this.exit = function(status) {
 			if ($nashorn.isTop()) {
 				exit(status);
