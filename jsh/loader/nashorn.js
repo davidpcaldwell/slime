@@ -7,15 +7,6 @@ var $javaloader = (function() {
 			return $nashorn.getClasspath();
 		}
 
-		this.exit = function(status) {
-			if ($nashorn.isTop()) {
-				exit(status);
-			} else {
-				//	NASHORN	Throwing object with toString() causes [object Object] to be error rather than toString()
-				throw new Packages.inonit.script.jsh.Nashorn.ExitException(status);
-			}
-		}
-
 		this.jsh = function(configuration,invocation) {
 			var subshell = Packages.inonit.script.jsh.Shell.create(
 				$shell.getInstallation(),
@@ -56,7 +47,12 @@ var $javaloader = (function() {
 	}
 	
 	rv.exit = function(status) {
-		$engine.exit(status);
+		if ($nashorn.isTop()) {
+			exit(status);
+		} else {
+			//	NASHORN	Throwing object with toString() causes [object Object] to be error rather than toString()
+			throw new Packages.inonit.script.jsh.Nashorn.ExitException(status);
+		}
 	}
 	
 	rv.jsh = function(configuration,invocation) {
