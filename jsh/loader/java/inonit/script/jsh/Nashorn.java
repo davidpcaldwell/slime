@@ -5,7 +5,6 @@ import java.util.*;
 import javax.script.*;
 
 import inonit.script.engine.*;
-import java.util.List;
 
 public class Nashorn {
 	public static abstract class Host {
@@ -43,8 +42,7 @@ public class Nashorn {
 	
 	private static class ExecutionImpl extends Shell.Execution {
 		private Classes classes;
-		private ScriptEngineManager factory;
-		private ScriptEngine engine;
+		private inonit.script.nashorn.Host host;
 		private boolean top;
 		
 		ExecutionImpl(boolean top) {
@@ -58,13 +56,12 @@ public class Nashorn {
 				}
 			});
 			Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
-			this.factory = new ScriptEngineManager();
-			this.engine = factory.getEngineByName("nashorn");
+			this.host = inonit.script.nashorn.Host.create();
 			this.top = top;
 		}
 
 		@Override public void host(String name, Object value) {
-			factory.getBindings().put(name, value);
+			host.set(name, value);
 		}
 
 		@Override public void addEngine() {
@@ -77,22 +74,16 @@ public class Nashorn {
 					return top;
 				}
 			});
-			scripts.add(this.getShell().getInstallation().getJshLoader("nashorn.js"));
+			host.add(this.getShell().getInstallation().getJshLoader("nashorn.js"));
 		}
 		
-		private List<Code.Source.File> scripts = new ArrayList<Code.Source.File>();
-
 		@Override public void script(Code.Source.File script) {
-			scripts.add(script);
+			host.add(script);
 		}
 
 		@Override public Integer execute() {
 			try {
-				for (Code.Source.File file : scripts) {
-					ScriptContext c = engine.getContext();
-					c.setAttribute(ScriptEngine.FILENAME, file.getSourceName(), ScriptContext.ENGINE_SCOPE);
-					engine.eval(file.getReader(), c);
-				}
+				Object ignore = host.run();
 				return null;
 			} catch (ScriptException e) {
 				if (e.getCause() != null && e.getCause().getCause() != null && e.getCause().getCause() instanceof ExitException) {
