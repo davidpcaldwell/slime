@@ -34,9 +34,9 @@ plugin({
 			,file: jsh.file
 		}
 		context.stdio = new function() {
-			this.input = jsh.io.java.adapt($host.getStdio().getStandardInput());
-			this.output = jsh.io.java.adapt($host.getStdio().getStandardOutput());
-			this.error = jsh.io.java.adapt($host.getStdio().getStandardError());
+			this.input = jsh.io.java.adapt($jsh.getStdio().getStandardInput());
+			this.output = jsh.io.java.adapt($jsh.getStdio().getStandardOutput());
+			this.error = jsh.io.java.adapt($jsh.getStdio().getStandardError());
 		}
 		//	TODO	properties methods should go away; should not be necessary now
 		context.getSystemProperty = function(name) {

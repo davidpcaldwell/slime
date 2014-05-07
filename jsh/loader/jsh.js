@@ -39,7 +39,28 @@ this.jsh = new function() {
 		$jsh.getEnvironment = function() {
 			return configuration.getEnvironment();
 		};
-	
+		
+		var stdio = new function() {
+			var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());
+			var err = new Packages.java.io.PrintStream(configuration.getStdio().getStandardError());
+
+			this.getStandardInput = function() {
+				return configuration.getStdio().getStandardInput();
+			};
+
+			this.getStandardOutput = function() {
+				return out;
+			};
+
+			this.getStandardError = function() {
+				return err;
+			};
+		};
+
+		$jsh.getStdio = function() {
+			return stdio;
+		};
+		
 		return {
 			getLoader: function() {
 				return loader;
@@ -271,9 +292,9 @@ this.jsh = new function() {
 
 		//	TODO	check to see whether this is used, because if it is, it had a longstanding copy-paste bug
 		context.stdio = new function() {
-			this.$out = $host.getStdio().getStandardOutput();
-			this.$in = $host.getStdio().getStandardInput();
-			this.$err = $host.getStdio().getStandardError();
+			this.$out = $jsh.getStdio().getStandardOutput();
+			this.$in = $jsh.getStdio().getStandardInput();
+			this.$err = $jsh.getStdio().getStandardError();
 		}
 
 		//	TODO	both jsh.file and jsh.shell use this property; consider making it part of host object and/or shell configuration
