@@ -10,17 +10,18 @@ public class Nashorn {
 	public static abstract class Host {
 		public abstract boolean isTop();
 		public abstract Loader.Classpath getClasspath();
+		public abstract void exit(int status);
 	}
 	
-	public static class ExitException extends RuntimeException {
+	private static class ExitException extends RuntimeException {
 		private int status;
 		
-		public ExitException(int status) {
+		ExitException(int status) {
 			super("Exit with status: " + status);
 			this.status = status;
 		}
 		
-		public int getExitStatus() {
+		int getExitStatus() {
 			return status;
 		}
 	}
@@ -70,6 +71,10 @@ public class Nashorn {
 				@Override public boolean isTop() {
 					return top;
 				}
+				
+				@Override public void exit(int status) {
+					throw new ExitException(status);
+				}
 			});
 			host.add(this.getShell().getInstallation().getJshLoader("nashorn.js"));
 		}
@@ -82,12 +87,10 @@ public class Nashorn {
 			try {
 				Object ignore = host.run();
 				return null;
+			} catch (ExitException e) {
+				return e.getExitStatus();
 			} catch (ScriptException e) {
-				if (e.getCause() != null && e.getCause().getCause() != null && e.getCause().getCause() instanceof ExitException) {
-					return ((ExitException)e.getCause().getCause()).getExitStatus();
-				} else {
-					return 255;
-				}
+				return 255;
 			}
 		}
 	}

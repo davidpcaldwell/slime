@@ -26,7 +26,7 @@ var $javaloader = (function() {
 			exit(status);
 		} else {
 			//	NASHORN	Throwing object with toString() causes [object Object] to be error rather than toString()
-			throw new Packages.inonit.script.jsh.Nashorn.ExitException(status);
+			$nashorn.exit(status);
 		}
 	}
 	
@@ -40,6 +40,7 @@ var $javaloader = (function() {
 			try {
 				return Packages.inonit.script.jsh.Nashorn.execute(subshell);				
 			} catch (e) {
+				Packages.java.lang.System.err.println(e);
 				return 255;
 			}
 		});
