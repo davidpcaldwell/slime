@@ -45,7 +45,7 @@ public class Nashorn {
 		private boolean top;
 		
 		ExecutionImpl(boolean top) {
-			Classes classes = Classes.create(new Classes.Configuration() {
+			this.host = inonit.script.nashorn.Host.create(new Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
 				}
@@ -54,7 +54,6 @@ public class Nashorn {
 					return Nashorn.class.getClassLoader();
 				}
 			});
-			this.host = inonit.script.nashorn.Host.create(classes);
 			this.top = top;
 		}
 

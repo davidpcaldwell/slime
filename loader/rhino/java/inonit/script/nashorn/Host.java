@@ -7,7 +7,8 @@ import javax.script.*;
 import inonit.script.engine.*;
 
 public class Host {
-	public static Host create(Classes classes) {
+	public static Host create(Classes.Configuration configuration) {
+		Classes classes = Classes.create(configuration);
 		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
 		return new Host(classes);
 	}
