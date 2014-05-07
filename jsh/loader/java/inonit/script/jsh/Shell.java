@@ -32,6 +32,10 @@ public abstract class Shell {
 		return streams.readString(getInstallation().getJshLoader("bootstrap.js").getReader());
 	}
 	
+	public Shell subshell(Configuration configuration, Invocation invocation) {
+		return create(this.getInstallation(), configuration, invocation);
+	}
+	
 	public abstract Configuration getConfiguration();
 	public abstract Invocation getInvocation() throws Invocation.CheckedException;
 	

@@ -31,14 +31,9 @@ var $javaloader = (function() {
 	}
 	
 	rv.jsh = function(configuration,invocation) {
-		var subshell = Packages.inonit.script.jsh.Shell.create(
-			$shell.getInstallation(),
-			configuration,
-			invocation
-		);
 		return scripts.subshell(function() {
 			try {
-				return Packages.inonit.script.jsh.Nashorn.execute(subshell);				
+				return Packages.inonit.script.jsh.Nashorn.execute($shell.subshell(configuration,invocation));				
 			} catch (e) {
 				return 255;
 			}
