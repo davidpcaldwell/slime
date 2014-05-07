@@ -4,19 +4,8 @@
 			return $loader.getLoaderCode(path);
 		};
 
-		//	TODO	is this indirection object unnecessary?
-		var classpath = new function() {
-			this.append = function(code) {
-				$engine.getClasspath().append(code);
-			};
-
-			this.getClass = function(name) {
-				return $engine.getClasspath().getClass(name);
-			}
-		};
-
 		this.getClasspath = function() {
-			return classpath;
+			return $engine.getClasspath();
 		};
 
 		this.script = function(name,code,scope,target) {
