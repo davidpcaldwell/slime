@@ -3,16 +3,15 @@ var $javaloader = (function() {
 	var $loader = eval($shell.getLoaderCode());
 	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 	
-	var $engine = new function() {
-		this.getClasspath = function() {
-			return $nashorn.getClasspath();
-		}
-	};
-
 	var rv = scripts.script(
 		"rhino/nashorn.js",
 		$loader.getLoaderCode("rhino/nashorn.js"),
-		{ $loader: $loader, $classpath: $nashorn.getClasspath() },
+		{ 
+			$getLoaderCode: function(path) {
+				return $loader.getLoaderCode(path);
+			},
+			$classpath: $nashorn.getClasspath() 
+		},
 		null
 	);
 	

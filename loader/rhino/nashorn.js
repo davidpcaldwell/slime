@@ -52,9 +52,7 @@ load("nashorn:mozilla_compat.js");
 		};
 	} else {
 		var $javahost = new function() {
-			this.getLoaderCode = function(path) {
-				return $loader.getLoaderCode(path);
-			};
+			this.getLoaderCode = $getLoaderCode;
 
 			this.getClasspath = function() {
 				return $classpath;
@@ -68,7 +66,7 @@ load("nashorn:mozilla_compat.js");
 			//	TODO	MetaObject?
 		};
 
-		var rv = $javahost.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);
+		var rv = $javahost.script("rhino/literal.js", $getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);
 
 		rv.java = new function() {
 			this.isJavaObjectArray = function(object) {
