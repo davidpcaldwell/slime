@@ -64,6 +64,9 @@ this.jsh = new function() {
 		return {
 			getLoader: function() {
 				return loader;
+			},
+			getPlugins: function(file) {	
+				return Packages.inonit.script.jsh.Installation.Plugin.get(file);
 			}
 		};		
 	})();
@@ -85,7 +88,7 @@ this.jsh = new function() {
 		//	TODO	naming conventions are inconsistent in this stuff; look at how there are addClasses methods and classpath.add().
 		//			generally speaking, should probably match the rhinoLoader API across all of these representations of it
 		var rhinoLoader = (function() {
-			var rv = $host.getRhinoLoader();
+			var rv = $engine.$javaloader;
 			rv.$api.deprecate.warning = function(o) {
 				debugger;
 			}
@@ -422,7 +425,7 @@ this.jsh = new function() {
 
 	this.loader.plugins = function(from) {
 		if (from && from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
-			loadPlugins($host.getPlugins(from.java.adapt()));
+			loadPlugins(host.getPlugins(from.java.adapt()));
 		}
 	};
 
