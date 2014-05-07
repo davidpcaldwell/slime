@@ -1,37 +1,51 @@
+load("nashorn:mozilla_compat.js");
+
 (function() {
-	var $javahost = new function() {
-		this.getLoaderCode = function(path) {
-			return $loader.getLoaderCode(path);
+	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
+	var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);
+	var Source = Java.type("jdk.nashorn.internal.runtime.Source");
+	var ScriptObject = Java.type("jdk.nashorn.internal.runtime.ScriptObject");
+	evaluateSourceSignature[0] = Source.class;
+	evaluateSourceSignature[1] = ScriptObject.class;
+	evaluateSourceSignature[2] = ScriptObject.class;
+	var evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
+	evaluateSource.setAccessible(true);
+
+	if ($engine.script) {
+		var $javahost = new function() {
+			this.getLoaderCode = function(path) {
+				return $loader.getLoaderCode(path);
+			};
+
+			this.getClasspath = function() {
+				return $engine.getClasspath();
+			};
+
+			this.script = function(name,code,scope,target) {
+				return $engine.script(name,code,$engine.toScope(scope),target);
+			};
 		};
 
-		this.getClasspath = function() {
-			return $engine.getClasspath();
+		var rv = $javahost.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), $engine.toScope({ $javahost: $javahost }), null);
+
+		rv.java = new function() {
+			this.isJavaObjectArray = function(object) {
+				return (Java.type("java.lang.Object[]").class.isInstance(object));
+			};
+			this.isJavaInstance = function(object) {
+				return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
+			}
+			this.getNamedJavaClass = function(name) {
+				return Java.type(name).class;
+			}
+			this.getJavaPackagesReference = function(name) {
+				return eval("Packages." + name);
+			}
+			this.Array = function(JavaClass,length) {
+				return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
+			}
 		};
 
-		this.script = function(name,code,scope,target) {
-			return $engine.script(name,code,$engine.toScope(scope),target);
-		};
-	};
-	
-	var rv = $javahost.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), $engine.toScope({ $javahost: $javahost }), null);
-		
-	rv.java = new function() {
-		this.isJavaObjectArray = function(object) {
-			return (Java.type("java.lang.Object[]").class.isInstance(object));
-		};
-		this.isJavaInstance = function(object) {
-			return typeof(object.getClass) == "function" && object.getClass() == Java.type(object.getClass().getName()).class;
-		}
-		this.getNamedJavaClass = function(name) {
-			return Java.type(name).class;
-		}
-		this.getJavaPackagesReference = function(name) {
-			return eval("Packages." + name);
-		}
-		this.Array = function(JavaClass,length) {
-			return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
-		}
-	};
-	
-	return rv;
+		return rv;
+	}
 })()
