@@ -39,7 +39,17 @@ load("nashorn:mozilla_compat.js");
 	if (!$engine) {
 		return {
 			Context: Context,
-			script: script
+			script: script,
+			subshell: function(f) {
+				var global = (function() { return this; })();
+				var subglobal = Context.getContext().createGlobal();
+				Context.setGlobal(subglobal);
+				try {
+					return f.apply(this,arguments);
+				} finally {
+					Context.setGlobal(global);
+				}				
+			}
 		};
 	} else {
 		var $javahost = new function() {

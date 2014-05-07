@@ -39,16 +39,13 @@ var $javaloader = (function() {
 			configuration,
 			invocation
 		);
-		var global = (function() { return this; })();
-		var subglobal = scripts.Context.getContext().createGlobal();
-		scripts.Context.setGlobal(subglobal);
-		try {
-			return Packages.inonit.script.jsh.Nashorn.execute(subshell);
-		} catch (e) {
-			return 255;
-		} finally {
-			scripts.Context.setGlobal(global);
-		}
+		return scripts.subshell(function() {
+			try {
+				return Packages.inonit.script.jsh.Nashorn.execute(subshell);				
+			} catch (e) {
+				return 255;
+			}
+		});
 	}
 	
 	return rv;
