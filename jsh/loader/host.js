@@ -9,10 +9,6 @@ var $host = new function() {
 		return $engine.$javaloader;
 	};
 	
-	this.getInvocation = function() {
-		return invocation;
-	}
-	
 	this.getEnvironment = function() {
 		return configuration.getEnvironment();
 	};

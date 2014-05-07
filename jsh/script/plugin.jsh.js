@@ -26,19 +26,19 @@ plugin({
 			},
 			workingDirectory: jsh.shell.PWD,
 			script: (function() {
-				var uri = $host.getInvocation().getScript().getUri();
+				var uri = $shell.getInvocation().getScript().getUri();
 				if (uri  && uri.getScheme() && String(uri.getScheme()) == "file") {
 					return jsh.file.filesystem.java.adapt(new Packages.java.io.File(uri)).file;
 				}
 			})(),
 			uri: (function() {
-				if ($host.getInvocation().getScript().getUri()) {
-					return String($host.getInvocation().getScript().getUri().normalize().toString());
+				if ($shell.getInvocation().getScript().getUri()) {
+					return String($shell.getInvocation().getScript().getUri().normalize().toString());
 				}
 			})(),
 			uri: (function() {
-				if ($host.getInvocation().getScript().getUri()) {
-					return String($host.getInvocation().getScript().getUri().normalize().toString());
+				if ($shell.getInvocation().getScript().getUri()) {
+					return String($shell.getInvocation().getScript().getUri().normalize().toString());
 				}
 			})(),
 			packaged: (function() {
@@ -52,7 +52,7 @@ plugin({
 				}
 				return null;
 			})(),
-			arguments: jsh.java.Array.adapt($host.getInvocation().getArguments()).map(function(s) { return String(s); }),
+			arguments: jsh.java.Array.adapt($shell.getInvocation().getArguments()).map(function(s) { return String(s); }),
 			loader: (function() {
 				if ($shell.getConfiguration().getPackagedCode()) {
 					return new jsh.io.Loader({ _source: $shell.getConfiguration().getPackagedCode() });
