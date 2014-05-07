@@ -38,7 +38,6 @@ load("nashorn:mozilla_compat.js");
 	
 	if (!$engine) {
 		return {
-			Context: Context,
 			script: script,
 			subshell: function(f) {
 				var global = (function() { return this; })();
