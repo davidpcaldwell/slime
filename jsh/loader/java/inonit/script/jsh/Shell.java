@@ -164,7 +164,6 @@ public abstract class Shell {
 	public Integer execute(Execution execution) throws Invocation.CheckedException {
 		execution.initialize(this);
 		execution.addEngine();
-		execution.script(this.getInstallation().getJshLoader("host.js"));
 		execution.script(this.getInstallation().getJshLoader("jsh.js"));
 		execution.script(this.getInvocation().getScript().getSource());
 		return execution.execute();
