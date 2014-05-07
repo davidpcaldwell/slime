@@ -1,5 +1,6 @@
 var $engine = {};
 var $javaloader = (function() {
+	var $loader = eval($shell.getLoaderCode());
 	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 	
 	var $engine = new function() {

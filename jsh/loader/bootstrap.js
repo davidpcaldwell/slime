@@ -1,7 +1,5 @@
-var $loader = new function() {
-	var _streams = new Packages.inonit.script.runtime.io.Streams();
-
+new (function() {
 	this.getLoaderCode = function(path) {
-		return _streams.readString($shell.getInstallation().getPlatformLoader(path).getReader());
+		return $shell.getStreams().readString($shell.getInstallation().getPlatformLoader(path).getReader());
 	};
-};
+});

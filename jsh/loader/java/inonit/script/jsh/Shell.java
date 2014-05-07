@@ -15,11 +15,23 @@ package inonit.script.jsh;
 import java.io.*;
 import java.util.*;
 
+import inonit.script.runtime.io.*;
 import inonit.system.*;
 import inonit.script.engine.*;
 
 public abstract class Shell {
 	public abstract Installation getInstallation();
+	
+	private Streams streams = new Streams();
+	
+	public final Streams getStreams() {
+		return streams;
+	}
+	
+	public final String getLoaderCode() throws IOException {
+		return streams.readString(getInstallation().getJshLoader("bootstrap.js").getReader());
+	}
+	
 	public abstract Configuration getConfiguration();
 	public abstract Invocation getInvocation() throws Invocation.CheckedException;
 	
@@ -160,7 +172,6 @@ public abstract class Shell {
 		final void initialize(Shell shell) {
 			this.shell = shell;
 			this.host("$shell", shell);
-			this.script(shell.getInstallation().getJshLoader("bootstrap.js"));
 		}
 		
 		protected final Shell getShell() {
