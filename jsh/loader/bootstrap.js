@@ -1,5 +1,5 @@
 new (function() {
 	this.getLoaderCode = function(path) {
-		return $shell.getStreams().readString($shell.getInstallation().getPlatformLoader(path).getReader());
+		return $jsh.getStreams().readString($jsh.getInstallation().getPlatformLoader(path).getReader());
 	};
 });

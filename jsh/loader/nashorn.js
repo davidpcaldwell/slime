@@ -1,5 +1,5 @@
 var $host = (function() {
-	var $loader = eval($shell.getLoaderCode());
+	var $loader = eval($jsh.getLoaderCode());
 	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 	
 	var rv = scripts.script(
@@ -32,7 +32,7 @@ var $host = (function() {
 	rv.jsh = function(configuration,invocation) {
 		return scripts.subshell(function() {
 			try {
-				return Packages.inonit.script.jsh.Nashorn.execute($shell.subshell(configuration,invocation));				
+				return Packages.inonit.script.jsh.Nashorn.execute($jsh.subshell(configuration,invocation));				
 			} catch (e) {
 				return 255;
 			}

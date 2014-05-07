@@ -174,7 +174,7 @@ public abstract class Shell {
 		
 		final void initialize(Shell shell) {
 			this.shell = shell;
-			this.host("$shell", shell);
+			this.host("$jsh", shell);
 		}
 		
 		protected final Shell getShell() {

@@ -11,12 +11,29 @@
 //	END LICENSE
 
 this.jsh = new function() {
-	var $jsh = $host;
-
 	var host = (function() {
-		var installation = $shell.getInstallation();
-		var configuration = $shell.getConfiguration();	
-		var invocation = $shell.getInvocation();
+		var installation = $jsh.getInstallation();
+		var configuration = $jsh.getConfiguration();	
+		var invocation = $jsh.getInvocation();
+
+		$host.getSystemProperties = function() {
+			return configuration.getSystemProperties();
+		}
+		$host.getEnvironment = function() {
+			return configuration.getEnvironment();
+		};
+
+		$host.getStdio = function() {
+			return stdio;
+		};
+		
+		$host.getInvocation = function() {
+			return invocation;
+		};
+		
+		$host.getPackagedCode = function() {
+			return configuration.getPackagedCode();
+		};
 		
 		var loader = new function() {
 			//	implementation duplicates original
@@ -33,13 +50,6 @@ this.jsh = new function() {
 			}
 		};
 
-		$jsh.getSystemProperties = function() {
-			return configuration.getSystemProperties();
-		}
-		$jsh.getEnvironment = function() {
-			return configuration.getEnvironment();
-		};
-		
 		var stdio = new function() {
 			var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());
 			var err = new Packages.java.io.PrintStream(configuration.getStdio().getStandardError());
@@ -57,10 +67,6 @@ this.jsh = new function() {
 			};
 		};
 
-		$jsh.getStdio = function() {
-			return stdio;
-		};
-		
 		return {
 			getLoader: function() {
 				return loader;
@@ -278,8 +284,8 @@ this.jsh = new function() {
 
 	(function() {
 		var context = {};
-		var environment = jsh.java.Environment($jsh.getEnvironment());
-		var properties = jsh.java.Properties.adapt($jsh.getSystemProperties());
+		var environment = jsh.java.Environment($host.getEnvironment());
+		var properties = jsh.java.Properties.adapt($host.getSystemProperties());
 
 		context._streams = new Packages.inonit.script.runtime.io.Streams();
 
@@ -295,14 +301,14 @@ this.jsh = new function() {
 
 		//	TODO	check to see whether this is used, because if it is, it had a longstanding copy-paste bug
 		context.stdio = new function() {
-			this.$out = $jsh.getStdio().getStandardOutput();
-			this.$in = $jsh.getStdio().getStandardInput();
-			this.$err = $jsh.getStdio().getStandardError();
+			this.$out = $host.getStdio().getStandardOutput();
+			this.$in = $host.getStdio().getStandardInput();
+			this.$err = $host.getStdio().getStandardError();
 		}
 
 		//	TODO	both jsh.file and jsh.shell use this property; consider making it part of host object and/or shell configuration
 		//			and pushing property-mapping back into inonit.script.jsh.Shell
-		context.$pwd = String( $jsh.getSystemProperties().getProperty("user.dir") );
+		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
 
 		context.addFinalizer = addFinalizer;
 
@@ -355,7 +361,7 @@ this.jsh = new function() {
 				}
 				callbacks.script({ _code: _code, declaration: declaration });
 			}
-			scope.$jsh = $jsh;
+			scope.$jsh = $host;
 			scope.global = (function() { return this; })();
 			scope.jsh = jsh;
 			scope.$loader = new (function(_code) {
@@ -433,9 +439,9 @@ this.jsh = new function() {
 		loadPlugins(host.getLoader().getPlugins());
 	})();
 
-	if ($jsh.getSystemProperties().getProperty("jsh.script.debugger")) {
+	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
 		(function() {
-			var property = String($jsh.getSystemProperties().getProperty("jsh.script.debugger"));
+			var property = String($host.getSystemProperties().getProperty("jsh.script.debugger"));
 			var parser = /^profiler\:(.*)$/;
 			if (parser.test(property)) {
 				var options = {};
