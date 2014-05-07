@@ -8,6 +8,7 @@ import inonit.script.engine.*;
 
 public class Host {
 	public static Host create(Classes classes) {
+		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
 		return new Host(classes);
 	}
 	

@@ -55,7 +55,6 @@ public class Nashorn {
 					return Nashorn.class.getClassLoader();
 				}
 			});
-			Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
 			this.host = inonit.script.nashorn.Host.create(classes);
 			this.top = top;
 		}
