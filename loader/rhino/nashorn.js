@@ -33,7 +33,7 @@ load("nashorn:mozilla_compat.js");
 		var notNull = function(o) {
 			return (o) ? o : {};
 		}
-		return evaluateSource.invoke(context, new Source(name,code), notNull(scope), notNull(target));
+		return evaluateSource.invoke(context, new Source(name,code), toScope(notNull(scope)), notNull(target));
 	};
 	
 	if (!$engine) {

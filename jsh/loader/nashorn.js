@@ -14,7 +14,7 @@ var $javaloader = (function() {
 	var rv = scripts.script(
 		"rhino/nashorn.js",
 		$loader.getLoaderCode("rhino/nashorn.js"),
-		scripts.toScope({ $loader: $loader, $engine: $engine }),
+		{ $loader: $loader, $engine: $engine },
 		null
 	);
 	
