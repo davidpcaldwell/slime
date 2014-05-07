@@ -45,14 +45,4 @@ var $host = new function() {
 	this.getPlugins = function(file) {
 		return Packages.inonit.script.jsh.Installation.Plugin.get(file);
 	}
-	
-	var global = (function() { return this; })();
-	
-	this.jsapi = new function() {
-		if (global.$nashorn) {
-			this.script = function(name,code,scope) {
-				return $engine.script(name, String(code), scope);
-			}
-		}		
-	};
 };
