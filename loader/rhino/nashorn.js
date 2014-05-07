@@ -11,11 +11,29 @@ load("nashorn:mozilla_compat.js");
 	var evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
 	evaluateSource.setAccessible(true);
 
+	var toScope = function(scope) {
+		var global = (function() { return this; })();
+		if (false) {
+			var rv = {};
+			for (var x in global) {
+				rv[x] = global[x];
+			}
+			for (var x in scope) {
+				rv[x] = scope[x];
+			}
+			return rv;
+		} else {
+			scope.__proto__ = global;
+			return scope;
+		}
+	};
+
 	if (!$engine) {
 		return {
 			Context: Context,
 			Source: Source,
-			evaluateSource: evaluateSource
+			evaluateSource: evaluateSource,
+			toScope: toScope
 		};
 	} else {
 		var $javahost = new function() {
@@ -28,11 +46,11 @@ load("nashorn:mozilla_compat.js");
 			};
 
 			this.script = function(name,code,scope,target) {
-				return $engine.script(name,code,$engine.toScope(scope),target);
+				return $engine.script(name,code,toScope(scope),target);
 			};
 		};
 
-		var rv = $javahost.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), $engine.toScope({ $javahost: $javahost }), null);
+		var rv = $javahost.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), toScope({ $javahost: $javahost }), null);
 
 		rv.java = new function() {
 			this.isJavaObjectArray = function(object) {

@@ -1,7 +1,7 @@
 var $engine = {};
 var $javaloader = (function() {
+	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 	var $engine = new function() {
-		var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 		this.script = function(name,code,scope,target) {
 			var context = scripts.Context.getContext();
 			var notNull = function(o) {
@@ -24,23 +24,6 @@ var $javaloader = (function() {
 
 		this.getDebugger = function() {
 			return fakeDebugger;
-		}
-
-		this.toScope = function(scope) {
-			var global = (function() { return this; })();
-			if (false) {
-				var rv = {};
-				for (var x in global) {
-					rv[x] = global[x];
-				}
-				for (var x in scope) {
-					rv[x] = scope[x];
-				}
-				return rv;
-			} else {
-				scope.__proto__ = global;
-				return scope;
-			}
 		}
 
 		this.exit = function(status) {
@@ -78,15 +61,10 @@ var $javaloader = (function() {
 		//	TODO	MetaObject?
 	};
 
-	var toScope = function(object) {
-		if ($engine.toScope) return $engine.toScope(object);
-		return object;
-	}
-	
 	var rv = $engine.script(
 		"rhino/nashorn.js",
 		$loader.getLoaderCode("rhino/nashorn.js"),
-		toScope({ $loader: $loader, $engine: $engine }),
+		scripts.toScope({ $loader: $loader, $engine: $engine }),
 		null
 	);
 	
