@@ -39,7 +39,6 @@ load("nashorn:mozilla_compat.js");
 	if (!$engine) {
 		return {
 			Context: Context,
-			toScope: toScope,
 			script: script
 		};
 	} else {
