@@ -1,5 +1,3 @@
-load("nashorn:mozilla_compat.js");
-
 var $engine = {};
 var $javaloader = (function() {
 	var $engine = new function() {
