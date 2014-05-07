@@ -11,7 +11,13 @@ load("nashorn:mozilla_compat.js");
 	var evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
 	evaluateSource.setAccessible(true);
 
-	if ($engine.script) {
+	if (!$engine) {
+		return {
+			Context: Context,
+			Source: Source,
+			evaluateSource: evaluateSource
+		};
+	} else {
 		var $javahost = new function() {
 			this.getLoaderCode = function(path) {
 				return $loader.getLoaderCode(path);

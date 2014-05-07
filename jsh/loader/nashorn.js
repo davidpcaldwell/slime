@@ -3,21 +3,13 @@ load("nashorn:mozilla_compat.js");
 var $engine = {};
 var $javaloader = (function() {
 	var $engine = new function() {
-		var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-		var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);
-		var Source = Java.type("jdk.nashorn.internal.runtime.Source");
-		var ScriptObject = Java.type("jdk.nashorn.internal.runtime.ScriptObject");
-		evaluateSourceSignature[0] = Source.class;
-		evaluateSourceSignature[1] = ScriptObject.class;
-		evaluateSourceSignature[2] = ScriptObject.class;
-		var evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
-		evaluateSource.setAccessible(true);
+		var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 		this.script = function(name,code,scope,target) {
-			var context = Context.getContext();
+			var context = scripts.Context.getContext();
 			var notNull = function(o) {
 				return (o) ? o : {};
 			}
-			return evaluateSource.invoke(context, new Source(name,code), notNull(scope), notNull(target));
+			return scripts.evaluateSource.invoke(context, new scripts.Source(name,code), notNull(scope), notNull(target));
 		};
 		this.getClasspath = function() {
 			return $nashorn.getClasspath();
@@ -69,14 +61,14 @@ var $javaloader = (function() {
 				invocation
 			);
 			var global = (function() { return this; })();
-			var subglobal = Context.getContext().createGlobal();
-			Context.setGlobal(subglobal);
+			var subglobal = scripts.Context.getContext().createGlobal();
+			scripts.Context.setGlobal(subglobal);
 			try {
 				return Packages.inonit.script.jsh.Nashorn.execute(subshell);
 			} catch (e) {
 				return 255;
 			} finally {
-				Context.setGlobal(global);
+				scripts.Context.setGlobal(global);
 			}
 	//		Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
 	//		debugger.setBreakOnExceptions(breakOnExceptions);
