@@ -7,28 +7,6 @@ var $javaloader = (function() {
 			return $nashorn.getClasspath();
 		}
 
-		this.jsh = function(configuration,invocation) {
-			var subshell = Packages.inonit.script.jsh.Shell.create(
-				$shell.getInstallation(),
-				configuration,
-				invocation
-			);
-			var global = (function() { return this; })();
-			var subglobal = scripts.Context.getContext().createGlobal();
-			scripts.Context.setGlobal(subglobal);
-			try {
-				return Packages.inonit.script.jsh.Nashorn.execute(subshell);
-			} catch (e) {
-				return 255;
-			} finally {
-				scripts.Context.setGlobal(global);
-			}
-	//		Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
-	//		debugger.setBreakOnExceptions(breakOnExceptions);
-	//		if (rv == null) return 0;
-	//		return rv.intValue();		
-		}
-
 		//	TODO	setReadOnly?
 		//	TODO	MetaObject?
 	};
@@ -56,7 +34,21 @@ var $javaloader = (function() {
 	}
 	
 	rv.jsh = function(configuration,invocation) {
-		return $engine.jsh(configuration,invocation);
+		var subshell = Packages.inonit.script.jsh.Shell.create(
+			$shell.getInstallation(),
+			configuration,
+			invocation
+		);
+		var global = (function() { return this; })();
+		var subglobal = scripts.Context.getContext().createGlobal();
+		scripts.Context.setGlobal(subglobal);
+		try {
+			return Packages.inonit.script.jsh.Nashorn.execute(subshell);
+		} catch (e) {
+			return 255;
+		} finally {
+			scripts.Context.setGlobal(global);
+		}
 	}
 	
 	return rv;
