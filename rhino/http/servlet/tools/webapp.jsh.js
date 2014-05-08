@@ -88,6 +88,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/java"));
+	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
 	jsh.java.tools.javac({
 		destination: WEBAPP.getRelativePath("WEB-INF/classes"),
 		classpath: classpath,
@@ -95,7 +96,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 		source: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
 		target: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
 		arguments: [
-			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java")
+			jsh.script.file.getRelativePath("../java/inonit/script/servlet/RhinoServlet.java")
 		].concat(args),
 		on: new function() {
 			this.exit = function(p) {

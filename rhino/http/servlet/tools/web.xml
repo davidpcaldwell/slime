@@ -15,7 +15,7 @@ END LICENSE
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee" version="2.5">
 	<servlet>
 		<servlet-name>slime</servlet-name>
-		<servlet-class>inonit.script.servlet.Servlet</servlet-class>
+		<servlet-class>inonit.script.servlet.RhinoServlet</servlet-class>
 		<init-param>
 			<param-name>script</param-name>
 			<param-value>__SCRIPT__</param-value>
