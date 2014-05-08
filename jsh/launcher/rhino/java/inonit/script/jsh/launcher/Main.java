@@ -47,7 +47,7 @@ public class Main {
 				if (launcherLocation.endsWith("jsh.jar")) {
 					JSH_HOME = new java.io.File(launcherLocation.substring(0, launcherLocation.length()-"jsh.jar".length()-1));
 				}
-				FileInvocation frv = (JSH_HOME != null) ? new Built(JSH_HOME) : new Unbuilt();
+				FileInvocation frv = new FileInvocation((JSH_HOME != null) ? new BuiltShell(JSH_HOME) : new UnbuiltShell());
 				//	TODO	This might miss some exotic situations, like loading this class in its own classloader
 				frv.setLauncherClasspath(System.getProperty("java.class.path"));
 				if (JSH_HOME != null) {
@@ -186,94 +186,13 @@ public class Main {
 			return status.intValue();			
 		}
 	}
-
-	private static abstract class RhinoInvocation extends Invocation {
-		abstract ClassLoader getMainClassLoader() throws IOException;
-		
-		@Override Engine createEngine() throws IOException {
-			return new Rhino(getMainClassLoader(), debug());
-		}		
+	
+	private static abstract class Shell {
+		abstract ClassLoader getRhinoClassLoader(Invocation invocation) throws IOException;
 	}
-
-	private static abstract class FileInvocation extends RhinoInvocation {
-		private String colon = java.io.File.pathSeparator;
-		private String launcherClasspath;
-
-		final void setLauncherClasspath(String launcherClasspath) {
-			this.launcherClasspath = launcherClasspath;
-		}
-
-		final void initializeSystemProperties() throws java.io.IOException {
-			if (getRhinoClasspath() != null) {
-				System.setProperty("jsh.launcher.rhino.classpath", getRhinoClasspath());
-			} else {
-				throw new RuntimeException("No Rhino classpath in " + this
-					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
-				;
-			}
-			System.setProperty("jsh.launcher.rhino.script", getRhinoScript());
-			if (getJshHome() != null) {
-				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());
-			}
-			System.setProperty("jsh.launcher.classpath", launcherClasspath);
-		}
-		
-		abstract File getJshHome() throws java.io.IOException;
-
-		abstract String getRhinoClasspath() throws java.io.IOException;
-
-		private ClassLoader mainClassLoader;
-
-		final ClassLoader getMainClassLoader() throws IOException {
-			if (mainClassLoader == null) {
-				FileInvocation invocation = this;
-				String JSH_RHINO_CLASSPATH = invocation.getRhinoClasspath();
-				debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
-				List<String> pathElements = new ArrayList<String>();
-				pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
-				java.net.URL[] urls = new java.net.URL[pathElements.size()];
-				for (int i=0; i<pathElements.size(); i++) {
-					debug("Path element = " + pathElements.get(i));
-					try {
-						urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
-					} catch (java.net.MalformedURLException e) {
-					}
-				}
-				mainClassLoader = new java.net.URLClassLoader(urls);
-			}
-			return mainClassLoader;
-		}
-
-		abstract String getRhinoScript() throws java.io.IOException;
-
-		final void addScriptArguments(Engine rhino) throws IOException {
-			String JSH_RHINO_JS = getRhinoScript();
-			String RHINO_JS = null;
-			if (JSH_RHINO_JS != null) {
-				RHINO_JS = new java.io.File(new java.io.File(JSH_RHINO_JS).getParentFile(), "api.rhino.js").getCanonicalPath();
-			}
-			if (JSH_RHINO_JS == null || !new java.io.File(JSH_RHINO_JS).exists() || !new java.io.File(RHINO_JS).exists()) {
-				throw new RuntimeException("Could not find jsh.rhino.js and api.rhino.js in " + this + ": JSH_RHINO_SCRIPT = "
-					+ System.getenv("JSH_RHINO_SCRIPT")
-				);
-			}
-			rhino.addScript(RHINO_JS);
-			rhino.addScript(JSH_RHINO_JS);
-		}
-	}
-
-	private static class Packaged extends RhinoInvocation {
-		private String location;
-
-		Packaged(String location) {
-			this.location = location;
-		}
-
-		void initializeSystemProperties() {
-			System.setProperty("jsh.launcher.packaged", location);
-		}
-
-		ClassLoader getMainClassLoader() {
+	
+	private static class PackagedShell extends Shell {
+		ClassLoader getRhinoClassLoader(Invocation invocation) {
 			//	In earlier versions of the launcher and packager, Rhino was packaged at the following location inside the packaged
 			//	JAR file. However, for some reason, loading Rhino using the below ClassLoader did not work. As a workaround, the
 			//	packager now unzips Rhino and we simply load it from the system class loader.
@@ -282,39 +201,36 @@ public class Main {
 				return ClassLoader.getSystemClassLoader();
 			} catch (ClassNotFoundException e) {
 				return new java.net.URLClassLoader(new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") });
+			}			
+		}
+	}
+	
+	private static abstract class UnpackagedShell extends Shell {
+		private String colon = java.io.File.pathSeparator;
+		
+		abstract String getRhinoClasspath() throws IOException;
+		
+		final ClassLoader getRhinoClassLoader(Invocation invocation) throws IOException {
+			String JSH_RHINO_CLASSPATH = getRhinoClasspath();
+			invocation.debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
+			List<String> pathElements = new ArrayList<String>();
+			pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
+			java.net.URL[] urls = new java.net.URL[pathElements.size()];
+			for (int i=0; i<pathElements.size(); i++) {
+				invocation.debug("Path element = " + pathElements.get(i));
+				try {
+					urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
+				} catch (java.net.MalformedURLException e) {
+				}
 			}
+			return new java.net.URLClassLoader(urls);
 		}
-
-		void addScriptArguments(Engine rhino) {
-			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
-			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
-		}
+		
+		abstract File getJshHome();
+		abstract String getRhinoScript() throws IOException;
 	}
-
-	private static class Built extends FileInvocation {
-		private java.io.File HOME;
-		private Unbuilt explicit = new Unbuilt();
-
-		Built(java.io.File HOME) throws java.io.IOException {
-			this.HOME = HOME;
-		}
-
-		File getJshHome() {
-			return HOME;
-		}
-
-		String getRhinoClasspath() throws java.io.IOException {
-			if (explicit.getRhinoClasspath() != null) return explicit.getRhinoClasspath();
-			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
-		}
-
-		String getRhinoScript() throws java.io.IOException {
-			if (explicit.getRhinoScript() != null) return explicit.getRhinoScript();
-			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
-		}
-	}
-
-	private static class Unbuilt extends FileInvocation {
+	
+	private static class UnbuiltShell extends UnpackagedShell {
 		private String toWindowsPath(String value) throws IOException {
 			inonit.system.cygwin.Cygwin cygwin = inonit.system.cygwin.Cygwin.locate();
 			if (cygwin != null) {
@@ -342,6 +258,124 @@ public class Main {
 			String rv = System.getenv("JSH_RHINO_SCRIPT");
 			if (rv == null) return null;
 			return rv;
+		}
+	}
+	
+	private static class BuiltShell extends UnpackagedShell {
+		private java.io.File HOME;
+		private UnbuiltShell explicit = new UnbuiltShell();
+
+		BuiltShell(java.io.File HOME) throws java.io.IOException {
+			this.HOME = HOME;
+		}
+
+		File getJshHome() {
+			return HOME;
+		}
+
+		String getRhinoClasspath() throws java.io.IOException {
+			if (explicit.getRhinoClasspath() != null) return explicit.getRhinoClasspath();
+			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
+		}
+
+		String getRhinoScript() throws java.io.IOException {
+			if (explicit.getRhinoScript() != null) return explicit.getRhinoScript();
+			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
+		}
+	}
+
+	private static abstract class RhinoInvocation extends Invocation {
+		abstract Shell getShell();
+		
+		private ClassLoader mainClassLoader;
+
+		final ClassLoader getMainClassLoader() throws IOException {
+			if (mainClassLoader == null) {
+				mainClassLoader = getShell().getRhinoClassLoader(this);
+			}
+			return mainClassLoader;
+		}
+		
+		@Override Engine createEngine() throws IOException {
+			return new Rhino(getMainClassLoader(), debug());
+		}		
+	}
+
+	private static class Packaged extends RhinoInvocation {
+		private String location;
+
+		Packaged(String location) {
+			this.location = location;
+		}
+
+		void initializeSystemProperties() {
+			System.setProperty("jsh.launcher.packaged", location);
+		}
+		
+		Shell getShell() {
+			return new PackagedShell();
+		}
+
+		void addScriptArguments(Engine rhino) {
+			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
+			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
+		}
+	}
+
+	private static class FileInvocation extends RhinoInvocation {
+		private String launcherClasspath;
+		private UnpackagedShell shell;
+		
+		FileInvocation(UnpackagedShell shell) {
+			this.shell = shell;
+		}
+		
+		UnpackagedShell shell() {
+			return shell;
+		}
+		
+		Shell getShell() {
+			return shell();
+		}
+
+		final void setLauncherClasspath(String launcherClasspath) {
+			this.launcherClasspath = launcherClasspath;
+		}
+
+		final void initializeSystemProperties() throws java.io.IOException {
+			if (shell().getRhinoClasspath() != null) {
+				System.setProperty("jsh.launcher.rhino.classpath", shell().getRhinoClasspath());
+			} else {
+				throw new RuntimeException("No Rhino classpath in " + this
+					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
+				;
+			}
+			System.setProperty("jsh.launcher.rhino.script", shell().getRhinoScript());
+			if (shell().getJshHome() != null) {
+				System.setProperty("jsh.launcher.home", shell().getJshHome().getCanonicalPath());
+			}
+			System.setProperty("jsh.launcher.classpath", launcherClasspath);
+		}
+		
+//		abstract File getJshHome() throws java.io.IOException;
+
+//		abstract String getRhinoClasspath() throws java.io.IOException;
+
+//		abstract String getRhinoScript() throws java.io.IOException;
+
+		final void addScriptArguments(Engine rhino) throws IOException {
+			String JSH_RHINO_JS = shell().getRhinoScript();
+			String RHINO_JS = null;
+			if (JSH_RHINO_JS != null) {
+				RHINO_JS = new java.io.File(new java.io.File(JSH_RHINO_JS).getParentFile(), "api.rhino.js").getCanonicalPath();
+			}
+			if (JSH_RHINO_JS == null || !new java.io.File(JSH_RHINO_JS).exists() || !new java.io.File(RHINO_JS).exists()) {
+				throw new RuntimeException("Could not find jsh.rhino.js and api.rhino.js in " + this + ": JSH_RHINO_SCRIPT = "
+					+ System.getenv("JSH_RHINO_SCRIPT")
+				);
+			}
+			rhino.addScript(RHINO_JS);
+			rhino.addScript(JSH_RHINO_JS);
 		}
 	}
 
