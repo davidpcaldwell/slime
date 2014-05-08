@@ -113,8 +113,8 @@ public class Main {
 		private boolean debug;
 		private ArrayList<String> scripts = new ArrayList<String>();
 		
-		Rhino(ClassLoader main, boolean debug) {
-			this.main = main;
+		Rhino(Shell shell, Invocation invocation, boolean debug) throws IOException {
+			this.main = shell.getRhinoClassLoader(invocation);
 			this.debug = debug;
 		}
 		
@@ -208,8 +208,6 @@ public class Main {
 	private static abstract class UnpackagedShell extends Shell {
 		private String colon = java.io.File.pathSeparator;
 		
-		abstract String getRhinoClasspath() throws IOException;
-		
 		final ClassLoader getRhinoClassLoader(Invocation invocation) throws IOException {
 			String JSH_RHINO_CLASSPATH = getRhinoClasspath();
 			invocation.debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
@@ -226,6 +224,7 @@ public class Main {
 			return new java.net.URLClassLoader(urls);
 		}
 		
+		abstract String getRhinoClasspath() throws IOException;		
 		abstract File getJshHome();
 		abstract String getRhinoScript() throws IOException;
 	}
@@ -297,7 +296,7 @@ public class Main {
 		}
 		
 		@Override Engine createEngine() throws IOException {
-			return new Rhino(getMainClassLoader(), debug());
+			return new Rhino(getShell(), this, debug());
 		}		
 	}
 
@@ -357,12 +356,6 @@ public class Main {
 			System.setProperty("jsh.launcher.classpath", launcherClasspath);
 		}
 		
-//		abstract File getJshHome() throws java.io.IOException;
-
-//		abstract String getRhinoClasspath() throws java.io.IOException;
-
-//		abstract String getRhinoScript() throws java.io.IOException;
-
 		final void addScriptArguments(Engine rhino) throws IOException {
 			String JSH_RHINO_JS = shell().getRhinoScript();
 			String RHINO_JS = null;
