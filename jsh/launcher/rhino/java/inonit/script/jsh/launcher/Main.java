@@ -82,33 +82,44 @@ public class Main {
 		
 		abstract int run(String[] args) throws IOException;
 	}
+	
+	private static class Rhino {
+		private ClassLoader main;
+		private boolean debug;
+		
+		Rhino(ClassLoader main, boolean debug) {
+			this.main = main;
+			this.debug = debug;
+		}
+		
+		int getExitStatus() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+			Class c = main.loadClass("org.mozilla.javascript.tools.shell.Main");
+			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
+			field.setAccessible(true);
+			return field.getInt(null);			
+		}
+		
+		java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
+			ClassLoader loader = main;
+			String mainClassName = (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+			Class shell = loader.loadClass(mainClassName);
+			String mainMethodName = (debug) ? "main" : "exec";
+			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
+			return main;
+		}
+	}
 
 	private static abstract class RhinoInvocation extends Invocation {
 		abstract ClassLoader getMainClassLoader() throws IOException;
 
-		final int getRhinoShellExitStatus() throws IOException, ClassNotFoundException, IllegalAccessException, NoSuchFieldException {
-			Class c = getMainClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
-			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
-			field.setAccessible(true);
-			return field.getInt(null);
-		}
-
-		final java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
-			ClassLoader loader = getMainClassLoader();
-			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
-			Class shell = loader.loadClass(mainClassName);
-			String mainMethodName = (debug()) ? "main" : "exec";
-			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
-			return main;
-		}
-
 		abstract void addScriptArguments(List<String> strings) throws IOException;
 
 		final int run(String[] args) throws IOException {
+			Rhino rhino = new Rhino(getMainClassLoader(), debug());
 			RhinoInvocation invocation = this;
 			Integer status = null;
 			try {
-				java.lang.reflect.Method main = invocation.getMainMethod();
+				java.lang.reflect.Method main = rhino.getMainMethod();
 				invocation.debug("Rhino shell main = " + main);
 				List<String> arguments = new ArrayList();
 				arguments.add("-opt");
@@ -121,7 +132,7 @@ public class Main {
 				}
 				Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
 				main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
-				status = new Integer(invocation.getRhinoShellExitStatus());
+				status = new Integer(rhino.getExitStatus());
 				Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -139,7 +150,7 @@ public class Main {
 				e.printStackTrace();
 				status = new Integer(127);
 			}
-			return status;
+			return status.intValue();
 		}
 	}
 
