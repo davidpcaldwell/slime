@@ -17,9 +17,8 @@ import java.io.*;
 import javax.servlet.http.*;
 
 import inonit.script.engine.*;
-import inonit.script.rhino.*;
 
-public class Servlet extends javax.servlet.http.HttpServlet {
+public abstract class Servlet extends javax.servlet.http.HttpServlet {
 	static {
 		Class[] dependencies = new Class[] {
 			//	Pull these in as dependencies, since the Rhino loader depends on them
@@ -33,86 +32,12 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		public abstract void service(HttpServletRequest request, HttpServletResponse response);
 		public abstract void destroy();
 	}
-
-	@Override public final void init() {
-		Engine.Debugger debugger = null;
-		if (System.getenv("SLIME_SCRIPT_DEBUGGER") != null && System.getenv("SLIME_SCRIPT_DEBUGGER").equals("rhino")) {
-			Engine.RhinoDebugger.Configuration configuration = new Engine.RhinoDebugger.Configuration() {
-				@Override public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
-					return inonit.script.rhino.Gui.RHINO_UI_FACTORY;
-				}
-			};
-			configuration.setExit(new Runnable() {
-				public void run() {
-				}
-			});
-			configuration.setLog(new Engine.Log() {
-				@Override public void println(String message) {
-					System.err.println(message);
-				}
-			});
-			debugger = Engine.RhinoDebugger.create(configuration);
-		}
-		Engine engine = Engine.create(debugger, new Engine.Configuration() {
-			@Override public boolean createClassLoader() {
-				return true;
-			}
-
-			@Override
-			public ClassLoader getApplicationClassLoader() {
-				return Servlet.class.getClassLoader();
-			}
-
-			@Override
-			public int getOptimizationLevel() {
-				return -1;
-			}
-		});
-
-		Engine.Program program = new Engine.Program();
-
-		try {
-			Engine.Program.Variable jsh = Engine.Program.Variable.create(
-				"$host",
-				Engine.Program.Variable.Value.create(new Host(engine))
-			);
-			jsh.setReadonly(true);
-			jsh.setPermanent(true);
-			jsh.setDontenum(true);
-			program.set(jsh);
-		} catch (Engine.Errors errors) {
-			errors.dump(
-				new Engine.Log() {
-					@Override
-					public void println(String message) {
-						System.err.println(message);
-					}
-				},
-				"[slime] "
-			);
-			throw errors;
-		}
-
-		program.add(Engine.Source.create("<api.js>", getServletContext().getResourceAsStream("/WEB-INF/api.js")));
-
-		try {
-			System.err.println("Executing JavaScript program ...");
-			engine.execute(program);
-			System.err.println("Executed program: script = " + script);
-		} catch (Engine.Errors errors) {
-			System.err.println("Caught errors.");
-			errors.dump(
-				new Engine.Log() {
-					@Override
-					public void println(String message) {
-						System.err.println(message);
-					}
-				},
-				"[slime] "
-			);
-			throw errors;
-		}
+	
+	protected final Script script() {
+		return script;
 	}
+	
+	public abstract void init();
 
 	@Override public final void destroy() {
 		script.destroy();
@@ -123,12 +48,10 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		script.service(request, response);
 	}
 
-	public class Host {
-		private Engine engine;
+	public abstract class Host {
 		private Loader loader;
 
-		Host(Engine engine) {
-			this.engine = engine;
+		Host() {
 			this.loader = new inonit.script.engine.Loader() {
 				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
@@ -142,10 +65,6 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			Servlet.this.script = script;
 		}
 
-		public Engine getEngine() {
-			return this.engine;
-		}
-		
 		public Loader getLoader() {
 			return this.loader;
 		}
