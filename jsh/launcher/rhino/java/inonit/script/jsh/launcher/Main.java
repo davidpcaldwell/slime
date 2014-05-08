@@ -86,17 +86,11 @@ public class Main {
 	private static class Rhino {
 		private ClassLoader main;
 		private boolean debug;
+		private ArrayList<String> scripts = new ArrayList<String>();
 		
 		Rhino(ClassLoader main, boolean debug) {
 			this.main = main;
 			this.debug = debug;
-		}
-		
-		int getExitStatus() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-			Class c = main.loadClass("org.mozilla.javascript.tools.shell.Main");
-			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
-			field.setAccessible(true);
-			return field.getInt(null);			
 		}
 		
 		java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
@@ -107,12 +101,37 @@ public class Main {
 			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
 			return main;
 		}
+		
+		void addScript(String pathname) {
+			scripts.add(pathname);
+		}
+		
+		String[] getArguments(String[] args) {
+			ArrayList<String> strings = new ArrayList<String>();
+			strings.add("-opt");
+			strings.add("-1");
+			for (int i=0; i<scripts.size(); i++) {
+				if (i != scripts.size()-1) {
+					strings.add("-f");
+				}
+				strings.add(scripts.get(i));
+			}
+			strings.addAll(Arrays.asList(args));
+			return strings.toArray(new String[0]);
+		}
+		
+		int getExitStatus() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+			Class c = main.loadClass("org.mozilla.javascript.tools.shell.Main");
+			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
+			field.setAccessible(true);
+			return field.getInt(null);			
+		}
 	}
 
 	private static abstract class RhinoInvocation extends Invocation {
 		abstract ClassLoader getMainClassLoader() throws IOException;
 
-		abstract void addScriptArguments(List<String> strings) throws IOException;
+		abstract void addScriptArguments(Rhino rhino) throws IOException;
 
 		final int run(String[] args) throws IOException {
 			Rhino rhino = new Rhino(getMainClassLoader(), debug());
@@ -121,17 +140,14 @@ public class Main {
 			try {
 				java.lang.reflect.Method main = rhino.getMainMethod();
 				invocation.debug("Rhino shell main = " + main);
-				List<String> arguments = new ArrayList();
-				arguments.add("-opt");
-				arguments.add("-1");
-				invocation.addScriptArguments(arguments);
-				arguments.addAll(Arrays.asList(args));
+				invocation.addScriptArguments(rhino);
+				String[] arguments = rhino.getArguments(args);
 				invocation.debug("Rhino shell arguments:");
-				for (int i=0; i<arguments.size(); i++) {
-					invocation.debug("Rhino shell argument = " + arguments.get(i));
+				for (int i=0; i<arguments.length; i++) {
+					invocation.debug("Rhino shell argument = " + arguments[i]);
 				}
 				Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
-				main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
+				main.invoke(null, new Object[] { rhino.getArguments(args) });
 				status = new Integer(rhino.getExitStatus());
 				Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
 			} catch (ClassNotFoundException e) {
@@ -170,15 +186,13 @@ public class Main {
 					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
 				;
 			}
-			ArrayList<String> dummy = new ArrayList<String>();
-			addScriptArguments(dummy);
-			System.setProperty("jsh.launcher.rhino.script", dummy.get(2));
+			System.setProperty("jsh.launcher.rhino.script", getRhinoScript());
 			if (getJshHome() != null) {
 				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());
 			}
 			System.setProperty("jsh.launcher.classpath", launcherClasspath);
 		}
-
+		
 		abstract File getJshHome() throws java.io.IOException;
 
 		abstract String getRhinoClasspath() throws java.io.IOException;
@@ -207,7 +221,7 @@ public class Main {
 
 		abstract String getRhinoScript() throws java.io.IOException;
 
-		final void addScriptArguments(List<String> strings) throws IOException {
+		final void addScriptArguments(Rhino rhino) throws IOException {
 			String JSH_RHINO_JS = getRhinoScript();
 			String RHINO_JS = null;
 			if (JSH_RHINO_JS != null) {
@@ -218,9 +232,8 @@ public class Main {
 					+ System.getenv("JSH_RHINO_SCRIPT")
 				);
 			}
-			strings.add("-f");
-			strings.add(RHINO_JS);
-			strings.add(JSH_RHINO_JS);
+			rhino.addScript(RHINO_JS);
+			rhino.addScript(JSH_RHINO_JS);
 		}
 	}
 
@@ -247,10 +260,9 @@ public class Main {
 			}
 		}
 
-		void addScriptArguments(List<String> strings) {
-			strings.add("-f");
-			strings.add(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
-			strings.add(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
+		void addScriptArguments(Rhino rhino) {
+			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
+			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
 		}
 	}
 
