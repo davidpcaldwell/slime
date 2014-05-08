@@ -80,13 +80,32 @@ public class Main {
 		
 		abstract void initializeSystemProperties() throws IOException;
 		
-		abstract int run(String[] args) throws IOException;
+		abstract Engine createEngine() throws IOException;
 		
+		final int run(String[] args) throws IOException {
+			if (!inonit.system.Logging.get().isSpecified()) {
+				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
+			}
+			Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(args));
+			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
+			Logging.get().log(Main.class, Level.FINEST, "System.in = %s", System.in);
+			InputStream stdin = new Logging.InputStream(System.in);
+			System.setIn(stdin);
+			Logging.get().log(Main.class, Level.CONFIG, "Set System.in to %s.", stdin);
+			System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
+			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
+			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
+			this.initializeSystemProperties();
+			Engine rhino = createEngine();
+			return rhino.run(this, args);
+		}
+
 		abstract void addScriptArguments(Engine engine) throws IOException;
 	}
 	
 	private static abstract class Engine {
 		abstract void addScript(String pathname);
+		abstract int run(Invocation invocation, String[] args) throws IOException;
 	}
 	
 	private static class Rhino extends Engine {
@@ -99,7 +118,7 @@ public class Main {
 			this.debug = debug;
 		}
 		
-		java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
+		private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
 			ClassLoader loader = main;
 			String mainClassName = (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
 			Class shell = loader.loadClass(mainClassName);
@@ -112,7 +131,7 @@ public class Main {
 			scripts.add(pathname);
 		}
 		
-		String[] getArguments(String[] args) {
+		private String[] getArguments(String[] args) {
 			ArrayList<String> strings = new ArrayList<String>();
 			strings.add("-opt");
 			strings.add("-1");
@@ -126,14 +145,14 @@ public class Main {
 			return strings.toArray(new String[0]);
 		}
 		
-		int getExitStatus() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+		private int getExitStatus() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
 			Class c = main.loadClass("org.mozilla.javascript.tools.shell.Main");
 			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
 			field.setAccessible(true);
 			return field.getInt(null);			
 		}
 		
-		int run(RhinoInvocation invocation, String[] args) throws IOException {
+		@Override int run(Invocation invocation, String[] args) throws IOException {
 			Integer status = null;
 			try {
 				java.lang.reflect.Method main = this.getMainMethod();
@@ -170,24 +189,10 @@ public class Main {
 
 	private static abstract class RhinoInvocation extends Invocation {
 		abstract ClassLoader getMainClassLoader() throws IOException;
-
-		final int run(String[] args) throws IOException {
-			if (!inonit.system.Logging.get().isSpecified()) {
-				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
-			}
-			Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(args));
-			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-			Logging.get().log(Main.class, Level.FINEST, "System.in = %s", System.in);
-			InputStream stdin = new Logging.InputStream(System.in);
-			System.setIn(stdin);
-			Logging.get().log(Main.class, Level.CONFIG, "Set System.in to %s.", stdin);
-			System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
-			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
-			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-			this.initializeSystemProperties();
-			Rhino rhino = new Rhino(getMainClassLoader(), debug());
-			return rhino.run(this, args);
-		}
+		
+		@Override Engine createEngine() throws IOException {
+			return new Rhino(getMainClassLoader(), debug());
+		}		
 	}
 
 	private static abstract class FileInvocation extends RhinoInvocation {
