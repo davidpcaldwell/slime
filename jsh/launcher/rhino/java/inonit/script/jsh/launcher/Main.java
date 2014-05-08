@@ -81,9 +81,15 @@ public class Main {
 		abstract void initializeSystemProperties() throws IOException;
 		
 		abstract int run(String[] args) throws IOException;
+		
+		abstract void addScriptArguments(Engine engine) throws IOException;
 	}
 	
-	private static class Rhino {
+	private static abstract class Engine {
+		abstract void addScript(String pathname);
+	}
+	
+	private static class Rhino extends Engine {
 		private ClassLoader main;
 		private boolean debug;
 		private ArrayList<String> scripts = new ArrayList<String>();
@@ -165,8 +171,6 @@ public class Main {
 	private static abstract class RhinoInvocation extends Invocation {
 		abstract ClassLoader getMainClassLoader() throws IOException;
 
-		abstract void addScriptArguments(Rhino rhino) throws IOException;
-
 		final int run(String[] args) throws IOException {
 			if (!inonit.system.Logging.get().isSpecified()) {
 				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
@@ -237,7 +241,7 @@ public class Main {
 
 		abstract String getRhinoScript() throws java.io.IOException;
 
-		final void addScriptArguments(Rhino rhino) throws IOException {
+		final void addScriptArguments(Engine rhino) throws IOException {
 			String JSH_RHINO_JS = getRhinoScript();
 			String RHINO_JS = null;
 			if (JSH_RHINO_JS != null) {
@@ -276,7 +280,7 @@ public class Main {
 			}
 		}
 
-		void addScriptArguments(Rhino rhino) {
+		void addScriptArguments(Engine rhino) {
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
 		}
