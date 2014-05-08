@@ -13,11 +13,8 @@
 package inonit.script.servlet;
 
 import java.io.*;
-import java.util.*;
 
 import javax.servlet.http.*;
-
-import org.mozilla.javascript.*;
 
 import inonit.script.engine.*;
 import inonit.script.rhino.*;
@@ -26,13 +23,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	static {
 		Class[] dependencies = new Class[] {
 			//	Pull these in as dependencies, since the Rhino loader depends on them
-			inonit.script.rhino.Objects.class
-			,inonit.script.rhino.MetaObject.class
-			//	Pull these in as dependencies, since servlets load the rhino/host module, which includes these classes
-			//	Currently, webapp.jsh.js is unaware of modules and just copies them into the WEB-INF/slime directory, expecting
-			//	them to be loaded by its bootstrap loader
-			,inonit.script.runtime.Throwables.class
-			,inonit.script.runtime.Properties.class
+			inonit.script.runtime.Throwables.class
 		};
 	}
 
