@@ -61,6 +61,7 @@ public class Main {
 			return rv;
 		}
 
+		private Engine engine = new Rhino();
 		private boolean debug;
 		
 		final boolean debug() {
@@ -81,7 +82,6 @@ public class Main {
 		abstract void initializeSystemProperties() throws IOException;
 		
 		abstract Shell getShell();
-		abstract Engine createEngine() throws IOException;
 		
 		final int run(String[] args) throws IOException {
 			if (!inonit.system.Logging.get().isSpecified()) {
@@ -97,14 +97,24 @@ public class Main {
 			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 			this.initializeSystemProperties();
-			Engine rhino = createEngine();
+			Engine rhino = this.engine;
+			rhino.initialize(getShell(), this, debug);
 			return rhino.run(this, args);
 		}
 
 		abstract void addScriptArguments(Engine engine) throws IOException;
+		private ClassLoader mainClassLoader;
+
+		final ClassLoader getMainClassLoader() throws IOException {
+			if (mainClassLoader == null) {
+				mainClassLoader = getShell().getRhinoClassLoader(this);
+			}
+			return mainClassLoader;
+		}
 	}
 	
 	private static abstract class Engine {
+		abstract void initialize(Shell shell, Invocation invocation, boolean debug) throws IOException;
 		abstract void addScript(String pathname);
 		abstract int run(Invocation invocation, String[] args) throws IOException;
 	}
@@ -114,7 +124,7 @@ public class Main {
 		private boolean debug;
 		private ArrayList<String> scripts = new ArrayList<String>();
 		
-		Rhino(Shell shell, Invocation invocation, boolean debug) throws IOException {
+		void initialize(Shell shell, Invocation invocation, boolean debug) throws IOException {
 			this.main = shell.getRhinoClassLoader(invocation);
 			this.debug = debug;
 		}
@@ -284,22 +294,7 @@ public class Main {
 		}
 	}
 
-	private static abstract class RhinoInvocation extends Invocation {
-		private ClassLoader mainClassLoader;
-
-		final ClassLoader getMainClassLoader() throws IOException {
-			if (mainClassLoader == null) {
-				mainClassLoader = getShell().getRhinoClassLoader(this);
-			}
-			return mainClassLoader;
-		}
-		
-		@Override Engine createEngine() throws IOException {
-			return new Rhino(getShell(), this, debug());
-		}		
-	}
-
-	private static class Packaged extends RhinoInvocation {
+	private static class Packaged extends Invocation {
 		private String location;
 
 		Packaged(String location) {
@@ -320,7 +315,7 @@ public class Main {
 		}
 	}
 
-	private static class FileInvocation extends RhinoInvocation {
+	private static class FileInvocation extends Invocation {
 		private String launcherClasspath;
 		private UnpackagedShell shell;
 		
