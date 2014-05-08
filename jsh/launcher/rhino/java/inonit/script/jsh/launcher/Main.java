@@ -126,29 +126,21 @@ public class Main {
 			field.setAccessible(true);
 			return field.getInt(null);			
 		}
-	}
-
-	private static abstract class RhinoInvocation extends Invocation {
-		abstract ClassLoader getMainClassLoader() throws IOException;
-
-		abstract void addScriptArguments(Rhino rhino) throws IOException;
-
-		final int run(String[] args) throws IOException {
-			Rhino rhino = new Rhino(getMainClassLoader(), debug());
-			RhinoInvocation invocation = this;
+		
+		int run(RhinoInvocation invocation, String[] args) throws IOException {
 			Integer status = null;
 			try {
-				java.lang.reflect.Method main = rhino.getMainMethod();
+				java.lang.reflect.Method main = this.getMainMethod();
 				invocation.debug("Rhino shell main = " + main);
-				invocation.addScriptArguments(rhino);
-				String[] arguments = rhino.getArguments(args);
+				invocation.addScriptArguments(this);
+				String[] arguments = this.getArguments(args);
 				invocation.debug("Rhino shell arguments:");
 				for (int i=0; i<arguments.length; i++) {
 					invocation.debug("Rhino shell argument = " + arguments[i]);
 				}
 				Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
-				main.invoke(null, new Object[] { rhino.getArguments(args) });
-				status = new Integer(rhino.getExitStatus());
+				main.invoke(null, new Object[] { this.getArguments(args) });
+				status = new Integer(this.getExitStatus());
 				Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -166,7 +158,31 @@ public class Main {
 				e.printStackTrace();
 				status = new Integer(127);
 			}
-			return status.intValue();
+			return status.intValue();			
+		}
+	}
+
+	private static abstract class RhinoInvocation extends Invocation {
+		abstract ClassLoader getMainClassLoader() throws IOException;
+
+		abstract void addScriptArguments(Rhino rhino) throws IOException;
+
+		final int run(String[] args) throws IOException {
+			if (!inonit.system.Logging.get().isSpecified()) {
+				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
+			}
+			Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(args));
+			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
+			Logging.get().log(Main.class, Level.FINEST, "System.in = %s", System.in);
+			InputStream stdin = new Logging.InputStream(System.in);
+			System.setIn(stdin);
+			Logging.get().log(Main.class, Level.CONFIG, "Set System.in to %s.", stdin);
+			System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
+			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
+			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
+			this.initializeSystemProperties();
+			Rhino rhino = new Rhino(getMainClassLoader(), debug());
+			return rhino.run(this, args);
 		}
 	}
 
@@ -322,19 +338,6 @@ public class Main {
 
 	private void run(String[] args) throws java.io.IOException {
 		Invocation invocation = Invocation.create();
-		if (!inonit.system.Logging.get().isSpecified()) {
-			inonit.system.Logging.get().initialize(invocation.getJavaLoggingProperties());
-		}
-		Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(args));
-		Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-		Logging.get().log(Main.class, Level.FINEST, "System.in = %s", System.in);
-		InputStream stdin = new Logging.InputStream(System.in);
-		System.setIn(stdin);
-		Logging.get().log(Main.class, Level.CONFIG, "Set System.in to %s.", stdin);
-		System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
-		System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
-		Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-		invocation.initializeSystemProperties();
 		Integer status = null;
 		try {
 			status = invocation.run(args);
