@@ -22,7 +22,7 @@ import inonit.system.cygwin.*;
 public class Main {
 	private Main() {
 	}
-
+	
 	private static abstract class Invocation {
 		static Invocation create() throws IOException {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
@@ -62,13 +62,28 @@ public class Main {
 		}
 
 		private boolean debug;
-
+		
+		final boolean debug() {
+			return debug;
+		}
+		
+		final void debug(String message) {
+			if (debug) {
+				System.err.println(message);
+			}
+		}
+		
 		final Properties getJavaLoggingProperties() throws IOException {
 			Properties rv = new Properties();
 			return rv;
 		}
+		
 		abstract void initializeSystemProperties() throws IOException;
+		
+		abstract int run(String[] args) throws IOException;
+	}
 
+	private static abstract class RhinoInvocation extends Invocation {
 		abstract ClassLoader getMainClassLoader() throws IOException;
 
 		final int getRhinoShellExitStatus() throws IOException, ClassNotFoundException, IllegalAccessException, NoSuchFieldException {
@@ -80,23 +95,55 @@ public class Main {
 
 		final java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
 			ClassLoader loader = getMainClassLoader();
-			String mainClassName = (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
 			Class shell = loader.loadClass(mainClassName);
-			String mainMethodName = (debug) ? "main" : "exec";
+			String mainMethodName = (debug()) ? "main" : "exec";
 			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
 			return main;
 		}
 
 		abstract void addScriptArguments(List<String> strings) throws IOException;
 
-		final void debug(String message) {
-			if (debug) {
-				System.err.println(message);
+		final int run(String[] args) throws IOException {
+			RhinoInvocation invocation = this;
+			Integer status = null;
+			try {
+				java.lang.reflect.Method main = invocation.getMainMethod();
+				invocation.debug("Rhino shell main = " + main);
+				List<String> arguments = new ArrayList();
+				arguments.add("-opt");
+				arguments.add("-1");
+				invocation.addScriptArguments(arguments);
+				arguments.addAll(Arrays.asList(args));
+				invocation.debug("Rhino shell arguments:");
+				for (int i=0; i<arguments.size(); i++) {
+					invocation.debug("Rhino shell argument = " + arguments.get(i));
+				}
+				Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
+				main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
+				status = new Integer(invocation.getRhinoShellExitStatus());
+				Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				status = new Integer(127);
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+				status = new Integer(127);
+			} catch (NoSuchFieldException e) {
+				e.printStackTrace();
+				status = new Integer(127);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+				status = new Integer(127);
+			} catch (java.lang.reflect.InvocationTargetException e) {
+				e.printStackTrace();
+				status = new Integer(127);
 			}
+			return status;
 		}
 	}
 
-	private static abstract class FileInvocation extends Invocation {
+	private static abstract class FileInvocation extends RhinoInvocation {
 		private String colon = java.io.File.pathSeparator;
 		private String launcherClasspath;
 
@@ -166,7 +213,7 @@ public class Main {
 		}
 	}
 
-	private static class Packaged extends Invocation {
+	private static class Packaged extends RhinoInvocation {
 		private String location;
 
 		Packaged(String location) {
@@ -267,35 +314,9 @@ public class Main {
 		invocation.initializeSystemProperties();
 		Integer status = null;
 		try {
-			java.lang.reflect.Method main = invocation.getMainMethod();
-			invocation.debug("Rhino shell main = " + main);
-			List<String> arguments = new ArrayList();
-			arguments.add("-opt");
-			arguments.add("-1");
-			invocation.addScriptArguments(arguments);
-			arguments.addAll(Arrays.asList(args));
-			invocation.debug("Rhino shell arguments:");
-			for (int i=0; i<arguments.size(); i++) {
-				invocation.debug("Rhino shell argument = " + arguments.get(i));
-			}
-			Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
-			main.invoke(null, new Object[] { arguments.toArray(new String[0]) });
-			status = new Integer(invocation.getRhinoShellExitStatus());
-			Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			status = new Integer(127);
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-			status = new Integer(127);
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-			status = new Integer(127);
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-			status = new Integer(127);
-		} catch (java.lang.reflect.InvocationTargetException e) {
-			e.printStackTrace();
+			status = invocation.run(args);
+		} catch (Throwable t) {
+			t.printStackTrace();
 			status = new Integer(127);
 		} finally {
 			//	Ensure the VM exits even if the debugger is displayed
