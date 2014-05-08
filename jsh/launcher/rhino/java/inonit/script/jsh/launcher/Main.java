@@ -80,6 +80,7 @@ public class Main {
 		
 		abstract void initializeSystemProperties() throws IOException;
 		
+		abstract Shell getShell();
 		abstract Engine createEngine() throws IOException;
 		
 		final int run(String[] args) throws IOException {
@@ -284,8 +285,6 @@ public class Main {
 	}
 
 	private static abstract class RhinoInvocation extends Invocation {
-		abstract Shell getShell();
-		
 		private ClassLoader mainClassLoader;
 
 		final ClassLoader getMainClassLoader() throws IOException {
