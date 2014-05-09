@@ -62,7 +62,12 @@ public class Main {
 		}
 
 		private Engine engine = new Rhino();
+		private Shell shell;
 		private boolean debug;
+		
+		Invocation(Shell shell) {
+			this.shell = shell;
+		}
 		
 		final boolean debug() {
 			return debug;
@@ -81,7 +86,9 @@ public class Main {
 		
 		abstract void initializeSystemProperties() throws IOException;
 		
-		abstract Shell getShell();
+		final Shell getShell() {
+			return shell;
+		}
 		
 		final int run(String[] args) throws IOException {
 			if (!inonit.system.Logging.get().isSpecified()) {
@@ -322,32 +329,24 @@ public class Main {
 		private String location;
 
 		Packaged(String location) {
+			super(new PackagedShell());
 			this.location = location;
 		}
 
 		void initializeSystemProperties() {
 			System.setProperty("jsh.launcher.packaged", location);
 		}
-		
-		Shell getShell() {
-			return new PackagedShell();
-		}
 	}
 
 	private static class FileInvocation extends Invocation {
 		private String launcherClasspath;
-		private UnpackagedShell shell;
 		
 		FileInvocation(UnpackagedShell shell) {
-			this.shell = shell;
+			super(shell);
 		}
 		
 		UnpackagedShell shell() {
-			return shell;
-		}
-		
-		Shell getShell() {
-			return shell();
+			return (UnpackagedShell)getShell();
 		}
 
 		final void setLauncherClasspath(String launcherClasspath) {
