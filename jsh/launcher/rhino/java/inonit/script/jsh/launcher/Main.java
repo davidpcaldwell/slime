@@ -92,6 +92,14 @@ public class Main {
 			return shell;
 		}
 		
+		final ClassLoader getRhinoClassLoader() throws IOException {
+			return shell.getRhinoClassLoader(this);
+		}
+		
+		final void addLauncherScriptsTo(Engine engine) throws IOException {
+			shell.addLauncherScriptsTo(engine);
+		}
+		
 		final int run(String[] args) throws IOException {
 			if (!inonit.system.Logging.get().isSpecified()) {
 				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
@@ -107,7 +115,7 @@ public class Main {
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 			this.initializeSystemProperties();
 			Engine rhino = this.engine;
-			rhino.initialize(getShell(), this, debug);
+			rhino.initialize(this);
 			return rhino.run(this, args);
 		}
 
@@ -122,26 +130,38 @@ public class Main {
 	}
 	
 	private static abstract class Engine {
-		abstract void initialize(Shell shell, Invocation invocation, boolean debug) throws IOException;
+		abstract void initialize(Invocation invocation) throws IOException;
 		abstract void addScript(String pathname);
 		abstract int run(Invocation invocation, String[] args) throws IOException;
 	}
 	
+	private static class Nashorn extends Engine {
+		void initialize(Invocation invocation) {
+		}
+		
+		void addScript(String pathname) {
+		}
+		
+		int run(Invocation invocation, String[] args) {
+			throw new UnsupportedOperationException();
+		}
+	}
+	
 	private static class Rhino extends Engine {
+		private Invocation invocation;
 		private ClassLoader main;
 		private boolean debug;
 		private ArrayList<String> scripts = new ArrayList<String>();
 		
-		void initialize(Shell shell, Invocation invocation, boolean debug) throws IOException {
-			this.main = shell.getRhinoClassLoader(invocation);
-			this.debug = debug;
+		void initialize(Invocation invocation) throws IOException {
+			this.invocation = invocation;
 		}
 		
 		private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
-			ClassLoader loader = main;
-			String mainClassName = (debug) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+			ClassLoader loader = invocation.getRhinoClassLoader();
+			String mainClassName = (invocation.debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
 			Class shell = loader.loadClass(mainClassName);
-			String mainMethodName = (debug) ? "main" : "exec";
+			String mainMethodName = (invocation.debug()) ? "main" : "exec";
 			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
 			return main;
 		}
@@ -164,8 +184,8 @@ public class Main {
 			return strings.toArray(new String[0]);
 		}
 		
-		private int getExitStatus() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-			Class c = main.loadClass("org.mozilla.javascript.tools.shell.Main");
+		private int getExitStatus() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+			Class c = invocation.getRhinoClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
 			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
 			field.setAccessible(true);
 			return field.getInt(null);			
