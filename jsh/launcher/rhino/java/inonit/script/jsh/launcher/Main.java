@@ -23,7 +23,7 @@ public class Main {
 	private Main() {
 	}
 	
-	private static abstract class Invocation {
+	private static class Invocation {
 		static Invocation create() throws IOException {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
@@ -41,15 +41,15 @@ public class Main {
 			}
 			Invocation rv = null;
 			if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-				rv = new Packaged(launcherLocation);
+				rv = new Invocation(new PackagedShell(launcherLocation));
 			} else {
 				java.io.File JSH_HOME = null;
 				if (launcherLocation.endsWith("jsh.jar")) {
 					JSH_HOME = new java.io.File(launcherLocation.substring(0, launcherLocation.length()-"jsh.jar".length()-1));
 				}
-				FileInvocation frv = new FileInvocation((JSH_HOME != null) ? new BuiltShell(JSH_HOME) : new UnbuiltShell());
+				Shell shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : new UnbuiltShell();
 				//	TODO	This might miss some exotic situations, like loading this class in its own classloader
-				frv.setLauncherClasspath(System.getProperty("java.class.path"));
+				Invocation frv = new Invocation(shell);
 				if (JSH_HOME != null) {
 					frv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 				} else {
@@ -84,7 +84,9 @@ public class Main {
 			return rv;
 		}
 		
-		abstract void initializeSystemProperties() throws IOException;
+		final void initializeSystemProperties() throws IOException {
+			shell.initializeSystemProperties();
+		}
 		
 		final Shell getShell() {
 			return shell;
@@ -211,9 +213,16 @@ public class Main {
 	private static abstract class Shell {
 		abstract ClassLoader getRhinoClassLoader(Invocation invocation) throws IOException;
 		abstract void addScriptArguments(Engine rhino) throws IOException;
+		abstract void initializeSystemProperties() throws IOException;
 	}
 	
 	private static class PackagedShell extends Shell {
+		private String location;
+		
+		PackagedShell(String location) {
+			this.location = location;
+		}
+		
 		ClassLoader getRhinoClassLoader(Invocation invocation) {
 			//	In earlier versions of the launcher and packager, Rhino was packaged at the following location inside the packaged
 			//	JAR file. However, for some reason, loading Rhino using the below ClassLoader did not work. As a workaround, the
@@ -229,6 +238,10 @@ public class Main {
 		void addScriptArguments(Engine rhino) {
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
+		}
+		
+		void initializeSystemProperties() {
+			System.setProperty("jsh.launcher.packaged", location);			
 		}
 	}
 	
@@ -264,6 +277,21 @@ public class Main {
 			}
 			rhino.addScript(RHINO_JS);
 			rhino.addScript(JSH_RHINO_JS);
+		}
+		
+		final void initializeSystemProperties() throws java.io.IOException {
+			if (getRhinoClasspath() != null) {
+				System.setProperty("jsh.launcher.rhino.classpath", getRhinoClasspath());
+			} else {
+				throw new RuntimeException("No Rhino classpath in " + this
+					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
+				;
+			}
+			System.setProperty("jsh.launcher.rhino.script", getRhinoScript());
+			if (getJshHome() != null) {
+				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());
+			}
+			System.setProperty("jsh.launcher.classpath", System.getProperty("java.class.path"));
 		}
 		
 		abstract String getRhinoClasspath() throws IOException;		
@@ -322,50 +350,6 @@ public class Main {
 		String getRhinoScript() throws java.io.IOException {
 			if (explicit.getRhinoScript() != null) return explicit.getRhinoScript();
 			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
-		}
-	}
-
-	private static class Packaged extends Invocation {
-		private String location;
-
-		Packaged(String location) {
-			super(new PackagedShell());
-			this.location = location;
-		}
-
-		void initializeSystemProperties() {
-			System.setProperty("jsh.launcher.packaged", location);
-		}
-	}
-
-	private static class FileInvocation extends Invocation {
-		private String launcherClasspath;
-		
-		FileInvocation(UnpackagedShell shell) {
-			super(shell);
-		}
-		
-		UnpackagedShell shell() {
-			return (UnpackagedShell)getShell();
-		}
-
-		final void setLauncherClasspath(String launcherClasspath) {
-			this.launcherClasspath = launcherClasspath;
-		}
-
-		final void initializeSystemProperties() throws java.io.IOException {
-			if (shell().getRhinoClasspath() != null) {
-				System.setProperty("jsh.launcher.rhino.classpath", shell().getRhinoClasspath());
-			} else {
-				throw new RuntimeException("No Rhino classpath in " + this
-					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
-				;
-			}
-			System.setProperty("jsh.launcher.rhino.script", shell().getRhinoScript());
-			if (shell().getJshHome() != null) {
-				System.setProperty("jsh.launcher.home", shell().getJshHome().getCanonicalPath());
-			}
-			System.setProperty("jsh.launcher.classpath", launcherClasspath);
 		}
 	}
 
