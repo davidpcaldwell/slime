@@ -88,10 +88,6 @@ public class Main {
 			shell.initializeSystemProperties();
 		}
 		
-		final Shell getShell() {
-			return shell;
-		}
-		
 		final ClassLoader getRhinoClassLoader() throws IOException {
 			return shell.getRhinoClassLoader(this);
 		}
@@ -116,14 +112,14 @@ public class Main {
 			this.initializeSystemProperties();
 			Engine rhino = this.engine;
 			rhino.initialize(this);
-			return rhino.run(this, args);
+			return rhino.run(args);
 		}
 
 		private ClassLoader mainClassLoader;
 
 		final ClassLoader getMainClassLoader() throws IOException {
 			if (mainClassLoader == null) {
-				mainClassLoader = getShell().getRhinoClassLoader(this);
+				mainClassLoader = shell.getRhinoClassLoader(this);
 			}
 			return mainClassLoader;
 		}
@@ -132,7 +128,7 @@ public class Main {
 	private static abstract class Engine {
 		abstract void initialize(Invocation invocation) throws IOException;
 		abstract void addScript(String pathname);
-		abstract int run(Invocation invocation, String[] args) throws IOException;
+		abstract int run(String[] args) throws IOException;
 	}
 	
 	private static class Nashorn extends Engine {
@@ -142,15 +138,13 @@ public class Main {
 		void addScript(String pathname) {
 		}
 		
-		int run(Invocation invocation, String[] args) {
+		int run(String[] args) {
 			throw new UnsupportedOperationException();
 		}
 	}
 	
 	private static class Rhino extends Engine {
 		private Invocation invocation;
-		private ClassLoader main;
-		private boolean debug;
 		private ArrayList<String> scripts = new ArrayList<String>();
 		
 		void initialize(Invocation invocation) throws IOException {
@@ -191,12 +185,12 @@ public class Main {
 			return field.getInt(null);			
 		}
 		
-		@Override int run(Invocation invocation, String[] args) throws IOException {
+		@Override int run(String[] args) throws IOException {
 			Integer status = null;
 			try {
 				java.lang.reflect.Method main = this.getMainMethod();
 				invocation.debug("Rhino shell main = " + main);
-				invocation.getShell().addLauncherScriptsTo(this);
+				invocation.addLauncherScriptsTo(this);
 				String[] arguments = this.getArguments(args);
 				invocation.debug("Rhino shell arguments:");
 				for (int i=0; i<arguments.length; i++) {
