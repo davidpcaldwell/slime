@@ -111,10 +111,6 @@ public class Main {
 			return rhino.run(this, args);
 		}
 
-		final void addScriptArguments(Engine engine) throws IOException {
-			getShell().addScriptArguments(engine);
-		}
-		
 		private ClassLoader mainClassLoader;
 
 		final ClassLoader getMainClassLoader() throws IOException {
@@ -180,14 +176,14 @@ public class Main {
 			try {
 				java.lang.reflect.Method main = this.getMainMethod();
 				invocation.debug("Rhino shell main = " + main);
-				invocation.addScriptArguments(this);
+				invocation.getShell().addLauncherScriptsTo(this);
 				String[] arguments = this.getArguments(args);
 				invocation.debug("Rhino shell arguments:");
 				for (int i=0; i<arguments.length; i++) {
 					invocation.debug("Rhino shell argument = " + arguments[i]);
 				}
 				Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
-				main.invoke(null, new Object[] { this.getArguments(args) });
+				main.invoke(null, new Object[] { arguments });
 				status = new Integer(this.getExitStatus());
 				Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
 			} catch (ClassNotFoundException e) {
@@ -212,7 +208,7 @@ public class Main {
 	
 	private static abstract class Shell {
 		abstract ClassLoader getRhinoClassLoader(Invocation invocation) throws IOException;
-		abstract void addScriptArguments(Engine rhino) throws IOException;
+		abstract void addLauncherScriptsTo(Engine rhino) throws IOException;
 		abstract void initializeSystemProperties() throws IOException;
 	}
 	
@@ -235,7 +231,7 @@ public class Main {
 			}			
 		}
 
-		void addScriptArguments(Engine rhino) {
+		void addLauncherScriptsTo(Engine rhino) {
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
 		}
@@ -264,7 +260,7 @@ public class Main {
 			return new java.net.URLClassLoader(urls);
 		}
 		
-		final void addScriptArguments(Engine rhino) throws IOException {
+		final void addLauncherScriptsTo(Engine rhino) throws IOException {
 			String JSH_RHINO_JS = getRhinoScript();
 			String RHINO_JS = null;
 			if (JSH_RHINO_JS != null) {
