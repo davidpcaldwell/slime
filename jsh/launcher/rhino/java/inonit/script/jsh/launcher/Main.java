@@ -126,15 +126,33 @@ public class Main {
 	}
 	
 	private static abstract class Engine {
-		abstract void initialize(Invocation invocation) throws IOException;
+		private Invocation invocation;
+		
+		final void initialize(Invocation invocation) throws IOException {
+			this.invocation = invocation;
+		}
+		
+		final boolean debug() {
+			return invocation.debug();
+		}
+		
+		final void debug(String message) {
+			invocation.debug(message);
+		}
+		
+		ClassLoader getRhinoClassLoader() throws IOException {
+			return invocation.getRhinoClassLoader();
+		}
+		
+		void addLauncherScripts() throws IOException {
+			invocation.addLauncherScriptsTo(this);
+		}
+		
 		abstract void addScript(String pathname);
 		abstract int run(String[] args) throws IOException;
 	}
 	
 	private static class Nashorn extends Engine {
-		void initialize(Invocation invocation) {
-		}
-		
 		void addScript(String pathname) {
 		}
 		
@@ -144,18 +162,13 @@ public class Main {
 	}
 	
 	private static class Rhino extends Engine {
-		private Invocation invocation;
 		private ArrayList<String> scripts = new ArrayList<String>();
 		
-		void initialize(Invocation invocation) throws IOException {
-			this.invocation = invocation;
-		}
-		
 		private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
-			ClassLoader loader = invocation.getRhinoClassLoader();
-			String mainClassName = (invocation.debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+			ClassLoader loader = getRhinoClassLoader();
+			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
 			Class shell = loader.loadClass(mainClassName);
-			String mainMethodName = (invocation.debug()) ? "main" : "exec";
+			String mainMethodName = (debug()) ? "main" : "exec";
 			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
 			return main;
 		}
@@ -179,7 +192,7 @@ public class Main {
 		}
 		
 		private int getExitStatus() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-			Class c = invocation.getRhinoClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
+			Class c = getRhinoClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
 			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
 			field.setAccessible(true);
 			return field.getInt(null);			
@@ -189,12 +202,12 @@ public class Main {
 			Integer status = null;
 			try {
 				java.lang.reflect.Method main = this.getMainMethod();
-				invocation.debug("Rhino shell main = " + main);
-				invocation.addLauncherScriptsTo(this);
+				debug("Rhino shell main = " + main);
+				addLauncherScripts();
 				String[] arguments = this.getArguments(args);
-				invocation.debug("Rhino shell arguments:");
+				debug("Rhino shell arguments:");
 				for (int i=0; i<arguments.length; i++) {
-					invocation.debug("Rhino shell argument = " + arguments[i]);
+					debug("Rhino shell argument = " + arguments[i]);
 				}
 				Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
 				main.invoke(null, new Object[] { arguments });
