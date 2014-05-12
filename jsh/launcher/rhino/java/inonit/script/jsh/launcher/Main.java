@@ -185,7 +185,7 @@ public class Main {
 			scripts.add(pathname);
 		}
 		
-		int run(String[] args) throws FileNotFoundException, ScriptException {
+		int run(String[] args) throws IOException, ScriptException {
 			Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
 			this.factory.getBindings().put("arguments", args);
 			this.factory.getBindings().put("$arguments", args);
@@ -196,8 +196,12 @@ public class Main {
 				Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
 				ScriptContext c = engine.getContext();
 				c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);
-				File file = new File(script);
-				engine.eval(new FileReader(file), c);
+//				File file = new File(script);
+				if (new java.io.File(script).exists()) {
+					script = new java.io.File(script).toURI().toURL().toExternalForm();
+				}
+				java.net.URLConnection connection = new java.net.URL(script).openConnection();
+				engine.eval(new InputStreamReader(connection.getInputStream()), c);
 				Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
 			}
 			return 0;

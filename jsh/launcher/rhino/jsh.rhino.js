@@ -157,7 +157,12 @@ var Command = function() {
 				);
 			};
 			
+			//	NASHORN	Under Rhino, these were implied
 			this.getSubprocessEnvironment = function() {
+				return null;
+			};
+			
+			this.getWorkingDirectory = function() {
 				return null;
 			};
 		}
