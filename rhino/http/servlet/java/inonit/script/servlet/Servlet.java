@@ -33,9 +33,9 @@ public abstract class Servlet extends javax.servlet.http.HttpServlet {
 		public abstract void destroy();
 	}
 	
-	static abstract class Container {
+	static abstract class ScriptContainer {
 		abstract void initialize(Servlet servlet);
-		abstract Host getHost();
+		abstract HostObject getServletHostObject();
 		abstract void setVariable(String name, Object value);
 		abstract void addScript(String name, InputStream stream);
 		abstract void execute();
@@ -45,7 +45,15 @@ public abstract class Servlet extends javax.servlet.http.HttpServlet {
 		return script;
 	}
 	
-	public abstract void init();
+	protected abstract ScriptContainer createScriptContainer();
+	
+	@Override public final void init() {
+		ScriptContainer container = createScriptContainer();
+		container.initialize(this);
+		container.setVariable("$host", container.getServletHostObject());
+		container.addScript("<api.js>", getServletContext().getResourceAsStream("/WEB-INF/api.js"));
+		container.execute();
+	}
 
 	@Override public final void destroy() {
 		script.destroy();
@@ -56,11 +64,11 @@ public abstract class Servlet extends javax.servlet.http.HttpServlet {
 		script.service(request, response);
 	}
 
-	public static abstract class Host {
+	public static abstract class HostObject {
 		private Servlet servlet;
 		private Loader loader;
 
-		Host(final Servlet servlet) {
+		HostObject(final Servlet servlet) {
 			this.servlet = servlet;
 			this.loader = new inonit.script.engine.Loader() {
 				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();

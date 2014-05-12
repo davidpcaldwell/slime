@@ -17,12 +17,12 @@ public class RhinoServlet extends Servlet {
 		};
 	}
 	
-	static class Container {
+	static class Rhino extends ScriptContainer {
 		private Servlet servlet;
 		private Engine engine;
 		private Engine.Program program;
 		
-		Container() {
+		Rhino() {
 		}
 		
 		void initialize(Servlet servlet) {
@@ -65,7 +65,7 @@ public class RhinoServlet extends Servlet {
 			this.program = new Engine.Program();
 		}
 		
-		Servlet.Host getHost() {
+		Servlet.HostObject getServletHostObject() {
 			return new Host(servlet, engine);
 		}
 		
@@ -118,15 +118,11 @@ public class RhinoServlet extends Servlet {
 		}
 	}
 	
-	@Override public final void init() {
-		Container container = new Container();
-		container.initialize(this);
-		container.setVariable("$host", container.getHost());
-		container.addScript("<api.js>", getServletContext().getResourceAsStream("/WEB-INF/api.js"));
-		container.execute();
+	protected ScriptContainer createScriptContainer() {
+		return new Rhino();
 	}
 	
-	public static class Host extends Servlet.Host {
+	public static class Host extends Servlet.HostObject {
 		private Engine engine;
 		
 		Host(Servlet servlet, Engine engine) {
