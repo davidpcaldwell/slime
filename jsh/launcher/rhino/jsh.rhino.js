@@ -40,6 +40,7 @@ if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 		return rv;
 	};
 	var readUrl = function(path) {
+		var rv = "";
 		var connection = new Packages.java.net.URL(path).openConnection();
 		var reader = new Packages.java.io.InputStreamReader(connection.getInputStream());
 		var c;
