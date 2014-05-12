@@ -425,8 +425,24 @@ public class Main {
 			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
 		}
 	}
+	
+	private static class BeforeExit implements Runnable {
+		private Integer status = null;
+		
+		void setStatus(int status) {
+			this.status = new Integer(status);
+		}
+		
+		public void run() {
+			System.out.flush();
+			Logging.get().log(Main.class, Level.INFO, "Exit status: %d", status);
+			System.err.flush();
+		}
+	}
 
 	private void run(String[] args) throws java.io.IOException {
+		BeforeExit beforeExit = new BeforeExit();
+		Runtime.getRuntime().addShutdownHook(new Thread(beforeExit));
 		Invocation invocation = Invocation.create();
 		Integer status = null;
 		try {
@@ -437,10 +453,8 @@ public class Main {
 			status = new Integer(127);
 			Logging.get().log(Main.class, Level.FINER, "Completed with stack trace.");
 		} finally {
+			beforeExit.setStatus(status);
 			//	Ensure the VM exits even if the debugger is displayed
-			System.out.flush();
-			Logging.get().log(Main.class, Level.INFO, "Exit status: %d", status);
-			System.err.flush();
 			System.exit(status.intValue());
 		}
 	}

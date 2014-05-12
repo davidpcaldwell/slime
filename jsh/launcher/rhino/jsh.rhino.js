@@ -23,7 +23,7 @@ var newStringArray = function(len) {
 if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	arguments = $arguments;
 	setExitStatus = function(status) {
-		exit(status);
+		arguments.callee.value = status;
 	}
 	newStringArray = function(len) {
 		return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String.class,len);		
@@ -742,4 +742,8 @@ try {
 	var error = e;
 	debugger;
 	setExitStatus(1);
+} finally {
+	if (typeof(setExitStatus.value) != "undefined") {
+		exit(setExitStatus.value);
+	}
 }
