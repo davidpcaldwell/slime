@@ -186,6 +186,11 @@ public class Main {
 		}
 		
 		int run(String[] args) throws FileNotFoundException, ScriptException {
+			Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
+			this.factory.getBindings().put("arguments", args);
+			this.factory.getBindings().put("$arguments", args);
+			this.factory.getBindings().put("foo", "bar");
+//			this.engine.getBindings(ScriptContext.GLOBAL_SCOPE).put("arguments", args);
 			Logging.get().log(Nashorn.class, Level.FINE, "run(): scripts.length = " + scripts.size());
 			for (String script : scripts) {
 				Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);

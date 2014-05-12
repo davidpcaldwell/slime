@@ -16,6 +16,20 @@ var setExitStatus = function(status) {
 	_field.set(null, new Packages.java.lang.Integer(status));
 }
 
+var newStringArray = function(len) {
+	return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,len);		
+};
+
+if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
+	arguments = $arguments;
+	setExitStatus = function(status) {
+		exit(status);
+	}
+	newStringArray = function(len) {
+		return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String.class,len);		
+	}
+}
+
 if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	console("Usage: jsh.rhino.js <script-path> [arguments]");
 	Packages.java.lang.System.exit(1);
@@ -142,6 +156,10 @@ var Command = function() {
 					}
 				);
 			};
+			
+			this.getSubprocessEnvironment = function() {
+				return null;
+			};
 		}
 		var list = [];
 		for (var i=0; i<arguments.length; i++) {
@@ -164,7 +182,7 @@ var Command = function() {
 					}
 
 					this.getArguments = function() {
-						var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,list.length-1);
+						var rv = newStringArray(list.length-1);
 						for (var i=1; i<list.length; i++) {
 							rv[i-1] = new Packages.java.lang.String(list[i]);
 						}
@@ -398,7 +416,7 @@ settings.explicit = new function() {
 					path = platform.cygwin.cygpath.windows(path);
 				}
 				if (new Packages.java.io.File(path).exists()) {
-					return new File( String(Packages.java.io.File(path).getCanonicalPath()) );
+					return new File( String(new Packages.java.io.File(path).getCanonicalPath()) );
 				}
 				if (path.indexOf(slash) == -1) {
 					debug("PATH = " + env.PATH);
@@ -417,6 +435,19 @@ settings.explicit = new function() {
 				}
 			})(ARGUMENTS[0]);
 
+			//	NASHORN	report incompatibility
+			if (typeof(readFile) == "undefined") {
+				readFile = function(path) {
+					var rv = "";
+					var reader = new Packages.java.io.FileReader(path);
+					var c;
+					while((c = reader.read()) != -1) {
+						var _character = new Packages.java.lang.Character(c);
+						rv += _character.toString();
+					}
+					return rv;
+				}
+			}
 			this.source = readFile(this.script.path);
 		}
 	}
@@ -687,6 +718,8 @@ try {
 	debug(e.fileName + ":" + e.lineNumber);
 	if (e.rhinoException) {
 		e.rhinoException.printStackTrace();
+	} else if (e.printStackTrace) {
+		e.printStackTrace();
 	} else if (typeof(e) == "string") {
 		Packages.java.lang.System.err.println("[jsh] Launch failed: " + e);
 	} else if (e instanceof Error) {
