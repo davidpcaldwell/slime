@@ -21,7 +21,7 @@ import inonit.script.engine.*;
 public abstract class Servlet extends javax.servlet.http.HttpServlet {
 	static {
 		Class[] dependencies = new Class[] {
-			//	Pull these in as dependencies, since the Rhino loader depends on them
+			//	Pull these in as dependencies, since the Java loader depends on them
 			inonit.script.runtime.Throwables.class
 		};
 	}
@@ -31,6 +31,14 @@ public abstract class Servlet extends javax.servlet.http.HttpServlet {
 	public static abstract class Script {
 		public abstract void service(HttpServletRequest request, HttpServletResponse response);
 		public abstract void destroy();
+	}
+	
+	static abstract class Container {
+		abstract void initialize(Servlet servlet);
+		abstract Host getHost();
+		abstract void setVariable(String name, Object value);
+		abstract void addScript(String name, InputStream stream);
+		abstract void execute();
 	}
 	
 	protected final Script script() {
@@ -48,21 +56,23 @@ public abstract class Servlet extends javax.servlet.http.HttpServlet {
 		script.service(request, response);
 	}
 
-	public abstract class Host {
+	public static abstract class Host {
+		private Servlet servlet;
 		private Loader loader;
 
-		Host() {
+		Host(final Servlet servlet) {
+			this.servlet = servlet;
 			this.loader = new inonit.script.engine.Loader() {
 				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
 				@Override public String getLoaderCode(String path) throws IOException {
-					return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
+					return streams.readString(servlet.getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
 				}
 			};
 		}
 
 		public void register(Script script) {
-			Servlet.this.script = script;
+			servlet.script = script;
 		}
 
 		public Loader getLoader() {
@@ -70,7 +80,7 @@ public abstract class Servlet extends javax.servlet.http.HttpServlet {
 		}
 		
 		public Servlet getServlet() {
-			return Servlet.this;
+			return servlet;
 		}
 	}
 }
