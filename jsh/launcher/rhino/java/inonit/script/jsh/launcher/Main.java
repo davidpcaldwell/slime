@@ -16,6 +16,8 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
+import javax.script.*;
+
 import inonit.system.*;
 import inonit.system.cygwin.*;
 
@@ -24,6 +26,18 @@ public class Main {
 	}
 	
 	private static class Invocation {
+		private static Engine getEngine() {
+			boolean hasNashorn = new ScriptEngineManager().getEngineByName("nashorn") != null;
+			if (System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("rhino")) {
+				return new Rhino();
+			} else if (hasNashorn && System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("nashorn")) {
+				return new Nashorn();
+			} else {
+				//	for now
+				return new Rhino();
+			}
+		}
+		
 		static Invocation create() throws IOException {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
@@ -41,7 +55,7 @@ public class Main {
 			}
 			Invocation rv = null;
 			if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-				rv = new Invocation(new PackagedShell(launcherLocation));
+				rv = new Invocation(new PackagedShell(launcherLocation), getEngine());
 			} else {
 				java.io.File JSH_HOME = null;
 				if (launcherLocation.endsWith("jsh.jar")) {
@@ -49,7 +63,7 @@ public class Main {
 				}
 				Shell shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : new UnbuiltShell();
 				//	TODO	This might miss some exotic situations, like loading this class in its own classloader
-				Invocation frv = new Invocation(shell);
+				Invocation frv = new Invocation(shell, getEngine());
 				if (JSH_HOME != null) {
 					frv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 				} else {
@@ -61,12 +75,13 @@ public class Main {
 			return rv;
 		}
 
-		private Engine engine = new Rhino();
 		private Shell shell;
+		private Engine engine;
 		private boolean debug;
 		
-		Invocation(Shell shell) {
+		Invocation(Shell shell, Engine engine) {
 			this.shell = shell;
+			this.engine = engine;
 		}
 		
 		final boolean debug() {
@@ -85,6 +100,7 @@ public class Main {
 		}
 		
 		final void initializeSystemProperties() throws IOException {
+			engine.initializeSystemProperties();
 			shell.initializeSystemProperties();
 		}
 		
@@ -96,7 +112,7 @@ public class Main {
 			shell.addLauncherScriptsTo(engine);
 		}
 		
-		final int run(String[] args) throws IOException {
+		final int run(String[] args) throws IOException, ScriptException {
 			if (!inonit.system.Logging.get().isSpecified()) {
 				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
 			}
@@ -110,6 +126,7 @@ public class Main {
 			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 			this.initializeSystemProperties();
+			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
 			Engine rhino = this.engine;
 			rhino.initialize(this);
 			return rhino.run(args);
@@ -130,6 +147,7 @@ public class Main {
 		
 		final void initialize(Invocation invocation) throws IOException {
 			this.invocation = invocation;
+			invocation.addLauncherScriptsTo(this);
 		}
 		
 		final boolean debug() {
@@ -143,21 +161,41 @@ public class Main {
 		ClassLoader getRhinoClassLoader() throws IOException {
 			return invocation.getRhinoClassLoader();
 		}
-		
-		void addLauncherScripts() throws IOException {
-			invocation.addLauncherScriptsTo(this);
-		}
-		
+
+		abstract void initializeSystemProperties();
 		abstract void addScript(String pathname);
-		abstract int run(String[] args) throws IOException;
+		abstract int run(String[] args) throws IOException, ScriptException;
 	}
 	
 	private static class Nashorn extends Engine {
-		void addScript(String pathname) {
+		private ScriptEngineManager factory;
+		private ScriptEngine engine;
+		private ArrayList<String> scripts = new ArrayList<String>();
+		
+		Nashorn() {
+			this.factory = new ScriptEngineManager();
+			this.engine = factory.getEngineByName("nashorn");			
 		}
 		
-		int run(String[] args) {
-			throw new UnsupportedOperationException();
+		void initializeSystemProperties() {
+			System.setProperty("jsh.launcher.nashorn", "true");
+		}
+		
+		void addScript(String pathname) {
+			scripts.add(pathname);
+		}
+		
+		int run(String[] args) throws FileNotFoundException, ScriptException {
+			Logging.get().log(Nashorn.class, Level.FINE, "run(): scripts.length = " + scripts.size());
+			for (String script : scripts) {
+				Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
+				ScriptContext c = engine.getContext();
+				c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);
+				File file = new File(script);
+				engine.eval(new FileReader(file), c);
+				Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
+			}
+			return 0;
 		}
 	}
 	
@@ -171,6 +209,9 @@ public class Main {
 			String mainMethodName = (debug()) ? "main" : "exec";
 			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
 			return main;
+		}
+		
+		void initializeSystemProperties() {
 		}
 		
 		void addScript(String pathname) {
@@ -203,7 +244,6 @@ public class Main {
 			try {
 				java.lang.reflect.Method main = this.getMainMethod();
 				debug("Rhino shell main = " + main);
-				addLauncherScripts();
 				String[] arguments = this.getArguments(args);
 				debug("Rhino shell arguments:");
 				for (int i=0; i<arguments.length; i++) {
@@ -302,6 +342,7 @@ public class Main {
 			rhino.addScript(JSH_RHINO_JS);
 		}
 		
+		//	TODO	push Rhino-specific properties back into Rhino engine
 		final void initializeSystemProperties() throws java.io.IOException {
 			if (getRhinoClasspath() != null) {
 				System.setProperty("jsh.launcher.rhino.classpath", getRhinoClasspath());
@@ -381,9 +422,11 @@ public class Main {
 		Integer status = null;
 		try {
 			status = invocation.run(args);
+			Logging.get().log(Main.class, Level.FINER, "Completed with status: %d", status);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			status = new Integer(127);
+			Logging.get().log(Main.class, Level.FINER, "Completed with stack trace.");
 		} finally {
 			//	Ensure the VM exits even if the debugger is displayed
 			System.out.flush();
@@ -394,6 +437,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws java.io.IOException {
+		Logging.get().log(Main.class, Level.FINEST, "Launcher Main executing ...");
 		new Main().run(args);
 	}
 }

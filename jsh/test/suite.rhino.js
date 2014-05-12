@@ -211,8 +211,8 @@ var jshPackage = function(p) {
 	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
 	invocation.push("-to",getJshPathname(to));
 	run(LAUNCHER_COMMAND.concat(invocation));
-	if (!to.exists()) {
-		throw new Error("Packaged file not created: " + to + " using " + LAUNCHER_COMMAND.concat(invocation));
+	if (!to.getCanonicalFile().exists()) {
+		throw new Error("Packaged file not created: " + to.getCanonicalFile() + " class=" + to.getClass() + " using " + LAUNCHER_COMMAND.concat(invocation).join(" "));
 	}
 	return to;
 };

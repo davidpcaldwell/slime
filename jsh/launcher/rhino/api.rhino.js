@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
+	load("nashorn:mozilla_compat.js");
+}
+
 var debug = function(message) {
 	if (arguments.callee.on) Packages.java.lang.System.err.println(message);
 }
