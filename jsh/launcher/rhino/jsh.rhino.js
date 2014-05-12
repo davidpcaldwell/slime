@@ -28,6 +28,27 @@ if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	newStringArray = function(len) {
 		return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String.class,len);		
 	}
+	//	NASHORN	report incompatibility
+	var readFile = function(path) {
+		var rv = "";
+		var reader = new Packages.java.io.FileReader(path);
+		var c;
+		while((c = reader.read()) != -1) {
+			var _character = new Packages.java.lang.Character(c);
+			rv += _character.toString();
+		}
+		return rv;
+	};
+	var readUrl = function(path) {
+		var connection = new Packages.java.net.URL(path).openConnection();
+		var reader = new Packages.java.io.InputStreamReader(connection.getInputStream());
+		var c;
+		while((c = reader.read()) != -1) {
+			var _character = new Packages.java.lang.Character(c);
+			rv += _character.toString();
+		}
+		return rv;
+	};
 }
 
 if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
@@ -440,19 +461,6 @@ settings.explicit = new function() {
 				}
 			})(ARGUMENTS[0]);
 
-			//	NASHORN	report incompatibility
-			if (typeof(readFile) == "undefined") {
-				readFile = function(path) {
-					var rv = "";
-					var reader = new Packages.java.io.FileReader(path);
-					var c;
-					while((c = reader.read()) != -1) {
-						var _character = new Packages.java.lang.Character(c);
-						rv += _character.toString();
-					}
-					return rv;
-				}
-			}
 			this.source = readFile(this.script.path);
 		}
 	}
