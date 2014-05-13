@@ -73,7 +73,18 @@ $exports.Tomcat = function(p) {
 		this.start = function(m) {
 			jsh.shell.echo("Starting server at " + p.home + " with base " + base + " ...");
 
-			jsh.java.Thread.start({ call: catalina("run",m) });
+			if (jsh.java.Thread) {
+				jsh.java.Thread.start({ call: catalina("run",m) });
+			} else {
+				var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable, {
+					run: function() {
+						jsh.shell.echo("Calling run in thread " + Packages.java.lang.Thread.currentThread() + " catalina=" + catalina);
+						catalina("run",m)();
+					}
+				}));
+				jsh.shell.echo("Forking thread from " + Packages.java.lang.Thread.currentThread() + " ...");
+				thread.start();
+			}
 			started = true;
 		}
 

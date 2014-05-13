@@ -53,10 +53,14 @@ var WEBAPP = destination.directory;
 if (!parameters.options.norhino) {
 	(function() {
 		//	Get the path of Rhino in this shell, assume it is a file, and copy it to WEB-INF/lib
-		var rhino = jsh.shell.java["class"].path.pathnames[0];
-		rhino.file.copy(WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
-			recursive: true
-		}))
+		var rhino = jsh.shell.rhino.classpath.pathnames[0];
+		if (rhino.basename == "js.jar") {
+			rhino.file.copy(WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
+				recursive: true
+			}))			
+		} else {
+			throw new Error("Rhino not present.");
+		}
 	})();
 }
 
@@ -102,9 +106,9 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 		].concat(args),
 		on: new function() {
 			this.exit = function(p) {
-				jsh.shell.echo("Exit status: " + p.status);
+				jsh.shell.echo("Exit status of javac: " + p.status);
 				if (p.status) {
-					jsh.shell.echo(p.arguments);
+					jsh.shell.echo("Compilation failure for arguments: " + p.arguments);
 				}
 			}
 		}

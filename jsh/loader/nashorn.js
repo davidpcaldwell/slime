@@ -32,8 +32,14 @@ var $host = (function() {
 	rv.jsh = function(configuration,invocation) {
 		return scripts.subshell(function() {
 			try {
-				return Packages.inonit.script.jsh.Nashorn.execute($jsh.subshell(configuration,invocation));				
+				return Packages.inonit.script.jsh.Nashorn.execute($jsh.subshell(configuration,invocation));
 			} catch (e) {
+				if (e.getClass && e.getClass().getName().equals("inonit.script.jsh.Nashorn$UncaughtException")) {
+					e = e.getCause();
+				}
+				if (e.printStackTrace) {
+					e.printStackTrace();
+				}
 				return 255;
 			}
 		});

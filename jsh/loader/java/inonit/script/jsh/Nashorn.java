@@ -41,6 +41,12 @@ public class Nashorn {
 		}
 	}
 	
+	public static class UncaughtException extends RuntimeException {
+		UncaughtException(ScriptException e) {
+			super(e);
+		}
+	}
+	
 	private static class ExecutionImpl extends Shell.Execution {
 		private inonit.script.nashorn.Host host;
 		private boolean top;
@@ -90,7 +96,7 @@ public class Nashorn {
 			} catch (ExitException e) {
 				return e.getExitStatus();
 			} catch (ScriptException e) {
-				throw new RuntimeException(e);
+				throw new UncaughtException(e);
 			}
 		}
 	}
