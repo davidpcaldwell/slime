@@ -96,7 +96,9 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 		source: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
 		target: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
 		arguments: [
-			jsh.script.file.getRelativePath("../java/inonit/script/servlet/RhinoServlet.java")
+			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java"),
+			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Rhino.java"),
+			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Nashorn.java")
 		].concat(args),
 		on: new function() {
 			this.exit = function(p) {

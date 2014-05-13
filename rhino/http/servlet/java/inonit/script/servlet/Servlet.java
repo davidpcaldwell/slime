@@ -18,7 +18,7 @@ import javax.servlet.http.*;
 
 import inonit.script.engine.*;
 
-public abstract class Servlet extends javax.servlet.http.HttpServlet {
+public class Servlet extends javax.servlet.http.HttpServlet {
 	static {
 		Class[] dependencies = new Class[] {
 			//	Pull these in as dependencies, since the Java loader depends on them
@@ -45,7 +45,18 @@ public abstract class Servlet extends javax.servlet.http.HttpServlet {
 		return script;
 	}
 	
-	protected abstract ScriptContainer createScriptContainer();
+	private ScriptContainer createScriptContainer() {
+		String engine = "Rhino";
+		try {
+			return (ScriptContainer)getClass().getClassLoader().loadClass("inonit.script.servlet." + engine).newInstance();
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	@Override public final void init() {
 		ScriptContainer container = createScriptContainer();
