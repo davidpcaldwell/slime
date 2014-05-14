@@ -197,24 +197,28 @@ var remove = function(file) {
 remove(JSH_HOME);
 JSH_HOME.mkdirs();
 
-var RHINO_HOME = function() {
-	//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
-	//	like an un-jarred version
-	var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
-	var matcher = /^file\:(.*)/;
-	if (matcher.exec(url)[1].substring(2,3) == ":") {
-		//	this is a windows path of the form /C:/ ...
-		return new File(matcher.exec(url)[1].substring(1)).getParentFile();
-	} else {
-		return new File(matcher.exec(url)[1]).getParentFile();
-	}
-}();
-debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
+var RHINO_HOME;
+var RHINO_LIBRARIES;
+if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+	RHINO_HOME = function() {
+		//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
+		//	like an un-jarred version
+		var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
+		var matcher = /^file\:(.*)/;
+		if (matcher.exec(url)[1].substring(2,3) == ":") {
+			//	this is a windows path of the form /C:/ ...
+			return new File(matcher.exec(url)[1].substring(1)).getParentFile();
+		} else {
+			return new File(matcher.exec(url)[1]).getParentFile();
+		}
+	}();
+	debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
 
-var RHINO_LIBRARIES = [
-	new File(RHINO_HOME,"js.jar")
-	//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
-];
+	RHINO_LIBRARIES = [
+		new File(RHINO_HOME,"js.jar")
+		//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
+	];
+}
 
 //	TODO	Consider adding XMLBeans back in
 /*
@@ -232,10 +236,12 @@ console("Copying launcher scripts ...");
 copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
 copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
 
-console("Copying libraries ...");
-RHINO_LIBRARIES.forEach( function(file) {
-	copyFile(file,new File(JSH_HOME,"lib/" + file.getName()));
-});
+if (RHINO_LIBRARIES) {
+	console("Copying libraries ...");
+	RHINO_LIBRARIES.forEach( function(file) {
+		copyFile(file,new File(JSH_HOME,"lib/" + file.getName()));
+	});
+}
 
 var tmp = createTemporaryDirectory();
 
@@ -260,9 +266,16 @@ addJavaFiles(new File(SLIME_SRC,"rhino/system/java"));
 addJavaFiles(new File(SLIME_SRC,"jsh/loader/java"));
 //	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
 var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
+var JSH_CLASSPATH = (function() {
+	if (RHINO_LIBRARIES) {
+		return RHINO_LIBRARIES.map(function(file) { return String(file.getCanonicalPath()); }).join(colon);
+	} else {
+		return "";
+	}
+})();
 var javacArguments = compileOptions.concat([
 	"-d", tmpClasses.getCanonicalPath(),
-	"-classpath", RHINO_LIBRARIES.map(function(file) { return String(file.getCanonicalPath()); }).join(colon)
+	"-classpath", JSH_CLASSPATH
 ]).concat(javaSources);
 debug("Compiling: " + javacArguments.join(" "));
 platform.jdk.compile(javacArguments);
@@ -330,6 +343,16 @@ console("Creating bundled modules ...")
 load(new File(SLIME_SRC,"jsh/tools/slime.js").getCanonicalPath());
 var tmpModules = new File(tmp,"modules");
 tmpModules.mkdir();
+var MODULE_CLASSPATH = (function() {
+	var files = [];
+	if (RHINO_LIBRARIES) {
+		files = files.concat(RHINO_LIBRARIES);
+	}
+	files.push(new File(JSH_HOME,"lib/jsh.jar"));
+	return files.map(function(_file) {
+		return _file.getCanonicalPath();
+	}).join(colon);
+})();
 var module = function(path,compile) {
 	var tmp = new File(tmpModules,path);
 	tmp.mkdirs();
@@ -339,7 +362,7 @@ var module = function(path,compile) {
 	}, {
 		source: JAVA_VERSION,
 		target: JAVA_VERSION,
-		classpath: new File(RHINO_HOME, "js.jar").getCanonicalPath() + colon + new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath(),
+		classpath: MODULE_CLASSPATH,
 		nowarn: true
 	});
 	var to = new File(JSH_HOME,"modules/"+path.replace(/\//g, ".")+".slime");
