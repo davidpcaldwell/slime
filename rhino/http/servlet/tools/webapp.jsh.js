@@ -91,6 +91,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	var sourcepath = jsh.file.Searchpath([]);
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/java"));
+	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/rhino/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
 	jsh.java.tools.javac({
