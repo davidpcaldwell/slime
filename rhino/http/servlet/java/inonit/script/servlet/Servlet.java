@@ -45,8 +45,29 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		return script;
 	}
 	
+	private boolean hasClass(String name) {
+		try {
+			Class c = Servlet.class.getClassLoader().loadClass(name);
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+	}
+	
 	private ScriptContainer createScriptContainer() {
-		String engine = "Rhino";
+		String engine = null;
+		boolean hasRhino = hasClass("org.mozilla.javascript.Context");
+		boolean hasNashorn = new javax.script.ScriptEngineManager().getEngineByName("nashorn") != null;
+		if (!hasRhino && !hasNashorn) {
+			//	TODO	think through
+			throw new RuntimeException("Missing Rhino classes and Nashorn engine.");
+		} else if (hasRhino && !hasNashorn) {
+			engine = "Rhino";
+		} else if (!hasRhino && hasNashorn) {
+			engine = "Nashorn";
+		} else {
+			engine = "Rhino";
+		}
 		try {
 			return (ScriptContainer)getClass().getClassLoader().loadClass("inonit.script.servlet." + engine).newInstance();
 		} catch (InstantiationException e) {

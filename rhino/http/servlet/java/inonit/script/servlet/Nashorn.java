@@ -25,7 +25,7 @@ class Nashorn extends Servlet.ScriptContainer {
 	}
 
 	@Override Servlet.HostObject getServletHostObject() {
-		return new HostObject(servlet);
+		return new HostObject(servlet,host);
 	}
 
 	@Override void setVariable(String name, Object value) {
@@ -53,9 +53,16 @@ class Nashorn extends Servlet.ScriptContainer {
 	}	
 	
 	//	TODO	could be removed and superclass could be made concrete
-	private static class HostObject extends Servlet.HostObject {
-		HostObject(Servlet servlet) {
+	public static class HostObject extends Servlet.HostObject {
+		private Host host;
+		
+		HostObject(Servlet servlet, Host host) {
 			super(servlet);
+			this.host = host;
+		}
+		
+		public Loader.Classpath getClasspath() {
+			return host.getClasspath();
 		}
 	}
 }

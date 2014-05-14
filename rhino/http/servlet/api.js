@@ -13,7 +13,22 @@
 var $loader = (function() {
 	if ($host.getLoader && $host.getEngine) {
 		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
-	}	
+	} else if ($host.getLoader && $host.getClasspath) {
+		var scripts = eval($host.getLoader().getLoaderCode("rhino/nashorn.js"));
+
+		var rv = scripts.script(
+			"rhino/nashorn.js",
+			$host.getLoader().getLoaderCode("rhino/nashorn.js"),
+			{ 
+				$getLoaderCode: function(path) {
+					return $host.getLoader().getLoaderCode(path);
+				},
+				$classpath: $host.getClasspath() 
+			},
+			null
+		);
+		return rv;
+	}
 })();
 
 var $servlet = (function() {

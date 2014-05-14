@@ -109,6 +109,7 @@ $exports.zip = function(p) {
 }
 
 $exports.unzip = function(p) {
+	if (!p.zip) throw new TypeError("Required: 'zip' property representing stream to be unzipped.");
 	var _zipstream = (function() {
 		if (p.zip.read) {
 			return new Packages.java.util.zip.ZipInputStream(p.zip.read($context.Streams.binary).java.adapt());
