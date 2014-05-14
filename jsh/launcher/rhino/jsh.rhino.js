@@ -28,7 +28,7 @@ if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	newStringArray = function(len) {
 		return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String.class,len);		
 	}
-	//	NASHORN	report incompatibility
+	//	TODO	Exact duplicate of both functions below in jsh/etc/unbuilt.rhino.js
 	var readFile = function(path) {
 		var rv = "";
 		var reader = new Packages.java.io.FileReader(path);

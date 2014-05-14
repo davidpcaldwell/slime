@@ -56,6 +56,30 @@ Packages.java.lang.System.out.println("SLIME_SRC = " + SLIME_SRC.getCanonicalPat
 
 load(new Packages.java.io.File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"));
 
+//	NASHORN	report incompatibility
+//	TODO	ideally would not redefine these if they are already defined
+var readFile = function(path) {
+	var rv = "";
+	var reader = new Packages.java.io.FileReader(path);
+	var c;
+	while((c = reader.read()) != -1) {
+		var _character = new Packages.java.lang.Character(c);
+		rv += _character.toString();
+	}
+	return rv;
+};
+var readUrl = function(path) {
+	var rv = "";
+	var connection = new Packages.java.net.URL(path).openConnection();
+	var reader = new Packages.java.io.InputStreamReader(connection.getInputStream());
+	var c;
+	while((c = reader.read()) != -1) {
+		var _character = new Packages.java.lang.Character(c);
+		rv += _character.toString();
+	}
+	return rv;
+};
+
 //	TODO	much of this is redundant with inonit.system.Command, but we preserve it here because we are trying to remain
 //			dependent only on Rhino, which apparently has a bug(?) making its own runCommand() not work correctly in this
 //			scenario when an InputStream is provided: even when underlying process terminates, command does not return
