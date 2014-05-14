@@ -93,18 +93,29 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/rhino/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/java"));
+	if (!parameters.options.norhino) {
+		sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/rhino/java"));
+	}
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
+	if (!parameters.options.norhino) {
+		sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/rhino/java"));		
+	}
+	var sources = [
+		jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java"),
+		jsh.script.file.getRelativePath("../java/inonit/script/servlet/Nashorn.java")
+	];
+	if (!parameters.options.norhino) {
+		sources.push(
+			jsh.script.file.getRelativePath("../rhino/java/inonit/script/servlet/Rhino.java")
+		);
+	}
 	jsh.java.tools.javac({
 		destination: WEBAPP.getRelativePath("WEB-INF/classes"),
 		classpath: classpath,
 		sourcepath: sourcepath,
 		source: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
 		target: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
-		arguments: [
-			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java"),
-			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Rhino.java"),
-			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Nashorn.java")
-		].concat(args),
+		arguments: sources.concat(args),
 		on: new function() {
 			this.exit = function(p) {
 				jsh.shell.echo("Exit status of javac: " + p.status);

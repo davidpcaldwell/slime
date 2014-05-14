@@ -369,7 +369,8 @@ var module = function(path,compile) {
 		source: JAVA_VERSION,
 		target: JAVA_VERSION,
 		classpath: MODULE_CLASSPATH,
-		nowarn: true
+		nowarn: true,
+		rhino: RHINO_LIBRARIES
 	});
 	var to = new File(JSH_HOME,"modules/"+path.replace(/\//g, ".")+".slime");
 	to.getParentFile().mkdirs();
