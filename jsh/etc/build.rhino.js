@@ -262,9 +262,14 @@ var addJavaFiles = function(f) {
 
 console("Building jsh application ...");
 addJavaFiles(new File(SLIME_SRC,"loader/rhino/java"));
-addJavaFiles(new File(SLIME_SRC,"loader/rhino/rhino/java"));
+if (RHINO_LIBRARIES) {
+	addJavaFiles(new File(SLIME_SRC,"loader/rhino/rhino/java"));
+}
 addJavaFiles(new File(SLIME_SRC,"rhino/system/java"));
 addJavaFiles(new File(SLIME_SRC,"jsh/loader/java"));
+if (RHINO_LIBRARIES) {
+	addJavaFiles(new File(SLIME_SRC,"jsh/loader/rhino/java"));
+}
 //	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
 var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
 var JSH_CLASSPATH = (function() {
