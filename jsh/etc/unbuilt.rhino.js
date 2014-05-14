@@ -16,6 +16,7 @@
 //	SLIME_SRC	A Packages.java.io.File representing the SLIME source root
 
 var SLIME_SRC = (function() {
+	var thisfile;
 	if (typeof(Packages.org.mozilla.javascript.WrappedException) == "function") {
 		//	TODO	could this fail under certain kinds of optimization?
 		var frames;
@@ -29,11 +30,13 @@ var SLIME_SRC = (function() {
 		//	Packages.java.lang.System.err.println("stack trace length: " + frames.length);
 		for (var i=0; i<frames.length; i++) {
 			//	Packages.java.lang.System.err.println("stack trace: " + frames[i].fileName);
-			var filename = String(frames[i].fileName);
-			if (/unbuilt\.rhino\.js/.test(filename)) {
-				return new Packages.java.io.File(filename).getCanonicalFile().getParentFile().getParentFile().getParentFile();
-			}
+			thisfile = String(frames[i].fileName);
 		}
+	} else {
+		thisfile = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
+	}
+	if (thisfile && /unbuilt\.rhino\.js/.test(thisfile)) {
+		return new Packages.java.io.File(thisfile).getCanonicalFile().getParentFile().getParentFile().getParentFile();
 	}
 	//	TODO	below is included defensively in case some optimizations cause the above to fail
 	//	TODO	probably would not work for Cygwin; see below logic from earlier version

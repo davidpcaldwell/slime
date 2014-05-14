@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
+if (!Object.prototype.__defineGetter__) {
 	load("nashorn:mozilla_compat.js");
 }
 
