@@ -118,7 +118,7 @@ var runCommand = function() {
 		}
 
 		this.environment = function(_environment) {
-			if (mode.env) {
+			if (mode && mode.env) {
 				_environment.clear();
 				for (var x in mode.env) {
 					if (mode.env[x]) {

@@ -595,5 +595,8 @@ if (destination.installer) {
 	command.push("-script",getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command.push("-file","build.zip=" + getPath(build));
 	command.push("-to",getPath(destination.installer));
+	if (!RHINO_LIBRARIES) {
+		command.push("-norhino");
+	}
 	runCommand.apply(this,command);
 }

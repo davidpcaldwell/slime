@@ -37,7 +37,7 @@ builders[parameters.options.builder]();
 
 jsh.shell.run({
 	command: jsh.shell.java.launcher,
-	arguments: ["-jar", TMP.getRelativePath("jsh.jar"), SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js")],
+	arguments: ["-jar", TMP.getRelativePath("jsh.jar"), SRC.getRelativePath("jsh/test/jsh.shell/properties.jsh.js")],
 	environment: {
 		JSH_ENGINE: parameters.options.engine
 	}

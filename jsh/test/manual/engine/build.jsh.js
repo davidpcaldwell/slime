@@ -1,7 +1,8 @@
 var parameters = jsh.script.getopts({
 	options: {
 		rhino: jsh.file.Pathname,
-		tomcat: jsh.file.Pathname
+		tomcat: jsh.file.Pathname,
+		installer: false
 	}
 });
 
@@ -16,22 +17,24 @@ var build = function(p) {
 		JSH_ENGINE: p.engine,
 		JSH_BUILD_TOMCAT_HOME: parameters.options.tomcat
 	};
-	var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	var destination = (p.installer) ? jsh.shell.TMPDIR.createTemporary({ prefix: "jsh-install.", suffix: ".jar" }) : jsh.shell.TMPDIR.createTemporary({ directory: true });
+	var buildargs = (p.installer) ? ["-installer", destination] : [destination];
 	var command = p.run({
 		script: SRC.getRelativePath("jsh/etc/unbuilt.rhino.js"),
-		arguments: ["build",TMP]		
+		arguments: ["build"].concat(buildargs)		
 	});
 	jsh.shell.run({
 		command: command.command,
 		arguments: command.arguments,
 		environment: environment
 	});
-	jsh.shell.echo("Successfully built engine: " + p.engine);
+	jsh.shell.echo("Successfully built engine: " + p.engine + " to " + destination);
+	return destination;
 }
 
-var builders = {};
+var engines = {};
 if (parameters.options.rhino) {
-	builders.rhino = {
+	engines.rhino = {
 		engine: "rhino",
 		run: function(p) {
 			return {
@@ -45,7 +48,7 @@ if (parameters.options.rhino) {
 var javaCommands = jsh.file.Searchpath([jsh.shell.java.home.getRelativePath("bin")]);
 var jjs = javaCommands.getCommand("jjs");
 if (jjs) {
-	builders.nashorn = {
+	engines.nashorn = {
 		engine: "nashorn",
 		run: function(p) {
 			return {
@@ -54,7 +57,26 @@ if (jjs) {
 			};
 		}
 	};
+};
+
+var install = function(p) {
+	var to = build(jsh.js.Object.set({}, p, { installer: true }));
+	var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	TMP.remove();
+	jsh.shell.run({
+		command: jsh.shell.java.launcher,
+		arguments: ["-jar", to, "-to", TMP]
+	});
+	jsh.shell.run({
+		command: jsh.shell.java.launcher,
+		arguments: ["-jar", TMP.getRelativePath("jsh.jar"), TMP.getRelativePath("src/jsh/test/jsh.shell/properties.jsh.js")]
+	});
 }
 
-if (builders.rhino) build(builders.rhino);
-if (builders.nashorn) build(builders.nashorn);
+if (parameters.options.installer) {
+	if (engines.rhino) install(engines.rhino);
+	if (engines.nashorn) install(engines.nashorn);
+} else {
+	if (engines.rhino) build(engines.rhino);
+	if (engines.nashorn) build(engines.nashorn);
+}
