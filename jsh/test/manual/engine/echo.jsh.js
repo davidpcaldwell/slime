@@ -1,5 +1,7 @@
-//	Expected:
-//		JDK 8, -builder nashorn ==> should complete successfully
+//	Compatible with jsh 0.0.4.8
+//	
+//	Expected results:
+//		under JDK 8, arguments -builder nashorn ==> should complete successfully
 var parameters = jsh.script.getopts({
 	options: {
 		builder: String,
@@ -9,7 +11,7 @@ var parameters = jsh.script.getopts({
 
 var javaCommands = jsh.file.Searchpath([jsh.shell.java.home.getRelativePath("bin")]);
 
-var SRC = jsh.script.file.getRelativePath("../../..").directory;
+var SRC = jsh.script.file.getRelativePath("../../../..").directory;
 
 var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
