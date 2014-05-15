@@ -26,15 +26,34 @@ public class Main {
 	}
 	
 	private static class Invocation {
+		private static boolean hasClass(String name) {
+			try {
+				Main.class.getClassLoader().loadClass(name);
+				return true;
+			} catch (ClassNotFoundException e) {
+				return false;
+			}
+		}
+		
+		//	TODO	this logic is duplicated in Servlet
 		private static Engine getEngine() {
 			boolean hasNashorn = new ScriptEngineManager().getEngineByName("nashorn") != null;
-			if (System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("rhino")) {
+			boolean hasRhino = hasClass("org.mozilla.javascript.Context");
+			if (!hasNashorn && !hasRhino) {
+				throw new RuntimeException("No JavaScript execution engine found.");
+			} else if (!hasNashorn && hasRhino) {
 				return new Rhino();
-			} else if (hasNashorn && System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("nashorn")) {
+			} else if (hasNashorn && !hasRhino) {
 				return new Nashorn();
 			} else {
-				//	for now
-				return new Rhino();
+				if (System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("rhino")) {
+					return new Rhino();
+				} else if (hasNashorn && System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("nashorn")) {
+					return new Nashorn();
+				} else {
+					//	for now
+					return new Rhino();
+				}
 			}
 		}
 		
