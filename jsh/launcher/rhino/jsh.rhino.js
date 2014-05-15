@@ -654,11 +654,17 @@ try {
 		} else {
 			command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));			
 		}
-		//	TODO	handle JSH_JAVA_DEBUGGER
+		//	TODO	handle JSH_JAVA_DEBUGGER, probably by detecting open port and using that port for dt_socket and server=y
 		//	TODO	handle JSH_SCRIPT_DEBUGGER == "profiler"
 		//	TODO	decide about client-vs.-server VM, probably not needed
 		if (jvmOptions.length) {
-			throw new Error("Unimplemented: Nashorn options");
+			command.add(jvmOptions.map(function(option) {
+				if (JJS) {
+					return "-J" + option;
+				} else {
+					return option;
+				}
+			}));
 		}
 		environmentAndProperties();
 		command.add("-classpath");
