@@ -10,8 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-var UNZIP_RHINO_WHEN_PACKAGING = true;
-
 var parameters = jsh.script.getopts({
 	options: {
 		jsh: jsh.script.getRelativePath("..")
@@ -23,8 +21,11 @@ var parameters = jsh.script.getopts({
 		,plugin: jsh.script.getopts.ARRAY(jsh.file.Pathname)
 		,directory: false
 		,to: jsh.file.Pathname
+		,norhino: false
 	}
 });
+
+var UNZIP_RHINO_WHEN_PACKAGING = !parameters.options.norhino;
 
 if (!parameters.options.to) {
 	jsh.shell.echo("Required: -to <pathname>");
@@ -61,7 +62,9 @@ var JSH = parameters.options.jsh.directory;
 if (UNZIP_RHINO_WHEN_PACKAGING) {
 	jsh.file.unzip({ zip: JSH.getFile("lib/js.jar"), to: to });
 }
-to.getRelativePath("$jsh/rhino.jar").write(JSH.getFile("lib/js.jar").read(jsh.file.Streams.binary), { recursive: true });
+if (!parameters.options.norhino) {
+	to.getRelativePath("$jsh/rhino.jar").write(JSH.getFile("lib/js.jar").read(jsh.file.Streams.binary), { recursive: true });
+}
 
 jsh.file.unzip({ zip: JSH.getFile("jsh.jar"), to: to });
 to.getRelativePath("$jsh/api.rhino.js").write(JSH.getFile("script/launcher/api.rhino.js").read(String), { recursive: true });

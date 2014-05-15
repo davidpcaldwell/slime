@@ -288,14 +288,17 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			return readUrl( ClassLoader.getSystemResource("main.jsh.js") );
 		});
 
-		debug("Copying rhino ...");
-		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
 		var tmpdir = new Directory(String(createTemporaryDirectory().getCanonicalPath()));
-		var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
-		var writeTo = rhinoCopiedTo.writeTo();
-		platform.io.copyStream(rhino,writeTo);
-		rhino.close();
-		writeTo.close();
+		
+		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
+		if (rhino) {
+			debug("Copying rhino ...");
+			var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
+			var writeTo = rhinoCopiedTo.writeTo();
+			platform.io.copyStream(rhino,writeTo);
+			rhino.close();
+			writeTo.close();
+		}
 
 		var index = 0;
 		var plugin;
@@ -329,7 +332,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			debug("Copied plugin " + index + " from " + plugin.name);
 		}
 
-		this.rhinoClasspath = new Searchpath([ rhinoCopiedTo ]);
+		this.rhinoClasspath = (rhinoCopiedTo) ? new Searchpath([ rhinoCopiedTo ]) : new Searchpath([]);
 		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
 		this.scriptClasspath = [];
 		this.JSH_PLUGINS = new Searchpath(plugins).toPath();

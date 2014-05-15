@@ -210,6 +210,7 @@ var jshPackage = function(p) {
 	packaged.mkdirs();
 	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
 	invocation.push("-to",getJshPathname(to));
+	if (!RHINO_LIBRARIES) invocation.push("-norhino");
 	run(LAUNCHER_COMMAND.concat(invocation));
 	if (!to.getCanonicalFile().exists()) {
 		throw new Error("Packaged file not created: " + to.getCanonicalFile() + " class=" + to.getClass() + " using " + LAUNCHER_COMMAND.concat(invocation).join(" "));
