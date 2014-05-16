@@ -175,6 +175,14 @@
 		if ($script.file) {
 			return new File($script.file, "../../..").getCanonicalFile();
 		} else {
+			var copy = function(from,to) {
+				var b;
+				while( (b = from.read()) != -1 ) {
+					to.write(b);
+				}
+				to.close();
+			}
+			
 			//	sample link		https://bitbucket.org/davidpcaldwell/slime/get/[label].zip
 			//	sample script	https://bitbucket.org/davidpcaldwell/slime/raw/[label]/jsh/etc/install.jrunscript.js
 			//	TODO	implement determination of URL from Bitbucket
@@ -184,7 +192,23 @@
 			if (match) {
 				version = match[1];
 			}
-			throw new Error("Unimplemented: download from URL calculated using " + $script.url + " version=" + version);
+			var tmpdir = Packages.java.io.File.createTempFile("slime",null);
+			tmpdir["delete"]();
+			tmpdir.mkdirs();
+			var downloadUrl = "https://bitbucket.org/davidpcaldwell/slime/get/" + version + ".zip";
+			var stream = new Packages.java.net.URL(downloadUrl).openConnection().getInputStream();
+			var zstream = new Packages.java.util.zip.ZipInputStream(stream);
+			var entry;
+			println("Downloading source to " + tmpdir);
+			while(entry = zstream.getNextEntry()) {
+				var name = String(_entry.getName());
+				if (name.substring(name.length-1) == "/") {
+					new Packages.java.io.File(tmpdir, name).mkdirs();
+				} else {
+					copy(zstream,new FileOutputStream(new Packages.java.io.File(tmpdir, name)));
+				}
+			}
+			return tmpdir;
 		}
 	})();
 
