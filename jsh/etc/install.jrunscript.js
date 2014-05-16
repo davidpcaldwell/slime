@@ -202,6 +202,7 @@
 			println("Downloading source to " + tmpdir);
 			while(entry = zstream.getNextEntry()) {
 				var name = String(entry.getName());
+				println(name);
 				if (name.substring(name.length-1) == "/") {
 					new Packages.java.io.File(tmpdir, name).mkdirs();
 				} else {
