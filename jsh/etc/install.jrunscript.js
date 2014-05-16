@@ -9,13 +9,14 @@
 
 	var $engine = (function() {
 		var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
-
+		
 		var Nashorn = function() {
 			this.filename = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
 
 			this.run = function(p) {
 				Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
 				Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
+				Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
 				load(p.script);
 			}
 		};
@@ -70,6 +71,7 @@
 				if (IN_PROCESS) {
 					Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
 					Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
+					Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
 					Packages.java.lang.System.getProperties().put("jsh.build.rhino", findRhino());
 					var USE_EVAL = false;
 					if (USE_EVAL) {
@@ -97,7 +99,12 @@
 						if (new File(jdk, "bin/java").exists()) return new File(jdk, "bin/java");
 						if (new File(jdk, "bin/java.exe").exists()) return new File(jdk, "bin/java.exe");
 					})();
-					var command = [launcher.getCanonicalPath(),"-jar",rhino.getCanonicalPath(),"-opt","-1",p.script.getCanonicalPath()].concat(p.arguments);
+					var command = [
+						launcher.getCanonicalPath(),
+						"-Djsh.build.notest=true",
+						"-jar",rhino.getCanonicalPath(),
+						"-opt","-1",
+						p.script.getCanonicalPath()].concat(p.arguments);
 					var JRUNSCRIPT_EXEC = false;
 					if (JRUNSCRIPT_EXEC) {
 						//	The jrunscript built-in exec() requires a single argument, which causes a mess here; we don't want to
