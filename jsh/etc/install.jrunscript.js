@@ -203,6 +203,8 @@
 			var topname;
 			while(entry = zstream.getNextEntry()) {
 				var name = String(entry.getName());
+				var toFile = new Packages.java.io.File(tmpdir,name);
+				toFile.getParentFile().mkdirs();
 				if (!topname) topname = name.split("/")[0];
 				println(name);
 				if (name.substring(name.length-1) == "/") {
