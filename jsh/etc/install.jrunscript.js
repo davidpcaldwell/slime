@@ -200,8 +200,10 @@
 			var zstream = new Packages.java.util.zip.ZipInputStream(stream);
 			var entry;
 			println("Downloading source to " + tmpdir);
+			var topname;
 			while(entry = zstream.getNextEntry()) {
 				var name = String(entry.getName());
+				if (!topname) topname = name.split("/")[0];
 				println(name);
 				if (name.substring(name.length-1) == "/") {
 					new Packages.java.io.File(tmpdir, name).mkdirs();
@@ -209,7 +211,7 @@
 					copy(zstream,new FileOutputStream(new Packages.java.io.File(tmpdir, name)));
 				}
 			}
-			return tmpdir;
+			return new File(tmpdir,topname);
 		}
 	})();
 
