@@ -197,28 +197,34 @@ var remove = function(file) {
 remove(JSH_HOME);
 JSH_HOME.mkdirs();
 
-var RHINO_HOME;
-var RHINO_LIBRARIES;
-if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-	RHINO_HOME = function() {
-		//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
-		//	like an un-jarred version
-		var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
-		var matcher = /^file\:(.*)/;
-		if (matcher.exec(url)[1].substring(2,3) == ":") {
-			//	this is a windows path of the form /C:/ ...
-			return new File(matcher.exec(url)[1].substring(1)).getParentFile();
-		} else {
-			return new File(matcher.exec(url)[1]).getParentFile();
-		}
-	}();
-	debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
+var RHINO_LIBRARIES = (function() {
+	var RHINO_HOME;
+	if (Packages.java.lang.System.getProperties().get("jsh.build.rhino")) {
+		return [
+			Packages.java.lang.System.getProperties().get("jsh.build.rhino")
+		]
+	}
+	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+		RHINO_HOME = function() {
+			//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
+			//	like an un-jarred version
+			var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
+			var matcher = /^file\:(.*)/;
+			if (matcher.exec(url)[1].substring(2,3) == ":") {
+				//	this is a windows path of the form /C:/ ...
+				return new File(matcher.exec(url)[1].substring(1)).getParentFile();
+			} else {
+				return new File(matcher.exec(url)[1]).getParentFile();
+			}
+		}();
+		debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
 
-	RHINO_LIBRARIES = [
-		new File(RHINO_HOME,"js.jar")
-		//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
-	];
-}
+		return [
+			new File(RHINO_HOME,"js.jar")
+			//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
+		];
+	}	
+})();
 
 //	TODO	Consider adding XMLBeans back in
 /*

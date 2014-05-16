@@ -15,7 +15,17 @@
 //	It places the following variables in the scope:
 //	SLIME_SRC	A Packages.java.io.File representing the SLIME source root
 
-var SLIME_SRC = (function() {
+var SLIME_SRC;
+		
+if (Packages.java.lang.System.getProperties().get("jsh.build.src")) {
+	SLIME_SRC = Packages.java.lang.System.getProperties().get("jsh.build.src");
+};
+
+if (Packages.java.lang.System.getProperties().get("jsh.build.arguments")) {
+	arguments = Packages.java.lang.System.getProperties().get("jsh.build.arguments");
+}
+
+if (!SLIME_SRC) SLIME_SRC = (function() {
 	var thisfile;
 	if (typeof(Packages.org.mozilla.javascript.WrappedException) == "function") {
 		//	TODO	could this fail under certain kinds of optimization?
