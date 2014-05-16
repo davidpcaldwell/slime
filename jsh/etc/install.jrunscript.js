@@ -178,7 +178,7 @@
 			//	sample link		https://bitbucket.org/davidpcaldwell/slime/get/[label].zip
 			//	sample script	https://bitbucket.org/davidpcaldwell/slime/raw/[label]/jsh/etc/install.jrunscript.js
 			//	TODO	implement determination of URL from Bitbucket
-			var bitbucketParser = /^http(?:s?)\:\/\/bitbucket.org\/davidpcaldwell\/slime\/get\/(.*)\/jsh\/etc\/install.jrunscript.js$/;
+			var bitbucketParser = /^http(?:s?)\:\/\/bitbucket.org\/davidpcaldwell\/slime\/raw\/(.*)\/jsh\/etc\/install.jrunscript.js$/;
 			var version;
 			var match = bitbucketParser.exec($script.url.toExternalForm());
 			if (match) {
