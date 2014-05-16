@@ -191,6 +191,7 @@ var server = (function() {
 				//			webapp.jsh.js
 				var rhinoArguments = (typeof(Packages.org.mozilla.javascript.Context) == "function") ? [] : ["-norhino"];
 				jsh.shell.jsh({
+					fork: true,
 					script: jsh.script.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js"),
 					arguments: [
 						"-to", environment.CATALINA_BASE.getSubdirectory("webapps").getRelativePath(urlpath),

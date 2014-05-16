@@ -54,9 +54,13 @@ WEBAPP.getRelativePath("WEB-INF").createDirectory();
 if (!parameters.options.norhino) {
 	(function() {
 		//	Get the path of Rhino in this shell, assume it is a file, and copy it to WEB-INF/lib
-		var rhino = jsh.shell.rhino.classpath.pathnames[0];
-		if (rhino.basename == "js.jar") {
-			rhino.file.copy(WEBAPP.getRelativePath("WEB-INF/lib").createDirectory())			
+		if (jsh.shell.rhino) {
+			var rhino = jsh.shell.rhino.classpath.pathnames[0];
+			if (rhino.basename == "js.jar") {
+				rhino.file.copy(WEBAPP.getRelativePath("WEB-INF/lib").createDirectory())			
+			} else {
+				throw new Error("Rhino not present; classpath=" + jsh.shell.rhino.classpath);
+			}
 		} else {
 			throw new Error("Rhino not present.");
 		}

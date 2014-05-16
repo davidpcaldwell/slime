@@ -26,19 +26,21 @@ public class Main {
 	}
 	
 	private static class Invocation {
-		private static boolean hasClass(String name) {
+		private static boolean hasClass(Shell shell, String name) {
 			try {
-				Main.class.getClassLoader().loadClass(name);
+				shell.getRhinoClassLoader().loadClass(name);
 				return true;
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			} catch (ClassNotFoundException e) {
 				return false;
 			}
 		}
 		
 		//	TODO	this logic is duplicated in Servlet
-		private static Engine getEngine() {
+		private static Engine getEngine(Shell shell) {
 			boolean hasNashorn = new ScriptEngineManager().getEngineByName("nashorn") != null;
-			boolean hasRhino = hasClass("org.mozilla.javascript.Context");
+			boolean hasRhino = hasClass(shell, "org.mozilla.javascript.Context");
 			if (!hasNashorn && !hasRhino) {
 				throw new RuntimeException("No JavaScript execution engine found.");
 			} else if (!hasNashorn && hasRhino) {
@@ -74,7 +76,8 @@ public class Main {
 			}
 			Invocation rv = null;
 			if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-				rv = new Invocation(new PackagedShell(launcherLocation), getEngine());
+				Shell shell = new PackagedShell(launcherLocation);
+				rv = new Invocation(shell, getEngine(shell));
 			} else {
 				java.io.File JSH_HOME = null;
 				if (launcherLocation.endsWith("jsh.jar")) {
@@ -82,7 +85,7 @@ public class Main {
 				}
 				Shell shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : new UnbuiltShell();
 				//	TODO	This might miss some exotic situations, like loading this class in its own classloader
-				Invocation frv = new Invocation(shell, getEngine());
+				Invocation frv = new Invocation(shell, getEngine(shell));
 				if (JSH_HOME != null) {
 					frv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 				} else {
@@ -119,12 +122,13 @@ public class Main {
 		}
 		
 		final void initializeSystemProperties() throws IOException {
-			engine.initializeSystemProperties();
+			debug("Initializing system properties; engine = " + engine + " ...");
+			engine.initializeSystemProperties(this, shell);
 			shell.initializeSystemProperties();
 		}
 		
 		final ClassLoader getRhinoClassLoader() throws IOException {
-			return shell.getRhinoClassLoader(this);
+			return shell.getRhinoClassLoader();
 		}
 		
 		final void addLauncherScriptsTo(Engine engine) throws IOException {
@@ -155,7 +159,7 @@ public class Main {
 
 		final ClassLoader getMainClassLoader() throws IOException {
 			if (mainClassLoader == null) {
-				mainClassLoader = shell.getRhinoClassLoader(this);
+				mainClassLoader = shell.getRhinoClassLoader();
 			}
 			return mainClassLoader;
 		}
@@ -181,7 +185,7 @@ public class Main {
 			return invocation.getRhinoClassLoader();
 		}
 
-		abstract void initializeSystemProperties();
+		abstract void initializeSystemProperties(Invocation invocation, Shell shell) throws IOException;
 		abstract void addScript(String pathname);
 		abstract int run(String[] args) throws IOException, ScriptException;
 	}
@@ -196,7 +200,7 @@ public class Main {
 			this.engine = factory.getEngineByName("nashorn");			
 		}
 		
-		void initializeSystemProperties() {
+		void initializeSystemProperties(Invocation invocation, Shell shell) {
 			System.setProperty("jsh.launcher.nashorn", "true");
 		}
 		
@@ -239,7 +243,16 @@ public class Main {
 			return main;
 		}
 		
-		void initializeSystemProperties() {
+		void initializeSystemProperties(Invocation invocation, Shell shell) throws IOException {
+			invocation.debug("Setting Rhino system properties...");
+			System.setProperty("jsh.launcher.rhino", "true");
+			if (shell.getRhinoClasspath() != null) {
+				System.setProperty("jsh.launcher.rhino.classpath", shell.getRhinoClasspath());
+			} else {
+//				throw new RuntimeException("No Rhino classpath in " + this
+//					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
+//				;
+			}
 		}
 		
 		void addScript(String pathname) {
@@ -269,6 +282,7 @@ public class Main {
 		
 		@Override int run(String[] args) throws IOException {
 			Integer status = null;
+			Logging.get().log(Main.class, Level.FINE, "jsh.launcher.rhino.classpath = %s", System.getProperty("jsh.launcher.rhino.classpath"));
 			try {
 				java.lang.reflect.Method main = this.getMainMethod();
 				debug("Rhino shell main = " + main);
@@ -302,7 +316,8 @@ public class Main {
 	}
 	
 	private static abstract class Shell {
-		abstract ClassLoader getRhinoClassLoader(Invocation invocation) throws IOException;
+		abstract String getRhinoClasspath() throws IOException;
+		abstract ClassLoader getRhinoClassLoader() throws IOException;
 		abstract void addLauncherScriptsTo(Engine rhino) throws IOException;
 		abstract void initializeSystemProperties() throws IOException;
 	}
@@ -314,7 +329,12 @@ public class Main {
 			this.location = location;
 		}
 		
-		ClassLoader getRhinoClassLoader(Invocation invocation) {
+		String getRhinoClasspath() {
+			//	TODO	should we return something more useful?
+			return null;
+		}
+		
+		ClassLoader getRhinoClassLoader() {
 			//	In earlier versions of the launcher and packager, Rhino was packaged at the following location inside the packaged
 			//	JAR file. However, for some reason, loading Rhino using the below ClassLoader did not work. As a workaround, the
 			//	packager now unzips Rhino and we simply load it from the system class loader.
@@ -322,8 +342,12 @@ public class Main {
 				Class.forName("org.mozilla.javascript.Context");
 				return ClassLoader.getSystemClassLoader();
 			} catch (ClassNotFoundException e) {
-				return new java.net.URLClassLoader(new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") });
-			}			
+				if (ClassLoader.getSystemResource("$jsh/rhino.jar") != null) {
+					return new java.net.URLClassLoader(new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") });
+				} else {
+					return new java.net.URLClassLoader(new java.net.URL[] {});
+				}
+			}
 		}
 
 		void addLauncherScriptsTo(Engine rhino) {
@@ -340,15 +364,13 @@ public class Main {
 		private String colon = java.io.File.pathSeparator;
 		private ClassLoader rhinoClassLoader;
 		
-		final ClassLoader getRhinoClassLoader(Invocation invocation) throws IOException {
+		final ClassLoader getRhinoClassLoader() throws IOException {
 			if (rhinoClassLoader == null) {
 				String JSH_RHINO_CLASSPATH = getRhinoClasspath();
-				invocation.debug("Launcher: JSH_RHINO_CLASSPATH = " + JSH_RHINO_CLASSPATH);
 				List<String> pathElements = new ArrayList<String>();
 				pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
 				java.net.URL[] urls = new java.net.URL[pathElements.size()];
 				for (int i=0; i<pathElements.size(); i++) {
-					invocation.debug("Path element = " + pathElements.get(i));
 					try {
 						urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
 					} catch (java.net.MalformedURLException e) {
@@ -376,13 +398,6 @@ public class Main {
 		
 		//	TODO	push Rhino-specific properties back into Rhino engine
 		final void initializeSystemProperties() throws java.io.IOException {
-			if (getRhinoClasspath() != null) {
-				System.setProperty("jsh.launcher.rhino.classpath", getRhinoClasspath());
-			} else {
-				throw new RuntimeException("No Rhino classpath in " + this
-					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
-				;
-			}
 			System.setProperty("jsh.launcher.rhino.script", getRhinoScript());
 			if (getJshHome() != null) {
 				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());

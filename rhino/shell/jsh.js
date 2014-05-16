@@ -167,11 +167,13 @@ $exports.shell = function(p) {
 
 //	TODO	if not running on Rhino, this property should not appear
 //	TODO	no test coverage for $exports.rhino
-$exports.rhino = new function() {
-	if ($exports.properties.get("jsh.launcher.rhino.classpath")) {
-		this.classpath = $exports.properties.searchpath("jsh.launcher.rhino.classpath");
-	}
-};
+if ($exports.properties.get("jsh.launcher.rhino")) {
+	$exports.rhino = new function() {
+		if ($exports.properties.get("jsh.launcher.rhino.classpath")) {
+			this.classpath = $exports.properties.searchpath("jsh.launcher.rhino.classpath");
+		}
+	};
+}
 
 $exports.jsh = function(p) {
 	if (!arguments[0].script && !arguments[0].arguments) {

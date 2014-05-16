@@ -2,7 +2,8 @@ var parameters = jsh.script.getopts({
 	options: {
 		rhino: jsh.file.Pathname,
 		tomcat: jsh.file.Pathname,
-		installer: false
+		installer: false,
+		debug: false
 	}
 });
 
@@ -15,7 +16,8 @@ var build = function(p) {
 		//	TODO	One unit test as of this writing requires the PATH environment variable to be defined
 		PATH: jsh.shell.environment.PATH,
 		JSH_ENGINE: p.engine,
-		JSH_BUILD_TOMCAT_HOME: parameters.options.tomcat
+		JSH_BUILD_TOMCAT_HOME: parameters.options.tomcat,
+		JSH_BUILD_DEBUG: (parameters.options.debug) ? "true" : ""
 	};
 	var destination = (p.installer) ? jsh.shell.TMPDIR.createTemporary({ prefix: "jsh-install.", suffix: ".jar" }) : jsh.shell.TMPDIR.createTemporary({ directory: true });
 	var buildargs = (p.installer) ? ["-installer", destination] : [destination];

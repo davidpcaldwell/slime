@@ -269,6 +269,8 @@ settings.defaults = new function() {
 
 	//	The jsh.launcher.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
 	//	create the classloader inside which we are executing
+	debug("jsh.launcher.rhino = " + getProperty("jsh.launcher.rhino"));
+	debug("jsh.launcher.rhino.classpath = " + getProperty("jsh.launcher.rhino.classpath"));
 	this.rhinoClasspath =
 		(getProperty("jsh.launcher.rhino.classpath"))
 		? new Searchpath(getProperty("jsh.launcher.rhino.classpath"))
@@ -623,7 +625,7 @@ try {
 		}
 
 		[
-			"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
+			"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
 		].forEach( function(property) {
 			if (getProperty(property)) {
 				command.jvmProperty(property, getProperty(property));
