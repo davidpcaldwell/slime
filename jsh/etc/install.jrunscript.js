@@ -23,16 +23,44 @@
 		var Rhino = function(filename) {
 			this.filename = filename;
 			
-			var downloadRhinoDistribution = function(url) {
-				//	TODO	download from Mozilla, unzip and save just js.jar to a particular location
-				throw new Error("Unimplemented: downloading Rhino from Mozilla; currently must use jsh.build.rhino system property to point to local js.jar");
+			var copy = function(from,to) {
+				var b;
+				while( (b = from.read()) != -1 ) {
+					to.write(b);
+				}
+				to.close();
+			}
+			
+			var downloadMozillaRhinoDistribution = function(url) {
+				var _url = new Packages.java.net.URL(url.replace(/ftp\:\/\//g, "http://"));
+				println("Downloading Rhino from " + _url);
+				var _connection = _url.openConnection();
+				var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
+				var _entry;
+				var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
+				tmpdir["delete"]();
+				tmpdir.mkdirs();
+				if (!tmpdir.exists()) {
+					throw new Error("Failed to create temporary file.");
+				}
+				var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
+				while(_entry = _zipstream.getNextEntry()) {
+					var name = String(_entry.getName());
+					var path = name.split("/");
+					if (path[1] == "js.jar") {
+						var out = new Packages.java.io.FileOutputStream(tmprhino);
+						copy(_zipstream,out);
+					}
+				}
+				println("Downloaded Rhino to " + tmprhino);
+				return tmprhino;
 			}
 			
 			var findRhino = function() {
 				if (Packages.java.lang.System.getProperty("jsh.build.rhino")) {
 					return new File(Packages.java.lang.System.getProperty("jsh.build.rhino"));
 				} else {
-					return downloadRhinoDistribution("ftp://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip");
+					return downloadMozillaRhinoDistribution("ftp://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip");
 				}
 			}
 			
@@ -53,7 +81,7 @@
 								_b.write(_c);
 							}
 							return _b.toString();
-						}
+						};
 
 						//	TODO	this does not seem to work; eval is essentially a no-op, for unknown reason
 						var code = readFile(p.script.getCanonicalPath());
