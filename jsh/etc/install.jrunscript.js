@@ -175,8 +175,16 @@
 		if ($script.file) {
 			return new File($script.file, "../../..").getCanonicalFile();
 		} else {
+			//	sample link		https://bitbucket.org/davidpcaldwell/slime/get/[label].zip
+			//	sample script	https://bitbucket.org/davidpcaldwell/slime/raw/[label]/jsh/etc/install.jrunscript.js
 			//	TODO	implement determination of URL from Bitbucket
-			println("Unimplemented: download from URL calculated using " + $script.url);
+			var bitbucketParser = /^http(?:s?)\:\/\/bitbucket.org\/davidpcaldwell\/slime\/get\/(.*)\/jsh\/etc\/install.jrunscript.js$/;
+			var version;
+			var match = bitbucketParser.exec($script.url.toExternalForm());
+			if (match) {
+				version = match[1];
+			}
+			throw new Error("Unimplemented: download from URL calculated using " + $script.url + " version=" + version);
 		}
 	})();
 
