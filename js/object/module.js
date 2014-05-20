@@ -402,7 +402,17 @@ $exports.Filter.or = function() {
 		}
 		return false;
 	}
-}
+};
+$exports.Filter.and = function() {
+	if (arguments.length == 0) throw new TypeError();
+	var items = Array.prototype.slice.call(arguments);
+	return function() {
+		for (var i=0; i<items.length; i++) {
+			if (!items[i].apply(this,arguments)) return false;
+		}
+		return true;
+	}
+};
 
 var Map = new function() {
 	this.property = function(name,map) {
