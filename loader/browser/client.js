@@ -83,6 +83,19 @@
 
 		var current = base + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
 
+		//	TODO	The next block is not very robust but probably works for most, or even all, cases. That said, the js/web
+		//			module has a better implementation of URL canonicalization.
+		//			This mostly matters for debuggers that try to map URLs to files or whatever; they may not be able to handle
+		//			paths with .. correctly (Google Chrome, for example, does not).
+		var tokens = current.split("/");
+		for (var i=0; i<tokens.length; i++) {
+			if (tokens[i] == "..") {
+				tokens.splice(i-1,2);
+				i = i - 2;
+			}
+		}
+		current = tokens.join("/");
+
 		return new Bootstrap(current);
 	}
 
