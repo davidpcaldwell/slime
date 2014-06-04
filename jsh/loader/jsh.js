@@ -421,7 +421,7 @@ this.jsh = new function() {
 				list.forEach(function(item) {
 					var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
 					Packages.inonit.system.Logging.get().log(
-						Packages.inonit.script.jsh.Shell,
+						loader.getRhinoLoader().java.getNamedJavaClass("inonit.script.jsh.Shell"),
 						Packages.java.util.logging.Level.WARNING,
 						"Plugin from " + item._code.getScripts() + " is disabled: " + message
 					);

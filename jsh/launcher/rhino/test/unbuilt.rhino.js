@@ -56,6 +56,7 @@ var addJavaSourceFilesFrom = function(dir,rv) {
 		rv = [];
 	}
 	var files = dir.listFiles();
+	if (!files) return [];
 	for (var i=0; i<files.length; i++) {
 		if (files[i].isDirectory()) {
 			addJavaSourceFilesFrom(files[i],rv);
@@ -68,25 +69,19 @@ var addJavaSourceFilesFrom = function(dir,rv) {
 	return rv;
 }
 
-//	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
-//	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
-var LOADER_CLASSES = createTemporaryDirectory();
-platform.jdk.compile([
-	"-d", LOADER_CLASSES
-]
-	.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("loader/rhino")))
-	.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("rhino/system")))
-	.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("jsh/loader")))
-);
-
-var MODULE_CLASSES = createTemporaryDirectory();
-var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.dir"));
-//	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
-var modules = ["js/object","js/document","js/mime","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client","rhino/mail"];
-//	TODO	some of this logic is duplicated in jsh/tools/slime.js
 var RHINO_JAR = (function() {
 	//	TODO	brutally plagiarized from jsh/etc/build.rhino.js
 	var File = Packages.java.io.File;
+	var rhinoContextClass = (function() {
+		try {
+			return Packages.java.lang.Class.forName("org.mozilla.javascript.Context")
+		} catch (e) {
+			return null;
+		}
+	})();
+	if (!rhinoContextClass) {
+		return null;
+	}
 	var RHINO_HOME = function() {
 		//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
 		//	like an un-jarred version
@@ -102,14 +97,37 @@ var RHINO_JAR = (function() {
 	debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
 	return new File(RHINO_HOME, "js.jar").getCanonicalPath();
 })();
+//	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
+//	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
+var LOADER_CLASSES = createTemporaryDirectory();
+var toCompile = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("loader/rhino/java"));
+if (RHINO_JAR) toCompile = toCompile.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("loader/rhino/rhino")));
+toCompile = toCompile.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("rhino/system/java")));
+toCompile = toCompile.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("jsh/loader/java")));
+if (RHINO_JAR) toCompile = toCompile.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("jsh/loader/rhino")));
+
+platform.jdk.compile([
+	"-d", LOADER_CLASSES
+].concat(toCompile));
+
+var MODULE_CLASSES = createTemporaryDirectory();
+var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.dir"));
+//	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
+var modules = ["js/object","js/document","js/mime","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client","rhino/mail"];
+//	TODO	some of this logic is duplicated in jsh/tools/slime.js
+var MODULE_CLASSPATH = [];
+if (RHINO_JAR) MODULE_CLASSPATH.push(RHINO_JAR);
+MODULE_CLASSPATH.push(LAUNCHER_CLASSES);
 modules.forEach(function(path) {
-	var files = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path));
+	var files = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/java"));
+	if (!files) throw new Error("Files null for " + path);
+	if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/rhino")));
 
 	if (files.length > 0) {
 		platform.jdk.compile([
 			"-d", MODULE_CLASSES,
 			//	LOADER_CLASSES not currently necessary
-			"-classpath", [RHINO_JAR, LAUNCHER_CLASSES].join(colon),
+			"-classpath", MODULE_CLASSPATH.join(colon),
 		].concat(files));
 	}
 });
@@ -127,14 +145,14 @@ args.push(
 	{
 		env: new (function() {
 			for (var x in env) {
-				if (x == "JSH_SCRIPT_DEBUGGER" || x == "JSH_PLUGINS" || x == "JSH_LAUNCHER_DEBUG" || "JSH_JVM_OPTIONS") {
+				if (x == "JSH_SCRIPT_DEBUGGER" || x == "JSH_PLUGINS" || x == "JSH_LAUNCHER_DEBUG" || x == "JSH_JVM_OPTIONS" || x == "JSH_ENGINE") {
 					this[x] = env[x];
 				} else if (/^JSH_/.test(x)) {
 				} else {
 					this[x] = env[x];
 				}
 			}
-			this.JSH_RHINO_CLASSPATH = RHINO_JAR;
+			if (RHINO_JAR) this.JSH_RHINO_CLASSPATH = RHINO_JAR;
 			this.JSH_RHINO_SCRIPT = JSH_SLIME_SRC.getPath("jsh/launcher/rhino/jsh.rhino.js");
 			this.JSH_SHELL_CLASSPATH = LOADER_CLASSES;
 			this.JSH_SCRIPT_CLASSPATH = MODULE_CLASSES;

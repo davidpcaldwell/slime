@@ -367,16 +367,20 @@ public class Main {
 		final ClassLoader getRhinoClassLoader() throws IOException {
 			if (rhinoClassLoader == null) {
 				String JSH_RHINO_CLASSPATH = getRhinoClasspath();
-				List<String> pathElements = new ArrayList<String>();
-				pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
-				java.net.URL[] urls = new java.net.URL[pathElements.size()];
-				for (int i=0; i<pathElements.size(); i++) {
-					try {
-						urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
-					} catch (java.net.MalformedURLException e) {
+				if (JSH_RHINO_CLASSPATH == null) {
+					rhinoClassLoader = new java.net.URLClassLoader(new java.net.URL[0]);
+				} else {
+					List<String> pathElements = new ArrayList<String>();
+					pathElements.addAll(Arrays.asList(JSH_RHINO_CLASSPATH.split(colon)));
+					java.net.URL[] urls = new java.net.URL[pathElements.size()];
+					for (int i=0; i<pathElements.size(); i++) {
+						try {
+							urls[i] = new java.io.File(pathElements.get(i)).toURI().toURL();
+						} catch (java.net.MalformedURLException e) {
+						}
 					}
+					rhinoClassLoader = new java.net.URLClassLoader(urls);
 				}
-				rhinoClassLoader = new java.net.URLClassLoader(urls);				
 			}
 			return rhinoClassLoader;
 		}
