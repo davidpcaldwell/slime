@@ -156,10 +156,8 @@
 		//	TODO	Come up with more robust way to detect; want to get access to javax.script.ScriptEngine but have not yet figured
 		//			out how; the below tests for presence of nashorn but not explicitly whether that is what we are running
 		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
-			println("nashorn");
 			return new Nashorn();
 		} else {
-			println("rhino: " + this["javax.script.filename"]);
 			return new Rhino(this["javax.script.filename"]);
 		}
 	})();
