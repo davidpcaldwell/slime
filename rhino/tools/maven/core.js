@@ -1,6 +1,5 @@
 $exports.mvn = function(m) {
 	var mvn = $context.mvn;
-	jsh.shell.echo("" + mvn.pathname + " " + m.arguments.join(" ") + " (in) " + m.directory);
 	var properties = (m.properties) ? (function() {
 		var rv = [];
 		for (var x in m.properties) {
@@ -97,6 +96,16 @@ var Pom = function(file) {
 		return root.child( jsh.document.filter({ elements: "dependencies" }) );
 	};
 	
+	this.getModules = function() {
+		var modules = root.child(jsh.document.filter({ elements: "modules" }));
+		if (!modules) return null;
+		return modules.children.filter(function(child) {
+			return child.element && child.element.type.name == "module";
+		}).map(function(element) {
+			return element.children[0].getString();
+		});
+	}
+	
 	if (this.getDependencies()) {
 		this.getDependencies().children.forEach(function(item) {
 			if (item.element && item.element.type.name == "dependency") {
@@ -175,6 +184,16 @@ $exports.Project = function(p) {
 		return null;
 	}
 	
+	this.getModules = function() {
+		if (this.pom.getModules()) {
+			return this.pom.getModules().map(function(module) {
+				return this.getModule(module);
+			},this);
+		} else {
+			return null;
+		}
+	}
+	
 	this.mvn = function(m) {
 		$exports.mvn(jsh.js.Object.set({}, {
 			directory: p.base
@@ -212,7 +231,6 @@ $exports.Project = function(p) {
 				evaluate: function(s) {
 					//	TODO	platform-dependent
 					var lines = s.split("\n");
-					jsh.shell.echo(lines.join("\n"));
 					var rv = [];
 					var mode = {
 						before: true
