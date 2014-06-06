@@ -145,7 +145,8 @@ var LocalRepository = function(o) {
 			command: "show",
 			arguments: ["--format=%H"],
 			stdio: {
-				output: String
+				output: String,
+				error: String
 			}
 			,evaluate: function(result) {
 				if (result.status == 128) return null;
