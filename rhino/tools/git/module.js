@@ -150,6 +150,9 @@ var LocalRepository = function(o) {
 			}
 			,evaluate: function(result) {
 				if (result.status == 128) return null;
+				if (result.status) {
+					throw new Error(result.stdio.error);
+				}
 				return result.stdio.output;
 			}
 		});
