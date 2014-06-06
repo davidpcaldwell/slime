@@ -12,18 +12,23 @@
 
 $exports.zip = function(p) {
 	var from;
-
-	if (p.from instanceof Array) {
-		from = p.from;
-	} else if (p.from instanceof $context.Pathname && p.from.directory) {
-		//	TODO	Should really allow p.from to *be* a directory
-		from = p.from.directory.list({ recursive: true, type: p.from.directory.list.ENTRY }).map( function(item) {
+	
+	var fromDirectory = function(directory) {
+		return directory.list({ recursive: true, type: directory.list.ENTRY }).map( function(item) {
 			if (item.node.directory) return { directory: item.path.substring(0,item.path.length-1).replace(/\\/g, "/") };
 			return {
 				path: item.path.replace(/\\/g, "/"),
 				$stream: item.node.read($context.Streams.binary).java.adapt()
 			};
 		});
+	}
+
+	if (p.from instanceof Array) {
+		from = p.from;
+	} else if (p.from instanceof $context.Pathname && p.from.directory) {
+		from = fromDirectory(p.from.directory);
+	} else if (p.from.pathname && p.from.pathname.directory) {
+		from = fromDirectory(p.from);
 	} else if (p.from instanceof $context.Pathname && p.from.file) {
 		throw "Unimplemented: from file";
 	} else {
