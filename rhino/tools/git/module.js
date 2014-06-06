@@ -12,7 +12,12 @@ var git = function(p) {
 };
 
 var RemoteRepository = function(o) {
+	this.toString = function() {
+		return "git remote: " + o.remote;
+	}
+	
 	var environment = (o && o.environment) ? o.environment : {};
+	
 	this.reference = o.remote;
 	
 	this.clone = function(p) {
@@ -131,6 +136,20 @@ var LocalRepository = function(o) {
 				}).filter(function(commit) {
 					return Boolean(commit.subject);
 				});
+			}
+		});
+	};
+	
+	this.show = function(p) {
+		return execute({
+			command: "show",
+			arguments: ["--format=%H"],
+			stdio: {
+				output: String
+			}
+			,evaluate: function(result) {
+				if (result.status == 128) return null;
+				return result.stdio.output;
 			}
 		});
 	};
