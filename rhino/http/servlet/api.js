@@ -10,22 +10,65 @@
 //	Contributor(s):
 //	END LICENSE
 
+var $loader = (function() {
+	if ($host.getLoader && $host.getEngine) {
+		return $host.getEngine().script("rhino/rhino.js", $host.getLoader().getLoaderCode("rhino/rhino.js"), { $loader: $host.getLoader(), $rhino: $host.getEngine() }, null);
+	} else if ($host.getLoader && $host.getClasspath) {
+		var scripts = eval($host.getLoader().getLoaderCode("rhino/nashorn.js"));
+
+		var rv = scripts.script(
+			"rhino/nashorn.js",
+			$host.getLoader().getLoaderCode("rhino/nashorn.js"),
+			{ 
+				$getLoaderCode: function(path) {
+					return $host.getLoader().getLoaderCode(path);
+				},
+				$classpath: $host.getClasspath() 
+			},
+			null
+		);
+		return rv;
+	}
+})();
+
+var $servlet = (function() {
+	if ($host.getServlet) {
+		var rv = {};
+		rv.resources = Packages.inonit.script.engine.Code.Source.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
+		rv.path = $host.getServlet().getServletConfig().getInitParameter("script");
+		rv.parameters = (function() {
+			var rv = {};
+			var _enumeration = $host.getServlet().getServletConfig().getInitParameterNames();
+			while(_enumeration.hasMoreElements()) {
+				var _key = _enumeration.nextElement();
+				rv[_key] = $host.getServlet().getServletConfig().getInitParameter(_key);
+			}
+			return rv;
+		})();
+		rv.getMimeType = function(path) {
+			return $host.getServlet().getServletConfig().getServletContext().getMimeType(path);
+		};
+		return rv;
+	}
+})();
+
 var scope = {
 	$exports: {}
 };
 
 var bootstrap = (function() {
-	if ($host.getRhinoLoader && $host.getServletResources) {
-		var $rhino = $host.getRhinoLoader();
+	if ($loader && $servlet) {
+		var $rhino = $loader;
 		var loader = new $rhino.Loader({
-			_source: $host.getServletResources()
+			_source: $servlet.resources
 		});
 		var rv = {};
 		rv.js = loader.module("WEB-INF/slime/js/object/", {
 			globals: true
 		});
 		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
-			globals: true
+			globals: true,
+			$rhino: $loader
 		});
 		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
 			$rhino: $rhino,
@@ -54,25 +97,25 @@ var api = (function() {
 })();
 
 var loaders = (function() {
-	if ($host.getRhinoLoader && $host.getServletResources && $host.getServletScriptPath) {
+	if ($loader && $servlet) {
 		//	servlet container, determine webapp path and load relative to that
-		var path = String($host.getServletScriptPath());
+		var path = String($servlet.path);
 		var tokens = path.split("/");
 		var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
 		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
 		return {
 			script: new Loader({
-				_source: $host.getServletResources().child(prefix),
+				_source: $servlet.resources.child(prefix),
 				type: function(path) {
-					var _type = $host.getMimeType(path);
+					var _type = $servlet.getMimeType(path);
 					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
 					return null;
 				}
 			}),
 			container: new Loader({
-				_source: $host.getServletResources(),
+				_source: $servlet.resources,
 				type: function(path) {
-					var _type = $host.getMimeType(path);
+					var _type = $servlet.getMimeType(path);
 					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
 					return null;
 				}
@@ -86,12 +129,10 @@ var loaders = (function() {
 })();
 
 var $parameters = (function() {
-	if ($host.getServletInitParameters) {
-		var _map = $host.getServletInitParameters();
+	if ($servlet) {
 		var rv = {};
-		var _entries = _map.entrySet().toArray();
-		for (var i=0; i<_entries.length; i++) {
-			rv[String(_entries[i].getKey())] = String(_entries[i].getValue());
+		for (var x in $servlet.parameters) {
+			rv[x] = String($servlet.parameters[x]);
 		}
 		return rv;
 	} else if ($host.parameters) {
@@ -100,18 +141,14 @@ var $parameters = (function() {
 })();
 
 var $code = (function() {
-	if ($host.getServletResources && $host.getServletScriptPath) {
-		var path = String($host.getServletScriptPath());
+	if ($servlet) {
+		var path = String($servlet.path);
 		var tokens = path.split("/");
 		var path = tokens[tokens.length-1];
 		return function(scope) {
 			Packages.java.lang.System.err.println("Loading servlet from " + path);
 			loaders.script.run(path,scope);
 		};
-//		return {
-//			name: String($host.getServletScriptPath()),
-//			_in: $host.getServletResources().getResourceAsStream($host.getServletScriptPath())
-//		};
 	} else if ($host.getCode) {
 		return $host.getCode;
 	} else {
@@ -130,7 +167,7 @@ scope.httpd.io = api.io;
 var server = (function() {
 	if ($host.server) {
 		return $host.server;
-	} else if ($host.getServletResources) {
+	} else if ($servlet) {
 		return loaders.container.file("WEB-INF/server.js", {
 			api: api
 		});

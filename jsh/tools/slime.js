@@ -35,8 +35,9 @@ slime.build.rhino = function(from,build,api,javac) {
 	]);
 
 	var javaDirectory = new Packages.java.io.File(from,"java");
+	var rhinoDirectory = new Packages.java.io.File(from,"rhino/java");
 
-	if (javaDirectory.exists()) {
+	if (javaDirectory.exists() || (javac.rhino && rhinoDirectory.exists())) {
 		var list = [];
 
 		var process = function(f) {
@@ -52,7 +53,12 @@ slime.build.rhino = function(from,build,api,javac) {
 			}
 		}
 
-		process(javaDirectory);
+		if (javaDirectory.exists()) {
+			process(javaDirectory);
+		}
+		if (javac.rhino && rhinoDirectory.exists()) {
+			process(rhinoDirectory);
+		}
 
 		var to = new Packages.java.io.File(build,"$jvm/classes");
 		to.mkdirs();
@@ -95,6 +101,7 @@ slime.build.jsh = function(from,build,api,javac) {
 		}
 	} );
 
+	//	TODO	Add rhino/java directory from above
 	if (from.getSubdirectory("java")) {
 		var toCompile = from.getSubdirectory("java").list({ recursive: true, type: from.list.ENTRY }).filter( function(item) {
 			if (!/\.java$/.test(item.path)) return false;

@@ -102,8 +102,7 @@ var Jsdom = function(base,dom) {
 		//	Unclear whether below used
 
 		this.toString = function() {
-			throw new Error();
-			return xml.toXMLString();
+			return "jsapi.js Element type=" + this.getAttribute("type") + " jsapi:reference=" + this.getJsapiAttribute("reference") + " content=" + this.getContentString();
 		}
 	}
 
@@ -164,6 +163,10 @@ $exports.tests = new function() {
 				this.getScenario = function(scope) {
 					return this.html.getScenario(scope,unit);
 				}
+			}
+			
+			this.toString = function() {
+				return "moduleToItem: name=" + this.name + " page=" + page + " this.html = " + this.html;
 			}
 
 			this.namespace = moduleDescriptor.namespace;
@@ -250,13 +253,7 @@ $exports.tests = new function() {
 					return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
 				},
 				disableBreakOnExceptions: function(f) {
-					return function() {
-						var isBreak = $host.getDebugger().isBreakOnExceptions();
-						$host.getDebugger().setBreakOnExceptions(false);
-						var rv = f.apply(this,arguments);
-						$host.getDebugger().setBreakOnExceptions(isBreak);
-						return rv;
-					}
+					return jsh.debug.disableBreakOnExceptionsFor(f);
 				}
 			},
 			$java: {
@@ -283,7 +280,25 @@ $exports.tests = new function() {
 			//	var item is expected to be $scope.$unit
 			suites.forEach( function(suite) {
 				var scope = new Scope(suite);
-				var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
+				try {
+					var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
+				} catch (e) {
+					var error = e;
+					topscope.scenario(new function() {
+						this.name = suite.name;
+						
+						this.execute = function(scope) {
+							scope.test({
+								success: null,
+								error: error,
+								messages: {
+									failure: suite.name + " threw error instantiating context"
+								}
+							});
+						}
+					});
+					return;
+				}
 
 				for (var i=0; i<contexts.length; i++) {
 					try {

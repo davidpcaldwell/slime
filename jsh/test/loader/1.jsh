@@ -10,9 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-#JVM_OPTION		-Xmx64m
-#CLASSPATH		/foo/bar/baz
-#JDK_LIBRARY	lib/tools.jar
+//#JVM_OPTION		-Xmx64m
+//#CLASSPATH		/foo/bar/baz
+//#JDK_LIBRARY	lib/tools.jar
 
 var parameters = jsh.script.getopts({
 	options: {

@@ -34,7 +34,7 @@ var helloServlet = new function() {
 		});
 		if (response.status.code != 200) {
 			if (response.status.code == 500) {
-				jsh.shell.echo(response.body.stream.character().asString());
+				jsh.shell.echo("Status: 500; body = " + response.body.stream.character().asString());
 			}
 			fail("Response is wrong status: " + response.status.code);
 		}
@@ -189,24 +189,24 @@ var server = (function() {
 			var buildWebapp = function(urlpath,servletpath) {
 				//	TODO	may want to move this to httpd.tomcat.js, although it would need to somehow be aware of location of
 				//			webapp.jsh.js
-				jsh.shell.jsh(
-					jsh.script.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js"),
-					[
+				var rhinoArguments = (typeof(Packages.org.mozilla.javascript.Context) == "function") ? [] : ["-norhino"];
+				jsh.shell.jsh({
+					fork: true,
+					script: jsh.script.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js"),
+					arguments: [
 						"-to", environment.CATALINA_BASE.getSubdirectory("webapps").getRelativePath(urlpath),
 						"-servletapi", environment.CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
 						"-resources", jsh.script.getRelativePath("httpd.resources.js"),
 						"-servlet", servletpath
-					],
-					{
-						onExit: function(result) {
-							jsh.shell.echo("Command: " + [result.command].concat(result.arguments).join(" "));
-							jsh.shell.echo("Status: " + result.status);
-							if (result.status) {
-								throw new Error("Exit status: " + result.status);
-							}
+					].concat(rhinoArguments),
+					evaluate: function(result) {
+						jsh.shell.echo("Command: " + [result.command].concat(result.arguments).join(" "));
+						jsh.shell.echo("Status: " + result.status);
+						if (result.status) {
+							throw new Error("Exit status: " + result.status);
 						}
 					}
-				);
+				});
 			};
 			buildWebapp("slime.hello", "test/hello.servlet.js");
 			buildWebapp("slime.file", "test/file.servlet.js");

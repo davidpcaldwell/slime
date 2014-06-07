@@ -22,8 +22,8 @@ plugin({
 				io: jsh.io,
 				file: jsh.file
 			},
-			_properties: $host.getSystemProperties(),
-			_environment: $host.getEnvironment()
+			_properties: $jsh.getSystemProperties(),
+			_environment: $jsh.getEnvironment()
 		});
 
 		var context = {};
@@ -34,21 +34,24 @@ plugin({
 			,file: jsh.file
 		}
 		context.stdio = new function() {
-			this.input = jsh.io.java.adapt($host.getStdio().getStandardInput());
-			this.output = jsh.io.java.adapt($host.getStdio().getStandardOutput());
-			this.error = jsh.io.java.adapt($host.getStdio().getStandardError());
+			this.input = jsh.io.java.adapt($jsh.getStdio().getStandardInput());
+			this.output = jsh.io.java.adapt($jsh.getStdio().getStandardOutput());
+			this.error = jsh.io.java.adapt($jsh.getStdio().getStandardError());
 		}
 		//	TODO	properties methods should go away; should not be necessary now
 		context.getSystemProperty = function(name) {
-			var rv = $host.getSystemProperties().getProperty(name);
+			var rv = $jsh.getSystemProperties().getProperty(name);
 			if (rv == null) return null;
 			return String(rv);
 		};
 		context._getSystemProperties = function() {
-			return $host.getSystemProperties();
+			return $jsh.getSystemProperties();
 		};
 		context.exit = function(code) {
-			$host.exit(code);
+			$jsh.exit(code);
+		}
+		context.jsh = function(configuration,invocation) {
+			return $jsh.jsh(configuration,invocation)
 		}
 		$loader.run(
 			"jsh.js",

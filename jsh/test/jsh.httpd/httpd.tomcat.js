@@ -41,7 +41,7 @@ $exports.Tomcat = function(p) {
 
 		var catalina = function(command,m) {
 			return function() {
-				jsh.shell.shell({
+				return jsh.shell.shell({
 					command: jsh.file.Pathname("/bin/sh").file,
 					arguments: [
 						p.home.getRelativePath("bin/catalina.sh"),
@@ -62,7 +62,7 @@ $exports.Tomcat = function(p) {
 							jsh.shell.echo("arguments: " + result.arguments);
 							jsh.shell.echo("environment: " + jsh.js.toLiteral(result.environment));
 						}
-						jsh.shell.exit(result.status);
+						return result;
 					}
 				});
 			}
@@ -73,7 +73,18 @@ $exports.Tomcat = function(p) {
 		this.start = function(m) {
 			jsh.shell.echo("Starting server at " + p.home + " with base " + base + " ...");
 
-			jsh.java.Thread.start({ call: catalina("run",m) });
+			if (jsh.java.Thread) {
+				jsh.java.Thread.start({ call: catalina("run",m) });
+			} else {
+				var thread = new Packages.java.lang.Thread(new JavaAdapter(Packages.java.lang.Runnable, {
+					run: function() {
+						jsh.shell.echo("Calling run in thread " + Packages.java.lang.Thread.currentThread() + " catalina=" + catalina);
+						catalina("run",m)();
+					}
+				}));
+				jsh.shell.echo("Forking thread from " + Packages.java.lang.Thread.currentThread() + " ...");
+				thread.start();
+			}
 			started = true;
 		}
 

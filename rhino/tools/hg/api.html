@@ -1,0 +1,631 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Mercurial</title>
+	<link rel="stylesheet" type="text/css" href="../slime/loader/api/api.css" jsapi:link="local" />
+</head>
+<body>
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="value">
+				<div class="name">install</div>
+				<span class="type"><a href="../slime/rhino/file/api.html#types.file">file</a></span>
+				<span>A file representing the Mercurial executable.</span>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#context">
+			(function() {
+				var Context = function() {
+					this.api = new function() {
+						var js = $jsapi.module("../slime/js/object/");
+						var java = $jsapi.module("../slime/rhino/host/");
+						var io = $jsapi.module("../slime/rhino/io/", {
+							api: {
+								java: java,
+								mime: $jsapi.module("../slime/js/mime/", {})
+							}
+							,$rhino: jsh.$jsapi.$rhino
+							,$java: new Packages.inonit.script.runtime.io.Streams()
+							,stdio: {
+								$out: Packages.java.lang.System.out,
+								$err: Packages.java.lang.System.err
+							}
+						});
+
+						this.js = js;
+						this.io = io;
+
+						this.file = $jsapi.module("../slime/rhino/file/", {
+							api: {
+								js: js,
+								java: java,
+								io: io
+							},
+							cygwin: (String(jsh.shell.properties.object.cygwin) == "undefined") ? function(){}() : jsh.shell.properties.object.cygwin
+						});
+
+						this.shell = $jsapi.module("../slime/rhino/shell/", {
+							api: {
+								js: js,
+								java: java,
+								io: io,
+								file: this.file
+							}
+						});
+					};
+
+					this.install = jsh.shell.PATH.getCommand("hg");
+				};
+				
+				return [
+					new Context()
+				];
+			})()
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<script type="application/x.jsapi#initialize">
+			//	Cannot run tests inside httpd, apparently; commands fail with "Invalid signature" so allow httpd to turn off
+			//	tests for this module
+			if (!scope.module) throw new TypeError("scope.module not found.");
+			if (!scope.$jsapi.environment.hgbug) {
+				//	TODO	get below from context variable?
+				var hg = jsh.shell.PATH.getCommand("hg");
+				module.unit = {
+					Repository: function() {
+						var rv = this;
+						rv.unit = new function() {
+							this.createFile = function(p) {
+								rv.directory.getRelativePath(p.path).write(p.content, { append: false });
+								if (p.add) {
+									rv.add({ files: [rv.directory.getRelativePath(p.path).toString()] });
+								}
+								return rv.directory.getFile(p.path);
+							};
+
+							this.editFile = function(p) {
+								var edited = rv.directory.getFile(p.path).read(String);
+								if (typeof(p.content) == "string") {
+									edited = p.content;
+								} else if (typeof(p.edit) == "function") {
+									edited = p.edit(edited);
+								}
+								rv.directory.getRelativePath(p.path).write(edited, { append: false });
+							};
+
+							this.readFile = function(p) {
+								if (typeof(p) == "string") {
+									p = { path: p };
+								}
+								return rv.directory.getFile(p.path).read(String);
+							};
+							
+							this.clone = function(p) {
+								var cloned = rv.clone(p);
+								module.unit.Repository.call(cloned);
+								return cloned;
+							}
+						}
+					}
+				};
+				var createHg = function() {
+					var rv = scope.module.init(scope.$jsapi.newTemporaryDirectory());
+					module.unit.Repository.call(rv);
+					return rv;
+				}
+				scope.createHg = createHg;
+			}
+		</script>
+		<script type="application/x.jsapi#initialize">
+			scope.a = scope.createHg();
+		</script>
+		<div class="type">
+			<a class="type" name="types.changeset">changeset</a>
+			<span>A single Mercurial changeset from a <a href="#types.Repository">Repository</a>.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">changeset</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">local</div>
+							<span class="type">number</span>
+							<span>The local changeset number.</span>
+						</li>
+						<li class="value">
+							<div class="name">global</div>
+							<span class="type">string</span>
+							<span>A global changeset ID.</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.Repository">Repository</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">reference</div>
+					<span class="type">string</span>
+					<span>A value that can be used to refer to this repository in a Mercurial command.</span>
+				</li>
+				<li class="function">
+					<div class="name">clone</div>
+					<span>Clones this repository into the specified directory.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="../slime/rhino/file/api.html#types.directory">directory</a></span>
+								or
+								<span class="type"><a href="../slime/rhino/file/api.html#types.Pathname">Pathname</a></span>
+								<span>
+									A destination. If the destination is a Pathname and the directory does not exist, it will be
+									created (but its parent directory must exist).
+								</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.LocalRepository">LocalRepository</a></span>
+						<span>The newly created repository.</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						//	TODO	add test for pathname scenario
+						if (!$jsapi.environment.hgbug) {
+							var b = a.clone($jsapi.newTemporaryDirectory());
+							var c = a.clone($jsapi.newTemporaryDirectory().pathname);
+							var to = $jsapi.newTemporaryDirectory().pathname;
+							to.directory.remove();
+							test(!to.directory);
+							var d = a.clone(to);
+							test(Boolean(to.directory));
+							test(1 == 1, "Clone succeeded");
+						}
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">identify</div>
+					<span>Returns information about a repository, including its current revision.</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">changeset</div>
+								<span class="type"><a href="#types.changeset">changeset</a></span>
+								<span>Changeset for the current revision.</span>
+							</li>
+							<li class="value">
+								<div class="name">modified</div>
+								<span class="type">boolean</span>
+								<span>
+									(conditional: if repository is local)
+									Whether the working directory has uncommitted changes.
+								</span>
+							</li>
+						</ul>
+					</div>
+					<!--	TODO	add test case for remote repository	-->
+					<script type="application/x.jsapi#tests">
+						var local = createHg();
+						var id = local.identify();
+						test(Boolean(id.changeset.global));
+						local.directory.getRelativePath("a").write("1\n", { append: false });
+						local.commit({ addremove: true, message: "a:1" });
+						var id1 = local.identify();
+						var copy = local.clone($jsapi.newTemporaryDirectory());
+						local.directory.getRelativePath("b").write("1\n", { append: false });
+						local.commit({ addremove: true, message: "b:1" });
+						copy.pull(local);
+						(function() {
+							var copyid = copy.identify();
+							test(copyid.changeset.global == id1.changeset.global);
+						})();
+						copy.directory.getRelativePath("a").write("2\n", { append: true });
+						(function() {
+							var copyid = copy.identify();
+							test(copyid.changeset.global == id1.changeset.global);
+							test(copyid.modified);
+						})();
+					</script>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.LocalRepository">LocalRepository</a>
+			<span class="type">supports <a href="#types.Repository">Repository</a></span>
+			<span>A local Mercurial repository.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">directory</div>
+					<span class="type"><a href="../slime/rhino/file/api.html#types.directory">directory</a></span>
+					<span>The root directory of this <code>Repository</code>.</span>
+				</li>
+				<li class="function">
+					<div class="name">heads</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">Array of <a href="#types.changeset">changeset</a></span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var repository = module.init($jsapi.newTemporaryDirectory());
+						repository.directory.getRelativePath("baz").write("baz", { append: false });
+						repository.commit({ addremove: true, message: "baz" });
+						var other = repository.clone($jsapi.newTemporaryDirectory());
+						repository.directory.getRelativePath("foo").write("foo", { append: false });
+						repository.commit({ addremove: true, message: "foo" });
+						other.directory.getRelativePath("bar").write("bar", { append: false });
+						other.commit({ addremove: true, message: "bar" });
+						other.pull({
+							source: repository
+						});
+						test(other.heads().length == 2);
+						debugger;
+					</script>
+				</li>
+				<li class="value">
+					<div class="name">paths</div>
+					<span class="type">object</span>
+					<span>
+						Each property of this object represents a path returned by the <code>hg paths</code> command. The
+						name of the property is the name of the path, and the value is the 
+						<a href="#types.Repository">Repository</a> represented by the path.
+					</span>
+					<script type="application/x.jsapi#tests">
+						var repository = module.init($jsapi.newTemporaryDirectory());
+						var other = repository.clone($jsapi.newTemporaryDirectory());
+						test(Boolean(other.paths["default"].directory));
+						test(other.paths["default"].directory.toString() == repository.directory.toString());
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">outgoing</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">
+									<a href="#types.Repository">Repository</a>
+								</span>
+								-OR-
+								<span class="type">string</span>
+								<span>
+									(optional)
+									The repository, or URL of a remote repository, to which to compare this one. If unspecified, 
+									the Mercurial default will be used.
+								</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">Array of <a href="#types.changeset">changeset</a></span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						if (!$jsapi.environment.hgbug) {
+							var first = a.clone($jsapi.newTemporaryDirectory());
+							var second = first.clone($jsapi.newTemporaryDirectory());
+							test(second.outgoing(first).length == 0);
+							second.directory.getRelativePath("hello.txt").write("Hello");
+							test(second.outgoing(first).length == 0);
+							second.commit({ addremove: true, message: "commit message" });
+							test(second.outgoing(first).length == 1);
+						}
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">archive</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function" jsapi:id="bookmarks">
+					<div class="name">bookmarks</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						If querying the bookmarks, array of the following type:
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">name</div>
+								<span class="type">string</span>
+								<span>The name of the bookmark</span>
+							</li>
+							<li class="value">
+								<div class="name">active</div>
+								<span class="type">boolean</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">changeset</div>
+								<span class="type"><a href="#types.changeset">changeset</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ul>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var parent = createHg();
+						parent.unit.createFile({ path: "a", content: "1", add: true });
+						parent.commit({ message: "1" });
+						parent.bookmarks({ name: "@" });
+						parent.bookmarks({ name: "local" });
+						parent.unit.editFile({ path: "a", content: "2" });
+						parent.commit({ message: "2" });
+						var child = parent.unit.clone($jsapi.newTemporaryDirectory());
+						test(child.unit.readFile("a") == "1");
+						//	TODO	this kind of access of bookmark by name is not documented
+						test(!child.bookmarks()["@"].active);
+						test(!child.bookmarks()["local"].active);
+					</script>
+					<script type="application/x.jsapi#tests">
+						var parent = createHg();
+						parent.unit.createFile({ path: "a", content: "1", add: true });
+						parent.commit({ message: "1" });
+						parent.bookmarks({ name: "@" });
+						var child = parent.unit.clone($jsapi.newTemporaryDirectory());
+						test(Boolean(child.bookmarks()["@"]));
+						test(!child.bookmarks()["@"].active);
+						test(!Boolean(child.bookmarks()["local"]));
+						parent.bookmarks({ name: "local" });
+						parent.unit.editFile({ path: "a", content: "2" });
+						parent.commit({ message: "2" });
+						test(child.unit.readFile("a") == "1");
+						child.pull({ source: parent });
+						//	When pulling locally, "new" bookmarks are pulled
+						test(Boolean(child.bookmarks()["local"]));
+					</script>
+					<script type="application/x.jsapi#tests">
+						var parent = createHg();
+						parent.unit.createFile({ path: "a", content: "1", add: true });
+						parent.commit({ message: "1" });
+						parent.bookmarks({ name: "@" });
+						var child = parent.unit.clone($jsapi.newTemporaryDirectory());
+						test(Boolean(child.bookmarks()["@"]));
+						test(!child.bookmarks()["@"].active);
+						test(!Boolean(child.bookmarks()["local"]));
+						parent.bookmarks({ name: "local" });
+						parent.unit.editFile({ path: "a", content: "2" });
+						parent.commit({ message: "2" });
+						test(child.unit.readFile("a") == "1");
+						parent.push({ destination: child });
+						//	When pushing locally, "new" bookmarks are not pushed
+						test(!Boolean(child.bookmarks()["local"]));
+						debugger;
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">parents</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">status</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						An object with properties representing each file that has a status. The names of these properties
+						are the relative paths of the files from the root, and the values are the values of the status.
+					</div>
+					<script type="application/x.jsapi#tests">
+						if (!$jsapi.environment.hgbug) {
+							a.directory.getRelativePath("1.txt").write("Hello");
+							a.directory.getRelativePath("2/2.txt").write("Hello", {recursive: true});
+							var rv = a.status();
+							test(rv["1.txt"] == "?");
+							test(rv["2/2.txt"] == "?");
+							test(rv["3.txt"] != "?");
+						}
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">commit</div>
+					<span>Commit changes from the working directory to the repository.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">addremove</div>
+										<span class="type">boolean</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">message</div>
+										<span class="type">string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">files</div>
+										<span class="type">Array of string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var repository = createHg();
+						repository.directory.getRelativePath("1").write("1\n", { append: false });
+						try {
+							repository.commit({ message: "1" });
+							test(false);
+						} catch (e) {
+							//	TODO	ensure that the failure is the correct one
+							var error = e;
+							debugger;
+							test(true);
+						}
+						repository.commit({ addremove: true, message: "1" });
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">update</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">merge</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">tip</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<!--
+		<div class="type">
+			<a class="type" name="types.RemoteRepository">RemoteRepository</a>
+			<span class="type">supports <a href="#types.Repository">Repository</a></span>
+			<span>A remote Mercurial repository</span>
+			<div class="label">has properties:</div>
+			<ul>
+			</ul>
+		</div>
+		-->
+		<ul>
+			<li class="constructor">
+				<div class="name">Repository</div>
+				<span>Creates an object representing a Mercurial repository given its location.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>An argument describing a local repository.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">local</div>
+									<span class="type"><a href="../slime/rhino/file/api.html#types.directory">directory</a></span>
+									<span>The location of the repository.</span>
+								</li>
+							</ul>
+							-or-
+							<span>An argument describing a remote repository.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">url</div>
+									<span class="type">string</span>
+									<span>The location of the repository</span>
+								</li>
+							</ul>
+						</li>
+						<li class="value">
+							<span class="type">jsh.file directory</span>
+							<span>
+								A directory where the repository is located (this directory must have a <code>.hg</code>
+								subdirectory).
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Repository">Repository</a></span>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">init</div>
+				<span>Creates a Mercurial repository for a given directory.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../slime/rhino/file/api.html#types.directory">directory</a></span>
+							<span>The directory to initialize as a Mercurial repository.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type"><a href="#types.Repository">Repository</a></span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var init = $jsapi.newTemporaryDirectory();
+					init.getRelativePath("foo").write("foo", { append: false });
+					var repository = module.init(init);
+					repository.commit({ addremove: true, message: "test" });
+					//	TODO	add log command and test based on its result
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

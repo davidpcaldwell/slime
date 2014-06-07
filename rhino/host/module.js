@@ -12,15 +12,11 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
-var getJavaClass = function(object) {
-	return Packages[object["class"].name];
-};
-
 $exports.getClass = $api.Function({
 	before: $api.Function.argument.isString({ index: 0, name: "name" }),
 	call: function(name) {
 		if ($context.$rhino.classpath.getClass(name)) {
-			return Packages[name];
+			return $context.$rhino.java.getJavaPackagesReference(name);
 		}
 		return null;
 	}
@@ -33,14 +29,81 @@ var isJavaObject = function(object) {
 	if (typeof(object) == "boolean") return false;
 	if (object == null) return false;
 	//	TODO	Is the next line superfluous now?
-	if ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) ) return true;
-	//	TODO	is this really the best way to do this?
-	return (String(object.getClass) == "function getClass() {/*\njava.lang.Class getClass()\n*/}\n");
+	if ($context.$rhino.java.isJavaObjectArray(object)) return true;
+	if ($context.$rhino.java.isJavaInstance(object)) return true;
+	return false;
 }
 $exports.isJavaObject = isJavaObject;
 
-$exports.Properties = function($properties) {
-	return Packages.inonit.script.runtime.Properties.create($properties);
+if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
+	$exports.Properties = function($properties) {
+		return Packages.inonit.script.runtime.Properties.create($properties);
+	}
+} else {
+	//	NASHORN	PropertyParent sometimes disappears in Nashorn so replacing it with an equivalent literal notation below for now.
+	var PropertyParent = function() {
+	}
+	PropertyParent.prototype.toString = function() {
+		return null;
+	}
+	
+	$exports.Properties = function($properties) {
+		var nashornTrace = function(s) {
+			//Packages.java.lang.System.err.println(s);
+		}
+		nashornTrace("Properties constructor");
+		var rv = {};
+		var keys = $properties.propertyNames();
+		while(keys.hasMoreElements()) {
+			nashornTrace("key");
+			var name = String(keys.nextElement());
+			var value = String($properties.getProperty(name));
+			nashornTrace(name + "=" + value);
+			var tokens = name.split(".");
+			var target = rv;
+			for (var i=0; i<tokens.length-1; i++) {
+				if (!target[tokens[i]]) {
+					nashornTrace("token: " + tokens[i] + " is PropertyParent");
+					target[tokens[i]] = {
+						toString: function() {
+							return null;
+						}
+					};
+				} else if (typeof(target[tokens[i]]) == "string") {
+					nashornTrace("token: " + tokens[i] + " is currently string; replacing with PropertyParent");
+					var toString = (function(value) {
+						return function() {
+							return value;
+						}
+					})(target[tokens[i]]);
+					if (false && typeof(PropertyParent) == "undefined") {
+						nashornTrace("PropertyParent undefined");
+						throw new TypeError("In Nashorn, PropertyParent is undefined.");
+					}
+					target[tokens[i]] = {
+						toString: function() {
+							return null;
+						}
+					};
+					target[tokens[i]].toString = toString;
+				} else {
+					nashornTrace("target: " + tokens[i] + " found.");
+				}
+				target = target[tokens[i]];
+			}
+			if (!target[tokens[tokens.length-1]]) {
+				nashornTrace("Last token: " + tokens[tokens.length-1] + " is string");
+				target[tokens[tokens.length-1]] = value;
+			} else {
+				nashornTrace("Last token: " + tokens[tokens.length-1] + " is toString");
+				target[tokens[tokens.length-1]].toString = function() {
+					return value;
+				}
+			}
+		}
+		nashornTrace("Properties constructor returning");
+		return rv;
+	};
 }
 $api.experimental($exports,"Properties");
 $exports.Properties.adapt = function($properties) {
@@ -143,7 +206,12 @@ if ($context.globals) {
 	})();
 
 	errorNames.forEach( function(name) {
-		global[name] = errors.decorate(global[name]);
+		if (!global[name]) {
+			//	Probably just not defined in this engine
+			//	TODO	log message or synthesize error or something
+		} else {
+			global[name] = errors.decorate(global[name]);
+		}
 	});
 }
 
@@ -164,27 +232,29 @@ var experimental = function(name) {
 	$api.experimental($exports, name);
 }
 
-var getJavaClassName = function(javaclass) {
-	var toString = "" + javaclass;
-	if (/\[JavaClass /.test(toString)) {
-		return toString.substring("[JavaClass ".length, toString.length-1);
-	} else {
-		return null;
-	}
-}
-
-var $isJavaType = function(javaclass,object) {
-	var getNamedJavaClass = function(name) {
-		return Packages.org.mozilla.javascript.Context.getCurrentContext().getApplicationClassLoader().loadClass(name);
-	};
-
-	var className = getJavaClassName(javaclass);
-	if (className == null) throw new TypeError("Not a class: " + javaclass);
-	if (!isJavaObject(object)) return false;
-	var loaded = getNamedJavaClass(className);
-	return loaded.isInstance(object);
-}
 $exports.isJavaType = function(javaclass) {
+	//	NASHORN	Used to have this function outside isJavaType but because of strange Nashorn issues with code loading it caused
+	//			unit tests to fail at times
+	var getJavaClassName = function(javaclass) {
+		var toString = "" + javaclass;
+		if (/\[JavaClass /.test(toString)) {
+			return toString.substring("[JavaClass ".length, toString.length-1);
+		} else {
+			return null;
+		}
+	}
+
+	//	NASHORN	Used to have this function outside isJavaType but because of strange Nashorn issues with code loading it caused
+	//			unit tests to fail at times
+	var $isJavaType = function(javaclass,object) {
+		var className = getJavaClassName(javaclass);
+		if (className == null) throw new TypeError("Not a class: " + javaclass);
+		//	NASHORN	Used to call isJavaObject rather than $exports.isJavaObject
+		if (!$exports.isJavaObject(object)) return false;
+		var loaded = $exports.isJavaType.getNamedJavaClass(className);
+		return loaded.isInstance(object);
+	};
+	
 	if (arguments.length == 2) {
 		warning("WARNING: Use of deprecated 2-argument form of isJavaType.");
 		return $isJavaType(javaclass,arguments[1]);
@@ -193,6 +263,7 @@ $exports.isJavaType = function(javaclass) {
 		return $isJavaType(javaclass,object);
 	}
 };
+$exports.isJavaType.getNamedJavaClass = $context.$rhino.java.getNamedJavaClass;
 $api.experimental($exports,"isJavaType");
 
 $exports.Array = new function() {
@@ -230,7 +301,7 @@ $exports.toJsArray = $api.deprecate(toJsArray);
 //	TODO	at least implement this in terms of $exports.Array.create
 var toJavaArray = function(jsArray,javaclass,adapter) {
 	if (!adapter) adapter = function(x) { return x; }
-	var rv = Packages.java.lang.reflect.Array.newInstance(javaclass,jsArray.length);
+	var rv = new $context.$rhino.java.Array(javaclass,jsArray.length);
 	for (var i=0; i<jsArray.length; i++) {
 		rv[i] = adapter(jsArray[i]);
 	}
@@ -369,67 +440,71 @@ var Thread = function(p) {
 		debug("Done waiting for " + thread);
 	};
 };
-$exports.Thread = {};
-$exports.Thread.start = function(p) {
-	return new Thread(p);
-}
-$exports.Thread.run = function(p) {
-	var callee = arguments.callee;
-	var on = new function() {
-		var result = {};
 
-		this.result = function(rv) {
-			result.returned = { value: rv };
-		}
-
-		this.error = function(t) {
-			result.threw = t;
-		}
-
-		this.timeout = function() {
-			result.timedOut = true;
-		}
-
-		this.evaluate = function() {
-			if (result.returned) return result.returned.value;
-			if (result.threw) throw result.threw;
-			if (result.timedOut) throw callee.TIMED_OUT;
-		}
-	};
-	var o = {};
-	for (var x in p) {
-		o[x] = p[x];
+//	TODO	implement for Nashorn
+if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+	$exports.Thread = {};
+	$exports.Thread.start = function(p) {
+		return new Thread(p);
 	}
-	o.on = on;
-	var t = new Thread(o);
-	t.join();
-	return on.evaluate();
-};
-//	TODO	make the below a subtype of Error
-//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
-$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
-	if (!arguments.callee.cached) {
-		arguments.callee.cached = new Error("Timed out.");
-	}
-	return arguments.callee.cached;
-});
-$exports.Thread.thisSynchronize = function(f) {
-	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
-	//			synchronize()
-	return new Packages.org.mozilla.javascript.Synchronizer(f);
-};
-$exports.Thread.Monitor = function() {
-	var lock = new Packages.java.lang.Object();
+	$exports.Thread.run = function(p) {
+		var callee = arguments.callee;
+		var on = new function() {
+			var result = {};
 
-	this.Waiter = function(c) {
-		return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, function() {
-			while(!c.until.apply(this,arguments)) {
-				lock.wait();
+			this.result = function(rv) {
+				result.returned = { value: rv };
 			}
-			var rv = c.then.apply(this,arguments);
-			lock.notifyAll();
-			return rv;
-		});
+
+			this.error = function(t) {
+				result.threw = t;
+			}
+
+			this.timeout = function() {
+				result.timedOut = true;
+			}
+
+			this.evaluate = function() {
+				if (result.returned) return result.returned.value;
+				if (result.threw) throw result.threw;
+				if (result.timedOut) throw callee.TIMED_OUT;
+			}
+		};
+		var o = {};
+		for (var x in p) {
+			o[x] = p[x];
+		}
+		o.on = on;
+		var t = new Thread(o);
+		t.join();
+		return on.evaluate();
+	};
+	//	TODO	make the below a subtype of Error
+	//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
+	$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
+		if (!arguments.callee.cached) {
+			arguments.callee.cached = new Error("Timed out.");
+		}
+		return arguments.callee.cached;
+	});
+	$exports.Thread.thisSynchronize = function(f) {
+		//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
+		//			synchronize()
+		return new Packages.org.mozilla.javascript.Synchronizer(f);
+	};
+	$exports.Thread.Monitor = function() {
+		var lock = new Packages.java.lang.Object();
+
+		this.Waiter = function(c) {
+			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, function() {
+				while(!c.until.apply(this,arguments)) {
+					lock.wait();
+				}
+				var rv = c.then.apply(this,arguments);
+				lock.notifyAll();
+				return rv;
+			});
+		}
 	}
 }
 

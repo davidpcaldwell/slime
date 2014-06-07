@@ -74,9 +74,7 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				var java = $jsapi.module("../../rhino/host/", {
-					loadClass: function(name) {
-						return $host.getLoader().getJavaClass(name)
-					}
+					$rhino: jsh.$jsapi.$rhino
 				});
 				if (!java) throw new Error("Not found: rhino/host/");
 
@@ -502,6 +500,7 @@ END LICENSE
 														buffer.close();
 													}
 													this.execute = function(scope) {
+														debugger;
 														var props = buffer.readBinary().asProperties();
 														scope.test( props.yes == "i do" );
 														scope.test( props.laptop == "inonit" );

@@ -41,7 +41,7 @@ var InputStream = function(peer) {
 		return new Resource(new function() {
 			this.read = new function() {
 				this.binary = function() {
-					return new InputStream(Packages.java.io.ByteArrayInputStream($bytes));
+					return new InputStream(new Packages.java.io.ByteArrayInputStream($bytes));
 				}
 			}
 		});
@@ -54,7 +54,7 @@ var InputStream = function(peer) {
 
 			this.read = new function() {
 				this.binary = function() {
-					return new InputStream(Packages.java.io.ByteArrayInputStream(_bytes));
+					return new InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
 				}
 			}
 		});
@@ -162,7 +162,7 @@ var Writer = function(peer) {
 			peer.write( string.toXMLString() );
 			peer.flush();
 		} else if (typeof(string) == "string") {
-			peer.write( string );
+			peer.write( String(string) );
 			peer.flush();
 		} else {
 			throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);
@@ -325,6 +325,8 @@ var Resource = function(p) {
 		//	TODO	may want to do some sort of "cast" here
 		this.type = p.type;
 	}
+	
+	var global = (function() { return this; })();
 
 	this.read = function(mode) {
 		if (binary) {
@@ -332,8 +334,10 @@ var Resource = function(p) {
 		}
 		if (text) {
 			if (mode == Streams.text) return text();
-			if (mode == XML) return text().asXml();
-			if (/^function XML\(\)/.test(String(mode))) return text().asXml();
+			if (typeof(global.XML) != "undefined") {
+				if (mode == XML) return text().asXml();
+				if (/^function XML\(\)/.test(String(mode))) return text().asXml();
+			}
 			if (mode == String) return text().asString();
 		}
 		var parameters = (function() {
@@ -483,7 +487,7 @@ $exports.Loader = function(p) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it
 		var _resources = new JavaAdapter(
-			Packages.inonit.script.rhino.Code.Source.Resources,
+			Packages.inonit.script.engine.Code.Source.Resources,
 			new function() {
 				this.toString = function() {
 					return p.resources.toString();
@@ -500,7 +504,7 @@ $exports.Loader = function(p) {
 			}
 		);
 		var rv = new $context.$rhino.Loader({
-			_source: Packages.inonit.script.rhino.Code.Source.create(_resources),
+			_source: Packages.inonit.script.engine.Code.Source.create(_resources),
 			Loader: Child
 		});
 		decorate.call(rv);

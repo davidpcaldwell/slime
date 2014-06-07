@@ -21,6 +21,10 @@ if ($context.globals) {
 		}
 	};
 
+	if (typeof(globals) == "undefined") {
+		//	NASHORN
+		globals = $loader.file("global.js");
+	}
 	copyGlobals(globals.Array,Array);
 	copyGlobals(globals.String,String);
 }
@@ -315,7 +319,8 @@ $exports.Object = new function() {
 		}
 	};
 	
-	this.expando = $api.deprecate(this.path);
+	this.expando = this.path;
+//	$api.deprecate(this,"expando");
 }
 $api.experimental($exports,"Object");
 

@@ -10,13 +10,78 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	HOST VARIABLE: $host (Java class: inonit.script.jsh.Shell.Host.Interface)
-
 this.jsh = new function() {
+	var host = (function() {
+		var installation = $jsh.getInstallation();
+		var configuration = $jsh.getConfiguration();	
+		var invocation = $jsh.getInvocation();
+
+		$host.getSystemProperties = function() {
+			return configuration.getSystemProperties();
+		};
+		
+		$host.getEnvironment = function() {
+			return configuration.getEnvironment();
+		};
+
+		$host.getStdio = function() {
+			return stdio;
+		};
+		
+		$host.getInvocation = function() {
+			return invocation;
+		};
+		
+		$host.getPackagedCode = function() {
+			return configuration.getPackagedCode();
+		};
+		
+		var loader = new function() {
+			//	implementation duplicates original
+			this.getBootstrapModule = function(path) {
+				return installation.getShellModuleCode(path);
+			};
+			
+			this.getPlugins = function() {
+				return installation.getPlugins();
+			}
+			
+			this.getPackagedCode = function() {
+				return configuration.getPackagedCode();
+			}
+		};
+
+		var stdio = new function() {
+			var out = new Packages.java.io.PrintStream(configuration.getStdio().getStandardOutput());
+			var err = new Packages.java.io.PrintStream(configuration.getStdio().getStandardError());
+
+			this.getStandardInput = function() {
+				return configuration.getStdio().getStandardInput();
+			};
+
+			this.getStandardOutput = function() {
+				return out;
+			};
+
+			this.getStandardError = function() {
+				return err;
+			};
+		};
+
+		return {
+			getLoader: function() {
+				return loader;
+			},
+			getPlugins: function(file) {	
+				return Packages.inonit.script.jsh.Installation.Plugin.get(file);
+			}
+		};		
+	})();
+	
 	var jsh = this;
 
 	var addFinalizer = function(f) {
-		$host.getLoader().addFinalizer(new JavaAdapter(
+		host.getLoader().addFinalizer(new JavaAdapter(
 			Packages.java.lang.Runnable,
 			{
 				run: function() {
@@ -30,7 +95,7 @@ this.jsh = new function() {
 		//	TODO	naming conventions are inconsistent in this stuff; look at how there are addClasses methods and classpath.add().
 		//			generally speaking, should probably match the rhinoLoader API across all of these representations of it
 		var rhinoLoader = (function() {
-			var rv = $host.getRhinoLoader();
+			var rv = $host;
 			rv.$api.deprecate.warning = function(o) {
 				debugger;
 			}
@@ -46,7 +111,7 @@ this.jsh = new function() {
 
 		this.bootstrap = function(path,context) {
 			var loader = new rhinoLoader.Loader({
-				_code: $host.getLoader().getBootstrapModule(path)
+				_code: host.getLoader().getBootstrapModule(path)
 			});
 			return loader.module("module.js", { $context: context });
 		}
@@ -158,7 +223,7 @@ this.jsh = new function() {
 			}
 
 			this.add = function(_file) {
-				rhinoLoader.classpath.add(Packages.inonit.script.rhino.Code.Source.create(_file));
+				rhinoLoader.classpath.add(Packages.inonit.script.engine.Code.Source.create(_file));
 			};
 
 			this.get = function(name) {
@@ -235,14 +300,15 @@ this.jsh = new function() {
 			context.pathext = environment.PATHEXT.split(";");
 		}
 
+		//	TODO	check to see whether this is used, because if it is, it had a longstanding copy-paste bug
 		context.stdio = new function() {
 			this.$out = $host.getStdio().getStandardOutput();
-			this.$in = $host.getStdio().getStandardError();
+			this.$in = $host.getStdio().getStandardInput();
 			this.$err = $host.getStdio().getStandardError();
 		}
 
 		//	TODO	both jsh.file and jsh.shell use this property; consider making it part of host object and/or shell configuration
-		//			and pushing property-mapping back into inonit.script.jsh.Main
+		//			and pushing property-mapping back into inonit.script.jsh.Shell
 		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
 
 		context.addFinalizer = addFinalizer;
@@ -296,6 +362,7 @@ this.jsh = new function() {
 				}
 				callbacks.script({ _code: _code, declaration: declaration });
 			}
+			scope.$jsh = $host;
 			scope.global = (function() { return this; })();
 			scope.jsh = jsh;
 			scope.$loader = new (function(_code) {
@@ -354,7 +421,7 @@ this.jsh = new function() {
 				list.forEach(function(item) {
 					var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
 					Packages.inonit.system.Logging.get().log(
-						Packages.inonit.script.jsh.Main,
+						loader.getRhinoLoader().java.getNamedJavaClass("inonit.script.jsh.Shell"),
 						Packages.java.util.logging.Level.WARNING,
 						"Plugin from " + item._code.getScripts() + " is disabled: " + message
 					);
@@ -365,12 +432,12 @@ this.jsh = new function() {
 
 	this.loader.plugins = function(from) {
 		if (from && from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
-			loadPlugins($host.getPlugins(from.java.adapt()));
+			loadPlugins(host.getPlugins(from.java.adapt()));
 		}
 	};
 
 	(function() {
-		loadPlugins($host.getLoader().getPlugins());
+		loadPlugins(host.getLoader().getPlugins());
 	})();
 
 	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
@@ -450,7 +517,7 @@ this.jsh = new function() {
 									var _listener = new Packages.java.io.File(options.listener);
 									var pathname = jsh.file.filesystems.os.Pathname(String(_listener.getCanonicalPath()));
 									jsh.loader.run(pathname, {
-										$loader: new loader.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(_listener.getParentFile()) }),
+										$loader: new loader.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(_listener.getParentFile()) }),
 										jsh: jsh,
 										profiles: profiles
 									});
@@ -469,7 +536,7 @@ this.jsh = new function() {
 										});
 									} else {
 										jsh.loader.run(pathname, {
-											$loader: new loader.Loader({ _source: Packages.inonit.script.rhino.Code.Source.create(pathname.parent.java.adapt()) }),
+											$loader: new loader.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(pathname.parent.java.adapt()) }),
 											jsh: jsh,
 											profiles: profiles,
 											to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))

@@ -65,7 +65,9 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var host = $jsapi.module("../../rhino/host/");
+				var host = $jsapi.module("../../rhino/host/", {
+					$rhino: jsh.$jsapi.$rhino
+				});
 				var file = $jsapi.module("../../rhino/file/", new function() {
 					if (jsh.shell.environment.PATHEXT) {
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
@@ -124,6 +126,10 @@ END LICENSE
 				}
 
 				this.exit = function() {
+				}
+				
+				this.jsh = function(configuration,invocation) {
+					return jsh.$jsapi.$rhino.jsh(configuration,invocation);
 				}
 			}
 		</script>

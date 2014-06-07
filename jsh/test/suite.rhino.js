@@ -91,6 +91,9 @@ for (var x in env) {
 		mode.env[x] = env[x];
 	}
 }
+if (env.JSH_ENGINE) {
+	mode.env.JSH_ENGINE = env.JSH_ENGINE;
+}
 mode.env.JSH_PLUGINS = String(new File(JSH_HOME, "plugins").getCanonicalPath());
 if (debug.on) {
 	mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
@@ -139,7 +142,7 @@ var testCommandOutput = function(path,tester,p) {
 		];
 		launcher = PACKAGED_LAUNCHER;
 	}
-	debug("Environment: " + env.toSource());
+	debug("Environment: " + JSON.stringify(env));
 	var options = {
 		output: "",
 		err: "",
@@ -207,7 +210,11 @@ var jshPackage = function(p) {
 	packaged.mkdirs();
 	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
 	invocation.push("-to",getJshPathname(to));
+	if (!RHINO_LIBRARIES) invocation.push("-norhino");
 	run(LAUNCHER_COMMAND.concat(invocation));
+	if (!to.getCanonicalFile().exists()) {
+		throw new Error("Packaged file not created: " + to.getCanonicalFile() + " class=" + to.getClass() + " using " + LAUNCHER_COMMAND.concat(invocation).join(" "));
+	}
 	return to;
 };
 
@@ -242,13 +249,29 @@ testCommandOutput("loader/child.jsh.js", function(options) {
 var classes = createTemporaryDirectory();
 classes.mkdirs();
 
-if (env.CATALINA_HOME) {
-	console("Running httpd integration tests with CATALINA_HOME = " + env.CATALINA_HOME);
+var CATALINA_HOME = (function() {
+	if (env.JSH_BUILD_TOMCAT_HOME) return env.JSH_BUILD_TOMCAT_HOME;
+	if (env.CATALINA_HOME) return env.CATALINA_HOME;
+})();
+if (CATALINA_HOME) {
+	console("Running httpd integration tests with CATALINA_HOME = " + CATALINA_HOME);
+	var mymode = {};
+	for (var x in mode) {
+		if (x == "env") {
+			if (!mymode.env) mymode.env = {};
+			for (var y in mode.env) {
+				mymode.env[y] = mode.env[y];
+			}
+		} else {
+			mymode[x] = mode[x];
+		}
+	}
+	mymode.env.CATALINA_HOME = CATALINA_HOME;
 	run(LAUNCHER_COMMAND.concat(
 		[
 			String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath())
 		]
-	));
+	),mymode);
 } else {
 	console("No CATALINA_HOME: not running httpd integration tests.");
 }

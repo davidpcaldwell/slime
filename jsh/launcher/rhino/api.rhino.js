@@ -10,6 +10,14 @@
 //	Contributor(s):
 //	END LICENSE
 
+var Class_java_lang_String;
+if (!Object.prototype.__defineGetter__) {
+	load("nashorn:mozilla_compat.js");
+	Class_java_lang_String = Packages.java.lang.String.class;
+} else {
+	Class_java_lang_String = Packages.java.lang.String;
+}
+
 var debug = function(message) {
 	if (arguments.callee.on) Packages.java.lang.System.err.println(message);
 }
@@ -127,7 +135,7 @@ platform.jdk = {};
 		if (compiler) {
 			return function(args) {
 				debug("Compiling with: " + args);
-				var jarray = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,args.length);
+				var jarray = Packages.java.lang.reflect.Array.newInstance(Class_java_lang_String,args.length);
 				for (var i=0; i<jarray.length; i++) {
 					jarray[i] = new Packages.java.lang.String(args[i]);
 				}
@@ -160,8 +168,8 @@ var copyFile = function(from,to,filters) {
 			copyFile(files[i], new File(to,files[i].getName()), filters);
 		}
 	} else if (from.exists()) {
-		var i = new Packages.java.io.BufferedInputStream(Packages.java.io.FileInputStream(from));
-		var o = new Packages.java.io.BufferedOutputStream(Packages.java.io.FileOutputStream(to));
+		var i = new Packages.java.io.BufferedInputStream(new Packages.java.io.FileInputStream(from));
+		var o = new Packages.java.io.BufferedOutputStream(new Packages.java.io.FileOutputStream(to));
 		platform.io.copyStream(i,o);
 		o.close();
 		i.close();
