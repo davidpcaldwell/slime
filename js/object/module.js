@@ -281,8 +281,8 @@ $exports.Object = new function() {
 		}
 		return o;
 	}
-
-	this.expando = new function() {
+	
+	this.path = new function() {
 		var find = function(o,n,create) {
 			var target = o;
 			var tokens = n.split(".");
@@ -313,7 +313,9 @@ $exports.Object = new function() {
 			var location = find(o,n,true);
 			location.target[location.name] = v;
 		}
-	}
+	};
+	
+	this.expando = $api.deprecate(this.path);
 }
 $api.experimental($exports,"Object");
 
