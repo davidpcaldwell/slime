@@ -527,15 +527,25 @@ $exports.Order = new function() {
 }
 
 $exports.Array = function(array) {
-	this.choose = function(filter) {
+	array.choose = function(filter) {
 		return $exports.Array.choose(array,filter);
 	};
 	
-	this.each = function(f) {
+	array.each = function(f) {
 		array.forEach(function(element) {
 			f.call(element);
 		});
-	}
+	};
+	
+	array.reduce = function(f,initial) {
+		var current = initial;
+		for (var i=0; i<array.length; i++) {
+			current = f.call(array[i],current);
+		}
+		return current;
+	};
+	
+	return array;
 }
 $exports.Array.choose = function(array,filter) {
 	var select = (filter) ? globals.Array.filter.call(array, filter) : array;
