@@ -526,28 +526,33 @@ $exports.Order = new function() {
 	}
 }
 
-$exports.Array = new function() {
-	this.choose = function(array,filter) {
-		var select = (filter) ? globals.Array.filter.call(array, filter) : array;
-		if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + array);
-		if (select.length == 0) return null;
-		return select[0];
-	}
-
-	this.categorize = function(array,p) {
-		var categorizer = new Categorizer(p);
-		array.forEach( function(item) {
-			categorizer.categorize(item);
-		} );
-		return categorizer;
+$exports.Array = function(array) {
+	this.choose = function(filter) {
+		return $exports.Array.choose(array,filter);
 	};
-	$api.experimental(this, "categorize");
-
-	this.toValue = function(array) {
-		return this.choose(array);
+	
+	this.each = function(f) {
+		array.forEach(function(element) {
+			f.call(element);
+		});
 	}
-	deprecate(this,"toValue");
 }
+$exports.Array.choose = function(array,filter) {
+	var select = (filter) ? globals.Array.filter.call(array, filter) : array;
+	if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + array);
+	if (select.length == 0) return null;
+	return select[0];
+};
+$exports.Array.categorize = $api.experimental(function(array,p) {
+	var categorizer = new Categorizer(p);
+	array.forEach( function(item) {
+		categorizer.categorize(item);
+	} );
+	return categorizer;	
+});
+$exports.Array.toValue = $api.deprecate(function(array) {
+	return $exports.Array.choose(array);
+});
 
 $exports.Error = $loader.file("Error.js").Error;
 
