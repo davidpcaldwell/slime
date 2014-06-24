@@ -424,6 +424,13 @@ $exports.Function.returning = function(v) {
 		return v;
 	};
 };
+$exports.Function.set = function(o) {
+	return function() {
+		for (var x in o) {
+			this[x] = o[x];
+		}
+	};
+}
 $exports.Function.evaluator = function() {
 	//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
 	//	undefined
