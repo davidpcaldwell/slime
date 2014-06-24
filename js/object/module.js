@@ -338,6 +338,87 @@ if ($context.globals) {
 $exports.Function = $api.deprecate(function(p) {
 	return $api.Function(p);
 });
+$exports.Function = function() {
+	var UNDEFINED = {};
+	
+	var Result = function() {
+		this.resolve = function() {
+			if (this.error) {
+				throw this.throwing;
+			} else {
+				if (this.returning === UNDEFINED) return void(0);
+				return this.returning;
+			}
+		};
+	};
+
+	var Situation = function() {
+		var result = new Result();
+
+		this.target = arguments[0];
+		this.arguments = arguments[1];
+
+		this.setReturn = function(v) {
+			result.error = false;
+			result.returning = v;
+		};
+
+		this.setThrow = function(v) {
+			result.error = true;
+			result.throwing = v;
+		};
+		
+		this.result = result;
+		
+		this.resolve = function() {
+			return result.resolve();
+		};
+	};
+	
+	var components = [];
+	
+	if (arguments.length != 1) {
+		throw new TypeError();
+	} else {
+		components.push(new $exports.Function.Basic(arguments[0]));
+	}
+	
+	var rv = function() {
+		var situation = new Situation(this,Array.prototype.slice.call(arguments));
+		components.forEach(function(component) {
+			component.call(situation);
+		});
+		return situation.resolve();
+	};
+	
+	rv.revise = function() {
+		for (var i=0; i<arguments.length; i++) {
+			components.push(new $exports.Function.Revise(arguments[i]));
+		}
+		return this;
+	}
+	
+	return rv;
+};
+$exports.Function.Basic = function(f) {
+	return function() {
+		try {
+			this.setReturn(f.apply(this.target,this.arguments));
+		} catch (e) {
+			this.setThrow(e);
+		}
+	};
+};
+$exports.Function.Revise = function(f) {
+	return function() {
+		this.setReturn(f.call({
+			target: this.target,
+			arguments: this.arguments,
+			throwing: this.result.throwing,
+			returning: this.result.returning
+		},this.result.returning));
+	};
+};
 $exports.Function.returning = function(v) {
 	return function() {
 		return v;
@@ -544,6 +625,17 @@ $exports.Array = function(array) {
 		}
 		return current;
 	};
+	
+	array.filter = function(f) {
+		//	TODO	currently incompatible with default array filter; should we provide a shim or rename?
+		var rv = $exports.Array([]);
+		for (var i=0; i<this.length; i++) {
+			if (f.call(this[i])) {
+				rv.push(this[i]);
+			}
+		}
+		return rv;
+	}
 	
 	return array;
 }
