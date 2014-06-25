@@ -612,55 +612,83 @@ $exports.Order = new function() {
 			return order(map(a),map(b));
 		}
 	}
-}
+};
 
-$exports.Array = function(array) {
-	array.choose = function(filter) {
-		return $exports.Array.choose(array,filter);
+var ArrayMethods = new function() {
+	var create = (function(self) {
+		return function() {
+			var rv = [];
+			for (var x in self) {
+				rv[x] = self[x];
+			}
+			return rv;
+		};
+	})(this);
+	
+	this.one = function(filter) {
+		var select = (filter) ? globals.Array.filter.call(this, filter) : this;
+		if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + this);
+		if (select.length == 0) return null;
+		return select[0];
 	};
 	
-	array.each = function(f) {
-		array.forEach(function(element) {
-			f.call(element);
-		});
-	};
-	
-	array.reduce = function(f,initial) {
+	this.fold = function(f,initial) {
 		var current = initial;
-		for (var i=0; i<array.length; i++) {
-			current = f.call(array[i],current);
+		for (var i=0; i<this.length; i++) {
+			current = f.call(this[i],current);
 		}
-		return current;
+		return current;		
 	};
 	
-	array.filter = function(f) {
-		//	TODO	currently incompatible with default array filter; should we provide a shim or rename?
-		var rv = $exports.Array([]);
+	this.each = function(f) {
+		var rv = create();
+		for (var i=0; i<this.length; i++) {
+			rv[i] = f.call(this[i]);
+		}
+		return rv;
+	};
+	
+	this.select = function(f) {
+		var rv = create();
 		for (var i=0; i<this.length; i++) {
 			if (f.call(this[i])) {
 				rv.push(this[i]);
 			}
 		}
-		return rv;
+		return rv;		
+	};
+};
+
+$exports.Array = function(array) {
+	if (this.constructor == arguments.callee.prototype) {
+		//	called with new
+		array = array.slice();
 	}
+	
+	array.one = ArrayMethods.one;		
+	array.each = ArrayMethods.each;
+	array.fold = ArrayMethods.fold;
+	array.select = ArrayMethods.select;
 	
 	return array;
 }
-$exports.Array.choose = function(array,filter) {
-	var select = (filter) ? globals.Array.filter.call(array, filter) : array;
-	if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + array);
-	if (select.length == 0) return null;
-	return select[0];
-};
+for (var x in ArrayMethods) {
+	$exports.Array[x] = (function(underlying) {
+		return function(array) {
+			return underlying.apply(array,Array.prototype.slice.call(arguments,1));
+		}
+	})(ArrayMethods[x]);
+}
+$exports.Array.choose = $api.deprecate(function(array,filter) {
+	return ArrayMethods.one.call(array,filter);
+});
+$exports.Array.toValue = $exports.Array.choose;
 $exports.Array.categorize = $api.experimental(function(array,p) {
 	var categorizer = new Categorizer(p);
 	array.forEach( function(item) {
 		categorizer.categorize(item);
 	} );
 	return categorizer;	
-});
-$exports.Array.toValue = $api.deprecate(function(array) {
-	return $exports.Array.choose(array);
 });
 
 $exports.Error = $loader.file("Error.js").Error;
