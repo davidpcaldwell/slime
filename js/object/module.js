@@ -680,7 +680,13 @@ for (var x in ArrayMethods) {
 	})(ArrayMethods[x]);
 }
 $exports.Array.choose = $api.deprecate(function(array,filter) {
-	return ArrayMethods.one.call(array,filter);
+	if (filter) {
+		return ArrayMethods.one.call(array, function(item) {
+			return filter.call(item,item);
+		});
+	} else {
+		return ArrayMethods.one.call(array);
+	}
 });
 $exports.Array.toValue = $exports.Array.choose;
 $exports.Array.categorize = $api.experimental(function(array,p) {
