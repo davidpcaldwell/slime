@@ -626,7 +626,7 @@ var ArrayMethods = new function() {
 	})(this);
 	
 	this.one = function(filter) {
-		var select = (filter) ? globals.Array.filter.call(this, filter) : this;
+		var select = (filter) ? ArrayMethods.select.call(this,filter) : this;
 		if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + this);
 		if (select.length == 0) return null;
 		return select[0];
@@ -681,8 +681,8 @@ for (var x in ArrayMethods) {
 }
 $exports.Array.choose = $api.deprecate(function(array,filter) {
 	if (filter) {
-		return ArrayMethods.one.call(array, function(item) {
-			return filter.call(item,item);
+		return ArrayMethods.one.call(array, function() {
+			return filter.call(this,this);
 		});
 	} else {
 		return ArrayMethods.one.call(array);
