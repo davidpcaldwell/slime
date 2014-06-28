@@ -93,7 +93,9 @@ var Pom = function(file) {
 	}
 	
 	this.getDependencies = function() {
-		return root.child( jsh.document.filter({ elements: "dependencies" }) );
+		var management = root.child(jsh.document.filter({ elements: "dependencyManagement" }));
+		var search = (management) ? management : root;
+		return search.child( jsh.document.filter({ elements: "dependencies" }) );
 	};
 	
 	this.getModules = function() {

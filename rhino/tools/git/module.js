@@ -104,7 +104,7 @@ var LocalRepository = function(o) {
 			command: "log",
 			arguments: (function() {
 				var rv = [];
-				rv.push("--format=format:%H~~%cn~~%s~~%ct");
+				rv.push("--format=format:%H~~%cn~~%s~~%ct~~%an");
 				if (p && p.since && p.until) {
 					rv.push(p.since+".."+p.until);
 					rv.push("--");
@@ -121,11 +121,14 @@ var LocalRepository = function(o) {
 					return null;
 				}
 				return result.stdio.output.split("\n").map(function(line) {
+					if (line.length == 0) return null;
 					var tokens = line.split("~~");
-					debugger;
 					return {
 						commit: {
 							hash: tokens[0]
+						},
+						author: {
+							name: tokens[4]
 						},
 						committer: { 
 							name: tokens[1],
@@ -134,7 +137,7 @@ var LocalRepository = function(o) {
 						subject: tokens[2]
 					}
 				}).filter(function(commit) {
-					return Boolean(commit.subject);
+					return Boolean(commit && commit.subject);
 				});
 			}
 		});
@@ -187,7 +190,10 @@ var LocalRepository = function(o) {
 		}
 		execute({
 			command: "fetch",
-			arguments: args
+			arguments: args,
+			stdio: {
+				output: String
+			}
 		});
 	};
 	
