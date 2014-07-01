@@ -699,5 +699,29 @@ $exports.Array.categorize = $api.experimental(function(array,p) {
 
 $exports.Error = $loader.file("Error.js").Error;
 
+$exports.Task = {};
+$exports.Task.tell = function(p) {
+	if (typeof(p.tell) != "function") {
+		throw new TypeError();
+	}
+	var tell;
+	if (typeof(p.target) == "object" && p.target) {
+		tell = p.tell.bind(p.target);
+	} else {
+		tell = p.tell;
+	}
+	if (p.tell.length == 1) {
+		if (p.threw) {
+			tell({ threw: p.threw });
+		} else {
+			tell({ returned: p.returned });
+		}
+	} else if (p.tell.length == 2) {
+		tell(p.threw,p.returned);
+	} else {
+		throw new TypeError("Tell length: " + p.tell.length + " tell=" + p.tell.toString());
+	}
+};
+
 $exports.deprecate = deprecate;
 $api.deprecate($exports,"deprecate");
