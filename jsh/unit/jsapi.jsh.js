@@ -13,7 +13,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		//	See api.html for documentation of these options
-		jsapi: jsh.file.Pathname,
+		jsapi: jsh.script.file.getRelativePath("../../loader/api"),
 		doc: jsh.file.Pathname,
 		notest: false,
 		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
@@ -32,13 +32,13 @@ if (!parameters.options.jsapi) {
 	jsh.shell.exit(1);
 }
 
-if (!parameters.options.base) {
-	jsh.shell.echo("Missing: -base");
-	jsh.shell.exit(1);
-} else if (!parameters.options.base.directory) {
-	jsh.shell.echo("Not a directory: -base " + parameters.options.base);
-	jsh.shell.exit(1);
-}
+//if (!parameters.options.base) {
+//	jsh.shell.echo("Missing: -base");
+//	jsh.shell.exit(1);
+//} else if (!parameters.options.base.directory) {
+//	jsh.shell.echo("Not a directory: -base " + parameters.options.base);
+//	jsh.shell.exit(1);
+//}
 
 var modules = parameters.options.module.map( function(string) {
 	var match = /^(.*)\@(.*)$/.exec(string);
@@ -150,9 +150,12 @@ if (!parameters.options.notest) {
 	if (parameters.options.test.length) {
 		parameters.options.test.forEach( function(test) {
 			var getModule = function(path) {
-				if (MODULES[path+"/"]) return MODULES[path+"/"];
-				if (!MODULES[path]) throw new Error("Module not found: " + path + " (available: " + Object.keys(MODULES) + ")");
-				return MODULES[path];
+				return {
+					location: jsh.file.Pathname(path)
+				}
+//				if (MODULES[path+"/"]) return MODULES[path+"/"];
+//				if (!MODULES[path]) throw new Error("Module not found: " + path + " (available: " + Object.keys(MODULES) + ")");
+//				return MODULES[path];
 			}
 
 
