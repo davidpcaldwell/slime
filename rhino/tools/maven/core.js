@@ -93,9 +93,46 @@ var Pom = function(file) {
 	}
 	
 	this.getDependencies = function() {
+		var filter = jsh.document.filter({ elements: "dependencies" });
+		var filter2 = jsh.document.filter({ elements: "dependency" });
 		var management = root.child(jsh.document.filter({ elements: "dependencyManagement" }));
-		var search = (management) ? management : root;
-		return search.child( jsh.document.filter({ elements: "dependencies" }) );
+		var declared = root.child( filter );
+		var rv = [];
+		if (declared) {
+			rv = rv.concat(declared.children.filter(filter2));
+		}
+		if (management) {
+			rv = rv.concat(management.child(filter).children.filter(filter2));
+		}
+		jsh.js.Array(rv).each(function() {
+			var item = this;
+			item.getGroup = function(v) {
+				return getElementContent(this,"groupId");
+			};
+			item.getArtifact = function(v) {
+				return getElementContent(this,"artifactId");
+			};
+			item.setGroup = function(v) {
+				setElementContent(this,"groupId",v);
+			}
+			item.setArtifact = function(v) {
+				setElementContent(this,"artifactId",v);
+			}
+			item.setVersion = function(v) {
+				if (!this.child(jsh.document.filter({ elements: "version" }))) {
+					var e = new jsh.js.document.Element({ type: { name: "version" }});
+					this.children.push(
+						new jsh.js.document.Text({ text: "\n" }),
+						e
+					);
+				}
+				setElementContent(this,"version",v);
+			}
+		});
+		return rv;
+//		if (declared) return declared;
+//		if (management) return management.child( filter );
+//		return null;
 	};
 	
 	this.getModules = function() {
@@ -108,27 +145,27 @@ var Pom = function(file) {
 		});
 	}
 	
-	if (this.getDependencies()) {
-		this.getDependencies().children.forEach(function(item) {
-			if (item.element && item.element.type.name == "dependency") {
-				item.getGroup = function(v) {
-					return getElementContent(this,"groupId");
-				};
-				item.getArtifact = function(v) {
-					return getElementContent(this,"artifactId");
-				};
-				item.setGroup = function(v) {
-					setElementContent(this,"groupId",v);
-				}
-				item.setArtifact = function(v) {
-					setElementContent(this,"artifactId",v);
-				}
-				item.setVersion = function(v) {
-					setElementContent(this,"version",v);
-				}
-			}
-		});
-	}
+//	if (this.getDependencies()) {
+//		this.getDependencies().children.forEach(function(item) {
+//			if (item.element && item.element.type.name == "dependency") {
+//				item.getGroup = function(v) {
+//					return getElementContent(this,"groupId");
+//				};
+//				item.getArtifact = function(v) {
+//					return getElementContent(this,"artifactId");
+//				};
+//				item.setGroup = function(v) {
+//					setElementContent(this,"groupId",v);
+//				}
+//				item.setArtifact = function(v) {
+//					setElementContent(this,"artifactId",v);
+//				}
+//				item.setVersion = function(v) {
+//					setElementContent(this,"version",v);
+//				}
+//			}
+//		});
+//	}
 	
 	var parent = root.child( jsh.document.filter({ elements: "parent" }) );
 	
@@ -278,15 +315,25 @@ $exports.Project = function(p) {
 			});
 		};
 		
+		this.get = function(p) {
+			return self.pom.getDependencies().one(function() {
+				return this.getGroup() == p.group && this.getArtifact() == p.artifact;
+			});
+//			return jsh.js.Array.choose(this.resolve(), function(dependency) {
+//				return dependency.group == p.group && dependency.artifact == p.artifact;
+//			});
+		};
+		
 		this.set = function(p) {
 			if (!self.pom.getDependencies()) throw new Error("No dependencies: " + self.base);
-			var target = self.pom.getDependencies().children.filter(function(element) {
-				return element.getGroup && element.getGroup() == p.group && element.getArtifact() == p.artifact;
-			})[0];
+			var target = self.pom.getDependencies().one(function() {
+				return this.getGroup && this.getGroup() == p.group && this.getArtifact() == p.artifact;
+			});
 			if (target) {
 				target.setVersion(p.version);
 			} else {
-				throw new Error("Unimplemented: add dependency");
+				debugger;
+				throw new Error("Unimplemented: add dependency " + p.group + ":" + p.artifact + ":" + p.version);
 			}
 		}
 	};
