@@ -438,31 +438,30 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		command.add("-index", "jsh/etc/index.html");
 
 		var modules = [];
-		modules.add = function(path,ns) {
-			var namespace = (ns) ? ns : "";
-			this.push(namespace+"@"+path);
+		modules.add = function(path) {
+			this.push(path);
 		}
-		modules.add("jsh/launcher/rhino/", "(launcher)");
-		modules.add("jsh/loader/plugin.api.html", "(plugins)");
-		modules.add("jsh/tools/", "(tools)");
-		modules.add("loader/api/", "(modules)");
-		modules.add("jsh/unit/", "(testing)");
-		modules.add("jsh/loader/loader.api.html","jsh.loader");
+		modules.add("jsh/launcher/rhino/");
+		modules.add("jsh/loader/plugin.api.html");
+		modules.add("jsh/tools/");
+		modules.add("loader/api/");
+		modules.add("jsh/unit/");
+		modules.add("jsh/loader/loader.api.html");
 		modules.add("loader/");
 		modules.add("loader/rhino/");
-		modules.add("js/object/","jsh.js");
-		modules.add("rhino/host/","jsh.java");
-		modules.add("rhino/io/", "jsh.io");
-		modules.add("js/document/", "jsh.js.document");
-		modules.add("rhino/document/", "jsh.document");
-		modules.add("rhino/file/","jsh.file");
-		modules.add("rhino/http/client/", "jsh.http");
-		modules.add("rhino/http/servlet/", "(servlets)");
-		modules.add("rhino/http/servlet/plugin.jsh.api.html", "jsh.httpd");
+		modules.add("js/object/");
+		modules.add("rhino/host/");
+		modules.add("rhino/io/");
+		modules.add("js/document/");
+		modules.add("rhino/document/");
+		modules.add("rhino/file/");
+		modules.add("rhino/http/client/");
+		modules.add("rhino/http/servlet/");
+		modules.add("rhino/http/servlet/plugin.jsh.api.html");
 		/*modules.add("rhino/mail/", "jsh.mail");*/
 		modules.add("rhino/shell/");
-		modules.add("rhino/shell/jsh.js","jsh.shell");
-		modules.add("jsh/script/","jsh.script");
+		modules.add("rhino/shell/jsh.js");
+		modules.add("jsh/script/");
 
 		modules.forEach( function(module) {
 			command.add("-module",module);

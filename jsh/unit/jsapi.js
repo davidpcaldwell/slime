@@ -569,22 +569,11 @@ $exports.tests = new function() {
 		});
 
 		modules.forEach( function(item) {
-			if (!p.old || item.ns) {
-				jsh.shell.echo("Generating documentation from " + item.location + " ...");
-				item.file = getApiHtml(item.location);
-				var path = (function() {
-					//	TODO	probably do not need item.file here; probably derivable from item.location
-					var rv = item.file.pathname.basename;
-					var dir = item.file.pathname.parent.directory;
-					while(dir.pathname.toString() != item.base.pathname.toString()) {
-						rv = dir.pathname.basename + "/" + rv;
-						dir = dir.pathname.parent.directory;
-					}
-					return rv;
-				})();
-				var document = getHtml(item);
-				destination.getRelativePath(path).write(document.toString(), { recursive: true });
-			}
+			jsh.shell.echo("Generating documentation from " + item.location + " ...");
+			item.file = getApiHtml(item.location);
+			item.path = p.getPath(item.file);
+			var document = getHtml(item);
+			destination.getRelativePath(item.path).write(document.toString(), { recursive: true });
 		});
 
 		var newIndex = new $context.jsdom.Rhino.Document({

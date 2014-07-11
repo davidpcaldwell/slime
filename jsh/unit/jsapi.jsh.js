@@ -21,9 +21,9 @@ var parameters = jsh.script.getopts({
 		notest: false,
 		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.script.getopts.ARRAY( String ),
-		
-		index: jsh.file.Pathname,
-		doc: jsh.file.Pathname
+
+		doc: jsh.file.Pathname,
+		index: jsh.file.Pathname
 	}
 });
 
@@ -32,17 +32,24 @@ if (!parameters.options.jsapi.directory) {
 	jsh.shell.exit(1);
 }
 
-var modules = parameters.options.module.map( function(string) {
-	var match = /^(.*)\@(.*)$/.exec(string);
-	if (match == null) throw new Error("No match: " + string);
+var getRelativePath = function(pathname) {
+	var pwd = jsh.shell.PWD.toString();
+	var indexpath = pathname.toString();
+	if (indexpath.substring(0,pwd.length) == pwd) {
+		return indexpath.substring(pwd.length);
+	} else {
+		return null;
+	}
+};
+
+var modules = parameters.options.module.map( function(pathname) {
 	//	TODO	some redundancy below which made adapting jsapi.js easier for now
 	var rv = {
 		//	TODO	refactor need for this out by moving calculation of relative path here
 		base: jsh.shell.PWD,
-		path: match[2],
-		location: jsh.shell.PWD.getRelativePath(match[2])
+		path: getRelativePath(pathname),
+		location: pathname
 	};
-	if (match[1]) rv.namespace = match[1];
 	return rv;
 } );
 
@@ -169,19 +176,16 @@ if (parameters.options.doc) {
 		if (!parameters.options.index || !parameters.options.index.file) {
 			return null;
 		}
-		var pwd = jsh.shell.PWD.toString();
-		var indexpath = parameters.options.index.toString();
-		if (indexpath.substring(0,pwd.length) == pwd) {
-			return indexpath.substring(pwd.length);
-		} else {
-			return null;
-		}
+		return getRelativePath(parameters.options.index);
 	})();
 	jsapi.documentation({
 		index: (parameters.options.index) ? parameters.options.index.file : null,
 		//	TODO	hot platform-independent
 		prefix: (relative) ? new Array(relative.split("/").length).join("../") : null,
 		modules: list,
-		to: parameters.options.doc
+		to: parameters.options.doc,
+		getPath: function(pathname) {
+			return getRelativePath(pathname);
+		}
 	});		
 }
