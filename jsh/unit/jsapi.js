@@ -546,7 +546,7 @@ $exports.tests = new function() {
 					e.append(node);
 				});
 			} else {
-				throw new Error("Could not resolve reference in: " + e);
+				throw new Error("Could not resolve reference in: " + e + " from " + getApiHtml(item.location));
 			}
 		}
 		return document;
@@ -665,8 +665,39 @@ $exports.tests = new function() {
 			);
 			destination.getRelativePath("index.html").write(String(index));
 		} else {
+			var newIndex = new $context.jsdom.Rhino.Document({
+				stream: p.index.read(jsh.io.Streams.binary)
+			});
+
+			var elements = function(node) {
+				return Boolean(node.name);
+			};
+			
+			var edit = function(element) {
+				if (element.name.local == "a" || element.name.local == "link") {
+					var href = element.getAttribute("href");
+					if (href.substring(0,p.prefix.length) == p.prefix) {
+						element.setAttribute("href", href.substring(p.prefix.length));
+					} else if (href.indexOf("://") != -1) {
+						//	do nothing
+					} else {
+						//	copy reference, hopefully this is relative reference without welcome file mapping
+						var target = p.index.getRelativePath(href);
+						var targetFile = target.file;
+						jsh.shell.echo("Copying " + targetFile + " to " + destination.getRelativePath(href) + " ...");
+						targetFile.copy(destination.getRelativePath(href));
+					}
+				}
+				var children = element.get(elements);
+				children.forEach(function(child) {
+					edit(child);
+				});
+			};
+			
+			edit(newIndex.get(elements)[0]);
+			destination.getRelativePath("index.html").write(newIndex.toString(), { append: false });
 			//	TODO	implement
-			throw new Error("Unimplemented: new documentation, copy index and linked files, rewrite links");
+			throw new Error("Unimplemented: new documentation - copy index and linked files, rewrite links; prefix = " + p.prefix);
 		}
 	}
 
@@ -674,7 +705,7 @@ $exports.tests = new function() {
 		document(jsh.js.Object.set(p, { old: true }));
 	};
 
-	$exports.document = function(p) {
+	$exports.documentation = function(p) {
 		document(p);
 	};	
 })();

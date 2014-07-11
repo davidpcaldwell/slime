@@ -166,7 +166,9 @@ if (parameters.options.doc) {
 			list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
 		} );
 		jsapi.documentation({
-			index: parameters.options.base.getRelativePath(parameters.options.api),
+			index: parameters.options.base.directory.getFile(parameters.options.api),
+			//	TODO	hot platform-independent
+			prefix: new Array(parameters.options.api.split("/").length).join("../"),
 			modules: list,
 			to: parameters.options.doc
 		});		
