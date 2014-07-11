@@ -205,6 +205,8 @@ $exports.tests = new function() {
 		};
 
 		//	TODO	it appears that for the purpose of this method suite must just support getRelativePath()
+		//	TODO	it also uses getResourcePathname; is there any difference? Would a scope created via $jsapi.test support
+		//			it? (probably not)
 		return {
 			$jsapi: {
 				module: function(name,context) {
@@ -212,21 +214,7 @@ $exports.tests = new function() {
 						jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
 						return arguments.callee.call(this,arguments[1],arguments[0]);
 					}
-					if (false) {
-						var MODULES = $context.MODULES;
-						if (MODULES[name+"/"]) {
-							//	Forgot trailing slash; fix; this ability may later be removed
-							debugger;
-							name += "/";
-						}
-						if (!MODULES[name]) {
-							debugger;
-							return null;
-						}
-						return jsh.loader.module(MODULES[name].location,context);
-					} else {
-						return jsh.loader.module(suite.getRelativePath(name),context);
-					}
+					return jsh.loader.module(suite.getRelativePath(name),context);
 				},
 				test: function(path,p) {
 					var apifile = getApiHtml(suite.getRelativePath(path));

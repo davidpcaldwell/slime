@@ -24,10 +24,7 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-if (!parameters.options.jsapi) {
-	jsh.shell.echo("Missing: -jsapi");
-	jsh.shell.exit(1);
-} else if (!parameters.options.jsapi.directory) {
+if (!parameters.options.jsapi.directory) {
 	jsh.shell.echo("Not a directory: -jsapi " + parameters.options.jsapi);
 	jsh.shell.exit(1);
 }
@@ -52,14 +49,6 @@ var modules = parameters.options.module.map( function(string) {
 	if (match[1]) rv.namespace = match[1];
 	return rv;
 } );
-
-var MODULES = (function() {
-	var rv = {};
-	modules.forEach(function(module) {
-		rv[module.path] = module;
-	} );
-	return rv;
-})();
 
 parameters.options.classpath.forEach( function(pathname) {
 	jsh.script.addClasses(pathname);
@@ -142,7 +131,6 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 		},
 		verbose: true
 	} ).console,
-	MODULES: MODULES,
 	ENVIRONMENT: ENVIRONMENT
 });
 
@@ -153,9 +141,6 @@ if (!parameters.options.notest) {
 				return {
 					location: jsh.file.Pathname(path)
 				}
-//				if (MODULES[path+"/"]) return MODULES[path+"/"];
-//				if (!MODULES[path]) throw new Error("Module not found: " + path + " (available: " + Object.keys(MODULES) + ")");
-//				return MODULES[path];
 			}
 
 
