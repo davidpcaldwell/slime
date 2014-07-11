@@ -696,8 +696,6 @@ $exports.tests = new function() {
 			
 			edit(newIndex.get(elements)[0]);
 			destination.getRelativePath("index.html").write(newIndex.toString(), { append: false });
-			//	TODO	implement
-			throw new Error("Unimplemented: new documentation - copy index and linked files, rewrite links; prefix = " + p.prefix);
 		}
 	}
 
