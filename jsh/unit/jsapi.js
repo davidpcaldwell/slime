@@ -550,9 +550,9 @@ $exports.tests = new function() {
 			}
 		}
 		return document;
-	}
-
-	$exports.doc = function(p) {
+	};
+	
+	var document = function(p) {
 		var modules = p.modules;
 		var to = p.to;
 
@@ -568,31 +568,36 @@ $exports.tests = new function() {
 			destination.getRelativePath(name).write($context.api.getFile(name).read(jsh.io.Streams.binary));
 		});
 
-		var index = new $context.jsdom.Rhino.Document({
+		var index = (p.old) ? new $context.jsdom.Rhino.Document({
 			stream: $context.jsapi.getFile("index.html").read(jsh.io.Streams.binary)
-		});
+		}) : null;
 
-		//	TODO	parameterize the below rather than hard-coding
-		//	TODO	apparent Rhino 1.7R3 bug which requires the given subscripting; should be able to do index.head.title = "..."
-		var title = index.get({
-			filter: $context.jsdom.filter({ name: "title" }),
-			recursive: true
-		})[0];
-		var h1 = index.get({
-			filter: $context.jsdom.filter({ name: "h1" }),
-			recursive: true
-		})[0];
-		title.set([ new $context.jsdom.Text("API Documentation" )]);
-		h1.set([ new $context.jsdom.Text("API Documentation") ]);
+		if (index) {
+			//	TODO	parameterize the below rather than hard-coding
+			var title = index.get({
+				filter: $context.jsdom.filter({ name: "title" }),
+				recursive: true
+			})[0];
+			var h1 = index.get({
+				filter: $context.jsdom.filter({ name: "h1" }),
+				recursive: true
+			})[0];
+			title.set([ new $context.jsdom.Text("API Documentation" )]);
+			h1.set([ new $context.jsdom.Text("API Documentation") ]);
 
-		index.get({
-			filter: $context.jsdom.filter({ name: "tbody" }),
-			recursive: true
-		})[0].set([]);
+			index.get({
+				filter: $context.jsdom.filter({ name: "tbody" }),
+				recursive: true
+			})[0].set([]);
+		}
 
 		modules.forEach( function(item) {
-			if (item.ns) {
-				jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
+			if (!p.old || item.ns) {
+				if (p.old) {
+					jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
+				} else {
+					jsh.shell.echo("Generating documentation from " + item.location + " ...");
+				}
 				item.file = getApiHtml(item.location);
 				var path = (function() {
 					//	TODO	probably do not need item.file here; probably derivable from item.location
@@ -606,59 +611,70 @@ $exports.tests = new function() {
 				})();
 				var document = getHtml(item);
 				destination.getRelativePath(path).write(document.toString(), { recursive: true });
-				var tbody = index.get({
-					filter: jsdom.filter({ name: "tbody" }),
-					recursive: true
-				})[0];
+				if (index) {
+					var tbody = index.get({
+						filter: jsdom.filter({ name: "tbody" }),
+						recursive: true
+					})[0];
 
-				tbody.append(new jsdom.Element({
-					name: {
-						namespace: ns,
-						local: "tr"
-					},
-					children: [
-						new jsdom.Element({
-							name: {
-								namespace: ns,
-								local: "td"
-							},
-							children: [
-								new jsdom.Element({
-									name: {
-										namespace: ns,
-										local: "a"
-									},
-									attributes: [
-										{ local: "href", value: path }
-									],
-									children: [
-										new jsdom.Text(item.ns)
-									]
-								})
-							]
-						}),
-						new jsdom.Element({
-							name: {
-								namespace: ns,
-								local: "td"
-							},
-							children: [
-								new jsdom.Text(document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString())
-							]
-						})
-					]
-				}));
+					tbody.append(new jsdom.Element({
+						name: {
+							namespace: ns,
+							local: "tr"
+						},
+						children: [
+							new jsdom.Element({
+								name: {
+									namespace: ns,
+									local: "td"
+								},
+								children: [
+									new jsdom.Element({
+										name: {
+											namespace: ns,
+											local: "a"
+										},
+										attributes: [
+											{ local: "href", value: path }
+										],
+										children: [
+											new jsdom.Text(item.ns)
+										]
+									})
+								]
+							}),
+							new jsdom.Element({
+								name: {
+									namespace: ns,
+									local: "td"
+								},
+								children: [
+									new jsdom.Text(document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString())
+								]
+							})
+						]
+					}));
+				}
 			}
 		});
 
-		destination.getRelativePath("index.css").write(
-			$context.jsapi.getFile("index.css").read(jsh.io.Streams.binary),
-			{ append: false }
-		);
-		destination.getRelativePath("index.html").write(String(index));
+		if (index) {
+			destination.getRelativePath("index.css").write(
+				$context.jsapi.getFile("index.css").read(jsh.io.Streams.binary),
+				{ append: false }
+			);
+			destination.getRelativePath("index.html").write(String(index));
+		} else {
+			//	TODO	implement
+			throw new Error("Unimplemented: new documentation, copy index and linked files, rewrite links");
+		}
+	}
+
+	$exports.doc = function(p) {
+		document(jsh.js.Object.set(p, { old: true }));
 	};
 
-	$exports.document = function() {
-
+	$exports.document = function(p) {
+		document(p);
 	};	
 })();
