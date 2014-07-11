@@ -14,14 +14,16 @@ var parameters = jsh.script.getopts({
 	options: {
 		//	See api.html for documentation of these options
 		jsapi: jsh.script.file.getRelativePath("../../loader/api"),
-		base: jsh.shell.PWD.pathname,
-		doc: jsh.file.Pathname,
-		api: String,
+		
+		module: jsh.script.getopts.ARRAY( String ),
+		test: jsh.script.getopts.ARRAY( String ),
+		
 		notest: false,
 		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.script.getopts.ARRAY( String ),
-		module: jsh.script.getopts.ARRAY( String ),
-		test: jsh.script.getopts.ARRAY( String )
+		
+		api: String,
+		doc: jsh.file.Pathname
 	}
 });
 
@@ -36,9 +38,9 @@ var modules = parameters.options.module.map( function(string) {
 	//	TODO	some redundancy below which made adapting jsapi.js easier for now
 	var rv = {
 		//	TODO	refactor need for this out by moving calculation of relative path here
-		base: parameters.options.base.directory,
+		base: jsh.shell.PWD,
 		path: match[2],
-		location: parameters.options.base.directory.getRelativePath(match[2])
+		location: jsh.shell.PWD.getRelativePath(match[2])
 	};
 	if (match[1]) rv.namespace = match[1];
 	return rv;
@@ -135,8 +137,7 @@ if (!parameters.options.notest) {
 				return {
 					location: jsh.file.Pathname(path)
 				}
-			}
-
+			};
 
 			var tokens = test.split(":");
 			if (tokens.length == 1) {
@@ -166,7 +167,7 @@ if (parameters.options.doc) {
 			list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
 		} );
 		jsapi.documentation({
-			index: parameters.options.base.directory.getFile(parameters.options.api),
+			index: jsh.shell.PWD.getFile(parameters.options.api),
 			//	TODO	hot platform-independent
 			prefix: new Array(parameters.options.api.split("/").length).join("../"),
 			modules: list,
