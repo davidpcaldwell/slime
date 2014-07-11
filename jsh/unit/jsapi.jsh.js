@@ -18,7 +18,6 @@ var parameters = jsh.script.getopts({
 		notest: false,
 		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.script.getopts.ARRAY( String ),
-		base: jsh.file.Pathname,
 		module: jsh.script.getopts.ARRAY( String ),
 		test: jsh.script.getopts.ARRAY( String )
 	}
@@ -29,22 +28,15 @@ if (!parameters.options.jsapi.directory) {
 	jsh.shell.exit(1);
 }
 
-//if (!parameters.options.base) {
-//	jsh.shell.echo("Missing: -base");
-//	jsh.shell.exit(1);
-//} else if (!parameters.options.base.directory) {
-//	jsh.shell.echo("Not a directory: -base " + parameters.options.base);
-//	jsh.shell.exit(1);
-//}
-
 var modules = parameters.options.module.map( function(string) {
 	var match = /^(.*)\@(.*)$/.exec(string);
 	if (match == null) throw new Error("No match: " + string);
 	//	TODO	some redundancy below which made adapting jsapi.js easier for now
 	var rv = {
-		base: parameters.options.base.directory,
+		//	TODO	refactor need for this out by moving calculation of relative path here
+		base: jsh.shell.PWD,
 		path: match[2],
-		location: parameters.options.base.directory.getRelativePath(match[2])
+		location: jsh.shell.PWD.getRelativePath(match[2])
 	};
 	if (match[1]) rv.namespace = match[1];
 	return rv;
