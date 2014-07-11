@@ -145,7 +145,7 @@ if (!parameters.options.notest) {
 	parameters.options.test.forEach( function(test) {
 		var getModule = function(path) {
 			return {
-				location: jsh.file.Pathname(path)
+				location: test
 			}
 		};
 
