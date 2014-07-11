@@ -15,7 +15,7 @@ var parameters = jsh.script.getopts({
 		//	See api.html for documentation of these options
 		jsapi: jsh.script.file.getRelativePath("../../loader/api"),
 		
-		module: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
+		api: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		test: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		
 		notest: false,
@@ -42,7 +42,7 @@ var getRelativePath = function(pathname) {
 	}
 };
 
-var modules = parameters.options.module.map( function(pathname) {
+var modules = parameters.options.api.map( function(pathname) {
 	//	TODO	some redundancy below which made adapting jsapi.js easier for now
 	var rv = {
 		//	TODO	refactor need for this out by moving calculation of relative path here
@@ -52,31 +52,6 @@ var modules = parameters.options.module.map( function(pathname) {
 	};
 	return rv;
 } );
-
-parameters.options.classpath.forEach( function(pathname) {
-	jsh.script.addClasses(pathname);
-} );
-
-var ENVIRONMENT = (function() {
-	var rv = {};
-	parameters.options.environment.forEach( function(item) {
-		if (item.split("=").length == 2) {
-			//	Interpret as assignment of string property to environment
-			var tokens = item.split("=");
-			jsh.shell.echo("Setting environment value " + tokens[0] + " to '" + tokens[1] + "'");
-			jsh.js.Object.expando.set(rv,tokens[0],tokens[1]);
-		} else if (item.split(":").length > 1) {
-			var coloned = item.split(":");
-			var pathname = jsh.file.Pathname(coloned.slice(1).join(":"));
-			jsh.shell.echo("Loading environment value " + coloned[0] + " from " + pathname);
-			jsh.js.Object.expando.set(rv,coloned[0],jsh.loader.module(pathname));
-		} else {
-			jsh.shell.echo("Setting environment value " + item);
-			jsh.js.Object.expando.set(rv,item,{});
-		}
-	});
-	return rv;
-})();
 
 var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,
@@ -133,31 +108,54 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 			}
 		},
 		verbose: true
-	} ).console,
-	ENVIRONMENT: ENVIRONMENT
+	} ).console
 });
 
 if (!parameters.options.notest) {
-	if (parameters.options.test.length) {
-		parameters.options.test.forEach( function(test) {
-			var getModule = function(path) {
-				return {
-					location: jsh.file.Pathname(path)
-				}
-			};
+	parameters.options.classpath.forEach( function(pathname) {
+		jsh.script.addClasses(pathname);
+	} );
 
-			var tokens = test.split(":");
-			if (tokens.length == 1) {
-				jsapi.tests.add(getModule(test));
+	var ENVIRONMENT = (function() {
+		var rv = {};
+		parameters.options.environment.forEach( function(item) {
+			if (item.split("=").length == 2) {
+				//	Interpret as assignment of string property to environment
+				var tokens = item.split("=");
+				jsh.shell.echo("Setting environment value " + tokens[0] + " to '" + tokens[1] + "'");
+				jsh.js.Object.expando.set(rv,tokens[0],tokens[1]);
+			} else if (item.split(":").length > 1) {
+				var coloned = item.split(":");
+				var pathname = jsh.file.Pathname(coloned.slice(1).join(":"));
+				jsh.shell.echo("Loading environment value " + coloned[0] + " from " + pathname);
+				jsh.js.Object.expando.set(rv,coloned[0],jsh.loader.module(pathname));
 			} else {
-				jsapi.tests.add(getModule(tokens[0]),tokens.slice(1).join("."));
+				jsh.shell.echo("Setting environment value " + item);
+				jsh.js.Object.expando.set(rv,item,{});
 			}
 		});
-	} else {
-		modules.forEach( function(module) {
-			jsapi.tests.add(module);
-		});
-	}
+		return rv;
+	})();
+	
+	jsapi.tests.environment(ENVIRONMENT);
+
+	modules.forEach( function(module) {
+		jsapi.tests.add(module);
+	});
+	parameters.options.test.forEach( function(test) {
+		var getModule = function(path) {
+			return {
+				location: jsh.file.Pathname(path)
+			}
+		};
+
+		var tokens = test.split(":");
+		if (tokens.length == 1) {
+			jsapi.tests.add(getModule(test));
+		} else {
+			jsapi.tests.add(getModule(tokens[0]),tokens.slice(1).join("."));
+		}
+	});
 	var UNIT_TESTS_COMPLETED = function(success) {
 		if (!success) {
 			jsh.shell.echo("Tests failed; exiting with status 1.", { stream: jsh.shell.stdio.error });

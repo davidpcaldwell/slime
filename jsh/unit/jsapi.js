@@ -142,6 +142,12 @@ var loadApiHtml = function(file) {
 }
 
 $exports.tests = new function() {
+	var environment;
+	
+	this.environment = function(v) {
+		environment = v;
+	};
+	
 	var testGroups = [];
 
 	var moduleToItem = function(moduleDescriptor,unit) {
@@ -233,7 +239,7 @@ $exports.tests = new function() {
 						return jsh.loader.file(suite.getRelativePath(name),context);
 					}
 				},
-				environment: $context.ENVIRONMENT,
+				environment: environment,
 				newTemporaryDirectory: function() {
 					var $path = $newTemporaryDirectory();
 					var pathstring = String($path.getCanonicalPath());
@@ -264,7 +270,7 @@ $exports.tests = new function() {
 		$scenario.name = "Unit tests";
 		var suites = [];
 		$scenario.execute = function(topscope) {
-			jsh.shell.echo("Environments present: " + Object.keys($context.ENVIRONMENT));
+			jsh.shell.echo("Environments present: " + Object.keys(environment));
 			//	var item is expected to be $scope.$unit
 			suites.forEach( function(suite) {
 				var scope = new Scope(suite);
