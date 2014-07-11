@@ -435,7 +435,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		}
 		command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
 		command.add("-base", JSH_JSAPI_BASE);
-		command.add("-api", "jsh/etc/index.html");
+		command.add("-index", "jsh/etc/index.html");
 
 		var modules = [];
 		modules.add = function(path,ns) {

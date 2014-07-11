@@ -15,14 +15,14 @@ var parameters = jsh.script.getopts({
 		//	See api.html for documentation of these options
 		jsapi: jsh.script.file.getRelativePath("../../loader/api"),
 		
-		module: jsh.script.getopts.ARRAY( String ),
-		test: jsh.script.getopts.ARRAY( String ),
+		module: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
+		test: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		
 		notest: false,
 		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.script.getopts.ARRAY( String ),
 		
-		api: String,
+		index: jsh.file.Pathname,
 		doc: jsh.file.Pathname
 	}
 });
@@ -161,26 +161,27 @@ if (!parameters.options.notest) {
 }
 
 if (parameters.options.doc) {
-	if (parameters.options.api) {
-		var list = [];
-		modules.forEach( function(item) {
-			list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
-		} );
-		jsapi.documentation({
-			index: jsh.shell.PWD.getFile(parameters.options.api),
-			//	TODO	hot platform-independent
-			prefix: new Array(parameters.options.api.split("/").length).join("../"),
-			modules: list,
-			to: parameters.options.doc
-		});		
-	} else {
-		var list = [];
-		modules.forEach( function(item) {
-			list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
-		} );
-		jsapi.doc({
-			modules: list,
-			to: parameters.options.doc
-		});
-	}
+	var list = [];
+	modules.forEach( function(item) {
+		list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
+	} );
+	var relative = (function() {
+		if (!parameters.options.index || !parameters.options.index.file) {
+			return null;
+		}
+		var pwd = jsh.shell.PWD.toString();
+		var indexpath = parameters.options.index.toString();
+		if (indexpath.substring(0,pwd.length) == pwd) {
+			return indexpath.substring(pwd.length);
+		} else {
+			return null;
+		}
+	})();
+	jsapi.documentation({
+		index: (parameters.options.index) ? parameters.options.index.file : null,
+		//	TODO	hot platform-independent
+		prefix: (relative) ? new Array(relative.split("/").length).join("../") : null,
+		modules: list,
+		to: parameters.options.doc
+	});		
 }

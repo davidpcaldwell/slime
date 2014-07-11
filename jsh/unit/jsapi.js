@@ -568,36 +568,9 @@ $exports.tests = new function() {
 			destination.getRelativePath(name).write($context.api.getFile(name).read(jsh.io.Streams.binary));
 		});
 
-		var index = (p.old) ? new $context.jsdom.Rhino.Document({
-			stream: $context.jsapi.getFile("index.html").read(jsh.io.Streams.binary)
-		}) : null;
-
-		if (index) {
-			//	TODO	parameterize the below rather than hard-coding
-			var title = index.get({
-				filter: $context.jsdom.filter({ name: "title" }),
-				recursive: true
-			})[0];
-			var h1 = index.get({
-				filter: $context.jsdom.filter({ name: "h1" }),
-				recursive: true
-			})[0];
-			title.set([ new $context.jsdom.Text("API Documentation" )]);
-			h1.set([ new $context.jsdom.Text("API Documentation") ]);
-
-			index.get({
-				filter: $context.jsdom.filter({ name: "tbody" }),
-				recursive: true
-			})[0].set([]);
-		}
-
 		modules.forEach( function(item) {
 			if (!p.old || item.ns) {
-				if (p.old) {
-					jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
-				} else {
-					jsh.shell.echo("Generating documentation from " + item.location + " ...");
-				}
+				jsh.shell.echo("Generating documentation from " + item.location + " ...");
 				item.file = getApiHtml(item.location);
 				var path = (function() {
 					//	TODO	probably do not need item.file here; probably derivable from item.location
@@ -611,92 +584,40 @@ $exports.tests = new function() {
 				})();
 				var document = getHtml(item);
 				destination.getRelativePath(path).write(document.toString(), { recursive: true });
-				if (index) {
-					var tbody = index.get({
-						filter: jsdom.filter({ name: "tbody" }),
-						recursive: true
-					})[0];
-
-					tbody.append(new jsdom.Element({
-						name: {
-							namespace: ns,
-							local: "tr"
-						},
-						children: [
-							new jsdom.Element({
-								name: {
-									namespace: ns,
-									local: "td"
-								},
-								children: [
-									new jsdom.Element({
-										name: {
-											namespace: ns,
-											local: "a"
-										},
-										attributes: [
-											{ local: "href", value: path }
-										],
-										children: [
-											new jsdom.Text(item.ns)
-										]
-									})
-								]
-							}),
-							new jsdom.Element({
-								name: {
-									namespace: ns,
-									local: "td"
-								},
-								children: [
-									new jsdom.Text(document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString())
-								]
-							})
-						]
-					}));
-				}
 			}
 		});
 
-		if (index) {
-			destination.getRelativePath("index.css").write(
-				$context.jsapi.getFile("index.css").read(jsh.io.Streams.binary),
-				{ append: false }
-			);
-			destination.getRelativePath("index.html").write(String(index));
-		} else {
-			var newIndex = new $context.jsdom.Rhino.Document({
-				stream: p.index.read(jsh.io.Streams.binary)
-			});
+		var newIndex = new $context.jsdom.Rhino.Document({
+			stream: p.index.read(jsh.io.Streams.binary)
+		});
 
-			var elements = function(node) {
-				return Boolean(node.name);
-			};
-			
-			var edit = function(element) {
-				if (element.name.local == "a" || element.name.local == "link") {
-					var href = element.getAttribute("href");
-					if (href.substring(0,p.prefix.length) == p.prefix) {
-						element.setAttribute("href", href.substring(p.prefix.length));
-					} else if (href.indexOf("://") != -1) {
-						//	do nothing
-					} else {
-						//	copy reference, hopefully this is relative reference without welcome file mapping
-						var target = p.index.getRelativePath(href);
-						var targetFile = target.file;
-						jsh.shell.echo("Copying " + targetFile + " to " + destination.getRelativePath(href) + " ...");
-						targetFile.copy(destination.getRelativePath(href));
-					}
+		var elements = function(node) {
+			return Boolean(node.name);
+		};
+
+		var edit = function(element) {
+			if (element.name.local == "a" || element.name.local == "link") {
+				var href = element.getAttribute("href");
+				if (p.prefix && href.substring(0,p.prefix.length) == p.prefix) {
+					element.setAttribute("href", href.substring(p.prefix.length));
+				} else if (href.indexOf("://") != -1) {
+					//	do nothing
+				} else {
+					//	copy reference, hopefully this is relative reference without welcome file mapping
+					var target = p.index.getRelativePath(href);
+					var targetFile = target.file;
+					jsh.shell.echo("Copying " + targetFile + " to " + destination.getRelativePath(href) + " ...");
+					targetFile.copy(destination.getRelativePath(href));
 				}
-				var children = element.get(elements);
-				children.forEach(function(child) {
-					edit(child);
-				});
-			};
-			
-			edit(newIndex.get(elements)[0]);
-			destination.getRelativePath("index.html").write(newIndex.toString(), { append: false });
-		}
+			}
+			var children = element.get(elements);
+			children.forEach(function(child) {
+				edit(child);
+			});
+		};
+
+		edit(newIndex.get(elements)[0]);
+		destination.getRelativePath("index.html").write(newIndex.toString(), { append: false });
 	}
 
 	$exports.doc = function(p) {
