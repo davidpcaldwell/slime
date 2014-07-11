@@ -14,7 +14,9 @@ var parameters = jsh.script.getopts({
 	options: {
 		//	See api.html for documentation of these options
 		jsapi: jsh.script.file.getRelativePath("../../loader/api"),
+		base: jsh.shell.PWD.pathname,
 		doc: jsh.file.Pathname,
+		api: String,
 		notest: false,
 		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.script.getopts.ARRAY( String ),
@@ -34,9 +36,9 @@ var modules = parameters.options.module.map( function(string) {
 	//	TODO	some redundancy below which made adapting jsapi.js easier for now
 	var rv = {
 		//	TODO	refactor need for this out by moving calculation of relative path here
-		base: jsh.shell.PWD,
+		base: parameters.options.base.directory,
 		path: match[2],
-		location: jsh.shell.PWD.getRelativePath(match[2])
+		location: parameters.options.base.directory.getRelativePath(match[2])
 	};
 	if (match[1]) rv.namespace = match[1];
 	return rv;
@@ -158,12 +160,24 @@ if (!parameters.options.notest) {
 }
 
 if (parameters.options.doc) {
-	var list = [];
-	modules.forEach( function(item) {
-		list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
-	} );
-	jsapi.doc({
-		modules: list,
-		to: parameters.options.doc
-	});
+	if (parameters.options.api) {
+		var list = [];
+		modules.forEach( function(item) {
+			list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
+		} );
+		jsapi.documentation({
+			index: parameters.options.base.getRelativePath(parameters.options.api),
+			modules: list,
+			to: parameters.options.doc
+		});		
+	} else {
+		var list = [];
+		modules.forEach( function(item) {
+			list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
+		} );
+		jsapi.doc({
+			modules: list,
+			to: parameters.options.doc
+		});
+	}
 }

@@ -332,46 +332,12 @@ $exports.tests = new function() {
 		var SCENARIO = new $context.Scenario($scenario);
 		successWas(SCENARIO.run( $context.console ));
 	}
-}
+};
 
-$exports.doc = function(p) {
-	var modules = p.modules;
-	var to = p.to;
-
-	var destination = to.createDirectory({
-		ifExists: function(dir) {
-			dir.remove();
-			return true;
-		},
-		recursive: true
-	});
-
-	["api.css","api.js"].forEach( function(name) {
-		destination.getRelativePath(name).write($context.api.getFile(name).read(jsh.io.Streams.binary));
-	});
-
-	var index = new $context.jsdom.Rhino.Document({
-		stream: $context.jsapi.getFile("index.html").read(jsh.io.Streams.binary)
-	});
-
-	//	TODO	parameterize the below rather than hard-coding
-	//	TODO	apparent Rhino 1.7R3 bug which requires the given subscripting; should be able to do index.head.title = "..."
-	var title = index.get({
-		filter: $context.jsdom.filter({ name: "title" }),
-		recursive: true
-	})[0];
-	var h1 = index.get({
-		filter: $context.jsdom.filter({ name: "h1" }),
-		recursive: true
-	})[0];
-	title.set([ new $context.jsdom.Text("API Documentation" )]);
-	h1.set([ new $context.jsdom.Text("API Documentation") ]);
-
-	index.get({
-		filter: $context.jsdom.filter({ name: "tbody" }),
-		recursive: true
-	})[0].set([]);
-
+(function() {
+	var jsdom = $context.jsdom;
+	var ns = "http://www.w3.org/1999/xhtml";
+	
 	var ApiHtml = function(p) {
 		//	TODO	disentangle all this recursion and 'this'-manipulation
 		var root = new $context.jsdom.Rhino.Document({
@@ -457,196 +423,242 @@ $exports.doc = function(p) {
 		this.resolve = function(element) {
 			return getElement(element,this);
 		}
-	}
-
-	modules.forEach( function(item) {
-		if (item.ns) {
-			jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
-			var file = getApiHtml(item.location);
-			var path = (function() {
-				var rv = file.pathname.basename;
-				var dir = file.pathname.parent.directory;
-				while(dir.pathname.toString() != item.base.pathname.toString()) {
-					rv = dir.pathname.basename + "/" + rv;
-					dir = dir.pathname.parent.directory;
-				}
-				return rv;
-			})();
-			//	TODO	it would be nice to get the below from the document itself like we did with E4X
-			var ns = "http://www.w3.org/1999/xhtml";
-			var jsdom = $context.jsdom;
-			var document = new jsdom.Rhino.Document({ stream: file.read(jsh.io.Streams.binary) });
-			var top = (function() {
-				//	below could be simplified with join and map but we leave it this way until we make sure all cases work; e.g.,
-				//	path ending with /, path ending with filename
-				var tokens = item.path.split("/");
-				var rv = "";
-				for (var i=0; i<tokens.length-1; i++) {
-					rv += "../";
-				}
-				return rv;
-			})();
-			var root = document.get(jsdom.filter({ name: "html" }))[0];
-
-			var head = root.get(jsdom.filter({ name: "head" }))[0];
-			var css = head.get(function(node) {
-				return node.name && node.name.local == "link" && /api\.css$/.test(node.getAttribute("href"));
-			})[0];
-			if (css) {
-				head.remove(css);
+	};
+	
+	var getHtml = function(item) {
+		var file = item.file;
+		//	TODO	it would be nice to get the below from the document itself like we did with E4X
+		var document = new jsdom.Rhino.Document({ stream: file.read(jsh.io.Streams.binary) });
+		var top = (function() {
+			//	below could be simplified with join and map but we leave it this way until we make sure all cases work; e.g.,
+			//	path ending with /, path ending with filename
+			var tokens = item.path.split("/");
+			var rv = "";
+			for (var i=0; i<tokens.length-1; i++) {
+				rv += "../";
 			}
-			head.append(new jsdom.Element({
-				name: {
-					namespace: ns,
-					local: "link"
-				},
-				attributes: [
-					{ local: "rel", value: "stylesheet" },
-					{ local: "type", value: "text/css" },
-					{ local: "href", value: top + "api.css" }
-				]
-			}));
-			var js = head.get(function(node) {
-				return node.name && node.name.local == "script" && /api\.js$/.test(node.getAttribute("src"));
-			})[0];
-			if (js) {
-				head.remove(js);
-			}
-			head.append(new jsdom.Element({
-				name: {
-					namespace: ns,
-					local: "script"
-				},
-				attributes: [
-					{ local: "type", value: "text/javascript" },
-					{ local: "src", value: top + "api.js" }
-				]
-			}));
+			return rv;
+		})();
+		var root = document.get(jsdom.filter({ name: "html" }))[0];
 
-			var body = root.get(jsdom.filter({ name: "body" }))[0];
-			body.insert(new jsdom.Element({
-				name: {
-					namespace: ns,
-					local: "a"
-				},
-				attributes: [
-					{ local: "href", value: top + "index.html" }
-				],
-				children: [
-					new jsdom.Text("Documentation Home")
-				]
-			}), { index: 0 });
+		var head = root.get(jsdom.filter({ name: "head" }))[0];
+		var css = head.get(function(node) {
+			return node.name && node.name.local == "link" && /api\.css$/.test(node.getAttribute("href"));
+		})[0];
+		if (css) {
+			head.remove(css);
+		}
+		head.append(new jsdom.Element({
+			name: {
+				namespace: ns,
+				local: "link"
+			},
+			attributes: [
+				{ local: "rel", value: "stylesheet" },
+				{ local: "type", value: "text/css" },
+				{ local: "href", value: top + "api.css" }
+			]
+		}));
+		var js = head.get(function(node) {
+			return node.name && node.name.local == "script" && /api\.js$/.test(node.getAttribute("src"));
+		})[0];
+		if (js) {
+			head.remove(js);
+		}
+		head.append(new jsdom.Element({
+			name: {
+				namespace: ns,
+				local: "script"
+			},
+			attributes: [
+				{ local: "type", value: "text/javascript" },
+				{ local: "src", value: top + "api.js" }
+			]
+		}));
 
-			var apiSpecificationMarkers = body.get({
+		var body = root.get(jsdom.filter({ name: "body" }))[0];
+		body.insert(new jsdom.Element({
+			name: {
+				namespace: ns,
+				local: "a"
+			},
+			attributes: [
+				{ local: "href", value: top + "index.html" }
+			],
+			children: [
+				new jsdom.Text("Documentation Home")
+			]
+		}), { index: 0 });
+
+		var apiSpecificationMarkers = body.get({
+			recursive: true,
+			filter: jsdom.filter({ id: "template.body" })
+		});
+		if (apiSpecificationMarkers.length == 0) {
+			var contextDiv = body.get({
+				//	TODO	probably need to be able to return STOP or something from filter to stop searching below a certain element
+				//	TODO	may want to look into xpath
 				recursive: true,
-				filter: jsdom.filter({ id: "template.body" })
-			});
-			if (apiSpecificationMarkers.length == 0) {
-				var contextDiv = body.get({
-					//	TODO	probably need to be able to return STOP or something from filter to stop searching below a certain element
-					//	TODO	may want to look into xpath
-					recursive: true,
-					filter: function(node) {
-						if (!node.name) return false;
-						var elements = node.get(function(child) {
-							return Boolean(child.name);
-						});
-						if (elements[0] && elements[0].name.local == "h1") {
-							if (elements[0].get()[0] && elements[0].get()[0].toString() == "Context") {
-								return true;
-							} else {
-								return false;
-							}
+				filter: function(node) {
+					if (!node.name) return false;
+					var elements = node.get(function(child) {
+						return Boolean(child.name);
+					});
+					if (elements[0] && elements[0].name.local == "h1") {
+						if (elements[0].get()[0] && elements[0].get()[0].toString() == "Context") {
+							return true;
 						} else {
 							return false;
 						}
+					} else {
+						return false;
 					}
-				})[0];
-				if (contextDiv) {
-					body.remove({
-						recursive: true,
-						node: contextDiv
-					});
 				}
-			}
-
-			//	TODO	document and enhance this ability to import documentation from other files
-			var declaration = new ApiHtml({ file: getApiHtml(item.location) });
-			var withJsapiReference = root.get({
-				recursive: true,
-				filter: function(node) {
-					return node.getAttribute && node.getAttribute({
-						namespace: "http://www.inonit.com/jsapi",
-						name: "reference"
-					}) != null;
-				}
-			});
-			for (var i=0; i<withJsapiReference.length; i++) {
-				var e = withJsapiReference[i];
-				var resolved = declaration.resolve(e);
-				if (resolved) {
-					while(e.get().length) {
-						e.remove(e.get()[0]);
-					}
-					var nodes = resolved.get();
-					nodes.forEach(function(node) {
-						e.append(node);
-					});
-				} else {
-					throw new Error("Could not resolve reference in: " + e);
-				}
-			}
-
-			destination.getRelativePath(path).write(document.toString(), { recursive: true });
-
-			var tbody = index.get({
-				filter: jsdom.filter({ name: "tbody" }),
-				recursive: true
 			})[0];
-
-			tbody.append(new jsdom.Element({
-				name: {
-					namespace: ns,
-					local: "tr"
-				},
-				children: [
-					new jsdom.Element({
-						name: {
-							namespace: ns,
-							local: "td"
-						},
-						children: [
-							new jsdom.Element({
-								name: {
-									namespace: ns,
-									local: "a"
-								},
-								attributes: [
-									{ local: "href", value: path }
-								],
-								children: [
-									new jsdom.Text(item.ns)
-								]
-							})
-						]
-					}),
-					new jsdom.Element({
-						name: {
-							namespace: ns,
-							local: "td"
-						},
-						children: [
-							new jsdom.Text(document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString())
-						]
-					})
-				]
-			}));
+			if (contextDiv) {
+				body.remove({
+					recursive: true,
+					node: contextDiv
+				});
+			}
 		}
-	});
 
-	destination.getRelativePath("index.css").write(
-		$context.jsapi.getFile("index.css").read(jsh.io.Streams.binary),
-		{ append: false }
-	);
-	destination.getRelativePath("index.html").write(String(index));
-}
+		//	TODO	document and enhance this ability to import documentation from other files
+		var declaration = new ApiHtml({ file: getApiHtml(item.location) });
+		var withJsapiReference = root.get({
+			recursive: true,
+			filter: function(node) {
+				return node.getAttribute && node.getAttribute({
+					namespace: "http://www.inonit.com/jsapi",
+					name: "reference"
+				}) != null;
+			}
+		});
+		for (var i=0; i<withJsapiReference.length; i++) {
+			var e = withJsapiReference[i];
+			var resolved = declaration.resolve(e);
+			if (resolved) {
+				while(e.get().length) {
+					e.remove(e.get()[0]);
+				}
+				var nodes = resolved.get();
+				nodes.forEach(function(node) {
+					e.append(node);
+				});
+			} else {
+				throw new Error("Could not resolve reference in: " + e);
+			}
+		}
+		return document;
+	}
+
+	$exports.doc = function(p) {
+		var modules = p.modules;
+		var to = p.to;
+
+		var destination = to.createDirectory({
+			ifExists: function(dir) {
+				dir.remove();
+				return true;
+			},
+			recursive: true
+		});
+
+		["api.css","api.js"].forEach( function(name) {
+			destination.getRelativePath(name).write($context.api.getFile(name).read(jsh.io.Streams.binary));
+		});
+
+		var index = new $context.jsdom.Rhino.Document({
+			stream: $context.jsapi.getFile("index.html").read(jsh.io.Streams.binary)
+		});
+
+		//	TODO	parameterize the below rather than hard-coding
+		//	TODO	apparent Rhino 1.7R3 bug which requires the given subscripting; should be able to do index.head.title = "..."
+		var title = index.get({
+			filter: $context.jsdom.filter({ name: "title" }),
+			recursive: true
+		})[0];
+		var h1 = index.get({
+			filter: $context.jsdom.filter({ name: "h1" }),
+			recursive: true
+		})[0];
+		title.set([ new $context.jsdom.Text("API Documentation" )]);
+		h1.set([ new $context.jsdom.Text("API Documentation") ]);
+
+		index.get({
+			filter: $context.jsdom.filter({ name: "tbody" }),
+			recursive: true
+		})[0].set([]);
+
+		modules.forEach( function(item) {
+			if (item.ns) {
+				jsh.shell.echo("Generating documentation for " + item.ns + " from module at " + item.location + " ...");
+				item.file = getApiHtml(item.location);
+				var path = (function() {
+					//	TODO	probably do not need item.file here; probably derivable from item.location
+					var rv = item.file.pathname.basename;
+					var dir = item.file.pathname.parent.directory;
+					while(dir.pathname.toString() != item.base.pathname.toString()) {
+						rv = dir.pathname.basename + "/" + rv;
+						dir = dir.pathname.parent.directory;
+					}
+					return rv;
+				})();
+				var document = getHtml(item);
+				destination.getRelativePath(path).write(document.toString(), { recursive: true });
+				var tbody = index.get({
+					filter: jsdom.filter({ name: "tbody" }),
+					recursive: true
+				})[0];
+
+				tbody.append(new jsdom.Element({
+					name: {
+						namespace: ns,
+						local: "tr"
+					},
+					children: [
+						new jsdom.Element({
+							name: {
+								namespace: ns,
+								local: "td"
+							},
+							children: [
+								new jsdom.Element({
+									name: {
+										namespace: ns,
+										local: "a"
+									},
+									attributes: [
+										{ local: "href", value: path }
+									],
+									children: [
+										new jsdom.Text(item.ns)
+									]
+								})
+							]
+						}),
+						new jsdom.Element({
+							name: {
+								namespace: ns,
+								local: "td"
+							},
+							children: [
+								new jsdom.Text(document.get({ filter: jsdom.filter({ name: "title"}), recursive: true })[0].get()[0].toString())
+							]
+						})
+					]
+				}));
+			}
+		});
+
+		destination.getRelativePath("index.css").write(
+			$context.jsapi.getFile("index.css").read(jsh.io.Streams.binary),
+			{ append: false }
+		);
+		destination.getRelativePath("index.html").write(String(index));
+	};
+
+	$exports.document = function() {
+
+	};	
+})();
