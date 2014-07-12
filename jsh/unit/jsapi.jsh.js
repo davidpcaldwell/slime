@@ -86,7 +86,6 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 			}
 		}
 	} ),
-	jsdom: jsh.script.loader.file("jsdom.js"),
 	jsapi: {
 		getFile: function(path) {
 			return jsh.script.file.getRelativePath(path).file;
