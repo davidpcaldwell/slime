@@ -96,9 +96,11 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 				target[tokens[tokens.length-1]] = value;
 			} else {
 				nashornTrace("Last token: " + tokens[tokens.length-1] + " is toString");
-				target[tokens[tokens.length-1]].toString = function() {
-					return value;
-				}
+				target[tokens[tokens.length-1]].toString = (function(constant) {
+					return function() {
+						return constant;
+					}
+				})(value);
 			}
 		}
 		nashornTrace("Properties constructor returning");

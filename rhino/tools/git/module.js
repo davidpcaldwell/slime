@@ -93,10 +93,10 @@ var LocalRepository = function(o) {
 	this.merge = function(p) {
 		var args = [];
 		args.push(p.name);
-		execute({
+		execute(jsh.js.Object.set({
 			command: "merge",
 			arguments: args
-		});
+		}, (p.stdio) ? { stdio: p.stdio } : {}));
 	}
 	
 	this.log = function(p) {
@@ -200,10 +200,10 @@ var LocalRepository = function(o) {
 	this.checkout = function(p) {
 		var args = [];
 		args.push(p.branch);
-		execute({
+		execute(jsh.js.Object.set({
 			command: "checkout",
 			arguments: args
-		});
+		}, (p.stdio) ? { stdio: p.stdio } : {}));
 	};
 	
 	this.branch = function(p) {
