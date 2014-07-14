@@ -199,12 +199,10 @@ END LICENSE
 				</span>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#context">
+		<script type="application/x.jsapi#context"><![CDATA[
 			(function() {
 				var host = $jsapi.module("../../rhino/host/", {
-					loadClass: function(name) {
-						return $host.getLoader().getJavaClass(name)
-					}
+					$rhino: jsh.$jsapi.$rhino
 				});
 				var context = {
 					api: {
@@ -212,13 +210,13 @@ END LICENSE
 						java: host,
 						io: $jsapi.module("../../rhino/io/", {
 							$java: new Packages.inonit.script.runtime.io.Streams(),
-							$rhino: $host.getRhinoLoader(),
+							$rhino: jsh.$jsapi.$rhino,
 							api: {
 								java: host,
 								mime: $jsapi.module("../../js/mime/", {})
 							}
 						}),
-						loader: $host.getRhinoLoader()
+						loader: jsh.$jsapi.$rhino
 					},
 					$pwd: String(jsh.shell.properties.object.user.dir)
 				};
@@ -251,9 +249,9 @@ END LICENSE
 					//	TODO	what are the next two for?
 					this.$filesystem = $filesystem;
 					this.FILE = file;
-				}
+				};
 			})()
-		</script>
+		]]></script>
 	</div>
 	<div>
 		<h1>Exports</h1>

@@ -16,6 +16,42 @@ var setExitStatus = function(status) {
 	_field.set(null, new Packages.java.lang.Integer(status));
 }
 
+var newStringArray = function(len) {
+	return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,len);		
+};
+
+if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
+	arguments = $arguments;
+	setExitStatus = function(status) {
+		arguments.callee.value = status;
+	}
+	newStringArray = function(len) {
+		return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String.class,len);		
+	}
+	//	TODO	Exact duplicate of both functions below in jsh/etc/unbuilt.rhino.js
+	var readFile = function(path) {
+		var rv = "";
+		var reader = new Packages.java.io.FileReader(path);
+		var c;
+		while((c = reader.read()) != -1) {
+			var _character = new Packages.java.lang.Character(c);
+			rv += _character.toString();
+		}
+		return rv;
+	};
+	var readUrl = function(path) {
+		var rv = "";
+		var connection = new Packages.java.net.URL(path).openConnection();
+		var reader = new Packages.java.io.InputStreamReader(connection.getInputStream());
+		var c;
+		while((c = reader.read()) != -1) {
+			var _character = new Packages.java.lang.Character(c);
+			rv += _character.toString();
+		}
+		return rv;
+	};
+}
+
 if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	console("Usage: jsh.rhino.js <script-path> [arguments]");
 	Packages.java.lang.System.exit(1);
@@ -41,6 +77,23 @@ var Directory = function(path) {
 	var peer = new Packages.java.io.File(path);
 
 	this.path = String(peer.getCanonicalPath());
+	
+	this.getCommand = function(relative) {
+		var getWithSuffix = function(name,suffix) {
+			if (new Packages.java.io.File(peer,name + suffix).exists()) {
+				return new File(String(new Packages.java.io.File(peer,name + suffix).getCanonicalPath()))
+			}
+			return null;
+		}
+		
+		//	TODO	should use more complex logic than this but it works for the java and jjs cases
+		if (env.PATHEXT) {
+			if (getWithSuffix(relative,".exe")) {
+				return getWithSuffix(relative,".exe");
+			}
+		}
+		return getWithSuffix(relative,"");
+	}
 
 	this.getFile = function(relative) {
 		var file = new Packages.java.io.File(peer,relative);
@@ -125,6 +178,15 @@ var Command = function() {
 					}
 				);
 			};
+			
+			//	NASHORN	Under Rhino, these were implied
+			this.getSubprocessEnvironment = function() {
+				return null;
+			};
+			
+			this.getWorkingDirectory = function() {
+				return null;
+			};
 		}
 		var list = [];
 		for (var i=0; i<arguments.length; i++) {
@@ -147,7 +209,7 @@ var Command = function() {
 					}
 
 					this.getArguments = function() {
-						var rv = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,list.length-1);
+						var rv = newStringArray(list.length-1);
 						for (var i=1; i<list.length; i++) {
 							rv[i-1] = new Packages.java.lang.String(list[i]);
 						}
@@ -207,6 +269,8 @@ settings.defaults = new function() {
 
 	//	The jsh.launcher.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
 	//	create the classloader inside which we are executing
+	debug("jsh.launcher.rhino = " + getProperty("jsh.launcher.rhino"));
+	debug("jsh.launcher.rhino.classpath = " + getProperty("jsh.launcher.rhino.classpath"));
 	this.rhinoClasspath =
 		(getProperty("jsh.launcher.rhino.classpath"))
 		? new Searchpath(getProperty("jsh.launcher.rhino.classpath"))
@@ -226,14 +290,17 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			return readUrl( ClassLoader.getSystemResource("main.jsh.js") );
 		});
 
-		debug("Copying rhino ...");
-		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
 		var tmpdir = new Directory(String(createTemporaryDirectory().getCanonicalPath()));
-		var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
-		var writeTo = rhinoCopiedTo.writeTo();
-		platform.io.copyStream(rhino,writeTo);
-		rhino.close();
-		writeTo.close();
+		
+		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
+		if (rhino) {
+			debug("Copying rhino ...");
+			var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
+			var writeTo = rhinoCopiedTo.writeTo();
+			platform.io.copyStream(rhino,writeTo);
+			rhino.close();
+			writeTo.close();
+		}
 
 		var index = 0;
 		var plugin;
@@ -267,7 +334,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			debug("Copied plugin " + index + " from " + plugin.name);
 		}
 
-		this.rhinoClasspath = new Searchpath([ rhinoCopiedTo ]);
+		this.rhinoClasspath = (rhinoCopiedTo) ? new Searchpath([ rhinoCopiedTo ]) : new Searchpath([]);
 		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
 		this.scriptClasspath = [];
 		this.JSH_PLUGINS = new Searchpath(plugins).toPath();
@@ -381,7 +448,7 @@ settings.explicit = new function() {
 					path = platform.cygwin.cygpath.windows(path);
 				}
 				if (new Packages.java.io.File(path).exists()) {
-					return new File( String(Packages.java.io.File(path).getCanonicalPath()) );
+					return new File( String(new Packages.java.io.File(path).getCanonicalPath()) );
 				}
 				if (path.indexOf(slash) == -1) {
 					debug("PATH = " + env.PATH);
@@ -523,89 +590,130 @@ try {
 			}
 		}
 	}
-	command.add(JAVA_HOME.getFile("bin/java"));
-	if (env.JSH_JAVA_DEBUGGER) {
-		//	TODO	this option seems to have changed as of Java 5 or Java 6 to agentlib or agentpath
-		//			see http://docs.oracle.com/javase/6/docs/technotes/guides/jpda/conninv.html
-		command.add("-Xrunjdwp:transport=dt_shmem,server=y");
-	} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
-		//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
-		//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
-		if (settings.get("profiler")) {
-			var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
-			if (withParameters) {
-				command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
-			} else {
-				command.add("-javaagent:" + settings.get("profiler").path);
-			}
-		} else {
-			//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
-			//	emit warning message?
-		}
-	}
+	debugger;
 	var jvmOptions = settings.combine("jvmOptions");
-	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
-	if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
-		jvmOptions.unshift("-client");
-	}
-	command.add(jvmOptions);
+	
+	var environmentAndProperties = function() {
+		[
+			"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
+			,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
+			,"JSH_LIBRARY_MODULES"
+			,"JSH_PLUGINS"
+			,"JSH_OS_ENV_UNIX"
+		].forEach(function(name) {
+			var property = name.toLowerCase().split("_").join(".");
+			command.jvmProperty(property,settings.get(name));
+		});
 
-	[
-		"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
-		,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
-		,"JSH_LIBRARY_MODULES"
-		,"JSH_PLUGINS"
-		,"JSH_OS_ENV_UNIX"
-	].forEach(function(name) {
-		var property = name.toLowerCase().split("_").join(".");
-		command.jvmProperty(property,settings.get(name));
-	});
+		if (settings.get("JSH_TMPDIR")) {
+			command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
+		}
 
-	if (settings.get("JSH_TMPDIR")) {
-		command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
-	}
+		if (settings.get("JSH_JAVA_LOGGING_PROPERTIES")) {
+			command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGING_PROPERTIES").path);
+		}
 
-	if (settings.get("JSH_JAVA_LOGGING_PROPERTIES")) {
-		command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGING_PROPERTIES").path);
-	}
+		if (platform.cygwin) {
+			command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
+			//	TODO	check for existence of the executable?
+			if (!settings.get("JSH_LIBRARY_NATIVE")) {
+				console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
+				console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
+			} else {
+				command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
+			}
+		}
 
-	if (platform.cygwin) {
-		command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
-		//	TODO	check for existence of the executable?
-		if (!settings.get("JSH_LIBRARY_NATIVE")) {
-			console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
-			console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
-		} else {
-			command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
+		[
+			"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
+		].forEach( function(property) {
+			if (getProperty(property)) {
+				command.jvmProperty(property, getProperty(property));
+			}
+		} );
+		for (var x in env) {
+			if (x.substring(0,4) == "JSH_" || x == "PATH") {
+				command.jvmProperty("jsh.launcher.environment." + x, env[x]);
+			}
 		}
 	}
-
-	[
-		"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
-	].forEach( function(property) {
-		if (getProperty(property)) {
-			command.jvmProperty(property, getProperty(property));
-		}
-	} );
-	for (var x in env) {
-		if (x.substring(0,4) == "JSH_" || x == "PATH") {
-			command.jvmProperty("jsh.launcher.environment." + x, env[x]);
-		}
-	}
-
-	command.add("-classpath");
+	
 	var shellClasspath = settings.get("shellClasspath");
 	if (!shellClasspath) {
 		console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
 		Packages.java.lang.System.exit(1);
 	}
-	command.add(
-		settings.get("rhinoClasspath")
-		.append(settings.get("shellClasspath"))
-		.append(new Searchpath(settings.combine("scriptClasspath")))
-		.toPath()
-	);
-	command.add("inonit.script.jsh.Main");
+	
+	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
+	
+	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
+	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE != "rhino") {
+//	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE == "nashorn") {
+		//	Nashorn
+		var JJS = false;
+		if (JJS) {
+			command.add(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
+		} else {
+			command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));			
+		}
+		//	TODO	handle JSH_JAVA_DEBUGGER, probably by detecting open port and using that port for dt_socket and server=y
+		//	TODO	handle JSH_SCRIPT_DEBUGGER == "profiler"
+		//	TODO	decide about client-vs.-server VM, probably not needed
+		if (jvmOptions.length) {
+			command.add(jvmOptions.map(function(option) {
+				if (JJS) {
+					return "-J" + option;
+				} else {
+					return option;
+				}
+			}));
+		}
+		environmentAndProperties();
+		command.add("-classpath");
+		command.add(shellClasspath.append(scriptClasspath).toPath());
+		if (JJS) {
+			command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("nashorn-host.js").path);
+			command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("jsh.js").path);
+			command.add("--");
+		} else {
+			command.add("inonit.script.jsh.Nashorn");
+		}
+	} else {
+		//	Rhino
+		command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));
+		if (env.JSH_JAVA_DEBUGGER) {
+			//	TODO	this option seems to have changed as of Java 5 or Java 6 to agentlib or agentpath
+			//			see http://docs.oracle.com/javase/6/docs/technotes/guides/jpda/conninv.html
+			command.add("-Xrunjdwp:transport=dt_shmem,server=y");
+		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
+			//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
+			//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
+			if (settings.get("profiler")) {
+				var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
+				if (withParameters) {
+					command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
+				} else {
+					command.add("-javaagent:" + settings.get("profiler").path);
+				}
+			} else {
+				//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
+				//	emit warning message?
+			}
+		}
+		if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
+			jvmOptions.unshift("-client");
+		}
+		command.add(jvmOptions);
+		environmentAndProperties();
+		command.add("-classpath");
+		command.add(
+			settings.get("rhinoClasspath")
+			.append(shellClasspath)
+			.append(scriptClasspath)
+			.toPath()
+		);
+		command.add("inonit.script.jsh.Rhino");
+	}
 	command.add(settings.get("script"));
 	var index = (settings.get("script")) ? 1 : 0;
 	for (var i=index; i<arguments.length; i++) {
@@ -622,7 +730,11 @@ try {
 		err: Packages.java.lang.System["err"]
 	};
 	debug("Running command ...");
-	setExitStatus(command.run(mode));
+	var status = command.run(mode);
+	if (status === null) {
+		throw new Error("Exit status null.");
+	}
+	setExitStatus(status);
 	debug("Command returned.");
 } catch (e) {
 	debug("Error:");
@@ -631,6 +743,8 @@ try {
 	debug(e.fileName + ":" + e.lineNumber);
 	if (e.rhinoException) {
 		e.rhinoException.printStackTrace();
+	} else if (e.printStackTrace) {
+		e.printStackTrace();
 	} else if (typeof(e) == "string") {
 		Packages.java.lang.System.err.println("[jsh] Launch failed: " + e);
 	} else if (e instanceof Error) {
@@ -639,4 +753,8 @@ try {
 	var error = e;
 	debugger;
 	setExitStatus(1);
+} finally {
+	if (typeof(setExitStatus.value) != "undefined") {
+		exit(setExitStatus.value);
+	}
 }

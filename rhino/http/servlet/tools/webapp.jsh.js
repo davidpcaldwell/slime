@@ -50,13 +50,20 @@ var destination = (function() {
 
 var WEBAPP = destination.directory;
 
+WEBAPP.getRelativePath("WEB-INF").createDirectory();
 if (!parameters.options.norhino) {
 	(function() {
 		//	Get the path of Rhino in this shell, assume it is a file, and copy it to WEB-INF/lib
-		var rhino = jsh.shell.java["class"].path.pathnames[0];
-		rhino.file.copy(WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
-			recursive: true
-		}))
+		if (jsh.shell.rhino) {
+			var rhino = jsh.shell.rhino.classpath.pathnames[0];
+			if (rhino.basename == "js.jar") {
+				rhino.file.copy(WEBAPP.getRelativePath("WEB-INF/lib").createDirectory())			
+			} else {
+				throw new Error("Rhino not present; classpath=" + jsh.shell.rhino.classpath);
+			}
+		} else {
+			throw new Error("Rhino not present.");
+		}
 	})();
 }
 
@@ -87,21 +94,36 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	var sourcepath = jsh.file.Searchpath([]);
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/java"));
+	sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/rhino/java"));
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/java"));
+	if (!parameters.options.norhino) {
+		sourcepath.pathnames.push(SLIME.getRelativePath("rhino/host/rhino/java"));
+	}
+	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
+	if (!parameters.options.norhino) {
+		sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/rhino/java"));		
+	}
+	var sources = [
+		jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java"),
+		jsh.script.file.getRelativePath("../java/inonit/script/servlet/Nashorn.java")
+	];
+	if (!parameters.options.norhino) {
+		sources.push(
+			jsh.script.file.getRelativePath("../rhino/java/inonit/script/servlet/Rhino.java")
+		);
+	}
 	jsh.java.tools.javac({
 		destination: WEBAPP.getRelativePath("WEB-INF/classes"),
 		classpath: classpath,
 		sourcepath: sourcepath,
 		source: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
 		target: (parameters.options["java:version"]) ? parameters.options["java:version"] : null,
-		arguments: [
-			jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java")
-		].concat(args),
+		arguments: sources.concat(args),
 		on: new function() {
 			this.exit = function(p) {
-				jsh.shell.echo("Exit status: " + p.status);
+				jsh.shell.echo("Exit status of javac: " + p.status);
 				if (p.status) {
-					jsh.shell.echo(p.arguments);
+					jsh.shell.echo("Compilation failure for arguments: " + p.arguments);
 				}
 			}
 		}
@@ -116,7 +138,12 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	});
 //	SLIME.getFile("loader/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/literal.js"));
 //	SLIME.getFile("loader/api.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/api.js"));
-	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/literal.js"), { recursive: true });
+	SLIME.getSubdirectory("loader/rhino").list().forEach(function(node) {
+		if (/\.js$/.test(node.pathname.basename)) {
+			node.copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/" + node.pathname.basename), { recursive: true });
+		}
+	});
+//	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/literal.js"), { recursive: true });
 	SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 

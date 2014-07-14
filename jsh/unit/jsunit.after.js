@@ -38,6 +38,47 @@ $exports.console = new function() {
 			success: true
 		});
 	}
+	
+	var printError = function(e) {
+		$context.console.println(e);
+		if (e.message) {
+			$context.console.println(e.message);
+		}
+		if (e.stack) {
+			if (e.stack.join) {
+				$context.console.println(e.stack.join("\n"));
+			} else {
+				//	TODO	When running jsh/unit tests on FreeBSD this property is a string, is it ever an array? Harmonize
+				$context.console.println(e.stack);
+			}
+		}
+		if (e.cause) {
+			$context.console.println("Executing code: " + e.code);
+			if (e.cause == e) {
+				throw new Error("Bug in setting cause");
+			}
+			printError(e.cause);
+		}
+		if (e.getStackTrace) {
+			var trace = e.getStackTrace();
+			for (var i=0; i<trace.length; i++) {
+				$context.console.println("\t" + trace[i]);
+			}
+		}
+		if (e.getCause) {
+			if (e.getCause()) printError(e.getCause());
+		}
+	}
+	
+	this.caught = function(p) {
+		$context.console.println("Caught something in .caught()");
+		if (p.initialize) {
+			$context.console.println("typeof(p.initialize) = " + typeof(p.initialize));
+			$context.console.println("Caught error in initializer: code = ");
+			$context.console.println(String(p.initialize));
+		}
+		printError(p.error);
+	}
 
 	this.test = function(test) {
 		var success = test.success;
@@ -49,15 +90,9 @@ $exports.console = new function() {
 			var code = (success == null) ? "*" : "X";
 			$context.console.print(code);
 			if (test.error) {
-				$context.console.println(test.error);
-				if (test.error.stack) {
-					if (test.error.stack.join) {
-						$context.console.println(test.error.stack.join("\n"));
-					} else {
-						//	TODO	When running jsh/unit tests on FreeBSD this property is a string, is it ever an array? Harmonize
-						$context.console.println(test.error.stack);
-					}
-				}
+				printError(test.error);
+			} else if (success == null) {
+				$context.console.println("No error property provided for test.")
 			}
 			stack[stack.length-1].success = false;
 		} else {

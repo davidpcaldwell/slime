@@ -21,6 +21,10 @@ if ($context.globals) {
 		}
 	};
 
+	if (typeof(globals) == "undefined") {
+		//	NASHORN
+		globals = $loader.file("global.js");
+	}
 	copyGlobals(globals.Array,Array);
 	copyGlobals(globals.String,String);
 }
@@ -315,7 +319,8 @@ $exports.Object = new function() {
 		}
 	};
 	
-	this.expando = $api.deprecate(this.path);
+	this.expando = this.path;
+//	$api.deprecate(this,"expando");
 }
 $api.experimental($exports,"Object");
 
@@ -333,11 +338,99 @@ if ($context.globals) {
 $exports.Function = $api.deprecate(function(p) {
 	return $api.Function(p);
 });
+$exports.Function = function() {
+	var UNDEFINED = {};
+	
+	var Result = function() {
+		this.resolve = function() {
+			if (this.error) {
+				throw this.throwing;
+			} else {
+				if (this.returning === UNDEFINED) return void(0);
+				return this.returning;
+			}
+		};
+	};
+
+	var Situation = function() {
+		var result = new Result();
+
+		this.target = arguments[0];
+		this.arguments = arguments[1];
+
+		this.setReturn = function(v) {
+			result.error = false;
+			result.returning = v;
+		};
+
+		this.setThrow = function(v) {
+			result.error = true;
+			result.throwing = v;
+		};
+		
+		this.result = result;
+		
+		this.resolve = function() {
+			return result.resolve();
+		};
+	};
+	
+	var components = [];
+	
+	if (arguments.length != 1) {
+		throw new TypeError();
+	} else {
+		components.push(new $exports.Function.Basic(arguments[0]));
+	}
+	
+	var rv = function() {
+		var situation = new Situation(this,Array.prototype.slice.call(arguments));
+		components.forEach(function(component) {
+			component.call(situation);
+		});
+		return situation.resolve();
+	};
+	
+	rv.revise = function() {
+		for (var i=0; i<arguments.length; i++) {
+			components.push(new $exports.Function.Revise(arguments[i]));
+		}
+		return this;
+	}
+	
+	return rv;
+};
+$exports.Function.Basic = function(f) {
+	return function() {
+		try {
+			this.setReturn(f.apply(this.target,this.arguments));
+		} catch (e) {
+			this.setThrow(e);
+		}
+	};
+};
+$exports.Function.Revise = function(f) {
+	return function() {
+		this.setReturn(f.call({
+			target: this.target,
+			arguments: this.arguments,
+			throwing: this.result.throwing,
+			returning: this.result.returning
+		},this.result.returning));
+	};
+};
 $exports.Function.returning = function(v) {
 	return function() {
 		return v;
 	};
 };
+$exports.Function.set = function(o) {
+	return function() {
+		for (var x in o) {
+			this[x] = o[x];
+		}
+	};
+}
 $exports.Function.evaluator = function() {
 	//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
 	//	undefined
@@ -389,12 +482,32 @@ $exports.Filter = new function() {
 			return v == value;
 		}
 	}
-}
+};
 $exports.Filter.not = function(filter) {
 	return function() {
 		return !Boolean(filter.apply(this,arguments));
 	}
-}
+};
+$exports.Filter.or = function() {
+	if (arguments.length == 0) throw new TypeError();
+	var items = Array.prototype.slice.call(arguments);
+	return function() {
+		for (var i=0; i<items.length; i++) {
+			if (items[i].apply(this,arguments)) return true;
+		}
+		return false;
+	}
+};
+$exports.Filter.and = function() {
+	if (arguments.length == 0) throw new TypeError();
+	var items = Array.prototype.slice.call(arguments);
+	return function() {
+		for (var i=0; i<items.length; i++) {
+			if (!items[i].apply(this,arguments)) return false;
+		}
+		return true;
+	}
+};
 
 var Map = new function() {
 	this.property = function(name,map) {
@@ -499,32 +612,116 @@ $exports.Order = new function() {
 			return order(map(a),map(b));
 		}
 	}
-}
+};
 
-$exports.Array = new function() {
-	this.choose = function(array,filter) {
-		var select = (filter) ? globals.Array.filter.call(array, filter) : array;
-		if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + array);
+var ArrayMethods = new function() {
+	var create = (function(self) {
+		return function() {
+			var rv = [];
+			for (var x in self) {
+				rv[x] = self[x];
+			}
+			return rv;
+		};
+	})(this);
+	
+	this.one = function(filter) {
+		var select = (filter) ? ArrayMethods.select.call(this,filter) : this;
+		if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + this);
 		if (select.length == 0) return null;
 		return select[0];
-	}
-
-	this.categorize = function(array,p) {
-		var categorizer = new Categorizer(p);
-		array.forEach( function(item) {
-			categorizer.categorize(item);
-		} );
-		return categorizer;
 	};
-	$api.experimental(this, "categorize");
+	
+	this.fold = function(f,initial) {
+		var current = initial;
+		for (var i=0; i<this.length; i++) {
+			current = f.call(this[i],current);
+		}
+		return current;		
+	};
+	
+	this.each = function(f) {
+		var rv = create();
+		for (var i=0; i<this.length; i++) {
+			rv[i] = f.call(this[i]);
+		}
+		return rv;
+	};
+	
+	this.select = function(f) {
+		var rv = create();
+		for (var i=0; i<this.length; i++) {
+			if (f.call(this[i])) {
+				rv.push(this[i]);
+			}
+		}
+		return rv;		
+	};
+};
 
-	this.toValue = function(array) {
-		return this.choose(array);
+$exports.Array = function(array) {
+	if (this.constructor == arguments.callee.prototype) {
+		//	called with new
+		array = array.slice();
 	}
-	deprecate(this,"toValue");
+	
+	array.one = ArrayMethods.one;		
+	array.each = ArrayMethods.each;
+	array.fold = ArrayMethods.fold;
+	array.select = ArrayMethods.select;
+	
+	return array;
 }
+for (var x in ArrayMethods) {
+	$exports.Array[x] = (function(underlying) {
+		return function(array) {
+			return underlying.apply(array,Array.prototype.slice.call(arguments,1));
+		}
+	})(ArrayMethods[x]);
+}
+$exports.Array.choose = $api.deprecate(function(array,filter) {
+	if (filter) {
+		return ArrayMethods.one.call(array, function() {
+			return filter.call(this,this);
+		});
+	} else {
+		return ArrayMethods.one.call(array);
+	}
+});
+$exports.Array.toValue = $exports.Array.choose;
+$exports.Array.categorize = $api.experimental(function(array,p) {
+	var categorizer = new Categorizer(p);
+	array.forEach( function(item) {
+		categorizer.categorize(item);
+	} );
+	return categorizer;	
+});
 
 $exports.Error = $loader.file("Error.js").Error;
+
+$exports.Task = {};
+$exports.Task.tell = function(p) {
+	if (typeof(p.tell) != "function") {
+		throw new TypeError();
+	}
+	var tell;
+	if (typeof(p.target) == "object" && p.target) {
+		tell = p.tell.bind(p.target);
+	} else {
+		tell = p.tell;
+	}
+	if (p.tell.length == 1) {
+		if (p.threw) {
+			tell({ threw: p.threw });
+		} else {
+			tell({ returned: p.returned });
+		}
+	} else if (p.tell.length == 2) {
+		tell(p.threw,p.returned);
+	} else {
+		throw new TypeError("Tell length: " + p.tell.length + " tell=" + p.tell.toString());
+	}
+};
 
 $exports.deprecate = deprecate;
 $api.deprecate($exports,"deprecate");

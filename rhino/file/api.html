@@ -99,9 +99,7 @@ END LICENSE
 				$Context.api = new function() {
 					this.js = $jsapi.module("../../js/object/");
 					var java = $jsapi.module("../../rhino/host/", {
-						loadClass: function(name) {
-							return $host.getLoader().getJavaClass(name)
-						}
+						$rhino: jsh.$jsapi.$rhino
 					});
 					this.java = java;
 					this.io = $jsapi.module("../../rhino/io/", {
@@ -144,7 +142,13 @@ END LICENSE
 				this.createFile = function(base,name,length) {
 					var pathname = base.getRelativePath(name);
 					//	Why the below is qualified with 'this' is a little mysterious
-					var out = pathname.write(this.context.$Context.api.io.Streams.binary);
+					if (true) {
+						//	NASHORN	Nashorn requires the use of scope to access context, even though when scope.createFile is 
+						//			invoked below, scope should == this. In Rhino it does, but in Nashorn it does not.
+						var out = pathname.write(scope.context.$Context.api.io.Streams.binary);
+					} else {
+						var out = pathname.write(this.context.$Context.api.io.Streams.binary);						
+					}
 					if (length) {
 						for (var i=0; i<length; i++) {
 							out.java.adapt().write(0);

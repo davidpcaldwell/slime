@@ -77,7 +77,7 @@ var Parent = function(p) {
 		return choose(rv);
 	}
 
-	this.get = function(p) {
+	this.get = $api.deprecate(function(p) {
 		var filtering = function(children,p) {
 			var filter = (function() {
 				if (p && p.name && typeof(p.name) == "string") {
@@ -123,25 +123,25 @@ var Parent = function(p) {
 		};
 
 		return filtering(this.children,p);
-	};
+	});
 
-	this.remove = function(p) {
+	this.remove = $api.deprecate(function(p) {
 		var child;
 		if (p.recursive && p.node) {
 			child = p.node;
 		} else {
 			child = p;
 		}
-		for (var i=0; i<children.length; i++) {
-			if (children[i] == child) {
-				children.splice(i,1);
+		for (var i=0; i<this.children.length; i++) {
+			if (this.children[i] == child) {
+				this.children.splice(i,1);
 				return;
 			}
-			if (p.recursive && children[i].remove) {
-				children[i].remove(p);
+			if (p.recursive && this.children[i].remove) {
+				this.children[i].remove(p);
 			}
 		}
-	};
+	});
 };
 
 var Comment = function(p) {

@@ -24,12 +24,19 @@ END LICENSE
 		Command-line arguments
 		<ul>
 			<!--	TODO	use styles rather than italics to implement the below; perhaps a class commandarg or something	-->
-			<li><code>-jsapi <i>pathname</i></code> Location of <code>loader/api</code> directory</li>
-			<li><code>-doc</code> Pathname at which to create a directory to which to emit documentation; if option is missing, no
-				documentation is emitted. If directory exists, it is deleted and re-created.
+			<li>(optional) <code>-jsapi <i>pathname</i></code> Location of <code>loader/api</code> directory</li>
+			<li><code>-api <i>pathname</i></code> A file describing an API.</li>
+			<li>
+				<code>-test <i>&lt;pathname&gt;</i>:<i>&lt;test&gt;</i></code>
+				<p>
+					Adds a test to the list of tests to be run.
+				</p>
+				<p>
+					The argument consists of a path to the API file, and, optionally, a test ID.
+				</p>
 			</li>
-			<li><code>-notest</code> Skip unit tests</li>
-			<li><code>-classpath <i>pathname</i></code> (Multiple allowed) Add pathname to the script classpath.</li>
+			<li><code>-notest</code> Skip unit tests. If this option is present, no tests will be run.</li>
+			<li><code>-classpath <i>pathname</i></code> (Multiple allowed) Add <code><i>pathname</i></code> to the script classpath.</li>
 			<li>
 				<code>-environment <i>arg</i></code>
 				Adds a value to the <code>$jsapi.environment</code> value provided to tests.
@@ -45,32 +52,13 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
-			<li>
-				<code>-base <i>pathname</i></code> Base location from which to resolve paths specified with <code>-module</code>.
+			<li><code>-doc</code> Pathname at which to create a directory to which to emit documentation; if option is missing, no
+				documentation is emitted. If directory exists, it is deleted and re-created.
 			</li>
 			<li>
-				<code>-module <i>[namespace]</i>@<i>path</i></code>
-				Adds a module to the list of modules to be documented and/or tested.
-				<ul>
-					<li>
-						<code><i>namespace</i></code> The namespace to use when emitting documentation. If no namespace is given,
-						the module will not be documented.
-					</li>
-					<li>
-						<code><i>path</i></code> The path of of the module relative to <code>-base</code>.
-					</li>
-				</ul>
-			</li>
-			<li>
-				<code>-test <i>&lt;module&gt;</i>:<i>&lt;test&gt;</i></code>
-				<p>
-					Adds a test to the list of tests to be run. If no <code>-test</code> options are specified, the entire set of
-					modules passed to the program will have all of their tests run. If at least one <code>-test</code> is specified,
-					then only tests specified by <code>-test</code> will be run.
-				</p>
-				<p>
-					The argument consists of a module path, and, optionally, a test ID.
-				</p>
+				<code>-index <i>pathname</i></code> File to be used as index file for documentation. If present, this file will
+				be copied as <code>index.html</code> at the top-level of the documentation hierarchy (that is, into the directory
+				specified by <code>-doc</code>).
 			</li>
 		</ul>
 	</div>

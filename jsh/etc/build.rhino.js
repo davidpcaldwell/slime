@@ -197,24 +197,34 @@ var remove = function(file) {
 remove(JSH_HOME);
 JSH_HOME.mkdirs();
 
-var RHINO_HOME = function() {
-	//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
-	//	like an un-jarred version
-	var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
-	var matcher = /^file\:(.*)/;
-	if (matcher.exec(url)[1].substring(2,3) == ":") {
-		//	this is a windows path of the form /C:/ ...
-		return new File(matcher.exec(url)[1].substring(1)).getParentFile();
-	} else {
-		return new File(matcher.exec(url)[1]).getParentFile();
+var RHINO_LIBRARIES = (function() {
+	var RHINO_HOME;
+	if (Packages.java.lang.System.getProperties().get("jsh.build.rhino")) {
+		return [
+			Packages.java.lang.System.getProperties().get("jsh.build.rhino")
+		]
 	}
-}();
-debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
+	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+		RHINO_HOME = function() {
+			//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
+			//	like an un-jarred version
+			var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
+			var matcher = /^file\:(.*)/;
+			if (matcher.exec(url)[1].substring(2,3) == ":") {
+				//	this is a windows path of the form /C:/ ...
+				return new File(matcher.exec(url)[1].substring(1)).getParentFile();
+			} else {
+				return new File(matcher.exec(url)[1]).getParentFile();
+			}
+		}();
+		debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
 
-var RHINO_LIBRARIES = [
-	new File(RHINO_HOME,"js.jar")
-	//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
-];
+		return [
+			new File(RHINO_HOME,"js.jar")
+			//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
+		];
+	}	
+})();
 
 //	TODO	Consider adding XMLBeans back in
 /*
@@ -232,10 +242,12 @@ console("Copying launcher scripts ...");
 copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
 copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
 
-console("Copying libraries ...");
-RHINO_LIBRARIES.forEach( function(file) {
-	copyFile(file,new File(JSH_HOME,"lib/" + file.getName()));
-});
+if (RHINO_LIBRARIES) {
+	console("Copying libraries ...");
+	RHINO_LIBRARIES.forEach( function(file) {
+		copyFile(file,new File(JSH_HOME,"lib/" + file.getName()));
+	});
+}
 
 var tmp = createTemporaryDirectory();
 
@@ -256,13 +268,26 @@ var addJavaFiles = function(f) {
 
 console("Building jsh application ...");
 addJavaFiles(new File(SLIME_SRC,"loader/rhino/java"));
+if (RHINO_LIBRARIES) {
+	addJavaFiles(new File(SLIME_SRC,"loader/rhino/rhino/java"));
+}
 addJavaFiles(new File(SLIME_SRC,"rhino/system/java"));
 addJavaFiles(new File(SLIME_SRC,"jsh/loader/java"));
+if (RHINO_LIBRARIES) {
+	addJavaFiles(new File(SLIME_SRC,"jsh/loader/rhino/java"));
+}
 //	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
 var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
+var JSH_CLASSPATH = (function() {
+	if (RHINO_LIBRARIES) {
+		return RHINO_LIBRARIES.map(function(file) { return String(file.getCanonicalPath()); }).join(colon);
+	} else {
+		return "";
+	}
+})();
 var javacArguments = compileOptions.concat([
 	"-d", tmpClasses.getCanonicalPath(),
-	"-classpath", RHINO_LIBRARIES.map(function(file) { return String(file.getCanonicalPath()); }).join(colon)
+	"-classpath", JSH_CLASSPATH
 ]).concat(javaSources);
 debug("Compiling: " + javacArguments.join(" "));
 platform.jdk.compile(javacArguments);
@@ -330,6 +355,16 @@ console("Creating bundled modules ...")
 load(new File(SLIME_SRC,"jsh/tools/slime.js").getCanonicalPath());
 var tmpModules = new File(tmp,"modules");
 tmpModules.mkdir();
+var MODULE_CLASSPATH = (function() {
+	var files = [];
+	if (RHINO_LIBRARIES) {
+		files = files.concat(RHINO_LIBRARIES);
+	}
+	files.push(new File(JSH_HOME,"lib/jsh.jar"));
+	return files.map(function(_file) {
+		return _file.getCanonicalPath();
+	}).join(colon);
+})();
 var module = function(path,compile) {
 	var tmp = new File(tmpModules,path);
 	tmp.mkdirs();
@@ -339,8 +374,9 @@ var module = function(path,compile) {
 	}, {
 		source: JAVA_VERSION,
 		target: JAVA_VERSION,
-		classpath: new File(RHINO_HOME, "js.jar").getCanonicalPath() + colon + new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath(),
-		nowarn: true
+		classpath: MODULE_CLASSPATH,
+		nowarn: true,
+		rhino: RHINO_LIBRARIES
 	});
 	var to = new File(JSH_HOME,"modules/"+path.replace(/\//g, ".")+".slime");
 	to.getParentFile().mkdirs();
@@ -399,36 +435,36 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		}
 		command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
 		command.add("-base", JSH_JSAPI_BASE);
+		command.add("-index", "jsh/etc/index.html");
 
 		var modules = [];
-		modules.add = function(path,ns) {
-			var namespace = (ns) ? ns : "";
-			this.push(namespace+"@"+path);
+		modules.add = function(path) {
+			this.push(path);
 		}
-		modules.add("jsh/launcher/rhino/", "(launcher)");
-		modules.add("jsh/loader/plugin.api.html", "(plugins)");
-		modules.add("jsh/tools/", "(tools)");
-		modules.add("loader/api/", "(modules)");
-		modules.add("jsh/unit/", "(testing)");
-		modules.add("jsh/loader/loader.api.html","jsh.loader");
+		modules.add("jsh/launcher/rhino/");
+		modules.add("jsh/loader/plugin.api.html");
+		modules.add("jsh/tools/");
+		modules.add("loader/api/");
+		modules.add("jsh/unit/");
+		modules.add("jsh/loader/loader.api.html");
 		modules.add("loader/");
 		modules.add("loader/rhino/");
-		modules.add("js/object/","jsh.js");
-		modules.add("rhino/host/","jsh.java");
-		modules.add("rhino/io/", "jsh.io");
-		modules.add("js/document/", "jsh.js.document");
-		modules.add("rhino/document/", "jsh.document");
-		modules.add("rhino/file/","jsh.file");
-		modules.add("rhino/http/client/", "jsh.http");
-		modules.add("rhino/http/servlet/", "(servlets)");
-		modules.add("rhino/http/servlet/plugin.jsh.api.html", "jsh.httpd");
+		modules.add("js/object/");
+		modules.add("rhino/host/");
+		modules.add("rhino/io/");
+		modules.add("js/document/");
+		modules.add("rhino/document/");
+		modules.add("rhino/file/");
+		modules.add("rhino/http/client/");
+		modules.add("rhino/http/servlet/");
+		modules.add("rhino/http/servlet/plugin.jsh.api.html");
 		/*modules.add("rhino/mail/", "jsh.mail");*/
 		modules.add("rhino/shell/");
-		modules.add("rhino/shell/jsh.js","jsh.shell");
-		modules.add("jsh/script/","jsh.script");
+		modules.add("rhino/shell/jsh.js");
+		modules.add("jsh/script/");
 
 		modules.forEach( function(module) {
-			command.add("-module",module);
+			command.add("-api",module);
 		});
 
 		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());
@@ -458,17 +494,23 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			subenv.JSH_LAUNCHER_DEBUG = "true";
 			subenv.JSH_SCRIPT_DEBUGGER = "rhino";
 		}
+		if (env.JSH_ENGINE) {
+			subenv.JSH_ENGINE = env.JSH_ENGINE;
+		}
 		subenv.JSH_PLUGINS = "";
 		command.add({
 			env: subenv
 		});
 
+		console("JSAPI command:");
 		console(command.map(function(item) {
 			if (item.env) return "";
 			var token = String(item);
 			if (token.indexOf("(") != -1) return "\"" + token + "\"";
 			return token;
 		}).join(" "));
+		console("JSAPI environment:");
+		console(JSON.stringify(subenv));
 		var status = runCommand.apply(this,command);
 		if (status) {
 			throw new Error("Failed: " + command.join(" "));
@@ -562,5 +604,8 @@ if (destination.installer) {
 	command.push("-script",getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command.push("-file","build.zip=" + getPath(build));
 	command.push("-to",getPath(destination.installer));
+	if (!RHINO_LIBRARIES) {
+		command.push("-norhino");
+	}
 	runCommand.apply(this,command);
 }

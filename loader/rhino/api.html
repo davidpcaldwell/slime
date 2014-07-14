@@ -111,7 +111,7 @@ END LICENSE
 								<ul>
 									<li class="value">
 										<div class="name">_code</div>
-										<span class="type">JavaClass inonit.script.rhino.Code</span>
+										<span class="type">JavaClass inonit.script.engine.Code</span>
 										<span>An object describing how to load scripts and/or Java classes from this module.</span>
 									</li>
 									<li class="value">
@@ -180,7 +180,7 @@ END LICENSE
 									<ul>
 										<li class="value">
 											<div class="name">_source</div>
-											<span class="type">JavaClass inonit.script.rhino.Code.Source</span>
+											<span class="type">JavaClass inonit.script.engine.Code.Source</span>
 											<span>
 												(optional; _source or _code must be specified)
 												A Java object that knows how to locate the code.
@@ -188,7 +188,7 @@ END LICENSE
 										</li>
 										<li class="value">
 											<div class="name">_code</div>
-											<span class="type">JavaClass inonit.script.rhino.Code</span>
+											<span class="type">JavaClass inonit.script.engine.Code</span>
 											<span>
 												(optional; _source or _code must be specified)
 												A Java object that knows how to locate the code.
@@ -299,7 +299,7 @@ END LICENSE
 					</span>
 				</div>
 			</li>
-			<li class="function" jsapi:id="namespace" jsapi:reference="getApi('../api.html').getElement('namespace')">
+			<li class="function" jsapi:id="namespace" jsapi:reference="getApi('../api.html').getElement('global/namespace')">
 				<div class="name">namespace</div>
 				<span>Invokes the platform loader's <code>namespace</code> method.</span>
 			</li>

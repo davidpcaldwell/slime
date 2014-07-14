@@ -26,36 +26,36 @@ plugin({
 			},
 			workingDirectory: jsh.shell.PWD,
 			script: (function() {
-				var uri = $host.getInvocation().getScript().getUri();
+				var uri = $jsh.getInvocation().getScript().getUri();
 				if (uri  && uri.getScheme() && String(uri.getScheme()) == "file") {
 					return jsh.file.filesystem.java.adapt(new Packages.java.io.File(uri)).file;
 				}
 			})(),
 			uri: (function() {
-				if ($host.getInvocation().getScript().getUri()) {
-					return String($host.getInvocation().getScript().getUri().normalize().toString());
+				if ($jsh.getInvocation().getScript().getUri()) {
+					return String($jsh.getInvocation().getScript().getUri().normalize().toString());
 				}
 			})(),
 			uri: (function() {
-				if ($host.getInvocation().getScript().getUri()) {
-					return String($host.getInvocation().getScript().getUri().normalize().toString());
+				if ($jsh.getInvocation().getScript().getUri()) {
+					return String($jsh.getInvocation().getScript().getUri().normalize().toString());
 				}
 			})(),
 			packaged: (function() {
 				//	TODO	push back into Invocation
-				if ($host.getSystemProperties().getProperty("jsh.launcher.packaged")) {
+				if ($jsh.getSystemProperties().getProperty("jsh.launcher.packaged")) {
 					return jsh.file.filesystem.java.adapt(
 						new Packages.java.io.File(
-							$host.getSystemProperties().getProperty("jsh.launcher.packaged")
+							$jsh.getSystemProperties().getProperty("jsh.launcher.packaged")
 						)
 					).file;
 				}
 				return null;
 			})(),
-			arguments: jsh.java.Array.adapt($host.getInvocation().getArguments()).map(function(s) { return String(s); }),
+			arguments: jsh.java.Array.adapt($jsh.getInvocation().getArguments()).map(function(s) { return String(s); }),
 			loader: (function() {
-				if ($host.getLoader().getPackagedCode()) {
-					return new jsh.io.Loader({ _source: $host.getLoader().getPackagedCode() });
+				if ($jsh.getPackagedCode()) {
+					return new jsh.io.Loader({ _source: $jsh.getPackagedCode() });
 				} else {
 					return function(){}();
 				}

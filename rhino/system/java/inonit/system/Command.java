@@ -350,6 +350,11 @@ public class Command {
 			try {
 				while( (i = in.read()) != -1 ) {
 					out.write(i);
+					//	We auto-flush after every byte to ensure that consumers of the output will eventually receive something
+					//	The particular case in question was when this loop was running inside the jsh launcher and consuming output
+					//	flushed by the loader, but was never flushing it to its own stdout
+					//	TODO	could make this much more configurable and/or complex
+					out.flush();
 				}
 				if (closeOnEnd) {
 					out.close();

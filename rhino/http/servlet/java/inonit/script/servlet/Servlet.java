@@ -13,25 +13,16 @@
 package inonit.script.servlet;
 
 import java.io.*;
-import java.util.*;
 
 import javax.servlet.http.*;
 
-import org.mozilla.javascript.*;
-
-import inonit.script.rhino.*;
+import inonit.script.engine.*;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
 	static {
 		Class[] dependencies = new Class[] {
-			//	Pull these in as dependencies, since the Rhino loader depends on them
-			inonit.script.rhino.Objects.class
-			,inonit.script.rhino.MetaObject.class
-			//	Pull these in as dependencies, since servlets load the rhino/host module, which includes these classes
-			//	Currently, webapp.jsh.js is unaware of modules and just copies them into the WEB-INF/slime directory, expecting
-			//	them to be loaded by its bootstrap loader
-			,inonit.script.runtime.Throwables.class
-			,inonit.script.runtime.Properties.class
+			//	Pull these in as dependencies, since the Java loader depends on them
+			inonit.script.runtime.Throwables.class
 		};
 	}
 
@@ -41,85 +32,59 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		public abstract void service(HttpServletRequest request, HttpServletResponse response);
 		public abstract void destroy();
 	}
-
+	
+	static abstract class ScriptContainer {
+		abstract void initialize(Servlet servlet);
+		abstract HostObject getServletHostObject();
+		abstract void setVariable(String name, Object value);
+		abstract void addScript(String name, InputStream stream);
+		abstract void execute();
+	}
+	
+	protected final Script script() {
+		return script;
+	}
+	
+	private boolean hasClass(String name) {
+		try {
+			Class c = Servlet.class.getClassLoader().loadClass(name);
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+	}
+	
+	private ScriptContainer createScriptContainer() {
+		String engine = null;
+		boolean hasRhino = hasClass("org.mozilla.javascript.Context");
+		boolean hasNashorn = new javax.script.ScriptEngineManager().getEngineByName("nashorn") != null;
+		if (!hasRhino && !hasNashorn) {
+			//	TODO	think through
+			throw new RuntimeException("Missing Rhino classes and Nashorn engine.");
+		} else if (hasRhino && !hasNashorn) {
+			engine = "Rhino";
+		} else if (!hasRhino && hasNashorn) {
+			engine = "Nashorn";
+		} else {
+			engine = "Rhino";
+		}
+		try {
+			return (ScriptContainer)getClass().getClassLoader().loadClass("inonit.script.servlet." + engine).newInstance();
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	@Override public final void init() {
-		Engine.Debugger debugger = null;
-		if (System.getenv("SLIME_SCRIPT_DEBUGGER") != null && System.getenv("SLIME_SCRIPT_DEBUGGER").equals("rhino")) {
-			Engine.RhinoDebugger.Configuration configuration = new Engine.RhinoDebugger.Configuration() {
-				@Override public Engine.RhinoDebugger.Ui.Factory getUiFactory() {
-					return inonit.script.rhino.Gui.RHINO_UI_FACTORY;
-				}
-			};
-			configuration.setExit(new Runnable() {
-				public void run() {
-				}
-			});
-			configuration.setLog(new Engine.Log() {
-				@Override public void println(String message) {
-					System.err.println(message);
-				}
-			});
-			debugger = Engine.RhinoDebugger.create(configuration);
-		}
-		Engine engine = Engine.create(debugger, new Engine.Configuration() {
-			@Override public boolean createClassLoader() {
-				return true;
-			}
-
-			@Override
-			public ClassLoader getApplicationClassLoader() {
-				return Servlet.class.getClassLoader();
-			}
-
-			@Override
-			public int getOptimizationLevel() {
-				return -1;
-			}
-		});
-
-		Engine.Program program = new Engine.Program();
-
-		try {
-			Engine.Program.Variable jsh = Engine.Program.Variable.create(
-				"$host",
-				Engine.Program.Variable.Value.create(new Host(engine))
-			);
-			jsh.setReadonly(true);
-			jsh.setPermanent(true);
-			jsh.setDontenum(true);
-			program.set(jsh);
-		} catch (Engine.Errors errors) {
-			errors.dump(
-				new Engine.Log() {
-					@Override
-					public void println(String message) {
-						System.err.println(message);
-					}
-				},
-				"[slime] "
-			);
-			throw errors;
-		}
-
-		program.add(Engine.Source.create("<api.js>", getServletContext().getResourceAsStream("/WEB-INF/api.js")));
-
-		try {
-			System.err.println("Executing JavaScript program ...");
-			engine.execute(program);
-			System.err.println("Executed program: script = " + script);
-		} catch (Engine.Errors errors) {
-			System.err.println("Caught errors.");
-			errors.dump(
-				new Engine.Log() {
-					@Override
-					public void println(String message) {
-						System.err.println(message);
-					}
-				},
-				"[slime] "
-			);
-			throw errors;
-		}
+		ScriptContainer container = createScriptContainer();
+		container.initialize(this);
+		container.setVariable("$host", container.getServletHostObject());
+		container.addScript("<api.js>", getServletContext().getResourceAsStream("/WEB-INF/api.js"));
+		container.execute();
 	}
 
 	@Override public final void destroy() {
@@ -131,54 +96,31 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		script.service(request, response);
 	}
 
-	public class Host {
-		private Scriptable rhinoLoader;
+	public static abstract class HostObject {
+		private Servlet servlet;
+		private Loader loader;
 
-		Host(Engine engine) {
-			try {
-				this.rhinoLoader = inonit.script.rhino.Loader.load(engine, new inonit.script.rhino.Loader() {
-					private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
+		HostObject(final Servlet servlet) {
+			this.servlet = servlet;
+			this.loader = new inonit.script.engine.Loader() {
+				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
-					@Override public String getLoaderCode(String path) throws IOException {
-						return streams.readString(getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
-					}
-				});
-			} catch (IOException e) {
-				throw new RuntimeException("Could not load Slime rhino loader.", e);
-			}
+				@Override public String getLoaderCode(String path) throws IOException {
+					return streams.readString(servlet.getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
+				}
+			};
 		}
 
 		public void register(Script script) {
-			Servlet.this.script = script;
+			servlet.script = script;
 		}
 
-		public Scriptable getRhinoLoader() throws IOException {
-			return this.rhinoLoader;
+		public Loader getLoader() {
+			return this.loader;
 		}
-
-		public Code.Source getServletResources() {
-			try {
-				return Code.Source.create(getServletConfig().getServletContext().getResource("/"));
-			} catch (java.net.MalformedURLException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		public String getServletScriptPath() {
-			return getServletConfig().getInitParameter("script");
-		}
-
-		public Map<String,String> getServletInitParameters() {
-			Map<String,String> rv = new HashMap<String,String>();
-			Enumeration<String> e = getServletConfig().getInitParameterNames();
-			for (String k : Collections.list(e)) {
-				rv.put(k, getServletConfig().getInitParameter(k));
-			}
-			return rv;
-		}
-
-		public String getMimeType(String path) {
-			return getServletConfig().getServletContext().getMimeType(path);
+		
+		public Servlet getServlet() {
+			return servlet;
 		}
 	}
 }

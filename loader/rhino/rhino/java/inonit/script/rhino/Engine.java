@@ -17,6 +17,8 @@ import java.util.*;
 
 import org.mozilla.javascript.*;
 
+import inonit.script.engine.*;
+
 public class Engine {
 	public static abstract class Log {
 		public static final Log NULL = new Log() {
@@ -490,8 +492,9 @@ public class Engine {
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
-			private ClassLoader classLoader;
-			private Loader.Classes classes;
+			private Classes classes;
+//			private ClassLoader classLoader;
+//			private Loader.Classes classes;
 
 			ContextFactoryInner() {
 			}
@@ -500,26 +503,27 @@ public class Engine {
 
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
-					ClassLoader classLoader = (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
-					if (Configuration.this.createClassLoader()) {
-						this.classes = Loader.Classes.create(classLoader);
-						this.classLoader = this.classes;
-					} else {
-						this.classes = null;
-						this.classLoader = classLoader;
-					}
+					this.classes = Classes.create(new Classes.Configuration() {
+						@Override public boolean canCreateClassLoaders() {
+							return Configuration.this.createClassLoader();
+						}
+
+						@Override public ClassLoader getApplicationClassLoader() {
+							return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+						}
+					});
 					initialized = true;
 				}
 			}
 
 			private synchronized ClassLoader getContextApplicationClassLoader() {
 				initializeClassLoaders();
-				return this.classLoader;
+				return this.classes.getApplicationClassLoader();
 			}
 
 			final Loader.Classes getLoaderClasses() {
 				initializeClassLoaders();
-				return this.classes;
+				return this.classes.getScriptClasses();
 			}
 
 			@Override protected synchronized Context makeContext() {
@@ -585,17 +589,24 @@ public class Engine {
 	}
 
 	private Scriptable getGlobalScope(Context context) {
-		Scriptable rv = (Scriptable)globals.get(context);
-		if (rv == null) {
-			rv = context.initStandardObjects();
-			globals.put(context, rv);
-		}
-		return rv;
+		return context.initStandardObjects();
 	}
 
 	void script(String name, InputStream code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name,new InputStreamReader(code));
 		source.evaluate(debugger, contexts, scope, target);
+	}
+	
+	void script(String name, Reader code, Scriptable scope, Scriptable target) throws IOException {
+		Source source = Engine.Source.create(name, code);
+		source.evaluate(debugger, contexts, scope, target);
+	}
+	
+	public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+		Source source = Engine.Source.create(name,code);
+		Object rv = source.evaluate(debugger, contexts, scope, target);
+		if (rv instanceof Scriptable) return (Scriptable)rv;
+		return null;
 	}
 
 	public static class Errors extends RuntimeException {
@@ -861,6 +872,10 @@ public class Engine {
 			} catch (IOException e) {
 				throw new RuntimeException("Cannot get canonical path of " + file);
 			}
+		}
+		
+		public static Source create(Code.Source.File file) {
+			return new ReaderSource(file.getSourceName(), file.getReader());
 		}
 
 		private boolean debug = true;
@@ -1394,7 +1409,12 @@ public class Engine {
 		return this.debugger;
 	}
 
-	public Loader.Classes getApplicationClassLoader() {
-		return this.contexts.getLoaderClasses();
+//	public Loader.Classes getApplicationClassLoader() {
+//		return this.contexts.getLoaderClasses();
+//	}
+	
+	public Loader.Classpath getClasspath() {
+		if (this.contexts.getLoaderClasses() == null) return null;
+		return this.contexts.getLoaderClasses().toScriptClasspath();
 	}
 }

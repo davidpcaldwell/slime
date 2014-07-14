@@ -113,6 +113,15 @@ var getElement = function(root,path) {
 //		.getScenario(scope,unit): produce a unit.before.js/Scenario given a scope and a test path
 //
 $exports.ApiHtmlTests = function(html,name) {
+	//	NASHORN	next two lines only needed because of Nashorn; see below
+	var nameParameter = name;
+	this.html = html;
+	
+	this.toString = function() {
+		return "ApiHtmlTests: " + name;
+	}
+	
+	//Packages.java.lang.System.err.println("Created html tests " + name + " with top " + html.top.toString().substring(0,1000));
 	var jsapiReferenceFilter = function(element) {
 		return element.getJsapiAttribute("reference") != null;
 	}
@@ -120,25 +129,27 @@ $exports.ApiHtmlTests = function(html,name) {
 	//	Cannot have reference at top level, currently
 
 	var references = filter(getDescendants(html.top), jsapiReferenceFilter);
-	for (var i=0; i<references.length; i++) {
-		var scope = new function() {
-			this.getApi = function(path) {
-				var otherhtml = html.load(path);
-				var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
-				rv.getElement = function(path) {
-					return getElement(otherhtml.top,path);
-				}
-				return rv;
+	
+	//	NASHORN	similarly under Nashorn the referenceScope is required to be "public"
+	this.referenceScope = new function() {
+		this.getApi = function(path) {
+			var otherhtml = html.load(path);
+			var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
+			rv.getElement = function(path) {
+				return getElement(otherhtml.top,path);
 			}
-		};
+			return rv;
+		}
+	};
+	for (var i=0; i<references.length; i++) {
 		var reference = references[i].getJsapiAttribute("reference");
 		var element = (function() {
 			var rv;
-			with(scope) {
+			with(this.referenceScope) {
 				rv = eval(reference);
 			}
 			return rv;
-		})();
+		}).call(this);
 		references[i].replaceContentWithContentOf(element);
 		//	TODO	is the next line necessary? If not, can also remove this call in the DOM/E4X implementations
 		references[i].removeJsapiAttribute("reference");
@@ -194,10 +205,22 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	this.getContexts = function(scope) {
-		var contextScripts = getDescendantScripts(html.top,"context");
+		//Packages.java.lang.System.err.println("in getContexts(), this: " + this);
+		//Packages.java.lang.System.err.println("in getContexts(), this.html: " + this.html.top.toString());
+		//Packages.java.lang.System.err.println("in getContexts(), name: " + name);
+		//Packages.java.lang.System.err.println("in getContexts(), nameParameter: " + nameParameter);
+		//Packages.java.lang.System.err.println("html.top: " + typeof(html.top) + " keys: " + Object.keys(html.top));
+		//Packages.java.lang.System.err.println("html.top.toString: " + html.top.toString);
+//		Packages.java.lang.System.err.println("html.top.toString(): " + html.top.toString());
+		//	NASHORN	Under Nashorn, this specific call does not work with html.top, although under Rhino it did (and it appears
+		//			that it should). Somehow the scope is getting confused and the arguments from the constructor are not available;
+		//			not only that, but even reassigning them (see nameParameter above) to local variables does not work.
+		
+		var contextScripts = getDescendantScripts(this.html.top,"context");
 
 		var contexts = [];
 		for (var i=0; i<contextScripts.length; i++) {
+			//Packages.java.lang.System.err.println("Context content string: " + contextScripts[i].getContentString());
 			var myscope = {};
 			if (html.$dom) {
 				myscope.document = html.$dom.root;
@@ -215,10 +238,31 @@ $exports.ApiHtmlTests = function(html,name) {
 				try {
 					var value = eval("(" + contextScripts[i].getContentString() + ")");
 				} catch (e) {
-					var error = new Error("Error instantiating context");
-					error.cause = e;
-					error.code = contextScripts[i].getContentString();
-					throw error;
+					if ($context.script) {
+						try {
+							value = $context.script(this.toString() + " contexts[" + i + "]","(" + contextScripts[i].getContentString() + ")", myscope);
+						} catch (e) {
+							var error = new Error("Error instantiating context via $context.script");
+							error.cause = e;
+							error.code = contextScripts[i].getContentString();
+							throw error;
+						}
+					} else if ($context.run) {
+						try {
+							if (e.printStackTrace) e.printStackTrace();
+							value = $context.run("(" + contextScripts[i].getContentString() + ")", myscope);
+						} catch (e) {
+							var error = new Error("Error instantiating context via $context.run");
+							error.cause = e;
+							error.code = contextScripts[i].getContentString();
+							throw error;							
+						}
+					} else {
+						var error = new Error("Error instantiating context via eval()");
+						error.cause = e;
+						error.code = contextScripts[i].getContentString();
+						throw error;
+					}
 				}
 			}
 			//	If the value produced is null or undefined, this context is not used
@@ -268,16 +312,27 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
+		
+		var runInitializer = function(initializer) {
+			try {
+				run(initializer.getContentString(), createTestScope(scope));
+			} catch (e) {
+				var error = new Error("Error executing scenario initialization.");
+				error.code = initializer.getContentString();
+				error.cause = e;
+				throw error;
+			}
+		}
 
 		p.initialize = function() {
 			if (container) {
 				for (var i=0; i<container.initializes.length; i++) {
-					run(container.initializes[i].getContentString(), createTestScope(scope));
+					runInitializer(container.initializes[i]);
 				}
 			}
 			var initializes = getScripts(element,"initialize");
 			for (var i=0; i<initializes.length; i++) {
-				run(initializes[i].getContentString(), createTestScope(scope));
+				runInitializer(initializes[i]);
 			}
 		};
 

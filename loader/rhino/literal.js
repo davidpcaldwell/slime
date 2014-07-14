@@ -12,6 +12,8 @@
 
 (function() {
 	return new function() {
+		var _streams = new Packages.inonit.script.runtime.io.Streams();
+		
 		var loader = (function() {
 			var $engine = {
 				Object: {
@@ -19,31 +21,21 @@
 				}
 			};
 			(function() {
-				var $objects = new Packages.inonit.script.rhino.Objects();
-				$engine.Object.defineProperty.setReadOnly = function(object,name,value) {
-					$objects.setReadOnly(object,name,value);
-				}
-
-				$engine.MetaObject = function(p) {
-					var delegate = (p.delegate) ? p.delegate : {};
-					var get = (p.get) ? p.get : function(){};
-					var set = (p.set) ? p.set : function(){};
-					return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
-				}
+				if ($javahost.setReadOnly) $engine.Object.defineProperty.setReadOnly = $javahost.setReadOnly;
+				if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
 			})();
 			var $slime = {
 				getCode: function(path) {
-					return String($rhino.getLoaderCode(path));
+					return String($javahost.getLoaderCode(path));
 				}
 			}
-			return eval(String($rhino.getLoaderCode("literal.js")));
+			return eval(String($javahost.getLoaderCode("literal.js")));
 		})();
 
 		var getCode = function(code) {
 			var script = function(name,_in,scope,target) {
 				if (!target) target = null;
-				$rhino.script(name,_in,scope,target);
-				_in.close();
+				$javahost.script(name,_in,scope,target);
 			};
 
 			if (typeof(code) == "object" && typeof(code.name) != "undefined" && typeof(code._in) != "undefined") {
@@ -53,11 +45,11 @@
 				}
 				if (script) {
 					return function() {
-						script(code.name,code._in,arguments[0],arguments[1]);
+						script(code.name,_streams.readString(code._in),arguments[0],arguments[1]);
 					};
 				} else {
 					return String(
-						new Packages.inonit.script.runtime.io.Streams().readString(code._in)
+						_streams.readString(code._in)
 					);
 				}
 			} else if (typeof(code) == "object" && code._source && code.path) {
@@ -83,7 +75,7 @@
 		}
 
 		this.Module = new function() {
-			var Code = Packages.inonit.script.rhino.Code;
+			var Code = Packages.inonit.script.engine.Code;
 
 			//	java.io.File, string
 			this.unpacked = function(_base,main) {
@@ -140,7 +132,7 @@
 			} else if (p._code) {
 				//	TODO	this is probably a bad place to do this, but it will do for now; should this move into the Loader
 				//			constructor?
-				$rhino.getClasspath().append(p._code);
+				$javahost.getClasspath().append(p._code);
 				return new Loader({
 					_source: p._code.getScripts(),
 					Loader: p.Loader
@@ -191,7 +183,7 @@
 			}
 
 			if (format._code) {
-				$rhino.getClasspath().append(format._code);
+				$javahost.getClasspath().append(format._code);
 				return loader.module(engineModuleCodeLoader(format._code, format.main),p);
 			} else {
 				return loader.module.apply(loader,arguments);
@@ -200,15 +192,15 @@
 
 		this.classpath = new function() {
 			this.toString = function() {
-				return String($rhino.getClasspath());
+				return String($javahost.getClasspath());
 			}
 
 			this.add = function(_source) {
-				$rhino.getClasspath().append(_source);
+				$javahost.getClasspath().append(_source);
 			}
 
 			this.getClass = function(name) {
-				return $rhino.getClasspath().getClass(name);
+				return $javahost.getClasspath().getClass(name);
 			}
 		}
 
