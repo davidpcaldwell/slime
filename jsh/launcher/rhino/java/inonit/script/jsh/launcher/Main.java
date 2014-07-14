@@ -62,6 +62,7 @@ public class Main {
 		static Invocation create() throws IOException {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
+			codeUrlString = new java.net.URLDecoder().decode(codeUrlString);
 			String launcherLocation = null;
 			if (codeUrlString.startsWith("file:")) {
 				if (codeUrlString.charAt(7) == ':') {
@@ -451,6 +452,10 @@ public class Main {
 
 		BuiltShell(java.io.File HOME) throws java.io.IOException {
 			this.HOME = HOME;
+		}
+		
+		public String toString() {
+			return "BuiltShell: HOME=" + HOME;
 		}
 
 		File getJshHome() {
