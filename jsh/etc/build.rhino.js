@@ -445,7 +445,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		command.add("-base", JSH_JSAPI_BASE);
 
 		modules.forEach( function(module) {
-			if (this.api) command.add("-api",module.api);
+			if (module.api) command.add("-api",module.api.path);
 		});
 
 		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());
