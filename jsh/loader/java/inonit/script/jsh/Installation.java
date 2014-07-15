@@ -2,7 +2,9 @@ package inonit.script.jsh;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
+import inonit.system.*;
 import inonit.script.engine.*;
 
 public abstract class Installation {
@@ -161,6 +163,7 @@ public abstract class Installation {
 			}
 
 			public Plugin[] getPlugins() {
+				Logging.get().log(Installation.class, Level.CONFIG, "Loading plugins from %s and %s ...", System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
 				ArrayList<Plugin> rv = new ArrayList<Plugin>();
 				addPluginsTo(rv, System.getProperty("jsh.library.modules"));
 				//	Defaults for jsh.plugins: installation modules directory? Probably obsolete given that we will be loading

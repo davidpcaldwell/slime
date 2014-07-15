@@ -113,22 +113,32 @@ platform.jdk.compile([
 var MODULE_CLASSES = createTemporaryDirectory();
 var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.dir"));
 //	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
-var modules = ["js/object","js/document","js/mime","js/debug","rhino/host","rhino/io","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client","rhino/mail"];
+var modules = (function() {
+	var code = eval(readFile(JSH_SLIME_SRC.getFile("jsh/etc/api.js")));
+	return code.filter(function(module) {
+		return module.module;
+	}).map(function(module) {
+		return module.module;
+	});
+})();
 //	TODO	some of this logic is duplicated in jsh/tools/slime.js
 var MODULE_CLASSPATH = [];
 if (RHINO_JAR) MODULE_CLASSPATH.push(RHINO_JAR);
 MODULE_CLASSPATH.push(LAUNCHER_CLASSES);
-modules.forEach(function(path) {
-	var files = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/java"));
-	if (!files) throw new Error("Files null for " + path);
-	if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/rhino")));
+modules.forEach(function(module) {
+	var path = module.path;
+	if (module.javac) {
+		var files = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/java"));
+		if (!files) throw new Error("Files null for " + path);
+		if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/rhino")));
 
-	if (files.length > 0) {
-		platform.jdk.compile([
-			"-d", MODULE_CLASSES,
-			//	LOADER_CLASSES not currently necessary
-			"-classpath", MODULE_CLASSPATH.join(colon),
-		].concat(files));
+		if (files.length > 0) {
+			platform.jdk.compile([
+				"-d", MODULE_CLASSES,
+				//	LOADER_CLASSES not currently necessary
+				"-classpath", MODULE_CLASSPATH.join(colon),
+			].concat(files));
+		}
 	}
 });
 

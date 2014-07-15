@@ -2,8 +2,8 @@
 	var modules = new function() {
 		var list = [];
 		
-		this.add = function(string) {
-			list.push(string);
+		this.add = function(o) {
+			list.push(o);
 		};
 		
 		this.array = list;
