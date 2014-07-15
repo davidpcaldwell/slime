@@ -53,3 +53,6 @@ $exports.getopts = $loader.file("getopts.js", {
 	$workingDirectory: $context.workingDirectory,
 	$Pathname: $context.api.file.Pathname
 }).getopts;
+
+$exports.Application = $loader.file("Application.js", { getopts: $exports.getopts }).Application;
+

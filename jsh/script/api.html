@@ -595,6 +595,51 @@ END LICENSE
 
 				</script>
 			</li>
+			<li class="constructor">
+				<div class="name">Application</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var returnParsedArguments = function() {
+						return jsh.js.Object.set({}, {
+							target: this
+						}, arguments[0]);
+					};
+					
+					var one = new module.Application({
+						property: "value",
+						options: {
+							global: String,
+							gboolean: false
+						},
+						commands: {
+							doIt: {
+								getopts: {
+									options: {
+										local: Number
+									}
+								},
+								run: returnParsedArguments
+							}
+						}
+					});
+					
+					var oneAnswer = one.run("-gboolean", "-global", "globalValue", "doIt", "-local", "4");
+					test(oneAnswer.global.gboolean);
+					test(oneAnswer.global.global === "globalValue");
+					test(oneAnswer.options.local === 4);
+					test(oneAnswer.target.property === "value");
+				</script>
+			</li>
 		</ul>
 	</div>
 </body>

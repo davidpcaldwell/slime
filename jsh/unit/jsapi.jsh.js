@@ -16,7 +16,7 @@ var parameters = jsh.script.getopts({
 		jsapi: jsh.script.file.getRelativePath("../../loader/api"),
 		
 		api: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
-		test: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
+		test: jsh.script.getopts.ARRAY( String ),
 		
 		notest: false,
 		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
@@ -144,7 +144,7 @@ if (!parameters.options.notest) {
 	parameters.options.test.forEach( function(test) {
 		var getModule = function(path) {
 			return {
-				location: test
+				location: jsh.file.Pathname(path)
 			}
 		};
 
