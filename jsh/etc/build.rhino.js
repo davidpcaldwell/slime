@@ -439,7 +439,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		var modules = eval(readFile(new File(SLIME_SRC, "jsh/etc/api.js")));
 	
 		modules.forEach( function(module) {
-			command.add("-api",module);
+			if (this.api) command.add("-api",module.api);
 		});
 
 		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());

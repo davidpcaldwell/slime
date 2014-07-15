@@ -12,7 +12,7 @@ var java = jsh.file.Searchpath([parameters.options.java.directory.getRelativePat
 var modules = eval(parameters.options.src.directory.getFile("jsh/etc/api.js").read(String));
 modules = jsh.js.Array(modules);
 var apiArguments = modules.fold(function(array) {
-	array.push("-api",this);
+	if (this.api) array.push("-api",this.api);
 	return array;
 },[]);
 
