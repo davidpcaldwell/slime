@@ -435,7 +435,6 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		}
 		command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
 		command.add("-base", JSH_JSAPI_BASE);
-		command.add("-index", "jsh/etc/index.html");
 
 		var modules = eval(readFile(new File(SLIME_SRC, "jsh/etc/api.js")));
 	
@@ -450,6 +449,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		if (getSetting("jsh.build.nodoc")) {
 		} else {
 			command.add("-doc",JSAPI_DOC);
+			command.add("-index", "jsh/etc/index.html");
 		}
 
 		var subenv = {};
