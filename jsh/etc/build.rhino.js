@@ -384,21 +384,29 @@ var module = function(path,compile) {
 	console("Created module file: " + to.getCanonicalPath());
 };
 
-[
-	"js/object","js/mime","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client"
-	,"rhino/tools"/*,"rhino/mail"*/
-].forEach( function(item) {
-	module(item,platform.jdk.compile);
+var modules = eval(readFile(new File(SLIME_SRC, "jsh/etc/api.js")));
+
+modules.forEach(function(item) {
+	if (item.module) {
+		module(item.module.path, (item.module.javac) ? platform.jdk.compile : function(args) {});
+	}
 });
 
-[
-	"rhino/http/servlet"
-].forEach( function(item) {
-	module(item,function(args) {
-		//	do not compile servlet; servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with
-		//	servlet API is supplied by invoker
-	});
-});
+//[
+//	"js/object","js/mime","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client"
+//	,"rhino/tools"/*,"rhino/mail"*/
+//].forEach( function(item) {
+//	module(item,platform.jdk.compile);
+//});
+//
+//[
+//	"rhino/http/servlet"
+//].forEach( function(item) {
+//	module(item,function(args) {
+//		//	do not compile servlet; servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with
+//		//	servlet API is supplied by invoker
+//	});
+//});
 
 console("Creating plugins directory ...");
 var JSH_PLUGINS = new File(JSH_HOME,"plugins");
@@ -436,8 +444,6 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
 		command.add("-base", JSH_JSAPI_BASE);
 
-		var modules = eval(readFile(new File(SLIME_SRC, "jsh/etc/api.js")));
-	
 		modules.forEach( function(module) {
 			if (this.api) command.add("-api",module.api);
 		});
