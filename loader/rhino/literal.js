@@ -93,6 +93,10 @@
 			var Callee = arguments.callee;
 
 			var parameter = new function() {
+				this.toString = function() {
+					return "rhino/literal.js: _source = " + p._source;
+				};
+				
 				this.getCode = function(path) {
 					return getCode({
 						_source: p._source,
@@ -119,6 +123,9 @@
 			};
 
 			var rv = new loader.Loader(parameter);
+			rv.toString = function() {
+				return parameter.toString();
+			}
 			rv._stream = function(path) {
 				return p._source.getResourceAsStream(path);
 			};

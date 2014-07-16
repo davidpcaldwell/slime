@@ -429,12 +429,15 @@ $exports.OutputStream = OutputStream;
 $exports.Loader = function(p) {
 	var Child = function(prefix) {
 		var parameter = $context.api.js.Object.set({}, p);
+		//	TODO	The whole structure below seems like a mess
 		if (parameter.resources) {
 			parameter.resources = new function() {
 				this.get = function(path) {
 					return p.resources.get(prefix + path);
 				}
 			}
+		} else if (parameter._source) {
+			parameter._source = parameter._source.child(prefix);
 		}
 		var rv = new $exports.Loader(parameter);
 		if (p.Loader) {
@@ -508,6 +511,9 @@ $exports.Loader = function(p) {
 			Loader: Child
 		});
 		decorate.call(rv);
+		rv.toString = function() {
+			return "rhino/io with Loader resources " + p.resources;
+		}
 		return rv;
 	} else {
 		var parameter = {};
