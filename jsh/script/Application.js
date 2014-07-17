@@ -44,16 +44,3 @@ $exports.Application = function(o) {
 		return toFunction(object).call(o, { options: globals.options, arguments: globals.arguments });
 	};
 };
-$exports.Application.run = function(descriptor) {
-	try {
-		return new Application(descriptor).run($context.arguments);
-	} catch (e) {
-		if (e.usage) {
-			jsh.shell.echo("Usage: " + jsh.script.file + " <command> [arguments]");			
-			jsh.shell.exit(1);
-		} else if (e.commandNotFound) {
-			jsh.shell.echo("Command not found: " + e.commandNotFound);			
-			jsh.shell.exit(1);			
-		}
-	}
-}

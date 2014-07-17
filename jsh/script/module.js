@@ -56,7 +56,6 @@ $exports.getopts = $loader.file("getopts.js", {
 
 $exports.Application = $loader.file("Application.js", {
 	js: $context.api.js,
-	arguments: $exports.arguments,
 	getopts: $exports.getopts
 }).Application;
 

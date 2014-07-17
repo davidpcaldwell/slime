@@ -62,5 +62,17 @@ plugin({
 			})()
 		});
 		jsh.shell.getopts = $api.deprecate(jsh.script.getopts);
-	}
+		jsh.script.Application.run = function(descriptor) {
+			try {
+				return new jsh.script.Application(descriptor).run(jsh.script.arguments);
+			} catch (e) {
+				if (e.usage) {
+					jsh.shell.echo("Usage: " + jsh.script.file + " <command> [arguments]");			
+					jsh.shell.exit(1);
+				} else if (e.commandNotFound) {
+					jsh.shell.echo("Command not found: " + e.commandNotFound);			
+					jsh.shell.exit(1);			
+				}
+			}
+		}	}
 })
