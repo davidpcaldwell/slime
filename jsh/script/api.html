@@ -201,12 +201,13 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context"><![CDATA[
 			(function() {
+				var js = $jsapi.module("../../js/object/");
 				var host = $jsapi.module("../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino
 				});
 				var context = {
 					api: {
-						js: $jsapi.module("../../js/object/"),
+						js: js,
 						java: host,
 						io: $jsapi.module("../../rhino/io/", {
 							$java: new Packages.inonit.script.runtime.io.Streams(),
@@ -234,6 +235,7 @@ END LICENSE
 				var FILE = file;
 				return new function() {
 					this.api = new function() {
+						this.js = js;
 						this.file = file;
 						this.addClasses = jsh.loader.addClasses;
 					};
@@ -314,7 +316,7 @@ END LICENSE
 				</span>
 			</li>
 			<li class="function">
-				<div class="name">getopts</div>
+				<div class="name"><a id="properties.getopts">getopts</a></div>
 				<span>
 					Processes an array of strings as arguments, using an object which specifies how arguments are interpreted.
 				</span>
