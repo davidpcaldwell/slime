@@ -334,11 +334,7 @@ $exports.tests = new function() {
 		//	TODO	disentangle all this recursion and 'this'-manipulation
 		var root = new jsh.document.Document({
 			stream: p.file.read(jsh.io.Streams.binary)
-		}).get({
-			filter: function(e) {
-				return Boolean(e.name);
-			}
-		})[0];
+		}).document.getElement();
 
 		this.getApi = function(path) {
 			var pathname = p.file.getRelativePath(path);
@@ -356,12 +352,12 @@ $exports.tests = new function() {
 				try {
 					var getApi = function(path) {
 						return declaration.getApi(path);
-					}
+					};
 					return eval(reference);
 				} catch (e) {
 					var _e = e;
 					debugger;
-					var error = new EvalError("Error evaluating reference: " + reference);
+					var error = new EvalError("Error evaluating reference: " + reference + " in " + p.file);
 					var string = String(reference);
 					error.string = string;
 					error.toString = function() {
@@ -396,7 +392,7 @@ $exports.tests = new function() {
 					descendants: function(e) {
 						//	TODO	obviously a function like this should return true if it is a document as well, but it will only
 						//			be called for children, and a document should never be a child
-						return e.element && e.elements.attributes.get({
+						return e.element && e.element.attributes.get({
 							namespace: "http://www.inonit.com/jsapi",
 							name: "id"
 						}) == null;
@@ -536,7 +532,7 @@ $exports.tests = new function() {
 				return true;
 			},
 			filter: function(node) {
-				return node.getAttribute && node.getAttribute({
+				return node.element && node.element.attributes.get({
 					namespace: "http://www.inonit.com/jsapi",
 					name: "reference"
 				}) != null;

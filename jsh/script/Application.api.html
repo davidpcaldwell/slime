@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="constructor">
+				<div class="name">Application</div>
+				<div jsapi:id="api">
+					<span>
+						Creates a top-level application that can have multiple <i>commands</i>, each of which have their own arguments,
+						as well as global arguments that apply to all commands.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var returnParsedArguments = function() {
+							return jsh.js.Object.set({}, {
+								target: this
+							}, arguments[0]);
+						};
+
+						var one = new module.Application({
+							property: "value",
+							options: {
+								global: String,
+								gboolean: false
+							},
+							commands: {
+								doIt: {
+									getopts: {
+										options: {
+											local: Number
+										}
+									},
+									run: returnParsedArguments
+								}
+							}
+						});
+
+						var oneAnswer = one.run("-gboolean", "-global", "globalValue", "doIt", "-local", "4");
+						test(oneAnswer.global.gboolean);
+						test(oneAnswer.global.global === "globalValue");
+						test(oneAnswer.options.local === 4);
+						test(oneAnswer.target.property === "value");
+					</script>
+				</div>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>
