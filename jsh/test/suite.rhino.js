@@ -142,6 +142,9 @@ var testCommandOutput = function(path,tester,p) {
 		];
 		launcher = PACKAGED_LAUNCHER;
 	}
+	if (p.arguments) {
+		command = command.concat(p.arguments);
+	}
 	debug("Environment: " + JSON.stringify(env));
 	var options = {
 		output: "",
@@ -503,4 +506,14 @@ testCommandOutput("jsh.shell/jsh.home.jsh.js", function(options) {
 		"jsh.home=" + JSH_HOME.getCanonicalPath() + Packages.java.io.File.separator,
 		""
 	])
+});
+
+testCommandOutput("jsh.script/Application.jsh.js", function(options) {
+	var json = JSON.parse(options.output);
+	if (json.global.gstring != "gvalue") throw new Error(options.output);
+	if (json.global.gboolean !== true) throw new Error(options.output);
+	if (json.options.lboolean !== true) throw new Error(options.output);
+	if (json.options.lstring !== "foo") throw new Error(options.output);
+}, {
+	arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"]
 });
