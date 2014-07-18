@@ -18,6 +18,18 @@
 //	(optional) LAUNCHER_COMMAND: the command to use when launching a shell
 //	(optional) compileOptions: array of string to use when compiling Java code
 
+var parameters = jsh.script.getopts({
+	options: {
+		src: jsh.script.file.getRelativePath("../..")
+	}
+});
+
+var src = parameters.options.src.directory;
+
+var RHINO_LIBRARIES = [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()];
+
+eval(src.getFile("jsh/launcher/rhino/api.rhino.js").read(String));
+
 var File = Packages.java.io.File;
 
 var getPath = function(basedir,relative) {
@@ -33,21 +45,8 @@ var getSourceFilePath = function(relative) {
 	return getPath(SLIME_SRC, relative);
 }
 
-if (typeof(this.JSH_HOME) == "undefined") {
-	if (getSystemProperty("jsh.home")) {
-		JSH_HOME = new File(getSystemProperty("jsh.home"));
-	} else {
-		throw new Error("Could not find built shell.");
-	}
-}
-
-if (typeof(this.SLIME_SRC) == "undefined") {
-	if (getSystemProperty("slime.src")) {
-		SLIME_SRC = new File(getSystemProperty("slime.src"));
-	} else {
-		throw new Error("Could not find SLIME source.");
-	}
-}
+var JSH_HOME = jsh.shell.jsh.home.pathname.java.adapt();
+var SLIME_SRC = parameters.options.src.java.adapt();
 
 var LAUNCHER_COMMAND;
 if (!LAUNCHER_COMMAND) {
@@ -97,6 +96,45 @@ if (env.JSH_ENGINE) {
 mode.env.JSH_PLUGINS = String(new File(JSH_HOME, "plugins").getCanonicalPath());
 if (debug.on) {
 	mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
+}
+
+var runCommand = function() {
+	var p = {
+		arguments: []
+	};
+	for (var i=0; i<arguments.length; i++) {
+		if (i == 0) {
+			p.command = arguments[i];
+		} else if (i == arguments.length-1 && typeof(arguments[i]) == "object") {
+			var mode = arguments[i];
+			if (mode.env) {
+				p.environment = mode.env;
+			}
+			if (typeof(mode.output) == "string") {
+				if (!p.stdio) p.stdio = {};
+				p.stdio.output = String;
+			}
+			if (typeof(mode.err) == "string") {
+				if (!p.stdio) p.stdio = {};
+				p.stdio.error = String;
+			}
+			if (typeof(mode.input) != "undefined") {
+				p.stdio.input = jsh.io.java.adapt(mode.input);
+			}
+		} else {
+			p.arguments.push(arguments[i]);
+		}
+	}
+	p.evaluate = function(result) {
+		if (typeof(mode.output) == "string") {
+			mode.output += result.stdio.output;
+		}
+		if (typeof(mode.err) == "string") {
+			mode.err += result.stdio.error;
+		}
+		return result.status;
+	};
+	return jsh.shell.run(p);
 }
 
 var run = function(command,mymode) {

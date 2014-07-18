@@ -2,7 +2,8 @@ var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.shell.java.home.pathname,
 		jsh: jsh.shell.jsh.home.pathname,
-		src: jsh.script.file.getRelativePath("../..")
+		src: jsh.script.file.getRelativePath("../.."),
+		debug: false
 	}
 });
 
@@ -12,7 +13,7 @@ var java = jsh.file.Searchpath([parameters.options.java.directory.getRelativePat
 var modules = eval(parameters.options.src.directory.getFile("jsh/etc/api.js").read(String));
 modules = jsh.js.Array(modules);
 var apiArguments = modules.fold(function(array) {
-	if (this.api) array.push("-api",this.api);
+	if (this.api) array.push("-api",this.api.path);
 	return array;
 },[]);
 
@@ -44,9 +45,15 @@ jsh.shell.run({
 	arguments: [
 		"-Djsh.home=" + parameters.options.jsh,
 		"-Dslime.src=" + parameters.options.src,
-		"-jar", parameters.options.jsh.directory.getRelativePath("lib/js.jar"),
-		"-e", "var RHINO_LIBRARIES = new Packages.java.io.File('" + RHINO + "')",
-		"-f", parameters.options.src.directory.getRelativePath("jsh/launcher/rhino/api.rhino.js"),
-		parameters.options.src.directory.getRelativePath("jsh/test/suite.rhino.js")
-	]
+//		"-jar", parameters.options.jsh.directory.getRelativePath("lib/js.jar"),
+//		"-e", "var RHINO_LIBRARIES = new Packages.java.io.File('" + RHINO + "')",
+//		"-f", parameters.options.src.directory.getRelativePath("jsh/launcher/rhino/api.rhino.js"),
+//		parameters.options.src.directory.getRelativePath("jsh/test/suite.rhino.js")
+		"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+		parameters.options.src.directory.getRelativePath("jsh/test/suite.rhino.js"),
+		"-src", parameters.options.src
+	],
+	environment: jsh.js.Object.set({}, jsh.shell.environment, {
+		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
+	})
 });
