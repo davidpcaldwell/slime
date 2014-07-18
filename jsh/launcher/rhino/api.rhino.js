@@ -11,7 +11,7 @@
 //	END LICENSE
 
 var Class_java_lang_String;
-if (!Object.prototype.__defineGetter__) {
+if (typeof(Packages.org.mozilla.javascript.Context) == "object") {
 	load("nashorn:mozilla_compat.js");
 	Class_java_lang_String = Packages.java.lang.String.class;
 } else {

@@ -271,7 +271,7 @@ $api.experimental($exports,"isJavaType");
 $exports.Array = new function() {
 	this.create = function(p) {
 		var type = (p.type) ? p.type : Packages.java.lang.Object;
-		var rv = Packages.java.lang.reflect.Array.newInstance(type,p.array.length);
+		var rv = $context.$java.Array(type,p.array.length);
 		for (var i=0; i<p.array.length; i++) {
 			rv[i] = p.array[i];
 		}

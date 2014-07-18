@@ -542,12 +542,12 @@ if (getSetting("jsh.build.javassist.jar")) {
 if (!getSetting("jsh.build.notest")) {
 	var integrationTests = function() {
 		var command = LAUNCHER_COMMAND.slice();
-		var script = new File(SLIME_SRC,"jsh/test/suite.rhino.js");
+		var script = new File(SLIME_SRC,"jsh/test/integration.jsh.js");
 		command.push(getPath(script));
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");
 		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
 		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
-		eval(readFile(script.getCanonicalPath()));
+		runCommand.apply(this,command);
 	}
 
 	integrationTests();

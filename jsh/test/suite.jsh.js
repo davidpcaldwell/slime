@@ -50,7 +50,7 @@ jsh.shell.run({
 //		"-f", parameters.options.src.directory.getRelativePath("jsh/launcher/rhino/api.rhino.js"),
 //		parameters.options.src.directory.getRelativePath("jsh/test/suite.rhino.js")
 		"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-		parameters.options.src.directory.getRelativePath("jsh/test/suite.rhino.js"),
+		parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
 		"-src", parameters.options.src
 	],
 	environment: jsh.js.Object.set({}, jsh.shell.environment, {

@@ -26,7 +26,7 @@ var parameters = jsh.script.getopts({
 
 var src = parameters.options.src.directory;
 
-var RHINO_LIBRARIES = [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()];
+var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar")) ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
 eval(src.getFile("jsh/launcher/rhino/api.rhino.js").read(String));
 

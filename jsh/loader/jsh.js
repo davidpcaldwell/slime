@@ -278,7 +278,7 @@ this.jsh = new function() {
 	var js = loader.bootstrap("js/object",{ globals: true });
 	jsh.js = js;
 
-	var java = loader.bootstrap("rhino/host", { globals: true, $rhino: loader.getRhinoLoader() });
+	var java = loader.bootstrap("rhino/host", { globals: true, $rhino: loader.getRhinoLoader(), $java: $host.java });
 	jsh.java = java;
 
 	var plugins = {};
