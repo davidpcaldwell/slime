@@ -528,9 +528,7 @@ END LICENSE
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat
-						&& !(jsh.shell.java.version == "1.6.0" && jsh.shell.os.name == "FreeBSD" && !context.gae)
-					) {
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 						var client = new module.Client();
 						servlet.set(function(request,response) {
 							test(request.getCookies() == null);
@@ -555,9 +553,7 @@ END LICENSE
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat
-						&& !(jsh.shell.java.version == "1.6.0" && jsh.shell.os.name == "FreeBSD" && !context.gae)
-					) {
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 						var client = new module.Client();
 						var redirected = false;
 						servlet.set(function(request,response) {

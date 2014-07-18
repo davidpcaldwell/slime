@@ -24,8 +24,20 @@ if (!$context.api.io) {
 //			this much more advanced; probably should configure at instance level, not module level
 var debug = ($context.debug) ? $context.debug : function(){};
 
+var useJavaCookieManager = (function() {
+	var getProperty = function(name) {
+		var _rv = Packages.java.lang.System.getProperty(name);
+		if (_rv) return String(_rv);
+		return null;
+	}
+	
+	if ($context.gae) return false;
+	if (getProperty("os.name") == "FreeBSD" && /^1\.6\.0/.test(getProperty("java.version"))) return false;
+	return true;
+})();
+
 var Cookies = function() {
-	if ($context.gae) {
+	if (!useJavaCookieManager) {
 		var cookies = [];
 
 		this.toString = function() {
