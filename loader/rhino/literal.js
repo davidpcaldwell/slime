@@ -87,6 +87,13 @@
 				return { _code: Code.slime(_slime), main: main };
 			}
 		};
+		
+		var decorate = function(_source) {
+			this._stream = function(path) {
+				return _source.getResourceAsStream(path);
+			};
+			this._resource = loader.$api.deprecate(this._stream);			
+		}
 
 		var Loader = function(p) {
 			if (!p._source) throw new TypeError("_source must be defined and not be null.");
@@ -101,28 +108,16 @@
 				};
 
 				this.Child = function(prefix) {
-					var c = {
-						_source: p._source.child(prefix),
-						Loader: (p.Loader) ? function() {
-							return p.Loader.call(this,prefix);
-						} : null
-					};
-					var rv = new Callee(c);
+					var _source = p._source.child(prefix);
+					decorate.call(this,_source);
 					if (p.Loader) {
-						var returned = p.Loader.call(rv,prefix);
-						if (typeof(returned) == "object" && returned != null) {
-							rv = returned;
-						}
+						return p.Loader.call(this,prefix);
 					}
-					return rv;
 				}
 			};
 
 			var rv = new loader.Loader(parameter);
-			rv._stream = function(path) {
-				return p._source.getResourceAsStream(path);
-			};
-			rv._resource = loader.$api.deprecate(rv._stream);
+			decorate.call(rv,p._source);
 			return rv;
 		}
 
