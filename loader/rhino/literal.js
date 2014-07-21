@@ -110,7 +110,7 @@
 					})
 				};
 				
-				this.Child = function(prefix) {
+				this.Loader = function(prefix) {
 					return (p.Loader) ? new p.Loader(prefix) : new Loader({ _source: p._source.child(prefix) });
 				}
 			};
@@ -138,7 +138,7 @@
 						debugger;
 						return getCode(p.getCode(path));
 					},
-					Child: p.Loader
+					Loader: p.Loader
 				});
 			} else {
 				throw new TypeError();
