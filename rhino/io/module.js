@@ -426,43 +426,6 @@ $exports.Writer = Writer;
 $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
-//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
-//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
-//			.resource decoration?
-var decorate = function(p) {
-	if (this._stream) {
-		this.resource = function(path) {
-			var target = this;
-			if (p && p.resources) {
-				//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
-				//			child would need to call the parent loader with the prefix, which probably means we'd have to
-				//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
-				return p.resources.get(path);
-			} else {
-				//	Test for existence so that we can return null if not found
-				var _in = this._stream(path);
-				if (!_in) {
-					return null;
-				} else {
-					_in.close();
-				}
-				var type;
-				if (p.type) {
-					type = p.type.call(this,path);
-				}
-				return new $exports.Resource({
-					type: type,
-					read: {
-						binary: function() {
-							return new InputStream(target._stream(path));
-						}
-					}
-				});
-			}
-		};
-	}
-};
-
 $exports.Loader = function(p) {
 	var rv;
 	if (p.resources) {
@@ -504,11 +467,37 @@ $exports.Loader = function(p) {
 	} else {
 		rv = new $context.$rhino.Loader(p);
 	}
-	decorate.call(rv,p);
-	return rv;
-};
-$exports.Loader.decorate = function(rv) {
-	decorate.call(rv);
+	if (rv._stream) {
+		rv.resource = function(path) {
+			var target = this;
+			if (p && p.resources) {
+				//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
+				//			child would need to call the parent loader with the prefix, which probably means we'd have to
+				//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
+				return p.resources.get(path);
+			} else {
+				//	Test for existence so that we can return null if not found
+				var _in = this._stream(path);
+				if (!_in) {
+					return null;
+				} else {
+					_in.close();
+				}
+				var type;
+				if (p.type) {
+					type = p.type.call(this,path);
+				}
+				return new $exports.Resource({
+					type: type,
+					read: {
+						binary: function() {
+							return new InputStream(target._stream(path));
+						}
+					}
+				});
+			}
+		};
+	}
 	return rv;
 };
 
