@@ -473,14 +473,6 @@ decorate.Resources = function(resources,prefix) {
 		}
 	}
 };
-decorate.Loader = function(p) {
-	return function(prefix) {
-		var parameter = $context.api.js.Object.set({}, p);
-		parameter.resources = new decorate.Resources(p.resources,prefix);
-		parameter.Loader = decorate.Loader(parameter);
-		return new $exports.Loader(parameter);
-	}
-}
 
 $exports.Loader = function(p) {
 	if (p.resources) {
@@ -506,7 +498,9 @@ $exports.Loader = function(p) {
 		var rv = new $context.$rhino.Loader({
 			_source: Packages.inonit.script.engine.Code.Source.create(_resources),
 			Loader: function(prefix) {
-				return new (decorate.Loader(p))(prefix);
+				return new $exports.Loader({
+					resources: decorate.Resources(p.resources,prefix)
+				});
 			}
 		});
 		decorate.call(rv,p);
