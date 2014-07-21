@@ -181,16 +181,7 @@
 				var inner = createScope(scope);
 				var tokens = path.split("/");
 				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-				var $loader = new Child(prefix);
-				if (p.Child) {
-					var replaced = p.Child.call($loader,prefix);
-					//	TODO	probably should interpret null like a JavaScript constructor would, or switch to prototype-based
-					//			inheritance altogether
-					if (typeof(replaced) != "undefined") {
-						$loader = replaced;
-					}
-				}
-				inner.$loader = $loader;
+				inner.$loader = (p.Child) ? new p.Child(prefix) : new Child(prefix);
 				if (path == "" || /\/$/.test(path)) {
 					path += "module.js";
 				}

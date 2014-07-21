@@ -109,13 +109,9 @@
 						path: path
 					})
 				};
-
+				
 				this.Child = function(prefix) {
-					var _source = p._source.child(prefix);
-					decorate.call(this,_source);
-					if (p.Loader) {
-						return p.Loader.call(this,prefix);
-					}
+					return (p.Loader) ? new p.Loader(prefix) : new Loader({ _source: p._source.child(prefix) });
 				}
 			};
 
