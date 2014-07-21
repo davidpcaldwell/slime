@@ -462,19 +462,9 @@ var decorate = function(p) {
 		};
 	}
 };
-decorate.Resources = function(resources,prefix) {
-	return new function() {
-		this.toString = function() {
-			return "Resources: " + resources + " with prefix " + prefix;
-		}
-		
-		this.get = function(path) {
-			return resources.get(prefix + path);
-		}
-	}
-};
 
 $exports.Loader = function(p) {
+	var rv;
 	if (p.resources) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it
@@ -495,22 +485,27 @@ $exports.Loader = function(p) {
 				}
 			}
 		);
-		var rv = new $context.$rhino.Loader({
+		rv = new $context.$rhino.Loader({
 			_source: Packages.inonit.script.engine.Code.Source.create(_resources),
 			Loader: function(prefix) {
 				return new $exports.Loader({
-					resources: decorate.Resources(p.resources,prefix)
+					resources: new function() {
+						this.toString = function() {
+							return "Resources: " + p.resources + " with prefix " + prefix;
+						}
+
+						this.get = function(path) {
+							return p.resources.get(prefix + path);
+						}
+					}
 				});
 			}
 		});
-		decorate.call(rv,p);
-		return rv;
 	} else {
-		var parameter = $context.api.js.Object.set({}, p);
-		var rv = new $context.$rhino.Loader(parameter);
-		decorate.call(rv,parameter);
-		return rv;
+		rv = new $context.$rhino.Loader(p);
 	}
+	decorate.call(rv,p);
+	return rv;
 };
 $exports.Loader.decorate = function(rv) {
 	decorate.call(rv);
