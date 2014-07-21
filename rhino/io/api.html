@@ -500,7 +500,6 @@ END LICENSE
 														buffer.close();
 													}
 													this.execute = function(scope) {
-														debugger;
 														var props = buffer.readBinary().asProperties();
 														scope.test( props.yes == "i do" );
 														scope.test( props.laptop == "inonit" );
@@ -912,7 +911,6 @@ END LICENSE
 					var api = loader.resource("api.html");
 					test(api.type.toString() == "text/html");
 
-					test(1 == 1);
 					var loaderModule = loader.module("test/Loader.js");
 					test(loaderModule.file.foo == "bar");
 					test(loaderModule.resource("Loader.js") != null);

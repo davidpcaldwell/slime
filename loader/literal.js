@@ -151,6 +151,10 @@
 
 		var Loader = function(p) {
 			var Callee = arguments.callee;
+			
+			this.toString = function() {
+				return p.toString();
+			}
 
 			this.run = function(path,scope,target) {
 				runInScope(p.getCode(path),scope,target);
@@ -161,8 +165,12 @@
 			}
 
 			//	Creates a child loader that prepends the given prefix
+			var parent = this;
 			var Child = function(prefix) {
 				return new Callee({
+					toString: function() {
+						return parent.toString() + " prefix=" + prefix;
+					},
 					getCode: function(path) {
 						return p.getCode(prefix+path);
 					}

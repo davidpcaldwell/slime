@@ -89,6 +89,10 @@
 		};
 		
 		var decorate = function(_source) {
+			this.toString = function() {
+				return "Java loader: " + _source.toString();
+			}
+
 			this._stream = function(path) {
 				return _source.getResourceAsStream(path);
 			};
@@ -97,7 +101,6 @@
 
 		var Loader = function(p) {
 			if (!p._source) throw new TypeError("_source must be defined and not be null.");
-			var Callee = arguments.callee;
 
 			var parameter = new function() {
 				this.getCode = function(path) {
@@ -133,13 +136,13 @@
 					Loader: p.Loader
 				});
 			} else if (p.getCode) {
-				//	TODO	document this; it is confusing; should p.Loader be disallowed or flagged here since platform loader
-				//			will ignore it?
+				debugger;
 				return new loader.Loader({
 					getCode: function(path) {
 						debugger;
 						return getCode(p.getCode(path));
-					}
+					},
+					Child: p.Loader
 				});
 			} else {
 				throw new TypeError();
