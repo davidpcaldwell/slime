@@ -27,22 +27,7 @@ public abstract class Invocation {
 			return create(delegate, null);
 		}
 
-//		static Script create(final Engine.Source delegate) {
-//			return create(delegate, null);
-//		}
-
 		public abstract java.net.URI getUri();
-
-		//			substitute; currently, it appears to only be used in jsh.js, to set the script property
-		public final File getFile() {
-			java.net.URI uri = getUri();
-			if (uri != null && uri.getScheme() != null && uri.getScheme().equals("file")) {
-				return new java.io.File(uri);
-			} else {
-				return null;
-			}
-		}
-
 		public abstract Code.Source.File getSource();
 	}
 

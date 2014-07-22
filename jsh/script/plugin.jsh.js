@@ -36,11 +36,6 @@ plugin({
 					return String($jsh.getInvocation().getScript().getUri().normalize().toString());
 				}
 			})(),
-			uri: (function() {
-				if ($jsh.getInvocation().getScript().getUri()) {
-					return String($jsh.getInvocation().getScript().getUri().normalize().toString());
-				}
-			})(),
 			packaged: (function() {
 				//	TODO	push back into Invocation
 				if ($jsh.getSystemProperties().getProperty("jsh.launcher.packaged")) {
@@ -74,5 +69,6 @@ plugin({
 					jsh.shell.exit(1);			
 				}
 			}
-		}	}
+		};
+	}
 })
