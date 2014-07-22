@@ -10,18 +10,18 @@
 //	Contributor(s):
 //	END LICENSE
 
-if ($context.script) {
-	$exports.file = $context.script;
-	$exports.script = $context.script;
+if ($context.file) {
+	$exports.file = $context.file;
+	$exports.script = $context.file;
 
-	$exports.pathname = $context.script.pathname;
+	$exports.pathname = $context.file.pathname;
 	$api.deprecate($exports,"pathname");
 	$exports.getRelativePath = function(path) {
-		return $exports.file.getRelativePath(path);
+		return $context.file.getRelativePath(path);
 	}
 	$api.deprecate($exports,"getRelativePath");
 } else if ($context.packaged) {
-	$exports.file = $context.packaged;
+	$exports.file = $context.packaged.file;
 } else if ($context.uri) {
 	$exports.url = $context.uri;
 } else {
@@ -33,10 +33,10 @@ $exports.addClasses = $api.deprecate($context.api.addClasses);
 $exports.Loader = $api.deprecate($context.api.file.Loader);
 
 //	TODO	should jsh.script.loader support some sort of path structure?
-if ($context.loader) {
-	$exports.loader = $context.loader;
-} else if ($context.script) {
-	$exports.loader = new $context.api.file.Loader($exports.file.parent);
+if ($context.packaged) {
+	$exports.loader = $context.packaged.loader;
+} else if ($context.file) {
+	$exports.loader = new $context.api.file.Loader($context.file.parent);
 } else if ($context.uri) {
 	$exports.__defineGetter__("loader", $context.api.js.constant(function() {
 		var http = $context.api.http();
@@ -50,7 +50,7 @@ if ($context.loader) {
 $exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
 	$filesystem: $context.api.file.filesystem,
-	$workingDirectory: $context.workingDirectory,
+	$workingDirectory: $context.directory,
 	$Pathname: $context.api.file.Pathname
 }).getopts;
 

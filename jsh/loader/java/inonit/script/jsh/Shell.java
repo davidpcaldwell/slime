@@ -104,6 +104,8 @@ public abstract class Shell {
 		 *	<code>null</code> if it is not.
 		 */
 		public abstract Code.Source getPackagedCode();
+		
+		public abstract File getPackageFile();
 
 		public static abstract class Stdio {
 			public abstract InputStream getStandardInput();
@@ -156,6 +158,14 @@ public abstract class Shell {
 					} else {
 						return null;
 					}
+				}
+				
+				@Override public File getPackageFile() {
+					if (System.getProperty("jsh.launcher.packaged") != null) {
+						return new java.io.File(System.getProperty("jsh.launcher.packaged"));
+					} else {
+						return null;
+					}					
 				}
 			};
 		}

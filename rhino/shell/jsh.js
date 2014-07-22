@@ -384,6 +384,10 @@ $exports.jsh = function(p) {
 
 				this.getPackagedCode = function() {
 					return null;
+				};
+				
+				this.getPackageFile = function() {
+					return null;
 				}
 			}
 		);

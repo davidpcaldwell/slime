@@ -32,6 +32,10 @@ this.jsh = new function() {
 			return invocation;
 		};
 		
+		$host.getPackageFile = function() {
+			return configuration.getPackageFile();
+		}
+		
 		$host.getPackagedCode = function() {
 			return configuration.getPackagedCode();
 		};

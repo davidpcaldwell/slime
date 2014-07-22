@@ -26,92 +26,6 @@ END LICENSE
 <body>
 	<script type="application/x.jsapi#initialize">
 	</script>
-	<div class="type">
-		<a class="type" name="types.Loader">Loader</a>
-		<span>An object that can load code from logical paths denoted by strings.</span>
-		<div class="label">has properties:</div>
-		<ul>
-			<li class="function">
-				<div class="name">run</div>
-				<span>
-					Analogous to the jsh.loader method of the same name; see
-					<code><a href="../../jsh/loader/api.html#exports.run">jsh.loader.run</a></code> for details.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>A logical path to a code file to run.</span>
-						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run/arguments[1]')">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run/arguments[2]')">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-					</ol>
-				</div>
-			</li>
-			<li class="function">
-				<div class="name">file</div>
-				<span>
-					Analogous to the jsh.loader method of the same name; see
-					<code><a href="../../jsh/loader/api.html#exports.file">jsh.loader.file</a></code> for details.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>A logical path to a code file to run.</span>
-						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/arguments[1]')">
-							The second argument to the Rhino loader
-							<a href="../../jsh/loader/api.html#exports.file">file</a> method.
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/returns')">
-					<div class="label">Returns</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</div>
-			</li>
-			<li class="function">
-				<div class="name">module</div>
-				<span>
-					Analogous to the jsh.loader method of the same name; see
-					<code><a href="../../jsh/loader/api.html#exports.module">jsh.loader.module</a></code> for details.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>A logical path to a module to load.</span>
-						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/arguments[1]')">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/returns')">
-					<div class="label">Returns</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</div>
-			</li>
-		</ul>
-	</div>
 	<div>
 		<h1>Context</h1>
 		<ul>
@@ -143,28 +57,33 @@ END LICENSE
 				</ul>
 			</li>
 			<li class="value">
-				<div class="name">script</div>
-				<span class="type">rhino/file file</span>
-				<span>The object representing the main script file this shell is running, if it is an ordinary file.</span>
-			</li>
-			<li class="value">
 				<div class="name">file</div>
 				<span class="type">rhino/file file</span>
 				<span>
-					The object representing the main file this shell is running, if it is an ordinary file; this property will
-					point to the package file if the shell is running a packaged script.
+					The object representing the main file this shell is running, if it is an ordinary file.
 				</span>
 			</li>
-			<!--	TODO	the 'url' property is completely untested	-->
 			<li class="value">
-				<div class="name">url</div>
+				<div class="name">uri</div>
 				<span class="type">string</span>
 				<span>The URL from which the main script file was loaded.</span>
 			</li>
-			<li class="value">
+			<li class="object">
 				<div class="name">packaged</div>
-				<span class="type">rhino/file file</span>
-				<span>The object representing the package file this shell is running.</span>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">file</div>
+						<span class="type">rhino/file file</span>
+						<span>The object representing the package file this shell is running.</span>
+					</li>
+					<li class="value">
+						<div class="name">loader</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+				</ul>
 			</li>
 			<li class="value">
 				<div class="name">arguments</div>
@@ -240,9 +159,9 @@ END LICENSE
 						this.addClasses = jsh.loader.addClasses;
 					};
 
-					this.workingDirectory = jsh.shell.PWD;
+					this.directory = jsh.shell.PWD;
 
-					this.script = jsh.script.file;
+					this.file = jsh.script.file;
 					this.arguments = ["a","bb","C"];
 
 					this.Loader = jsh.script.Loader;
@@ -262,6 +181,7 @@ END LICENSE
 				<div class="name">file</div>
 				<span class="type">jsh.file file</span>
 				<span>
+					(conditional)
 					The object representing the main file being executed.
 					In the case of an ordinary script, this is the script that was launched.
 					In the case of a packaged script, it is the package file.
@@ -271,7 +191,7 @@ END LICENSE
 				<div class="name">script</div>
 				<span class="type">jsh.file file</span>
 				<span>
-					(optional)
+					(conditional)
 					The object representing the script being executed. In the case of a packaged script, this value will be absent
 					as the script is embedded in the package file itself.
 				</span>
@@ -550,14 +470,14 @@ END LICENSE
 					})("-a", "b");
 					test(usingArgumentsObject.options.a == "b");
 
-					var expectError = function(f) {
+					var expectError = $jsapi.disableBreakOnExceptions(function(f) {
 						try {
 							f.apply(this,arguments);
 							return false;
 						} catch (e) {
 							return true;
 						}
-					};
+					});
 
 					test(expectError(function() {
 						var args;

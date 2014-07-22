@@ -32,7 +32,6 @@ public abstract class Invocation {
 	}
 
 	public abstract Script getScript();
-
 	public abstract String[] getArguments();
 
 	static class CheckedException extends Exception {

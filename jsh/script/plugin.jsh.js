@@ -15,7 +15,25 @@ plugin({
 		return jsh.js && jsh.java && jsh.file && jsh.http && jsh.shell;
 	},
 	load: function() {
-		jsh.script = $loader.module("module.js", {
+		var source = (function() {
+			var _script = $jsh.getInvocation().getScript();
+			var _uri = _script.getUri();
+			var rv = {};
+			if (_uri) {
+				if (_uri.getScheme() && String(_uri.getScheme()) == "file") {
+					rv.file = jsh.file.filesystem.java.adapt(new Packages.java.io.File(_uri)).file;
+				}
+				rv.uri = String(_uri.normalize().toString());
+			}
+			if ($jsh.getPackageFile()) {
+				rv.packaged = {
+					file: jsh.file.filesystem.java.adapt($jsh.getPackageFile()).file,
+					loader: new jsh.io.Loader({ _source: $jsh.getPackagedCode() })
+				}
+			}
+			return rv;
+		})();
+		jsh.script = $loader.module("module.js", jsh.js.Object.set({}, {
 			api: {
 				js: jsh.js,
 				file: jsh.file,
@@ -24,38 +42,9 @@ plugin({
 				},
 				addClasses: jsh.loader.addClasses
 			},
-			workingDirectory: jsh.shell.PWD,
-			script: (function() {
-				var uri = $jsh.getInvocation().getScript().getUri();
-				if (uri  && uri.getScheme() && String(uri.getScheme()) == "file") {
-					return jsh.file.filesystem.java.adapt(new Packages.java.io.File(uri)).file;
-				}
-			})(),
-			uri: (function() {
-				if ($jsh.getInvocation().getScript().getUri()) {
-					return String($jsh.getInvocation().getScript().getUri().normalize().toString());
-				}
-			})(),
-			packaged: (function() {
-				//	TODO	push back into Invocation
-				if ($jsh.getSystemProperties().getProperty("jsh.launcher.packaged")) {
-					return jsh.file.filesystem.java.adapt(
-						new Packages.java.io.File(
-							$jsh.getSystemProperties().getProperty("jsh.launcher.packaged")
-						)
-					).file;
-				}
-				return null;
-			})(),
+			directory: jsh.shell.PWD,
 			arguments: jsh.java.Array.adapt($jsh.getInvocation().getArguments()).map(function(s) { return String(s); }),
-			loader: (function() {
-				if ($jsh.getPackagedCode()) {
-					return new jsh.io.Loader({ _source: $jsh.getPackagedCode() });
-				} else {
-					return function(){}();
-				}
-			})()
-		});
+		}, source));
 		jsh.shell.getopts = $api.deprecate(jsh.script.getopts);
 		jsh.script.Application.run = function(descriptor) {
 			try {
