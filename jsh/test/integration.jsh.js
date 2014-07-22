@@ -555,3 +555,18 @@ testCommandOutput("jsh.script/Application.jsh.js", function(options) {
 }, {
 	arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"]
 });
+
+jsh.shell.run({
+	command: LAUNCHER_COMMAND[0],
+	arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/loader.jsh.js")),
+	stdio: {
+		output: String
+	},
+	evaluate: function(result) {
+		if (result.status == 0) {
+			jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+		} else {
+			throw new Error("Status: " + result.status);
+		}
+	}
+});

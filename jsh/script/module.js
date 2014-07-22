@@ -47,6 +47,13 @@ if ($context.packaged) {
 	}));
 }
 
+if ($context.file) {
+	$exports.Loader = function(path) {
+		var base = $context.file.getRelativePath(path).directory;
+		return new $context.api.file.Loader({ directory: base });
+	};
+}
+
 $exports.getopts = $loader.file("getopts.js", {
 	$arguments: $exports.arguments,
 	$filesystem: $context.api.file.filesystem,

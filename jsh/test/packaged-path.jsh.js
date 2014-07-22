@@ -11,7 +11,7 @@
 //	END LICENSE
 
 if (jsh.script.script) {
-	jsh.script.loader = new jsh.script.Loader(jsh.script.file.getRelativePath("packaged-path").directory);
+	jsh.script.loader = new jsh.script.Loader("packaged-path");
 }
 var file = jsh.script.loader.file("file.js");
 if (file.bar != "bar") {
