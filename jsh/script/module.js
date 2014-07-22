@@ -30,7 +30,6 @@ if ($context.file) {
 $exports.arguments = $context.arguments;
 $exports.addClasses = $api.deprecate($context.api.addClasses);
 
-$exports.Loader = $api.deprecate($context.api.file.Loader);
 
 //	TODO	should jsh.script.loader support some sort of path structure?
 if ($context.packaged) {
@@ -52,6 +51,14 @@ if ($context.file) {
 		var base = $context.file.getRelativePath(path).directory;
 		return new $context.api.file.Loader({ directory: base });
 	};
+} else if ($context.uri) {
+	var _uri = new Packages.java.net.URI($context.uri);
+	$exports.Loader = function(path) {
+		var _relative = _uri.resolve(path);
+		var base = _relative.toString();
+		var http = $context.api.http();
+		return new http.Client().Loader(base);
+	}
 }
 
 $exports.getopts = $loader.file("getopts.js", {
