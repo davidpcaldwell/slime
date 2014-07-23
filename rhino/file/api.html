@@ -1351,6 +1351,7 @@ END LICENSE
 				}
 			</script>
 			<script type="application/x.jsapi#tests" jsapi:id="Softlinks">
+				//	TODO	softlinks could be much more thoroughly tested; many scenarios not covered including move, copy
 				if (jsh.shell.PATH.getCommand("ln")) {
 					var linkdir = filesystem.java.adapt(_linkdir).directory;
 					var filelink = linkdir.getRelativePath("to_target").file;
@@ -1432,7 +1433,16 @@ END LICENSE
 							scope.test( linkdir.getRelativePath("to_nowhere").file == null );
 							scope.test( linkdir.getRelativePath("to_nowhere").directory == null );
 							var list = linkdir.list();
-							//	both elements of this array are null, leading to issue #40
+							var toDelete;
+							list.forEach(function(item) {
+								scope.test(item != null);
+								scope.test(item.parent.pathname.toString() == linkdir.pathname.toString());
+								scope.test(item.pathname.toString().substring(0,linkdir.pathname.toString().length) == linkdir.pathname.toString());
+								scope.test(item.directory === null);
+								toDelete = item;
+							});
+							toDelete.remove();
+							scope.test(linkdir.list().length+1 == list.length);
 						}
 					})
 				}

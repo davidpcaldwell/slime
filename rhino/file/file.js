@@ -189,7 +189,10 @@ var Pathname = function(parameters) {
 		}
 	}
 
-	var Node = function(pathname,prefix) {
+	var Node = function(pathname,prefix,_peer) {
+		if (!_peer) {
+			_peer = peer;
+		}
 		this.toString = function() {
 			return pathname.toString();
 		}
@@ -208,11 +211,11 @@ var Pathname = function(parameters) {
 		this.__defineGetter__("parent", getParent);
 
 		var getLastModified = function() {
-			return $filesystem.getLastModified(peer);
+			return $filesystem.getLastModified(_peer);
 		}
 
 		var setLastModified = function(date) {
-			$filesystem.setLastModified(peer,date);
+			$filesystem.setLastModified(_peer,date);
 		}
 
 		this.__defineGetter__("modified", getLastModified);
@@ -229,7 +232,7 @@ var Pathname = function(parameters) {
 		this.remove = function() {
 			//	TODO	Should probably invalidate this object somehow
 			//	TODO	Should this return a value of some kind?
-			$filesystem.remove(peer);
+			$filesystem.remove(_peer);
 		}
 
 		this.move = function(toPathname,mode) {
@@ -254,7 +257,7 @@ var Pathname = function(parameters) {
 					toPathname.parent.createDirectory({ recursive: true });
 				}
 			}
-			$filesystem.move(peer,toPathname);
+			$filesystem.move(_peer,toPathname);
 			if (toPathname.file) {
 				return toPathname.file;
 			} else if (toPathname.directory) {
@@ -358,6 +361,12 @@ var Pathname = function(parameters) {
 				return true;
 			}
 		}
+	}
+	
+	var Link = function(pathname,peer) {
+		Node.call(this,pathname,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname,peer);
+
+		this.directory = null;
 	}
 
 	var File = function(pathname,peer) {
@@ -484,10 +493,13 @@ var Pathname = function(parameters) {
 					for (var i=0; i<peers.length; i++) {
 						var pathname = new Pathname( { filesystem: $filesystem, peer: peers[i] } );
 						var directory = defined(peers[i].directory, Boolean(pathname.directory));
-						if (directory) {
+						if (pathname.directory) {
 							rv.push(pathname.directory);
-						} else {
+						} else if (pathname.file) {
 							rv.push(pathname.file);
+						} else {
+							//	broken softlink, apparently
+							rv.push(new Link(pathname,peers[i]));
 						}
 					}
 					return rv;
