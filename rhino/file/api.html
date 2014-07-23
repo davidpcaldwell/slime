@@ -1405,16 +1405,21 @@ END LICENSE
 					test( linkToLink != null );
 
 					scenario( new function() {
+						var dir = filesystem.java.adapt(hostdir).directory;
+						var dirlist;
+						
 						this.name = "Softlink deletion.";
 						this.initialize = function() {
 							filelink.remove();
+							dirlist = dir.getSubdirectory("c").list();
 						}
-						this.execute = function(scope) {
-							var dir = filesystem.java.adapt(hostdir).directory;
+						this.execute = function(scope) {					
 							scope.test( linkdir.getRelativePath("to_target").file == null );
 							scope.test( dir.getRelativePath("target").file != null );
 							scope.test( linkdir.getRelativePath("to_c").directory != null );
 							linkdir.getRelativePath("to_c").directory.remove();
+							scope.test( dir.getSubdirectory("c").list().length == dirlist.length );
+							scope.test( dir.getRelativePath("c").directory != null );
 							scope.test( linkdir.getRelativePath("to_c").directory == null );
 							scope.test( dir.getRelativePath("c").directory != null );
 						}

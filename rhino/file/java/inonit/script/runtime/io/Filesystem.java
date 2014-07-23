@@ -202,8 +202,15 @@ public abstract class Filesystem {
 				if (file.isDirectory()) {
 					File[] contents = file.listFiles();
 					for (int i=0; i<contents.length; i++) {
-						boolean success = delete(contents[i]);
-						if (!success) {
+						try {
+							//	Do not delete contents of this directory if this directory is a symbolic link
+							if (contents[i].getParentFile().getCanonicalFile().equals(file.getAbsoluteFile())) {
+								boolean success = delete(contents[i]);
+								if (!success) {
+									return false;
+								}
+							}
+						} catch (IOException e) {
 							return false;
 						}
 					}
