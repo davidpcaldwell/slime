@@ -93,7 +93,7 @@
 						eval(arguments[0]);
 					}
 				}).apply(
-					(arguments[2]) ? arguments[2] : {},
+					this,
 					arguments
 				);
 			};
@@ -111,7 +111,7 @@
 				//	it is a function that can execute the code given a scope and target object
 				code(fixed,this);
 			} else if (typeof(code) == "string") {
-				run(code,fixed,this);
+				run.call(this,code,fixed);
 			} else {
 				throw "Unimplemented: typeof(code) = " + typeof(code);
 			}
