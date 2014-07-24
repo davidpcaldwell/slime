@@ -176,7 +176,7 @@
 				if (path == "" || /\/$/.test(path)) {
 					path += "module.js";
 				}
-				runInScope(p.getCode(path),inner,target);
+				runInScope.call(target,p.getCode(path),inner);
 				return inner.$exports;
 			}
 		}

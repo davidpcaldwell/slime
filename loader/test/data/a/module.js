@@ -15,7 +15,10 @@ if (typeof($context.d) == "undefined") {
 	throw "$context.d is undefined";
 }
 
-var file = $loader.file("file.js", {$debug: $context.debug, b: 4});
+var fThis = { description: "fThis" };
+var file = $loader.file("file.js", {$debug: $context.debug, b: 4}, fThis);
+var mThis = { description: "mThis" };
+var module = $loader.module("file.js", {$debug: $context.debug, b: 4}, mThis);
 
 var runScope = new function() {
 	this.e = 2;
@@ -41,3 +44,5 @@ $exports.c = file.c;
 $exports.d = $context.d;
 $exports.e = runScope.result();
 $exports.f = runThis.f;
+$exports.fThis = file.thisName;
+$exports.mThis = module.thisName;

@@ -17,3 +17,5 @@ var c = 5;
 $exports.a = a;
 $exports.b = $context.b;
 $exports.c = c;
+
+$exports.thisName = this.description;
