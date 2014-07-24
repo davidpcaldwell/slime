@@ -81,7 +81,7 @@
 
 		var $api = eval($slime.getCode("api.js"));
 
-		var runInScope = function(code,scope,target) {
+		var runInScope = function(code,scope) {
 			var run = function(/*code,scope,this*/) {
 				//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
 				//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
@@ -109,9 +109,9 @@
 
 			if (typeof(code) == "function") {
 				//	it is a function that can execute the code given a scope and target object
-				code(fixed,target);
+				code(fixed,this);
 			} else if (typeof(code) == "string") {
-				run(code,fixed,target);
+				run(code,fixed,this);
 			} else {
 				throw "Unimplemented: typeof(code) = " + typeof(code);
 			}
@@ -132,11 +132,11 @@
 			return rv;
 		}
 
-		var file = function(code,scope,target) {
+		var file = function(code,scope) {
 			//	TODO	can we put file in here somehow?
 			//	TODO	should we be able to provide a 'this' here?
 			var inner = createScope(scope);
-			runInScope(code,inner,target);
+			runInScope.call(this,code,inner);
 			return inner.$exports;
 		}
 
@@ -148,11 +148,11 @@
 			}
 
 			this.run = function(path,scope,target) {
-				runInScope(p.getCode(path),scope,target);
+				runInScope.call(target,p.getCode(path),scope);
 			}
 
 			this.file = function(path,scope,target) {
-				return file(p.getCode(path),scope,target);
+				return file.call(target,p.getCode(path),scope);
 			}
 
 			//	Creates a child loader that prepends the given prefix
@@ -182,13 +182,13 @@
 		}
 
 		this.run = function(code,scope,target) {
-			runInScope(code,scope,target);
+			runInScope.call(target,code,scope);
 		};
 
 		//	TODO	For file and module, what should we do about 'this' and why?
 
-		this.file = function() {
-			return file.apply(this,arguments);
+		this.file = function(code,scope,target) {
+			return file.call(target,code,scope);
 		};
 
 		this.module = function(p,scope) {
