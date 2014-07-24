@@ -99,19 +99,10 @@
 			};
 
 			var runScope = function(initial) {
-				if (false) {
-					var rv = {};
-					rv.$platform = $platform;
-					rv.$api = $api;
-					for (var x in initial) {
-						rv[x] = initial[x];
-					}
-					return rv;
-				} else {
-					initial.$platform = $platform;
-					initial.$api = $api;
-					return initial;
-				}
+				//	earlier version copied object but that seems unnecessary
+				initial.$platform = $platform;
+				initial.$api = $api;
+				return initial;
 			}
 
 			var fixed = runScope(scope);
