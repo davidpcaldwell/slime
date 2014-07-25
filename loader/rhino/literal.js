@@ -31,7 +31,7 @@
 		return eval(String($javahost.getLoaderCode("literal.js")));
 	})();
 	
-	var run = function(script) {
+	loader.run.spi(function(script) {
 		if (script.name && script._in) {
 			//	ready
 		} else if (script._source && script.path) {
@@ -48,9 +48,7 @@
 			throw new Error("Unimplemented: script = " + script);
 		}
 		$javahost.script(script.name,_streams.readString(script._in),script.scope,script.target);
-	};
-
-	loader.run.spi(run);
+	});
 
 	var Loader = function(p) {
 		var decorate = function(_source) {
@@ -84,8 +82,11 @@
 		return rv;
 	}
 
-	loader.Loader = (function(underlying) {
-		return function(p) {
+	loader.Loader = loader.$api.Function.conditional(
+		function(p) {
+			return p._source || p._code;
+		}, 
+		function(p) {
 			if (p._source) {
 				return new Loader(p);
 			} else if (p._code) {
@@ -96,18 +97,10 @@
 					_source: p._code.getScripts(),
 					Loader: p.Loader
 				});
-			} else if (p.getCode) {
-				return new underlying({
-					getCode: function(path) {
-						return p.getCode(path);
-					},
-					Loader: p.Loader
-				});
-			} else {
-				throw new TypeError();
 			}
-		};
-	})(loader.Loader);
+		},
+		loader.Loader
+	);
 	
 	loader.classpath = new function() {
 		this.toString = function() {
@@ -170,10 +163,9 @@
 				};
 				
 				$javahost.getClasspath().append(format._code);
-				return loader.module(engineModuleCodeLoader(format._code, format.main),p);
-			} else {
-				return underlying.apply(loader,arguments);
+				format = engineModuleCodeLoader(format._code, format.main);
 			}
+			return underlying.apply(this,arguments);
 		};
 	})(loader.module);
 
