@@ -209,15 +209,15 @@
 				this.java = $platform.java;
 			}
 
-			//	TODO	The following properties must be exposed to the Rhino loader so that it can supply them to jsh/unit jsapi via
-			//			jsh.js
-
+			//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
 			//	TODO	also used by client.html unit tests
 			this.$platform = $platform;
 
+			//	TODO	currently used to set deprecation warning in jsh.js
+			//	TODO	currently used by jsapi in jsh/unit via jsh.js
 			//	TODO	also used by client.html unit tests
 			//	used to allow implementations to set warnings for deprecate and experimental
-			this.$api = $api;			
+			this.$api = $api;
 		}).call(this);
 	};
 })()

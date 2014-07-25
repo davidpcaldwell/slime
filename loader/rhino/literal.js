@@ -130,50 +130,5 @@
 		}
 	};
 		
-
-	//	Only modules may currently contain Java classes, which causes the API to be somewhat different
-	//	Code currently contains a Code.Source for scripts and a Code.Source for classes
-	//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
-	loader.module = (function(underlying) {
-		return function(format,p) {
-			if (format._code) {
-				var engineModuleCodeLoader = function(_code,main) {
-					return new function() {
-						this.main = main;
-
-						this.getCode = function(path) {
-							var $in = _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
-							if (!$in) throw "Missing module file: " + path + " in " + _code;
-							return {
-								name: String(_code) + ":" + path,
-								_in: $in
-							};
-						};
-
-						//	TODO	untested explicitly, although presumably unit tests already cover this as modules are loaded within
-						//			modules pretty often
-						this.Child = function(prefix) {
-							this.java = new function() {
-								this.read = function(path) {
-									return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(prefix+path));
-								}
-							}
-						};
-					}
-				};
-				
-				$javahost.getClasspath().append(format._code);
-				format = engineModuleCodeLoader(format._code, format.main);
-			}
-			return underlying.apply(this,arguments);
-		};
-	})(loader.module);
-
-//		//	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
-//		this.$platform = loader.$platform;
-//
-//		//	currently used to set deprecation warning in jsh.js
-//		//	currently used by jsapi in jsh/unit via jsh.js
-//		this.$api = loader.$api;
 	return loader;
 })()
