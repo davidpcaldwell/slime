@@ -81,13 +81,9 @@
 
 		var $api = eval($slime.getCode("api.js"));
 
-		var run = function(/*code,scope*/) {
-			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
-			//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
-			//			loaded by the new loader, and should go away when all modules are converted
+		var run = function(/*script*/) {
 			return (function() {
-				//	$platform is in scope because of the above
-				//	$api is also in scope
+				//	$platform and $api are in scope
 				with( arguments[0].scope ) {
 					eval(arguments[0].code);
 				}
@@ -99,24 +95,10 @@
 		
 		(function() {
 			var runWith = function(script,scope) {
-				var runScope = function(initial) {
-					//	earlier version copied object but that seems unnecessary
-					initial.$platform = $platform;
-					initial.$api = $api;
-					return initial;
-				}
-
-				var fixed = runScope(scope);
-
-				if (typeof(script) == "object" && script) {
-					//	OK
-				} else if (typeof(script) == "string") {
-					script = { code: script };
-				} else {
-					throw new TypeError("Unimplemented: typeof(code) = " + typeof(script));
-				}
 				script.target = this;
-				script.scope = fixed;
+				script.scope = scope;
+				script.scope.$platform = $platform;
+				script.scope.$api = $api;
 				run(script);
 			}
 

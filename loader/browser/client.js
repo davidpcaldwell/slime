@@ -174,7 +174,7 @@
 
 		var loader = new platform.Loader({
 			getCode: function(path) {
-				return fetcher.getCode(path);
+				return { code: fetcher.getCode(path) };
 			}
 		});
 
@@ -189,7 +189,7 @@
 							}
 						} else {
 							//	TODO	assumes trailing slash when loading module
-							return fetcher.getCode(code.base+path);
+							return { code: fetcher.getCode(code.base+path) };
 						}
 					}
 				}
