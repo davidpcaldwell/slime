@@ -46,7 +46,6 @@ END LICENSE
 				<span class="type"><a href="../io/api.html#types.Loader">Loader</a></span>
 			</div>
 			<script type="application/x.jsapi#tests">
-				debugger;
 				var loader = new module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
 				test(typeof(loader.resource) == "function");
 				test(loader.resource("api.html") != null);
