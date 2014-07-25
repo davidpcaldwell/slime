@@ -96,139 +96,141 @@
 				arguments
 			);
 		};
-
-		var runWith = function(code,scope) {
-			var runScope = function(initial) {
-				//	earlier version copied object but that seems unnecessary
-				initial.$platform = $platform;
-				initial.$api = $api;
-				return initial;
-			}
-
-			var fixed = runScope(scope);
-
-			if (typeof(code) == "function") {
-				//	it is a function that can execute the code given a scope and target object
-				code(fixed,this);
-			} else if (typeof(code) == "string") {
-				run.call(this,code,fixed);
-			} else {
-				throw "Unimplemented: typeof(code) = " + typeof(code);
-			}
-		}
-
-		var createScope = function(scope) {
-			var rv;
-			if (scope && (scope.$context || scope.$exports)) {
-				rv = scope;
-			} else if (scope) {
-				rv = { $context: scope };
-			} else {
-				rv = { $context: {} };
-			}
-			if (!rv.$exports) {
-				rv.$exports = {};
-			}
-			return rv;
-		}
-
-		var file = function(code,scope) {
-			//	TODO	can we put file in here somehow?
-			//	TODO	should we be able to provide a 'this' here?
-			var inner = createScope(scope);
-			runWith.call(this,code,inner);
-			return inner.$exports;
-		}
-
-		var Loader = function(p) {
-			var Callee = arguments.callee;
-			
-			this.toString = function() {
-				return p.toString();
-			}
-
-			this.run = function(path,scope,target) {
-				runWith.call(target,p.getCode(path),scope);
-			}
-
-			this.file = function(path,scope,target) {
-				return file.call(target,p.getCode(path),scope);
-			}
-
-			//	Creates a child loader that prepends the given prefix
-			var parent = this;
-			var Child = function(prefix) {
-				return new Callee({
-					toString: function() {
-						return parent.toString() + " prefix=" + prefix;
-					},
-					getCode: function(path) {
-						return p.getCode(prefix+path);
-					}
-				});
-			};
-
-			this.module = function(path,scope,target) {
-				var inner = createScope(scope);
-				var tokens = path.split("/");
-				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-				inner.$loader = (p.Loader) ? new p.Loader(prefix) : new Child(prefix);
-				if (path == "" || /\/$/.test(path)) {
-					path += "module.js";
+		
+		(function() {
+			var runWith = function(code,scope) {
+				var runScope = function(initial) {
+					//	earlier version copied object but that seems unnecessary
+					initial.$platform = $platform;
+					initial.$api = $api;
+					return initial;
 				}
-				runWith.call(target,p.getCode(path),inner);
+
+				var fixed = runScope(scope);
+
+				if (typeof(code) == "function") {
+					//	it is a function that can execute the code given a scope and target object
+					code(fixed,this);
+				} else if (typeof(code) == "string") {
+					run.call(this,code,fixed);
+				} else {
+					throw "Unimplemented: typeof(code) = " + typeof(code);
+				}
+			}
+
+			var createScope = function(scope) {
+				var rv;
+				if (scope && (scope.$context || scope.$exports)) {
+					rv = scope;
+				} else if (scope) {
+					rv = { $context: scope };
+				} else {
+					rv = { $context: {} };
+				}
+				if (!rv.$exports) {
+					rv.$exports = {};
+				}
+				return rv;
+			}
+
+			var file = function(code,scope) {
+				//	TODO	can we put file in here somehow?
+				//	TODO	should we be able to provide a 'this' here?
+				var inner = createScope(scope);
+				runWith.call(this,code,inner);
 				return inner.$exports;
 			}
-		}
 
-		this.run = function(code,scope,target) {
-			runWith.call(target,code,scope);
-		};
+			var Loader = function(p) {
+				var Callee = arguments.callee;
 
-		//	TODO	For file and module, what should we do about 'this' and why?
+				this.toString = function() {
+					return p.toString();
+				}
 
-		this.file = function(code,scope,target) {
-			return file.call(target,code,scope);
-		};
+				this.run = function(path,scope,target) {
+					runWith.call(target,p.getCode(path),scope);
+				}
 
-		this.module = function(p,scope) {
-			var loader = new Loader(p);
-			return loader.module(p.main,scope);
-		};
+				this.file = function(path,scope,target) {
+					return file.call(target,p.getCode(path),scope);
+				}
 
-		this.Loader = Loader;
+				//	Creates a child loader that prepends the given prefix
+				var parent = this;
+				var Child = function(prefix) {
+					return new Callee({
+						toString: function() {
+							return parent.toString() + " prefix=" + prefix;
+						},
+						getCode: function(path) {
+							return p.getCode(prefix+path);
+						}
+					});
+				};
 
-		this.namespace = function(string) {
-			//	This construct returns the top-level global object, e.g., window in the browser
-			var global = function() {
-				return this;
-			}();
-
-			var scope = global;
-			if (string) {
-				var tokens = string.split(".");
-				for (var i=0; i<tokens.length; i++) {
-					if (typeof(scope[tokens[i]]) == "undefined") {
-						scope[tokens[i]] = {};
+				this.module = function(path,scope,target) {
+					var inner = createScope(scope);
+					var tokens = path.split("/");
+					var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+					inner.$loader = (p.Loader) ? new p.Loader(prefix) : new Child(prefix);
+					if (path == "" || /\/$/.test(path)) {
+						path += "module.js";
 					}
-					scope = scope[tokens[i]];
+					runWith.call(target,p.getCode(path),inner);
+					return inner.$exports;
 				}
 			}
-			return scope;
-		}
 
-		if ($platform.java) {
-			this.java = $platform.java;
-		}
+			this.run = function(code,scope,target) {
+				runWith.call(target,code,scope);
+			};
 
-		//	TODO	The following properties must be exposed to the Rhino loader so that it can supply them to jsh/unit jsapi via
-		//			jsh.js
+			//	TODO	For file and module, what should we do about 'this' and why?
 
-		//	TODO	also used by client.html unit tests
-		this.$platform = $platform;
+			this.file = function(code,scope,target) {
+				return file.call(target,code,scope);
+			};
 
-		//	TODO	also used by client.html unit tests
-		//	used to allow implementations to set warnings for deprecate and experimental
-		this.$api = $api;
+			this.module = function(p,scope) {
+				var loader = new Loader(p);
+				return loader.module(p.main,scope);
+			};
+
+			this.Loader = Loader;
+
+			this.namespace = function(string) {
+				//	This construct returns the top-level global object, e.g., window in the browser
+				var global = function() {
+					return this;
+				}();
+
+				var scope = global;
+				if (string) {
+					var tokens = string.split(".");
+					for (var i=0; i<tokens.length; i++) {
+						if (typeof(scope[tokens[i]]) == "undefined") {
+							scope[tokens[i]] = {};
+						}
+						scope = scope[tokens[i]];
+					}
+				}
+				return scope;
+			}
+
+			if ($platform.java) {
+				this.java = $platform.java;
+			}
+
+			//	TODO	The following properties must be exposed to the Rhino loader so that it can supply them to jsh/unit jsapi via
+			//			jsh.js
+
+			//	TODO	also used by client.html unit tests
+			this.$platform = $platform;
+
+			//	TODO	also used by client.html unit tests
+			//	used to allow implementations to set warnings for deprecate and experimental
+			this.$api = $api;			
+		}).call(this);
 	};
 })()
