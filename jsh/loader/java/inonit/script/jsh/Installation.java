@@ -101,11 +101,52 @@ public abstract class Installation {
 
 		public abstract Code getCode();
 	}
+	
+	public abstract File[] getPluginRoots();
 
-	public abstract Plugin[] getPlugins();
+	public final Plugin[] getPlugins() {
+		File[] roots = getPluginRoots();
+		ArrayList<Plugin> rv = new ArrayList<Plugin>();
+		for (int i=0; i<roots.length; i++) {
+			Logging.get().log(Installation.class, Level.CONFIG, "Loading plugins from %s ...", roots[i]);
+			Plugin.addPluginsTo(rv, roots[i]);
+		}
+		return rv.toArray(new Plugin[rv.size()]);		
+	}
+	
+	public final Code.Source.File getLibrary(String path) {
+		File[] roots = getPluginRoots();
+		Code.Source.File rv = null;
+		for (File root : roots) {
+			if (new File(root, path).exists()) {
+				rv = Code.Source.File.create(new File(root, path));
+			}
+		}
+		return rv;
+	}
+	
+	private static abstract class BaseInstallation extends Installation {
+		protected final File[] getPluginRoots(String... searchpaths) {
+			ArrayList<File> files = new ArrayList<File>();
+			for (String searchpath : searchpaths) {
+				if (searchpath != null) {
+					int next = searchpath.indexOf(File.pathSeparator);
+					while(next != -1) {
+						files.add(new File(searchpath.substring(0,next)));
+						searchpath = searchpath.substring(next+File.pathSeparator.length());
+						next = searchpath.indexOf(File.pathSeparator);
+					}
+					if (searchpath.length() > 0) {
+						files.add(new File(searchpath));
+					}
+				}
+			}
+			return files.toArray(new File[files.size()]);
+		}
+	}
 	
 	public static Installation unpackaged() {
-		return new Installation() {
+		return new BaseInstallation() {
 			public String toString() {
 				return getClass().getName()
 					+ " jsh.library.scripts=" + System.getProperty("jsh.library.scripts")
@@ -162,20 +203,16 @@ public abstract class Installation {
 				}
 			}
 
-			public Plugin[] getPlugins() {
-				Logging.get().log(Installation.class, Level.CONFIG, "Loading plugins from %s and %s ...", System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
-				ArrayList<Plugin> rv = new ArrayList<Plugin>();
-				addPluginsTo(rv, System.getProperty("jsh.library.modules"));
+			public File[] getPluginRoots() {
 				//	Defaults for jsh.plugins: installation modules directory? Probably obsolete given that we will be loading
 				//	them. $HOME/.jsh/plugins?
-				addPluginsTo(rv, System.getProperty("jsh.plugins"));
-				return rv.toArray(new Plugin[rv.size()]);
+				return getPluginRoots(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
 			}
 		};
 	}
 	
 	public static Installation packaged() {
-		return new Installation() {
+		return new BaseInstallation() {
 			public String toString() {
 				return getClass().getName() + " [packaged]";
 			}
@@ -198,13 +235,8 @@ public abstract class Installation {
 				);
 			}
 
-			public Plugin[] getPlugins() {
-				String[] paths = System.getProperty("jsh.plugins").split("\\" + java.io.File.pathSeparator);
-				ArrayList<Plugin> rv = new ArrayList<Plugin>();
-				for (int i=0; i<paths.length; i++) {
-					Plugin.addPluginsTo(rv, new File(paths[i]));
-				}
-				return rv.toArray(new Plugin[rv.size()]);
+			public File[] getPluginRoots() {
+				return getPluginRoots(System.getProperty("jsh.plugins"));
 			}
 		};		
 	}
