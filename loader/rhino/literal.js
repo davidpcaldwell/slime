@@ -11,70 +11,48 @@
 //	END LICENSE
 
 (function() {
-	return new function() {
-		var _streams = new Packages.inonit.script.runtime.io.Streams();
-		
-		var loader = (function() {
-			var $engine = {
-				Object: {
-					defineProperty: {}
-				}
-			};
-			(function() {
-				if ($javahost.setReadOnly) $engine.Object.defineProperty.setReadOnly = $javahost.setReadOnly;
-				if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
-			})();
-			var $slime = {
-				getCode: function(path) {
-					return String($javahost.getLoaderCode(path));
-				}
+	var _streams = new Packages.inonit.script.runtime.io.Streams();
+
+	var loader = (function() {
+		var $engine = {
+			Object: {
+				defineProperty: {}
 			}
-			return eval(String($javahost.getLoaderCode("literal.js")));
+		};
+		(function() {
+			if ($javahost.setReadOnly) $engine.Object.defineProperty.setReadOnly = $javahost.setReadOnly;
+			if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
 		})();
-		
-		var run = function(script) {
-			if (script.name && script._in) {
-				//	ready
-			} else if (script._source && script.path) {
-				var replace = {};
-				replace._in = script._source.getResourceAsStream(script.path);
-				if (!replace._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
-				replace.name = script._source.toString() + ":" + script.path;
-				replace.scope = script.scope;
-				replace.target = script.target;
-				script = replace;
-			} else if (script.name && !script._in) {
-				throw new Error("script._in is null for name = " + script.name);				
-			} else {
-				throw new Error("Unimplemented: script = " + script);
+		var $slime = {
+			getCode: function(path) {
+				return String($javahost.getLoaderCode(path));
 			}
-			$javahost.script(script.name,_streams.readString(script._in),script.scope,script.target);
-		};
-		
-		loader.run.spi(run);
-
-		this.run = function(code,scope,target) {
-			loader.run(code,scope,target);
 		}
-
-		this.file = function(code,$context) {
-			return loader.file(code,$context);
+		return eval(String($javahost.getLoaderCode("literal.js")));
+	})();
+	
+	var run = function(script) {
+		if (script.name && script._in) {
+			//	ready
+		} else if (script._source && script.path) {
+			var replace = {};
+			replace._in = script._source.getResourceAsStream(script.path);
+			if (!replace._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
+			replace.name = script._source.toString() + ":" + script.path;
+			replace.scope = script.scope;
+			replace.target = script.target;
+			script = replace;
+		} else if (script.name && !script._in) {
+			throw new Error("script._in is null for name = " + script.name);				
+		} else {
+			throw new Error("Unimplemented: script = " + script);
 		}
+		$javahost.script(script.name,_streams.readString(script._in),script.scope,script.target);
+	};
 
-		this.Module = new function() {
-			var Code = Packages.inonit.script.engine.Code;
+	loader.run.spi(run);
 
-			//	java.io.File, string
-			this.unpacked = function(_base,main) {
-				return { _code: Code.unpacked(_base), main: main };
-			}
-
-			//	java.io.File, string
-			this.packed = function(_slime,main) {
-				return { _code: Code.slime(_slime), main: main };
-			}
-		};
-		
+	var Loader = function(p) {
 		var decorate = function(_source) {
 			this.toString = function() {
 				return "Java loader: " + _source.toString();
@@ -86,28 +64,28 @@
 			this._resource = loader.$api.deprecate(this._stream);			
 		}
 
-		var Loader = function(p) {
-			if (!p._source) throw new TypeError("_source must be defined and not be null.");
+		if (!p._source) throw new TypeError("_source must be defined and not be null.");
 
-			var parameter = new function() {
-				this.getCode = function(path) {
-					return {
-						_source: p._source,
-						path: path
-					}
-				};
-				
-				this.Loader = function(prefix) {
-					return (p.Loader) ? new p.Loader(prefix) : new Loader({ _source: p._source.child(prefix) });
+		var parameter = new function() {
+			this.getCode = function(path) {
+				return {
+					_source: p._source,
+					path: path
 				}
 			};
 
-			var rv = new loader.Loader(parameter);
-			decorate.call(rv,p._source);
-			return rv;
-		}
+			this.Loader = function(prefix) {
+				return (p.Loader) ? new p.Loader(prefix) : new Loader({ _source: p._source.child(prefix) });
+			}
+		};
 
-		this.Loader = function(p) {
+		var rv = new loader.Loader(parameter);
+		decorate.call(rv,p._source);
+		return rv;
+	}
+
+	loader.Loader = (function(underlying) {
+		return function(p) {
 			if (p._source) {
 				return new Loader(p);
 			} else if (p._code) {
@@ -120,7 +98,7 @@
 				});
 			} else if (p.getCode) {
 				debugger;
-				return new loader.Loader({
+				return new underlying({
 					getCode: function(path) {
 						debugger;
 						return p.getCode(path);
@@ -130,70 +108,82 @@
 			} else {
 				throw new TypeError();
 			}
+		};
+	})(loader.Loader);
+	
+	loader.classpath = new function() {
+		this.toString = function() {
+			return String($javahost.getClasspath());
 		}
 
-		//	Only modules may currently contain Java classes, which causes the API to be somewhat different
-		//	Code currently contains a Code.Source for scripts and a Code.Source for classes
-		//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
-		this.module = function(format,p) {
-			debugger;
+		this.add = function(_source) {
+			$javahost.getClasspath().append(_source);
+		}
 
-			var engineModuleCodeLoader = function(_code,main) {
-				return new function() {
-					this.main = main;
+		this.getClass = function(name) {
+			return $javahost.getClasspath().getClass(name);
+		}
+	}
+	
+	loader.Module = new function() {
+		var Code = Packages.inonit.script.engine.Code;
 
-					this.getCode = function(path) {
-						var $in = _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
-						if (!$in) throw "Missing module file: " + path + " in " + _code;
-						return {
-							name: String(_code) + ":" + path,
-							_in: $in
-						};
-					};
+		//	java.io.File, string
+		this.unpacked = function(_base,main) {
+			return { _code: Code.unpacked(_base), main: main };
+		}
 
-					//	TODO	untested explicitly, although presumably unit tests already cover this as modules are loaded within
-					//			modules pretty often
-					this.Child = function(prefix) {
-						this.java = new function() {
-							this.read = function(path) {
-								return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(prefix+path));
-							}
-						}
-					};
-				}
-			}
+		//	java.io.File, string
+		this.packed = function(_slime,main) {
+			return { _code: Code.slime(_slime), main: main };
+		}
+	};
+		
 
+	//	Only modules may currently contain Java classes, which causes the API to be somewhat different
+	//	Code currently contains a Code.Source for scripts and a Code.Source for classes
+	//	TODO	we probably need to allow the script side to implement Source, at least, to support the use of this API
+	loader.module = (function(underlying) {
+		return function(format,p) {
 			if (format._code) {
+				var engineModuleCodeLoader = function(_code,main) {
+					return new function() {
+						this.main = main;
+
+						this.getCode = function(path) {
+							var $in = _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
+							if (!$in) throw "Missing module file: " + path + " in " + _code;
+							return {
+								name: String(_code) + ":" + path,
+								_in: $in
+							};
+						};
+
+						//	TODO	untested explicitly, although presumably unit tests already cover this as modules are loaded within
+						//			modules pretty often
+						this.Child = function(prefix) {
+							this.java = new function() {
+								this.read = function(path) {
+									return _code.getScripts().getResourceAsStream(new Packages.java.lang.String(prefix+path));
+								}
+							}
+						};
+					}
+				};
+				
 				$javahost.getClasspath().append(format._code);
 				return loader.module(engineModuleCodeLoader(format._code, format.main),p);
 			} else {
-				return loader.module.apply(loader,arguments);
+				return underlying.apply(loader,arguments);
 			}
-		}
+		};
+	})(loader.module);
 
-		this.classpath = new function() {
-			this.toString = function() {
-				return String($javahost.getClasspath());
-			}
-
-			this.add = function(_source) {
-				$javahost.getClasspath().append(_source);
-			}
-
-			this.getClass = function(name) {
-				return $javahost.getClasspath().getClass(name);
-			}
-		}
-
-		this.namespace = function(name) {
-			return loader.namespace(name);
-		}
-
-		//	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
-		this.$platform = loader.$platform;
-
-		//	currently used to set deprecation warning in jsh.js
-		//	currently used by jsapi in jsh/unit via jsh.js
-		this.$api = loader.$api;
-	};
+//		//	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
+//		this.$platform = loader.$platform;
+//
+//		//	currently used to set deprecation warning in jsh.js
+//		//	currently used by jsapi in jsh/unit via jsh.js
+//		this.$api = loader.$api;
+	return loader;
 })()
