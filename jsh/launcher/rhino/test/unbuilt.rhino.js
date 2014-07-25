@@ -155,7 +155,7 @@ args.push(
 	{
 		env: new (function() {
 			for (var x in env) {
-				if (x == "JSH_SCRIPT_DEBUGGER" || x == "JSH_PLUGINS" || x == "JSH_LAUNCHER_DEBUG" || x == "JSH_JVM_OPTIONS" || x == "JSH_ENGINE") {
+				if (x == "JSH_SCRIPT_DEBUGGER" || x == "JSH_PLUGINS" || x == "JSH_LAUNCHER_DEBUG" || x == "JSH_JVM_OPTIONS" || x == "JSH_ENGINE" || x == "JSH_JAVA_LOGGING_PROPERTIES") {
 					this[x] = env[x];
 				} else if (/^JSH_/.test(x)) {
 				} else {
