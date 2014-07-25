@@ -98,7 +98,7 @@
 		};
 		
 		(function() {
-			var runWith = function(code,scope) {
+			var runWith = function(script,scope) {
 				var runScope = function(initial) {
 					//	earlier version copied object but that seems unnecessary
 					initial.$platform = $platform;
@@ -108,18 +108,16 @@
 
 				var fixed = runScope(scope);
 
-				if (typeof(code) == "object") {
-					code.target = this;
-					code.scope = fixed;
-					run(code);
-				} else if (typeof(code) == "function") {
-					//	it is a function that can execute the code given a scope and target object
-					code(fixed,this);
-				} else if (typeof(code) == "string") {
-					run({ target: this, code: code, scope: fixed });
+				if (typeof(script) == "object" && script) {
+					//	OK
+				} else if (typeof(script) == "string") {
+					script = { code: script };
 				} else {
-					throw "Unimplemented: typeof(code) = " + typeof(code);
+					throw new TypeError("Unimplemented: typeof(code) = " + typeof(script));
 				}
+				script.target = this;
+				script.scope = fixed;
+				run(script);
 			}
 
 			var createScope = function(scope) {
