@@ -13,6 +13,9 @@
 package inonit.script.runtime.io;
 
 import java.io.*;
+import java.util.logging.*;
+
+import inonit.system.*;
 
 public abstract class Filesystem {
 	public static Filesystem create() {
@@ -197,26 +200,34 @@ public abstract class Filesystem {
 				}
 				return rv;
 			}
+			
+			private boolean isSymlink(File file) throws IOException {
+				return !file.getCanonicalFile().getParentFile().equals(file.getParentFile().getCanonicalFile());
+			}
 
 			private boolean delete(File file) {
 				if (file.isDirectory()) {
 					File[] contents = file.listFiles();
-					for (int i=0; i<contents.length; i++) {
-						try {
-							//	Do not delete contents of this directory if this directory is a symbolic link
-							if (contents[i].getParentFile().getCanonicalFile().equals(file.getAbsoluteFile())) {
+					//	Do not delete contents of this directory if this directory is a symbolic link
+					try {
+						if (!isSymlink(file)) {
+							//	delete contents
+							for (int i=0; i<contents.length; i++) {
 								boolean success = delete(contents[i]);
 								if (!success) {
+									Logging.get().log(Filesystem.class, Level.WARNING, "Failed to delete " + contents[i]);
 									return false;
 								}
 							}
-						} catch (IOException e) {
-							return false;
 						}
+					} catch (IOException e) {
+						Logging.get().log(Filesystem.class, Level.WARNING, "Error deleting file " + file, e);
+						return false;
 					}
-					//	delete contents
 				}
-				return file.delete();
+				boolean rv = file.delete();
+				if (!rv) Logging.get().log(Filesystem.class, Level.WARNING, "Failed to delete " + file);
+				return rv;
 			}
 
 			public void delete() throws IOException {
