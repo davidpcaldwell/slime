@@ -233,7 +233,9 @@
 				}
 			}
 
-			return platform.module(createModuleLoader(code),args);
+			var spec = createModuleLoader(code);
+			var loader = new platform.Loader(spec);
+			return loader.module(spec.main,args);
 		}
 
 		this.file = function(path,$context) {

@@ -179,11 +179,6 @@
 				return file.call(target,code,scope);
 			};
 
-			this.module = function(p,scope) {
-				var loader = new Loader(p);
-				return loader.module(p.main,scope);
-			};
-
 			this.Loader = Loader;
 
 			this.namespace = function(string) {
