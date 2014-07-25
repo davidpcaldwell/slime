@@ -81,19 +81,19 @@
 
 		var $api = eval($slime.getCode("api.js"));
 
-		var run = function(/*code,scope,this*/) {
+		var run = function(/*code,scope*/) {
 			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
 			//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
 			//			loaded by the new loader, and should go away when all modules are converted
 			return (function() {
 				//	$platform is in scope because of the above
 				//	$api is also in scope
-				with( arguments[1] ) {
-					eval(arguments[0]);
+				with( arguments[0].scope ) {
+					eval(arguments[0].code);
 				}
-			}).apply(
-				this,
-				arguments
+			}).call(
+				arguments[0].target,
+				{ scope: arguments[0].scope, code: arguments[0].code }
 			);
 		};
 		
@@ -112,7 +112,7 @@
 					//	it is a function that can execute the code given a scope and target object
 					code(fixed,this);
 				} else if (typeof(code) == "string") {
-					run.call(this,code,fixed);
+					run({ target: this, code: code, scope: fixed });
 				} else {
 					throw "Unimplemented: typeof(code) = " + typeof(code);
 				}
@@ -185,6 +185,9 @@
 			this.run = function(code,scope,target) {
 				runWith.call(target,code,scope);
 			};
+			this.run.spi = function(implementation) {
+				run = implementation;
+			}
 
 			//	TODO	For file and module, what should we do about 'this' and why?
 
