@@ -206,21 +206,12 @@ this.jsh = new function() {
 			if (arguments.length == 2) {
 				p.$context = arguments[1];
 			}
-			if (format.slime) {
-//				var descriptor = rhinoLoader.Module.packed(format.slime,format.name);
-//				var loader = new Loader({ _code: descriptor._code });
-				var loader = new Loader({ _packed: format.slime });
-				return loader.module(format.name,p);
-//				return rhinoLoader.module(rhinoLoader.Module.packed(format.slime,format.name),p);
-			} else if (format.base) {
-//				var descriptor = rhinoLoader.Module.unpacked(format.base,format.name);
-//				var loader = new Loader({ _code: descriptor._code });
-				var loader = new Loader({ _unpacked: format.base });
-				return loader.module(format.name,p);
-//				return rhinoLoader.module(rhinoLoader.Module.unpacked(format.base,format.name),p);
-			} else {
+			var loader = (function(format) {
+				if (format.slime) return new Loader({ _packed: format.slime });
+				if (format.base) return new Loader({ _unpacked: format.base });
 				throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
-			}
+			})(format);
+			return loader.module(format.name,p);
 		}
 
 		this.classpath = new function() {
