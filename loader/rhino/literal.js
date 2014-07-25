@@ -82,35 +82,34 @@
 		return rv;
 	}
 
-	loader.Loader = loader.$api.Function.conditional(
-		function(p) {
-			return p._source || p._code || p._unpacked || p._packed;
-		},
-		loader.$api.Function(function(p) {
-			if (p._source) {
-				return new Loader(p);
-			} else if (p._code) {
-				//	TODO	this is probably a bad place to do this, but it will do for now; should this move into the Loader
-				//			constructor?
-				$javahost.getClasspath().append(p._code);
-				return new Loader({
-					_source: p._code.getScripts(),
-					Loader: p.Loader
-				});
-			}
-		}).prepare(function(p) {
-			if (arguments.length == 0) {
-				throw new Error("No arguments to function called via prepare");
-			}
-			var Code = Packages.inonit.script.engine.Code;
-			if (p._unpacked) {
-				p._code = Code.unpacked(p._unpacked);
-			} else if (p._packed) {
-				p._code = Code.slime(p._packed);
-			}
-		}),
-		loader.Loader
-	);
+	loader.Loader = loader.$api.Function(
+		loader.$api.Function.conditional(
+			function(p) {
+				return p._source || p._code;
+			},
+			function(p) {
+				if (p._source) {
+					return new Loader(p);
+				} else if (p._code) {
+					//	TODO	this is probably a bad place to do this, but it will do for now; should this move into the Loader
+					//			constructor?
+					$javahost.getClasspath().append(p._code);
+					return new Loader({
+						_source: p._code.getScripts(),
+						Loader: p.Loader
+					});
+				}
+			},
+			loader.Loader
+		)
+	).prepare(function(p) {
+		var Code = Packages.inonit.script.engine.Code;
+		if (p._unpacked) {
+			p._code = Code.unpacked(p._unpacked);
+		} else if (p._packed) {
+			p._code = Code.slime(p._packed);
+		}		
+	});
 	
 	loader.classpath = new function() {
 		this.toString = function() {
