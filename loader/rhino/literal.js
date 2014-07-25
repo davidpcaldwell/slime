@@ -31,45 +31,34 @@
 			}
 			return eval(String($javahost.getLoaderCode("literal.js")));
 		})();
-
-		var getCode = function(code) {
-			var script = function(name,_in,scope,target) {
-				if (!target) target = null;
-				$javahost.script(name,_in,scope,target);
-			};
-
-			if (typeof(code) == "object" && typeof(code.name) != "undefined" && typeof(code._in) != "undefined") {
-				if (!code._in) {
-					//	TODO	decide semantics of this
-					throw new Error("code._in is null for name = " + code.name);
-				}
-				if (script) {
-					return function() {
-						script(code.name,_streams.readString(code._in),arguments[0],arguments[1]);
-					};
-				} else {
-					return String(
-						_streams.readString(code._in)
-					);
-				}
-			} else if (typeof(code) == "object" && code._source && code.path) {
-				var _in = code._source.getResourceAsStream(code.path);
-				if (!_in) throw new Error("Could not find resource at " + code.path + " in " + code._source);
-				return arguments.callee({
-					name: code._source.toString() + ":" + code.path,
-					_in: _in
-				});
+		
+		var run = function(script) {
+			if (script.name && script._in) {
+				//	ready
+			} else if (script._source && script.path) {
+				var replace = {};
+				replace._in = script._source.getResourceAsStream(script.path);
+				if (!replace._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
+				replace.name = script._source.toString() + ":" + script.path;
+				replace.scope = script.scope;
+				replace.target = script.target;
+				script = replace;
+			} else if (script.name && !script._in) {
+				throw new Error("script._in is null for name = " + script.name);				
 			} else {
-				throw new Error("Unimplemented: code = " + code);
+				throw new Error("Unimplemented: script = " + script);
 			}
-		}
+			$javahost.script(script.name,_streams.readString(script._in),script.scope,script.target);
+		};
+		
+		loader.run.spi(run);
 
 		this.run = function(code,scope,target) {
-			loader.run(getCode(code),scope,target);
+			loader.run(code,scope,target);
 		}
 
 		this.file = function(code,$context) {
-			return loader.file(getCode(code),$context);
+			return loader.file(code,$context);
 		}
 
 		this.Module = new function() {
@@ -102,10 +91,10 @@
 
 			var parameter = new function() {
 				this.getCode = function(path) {
-					return getCode({
+					return {
 						_source: p._source,
 						path: path
-					})
+					}
 				};
 				
 				this.Loader = function(prefix) {
@@ -134,7 +123,7 @@
 				return new loader.Loader({
 					getCode: function(path) {
 						debugger;
-						return getCode(p.getCode(path));
+						return p.getCode(path);
 					},
 					Loader: p.Loader
 				});
@@ -156,10 +145,10 @@
 					this.getCode = function(path) {
 						var $in = _code.getScripts().getResourceAsStream(new Packages.java.lang.String(path));
 						if (!$in) throw "Missing module file: " + path + " in " + _code;
-						return getCode({
+						return {
 							name: String(_code) + ":" + path,
 							_in: $in
-						});
+						};
 					};
 
 					//	TODO	untested explicitly, although presumably unit tests already cover this as modules are loaded within

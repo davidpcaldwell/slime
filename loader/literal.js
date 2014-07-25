@@ -108,7 +108,11 @@
 
 				var fixed = runScope(scope);
 
-				if (typeof(code) == "function") {
+				if (typeof(code) == "object") {
+					code.target = this;
+					code.scope = fixed;
+					run(code);
+				} else if (typeof(code) == "function") {
 					//	it is a function that can execute the code given a scope and target object
 					code(fixed,this);
 				} else if (typeof(code) == "string") {
