@@ -81,23 +81,23 @@
 
 		var $api = eval($slime.getCode("api.js"));
 
-		var runInScope = function(code,scope) {
-			var run = function(/*code,scope,this*/) {
-				//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
-				//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
-				//			loaded by the new loader, and should go away when all modules are converted
-				return (function() {
-					//	$platform is in scope because of the above
-					//	$api is also in scope
-					with( arguments[1] ) {
-						eval(arguments[0]);
-					}
-				}).apply(
-					this,
-					arguments
-				);
-			};
+		var run = function(/*code,scope,this*/) {
+			//	TODO	check to understand exactly what leaks into namespace. Does 'runners' for example? 'runScope'? ModuleLoader?
+			//	TODO	putting $exports: true as a property of 'this' is designed to allow older modules to know they are being
+			//			loaded by the new loader, and should go away when all modules are converted
+			return (function() {
+				//	$platform is in scope because of the above
+				//	$api is also in scope
+				with( arguments[1] ) {
+					eval(arguments[0]);
+				}
+			}).apply(
+				this,
+				arguments
+			);
+		};
 
+		var runWith = function(code,scope) {
 			var runScope = function(initial) {
 				//	earlier version copied object but that seems unnecessary
 				initial.$platform = $platform;
@@ -136,7 +136,7 @@
 			//	TODO	can we put file in here somehow?
 			//	TODO	should we be able to provide a 'this' here?
 			var inner = createScope(scope);
-			runInScope.call(this,code,inner);
+			runWith.call(this,code,inner);
 			return inner.$exports;
 		}
 
@@ -148,7 +148,7 @@
 			}
 
 			this.run = function(path,scope,target) {
-				runInScope.call(target,p.getCode(path),scope);
+				runWith.call(target,p.getCode(path),scope);
 			}
 
 			this.file = function(path,scope,target) {
@@ -176,13 +176,13 @@
 				if (path == "" || /\/$/.test(path)) {
 					path += "module.js";
 				}
-				runInScope.call(target,p.getCode(path),inner);
+				runWith.call(target,p.getCode(path),inner);
 				return inner.$exports;
 			}
 		}
 
 		this.run = function(code,scope,target) {
-			runInScope.call(target,code,scope);
+			runWith.call(target,code,scope);
 		};
 
 		//	TODO	For file and module, what should we do about 'this' and why?
