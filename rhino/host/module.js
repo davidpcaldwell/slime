@@ -12,15 +12,22 @@
 
 //	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
 //	script objects to wrap Java classes, which may be a better approach
-$exports.getClass = $api.Function({
-	before: $api.Function.argument.isString({ index: 0, name: "name" }),
-	call: function(name) {
-		if ($context.$rhino.classpath.getClass(name)) {
-			return $context.$rhino.java.getJavaPackagesReference(name);
-		}
-		return null;
+//$exports.getClass = $api.Function({
+//	before: $api.Function.argument.isString({ index: 0, name: "name" }),
+//	call: function(name) {
+//		if ($context.$rhino.classpath.getClass(name)) {
+//			return $context.$rhino.java.getJavaPackagesReference(name);
+//		}
+//		return null;
+//	}
+//});
+$exports.getClass = function(name) {
+	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
+	if ($context.$rhino.classpath.getClass(name)) {
+		return $context.$rhino.java.getJavaPackagesReference(name);
 	}
-});
+	return null;
+};
 
 var isJavaObject = function(object) {
 	if (typeof(object) == "undefined") return false;

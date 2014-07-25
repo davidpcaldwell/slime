@@ -10,38 +10,35 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.Type = $api.Function({
-	before: [
-		$api.Function.argument.isString({ index: 0, name: "media" }),
-		$api.Function.argument.isString({ index: 1, name: "subtype" }),
-		function() {
-			if (typeof(this.arguments[2]) != "object" && typeof(this.arguments[2]) != "undefined") {
-				throw new TypeError("arguments[2] (parameters) must be undefined or object");
-			}
+$exports.Type = function(media,subtype,parameters) {
+	$api.Function.argument.isString({ index: 0, name: "media" }).apply(this,arguments);
+	$api.Function.argument.isString({ index: 1, name: "subtype" }).apply(this,arguments);
+	(function() {
+		if (typeof(arguments[2]) != "object" && typeof(arguments[2]) != "undefined") {
+			throw new TypeError("arguments[2] (parameters) must be undefined or object");
 		}
-	],
-	call: function(media,subtype,parameters) {
-		this.getMedia = function() {
-			return media;
-		}
-
-		this.getSubtype = function() {
-			return subtype;
-		}
-
-		this.getParameters = function() {
-			return parameters;
-		}
-
-		this.toString = function() {
-			var rv = media + "/" + subtype;
-			for (var x in parameters) {
-				rv += ";" + x + "=\"" + parameters[x] + "\"";
-			}
-			return rv;
-		}
+	}).apply(this,arguments);
+	
+	this.getMedia = function() {
+		return media;
 	}
-});
+
+	this.getSubtype = function() {
+		return subtype;
+	}
+
+	this.getParameters = function() {
+		return parameters;
+	}
+
+	this.toString = function() {
+		var rv = media + "/" + subtype;
+		for (var x in parameters) {
+			rv += ";" + x + "=\"" + parameters[x] + "\"";
+		}
+		return rv;
+	}
+};
 $exports.Type.parse = function(string) {
 	//	First parse RFC 822 header; see RFC 822 section 3.2 http://tools.ietf.org/html/rfc822#section-3.2
 	var collapser = /^(.*)(?:\r\n| |\t){2,}(.*)/;
