@@ -193,6 +193,13 @@
 			});
 			return situation.resolve();
 		};
+		
+		rv.prepare = function() {
+			for (var i=0; i<arguments.length; i++) {
+				components.splice(i,0,new $exports.Function.Prepare(arguments[i]));
+			}
+			return this;
+		}
 
 		rv.revise = function() {
 			for (var i=0; i<arguments.length; i++) {
@@ -221,6 +228,19 @@
 				returning: this.result.returning
 			},this.result.returning));
 		};
+	};
+	$exports.Function.Prepare = function(f) {
+		return function() {
+			var situation = this;
+			f.apply({
+				setThis: function(v) {
+					situation.target = v;
+				},
+				setArguments: function(v) {
+					situation.arguments = Array.prototype.slice.call(v);
+				}
+			},situation.arguments);
+		}
 	};
 	$exports.Function.returning = function(v) {
 		return function() {

@@ -84,9 +84,9 @@
 
 	loader.Loader = loader.$api.Function.conditional(
 		function(p) {
-			return p._source || p._code;
-		}, 
-		function(p) {
+			return p._source || p._code || p._unpacked || p._packed;
+		},
+		loader.$api.Function(function(p) {
 			if (p._source) {
 				return new Loader(p);
 			} else if (p._code) {
@@ -98,7 +98,17 @@
 					Loader: p.Loader
 				});
 			}
-		},
+		}).prepare(function(p) {
+			if (arguments.length == 0) {
+				throw new Error("No arguments to function called via prepare");
+			}
+			var Code = Packages.inonit.script.engine.Code;
+			if (p._unpacked) {
+				p._code = Code.unpacked(p._unpacked);
+			} else if (p._packed) {
+				p._code = Code.slime(p._packed);
+			}
+		}),
 		loader.Loader
 	);
 	
@@ -115,20 +125,6 @@
 			return $javahost.getClasspath().getClass(name);
 		}
 	}
-	
-	loader.Module = new function() {
-		var Code = Packages.inonit.script.engine.Code;
-
-		//	java.io.File, string
-		this.unpacked = function(_base,main) {
-			return { _code: Code.unpacked(_base), main: main };
-		}
-
-		//	java.io.File, string
-		this.packed = function(_slime,main) {
-			return { _code: Code.slime(_slime), main: main };
-		}
-	};
 		
 	return loader;
 })()

@@ -207,17 +207,19 @@ this.jsh = new function() {
 				p.$context = arguments[1];
 			}
 			if (format.slime) {
-				var descriptor = rhinoLoader.Module.packed(format.slime,format.name);
-				var loader = new Loader({ _code: descriptor._code });
+//				var descriptor = rhinoLoader.Module.packed(format.slime,format.name);
+//				var loader = new Loader({ _code: descriptor._code });
+				var loader = new Loader({ _packed: format.slime });
 				return loader.module(format.name,p);
 //				return rhinoLoader.module(rhinoLoader.Module.packed(format.slime,format.name),p);
 			} else if (format.base) {
-				var descriptor = rhinoLoader.Module.unpacked(format.base,format.name);
-				var loader = new Loader({ _code: descriptor._code });
+//				var descriptor = rhinoLoader.Module.unpacked(format.base,format.name);
+//				var loader = new Loader({ _code: descriptor._code });
+				var loader = new Loader({ _unpacked: format.base });
 				return loader.module(format.name,p);
 //				return rhinoLoader.module(rhinoLoader.Module.unpacked(format.base,format.name),p);
 			} else {
-				throw "Unreachable code: format.slime and format.base null in jsh loader's module()";
+				throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
 			}
 		}
 
