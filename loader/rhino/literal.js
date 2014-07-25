@@ -59,8 +59,6 @@
 					name: code._source.toString() + ":" + code.path,
 					_in: _in
 				});
-			} else if (typeof(code) == "string") {
-				return code;
 			} else {
 				throw new Error("Unimplemented: code = " + code);
 			}
