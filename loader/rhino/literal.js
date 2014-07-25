@@ -97,10 +97,8 @@
 					Loader: p.Loader
 				});
 			} else if (p.getCode) {
-				debugger;
 				return new underlying({
 					getCode: function(path) {
-						debugger;
 						return p.getCode(path);
 					},
 					Loader: p.Loader
