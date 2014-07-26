@@ -539,6 +539,13 @@ if (getSetting("jsh.build.javassist.jar")) {
 	console("Javassist location not specified; not building profiler.");
 }
 
+if (getSetting("jsh.build.coffeescript.path")) {
+	console("Copying CoffeeScript from " + getSetting("jsh.build.coffeescript.path") + " ...");
+	copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
+} else {
+	console("CoffeeScript location not specified; not including CoffeeScript.");	
+}
+
 if (!getSetting("jsh.build.notest")) {
 	var integrationTests = function() {
 		var command = LAUNCHER_COMMAND.slice();

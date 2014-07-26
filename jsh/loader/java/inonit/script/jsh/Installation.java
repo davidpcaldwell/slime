@@ -115,12 +115,18 @@ public abstract class Installation {
 	}
 	
 	public final Code.Source.File getLibrary(String path) {
+		Logging.get().log(Installation.class, Level.FINE, "Searching for library %s ...", path);
 		File[] roots = getPluginRoots();
 		Code.Source.File rv = null;
 		for (File root : roots) {
+			Logging.get().log(Installation.class, Level.FINER, "Searching for library %s in %s ...", path, root);
 			if (new File(root, path).exists()) {
+				Logging.get().log(Installation.class, Level.FINE, "Found library %s in %s ...", path, root);
 				rv = Code.Source.File.create(new File(root, path));
 			}
+		}
+		if (rv == null) {
+			Logging.get().log(Installation.class, Level.FINE, "Did not find library %s.", path);
 		}
 		return rv;
 	}

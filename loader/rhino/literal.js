@@ -26,28 +26,38 @@
 		var $slime = {
 			getCode: function(path) {
 				return String($javahost.getLoaderCode(path));
+			},
+			getCoffeeScript: function(path) {
+				var _code = $javahost.getCoffeeScript();
+				if (_code) return String(_code);
+				return null;
 			}
 		}
 		return eval(String($javahost.getLoaderCode("literal.js")));
 	})();
 	
-	loader.run.spi(function(script) {
-		if (script.name && script._in) {
-			//	ready
-		} else if (script._source && script.path) {
-			var replace = {};
-			replace._in = script._source.getResourceAsStream(script.path);
-			if (!replace._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
-			replace.name = script._source.toString() + ":" + script.path;
-			replace.scope = script.scope;
-			replace.target = script.target;
-			script = replace;
-		} else if (script.name && !script._in) {
-			throw new Error("script._in is null for name = " + script.name);				
-		} else {
-			throw new Error("Unimplemented: script = " + script);
+	loader.run.spi.preprocess(function(underlying) {
+		return function(script) {
+			if (script.name && script._in) {
+				//	ready
+			} else if (script._source && script.path) {
+				script._in = script._source.getResourceAsStream(script.path);
+				if (!script._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
+				script.name = script._source.toString() + ":" + script.path;
+			} else if (script.name && !script._in) {
+				throw new Error("script._in is null for name = " + script.name);				
+			} else {
+				throw new Error("Unimplemented: script = " + script);
+			}
+			script.code = String(_streams.readString(script._in));
+			delete script._in;
 		}
-		$javahost.script(script.name,_streams.readString(script._in),script.scope,script.target);
+	})
+	
+	loader.run.spi.execute(function(underlying) {
+		return function(script) {
+			return $javahost.script(script.name,script.code,script.scope,script.target);			
+		}
 	});
 
 	var Loader = function(p) {

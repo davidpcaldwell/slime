@@ -46,6 +46,10 @@ var getSourceFilePath = function(relative) {
 }
 
 var JSH_HOME = jsh.shell.jsh.home.pathname.java.adapt();
+var COFFEESCRIPT = jsh.shell.jsh.home.getFile("plugins/coffee-script.js");
+if (!COFFEESCRIPT) {
+	jsh.shell.echo("Skipping CoffeeScript tests; CoffeeScript not present.");
+}
 var SLIME_SRC = parameters.options.src.java.adapt();
 
 var LAUNCHER_COMMAND;
@@ -586,4 +590,25 @@ if (CATALINA_HOME) {
 			}
 		}
 	});	
+}
+
+if (COFFEESCRIPT) {
+	jsh.shell.run({
+		command: LAUNCHER_COMMAND[0],
+		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("coffee/hello.jsh.coffee")),
+		stdio: {
+			output: String
+		},
+		evaluate: function(result) {
+			if (result.status == 0) {
+				if (result.stdio.output == ["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+				} else {
+					throw new Error("Output was [" + result.stdio.output + "]");
+				}
+			} else {
+				throw new Error("Status: " + result.status);
+			}
+		}
+	});
 }

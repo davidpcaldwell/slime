@@ -554,3 +554,11 @@ this.jsh = new function() {
 		//	TODO	test for the existence of this class as well?
 	}
 };
+
+jsh.loader.run({
+		name: $jsh.getInvocation().getScript().getSource().getSourceName(),
+		_in: $jsh.getInvocation().getScript().getSource().getReader()
+	},
+	this,
+	this
+);

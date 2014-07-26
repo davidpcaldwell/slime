@@ -17,6 +17,10 @@
 		this.getLoaderCode = function(path) {
 			return $loader.getLoaderCode(path);
 		}
+		
+		this.getCoffeeScript = function() {
+			return $loader.getCoffeeScript();
+		}
 
 		this.script = function(name,code,scope,target) {
 			return $rhino.script(name,code,scope,target);

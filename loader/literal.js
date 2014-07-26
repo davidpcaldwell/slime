@@ -93,12 +93,32 @@
 			);
 		};
 		
+		var $coffee = (function() {
+			var coffeeScriptCode = $slime.getCoffeeScript();
+			if (!coffeeScriptCode) return null;
+			var target = {};
+			run({
+				code: String(coffeeScriptCode),
+				target: target,
+				scope: {}
+			});
+			return target.CoffeeScript;
+		})();
+
 		(function() {
+			var preprocess;
+			
 			var runWith = function(script,scope) {
+				if (preprocess) {
+					preprocess(script);
+				}
 				script.target = this;
 				script.scope = scope;
 				script.scope.$platform = $platform;
 				script.scope.$api = $api;
+				if ($coffee && /\.coffee/.test(script.name)) {
+					script.code = $coffee.compile(script.code);
+				}
 				run(script);
 			}
 
@@ -118,8 +138,6 @@
 			}
 
 			var file = function(code,scope) {
-				//	TODO	can we put file in here somehow?
-				//	TODO	should we be able to provide a 'this' here?
 				var inner = createScope(scope);
 				runWith.call(this,code,inner);
 				return inner.$exports;
@@ -169,9 +187,13 @@
 			this.run = function(code,scope,target) {
 				runWith.call(target,code,scope);
 			};
-			this.run.spi = function(implementation) {
-				run = implementation;
-			}
+			this.run.spi = {};
+			this.run.spi.preprocess = function(implementation) {
+				preprocess = implementation(preprocess);
+			};
+			this.run.spi.execute = function(implementation) {
+				run = implementation(run);
+			};
 
 			//	TODO	For file and module, what should we do about 'this' and why?
 
