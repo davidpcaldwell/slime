@@ -160,7 +160,11 @@ var suites = {
 		plugin.api();
 	},
 	server: function() {
-		server.start();
+		server.start({
+			"slime.hello": "test/hello.servlet.js",
+			"slime.file": "test/file.servlet.js",
+			"slime.api": "test/api.servlet.js"
+		});
 		jsh.shell.echo("Test hello servlet inside Tomcat ...");
 		helloServlet.test("http://127.0.0.1:8080/slime.hello/");
 		fileServlet.test("http://127.0.0.1:8080/slime.file/");

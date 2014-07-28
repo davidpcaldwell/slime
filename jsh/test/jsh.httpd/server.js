@@ -30,7 +30,7 @@ $exports.server = (function() {
 			configuration: environment.CATALINA_HOME.getFile("conf/server.xml")
 		});
 
-		var build = function() {
+		var build = function(servlets) {
 			jsh.shell.echo("Building webapps ...");
 
 			var buildWebapp = function(urlpath,servletpath) {
@@ -55,13 +55,13 @@ $exports.server = (function() {
 					}
 				});
 			};
-			buildWebapp("slime.hello", "test/hello.servlet.js");
-			buildWebapp("slime.file", "test/file.servlet.js");
-			buildWebapp("slime.api", "test/api.servlet.js");
+			for (var x in servlets) {
+				buildWebapp(x,servlets[x]);
+			}
 		}
 
-		this.start = function() {
-			build();
+		this.start = function(servlets) {
+			build(servlets);
 			jsh.shell.echo("Invoking Tomcat start script ...");
 			server.start({
 				debug: {
