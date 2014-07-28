@@ -611,4 +611,18 @@ if (COFFEESCRIPT) {
 			}
 		}
 	});
+	jsh.shell.run({
+		command: LAUNCHER_COMMAND[0],
+		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("coffee/loader.jsh.js")),
+		stdio: {
+			output: String
+		},
+		evaluate: function(result) {
+			if (result.status == 0) {
+				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+			} else {
+				throw new Error("Status: " + result.status + " for " + result.command + " " + result.arguments.join(" "));
+			}
+		}
+	});
 }
