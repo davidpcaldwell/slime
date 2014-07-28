@@ -50,7 +50,7 @@ public class Main {
 			} else {
 				if (System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("rhino")) {
 					return new Rhino();
-				} else if (hasNashorn && System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("nashorn")) {
+				} else if (System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("nashorn")) {
 					return new Nashorn();
 				} else {
 					//	for now
