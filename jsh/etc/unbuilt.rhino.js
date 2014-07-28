@@ -231,6 +231,27 @@ if (arguments[0] == "build") {
 } else if (arguments[0] == "launch") {
 	arguments.splice(0,1);
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
+} else if (arguments[0] == "verify") {
+	var verifyArgs = arguments.slice(1);
+	arguments.splice(0,arguments.length);
+	var JSH_HOME = Packages.java.io.File.createTempFile("jsh-unbuilt.", ".tmp");
+	JSH_HOME.mkdirs();
+	arguments.push(JSH_HOME);
+	Packages.java.lang.System.setProperty("jsh.build.notest","true");
+	Packages.java.lang.System.setProperty("jsh.build.nodoc","true");
+	load(new Packages.java.io.File(SLIME_SRC, "jsh/etc/build.rhino.js"));
+	var JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
+	Packages.java.lang.System.err.println("JAVA_HOME = " + JAVA_HOME);
+	var command = [];
+	command.push(String(new Packages.java.io.File(JAVA_HOME,"bin/java")),"-jar",String(new File(JSH_HOME,"jsh.jar")));
+	command.push(String(new Packages.java.io.File(SLIME_SRC, "jsh/test/verify.jsh.js")),"-slime",String(SLIME_SRC));
+	command = command.concat(verifyArgs);
+	Packages.java.lang.System.err.println("Verify command: " + command.join(" "));
+	var status = runCommand.apply(this,command);
+	if (status) {
+		throw new Error("Verification failed with status: " + status);
+	}
+//	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
 } else if (arguments[0] == "test") {
 	arguments.splice(0,1);
 	//	create temporary file
