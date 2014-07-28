@@ -243,10 +243,12 @@ copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"), new File(JSH_HOM
 copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
 
 if (RHINO_LIBRARIES) {
-	console("Copying libraries ...");
+	console("Copying Rhino libraries ...");
 	RHINO_LIBRARIES.forEach( function(file) {
 		copyFile(file,new File(JSH_HOME,"lib/" + file.getName()));
 	});
+} else {
+	console("Rhino libraries not present; building for Nashorn only.");
 }
 
 var tmp = createTemporaryDirectory();
@@ -554,7 +556,10 @@ if (!getSetting("jsh.build.notest")) {
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");
 		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
 		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
-		runCommand.apply(this,command);
+		var status = runCommand.apply(this,command);
+		if (status != 0) {
+			throw new Error("Integration tests failed.");
+		}
 	}
 
 	integrationTests();
