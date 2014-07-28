@@ -241,12 +241,11 @@ if (arguments[0] == "build") {
 	Packages.java.lang.System.setProperty("jsh.build.nodoc","true");
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/etc/build.rhino.js"));
 	var JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
-	Packages.java.lang.System.err.println("JAVA_HOME = " + JAVA_HOME);
 	var command = [];
 	command.push(String(new Packages.java.io.File(JAVA_HOME,"bin/java")),"-jar",String(new File(JSH_HOME,"jsh.jar")));
 	command.push(String(new Packages.java.io.File(SLIME_SRC, "jsh/test/verify.jsh.js")),"-slime",String(SLIME_SRC));
 	command = command.concat(verifyArgs);
-	Packages.java.lang.System.err.println("Verify command: " + command.join(" "));
+	Packages.java.lang.System.err.println("Verifying with command: " + command.join(" "));
 	var status = runCommand.apply(this,command);
 	if (status) {
 		throw new Error("Verification failed with status: " + status);
