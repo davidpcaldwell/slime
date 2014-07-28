@@ -245,6 +245,9 @@ if (arguments[0] == "build") {
 	command.push(String(new Packages.java.io.File(JAVA_HOME,"bin/java")),"-jar",String(new File(JSH_HOME,"jsh.jar")));
 	command.push(String(new Packages.java.io.File(SLIME_SRC, "jsh/test/verify.jsh.js")),"-slime",String(SLIME_SRC));
 	command = command.concat(verifyArgs);
+	if (Packages.java.lang.System.getProperty("jsh.build.tomcat.home")) {
+		command.push("-tomcat",String(new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.build.tomcat.home"))));
+	}
 	Packages.java.lang.System.err.println("Verifying with command: " + command.join(" "));
 	var status = runCommand.apply(this,command);
 	if (status) {
