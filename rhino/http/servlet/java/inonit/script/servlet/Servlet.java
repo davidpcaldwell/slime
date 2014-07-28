@@ -104,6 +104,10 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			this.servlet = servlet;
 			this.loader = new inonit.script.engine.Loader() {
 				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
+				
+				@Override public String getCoffeeScript() {
+					return null;
+				}
 
 				@Override public String getLoaderCode(String path) throws IOException {
 					return streams.readString(servlet.getServletContext().getResourceAsStream("/WEB-INF/loader/" + path));
