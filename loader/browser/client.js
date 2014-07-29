@@ -157,6 +157,9 @@
 			var $slime = {
 				getCode: function(path) {
 					return fetcher.getCode(bootstrap.getRelativePath(path));
+				},
+				getCoffeeScript: function() {
+					return null;
 				}
 			};
 			return eval(fetcher.getCode(bootstrap.getRelativePath("literal.js")));
