@@ -10,4 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-map("",$mapping.getRelativePath("../../../rhino/http/servlet/"));
+map("WEB-INF/servlet/",$mapping.getRelativePath("../../../rhino/http/servlet/"));
+map("file/",$mapping.getRelativePath("../../../rhino/http/servlet/"));
+map("WEB-INF/coffee/", $mapping.getRelativePath("../coffee/"));

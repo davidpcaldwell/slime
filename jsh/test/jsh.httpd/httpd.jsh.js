@@ -58,7 +58,7 @@ var fileServlet = new function() {
 	this.test = function(url) {
 		var client = new jsh.http.Client();
 		var response = client.request({
-			url: url + "test/file.servlet.js"
+			url: url + "file/test/file.servlet.js"
 		});
 		if (response.status.code != 200) {
 			fail("status = " + response.status.code);
@@ -161,9 +161,9 @@ var suites = {
 	},
 	server: function() {
 		server.start({
-			"slime.hello": "test/hello.servlet.js",
-			"slime.file": "test/file.servlet.js",
-			"slime.api": "test/api.servlet.js"
+			"slime.hello": "WEB-INF/servlet/test/hello.servlet.js",
+			"slime.file": "WEB-INF/servlet/test/file.servlet.js",
+			"slime.api": "WEB-INF/servlet/test/api.servlet.js"
 		});
 		jsh.shell.echo("Test hello servlet inside Tomcat ...");
 		helloServlet.test("http://127.0.0.1:8080/slime.hello/");
