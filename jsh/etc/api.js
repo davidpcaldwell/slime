@@ -28,6 +28,10 @@
 	modules.add({ api: { path: "jsh/loader/loader.api.html" } });
 	modules.add({ api: { path: "loader/" } });
 	modules.add({ api: { path: "loader/rhino/" } });
+	modules.add({ api: { path: "loader/test/data/a/" } });
+	modules.add({ api: { path: "loader/test/data/b/" } });
+	modules.add({ api: { path: "loader/test/data/c/main.js" } });
+	modules.add({ api: { path: "loader/test/data/coffee/" } });
 	modules.add(new Module("js/object/", { api: true, module: true }));
 	modules.add(new Module("js/mime/", { api: false, module: true }));
 	modules.add(new Module("js/debug/", { api: false, module: true }));

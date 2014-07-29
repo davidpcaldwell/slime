@@ -342,7 +342,8 @@ this.jsh = new function() {
 	jsh.$jsapi = {
 		$platform: loader.$platform,
 		$api: loader.$api,
-		$rhino: loader.getRhinoLoader()
+		$rhino: loader.getRhinoLoader(),
+		$coffee: $jsh.getInstallation().getLibrary("coffee-script.js")
 	};
 
 	var readPlugin = function(_code,callbacks) {

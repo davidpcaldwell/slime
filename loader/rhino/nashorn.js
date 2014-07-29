@@ -22,9 +22,15 @@ load("nashorn:mozilla_compat.js");
 				rv[x] = scope[x];
 			}
 			return rv;
-		} else {
+		} else if (false) {
 			scope.__proto__ = global;
 			return scope;
+		} else {
+			var rv = Object.create(global);
+			for (var x in scope) {
+				rv[x] = scope[x];
+			}
+			return rv;
 		}
 	};
 
@@ -38,7 +44,7 @@ load("nashorn:mozilla_compat.js");
 	
 	if (typeof($classpath) == "undefined") {
 		return {
-			script: script,
+			script: script,//(script) ? script : Java.type("java.lang.System").getProperties().get("slime/loader/rhino/nashorn.js:script"),
 			subshell: function(f) {
 				var global = (function() { return this; })();
 				var subglobal = Context.getContext().createGlobal();
@@ -53,6 +59,10 @@ load("nashorn:mozilla_compat.js");
 	} else {
 		var $javahost = new function() {
 			this.getLoaderCode = $getLoaderCode;
+			
+			this.getCoffeeScript = function() {
+				return $getCoffeeScript();
+			};
 
 			this.getClasspath = function() {
 				return $classpath;

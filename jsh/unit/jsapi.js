@@ -201,13 +201,13 @@ $exports.tests = new function() {
 		//			it? (probably not)
 		return {
 			$jsapi: {
-				module: function(name,context) {
+				module: $api.deprecate(function(name,context) {
 					if (typeof(name) == "object" && typeof(context) == "string") {
 						jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
 						return arguments.callee.call(this,arguments[1],arguments[0]);
 					}
 					return jsh.loader.module(suite.getRelativePath(name),context);
-				},
+				}),
 				test: function(path,p) {
 					var apifile = getApiHtml(suite.getRelativePath(path));
 					var page = loadApiHtml(apifile);
@@ -221,8 +221,11 @@ $exports.tests = new function() {
 //							throw new Error("Unimplemented: $jsapi.test");
 				},
 				loader: {
-					file: function(name,context) {
-						return jsh.loader.file(suite.getRelativePath(name),context);
+					module: function(name,context,target) {
+						return jsh.loader.module(suite.getRelativePath(name),context,target);
+					},
+					file: function(name,context,target) {
+						return jsh.loader.file(suite.getRelativePath(name),context,target);
 					}
 				},
 				environment: environment,
