@@ -23,27 +23,29 @@
 		}
 
 		this.script = function(name,code,scope,target) {
-			try {
+			//	TODO	revisit whether some improved error reporting code inspired by the below can be re-enabled at some point;
+			//			currently it somehow breaks some automated tests
+//			try {
 				return $rhino.script(name,code,scope,target);
-			} catch (e) {
-				if (e.rhinoException) {
-					if (e.rhinoException.getWrappedException) {
-						if (e.rhinoException.getWrappedException().getErrors) {
-							var errors = e.rhinoException.getWrappedException().getErrors();
-							for (var i=0; i<errors.length; i++) {
-								Packages.java.lang.System.err.println(errors[i]);
-							}
-						} else {
-							e.rhinoException.getWrappedException().printStackTrace();
-						}
-					} else {
-						e.rhinoException.printStackTrace();
-					}
-				} else if (e.javaException) {
-					e.javaException.printStackTrace();					
-				}
-				throw e;
-			}
+//			} catch (e) {
+//				if (e.rhinoException) {
+//					if (e.rhinoException.getWrappedException) {
+//						if (e.rhinoException.getWrappedException().getErrors) {
+//							var errors = e.rhinoException.getWrappedException().getErrors();
+//							for (var i=0; i<errors.length; i++) {
+//								Packages.java.lang.System.err.println(errors[i]);
+//							}
+//						} else {
+//							e.rhinoException.getWrappedException().printStackTrace();
+//						}
+//					} else {
+//						e.rhinoException.printStackTrace();
+//					}
+//				} else if (e.javaException) {
+//					e.javaException.printStackTrace();					
+//				}
+//				throw e;
+//			}
 		};
 
 		this.getClasspath = function() {
