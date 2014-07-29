@@ -317,6 +317,15 @@ if (CATALINA_HOME) {
 			String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath())
 		]
 	),mymode);
+	if (COFFEESCRIPT) {
+		console("Running httpd CoffeeScript integration tests with CoffeeScript = " + COFFEESCRIPT);
+		run(LAUNCHER_COMMAND.concat(
+			[
+				String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath()),
+				"-suite", "coffee"
+			]
+		),mymode);
+	}
 } else {
 	console("No CATALINA_HOME: not running httpd integration tests.");
 }

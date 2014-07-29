@@ -93,7 +93,47 @@ var apiServlet = new function() {
 			fail("Did not match value: " + value);
 		}
 	}
-}
+};
+
+var coffeeServlet = new function() {
+	var getString = function(response) {
+		if (response.status.code != 200) {
+			if (response.status.code == 500) {
+				jsh.shell.echo("Status: 500; body = " + response.body.stream.character().asString());
+			}
+			fail("Response is wrong status: " + response.status.code);
+		}
+		if (!/^text\/plain/.test(response.body.type)) {
+			fail("Response is wrong type: " + response.body.type);
+		} else {
+			jsh.shell.echo("Got correct type: " + response.body.type);
+		}
+		return response.body.stream.character().asString();		
+	}
+	
+	this.test = function(url) {
+		var client = new jsh.http.Client();
+		jsh.shell.echo("Testing coffee servlet at " + url);
+		var response = client.request({
+			url: url + "coffee/a"
+		});
+		var coffeeA = getString(response);
+		if (coffeeA != "2") {
+			fail("string = " + coffeeA);
+		} else {
+			jsh.shell.echo("Got correct string: " + coffeeA);
+		}
+		var response = client.request({
+			url: url + "cup/file/b"
+		});
+		var cupFileB = getString(response);
+		if (cupFileB != "3") {
+			fail("string = " + cupFileB);
+		} else {
+			jsh.shell.echo("Got correct string: " + cupFileB);
+		}
+	}
+};
 
 var plugin = new function() {
 	this.hello = function() {
@@ -170,6 +210,14 @@ var suites = {
 		fileServlet.test("http://127.0.0.1:8080/slime.file/");
 		apiServlet.test("http://127.0.0.1:8080/slime.api/");
 		server.stop();
+	},
+	coffee: function() {
+		server.start({
+			"slime.coffee": "WEB-INF/servlet/test/coffee.servlet.js"
+		});
+		jsh.shell.echo("Test coffee servlet inside Tomcat ...");
+		coffeeServlet.test("http://127.0.0.1:8080/slime.coffee/");
+		server.stop();		
 	},
 	all: function() {
 		this.plugin();
