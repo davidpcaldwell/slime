@@ -10,7 +10,7 @@ if (module.file.b != 3) {
 } else {
 	jsh.shell.echo("Loaded CoffeeScript file from CoffeeScript module.");
 }
-var jmodule = jsh.script.loader.module("module.js");
+var jmodule = jsh.script.loader.module("loader.js");
 if (jmodule.file.b != 3) {
 	throw new Error("Failed.");
 } else {
