@@ -37,6 +37,7 @@ $exports.server = (function() {
 				//	TODO	may want to move this to httpd.tomcat.js, although it would need to somehow be aware of location of
 				//			webapp.jsh.js
 				var rhinoArguments = (typeof(Packages.org.mozilla.javascript.Context) == "function") ? [] : ["-norhino"];
+				var coffeeScriptArguments = ($context.coffeescript) ? ["-library", "coffee-script.js=" + $context.coffeescript] : [];
 				jsh.shell.jsh({
 					fork: true,
 					script: jsh.script.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js"),
@@ -45,7 +46,7 @@ $exports.server = (function() {
 						"-servletapi", environment.CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
 						"-resources", jsh.script.getRelativePath("httpd.resources.js"),
 						"-servlet", servletpath
-					].concat(rhinoArguments),
+					].concat(rhinoArguments).concat(coffeeScriptArguments),
 					evaluate: function(result) {
 						jsh.shell.echo("Command: " + [result.command].concat(result.arguments).join(" "));
 						jsh.shell.echo("Status: " + result.status);

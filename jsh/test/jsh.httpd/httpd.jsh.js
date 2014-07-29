@@ -14,6 +14,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		"tomcat.base": jsh.file.Pathname,
 		"debug:server": false,
+		coffeescript: jsh.file.Pathname,
 		suite: "all"
 	}
 });
@@ -171,6 +172,24 @@ var plugin = new function() {
 		tomcat.start();
 		fileServlet.test("http://127.0.0.1:" + tomcat.port + "/");
 	}
+	
+	var run = function(path,tests) {
+		jsh.shell.echo("Plugin: " + path);
+		var tomcat = new jsh.httpd.Tomcat({});
+		var script = jsh.script.getRelativePath("../../../" + path).file
+		tomcat.map({
+			path: "/",
+			servlets: {
+				"/*": {
+					file: script
+				}
+			},
+			//	TODO	is there a jsh.script.getFile()?
+			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
+		});
+		tomcat.start();
+		tests.test("http://127.0.0.1:" + tomcat.port + "/");		
+	}
 
 	this.api = function() {
 		jsh.shell.echo("plugin api servlet");
@@ -188,10 +207,16 @@ var plugin = new function() {
 		});
 		tomcat.start();
 		apiServlet.test("http://127.0.0.1:" + tomcat.port + "/");
+	};
+	
+	this.coffee = function() {
+		run("rhino/http/servlet/test/coffee.servlet.js",coffeeServlet);
 	}
 };
 
-var server = jsh.script.loader.file("server.js").server;
+var server = jsh.script.loader.file("server.js", {
+	coffeescript: parameters.options.coffeescript
+}).server;
 
 var suites = {
 	plugin: function() {
@@ -212,6 +237,7 @@ var suites = {
 		server.stop();
 	},
 	coffee: function() {
+		plugin.coffee();
 		server.start({
 			"slime.coffee": "WEB-INF/servlet/test/coffee.servlet.js"
 		});

@@ -116,7 +116,7 @@
 				script.scope = scope;
 				script.scope.$platform = $platform;
 				script.scope.$api = $api;
-				if ($coffee && /\.coffee/.test(script.name)) {
+				if ($coffee && /\.coffee$/.test(script.name)) {
 					script.code = $coffee.compile(script.code);
 				}
 				run(script);

@@ -1,5 +1,5 @@
 var coffee = httpd.loader.module("WEB-INF/coffee/module.coffee");
-var cup = httpd.loader.module("WEB-INF/coffee/module.js");
+var cup = httpd.loader.module("WEB-INF/coffee/loader.js");
 
 $exports.handle = function(request) {
 	if (request.path == "coffee/a") {

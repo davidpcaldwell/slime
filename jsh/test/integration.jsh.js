@@ -322,7 +322,8 @@ if (CATALINA_HOME) {
 		run(LAUNCHER_COMMAND.concat(
 			[
 				String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath()),
-				"-suite", "coffee"
+				"-suite", "coffee",
+				"-coffeescript", COFFEESCRIPT
 			]
 		),mymode);
 	}

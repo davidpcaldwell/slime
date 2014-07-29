@@ -19,7 +19,7 @@ import java.net.*;
 import inonit.script.engine.*;
 
 public abstract class Loader {
-	public abstract String getCoffeeScript();
+	public abstract String getCoffeeScript() throws IOException;
 	public abstract String getLoaderCode(String path) throws IOException;
 
 	//	Used in literal.js to support operations on the class loader

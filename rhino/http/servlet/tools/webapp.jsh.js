@@ -20,6 +20,7 @@ var parameters = jsh.script.getopts({
 		//	TODO	allow multiple servlets with separate parameters
 		servlet: String,
 		parameter: jsh.script.getopts.ARRAY(String),
+		library: jsh.script.getopts.ARRAY(String),
 		"java:version": String
 	}
 });
@@ -66,6 +67,15 @@ if (!parameters.options.norhino) {
 		}
 	})();
 }
+parameters.options.library.forEach(function(declaration) {
+	var tokens = declaration.split("=");
+	var lib = WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
+		ifExists: function(dir) {
+			return false;
+		}
+	});
+	jsh.file.Pathname(tokens[1]).file.copy(lib.getRelativePath(tokens[0]), { recursive: true });
+});
 
 var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 
