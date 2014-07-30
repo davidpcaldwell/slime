@@ -23,42 +23,32 @@ if (parameters.options.chrome) {
 			var opened;
 			jsh.java.Thread.start({
 				call: function() {
-					if (true) {
-						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						TMP.getRelativePath("First Run").write("", { append: false });
-						jsh.shell.echo("Running with data directory: " + TMP);
-						jsh.shell.run({
-							command: parameters.options.chrome.file,
-							arguments: [
-								"--user-data-dir=" + TMP,
-								uri
-							],
-							on: {
-								start: function(p) {
-									new lock.Waiter({
-										until: function() {
-											return true;
-										},
-										then: function() {
-											opened = new function() {
-												this.close = function() {
-													p.kill();
-												}
-											}										
-										}
-									})();
-								}
+					var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					TMP.getRelativePath("First Run").write("", { append: false });
+					jsh.shell.echo("Running with data directory: " + TMP);
+					jsh.shell.run({
+						command: parameters.options.chrome.file,
+						arguments: [
+							"--user-data-dir=" + TMP,
+							uri
+						],
+						on: {
+							start: function(p) {
+								new lock.Waiter({
+									until: function() {
+										return true;
+									},
+									then: function() {
+										opened = new function() {
+											this.close = function() {
+												p.kill();
+											}
+										}										
+									}
+								})();
 							}
-						});
-					} else {
-						jsh.shell.shell({
-							command: "open",
-							arguments: [
-								"-a", "/Applications/Google Chrome.app",
-								uri
-							]
-						});
-					}
+						}
+					});
 				}
 			});
 			var returner = new lock.Waiter({
@@ -73,63 +63,6 @@ if (parameters.options.chrome) {
 		};
 	}
 }
-
-//$context = {};
-//$context.desktop = new function() {
-//	this.browse = function(uri) {
-//		var lock = new jsh.java.Thread.Monitor();
-//		var opened;
-//		jsh.java.Thread.start({
-//			call: function() {
-//				if (true) {
-//					var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-//					TMP.getRelativePath("First Run").write("", { append: false });
-//					jsh.shell.echo("Running with data directory: " + TMP);
-//					jsh.shell.run({
-//						command: parameters.options.chrome.file,
-//						arguments: [
-//							"--user-data-dir=" + TMP,
-//							uri
-//						],
-//						on: {
-//							start: function(p) {
-//								new lock.Waiter({
-//									until: function() {
-//										return true;
-//									},
-//									then: function() {
-//										opened = new function() {
-//											this.close = function() {
-//												p.kill();
-//											}
-//										}										
-//									}
-//								})();
-//							}
-//						}
-//					});
-//				} else {
-//					jsh.shell.shell({
-//						command: "open",
-//						arguments: [
-//							"-a", "/Applications/Google Chrome.app",
-//							uri
-//						]
-//					});
-//				}
-//			}
-//		});
-//		var returner = new lock.Waiter({
-//			until: function() {
-//				return Boolean(opened);
-//			},
-//			then: function() {
-//				return opened;
-//			}
-//		});
-//		return returner();
-//	}
-//};
 
 var browseTestPage = function(p) {
 	var opened = chrome.browse(p.tomcat.url(p.url));

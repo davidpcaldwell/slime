@@ -3,6 +3,7 @@ var parameters = jsh.script.getopts({
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		slime: jsh.file.Pathname,
 		tomcat: jsh.file.Pathname,
+		chrome: jsh.file.Pathname,
 		debug: false
 	}
 });
@@ -24,15 +25,26 @@ parameters.options.java.forEach(function(jre) {
 		command: searchpath.getCommand("java"),
 		arguments: [
 			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-			parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
-			jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "jsh-verify.", suffix: "" })
+			parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString()
 		],
 		directory: parameters.options.slime.directory,
 		environment: jsh.js.Object.set({}, jsh.shell.environment
-			,{
-				JSH_BUILD_DEBUG: (parameters.options.debug) ? "true" : "",
-			}
 			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 		)
 	});	
 });
+
+if (parameters.options.chrome) {
+	jsh.shell.run({
+		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
+		arguments: [
+			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
+			"-chrome", parameters.options.chrome
+		],
+		directory: parameters.options.slime.directory,
+		environment: jsh.js.Object.set({}, jsh.shell.environment
+			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
+		)
+	});		
+}
