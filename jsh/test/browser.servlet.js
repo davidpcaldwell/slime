@@ -4,55 +4,23 @@ var lock = new jsh.java.Thread.Monitor();
 var success;
 
 var delegate = (function() {
-	if ($parameters.delegate == "offline") {
-//		return new function() {
-//			var base = jsh.file.Pathname($parameters.offline).directory;
-//			
-//			this.handle = function(request) {
-//				jsh.shell.echo("Requesting path: " + request.path);
-//				if (base.getFile(request.path)) {
-//					jsh.shell.echo("Returning: " + base.getFile(request.path));
-//					return {
-//						status: {
-//							code: 200
-//						},
-//						body: {
-//							stream: base.getFile(request.path).read(jsh.io.Streams.binary)
-//						}
-//					};
-//				} else {
-//					jsh.shell.echo("404");
-//					return {
-//						status: {
-//							code: 404
-//						}
-//					};
-//				}
-//			}
-//			
-//			this.destroy = function() {
-//			};
-//		}
-		throw new Error("Offline");
-	} else {
-		var scope = {
-			$exports: {},
-			httpd: httpd,
-			$parameters: $parameters,
-			$loader: new httpd.io.Loader({
-				resources: new function() {
-					var prefix = $parameters.delegate.split("/").slice(0,-1).join("/") + "/";
-					
-					this.get = function(path) {
-						return httpd.loader.resource(prefix + path);
-					}
+	var scope = {
+		$exports: {},
+		httpd: httpd,
+		$parameters: $parameters,
+		$loader: new httpd.io.Loader({
+			resources: new function() {
+				var prefix = $parameters.delegate.split("/").slice(0,-1).join("/") + "/";
+
+				this.get = function(path) {
+					return httpd.loader.resource(prefix + path);
 				}
-			})
-		};
-		jsh.shell.echo("Running: " + $parameters.delegate);
-		httpd.loader.run($parameters.delegate, scope);
-		return scope.$exports;
-	}
+			}
+		})
+	};
+	jsh.shell.echo("Running: " + $parameters.delegate);
+	httpd.loader.run($parameters.delegate, scope);
+	return scope.$exports;
 })();
 
 $exports.handle = function(request) {
