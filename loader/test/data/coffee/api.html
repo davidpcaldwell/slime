@@ -8,7 +8,7 @@
 <body>
 	<script type="application/x.jsapi#tests">
 //		test(false);
-		if (jsh.$jsapi.$coffee) {
+		if ($jsapi.loader.coffee) {
 			test(true);
 			var loader = $jsapi.loader.module("loader.js");
 			var coffee = $jsapi.loader.module("module.coffee");

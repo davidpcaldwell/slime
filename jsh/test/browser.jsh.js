@@ -9,7 +9,7 @@ var parameters = jsh.script.getopts({
 
 var all = [
 	"loader/test/data/a/", "loader/test/data/b/", "loader/test/data/c/main.js",
-//	"loader/test/data/coffee/",
+	"loader/test/data/coffee/",
 	"js/object/","js/object/Error.js","js/web/"
 ].map(function(path) {
 	return { path: path };

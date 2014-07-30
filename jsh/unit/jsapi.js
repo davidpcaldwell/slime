@@ -226,7 +226,8 @@ $exports.tests = new function() {
 					},
 					file: function(name,context,target) {
 						return jsh.loader.file(suite.getRelativePath(name),context,target);
-					}
+					},
+					coffee: jsh.$jsapi.$coffee
 				},
 				environment: environment,
 				newTemporaryDirectory: function() {

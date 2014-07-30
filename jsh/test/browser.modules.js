@@ -6,11 +6,14 @@ $exports.handle = function(request) {
 		//	TODO	wire this into servlet container MIME type specification
 		if (false) {
 
-		} else if (/\.html/.test(request.path)) {
+		} else if (/\.html$/.test(request.path)) {
 			type = "text/html";
-		} else if (/\.js/.test(request.path)) {
+		} else if (/\.js$/.test(request.path)) {
 			//	TODO	check for correctness
 			type = "application/javascript";
+		} else if (/\.coffee$/.test(request.path)) {
+			//	TODO	check for correctness
+			type = "text/coffeescript";
 		} else {
 			throw new Error("Unknown type: " + request.path);
 		}

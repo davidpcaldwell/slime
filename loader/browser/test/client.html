@@ -260,19 +260,28 @@ END LICENSE
 							var self = this;
 
 							this.$jsapi = new function() {
-								this.module = function(path,context) {
-									//	TODO	probable bug here; probably works when module path ends in /, but for module path
-									//			that has a terminal file name, probably needs to strip that file name to find the
-									//			base from which to load the module at 'path'
+								this.loader = new function() {
 									var base = (function() {
 										var tokens = module.split("/");
 										if (tokens[tokens.length-1].length == 0) return module;
 										return tokens.slice(0,tokens.length-1).join("/") + "/";
 									})();
-									return inonit.loader.module(
-										base + self.top + path,
-										context
-									);
+									this.module = function(path,context) {
+										//	TODO	probable bug here; probably works when module path ends in /, but for module path
+										//			that has a terminal file name, probably needs to strip that file name to find the
+										//			base from which to load the module at 'path'
+										return inonit.loader.module(
+											base + self.top + path,
+											context
+										);
+									};
+									this.file = function(path,context) {
+										return inonit.loader.file(
+											base + self.top + path,
+											context
+										);										
+									};
+									this.coffee = window.CoffeeScript;
 								}
 							};
 

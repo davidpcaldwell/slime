@@ -146,8 +146,11 @@
 				for (var i=0; i<arguments.callee.preprocessors.length; i++) {
 					code = arguments.callee.preprocessors[i](code);
 				}
-				//	Add sourceURL for JavaScript debuggers
-				code = code + "//@ sourceURL=" + path;
+				//	TODO	probably should reorganize so that sourceURL can be added for CoffeeScript after compilation
+				if (!/\.coffee$/.test(path)) {
+					//	Add sourceURL for JavaScript debuggers
+					code = code + "//@ sourceURL=" + path;
+				}
 				return code;
 			}
 			this.getCode.preprocessors = [];
@@ -177,7 +180,7 @@
 
 		var loader = new platform.Loader({
 			getCode: function(path) {
-				return { code: fetcher.getCode(path) };
+				return { name: path, code: fetcher.getCode(path) };
 			}
 		});
 
@@ -192,7 +195,7 @@
 							}
 						} else {
 							//	TODO	assumes trailing slash when loading module
-							return { code: fetcher.getCode(code.base+path) };
+							return { name: path, code: fetcher.getCode(code.base+path) };
 						}
 					}
 				}
