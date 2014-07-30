@@ -6,7 +6,11 @@ var parameters = jsh.script.getopts({
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
-var all = ["js/object/","js/object/Error.js","js/web/"].map(function(path) {
+var all = [
+	"loader/test/data/a/", "loader/test/data/b/", "loader/test/data/c/main.js",
+//	"loader/test/data/coffee/",
+	"js/object/","js/object/Error.js","js/web/"
+].map(function(path) {
 	return { path: path };
 });
 
