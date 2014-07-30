@@ -2,6 +2,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
 		chrome: jsh.file.Pathname,
+		firefox: jsh.file.Pathname,
 		ie: jsh.file.Pathname,
 		coffeescript: jsh.file.Pathname
 	},
@@ -16,7 +17,9 @@ if (!jsh.httpd || !jsh.httpd.Tomcat) {
 var all = [
 	"loader/test/data/a/", "loader/test/data/b/", "loader/test/data/c/main.js",
 	"loader/test/data/coffee/",
-	"js/object/","js/object/Error.js","js/web/","js/document/","js/mime/"
+	"js/object/","js/object/Error.js",
+	"js/web/"
+	,"js/document/","js/mime/"
 ].map(function(path) {
 	return { path: path };
 });
@@ -101,6 +104,9 @@ var browserTest = function(p) {
 };
 
 var Browser = function(p) {
+	var lock = new jsh.java.Thread.Monitor();
+	var opened;
+	
 	var on = {
 		start: function(p) {
 			new lock.Waiter({
@@ -110,7 +116,9 @@ var Browser = function(p) {
 				then: function() {
 					opened = new function() {
 						this.close = function() {
+							jsh.shell.echo("Killing browser process " + p + " ...");
 							p.kill();
+							jsh.shell.echo("Killed.");
 						}
 					}										
 				}
@@ -118,9 +126,19 @@ var Browser = function(p) {
 		}
 	};
 	
+	this.filter = (p.exclude) ? 
+		function(module) {
+			if (p.exclude(module)) {
+				return false;
+			}
+			return true;
+		}
+		: function(module) {
+			return true;
+		}
+	;
+	
 	this.browse = function(uri) {
-		var lock = new jsh.java.Thread.Monitor();
-		var opened;
 		jsh.shell.echo("Starting browser thread...");
 		jsh.java.Thread.start({
 			call: function() {
@@ -140,11 +158,52 @@ var Browser = function(p) {
 	
 	this.browseTestPage = browseTestPage;
 	this.browserTest = browserTest;
+};
+
+var ie;
+if (parameters.options.ie) {
+	ie = new Browser({
+		open: function(on) {
+			return function(uri) {
+				jsh.shell.echo("Opening IE ...");
+				jsh.shell.echo("Command: " + parameters.options.ie.file);
+				jsh.shell.echo("Arguments: " + uri);
+				jsh.shell.run({
+					command: parameters.options.ie.file,
+					arguments: [
+						uri
+					],
+					on: on
+				});
+			};
+		}
+	});
+}
+
+var firefox;
+if (parameters.options.firefox) {
+	firefox = new Browser({
+		open: function(on) {
+			return function(uri) {
+				jsh.shell.run({
+					command: parameters.options.firefox.file,
+					arguments: [
+						uri
+					],
+					on: on
+				});
+			};			
+		}
+	})
 }
 
 var chrome;
 if (parameters.options.chrome) {
 	chrome = new function() {
+		this.filter = function(module) {
+			return true;
+		}
+		
 		this.browse = function(uri) {
 			var lock = new jsh.java.Thread.Monitor();
 			var opened;
@@ -192,45 +251,8 @@ if (parameters.options.chrome) {
 		this.browseTestPage = browseTestPage;
 		this.browserTest = browserTest;
 	}
-}
-var ie;
-if (parameters.options.ie) {
-	ie = new Browser({
-		open: function(on) {
-			return function(uri) {
-				jsh.shell.echo("Opening IE ...");
-				jsh.shell.echo("Command: " + parameters.options.ie.file);
-				jsh.shell.echo("Arguments: " + uri);
-				jsh.shell.run({
-					command: parameters.options.ie.file,
-					arguments: [
-						uri
-					],
-					on: on
-				});
-			};
-		}
-	})
-}
+};
 
-//var browserTest = function(p) {
-//	var tomcat = startServer(p);
-//	var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
-//	if (!p.success) {
-//		tomcat.run();
-//	} else {
-//		if (result === false) {
-//			throw new Error("Browser tests failed." + ((p.message) ? (" " + p.message) : ""));
-//		} else if (result === true) {
-//			jsh.shell.echo("Browser tests succeeded." + ((p.message) ? (" " + p.message) : ""));
-//		} else if (result === null) {
-//			throw new Error("Browser tests errored." + ((p.message) ? (" " + p.message) : ""));			
-//		} else {
-//			throw new Error("Error launching browser tests: " + result);
-//		}
-//	}
-//}
-		
 var getBrowserTestRequest = function(modules) {
 	jsh.shell.echo("Testing modules ...");
 	modules.forEach(function(item) {
@@ -259,16 +281,17 @@ var getBrowserTestRequest = function(modules) {
 };
 
 if (modules) {
-	var request = getBrowserTestRequest(modules);
-	if (!parameters.options.interactive) {
-		request.parameters.push({ name: "callback", value: "server" });					
-	}
-	jsh.shell.echo("fullurl = " + request.build());
 	var browsers = [];
 	if (chrome) browsers.push(chrome);
 	if (ie) browsers.push(ie);
+	if (firefox) browsers.push(firefox);
 	try {
 		browsers.forEach(function(browser) {
+			var request = getBrowserTestRequest(modules.filter(browser.filter));
+			if (!parameters.options.interactive) {
+				request.parameters.push({ name: "callback", value: "server" });					
+			}
+			jsh.shell.echo("fullurl = " + request.build());
 			browser.browserTest(jsh.js.Object.set({}, {
 				resources: (function() {
 					var rv = new jsh.httpd.Resources();

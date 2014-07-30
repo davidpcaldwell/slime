@@ -394,9 +394,15 @@ END LICENSE
 								})();
 							} else {
 								var doc = document.implementation.createHTMLDocument("");
+								var before = new XMLSerializer().serializeToString(doc);
 								doc.open();
 								doc.write(unparsed);
 								doc.close();
+								var after = new XMLSerializer().serializeToString(doc);
+								if (before == after) {
+									//	Added this check for Firefox, for which document.write was not doing the trick
+									doc.documentElement.innerHTML = unparsed;
+								}
 								var root = doc;
 //								var root = doc.documentElement;
 							}
