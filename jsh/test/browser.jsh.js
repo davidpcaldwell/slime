@@ -1,7 +1,8 @@
 var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
-		chrome: jsh.file.Pathname
+		chrome: jsh.file.Pathname,
+		coffeescript: jsh.file.Pathname
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -177,7 +178,7 @@ if (modules) {
 	}
 	jsh.shell.echo("fullurl = " + request.build());
 	try {
-		browserTest({
+		browserTest(jsh.js.Object.set({}, {
 			resources: (function() {
 				var rv = new jsh.httpd.Resources();
 				rv.map("", jsh.script.file.getRelativePath("../../"));
@@ -186,7 +187,7 @@ if (modules) {
 			servlet: "jsh/test/browser.modules.js",
 			url: request.build(),
 			success: (parameters.options.interactive) ? null : slimepath + "loader/browser/test/success"
-		});
+		}, (parameters.options.coffeescript) ? { parameters: { coffeescript: parameters.options.coffeescript } } : {}));
 	} catch (e) {
 		if (e.rhinoException) {
 			e.rhinoException.printStackTrace();

@@ -159,7 +159,7 @@
 					return fetcher.getCode(bootstrap.getRelativePath(path));
 				},
 				getCoffeeScript: function() {
-					return null;
+					return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 				}
 			};
 			return eval(fetcher.getCode(bootstrap.getRelativePath("literal.js")));

@@ -29,7 +29,7 @@
 			},
 			getCoffeeScript: function(path) {
 				var _code = $javahost.getCoffeeScript();
-				if (_code) return String(_code);
+				if (_code) return { code: String(_code) };
 				return null;
 			}
 		}

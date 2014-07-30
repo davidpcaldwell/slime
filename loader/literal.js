@@ -94,15 +94,19 @@
 		};
 		
 		var $coffee = (function() {
-			var coffeeScriptCode = $slime.getCoffeeScript();
-			if (!coffeeScriptCode) return null;
-			var target = {};
-			run({
-				code: String(coffeeScriptCode),
-				target: target,
-				scope: {}
-			});
-			return target.CoffeeScript;
+			var coffeeScript = $slime.getCoffeeScript();
+			if (!coffeeScript) return null;
+			if (coffeeScript.code) {
+				var target = {};
+				run({
+					code: String(coffeeScript.code),
+					target: target,
+					scope: {}
+				});
+				return target.CoffeeScript;
+			} else if (coffeeScript.object) {
+				return coffeeScript.object;
+			}
 		})();
 
 		(function() {

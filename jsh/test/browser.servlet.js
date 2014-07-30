@@ -26,6 +26,25 @@ var delegate = (function() {
 $exports.handle = function(request) {
 	//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
 	if (httpd.$reload) delete httpd.$reload;
+	if (request.path == "coffee-script.js") {
+		if ($parameters.coffeescript) {
+			return {
+				status: { code: 200 },
+				body: {
+					type: "text/javascript",
+					string: $parameters.coffeescript.file.read(String)
+				}
+			}
+		} else {
+			return {
+				status: { code: 404 },
+				body: {
+					type: "text/plain",
+					string: "No $parameters.coffeescript"
+				}
+			}
+		}
+	}
 	if (request.path == $parameters.url) {
 		if (request.method == "POST") {
 			debugger;
