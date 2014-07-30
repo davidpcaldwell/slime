@@ -147,10 +147,6 @@
 					code = arguments.callee.preprocessors[i](code);
 				}
 				//	TODO	probably should reorganize so that sourceURL can be added for CoffeeScript after compilation
-				if (!/\.coffee$/.test(path)) {
-					//	Add sourceURL for JavaScript debuggers
-					code = code + "//@ sourceURL=" + path;
-				}
 				return code;
 			}
 			this.getCode.preprocessors = [];
@@ -167,6 +163,14 @@
 			};
 			return eval(fetcher.getCode(bootstrap.getRelativePath("literal.js")));
 		})();
+		platform.run.spi.preprocess(function(underlying) {
+			return function(script) {
+				if (!/\.coffee$/.test(script.path)) {
+					//	Add sourceURL for JavaScript debuggers
+					script.code = script.code + "//# sourceURL=" + script.path;
+				}
+			}
+		});
 		platform.$api.deprecate.warning = function(access) {
 			debugger;
 		}
@@ -180,7 +184,7 @@
 
 		var loader = new platform.Loader({
 			getCode: function(path) {
-				return { name: path, code: fetcher.getCode(path) };
+				return { name: path, path: path, code: fetcher.getCode(path) };
 			}
 		});
 
