@@ -512,7 +512,9 @@ END LICENSE
 						},
 						[ "-absolute", anAbsolute, "-relative", "hello" ]
 					);
-					test( pathsOptions.options.absolute.toString().match(/([A-Z]\:)?(.*)/)[2] == anAbsolute );
+					//	TODO	the below regular expression is horrifying; the first capture is for Windows \\SERVER\SHARE and the
+					//			second is for Windows drive letters
+					test( pathsOptions.options.absolute.toString().match(/(?:^\\\\[a-zA-Z0-9]+\\[A-Za-z0-9]+)?(?:[A-Z]\:)?(.*)/)[1] == anAbsolute );
 					test( pathsOptions.options.relative.toString() == context.FILE.workingDirectory.toString() + "hello" );
 
 				</script>
