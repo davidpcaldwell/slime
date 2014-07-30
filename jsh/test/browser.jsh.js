@@ -10,7 +10,7 @@ var parameters = jsh.script.getopts({
 var all = [
 	"loader/test/data/a/", "loader/test/data/b/", "loader/test/data/c/main.js",
 	"loader/test/data/coffee/",
-	"js/object/","js/object/Error.js","js/web/"
+	"js/object/","js/object/Error.js","js/web/","js/document/","js/mime/"
 ].map(function(path) {
 	return { path: path };
 });
