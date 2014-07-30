@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 package inonit.script.jsh;
 
 import java.io.*;
@@ -22,7 +34,7 @@ public abstract class Invocation {
 		static Script create(File file) {
 			return create(Code.Source.File.create(file), file.toURI());
 		}
-		
+
 		static Script create(Code.Source.File delegate) {
 			return create(delegate, null);
 		}
@@ -43,7 +55,7 @@ public abstract class Invocation {
 			super(message, cause);
 		}
 	}
-	
+
 	public static Invocation jsh(final File script, final String[] arguments) {
 		return new Invocation() {
 			@Override public String toString() {
@@ -53,7 +65,7 @@ public abstract class Invocation {
 				}
 				return rv;
 			}
-			
+
 			@Override public Invocation.Script getScript() {
 				return Invocation.Script.create(script);
 			}
@@ -63,7 +75,7 @@ public abstract class Invocation {
 			}
 		};
 	}
-	
+
 	public static Invocation packaged(final String[] arguments) {
 		return new Invocation() {
 			public Script getScript() {
@@ -139,5 +151,5 @@ public abstract class Invocation {
 			};
 		}
 	}
-	
+
 }

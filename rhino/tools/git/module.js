@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var git = function(p) {
 	debugger;
 	return jsh.shell.run(
@@ -15,11 +27,11 @@ var RemoteRepository = function(o) {
 	this.toString = function() {
 		return "git remote: " + o.remote;
 	}
-	
+
 	var environment = (o && o.environment) ? o.environment : {};
-	
+
 	this.reference = o.remote;
-	
+
 	this.clone = function(p) {
 		if (!p.to) {
 			throw new Error("Required: 'to' property indicating destination.");
@@ -34,17 +46,17 @@ var RemoteRepository = function(o) {
 
 var LocalRepository = function(o) {
 	this.base = o.local;
-	
+
 	this.toString = function() {
 		return "git local: " + o.local;
 	};
-	
+
 	["getRelativePath","getFile","getSubdirectory"].forEach(function(method) {
 		this[method] = function() {
 			return o.local[method].apply(o.local,arguments);
 		}
 	},this);
-	
+
 	var execute = function(p) {
 		var environment = (o && o.environment) ? o.environment : {};
 		return jsh.shell.run(jsh.js.Object.set({}, p, {
@@ -54,7 +66,7 @@ var LocalRepository = function(o) {
 			directory: o.local
 		}));
 	}
-	
+
 	this.add = function(p) {
 		execute({
 			command: "add",
@@ -67,10 +79,10 @@ var LocalRepository = function(o) {
 					rv.push.apply(rv,p.paths);
 				}
 				return rv;
-			})()			
+			})()
 		});
 	};
-	
+
 	this.commit = function(p) {
 		execute({
 			command: "commit",
@@ -86,10 +98,10 @@ var LocalRepository = function(o) {
 					rv.push("-a");
 				}
 				return rv;
-			})()			
-		});		
+			})()
+		});
 	};
-	
+
 	this.merge = function(p) {
 		var args = [];
 		args.push(p.name);
@@ -98,7 +110,7 @@ var LocalRepository = function(o) {
 			arguments: args
 		}, (p.stdio) ? { stdio: p.stdio } : {}));
 	}
-	
+
 	this.log = function(p) {
 		return execute({
 			command: "log",
@@ -130,7 +142,7 @@ var LocalRepository = function(o) {
 						author: {
 							name: tokens[4]
 						},
-						committer: { 
+						committer: {
 							name: tokens[1],
 							date: new jsh.time.When({ unix: Number(tokens[3])*1000 })
 						},
@@ -142,7 +154,7 @@ var LocalRepository = function(o) {
 			}
 		});
 	};
-	
+
 	this.show = function(p) {
 		return execute({
 			command: "show",
@@ -160,7 +172,7 @@ var LocalRepository = function(o) {
 			}
 		});
 	};
-	
+
 	this.status = function(p) {
 		//	TODO	dependency on jsh
 		return execute({
@@ -182,7 +194,7 @@ var LocalRepository = function(o) {
 			}
 		});
 	};
-	
+
 	this.fetch = function(p) {
 		var args = [];
 		if (p && p.all) {
@@ -196,7 +208,7 @@ var LocalRepository = function(o) {
 			}
 		});
 	};
-	
+
 	this.checkout = function(p) {
 		var args = [];
 		args.push(p.branch);
@@ -205,7 +217,7 @@ var LocalRepository = function(o) {
 			arguments: args
 		}, (p.stdio) ? { stdio: p.stdio } : {}));
 	};
-	
+
 	this.branch = function(p) {
 		var args = [];
 		if (p && p.force) {
@@ -242,7 +254,7 @@ var LocalRepository = function(o) {
 			}
 		});
 	};
-	
+
 	this.push = function(p) {
 		var args = [];
 		if (p && p.repository) args.push(p.repository);

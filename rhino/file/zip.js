@@ -12,7 +12,7 @@
 
 $exports.zip = function(p) {
 	var from;
-	
+
 	var fromDirectory = function(directory) {
 		return directory.list({ recursive: true, type: directory.list.ENTRY }).map( function(item) {
 			if (item.node.directory) return { directory: item.path.substring(0,item.path.length-1).replace(/\\/g, "/") };

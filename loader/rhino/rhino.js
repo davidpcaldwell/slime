@@ -1,10 +1,22 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME loader for rhino.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 (function() {
 	var $javahost = new function() {
 		this.setReadOnly = function(object,name,value) {
 			if (!arguments.callee.objects) {
 				arguments.callee.objects = new Packages.inonit.script.rhino.Objects();
 			}
-			arguments.callee.objects.setReadOnly(object,name,value);							
+			arguments.callee.objects.setReadOnly(object,name,value);
 		};
 
 		this.MetaObject = function(p) {
@@ -17,7 +29,7 @@
 		this.getLoaderCode = function(path) {
 			return $loader.getLoaderCode(path);
 		}
-		
+
 		this.getCoffeeScript = function() {
 			return $loader.getCoffeeScript();
 		}
@@ -42,7 +54,7 @@
 //						e.rhinoException.printStackTrace();
 //					}
 //				} else if (e.javaException) {
-//					e.javaException.printStackTrace();					
+//					e.javaException.printStackTrace();
 //				}
 //				throw e;
 //			}
@@ -54,7 +66,7 @@
 	};
 
 	var rv = $rhino.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
-	
+
 	rv.java = new function() {
 		this.isJavaObjectArray = function(object) {
 			//	TODO	would this work with Nashorn?
@@ -73,10 +85,10 @@
 			return Packages.java.lang.reflect.Array.newInstance(JavaClass,length);
 		}
 	};
-	
+
 	rv.getDebugger = function() {
 		return $rhino.getDebugger();
 	};
-	
+
 	return rv;
 })()

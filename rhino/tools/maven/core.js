@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 $exports.mvn = function(m) {
 	var mvn = $context.mvn;
 	var properties = (m.properties) ? (function() {
@@ -49,13 +61,13 @@ var Pom = function(file) {
 	var xml = new jsh.document.Document({
 		stream: file.read(jsh.io.Streams.binary)
 	});
-	
+
 	var root = xml.document.getElement();
 
 	if (root.element.type.name != "project") {
 		throw new TypeError();
 	}
-	
+
 	var getElementContent = function(parent,name) {
 		var e = parent.child( jsh.document.filter({ elements: name }) );
 		if (!e) throw new Error("Element " + parent + " has no child with name " + name);
@@ -65,33 +77,33 @@ var Pom = function(file) {
 			throw new TypeError("Unknown content: " + item);
 		}).join("");
 	};
-	
+
 	var setElementContent = function(parent,name,value) {
 		var e = parent.child( jsh.document.filter({ elements: name }) );
 		e.children = [new jsh.js.document.Text({ text: value })];
 	};
-	
+
 	this.getGroup = function() {
 		if (!root.child(jsh.document.filter({ elements: "groupId" }))) {
 			return parent.group;
 		}
 		return getElementContent(root,"groupId");
 	}
-	
+
 	this.getArtifact = function() {
 		return getElementContent(root,"artifactId");
 	}
-	
+
 	this.getVersion = function() {
 		var e = root.child( jsh.document.filter({ elements: "version" }) );
 		if (!e) return null;
 		return getElementContent(root,"version");
 	}
-	
+
 	this.setVersion = function(version) {
 		setElementContent(root,"version",version);
 	}
-	
+
 	this.getDependencies = function() {
 		var filter = jsh.document.filter({ elements: "dependencies" });
 		var filter2 = jsh.document.filter({ elements: "dependency" });
@@ -134,7 +146,7 @@ var Pom = function(file) {
 //		if (management) return management.child( filter );
 //		return null;
 	};
-	
+
 	this.getModules = function() {
 		var modules = root.child(jsh.document.filter({ elements: "modules" }));
 		if (!modules) return null;
@@ -144,7 +156,7 @@ var Pom = function(file) {
 			return element.children[0].getString();
 		});
 	}
-	
+
 //	if (this.getDependencies()) {
 //		this.getDependencies().children.forEach(function(item) {
 //			if (item.element && item.element.type.name == "dependency") {
@@ -166,15 +178,15 @@ var Pom = function(file) {
 //			}
 //		});
 //	}
-	
+
 	var parent = root.child( jsh.document.filter({ elements: "parent" }) );
-	
+
 	if (parent) {
 		this.parent = new function() {
 			this.toString = function() {
 				return parent.toString();
 			}
-			
+
 			var getElementContent = function(name) {
 				var e = parent.child( jsh.document.filter({ elements: name }) );
 				return e.children.map(function(item) {
@@ -183,11 +195,11 @@ var Pom = function(file) {
 					throw new TypeError("Unknown content: " + item);
 				}).join("");
 			}
-			
+
 			this.group = getElementContent("groupId");
 			this.artifact = getElementContent("artifactId");
 			this.version = getElementContent("version");
-			
+
 			this.setVersion = function(version) {
 				var e = parent.child( jsh.document.filter({ elements: "version" }) );
 				e.children = [new jsh.js.document.Text({ text: version })];
@@ -195,11 +207,11 @@ var Pom = function(file) {
 			}
 		}
 	}
-	
+
 	this.toString = function() {
 		return xml.toString();
 	}
-	
+
 	this.write = function() {
 		file.pathname.write(xml.toString(), { append: false });
 	}
@@ -210,9 +222,9 @@ $exports.Project = function(p) {
 	this.toString = function() {
 		return "Maven project: " + p.base;
 	}
-	
+
 	this.base = p.base;
-	
+
 	this.getModule = function(path) {
 		var base = p.base.getSubdirectory(path);
 		if (base && base.getFile("pom.xml")) {
@@ -222,7 +234,7 @@ $exports.Project = function(p) {
 		}
 		return null;
 	}
-	
+
 	this.getModules = function() {
 		if (this.pom.getModules()) {
 			return this.pom.getModules().map(function(module) {
@@ -232,24 +244,24 @@ $exports.Project = function(p) {
 			return null;
 		}
 	}
-	
+
 	this.mvn = function(m) {
 		$exports.mvn(jsh.js.Object.set({}, {
 			directory: p.base
 		},m));
 	};
-	
+
 	var Dependencies = function(p) {
 		var list;
-		
+
 		if (p.list) {
 			list = p.list.slice();
 		}
-		
+
 		this.toString = function() {
 			return jsh.js.toLiteral(list);
 		}
-		
+
 		this.getVersion = function(p) {
 			var versions = list.filter(function(item) {
 				return item.group == p.group && item.artifact == p.artifact;
@@ -261,7 +273,7 @@ $exports.Project = function(p) {
 			return versions[0];
 		}
 	}
-	
+
 	this.dependencies = new function() {
 		this.resolve = jsh.js.constant(function() {
 			return $exports.mvn({
@@ -308,13 +320,13 @@ $exports.Project = function(p) {
 				}
 			});
 		});
-		
+
 		this.on = function(p) {
 			return jsh.js.Array.choose(this.resolve(), function(dependency) {
 				return dependency.group == p.group && dependency.artifact == p.artifact;
 			});
 		};
-		
+
 		this.get = function(p) {
 			return self.pom.getDependencies().one(function() {
 				return this.getGroup() == p.group && this.getArtifact() == p.artifact;
@@ -323,7 +335,7 @@ $exports.Project = function(p) {
 //				return dependency.group == p.group && dependency.artifact == p.artifact;
 //			});
 		};
-		
+
 		this.set = function(p) {
 			if (!self.pom.getDependencies()) throw new Error("No dependencies: " + self.base);
 			var target = self.pom.getDependencies().one(function() {
@@ -337,14 +349,14 @@ $exports.Project = function(p) {
 			}
 		}
 	};
-	
+
 	var self = this;
-	
+
 	if (!p.base.getFile("pom.xml")) {
 		throw new Error("POM not found at " + p.base.getRelativePath("pom.xml"));
 	}
 	this.pom = new Pom(p.base.getFile("pom.xml"));
-	
+
 	this.getVersion = function() {
 		if (this.pom.getVersion() !== null) {
 			return this.pom.getVersion();

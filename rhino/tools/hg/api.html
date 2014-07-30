@@ -1,3 +1,16 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME JDK interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Mercurial</title>
@@ -56,7 +69,7 @@
 
 					this.install = jsh.shell.PATH.getCommand("hg");
 				};
-				
+
 				return [
 					new Context()
 				];
@@ -100,7 +113,7 @@
 								}
 								return rv.directory.getFile(p.path).read(String);
 							};
-							
+
 							this.clone = function(p) {
 								var cloned = rv.clone(p);
 								module.unit.Repository.call(cloned);
@@ -283,7 +296,7 @@
 					<span class="type">object</span>
 					<span>
 						Each property of this object represents a path returned by the <code>hg paths</code> command. The
-						name of the property is the name of the path, and the value is the 
+						name of the property is the name of the path, and the value is the
 						<a href="#types.Repository">Repository</a> represented by the path.
 					</span>
 					<script type="application/x.jsapi#tests">
@@ -307,7 +320,7 @@
 								<span class="type">string</span>
 								<span>
 									(optional)
-									The repository, or URL of a remote repository, to which to compare this one. If unspecified, 
+									The repository, or URL of a remote repository, to which to compare this one. If unspecified,
 									the Mercurial default will be used.
 								</span>
 							</li>

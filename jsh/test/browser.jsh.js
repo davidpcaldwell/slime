@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
@@ -85,7 +97,7 @@ var browserTest = function(p) {
 			}
 		};
 	};
-	
+
 	var tomcat = startServer(p);
 	var result = this.browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
 	if (!p.success) {
@@ -96,7 +108,7 @@ var browserTest = function(p) {
 		} else if (result === true) {
 			jsh.shell.echo("Browser tests succeeded." + ((p.message) ? (" " + p.message) : ""));
 		} else if (result === null) {
-			throw new Error("Browser tests errored." + ((p.message) ? (" " + p.message) : ""));			
+			throw new Error("Browser tests errored." + ((p.message) ? (" " + p.message) : ""));
 		} else {
 			throw new Error("Error launching browser tests: " + result);
 		}
@@ -106,7 +118,7 @@ var browserTest = function(p) {
 var Browser = function(p) {
 	var lock = new jsh.java.Thread.Monitor();
 	var opened;
-	
+
 	var on = {
 		start: function(p) {
 			new lock.Waiter({
@@ -120,13 +132,13 @@ var Browser = function(p) {
 							p.kill();
 							jsh.shell.echo("Killed.");
 						}
-					}										
+					}
 				}
 			})();
 		}
 	};
-	
-	this.filter = (p.exclude) ? 
+
+	this.filter = (p.exclude) ?
 		function(module) {
 			if (p.exclude(module)) {
 				return false;
@@ -137,7 +149,7 @@ var Browser = function(p) {
 			return true;
 		}
 	;
-	
+
 	this.browse = function(uri) {
 		jsh.shell.echo("Starting browser thread...");
 		jsh.java.Thread.start({
@@ -153,9 +165,9 @@ var Browser = function(p) {
 				return opened;
 			}
 		});
-		return returner();		
+		return returner();
 	};
-	
+
 	this.browseTestPage = browseTestPage;
 	this.browserTest = browserTest;
 };
@@ -192,7 +204,7 @@ if (parameters.options.firefox) {
 					],
 					on: on
 				});
-			};			
+			};
 		}
 	})
 }
@@ -203,7 +215,7 @@ if (parameters.options.chrome) {
 		this.filter = function(module) {
 			return true;
 		}
-		
+
 		this.browse = function(uri) {
 			var lock = new jsh.java.Thread.Monitor();
 			var opened;
@@ -229,7 +241,7 @@ if (parameters.options.chrome) {
 											this.close = function() {
 												p.kill();
 											}
-										}										
+										}
 									}
 								})();
 							}
@@ -247,7 +259,7 @@ if (parameters.options.chrome) {
 			});
 			return returner();
 		};
-	
+
 		this.browseTestPage = browseTestPage;
 		this.browserTest = browserTest;
 	}
@@ -275,7 +287,7 @@ var getBrowserTestRequest = function(modules) {
 
 			return this.url + "?" + this.parameters.map(function(item) {
 				return urlencode(item.name) + "=" + urlencode(item.value);
-			}).join("&");				
+			}).join("&");
 		}
 	};
 };
@@ -289,7 +301,7 @@ if (modules) {
 		browsers.forEach(function(browser) {
 			var request = getBrowserTestRequest(modules.filter(browser.filter));
 			if (!parameters.options.interactive) {
-				request.parameters.push({ name: "callback", value: "server" });					
+				request.parameters.push({ name: "callback", value: "server" });
 			}
 			jsh.shell.echo("fullurl = " + request.build());
 			browser.browserTest(jsh.js.Object.set({}, {
@@ -301,14 +313,14 @@ if (modules) {
 				servlet: "jsh/test/browser.modules.js",
 				url: (browser != ie) ? request.build() : getBrowserTestRequest([]).build(),
 				success: (parameters.options.interactive) ? null : slimepath + "loader/browser/test/success"
-			}, (parameters.options.coffeescript) ? { parameters: { coffeescript: parameters.options.coffeescript } } : {}));			
+			}, (parameters.options.coffeescript) ? { parameters: { coffeescript: parameters.options.coffeescript } } : {}));
 		})
 	} catch (e) {
 		if (e.rhinoException) {
 			e.rhinoException.printStackTrace();
 		}
 		if (e.javaException) {
-			e.javaException.printStackTrace();			
+			e.javaException.printStackTrace();
 		}
 		throw e;
 	}

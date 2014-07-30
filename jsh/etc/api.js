@@ -1,14 +1,26 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 (function() {
 	var modules = new function() {
 		var list = [];
-		
+
 		this.add = function(o) {
 			list.push(o);
 		};
-		
+
 		this.array = list;
 	};
-	
+
 	var Module = function(path,configuration) {
 		if (configuration.api) {
 			this.api = { path: path };
@@ -46,7 +58,7 @@
 	modules.add(new Module("rhino/http/client/", { api: true, module: true }));
 	modules.add(new Module("rhino/tools/", { api: false, module: true }));
 	//	Servlet module has Java classes but we do not compile them here
-	//	servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with servlet API is supplied by invoker	
+	//	servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with servlet API is supplied by invoker
 	modules.add(new Module("rhino/http/servlet/", { api: true, module: true }));
 	modules.add({ api: { path: "rhino/http/servlet/plugin.jsh.api.html" } });
 	/*modules.add("rhino/mail/", "jsh.mail");*/

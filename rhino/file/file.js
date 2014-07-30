@@ -362,7 +362,7 @@ var Pathname = function(parameters) {
 			}
 		}
 	}
-	
+
 	var Link = function(pathname,peer) {
 		Node.call(this,pathname,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname,peer);
 

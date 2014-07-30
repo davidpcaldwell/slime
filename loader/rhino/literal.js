@@ -35,7 +35,7 @@
 		}
 		return eval(String($javahost.getLoaderCode("literal.js")));
 	})();
-	
+
 	loader.run.spi.preprocess(function(underlying) {
 		return function(script) {
 			if (script.name && script._in) {
@@ -45,7 +45,7 @@
 				if (!script._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
 				script.name = script._source.toString() + ":" + script.path;
 			} else if (script.name && !script._in) {
-				throw new Error("script._in is null for name = " + script.name);				
+				throw new Error("script._in is null for name = " + script.name);
 			} else {
 				throw new Error("Unimplemented: script = " + script);
 			}
@@ -53,10 +53,10 @@
 			delete script._in;
 		}
 	})
-	
+
 	loader.run.spi.execute(function(underlying) {
 		return function(script) {
-			return $javahost.script(script.name,script.code,script.scope,script.target);			
+			return $javahost.script(script.name,script.code,script.scope,script.target);
 		}
 	});
 
@@ -69,7 +69,7 @@
 			this._stream = function(path) {
 				return _source.getResourceAsStream(path);
 			};
-			this._resource = loader.$api.deprecate(this._stream);			
+			this._resource = loader.$api.deprecate(this._stream);
 		}
 
 		if (!p._source) throw new TypeError("_source must be defined and not be null.");
@@ -118,9 +118,9 @@
 			p._code = Code.unpacked(p._unpacked);
 		} else if (p._packed) {
 			p._code = Code.slime(p._packed);
-		}		
+		}
 	});
-	
+
 	loader.classpath = new function() {
 		this.toString = function() {
 			return String($javahost.getClasspath());
@@ -134,6 +134,6 @@
 			return $javahost.getClasspath().getClass(name);
 		}
 	}
-		
+
 	return loader;
 })()

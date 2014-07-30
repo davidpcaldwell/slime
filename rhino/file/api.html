@@ -143,11 +143,11 @@ END LICENSE
 					var pathname = base.getRelativePath(name);
 					//	Why the below is qualified with 'this' is a little mysterious
 					if (true) {
-						//	NASHORN	Nashorn requires the use of scope to access context, even though when scope.createFile is 
+						//	NASHORN	Nashorn requires the use of scope to access context, even though when scope.createFile is
 						//			invoked below, scope should == this. In Rhino it does, but in Nashorn it does not.
 						var out = pathname.write(scope.context.$Context.api.io.Streams.binary);
 					} else {
-						var out = pathname.write(this.context.$Context.api.io.Streams.binary);						
+						var out = pathname.write(this.context.$Context.api.io.Streams.binary);
 					}
 					if (length) {
 						for (var i=0; i<length; i++) {
@@ -1408,13 +1408,13 @@ END LICENSE
 					scenario( new function() {
 						var dir = filesystem.java.adapt(hostdir).directory;
 						var dirlist;
-						
+
 						this.name = "Softlink deletion.";
 						this.initialize = function() {
 							filelink.remove();
 							dirlist = dir.getSubdirectory("c").list();
 						}
-						this.execute = function(scope) {					
+						this.execute = function(scope) {
 							scope.test( linkdir.getRelativePath("to_target").file == null );
 							scope.test( dir.getRelativePath("target").file != null );
 							scope.test( linkdir.getRelativePath("to_c").directory != null );

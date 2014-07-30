@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
@@ -31,7 +43,7 @@ parameters.options.java.forEach(function(jre) {
 		environment: jsh.js.Object.set({}, jsh.shell.environment
 			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 		)
-	});	
+	});
 });
 
 if (parameters.options.chrome) {
@@ -46,5 +58,8 @@ if (parameters.options.chrome) {
 		environment: jsh.js.Object.set({}, jsh.shell.environment
 			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 		)
-	});		
+	});
 }
+
+jsh.shell.echo();
+jsh.shell.echo("Finished at " + new Date());

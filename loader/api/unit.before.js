@@ -136,7 +136,7 @@ $exports.Scenario = function(properties) {
 						this.success = function() {
 							return object.success;
 						};
-						
+
 						if (object.error) {
 							this.error = object.error;
 						}

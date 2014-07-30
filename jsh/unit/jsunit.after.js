@@ -38,7 +38,7 @@ $exports.console = new function() {
 			success: true
 		});
 	}
-	
+
 	var printError = function(e) {
 		$context.console.println(e);
 		if (e.message) {
@@ -69,7 +69,7 @@ $exports.console = new function() {
 			if (e.getCause()) printError(e.getCause());
 		}
 	}
-	
+
 	this.caught = function(p) {
 		$context.console.println("Caught something in .caught()");
 		if (p.initialize) {

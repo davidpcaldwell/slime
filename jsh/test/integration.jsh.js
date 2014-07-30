@@ -599,7 +599,7 @@ if (CATALINA_HOME) {
 				throw new Error("Status: " + result.status);
 			}
 		}
-	});	
+	});
 }
 
 if (COFFEESCRIPT) {

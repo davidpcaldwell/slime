@@ -32,7 +32,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		public abstract void service(HttpServletRequest request, HttpServletResponse response);
 		public abstract void destroy();
 	}
-	
+
 	static abstract class ScriptContainer {
 		abstract void initialize(Servlet servlet);
 		abstract HostObject getServletHostObject();
@@ -40,11 +40,11 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		abstract void addScript(String name, InputStream stream);
 		abstract void execute();
 	}
-	
+
 	protected final Script script() {
 		return script;
 	}
-	
+
 	private boolean hasClass(String name) {
 		try {
 			Class c = Servlet.class.getClassLoader().loadClass(name);
@@ -53,7 +53,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			return false;
 		}
 	}
-	
+
 	private ScriptContainer createScriptContainer() {
 		String engine = null;
 		boolean hasRhino = hasClass("org.mozilla.javascript.Context");
@@ -78,7 +78,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	@Override public final void init() {
 		ScriptContainer container = createScriptContainer();
 		container.initialize(this);
@@ -104,7 +104,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			this.servlet = servlet;
 			this.loader = new inonit.script.engine.Loader() {
 				private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
-				
+
 				@Override public String getCoffeeScript() throws IOException {
 					InputStream code = servlet.getServletContext().getResourceAsStream("/WEB-INF/lib/coffee-script.js");
 					if (code == null) return null;
@@ -124,7 +124,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		public Loader getLoader() {
 			return this.loader;
 		}
-		
+
 		public Servlet getServlet() {
 			return servlet;
 		}

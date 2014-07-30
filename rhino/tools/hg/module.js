@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var api = $context.api;
 
 var toNativePath = function(pathname) {
@@ -10,7 +22,7 @@ var toNativePath = function(pathname) {
 
 var shell = function(p) {
 	var invocation = {};
-	
+
 	var args = [];
 
 	if (p.config) {
@@ -22,13 +34,13 @@ var shell = function(p) {
 		args.push("-R", p.repository.reference);
 		if (p.repository.config) {
 			for (var x in p.repository.config) {
-				args.push("--config", x + "=" + p.repository.config[x]);				
+				args.push("--config", x + "=" + p.repository.config[x]);
 			}
 		}
 	}
 	args.push(p.command);
 	args.push.apply(args,p.arguments);
-	
+
 	if (p.directory) {
 		invocation.directory = p.directory;
 	}
@@ -47,10 +59,10 @@ var shell = function(p) {
 			return p.evaluate(myresult);
 		}
 	}
-	
+
 	invocation.command = $context.install;
 	invocation.arguments = args;
-	
+
 	return $context.api.shell.run(invocation);
 };
 
@@ -109,7 +121,7 @@ var parseLog = function(lines) {
 	});
 	return rv;
 };
-	
+
 var Repository = function() {
 	//	reference property defined by implementations
 	this.on = {};
@@ -151,7 +163,7 @@ var Repository = function() {
 			}
 		});
 	};
-	
+
 	this.identify = function(p) {
 		if (this.on.access) this.on.access.call(this);
 		//	TODO	hg help identify claims there is a way that this can include two parent identifiers, but cannot so far reproduce
@@ -186,19 +198,19 @@ var Repository = function() {
 var LocalRepository = function(dir) {
 	if (dir == null) throw new RangeError("Attempt to create Repository with null dir");
 	if (!dir.getSubdirectory(".hg")) throw new RangeError("No repository located at: " + dir);
-	
+
 	Repository.call(this);
-	
+
 	this.toString = function() {
 		return "hg repository: " + dir.pathname.toString();
 	}
-	
+
 	this.reference = toNativePath(dir.pathname);
 
 	this.__defineGetter__("directory", function() {
 		return dir;
 	});
-	
+
 	this.heads = function() {
 		return shell({
 			repository: this,
@@ -208,7 +220,7 @@ var LocalRepository = function(dir) {
 			}
 		});
 	};
-	
+
 	this.parents = function() {
 		return shell({
 			repository: this,
@@ -218,7 +230,7 @@ var LocalRepository = function(dir) {
 			}
 		});
 	}
-	
+
 	this.status = function(p) {
 		var subrepositories = (function(dir,p) {
 			if (p && p.subrepos === true) return true;
@@ -238,12 +250,12 @@ var LocalRepository = function(dir) {
 				var rv = {};
 				lines.forEach( function(line) {
 					rv[line.substring(2).replace(/\\/g, "/")] = line.substring(0,1);
-				});				
+				});
 				return rv;
 			}
 		});
 	};
-	
+
 	this.add = function(p) {
 		var args = [];
 		if (p.files) {
@@ -255,7 +267,7 @@ var LocalRepository = function(dir) {
 			arguments: args
 		});
 	}
-	
+
 	this.commit = function(p) {
 		if (typeof(p) == "undefined") throw new TypeError("Required: argument to commit.");
 		if (p === null) throw new TypeError("Required: non-null argument to commit.");
@@ -290,7 +302,7 @@ var LocalRepository = function(dir) {
 			arguments: args
 		});
 	};
-	
+
 	this.merge = function(p) {
 		var args = [];
 		if (p && p.revision) {
@@ -310,9 +322,9 @@ var LocalRepository = function(dir) {
 			evaluate: function(result) {
 				return parseLog(result.stdio.output.split("\n"))[0];
 			}
-		});		
+		});
 	};
-	
+
 	$context.api.js.lazy(this,"paths",function() {
 		return shell({
 			repository: this,
@@ -324,7 +336,7 @@ var LocalRepository = function(dir) {
 				lines.forEach( function(line) {
 					if (line != "") {
 						var parsed = parser.exec(line);
-						
+
 						var pathnameToRepository = function(pathname) {
 							if (pathname.directory && pathname.directory.getSubdirectory(".hg")) {
 								return new $exports.Repository({ local: pathname.directory });
@@ -332,7 +344,7 @@ var LocalRepository = function(dir) {
 								throw new TypeError("Does not appear to be a local repository location: " + pathname);
 							}
 						};
-						
+
 						if (
 							new RegExp("^http(s?)://").test(parsed[2])
 							|| new RegExp("^ssh://").test(parsed[2])
@@ -361,7 +373,7 @@ var LocalRepository = function(dir) {
 			}
 		});
 	});
-	
+
 	var inout = (function(target) {
 		return function(verb,m) {
 			var MyError = function(p) {
@@ -384,7 +396,7 @@ var LocalRepository = function(dir) {
 					lines: result.out.split("\n")
 				};
 			};
-			
+
 			var targetargs = (function() {
 				if (!m) return [];
 				var other;
@@ -392,9 +404,9 @@ var LocalRepository = function(dir) {
 				if (verb == "outgoing") other = m.destination;
 				return (other) ? [other.reference] : [];
 			})();
-			
+
 			var config = (m && m.config) ? m.config : {};
-			
+
 			if (m.revision) {
 				targetargs.push("-r", m.revision);
 			}
@@ -434,15 +446,15 @@ var LocalRepository = function(dir) {
 			});
 		};
 	})(this);
-	
+
 	this.outgoing = function(m) {
 		return inout("outgoing",m);
 	}
-	
+
 	this.incoming = function(m) {
 		return inout("incoming",m);
 	}
-	
+
 	this.log = function(p) {
 		var args = [];
 		if (p && p.revision) {
@@ -454,10 +466,10 @@ var LocalRepository = function(dir) {
 			arguments: args,
 			evaluate: function(result) {
 				return parseLog(result.stdio.output.split("\n"));
-			}			
+			}
 		});
 	};
-	
+
 	this.bookmarks = function(p) {
 		if (p && p.name) {
 			if (p.delete) {
@@ -539,7 +551,7 @@ var LocalRepository = function(dir) {
 			arguments: args
 		});
 	}
-	
+
 	this.push = function(p) {
 		var destination = (p && p.destination) ? p.destination : null;
 		//	TODO	should fall back to default and/or default-push to call on.access
@@ -563,7 +575,7 @@ var LocalRepository = function(dir) {
 			arguments: args
 		});
 	};
-		
+
 	this.archive = function(p) {
 		var args = [];
 		if (p.exclude) {
@@ -606,7 +618,7 @@ $exports.Repository = function(p) {
 	} else {
 		throw new TypeError();
 	}
-	
+
 	this.__defineGetter__("changesets", function() {
 		var rv = {};
 		exec(["parents"],dir,{
@@ -649,11 +661,11 @@ $exports.Repository = function(p) {
 	this.clone = function(todir) {
 		exec(["clone",toNativePath(dir.pathname),toNativePath(todir.pathname)],dir,new function() {
 			var output;
-			
+
 			this.callback = function(out,err) {
 				output = { out: out, err: err };
 			}
-			
+
 			this.parse = function(result) {
 				if (result.status != 0) {
 					throw new Error(output.err + " args=" + result.arguments.join(","));
@@ -662,7 +674,7 @@ $exports.Repository = function(p) {
 		});
 		return new $exports.Repository(todir);
 	};
-	
+
 	var Repository = arguments.callee;
 
 	var toRepository = function(p) {
@@ -676,7 +688,7 @@ $exports.Repository = function(p) {
 		}
 		throw new TypeError("Not a repository: " + p);
 	};
-	
+
 	var toRepositoryArgument = function(p) {
 		var r;
 		if (typeof(p) == "string") {
@@ -688,7 +700,7 @@ $exports.Repository = function(p) {
 			throw new TypeError(p);
 		}
 	}
-	
+
 	var inout = function(verb,destination,p) {
 		var args = [];
 		if (p && p.config) {
@@ -731,15 +743,15 @@ $exports.Repository = function(p) {
 			return parseLog(result.lines.slice(2));
 		}
 	};
-	
+
 	this.outgoing = function(destination,m) {
 		return inout("outgoing",destination,api.js.Object.set({},p,m));
 	}
-	
+
 	this.incoming = function(destination,m) {
 		return inout("incoming",destination,api.js.Object.set({},p,m));
 	}
-	
+
 	this.pull = function(from) {
 		var output;
 		var args = ["pull"];
@@ -770,17 +782,17 @@ $exports.Repository = function(p) {
 			}
 		}
 	}
-	
+
 	this.view = function() {
 		exec(["view"],dir);
-	}	
+	}
 };
 
 $exports.init = function(dir) {
 	shell({
 		command: "init",
 		directory: dir
-		
+
 	});
 	return new $exports.Repository(dir);
 }

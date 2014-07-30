@@ -17,7 +17,7 @@ var setExitStatus = function(status) {
 }
 
 var newStringArray = function(len) {
-	return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,len);		
+	return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,len);
 };
 
 if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
@@ -26,7 +26,7 @@ if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 		arguments.callee.value = status;
 	}
 	newStringArray = function(len) {
-		return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String.class,len);		
+		return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String.class,len);
 	}
 	//	TODO	Exact duplicate of both functions below in jsh/etc/unbuilt.rhino.js
 	var readFile = function(path) {
@@ -77,7 +77,7 @@ var Directory = function(path) {
 	var peer = new Packages.java.io.File(path);
 
 	this.path = String(peer.getCanonicalPath());
-	
+
 	this.getCommand = function(relative) {
 		var getWithSuffix = function(name,suffix) {
 			if (new Packages.java.io.File(peer,name + suffix).exists()) {
@@ -85,7 +85,7 @@ var Directory = function(path) {
 			}
 			return null;
 		}
-		
+
 		//	TODO	should use more complex logic than this but it works for the java and jjs cases
 		if (env.PATHEXT) {
 			if (getWithSuffix(relative,".exe")) {
@@ -178,12 +178,12 @@ var Command = function() {
 					}
 				);
 			};
-			
+
 			//	NASHORN	Under Rhino, these were implied
 			this.getSubprocessEnvironment = function() {
 				return null;
 			};
-			
+
 			this.getWorkingDirectory = function() {
 				return null;
 			};
@@ -291,7 +291,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		});
 
 		var tmpdir = new Directory(String(createTemporaryDirectory().getCanonicalPath()));
-		
+
 		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
 		if (rhino) {
 			debug("Copying rhino ...");
@@ -592,7 +592,7 @@ try {
 	}
 	debugger;
 	var jvmOptions = settings.combine("jvmOptions");
-	
+
 	var environmentAndProperties = function() {
 		[
 			"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
@@ -637,15 +637,15 @@ try {
 			}
 		}
 	}
-	
+
 	var shellClasspath = settings.get("shellClasspath");
 	if (!shellClasspath) {
 		console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
 		Packages.java.lang.System.exit(1);
 	}
-	
+
 	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
-	
+
 	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
 	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE == "nashorn") {
 		//	Nashorn
@@ -653,7 +653,7 @@ try {
 		if (JJS) {
 			command.add(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
 		} else {
-			command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));			
+			command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));
 		}
 		//	TODO	handle JSH_JAVA_DEBUGGER, probably by detecting open port and using that port for dt_socket and server=y
 		//	TODO	handle JSH_SCRIPT_DEBUGGER == "profiler"

@@ -129,11 +129,11 @@ var loadApiHtml = function(file) {
 
 $exports.tests = new function() {
 	var environment;
-	
+
 	this.environment = function(v) {
 		environment = v;
 	};
-	
+
 	var testGroups = [];
 
 	var moduleToItem = function(moduleDescriptor,unit) {
@@ -156,7 +156,7 @@ $exports.tests = new function() {
 					return this.html.getScenario(scope,unit);
 				}
 			}
-			
+
 			this.toString = function() {
 				return "moduleToItem: name=" + this.name + " page=" + page + " this.html = " + this.html;
 			}
@@ -270,7 +270,7 @@ $exports.tests = new function() {
 					var error = e;
 					topscope.scenario(new function() {
 						this.name = suite.name;
-						
+
 						this.execute = function(scope) {
 							scope.test({
 								success: null,
@@ -333,7 +333,7 @@ $exports.tests = new function() {
 (function() {
 	var jsdom = $context.jsdom;
 	var ns = "http://www.w3.org/1999/xhtml";
-	
+
 	var ApiHtml = function(p) {
 		//	TODO	disentangle all this recursion and 'this'-manipulation
 		var root = new jsh.document.Document({
@@ -413,7 +413,7 @@ $exports.tests = new function() {
 			return getElement(element,this);
 		}
 	};
-	
+
 	var getHtml = function(item) {
 		var file = item.file;
 		//	TODO	it would be nice to get the below from the document itself like we did with E4X
@@ -428,7 +428,7 @@ $exports.tests = new function() {
 			}
 			return rv;
 		})();
-		
+
 		var jsdom = new function() {
 			this.filter = function(p) {
 				if (p.name) return jsh.js.document.filter({ elements: p.name });
@@ -440,7 +440,7 @@ $exports.tests = new function() {
 				throw new Error("No match for jsdom.filter");
 			}
 		}
-		
+
 		var root = document.children.filter(jsdom.filter({ name: "html" }))[0];
 
 		var head = root.children.filter(jsdom.filter({ name: "head" }))[0];
@@ -557,7 +557,7 @@ $exports.tests = new function() {
 		}
 		return document;
 	};
-	
+
 	var document = function(p) {
 		var modules = p.modules;
 		var to = p.to;
@@ -621,5 +621,5 @@ $exports.tests = new function() {
 
 	$exports.documentation = function(p) {
 		document(p);
-	};	
+	};
 })();

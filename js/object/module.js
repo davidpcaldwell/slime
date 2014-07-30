@@ -285,7 +285,7 @@ $exports.Object = new function() {
 		}
 		return o;
 	}
-	
+
 	this.path = new function() {
 		var find = function(o,n,create) {
 			var target = o;
@@ -318,7 +318,7 @@ $exports.Object = new function() {
 			location.target[location.name] = v;
 		}
 	};
-	
+
 	this.expando = this.path;
 //	$api.deprecate(this,"expando");
 }
@@ -501,22 +501,22 @@ var ArrayMethods = new function() {
 			return rv;
 		};
 	})(this);
-	
+
 	this.one = function(filter) {
 		var select = (filter) ? ArrayMethods.select.call(this,filter) : this;
 		if (select.length > 1) throw new RangeError("Too many matches for filter " + filter + " in " + this);
 		if (select.length == 0) return null;
 		return select[0];
 	};
-	
+
 	this.fold = function(f,initial) {
 		var current = initial;
 		for (var i=0; i<this.length; i++) {
 			current = f.call(this[i],current);
 		}
-		return current;		
+		return current;
 	};
-	
+
 	this.each = function(f) {
 		var rv = create();
 		for (var i=0; i<this.length; i++) {
@@ -524,7 +524,7 @@ var ArrayMethods = new function() {
 		}
 		return rv;
 	};
-	
+
 	this.select = function(f) {
 		var rv = create();
 		for (var i=0; i<this.length; i++) {
@@ -532,7 +532,7 @@ var ArrayMethods = new function() {
 				rv.push(this[i]);
 			}
 		}
-		return rv;		
+		return rv;
 	};
 };
 
@@ -541,12 +541,12 @@ $exports.Array = function(array) {
 		//	called with new
 		array = array.slice();
 	}
-	
-	array.one = ArrayMethods.one;		
+
+	array.one = ArrayMethods.one;
 	array.each = ArrayMethods.each;
 	array.fold = ArrayMethods.fold;
 	array.select = ArrayMethods.select;
-	
+
 	return array;
 }
 for (var x in ArrayMethods) {
@@ -571,7 +571,7 @@ $exports.Array.categorize = $api.experimental(function(array,p) {
 	array.forEach( function(item) {
 		categorizer.categorize(item);
 	} );
-	return categorizer;	
+	return categorizer;
 });
 
 $exports.Error = $loader.file("Error.js").Error;

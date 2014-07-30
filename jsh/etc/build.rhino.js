@@ -223,7 +223,7 @@ var RHINO_LIBRARIES = (function() {
 			new File(RHINO_HOME,"js.jar")
 			//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
 		];
-	}	
+	}
 })();
 
 //	TODO	Consider adding XMLBeans back in
@@ -545,7 +545,7 @@ if (getSetting("jsh.build.coffeescript.path")) {
 	console("Copying CoffeeScript from " + getSetting("jsh.build.coffeescript.path") + " ...");
 	copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
 } else {
-	console("CoffeeScript location not specified; not including CoffeeScript.");	
+	console("CoffeeScript location not specified; not including CoffeeScript.");
 }
 
 if (!getSetting("jsh.build.notest")) {

@@ -58,7 +58,7 @@ if (!parameters.options.norhino) {
 		if (jsh.shell.rhino) {
 			var rhino = jsh.shell.rhino.classpath.pathnames[0];
 			if (rhino.basename == "js.jar") {
-				rhino.file.copy(WEBAPP.getRelativePath("WEB-INF/lib").createDirectory())			
+				rhino.file.copy(WEBAPP.getRelativePath("WEB-INF/lib").createDirectory())
 			} else {
 				throw new Error("Rhino not present; classpath=" + jsh.shell.rhino.classpath);
 			}
@@ -111,7 +111,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	}
 	sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
 	if (!parameters.options.norhino) {
-		sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/rhino/java"));		
+		sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/rhino/java"));
 	}
 	var sources = [
 		jsh.script.file.getRelativePath("../java/inonit/script/servlet/Servlet.java"),

@@ -28,12 +28,12 @@ public class Rhino {
 		private Engine engine;
 		private Interface $rhino;
 		private Streams streams = new Streams();
-		
+
 		ExecutionImpl(Engine engine, Interface $rhino) {
 			this.engine = engine;
 			this.$rhino = $rhino;
 		}
-		
+
 		private Engine.Program program = new Engine.Program();
 
 		@Override public void host(String name, Object value) {
@@ -46,7 +46,7 @@ public class Rhino {
 			variable.setDontenum(true);
 			program.set(variable);
 		}
-		
+
 		@Override public void addEngine() {
 			host("$rhino", $rhino);
 			script(this.getShell().getInstallation().getJshLoader("rhino.js"));
@@ -61,7 +61,7 @@ public class Rhino {
 			return null;
 		}
 	}
-	
+
 	public static abstract class Configuration {
 		public abstract int getOptimizationLevel();
 		public abstract Engine.Debugger getDebugger();
@@ -91,7 +91,7 @@ public class Rhino {
 		Engine getEngine() {
 			return engine;
 		}
-		
+
 		static Configuration main(final Shell.Configuration shell) {
 			return new Configuration() {
 				public int getOptimizationLevel() {
@@ -157,7 +157,7 @@ public class Rhino {
 
 	private Integer run() throws Invocation.CheckedException {
 		Shell shell = Shell.main(arguments);
-		
+
 		this.rhino = Configuration.main(shell.getConfiguration());
 
 		Integer rv = Rhino.execute(
@@ -174,7 +174,7 @@ public class Rhino {
 		rhino.initialize(shell.getConfiguration());
 		return Rhino.execute(shell, rhino, new Interface(shell.getInstallation(), rhino));
 	}
-	
+
 	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Invocation.CheckedException {
 		try {
 			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $rhino);
@@ -204,13 +204,13 @@ public class Rhino {
 			return -1;
 		} finally {
 			$rhino.destroy();
-		}		
+		}
 	}
 
 //	public static Scriptable load(Installation installation, Shell.Configuration configuration, Rhino.Configuration rhino, Invocation invocation) {
 //		return Host.create(installation, configuration, rhino, invocation).load();
 //	}
-	
+
 	static class ExitException extends Exception {
 		private int status;
 
@@ -228,21 +228,21 @@ public class Rhino {
 		private Configuration rhino;
 		private Engine.Debugger debugger;
 		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
-		
+
 		Interface(Installation installation, Rhino.Configuration rhino) {
 			this.installation = installation;
 			this.rhino = rhino;
 			this.debugger = rhino.getEngine().getDebugger();
 		}
-		
+
 		private Interface(Installation installation, Rhino.Configuration rhino, Engine.Debugger debugger) {
 			this.installation = installation;
 			this.rhino = rhino;
 			this.debugger = debugger;
 		}
-		
+
 		//	TODO	can this level of indirection surrounding debugger be removed?
-		
+
 		public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
 			return rhino.getEngine().script(name, code, scope, target);
 		}
@@ -259,7 +259,7 @@ public class Rhino {
 			debugger.setBreakOnExceptions(false);
 			throw new ExitException(status);
 		}
-		
+
 		private Interface subinterface() {
 			//	TODO	provide separate classloader for child script
 			return new Interface(installation,rhino,debugger);
@@ -273,11 +273,11 @@ public class Rhino {
 			if (rv == null) return 0;
 			return rv.intValue();
 		}
-		
+
 		public void addFinalizer(Runnable finalizer) {
 			finalizers.add(finalizer);
 		}
-		
+
 		public void destroy() {
 			for (int i=0; i<finalizers.size(); i++) {
 				try {
@@ -286,7 +286,7 @@ public class Rhino {
 					//	TODO	log something about the exception
 					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
 				}
-			}			
+			}
 		}
 	}
 

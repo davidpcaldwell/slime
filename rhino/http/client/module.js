@@ -30,7 +30,7 @@ var useJavaCookieManager = (function() {
 		if (_rv) return String(_rv);
 		return null;
 	}
-	
+
 	if ($context.gae) return false;
 	if (getProperty("os.name") == "FreeBSD" && /^1\.6\.0/.test(getProperty("java.version"))) return false;
 	return true;

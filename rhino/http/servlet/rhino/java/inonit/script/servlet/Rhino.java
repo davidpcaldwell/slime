@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME servlet interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 package inonit.script.servlet;
 
 import java.io.*;
@@ -16,7 +28,7 @@ public class Rhino extends Servlet.ScriptContainer {
 			,inonit.script.runtime.Properties.class
 		};
 	}
-	
+
 	private Servlet servlet;
 	private Engine engine;
 	private Engine.Program program;
@@ -89,7 +101,7 @@ public class Rhino extends Servlet.ScriptContainer {
 				"[slime] "
 			);
 			throw errors;
-		}			
+		}
 	}
 
 	void addScript(String name, InputStream stream) {
@@ -115,15 +127,15 @@ public class Rhino extends Servlet.ScriptContainer {
 			throw errors;
 		}
 	}
-	
+
 	public static class Host extends Servlet.HostObject {
 		private Engine engine;
-		
+
 		Host(Servlet servlet, Engine engine) {
 			super(servlet);
 			this.engine = engine;
 		}
-		
+
 		public Engine getEngine() {
 			return engine;
 		}

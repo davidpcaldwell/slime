@@ -37,7 +37,7 @@ public abstract class Code {
 		public static abstract class File {
 			public abstract String getSourceName();
 			public abstract Reader getReader();
-			
+
 			public static File create(final java.io.File file) {
 				return new File() {
 					@Override public String getSourceName() {
@@ -57,7 +57,7 @@ public abstract class Code {
 					}
 				};
 			}
-			
+
 			public static File create(final String name, final InputStream in) {
 				return new File() {
 					@Override public String getSourceName() {

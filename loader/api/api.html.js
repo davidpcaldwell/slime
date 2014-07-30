@@ -116,11 +116,11 @@ $exports.ApiHtmlTests = function(html,name) {
 	//	NASHORN	next two lines only needed because of Nashorn; see below
 	var nameParameter = name;
 	this.html = html;
-	
+
 	this.toString = function() {
 		return "ApiHtmlTests: " + name;
 	}
-	
+
 	//Packages.java.lang.System.err.println("Created html tests " + name + " with top " + html.top.toString().substring(0,1000));
 	var jsapiReferenceFilter = function(element) {
 		return element.getJsapiAttribute("reference") != null;
@@ -129,7 +129,7 @@ $exports.ApiHtmlTests = function(html,name) {
 	//	Cannot have reference at top level, currently
 
 	var references = filter(getDescendants(html.top), jsapiReferenceFilter);
-	
+
 	//	NASHORN	similarly under Nashorn the referenceScope is required to be "public"
 	this.referenceScope = new function() {
 		this.getApi = function(path) {
@@ -215,7 +215,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		//	NASHORN	Under Nashorn, this specific call does not work with html.top, although under Rhino it did (and it appears
 		//			that it should). Somehow the scope is getting confused and the arguments from the constructor are not available;
 		//			not only that, but even reassigning them (see nameParameter above) to local variables does not work.
-		
+
 		var contextScripts = getDescendantScripts(this.html.top,"context");
 
 		var contexts = [];
@@ -255,7 +255,7 @@ $exports.ApiHtmlTests = function(html,name) {
 							var error = new Error("Error instantiating context via $context.run");
 							error.cause = e;
 							error.code = contextScripts[i].getContentString();
-							throw error;							
+							throw error;
 						}
 					} else {
 						var error = new Error("Error instantiating context via eval()");
@@ -312,7 +312,7 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
-		
+
 		var runInitializer = function(initializer) {
 			try {
 				run(initializer.getContentString(), createTestScope(scope));

@@ -92,7 +92,7 @@
 				{ scope: arguments[0].scope, code: arguments[0].code }
 			);
 		};
-		
+
 		var $coffee = (function() {
 			var coffeeScript = $slime.getCoffeeScript();
 			if (!coffeeScript) return null;
@@ -111,7 +111,7 @@
 
 		(function() {
 			var preprocess;
-			
+
 			var runWith = function(script,scope) {
 				if (preprocess) {
 					preprocess(script);

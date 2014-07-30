@@ -193,7 +193,7 @@
 			});
 			return situation.resolve();
 		};
-		
+
 		rv.prepare = function() {
 			for (var i=0; i<arguments.length; i++) {
 				components.splice(i,0,new $exports.Function.Prepare(arguments[i]));
@@ -270,7 +270,7 @@
 			if (typeof(arguments[p.index]) != "string") throw new TypeError(reference + " must be a string, not " + typeof(arguments[p.index]));
 		};
 	};
-	
+
 	$exports.Function.evaluator = function() {
 		//	creates a composed function that invokes each function in turn with its arguments, returning the first result that is not
 		//	undefined

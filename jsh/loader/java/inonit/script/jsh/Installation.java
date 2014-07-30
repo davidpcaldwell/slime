@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 package inonit.script.jsh;
 
 import java.io.*;
@@ -101,7 +113,7 @@ public abstract class Installation {
 
 		public abstract Code getCode();
 	}
-	
+
 	public abstract File[] getPluginRoots();
 
 	public final Plugin[] getPlugins() {
@@ -111,9 +123,9 @@ public abstract class Installation {
 			Logging.get().log(Installation.class, Level.CONFIG, "Loading plugins from %s ...", roots[i]);
 			Plugin.addPluginsTo(rv, roots[i]);
 		}
-		return rv.toArray(new Plugin[rv.size()]);		
+		return rv.toArray(new Plugin[rv.size()]);
 	}
-	
+
 	public final Code.Source.File getLibrary(String path) {
 		Logging.get().log(Installation.class, Level.FINE, "Searching for library %s ...", path);
 		File[] roots = getPluginRoots();
@@ -130,7 +142,7 @@ public abstract class Installation {
 		}
 		return rv;
 	}
-	
+
 	private static abstract class BaseInstallation extends Installation {
 		protected final File[] getPluginRoots(String... searchpaths) {
 			ArrayList<File> files = new ArrayList<File>();
@@ -150,7 +162,7 @@ public abstract class Installation {
 			return files.toArray(new File[files.size()]);
 		}
 	}
-	
+
 	public static Installation unpackaged() {
 		return new BaseInstallation() {
 			public String toString() {
@@ -216,7 +228,7 @@ public abstract class Installation {
 			}
 		};
 	}
-	
+
 	public static Installation packaged() {
 		return new BaseInstallation() {
 			public String toString() {
@@ -244,6 +256,6 @@ public abstract class Installation {
 			public File[] getPluginRoots() {
 				return getPluginRoots(System.getProperty("jsh.plugins"));
 			}
-		};		
+		};
 	}
 }

@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var parameters = jsh.script.getopts({
 	options: {
 		rhino: jsh.file.Pathname,
@@ -23,7 +35,7 @@ var build = function(p) {
 	var buildargs = (p.installer) ? ["-installer", destination] : [destination];
 	var command = p.run({
 		script: SRC.getRelativePath("jsh/etc/unbuilt.rhino.js"),
-		arguments: ["build"].concat(buildargs)		
+		arguments: ["build"].concat(buildargs)
 	});
 	jsh.shell.run({
 		command: command.command,

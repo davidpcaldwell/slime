@@ -14,10 +14,10 @@ var parameters = jsh.script.getopts({
 	options: {
 		//	See api.html for documentation of these options
 		jsapi: jsh.script.file.getRelativePath("../../loader/api"),
-		
+
 		api: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		test: jsh.script.getopts.ARRAY( String ),
-		
+
 		notest: false,
 		classpath: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 		environment: jsh.script.getopts.ARRAY( String ),
@@ -79,7 +79,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 			}
 			jsh.loader.run(source,scope);
 		}
-		
+
 		if (jsh.$jsapi.$rhino.jsapi && jsh.$jsapi.$rhino.jsapi.script) {
 			this.script = function(name,code,scope) {
 				return jsh.$jsapi.$rhino.jsapi.script(name, String(code), scope);
@@ -135,7 +135,7 @@ if (!parameters.options.notest) {
 		});
 		return rv;
 	})();
-	
+
 	jsapi.tests.environment(ENVIRONMENT);
 
 	modules.forEach( function(module) {
@@ -184,5 +184,5 @@ if (parameters.options.doc) {
 		getPath: function(pathname) {
 			return getRelativePath(pathname);
 		}
-	});		
+	});
 }

@@ -596,12 +596,12 @@ public class Engine {
 		Source source = Engine.Source.create(name,new InputStreamReader(code));
 		source.evaluate(debugger, contexts, scope, target);
 	}
-	
+
 	void script(String name, Reader code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name, code);
 		source.evaluate(debugger, contexts, scope, target);
 	}
-	
+
 	public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
 		Source source = Engine.Source.create(name,code);
 		Object rv = source.evaluate(debugger, contexts, scope, target);
@@ -873,7 +873,7 @@ public class Engine {
 				throw new RuntimeException("Cannot get canonical path of " + file);
 			}
 		}
-		
+
 		public static Source create(Code.Source.File file) {
 			return new ReaderSource(file.getSourceName(), file.getReader());
 		}
@@ -1412,7 +1412,7 @@ public class Engine {
 //	public Loader.Classes getApplicationClassLoader() {
 //		return this.contexts.getLoaderClasses();
 //	}
-	
+
 	public Loader.Classpath getClasspath() {
 		if (this.contexts.getLoaderClasses() == null) return null;
 		return this.contexts.getLoaderClasses().toScriptClasspath();

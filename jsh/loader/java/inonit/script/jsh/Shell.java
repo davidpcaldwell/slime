@@ -21,24 +21,24 @@ import inonit.script.engine.*;
 
 public abstract class Shell {
 	public abstract Installation getInstallation();
-	
+
 	private Streams streams = new Streams();
-	
+
 	public final Streams getStreams() {
 		return streams;
 	}
-	
+
 	public final String getLoaderCode() throws IOException {
 		return streams.readString(getInstallation().getJshLoader("bootstrap.js").getReader());
 	}
-	
+
 	public Shell subshell(Configuration configuration, Invocation invocation) {
 		return create(this.getInstallation(), configuration, invocation);
 	}
-	
+
 	public abstract Configuration getConfiguration();
 	public abstract Invocation getInvocation() throws Invocation.CheckedException;
-	
+
 	public static Shell create(final Installation installation, final Configuration configuration, final Invocation invocation) {
 		return new Shell() {
 			@Override public Installation getInstallation() {
@@ -54,7 +54,7 @@ public abstract class Shell {
 			}
 		};
 	}
-	
+
 	public static Shell main(final String[] arguments) {
 		final Configuration configuration = Configuration.main();
 		if (System.getProperty("jsh.launcher.packaged") != null) {
@@ -62,7 +62,7 @@ public abstract class Shell {
 				@Override public Installation getInstallation() {
 					return Installation.packaged();
 				}
-				
+
 				@Override public Configuration getConfiguration() {
 					return configuration;
 				}
@@ -79,7 +79,7 @@ public abstract class Shell {
 				@Override public Installation getInstallation() {
 					return Installation.unpackaged();
 				}
-				
+
 				@Override public Configuration getConfiguration() {
 					return configuration;
 				}
@@ -88,9 +88,9 @@ public abstract class Shell {
 					return Invocation.create(arguments);
 				}
 			};
-		}		
+		}
 	}
-	
+
 	public static abstract class Configuration {
 		public abstract ClassLoader getClassLoader();
 
@@ -104,7 +104,7 @@ public abstract class Shell {
 		 *	<code>null</code> if it is not.
 		 */
 		public abstract Code.Source getPackagedCode();
-		
+
 		public abstract File getPackageFile();
 
 		public static abstract class Stdio {
@@ -112,7 +112,7 @@ public abstract class Shell {
 			public abstract OutputStream getStandardOutput();
 			public abstract OutputStream getStandardError();
 		}
-		
+
 		public static Configuration main() {
 			return new Shell.Configuration() {
 				private InputStream stdin = new Logging.InputStream(System.in);
@@ -159,18 +159,18 @@ public abstract class Shell {
 						return null;
 					}
 				}
-				
+
 				@Override public File getPackageFile() {
 					if (System.getProperty("jsh.launcher.packaged") != null) {
 						return new java.io.File(System.getProperty("jsh.launcher.packaged"));
 					} else {
 						return null;
-					}					
+					}
 				}
 			};
 		}
 	}
-	
+
 	public Integer execute(Execution execution) throws Invocation.CheckedException {
 		execution.initialize(this);
 		execution.addEngine();
@@ -178,15 +178,15 @@ public abstract class Shell {
 //		execution.script(this.getInvocation().getScript().getSource());
 		return execution.execute();
 	}
-	
+
 	public static abstract class Execution {
 		private Shell shell;
-		
+
 		final void initialize(Shell shell) {
 			this.shell = shell;
 			this.host("$jsh", shell);
 		}
-		
+
 		protected final Shell getShell() {
 			return this.shell;
 		}
@@ -195,5 +195,5 @@ public abstract class Shell {
 		protected abstract void addEngine();
 		protected abstract void script(Code.Source.File script);
 		protected abstract Integer execute();
-	}	
+	}
 }

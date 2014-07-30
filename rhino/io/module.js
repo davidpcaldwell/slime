@@ -325,7 +325,7 @@ var Resource = function(p) {
 		//	TODO	may want to do some sort of "cast" here
 		this.type = p.type;
 	}
-	
+
 	var global = (function() { return this; })();
 
 	this.read = function(mode) {

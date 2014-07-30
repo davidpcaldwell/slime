@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 (function() {
 	var $arguments = (function() {
 		var rv = [];
@@ -9,7 +21,7 @@
 
 	var $engine = (function() {
 		var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
-		
+
 		var Nashorn = function() {
 			this.filename = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
 
@@ -23,7 +35,7 @@
 
 		var Rhino = function(filename) {
 			this.filename = filename;
-			
+
 			var copy = function(from,to) {
 				var b;
 				while( (b = from.read()) != -1 ) {
@@ -31,7 +43,7 @@
 				}
 				to.close();
 			}
-			
+
 			var downloadMozillaRhinoDistribution = function(url) {
 				var _url = new Packages.java.net.URL(url.replace(/ftp\:\/\//g, "http://"));
 				println("Downloading Rhino from " + _url);
@@ -56,7 +68,7 @@
 				println("Downloaded Rhino to " + tmprhino);
 				return tmprhino;
 			}
-			
+
 			var findRhino = function() {
 				if (Packages.java.lang.System.getProperty("jsh.build.rhino")) {
 					return new File(Packages.java.lang.System.getProperty("jsh.build.rhino"));
@@ -64,7 +76,7 @@
 					return downloadMozillaRhinoDistribution("ftp://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip");
 				}
 			}
-			
+
 			this.run = function(p) {
 				//	Try to download Rhino
 				var IN_PROCESS = false;
@@ -87,9 +99,9 @@
 
 						//	TODO	this does not seem to work; eval is essentially a no-op, for unknown reason
 						var code = readFile(p.script.getCanonicalPath());
-						eval(code);					
+						eval(code);
 					} else {
-						load(file);					
+						load(file);
 					}
 				} else {
 					var rhino = findRhino();
@@ -122,7 +134,7 @@
 							var Redirect = Packages.java.lang.ProcessBuilder.Redirect;
 							_builder.redirectOutput(Redirect.INHERIT).redirectError(Redirect.INHERIT);
 						}
-						
+
 						//	TODO	below requires Java 1.7
 						var _process = _builder.start();
 
@@ -143,7 +155,7 @@
 							var out = spool(_process.getInputStream(), Packages.java.lang.System.out);
 							var err = spool(_process.getErrorStream(), Packages.java.lang.System.err);
 						}
-						
+
 						//	TODO	error handling
 						var exitStatus = _process.waitFor();
 						out.join();
@@ -189,7 +201,7 @@
 				}
 				to.close();
 			}
-			
+
 			//	sample link		https://bitbucket.org/davidpcaldwell/slime/get/[label].zip
 			//	sample script	https://bitbucket.org/davidpcaldwell/slime/raw/[label]/jsh/etc/install.jrunscript.js
 			//	TODO	implement determination of URL from Bitbucket
@@ -227,5 +239,5 @@
 	$engine.run({
 		script: new Packages.java.io.File($source, "jsh/etc/unbuilt.rhino.js"),
 		arguments: ["build"].concat($arguments)
-	});	
+	});
 })();

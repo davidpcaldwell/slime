@@ -13,13 +13,13 @@
 this.jsh = new function() {
 	var host = (function() {
 		var installation = $jsh.getInstallation();
-		var configuration = $jsh.getConfiguration();	
+		var configuration = $jsh.getConfiguration();
 		var invocation = $jsh.getInvocation();
 
 		$host.getSystemProperties = function() {
 			return configuration.getSystemProperties();
 		};
-		
+
 		$host.getEnvironment = function() {
 			return configuration.getEnvironment();
 		};
@@ -27,29 +27,29 @@ this.jsh = new function() {
 		$host.getStdio = function() {
 			return stdio;
 		};
-		
+
 		$host.getInvocation = function() {
 			return invocation;
 		};
-		
+
 		$host.getPackageFile = function() {
 			return configuration.getPackageFile();
 		}
-		
+
 		$host.getPackagedCode = function() {
 			return configuration.getPackagedCode();
 		};
-		
+
 		var loader = new function() {
 			//	implementation duplicates original
 			this.getBootstrapModule = function(path) {
 				return installation.getShellModuleCode(path);
 			};
-			
+
 			this.getPlugins = function() {
 				return installation.getPlugins();
 			}
-			
+
 			this.getPackagedCode = function() {
 				return configuration.getPackagedCode();
 			}
@@ -76,12 +76,12 @@ this.jsh = new function() {
 			getLoader: function() {
 				return loader;
 			},
-			getPlugins: function(file) {	
+			getPlugins: function(file) {
 				return Packages.inonit.script.jsh.Installation.Plugin.get(file);
 			}
-		};		
+		};
 	})();
-	
+
 	var jsh = this;
 
 	var addFinalizer = function(f) {

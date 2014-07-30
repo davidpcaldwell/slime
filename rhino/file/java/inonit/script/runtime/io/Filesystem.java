@@ -200,7 +200,7 @@ public abstract class Filesystem {
 				}
 				return rv;
 			}
-			
+
 			private boolean isSymlink(File file) throws IOException {
 				return !file.getCanonicalFile().getParentFile().equals(file.getParentFile().getCanonicalFile());
 			}

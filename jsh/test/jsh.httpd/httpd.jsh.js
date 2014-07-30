@@ -109,9 +109,9 @@ var coffeeServlet = new function() {
 		} else {
 			jsh.shell.echo("Got correct type: " + response.body.type);
 		}
-		return response.body.stream.character().asString();		
+		return response.body.stream.character().asString();
 	}
-	
+
 	this.test = function(url) {
 		var client = new jsh.http.Client();
 		jsh.shell.echo("Testing coffee servlet at " + url);
@@ -172,7 +172,7 @@ var plugin = new function() {
 		tomcat.start();
 		fileServlet.test("http://127.0.0.1:" + tomcat.port + "/");
 	}
-	
+
 	var run = function(path,tests) {
 		jsh.shell.echo("Plugin: " + path);
 		var tomcat = new jsh.httpd.Tomcat({});
@@ -188,7 +188,7 @@ var plugin = new function() {
 			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
 		});
 		tomcat.start();
-		tests.test("http://127.0.0.1:" + tomcat.port + "/");		
+		tests.test("http://127.0.0.1:" + tomcat.port + "/");
 	}
 
 	this.api = function() {
@@ -208,7 +208,7 @@ var plugin = new function() {
 		tomcat.start();
 		apiServlet.test("http://127.0.0.1:" + tomcat.port + "/");
 	};
-	
+
 	this.coffee = function() {
 		run("rhino/http/servlet/test/coffee.servlet.coffee",coffeeServlet);
 	}
@@ -243,7 +243,7 @@ var suites = {
 		});
 		jsh.shell.echo("Test coffee servlet inside Tomcat ...");
 		coffeeServlet.test("http://127.0.0.1:8080/slime.coffee/");
-		server.stop();		
+		server.stop();
 	},
 	all: function() {
 		this.plugin();

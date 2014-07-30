@@ -24,7 +24,7 @@ import inonit.system.cygwin.*;
 public class Main {
 	private Main() {
 	}
-	
+
 	private static class Invocation {
 		private static boolean hasClass(Shell shell, String name) {
 			try {
@@ -36,7 +36,7 @@ public class Main {
 				return false;
 			}
 		}
-		
+
 		//	TODO	this logic is duplicated in Servlet
 		private static Engine getEngine(Shell shell) {
 			boolean hasNashorn = new ScriptEngineManager().getEngineByName("nashorn") != null;
@@ -58,7 +58,7 @@ public class Main {
 				}
 			}
 		}
-		
+
 		static Invocation create() throws IOException {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
@@ -101,41 +101,41 @@ public class Main {
 		private Shell shell;
 		private Engine engine;
 		private boolean debug;
-		
+
 		Invocation(Shell shell, Engine engine) {
 			this.shell = shell;
 			this.engine = engine;
 		}
-		
+
 		final boolean debug() {
 			return debug;
 		}
-		
+
 		final void debug(String message) {
 			if (debug) {
 				System.err.println(message);
 			}
 		}
-		
+
 		final Properties getJavaLoggingProperties() throws IOException {
 			Properties rv = new Properties();
 			return rv;
 		}
-		
+
 		final void initializeSystemProperties() throws IOException {
 			debug("Initializing system properties; engine = " + engine + " ...");
 			engine.initializeSystemProperties(this, shell);
 			shell.initializeSystemProperties();
 		}
-		
+
 		final ClassLoader getRhinoClassLoader() throws IOException {
 			return shell.getRhinoClassLoader();
 		}
-		
+
 		final void addLauncherScriptsTo(Engine engine) throws IOException {
 			shell.addLauncherScriptsTo(engine);
 		}
-		
+
 		final int run(String[] args) throws IOException, ScriptException {
 			if (!inonit.system.Logging.get().isSpecified()) {
 				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
@@ -165,23 +165,23 @@ public class Main {
 			return mainClassLoader;
 		}
 	}
-	
+
 	private static abstract class Engine {
 		private Invocation invocation;
-		
+
 		final void initialize(Invocation invocation) throws IOException {
 			this.invocation = invocation;
 			invocation.addLauncherScriptsTo(this);
 		}
-		
+
 		final boolean debug() {
 			return invocation.debug();
 		}
-		
+
 		final void debug(String message) {
 			invocation.debug(message);
 		}
-		
+
 		ClassLoader getRhinoClassLoader() throws IOException {
 			return invocation.getRhinoClassLoader();
 		}
@@ -190,25 +190,25 @@ public class Main {
 		abstract void addScript(String pathname);
 		abstract int run(String[] args) throws IOException, ScriptException;
 	}
-	
+
 	private static class Nashorn extends Engine {
 		private ScriptEngineManager factory;
 		private ScriptEngine engine;
 		private ArrayList<String> scripts = new ArrayList<String>();
-		
+
 		Nashorn() {
 			this.factory = new ScriptEngineManager();
-			this.engine = factory.getEngineByName("nashorn");			
+			this.engine = factory.getEngineByName("nashorn");
 		}
-		
+
 		void initializeSystemProperties(Invocation invocation, Shell shell) {
 			System.setProperty("jsh.launcher.nashorn", "true");
 		}
-		
+
 		void addScript(String pathname) {
 			scripts.add(pathname);
 		}
-		
+
 		int run(String[] args) throws IOException, ScriptException {
 			Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
 			this.factory.getBindings().put("arguments", args);
@@ -231,10 +231,10 @@ public class Main {
 			return 0;
 		}
 	}
-	
+
 	private static class Rhino extends Engine {
 		private ArrayList<String> scripts = new ArrayList<String>();
-		
+
 		private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
 			ClassLoader loader = getRhinoClassLoader();
 			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
@@ -243,7 +243,7 @@ public class Main {
 			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
 			return main;
 		}
-		
+
 		void initializeSystemProperties(Invocation invocation, Shell shell) throws IOException {
 			invocation.debug("Setting Rhino system properties...");
 			System.setProperty("jsh.launcher.rhino", "true");
@@ -255,11 +255,11 @@ public class Main {
 //				;
 			}
 		}
-		
+
 		void addScript(String pathname) {
 			scripts.add(pathname);
 		}
-		
+
 		private String[] getArguments(String[] args) {
 			ArrayList<String> strings = new ArrayList<String>();
 			strings.add("-opt");
@@ -273,14 +273,14 @@ public class Main {
 			strings.addAll(Arrays.asList(args));
 			return strings.toArray(new String[0]);
 		}
-		
+
 		private int getExitStatus() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
 			Class c = getRhinoClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
 			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
 			field.setAccessible(true);
-			return field.getInt(null);			
+			return field.getInt(null);
 		}
-		
+
 		@Override int run(String[] args) throws IOException {
 			Integer status = null;
 			Logging.get().log(Main.class, Level.FINE, "jsh.launcher.rhino.classpath = %s", System.getProperty("jsh.launcher.rhino.classpath"));
@@ -312,29 +312,29 @@ public class Main {
 				e.printStackTrace();
 				status = new Integer(127);
 			}
-			return status.intValue();			
+			return status.intValue();
 		}
 	}
-	
+
 	private static abstract class Shell {
 		abstract String getRhinoClasspath() throws IOException;
 		abstract ClassLoader getRhinoClassLoader() throws IOException;
 		abstract void addLauncherScriptsTo(Engine rhino) throws IOException;
 		abstract void initializeSystemProperties() throws IOException;
 	}
-	
+
 	private static class PackagedShell extends Shell {
 		private String location;
-		
+
 		PackagedShell(String location) {
 			this.location = location;
 		}
-		
+
 		String getRhinoClasspath() {
 			//	TODO	should we return something more useful?
 			return null;
 		}
-		
+
 		ClassLoader getRhinoClassLoader() {
 			//	In earlier versions of the launcher and packager, Rhino was packaged at the following location inside the packaged
 			//	JAR file. However, for some reason, loading Rhino using the below ClassLoader did not work. As a workaround, the
@@ -355,16 +355,16 @@ public class Main {
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
 		}
-		
+
 		void initializeSystemProperties() {
-			System.setProperty("jsh.launcher.packaged", location);			
+			System.setProperty("jsh.launcher.packaged", location);
 		}
 	}
-	
+
 	private static abstract class UnpackagedShell extends Shell {
 		private String colon = java.io.File.pathSeparator;
 		private ClassLoader rhinoClassLoader;
-		
+
 		final ClassLoader getRhinoClassLoader() throws IOException {
 			if (rhinoClassLoader == null) {
 				String JSH_RHINO_CLASSPATH = getRhinoClasspath();
@@ -385,7 +385,7 @@ public class Main {
 			}
 			return rhinoClassLoader;
 		}
-		
+
 		final void addLauncherScriptsTo(Engine rhino) throws IOException {
 			String JSH_RHINO_JS = getRhinoScript();
 			String RHINO_JS = null;
@@ -400,7 +400,7 @@ public class Main {
 			rhino.addScript(RHINO_JS);
 			rhino.addScript(JSH_RHINO_JS);
 		}
-		
+
 		//	TODO	push Rhino-specific properties back into Rhino engine
 		final void initializeSystemProperties() throws java.io.IOException {
 			System.setProperty("jsh.launcher.rhino.script", getRhinoScript());
@@ -409,12 +409,12 @@ public class Main {
 			}
 			System.setProperty("jsh.launcher.classpath", System.getProperty("java.class.path"));
 		}
-		
-		abstract String getRhinoClasspath() throws IOException;		
+
+		abstract String getRhinoClasspath() throws IOException;
 		abstract File getJshHome();
 		abstract String getRhinoScript() throws IOException;
 	}
-	
+
 	private static class UnbuiltShell extends UnpackagedShell {
 		private String toWindowsPath(String value) throws IOException {
 			inonit.system.cygwin.Cygwin cygwin = inonit.system.cygwin.Cygwin.locate();
@@ -445,7 +445,7 @@ public class Main {
 			return rv;
 		}
 	}
-	
+
 	private static class BuiltShell extends UnpackagedShell {
 		private java.io.File HOME;
 		private UnbuiltShell explicit = new UnbuiltShell();
@@ -453,7 +453,7 @@ public class Main {
 		BuiltShell(java.io.File HOME) throws java.io.IOException {
 			this.HOME = HOME;
 		}
-		
+
 		public String toString() {
 			return "BuiltShell: HOME=" + HOME;
 		}
@@ -472,14 +472,14 @@ public class Main {
 			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
 		}
 	}
-	
+
 	private static class BeforeExit implements Runnable {
 		private Integer status = null;
-		
+
 		void setStatus(int status) {
 			this.status = new Integer(status);
 		}
-		
+
 		public void run() {
 			System.out.flush();
 			Logging.get().log(Main.class, Level.INFO, "Exit status: %d", status);

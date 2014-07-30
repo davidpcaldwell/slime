@@ -18,7 +18,7 @@ $exports.Type = function(media,subtype,parameters) {
 			throw new TypeError("arguments[2] (parameters) must be undefined or object");
 		}
 	}).apply(this,arguments);
-	
+
 	this.getMedia = function() {
 		return media;
 	}

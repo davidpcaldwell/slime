@@ -91,13 +91,13 @@ END LICENSE
 					test(isJavaObject(new Packages.java.lang.Object()));
 					if (isRhino) {
 						test(isJavaObject(new Packages.java.lang.String("hello world")));
-						test(isJavaObject(new Packages.java.lang.Integer(4)));						
+						test(isJavaObject(new Packages.java.lang.Integer(4)));
 						test(isJavaObject(new Packages.java.lang.Boolean(true)));
 					} else {
 						//	Nashorn appears to map these to JavaScript types
 						//	TODO	clarify and document this
 						test(!isJavaObject(new Packages.java.lang.String("hello world")));
-						test(!isJavaObject(new Packages.java.lang.Integer(4)));						
+						test(!isJavaObject(new Packages.java.lang.Integer(4)));
 						test(!isJavaObject(new Packages.java.lang.Boolean(true)));
 					}
 					test(isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK));
@@ -110,7 +110,7 @@ END LICENSE
 					test(!isJavaObject(null));
 					test(!isJavaObject({}));
 					var javaArray = context.$rhino.java.Array(Packages.java.lang.Object,4);
-					test(isJavaObject(javaArray));						
+					test(isJavaObject(javaArray));
 				</script>
 			</li>
 			<li class="object">

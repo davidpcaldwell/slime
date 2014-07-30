@@ -16,7 +16,7 @@
 //	SLIME_SRC	A Packages.java.io.File representing the SLIME source root
 
 var SLIME_SRC;
-		
+
 if (Packages.java.lang.System.getProperties().get("jsh.build.src")) {
 	SLIME_SRC = Packages.java.lang.System.getProperties().get("jsh.build.src");
 };
@@ -97,11 +97,11 @@ var readUrl = function(path) {
 var runCommand = function() {
 	var Buffer = function(initial) {
 		var _bytes = new Packages.java.io.ByteArrayOutputStream();
-		
+
 		var string = initial;
-		
+
 		this.stream = _bytes;
-		
+
 		this.finish = function() {
 			_bytes.close();
 			var _reader = new Packages.java.io.InputStreamReader(new Packages.java.io.ByteArrayInputStream(_bytes.toByteArray()));
@@ -112,7 +112,7 @@ var runCommand = function() {
 			return string;
 		}
 	}
-	
+
 	var buffers = {};
 	var context = new function() {
 		var mode;
@@ -138,7 +138,7 @@ var runCommand = function() {
 			} else {
 			}
 		}
-		
+
 		this.getStandardOutput = function() {
 			if (buffers.output) return buffers.output.stream;
 			if (mode && mode.output) return mode.output;
@@ -160,7 +160,7 @@ var runCommand = function() {
 				}
 			);
 		};
-		
+
 		this.finish = function() {
 			if (buffers.output) mode.output = buffers.output.finish();
 			if (buffers.err) mode.err = buffers.err.finish();

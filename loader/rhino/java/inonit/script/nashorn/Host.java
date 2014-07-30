@@ -1,3 +1,15 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	The Original Code is the SLIME loader for rhino.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 package inonit.script.nashorn;
 
 import java.util.*;
@@ -12,30 +24,30 @@ public class Host {
 		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
 		return new Host(classes);
 	}
-	
+
 	private ScriptEngineManager factory;
 	private ScriptEngine engine;
 	private Classes classes;
 	private List<Code.Source.File> scripts = new ArrayList<Code.Source.File>();
-	
+
 	private Host(Classes classes) {
 		this.factory = new ScriptEngineManager();
 		this.engine = factory.getEngineByName("nashorn");
 		this.classes = classes;
 	}
-	
+
 	public void set(String name, Object value) {
 		factory.getBindings().put(name, value);
 	}
-	
+
 	public void add(Code.Source.File script) {
 		scripts.add(script);
 	}
-	
+
 	public Loader.Classpath getClasspath() {
 		return classes.getScriptClasses().toScriptClasspath();
 	}
-	
+
 	public Object run() throws ScriptException {
 		Object rv = null;
 		for (Code.Source.File file : scripts) {

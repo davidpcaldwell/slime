@@ -53,7 +53,7 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 	PropertyParent.prototype.toString = function() {
 		return null;
 	}
-	
+
 	$exports.Properties = function($properties) {
 		var nashornTrace = function(s) {
 			//Packages.java.lang.System.err.println(s);
@@ -263,7 +263,7 @@ $exports.isJavaType = function(javaclass) {
 		var loaded = $exports.isJavaType.getNamedJavaClass(className);
 		return loaded.isInstance(object);
 	};
-	
+
 	if (arguments.length == 2) {
 		warning("WARNING: Use of deprecated 2-argument form of isJavaType.");
 		return $isJavaType(javaclass,arguments[1]);

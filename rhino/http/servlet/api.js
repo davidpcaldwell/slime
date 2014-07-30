@@ -19,11 +19,11 @@ var $loader = (function() {
 		var rv = scripts.script(
 			"rhino/nashorn.js",
 			$host.getLoader().getLoaderCode("rhino/nashorn.js"),
-			{ 
+			{
 				$getLoaderCode: function(path) {
 					return $host.getLoader().getLoaderCode(path);
 				},
-				$classpath: $host.getClasspath() 
+				$classpath: $host.getClasspath()
 			},
 			null
 		);
