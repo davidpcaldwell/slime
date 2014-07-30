@@ -12,7 +12,7 @@
 
 if (typeof($context.d) == "undefined") {
 	debugger;
-	throw "$context.d is undefined";
+	throw new Error("$context.d is undefined");
 }
 
 var fThis = { description: "fThis" };
