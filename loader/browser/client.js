@@ -261,7 +261,7 @@
 			if (typeof(p) == "string") {
 				return new platform.Loader({
 					getCode: function(path) {
-						return fetcher.getCode(p+path);
+						return { name: path, path: p+path, code: fetcher.getCode(p+path) };
 					}
 				});
 			}
