@@ -100,14 +100,33 @@ public class Nashorn {
 		@Override public void script(Code.Source.File script) {
 			host.add(script);
 		}
+		
+		private ExitException getExitException(Exception e) {
+			Throwable t = e.getCause();
+			while(t != null) {
+				if (t instanceof ExitException) {
+					return (ExitException)t;
+				}
+				t = t.getCause();
+			}
+			return null;
+		}
 
 		@Override public Integer execute() {
 			try {
 				Object ignore = host.run();
 				return null;
-			} catch (ExitException e) {
-				return e.getExitStatus();
+			} catch (RuntimeException e) {
+				ExitException exit = getExitException(e);
+				if (exit != null) {
+					return exit.getExitStatus();
+				}
+				throw e;
 			} catch (ScriptException e) {
+				ExitException exit = getExitException(e);
+				if (exit != null) {
+					return exit.getExitStatus();
+				}
 				throw new UncaughtException(e);
 			}
 		}

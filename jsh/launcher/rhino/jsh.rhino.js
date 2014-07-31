@@ -647,7 +647,7 @@ try {
 	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
 
 	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
-	if (JAVA_HOME.getDirectory("bin").getCommand("jjs") && env.JSH_ENGINE == "nashorn") {
+	if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 		//	Nashorn
 		var JJS = false;
 		if (JJS) {
