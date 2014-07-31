@@ -103,7 +103,7 @@ var Jsdom = function(base,dom) {
 		if (file == null) {
 			throw new Error("Cannot find referenced file at " + path + " from base: " + base);
 		} else {
-			jsh.shell.echo("Loading " + path + " from " + base);
+			//jsh.shell.echo("Loading " + path + " from " + base);
 		}
 		return loadApiHtml(base.getFile(path));
 	}
@@ -115,14 +115,14 @@ var loadApiHtml = function(file) {
 	}
 	if (!arguments.callee.cache[file.pathname.toString()]) {
 		arguments.callee.cache[file.pathname.toString()] = (function() {
-			if (false) jsh.shell.echo("Reading api.html: " + file.pathname);
+			jsh.shell.echo("Loading API file: " + file.pathname);
 			var doc = new jsh.document.Document({
 				stream: file.read(jsh.io.Streams.binary)
 			});
 			return new Jsdom(file.parent,doc);
 		})();
 	} else {
-		jsh.shell.echo("Returning cached api.html: " + file.pathname);
+		//	jsh.shell.echo("Returning cached api.html: " + file.pathname);
 	}
 	return arguments.callee.cache[file.pathname.toString()];
 }

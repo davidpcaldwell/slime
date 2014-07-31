@@ -579,6 +579,7 @@ jsh.shell.run({
 	evaluate: function(result) {
 		if (result.status == 0) {
 			jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+			jsh.shell.echo();
 		} else {
 			throw new Error("Status: " + result.status);
 		}
@@ -595,6 +596,7 @@ if (CATALINA_HOME) {
 		evaluate: function(result) {
 			if (result.status == 0) {
 				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+				jsh.shell.echo();
 			} else {
 				throw new Error("Status: " + result.status);
 			}
@@ -613,6 +615,7 @@ if (COFFEESCRIPT) {
 			if (result.status == 0) {
 				if (result.stdio.output == ["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
 					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+					jsh.shell.echo();
 				} else {
 					throw new Error("Output was [" + result.stdio.output + "]");
 				}
@@ -630,6 +633,7 @@ if (COFFEESCRIPT) {
 		evaluate: function(result) {
 			if (result.status == 0) {
 				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+				jsh.shell.echo();
 			} else {
 				throw new Error("Status: " + result.status + " for " + result.command + " " + result.arguments.join(" "));
 			}
