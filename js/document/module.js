@@ -402,7 +402,7 @@ var Doctype = function(p) {
 		var quote = function(s) {
 			return "\"" + s + "\"";
 		};
-		return "<!DOCTYPE " + this.doctype.name + " " + type + ((this.doctype.publicId) ? " " + quote(this.doctype.publicId) : "") + " " + quote(this.doctype.systemId) + ">";
+		return "<!DOCTYPE " + this.doctype.name + " " + type + ((this.doctype.publicId) ? " " + quote(this.doctype.publicId) : "") + " " + quote(this.doctype.systemId) + ">\n";
 	};
 };
 
