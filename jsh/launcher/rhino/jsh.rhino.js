@@ -409,7 +409,7 @@ settings.explicit = new function() {
 		self[name] = (typeof(env[name]) != "undefined") ? new Searchpath(os(env[name],true)).toPath() : UNDEFINED;
 	});
 
-	["JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
+	["JSH_RHINO_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
 		this[name] = env[name];
 	}, this);
 
@@ -595,7 +595,7 @@ try {
 
 	var environmentAndProperties = function() {
 		[
-			"JSH_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
+			"JSH_RHINO_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
 			,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
 			,"JSH_LIBRARY_MODULES"
 			,"JSH_PLUGINS"

@@ -154,8 +154,9 @@ args = args.concat(arguments);
 args.push(
 	{
 		env: new (function() {
+			var passthrough = ["JSH_SCRIPT_DEBUGGER","JSH_PLUGINS","JSH_LAUNCHER_DEBUG","JSH_JVM_OPTIONS","JSH_ENGINE","JSH_JAVA_LOGGING_PROPERTIES","JSH_RHINO_OPTIMIZATION"];
 			for (var x in env) {
-				if (x == "JSH_SCRIPT_DEBUGGER" || x == "JSH_PLUGINS" || x == "JSH_LAUNCHER_DEBUG" || x == "JSH_JVM_OPTIONS" || x == "JSH_ENGINE" || x == "JSH_JAVA_LOGGING_PROPERTIES") {
+				if (passthrough.indexOf(x) != -1) {
 					this[x] = env[x];
 				} else if (/^JSH_/.test(x)) {
 				} else {

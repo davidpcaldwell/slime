@@ -96,9 +96,9 @@ public class Rhino {
 			return new Configuration() {
 				public int getOptimizationLevel() {
 					int optimization = -1;
-					if (System.getProperty("jsh.optimization") != null) {
+					if (System.getProperty("jsh.rhino.optimization") != null) {
 						//	TODO	validate this value
-						optimization = Integer.parseInt(System.getProperty("jsh.optimization"));
+						optimization = Integer.parseInt(System.getProperty("jsh.rhino.optimization"));
 					}
 					return optimization;
 				}

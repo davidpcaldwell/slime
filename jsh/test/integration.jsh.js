@@ -586,6 +586,30 @@ jsh.shell.run({
 	}
 });
 
+if (RHINO_LIBRARIES) {
+	(function(level) {
+		jsh.shell.run({
+			command: LAUNCHER_COMMAND[0],
+			arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("rhino-optimization.jsh.js")),
+			stdio: {
+				output: String
+			},
+			environment: jsh.js.Object.set({}, jsh.shell.environment, {
+				JSH_RHINO_OPTIMIZATION: String(level)
+			}),
+			evaluate: function(result) {
+				var optimization = Number(result.stdio.output);
+				if (result.status == 0 && optimization == level) {
+					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+					jsh.shell.echo();
+				} else {
+					throw new Error("Status: " + result.status);
+				}
+			}
+		});	
+	})(1);
+}
+
 if (CATALINA_HOME) {
 	jsh.shell.run({
 		command: LAUNCHER_COMMAND[0],
