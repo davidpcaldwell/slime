@@ -398,10 +398,11 @@ var Doctype = function(p) {
 	}, this);
 
 	this.serialize = function(m) {
+		var type = (this.doctype.publicId) ? "PUBLIC" : "SYSTEM";
 		var quote = function(s) {
 			return "\"" + s + "\"";
 		};
-		return "<!DOCTYPE " + this.doctype.name + " " + quote(this.doctype.publicId) + " " + quote(this.doctype.systemId) + ">";
+		return "<!DOCTYPE " + this.doctype.name + " " + type + ((this.doctype.publicId) ? " " + quote(this.doctype.publicId) : "") + " " + quote(this.doctype.systemId) + ">";
 	};
 };
 
