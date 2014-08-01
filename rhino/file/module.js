@@ -107,7 +107,7 @@ $exports.Pathname = function(parameters) {
 		} else if (typeof(parameters) == "object" && parameters instanceof String) {
 			return decorator($exports.filesystem.Pathname(parameters.toString()));
 		} else {
-			$context.api.java.fail("Illegal argument to Pathname(): " + parameters);
+			throw new TypeError("Illegal argument to Pathname(): " + parameters);
 		}
 	} else {
 		$context.api.java.fail("Cannot invoke Pathname as constructor.");
