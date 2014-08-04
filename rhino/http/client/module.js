@@ -140,43 +140,114 @@ var Cookies = function() {
 	}
 };
 
-var QueryString = function(string) {
-	var decode = function(string) {
-		return String(Packages.java.net.URLDecoder.decode(string, "UTF-8"));
-	}
-
-	var pairs = string.split("&").map( function(token) {
-		var assign = token.split("=");
-		return { name: decode(assign[0]), value: decode(assign[1]) };
-	});
-
-	return pairs;
-}
-QueryString.encode = function(array) {
-	var encode = function(string) {
-		return String(Packages.java.net.URLEncoder.encode(string, "UTF-8"));
-	}
-
-	return array.map( function(item) {
-		return encode(item.name) + "=" + encode(item.value);
-	}).join("&");
-};
-
-var Url = function(string) {
-	if (string.indexOf("?") == -1) {
-		this.url = string;
-		this.parameters = [];
-	} else {
-		this.url = string.split("?")[0];
-		this.parameters = new QueryString(string.split("?").slice(1).join("?"));
-	}
-
-	this.toString = function() {
-		var rv = this.url;
-		if (this.parameters.length) {
-			rv += "?" + QueryString.encode(this.parameters);
+var spi = function(p,cookies) {
+	var connect = function(method,url,headers,mode) {
+		var $url = new Packages.java.net.URL(url.toString());
+		debug("Requesting: " + url);
+		var $urlConnection = (function(proxy) {
+			if (!proxy) {
+				return $url.openConnection();
+			} else if (proxy.http || proxy.socks) {
+				var _type = (function() {
+					if (proxy.http) return {
+						type: Packages.java.net.Proxy.Type.HTTP,
+						specifier: proxy.http
+					}
+					if (proxy.socks) return {
+						type: Packages.java.net.Proxy.Type.SOCKS,
+						specifier: proxy.socks
+					};
+					throw new Error("Unrecognized proxy type in " + proxy);
+				})();
+				var _proxy = new Packages.java.net.Proxy(
+					_type.type,
+					new Packages.java.net.InetSocketAddress(_type.specifier.host,_type.specifier.port)
+				);
+				return $url.openConnection(_proxy);
+			}
+		})(mode.proxy);
+		$urlConnection.setRequestMethod(method);
+		if (mode && mode.timeout) {
+			if (mode.timeout.connect) {
+				$urlConnection.setConnectTimeout(mode.timeout.connect);
+			}
+			if (mode.timeout.read) {
+				$urlConnection.setReadTimeout(mode.timeout.read);
+			}
 		}
+		cookies.get(url,headers);
+		headers.forEach( function(header) {
+			$urlConnection.addRequestProperty(header.name,header.value);
+		});
+		$urlConnection.setInstanceFollowRedirects(false);
+		return $urlConnection;
+	}
+
+	var getStatus = function($urlConnection) {
+		if ($urlConnection.getResponseCode() == -1 || $urlConnection.getResponseMessage() == null) {
+			throw new Error("Response was not valid HTTP.");
+		}
+		var rv = {
+			code: Number($urlConnection.getResponseCode()),
+			reason: String($urlConnection.getResponseMessage())
+		};
+		rv.message = rv.reason;
+		$api.deprecate(rv,"message");
 		return rv;
+	}
+
+	var getHeaders = function($urlConnection) {
+		var headers = [];
+		var more = true;
+		var i = 1;
+		while(more) {
+			var name = $urlConnection.getHeaderFieldKey(i);
+			if (name != null) {
+				var value = $urlConnection.getHeaderField(i);
+				headers.push({name: String(name), value: String(value)});
+			} else {
+				more = false;
+			}
+			i++;
+		}
+		cookies.set(String($urlConnection.getURL().toExternalForm()),headers);
+		return headers;
+	}
+
+	var $urlConnection = connect(p.method,p.url.toString(),p.headers,{ proxy: p.proxy, timeout: p.timeout });
+	if (p.body) {
+		$urlConnection.setDoOutput(true);
+		if (p.body.type) {
+			$urlConnection.setRequestProperty("Content-Type", p.body.type);
+		} else {
+			//	TODO	Would be more accurate to remove the content type, but this does not seem to work; seems to default
+			//			to application/x-www-form-urlencoded
+			$urlConnection.setRequestProperty("Content-Type", "application/octet-stream");
+		}
+
+		//	TODO	Does not handle stream/$stream from rhino/mime
+		if (false) {
+		} else if (p.body.stream) {
+			$context.api.io.Streams.binary.copy(p.body.stream,$urlConnection.getOutputStream());
+			$urlConnection.getOutputStream().close();
+		} else if (typeof(p.body.string) != "undefined") {
+			var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
+			writer.write(p.body.string);
+			writer.close();
+		} else {
+			throw new TypeError("A message body must specify its content; no p.body.stream or p.body.string found.");
+		}
+	}
+	try {
+		var $input = $urlConnection.getInputStream();
+	} catch (e) {
+		var $error = $urlConnection.getErrorStream();
+	}
+	var result = ($input) ? $input : $error;
+	return {
+		status: getStatus($urlConnection),
+		headers: getHeaders($urlConnection),
+		stream: (result) ? $context.api.io.java.adapt(result) : null
 	}
 }
 
@@ -204,127 +275,8 @@ var Parameters = function(p) {
 	}
 }
 
-Url.Query = function(p) {
-	if (typeof(p) == "string") {
-		return new QueryString(p);
-	} else {
-		return new Parameters(p);
-	}
-}
-
 var Client = function(mode) {
 	var cookies = new Cookies();
-
-	var spi = function(p) {
-		var connect = function(method,url,headers,mode) {
-			var $url = new Packages.java.net.URL(url.toString());
-			debug("Requesting: " + url);
-			var $urlConnection = (function(proxy) {
-				if (!proxy) {
-					return $url.openConnection();
-				} else if (proxy.http || proxy.socks) {
-					var _type = (function() {
-						if (proxy.http) return {
-							type: Packages.java.net.Proxy.Type.HTTP,
-							specifier: proxy.http
-						}
-						if (proxy.socks) return {
-							type: Packages.java.net.Proxy.Type.SOCKS,
-							specifier: proxy.socks
-						};
-						throw new Error("Unrecognized proxy type in " + proxy);
-					})();
-					var _proxy = new Packages.java.net.Proxy(
-						_type.type,
-						new Packages.java.net.InetSocketAddress(_type.specifier.host,_type.specifier.port)
-					);
-					return $url.openConnection(_proxy);
-				}
-			})(mode.proxy);
-			$urlConnection.setRequestMethod(method);
-			if (mode && mode.timeout) {
-				if (mode.timeout.connect) {
-					$urlConnection.setConnectTimeout(mode.timeout.connect);
-				}
-				if (mode.timeout.read) {
-					$urlConnection.setReadTimeout(mode.timeout.read);
-				}
-			}
-			cookies.get(url,headers);
-			headers.forEach( function(header) {
-				$urlConnection.addRequestProperty(header.name,header.value);
-			});
-			$urlConnection.setInstanceFollowRedirects(false);
-			return $urlConnection;
-		}
-
-		var getStatus = function($urlConnection) {
-			if ($urlConnection.getResponseCode() == -1 || $urlConnection.getResponseMessage() == null) {
-				throw new Error("Response was not valid HTTP.");
-			}
-			var rv = {
-				code: Number($urlConnection.getResponseCode()),
-				reason: String($urlConnection.getResponseMessage())
-			};
-			rv.message = rv.reason;
-			$api.deprecate(rv,"message");
-			return rv;
-		}
-
-		var getHeaders = function($urlConnection) {
-			var headers = [];
-			var more = true;
-			var i = 1;
-			while(more) {
-				var name = $urlConnection.getHeaderFieldKey(i);
-				if (name != null) {
-					var value = $urlConnection.getHeaderField(i);
-					headers.push({name: String(name), value: String(value)});
-				} else {
-					more = false;
-				}
-				i++;
-			}
-			cookies.set(String($urlConnection.getURL().toExternalForm()),headers);
-			return headers;
-		}
-
-		var $urlConnection = connect(p.method,p.url.toString(),p.headers,{ proxy: p.proxy, timeout: p.timeout });
-		if (p.body) {
-			$urlConnection.setDoOutput(true);
-			if (p.body.type) {
-				$urlConnection.setRequestProperty("Content-Type", p.body.type);
-			} else {
-				//	TODO	Would be more accurate to remove the content type, but this does not seem to work; seems to default
-				//			to application/x-www-form-urlencoded
-				$urlConnection.setRequestProperty("Content-Type", "application/octet-stream");
-			}
-
-			//	TODO	Does not handle stream/$stream from rhino/mime
-			if (false) {
-			} else if (p.body.stream) {
-				$context.api.io.Streams.binary.copy(p.body.stream,$urlConnection.getOutputStream());
-				$urlConnection.getOutputStream().close();
-			} else if (typeof(p.body.string) != "undefined") {
-				var writer = $context.api.io.java.adapt($urlConnection.getOutputStream()).character();
-				writer.write(p.body.string);
-				writer.close();
-			} else {
-				throw new TypeError("A message body must specify its content; no p.body.stream or p.body.string found.");
-			}
-		}
-		try {
-			var $input = $urlConnection.getInputStream();
-		} catch (e) {
-			var $error = $urlConnection.getErrorStream();
-		}
-		var result = ($input) ? $input : $error;
-		return {
-			status: getStatus($urlConnection),
-			headers: getHeaders($urlConnection),
-			stream: (result) ? $context.api.io.java.adapt(result) : null
-		}
-	}
 
 	this.request = function(p) {
 		var method = (p.method) ? p.method.toUpperCase() : "GET";
@@ -364,7 +316,7 @@ var Client = function(mode) {
 			body: p.body,
 			proxy: p.proxy,
 			timeout: p.timeout
-		});
+		},cookies);
 		var status = response.status;
 		var headers = response.headers;
 
@@ -476,10 +428,40 @@ $exports.Authentication = new function() {
 }
 
 $exports.Body = new function() {
+	var QueryString = function(string) {
+		var decode = function(string) {
+			return String(Packages.java.net.URLDecoder.decode(string, "UTF-8"));
+		}
+
+		var pairs = string.split("&").map( function(token) {
+			var assign = token.split("=");
+			return { name: decode(assign[0]), value: decode(assign[1]) };
+		});
+
+		return pairs;
+	}
+	QueryString.encode = function(array) {
+		var encode = function(string) {
+			return String(Packages.java.net.URLEncoder.encode(string, "UTF-8"));
+		}
+
+		return array.map( function(item) {
+			return encode(item.name) + "=" + encode(item.value);
+		}).join("&");
+	};
+
+	UrlQuery = function(p) {
+		if (typeof(p) == "string") {
+			return new QueryString(p);
+		} else {
+			return new Parameters(p);
+		}
+	}
+
 	this.Form = function(p) {
 		return {
 			type: "application/x-www-form-urlencoded",
-			string: QueryString.encode(new Url.Query(p))
+			string: QueryString.encode(new UrlQuery(p))
 		};
 	}
 }
