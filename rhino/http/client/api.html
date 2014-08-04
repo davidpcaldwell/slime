@@ -105,26 +105,25 @@ END LICENSE
 				var Cookie = Packages.javax.servlet.http.Cookie;
 
 				scope.$Context = function(gae) {
-					if ($jsapi.module("rhino/io")) {
-						var js = $jsapi.module("js/object");
-						var java = $jsapi.module("rhino/host");
-						var io = $jsapi.module("rhino/io", {
-							api: {
-								java: java
-							},
-							$java: new Packages.inonit.script.runtime.io.Streams()
-						});
+					var js = $jsapi.loader.module("../../../js/object/");
+					var java = $jsapi.loader.module("../../../rhino/host/", {
+						$rhino: jsh.$jsapi.$rhino
+					});
+					var io = $jsapi.loader.module("../../../rhino/io", {
+						api: {
+							java: java,
+							mime: $jsapi.loader.module("../../../js/mime/")
+						},
+						$java: new Packages.inonit.script.runtime.io.Streams()
+					});
 
-						this.api = {
-							js: js,
-							io: io
-						};
-					} else {
-						this.api = {
-							js: jsh.js,
-							io: jsh.io
-						}
-					}
+					this.api = {
+						js: js,
+						io: io,
+						web: $jsapi.loader.module("../../../js/web/", {
+							escaper: $jsapi.loader.file("../../../js/web/context.java.js")
+						})
+					};
 					this.port = port;
 					this.gae = gae;
 				};
@@ -520,11 +519,28 @@ END LICENSE
 						var response = client.request({
 							method: "GET"
 							,url: "http://127.0.0.1:" + context.port + "/"
-							,parse: function(response) {
+							,evaluate: function(response) {
 								return response.body.stream.character().asString();
 							}
 						});
 						test(response == "Hello, World!");
+					}
+				]]></script>
+				<script type="application/x.jsapi#tests" jsapi:id="Parameters"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+						var client = new module.Client();
+						servlet.set(function(request,response) {
+							response.getWriter().print(request.getRequestURL()+"?"+request.getQueryString());
+						});
+						var url = "http://127.0.0.1:" + context.port + "/hello?world=earth";
+						var response = client.request({
+							method: "GET"
+							,url: url
+							,evaluate: function(response) {
+								return response.body.stream.character().asString();
+							}
+						});
+						verify(response).is(url);
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
@@ -574,7 +590,7 @@ END LICENSE
 						var response = client.request({
 							method: "GET",
 							url: "http://127.0.0.1:" + context.port + "/"
-							,parse: function(response) {
+							,evaluate: function(response) {
 							}
 						});
 						test(redirected);
