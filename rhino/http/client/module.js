@@ -140,7 +140,7 @@ var Cookies = function() {
 	}
 };
 
-var spi = function(p,cookies) {
+var spi = function(p) {
 	var connect = function(method,url,headers,mode) {
 		var $url = new Packages.java.net.URL(url.toString());
 		debug("Requesting: " + url);
@@ -209,7 +209,6 @@ var spi = function(p,cookies) {
 			}
 			i++;
 		}
-		cookies.set(String($urlConnection.getURL().toExternalForm()),headers);
 		return headers;
 	}
 
@@ -319,6 +318,7 @@ var Client = function(mode) {
 		},cookies);
 		var status = response.status;
 		var headers = response.headers;
+		cookies.set(url.toString(),response.headers);
 
 		response.headers.get = function(name) {
 			var values = this
