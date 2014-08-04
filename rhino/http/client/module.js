@@ -175,7 +175,6 @@ var spi = function(p,cookies) {
 				$urlConnection.setReadTimeout(mode.timeout.read);
 			}
 		}
-		cookies.get(url,headers);
 		headers.forEach( function(header) {
 			$urlConnection.addRequestProperty(header.name,header.value);
 		});
@@ -309,6 +308,7 @@ var Client = function(mode) {
 		if (p.authorization) {
 			headers.push({ name: "Authorization", value: p.authorization });
 		}
+		cookies.get(url,headers);
 		var response = spi({
 			method: method,
 			url: url,
