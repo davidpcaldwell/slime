@@ -38,11 +38,7 @@ $exports.Url = function(o) {
 	}
 
 	if (typeof(this.query) == "object" && typeof(this.query.length) == "number") {
-		this.query = (function(array) {
-			return array.map(function(item) {
-				return $context.escaper.encode(item.name) + "=" + $context.escaper.encode(item.value);
-			}).join("&");
-		})(this.query);
+		this.query = $exports.Url.query(this.query);
 	}
 
 	this.resolve = function(reference) {
@@ -135,4 +131,9 @@ $exports.Url = function(o) {
 };
 $exports.Url.parse = function(string) {
 	return new $exports.Url(parse(string))
+}
+$exports.Url.query = function(array) {
+	return array.map(function(item) {
+		return $context.escaper.encode(item.name) + "=" + $context.escaper.encode(item.value);
+	}).join("&");
 }
