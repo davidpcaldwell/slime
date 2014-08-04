@@ -82,6 +82,8 @@ $exports.console = new function() {
 
 	this.test = function(test) {
 		var success = test.success;
+		var old = false;
+		if (old) {
 		if (!success) {
 			if (!dots) {
 				$context.console.print(indent());
@@ -101,6 +103,32 @@ $exports.console = new function() {
 				dots = true;
 			}
 			$context.console.print(".");
+		}
+		} else {
+			$context.console.print(indent());
+			if (!success) {
+//				if (!dots) {
+//					$context.console.print(indent());
+//					dots = true;
+//				}
+//				var code = (success == null) ? "*" : "X";
+//				$context.console.print(code);
+				$context.console.println(test.message(success));
+				if (test.error) {
+					printError(test.error);
+				} else if (success == null) {
+					$context.console.println("No error property provided for test.")
+				}
+				stack[stack.length-1].success = false;
+			} else {
+//				if (!dots) {
+//					$context.console.print(indent());
+//					dots = true;
+//				}
+				$context.console.println(test.message(success));
+//				$context.console.print(".");
+			}
+			
 		}
 	}
 
