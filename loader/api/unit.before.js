@@ -19,6 +19,164 @@ $exports.Scenario = function(properties) {
 
 	this.name = properties.name;
 
+	var Verify = function(scope,vars) {
+		var Value = function(v,name) {
+			var prefix = (name) ? (name + " ") : "";
+			
+			if (typeof(v) != "object" || !v) {
+				this.name = name;
+				this.value = v;
+			}
+			
+			if (typeof(v) == "string") {
+				var expression = (name) ? name : "\"" + v + "\"";
+				this.length = function() {
+					return new Value(v.length, expression + ".length");
+				};
+			}
+			
+			this.isUndefined = function() {
+				scope.test({
+					success: function() { return typeof(v) === "undefined"; },
+					message: function(success) {
+						return prefix + ((success) ? "is undefined" : "" + v + " is not undefined");
+					}
+				});
+			};
+			
+			var toLiteral = function(v) {
+				if (typeof(v) == "string") return "\"" + v + "\"";
+				return String(v);
+			}
+
+			var represent = function(value) {
+				if (value instanceof Value) {
+					return value;
+				} else {
+					return {
+						value: value,
+						name: toLiteral(value)
+					};
+				}				
+			}
+			
+			this.is = function(value) {
+				var specified = represent(value);
+				scope.test({
+					success: function() { return v === specified.value; },
+					message: function(success) {
+						return prefix + ((success) ? "is " + specified.name : " is " + toLiteral(v) + ", not " + specified.name);
+					}
+				});
+			};
+			
+			this.isNotEqualTo = function(value) {
+				var specified = represent(value);
+				scope.test({
+					success: function() { return v != value; },
+					message: function(success) {
+						return prefix + ((success) ? "is not equal to " + specified.name : " equals " + specified.name + " (value: " + v + "), but should not.");
+					}
+				})
+			};
+		};
+
+		var Object = function(o,name) {
+			Value.call(this,o,name);
+			var prefix = function(x) {
+				var isNumber = function(x) {
+					return !isNaN(Number(x));
+				};
+
+				var access = (isNumber(x)) ? "[" + x + "]" : "." + x;
+				return (name) ? (name + access) : access;
+			}
+
+			var wrap = function(x) {
+				return function() {
+					var argumentToString = function(v) {
+						if (typeof(v) == "string") return "\"" + v + "\"";
+						return String(v);
+					}
+					var strings = Array.prototype.map.call(arguments,argumentToString);
+					return rv(o[x].apply(o,arguments),prefix(x)+"(" + strings.join() + ")");
+				}
+			};
+
+			var wrapProperty = function(x) {
+				return function() {
+					return rv(o[x],prefix(x));
+				}
+			};
+			
+			this.evaluate = function(f) {
+				var mapped = f.call(o);
+				return rv(mapped,name+"{" + f + "}")
+			}
+
+			for (var x in o) {
+				if (typeof(o[x]) == "function") {
+					this[x] = wrap(x);
+				} else {
+					this[x] = wrapProperty(x);
+				}
+			}
+			if (o instanceof Array) {
+				this.length = wrapProperty("length");
+			}
+		};
+		
+		var delegates = [];
+
+		var rv = function(value,name) {
+			for (var i=0; i<delegates.length; i++) {
+				if (delegates[i].accept(value)) {
+					return delegates[i].wrap(value);
+				}
+			}
+			if (value && typeof(value) == "object") {
+				var localName = (function() {
+					if (name) return name;
+					for (var x in vars) {
+						if (vars[x] == value) {
+							return x;
+						}
+					}
+				})();
+				return new Object(value,localName);
+			}
+			return new Value(value,name);
+		};
+//		var $document = rv(inonit.slim.getDocument(),"inonit.slim.getDocument()");
+//		for (var x in $document) {
+//			rv[x] = $document[x];
+//		}
+//		rv.getComponent = (function() {
+//			return function(path,decorator) {
+//				var component = inonit.slim.getDocument().getComponent(path);
+//				if (decorator) decorator.call(component);
+//				return rv(component,"getComponent(\"" + path + "\")");
+//			}
+//		})();
+//		rv.map = function(object,f) {
+//			return object.evaluate(f);
+//		};
+//		for (var x in vars) {
+//			if (typeof(vars[x]) == "function") {
+//				rv[x] = (function(delegate,name) {
+//					return function() {
+//						var v = delegate.apply(inonit.slim.getDocument(),arguments);
+//						//	TODO	the below does a poor job at creating the prefix to use
+//						return rv(v,name);
+//					}
+//				})(vars[x],x)
+//			} else {
+//				rv[x] = rv(vars[x]);
+//			}
+//		}
+		return rv;
+	};
+	
 	var Scope = function(console,callback) {
 		var self = this;
 		if (Object.prototype.__defineGetter__) {
@@ -216,6 +374,12 @@ $exports.Scenario = function(properties) {
 			} else {
 				units.push({ test: assertion });
 			}
+		};
+		
+		var verify = new Verify(this);
+		
+		this.verify = function(value) {
+			return verify(value);
 		}
 
 		this.start = function(console) {
