@@ -211,7 +211,8 @@ this.jsh = new function() {
 				if (format.base) return new Loader({ _unpacked: format.base });
 				throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
 			})(format);
-			return loader.module(format.name,p);
+			var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
+			return loader.module.apply(loader,args);
 		}
 
 		this.classpath = new function() {
