@@ -92,6 +92,7 @@
 		return rv;
 	}
 
+//<<<<<<< local
 	loader.Loader = loader.$api.Function(
 		loader.$api.Function.conditional(
 			function(p) {
@@ -120,10 +121,53 @@
 			p._code = Code.slime(p._packed);
 		}
 	});
+//=======
+//			var parameter = new function() {
+//				this.toString = function() {
+//					return "rhino/literal.js: _source = " + p._source;
+//				};
+//				
+//				this.getCode = function(path) {
+//					return getCode({
+//						_source: p._source,
+//						path: path
+//					})
+//				};
+//>>>>>>> other
 
+//<<<<<<< local
 	loader.classpath = new function() {
 		this.toString = function() {
 			return String($javahost.getClasspath());
+//=======
+//				this.Child = function(prefix) {
+//					var c = {
+//						_source: p._source.child(prefix),
+//						Loader: (p.Loader) ? function() {
+//							return p.Loader.call(this,prefix);
+//						} : null
+//					};
+//					var rv = new Callee(c);
+//					if (p.Loader) {
+//						var returned = p.Loader.call(rv,prefix);
+//						if (typeof(returned) == "object" && returned != null) {
+//							rv = returned;
+//						}
+//					}
+//					return rv;
+//				}
+//			};
+//
+//			var rv = new loader.Loader(parameter);
+//			rv.toString = function() {
+//				return parameter.toString();
+//			}
+//			rv._stream = function(path) {
+//				return p._source.getResourceAsStream(path);
+//			};
+//			rv._resource = loader.$api.deprecate(rv._stream);
+//			return rv;
+//>>>>>>> other
 		}
 
 		this.add = function(_source) {
