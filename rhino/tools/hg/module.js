@@ -407,7 +407,7 @@ var LocalRepository = function(dir) {
 
 			var config = (m && m.config) ? m.config : {};
 
-			if (m.revision) {
+			if (m && m.revision) {
 				targetargs.push("-r", m.revision);
 			}
 
