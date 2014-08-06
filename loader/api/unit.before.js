@@ -378,9 +378,7 @@ $exports.Scenario = function(properties) {
 		
 		var verify = new Verify(this);
 		
-		this.verify = function(value) {
-			return verify(value);
-		}
+		this.verify = verify;
 
 		this.start = function(console) {
 			if (console.start) console.start(scenario);
