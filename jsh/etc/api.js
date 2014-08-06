@@ -46,6 +46,7 @@
 	modules.add({ api: { path: "loader/test/data/coffee/" } });
 	modules.add(new Module("js/object/", { api: true, module: true }));
 	modules.add(new Module("js/mime/", { api: false, module: true }));
+	modules.add(new Module("js/web/", { api: false, module: true }));
 	modules.add(new Module("js/debug/", { api: false, module: true }));
 	modules.add(new Module("rhino/host/", { api: true, module: { javac: true } }));
 	modules.add(new Module("rhino/io/", { api: true, module: true }));
