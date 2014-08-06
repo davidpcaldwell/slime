@@ -32,6 +32,10 @@ var getApiHtml = function(moduleMainPathname) {
 }
 
 var Jsdom = function(base,dom) {
+	this.toString = function() {
+		return "Jsdom: base=" + base + " dom=" + dom;
+	}
+	
 	var Element = function(delegate,parent) {
 		var map = function(query,parent) {
 			return query.map(function(e) {
@@ -89,6 +93,21 @@ var Jsdom = function(base,dom) {
 			}, null);
 		}
 
+		if (parent) {
+			this.getRelativePath = function(path) {
+				return parent.getRelativePath(path);
+			};			
+		} else {
+			this.getRelativePath = function(path) {
+				return base.getRelativePath(path);
+			};
+			this.getRelativePath.toString = (function(underlying) {
+				return function() {
+					return underlying.toString.call(this) + " base=" + String(base);
+				};
+			})(this.getRelativePath.toString);
+		}
+	
 		//	Unclear whether below used
 
 		this.toString = function() {
@@ -97,7 +116,7 @@ var Jsdom = function(base,dom) {
 	}
 
 	this.top = new Element(dom.document.getElement());
-
+	
 	this.load = function(path) {
 		var file = base.getFile(path);
 		if (file == null) {
@@ -200,6 +219,9 @@ $exports.tests = new function() {
 		//	TODO	it also uses getResourcePathname; is there any difference? Would a scope created via $jsapi.test support
 		//			it? (probably not)
 		return {
+			$relative: function(getRelativePath) {
+				return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath });
+			},
 			$jsapi: {
 				module: $api.deprecate(function(name,context) {
 					if (typeof(name) == "object" && typeof(context) == "string") {
@@ -226,6 +248,15 @@ $exports.tests = new function() {
 					},
 					file: function(name,context,target) {
 						return jsh.loader.file(suite.getRelativePath(name),context,target);
+					},
+					eval: function(name,scope) {
+						var code = suite.getRelativePath(name);
+						if (!code.file) throw new Error("No file at " + code + " path=" + name);
+						var scope = (scope) ? scope : {};
+						with(scope) {
+							return eval(code.file.read(String));
+						}
+//						return jsh.loader.run(suite.getRelativePath(name),scope);
 					},
 					coffee: jsh.$jsapi.$coffee
 				},
@@ -287,6 +318,7 @@ $exports.tests = new function() {
 				for (var i=0; i<contexts.length; i++) {
 					try {
 						if (suite.getScenario) {
+							debugger;
 							scope.module = suite.loadWith(contexts[i]);
 							scope.context = contexts[i];
 							var scenario = suite.getScenario(scope);

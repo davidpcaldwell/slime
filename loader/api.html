@@ -348,6 +348,11 @@ END LICENSE
 		</ul>
 	</div>
 	<div jsapi:id="$api">
+		<script type="application/x.jsapi#initialize">
+			debugger;
+			scope.api = $jsapi.loader.eval("api.js", { $platform: $platform });
+			scope.api.loaded = true;
+		</script>
 		<h1>$api</h1>
 		<div>
 			The <code>$api</code> object is also provided to code loaded by the platform loader. It provides capabilities for
@@ -484,8 +489,10 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
+				<script type="application/x.jsapi#tests">
+					verify(api.loaded,"api.loaded").is(true);
+				</script>
 				<script jsapi:id="deprecate.function" type="application/x.jsapi#tests"><![CDATA[
-					var was = $api.deprecate.warning;
 					var called = 0;
 					var warnings = 0;
 					var f = function() {
@@ -493,19 +500,18 @@ END LICENSE
 						return called;
 					};
 					var warning = function(p) {
-						test(p.callee == f);
+						verify(p.callee).is(f);
 						warnings++;
 					};
-					$api.deprecate.warning = warning;
+					api.deprecate.warning = warning;
 
-					var deprecated = $api.deprecate(f);
-
-					test(f() == 1 && warnings == 0);
-					test(deprecated() == 2);
-					test(warnings == 1);
-					test(deprecated() == 3);
-					test(warnings == 2);
-					$api.deprecate.warning = was;
+					var deprecated = api.deprecate(f);
+					verify(f()).is(1);
+					verify(warnings).is(0);
+					verify(deprecated()).is(2);
+					verify(warnings).is(1);
+					verify(deprecated()).is(3);
+					verify(warnings).is(2);
 				]]></script>
 				<script jsapi:id="deprecate.object" type="application/x.jsapi#tests"><![CDATA[
 					var was = $api.deprecate.warning;
