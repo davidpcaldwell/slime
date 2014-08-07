@@ -389,20 +389,15 @@
 	};
 	
 	$exports.Value = function(v,name) {
-		this.property = function() {
-			return new $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + Array.prototype.join.call(arguments,"."))
-		};
-		
-		this.require = function() {
-			if (!v) {
-				throw new TypeError(name + " is required.");
-			}
-			var rv = v;
-			for (var i=0; i<arguments.length; i++) {
-				if (!rv[arguments[i]]) {
-					throw new TypeError(name + "." + Array.prototype.slice.call(arguments,0,i).join(".") + " is required.");
+		return new function() {
+			this.property = function() {
+				return new $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + Array.prototype.join.call(arguments,"."))
+			};
+
+			this.require = function() {
+				if (!v) {
+					throw new TypeError(name + " is required.");
 				}
-				rv = rv[arguments[i]];
 			}
 		}
 	};
