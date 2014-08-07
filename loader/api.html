@@ -349,9 +349,8 @@ END LICENSE
 	</div>
 	<div jsapi:id="$api">
 		<script type="application/x.jsapi#initialize">
-			debugger;
 			scope.api = $jsapi.loader.eval("api.js", { $platform: $platform });
-			scope.api.loaded = true;
+			scope.api.loadedByJsapi = true;
 		</script>
 		<h1>$api</h1>
 		<div>
@@ -490,7 +489,7 @@ END LICENSE
 					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
-					verify(api.loaded,"api.loaded").is(true);
+					verify(api.loadedByJsapi,"$api.loadedByJsapi").is(true);
 				</script>
 				<script jsapi:id="deprecate.function" type="application/x.jsapi#tests"><![CDATA[
 					var called = 0;
