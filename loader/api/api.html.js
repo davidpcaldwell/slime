@@ -44,12 +44,17 @@ $exports.getApiHtmlPath = function(path) {
 }
 
 var run = function() {
-	if (typeof($context) == "object" && $context.run) {
-		$context.run(arguments[0],arguments[1]);
-	} else {
-		with(arguments[1]) {
-			eval(arguments[0]);
+	try {
+		if (typeof($context) == "object" && $context.run) {
+			$context.run(arguments[0],arguments[1]);
+		} else {
+			with(arguments[1]) {
+				eval(arguments[0]);
+			}
 		}
+	} catch (e) {
+		e.code = arguments[0];
+		throw e;
 	}
 }
 

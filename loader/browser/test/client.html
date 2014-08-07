@@ -511,6 +511,21 @@ END LICENSE
 							log("Failure: " + test);
 							log("Reason: " + test.message());
 						}
+						if (test.error) {
+							log("Error: " + test.error);
+							if (test.error.stack) {
+								if (window.console && window.console.log) {
+									window.console.log(test.error.stack);
+								}
+								if (test.error.code) {
+									if (window.console && window.console.log) {
+										window.console.log(test.error.code);
+									}
+									log(test.error.code);
+								}
+								log(test.error.stack);
+							}
+						}
 						var div = document.createElement("div");
 						div.appendChild(document.createTextNode(test.message()));
 						current.appendChild(div);
