@@ -10,18 +10,12 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (!$context.api) {
-	throw new TypeError("Missing $context.api");
-}
-if (!$context.api.js) {
-	throw new TypeError("Missing $context.api.js");
-}
-if (!$context.api.io) {
-	throw new TypeError("Missing $context.api.io");
-}
-if (!$context.api.web) {
-	throw new TypeError("Missing $context.api.web");
-}
+(function($context) {
+	$context.property("api").require();
+	$context.property("api","js").require();
+	$context.property("api","io").require();
+	$context.property("api","web").require();
+})($api.Value($context,"$context"));
 
 //	TODO	Pretty much all this does currently is log "Requesting:" followed by the URL being requested; should document and make
 //			this much more advanced; probably should configure at instance level, not module level
