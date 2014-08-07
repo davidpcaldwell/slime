@@ -124,6 +124,7 @@
 				}
 				req.open("GET", path, false);
 				req.send(null);
+				//	TODO	throw actual error object
 				if (req.status >= 400) throw {
 					code: req.status,
 					message: req.statusText,

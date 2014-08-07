@@ -263,8 +263,9 @@ END LICENSE
 							//	TODO	obsolete?
 							this.top = "";
 							
-							this.$relative = function(path) {
-								return new Self(base + this.top + path);
+							this.$relative = function(getRelativePath) {
+								//	TODO	since this ignores getRelativePath, it almost certainly does not work
+								return new Self(base + this.top);
 							};
 
 							this.$jsapi = new function() {
