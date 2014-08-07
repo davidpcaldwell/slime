@@ -107,7 +107,7 @@ $exports.Scenario = function(properties) {
 						}
 					}
 
-					this.threw = new Object(e,name + "threw " + e);
+					this.threw = new Object(e,name + " thrown");
 					this.threw.type = function(type) {
 						scope.test({
 							success: function() { return e instanceof type; },
@@ -198,6 +198,9 @@ $exports.Scenario = function(properties) {
 			}
 			if (o instanceof Array) {
 				this.length = wrapProperty("length");
+			}
+			if (o instanceof Error) {
+				this.message = wrapProperty("message");
 			}
 		};
 		
