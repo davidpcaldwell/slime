@@ -741,6 +741,77 @@ END LICENSE
 				<ul>
 				</ul>
 			</li>
+			<li class="object">
+				<div class="name">Object</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">property</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							verify(api.Object).isNotEqualTo(void(0));
+							verify(api.Object.property).isNotEqualTo(void(0));
+							var test = {
+								name: "value"
+							};
+							verify(api.Object.property.call(test,"name","length")).is("value".length);
+						</script>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">Value</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">require</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							verify(api.Value).isNotEqualTo(void(0));
+							var one = {
+								name: "value1",
+								nested: {
+									value: "nested1",
+									method: function() {
+										return "method";
+									}
+								}
+							};
+							var value = new $api.Value(one,"one");
+							verify(value).require().threw.nothing();
+							verify(value).require("foo").threw.type(TypeError);
+							verify(value).require("foo","bar").threw.type(TypeError);
+							verify(value).require("name").threw.nothing();
+							verify(value).require("name","length").threw.nothing();
+							verify(value).require("nested","value").threw.nothing();
+							verify(value).require("nested","value1").threw.type(TypeError);
+							verify(one).nested().method().is("method");
+						</script>
+					</li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 	<div>

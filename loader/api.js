@@ -379,6 +379,33 @@
 //			if (typeof(this.arguments[p.index]) != "string") throw new TypeError(reference + " must be a string, not " + typeof(this.arguments[p.index]));
 //		};
 //	};
+	$exports.Object = {};
+	$exports.Object.property = function() {
+		var rv = this;
+		for (var i=0; i<arguments.length; i++) {
+			rv = rv[arguments[i]];
+		}
+		return rv;
+	};
+	
+	$exports.Value = function(v,name) {
+		this.property = function() {
+			return new $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + Array.prototype.join.call(arguments,"."))
+		};
+		
+		this.require = function() {
+			if (!v) {
+				throw new TypeError(name + " is required.");
+			}
+			var rv = v;
+			for (var i=0; i<arguments.length; i++) {
+				if (!rv[arguments[i]]) {
+					throw new TypeError(name + "." + Array.prototype.slice.call(arguments,0,i).join(".") + " is required.");
+				}
+				rv = rv[arguments[i]];
+			}
+		}
+	};
 
 	return $exports;
 })()
