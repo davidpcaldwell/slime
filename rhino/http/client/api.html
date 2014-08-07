@@ -508,6 +508,9 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#initialize">
 					scope.Cookie = Packages.javax.servlet.http.Cookie;
+					scope.skip = function(verify) {
+						verify("Skipping: no Tomcat").is("Skipping: no Tomcat");
+					}
 				</script>
 				<script type="application/x.jsapi#tests" jsapi:id="Hello World"><![CDATA[
 					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
@@ -524,6 +527,8 @@ END LICENSE
 							}
 						});
 						test(response == "Hello, World!");
+					} else {
+						skip(verify);
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Parameters"><![CDATA[
@@ -541,6 +546,8 @@ END LICENSE
 							}
 						});
 						verify(response).is(url);
+					} else {
+						skip(verify);
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
@@ -566,6 +573,8 @@ END LICENSE
 							method: "GET"
 							,url: "http://127.0.0.1:" + context.port + "/"
 						});
+					} else {
+						skip(verify);
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
@@ -594,6 +603,8 @@ END LICENSE
 							}
 						});
 						test(redirected);
+					} else {
+						skip(verify);
 					}
 				]]></script>
 			</li>
