@@ -65,7 +65,7 @@ $exports.Scenario = function(properties) {
 				scope.test({
 					success: function() { return v === specified.value; },
 					message: function(success) {
-						return prefix + ((success) ? "is " + specified.name : " is " + toLiteral(v) + ", not " + specified.name);
+						return prefix + ((success) ? "is " + specified.name : "is " + toLiteral(v) + ", not " + specified.name);
 					}
 				});
 			};
