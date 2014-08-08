@@ -391,16 +391,55 @@
 	$exports.Value = function(v,name) {
 		return new function() {
 			this.property = function() {
-				return new $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + Array.prototype.join.call(arguments,"."))
+				return new $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + "." + Array.prototype.join.call(arguments,"."))
 			};
 
 			this.require = function() {
 				if (!v) {
-					throw new TypeError(name + " is required.");
+					throw new TypeError(name + " is required");
 				}
 			}
 		}
 	};
+	
+	$exports.Events = function(p) {
+		return new function() {
+			var byType = {};
+
+			var Event = function(type,detail) {
+				this.type = type;
+				this.source = p.source;
+				this.detail = detail;
+			};
+
+			p.source.listeners = new function() {
+				this.add = function(name,handler) {
+					if (!byType[name]) {
+						byType[name] = [];
+					}
+					byType[name].push(handler);
+				};
+
+				this.remove = function(name,handler) {
+					if (byType[name]) {
+						var index = byType[name].indexOf(handler);
+						if (index != -1) {
+							byType[name].splice(index,1);
+						}
+					}
+				};
+			};
+
+			this.fire = function(type,detail) {
+				if (byType[type]) {
+					byType[type].forEach(function(listener) {
+						//	In a DOM-like structure, we would need something other than 'source' to act as 'this'
+						listener.call(p.source,new Event(type,detail))
+					});
+				}
+			}
+		};
+	}
 
 	return $exports;
 })()
