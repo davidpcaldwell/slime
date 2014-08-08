@@ -215,6 +215,8 @@ var Streams = new function() {
 				if (isJavaType(Packages.java.io.OutputStream)(to)) return to;
 				if (to.java && to.java.adapt && isJavaType(Packages.java.io.OutputStream)(to.java.adapt())) return to.java.adapt();
 			})();
+			//	NASHORN	next line
+			if (!_java) _java = new Packages.inonit.script.runtime.io.Streams();
 			if (mode) {
 				_java.copy(_r,_w,false);
 				if (mode.onFinish) {

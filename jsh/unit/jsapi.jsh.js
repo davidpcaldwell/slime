@@ -98,7 +98,9 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 				if (arguments.length == 0) {
 					Packages.java.lang.System.out.println();
 				} else {
-					Packages.java.lang.System.out.println(s);
+					//	NASHORN	under some scenarios when running test suite failing to wrap s in a string causes a
+					//			NullPointerException to get thrown out of Nashorn
+					Packages.java.lang.System.out.println(String(s));
 				}
 			},
 			print: function(s) {
