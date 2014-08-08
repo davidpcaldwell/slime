@@ -124,6 +124,7 @@ END LICENSE
 							escaper: $jsapi.loader.file("../../../js/web/context.java.js")
 						})
 					};
+					this.io = io;
 					this.port = port;
 					this.gae = gae;
 				};
@@ -611,6 +612,47 @@ END LICENSE
 							}
 						});
 						test(redirected);
+					} else {
+						test(skip("No Tomcat"));
+					}
+				]]></script>
+				<script type="application/x.jsapi#tests" jsapi:id="spi"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+						var client = new module.Client({
+							spi: function(original) {
+								return function(p) {
+									var buffer = new context.io.Buffer();
+									//	TODO	below was buffer.writeText("Hello, Dude!"), which counterintuitively, silently
+									//			failed; consider alternatives for rhino/io
+									buffer.writeText().write("Hello, Dude!");
+									buffer.close();
+									return {
+										status: {
+											code: 200,
+											reason: "OK"
+										},
+										headers: [
+											{ name: "Content-Type", value: "text/plain" }
+										],
+										stream: buffer.readBinary()
+									}
+								}
+							}
+						});
+						var redirected = false;
+						servlet.set(function(request,response) {
+							response.setContentType("text/plain");
+							response.getWriter().print("Hello, World!");
+						});
+						var response = client.request({
+							method: "GET",
+							url: "http://127.0.0.1:" + context.port + "/"
+							,evaluate: function(response) {
+								return response;
+							}
+						});
+						//	TODO	add rhino/io Resource capability
+						verify(response.body.stream.character().asString()).is("Hello, Dude!");
 					} else {
 						test(skip("No Tomcat"));
 					}
