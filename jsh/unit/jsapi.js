@@ -318,7 +318,6 @@ $exports.tests = new function() {
 				for (var i=0; i<contexts.length; i++) {
 					try {
 						if (suite.getScenario) {
-							debugger;
 							scope.module = suite.loadWith(contexts[i]);
 							scope.context = contexts[i];
 							var scenario = suite.getScenario(scope);
