@@ -171,14 +171,6 @@ public abstract class Shell {
 		}
 	}
 
-	public Integer execute(Execution execution) throws Invocation.CheckedException {
-		execution.initialize(this);
-		execution.addEngine();
-		execution.script(this.getInstallation().getJshLoader("jsh.js"));
-//		execution.script(this.getInvocation().getScript().getSource());
-		return execution.execute();
-	}
-
 	public static abstract class Execution {
 		private Shell shell;
 
@@ -195,5 +187,13 @@ public abstract class Shell {
 		protected abstract void addEngine();
 		protected abstract void script(Code.Source.File script);
 		protected abstract Integer execute();
+		
+		public final Integer execute(Shell _this) {
+			final Execution execution = this;
+			execution.initialize(_this);
+			execution.addEngine();
+			execution.script(_this.getInstallation().getJshLoader("jsh.js"));
+			return execution.execute();			
+		}
 	}
 }

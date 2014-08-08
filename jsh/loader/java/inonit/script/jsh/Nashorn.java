@@ -40,12 +40,12 @@ public class Nashorn {
 
 	public static Integer execute(Shell shell) throws Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(false);
-		return shell.execute(execution);
+		return execution.execute(shell);
 	}
 
 	private static void main(Shell shell) throws Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(true);
-		Integer rv = shell.execute(execution);
+		Integer rv = execution.execute(shell);
 		if (rv == null) {
 		} else if (rv.intValue() == 0) {
 		} else {
