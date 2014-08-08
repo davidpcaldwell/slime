@@ -23,8 +23,8 @@ $exports.server = (function() {
 		var environment = {
 			CATALINA_HOME: jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory,
 			CATALINA_BASE: (function() {
-				if (parameters.options["tomcat.base"]) {
-					return parameters.options["tomcat.base"].directory;
+				if ($context["tomcat.base"]) {
+					return $context["tomcat.base"].directory;
 				} else {
 					return jsh.shell.TMPDIR.createTemporary({ directory: true });
 				}
@@ -78,7 +78,7 @@ $exports.server = (function() {
 			jsh.shell.echo("Invoking Tomcat start script ...");
 			server.start({
 				debug: {
-					script: parameters.options["debug:server"]
+					script: $context["debug:server"]
 				}
 			});
 			//	TODO	horrifying synchronization strategy

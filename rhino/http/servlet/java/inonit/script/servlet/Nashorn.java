@@ -72,6 +72,10 @@ class Nashorn extends Servlet.ScriptContainer {
 			super(servlet);
 			this.host = host;
 		}
+		
+		public String getCoffeeScript() throws IOException {
+			return getLoader().getCoffeeScript();
+		}
 
 		public Loader.Classpath getClasspath() {
 			return host.getClasspath();

@@ -23,7 +23,10 @@ var $loader = (function() {
 				$getLoaderCode: function(path) {
 					return $host.getLoader().getLoaderCode(path);
 				},
-				$classpath: $host.getClasspath()
+				$classpath: $host.getClasspath(),
+				$getCoffeeScript: function() {
+					return $host.getCoffeeScript();
+				}
 			},
 			null
 		);
