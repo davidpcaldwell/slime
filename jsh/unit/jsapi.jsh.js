@@ -126,6 +126,7 @@ if (!parameters.options.notest) {
 				jsh.shell.echo("Setting environment value " + tokens[0] + " to '" + tokens[1] + "'");
 				jsh.js.Object.expando.set(rv,tokens[0],tokens[1]);
 			} else if (item.split(":").length > 1) {
+				//	Interpret as path to module
 				var coloned = item.split(":");
 				var pathname = jsh.file.Pathname(coloned.slice(1).join(":"));
 				jsh.shell.echo("Loading environment value " + coloned[0] + " from " + pathname);
