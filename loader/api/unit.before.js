@@ -65,7 +65,7 @@ $exports.Scenario = function(properties) {
 				scope.test({
 					success: function() { return v === specified.value; },
 					message: function(success) {
-						return prefix + ((success) ? "is " + specified.name : " is " + toLiteral(v) + ", not " + specified.name);
+						return prefix + ((success) ? "is " + specified.name : "is " + toLiteral(v) + ", not " + specified.name);
 					}
 				});
 			};
@@ -93,13 +93,88 @@ $exports.Scenario = function(properties) {
 			}
 
 			var wrap = function(x) {
+				var DidNotReturn = function(e,name) {
+					var delegate = new Value(void(0),name);
+
+					for (var x in delegate) {
+						this[x] = function() {
+							scope.test({
+								success: function() { return false; },
+								message: function(success) {
+									return name + "threw " + e;
+								}
+							});
+						}
+					}
+
+					this.threw = new Object(e,name + " thrown");
+					this.threw.type = function(type) {
+						scope.test({
+							success: function() { return e instanceof type; },
+							message: function(success) {
+								if (success) return name + " threw expected " + type.name;
+								return "Threw " + e + ", not " + type.name;
+							}
+						});												
+					};
+					this.threw.nothing = function() {
+						scope.test({
+							success: function() { return false; },
+							message: function(success) {
+								return prefix + "threw " + e;
+							}
+						});						
+					}
+				};
+				
+				var DidNotThrow = function(returned,name) {
+					var delegate = new Value(void(0),name);
+					
+					for (var x in delegate) {
+						this[x] = function() {
+							scope.test({
+								success: function() { return false; },
+								message: function(success) {
+									return name + " did not throw; returned " + returned;
+								}
+							});
+						}						
+					}
+					
+					this.nothing = function() {
+						scope.test({
+							success: function() { return true; },
+							message: function(success) {
+								return name + " did not error. (returned: " + returned + ")";
+							}
+						});
+					};
+					
+					this.type = function(type) {
+						scope.test({
+							success: function() { return false; },
+							message: function(success) {
+								return name + " did not throw; returned " + returned;
+							}
+						})
+					}
+				}
+				
 				return function() {
 					var argumentToString = function(v) {
 						if (typeof(v) == "string") return "\"" + v + "\"";
 						return String(v);
 					}
 					var strings = Array.prototype.map.call(arguments,argumentToString);
-					return rv(o[x].apply(o,arguments),prefix(x)+"(" + strings.join() + ")");
+					var name = prefix(x)+"(" + strings.join() + ")";
+					try {
+						var returned = o[x].apply(o,arguments);
+						var value = rv(returned,name);
+						value.threw = new DidNotThrow(returned,name);
+						return value;
+					} catch (e) {
+						return new DidNotReturn(e,name);
+					}
 				}
 			};
 
@@ -123,6 +198,9 @@ $exports.Scenario = function(properties) {
 			}
 			if (o instanceof Array) {
 				this.length = wrapProperty("length");
+			}
+			if (o instanceof Error) {
+				this.message = wrapProperty("message");
 			}
 		};
 		
@@ -378,9 +456,7 @@ $exports.Scenario = function(properties) {
 		
 		var verify = new Verify(this);
 		
-		this.verify = function(value) {
-			return verify(value);
-		}
+		this.verify = verify;
 
 		this.start = function(console) {
 			if (console.start) console.start(scenario);

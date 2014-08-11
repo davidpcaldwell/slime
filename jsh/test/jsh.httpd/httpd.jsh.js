@@ -215,7 +215,9 @@ var plugin = new function() {
 };
 
 var server = jsh.script.loader.file("server.js", {
-	coffeescript: parameters.options.coffeescript
+	coffeescript: parameters.options.coffeescript,
+	"tomcat.base": parameters.options["tomcat.base"],
+	"debug.server": parameters.options["debug.server"]
 }).server;
 
 var suites = {

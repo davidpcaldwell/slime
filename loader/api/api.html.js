@@ -44,12 +44,17 @@ $exports.getApiHtmlPath = function(path) {
 }
 
 var run = function() {
-	if (typeof($context) == "object" && $context.run) {
-		$context.run(arguments[0],arguments[1]);
-	} else {
-		with(arguments[1]) {
-			eval(arguments[0]);
+	try {
+		if (typeof($context) == "object" && $context.run) {
+			$context.run(arguments[0],arguments[1]);
+		} else {
+			with(arguments[1]) {
+				eval(arguments[0]);
+			}
 		}
+	} catch (e) {
+		e.code = arguments[0];
+		throw e;
 	}
 }
 
@@ -136,7 +141,12 @@ $exports.ApiHtmlTests = function(html,name) {
 			var otherhtml = html.load(path);
 			var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
 			rv.getElement = function(path) {
-				return getElement(otherhtml.top,path);
+				var rv = getElement(otherhtml.top,path);
+//				if (!otherhtml.getRelativePath) throw new Error("html " + otherhtml + " does not have getRelativePath");
+//				rv.getRelativePath = function(path) {
+//					return otherhtml.getRelativePath(path);
+//				}
+				return rv;
 			}
 			return rv;
 		}
@@ -151,6 +161,12 @@ $exports.ApiHtmlTests = function(html,name) {
 			return rv;
 		}).call(this);
 		references[i].replaceContentWithContentOf(element);
+		if (!element.getRelativePath) {
+			throw new Error("No getRelativePath: " + reference);
+		}
+		var was = references[i].getRelativePath;
+		references[i].getRelativePath = element.getRelativePath;
+		references[i].getRelativePath.was = was;
 		//	TODO	is the next line necessary? If not, can also remove this call in the DOM/E4X implementations
 		references[i].removeJsapiAttribute("reference");
 	}
@@ -312,10 +328,24 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
+		
+		var relativeScope = function(element) {
+			var rv = scope.$relative(element.getRelativePath);
+//			debugger;
+			if (scope.module) {
+				rv.module = scope.module;
+			}
+			for (var x in scope) {
+				if (scope[x] && !rv[x]) {
+					rv[x] = scope[x];
+				}
+			}
+			return rv;
+		}
 
 		var runInitializer = function(initializer) {
 			try {
-				run(initializer.getContentString(), createTestScope(scope));
+				run(initializer.getContentString(), createTestScope(relativeScope(initializer)));
 			} catch (e) {
 				var error = new Error("Error executing scenario initialization.");
 				error.code = initializer.getContentString();
@@ -346,7 +376,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			})();
 			for (var i=0; i<children.length; i++) {
 				if (children[i].localName == "script" && children[i].getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
-					run(children[i].getContentString(),createTestScope(scope,unit));
+					run(children[i].getContentString(),createTestScope(scope,relativeScope(children[i]).scope,unit));
 				} else if (children[i].localName == "script") {
 					//	do nothing
 				} else {

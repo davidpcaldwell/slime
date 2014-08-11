@@ -124,6 +124,7 @@ END LICENSE
 							escaper: $jsapi.loader.file("../../../js/web/context.java.js")
 						})
 					};
+					this.io = io;
 					this.port = port;
 					this.gae = gae;
 				};
@@ -508,6 +509,17 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#initialize">
 					scope.Cookie = Packages.javax.servlet.http.Cookie;
+					scope.skip = function(verify) {
+						verify("Skipping: no Tomcat").is("Skipping: no Tomcat");
+					};
+					scope.skip = function(message) {
+						return {
+							success: true,
+							messages: {
+								success: "SKIP: " + message
+							}
+						}
+					};
 				</script>
 				<script type="application/x.jsapi#tests" jsapi:id="Hello World"><![CDATA[
 					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
@@ -524,6 +536,8 @@ END LICENSE
 							}
 						});
 						test(response == "Hello, World!");
+					} else {
+						test(skip("No Tomcat"));
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Parameters"><![CDATA[
@@ -541,6 +555,8 @@ END LICENSE
 							}
 						});
 						verify(response).is(url);
+					} else {
+						test(skip("No Tomcat"));
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
@@ -566,6 +582,8 @@ END LICENSE
 							method: "GET"
 							,url: "http://127.0.0.1:" + context.port + "/"
 						});
+					} else {
+						test(skip("No Tomcat"));
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
@@ -594,6 +612,49 @@ END LICENSE
 							}
 						});
 						test(redirected);
+					} else {
+						test(skip("No Tomcat"));
+					}
+				]]></script>
+				<script type="application/x.jsapi#tests" jsapi:id="spi"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+						var client = new module.Client({
+							spi: function(original) {
+								return function(p) {
+									var buffer = new context.io.Buffer();
+									//	TODO	below was buffer.writeText("Hello, Dude!"), which counterintuitively, silently
+									//			failed; consider alternatives for rhino/io
+									buffer.writeText().write("Hello, Dude!");
+									buffer.close();
+									return {
+										status: {
+											code: 200,
+											reason: "OK"
+										},
+										headers: [
+											{ name: "Content-Type", value: "text/plain" }
+										],
+										stream: buffer.readBinary()
+									}
+								}
+							}
+						});
+						var redirected = false;
+						servlet.set(function(request,response) {
+							response.setContentType("text/plain");
+							response.getWriter().print("Hello, World!");
+						});
+						var response = client.request({
+							method: "GET",
+							url: "http://127.0.0.1:" + context.port + "/"
+							,evaluate: function(response) {
+								return response;
+							}
+						});
+						//	TODO	add rhino/io Resource capability
+						verify(response.body.stream.character().asString()).is("Hello, Dude!");
+					} else {
+						test(skip("No Tomcat"));
 					}
 				]]></script>
 			</li>

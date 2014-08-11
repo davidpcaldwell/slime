@@ -18,7 +18,8 @@ plugin({
 		jsh.http = $loader.module("module.js", {
 			api: {
 				io: jsh.io,
-				js: jsh.js
+				js: jsh.js,
+				web: jsh.js.web
 			}
 		});
 	}

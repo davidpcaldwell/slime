@@ -194,18 +194,22 @@ if (parameters.options.ie) {
 
 var firefox;
 if (parameters.options.firefox) {
-	firefox = new Browser({
-		open: function(on) {
+	firefox = new Browser(new function() {
+		var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		
+		this.open = function(on) {
 			return function(uri) {
 				jsh.shell.run({
 					command: parameters.options.firefox.file,
 					arguments: [
+						"-no-remote",
+						"-profile", PROFILE.toString(),
 						uri
 					],
 					on: on
 				});
 			};
-		}
+		};
 	})
 }
 

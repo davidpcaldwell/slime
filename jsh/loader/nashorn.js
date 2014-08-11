@@ -25,7 +25,6 @@ var $host = (function() {
 				return $loader.getLoaderCode(path);
 			},
 			$getCoffeeScript: function() {
-				if (!$loader.getCoffeeScript) throw new Error("No getCoffeeScript in jsh/nashorn.js");
 				return $loader.getCoffeeScript();
 			},
 			$classpath: $nashorn.getClasspath()

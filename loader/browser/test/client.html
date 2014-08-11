@@ -256,16 +256,20 @@ END LICENSE
 					})();
 
 					(function() {
-						var Scope = function() {
+						var Scope = function(base) {
 							var self = this;
+							var Self = arguments.callee;
+							
+							//	TODO	obsolete?
+							this.top = "";
+							
+							this.$relative = function(getRelativePath) {
+								//	TODO	since this ignores getRelativePath, it almost certainly does not work
+								return new Self(base + this.top);
+							};
 
 							this.$jsapi = new function() {
 								this.loader = new function() {
-									var base = (function() {
-										var tokens = module.split("/");
-										if (tokens[tokens.length-1].length == 0) return module;
-										return tokens.slice(0,tokens.length-1).join("/") + "/";
-									})();
 									this.module = function(path,context) {
 										//	TODO	probable bug here; probably works when module path ends in /, but for module path
 										//			that has a terminal file name, probably needs to strip that file name to find the
@@ -281,7 +285,17 @@ END LICENSE
 											context
 										);
 									};
+									this.eval = function(path,scope) {
+										if (!scope) scope = {};
+										with(scope) {
+											return eval(inonit.loader.Loader.getCode(base + self.top + path));
+										}
+									};
 									this.coffee = window.CoffeeScript;
+								};
+								
+								this.disableBreakOnExceptions = function(f) {
+									return f;
 								}
 							};
 
@@ -415,7 +429,12 @@ END LICENSE
 
 						var loaderApiDom = getLoaderApiDom(documentation);
 						var apiHtml = new apiHtmlScript.ApiHtmlTests(loaderApiDom,module);
-						var scope = new Scope();
+						var base = (function() {
+							var tokens = module.split("/");
+							if (tokens[tokens.length-1].length == 0) return module;
+							return tokens.slice(0,tokens.length-1).join("/") + "/";
+						})();
+						var scope = new Scope(base);
 						scope.top = (function() {
 							//	TODO	it could be that this jsapi:top capability is obsolete, and therefore the $dom member
 							//			of DOM is obsolete; possibly this was used before relative paths were used to find
@@ -447,7 +466,6 @@ END LICENSE
 								scope.module = object;
 							} catch (e) {
 								//	error loading module, which is OK: sometimes tests do not pertain directly to a module
-								debugger;
 							}
 							scope.context = contexts[i];
 							var moduleScenario = apiHtml.getScenario(scope,test.path);
@@ -488,6 +506,45 @@ END LICENSE
 						current.appendChild(document.createTextNode(result + " " + scenario.name))
 						current = current.parentNode;
 						log("END Scenario: " + scenario.name);
+					};
+					
+					var dumpError = function(error) {
+						log("Error: " + error);
+						if (error.stack) {
+							if (error.code) {
+								var lines = error.stack.split("\n");
+								if (lines[1].substring(0,"    at ".length) == "    at ") {
+									var evalFormat = /\(eval at (?:.*), (\S+)\:(\d+)\:(\d+)\)/;
+									var match = evalFormat.exec(lines[1]);
+									if (match) {
+										var lineNumber = match[2];
+										var columnNumber = match[3];
+										var script = error.code.split("\n");
+										var prefix = "";
+										for (var i=0; i<columnNumber-1; i++) {
+											if (script[lineNumber-1].substring(i,i+1) == "\t") {
+												prefix += "\t";
+											} else {
+												prefix += " ";
+											}
+										}
+										script.splice(Number(match[2]),0,prefix + "^",prefix + error.name + ": " + error.message);
+										if (window.console && window.console.log) {
+											window.console.log(script.join("\n"));
+										}
+										return;
+									}
+								}
+								if (window.console && window.console.log) {
+									window.console.log(error.code);
+								}
+								log(error.code);
+							}
+							if (window.console && window.console.log) {
+								window.console.log(error.stack);
+							}
+							log(error.stack);
+						}
 					}
 
 					this.test = function(test) {
@@ -496,6 +553,9 @@ END LICENSE
 						} else {
 							log("Failure: " + test);
 							log("Reason: " + test.message());
+						}
+						if (test.error) {
+							dumpError(test.error);
 						}
 						var div = document.createElement("div");
 						div.appendChild(document.createTextNode(test.message()));

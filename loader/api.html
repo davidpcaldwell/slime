@@ -348,6 +348,10 @@ END LICENSE
 		</ul>
 	</div>
 	<div jsapi:id="$api">
+		<script type="application/x.jsapi#initialize">
+			scope.api = $jsapi.loader.eval("api.js", { $platform: $platform });
+			scope.api.loadedByJsapi = true;
+		</script>
 		<h1>$api</h1>
 		<div>
 			The <code>$api</code> object is also provided to code loaded by the platform loader. It provides capabilities for
@@ -484,8 +488,10 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
+				<script type="application/x.jsapi#tests">
+					verify(api.loadedByJsapi,"$api.loadedByJsapi").is(true);
+				</script>
 				<script jsapi:id="deprecate.function" type="application/x.jsapi#tests"><![CDATA[
-					var was = $api.deprecate.warning;
 					var called = 0;
 					var warnings = 0;
 					var f = function() {
@@ -493,19 +499,18 @@ END LICENSE
 						return called;
 					};
 					var warning = function(p) {
-						test(p.callee == f);
+						verify(p.callee).is(f);
 						warnings++;
 					};
-					$api.deprecate.warning = warning;
+					api.deprecate.warning = warning;
 
-					var deprecated = $api.deprecate(f);
-
-					test(f() == 1 && warnings == 0);
-					test(deprecated() == 2);
-					test(warnings == 1);
-					test(deprecated() == 3);
-					test(warnings == 2);
-					$api.deprecate.warning = was;
+					var deprecated = api.deprecate(f);
+					verify(f()).is(1);
+					verify(warnings).is(0);
+					verify(deprecated()).is(2);
+					verify(warnings).is(1);
+					verify(deprecated()).is(3);
+					verify(warnings).is(2);
 				]]></script>
 				<script jsapi:id="deprecate.object" type="application/x.jsapi#tests"><![CDATA[
 					var was = $api.deprecate.warning;
@@ -735,6 +740,128 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<ul>
 				</ul>
+			</li>
+			<li class="object">
+				<div class="name">Object</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">property</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							verify(api.Object).isNotEqualTo(void(0));
+							verify(api.Object.property).isNotEqualTo(void(0));
+							var test = {
+								name: "value"
+							};
+							verify(api.Object.property.call(test,"name","length")).is("value".length);
+						</script>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">Value</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">require</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							verify(api.Value).isNotEqualTo(void(0));
+							var one = {
+								name: "value1",
+								nested: {
+									value: "nested1",
+									method: function() {
+										return "method";
+									}
+								}
+							};
+							var value = $api.Value(one,"one");
+							$jsapi.disableBreakOnExceptions(function() {
+								verify(value).require().threw.nothing();
+								verify(value).property("foo").require().threw.type(TypeError);
+								verify(value).property("foo").require().threw.message().is("one.foo is required");
+								verify(value).property("foo","bar").threw.type(TypeError);
+								verify(value).property("name").require().threw.nothing();
+								verify(value).property("name","length").require().threw.nothing();
+								verify(value).property("nested","value").require().threw.nothing();
+								verify(value).property("nested","value1").require().threw.type(TypeError);
+								verify(one).nested().method().is("method");								
+							})();
+						</script>
+					</li>
+				</ul>
+			</li>
+			<li class="function">
+				<div class="name">Events</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var source = new function() {
+						var events = $api.Events({ source: this });
+						
+						this.doIt = function(p) {
+							events.fire("done", p);
+						};
+					};
+					
+					var received = [];
+					var counter = function(e) {
+						received.push(e);
+					};
+					
+					verify(received).length().is(0);
+					source.doIt();
+					verify(received).length().is(0);
+					source.listeners.add("other", counter);
+					verify(received).length().is(0);
+					source.doIt();
+					verify(received).length().is(0);
+					source.listeners.add("done", counter);
+					source.doIt();
+					verify(received).length().is(1);
+					source.listeners.remove("done", counter);
+					source.doIt();
+					verify(received).length().is(1);
+				</script>
 			</li>
 		</ul>
 	</div>

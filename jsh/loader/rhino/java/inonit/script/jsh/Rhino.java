@@ -178,7 +178,7 @@ public class Rhino {
 	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Invocation.CheckedException {
 		try {
 			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $rhino);
-			Object ignore = shell.execute(execution);
+			Integer ignore = execution.execute(shell);
 			return null;
 		} catch (Engine.Errors e) {
 			Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
