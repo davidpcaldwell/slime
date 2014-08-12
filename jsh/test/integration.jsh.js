@@ -26,7 +26,7 @@ var parameters = jsh.script.getopts({
 
 var src = parameters.options.src.directory;
 
-var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar")) ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
+var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
 eval(src.getFile("jsh/launcher/rhino/api.rhino.js").read(String));
 
@@ -264,6 +264,20 @@ var jshPackage = function(p) {
 };
 
 (function() {
+	var mymode = {
+		env: {}
+	};
+	for (var x in mode.env) {
+		mymode.env[x] = mode.env[x];
+	}
+	
+	mymode.env.JSH_JAVA_LOGGING_PROPERTIES = String(new File(SLIME_SRC,"jsh/test/integration.logging.properties").getCanonicalPath());
+	jsh.shell.echo("JSH_ENGINE = " + jsh.shell.environment.JSH_ENGINE);
+	run(LAUNCHER_COMMAND.concat([
+		getSourceFilePath("jsh/test/jsh.shell/properties.jsh.js")
+	]), mymode);
+	
+	delete mymode.env.JSH_JAVA_LOGGING_PROPERTIES;
 	var tmp = createTemporaryDirectory();
 	run(LAUNCHER_COMMAND.concat([
 		getSourceFilePath("jsh/tools/slime.jsh.js"),
@@ -273,12 +287,6 @@ var jshPackage = function(p) {
 		"-version", "1.6"
 	]));
 
-	var mymode = {
-		env: {}
-	};
-	for (var x in mode.env) {
-		mymode.env[x] = mode.env[x];
-	}
 	mymode.env.MODULES = tmp.getCanonicalPath();
 //	mymode.env.PATH = String(Packages.java.lang.System.getenv("PATH"));
 	run(LAUNCHER_COMMAND.concat(
@@ -587,6 +595,7 @@ jsh.shell.run({
 });
 
 if (RHINO_LIBRARIES) {
+	jsh.shell.echo("Testing Rhino optimization ...");
 	(function(level) {
 		jsh.shell.run({
 			command: LAUNCHER_COMMAND[0],
@@ -664,3 +673,5 @@ if (COFFEESCRIPT) {
 		}
 	});
 }
+
+jsh.shell.echo("Integration tests complete.");
