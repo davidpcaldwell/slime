@@ -14,6 +14,7 @@ package inonit.script.jsh;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 import inonit.script.runtime.io.*;
 import inonit.system.*;
@@ -189,6 +190,7 @@ public abstract class Shell {
 		protected abstract Integer execute();
 		
 		public final Integer execute(Shell _this) {
+			Logging.get().log(Shell.class, Level.INFO, "Executing shell with %s", this);
 			final Execution execution = this;
 			execution.initialize(_this);
 			execution.addEngine();
