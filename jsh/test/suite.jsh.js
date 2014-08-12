@@ -39,6 +39,7 @@ for (var x in jsh.shell.environment) {
 //	Provide way to set JSH_LAUNCHER_DEBUG?
 //	Provide way to set JSH_SCRIPT_DEBUGGER?
 //	Provide way to set JSH_ENGINE?
+jsh.shell.echo("Running unit tests ...");
 jsh.shell.run({
 	command: java,
 	arguments: [
@@ -48,6 +49,7 @@ jsh.shell.run({
 	environment: subenv
 });
 
+jsh.shell.echo("Running system tests ...");
 jsh.shell.run({
 	command: java,
 	arguments: [
