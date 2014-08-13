@@ -26,40 +26,25 @@ public class Main {
 	}
 
 	private static class Invocation {
-		private static boolean hasClass(Shell shell, String name) {
-			try {
-				shell.getRhinoClassLoader().loadClass(name);
-				return true;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			} catch (ClassNotFoundException e) {
-				return false;
-			}
-		}
-
 		//	TODO	this logic is duplicated in Servlet
-		private static Engine getEngine(Shell shell) {
-			boolean hasNashorn = new ScriptEngineManager().getEngineByName("nashorn") != null;
-			boolean hasRhino = hasClass(shell, "org.mozilla.javascript.Context");
-			if (!hasNashorn && !hasRhino) {
-				throw new RuntimeException("No JavaScript execution engine found.");
-			} else if (!hasNashorn && hasRhino) {
-				return new Rhino();
-			} else if (hasNashorn && !hasRhino) {
-				return new Nashorn();
-			} else {
-				if (System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("rhino")) {
-					return new Rhino();
-				} else if (System.getenv("JSH_ENGINE") != null && System.getenv("JSH_ENGINE").equals("nashorn")) {
-					return new Nashorn();
-				} else {
-					//	for now
-					return new Rhino();
+		private static Engine getEngine(Shell shell, String JSH_ENGINE) {
+			if (JSH_ENGINE != null) {
+				Engine specified = Engine.INSTANCES.get(JSH_ENGINE);
+				if (specified != null && specified.isInstalled(shell)) {
+					return specified;
 				}
 			}
+			Engine[] preferenceOrder = new Engine[] { Engine.INSTANCES.get("rhino"), Engine.INSTANCES.get("nashorn") };
+			for (Engine e : preferenceOrder) {
+				if (e == null) {
+					throw new RuntimeException("preferenceOrder[0] = " + preferenceOrder[0] + " preferenceOrder[1] = " + preferenceOrder[1]);
+				}
+				if (e.isInstalled(shell)) return e;
+			}
+			throw new RuntimeException("No JavaScript execution engine found.");
 		}
-
-		static Invocation create() throws IOException {
+		
+		static Shell shell() throws IOException {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
 			codeUrlString = new java.net.URLDecoder().decode(codeUrlString);
@@ -75,36 +60,46 @@ public class Main {
 			} else {
 				throw new RuntimeException("Unreachable: code source = " + codeUrlString);
 			}
-			Invocation rv = null;
+			Shell shell = null;
 			if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-				Shell shell = new PackagedShell(launcherLocation);
-				rv = new Invocation(shell, getEngine(shell));
+				shell = new PackagedShell(launcherLocation);
 			} else {
 				java.io.File JSH_HOME = null;
 				if (launcherLocation.endsWith("jsh.jar")) {
 					JSH_HOME = new java.io.File(launcherLocation.substring(0, launcherLocation.length()-"jsh.jar".length()-1));
 				}
-				Shell shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : new UnbuiltShell();
+				shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : new UnbuiltShell();
 				//	TODO	This might miss some exotic situations, like loading this class in its own classloader
-				Invocation frv = new Invocation(shell, getEngine(shell));
-				if (JSH_HOME != null) {
-					frv.debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
-				} else {
-					frv.debug("JSH_HOME = null");
-				}
-				rv = frv;
 			}
-			((Invocation)rv).debug = (System.getenv("JSH_LAUNCHER_DEBUG") != null);
+			return shell;
+		}
+		
+		static ArrayList<String> engines() throws IOException {
+			Shell shell = shell();
+			ArrayList<String> rv = new ArrayList<String>();
+			for (Map.Entry<String,Engine> entry : Engine.INSTANCES.entrySet()) {
+				if (entry.getValue().isInstalled(shell)) {
+					rv.add(entry.getKey());
+				}
+			}
 			return rv;
+		}
+		
+		static Invocation create() throws IOException {
+			boolean debug = (System.getenv("JSH_LAUNCHER_DEBUG") != null);
+			return new Invocation(shell(), System.getenv("JSH_ENGINE"), debug);
 		}
 
 		private Shell shell;
 		private Engine engine;
 		private boolean debug;
 
-		Invocation(Shell shell, Engine engine) {
+		Invocation(Shell shell, String engine, boolean debug) {
+			this.debug = debug;
+			this.debug("Invoking: " + shell + " with engine named " + engine);
 			this.shell = shell;
-			this.engine = engine;
+			this.engine = getEngine(shell, engine);
+			this.debug("Using engine: " + this.engine);
 		}
 
 		final boolean debug() {
@@ -167,6 +162,13 @@ public class Main {
 	}
 
 	private static abstract class Engine {
+		private static final Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
+		
+		static {
+			INSTANCES.put("rhino", new Rhino());
+			INSTANCES.put("nashorn", new Nashorn());
+		}
+		
 		private Invocation invocation;
 
 		final void initialize(Invocation invocation) throws IOException {
@@ -186,134 +188,151 @@ public class Main {
 			return invocation.getRhinoClassLoader();
 		}
 
+		abstract boolean isInstalled(Shell shell);
 		abstract void initializeSystemProperties(Invocation invocation, Shell shell) throws IOException;
 		abstract void addScript(String pathname);
 		abstract int run(String[] args) throws IOException, ScriptException;
-	}
+		
+		private static class Nashorn extends Engine {
+			private ScriptEngineManager factory;
+			private ScriptEngine engine;
+			private ArrayList<String> scripts = new ArrayList<String>();
 
-	private static class Nashorn extends Engine {
-		private ScriptEngineManager factory;
-		private ScriptEngine engine;
-		private ArrayList<String> scripts = new ArrayList<String>();
+			Nashorn() {
+				this.factory = new ScriptEngineManager();
+				this.engine = factory.getEngineByName("nashorn");
+			}
+			
+			boolean isInstalled(Shell shell) {
+				return new ScriptEngineManager().getEngineByName("nashorn") != null;				
+			}
 
-		Nashorn() {
-			this.factory = new ScriptEngineManager();
-			this.engine = factory.getEngineByName("nashorn");
-		}
+			void initializeSystemProperties(Invocation invocation, Shell shell) {
+				System.setProperty("jsh.launcher.nashorn", "true");
+			}
 
-		void initializeSystemProperties(Invocation invocation, Shell shell) {
-			System.setProperty("jsh.launcher.nashorn", "true");
-		}
+			void addScript(String pathname) {
+				scripts.add(pathname);
+			}
 
-		void addScript(String pathname) {
-			scripts.add(pathname);
-		}
-
-		int run(String[] args) throws IOException, ScriptException {
-			Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
-			this.factory.getBindings().put("arguments", args);
-			this.factory.getBindings().put("$arguments", args);
-			this.factory.getBindings().put("foo", "bar");
-//			this.engine.getBindings(ScriptContext.GLOBAL_SCOPE).put("arguments", args);
-			Logging.get().log(Nashorn.class, Level.FINE, "run(): scripts.length = " + scripts.size());
-			for (String script : scripts) {
-				Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
-				ScriptContext c = engine.getContext();
-				c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);
-//				File file = new File(script);
-				if (new java.io.File(script).exists()) {
-					script = new java.io.File(script).toURI().toURL().toExternalForm();
+			int run(String[] args) throws IOException, ScriptException {
+				Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
+				this.factory.getBindings().put("arguments", args);
+				this.factory.getBindings().put("$arguments", args);
+				this.factory.getBindings().put("foo", "bar");
+	//			this.engine.getBindings(ScriptContext.GLOBAL_SCOPE).put("arguments", args);
+				Logging.get().log(Nashorn.class, Level.FINE, "run(): scripts.length = " + scripts.size());
+				for (String script : scripts) {
+					Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
+					ScriptContext c = engine.getContext();
+					c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);
+	//				File file = new File(script);
+					if (new java.io.File(script).exists()) {
+						script = new java.io.File(script).toURI().toURL().toExternalForm();
+					}
+					java.net.URLConnection connection = new java.net.URL(script).openConnection();
+					engine.eval(new InputStreamReader(connection.getInputStream()), c);
+					Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
 				}
-				java.net.URLConnection connection = new java.net.URL(script).openConnection();
-				engine.eval(new InputStreamReader(connection.getInputStream()), c);
-				Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
-			}
-			return 0;
-		}
-	}
-
-	private static class Rhino extends Engine {
-		private ArrayList<String> scripts = new ArrayList<String>();
-
-		private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
-			ClassLoader loader = getRhinoClassLoader();
-			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
-			Class shell = loader.loadClass(mainClassName);
-			String mainMethodName = (debug()) ? "main" : "exec";
-			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
-			return main;
-		}
-
-		void initializeSystemProperties(Invocation invocation, Shell shell) throws IOException {
-			invocation.debug("Setting Rhino system properties...");
-			System.setProperty("jsh.launcher.rhino", "true");
-			if (shell.getRhinoClasspath() != null) {
-				System.setProperty("jsh.launcher.rhino.classpath", shell.getRhinoClasspath());
-			} else {
-//				throw new RuntimeException("No Rhino classpath in " + this
-//					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
-//				;
+				return 0;
 			}
 		}
 
-		void addScript(String pathname) {
-			scripts.add(pathname);
-		}
-
-		private String[] getArguments(String[] args) {
-			ArrayList<String> strings = new ArrayList<String>();
-			strings.add("-opt");
-			strings.add("-1");
-			for (int i=0; i<scripts.size(); i++) {
-				if (i != scripts.size()-1) {
-					strings.add("-f");
+		private static class Rhino extends Engine {
+			private ArrayList<String> scripts = new ArrayList<String>();
+			
+			boolean isInstalled(Shell shell) {
+				try {
+					shell.getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
+					return true;
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				} catch (ClassNotFoundException e) {
+					return false;
 				}
-				strings.add(scripts.get(i));
 			}
-			strings.addAll(Arrays.asList(args));
-			return strings.toArray(new String[0]);
-		}
 
-		private int getExitStatus() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-			Class c = getRhinoClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
-			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
-			field.setAccessible(true);
-			return field.getInt(null);
-		}
+			private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
+				ClassLoader loader = getRhinoClassLoader();
+				String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
+				Class shell = loader.loadClass(mainClassName);
+				String mainMethodName = (debug()) ? "main" : "exec";
+				java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
+				return main;
+			}
 
-		@Override int run(String[] args) throws IOException {
-			Integer status = null;
-			Logging.get().log(Main.class, Level.FINE, "jsh.launcher.rhino.classpath = %s", System.getProperty("jsh.launcher.rhino.classpath"));
-			try {
-				java.lang.reflect.Method main = this.getMainMethod();
-				debug("Rhino shell main = " + main);
-				String[] arguments = this.getArguments(args);
-				debug("Rhino shell arguments:");
-				for (int i=0; i<arguments.length; i++) {
-					debug("Rhino shell argument = " + arguments[i]);
+			void initializeSystemProperties(Invocation invocation, Shell shell) throws IOException {
+				invocation.debug("Setting Rhino system properties...");
+				System.setProperty("jsh.launcher.rhino", "true");
+				if (shell.getRhinoClasspath() != null) {
+					System.setProperty("jsh.launcher.rhino.classpath", shell.getRhinoClasspath());
+				} else {
+	//				throw new RuntimeException("No Rhino classpath in " + this
+	//					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
+	//				;
 				}
-				Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
-				main.invoke(null, new Object[] { arguments });
-				status = new Integer(this.getExitStatus());
-				Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-				status = new Integer(127);
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-				status = new Integer(127);
-			} catch (NoSuchFieldException e) {
-				e.printStackTrace();
-				status = new Integer(127);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-				status = new Integer(127);
-			} catch (java.lang.reflect.InvocationTargetException e) {
-				e.printStackTrace();
-				status = new Integer(127);
 			}
-			return status.intValue();
+
+			void addScript(String pathname) {
+				scripts.add(pathname);
+			}
+
+			private String[] getArguments(String[] args) {
+				ArrayList<String> strings = new ArrayList<String>();
+				strings.add("-opt");
+				strings.add("-1");
+				for (int i=0; i<scripts.size(); i++) {
+					if (i != scripts.size()-1) {
+						strings.add("-f");
+					}
+					strings.add(scripts.get(i));
+				}
+				strings.addAll(Arrays.asList(args));
+				return strings.toArray(new String[0]);
+			}
+
+			private int getExitStatus() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+				Class c = getRhinoClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
+				java.lang.reflect.Field field = c.getDeclaredField("exitCode");
+				field.setAccessible(true);
+				return field.getInt(null);
+			}
+
+			@Override int run(String[] args) throws IOException {
+				Integer status = null;
+				Logging.get().log(Main.class, Level.FINE, "jsh.launcher.rhino.classpath = %s", System.getProperty("jsh.launcher.rhino.classpath"));
+				try {
+					java.lang.reflect.Method main = this.getMainMethod();
+					debug("Rhino shell main = " + main);
+					String[] arguments = this.getArguments(args);
+					debug("Rhino shell arguments:");
+					for (int i=0; i<arguments.length; i++) {
+						debug("Rhino shell argument = " + arguments[i]);
+					}
+					Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
+					main.invoke(null, new Object[] { arguments });
+					status = new Integer(this.getExitStatus());
+					Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+					status = new Integer(127);
+				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
+					status = new Integer(127);
+				} catch (NoSuchFieldException e) {
+					e.printStackTrace();
+					status = new Integer(127);
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+					status = new Integer(127);
+				} catch (java.lang.reflect.InvocationTargetException e) {
+					e.printStackTrace();
+					status = new Integer(127);
+				}
+				return status.intValue();
+			}
 		}
+
 	}
 
 	private static abstract class Shell {
@@ -487,7 +506,7 @@ public class Main {
 		}
 	}
 
-	private void run(String[] args) throws java.io.IOException {
+	private void run(String[] args) throws IOException {
 		BeforeExit beforeExit = new BeforeExit();
 		Runtime.getRuntime().addShutdownHook(new Thread(beforeExit));
 		Invocation invocation = Invocation.create();
@@ -505,9 +524,22 @@ public class Main {
 			System.exit(status.intValue());
 		}
 	}
-
+	
 	public static void main(String[] args) throws java.io.IOException {
-		Logging.get().log(Main.class, Level.FINEST, "Launcher Main executing ...");
-		new Main().run(args);
+		Main main = new Main();
+		if (args.length == 1 && args[0].equals("-engines")) {
+			List<String> engines = Invocation.engines();
+			System.out.print("[");
+			for (int i=0; i<engines.size(); i++) {
+				if (i > 0) {
+					System.out.print(",");
+				}
+				System.out.print("\"" + engines.get(i) + "\"");
+			}
+			System.out.print("]");
+		} else {
+			Logging.get().log(Main.class, Level.FINEST, "Launcher Main executing ...");
+			main.run(args);
+		}
 	}
 }

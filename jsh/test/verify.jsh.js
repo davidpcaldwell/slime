@@ -13,6 +13,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
+		engine: jsh.script.getopts.ARRAY(String),
 		slime: jsh.file.Pathname,
 		tomcat: jsh.file.Pathname,
 		chrome: jsh.file.Pathname,
@@ -26,24 +27,53 @@ if (!parameters.options.java.length) {
 	parameters.options.java = [jsh.shell.java.home.pathname];
 }
 
+if (!parameters.options.engine.length) {
+	parameters.options.engine = [""];
+}
+
 if (!parameters.options.slime) {
 	jsh.shell.echo("Required: -slime");
 	jsh.shell.exit(1);
 }
 
 parameters.options.java.forEach(function(jre) {
-	var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin")]);
+	parameters.options.engine.forEach(function(engine) {
+		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin")]);
+		
+		var launcher = searchpath.getCommand("java");
+		
+		var engines = jsh.shell.run({
+			command: launcher,
+			arguments: [
+				"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+				"-engines"
+			],
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				return eval("(" + result.stdio.output + ")");
+			}
+		});
+		
+		if (engines.indexOf(engine) == -1) {
+			jsh.shell.echo("Skipping engine " + engine + "; not available under " + launcher);
+		} else {
+			jsh.shell.echo("Running with Java " + launcher + " and engine " + engine + " ...");
 
-	jsh.shell.run({
-		command: searchpath.getCommand("java"),
-		arguments: [
-			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-			parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString()
-		],
-		directory: parameters.options.slime.directory,
-		environment: jsh.js.Object.set({}, jsh.shell.environment
-			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-		)
+			jsh.shell.run({
+				command: launcher,
+				arguments: [
+					"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+					parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString()
+				],
+				directory: parameters.options.slime.directory,
+				environment: jsh.js.Object.set({}, jsh.shell.environment
+					, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
+					, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
+				)
+			});			
+		}
 	});
 });
 
