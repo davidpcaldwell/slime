@@ -153,11 +153,12 @@ var $code = (function() {
 			loaders.script.run(path,scope);
 		};
 	} else if ($host.getCode) {
-		return $host.getCode;
+		//	NASHORN	$host.getCode did not work consistently; see plugin.jsh.js
+		return this.$host.getCode;
 	} else {
 		throw new Error();
 	}
-})();
+}).call(this);
 
 scope.httpd = {};
 

@@ -11,6 +11,9 @@
 //	END LICENSE
 
 plugin({
+	isReady: function() {
+		return jsh.shell && jsh.shell.environment.LOAD_JSH_PLUGIN_TEST_PLUGIN;
+	},
 	load: function() {
 		global.a = $loader.module("module.js", {
 			log: function(s) {

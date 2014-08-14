@@ -476,7 +476,8 @@ testCommandOutput("$api-deprecate-properties.jsh.js", function(options) {
 		]);
 	}, {
 		env: {
-			JSH_PLUGINS: String(new File(SLIME_SRC,"jsh/test/plugins/a").getCanonicalPath())
+			JSH_PLUGINS: String(new File(SLIME_SRC,"jsh/test/plugins/a").getCanonicalPath()),
+			LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
 		}
 	})
 })();
@@ -494,6 +495,7 @@ testCommandOutput(packaged_plugins, function(options) {
 }, {
 	env: {
 		JSH_PLUGINS: null
+		,LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
 	}
 });
 
@@ -588,6 +590,29 @@ jsh.shell.run({
 		if (result.status == 0) {
 			jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
 			jsh.shell.echo();
+		} else {
+			throw new Error("Status: " + result.status);
+		}
+	}
+});
+
+jsh.shell.run({
+	command: LAUNCHER_COMMAND[0],
+	arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("loader/issue32.jsh.js")),
+	stdio: {
+		output: String
+	},
+	evaluate: function(result) {
+		if (result.status == 0) {
+			var globals = eval("(" + result.stdio.output + ")");
+			if (globals.length > 1) {
+				throw new Error("Too many globals: " + globals);
+			} else if (globals.length == 1 && globals[0] != "jsh") {
+				throw new Error("Wrong global variable name: " + globals[0]);
+			} else {
+				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+				jsh.shell.echo();
+			}
 		} else {
 			throw new Error("Status: " + result.status);
 		}

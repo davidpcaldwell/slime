@@ -117,6 +117,10 @@
 					preprocess(script);
 				}
 				script.target = this;
+				var global = (function() { return this; })();
+				if (scope === global) {
+					scope = {};
+				}
 				script.scope = scope;
 				script.scope.$platform = $platform;
 				script.scope.$api = $api;

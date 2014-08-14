@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var $host = (function() {
+$jsh.setHost((function() {
 	//	Try to port inonit.script.rhino.Loader.Bootstrap
 	var $loader = eval(String($jsh.getLoaderCode()));
 
@@ -25,4 +25,4 @@ var $host = (function() {
 	};
 
 	return rv;
-})();
+})());

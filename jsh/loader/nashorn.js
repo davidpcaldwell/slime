@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-var $host = (function() {
+$jsh.setHost((function() {
 	var $loader = eval($jsh.getLoaderCode());
 	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 
@@ -64,4 +64,4 @@ var $host = (function() {
 	}
 
 	return rv;
-})();
+})());

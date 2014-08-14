@@ -55,6 +55,16 @@ public abstract class Shell {
 			}
 		};
 	}
+	
+	private Object $host;
+	
+	public final void setHost(Object object) {
+		this.$host = object;
+	}
+	
+	public final Object host() {
+		return $host;
+	}
 
 	public static Shell main(final String[] arguments) {
 		final Configuration configuration = Configuration.main();

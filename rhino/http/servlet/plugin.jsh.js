@@ -120,7 +120,9 @@ plugin({
 										};
 										//	TODO	use $host and $loader.run, but that is not currently implemented; when it is, switch this
 										//			if (false) and delete the $context/$host rigamarole at the top of api.js
-										$loader.run("api.js", apiScope);
+										//	NASHORN	Sending variable as scope sometimes caused wrong .getCode() from another
+										//			instance to be run. So sending it also as 'this' which allows access
+										$loader.run("api.js", apiScope, apiScope);
 										servlet = apiScope.$host.$exports.servlet;
 									};
 

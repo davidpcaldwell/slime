@@ -11,6 +11,7 @@
 //	END LICENSE
 
 this.jsh = new function() {
+	var $host = $jsh.host();
 	var host = (function() {
 		var installation = $jsh.getInstallation();
 		var configuration = $jsh.getConfiguration();
