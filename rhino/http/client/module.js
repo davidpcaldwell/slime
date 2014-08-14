@@ -450,7 +450,7 @@ $exports.Body = new function() {
 		}).join("&");
 	};
 
-	UrlQuery = function(p) {
+	var UrlQuery = function(p) {
 		if (typeof(p) == "string") {
 			return new QueryString(p);
 		} else {
