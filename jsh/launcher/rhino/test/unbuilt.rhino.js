@@ -82,20 +82,20 @@ var RHINO_JAR = (function() {
 	if (!rhinoContextClass) {
 		return null;
 	}
-	var RHINO_HOME = function() {
+	var RHINO_HOME = (function() {
 		//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
 		//	like an un-jarred version
 		var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
 		var matcher = /^file\:(.*)/;
 		if (matcher.exec(url)[1].substring(2,3) == ":") {
 			//	this is a windows path of the form /C:/ ...
-			return new File(matcher.exec(url)[1].substring(1)).getParentFile();
+			return new File(matcher.exec(url)[1].substring(1));
 		} else {
-			return new File(matcher.exec(url)[1]).getParentFile();
+			return new File(matcher.exec(url)[1]);
 		}
-	}();
+	})();
 	debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
-	return new File(RHINO_HOME, "js.jar").getCanonicalPath();
+	return RHINO_HOME.getCanonicalPath();
 })();
 //	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
 //	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
