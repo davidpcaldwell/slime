@@ -231,6 +231,9 @@ if (arguments[0] == "build") {
 } else if (arguments[0] == "launch") {
 	arguments.splice(0,1);
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
+} else if (arguments[0] == "develop") {
+	arguments.splice(0,1,String(new Packages.java.io.File(SLIME_SRC, "jsh/etc/develop.jsh.js")));
+	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
 } else if (arguments[0] == "verify") {
 	var verifyArgs = arguments.slice(1);
 	arguments.splice(0,arguments.length);
