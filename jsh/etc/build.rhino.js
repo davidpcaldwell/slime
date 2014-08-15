@@ -198,7 +198,6 @@ remove(JSH_HOME);
 JSH_HOME.mkdirs();
 
 var RHINO_LIBRARIES = (function() {
-	var RHINO_HOME;
 	if (Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar")) {
 		return [
 			new File(Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar"))
