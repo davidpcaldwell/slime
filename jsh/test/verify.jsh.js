@@ -39,9 +39,9 @@ if (!parameters.options.slime) {
 parameters.options.java.forEach(function(jre) {
 	parameters.options.engine.forEach(function(engine) {
 		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin")]);
-		
+
 		var launcher = searchpath.getCommand("java");
-		
+
 		var engines = jsh.shell.run({
 			command: launcher,
 			arguments: [
@@ -55,8 +55,8 @@ parameters.options.java.forEach(function(jre) {
 				return eval("(" + result.stdio.output + ")");
 			}
 		});
-		
-		if (engines.indexOf(engine) == -1) {
+
+		if (engine && engines.indexOf(engine) == -1) {
 			jsh.shell.echo("Skipping engine " + engine + "; not available under " + launcher);
 		} else {
 			jsh.shell.echo("Running with Java " + launcher + " and engine " + engine + " ...");
@@ -72,7 +72,7 @@ parameters.options.java.forEach(function(jre) {
 					, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 					, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
 				)
-			});			
+			});
 		}
 	});
 });

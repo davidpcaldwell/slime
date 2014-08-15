@@ -35,7 +35,7 @@ var Jsdom = function(base,dom) {
 	this.toString = function() {
 		return "Jsdom: base=" + base + " dom=" + dom;
 	}
-	
+
 	var Element = function(delegate,parent) {
 		var map = function(query,parent) {
 			return query.map(function(e) {
@@ -96,7 +96,7 @@ var Jsdom = function(base,dom) {
 		if (parent) {
 			this.getRelativePath = function(path) {
 				return parent.getRelativePath(path);
-			};			
+			};
 		} else {
 			this.getRelativePath = function(path) {
 				return base.getRelativePath(path);
@@ -107,7 +107,7 @@ var Jsdom = function(base,dom) {
 				};
 			})(this.getRelativePath.toString);
 		}
-	
+
 		//	Unclear whether below used
 
 		this.toString = function() {
@@ -116,7 +116,7 @@ var Jsdom = function(base,dom) {
 	}
 
 	this.top = new Element(dom.document.getElement());
-	
+
 	this.load = function(path) {
 		var file = base.getFile(path);
 		if (file == null) {

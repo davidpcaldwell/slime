@@ -196,7 +196,7 @@ var firefox;
 if (parameters.options.firefox) {
 	firefox = new Browser(new function() {
 		var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
-		
+
 		this.open = function(on) {
 			return function(uri) {
 				jsh.shell.run({

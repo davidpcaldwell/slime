@@ -43,7 +43,7 @@ public class Main {
 			}
 			throw new RuntimeException("No JavaScript execution engine found.");
 		}
-		
+
 		static Shell shell() throws IOException {
 			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
 			String codeUrlString = codeLocation.toExternalForm();
@@ -73,7 +73,7 @@ public class Main {
 			}
 			return shell;
 		}
-		
+
 		static ArrayList<String> engines() throws IOException {
 			Shell shell = shell();
 			ArrayList<String> rv = new ArrayList<String>();
@@ -84,7 +84,7 @@ public class Main {
 			}
 			return rv;
 		}
-		
+
 		static Invocation create() throws IOException {
 			boolean debug = (System.getenv("JSH_LAUNCHER_DEBUG") != null);
 			return new Invocation(shell(), System.getenv("JSH_ENGINE"), debug);
@@ -163,12 +163,12 @@ public class Main {
 
 	private static abstract class Engine {
 		private static final Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
-		
+
 		static {
 			INSTANCES.put("rhino", new Rhino());
 			INSTANCES.put("nashorn", new Nashorn());
 		}
-		
+
 		private Invocation invocation;
 
 		final void initialize(Invocation invocation) throws IOException {
@@ -192,7 +192,7 @@ public class Main {
 		abstract void initializeSystemProperties(Invocation invocation, Shell shell) throws IOException;
 		abstract void addScript(String pathname);
 		abstract int run(String[] args) throws IOException, ScriptException;
-		
+
 		private static class Nashorn extends Engine {
 			private ScriptEngineManager factory;
 			private ScriptEngine engine;
@@ -202,9 +202,9 @@ public class Main {
 				this.factory = new ScriptEngineManager();
 				this.engine = factory.getEngineByName("nashorn");
 			}
-			
+
 			boolean isInstalled(Shell shell) {
-				return new ScriptEngineManager().getEngineByName("nashorn") != null;				
+				return new ScriptEngineManager().getEngineByName("nashorn") != null;
 			}
 
 			void initializeSystemProperties(Invocation invocation, Shell shell) {
@@ -240,7 +240,7 @@ public class Main {
 
 		private static class Rhino extends Engine {
 			private ArrayList<String> scripts = new ArrayList<String>();
-			
+
 			boolean isInstalled(Shell shell) {
 				try {
 					shell.getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
@@ -524,7 +524,7 @@ public class Main {
 			System.exit(status.intValue());
 		}
 	}
-	
+
 	public static void main(String[] args) throws java.io.IOException {
 		Main main = new Main();
 		if (args.length == 1 && args[0].equals("-engines")) {

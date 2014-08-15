@@ -100,7 +100,7 @@ public class Nashorn {
 		@Override public void script(Code.Source.File script) {
 			host.add(script);
 		}
-		
+
 		private ExitException getExitException(Exception e) {
 			Throwable t = e.getCause();
 			while(t != null) {

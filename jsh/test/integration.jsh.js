@@ -270,13 +270,13 @@ var jshPackage = function(p) {
 	for (var x in mode.env) {
 		mymode.env[x] = mode.env[x];
 	}
-	
+
 	mymode.env.JSH_JAVA_LOGGING_PROPERTIES = String(new File(SLIME_SRC,"jsh/test/integration.logging.properties").getCanonicalPath());
 	jsh.shell.echo("JSH_ENGINE = " + jsh.shell.environment.JSH_ENGINE);
 	run(LAUNCHER_COMMAND.concat([
 		getSourceFilePath("jsh/test/jsh.shell/properties.jsh.js")
 	]), mymode);
-	
+
 	delete mymode.env.JSH_JAVA_LOGGING_PROPERTIES;
 	var tmp = createTemporaryDirectory();
 	run(LAUNCHER_COMMAND.concat([
@@ -640,7 +640,7 @@ if (RHINO_LIBRARIES) {
 					throw new Error("Status: " + result.status);
 				}
 			}
-		});	
+		});
 	})(1);
 }
 

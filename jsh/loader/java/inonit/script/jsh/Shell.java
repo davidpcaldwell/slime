@@ -55,13 +55,13 @@ public abstract class Shell {
 			}
 		};
 	}
-	
+
 	private Object $host;
-	
+
 	public final void setHost(Object object) {
 		this.$host = object;
 	}
-	
+
 	public final Object host() {
 		return $host;
 	}
@@ -198,14 +198,14 @@ public abstract class Shell {
 		protected abstract void addEngine();
 		protected abstract void script(Code.Source.File script);
 		protected abstract Integer execute();
-		
+
 		public final Integer execute(Shell _this) {
 			Logging.get().log(Shell.class, Level.INFO, "Executing shell with %s", this);
 			final Execution execution = this;
 			execution.initialize(_this);
 			execution.addEngine();
 			execution.script(_this.getInstallation().getJshLoader("jsh.js"));
-			return execution.execute();			
+			return execution.execute();
 		}
 	}
 }

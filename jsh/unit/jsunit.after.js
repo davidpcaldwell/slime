@@ -128,7 +128,7 @@ $exports.console = new function() {
 				$context.console.println(test.message(success));
 //				$context.console.print(".");
 			}
-			
+
 		}
 	}
 
