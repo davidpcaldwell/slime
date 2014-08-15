@@ -303,9 +303,9 @@ var Client = function(configuration) {
 			headers.push({ name: "Authorization", value: p.authorization });
 		}
 		cookies.get(url,headers);
-		
+
 		var myspi = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
-		
+
 		var response = myspi({
 			method: method,
 			url: url,
@@ -314,7 +314,7 @@ var Client = function(configuration) {
 			proxy: p.proxy,
 			timeout: p.timeout
 		},cookies);
-		
+
 		response.status.message = response.status.reason;
 		$api.deprecate(response.status,"message");
 

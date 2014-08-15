@@ -126,7 +126,7 @@
 //				this.toString = function() {
 //					return "rhino/literal.js: _source = " + p._source;
 //				};
-//				
+//
 //				this.getCode = function(path) {
 //					return getCode({
 //						_source: p._source,

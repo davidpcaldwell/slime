@@ -259,10 +259,10 @@ END LICENSE
 						var Scope = function(base) {
 							var self = this;
 							var Self = arguments.callee;
-							
+
 							//	TODO	obsolete?
 							this.top = "";
-							
+
 							this.$relative = function(getRelativePath) {
 								//	TODO	since this ignores getRelativePath, it almost certainly does not work
 								return new Self(base + this.top);
@@ -293,7 +293,7 @@ END LICENSE
 									};
 									this.coffee = window.CoffeeScript;
 								};
-								
+
 								this.disableBreakOnExceptions = function(f) {
 									return f;
 								}
@@ -507,7 +507,7 @@ END LICENSE
 						current = current.parentNode;
 						log("END Scenario: " + scenario.name);
 					};
-					
+
 					var dumpError = function(error) {
 						log("Error: " + error);
 						if (error.stack) {

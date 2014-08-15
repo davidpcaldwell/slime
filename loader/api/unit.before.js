@@ -22,19 +22,19 @@ $exports.Scenario = function(properties) {
 	var Verify = function(scope,vars) {
 		var Value = function(v,name) {
 			var prefix = (name) ? (name + " ") : "";
-			
+
 			if (typeof(v) != "object" || !v) {
 				this.name = name;
 				this.value = v;
 			}
-			
+
 			if (typeof(v) == "string") {
 				var expression = (name) ? name : "\"" + v + "\"";
 				this.length = function() {
 					return new Value(v.length, expression + ".length");
 				};
 			}
-			
+
 			this.isUndefined = function() {
 				scope.test({
 					success: function() { return typeof(v) === "undefined"; },
@@ -43,7 +43,7 @@ $exports.Scenario = function(properties) {
 					}
 				});
 			};
-			
+
 			var toLiteral = function(v) {
 				if (typeof(v) == "string") return "\"" + v + "\"";
 				return String(v);
@@ -57,9 +57,9 @@ $exports.Scenario = function(properties) {
 						value: value,
 						name: toLiteral(value)
 					};
-				}				
+				}
 			}
-			
+
 			this.is = function(value) {
 				var specified = represent(value);
 				scope.test({
@@ -69,7 +69,7 @@ $exports.Scenario = function(properties) {
 					}
 				});
 			};
-			
+
 			this.isNotEqualTo = function(value) {
 				var specified = represent(value);
 				scope.test({
@@ -115,7 +115,7 @@ $exports.Scenario = function(properties) {
 								if (success) return name + " threw expected " + type.name;
 								return "Threw " + e + ", not " + type.name;
 							}
-						});												
+						});
 					};
 					this.threw.nothing = function() {
 						scope.test({
@@ -123,13 +123,13 @@ $exports.Scenario = function(properties) {
 							message: function(success) {
 								return prefix + "threw " + e;
 							}
-						});						
+						});
 					}
 				};
-				
+
 				var DidNotThrow = function(returned,name) {
 					var delegate = new Value(void(0),name);
-					
+
 					for (var x in delegate) {
 						this[x] = function() {
 							scope.test({
@@ -138,9 +138,9 @@ $exports.Scenario = function(properties) {
 									return name + " did not throw; returned " + returned;
 								}
 							});
-						}						
+						}
 					}
-					
+
 					this.nothing = function() {
 						scope.test({
 							success: function() { return true; },
@@ -149,7 +149,7 @@ $exports.Scenario = function(properties) {
 							}
 						});
 					};
-					
+
 					this.type = function(type) {
 						scope.test({
 							success: function() { return false; },
@@ -159,7 +159,7 @@ $exports.Scenario = function(properties) {
 						})
 					}
 				}
-				
+
 				return function() {
 					var argumentToString = function(v) {
 						if (typeof(v) == "string") return "\"" + v + "\"";
@@ -183,7 +183,7 @@ $exports.Scenario = function(properties) {
 					return rv(o[x],prefix(x));
 				}
 			};
-			
+
 			this.evaluate = function(f) {
 				var mapped = f.call(o);
 				return rv(mapped,name+"{" + f + "}")
@@ -203,7 +203,7 @@ $exports.Scenario = function(properties) {
 				this.message = wrapProperty("message");
 			}
 		};
-		
+
 		var delegates = [];
 
 		var rv = function(value,name) {
@@ -254,7 +254,7 @@ $exports.Scenario = function(properties) {
 //		}
 		return rv;
 	};
-	
+
 	var Scope = function(console,callback) {
 		var self = this;
 		if (Object.prototype.__defineGetter__) {
@@ -453,9 +453,9 @@ $exports.Scenario = function(properties) {
 				units.push({ test: assertion });
 			}
 		};
-		
+
 		var verify = new Verify(this);
-		
+
 		this.verify = verify;
 
 		this.start = function(console) {

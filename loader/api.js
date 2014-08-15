@@ -387,7 +387,7 @@
 		}
 		return rv;
 	};
-	
+
 	$exports.Value = function(v,name) {
 		return new function() {
 			this.property = function() {
@@ -401,7 +401,7 @@
 			}
 		}
 	};
-	
+
 	$exports.Events = function(p) {
 		return new function() {
 			var byType = {};

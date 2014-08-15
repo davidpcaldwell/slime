@@ -328,7 +328,7 @@ $exports.ApiHtmlTests = function(html,name) {
 				p.name = "<" + element.localName + ">";
 			}
 		}
-		
+
 		var relativeScope = function(element) {
 			var rv = scope.$relative(element.getRelativePath);
 //			debugger;

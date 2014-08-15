@@ -809,7 +809,7 @@ END LICENSE
 								verify(value).property("name","length").require().threw.nothing();
 								verify(value).property("nested","value").require().threw.nothing();
 								verify(value).property("nested","value1").require().threw.type(TypeError);
-								verify(one).nested().method().is("method");								
+								verify(one).nested().method().is("method");
 							})();
 						</script>
 					</li>
@@ -837,17 +837,17 @@ END LICENSE
 				<script type="application/x.jsapi#tests">
 					var source = new function() {
 						var events = $api.Events({ source: this });
-						
+
 						this.doIt = function(p) {
 							events.fire("done", p);
 						};
 					};
-					
+
 					var received = [];
 					var counter = function(e) {
 						received.push(e);
 					};
-					
+
 					verify(received).length().is(0);
 					source.doIt();
 					verify(received).length().is(0);
