@@ -199,30 +199,25 @@ JSH_HOME.mkdirs();
 
 var RHINO_LIBRARIES = (function() {
 	var RHINO_HOME;
-	if (Packages.java.lang.System.getProperties().get("jsh.build.rhino")) {
+	if (Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar")) {
 		return [
-			Packages.java.lang.System.getProperties().get("jsh.build.rhino")
+			new File(Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar"))
 		]
 	}
 	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-		RHINO_HOME = function() {
+		//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
+		return (function() {
 			//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
 			//	like an un-jarred version
 			var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
 			var matcher = /^file\:(.*)/;
 			if (matcher.exec(url)[1].substring(2,3) == ":") {
 				//	this is a windows path of the form /C:/ ...
-				return new File(matcher.exec(url)[1].substring(1)).getParentFile();
+				return [ new File(matcher.exec(url)[1].substring(1)) ];
 			} else {
-				return new File(matcher.exec(url)[1]).getParentFile();
+				return [ new File(matcher.exec(url)[1]) ];
 			}
-		}();
-		debug("RHINO_HOME = " + RHINO_HOME.getCanonicalPath());
-
-		return [
-			new File(RHINO_HOME,"js.jar")
-			//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
-		];
+		})();
 	}
 })();
 
@@ -244,8 +239,9 @@ copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOM
 
 if (RHINO_LIBRARIES) {
 	console("Copying Rhino libraries ...");
-	RHINO_LIBRARIES.forEach( function(file) {
-		copyFile(file,new File(JSH_HOME,"lib/" + file.getName()));
+	RHINO_LIBRARIES.forEach( function(file,index,array) {
+		var name = (array.length == 1) ? "js.jar" : file.getName();
+		copyFile(file,new File(JSH_HOME,"lib/" + name));
 	});
 } else {
 	console("Rhino libraries not present; building for Nashorn only.");
