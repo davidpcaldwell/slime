@@ -106,3 +106,9 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 		});
 	};
 })));
+
+$exports.askpass = $loader.file("askpass.js", {
+	api: {
+		java: $context.api.java
+	}
+});
