@@ -123,6 +123,12 @@ var LocalRepository = function(o) {
 				} else if (p && p.since || p && p.until) {
 					throw new TypeError("Unsupported: since or until without other");
 				}
+				if (p && p.author) {
+					rv.push("--author=" + p.author);
+				}
+				if (p && p.all) {
+					rv.push("--all");
+				}
 				return rv;
 			})()
 			,stdio: {
@@ -275,5 +281,7 @@ $exports.Repository = function(p) {
 		return new LocalRepository(p);
 	} else if (p.remote) {
 		return new RemoteRepository(p);
+	} else {
+		throw new TypeError("Required: .local or .remote property.");
 	}
 };
