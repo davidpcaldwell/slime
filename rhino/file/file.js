@@ -123,23 +123,31 @@ var Pathname = function(parameters) {
 		var append = Boolean(mode.append);
 
 		//	TODO	adapt to use rhino/io Resource write method
-		if (dataOrType == $context.Streams.binary) {
-			return $filesystem.write.binary(peer,append);
-		} else if (dataOrType == $context.Streams.text) {
-			return $filesystem.write.character(peer,append);
-		} else if (typeof(dataOrType) == "string") {
-			$filesystem.write.string(peer,append,dataOrType);
-		} else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
-			var stream = $filesystem.write.binary(peer,append);
-			$context.Streams.binary.copy(dataOrType,stream);
-			stream.close();
-		} else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
-			var stream = $filesystem.write.character(peer,append);
-			$context.Streams.text.copy(dataOrType,stream);
-			stream.close();
-		} else {
-			fail("Unimplemented: write " + dataOrType);
-		}
+		var poorResource = new $context.Resource({
+			write: {
+				binary: function(mode) {
+					return $filesystem.write.binary(peer,Boolean(mode.append));
+				}
+			}
+		});
+		return poorResource.write(dataOrType,mode);
+//		if (dataOrType == $context.Streams.binary) {
+//			return $filesystem.write.binary(peer,append);
+//		} else if (dataOrType == $context.Streams.text) {
+//			return $filesystem.write.character(peer,append);
+//		} else if (typeof(dataOrType) == "string") {
+//			$filesystem.write.string(peer,append,dataOrType);
+//		} else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
+//			var stream = $filesystem.write.binary(peer,append);
+//			$context.Streams.binary.copy(dataOrType,stream);
+//			stream.close();
+//		} else if (dataOrType.java && dataOrType.java.adapt && $context.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
+//			var stream = $filesystem.write.character(peer,append);
+//			$context.Streams.text.copy(dataOrType,stream);
+//			stream.close();
+//		} else {
+//			fail("Unimplemented: write " + dataOrType);
+//		}
 	}
 
 	this.write = write;
