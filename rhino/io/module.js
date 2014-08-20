@@ -337,16 +337,26 @@ var Resource = function(p) {
 	var global = (function() { return this; })();
 
 	this.read = function(mode) {
+		var _properties = function(peer) {
+			//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader
+			var properties = new Packages.java.util.Properties();
+			properties.load( peer );
+			peer.close();
+			return properties;
+		}
+		
 		if (binary) {
 			if (mode == Streams.binary) return binary();
+			if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
 		}
 		if (text) {
 			if (mode == Streams.text) return text();
+			if (mode == String) return text().asString();
+			if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
 			if (typeof(global.XML) != "undefined") {
 				if (mode == XML) return text().asXml();
 				if (/^function XML\(\)/.test(String(mode))) return text().asXml();
 			}
-			if (mode == String) return text().asString();
 		}
 		var parameters = (function() {
 			if (!p) return String(p);
@@ -356,7 +366,7 @@ var Resource = function(p) {
 		throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
 			+ " Streams.binary " + (mode == Streams.binary)
 			+ " Streams.text " + (mode == Streams.text)
-			+ " XML " + (mode == XML)
+			+ " XML " + (mode == global.XML)
 			+ " String " + (mode == String)
 		);
 	}
@@ -412,16 +422,28 @@ var Resource = function(p) {
 				return writeBinary(mode);
 			} else if (dataOrType == Streams.text && writeText) {
 				return writeText(mode);
+			} else if (dataOrType.java && dataOrType.java.adapt && $context.api.java.isJavaType(Packages.java.io.InputStream)(dataOrType.java.adapt())) {
+				var stream = writeBinary(mode);
+				Streams.binary.copy(dataOrType,stream);
+				stream.close();
+			} else if (dataOrType.java && dataOrType.java.adapt && $context.api.java.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
+				stream = writeText(mode);
+				Streams.text.copy(dataOrType,stream);
+				stream.close();
 			} else if (typeof(dataOrType) == "string" && writeText) {
 				var writer = writeText(mode);
 				writer.write(dataOrType);
+				writer.close();
+			} else if (typeof(dataOrType) == "object" && $context.api.java.isJavaType(Packages.java.util.Properties)(dataOrType)) {
+				var writer = writeText(mode);
+				dataOrType.store(writer.java.adapt(), null);
 				writer.close();
 			} else if (typeof(dataOrType) == "xml" && writeText) {
 				var writer = writeText(mode);
 				writer.write(dataOrType.toXMLString());
 				writer.close();
 			} else {
-				throw new Error("No compatible write mode, trying to write: " + dataOrType);
+				throw new TypeError("No compatible write mode, trying to write: " + dataOrType);
 			}
 		}
 	}
