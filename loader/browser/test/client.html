@@ -370,7 +370,20 @@ END LICENSE
 								this.removeJsapiAttribute = function(name) {
 									//	TODO	does this work in IE?
 									node.removeAttribute("jsapi:" + name);
-								}
+								};
+
+								//	TODO	Clearly there is no test case that exercises this method. It was added as part of
+								//			resolving issues with including one file's content in another: the included file, if
+								//			it contains relative path references, needs to somehow know where it came from so that
+								//			it can resolve the relative paths relative to itself rather than relative to the file
+								//			in which it was included. So probably need a test case on browser side that does that
+								//			and then we can implement and fix this. Don't recall specifically, but dimly recall
+								//			the object returned by this is supposed to be opaque to generic layers and somehow is
+								//			used as a marker somewhere where it is passed back to an implementation-specific method
+								//			for use.
+								this.getRelativePath = function() {
+									throw new Error("Unimplemented: getRelativePath");
+								};
 
 								//	Below unverified as to use
 
