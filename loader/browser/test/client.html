@@ -218,6 +218,46 @@ END LICENSE
 					return "Unknown error type: " + e;
 				}
 
+				var dumpError = function(error,log) {
+					if (!log) log = function(){};
+					log("Error: " + error);
+					if (error.stack) {
+						if (error.code) {
+							var lines = error.stack.split("\n");
+							if (lines[1].substring(0,"    at ".length) == "    at ") {
+								var evalFormat = /\(eval at (?:.*), (\S+)\:(\d+)\:(\d+)\)/;
+								var match = evalFormat.exec(lines[1]);
+								if (match) {
+									var lineNumber = match[2];
+									var columnNumber = match[3];
+									var script = error.code.split("\n");
+									var prefix = "";
+									for (var i=0; i<columnNumber-1; i++) {
+										if (script[lineNumber-1].substring(i,i+1) == "\t") {
+											prefix += "\t";
+										} else {
+											prefix += " ";
+										}
+									}
+									script.splice(Number(match[2]),0,prefix + "^",prefix + error.name + ": " + error.message);
+									if (window.console && window.console.log) {
+										window.console.log(script.join("\n"));
+									}
+									return;
+								}
+							}
+							if (window.console && window.console.log) {
+								window.console.log(error.code);
+							}
+							log(error.code);
+						}
+						if (window.console && window.console.log) {
+							window.console.log(error.stack);
+						}
+						log(error.stack);
+					}
+				}
+
 				var scenarios = [];
 				for (var i=0; i<parameters.module.length; i++) {
 					var test = (function() {
@@ -469,7 +509,17 @@ END LICENSE
 							if (declaration) return declaration.getAttribute("path");
 							return "";
 						})();
-						var contexts = apiHtml.getContexts(scope);
+						try {
+							var contexts = apiHtml.getContexts(scope);
+						} catch (e) {
+							if (e.cause) {
+								e.cause.code = e.code;
+								dumpError(e.cause);
+							} else {
+								dumpError(e);
+							}
+							throw e;
+						}
 						for (var i=0; i<contexts.length; i++) {
 							try {
 								var object = inonit.loader.module(
@@ -521,45 +571,6 @@ END LICENSE
 						log("END Scenario: " + scenario.name);
 					};
 
-					var dumpError = function(error) {
-						log("Error: " + error);
-						if (error.stack) {
-							if (error.code) {
-								var lines = error.stack.split("\n");
-								if (lines[1].substring(0,"    at ".length) == "    at ") {
-									var evalFormat = /\(eval at (?:.*), (\S+)\:(\d+)\:(\d+)\)/;
-									var match = evalFormat.exec(lines[1]);
-									if (match) {
-										var lineNumber = match[2];
-										var columnNumber = match[3];
-										var script = error.code.split("\n");
-										var prefix = "";
-										for (var i=0; i<columnNumber-1; i++) {
-											if (script[lineNumber-1].substring(i,i+1) == "\t") {
-												prefix += "\t";
-											} else {
-												prefix += " ";
-											}
-										}
-										script.splice(Number(match[2]),0,prefix + "^",prefix + error.name + ": " + error.message);
-										if (window.console && window.console.log) {
-											window.console.log(script.join("\n"));
-										}
-										return;
-									}
-								}
-								if (window.console && window.console.log) {
-									window.console.log(error.code);
-								}
-								log(error.code);
-							}
-							if (window.console && window.console.log) {
-								window.console.log(error.stack);
-							}
-							log(error.stack);
-						}
-					}
-
 					this.test = function(test) {
 						if (test.success) {
 							log("Success: " + test + "; " + test.message());
@@ -568,7 +579,7 @@ END LICENSE
 							log("Reason: " + test.message());
 						}
 						if (test.error) {
-							dumpError(test.error);
+							dumpError(test.error,log);
 						}
 						var div = document.createElement("div");
 						div.appendChild(document.createTextNode(test.message()));
