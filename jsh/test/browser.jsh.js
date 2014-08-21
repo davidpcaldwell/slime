@@ -29,6 +29,7 @@ if (!jsh.httpd || !jsh.httpd.Tomcat) {
 var all = [
 	"loader/test/data/a/", "loader/test/data/b/", "loader/test/data/c/main.js",
 	"loader/test/data/coffee/",
+	"loader/api/test/data/1/",
 	"js/object/","js/object/Error.js",
 	"js/web/"
 	,"js/document/","js/mime/"
