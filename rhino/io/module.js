@@ -520,6 +520,40 @@ $exports.Loader = function(p) {
 //	}
 //
 //>>>>>>> other
+	var decorate = function() {
+		if (this._stream) {
+			this.resource = function(path) {
+				var target = this;
+				if (p && p.resources) {
+					//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
+					//			child would need to call the parent loader with the prefix, which probably means we'd have to
+					//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
+					return p.resources.get(path);
+				} else {
+					//	Test for existence so that we can return null if not found
+					var _in = this._stream(path);
+					if (!_in) {
+						return null;
+					} else {
+						_in.close();
+					}
+					var type;
+					if (p.type) {
+						type = p.type.call(this,path);
+					}
+					return new $exports.Resource({
+						type: type,
+						read: {
+							binary: function() {
+								return new InputStream(target._stream(path));
+							}
+						}
+					});
+				}
+			};
+		}
+	};
+	
 	if (p.resources) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it
@@ -565,39 +599,25 @@ $exports.Loader = function(p) {
 //		return rv;
 //>>>>>>> other
 	} else {
-		rv = new $context.$rhino.Loader(p);
-	}
-	if (rv._stream) {
-		rv.resource = function(path) {
-			var target = this;
-			if (p && p.resources) {
-				//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
-				//			child would need to call the parent loader with the prefix, which probably means we'd have to
-				//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
-				return p.resources.get(path);
+		var parameter = {};
+		for (var x in p) {
+			parameter[x] = p[x];
+		}
+		parameter.Loader = function(prefix) {
+			//	TODO	next line duplicates code in rhino loader, which is currently too encapsulated
+			if (p._source) {
+				var underlying = new $context.$rhino.Loader({ _source: p._source.child(prefix) });
+				decorate.call(underlying);
+				return underlying;
 			} else {
-				//	Test for existence so that we can return null if not found
-				var _in = this._stream(path);
-				if (!_in) {
-					return null;
-				} else {
-					_in.close();
-				}
-				var type;
-				if (p.type) {
-					type = p.type.call(this,path);
-				}
-				return new $exports.Resource({
-					type: type,
-					read: {
-						binary: function() {
-							return new InputStream(target._stream(path));
-						}
-					}
-				});
+				return new $context.$rhino.Loader(p);
 			}
-		};
+		}
+		rv = new $context.$rhino.Loader(parameter);
 	}
+	
+	decorate.call(rv);
+	
 	return rv;
 };
 
