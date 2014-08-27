@@ -124,6 +124,9 @@ var Pom = function(file) {
 			item.getArtifact = function(v) {
 				return getElementContent(this,"artifactId");
 			};
+			item.getVersion = function() {
+				return getElementContent(this,"version");				
+			};
 			item.setGroup = function(v) {
 				setElementContent(this,"groupId",v);
 			}
