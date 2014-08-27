@@ -299,6 +299,26 @@
 			return rv;
 		};
 	};
+	
+	$exports.Constructor = {};
+	
+	$exports.Constructor.decorated = function(original,decorator) {
+		return function() {
+			var delimited = "";
+			for (var i=0; i<arguments.length; i++) {
+				if (i > 0) {
+					delimited += ",";
+				}
+				delimited += "arguments[" + i + "]";
+			}
+			var defaulted = eval("new original(" + delimited + ")");
+			var decorated = decorator.apply(defaulted,arguments);
+			if (typeof(decorated) == "object" && decorated !== null) {
+				return decorated;
+			}
+			return defaulted;
+		}
+	}
 //	var UNDEFINED = {};
 //
 //	$exports.Function = function(p) {

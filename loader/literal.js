@@ -183,7 +183,8 @@
 					var inner = createScope(scope);
 					var tokens = path.split("/");
 					var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-					inner.$loader = (p.Loader) ? new p.Loader(prefix) : new Child(prefix);
+					var Constructor = (p.Loader) ? $api.Constructor.decorated(Child,p.Loader) : Child;
+					inner.$loader = new Constructor(prefix);
 					if (path == "" || /\/$/.test(path)) {
 						path += "module.js";
 					}
