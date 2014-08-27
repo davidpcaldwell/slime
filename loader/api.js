@@ -303,6 +303,7 @@
 	$exports.Constructor = {};
 	
 	$exports.Constructor.decorated = function(original,decorator) {
+		if (!decorator) return original;
 		return function() {
 			var delimited = "";
 			for (var i=0; i<arguments.length; i++) {

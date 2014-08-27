@@ -73,6 +73,10 @@
 		}
 
 		if (!p._source) throw new TypeError("_source must be defined and not be null.");
+		
+		var Child = function(prefix) {
+			return new Loader({ _source: p._source.child(prefix) });
+		}
 
 		var parameter = new function() {
 			this.getCode = function(path) {
@@ -81,10 +85,8 @@
 					path: path
 				}
 			};
-
-			this.Loader = function(prefix) {
-				return (p.Loader) ? new p.Loader(prefix) : new Loader({ _source: p._source.child(prefix) });
-			}
+			
+			this.Loader = loader.$api.Constructor.decorated(Child,p.Loader);
 		};
 
 		var rv = new loader.Loader(parameter);
