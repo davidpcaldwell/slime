@@ -189,74 +189,17 @@
 			}
 		});
 
-		this.module = function(code,args) {
-			var createModuleLoader = function(code) {
-				return new function() {
-					this.main = (code.main) ? code.main : "module.js";
-					this.getScript = function(path) {
-						if (instantiate[code.base+path]) {
-							return function(scope,target) {
-								instantiate[code.base+path](scope);
-							}
-						} else {
-							//	TODO	assumes trailing slash when loading module
-							return { name: path, code: fetcher.getCode(code.base+path) };
-						}
-					}
-				}
-			}
-
-			if (!code) {
-				//	TODO	probably want better message for zero-length string
-				throw new TypeError("Missing argument 0 specifying location of module.");
-			} else if (typeof(code) == "string") {
-				if (/\/$/.test(code)) {
-					code = { base: code };
-				} else {
-					var tokens = code.split("/");
-					var base = tokens.slice(0,tokens.length-1).join("/");
-					//	TODO	add an automated test for loading a "sibling" module (one from a URL with no /); the below
-					//			'if' statement seems to make that work correctly
-					if (base.length > 0) {
-						base += "/";
-					}
-					code = { base: base, main: tokens[tokens.length-1] };
-				}
-			} else if (typeof(code) == "object" && code.base && code.main) {
-				throw new TypeError(
-					"Attempt to use removed inonit.loader.module API by invoking with first argument having base/main properties."
-					+ " base=" + code.base + " main=" + code.main
-					+ " Resolve the properties to a single location and invoke using that."
-				);
-			} else {
-				throw new TypeError(
-					"Non-string passed to inonit.loader.module: " + code
-				);
-			}
-
-			if (typeof(args) == "object") {
-				if (args.$context && args.$exports) {
-				} else {
-					args = {
-						$context: args,
-						$exports: {}
-					}
-				}
-			}
-
-			var spec = createModuleLoader(code);
-			var loader = new platform.Loader(spec);
-			return loader.module(spec.main,args);
-		}
-
-		this.file = function(path,$context) {
-			return loader.file.apply(loader,arguments);
-//			return platform.file(fetcher.getCode(path),$context);
-		};
-
 		this.run = function(path,scope,target) {
 			return loader.run.apply(loader,arguments);
 		};
+
+		this.file = function(path,$context) {
+			return loader.file.apply(loader,arguments);
+		};
+
+		this.module = function(path,scope,target) {
+			return loader.module.apply(loader,arguments);
+		}
 
 		this.Loader = function(p) {
 			if (typeof(p) == "string") {
