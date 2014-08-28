@@ -153,11 +153,11 @@
 				return inner.$exports;
 			}
 
-			var getChildLoader = function(parent,p,prefix,Loader) {
+			var getChildLoader = function(p/*,parent,p,prefix,Loader*/) {
 				var Child = function(prefix) {
-					return new Loader({
+					return new p.Loader({
 						toString: function() {
-							return parent.toString() + " prefix=" + prefix;
+							return p.parent.toString() + " prefix=" + prefix;
 						},
 						getScript: function(path) {
 							return p.getScript(prefix+path);
@@ -165,8 +165,8 @@
 					});
 				};
 
-				var Constructor = (p.Loader) ? $api.Constructor.decorated(Child,p.Loader) : Child;
-				return new Constructor(prefix);					
+				var Constructor = (p.Child) ? $api.Constructor.decorated(Child,p.Child) : Child;
+				return new Constructor(p.prefix);					
 			};
 
 			var getModuleLocations = function(path) {
@@ -184,7 +184,15 @@
 			
 			methods.module = function(code,scope,context) {
 				var inner = createScope(scope);
-				inner.$loader = getChildLoader(this,context.parameter,context.prefix,context.Loader);
+				inner.$loader = getChildLoader({
+					parent: this,
+					getScript: function(path) {
+						return context.parameter.getScript(path);
+					},
+					Child: context.parameter.Loader,
+					prefix: context.prefix,
+					Loader: context.Loader
+				});
 				methods.run.call(this,code,inner);
 				return inner.$exports;
 			}
