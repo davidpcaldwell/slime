@@ -186,10 +186,8 @@
 				var inner = createScope(scope);
 				inner.$loader = getChildLoader({
 					parent: this,
-					getScript: function(path) {
-						return context.parameter.getScript(path);
-					},
-					Child: context.parameter.Loader,
+					getScript: context.getScript,
+					Child: context.Child,
 					prefix: context.prefix,
 					Loader: context.Loader
 				});
@@ -216,8 +214,11 @@
 				this.module = function(path,scope,target) {
 					var locations = getModuleLocations(path);
 					return methods.module.call(target,p.getScript(locations.main),scope,{
+						getScript: function(path) {
+							return p.getScript(path);
+						},
+						Child: p.Loader,
 						prefix: locations.prefix,
-						parameter: p,
 						Loader: Callee
 					});
 //					var inner = createScope(scope);
