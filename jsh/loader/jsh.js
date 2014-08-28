@@ -102,6 +102,9 @@ this.jsh = new function() {
 	}
 	
 	var Loader = eval(host.getLoader().getLoaderCode("loader.js"));
+	
+	var plugins = {};
+	var loadPlugins = eval(host.getLoader().getLoaderCode("plugins.js"));
 
 	var loader = new Loader();
 
@@ -129,7 +132,13 @@ this.jsh = new function() {
 				}
 				loader.classpath.add(pathname.java.adapt());
 			};
-		}
+		};
+
+		this.plugins = function(from) {
+			if (from && from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
+				loadPlugins(host.getPlugins(from.java.adapt()));
+			}
+		};
 
 		this.addClasses = loader.$api.deprecate(function(pathname) {
 			this.java.add(pathname);
@@ -149,8 +158,6 @@ this.jsh = new function() {
 
 	var java = loader.bootstrap("rhino/host", { globals: true, $rhino: loader.getRhinoLoader(), $java: $host.java });
 	jsh.java = java;
-
-	var plugins = {};
 
 	(function() {
 		var context = {};
@@ -211,24 +218,14 @@ this.jsh = new function() {
 		jsh.file = loader.bootstrap("rhino/file", context);
 	})();
 
+	loadPlugins(host.getLoader().getPlugins());
+
 	jsh.$jsapi = {
 		$platform: loader.$platform,
 		$api: loader.$api,
 		$rhino: loader.getRhinoLoader(),
 		$coffee: $jsh.getInstallation().getLibrary("coffee-script.js")
 	};
-
-	var loadPlugins = eval(host.getLoader().getLoaderCode("plugins.js"));
-
-	this.loader.plugins = function(from) {
-		if (from && from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
-			loadPlugins(host.getPlugins(from.java.adapt()));
-		}
-	};
-
-	(function() {
-		loadPlugins(host.getLoader().getPlugins());
-	})();
 
 	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
 		(function() {
