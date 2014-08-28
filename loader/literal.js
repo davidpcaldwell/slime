@@ -153,6 +153,24 @@
 				return inner.$exports;
 			}
 
+			var getChildLoader = function(parent,p,path,Loader) {
+				var Child = function(prefix) {
+					return new Loader({
+						toString: function() {
+							return parent.toString() + " prefix=" + prefix;
+						},
+						getScript: function(path) {
+							return p.getScript(prefix+path);
+						}
+					});
+				};
+
+				var tokens = path.split("/");
+				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+				var Constructor = (p.Loader) ? $api.Constructor.decorated(Child,p.Loader) : Child;
+				return new Constructor(prefix);					
+			};
+
 			var Loader = function(p) {
 				var Callee = arguments.callee;
 
@@ -169,29 +187,9 @@
 				declare.call(this,"run");
 				declare.call(this,"file");
 
-				//	Creates a child loader that prepends the given prefix
-				var parent = this;
-				var Child = function(prefix) {
-					return new Callee({
-						toString: function() {
-							return parent.toString() + " prefix=" + prefix;
-						},
-						getScript: function(path) {
-							return p.getScript(prefix+path);
-						}
-					});
-				};
-				
-				var getLoader = function(path) {
-					var tokens = path.split("/");
-					var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-					var Constructor = (p.Loader) ? $api.Constructor.decorated(Child,p.Loader) : Child;
-					return new Constructor(prefix);					
-				}
-
 				this.module = function(path,scope,target) {
 					var inner = createScope(scope);
-					inner.$loader = getLoader(path);
+					inner.$loader = getChildLoader(this,p,path,Callee);
 					if (path == "" || /\/$/.test(path)) {
 						path += "module.js";
 					}
