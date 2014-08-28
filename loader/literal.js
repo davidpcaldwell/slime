@@ -111,25 +111,9 @@
 
 		(function() {
 			var preprocess;
-
-			var runWith = function(script,scope) {
-				if (preprocess) {
-					preprocess(script);
-				}
-				script.target = this;
-				var global = (function() { return this; })();
-				if (scope === global) {
-					scope = {};
-				}
-				script.scope = scope;
-				script.scope.$platform = $platform;
-				script.scope.$api = $api;
-				if ($coffee && /\.coffee$/.test(script.name)) {
-					script.code = $coffee.compile(script.code);
-				}
-				execute(script);
-			}
-
+			
+			var methods = {};
+			
 			var createScope = function(scope) {
 				var rv;
 				if (scope && (scope.$context || scope.$exports)) {
@@ -145,9 +129,27 @@
 				return rv;
 			}
 
-			var file = function(code,scope) {
+			methods.run = function(script,scope) {
+				if (preprocess) {
+					preprocess(script);
+				}
+				script.target = this;
+				var global = (function() { return this; })();
+				if (scope === global) {
+					scope = {};
+				}
+				script.scope = scope;
+				script.scope.$platform = $platform;
+				script.scope.$api = $api;
+				if ($coffee && /\.coffee$/.test(script.name)) {
+					script.code = $coffee.compile(script.code);
+				}
+				execute(script);				
+			}
+
+			methods.file = function(code,scope) {
 				var inner = createScope(scope);
-				runWith.call(this,code,inner);
+				methods.run.call(this,code,inner);
 				return inner.$exports;
 			}
 
@@ -158,13 +160,14 @@
 					return p.toString();
 				}
 
-				this.run = function(path,scope,target) {
-					runWith.call(target,p.getCode(path),scope);
-				}
-
-				this.file = function(path,scope,target) {
-					return file.call(target,p.getCode(path),scope);
-				}
+				var declare = function(name) {
+					this[name] = function(path,scope,target) {
+						return methods[name].call(target,p.getCode(path),scope);
+					};
+				};
+				
+				declare.call(this,"run");
+				declare.call(this,"file");
 
 				//	Creates a child loader that prepends the given prefix
 				var parent = this;
@@ -192,13 +195,13 @@
 					if (path == "" || /\/$/.test(path)) {
 						path += "module.js";
 					}
-					runWith.call(target,p.getCode(path),inner);
+					methods.run.call(target,p.getCode(path),inner);
 					return inner.$exports;
 				}
 			}
 
 			this.run = function(code,scope,target) {
-				runWith.call(target,code,scope);
+				methods.run.call(target,code,scope);
 			};
 			this.run.spi = {};
 			this.run.spi.preprocess = function(implementation) {
@@ -211,7 +214,7 @@
 			//	TODO	For file and module, what should we do about 'this' and why?
 
 			this.file = function(code,scope,target) {
-				return file.call(target,code,scope);
+				return methods.file.call(target,code,scope);
 			};
 
 			this.Loader = Loader;
