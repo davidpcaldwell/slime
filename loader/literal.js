@@ -169,23 +169,10 @@
 				return new Constructor(p.prefix);					
 			};
 
-			var getModuleLocations = function(path) {
-				var tokens = path.split("/");
-				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-				var main = path;
-				if (!main || /\/$/.test(main)) {
-					main += "module.js";
-				}
-				return {
-					prefix: prefix,
-					main: main
-				}
-			};
-			
 			methods.module = function(code,scope,context) {
 				var inner = createScope(scope);
 				inner.$loader = getChildLoader({
-					parent: this,
+					parent: context.parent,
 					getScript: context.getScript,
 					Child: context.Child,
 					prefix: context.prefix,
@@ -210,10 +197,25 @@
 				
 				declare.call(this,"run");
 				declare.call(this,"file");
-				
+			
 				this.module = function(path,scope,target) {
+					var getModuleLocations = function(path) {
+						var tokens = path.split("/");
+						var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+						var main = path;
+						if (!main || /\/$/.test(main)) {
+							main += "module.js";
+						}
+						return {
+							prefix: prefix,
+							main: main
+						}
+					};
+					
+					var parent = this;
 					var locations = getModuleLocations(path);
 					return methods.module.call(target,p.getScript(locations.main),scope,{
+						parent: parent,
 						getScript: function(path) {
 							return p.getScript(path);
 						},
@@ -247,6 +249,25 @@
 			//	TODO	For file and module, what should we do about 'this' and why?
 
 			addTopMethod.call(this,"file");
+			
+			this.module = function(code,scope,target,context) {
+				var internal = {
+					parent: {
+						toString: function() {
+							if (context.parent) {
+								return context.parent.toString();
+							} else {
+								return "(parent unpecified)";
+							}
+						}
+					},
+					getScript: context.getScript,
+					Child: context.Loader,
+					prefix: "",
+					Loader: Loader
+				};
+				return methods.module.call(target,code,scope,internal);
+			};
 
 			this.Loader = Loader;
 
