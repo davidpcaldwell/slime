@@ -169,6 +169,19 @@
 				return new Constructor(prefix);					
 			};
 
+			var getModuleLocations = function(path) {
+				var tokens = path.split("/");
+				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+				var main = path;
+				if (!main || /\/$/.test(main)) {
+					main += "module.js";
+				}
+				return {
+					prefix: prefix,
+					main: main
+				}
+			};
+
 			var Loader = function(p) {
 				var Callee = arguments.callee;
 
@@ -185,19 +198,6 @@
 				declare.call(this,"run");
 				declare.call(this,"file");
 				
-				var getModuleLocations = function(path) {
-					var tokens = path.split("/");
-					var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
-					var main = path;
-					if (!main || /\/$/.test(main)) {
-						main += "module.js";
-					}
-					return {
-						prefix: prefix,
-						main: main
-					}
-				}
-
 				this.module = function(path,scope,target) {
 					var inner = createScope(scope);
 					var locations = getModuleLocations(path);
