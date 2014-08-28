@@ -871,38 +871,32 @@ END LICENSE
 			The platform loader is normally loaded within an environment-specific loader, so the following exports are not
 			normally available to application code: they are available to the environment-specific loader.
 		</div>
+		<div>
+			Note that although there are global <code>run()</code> and <code>file()</code> methods that can be used to execute code,
+			there is no global <code>module()</code> method. Since modules themselves load code, in order to create a module, code
+			loading capability is needed. For this reason, the loader API exposes the ability to load modules via first creating a
+			<a href="#types.Loader">Loader</a> implementation and then using the <code>module()</code> method of the
+			<code>Loader</code>.
+		</div>
 		<div class="type">
-			<a class="type" name="types.code">code</a>
-			<div>
-				<div>
+			<a class="type" name="types.script">script</a>
+			<span>A script to execute</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">name</div>
 					<span class="type">string</span>
-					<span>JavaScript code to execute.</span>
-				</div>
-				-OR-
-				<div>
-					<span class="type">function</span>
 					<span>
-						A function that can load the code and execute it inside a particular scope with a particular
-						<code>this</code> object.
+						The name of the script. Used (by file extension) to determine whether the script contains CoffeeScript
+						code.
 					</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">object</span>
-								<span>
-									The scope object inside which to execute the code, as if the code were executed
-									with <code>with(arguments[0])</code>.
-								</span>
-							</li>
-							<li class="value">
-								<span class="type">object</span>
-								<span>The object to use as <code>this</code> when executing the code.</span>
-							</li>
-						</ol>
-					</div>
-				</div>
-			</div>
+				</li>
+				<li class="value">
+					<div class="name">code</div>
+					<span class="type">string</span>
+					<span>The actual JavaScript code to execute.</span>
+				</li>
+			</ul>
 		</div>
 		<div class="type" jsapi:id="Loader">
 			<a class="type" name="types.Loader">Loader</a>
@@ -956,6 +950,10 @@ END LICENSE
 									empty object will be supplied.
 									<!--	TODO	What about if it is a number, string, or boolean?	-->
 								</span>
+							</li>
+							<li class="value" jsapi:id="arguments[2]">
+								<span class="type">object</span>
+								<span>The object to use as the <code>this</code> value when executing the code.</span>
 							</li>
 						</ol>
 					</div>
@@ -1030,14 +1028,14 @@ END LICENSE
 				<div class="name">run</div>
 				<span jsapi:id="description">
 					Analogous to <a href="#Loader.run">Loader.run()</a>, except that the caller specifies a
-					<a href="#types.code">code</a> to execute rather than a path within a <a href="#types.Loader">Loader</a>.
+					<a href="#types.script">script</a> to execute rather than a path within a <a href="#types.Loader">Loader</a>.
 				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type"><a href="#types.code">code</a></span>
-							<span>The code to execute.</span>
+							<span class="type"><a href="#types.script">script</a></span>
+							<span>The script to execute.</span>
 						</li>
 						<li class="value" jsapi:id="arguments[1]">
 							<span class="type">object</span>
@@ -1054,16 +1052,20 @@ END LICENSE
 				<div class="name">file</div>
 				<span jsapi:id="description">
 					Analogous to <a href="#Loader.file">Loader.file()</a>, except that the caller specifies a
-					<a href="#types.code">code</a> to execute rather than a path within a <a href="#types.Loader">Loader</a>.
+					<a href="#types.script">script</a> to execute rather than a path within a <a href="#types.Loader">Loader</a>.
 				</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type"><a href="#types.code">code</a></span>
-							<span>The code to execute.</span>
+							<span class="type"><a href="#types.script">script</a></span>
+							<span>The script to execute.</span>
 						</li>
 						<li class="value" jsapi:id="arguments[1]">
+							<span class="type">object</span>
+							<span>See <a href="#Loader.file">Loader.file()</a>.</span>
+						</li>
+						<li class="value" jsapi:id="arguments[2]">
 							<span class="type">object</span>
 							<span>See <a href="#Loader.file">Loader.file()</a>.</span>
 						</li>
@@ -1072,93 +1074,6 @@ END LICENSE
 				<div class="returns" jsapi:id="returns">
 					<div class="label">Returns</div>
 					<span>See <a href="#Loader.file">Loader.file()</a>.</span>
-				</div>
-			</li>
-			<li class="function" jsapi:id="module">
-				<div class="name"><a name="exports.module">module</a></div>
-				<span jsapi:id="description">
-					Analogous to <a href="#Loader.module">Loader.module()</a>, except that the caller specifies information about
-					the module structure and how to load the code rather than a path within a <a href="#types.Loader">Loader</a>.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<span>An object specifying the format of the module and how to load it.</span>
-							<p>
-								Ordinarily, the loader loads the main file by calling the <code>getCode</code> method with the
-								string value of the <code>main</code> property, and then executing the resulting code with the
-								appropriate <code>$context</code> and <code>$exports</code>.
-								<!--
-									Below outdated; may now be part of decorateLoader
-								However, the <code>instantiate</code>
-								method, if defined, can override the behavior of <code>getCode</code>. See the definition of
-								<code>instantiate</code> for details.
-								-->
-							</p>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">main</div>
-									<span class="type">string</span>
-									<span>
-										The path of the module's main file: the file that is executed first, and loads the other
-										files (if any).
-									</span>
-								</li>
-								<li class="function">
-									<div class="name">getCode</div>
-									<span>Loads the source files of this module.</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">string</span>
-												<span>A file name or path, delimited by slashes (<code>/</code>).</span>
-											</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.code">code</a></span>
-										<span>The code located at the given location in this module.</span>
-									</div>
-								</li>
-								<li class="constructor">
-									<div class="name">Child</div>
-									<span>
-										(optional)
-										Creates a child loader for use in loading modules within this loader.
-										If omitted, an implementation will be supplied that uses the <code>getCode</code> method
-										with a prefix attached.
-									</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">string</span>
-												<span>A prefix to use when loading the resources of the child.</span>
-											</li>
-										</ol>
-									</div>
-									<div class="instances">
-										<div class="label">Instances</div>
-										<span class="type"><a href="#types.Loader">Loader</a></span>
-										<span>A loader that loads code for a child loader.</span>
-									</div>
-								</li>
-							</ul>
-						</li>
-						<li class="object" jsapi:id="arguments[1]">
-							<span>
-								See <a href="#Loader.module">Loader.module()</a>.
-							</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns" jsapi:id="returns">
-					<div class="label">Returns</div>
-					See <a href="#types.Loader">Loader.module()</a>.
 				</div>
 			</li>
 			<li class="constructor">

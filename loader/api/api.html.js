@@ -108,6 +108,8 @@ var getElement = function(root,path) {
 		rv = select(getDescendants(rv), hasJsapiId(tokens[i]));
 		if (typeof(rv) == "undefined") {
 			return null;
+		} else if (rv === null) {
+			throw new Error("Could not locate element: path = " + path);
 		}
 	}
 	return rv;

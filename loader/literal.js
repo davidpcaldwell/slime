@@ -153,9 +153,6 @@
 				return inner.$exports;
 			}
 
-			methods.module = function(code,scope,context) {
-			}
-
 			var Loader = function(p) {
 				var Callee = arguments.callee;
 
@@ -202,12 +199,11 @@
 						return new Constructor(p.prefix);					
 					};
 					
-					var parent = this;
 					var locations = getModuleLocations(path);
 
 					var inner = createScope(scope);
 					inner.$loader = getChildLoader({
-						parent: parent,
+						parent: this,
 						getScript: function(path) {
 							return p.getScript(path);
 						},
@@ -217,15 +213,6 @@
 					});
 					methods.run.call(target,p.getScript(locations.main),inner);
 					return inner.$exports;
-//					return methods.module.call(target,p.getScript(locations.main),scope,{
-//						parent: parent,
-//						getScript: function(path) {
-//							return p.getScript(path);
-//						},
-//						Child: p.Loader,
-//						prefix: locations.prefix,
-//						Loader: Callee
-//					});
 				}
 			};
 			
