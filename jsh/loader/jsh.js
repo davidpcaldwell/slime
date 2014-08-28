@@ -118,7 +118,7 @@ this.jsh = new function() {
 			var loader = new rhinoLoader.Loader({
 				_code: host.getLoader().getBootstrapModule(path)
 			});
-			return loader.module("module.js", { $context: context });
+			return loader.module("module.js", context);
 		}
 
 		var getCode = function(code) {
@@ -171,7 +171,7 @@ this.jsh = new function() {
 			};
 			this.module = function(_code,main,context) {
 				var loader = new Loader({ _code: _code });
-				return loader.module(main, { $context: context });
+				return loader.module(main, context);
 			};
 			this.addClasses = function(_code) {
 				rhinoLoader.classpath.add(_code.getClasses());

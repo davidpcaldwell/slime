@@ -115,18 +115,25 @@
 			var methods = {};
 			
 			var createScope = function(scope) {
-				var rv;
-				if (scope && (scope.$context || scope.$exports)) {
-					rv = scope;
-				} else if (scope) {
-					rv = { $context: scope };
-				} else {
-					rv = { $context: {} };
-				}
-				if (!rv.$exports) {
-					rv.$exports = {};
-				}
-				return rv;
+				return {
+					$context: (scope) ? scope : {},
+					$exports: {}
+				};
+//				var rv;
+//				if (scope && (scope.$context || scope.$exports)) {
+//					throw new Error("$context or $exports");
+//					rv = scope;
+//				} else if (scope) {
+//					rv = { $context: scope };
+//				} else {
+//					rv = { $context: {} };
+//				}
+//				if (!rv.$exports) {
+//					rv.$exports = {};
+//				} else {
+//					throw new Error("$exports");
+//				}
+//				return rv;
 			}
 
 			methods.run = function(script,scope) {
