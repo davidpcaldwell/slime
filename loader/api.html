@@ -880,7 +880,7 @@ END LICENSE
 		</div>
 		<div class="type">
 			<a class="type" name="types.script">script</a>
-			<span>A script to execute</span>
+			<span>A script to execute.</span>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="value">
@@ -973,7 +973,8 @@ END LICENSE
 						The module's main file will be executed with the following variables in scope:
 						<ul>
 							<li>the <code>$platform</code> and <code>$api</code> objects specified above,</li>
-							<li>the <code>$context</code> and <code>$exports</code> objects specified by the second argument,</li>
+							<li>the <code>$context</code> object specified by the second argument,</li>
+							<li>an <code>$exports</code> object,</li>
 							<li>
 								a <code>$loader</code> object of type <a href="#types.Loader">Loader</a> allowing other source
 								files and submodules to be loaded.
@@ -987,30 +988,17 @@ END LICENSE
 								<span class="type">string</span>
 								<span>The path of the code to execute.</span>
 							</li>
-							<li class="object" jsapi:id="arguments[1]">
+							<li class="value" jsapi:id="arguments[1]">
+								<span class="type">object</span>
 								<span>
-									(optional) An object specifying objects for the module. If no object is provided, an object will be
-									created and supplied with default values for its properties as indicated below.
+									An object to use as the <code>$context</code> object when executing the given code. If absent, an
+									empty object will be supplied.
+									<!--	TODO	What about if it is a number, string, or boolean?	-->
 								</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">$context</div>
-										<span class="type">object</span>
-										<span>
-											(optional) The <code>$context</code> object to supply to the module's main file. If not
-											provided, an empty object will be created and supplied.
-										</span>
-									</li>
-									<li class="value">
-										<div class="name">$exports</div>
-										<span class="type">object</span>
-										<span>
-											(optional) The <code>$exports</code> object to supply to the module's main file. If not
-											provided, an empty object will be created and supplied.
-										</span>
-									</li>
-								</ul>
+							</li>
+							<li class="value" jsapi:id="arguments[2]">
+								<span class="type">object</span>
+								<span>The object to use as the <code>this</code> value when executing the code.</span>
 							</li>
 						</ol>
 					</div>
@@ -1086,7 +1074,7 @@ END LICENSE
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="function">
-									<div class="name">getCode</div>
+									<div class="name">getScript</div>
 									<span>Locates JavaScript code to execute given a path.</span>
 									<div class="arguments">
 										<div class="label">Arguments</div>
@@ -1099,13 +1087,17 @@ END LICENSE
 									</div>
 									<div class="returns">
 										<div class="label">Returns</div>
-										<span class="type"><a href="#types.code">code</a></span>
+										<span class="type"><a href="#types.script">script</a></span>
 									</div>
 								</li>
 								<li class="constructor">
-									<div class="name">Child</div>
+									<div class="name">Loader</div>
 									<span>
-										A constructor invoked when a child loader is created.
+										A constructor-like function invoked when a child loader is created. A standard
+										implementation is first invoked and the resulting object is the <code>this</code> object
+										of the invocation. Like a constructor, if a value is returned, it replaces the standard
+										implementation; otherwise, operations executed inside the function modify the standard
+										implementation.
 									</span>
 									<div class="arguments">
 										<div class="label">Arguments</div>

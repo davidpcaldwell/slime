@@ -114,28 +114,6 @@
 			
 			var methods = {};
 			
-			var createScope = function(scope) {
-				return {
-					$context: (scope) ? scope : {},
-					$exports: {}
-				};
-//				var rv;
-//				if (scope && (scope.$context || scope.$exports)) {
-//					throw new Error("$context or $exports");
-//					rv = scope;
-//				} else if (scope) {
-//					rv = { $context: scope };
-//				} else {
-//					rv = { $context: {} };
-//				}
-//				if (!rv.$exports) {
-//					rv.$exports = {};
-//				} else {
-//					throw new Error("$exports");
-//				}
-//				return rv;
-			}
-
 			methods.run = function(script,scope) {
 				if (preprocess) {
 					preprocess(script);
@@ -154,8 +132,15 @@
 				execute(script);				
 			}
 
+			var createFileScope = function($context) {
+				return {
+					$context: ($context) ? $context : {},
+					$exports: {}
+				};
+			}
+
 			methods.file = function(code,scope) {
-				var inner = createScope(scope);
+				var inner = createFileScope(scope);
 				methods.run.call(this,code,inner);
 				return inner.$exports;
 			}
@@ -208,7 +193,7 @@
 					
 					var locations = getModuleLocations(path);
 
-					var inner = createScope(scope);
+					var inner = createFileScope(scope);
 					inner.$loader = getChildLoader({
 						parent: this,
 						getScript: function(path) {
