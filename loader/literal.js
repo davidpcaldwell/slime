@@ -153,7 +153,7 @@
 				return inner.$exports;
 			}
 
-			var getChildLoader = function(parent,p,path,Loader) {
+			var getChildLoader = function(parent,p,prefix,Loader) {
 				var Child = function(prefix) {
 					return new Loader({
 						toString: function() {
@@ -165,8 +165,6 @@
 					});
 				};
 
-				var tokens = path.split("/");
-				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
 				var Constructor = (p.Loader) ? $api.Constructor.decorated(Child,p.Loader) : Child;
 				return new Constructor(prefix);					
 			};
@@ -186,14 +184,25 @@
 				
 				declare.call(this,"run");
 				declare.call(this,"file");
+				
+				var getModuleLocations = function(path) {
+					var tokens = path.split("/");
+					var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
+					var main = path;
+					if (!main || /\/$/.test(main)) {
+						main += "module.js";
+					}
+					return {
+						prefix: prefix,
+						main: main
+					}
+				}
 
 				this.module = function(path,scope,target) {
 					var inner = createScope(scope);
-					inner.$loader = getChildLoader(this,p,path,Callee);
-					if (path == "" || /\/$/.test(path)) {
-						path += "module.js";
-					}
-					methods.run.call(target,p.getScript(path),inner);
+					var locations = getModuleLocations(path);
+					inner.$loader = getChildLoader(this,p,locations.prefix,Callee);
+					methods.run.call(target,p.getScript(locations.main),inner);
 					return inner.$exports;
 				}
 			};
