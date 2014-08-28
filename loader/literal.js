@@ -81,7 +81,7 @@
 
 		var $api = eval($slime.getCode("api.js"));
 
-		var run = function(/*script*/) {
+		var execute = function(/*script*/) {
 			return (function() {
 				//	$platform and $api are in scope
 				with( arguments[0].scope ) {
@@ -98,7 +98,7 @@
 			if (!coffeeScript) return null;
 			if (coffeeScript.code) {
 				var target = {};
-				run({
+				execute({
 					code: String(coffeeScript.code),
 					target: target,
 					scope: {}
@@ -127,7 +127,7 @@
 				if ($coffee && /\.coffee$/.test(script.name)) {
 					script.code = $coffee.compile(script.code);
 				}
-				run(script);
+				execute(script);
 			}
 
 			var createScope = function(scope) {
@@ -178,13 +178,17 @@
 						}
 					});
 				};
-
-				this.module = function(path,scope,target) {
-					var inner = createScope(scope);
+				
+				var getLoader = function(path) {
 					var tokens = path.split("/");
 					var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
 					var Constructor = (p.Loader) ? $api.Constructor.decorated(Child,p.Loader) : Child;
-					inner.$loader = new Constructor(prefix);
+					return new Constructor(prefix);					
+				}
+
+				this.module = function(path,scope,target) {
+					var inner = createScope(scope);
+					inner.$loader = getLoader(path);
 					if (path == "" || /\/$/.test(path)) {
 						path += "module.js";
 					}
@@ -201,7 +205,7 @@
 				preprocess = implementation(preprocess);
 			};
 			this.run.spi.execute = function(implementation) {
-				run = implementation(run);
+				execute = implementation(execute);
 			};
 
 			//	TODO	For file and module, what should we do about 'this' and why?
