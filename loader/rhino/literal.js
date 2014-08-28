@@ -79,7 +79,7 @@
 		}
 
 		var parameter = new function() {
-			this.getCode = function(path) {
+			this.getScript = function(path) {
 				return {
 					_source: p._source,
 					path: path

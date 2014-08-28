@@ -162,7 +162,7 @@
 
 				var declare = function(name) {
 					this[name] = function(path,scope,target) {
-						return methods[name].call(target,p.getCode(path),scope);
+						return methods[name].call(target,p.getScript(path),scope);
 					};
 				};
 				
@@ -176,8 +176,8 @@
 						toString: function() {
 							return parent.toString() + " prefix=" + prefix;
 						},
-						getCode: function(path) {
-							return p.getCode(prefix+path);
+						getScript: function(path) {
+							return p.getScript(prefix+path);
 						}
 					});
 				};
@@ -195,7 +195,7 @@
 					if (path == "" || /\/$/.test(path)) {
 						path += "module.js";
 					}
-					methods.run.call(target,p.getCode(path),inner);
+					methods.run.call(target,p.getScript(path),inner);
 					return inner.$exports;
 				}
 			};

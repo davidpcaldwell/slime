@@ -184,7 +184,7 @@
 		var instantiate = {};
 
 		var loader = new platform.Loader({
-			getCode: function(path) {
+			getScript: function(path) {
 				return { name: path, path: path, code: fetcher.getCode(path) };
 			}
 		});
@@ -193,7 +193,7 @@
 			var createModuleLoader = function(code) {
 				return new function() {
 					this.main = (code.main) ? code.main : "module.js";
-					this.getCode = function(path) {
+					this.getScript = function(path) {
 						if (instantiate[code.base+path]) {
 							return function(scope,target) {
 								instantiate[code.base+path](scope);
