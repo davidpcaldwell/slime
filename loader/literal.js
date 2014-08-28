@@ -249,7 +249,8 @@
 			//	TODO	For file and module, what should we do about 'this' and why?
 
 			addTopMethod.call(this,"file");
-			
+
+			//	This implementation is currently untested
 			this.module = function(code,scope,target,context) {
 				var internal = {
 					parent: {
