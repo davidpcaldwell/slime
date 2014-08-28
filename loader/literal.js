@@ -153,33 +153,7 @@
 				return inner.$exports;
 			}
 
-			var getChildLoader = function(p/*,parent,p,prefix,Loader*/) {
-				var Child = function(prefix) {
-					return new p.Loader({
-						toString: function() {
-							return p.parent.toString() + " prefix=" + prefix;
-						},
-						getScript: function(path) {
-							return p.getScript(prefix+path);
-						}
-					});
-				};
-
-				var Constructor = (p.Child) ? $api.Constructor.decorated(Child,p.Child) : Child;
-				return new Constructor(p.prefix);					
-			};
-
 			methods.module = function(code,scope,context) {
-				var inner = createScope(scope);
-				inner.$loader = getChildLoader({
-					parent: context.parent,
-					getScript: context.getScript,
-					Child: context.Child,
-					prefix: context.prefix,
-					Loader: context.Loader
-				});
-				methods.run.call(this,code,inner);
-				return inner.$exports;
 			}
 
 			var Loader = function(p) {
@@ -212,9 +186,27 @@
 						}
 					};
 					
+					var getChildLoader = function(p) {
+						var Child = function(prefix) {
+							return new p.Loader({
+								toString: function() {
+									return p.parent.toString() + " prefix=" + prefix;
+								},
+								getScript: function(path) {
+									return p.getScript(prefix+path);
+								}
+							});
+						};
+
+						var Constructor = (p.Child) ? $api.Constructor.decorated(Child,p.Child) : Child;
+						return new Constructor(p.prefix);					
+					};
+					
 					var parent = this;
 					var locations = getModuleLocations(path);
-					return methods.module.call(target,p.getScript(locations.main),scope,{
+
+					var inner = createScope(scope);
+					inner.$loader = getChildLoader({
 						parent: parent,
 						getScript: function(path) {
 							return p.getScript(path);
@@ -223,10 +215,17 @@
 						prefix: locations.prefix,
 						Loader: Callee
 					});
-//					var inner = createScope(scope);
-//					inner.$loader = getChildLoader(this,p,locations.prefix,Callee);
-//					methods.run.call(target,p.getScript(locations.main),inner);
-//					return inner.$exports;
+					methods.run.call(target,p.getScript(locations.main),inner);
+					return inner.$exports;
+//					return methods.module.call(target,p.getScript(locations.main),scope,{
+//						parent: parent,
+//						getScript: function(path) {
+//							return p.getScript(path);
+//						},
+//						Child: p.Loader,
+//						prefix: locations.prefix,
+//						Loader: Callee
+//					});
 				}
 			};
 			
@@ -249,26 +248,6 @@
 			//	TODO	For file and module, what should we do about 'this' and why?
 
 			addTopMethod.call(this,"file");
-
-			//	This implementation is currently untested
-			this.module = function(code,scope,target,context) {
-				var internal = {
-					parent: {
-						toString: function() {
-							if (context.parent) {
-								return context.parent.toString();
-							} else {
-								return "(parent unpecified)";
-							}
-						}
-					},
-					getScript: context.getScript,
-					Child: context.Loader,
-					prefix: "",
-					Loader: Loader
-				};
-				return methods.module.call(target,code,scope,internal);
-			};
 
 			this.Loader = Loader;
 
