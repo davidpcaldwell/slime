@@ -198,11 +198,16 @@
 					methods.run.call(target,p.getCode(path),inner);
 					return inner.$exports;
 				}
-			}
-
-			this.run = function(code,scope,target) {
-				methods.run.call(target,code,scope);
 			};
+			
+			var addTopMethod = function(name) {
+				this[name] = function(code,scope,target) {
+					return methods[name].call(target,code,scope);
+				};
+			};
+			
+			addTopMethod.call(this,"run");
+
 			this.run.spi = {};
 			this.run.spi.preprocess = function(implementation) {
 				preprocess = implementation(preprocess);
@@ -213,9 +218,7 @@
 
 			//	TODO	For file and module, what should we do about 'this' and why?
 
-			this.file = function(code,scope,target) {
-				return methods.file.call(target,code,scope);
-			};
+			addTopMethod.call(this,"file");
 
 			this.Loader = Loader;
 
