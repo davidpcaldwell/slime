@@ -42,7 +42,7 @@ var global = (function() { return this; })();
 //	to fail, at least under Rhino 1.7R2
 //verify(typeof(Packages.test.AddClasses) == "object", "typeof(Packages.test.AddClasses) == object");
 verify(getClass("test.AddClasses") == null, "Class not found");
-jsh.loader.addClasses(parameters.options.classes);
+jsh.loader.java.add(parameters.options.classes);
 verify(jsh.$jsapi.$rhino.classpath.getClass("test.AddClasses") != null, "Class found through loader");
 verify(getClass("test.AddClasses") != null, "Class found");
 verify(typeof(Packages.test.AddClasses) == "function", "typeof(Packages.test.AddClasses) == function");

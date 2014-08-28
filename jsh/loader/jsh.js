@@ -118,8 +118,6 @@ this.jsh = new function() {
 			addFinalizer(f);
 		}
 
-		this.script = loader.$api.deprecate(loader.file);
-
 		this.java = new function() {
 			this.toString = function() {
 				return loader.classpath.toString();
@@ -139,14 +137,6 @@ this.jsh = new function() {
 				loadPlugins(host.getPlugins(from.java.adapt()));
 			}
 		};
-
-		this.addClasses = loader.$api.deprecate(function(pathname) {
-			this.java.add(pathname);
-		});
-
-		this.$getClass = loader.$api.deprecate(function(name) {
-			return loader.classpath.get(name);
-		});
 	};
 
 	//	TODO	should separate everything above/below into two files; above is loader implementation, below is

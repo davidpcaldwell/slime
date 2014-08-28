@@ -41,7 +41,7 @@ if (!parameters.options.script.file) {
 	jsh.shell.exit(1);
 }
 
-var slime = jsh.loader.script(jsh.script.getRelativePath("slime.js")).slime;
+var slime = jsh.loader.file(jsh.script.getRelativePath("slime.js")).slime;
 
 var compile = function(args) {
 	Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
