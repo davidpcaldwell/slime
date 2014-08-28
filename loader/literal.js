@@ -181,6 +181,13 @@
 					main: main
 				}
 			};
+			
+			methods.module = function(code,scope,context) {
+				var inner = createScope(scope);
+				inner.$loader = getChildLoader(this,context.parameter,context.prefix,context.Loader);
+				methods.run.call(this,code,inner);
+				return inner.$exports;
+			}
 
 			var Loader = function(p) {
 				var Callee = arguments.callee;
@@ -199,11 +206,16 @@
 				declare.call(this,"file");
 				
 				this.module = function(path,scope,target) {
-					var inner = createScope(scope);
 					var locations = getModuleLocations(path);
-					inner.$loader = getChildLoader(this,p,locations.prefix,Callee);
-					methods.run.call(target,p.getScript(locations.main),inner);
-					return inner.$exports;
+					return methods.module.call(target,p.getScript(locations.main),scope,{
+						prefix: locations.prefix,
+						parameter: p,
+						Loader: Callee
+					});
+//					var inner = createScope(scope);
+//					inner.$loader = getChildLoader(this,p,locations.prefix,Callee);
+//					methods.run.call(target,p.getScript(locations.main),inner);
+//					return inner.$exports;
 				}
 			};
 			
