@@ -216,6 +216,7 @@
 			
 			addTopMethod.call(this,"run");
 
+			//	TODO	document the run spi
 			this.run.spi = {};
 			this.run.spi.preprocess = function(implementation) {
 				preprocess = implementation(preprocess);
