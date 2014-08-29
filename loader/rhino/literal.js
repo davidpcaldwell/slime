@@ -38,6 +38,7 @@
 
 	loader.run.spi.preprocess(function(underlying) {
 		return function(script) {
+			if (script.code) return;
 			if (script.name && script._in) {
 				//	ready
 			} else if (script._source && script.path) {
