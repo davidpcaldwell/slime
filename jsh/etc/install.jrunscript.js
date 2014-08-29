@@ -134,6 +134,7 @@
 							var Redirect = Packages.java.lang.ProcessBuilder.Redirect;
 							_builder.redirectOutput(Redirect.INHERIT).redirectError(Redirect.INHERIT);
 						}
+						_builder.directory(p.directory);
 
 						//	TODO	below requires Java 1.7
 						var _process = _builder.start();
@@ -238,6 +239,7 @@
 
 	$engine.run({
 		script: new Packages.java.io.File($source, "jsh/etc/unbuilt.rhino.js"),
-		arguments: ["build"].concat($arguments)
+		arguments: ["build"].concat($arguments),
+		directory: $source
 	});
 })();
