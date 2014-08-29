@@ -55,9 +55,16 @@ this.jsh = new function() {
 				return configuration.getPackagedCode();
 			};
 			
-			this.getLoaderCode = function(path) {
+			var getLoaderCode = function(path) {
 				var _reader = installation.getJshLoader(path).getReader();
 				return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
+			};
+			
+			this.getLoaderScript = function(path) {
+				return {
+					name: path,
+					code: getLoaderCode(path)
+				};
 			};
 		};
 
@@ -101,10 +108,10 @@ this.jsh = new function() {
 		));
 	}
 	
-	var Loader = eval(host.getLoader().getLoaderCode("loader.js"));
+	var Loader = eval(host.getLoader().getLoaderScript("loader.js").code);
 	
 	var plugins = {};
-	var loadPlugins = eval(host.getLoader().getLoaderCode("plugins.js"));
+	var loadPlugins = eval(host.getLoader().getLoaderScript("plugins.js").code);
 
 	var loader = new Loader();
 
@@ -217,7 +224,25 @@ this.jsh = new function() {
 		$coffee: $jsh.getInstallation().getLibrary("coffee-script.js")
 	};
 
-	eval(host.getLoader().getLoaderCode("profiler.js"));	
+	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
+		(function() {
+			var property = String($host.getSystemProperties().getProperty("jsh.script.debugger"));
+			var parser = /^profiler\:(.*)$/;
+			if (parser.test(property)) {
+				var options = {};
+				parser.exec(property)[1].split(",").forEach(function(declaration) {
+					var tokens = declaration.split("=");
+					options[tokens[0]] = tokens[1];
+				});
+				loader.getRhinoLoader().run(host.getLoader().getLoaderScript("profiler.js"), {
+					jsh: jsh,
+					loader: loader,
+					options: options
+				});
+//				eval(host.getLoader().getLoaderCode("profiler.js"));
+			}
+		})();
+	}
 };
 
 jsh.loader.run({
