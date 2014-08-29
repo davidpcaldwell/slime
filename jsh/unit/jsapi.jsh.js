@@ -178,6 +178,9 @@ if (parameters.options.doc) {
 		}
 		return getRelativePath(parameters.options.index);
 	})();
+	//	TODO	currently disaster ensues when attempting to generate the documentation if the working directory is not also
+	//			the source root, due to the implementation of getRelativePath (which calculates things relative to the working
+	//			directory)
 	jsapi.documentation({
 		index: (parameters.options.index) ? parameters.options.index.file : null,
 		//	TODO	hot platform-independent

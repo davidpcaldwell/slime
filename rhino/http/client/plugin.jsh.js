@@ -12,7 +12,7 @@
 
 plugin({
 	isReady: function() {
-		return typeof(jsh.js) != "undefined" && typeof(jsh.io) != "undefined";
+		return typeof(jsh.js) != "undefined" && typeof(jsh.io) != "undefined" && typeof(jsh.js.web) != "undefined";
 	},
 	load: function() {
 		jsh.http = $loader.module("module.js", {
