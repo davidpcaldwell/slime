@@ -75,35 +75,24 @@ $engine.run = $engine.resolve(new function() {
 	};
 
 	this.jdkrhino = function(p) {
-		var IN_PROCESS = false;
+		//	TODO	For some reason, running in process does not quite work yet, so we make it configurable and disabled by
+		//			default. jsh/launcher/rhino/api.rhino.js does not initialize correctly under the JDK Rhino implementation for
+		//			unknown reasons; it runs the Nashorn-specific code, which fails.
+		var IN_PROCESS = Packages.java.lang.System.getProperty("jsh.build.test.jrunscript");
 		if (IN_PROCESS) {
 			Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
 			Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
 			Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
 			configureRhino("true");
-			var USE_EVAL = false;
-			if (USE_EVAL) {
-				var readFile = function(file) {
-					var _r = new Packages.java.io.FileReader(file);
-					var _c;
-					var _b = new Packages.java.io.StringWriter();
-					while( (_c = _r.read()) != -1 ) {
-						_b.write(_c);
-					}
-					return _b.toString();
-				};
-
-				//	TODO	this does not seem to work; eval is essentially a no-op, for unknown reason
-				var code = readFile(p.script.getCanonicalPath());
-				eval(code);
-			} else {
-				load(String(p.script.getCanonicalPath()));
-			}
+			load(String(p.script.getCanonicalPath()));
 		} else {
 			//	TODO	In theory if we carefully constructed a ClassLoader we would not have to shell another process,
 			//			maybe?
 			$api.shell.rhino({
 				rhino: configureRhino("true"),
+				properties: {
+					"jsh.build.notest": "true"
+				},
 				script: p.script,
 				arguments: p.arguments,
 				directory: p.directory

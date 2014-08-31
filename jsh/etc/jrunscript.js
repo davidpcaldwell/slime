@@ -92,12 +92,22 @@ $api.shell.rhino = function(p) {
 	//		script (Packages.java.io.File): main script to run
 	//		arguments (Array): arguments to send to script
 	//		directory (optional Packages.java.io.File): working directory in which to run it
+	var dashD = [];
+	if (p.properties) {
+		for (var x in p.properties) {
+			dashD.push("-D" + x + "=" + p.properties[x]);
+		}
+	}
 	var command = [
-		$java.launcher.getCanonicalPath(),
-		"-Djsh.build.notest=true",
+		$java.launcher.getCanonicalPath()
+	]
+	.concat(dashD)
+	.concat([
 		"-jar",p.rhino.getCanonicalPath(),
 		"-opt","-1",
-		p.script.getCanonicalPath()].concat( (p.arguments) ? p.arguments : [] );
+		p.script.getCanonicalPath()
+	]).concat((p.arguments) ? p.arguments : []);
+	
 	var USE_JRUNSCRIPT_EXEC = false;
 	if (USE_JRUNSCRIPT_EXEC) {
 		//	The jrunscript built-in exec() requires a single argument, which causes a mess here; we don't want to
