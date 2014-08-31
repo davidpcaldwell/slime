@@ -11,6 +11,35 @@
 //	END LICENSE
 
 (function() {
+	var $engine = (function(global) {
+		var Nashorn = function() {
+			this.filename = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
+		};
+		
+		var Rhino = function() {
+			this.filename = global["javax.script.filename"];
+		}
+		
+		var engines = {
+			nashorn: new Nashorn(),
+			jdkrhino: new Rhino()
+		};
+		
+		var name = (function() {
+			if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+				return "nashorn";
+			} else {
+				return "jdkrhino";
+			}
+		})();
+		
+		var rv = engines[name];
+		rv.resolve = function(options) {
+			return options[name];
+		};
+		return rv;
+	})(this);
+	
 	var $java = new function() {
 		var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 		var launcher = (function() {
@@ -22,6 +51,22 @@
 		this.launcher = launcher;
 	};
 	
+	var $script = (function() {
+		var interpret = function(string) {
+			if (new Packages.java.io.File(string).exists()) {
+				return {
+					file: new Packages.java.io.File(string)
+				};
+			} else {
+				return {
+					url: new Packages.java.net.URL(string)
+				};
+			}
+		};
+
+		return interpret($engine.filename);
+	})();
+
 	var $arguments = (function() {
 		var rv = [];
 		for (var i=0; i<this["javax.script.argv"].length; i++) {
@@ -30,7 +75,9 @@
 		return rv;
 	})();
 	
-	var rhino = function(p) {
+	var $api = {};
+	$api.shell = {};	
+	$api.shell.rhino = function(p) {
 		//	p:
 		//		rhino (Packages.java.io.File): Rhino js.jar
 		//		script (Packages.java.io.File): main script to run
@@ -86,9 +133,9 @@
 			out.join();
 			err.join();
 		}
-	}
-
-	var $engine = (function() {
+	};
+	
+	$engine.run = $engine.resolve(new function() {
 		var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 
 		var copy = function(from,to) {
@@ -144,84 +191,51 @@
 			return Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar");
 		};
 
-		var Nashorn = function() {
-			this.filename = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
-
-			this.run = function(p) {
+		this.nashorn = function(p) {
+			Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
+			Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
+			Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
+			configureRhino("true");
+			load(p.script);
+		};
+		
+		this.jdkrhino = function(p) {
+			var IN_PROCESS = false;
+			if (IN_PROCESS) {
 				Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
 				Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
 				Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
 				configureRhino("true");
-				load(p.script);
-			}
-		};
+				var USE_EVAL = false;
+				if (USE_EVAL) {
+					var readFile = function(file) {
+						var _r = new Packages.java.io.FileReader(file);
+						var _c;
+						var _b = new Packages.java.io.StringWriter();
+						while( (_c = _r.read()) != -1 ) {
+							_b.write(_c);
+						}
+						return _b.toString();
+					};
 
-		var Rhino = function(filename) {
-			this.filename = filename;
-
-			this.run = function(p) {
-				//	Try to download Rhino
-				var IN_PROCESS = false;
-				if (IN_PROCESS) {
-					Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
-					Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
-					Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
-					configureRhino("true");
-					var USE_EVAL = false;
-					if (USE_EVAL) {
-						var readFile = function(file) {
-							var _r = new Packages.java.io.FileReader(file);
-							var _c;
-							var _b = new Packages.java.io.StringWriter();
-							while( (_c = _r.read()) != -1 ) {
-								_b.write(_c);
-							}
-							return _b.toString();
-						};
-
-						//	TODO	this does not seem to work; eval is essentially a no-op, for unknown reason
-						var code = readFile(p.script.getCanonicalPath());
-						eval(code);
-					} else {
-						load(file);
-					}
+					//	TODO	this does not seem to work; eval is essentially a no-op, for unknown reason
+					var code = readFile(p.script.getCanonicalPath());
+					eval(code);
 				} else {
-					//	TODO	In theory if we carefully constructed a ClassLoader we would not have to shell another process,
-					//			maybe?
-					rhino({
-						rhino: configureRhino("true"),
-						script: p.script,
-						arguments: p.arguments,
-						directory: p.directory
-					});
+					load(file);
 				}
-			}
-		};
-
-		//	TODO	Come up with more robust way to detect; want to get access to javax.script.ScriptEngine but have not yet figured
-		//			out how; the below tests for presence of nashorn but not explicitly whether that is what we are running
-		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
-			return new Nashorn();
-		} else {
-			return new Rhino(this["javax.script.filename"]);
-		}
-	})();
-
-	var $script = (function() {
-		var interpret = function(string) {
-			if (new Packages.java.io.File(string).exists()) {
-				return {
-					file: new Packages.java.io.File(string)
-				};
 			} else {
-				return {
-					url: new Packages.java.net.URL(string)
-				};
+				//	TODO	In theory if we carefully constructed a ClassLoader we would not have to shell another process,
+				//			maybe?
+				$api.shell.rhino({
+					rhino: configureRhino("true"),
+					script: p.script,
+					arguments: p.arguments,
+					directory: p.directory
+				});
 			}
-		};
-
-		return interpret($engine.filename);
-	})();
+		}
+	});
 
 	var $source = (function() {
 		if ($script.file) {
