@@ -40,54 +40,23 @@ var $java = new function() {
 
 var $api = {};
 $api.shell = {};
-$api.load = $engine.resolve({
-	nashorn: function(script) {
-		Packages.java.lang.System.err.println("Loading: " + script + " with nashorn ...");
-		load(script.toString());
-	},
-	jdkrhino: function(script) {
-		Packages.java.lang.System.err.println("Loading: " + script + " with jdkrhino ...");
-		if (false) {
-			var readFile = function(file) {
-				var _r = new Packages.java.io.FileReader(file);
-				var _c;
-				var _b = new Packages.java.io.StringWriter();
-				while( (_c = _r.read()) != -1 ) {
-					_b.write(_c);
-				}
-				return _b.toString();
-			};
-
-			//	TODO	this does not seem to work; eval is essentially a no-op, for unknown reason
-			if (script.file) {
-				var code = readFile(script.file);
-				eval(String(code));
-			} else {
-				throw new Error("Unimplemented.");
-			}
-		} else {
-			load(String(script.toString()));
-		}
-	}
-})
 $api.Script = function(p) {
 	var Callee = arguments.callee;
 	if (p.file) {
-		this.toString = function() { return p.file.getCanonicalPath(); }
+		this.toString = function() { return String(p.file.getCanonicalPath()); }
 		this.file = p.file;
 		this.resolve = function(path) {
 			return new Callee({ file: new Packages.java.io.File(p.file.getParentFile(), path) });
 		};
 	} else if (p.url) {
-		this.toString = function() { return p.file.getCanonicalPath(); }
+		this.toString = function() { return String(p.url.toExternalForm()); }
 		this.url = p.url;
 		this.resolve = function(path) {
 			return new Callee({ url: new Packages.java.net.URL(p.url, path) });
 		};
 	}
 	this.load = function() {
-		Packages.java.lang.System.err.println("Loading: " + this.toString() + " using shell load.");
-		$api.load(this);
+		load(this.toString());
 	}
 }
 
