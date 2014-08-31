@@ -11,6 +11,17 @@
 //	END LICENSE
 
 (function() {
+	var $java = new function() {
+		var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
+		var launcher = (function() {
+			if (new File(jdk, "bin/java").exists()) return new File(jdk, "bin/java");
+			if (new File(jdk, "bin/java.exe").exists()) return new File(jdk, "bin/java.exe");
+		})();
+		
+		this.home = jdk;
+		this.launcher = launcher;
+	};
+	
 	var $arguments = (function() {
 		var rv = [];
 		for (var i=0; i<this["javax.script.argv"].length; i++) {
@@ -18,6 +29,64 @@
 		}
 		return rv;
 	})();
+	
+	var rhino = function(p) {
+		//	p:
+		//		rhino (Packages.java.io.File): Rhino js.jar
+		//		script (Packages.java.io.File): main script to run
+		//		arguments (Array): arguments to send to script
+		//		directory (optional Packages.java.io.File): working directory in which to run it
+		var command = [
+			$java.launcher.getCanonicalPath(),
+			"-Djsh.build.notest=true",
+			"-jar",p.rhino.getCanonicalPath(),
+			"-opt","-1",
+			p.script.getCanonicalPath()].concat( (p.arguments) ? p.arguments : [] );
+		var USE_JRUNSCRIPT_EXEC = false;
+		if (USE_JRUNSCRIPT_EXEC) {
+			//	The jrunscript built-in exec() requires a single argument, which causes a mess here; we don't want to
+			//	double-quote "Program Files" on Windows, etc., so we will just use "real" Java
+//						exec(command.join(" "));
+			throw new Error("Unimplemented: jrunscript exec()");
+		} else {
+			var _command = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,command.length);
+			for (var i=0; i<command.length; i++) {
+				_command[i] = command[i];;
+			}
+			var _builder = new Packages.java.lang.ProcessBuilder(_command);
+			var USE_JAVA_1_7 = false;
+			if (USE_JAVA_1_7) {
+				var Redirect = Packages.java.lang.ProcessBuilder.Redirect;
+				_builder.redirectOutput(Redirect.INHERIT).redirectError(Redirect.INHERIT);
+			}
+			if (p.directory) _builder.directory(p.directory);
+
+			var _process = _builder.start();
+
+			if (!USE_JAVA_1_7) {
+				var spool = function(from,to) {
+					var t = new Packages.java.lang.Thread(function() {
+						var b;
+						while( (b = from.read()) != -1 ) {
+							to.write(b);
+						}
+						from.close();
+						to.close();
+					});
+					t.start();
+					return t;
+				};
+
+				var out = spool(_process.getInputStream(), Packages.java.lang.System.out);
+				var err = spool(_process.getErrorStream(), Packages.java.lang.System.err);
+			}
+
+			//	TODO	error handling
+			var exitStatus = _process.waitFor();
+			out.join();
+			err.join();
+		}
+	}
 
 	var $engine = (function() {
 		var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
@@ -117,63 +186,14 @@
 						load(file);
 					}
 				} else {
-					var rhino = configureRhino("true");
 					//	TODO	In theory if we carefully constructed a ClassLoader we would not have to shell another process,
 					//			maybe?
-					var launcher = (function() {
-						if (new File(jdk, "bin/java").exists()) return new File(jdk, "bin/java");
-						if (new File(jdk, "bin/java.exe").exists()) return new File(jdk, "bin/java.exe");
-					})();
-					var command = [
-						launcher.getCanonicalPath(),
-						"-Djsh.build.notest=true",
-						"-jar",rhino.getCanonicalPath(),
-						"-opt","-1",
-						p.script.getCanonicalPath()].concat(p.arguments);
-					var JRUNSCRIPT_EXEC = false;
-					if (JRUNSCRIPT_EXEC) {
-						//	The jrunscript built-in exec() requires a single argument, which causes a mess here; we don't want to
-						//	double-quote "Program Files" on Windows, etc., so we will just use "real" Java
-//						exec(command.join(" "));
-						throw new Error("Unimplemented: jrunscript exec()");
-					} else {
-						var _command = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,command.length);
-						for (var i=0; i<command.length; i++) {
-							_command[i] = command[i];;
-						}
-						var _builder = new Packages.java.lang.ProcessBuilder(_command);
-						var USE_JAVA_1_7 = false;
-						if (USE_JAVA_1_7) {
-							var Redirect = Packages.java.lang.ProcessBuilder.Redirect;
-							_builder.redirectOutput(Redirect.INHERIT).redirectError(Redirect.INHERIT);
-						}
-						_builder.directory(p.directory);
-
-						var _process = _builder.start();
-
-						if (!USE_JAVA_1_7) {
-							var spool = function(from,to) {
-								var t = new Packages.java.lang.Thread(function() {
-									var b;
-									while( (b = from.read()) != -1 ) {
-										to.write(b);
-									}
-									from.close();
-									to.close();
-								});
-								t.start();
-								return t;
-							};
-
-							var out = spool(_process.getInputStream(), Packages.java.lang.System.out);
-							var err = spool(_process.getErrorStream(), Packages.java.lang.System.err);
-						}
-
-						//	TODO	error handling
-						var exitStatus = _process.waitFor();
-						out.join();
-						err.join();
-					}
+					rhino({
+						rhino: configureRhino("true"),
+						script: p.script,
+						arguments: p.arguments,
+						directory: p.directory
+					});
 				}
 			}
 		};
