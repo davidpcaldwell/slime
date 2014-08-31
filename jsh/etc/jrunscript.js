@@ -141,6 +141,7 @@ $api.shell.rhino = function(p) {
 		var exitStatus = _process.waitFor();
 		out.join();
 		err.join();
+		return exitStatus;
 	}
 };
 
@@ -149,7 +150,5 @@ if (!$arguments.length) {
 	Packages.java.lang.System.exit(1);
 } else {
 	$script = $script.resolve($arguments.shift());
-	Packages.java.lang.System.err.println("Running " + $script + " with " + $arguments);
 	$script.load();
-	Packages.java.lang.System.err.println("Ran script from jrunscript.js");
 }

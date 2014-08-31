@@ -158,10 +158,8 @@ var $source = (function() {
 	}
 })();
 
-Packages.java.lang.System.err.println("Running unbuilt.rhino.js");
 $engine.run({
 	script: new Packages.java.io.File($source, "jsh/etc/unbuilt.rhino.js"),
 	arguments: ["build"].concat($arguments),
 	directory: $source
 });
-Packages.java.lang.System.err.println("Ran unbuilt.rhino.js");
