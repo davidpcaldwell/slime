@@ -442,7 +442,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		command.add("-base", JSH_JSAPI_BASE);
 
 		modules.forEach( function(module) {
-			if (module.api) command.add("-api",module.api.path);
+			if (module.api) command.add("-api",String(new File(SLIME_SRC,module.api.path).getCanonicalPath()));
 		});
 
 		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());
@@ -452,7 +452,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		if (getSetting("jsh.build.nodoc")) {
 		} else {
 			command.add("-doc",JSAPI_DOC);
-			command.add("-index", "jsh/etc/index.html");
+			command.add("-index", String(new File(SLIME_SRC,"jsh/etc/index.html").getCanonicalPath()));
 		}
 
 		var subenv = {};

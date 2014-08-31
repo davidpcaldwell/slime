@@ -33,7 +33,7 @@ if (!parameters.options.jsapi.directory) {
 }
 
 var getRelativePath = function(pathname) {
-	var pwd = jsh.shell.PWD.toString();
+	var pwd = jsh.script.file.parent.parent.parent.toString();
 	var indexpath = pathname.toString();
 	if (indexpath.substring(0,pwd.length) == pwd) {
 		return indexpath.substring(pwd.length);
@@ -178,9 +178,6 @@ if (parameters.options.doc) {
 		}
 		return getRelativePath(parameters.options.index);
 	})();
-	//	TODO	currently disaster ensues when attempting to generate the documentation if the working directory is not also
-	//			the source root, due to the implementation of getRelativePath (which calculates things relative to the working
-	//			directory)
 	jsapi.documentation({
 		index: (parameters.options.index) ? parameters.options.index.file : null,
 		//	TODO	hot platform-independent

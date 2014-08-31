@@ -22,6 +22,59 @@
 	var $engine = (function() {
 		var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 
+		var copy = function(from,to) {
+			var b;
+			while( (b = from.read()) != -1 ) {
+				to.write(b);
+			}
+			to.close();
+		};
+
+		var downloadMozillaRhinoDistribution = function(url) {
+			var _url = new Packages.java.net.URL(url);
+			println("Downloading Rhino from " + _url);
+			var _connection = _url.openConnection();
+			var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
+			var _entry;
+			var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
+			tmpdir["delete"]();
+			tmpdir.mkdirs();
+			if (!tmpdir.exists()) {
+				throw new Error("Failed to create temporary file.");
+			}
+			var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
+			while(_entry = _zipstream.getNextEntry()) {
+				var name = String(_entry.getName());
+				var path = name.split("/");
+				if (path[1] == "js.jar") {
+					var out = new Packages.java.io.FileOutputStream(tmprhino);
+					copy(_zipstream,out);
+				}
+			}
+			println("Downloaded Rhino to " + tmprhino);
+			return tmprhino;
+		};
+
+		var configureRhino = function(defaultValue) {
+			var _property = Packages.java.lang.System.getProperty("jsh.build.rhino.jar");
+			var property = (_property) ? String(_property) : defaultValue;
+			var set = function(value) {
+				if (!value) {
+					Packages.java.lang.System.getProperties().remove("jsh.build.rhino.jar");
+				} else {
+					Packages.java.lang.System.getProperties().put("jsh.build.rhino.jar",value);
+				}
+			}
+			if (property == "false") {
+				set(null);
+			} else if (property == "true") {
+				set(downloadMozillaRhinoDistribution("http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip"));
+			} else {
+				set(new File(property));
+			}
+			return Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar");
+		};
+
 		var Nashorn = function() {
 			this.filename = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
 
@@ -29,53 +82,13 @@
 				Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
 				Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
 				Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
+				configureRhino("true");
 				load(p.script);
 			}
 		};
 
 		var Rhino = function(filename) {
 			this.filename = filename;
-
-			var copy = function(from,to) {
-				var b;
-				while( (b = from.read()) != -1 ) {
-					to.write(b);
-				}
-				to.close();
-			}
-
-			var downloadMozillaRhinoDistribution = function(url) {
-				var _url = new Packages.java.net.URL(url.replace(/ftp\:\/\//g, "http://"));
-				println("Downloading Rhino from " + _url);
-				var _connection = _url.openConnection();
-				var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
-				var _entry;
-				var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
-				tmpdir["delete"]();
-				tmpdir.mkdirs();
-				if (!tmpdir.exists()) {
-					throw new Error("Failed to create temporary file.");
-				}
-				var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
-				while(_entry = _zipstream.getNextEntry()) {
-					var name = String(_entry.getName());
-					var path = name.split("/");
-					if (path[1] == "js.jar") {
-						var out = new Packages.java.io.FileOutputStream(tmprhino);
-						copy(_zipstream,out);
-					}
-				}
-				println("Downloaded Rhino to " + tmprhino);
-				return tmprhino;
-			}
-
-			var findRhino = function() {
-				if (Packages.java.lang.System.getProperty("jsh.build.rhino")) {
-					return new File(Packages.java.lang.System.getProperty("jsh.build.rhino"));
-				} else {
-					return downloadMozillaRhinoDistribution("ftp://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip");
-				}
-			}
 
 			this.run = function(p) {
 				//	Try to download Rhino
@@ -84,7 +97,7 @@
 					Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
 					Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
 					Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
-					Packages.java.lang.System.getProperties().put("jsh.build.rhino", findRhino());
+					configureRhino("true");
 					var USE_EVAL = false;
 					if (USE_EVAL) {
 						var readFile = function(file) {
@@ -104,7 +117,7 @@
 						load(file);
 					}
 				} else {
-					var rhino = findRhino();
+					var rhino = configureRhino("true");
 					//	TODO	In theory if we carefully constructed a ClassLoader we would not have to shell another process,
 					//			maybe?
 					var launcher = (function() {
@@ -136,7 +149,6 @@
 						}
 						_builder.directory(p.directory);
 
-						//	TODO	below requires Java 1.7
 						var _process = _builder.start();
 
 						if (!USE_JAVA_1_7) {
