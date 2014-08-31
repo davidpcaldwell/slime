@@ -97,7 +97,7 @@ $engine.run = $engine.resolve(new function() {
 				var code = readFile(p.script.getCanonicalPath());
 				eval(code);
 			} else {
-				load(file);
+				load(String(p.script.getCanonicalPath()));
 			}
 		} else {
 			//	TODO	In theory if we carefully constructed a ClassLoader we would not have to shell another process,

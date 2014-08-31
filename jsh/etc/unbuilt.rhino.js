@@ -33,7 +33,7 @@ if (!SLIME_SRC) SLIME_SRC = (function() {
 		try {
 			throw new Packages.org.mozilla.javascript.WrappedException(Packages.java.lang.RuntimeException());
 		} catch (e) {
-			debugger;
+//			debugger;
 			var error = e;
 			frames = error.getScriptStack();
 		}
@@ -63,6 +63,12 @@ if (!SLIME_SRC) SLIME_SRC = (function() {
 })();
 
 Packages.java.lang.System.out.println("SLIME_SRC = " + SLIME_SRC.getCanonicalPath());
+
+var load = (function(before) {
+	return function(path) {
+		before.call(this,String(path));
+	}
+})(load);
 
 load(new Packages.java.io.File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"));
 
