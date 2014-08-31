@@ -47,22 +47,26 @@ $api.load = $engine.resolve({
 	},
 	jdkrhino: function(script) {
 		Packages.java.lang.System.err.println("Loading: " + script + " with jdkrhino ...");
-		var readFile = function(file) {
-			var _r = new Packages.java.io.FileReader(file);
-			var _c;
-			var _b = new Packages.java.io.StringWriter();
-			while( (_c = _r.read()) != -1 ) {
-				_b.write(_c);
-			}
-			return _b.toString();
-		};
+		if (false) {
+			var readFile = function(file) {
+				var _r = new Packages.java.io.FileReader(file);
+				var _c;
+				var _b = new Packages.java.io.StringWriter();
+				while( (_c = _r.read()) != -1 ) {
+					_b.write(_c);
+				}
+				return _b.toString();
+			};
 
-		//	TODO	this does not seem to work; eval is essentially a no-op, for unknown reason
-		if (script.file) {
-			var code = readFile(script.file);
-			eval(String(code));
+			//	TODO	this does not seem to work; eval is essentially a no-op, for unknown reason
+			if (script.file) {
+				var code = readFile(script.file);
+				eval(String(code));
+			} else {
+				throw new Error("Unimplemented.");
+			}
 		} else {
-			throw new Error("Unimplemented.");
+			load(String(script.toString()));
 		}
 	}
 })
