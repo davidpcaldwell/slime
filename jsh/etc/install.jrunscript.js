@@ -54,12 +54,20 @@
 	var $script = (function() {
 		var interpret = function(string) {
 			if (new Packages.java.io.File(string).exists()) {
+				var file = new Packages.java.io.File(string);
 				return {
-					file: new Packages.java.io.File(string)
+					file: file,
+					load: function(path) {
+						load(new Packages.java.io.File(file.getParentFile(), path).getCanonicalPath());
+					}
 				};
 			} else {
+				var url = new Packages.java.net.URL(string);
 				return {
-					url: new Packages.java.net.URL(string)
+					url: url,
+					load: function(path) {
+						load(new Packages.java.net.URL(url, path).toExternalForm());
+					}
 				};
 			}
 		};
