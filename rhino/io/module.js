@@ -276,13 +276,13 @@ $exports.java = new function() {
 	this.adapt = function(object) {
 		if (false) {
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
-			return new arguments.callee.nashorn.InputStream(object);
+			return new InputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new arguments.callee.nashorn.OutputStream(object);
+			return new OutputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
-			return new arguments.callee.nashorn.Reader(object);
+			return new Reader(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
-			return new arguments.callee.nashorn.Writer(object);
+			return new Writer(object);
 		} else {
 			var type = (function() {
 				if (object.getClass) {
@@ -299,12 +299,6 @@ $exports.java = new function() {
 			throw "Unimplemented java.adapt: " + type + object;
 		}
 	};
-	//	NASHORN	These references do not work in Nashorn
-	this.adapt.nashorn = {};
-	this.adapt.nashorn.InputStream = InputStream;
-	this.adapt.nashorn.OutputStream = OutputStream;
-	this.adapt.nashorn.Reader = Reader;
-	this.adapt.nashorn.Writer = Writer;
 }
 
 var Resource = function(p) {
