@@ -226,11 +226,11 @@ $api.experimental($exports,"ErrorType");
 var experimental = function(name) {
 	$exports[name] = items[name];
 	$api.experimental($exports, name);
-}
+};
+
+var getNamedJavaClass = $context.$rhino.java.getNamedJavaClass;
 
 $exports.isJavaType = function(javaclass) {
-	//	NASHORN	Used to have this function outside isJavaType but because of strange Nashorn issues with code loading it caused
-	//			unit tests to fail at times
 	var getJavaClassName = function(javaclass) {
 		var toString = "" + javaclass;
 		if (/\[JavaClass /.test(toString)) {
@@ -240,14 +240,12 @@ $exports.isJavaType = function(javaclass) {
 		}
 	}
 
-	//	NASHORN	Used to have this function outside isJavaType but because of strange Nashorn issues with code loading it caused
-	//			unit tests to fail at times
 	var $isJavaType = function(javaclass,object) {
 		var className = getJavaClassName(javaclass);
 		if (className == null) throw new TypeError("Not a class: " + javaclass);
 		//	NASHORN	Used to call isJavaObject rather than $exports.isJavaObject
-		if (!$exports.isJavaObject(object)) return false;
-		var loaded = $exports.isJavaType.getNamedJavaClass(className);
+		if (!isJavaObject(object)) return false;
+		var loaded = getNamedJavaClass(className);
 		return loaded.isInstance(object);
 	};
 
@@ -259,7 +257,7 @@ $exports.isJavaType = function(javaclass) {
 		return $isJavaType(javaclass,object);
 	}
 };
-$exports.isJavaType.getNamedJavaClass = $context.$rhino.java.getNamedJavaClass;
+$exports.isJavaType.getNamedJavaClass = getNamedJavaClass;
 $api.experimental($exports,"isJavaType");
 
 $exports.Array = new function() {
