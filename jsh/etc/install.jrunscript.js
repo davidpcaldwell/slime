@@ -70,7 +70,7 @@ $engine.run = $engine.resolve(new function() {
 		Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
 		Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
 		Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
-		configureRhino("true");
+		configureRhino("false");
 		load(p.script);
 	};
 
