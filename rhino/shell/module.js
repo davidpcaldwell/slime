@@ -102,12 +102,18 @@ $exports.run = function(p) {
 	var configuration = new JavaAdapter(
 		Packages.inonit.system.Command.Configuration,
 		new function() {
+			var args = $context.api.java.Array.create({
+				type: Packages.java.lang.String,
+				array: invocation.configuration.arguments.map(function(s) {
+					return new Packages.java.lang.String(s);
+				})
+			});
 			this.getCommand = function() {
-				return invocation.configuration.command;
+				return new Packages.java.lang.String(invocation.configuration.command);
 			};
 
 			this.getArguments = function() {
-				return invocation.configuration.arguments;
+				return args;
 			};
 		}
 	);
