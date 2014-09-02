@@ -102,7 +102,7 @@ public class Nashorn {
 		}
 
 		private ExitException getExitException(Exception e) {
-			Throwable t = e.getCause();
+			Throwable t = e;
 			while(t != null) {
 				if (t instanceof ExitException) {
 					return (ExitException)t;
