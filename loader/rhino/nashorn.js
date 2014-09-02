@@ -35,10 +35,10 @@ load("nashorn:mozilla_compat.js");
 			return rv;
 		}
 	};
-	
+
 	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-	
-	var loaders = new function() {		
+
+	var loaders = new function() {
 		var toSource = function(name,code) {
 			var Source = Java.type("jdk.nashorn.internal.runtime.Source");
 			if (Source.sourceFor) return Source.sourceFor(name,code);
@@ -60,7 +60,7 @@ load("nashorn:mozilla_compat.js");
 		//	Try to use public javax.script APIs with source rewriting; not very thought through and did not work in current form
 		this.eval = function(name,code,scope,target) {
 			throw new Error("Unimplemented.");
-			//	$interface was nested class of inonit.script.nashorn.Host:				
+			//	$interface was nested class of inonit.script.nashorn.Host:
 			//	public class Interface {
 			//		public Object eval(String name, String code, Bindings bindings) throws ScriptException {
 			//			ScriptContext c = engine.getContext();
@@ -78,9 +78,9 @@ load("nashorn:mozilla_compat.js");
 				_bindings.put(x,scope[x]);
 			}
 			_bindings.put("$$this",target);
-			return $interface.eval(name, targeted, _bindings);			
+			return $interface.eval(name, targeted, _bindings);
 		};
-		
+
 		//	Use Nashorn classes directly. Uses undocumented, non-public classes. Replaces 'old' implementation because 'old' relies
 		//	on private meethods of undocumented classes. Should test whether this affects some of the "scope loss" bugs; however,
 		//	those may have been caused by loading multiple scripts with the same name, so should also test that possibility.
@@ -88,7 +88,7 @@ load("nashorn:mozilla_compat.js");
 			var compiled = Context.getContext().compileScript(toSource(name,code),scope);
 			return Packages.jdk.nashorn.internal.runtime.ScriptRuntime.apply(compiled,target);
 		};
-		
+
 		//	Initial working implementation, that nevertheless can fail in complicated scoping scenarios because sometimes scope
 		//	chain is wrong. May be caused by incorrect use of private APIs, or perhaps by name collisions between multiple copies
 		//	of the "same" script (script with same name) that could be solved by adding unambiguous names.
@@ -102,7 +102,7 @@ load("nashorn:mozilla_compat.js");
 				arguments.callee.evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
 				arguments.callee.evaluateSource.setAccessible(true);
 			}
-			return arguments.callee.evaluateSource.invoke(Context.getContext(), toSource(name,code), scope, target);			
+			return arguments.callee.evaluateSource.invoke(Context.getContext(), toSource(name,code), scope, target);
 		};
 
 		//	Attempt to leverage Nashorn script APIs.
@@ -117,7 +117,7 @@ load("nashorn:mozilla_compat.js");
 			}).call(target);
 		};
 	}
-	
+
 	var script = function(name,code,scope,target) {
 		var notNull = function(o) {
 			return (o) ? o : {};

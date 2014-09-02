@@ -111,9 +111,9 @@
 
 		(function() {
 			var preprocess;
-			
+
 			var methods = {};
-			
+
 			methods.run = function(script,scope) {
 				if (preprocess) {
 					preprocess(script);
@@ -129,7 +129,7 @@
 				if ($coffee && /\.coffee$/.test(script.name)) {
 					script.code = $coffee.compile(script.code);
 				}
-				execute(script);				
+				execute(script);
 			}
 
 			var createFileScope = function($context) {
@@ -157,10 +157,10 @@
 						return methods[name].call(target,p.getScript(path),scope);
 					};
 				};
-				
+
 				declare.call(this,"run");
 				declare.call(this,"file");
-			
+
 				this.module = function(path,scope,target) {
 					var getModuleLocations = function(path) {
 						var tokens = path.split("/");
@@ -174,7 +174,7 @@
 							main: main
 						}
 					};
-					
+
 					var getChildLoader = function(p) {
 						var Child = function(prefix) {
 							return new p.Loader({
@@ -188,9 +188,9 @@
 						};
 
 						var Constructor = (p.Child) ? $api.Constructor.decorated(Child,p.Child) : Child;
-						return new Constructor(p.prefix);					
+						return new Constructor(p.prefix);
 					};
-					
+
 					var locations = getModuleLocations(path);
 
 					var inner = createFileScope(scope);
@@ -207,13 +207,13 @@
 					return inner.$exports;
 				}
 			};
-			
+
 			var addTopMethod = function(name) {
 				this[name] = function(code,scope,target) {
 					return methods[name].call(target,code,scope);
 				};
 			};
-			
+
 			addTopMethod.call(this,"run");
 
 			//	TODO	document the run spi

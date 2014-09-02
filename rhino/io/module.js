@@ -336,7 +336,7 @@ var Resource = function(p) {
 			peer.close();
 			return properties;
 		}
-		
+
 		if (binary) {
 			if (mode == Streams.binary) return binary();
 			if (mode == Packages.java.util.Properties) return _properties(binary().java.adapt());
@@ -450,7 +450,7 @@ $exports.OutputStream = OutputStream;
 
 $exports.Loader = function(p) {
 	var rv;
-	
+
 //	var Child = function(prefix) {
 //		var parameter = $context.api.js.Object.set({}, p);
 //		//	TODO	The whole structure below seems like a mess
@@ -509,7 +509,7 @@ $exports.Loader = function(p) {
 			};
 		}
 	};
-	
+
 	if (p.resources) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it
@@ -560,9 +560,9 @@ $exports.Loader = function(p) {
 		},p.Loader);
 		rv = new $context.$rhino.Loader(parameter);
 	}
-	
+
 	decorate.call(rv);
-	
+
 	return rv;
 };
 

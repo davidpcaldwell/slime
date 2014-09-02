@@ -74,7 +74,7 @@
 		}
 
 		if (!p._source) throw new TypeError("_source must be defined and not be null.");
-		
+
 		var Child = function(prefix) {
 			return new Loader({ _source: p._source.child(prefix) });
 		}
@@ -86,7 +86,7 @@
 					path: path
 				}
 			};
-			
+
 			this.Loader = loader.$api.Constructor.decorated(Child,p.Loader);
 		};
 

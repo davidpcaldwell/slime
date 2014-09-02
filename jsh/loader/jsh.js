@@ -54,12 +54,12 @@ this.jsh = new function() {
 			this.getPackagedCode = function() {
 				return configuration.getPackagedCode();
 			};
-			
+
 			var getLoaderCode = function(path) {
 				var _reader = installation.getJshLoader(path).getReader();
 				return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
 			};
-			
+
 			this.getLoaderScript = function(path) {
 				return {
 					name: path,
@@ -107,9 +107,9 @@ this.jsh = new function() {
 			}
 		));
 	}
-	
+
 	var Loader = eval(host.getLoader().getLoaderScript("loader.js").code);
-	
+
 	var plugins = {};
 	var loadPlugins = eval(host.getLoader().getLoaderScript("plugins.js").code);
 
