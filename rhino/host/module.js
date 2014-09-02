@@ -243,7 +243,6 @@ $exports.isJavaType = function(javaclass) {
 	var $isJavaType = function(javaclass,object) {
 		var className = getJavaClassName(javaclass);
 		if (className == null) throw new TypeError("Not a class: " + javaclass);
-		//	NASHORN	Used to call isJavaObject rather than $exports.isJavaObject
 		if (!isJavaObject(object)) return false;
 		var loaded = getNamedJavaClass(className);
 		return loaded.isInstance(object);
