@@ -45,13 +45,18 @@ load("nashorn:mozilla_compat.js");
 			return rv;
 		}
 	};
+	
+	var toSource = function(name,code) {
+		if (Source.sourceFor) return Source.sourceFor(name,code);
+		return new Source(name,code);
+	}
 
 	var script = function(name,code,scope,target) {
 		var context = Context.getContext();
 		var notNull = function(o) {
 			return (o) ? o : {};
 		}
-		return evaluateSource.invoke(context, new Source(name,code), toScope(notNull(scope)), notNull(target));
+		return evaluateSource.invoke(context, toSource(name,code), toScope(notNull(scope)), notNull(target));
 	};
 
 	if (typeof($classpath) == "undefined") {
