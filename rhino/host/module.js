@@ -47,7 +47,6 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 		return Packages.inonit.script.runtime.Properties.create($properties);
 	}
 } else {
-	//	NASHORN	PropertyParent sometimes disappears in Nashorn so replacing it with an equivalent literal notation below for now.
 	var PropertyParent = function() {
 	}
 	PropertyParent.prototype.toString = function() {
@@ -71,11 +70,7 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 			for (var i=0; i<tokens.length-1; i++) {
 				if (!target[tokens[i]]) {
 					nashornTrace("token: " + tokens[i] + " is PropertyParent");
-					target[tokens[i]] = {
-						toString: function() {
-							return null;
-						}
-					};
+					target[tokens[i]] = new PropertyParent();
 				} else if (typeof(target[tokens[i]]) == "string") {
 					nashornTrace("token: " + tokens[i] + " is currently string; replacing with PropertyParent");
 					var toString = (function(value) {
@@ -83,15 +78,7 @@ if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
 							return value;
 						}
 					})(target[tokens[i]]);
-					if (false && typeof(PropertyParent) == "undefined") {
-						nashornTrace("PropertyParent undefined");
-						throw new TypeError("In Nashorn, PropertyParent is undefined.");
-					}
-					target[tokens[i]] = {
-						toString: function() {
-							return null;
-						}
-					};
+					target[tokens[i]] = new PropertyParent();
 					target[tokens[i]].toString = toString;
 				} else {
 					nashornTrace("target: " + tokens[i] + " found.");
