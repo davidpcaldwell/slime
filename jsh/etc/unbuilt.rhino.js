@@ -72,7 +72,10 @@ var load = (function(before) {
 
 load(new Packages.java.io.File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"));
 
-//	NASHORN	report incompatibility
+//	These methods are included in the Rhino shell but not in the Nashorn shell. We define them here. This incompatibility was
+//	reported on the nashorn-dev mailing list in the thread "Rhino shell compatibility" 
+//	(see http://mail.openjdk.java.net/pipermail/nashorn-dev/2014-May/002967.html) and the decision was not to plug the
+//	compatibility holes.
 //	TODO	ideally would not redefine these if they are already defined
 var readFile = function(path) {
 	var rv = "";

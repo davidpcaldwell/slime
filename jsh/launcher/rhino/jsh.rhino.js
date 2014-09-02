@@ -179,7 +179,10 @@ var Command = function() {
 				);
 			};
 
-			//	NASHORN	Under Rhino, these were implied
+			//	Under Rhino, these were implied, but under Nashorn, they must be made explicit. This incompatibility was mentioned
+			//	on the nashorn-dev mailing list under the thread "Rhino shell compatibility"
+			//	(see http://mail.openjdk.java.net/pipermail/nashorn-dev/2014-May/002967.html) and the decision was not to do
+			//	anything to increase the compatibility.
 			this.getSubprocessEnvironment = function() {
 				return null;
 			};
