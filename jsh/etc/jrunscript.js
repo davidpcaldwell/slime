@@ -59,6 +59,9 @@ $api.Script = function(p) {
 		this.toString = function() { return String(p.file.getCanonicalPath()); }
 		this.file = p.file;
 		this.resolve = function(path) {
+			if (new Packages.java.io.File(path).isAbsolute()) {
+				return new Callee({ file: new Packages.java.io.File(path) });
+			}
 			return new Callee({ file: new Packages.java.io.File(p.file.getParentFile(), path) });
 		};
 	} else if (p.url) {
