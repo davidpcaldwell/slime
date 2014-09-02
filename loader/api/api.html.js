@@ -120,10 +120,6 @@ var getElement = function(root,path) {
 //		.getScenario(scope,unit): produce a unit.before.js/Scenario given a scope and a test path
 //
 $exports.ApiHtmlTests = function(html,name) {
-	//	NASHORN	next two lines only needed because of Nashorn; see below
-	var nameParameter = name;
-	this.html = html;
-
 	this.toString = function() {
 		return "ApiHtmlTests: " + name;
 	}
@@ -137,8 +133,7 @@ $exports.ApiHtmlTests = function(html,name) {
 
 	var references = filter(getDescendants(html.top), jsapiReferenceFilter);
 
-	//	NASHORN	similarly under Nashorn the referenceScope is required to be "public"
-	this.referenceScope = new function() {
+	var referenceScope = new function() {
 		this.getApi = function(path) {
 			var otherhtml = html.load(path);
 			var rv = new $exports.ApiHtmlTests(otherhtml,name+":"+path);
@@ -157,7 +152,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		var reference = references[i].getJsapiAttribute("reference");
 		var element = (function() {
 			var rv;
-			with(this.referenceScope) {
+			with(referenceScope) {
 				rv = eval(reference);
 			}
 			return rv;
@@ -234,7 +229,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		//			that it should). Somehow the scope is getting confused and the arguments from the constructor are not available;
 		//			not only that, but even reassigning them (see nameParameter above) to local variables does not work.
 
-		var contextScripts = getDescendantScripts(this.html.top,"context");
+		var contextScripts = getDescendantScripts(html.top,"context");
 
 		var contexts = [];
 		for (var i=0; i<contextScripts.length; i++) {

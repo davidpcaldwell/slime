@@ -42,7 +42,6 @@ $jsh.setHost((function() {
 		if ($nashorn.isTop()) {
 			exit(status);
 		} else {
-			//	NASHORN	Throwing object with toString() causes [object Object] to be error rather than toString()
 			$nashorn.exit(status);
 		}
 	}
