@@ -218,17 +218,6 @@ $exports.ApiHtmlTests = function(html,name) {
 	}
 
 	this.getContexts = function(scope) {
-		//Packages.java.lang.System.err.println("in getContexts(), this: " + this);
-		//Packages.java.lang.System.err.println("in getContexts(), this.html: " + this.html.top.toString());
-		//Packages.java.lang.System.err.println("in getContexts(), name: " + name);
-		//Packages.java.lang.System.err.println("in getContexts(), nameParameter: " + nameParameter);
-		//Packages.java.lang.System.err.println("html.top: " + typeof(html.top) + " keys: " + Object.keys(html.top));
-		//Packages.java.lang.System.err.println("html.top.toString: " + html.top.toString);
-//		Packages.java.lang.System.err.println("html.top.toString(): " + html.top.toString());
-		//	NASHORN	Under Nashorn, this specific call does not work with html.top, although under Rhino it did (and it appears
-		//			that it should). Somehow the scope is getting confused and the arguments from the constructor are not available;
-		//			not only that, but even reassigning them (see nameParameter above) to local variables does not work.
-
 		var contextScripts = getDescendantScripts(html.top,"context");
 
 		var contexts = [];
