@@ -13,16 +13,6 @@
 load("nashorn:mozilla_compat.js");
 
 (function() {
-	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-	var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);
-	var Source = Java.type("jdk.nashorn.internal.runtime.Source");
-	var ScriptObject = Java.type("jdk.nashorn.internal.runtime.ScriptObject");
-	evaluateSourceSignature[0] = Source.class;
-	evaluateSourceSignature[1] = ScriptObject.class;
-	evaluateSourceSignature[2] = ScriptObject.class;
-	var evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
-	evaluateSource.setAccessible(true);
-
 	var toScope = function(scope) {
 		var global = (function() { return this; })();
 		if (false) {
@@ -46,17 +36,99 @@ load("nashorn:mozilla_compat.js");
 		}
 	};
 	
-	var toSource = function(name,code) {
-		if (Source.sourceFor) return Source.sourceFor(name,code);
-		return new Source(name,code);
-	}
+	var Context = Java.type("jdk.nashorn.internal.runtime.Context");
+	
+	var loaders = new function() {		
+		var toSource = function(name,code) {
+			var Source = Java.type("jdk.nashorn.internal.runtime.Source");
+			if (Source.sourceFor) return Source.sourceFor(name,code);
+			return new Source(name,code);
+		};
 
+		//	Attempt to use pure JavaScript to implement (ignoring name, which perhaps could be attached using a sourceURL-like
+		//	hack)
+		this.js = function(name,code,scope,target) {
+			//	When executing jsh verification, this throws a mysterious NullPointerException deep inside Nashorn, which is hard to
+			//	debug because of the wall of evals in the resulting stack trace
+			return (function() {
+				with(scope) {
+					return eval(code);
+				}
+			}).call(target);
+		};
+
+		//	Try to use public javax.script APIs with source rewriting; not very thought through and did not work in current form
+		this.eval = function(name,code,scope,target) {
+			throw new Error("Unimplemented.");
+			//	$interface was nested class of inonit.script.nashorn.Host:				
+			//	public class Interface {
+			//		public Object eval(String name, String code, Bindings bindings) throws ScriptException {
+			//			ScriptContext c = engine.getContext();
+			//			c.setAttribute(ScriptEngine.FILENAME, name, ScriptContext.ENGINE_SCOPE);
+			//			return engine.eval(code, bindings);
+			//		}
+			//	}
+			//	exposed by:
+			//	factory.getBindings().put("$interface", new Interface());
+			//	in constructor
+
+			var targeted = "(function() { return (" + code + ");\n}).call($$this)";
+			var _bindings = new Packages.javax.script.SimpleBindings();
+			for (var x in scope) {
+				_bindings.put(x,scope[x]);
+			}
+			_bindings.put("$$this",target);
+			return $interface.eval(name, targeted, _bindings);			
+		};
+		
+		//	Use Nashorn classes directly. Uses undocumented, non-public classes. Replaces 'old' implementation because 'old' relies
+		//	on private meethods of undocumented classes. Should test whether this affects some of the "scope loss" bugs; however,
+		//	those may have been caused by loading multiple scripts with the same name, so should also test that possibility.
+		this.compile = function(name,code,scope,target) {
+			var compiled = Context.getContext().compileScript(toSource(name,code),scope);
+			return Packages.jdk.nashorn.internal.runtime.ScriptRuntime.apply(compiled,target);
+		};
+		
+		//	Initial working implementation, that nevertheless can fail in complicated scoping scenarios because sometimes scope
+		//	chain is wrong. May be caused by incorrect use of private APIs, or perhaps by name collisions between multiple copies
+		//	of the "same" script (script with same name) that could be solved by adding unambiguous names.
+		this.old = function(name,code,scope,target) {
+			if (!arguments.callee.evaluateSource) {
+				var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);
+				var ScriptObject = Java.type("jdk.nashorn.internal.runtime.ScriptObject");
+				evaluateSourceSignature[0] = Java.type("jdk.nashorn.internal.runtime.Source").class;
+				evaluateSourceSignature[1] = ScriptObject.class;
+				evaluateSourceSignature[2] = ScriptObject.class;
+				arguments.callee.evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
+				arguments.callee.evaluateSource.setAccessible(true);
+			}
+			return arguments.callee.evaluateSource.invoke(Context.getContext(), toSource(name,code), scope, target);			
+		};
+
+		//	Attempt to leverage Nashorn script APIs.
+		this.load = function(name,code,scope,target) {
+			throw new Error("Would never work with current Nashorn design.");
+			//	The "with" statement does not affect load(); load is always executed in global scope. See nashorn-dev thread
+			//	"Scopes and load()": http://mail.openjdk.java.net/pipermail/nashorn-dev/2014-September/003372.html
+			return (function() {
+				with(scope) {
+					return load({ name: name, script: code });
+				}
+			}).call(target);
+		};
+	}
+	
 	var script = function(name,code,scope,target) {
-		var context = Context.getContext();
 		var notNull = function(o) {
 			return (o) ? o : {};
-		}
-		return evaluateSource.invoke(context, toSource(name,code), toScope(notNull(scope)), notNull(target));
+		};
+		var fixedScope = toScope(notNull(scope));
+		var fixedTarget = notNull(target);
+		var mode = Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_NASHORN_SCRIPT");
+		if (!mode) mode = "compile";
+		var implementation = loaders[mode];
+		if (!implementation) throw new Error("Unknown mode: " + mode);
+		return implementation(name,code,fixedScope,fixedTarget);
 	};
 
 	if (typeof($classpath) == "undefined") {
