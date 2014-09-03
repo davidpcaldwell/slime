@@ -53,53 +53,52 @@ var $java = new function() {
 
 var $api = {};
 $api.shell = {};
-$api.Script = function(p) {
-	var Callee = arguments.callee;
-	if (p.file) {
-		this.toString = function() { return String(p.file.getCanonicalPath()); }
-		this.file = p.file;
-		this.resolve = function(path) {
-			if (new Packages.java.io.File(path).isAbsolute()) {
-				return new Callee({ file: new Packages.java.io.File(path) });
-			}
-			return new Callee({ file: new Packages.java.io.File(p.file.getParentFile(), path) });
-		};
-	} else if (p.url) {
-		this.toString = function() { return String(p.url.toExternalForm()); }
-		this.url = p.url;
-		this.resolve = function(path) {
-			return new Callee({ url: new Packages.java.net.URL(p.url, path) });
-		};
-	}
-	this.load = function() {
-		load(this.toString());
-	}
-}
 
-var $script = (function() {
+(function() {
 	var interpret = function(string) {
 		if (new Packages.java.io.File(string).exists()) {
 			var file = new Packages.java.io.File(string);
-			return new $api.Script({
+			return {
 				file: file
-			});
+			};
 		} else {
 			var url = new Packages.java.net.URL(string);
-			return new $api.Script({
+			return {
 				url: url
-			});
+			};
 		}
 	};
 
-	return interpret($engine.filename);
-})();
-
-var $arguments = (function() {
-	var rv = [];
-	for (var i=0; i<this["javax.script.argv"].length; i++) {
-		rv[i] = String(this["javax.script.argv"][i]);
-	}
-	return rv;
+	$api.Script = function(p) {
+		var Callee = arguments.callee;
+		if (p.string) {
+			return new arguments.callee(interpret(p.string));
+		}
+		if (p.file) {
+			this.toString = function() { return String(p.file.getCanonicalPath()); }
+			this.file = p.file;
+			this.resolve = function(path) {
+				if (new Packages.java.io.File(path).isAbsolute()) {
+					return new Callee({ file: new Packages.java.io.File(path) });
+				}
+				return new Callee({ file: new Packages.java.io.File(p.file.getParentFile(), path) });
+			};
+		} else if (p.url) {
+			this.toString = function() { return String(p.url.toExternalForm()); }
+			this.url = p.url;
+			this.resolve = function(path) {
+				return new Callee({ url: new Packages.java.net.URL(p.url, path) });
+			};
+		}
+		
+		this.load = function() {
+			load(this.toString());
+		}
+	};
+	
+	$api.script = new $api.Script({
+		string: $engine.filename
+	});
 })();
 
 $api.shell.rhino = function(p) {
@@ -171,10 +170,38 @@ $api.shell.rhino = function(p) {
 	}
 };
 
-if (!$arguments.length) {
-	Packages.java.lang.System.err.println("Usage: jrunscript.js <script> [arguments]");
-	Packages.java.lang.System.exit(1);
-} else {
-	$script = $script.resolve($arguments.shift());
+var $arguments = (function() {
+	var rv = [];
+	for (var i=0; i<this["javax.script.argv"].length; i++) {
+		rv[i] = String(this["javax.script.argv"][i]);
+	}
+	return rv;
+})();
+
+var $script;
+
+if ($api.script.url && $api.script.url.getQuery()) {
+	var parameters = (function() {
+		//	Only allows single value for each name; surely sufficient for this purpose
+		var rv = {};
+		var string = String($api.script.url.getQuery());
+		string.split("&").forEach(function(pair) {
+			var tokens = pair.split("=");
+			rv[tokens[0]] = tokens[1];
+		});
+		return rv;
+	})();
+	if (parameters.relative) {
+		$script = $api.script.resolve(parameters.relative);
+		$script.load();
+	} else {
+		Packages.java.lang.System.err.println("Usage: jrunscript.js <script> [arguments]");
+		Packages.java.lang.System.exit(1);			
+	}
+} else if ($arguments.length) {
+	$script = new $api.Script({ string: $arguments.shift() });
 	$script.load();
+} else {
+	Packages.java.lang.System.err.println("Usage: jrunscript.js <script> [arguments]");
+	Packages.java.lang.System.exit(1);	
 }
