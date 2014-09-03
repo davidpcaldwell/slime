@@ -52,6 +52,41 @@ var $java = new function() {
 };
 
 var $api = {};
+$api.io = {};
+$api.io.copy = function(from,to) {
+	var b;
+	while( (b = from.read()) != -1 ) {
+		to.write(b);
+	}
+	to.close();
+};
+$api.rhino = {};
+$api.rhino.download = function(url) {
+	if (!url) url = "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip";
+	var _url = new Packages.java.net.URL(url);
+	println("Downloading Rhino from " + _url);
+	var _connection = _url.openConnection();
+	var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
+	var _entry;
+	var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
+	tmpdir["delete"]();
+	tmpdir.mkdirs();
+	if (!tmpdir.exists()) {
+		throw new Error("Failed to create temporary file.");
+	}
+	var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
+	while(_entry = _zipstream.getNextEntry()) {
+		var name = String(_entry.getName());
+		var path = name.split("/");
+		if (path[1] == "js.jar") {
+			var out = new Packages.java.io.FileOutputStream(tmprhino);
+			$api.io.copy(_zipstream,out);
+		}
+	}
+	println("Downloaded Rhino to " + tmprhino);
+	return tmprhino;
+}
+
 $api.shell = {};
 
 (function() {
@@ -107,6 +142,7 @@ $api.shell.rhino = function(p) {
 	//		script (Packages.java.io.File): main script to run
 	//		arguments (Array): arguments to send to script
 	//		directory (optional Packages.java.io.File): working directory in which to run it
+	//		properties: (Object): keys are keys, values are values
 	var dashD = [];
 	if (p.properties) {
 		for (var x in p.properties) {

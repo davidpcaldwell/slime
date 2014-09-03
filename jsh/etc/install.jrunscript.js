@@ -13,41 +13,8 @@
 $engine.run = $engine.resolve(new function() {
 	var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 
-	var copy = function(from,to) {
-		var b;
-		while( (b = from.read()) != -1 ) {
-			to.write(b);
-		}
-		to.close();
-	};
-
-	var downloadMozillaRhinoDistribution = function(url) {
-		var _url = new Packages.java.net.URL(url);
-		println("Downloading Rhino from " + _url);
-		var _connection = _url.openConnection();
-		var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
-		var _entry;
-		var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
-		tmpdir["delete"]();
-		tmpdir.mkdirs();
-		if (!tmpdir.exists()) {
-			throw new Error("Failed to create temporary file.");
-		}
-		var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
-		while(_entry = _zipstream.getNextEntry()) {
-			var name = String(_entry.getName());
-			var path = name.split("/");
-			if (path[1] == "js.jar") {
-				var out = new Packages.java.io.FileOutputStream(tmprhino);
-				copy(_zipstream,out);
-			}
-		}
-		println("Downloaded Rhino to " + tmprhino);
-		return tmprhino;
-	};
-
 	var configureRhino = function(defaultValue) {
-		var _property = Packages.java.lang.System.getProperty("jsh.build.rhino.jar");
+		var _property = Packages.java.lang.System.getProperty("jsh.build.rhino");
 		var property = (_property) ? String(_property) : defaultValue;
 		var set = function(value) {
 			if (!value) {
@@ -59,7 +26,7 @@ $engine.run = $engine.resolve(new function() {
 		if (property == "false") {
 			set(null);
 		} else if (property == "true") {
-			set(downloadMozillaRhinoDistribution("http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip"));
+			set($api.rhino.download());
 		} else {
 			set(new File(property));
 		}
@@ -105,14 +72,6 @@ var $source = (function() {
 	if ($script.file) {
 		return new File($script.file, "../../..").getCanonicalFile();
 	} else {
-		var copy = function(from,to) {
-			var b;
-			while( (b = from.read()) != -1 ) {
-				to.write(b);
-			}
-			to.close();
-		}
-
 		//	sample link		https://bitbucket.org/davidpcaldwell/slime/get/[label].zip
 		//	sample script	https://bitbucket.org/davidpcaldwell/slime/raw/[label]/jsh/etc/install.jrunscript.js
 		//	TODO	implement determination of URL from Bitbucket
@@ -140,7 +99,7 @@ var $source = (function() {
 			if (name.substring(name.length-1) == "/") {
 				new Packages.java.io.File(tmpdir, name).mkdirs();
 			} else {
-				copy(zstream,new FileOutputStream(new Packages.java.io.File(tmpdir, name)));
+				$api.io.copy(zstream,new FileOutputStream(new Packages.java.io.File(tmpdir, name)));
 			}
 		}
 		return new File(tmpdir,topname);
