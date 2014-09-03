@@ -303,11 +303,11 @@ public class Main {
 				Logging.get().log(Main.class, Level.FINE, "jsh.launcher.rhino.classpath = %s", System.getProperty("jsh.launcher.rhino.classpath"));
 				try {
 					java.lang.reflect.Method main = this.getMainMethod();
-					debug("Rhino shell main = " + main);
+					Logging.get().log(Main.class, Level.FINER, "Rhino shell main = %s", main);
 					String[] arguments = this.getArguments(args);
-					debug("Rhino shell arguments:");
+					Logging.get().log(Main.class, Level.FINER, "Rhino shell arguments:");
 					for (int i=0; i<arguments.length; i++) {
-						debug("Rhino shell argument = " + arguments[i]);
+						Logging.get().log(Main.class, Level.FINER, "Rhino shell argument %d: %s", i, arguments[i]);
 					}
 					Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
 					main.invoke(null, new Object[] { arguments });
