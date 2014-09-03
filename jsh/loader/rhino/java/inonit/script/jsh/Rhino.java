@@ -295,9 +295,7 @@ public class Rhino {
 	}
 
 	public static void main(String[] args) throws Throwable {
-		if (!inonit.system.Logging.get().isSpecified()) {
-			inonit.system.Logging.get().initialize(new java.util.Properties());
-		}
+		Main.initialize();
 		Logging.get().log(Rhino.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
 		Rhino main = new Rhino();
 		main.arguments = args;
