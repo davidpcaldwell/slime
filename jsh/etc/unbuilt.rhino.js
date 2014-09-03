@@ -17,12 +17,12 @@
 
 var SLIME_SRC;
 
-if (Packages.java.lang.System.getProperties().get("jsh.build.src")) {
-	SLIME_SRC = Packages.java.lang.System.getProperties().get("jsh.build.src");
+if (Packages.java.lang.System.getProperties().get("jsh.unbuilt.src")) {
+	SLIME_SRC = Packages.java.lang.System.getProperties().get("jsh.unbuilt.src");
 };
 
-if (Packages.java.lang.System.getProperties().get("jsh.build.arguments")) {
-	arguments = Packages.java.lang.System.getProperties().get("jsh.build.arguments");
+if (Packages.java.lang.System.getProperties().get("jsh.unbuilt.arguments")) {
+	arguments = Packages.java.lang.System.getProperties().get("jsh.unbuilt.arguments");
 }
 
 if (!SLIME_SRC) SLIME_SRC = (function() {

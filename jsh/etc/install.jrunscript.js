@@ -67,8 +67,8 @@ $engine.run = $engine.resolve(new function() {
 	};
 
 	this.nashorn = function(p) {
-		Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
-		Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
+		Packages.java.lang.System.getProperties().put("jsh.unbuilt.arguments", p.arguments);
+		Packages.java.lang.System.getProperties().put("jsh.unbuilt.src", $source);
 		Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
 		configureRhino("false");
 		load(p.script);
@@ -80,8 +80,8 @@ $engine.run = $engine.resolve(new function() {
 		//			unknown reasons; it runs the Nashorn-specific code, which fails.
 		var IN_PROCESS = Packages.java.lang.System.getProperty("jsh.build.test.jrunscript");
 		if (IN_PROCESS) {
-			Packages.java.lang.System.getProperties().put("jsh.build.arguments", p.arguments);
-			Packages.java.lang.System.getProperties().put("jsh.build.src", $source);
+			Packages.java.lang.System.getProperties().put("jsh.unbuilt.arguments", p.arguments);
+			Packages.java.lang.System.getProperties().put("jsh.unbuilt.src", $source);
 			Packages.java.lang.System.getProperties().put("jsh.build.notest", "true");
 			configureRhino("true");
 			load(String(p.script.getCanonicalPath()));
