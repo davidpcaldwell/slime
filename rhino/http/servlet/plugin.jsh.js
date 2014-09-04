@@ -27,10 +27,15 @@ plugin({
 			getMimeType: getMimeType
 		}).addJshPluginTo(jsh);
 
+		var CATALINA_HOME = (function() {
+			if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+			if (jsh.shell.jsh.home && jsh.shell.jsh.home.getSubdirectory("lib/tomcat")) return jsh.shell.jsh.home.getSubdirectory("lib/tomcat");
+		})();
+
 		//	TODO	allow system property in addition to environment variable?
 		$loader.module("jsh.tomcat.js", {
 			jsh: jsh,
-			CATALINA_HOME: (jsh.shell.environment.CATALINA_HOME) ? jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory : null
+			CATALINA_HOME: CATALINA_HOME
 		});
 	}
 });

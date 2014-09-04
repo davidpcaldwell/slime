@@ -560,9 +560,10 @@ if (!getSetting("jsh.build.notest")) {
 	integrationTests();
 }
 
-console("Creating install script ...");
+console("Creating install scripts ...");
 new File(JSH_HOME,"etc").mkdir();
 copyFile(new File(SLIME_SRC,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
+copyFile(new File(SLIME_SRC,"jsh/etc/install"), new File(JSH_HOME, "etc/install"));
 
 var bases = ["js","loader","rhino","jsh"];
 
