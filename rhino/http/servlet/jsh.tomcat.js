@@ -18,12 +18,13 @@ if (!jsh.java.getClass("org.apache.catalina.startup.Tomcat") && $context.CATALIN
 		"lib/catalina.jar"
 		,"lib/annotations-api.jar"
 	].forEach(function(path) {
-		$context.classpath.add($context.CATALINA_HOME.getRelativePath(path));
+		jsh.loader.java.add($context.CATALINA_HOME.getRelativePath(path));
 	});
 }
 $context.jsh.java.log.named("jsh.httpd").INFO("Trying to load Tomcat: class = %s CATALINA_HOME = %s", jsh.java.getClass("org.apache.catalina.startup.Tomcat"), $context.CATALINA_HOME);
 
 if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
+	if (!$context.getMimeType) $context.getMimeType = $loader.file("jsh.mime.js",$context);
 	jsh.httpd.Tomcat = function(p) {
 		var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 

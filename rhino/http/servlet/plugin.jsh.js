@@ -12,22 +12,16 @@
 
 plugin({
 	isReady: function() {
-		return jsh.java && jsh.java.log && jsh.shell && jsh.file;
+		return jsh.java && jsh.java.log && jsh.io.mime && jsh.shell && jsh.file;
 	},
 	load: function() {
 		if (!jsh.httpd) {
 			jsh.httpd = {};
 		}
 
-		var getMimeType = function(file) {
-			var type = jsh.io.mime.Type.guess({
-				name: file.pathname.basename
-			});
-			if (!type && /\.js$/.test(file.pathname.basename)) {
-				type = new jsh.io.mime.Type("text", "javascript");
-			}
-			return type;
-		}
+		var getMimeType = $loader.file("jsh.mime.js", {
+			jsh: jsh
+		}).getMimeType;
 
 		$loader.file("resources.jsh.file.js", {
 			getMimeType: getMimeType
@@ -36,9 +30,7 @@ plugin({
 		//	TODO	allow system property in addition to environment variable?
 		$loader.module("jsh.tomcat.js", {
 			jsh: jsh,
-			CATALINA_HOME: (jsh.shell.environment.CATALINA_HOME) ? jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory : null,
-			classpath: $loader.classpath,
-			getMimeType: getMimeType
+			CATALINA_HOME: (jsh.shell.environment.CATALINA_HOME) ? jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory : null
 		});
 	}
 });
