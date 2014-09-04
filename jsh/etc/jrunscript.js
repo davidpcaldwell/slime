@@ -125,12 +125,12 @@ $api.shell = {};
 				return new Callee({ url: new Packages.java.net.URL(p.url, path) });
 			};
 		}
-		
+
 		this.load = function() {
 			load(this.toString());
 		}
 	};
-	
+
 	$api.script = new $api.Script({
 		string: $engine.filename
 	});
@@ -232,12 +232,12 @@ if ($api.script.url && $api.script.url.getQuery()) {
 		$script.load();
 	} else {
 		Packages.java.lang.System.err.println("Usage: jrunscript.js <script> [arguments]");
-		Packages.java.lang.System.exit(1);			
+		Packages.java.lang.System.exit(1);
 	}
 } else if ($arguments.length) {
 	$script = new $api.Script({ string: $arguments.shift() });
 	$script.load();
 } else {
 	Packages.java.lang.System.err.println("Usage: jrunscript.js <script> [arguments]");
-	Packages.java.lang.System.exit(1);	
+	Packages.java.lang.System.exit(1);
 }
