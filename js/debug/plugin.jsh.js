@@ -38,7 +38,7 @@ plugin({
 		var addLevelsTo = function(object) {
 			levels.forEach(function(item) {
 				this[item] = function() {
-					this.log([_Level[item]].concat(Array.prototype.slice.call(arguments)));
+					this.log.apply(this,[_Level[item]].concat(Array.prototype.slice.call(arguments)));
 				};
 			}, object);
 		}
@@ -46,7 +46,7 @@ plugin({
 		var jlogger = function(name) {
 			return new function() {
 				this.log = function(_level) {
-					jlog.apply(null, [name,_level].concat(Array.prototype.slice.call(arguments)));
+					jlog.apply(null, [name,_level].concat(Array.prototype.slice.call(arguments,1)));
 				};
 
 				addLevelsTo(this);
