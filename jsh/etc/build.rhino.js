@@ -626,6 +626,5 @@ if (destination.installer) {
 	var command = LAUNCHER_COMMAND.slice();
 	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command = command.concat(destination.arguments);
-	console("command = " + command);
 	runCommand.apply(this,command);
 }
