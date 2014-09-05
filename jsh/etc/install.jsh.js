@@ -29,7 +29,8 @@ var parameters = jsh.script.getopts({
 		//	TODO	-unix and -cygwin cannot be turned off currently; if unspecified and autodetected, they will be added anyway
 		unix: false,
 		cygwin: false,
-		native: false
+		native: false,
+		install: jsh.script.getopts.ARRAY(String)
 	}
 });
 
@@ -309,7 +310,7 @@ if (parameters.options.native) {
 
 //	TODO	run test cases given in jsh.c
 
-//	Make tools executable
+//	TODO	if on UNIX-based system, could do more to build convenience scripts that either include shebangs or launch with bash
 if (which("chmod")) {
 	var makeExecutable = function(node) {
 		if (!arguments.callee.chmod) {
@@ -335,3 +336,10 @@ if (which("chmod")) {
 
 	if (false) makeExecutable(install.getSubdirectory("tools"));
 }
+
+parameters.options.install.forEach(function(name) {
+	jsh.shell.java({
+		jar: install.getFile("jsh.jar"),
+		arguments: [install.getRelativePath("etc/install/" + name + ".jsh.js")]
+	});
+});

@@ -41,4 +41,5 @@ jsh.file.unzip({
 	to: to
 });
 var destination = parameters.options.jsh.directory.getRelativePath("lib/tomcat");
+jsh.shell.echo("Installing Tomcat at " + destination);
 to.getSubdirectory("apache-tomcat-" + parameters.options.version).move(destination, { overwrite: true });
