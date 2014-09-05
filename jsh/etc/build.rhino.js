@@ -56,17 +56,21 @@ var zip = function(from,to,filters) {
 
 	var directories = {};
 
+	var createDirectoryEntry = function(partial) {
+		if (!directories[partial]) {
+			var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
+			zstream.putNextEntry(entry);
+			zstream.closeEntry();
+			directories[partial] = true;
+		}
+	}
+
 	var createDirectory = function(path) {
 		if (path.length == 0) return;
 		var tokens = path.split("/");
 		for (var i=1; i<tokens.length; i++) {
 			var partial = tokens.slice(0,i).join("/");
-			if (!directories[partial]) {
-				var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
-				zstream.putNextEntry(entry);
-				zstream.closeEntry();
-				directories[partial] = true;
-			}
+			createDirectoryEntry(partial);
 		}
 	}
 
@@ -85,6 +89,9 @@ var zip = function(from,to,filters) {
 
 		if (file.isDirectory()) {
 			createDirectory(prefix);
+			if (!directories[nextPrefix()+file.getName()]) {
+				createDirectoryEntry(nextPrefix()+file.getName())
+			}
 			var files = file.listFiles();
 			for (var i=0; i<files.length; i++) {
 				process(files[i],nextPrefix()+file.getName(),filters);
@@ -161,22 +168,37 @@ var destination = (function() {
 		return path;
 	}
 
-	if (arguments[0] == "-installer") {
-		return {
-			installer: new File(toNativePath(arguments[1])),
-			shell: createTemporaryDirectory()
+	var rv;
+
+	var Installer = function(to) {
+		this.installer = new File(toNativePath(to));
+		this.shell = createTemporaryDirectory();
+		this.arguments = [];
+	};
+
+	var Destination = function(to) {
+		this.shell = new File(toNativePath(to));
+		this.arguments = [];
+	};
+
+	for (var i=0; i<arguments.length; i++) {
+		if (!rv && arguments[i] == "-installer") {
+			rv = new Installer(arguments[++i]);
+		} else if (!rv) {
+			rv = new Destination(arguments[i]);
+		} else {
+			rv.arguments.push(arguments[i]);
 		}
+	}
+
+	if (!rv) {
+		console("Usage:");
+		console("build.rhino.js <build-destination>");
+		console("-or-");
+		console("build.rhino.js -installer <installer-jar-location>");
+		System.exit(1);
 	} else {
-		if (arguments.length == 0) {
-			console("Usage:");
-			console("build.rhino.js <build-destination>");
-			console("-or-");
-			console("build.rhino.js -installer <installer-jar-location>");
-			System.exit(1);
-		}
-		return {
-			shell: new File(toNativePath(arguments[0]))
-		}
+		return rv;
 	}
 }).apply(this,arguments);
 
@@ -599,5 +621,11 @@ if (destination.installer) {
 	if (!RHINO_LIBRARIES) {
 		command.push("-norhino");
 	}
+	runCommand.apply(this,command);
+} else {
+	var command = LAUNCHER_COMMAND.slice();
+	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
+	command = command.concat(destination.arguments);
+	console("command = " + command);
 	runCommand.apply(this,command);
 }

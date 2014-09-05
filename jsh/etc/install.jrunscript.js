@@ -10,6 +10,11 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!this.$engine) {
+	Packages.java.lang.System.err.println("This script must be launched from jrunscript.js.");
+	Packages.java.lang.System.exit(1);
+}
+
 $engine.run = $engine.resolve(new function() {
 	var jdk = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 
