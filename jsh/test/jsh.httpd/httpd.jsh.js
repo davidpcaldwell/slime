@@ -240,12 +240,14 @@ var suites = {
 	},
 	coffee: function() {
 		plugin.coffee();
-		server.start({
-			"slime.coffee": "WEB-INF/servlet/test/coffee.servlet.coffee"
-		});
-		jsh.shell.echo("Test coffee servlet inside Tomcat ...");
-		coffeeServlet.test("http://127.0.0.1:8080/slime.coffee/");
-		server.stop();
+		if (server) {
+			server.start({
+				"slime.coffee": "WEB-INF/servlet/test/coffee.servlet.coffee"
+			});
+			jsh.shell.echo("Test coffee servlet inside Tomcat ...");
+			coffeeServlet.test("http://127.0.0.1:8080/slime.coffee/");
+			server.stop();
+		}
 	},
 	all: function() {
 		this.plugin();
