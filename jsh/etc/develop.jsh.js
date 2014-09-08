@@ -74,11 +74,18 @@ if (jsh.script.arguments.length == 0) {
 	};
 	var settings = new Hgrc(hgrc.file);
 	var runscript = (function() {
-		if (jsh.shell.rhino) {
+		if (jsh.shell.jsh.home) {
 			return [
-				jsh.shell.java.home.getRelativePath("bin/java"),
+				jsh.shell.java.launcher,
+				"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar")
+			]
+		} else if (jsh.shell.rhino) {
+			return [
+				jsh.shell.java.launcher,
 				"-jar", jsh.shell.rhino.classpath,
-				"-opt", "-1"
+				"-opt", "-1",
+				"jsh/etc/unbuilt.rhino.js",
+				"launch"
 			];
 		} else {
 			var jrunscript = (function() {
@@ -87,15 +94,14 @@ if (jsh.script.arguments.length == 0) {
 				return rv;
 			})();
 			return [
-				jrunscript.pathname
+				jrunscript.pathname,
+				"jsh/etc/unbuilt.rhino.js",
+				"launch"
 			]
 		}
 	})();
 	//	TODO	adds hook even if it is already there
 	settings.set("hooks","precommit.slime",runscript.concat([
-//		jsh.script.file.parent.parent.parent.getFile("jsh/etc/develop.jsh.js"),
-		"jsh/etc/unbuilt.rhino.js",
-		"launch",
 		"jsh/etc/develop.jsh.js",
 		"commit"
 	]).join(" "));
