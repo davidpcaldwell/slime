@@ -22,19 +22,13 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var apache = jsh.script.loader.file("apache.js");
+var api = jsh.script.loader.file("api.js");
+var apache = jsh.script.loader.file("apache.js", { api: api });
 
 var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-var zip = (function() {
-	if (parameters.options.download) {
-		return parameters.options.download.file.read(jsh.io.Streams.binary);
-	} else {
-		var response = apache.get("tomcat/tomcat-7/v" + parameters.options.version + "/bin/apache-tomcat-" + parameters.options.version + ".zip");
-		jsh.shell.echo("HTTP response code: " + response.status.code);
-		return response.body.stream;
-	}
-})();
+var zip = apache.download({
+	path: "tomcat/tomcat-7/v" + parameters.options.version + "/bin/apache-tomcat-" + parameters.options.version + ".zip"
+});
 jsh.shell.echo("Unzipping to: " + to);
 jsh.file.unzip({
 	zip: zip,

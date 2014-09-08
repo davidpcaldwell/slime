@@ -18,19 +18,12 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var javassist = (function() {
-	var response = new jsh.http.Client().request({
-		url: parameters.options.javassist
-	});
-	if (response.status.code == 200) {
-		var TMP = jsh.shell.TMPDIR.createTemporary({ prefix: "javassist.", suffix: ".jar" });
-		TMP.pathname.write(response.body.stream, { append: false });
-		return TMP;
-	} else {
-		jsh.shell.echo("Response code " + response.status.code + " for " + parameters.options.javassist);
-		jsh.shell.exit(1);
-	}
-})();
+var api = jsh.script.loader.file("api.js");
+
+var javassist = api.download({
+	url: parameters.options.javassist,
+	name: "javassist-3.18.2.GA.jar"
+});
 
 var src = parameters.options.src.directory;
 

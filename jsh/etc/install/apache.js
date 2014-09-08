@@ -39,4 +39,17 @@ $exports.get = function(path) {
 	return client.request({
 		url: url
 	});
+};
+
+$exports.download = function(p) {
+	var name = p.path.split("/").slice(-1)[0];
+	if ($context.api.downloads && $context.api.downloads.getFile(name)) {
+		return $context.api.download({
+			name: name
+		});
+	} else {
+		return $context.api.download({
+			url: getMirror() + p.path
+		});
+	}
 }

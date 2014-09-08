@@ -512,7 +512,21 @@ if (!destination.installer) {
 	var command = LAUNCHER_COMMAND.slice();
 	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command = command.concat(destination.arguments);
-	runCommand.apply(this,command);
+	var subenv = {};
+	for (var x in env) {
+		if (!/^JSH_/.test(x)) {
+			subenv[x] = env[x];
+		}
+	}
+	if (getSetting("jsh.build.downloads")) {
+		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
+	}
+	Packages.java.lang.System.err.println("subenv = " + JSON.stringify(subenv));
+	command.push({ env: subenv });
+	var status = runCommand.apply(this,command);
+	if (status != 0) {
+		throw new Error("Exit status " + status + " from " + command.slice(0,-1).join(" "));
+	}
 }
 
 if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSetting("jsh.build.nodoc")) {

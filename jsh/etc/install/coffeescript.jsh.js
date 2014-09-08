@@ -17,13 +17,11 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var response = new jsh.http.Client().request({ url: parameters.options.url });
-if (response.status.code == 200) {
-	var destination = jsh.shell.jsh.home.getRelativePath("plugins/coffee-script.js");
-	jsh.shell.echo("Writing CoffeeScript to " + destination + " ...");
-	destination.write(response.body.stream, { append: false });
-} else {
-	jsh.shell.echo("Response code: " + response.status.code + " for " + parameters.options.url);
-	jsh.shell.exit(1);
-}
-jsh.shell.jsh.home.getRelativePath("coffee-script.js").write(new jsh.http.Client().request({ url: parameters.options.url }).body.stream, { append: false });
+var api = jsh.script.loader.file("api.js");
+
+var destination = jsh.shell.jsh.home.getRelativePath("plugins/coffee-script.js");
+var code = api.download({
+	url: parameters.options.url
+});
+jsh.shell.echo("Writing CoffeeScript to " + destination + " ...");
+destination.write(code.read(jsh.io.Streams.binary), { append: false });
