@@ -252,6 +252,7 @@ if (arguments[0] == "build") {
 	Packages.java.lang.System.setProperty("jsh.build.notest","true");
 	Packages.java.lang.System.setProperty("jsh.build.nodoc","true");
 	//	TODO	set jsh.build.rhino to a java.io.File if it is needed here so that build builds it
+	arguments.push("-install","coffeescript","-install","tomcat")
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/etc/build.rhino.js"));
 	var JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
 	var command = [];
