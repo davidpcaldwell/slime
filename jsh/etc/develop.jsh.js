@@ -19,6 +19,7 @@ if (jsh.script.arguments.length == 0) {
 		jsh.shell.echo("Not found: " + hgrc);
 		jsh.shell.exit(1);
 	}
+	//	TODO	Move Hgrc implementation to the hg module
 	var Hgrc = function(file) {
 		var headerMatch = /^\[(.*)\]/;
 		var valueMatch = /^(\S+)(?:\s*)\=(?:\s*)(.+)$/
