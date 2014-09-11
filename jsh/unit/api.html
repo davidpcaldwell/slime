@@ -43,7 +43,11 @@ END LICENSE
 				<code>arg</code> can have one of two formats:
 				<ul>
 					<li>
-						<code><i>name</i>=<i>pathname</i></code>: The variable <code>$jsapi.environment[<i>name</i>]</code> is set
+						<code><i>name</i>=<i>value</i></code>: The variable <code>$jsapi.environment[<i>name</i>]</code> is set
+						to the string <i>value</i>.
+					</li>
+					<li>
+						<code><i>name</i>:<i>pathname</i></code>: The variable <code>$jsapi.environment[<i>name</i>]</code> is set
 						to a module object loaded from <code><i>pathname</i></code>.
 					</li>
 					<li>
