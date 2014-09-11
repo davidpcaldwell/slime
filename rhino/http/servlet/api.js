@@ -71,7 +71,8 @@ var bootstrap = (function() {
 		});
 		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
 			globals: true,
-			$rhino: $loader
+			$rhino: $loader,
+			$java: $loader.java
 		});
 		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
 			$rhino: $rhino,
