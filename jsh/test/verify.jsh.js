@@ -22,7 +22,6 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-//	Provide way to set JSH_ENGINE?
 if (!parameters.options.java.length) {
 	parameters.options.java = [jsh.shell.java.home.pathname];
 }
@@ -33,6 +32,11 @@ if (!parameters.options.engine.length) {
 
 if (!parameters.options.slime) {
 	jsh.shell.echo("Required: -slime");
+	jsh.shell.exit(1);
+}
+
+if (!jsh.java.Thread && (parameters.options.chrome || parameters.options.firefox)) {
+	jsh.shell.echo("Cannot run browser verification in shell without multithreading (use Rhino).");
 	jsh.shell.exit(1);
 }
 

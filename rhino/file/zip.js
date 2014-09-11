@@ -133,7 +133,7 @@ $exports.unzip = function(p) {
 	while( (entry = _zipstream.getNextEntry()) != null ) {
 		var name = String(entry.getName());
 		if (name.substring(name.length-1) == "/") {
-			p.to.getRelativePath(name.substring(name.length-1)).createDirectory({ ifExists: function(d) { return false; }});
+			p.to.getRelativePath(name.substring(0,name.length-1)).createDirectory({ ifExists: function(d) { return false; }});
 		} else {
 			$context.Streams.binary.copy(
 				new $context.InputStream(_zipstream),

@@ -299,9 +299,9 @@
 			return rv;
 		};
 	};
-	
+
 	$exports.Constructor = {};
-	
+
 	$exports.Constructor.decorated = function(original,decorator) {
 		if (!decorator) return original;
 		return function() {

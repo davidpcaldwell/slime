@@ -133,6 +133,7 @@ public class Nashorn {
 	}
 
 	public static void main(final String[] args) throws Invocation.CheckedException {
+		Main.initialize();
 		main(Shell.main(args));
 	}
 }

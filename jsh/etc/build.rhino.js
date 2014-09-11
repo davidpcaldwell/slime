@@ -56,17 +56,21 @@ var zip = function(from,to,filters) {
 
 	var directories = {};
 
+	var createDirectoryEntry = function(partial) {
+		if (!directories[partial]) {
+			var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
+			zstream.putNextEntry(entry);
+			zstream.closeEntry();
+			directories[partial] = true;
+		}
+	}
+
 	var createDirectory = function(path) {
 		if (path.length == 0) return;
 		var tokens = path.split("/");
 		for (var i=1; i<tokens.length; i++) {
 			var partial = tokens.slice(0,i).join("/");
-			if (!directories[partial]) {
-				var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
-				zstream.putNextEntry(entry);
-				zstream.closeEntry();
-				directories[partial] = true;
-			}
+			createDirectoryEntry(partial);
 		}
 	}
 
@@ -85,6 +89,9 @@ var zip = function(from,to,filters) {
 
 		if (file.isDirectory()) {
 			createDirectory(prefix);
+			if (!directories[nextPrefix()+file.getName()]) {
+				createDirectoryEntry(nextPrefix()+file.getName())
+			}
 			var files = file.listFiles();
 			for (var i=0; i<files.length; i++) {
 				process(files[i],nextPrefix()+file.getName(),filters);
@@ -161,22 +168,37 @@ var destination = (function() {
 		return path;
 	}
 
-	if (arguments[0] == "-installer") {
-		return {
-			installer: new File(toNativePath(arguments[1])),
-			shell: createTemporaryDirectory()
+	var rv;
+
+	var Installer = function(to) {
+		this.installer = new File(toNativePath(to));
+		this.shell = createTemporaryDirectory();
+		this.arguments = [];
+	};
+
+	var Destination = function(to) {
+		this.shell = new File(toNativePath(to));
+		this.arguments = [];
+	};
+
+	for (var i=0; i<arguments.length; i++) {
+		if (!rv && arguments[i] == "-installer") {
+			rv = new Installer(arguments[++i]);
+		} else if (!rv) {
+			rv = new Destination(arguments[i]);
+		} else {
+			rv.arguments.push(arguments[i]);
 		}
+	}
+
+	if (!rv) {
+		console("Usage:");
+		console("build.rhino.js <build-destination>");
+		console("-or-");
+		console("build.rhino.js -installer <installer-jar-location>");
+		System.exit(1);
 	} else {
-		if (arguments.length == 0) {
-			console("Usage:");
-			console("build.rhino.js <build-destination>");
-			console("-or-");
-			console("build.rhino.js -installer <installer-jar-location>");
-			System.exit(1);
-		}
-		return {
-			shell: new File(toNativePath(arguments[0]))
-		}
+		return rv;
 	}
 }).apply(this,arguments);
 
@@ -419,6 +441,94 @@ var LAUNCHER_COMMAND = [
 	"-jar",String(new File(JSH_HOME,"jsh.jar").getCanonicalPath())
 ];
 
+console("Creating tools ...");
+var JSH_TOOLS = new File(JSH_HOME,"tools");
+JSH_TOOLS.mkdir();
+copyFile(new File(SLIME_SRC,"jsh/tools"),JSH_TOOLS);
+
+var getPath = function(file) {
+	var path = String(file.getCanonicalPath());
+	if (platform.cygwin) {
+		path = platform.cygwin.cygpath.unix(path);
+	}
+	return path;
+};
+
+if (getSetting("jsh.build.javassist.jar")) {
+	(function() {
+		console("Building profiler to " + getPath(new File(JSH_HOME,"tools/profiler.jar")) + " ...");
+		var command = LAUNCHER_COMMAND.slice(0);
+		command.push(getPath(new File(SLIME_SRC, "rhino/tools/profiler/build.jsh.js")));
+		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
+		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
+		var subenv = {};
+		for (var x in env) {
+			subenv[x] = env[x];
+		}
+		subenv.JSH_PLUGINS = "";
+		command.push({
+			env: subenv
+		});
+		var status = runCommand.apply(this,command);
+		if (status != 0) {
+			throw new Error("Exit status when building profile: " + status);
+		}
+		new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
+		copyFile(new File(SLIME_SRC,"rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
+	}).call(this);
+} else {
+	debug("Javassist location not specified; not building profiler.");
+}
+
+if (getSetting("jsh.build.coffeescript.path")) {
+	console("Copying CoffeeScript from " + getSetting("jsh.build.coffeescript.path") + " ...");
+	copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
+} else {
+	debug("CoffeeScript location not specified; not including CoffeeScript.");
+}
+
+console("Creating install scripts ...");
+new File(JSH_HOME,"etc").mkdir();
+copyFile(new File(SLIME_SRC,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
+copyFile(new File(SLIME_SRC,"jsh/etc/install"), new File(JSH_HOME, "etc/install"));
+
+var JSH_SRC = new File(JSH_HOME,"src");
+console("Bundling source code ...");
+JSH_SRC.mkdir();
+
+["js","loader","rhino","jsh"].forEach( function(base) {
+	copyFile(new File(SLIME_SRC,base), new File(JSH_SRC,base), [
+		{
+			accept: function(f) {
+				return f.isDirectory() && f.getName() == ".hg";
+			},
+			process: function(f,t) {
+			}
+		}
+	]);
+});
+
+if (!destination.installer) {
+	var command = LAUNCHER_COMMAND.slice();
+	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
+	command = command.concat(destination.arguments);
+	var subenv = {};
+	for (var x in env) {
+		if (!/^JSH_/.test(x)) {
+			subenv[x] = env[x];
+		}
+	}
+	if (getSetting("jsh.build.downloads")) {
+		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
+	}
+	debug("subenv = " + JSON.stringify(subenv));
+	command.push({ env: subenv });
+	var status = runCommand.apply(this,command);
+	if (status != 0) {
+		throw new Error("Exit status " + status + " from " + command.slice(0,-1).join(" "));
+	}
+}
+
 if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSetting("jsh.build.nodoc")) {
 } else {
 	console("Running JSAPI ...");
@@ -497,52 +607,6 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 	})();
 }
 
-console("Creating tools ...");
-var JSH_TOOLS = new File(JSH_HOME,"tools");
-JSH_TOOLS.mkdir();
-copyFile(new File(SLIME_SRC,"jsh/tools"),JSH_TOOLS);
-
-var getPath = function(file) {
-	var path = String(file.getCanonicalPath());
-	if (platform.cygwin) {
-		path = platform.cygwin.cygpath.unix(path);
-	}
-	return path;
-};
-
-if (getSetting("jsh.build.javassist.jar")) {
-	(function() {
-		console("Building profiler to " + getPath(new File(JSH_HOME,"tools/profiler.jar")) + " ...");
-		var command = LAUNCHER_COMMAND.slice(0);
-		command.push(getPath(new File(SLIME_SRC, "rhino/tools/profiler/build.jsh.js")));
-		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
-		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
-		var subenv = {};
-		for (var x in env) {
-			subenv[x] = env[x];
-		}
-		subenv.JSH_PLUGINS = "";
-		command.push({
-			env: subenv
-		});
-		var status = runCommand.apply(this,command);
-		if (status != 0) {
-			throw new Error("Exit status when building profile: " + status);
-		}
-		new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
-		copyFile(new File(SLIME_SRC,"rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
-	}).call(this);
-} else {
-	console("Javassist location not specified; not building profiler.");
-}
-
-if (getSetting("jsh.build.coffeescript.path")) {
-	console("Copying CoffeeScript from " + getSetting("jsh.build.coffeescript.path") + " ...");
-	copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
-} else {
-	console("CoffeeScript location not specified; not including CoffeeScript.");
-}
-
 if (!getSetting("jsh.build.notest")) {
 	var integrationTests = function() {
 		var command = LAUNCHER_COMMAND.slice();
@@ -559,27 +623,6 @@ if (!getSetting("jsh.build.notest")) {
 
 	integrationTests();
 }
-
-console("Creating install script ...");
-new File(JSH_HOME,"etc").mkdir();
-copyFile(new File(SLIME_SRC,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
-
-var bases = ["js","loader","rhino","jsh"];
-
-var JSH_SRC = new File(JSH_HOME,"src");
-console("Bundling source code ...");
-JSH_SRC.mkdir();
-bases.forEach( function(base) {
-	copyFile(new File(SLIME_SRC,base), new File(JSH_SRC,base), [
-		{
-			accept: function(f) {
-				return f.isDirectory() && f.getName() == ".hg";
-			},
-			process: function(f,t) {
-			}
-		}
-	]);
-});
 
 if (destination.installer) {
 	//	TODO	allow getting named resource as stream from within jsh

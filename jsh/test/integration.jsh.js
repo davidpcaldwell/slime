@@ -305,6 +305,7 @@ classes.mkdirs();
 var CATALINA_HOME = (function() {
 	if (env.JSH_BUILD_TOMCAT_HOME) return env.JSH_BUILD_TOMCAT_HOME;
 	if (env.CATALINA_HOME) return env.CATALINA_HOME;
+	if (jsh.shell.jsh.home.getSubdirectory("lib/tomcat")) return jsh.shell.jsh.home.getSubdirectory("lib/tomcat").pathname.toString()
 })();
 if (CATALINA_HOME) {
 	console("Running httpd integration tests with CATALINA_HOME = " + CATALINA_HOME);

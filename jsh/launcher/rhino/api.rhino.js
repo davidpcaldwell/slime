@@ -11,6 +11,8 @@
 //	END LICENSE
 
 var Class_java_lang_String;
+//	TODO	the below currently does not work when running inside the JSR223 Rhino engine bundled with Java 6 and Java 7; it falsely
+//			detects as Nashorn
 if (typeof(Packages.org.mozilla.javascript.Context) == "object" || Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	load("nashorn:mozilla_compat.js");
 	Class_java_lang_String = Packages.java.lang.String.class;

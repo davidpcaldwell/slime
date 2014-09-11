@@ -604,7 +604,7 @@ var LocalRepository = function(dir) {
 var RemoteRepository = function(url) {
 	Repository.call(this);
 	this.reference = url;
-	
+
 	this.toString = function() {
 		return "hg repository: " + url;
 	};

@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var $engine = (function(global) {
 	var Nashorn = function() {
 		this.filename = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
@@ -39,51 +52,88 @@ var $java = new function() {
 };
 
 var $api = {};
-$api.shell = {};
-$api.Script = function(p) {
-	var Callee = arguments.callee;
-	if (p.file) {
-		this.toString = function() { return String(p.file.getCanonicalPath()); }
-		this.file = p.file;
-		this.resolve = function(path) {
-			return new Callee({ file: new Packages.java.io.File(p.file.getParentFile(), path) });
-		};
-	} else if (p.url) {
-		this.toString = function() { return String(p.url.toExternalForm()); }
-		this.url = p.url;
-		this.resolve = function(path) {
-			return new Callee({ url: new Packages.java.net.URL(p.url, path) });
-		};
+$api.io = {};
+$api.io.copy = function(from,to) {
+	var b;
+	while( (b = from.read()) != -1 ) {
+		to.write(b);
 	}
-	this.load = function() {
-		load(this.toString());
+	to.close();
+};
+$api.rhino = {};
+$api.rhino.download = function(url) {
+	if (!url) url = "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip";
+	var _url = new Packages.java.net.URL(url);
+	println("Downloading Rhino from " + _url);
+	var _connection = _url.openConnection();
+	var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
+	var _entry;
+	var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
+	tmpdir["delete"]();
+	tmpdir.mkdirs();
+	if (!tmpdir.exists()) {
+		throw new Error("Failed to create temporary file.");
 	}
+	var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
+	while(_entry = _zipstream.getNextEntry()) {
+		var name = String(_entry.getName());
+		var path = name.split("/");
+		if (path[1] == "js.jar") {
+			var out = new Packages.java.io.FileOutputStream(tmprhino);
+			$api.io.copy(_zipstream,out);
+		}
+	}
+	println("Downloaded Rhino to " + tmprhino);
+	return tmprhino;
 }
 
-var $script = (function() {
+$api.shell = {};
+
+(function() {
 	var interpret = function(string) {
 		if (new Packages.java.io.File(string).exists()) {
 			var file = new Packages.java.io.File(string);
-			return new $api.Script({
+			return {
 				file: file
-			});
+			};
 		} else {
 			var url = new Packages.java.net.URL(string);
-			return new $api.Script({
+			return {
 				url: url
-			});
+			};
 		}
 	};
 
-	return interpret($engine.filename);
-})();
+	$api.Script = function(p) {
+		var Callee = arguments.callee;
+		if (p.string) {
+			return new arguments.callee(interpret(p.string));
+		}
+		if (p.file) {
+			this.toString = function() { return String(p.file.getCanonicalPath()); }
+			this.file = p.file;
+			this.resolve = function(path) {
+				if (new Packages.java.io.File(path).isAbsolute()) {
+					return new Callee({ file: new Packages.java.io.File(path) });
+				}
+				return new Callee({ file: new Packages.java.io.File(p.file.getParentFile(), path) });
+			};
+		} else if (p.url) {
+			this.toString = function() { return String(p.url.toExternalForm()); }
+			this.url = p.url;
+			this.resolve = function(path) {
+				return new Callee({ url: new Packages.java.net.URL(p.url, path) });
+			};
+		}
 
-var $arguments = (function() {
-	var rv = [];
-	for (var i=0; i<this["javax.script.argv"].length; i++) {
-		rv[i] = String(this["javax.script.argv"][i]);
-	}
-	return rv;
+		this.load = function() {
+			load(this.toString());
+		}
+	};
+
+	$api.script = new $api.Script({
+		string: $engine.filename
+	});
 })();
 
 $api.shell.rhino = function(p) {
@@ -92,6 +142,7 @@ $api.shell.rhino = function(p) {
 	//		script (Packages.java.io.File): main script to run
 	//		arguments (Array): arguments to send to script
 	//		directory (optional Packages.java.io.File): working directory in which to run it
+	//		properties: (Object): keys are keys, values are values
 	var dashD = [];
 	if (p.properties) {
 		for (var x in p.properties) {
@@ -107,7 +158,7 @@ $api.shell.rhino = function(p) {
 		"-opt","-1",
 		p.script.getCanonicalPath()
 	]).concat((p.arguments) ? p.arguments : []);
-	
+
 	var USE_JRUNSCRIPT_EXEC = false;
 	if (USE_JRUNSCRIPT_EXEC) {
 		//	The jrunscript built-in exec() requires a single argument, which causes a mess here; we don't want to
@@ -155,10 +206,38 @@ $api.shell.rhino = function(p) {
 	}
 };
 
-if (!$arguments.length) {
+var $arguments = (function() {
+	var rv = [];
+	for (var i=0; i<this["javax.script.argv"].length; i++) {
+		rv[i] = String(this["javax.script.argv"][i]);
+	}
+	return rv;
+})();
+
+var $script;
+
+if ($api.script.url && $api.script.url.getQuery()) {
+	var parameters = (function() {
+		//	Only allows single value for each name; surely sufficient for this purpose
+		var rv = {};
+		var string = String($api.script.url.getQuery());
+		string.split("&").forEach(function(pair) {
+			var tokens = pair.split("=");
+			rv[tokens[0]] = tokens[1];
+		});
+		return rv;
+	})();
+	if (parameters.relative) {
+		$script = $api.script.resolve(parameters.relative);
+		$script.load();
+	} else {
+		Packages.java.lang.System.err.println("Usage: jrunscript.js <script> [arguments]");
+		Packages.java.lang.System.exit(1);
+	}
+} else if ($arguments.length) {
+	$script = new $api.Script({ string: $arguments.shift() });
+	$script.load();
+} else {
 	Packages.java.lang.System.err.println("Usage: jrunscript.js <script> [arguments]");
 	Packages.java.lang.System.exit(1);
-} else {
-	$script = $script.resolve($arguments.shift());
-	$script.load();
 }

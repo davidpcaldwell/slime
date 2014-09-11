@@ -38,20 +38,24 @@
 
 	loader.run.spi.preprocess(function(underlying) {
 		return function(script) {
-			if (script.code) return;
-			if (script.name && script._in) {
-				//	ready
-			} else if (script._source && script.path) {
-				script._in = script._source.getResourceAsStream(script.path);
-				if (!script._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
-				script.name = script._source.toString() + ":" + script.path;
-			} else if (script.name && !script._in) {
-				throw new Error("script._in is null for name = " + script.name);
-			} else {
-				throw new Error("Unimplemented: script = " + script);
+			if (!script.code) {
+				if (script.name && script._in) {
+					//	ready
+				} else if (script._source && script.path) {
+					script._in = script._source.getResourceAsStream(script.path);
+					if (!script._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
+					script.name = script._source.toString() + ":" + script.path;
+				} else if (script.name && !script._in) {
+					throw new Error("script._in is null for name = " + script.name);
+				} else {
+					throw new Error("Unimplemented: script = " + script);
+				}
+				script.code = String(_streams.readString(script._in));
+				delete script._in;
 			}
-			script.code = String(_streams.readString(script._in));
-			delete script._in;
+			if (script.code.substring(0,2) == "#!") {
+				script.code = "//" + script.code;
+			}
 		}
 	})
 
@@ -74,7 +78,7 @@
 		}
 
 		if (!p._source) throw new TypeError("_source must be defined and not be null.");
-		
+
 		var Child = function(prefix) {
 			return new Loader({ _source: p._source.child(prefix) });
 		}
@@ -86,7 +90,7 @@
 					path: path
 				}
 			};
-			
+
 			this.Loader = loader.$api.Constructor.decorated(Child,p.Loader);
 		};
 

@@ -204,7 +204,7 @@
 		this.Loader = function(p) {
 			if (typeof(p) == "string") {
 				return new platform.Loader({
-					getCode: function(path) {
+					getScript: function(path) {
 						return { name: path, path: p+path, code: fetcher.getCode(p+path) };
 					}
 				});

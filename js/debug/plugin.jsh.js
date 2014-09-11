@@ -16,14 +16,14 @@ plugin({
 	},
 	load: function() {
 		jsh.debug = $loader.module("module.js", $loader.file("context.java.js"));
-		
+
 		jsh.java.log = $loader.file("logging.java.js", {
 			prefix: "inonit.script.jsh.Shell.log",
 			api: {
 				java: jsh.java
 			}
 		}).log;
-		
+
 		var Dumper = function(indent,p) {
 			var top;
 

@@ -182,7 +182,7 @@ END LICENSE
 								p.put("laptop.manufacturer", "dell");
 								p.store(buffer.writeBinary().java.adapt(), "No comment!");
 								buffer.close();
-								
+
 								var resource = new (buffer.readBinary()).Resource(new context.api.mime.Type("text","plain"));
 
 								var props = resource.read(Packages.java.util.Properties);

@@ -15,21 +15,27 @@
 //	TODO	remove obsolete command-line options unix, cygwin, src
 var parameters = jsh.script.getopts({
 	options: {
+		//	First two arguments are for the installer case, specifying directory in which to create the shell
 		to: jsh.file.Pathname,
 		replace: false,
-		//	below three arguments all are auto-detected later in the code
-		//	TODO	review whether this should be able to be specified on the command line and how it works if it is
-		native: false,
+
+		//	Below arguments are for post-installation: can be run from build script, by themselves post-installation, or when
+		//	installer is run
+		//
+		//	(optional) Describes location of source code; allows running post-installation on a shell that did not have source
+		//	code included in build
 		src: jsh.file.Pathname,
+
 		//	TODO	-unix and -cygwin cannot be turned off currently; if unspecified and autodetected, they will be added anyway
 		unix: false,
-		cygwin: false
+		cygwin: false,
+		native: false,
+		install: jsh.script.getopts.ARRAY(String)
 	}
 });
 
 debugger;
 
-//	TODO	below is affected by issue 61
 var zip = (jsh.script.loader.resource) ? jsh.script.loader.resource("build.zip") : null;
 
 if (!parameters.options.to && zip) {
@@ -42,19 +48,15 @@ if (!parameters.options.to && zip) {
 	//	TODO	if it is a symlink to a non-existent directory, what will happen?
 	jsh.shell.exit(1);
 } else if (!parameters.options.to && !zip) {
-	//	TODO	add sanity check to make sure that the directory ../.. is actually the installation directory
-	jsh.shell.echo("Doing post-installation for shell at " + jsh.script.file.parent.parent);
-	//	TODO	this rigamarole is necessary because of a false positive in softlink detection; figure it out and simplify
-	//	does not work:
-	//	parameters.options.to = jsh.script.file.parent.parent.pathname;
-	parameters.options.to = jsh.script.file.parent.parent.parent.getRelativePath(jsh.script.file.parent.parent.pathname.basename);
+	jsh.shell.echo("Doing post-installation for shell at " + jsh.shell.jsh.home);
 } else {
 	jsh.shell.echo("Installing to: " + parameters.options.to);
 }
 
 var realpath = function(pathname) {
 	//	TODO	is this really the simplest way to do this?
-	return new jsh.file.filesystem.java.adapt(pathname.java.adapt());
+	if (!pathname) throw new Error("pathname is " + pathname);
+	return jsh.file.filesystem.java.adapt(pathname.java.adapt());
 }
 
 var destinationIsSoftlink = function() {
@@ -64,7 +66,8 @@ var destinationIsSoftlink = function() {
 }
 
 if (
-	realpath(parameters.options.to).toString() != parameters.options.to.toString()
+	parameters.options.to
+	&& realpath(parameters.options.to).toString() != parameters.options.to.toString()
 	&& realpath(parameters.options.to.parent).toString() == parameters.options.to.parent.toString()
 ) {
 	destinationIsSoftlink();
@@ -101,29 +104,12 @@ if (zip) {
 		zip: zip.read(jsh.io.Streams.binary),
 		to: install
 	});
-	install.getRelativePath("plugins").createDirectory();
 } else {
-	install = parameters.options.to.directory;
+	install = jsh.shell.jsh.home;
 }
 
 var which = function(command) {
-	if (arguments.length > 1) throw new Error("Too many arguments.");
-	//	Search the path for a given command
-	for (var i=0; i<jsh.shell.PATH.pathnames.length; i++) {
-		var dir = jsh.shell.PATH.pathnames[i].directory;
-		if (dir) {
-			//	TODO	generalize extensions
-			if (dir.getFile(command)) {
-				return dir.getFile(command);
-			}
-			if (dir.getFile(command + ".exe")) {
-				return dir.getFile(command + ".exe");
-			}
-		} else {
-			//	jsh.shell.echo("Not a directory: " + jsh.shell.PATH.pathnames[i]);
-		}
-	}
-	return null;
+	return jsh.shell.PATH.getCommand(command);
 }
 
 //	TODO	Is this the best way to detect UNIX? We later use the jsh.shell.os.name property, but do we want to try a list of
@@ -135,18 +121,17 @@ if (uname) {
 	//	Re-use the detection logic that jsh uses for Cygwin, although this leaves it opaque in this script exactly how we are doing
 	//	it; we could run the uname we just found, or even check for its .exe extension
 	if (jsh.file.filesystems.cygwin) {
+		jsh.shell.echo("Detected Cygwin.");
 		parameters.options.cygwin = true;
 	}
 } else {
+	parameters.options.unix = false;
+	parameters.options.cygwin = false;
 	jsh.shell.echo("Did not detect UNIX-like operating system using PATH: " + jsh.shell.PATH);
 }
 
-if (!parameters.options.src) {
-	parameters.options.src = install.getRelativePath("src");
-}
-var src = parameters.options.src.directory;
+var src = (parameters.options.src) ? parameters.options.src.directory : install.getSubdirectory("src");
 
-//	Build bash launcher
 if (parameters.options.unix) {
 	var bash = which("bash");
 	if (bash) {
@@ -262,10 +247,6 @@ if (parameters.options.native) {
 			};
 
 			if (jsh.shell.os.name == "FreeBSD") {
-				//	The below also works on FreeBSD 9.0 with gcc, but the above seems more portable
-	//			return jni("freebsd", function(path) {
-	//				return ["-rpath", path.toString()];
-	//			});
 				return jni("freebsd", rpath);
 			} else if (jsh.shell.os.name == "Linux") {
 				return jni("linux", rpath);
@@ -322,12 +303,14 @@ if (parameters.options.native) {
 				}
 			);
 		}
+	} else {
+		jsh.shell.echo("Did not detect UNIX-like operating system (detected " + jsh.shell.os.name + "); not building native launcher.");
 	}
 }
 
 //	TODO	run test cases given in jsh.c
 
-//	Make tools executable
+//	TODO	if on UNIX-based system, could do more to build convenience scripts that either include shebangs or launch with bash
 if (which("chmod")) {
 	var makeExecutable = function(node) {
 		if (!arguments.callee.chmod) {
@@ -353,3 +336,10 @@ if (which("chmod")) {
 
 	if (false) makeExecutable(install.getSubdirectory("tools"));
 }
+
+parameters.options.install.forEach(function(name) {
+	jsh.shell.java({
+		jar: install.getFile("jsh.jar"),
+		arguments: [install.getRelativePath("etc/install/" + name + ".jsh.js")]
+	});
+});
