@@ -864,12 +864,76 @@ $exports.Hgrc = function(p) {
 		lines.push(name + " = " + value);
 	};
 
+	var normalizeSections = function(parsed) {
+		var section;
+		var bySection = {};
+		var after = [];
+		parsed.lines.forEach(function(entry) {
+			if (false) {
+			} else if (entry.header) {
+				if (section) {
+					section.index = after.length;
+				}
+				section = {};
+				if (false) {
+				} else if (!bySection[entry.header]) {
+					bySection[entry.header] = section;
+					after.push(entry);
+				} else {
+					section = bySection[entry.header];
+					section.append = true;
+					//	repeated; do not add
+				}
+			} else {
+				if (section && section.append) {
+					after.splice(section.index,0,entry);
+					section.index++;
+				} else {
+					after.push(entry);
+				}
+			}
+		});
+		return after.map(function(entry) {
+			return entry.line;
+		});
+	};
+
+	var normalizeLines = function(parsed) {
+		var indexByName = {};
+		var rv = [];
+		parsed.lines.forEach(function(entry) {
+			if (false) {
+			} else if (entry.section && entry.name) {
+				var key = entry.section + "." + entry.name;
+				if (typeof(indexByName[key]) != "undefined") {
+					rv[indexByName[key]] = entry;
+				} else {
+					indexByName[key] = rv.length;
+					rv.push(entry);
+				}
+			} else {
+				rv.push(entry);
+			}
+		});
+		return rv.map(function(entry) {
+			return entry.line;
+		});
+	}
+
+	this.normalize = function() {
+		//	Check for duplicate sections and eliminate
+		lines = normalizeSections(parse());
+		lines = normalizeLines(parse());
+	};
+
 	this.write = function() {
 		p.file.pathname.write(lines.join("\n"), { append: false });
 	};
 
 	this.unit = {
-		lines: lines,
 		parse: parse
 	};
+	this.unit.__defineGetter__("lines", function() {
+		return lines;
+	});
 };

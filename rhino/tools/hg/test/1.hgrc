@@ -13,3 +13,16 @@
 
 [ui]
 username = I use it <iuseit@aol.com>
+[foo]
+bar = baz
+[numbers]
+one = 1
+two = 2
+[languages]
+easier = javascript
+easy = java
+hard = C
+
+[numbers]
+three = 3
+four = 4

@@ -666,12 +666,18 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
+					//	Can't find easy way to write enough automated tests here; maybe just laziness?
 					var hgrc = new module.Hgrc({ file: $module.getResourcePathname("test/1.hgrc").file });
+					var LENGTH = 29;
 					verify(hgrc,"1.hgrc").get("ui.username").is("I use it <iuseit@aol.com>");
-					verify(hgrc,"1.hgrc").unit().lines().length().is(16);
+					verify(hgrc,"1.hgrc").unit().lines().length().is(LENGTH);
 					hgrc.set("ui","username","I also use it");
 					verify(hgrc,"1.hgrc").get("ui.username").is("I also use it");
-					verify(hgrc,"1.hgrc").unit().lines().length().is(18);
+					verify(hgrc,"1.hgrc").unit().lines().length().is(LENGTH+2);
+					hgrc.normalize();
+					//	Should remove the duplicate header
+					verify(hgrc,"1.hgrc").unit().lines().length().is(LENGTH-1);
+					verify(hgrc,"1.hgrc").get("ui.username").is("I also use it");
 				]]></script>
 			</li>
 		</ul>
