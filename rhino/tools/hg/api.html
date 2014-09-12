@@ -665,9 +665,14 @@ END LICENSE
 					<span class="type">__TYPE__</span>
 					<span>__DESCRIPTION__</span>
 				</div>
-				<script type="application/x.jsapi#tests">
+				<script type="application/x.jsapi#tests"><![CDATA[
 					var hgrc = new module.Hgrc({ file: $module.getResourcePathname("test/1.hgrc").file });
-				</script>
+					verify(hgrc,"1.hgrc").get("ui.username").is("I use it <iuseit@aol.com>");
+					verify(hgrc,"1.hgrc").unit().lines().length().is(16);
+					hgrc.set("ui","username","I also use it");
+					verify(hgrc,"1.hgrc").get("ui.username").is("I also use it");
+					verify(hgrc,"1.hgrc").unit().lines().length().is(18);
+				]]></script>
 			</li>
 		</ul>
 	</div>

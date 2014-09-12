@@ -818,7 +818,7 @@ $exports.Hgrc = function(p) {
 			get: function(name) {
 				var rv = null;
 				this.lines.forEach(function(line) {
-					var fullname = (line.section && line.name) ? line.section + line.name : null;
+					var fullname = (line.section && line.name) ? line.section + "." + line.name : null;
 					if (fullname == name) {
 						rv = line.value;
 					}
@@ -856,15 +856,20 @@ $exports.Hgrc = function(p) {
 
 	this.get = function(name) {
 		return parse().get(name)
-	}
+	};
 
 	this.set = function(section,name,value) {
 		//	TODO	more intelligent implementation
 		lines.push("[" + section + "]");
 		lines.push(name + " = " + value);
-	}
+	};
 
 	this.write = function() {
 		p.file.pathname.write(lines.join("\n"), { append: false });
-	}
+	};
+
+	this.unit = {
+		lines: lines,
+		parse: parse
+	};
 };
