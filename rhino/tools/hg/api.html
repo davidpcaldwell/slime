@@ -14,7 +14,7 @@ END LICENSE
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>Mercurial</title>
-	<link rel="stylesheet" type="text/css" href="../slime/loader/api/api.css" jsapi:link="local" />
+	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css" />
 </head>
 <body>
 	<div>
@@ -22,7 +22,7 @@ END LICENSE
 		<ul>
 			<li class="value">
 				<div class="name">install</div>
-				<span class="type"><a href="../slime/rhino/file/api.html#types.file">file</a></span>
+				<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
 				<span>A file representing the Mercurial executable.</span>
 			</li>
 		</ul>
@@ -30,12 +30,15 @@ END LICENSE
 			(function() {
 				var Context = function() {
 					this.api = new function() {
-						var js = $jsapi.module("../slime/js/object/");
-						var java = $jsapi.module("../slime/rhino/host/");
-						var io = $jsapi.module("../slime/rhino/io/", {
+						var js = $jsapi.module("../../../js/object/");
+						var java = $jsapi.module("../../../rhino/host/", {
+							$rhino: jsh.$jsapi.$rhino,
+							$java: jsh.$jsapi.$java
+						});
+						var io = $jsapi.module("../../../rhino/io/", {
 							api: {
 								java: java,
-								mime: $jsapi.module("../slime/js/mime/", {})
+								mime: $jsapi.module("../../../js/mime/", {})
 							}
 							,$rhino: jsh.$jsapi.$rhino
 							,$java: new Packages.inonit.script.runtime.io.Streams()
@@ -48,7 +51,7 @@ END LICENSE
 						this.js = js;
 						this.io = io;
 
-						this.file = $jsapi.module("../slime/rhino/file/", {
+						this.file = $jsapi.module("../../../rhino/file/", {
 							api: {
 								js: js,
 								java: java,
@@ -57,7 +60,7 @@ END LICENSE
 							cygwin: (String(jsh.shell.properties.object.cygwin) == "undefined") ? function(){}() : jsh.shell.properties.object.cygwin
 						});
 
-						this.shell = $jsapi.module("../slime/rhino/shell/", {
+						this.shell = $jsapi.module("../../../rhino/shell/", {
 							api: {
 								js: js,
 								java: java,
@@ -174,9 +177,9 @@ END LICENSE
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="value">
-								<span class="type"><a href="../slime/rhino/file/api.html#types.directory">directory</a></span>
+								<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
 								or
-								<span class="type"><a href="../slime/rhino/file/api.html#types.Pathname">Pathname</a></span>
+								<span class="type"><a href="../../../rhino/file/api.html#types.Pathname">Pathname</a></span>
 								<span>
 									A destination. If the destination is a Pathname and the directory does not exist, it will be
 									created (but its parent directory must exist).
@@ -259,7 +262,7 @@ END LICENSE
 			<ul>
 				<li class="value">
 					<div class="name">directory</div>
-					<span class="type"><a href="../slime/rhino/file/api.html#types.directory">directory</a></span>
+					<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
 					<span>The root directory of this <code>Repository</code>.</span>
 				</li>
 				<li class="function">
@@ -585,7 +588,7 @@ END LICENSE
 							<ul>
 								<li class="value">
 									<div class="name">local</div>
-									<span class="type"><a href="../slime/rhino/file/api.html#types.directory">directory</a></span>
+									<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
 									<span>The location of the repository.</span>
 								</li>
 							</ul>
@@ -621,7 +624,7 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type"><a href="../slime/rhino/file/api.html#types.directory">directory</a></span>
+							<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
 							<span>The directory to initialize as a Mercurial repository.</span>
 						</li>
 					</ol>
@@ -636,6 +639,34 @@ END LICENSE
 					var repository = module.init(init);
 					repository.commit({ addremove: true, message: "test" });
 					//	TODO	add log command and test based on its result
+				</script>
+			</li>
+			<li class="constructor" jsapi:id="Hgrc">
+				<div class="name">Hgrc</div>
+				<span>A Mercurial configuration file.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">file</div>
+									<span class="type"><a href="../../file/api.html#types.file">file</a></span>
+									<span>The file to parse.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var hgrc = new module.Hgrc({ file: $module.getResourcePathname("test/1.hgrc").file });
 				</script>
 			</li>
 		</ul>

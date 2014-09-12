@@ -226,6 +226,7 @@ $exports.languages = new function() {
 	this.cpp = cplusplus;
 	this.c = new BeginEnd("/*","*/");
 	this.def = new Line(";");
+	this.hgrc = new Line("#");
 }
 
 $exports.SourceFile = function(lines,format,template) {

@@ -799,4 +799,72 @@ $exports.init = function(dir) {
 
 	});
 	return new $exports.Repository(dir);
-}
+};
+
+$exports.Hgrc = function(p) {
+	var headerMatch = /^\[(.*)\]/;
+	var valueMatch = /^(\S+)(?:\s*)\=(?:\s*)(.+)$/
+	var continueMatch = /^(\s+)(.*)$/
+	var lines = p.file.read(String).split("\n");
+
+	var parse = function() {
+		//	From man hgrc:
+		//	Each line contains one entry. If the lines that follow are indented, they are treated as continuations of that
+		//	entry. Leading whitespace is removed from values. Empty lines are skipped. Lines beginning with # or ; are ignored
+		//	and may be used to provide comments
+
+		var rv = {
+			lines: [],
+			get: function(name) {
+				var rv = null;
+				this.lines.forEach(function(line) {
+					var fullname = (line.section && line.name) ? line.section + line.name : null;
+					if (fullname == name) {
+						rv = line.value;
+					}
+				});
+				return rv;
+			}
+		};
+
+		var section;
+		lines.forEach(function(line) {
+			var current = { line: line };
+			rv.lines.push(current);
+			if (false) {
+			} else if (line.substring(0,1) == "#" || line.substring(0,1) == ";") {
+			} else if (headerMatch.test(line)) {
+				var match = headerMatch.exec(line);
+				current.header = match[1];
+				section = { name: match[1], lines: [] };
+			} else if (valueMatch.test(line)) {
+				var match = valueMatch.exec(line);
+				//	TODO	what if section is undefined?
+				section.lines.push(current);
+				current.section = section.name;
+				current.name = match[1];
+				current.value = match[2];
+			} else if (continueMatch.test(line)) {
+				throw new Error("Unimplemented: line continuation.");
+			} else if (!line) {
+			} else {
+				//	jsh.shell.echo("No match: " + line);
+			}
+		});
+		return rv;
+	};
+
+	this.get = function(name) {
+		return parse().get(name)
+	}
+
+	this.set = function(section,name,value) {
+		//	TODO	more intelligent implementation
+		lines.push("[" + section + "]");
+		lines.push(name + " = " + value);
+	}
+
+	this.write = function() {
+		p.file.pathname.write(lines.join("\n"), { append: false });
+	}
+};
