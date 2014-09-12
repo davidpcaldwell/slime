@@ -47,11 +47,11 @@ if (jsh.script.arguments.length == 0) {
 			]
 		}
 	})();
-	//	TODO	adds hook even if it is already there
 	settings.set("hooks","precommit.slime",runscript.concat([
 		"jsh/etc/develop.jsh.js",
 		"commit"
 	]).join(" "));
+	settings.normalize();
 	settings.write();
 } else if (jsh.script.arguments.length == 1 && jsh.script.arguments[0] == "commit") {
 	var code = jsh.script.loader.module("code/module.js");
