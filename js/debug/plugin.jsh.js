@@ -17,49 +17,12 @@ plugin({
 	load: function() {
 		jsh.debug = $loader.module("module.js", $loader.file("context.java.js"));
 
-		var _Level = Packages.java.util.logging.Level;
-
-		var jlog = function(name,_level) {
-			//	TODO	we do not provide a way to log a Throwable in the same way as inonit.system.Logging
-			var mask = arguments[2];
-			var substitutions = jsh.java.Array.create({
-				array: Array.prototype.slice.call(arguments,3)
-			});
-
-			var _logger = Packages.java.util.logging.Logger.getLogger(name);
-			if (_logger.isLoggable(_level)) {
-				var _message = Packages.java.lang.String.format(mask, substitutions);
-				_logger.log(_level, _message);
+		jsh.java.log = $loader.file("logging.java.js", {
+			prefix: "inonit.script.jsh.Shell.log",
+			api: {
+				java: jsh.java
 			}
-		};
-
-		var levels = ["SEVERE","WARNING","INFO","CONFIG","FINE","FINER","FINEST"];
-
-		var addLevelsTo = function(object) {
-			levels.forEach(function(item) {
-				this[item] = function() {
-					this.log.apply(this,[_Level[item]].concat(Array.prototype.slice.call(arguments)));
-				};
-			}, object);
-		}
-
-		var jlogger = function(name) {
-			return new function() {
-				this.log = function(_level) {
-					jlog.apply(null, [name,_level].concat(Array.prototype.slice.call(arguments,1)));
-				};
-
-				addLevelsTo(this);
-			};
-		};
-
-		jsh.java.log = function() {
-			Packages.java.lang.System.err.println("Entered " + jsh.java.log);
-			jlog.apply(null, ["inonit.script.jsh.Shell.log", _Level.INFO].concat(Array.prototype.slice.call(arguments)));
-		};
-		jsh.java.log.named = function(name) {
-			return jlogger("inonit.script.jsh.Shell.log." + name);
-		};
+		}).log;
 
 		var Dumper = function(indent,p) {
 			var top;

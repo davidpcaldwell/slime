@@ -521,7 +521,7 @@ if (!destination.installer) {
 	if (getSetting("jsh.build.downloads")) {
 		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
 	}
-	Packages.java.lang.System.err.println("subenv = " + JSON.stringify(subenv));
+	debug("subenv = " + JSON.stringify(subenv));
 	command.push({ env: subenv });
 	var status = runCommand.apply(this,command);
 	if (status != 0) {

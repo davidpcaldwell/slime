@@ -13,7 +13,8 @@
 var parameters = jsh.script.getopts({
 	options: {
 		to: jsh.file.Pathname,
-		servletapi: jsh.file.Pathname,
+		recursive: false,
+		servletapi: jsh.shell.jsh.home.getRelativePath("lib/tomcat/lib/servlet-api.jar"),
 		compile: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		resources: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		norhino: false,

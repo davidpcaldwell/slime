@@ -40,7 +40,7 @@ plugin({
 				http: function() {
 					return jsh.http;
 				},
-				addClasses: jsh.loader.addClasses
+				addClasses: jsh.loader.java.add
 			},
 			directory: jsh.shell.PWD,
 			arguments: jsh.java.Array.adapt($jsh.getInvocation().getArguments()).map(function(s) { return String(s); }),

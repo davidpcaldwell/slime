@@ -26,6 +26,11 @@ if (!jsh.httpd || !jsh.httpd.Tomcat) {
 	jsh.shell.exit(1);
 }
 
+if (!jsh.java.Thread) {
+	jsh.shell.echo("Cannot run browser tests; jsh.java.Thread not implemented; use Rhino, not Nashorn", { stream: jsh.shell.stderr });
+	jsh.shell.exit(1);
+}
+
 var all = [
 	"loader/test/data/a/", "loader/test/data/b/", "loader/test/data/c/main.js",
 	"loader/test/data/coffee/",

@@ -114,7 +114,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 
 if (!parameters.options.notest) {
 	parameters.options.classpath.forEach( function(pathname) {
-		jsh.script.addClasses(pathname);
+		jsh.loader.java.add(pathname);
 	} );
 
 	var ENVIRONMENT = (function() {
