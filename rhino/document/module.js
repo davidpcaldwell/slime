@@ -112,6 +112,8 @@ $exports.Document = function(p) {
 		return parse(new Packages.org.xml.sax.InputSource(p.stream.java.adapt()));
 	} else if (p.string) {
 		return parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(p.string)));
+	} else if (p.file) {
+		return parse(new Packages.org.xml.sax.InputSource(p.file.resource.read.binary().java.adapt()));
 	} else if (p._document) {
 		return toNode(p._document);
 	} else {
