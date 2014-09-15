@@ -30,11 +30,113 @@ var parameters = jsh.script.getopts({
 		unix: false,
 		cygwin: false,
 		native: false,
-		install: jsh.script.getopts.ARRAY(String)
+		install: jsh.script.getopts.ARRAY(String),
+		
+		//	Do not invoke directly; program self-invokes using sudo on Mac OS X to modify JDK to allow building of native launcher
+		"OSX-add-JNI-to-JVMCapabilities": false 
 	}
 });
 
-debugger;
+var osx = new function() {
+	var jdk = jsh.shell.java.home.parent;
+	var parse = function() {
+		var file = jdk.parent.getFile("Info.plist");
+		var plist = new jsh.document.Document({ file: file });
+		var capabilitiesArray = (function(plist) {
+			var top = plist.document.getElement();
+			var dict = top.children.filter(function(node) {
+				return node.element && node.element.type.name == "dict";
+			})[0];
+			var isCapabilitiesKey = function(child) {
+				return child.element && child.element.type.name == "key" && child.children[0].getString() == "JVMCapabilities";
+			};
+			var javavm = dict.children.filter(function(node) {
+				return node.element && node.element.type.name == "dict" && node.children.filter(isCapabilitiesKey)[0];
+			})[0];
+			var next;
+			for (var i=0; i<javavm.children.length; i++) {
+				if (isCapabilitiesKey(javavm.children[i])) {
+					next = true;
+				} else if (next && javavm.children[i].element) {
+					return javavm.children[i];
+				}
+			}
+		})(plist);
+		var indentInner = capabilitiesArray.children[0].getString();
+		var capabilities = [];
+		for (var i=0; i<capabilitiesArray.children.length; i++) {
+			if (capabilitiesArray.children[i].element) {
+				capabilities.push(capabilitiesArray.children[i].children[0].getString());
+			}
+		}
+		return {
+			file: file,
+			plist: plist,
+			element: capabilitiesArray,
+			array: capabilities,
+			indent: {
+				inner: indentInner
+			}
+		}
+	}
+	
+	this.check = function() {
+		//	Check whether we can build native launcher
+		var parsed = parse();
+		jsh.shell.echo("Capabilities: [" + parsed.array + "]");
+		if (parsed.array.indexOf("JNI") == -1) {
+			var SCRIPT = jsh.shell.TMPDIR.createTemporary({ prefix: "askpass.", suffix: ".bash" });
+			SCRIPT.remove();
+			SCRIPT.pathname.write("#!/bin/bash"
+				+ "\n" + jsh.shell.java.launcher + " -jar " + jsh.shell.jsh.home.getRelativePath("jsh.jar")
+				+ " " + jsh.shell.jsh.home.getRelativePath("src/rhino/tools/askpass.jsh.js")
+				+ " " + "\"Enter password to modify JDK installation\""
+			);
+			jsh.shell.run({
+				command: "chmod",
+				arguments: ["+x", SCRIPT.toString()]
+			});
+			jsh.shell.echo("Cannot build Mac OS X native installer; JDK must be modified to include JNI capability.");
+			jsh.shell.echo("To build native launcher, enter password in the graphical dialog displayed.");
+			//	TODO	jsh.shell.os.sudo should be adapted for this purpose
+			jsh.shell.run({
+				command: "sudo",
+				arguments: ["-k", "-A", jsh.shell.java.launcher, "-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"), jsh.script.file, "-OSX-add-JNI-to-JVMCapabilities"],
+				environment: jsh.js.Object.set({}, jsh.shell.environment, {
+					SUDO_ASKPASS: SCRIPT.toString()
+				})
+			});
+			var success = (parse().array.indexOf("JNI") != -1);
+			if (!success) {
+				jsh.shell.echo("Could not build native launcher: " + parsed.file + " does not contain JNI in JVMCapabilities.");
+				jsh.shell.exit(1);
+			}
+		}
+	};
+	
+	this.fix = function() {
+		var parsed = parse();
+		parsed.element.children.splice(parsed.element.children.length-1,0,
+			new jsh.js.document.Text({ text: parsed.indent.inner }),
+			new jsh.js.document.Element({
+				type: {
+					name: "string"
+				},
+				children: [
+					new jsh.js.document.Text({ text: "JNI" })
+				]
+			})
+		);
+		jsh.shell.echo("Would write to " + parsed.file);
+		jsh.shell.echo(parsed.plist);
+		parsed.file.pathname.write(parsed.plist.toString(), { append: false });
+	}
+}
+
+if (parameters.options["OSX-add-JNI-to-JVMCapabilities"]) {
+	osx.fix();
+	jsh.shell.exit(0);
+}
 
 var zip = (jsh.script.loader.resource) ? jsh.script.loader.resource("build.zip") : null;
 
@@ -251,6 +353,7 @@ if (parameters.options.native) {
 			} else if (jsh.shell.os.name == "Linux") {
 				return jni("linux", rpath);
 			} else if (jsh.shell.os.name == "Mac OS X") {
+				osx.check();
 				if (jdk.getSubdirectory("include")) {
 					return jni("darwin", rpath);
 				} else {
