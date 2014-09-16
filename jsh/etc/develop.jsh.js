@@ -19,61 +19,7 @@ if (jsh.script.arguments.length == 0) {
 		jsh.shell.echo("Not found: " + hgrc);
 		jsh.shell.exit(1);
 	}
-	//	TODO	Move Hgrc implementation to the hg module
-	var Hgrc = function(file) {
-		var headerMatch = /^\[(.*)\]/;
-		var valueMatch = /^(\S+)(?:\s*)\=(?:\s*)(.+)$/
-		var continueMatch = /^(\s+)(.*)$/
-		var lines = file.read(String).split("\n");
-		var sections = {};
-		lines.forEach(function(line) {
-			//Each line contains one entry. If the lines that follow are indented, they are treated as continuations of that entry.
-			//Leading whitespace is removed from values. Empty lines are skipped. Lines beginning with # or ; are ignored and may be used to
-			//provide comments
-			if (!line) {
-			} else if (line.substring(0,1) == "#" || line.substring(0,1) == ";") {
-			} else if (headerMatch.test(line)) {
-				var match = headerMatch.exec(line);
-				if (!sections[match[1]]) {
-					sections[match[1]] = [];
-				}
-				section = sections[match[1]];
-			} else if (valueMatch.test(line)) {
-				var match = valueMatch.exec(line);
-				section.push({
-					name: match[1],
-					value: match[2]
-				});
-			} else if (continueMatch.test(line)) {
-				throw new Error("Unimplemented: line continuation.");
-			} else if (!line) {
-			} else {
-				jsh.shell.echo("No match: " + line);
-			}
-		});
-
-		this.set = function(section,name,value) {
-			if (!sections[section]) {
-				sections[section] = [];
-			}
-			sections[section].push({ name: name, value: value });
-		}
-
-		this.write = function() {
-			var lines = [];
-			for (var x in sections) {
-				if (lines.length != 0) {
-					lines.push("");
-				}
-				lines.push("[" + x + "]");
-				lines = lines.concat(sections[x].map(function(entry) {
-					return entry.name + " = " + entry.value;
-				}));
-			}
-			return lines.join("\n");
-		}
-	};
-	var settings = new Hgrc(hgrc.file);
+	var settings = new hg.Hgrc({ file: hgrc.file });
 	var runscript = (function() {
 		if (jsh.shell.jsh.home) {
 			return [
@@ -101,13 +47,12 @@ if (jsh.script.arguments.length == 0) {
 			]
 		}
 	})();
-	//	TODO	adds hook even if it is already there
 	settings.set("hooks","precommit.slime",runscript.concat([
 		"jsh/etc/develop.jsh.js",
 		"commit"
 	]).join(" "));
-	jsh.shell.echo(settings.write());
-	hgrc.write(settings.write(), { append: false });
+	settings.normalize();
+	settings.write();
 } else if (jsh.script.arguments.length == 1 && jsh.script.arguments[0] == "commit") {
 	var code = jsh.script.loader.module("code/module.js");
 	var failed = false;
