@@ -54,11 +54,22 @@
 		}
 	}
 
-	var Loader = function(p) {
-		return new jsh.io.Loader(p);
-	}
+//	var Loader = function(p) {
+//		return new jsh.io.Loader(p);
+//	}
+//
+//	this.Loader = Loader;
 
-	this.Loader = Loader;
+	var Loader;
+	
+	Object.defineProperty(this, "Loader", {
+		set: function(v) {
+			Loader = v;
+		},
+		get: function() {
+			return Loader;
+		}
+	});
 
 	this.plugin = new function() {
 		this.read = function(_code,scope) {
