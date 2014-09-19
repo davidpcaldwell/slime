@@ -14,7 +14,7 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>Browser slime loader</title>
+	<title>SLIME: browser loader</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
@@ -23,84 +23,89 @@ END LICENSE
 		The SLIME browser-based code loader.
 	</div>
 	<div>
-		For configuration information, see <a href="#configuration">below</a>.
+		<h1><a name="configuration">Configuration</a></h1>
+		<div>
+			The <code>inonit.loader</code> module is configured specially, given that it bootstraps the module system. To configure
+			the module, one must create a global <code>inonit</code> object with a <code>loader</code> property containing
+			configuration information. If this <code>inonit.loader</code> object is present, its properties are used to create the
+			functioning <code>inonit.loader</code> object (which replaces the configuration object).
+		</div>
+		<div>
+			The following properties are used for configuration:
+			<ul>
+				<li class="function">
+					<div class="name">debug</div>
+					<span>
+						(optional; if unspecified, a default implementation that does nothing will be supplied)
+						A one-argument function that is passed a string argument corresponding to a message
+						this module would like to log.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A message to emit.</span>
+							</li>
+						</ol>
+					</div>
+				</li>
+				<li class="value">
+					<div class="name">XMLHttpRequest</div>
+					<span class="type">function</span>
+					<span>
+						The implementation of <code>XMLHttpRequest</code> to use. By default, the
+						implementation attempts to use the native implementation in the browser (including ActiveX implementations).
+					</span>
+				</li>
+				<li class="function">
+					<div class="name">callback</div>
+					<span>
+						A callback function that will be invoked when the loader finishes initializing. The function will be
+						invoked with the loader as <code>this</code>.
+					</span>
+				</li>
+			</ul>
+		</div>
 	</div>
 	<div>
 		<h1>Exports</h1>
 		<ul>
-			<li class="function">
-				<div class="name">module</div>
+			<li class="function" jsapi:id="run">
+				<div class="name"><a id="exports.run">run</a></div>
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
 				<span>
-					Invokes the platform loader's <a href="../api.html#exports.module"><code>module</code></a> method with an
-					argument suitable for locating and loading code in a browser environment.
+					Note that the browser loader adds the ability to pass a string as the first argument.
 				</span>
-				<div class="arguments">
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('global/run/arguments')">
 					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>
-								The path of the module's main file. Other files the main file may load will be loaded from the
-								base location of the main file.
-							</span>
-						</li>
-						<li class="object">
-							<span>
-								An argument providing configuration for the script. If the argument is an object with both a
-								<code>$context</code> and <code>$exports</code> property, it is interpreted as the second argument
-								to the platform loader's <code>module</code> method. Otherwise, it is interpreted as a
-								<code>$context</code> object.
-							</span>
-							<div class="object">
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">$context</div>
-										<span class="type">object</span>
-										<span>The object to supply to the module as its <code>$context</code>.</span>
-									</li>
-									<li class="value">
-										<div class="name">$exports</div>
-										<span class="type">object</span>
-										<span>The object to supply to the module to contain its <code>$exports</code>.</span>
-									</li>
-								</ul>
-							</div>
-							OR
-							<div class="value">
-								<span class="type">object</span>
-								<span>The object to supply to the module as its <code>$context</code>.</span>
-							</div>
-						</li>
-					</ol>
+					See the platform loader's <a href="../../loader/api.html#exports.run">run</a> method.
 				</div>
-				<div class="returns">
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name"><a id="exports.file">file</a></div>
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
+				<span>
+					Note that the browser loader adds the ability to pass a string as the first argument.
+				</span>
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('global/file/arguments')">
+					<div class="label">Arguments</div>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
+				</div>
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/returns')">
 					<div class="label">Returns</div>
-					The return value of the platform loader's <code>module</code> method.
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
 				</div>
 			</li>
 			<li class="function">
-				<div class="name">script</div>
-				<span>Invokes the platform loader's <code>script</code> method.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span> The path from which to load the script.
-						</li>
-						<li class="value">
-							The second argument to the platform loader's <code>script</code> method.
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					The return value of the platform loader's <code>script</code> method.
+				<div class="name">module</div>
+				<div jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/description')">
+					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
 				</div>
 			</li>
 			<li class="function">
 				<div class="name">namespace</div>
-				<span>Invokes the platform loader's <code>namespace</code> method.</span>
+				<span>Invokes the platform loader's <a href="../../loader/api.html"><code>namespace</code></a> method.</span>
 				<script type="application/x.jsapi#tests">
 					test(typeof(window.foo) == "undefined");
 					var ns = inonit.loader.namespace("foo.bar.baz");
@@ -118,10 +123,6 @@ END LICENSE
 					test(f() == window);
 					test(x.f() != window);
 				</script>
-			</li>
-			<li class="value">
-				<div class="name">base</div>
-				<span class="type">string</span> The "base" URL of the module system: the URL from which the system was loaded.
 			</li>
 			<li class="object">
 				<div class="name">nugget</div>
@@ -172,25 +173,6 @@ END LICENSE
 			</li>
 			-->
 		</ul>
-	</div>
-	<div>
-		<h1><a name="configuration">Configuration</a></h1>
-		<div>
-			The <code>inonit.loader</code> module is configured specially, given that it bootstraps the module system. To configure
-			the module, one must create a global <code>inonit</code> object with a <code>loader</code> property, and give that
-			object properties. If this <code>inonit.loader</code> object is present, its properties are used to create the
-			functioning <code>inonit.loader</code> object.
-		</div>
-		<div>
-			The following properties are used:
-			<ul>
-				<li><code>debug(message)</code>: A one-argument function that is passed a string argument corresponding to a message
-					this module would like to log. By default, this function does nothing, and so nothing is logged.</li>
-				<li><code>XMLHttpRequest</code>: The implementation of <code>XMLHttpRequest</code> to use. By default, the
-					implementation attempts to use the native implementation in the browser (including ActiveX implementations).
-				</li>
-			</ul>
-		</div>
 	</div>
 </body>
 </html>

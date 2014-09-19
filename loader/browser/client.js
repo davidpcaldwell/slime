@@ -12,33 +12,35 @@
 
 (function() {
 	var $context = (window.inonit && window.inonit.loader) ? window.inonit.loader : {
-		debug: function(message) {},
-		XMLHttpRequest: (function() {
-			if (typeof(window.XMLHttpRequest) == "undefined") {
-				return function() {
-					var req = false;
-					try {
-						req = new ActiveXObject("Msxml2.XMLHTTP");
-					} catch(e) {
-						try {
-							req = new ActiveXObject("Microsoft.XMLHTTP");
-						} catch(e) {
-							debug("Error instantiating XMLHttpRequest using ActiveX");
-							throw e;
-						}
-					}
-					return req;
-				}
-			} else {
-				return window.XMLHttpRequest;
-			}
-		})(),
-		url: void(0),
-		callback: function(created) {}
 	};
+	if (!$context.debug) $context.debug = function(message) {};
+	if (!$context.XMLHttpRequest) $context.XMLHttpRequest = (function() {
+		if (typeof(window.XMLHttpRequest) == "undefined") {
+			return function() {
+				var req = false;
+				try {
+					req = new ActiveXObject("Msxml2.XMLHTTP");
+				} catch(e) {
+					try {
+						req = new ActiveXObject("Microsoft.XMLHTTP");
+					} catch(e) {
+						debug("Error instantiating XMLHttpRequest using ActiveX");
+						throw e;
+					}
+				}
+				return req;
+			}
+		} else {
+			return window.XMLHttpRequest;
+		}
+	})();
+	//	Undocumented for now; seemingly unused
+	if (!$context.url) $context.url = void(0);
+	if (!$context.callback) $context.callback = function(){};
+
 	var $exports = (function() {
 		if (!window.inonit) window.inonit = {};
-		if (window.inonit.loader && window.inonit.loader.module && window.inonit.loader.script && window.inonit.loader.namespace) {
+		if (window.inonit.loader && window.inonit.loader.run && window.inonit.loader.file && window.inonit.loader.module) {
 			throw new Error("Unimplemented: trying to reload inonit.loader");
 		}
 		window.inonit.loader = {};
@@ -212,13 +214,6 @@
 			return platform.namespace(name);
 		}
 
-		//	TODO	Experimental API currently used by httpd, perhaps should be kept (and possibly made more robust)
-
-		//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
-		//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
-
-		this.base = bootstrap.base;
-
 		this.nugget = new function() {
 			//	This is provided so that others do not have to go through the rigamarole of determining how to instantiate this.
 			this.XMLHttpRequest = XMLHttpRequest;
@@ -226,6 +221,14 @@
 			//	DRY:	Other scripts may want to use this (already have examples)
 			this.getCurrentScript = getCurrentScript;
 		};
+
+		//	TODO	Experimental API currently used by httpd, perhaps should be kept (and possibly made more robust)
+
+		//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
+		//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
+
+		//	Undocumented
+		this.base = bootstrap.base;
 
 		//	For use in scripts that are loaded directly by the browser rather than via this loader
 		this.$api = platform.$api;
@@ -271,6 +274,6 @@
 		//	TODO set to dontenum if possible
 		this.$sdk = sdk;
 
-		$context.callback(this);
+		$context.callback.call(this);
 	}).call($exports);
 })();
