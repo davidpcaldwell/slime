@@ -134,8 +134,8 @@
 			p.$context = arguments[1];
 		}
 		var loader = (function(format) {
-			if (format.slime) return new Loader({ _packed: format.slime });
-			if (format.base) return new Loader({ _unpacked: format.base });
+			if (format.slime) return new rhinoLoader.Loader({ _packed: format.slime });
+			if (format.base) return new rhinoLoader.Loader({ _unpacked: format.base });
 			throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
 		})(format);
 		var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
