@@ -54,23 +54,6 @@
 		}
 	}
 
-//	var Loader = function(p) {
-//		return new jsh.io.Loader(p);
-//	}
-//
-//	this.Loader = Loader;
-
-//	var Loader;
-//	
-//	Object.defineProperty(this, "Loader", {
-//		set: function(v) {
-//			Loader = v;
-//		},
-//		get: function() {
-//			return Loader;
-//		}
-//	});
-
 	this.plugin = new function() {
 		this.read = function(_code,scope) {
 			var loader = new rhinoLoader.Loader({ _source: _code.getScripts() });

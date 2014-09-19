@@ -211,12 +211,6 @@ this.jsh = new function() {
 
 		jsh.io = io;
 		context.api.io = io;
-		
-//		var Loader = function(p) {
-//			return new io.Loader(p);
-//		}
-//
-//		loader.Loader = Loader;
 
 		jsh.file = loader.bootstrap("rhino/file", context);
 	})();
