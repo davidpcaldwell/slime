@@ -11,48 +11,39 @@
 //	END LICENSE
 
 (function() {
-	if (!window.inonit) {
-		window.inonit = {};
-	}
-	var inonit = window.inonit;
-
-	if (!inonit.loader) {
-		//	we will create this object after specifying defaults below
-	} else if (inonit.loader && inonit.loader.module && inonit.loader.script && inonit.loader.namespace) {
-		//	already loaded, what to do?
-		throw "Unimplemented";
-	} else {
-		//	caller created the object inonit.module to configure this object before usage
-		//	debug/XMLHttpRequest/modes are configurable; see initialization below.
-	}
-
-	var debug = (inonit.loader && inonit.loader.debug) ? inonit.loader.debug : function(message) {};
-
-	var XMLHttpRequest = (inonit.loader && inonit.loader.XMLHttpRequest) ? inonit.loader.XMLHttpRequest : (function() {
-		if (typeof(window.XMLHttpRequest) == "undefined") {
-			return function() {
-				var req = false;
-				try {
-					req = new ActiveXObject("Msxml2.XMLHTTP");
-				} catch(e) {
+	var $context = (window.inonit && window.inonit.loader) ? window.inonit.loader : {
+		debug: function(message) {},
+		XMLHttpRequest: (function() {
+			if (typeof(window.XMLHttpRequest) == "undefined") {
+				return function() {
+					var req = false;
 					try {
-						req = new ActiveXObject("Microsoft.XMLHTTP");
+						req = new ActiveXObject("Msxml2.XMLHTTP");
 					} catch(e) {
-						debug("Error instantiating XMLHttpRequest using ActiveX");
-						throw e;
+						try {
+							req = new ActiveXObject("Microsoft.XMLHTTP");
+						} catch(e) {
+							debug("Error instantiating XMLHttpRequest using ActiveX");
+							throw e;
+						}
 					}
+					return req;
 				}
-				return req;
+			} else {
+				return window.XMLHttpRequest;
 			}
-		} else {
-			return window.XMLHttpRequest;
+		})(),
+		url: void(0),
+		callback: function(created) {}
+	};
+	var $exports = (function() {
+		if (!window.inonit) window.inonit = {};
+		if (window.inonit.loader && window.inonit.loader.module && window.inonit.loader.script && window.inonit.loader.namespace) {
+			throw new Error("Unimplemented: trying to reload inonit.loader");
 		}
+		window.inonit.loader = {};
+		return window.inonit.loader;
 	})();
-
-	var modes = (inonit.loader && inonit.loader.modes) ? inonit.loader.modes : {};
-	//	TODO	probably rename these properties to runner and loader or something
-	if (!modes.module) modes.module = "evalScope";
-	if (!modes.execute) modes.execute = "call";
 
 	var Bootstrap = function(base) {
 		this.base = base;
@@ -100,14 +91,14 @@
 	}
 
 	var bootstrap = (function() {
-		return (inonit.loader && inonit.loader.url) ? new Bootstrap(inonit.loader.url) : getCurrentScript();
+		return ($context.url) ? new Bootstrap($context.url) : getCurrentScript();
 	})();
 
 	var callback = (inonit.loader && inonit.loader.callback) ? inonit.loader.callback : function(){};
 
 	//	Now even if the object existed before, we have obtained the specified properties and we replace the existing object with
 	//	this one
-	inonit.loader = new function() {
+	(function() {
 
 		var fetcher = new function() {
 			var downloads = {};
@@ -273,11 +264,13 @@
 		//	Used by loader/browser/tools/offline.html, which may be obsolete
 
 		this.setLoader = function(loader) {
+			//	TODO	this would not work currently; fetch is private
 			fetch.loader = loader;
 		}
 
 		//	TODO set to dontenum if possible
 		this.$sdk = sdk;
-	};
-	callback(inonit.loader);
+
+		$context.callback(this);
+	}).call($exports);
 })();
