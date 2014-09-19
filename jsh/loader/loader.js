@@ -60,20 +60,20 @@
 //
 //	this.Loader = Loader;
 
-	var Loader;
-	
-	Object.defineProperty(this, "Loader", {
-		set: function(v) {
-			Loader = v;
-		},
-		get: function() {
-			return Loader;
-		}
-	});
+//	var Loader;
+//	
+//	Object.defineProperty(this, "Loader", {
+//		set: function(v) {
+//			Loader = v;
+//		},
+//		get: function() {
+//			return Loader;
+//		}
+//	});
 
 	this.plugin = new function() {
 		this.read = function(_code,scope) {
-			var loader = new Loader({ _source: _code.getScripts() });
+			var loader = new rhinoLoader.Loader({ _source: _code.getScripts() });
 			return loader.run("plugin.jsh.js", scope);
 		};
 		this.run = function(_code,path,scope,target) {
@@ -96,7 +96,7 @@
 			);
 		};
 		this.module = function(_code,main,context) {
-			var loader = new Loader({ _code: _code });
+			var loader = new rhinoLoader.Loader({ _code: _code });
 			return loader.module(main, context);
 		};
 		this.addClasses = function(_code) {
