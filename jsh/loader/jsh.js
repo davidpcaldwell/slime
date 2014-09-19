@@ -89,8 +89,8 @@ this.jsh = new function() {
 			getLoader: function() {
 				return loader;
 			},
-			getPlugins: function(file) {
-				return Packages.inonit.script.jsh.Installation.Plugin.get(file);
+			getPlugins: function(_file) {
+				return Packages.inonit.script.jsh.Installation.Plugin.get(_file);
 			}
 		};
 	})();
@@ -121,6 +121,7 @@ this.jsh = new function() {
 		this.module = loader.module;
 		this.namespace = loader.namespace;
 
+		//	experimental interface and therefore currently undocumented
 		this.addFinalizer = function(f) {
 			addFinalizer(f);
 		}
