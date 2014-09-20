@@ -555,6 +555,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 
 		modules.forEach( function(module) {
 			if (module.api) command.add("-api",String(new File(SLIME_SRC,module.path).getCanonicalPath()));
+			if (module.test) command.add("-test",String(new File(SLIME_SRC,module.path).getCanonicalPath()));
 		});
 
 		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());

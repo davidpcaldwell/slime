@@ -26,6 +26,7 @@ var modules = eval(parameters.options.src.directory.getFile("jsh/etc/api.js").re
 modules = jsh.js.Array(modules);
 var apiArguments = modules.fold(function(array) {
 	if (this.api) array.push("-api",this.path);
+	if (this.test) array.push("-test",this.path);
 	return array;
 },[]);
 

@@ -32,19 +32,9 @@ if (!jsh.java.Thread) {
 }
 
 var api = eval(jsh.script.file.getRelativePath("../etc/api.js").file.read(String));
-var all = api.environment("browser").map(function(declaration) {
-	return declaration;
+var all = api.environment("browser").filter(function(declaration) {
+	return declaration.api || declaration.test;
 });
-//var all = [
-//	"loader/test/data/a/", "loader/test/data/b/", "loader/test/data/c/main.js",
-//	"loader/test/data/coffee/",
-//	"loader/api/test/data/1/",
-//	"js/object/","js/object/Error.js",
-//	"js/web/"
-//	,"js/document/","js/mime/"
-//].map(function(path) {
-//	return { path: path };
-//});
 
 jsh.shell.echo("Running browser unit tests ...");
 var modules = (parameters.arguments.length == 0) ? all : parameters.arguments.map(function(path) { return { path: path } });

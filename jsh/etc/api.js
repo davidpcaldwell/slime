@@ -26,7 +26,7 @@
 				p.browser.path = path;
 				byEnvironment.browser.push(p.browser);
 			}
-			if (p.api) {
+			if (p.api || p.test) {
 				p.path = path;
 				byEnvironment.browser.push(p);
 				byEnvironment.jsh.push(p);
@@ -38,31 +38,10 @@
 		}
 	}
 
-	var modules = new function() {
-		var list = [];
-
-		this.add = function(o) {
-			list.push(o);
-		};
-
-		this.array = list;
-	};
-
-	var Module = function(path,configuration) {
-		if (configuration.api) {
-			this.api = { path: path };
-		}
-		if (configuration.module) {
-			this.module = { path: path.substring(0,path.length-1) };
-			for (var x in configuration.module) {
-				this.module[x] = configuration.module[x];
-			}
-		}
-	}
 	components.add("loader/", { api: true });
 	components.add("loader/api/", { api: true });
 	components.add("js/object/", { api: true, jsh: { module: true }});
-	components.add("js/object/Error.js", { api: true });
+	components.add("js/object/Error.js", { test: true });
 	components.add("js/document/", { api: true, jsh: { module: true }});
 	components.add("js/web/", { browser: { api: true }, jsh: { api: false, module: true }});
 	components.add("loader/api/test/data/1/", { api: true });
@@ -80,9 +59,9 @@
 	["rhino/io/","rhino/document/","rhino/shell/","jsh/script/","rhino/http/client/","rhino/http/servlet/"].forEach(function(path) {
 		components.add(path, { jsh: { api: true, module: true }});
 	});
+	components.add("rhino/tools/", { jsh: { api: false, module: true }});
 	components.add("rhino/http/servlet/plugin.jsh.api.html", { jsh: { api: true } });
 
-	components.add("rhino/tools/", { jsh: { api: false, module: true }});
 	/*modules.add("rhino/mail/", "jsh.mail");*/
 
 	components.add("jsh/loader/loader.api.html", { jsh: { api: true } });
