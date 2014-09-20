@@ -103,6 +103,51 @@ END LICENSE
 					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
 				</div>
 			</li>
+			<li class="constructor">
+				<div class="name">Loader</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">getCode</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">fetch</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
 			<li class="function">
 				<div class="name">namespace</div>
 				<span>Invokes the platform loader's <a href="../../loader/api.html"><code>namespace</code></a> method.</span>
@@ -168,7 +213,7 @@ END LICENSE
 			</li>
 			<script type="application/x.jsapi#initialize">
 				scope.loadTestModule = function(path,context) {
-					return $jsapi.loader.module("../test/data/" + path, context);
+					return $jsapi.loader.module("../" + path, context);
 				}
 			</script>
 			<div jsapi:reference="getApi('../api.html').getElement('tests')">

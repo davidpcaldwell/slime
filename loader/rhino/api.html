@@ -171,6 +171,13 @@ END LICENSE
 						additional properties. Otherwise returns a SLIME Loader without them.
 					</span>
 				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.loadTestModule = function(path,context) {
+						return $jsapi.loader.module("../" + path, context);
+					}
+				</script>
+				<div jsapi:reference="getApi('../api.html').getElement('tests')">
+				</div>
 			</li>
 			<li class="function" jsapi:id="namespace" jsapi:reference="getApi('../api.html').getElement('global/namespace')">
 				<div class="name">namespace</div>

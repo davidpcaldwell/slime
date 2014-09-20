@@ -22,10 +22,10 @@ var parameters = jsh.script.getopts({
 var java = jsh.file.Searchpath([parameters.options.java.directory.getRelativePath("bin")]).getCommand("java");
 
 //	Unit tests
-var modules = eval(parameters.options.src.directory.getFile("jsh/etc/api.js").read(String));
+var modules = eval(parameters.options.src.directory.getFile("jsh/etc/api.js").read(String)).environment("jsh");
 modules = jsh.js.Array(modules);
 var apiArguments = modules.fold(function(array) {
-	if (this.api) array.push("-api",this.api.path);
+	if (this.api) array.push("-api",this.path);
 	return array;
 },[]);
 

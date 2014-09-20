@@ -397,17 +397,19 @@ var module = function(path,compile) {
 		nowarn: true,
 		rhino: RHINO_LIBRARIES
 	});
-	var to = new File(JSH_HOME,"modules/"+path.replace(/\//g, ".")+".slime");
+	var topath = path.replace(/\//g, ".");
+	if (topath.substring(topath.length-1) == ".") topath = topath.substring(0,topath.length-1);
+	var to = new File(JSH_HOME,"modules/"+topath+".slime");
 	to.getParentFile().mkdirs();
 	zip(tmp,to,[]);
 	console("Created module file: " + to.getCanonicalPath());
 };
 
-var modules = eval(readFile(new File(SLIME_SRC, "jsh/etc/api.js")));
+var modules = eval(readFile(new File(SLIME_SRC, "jsh/etc/api.js"))).environment("jsh");
 
 modules.forEach(function(item) {
 	if (item.module) {
-		module(item.module.path, (item.module.javac) ? platform.jdk.compile : function(args) {});
+		module(item.path, (item.module.javac) ? platform.jdk.compile : function(args) {});
 	}
 });
 
@@ -552,7 +554,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		command.add("-base", JSH_JSAPI_BASE);
 
 		modules.forEach( function(module) {
-			if (module.api) command.add("-api",String(new File(SLIME_SRC,module.api.path).getCanonicalPath()));
+			if (module.api) command.add("-api",String(new File(SLIME_SRC,module.path).getCanonicalPath()));
 		});
 
 		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());

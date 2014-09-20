@@ -1013,12 +1013,12 @@ END LICENSE
 				<script type="application/x.jsapi#initialize">
 					if (scope.loadTestModule) {
 						var Tests = function(p) {
-							this.a = function(scope) {
+							var a = function(scope) {
 								if (!scope.verify) throw new Error("No scope.verify; scope keys = " + Object.keys(scope));
 								if (!p.loadTestModule) throw new Error("No p.loadTestModule");
-								var module = scope.verify(p.loadTestModule("a/", {
+								var module = scope.verify(p.loadTestModule("test/data/a/", {
 									d: 1970
-								}), "test/a");
+								}), "test/data/a");
 								module.a().is(3);
 								module.b().is(4);
 								module.c().is(5);
@@ -1027,10 +1027,25 @@ END LICENSE
 								module.f().is(6);
 								module.fThis().is("fThis");
 								module.mThis().is("mThis");
+							};
+
+							var b = function(scope) {
+								var module = scope.verify(p.loadTestModule("test/data/b/", {
+								}), "test/data/b");
+								module.submodule().message().is("ititit");
+							}
+
+							var c = function(scope) {
+								var module = scope.verify(p.loadTestModule("test/data/c/main.js", {
+								}), "test/data/c/main");
+								module.value().is(13);
+								module.other().is(42);
 							}
 
 							this.run = function(scope) {
-								this.a(scope);
+								a(scope);
+								b(scope);
+								c(scope);
 							}
 						};
 						scope.tests = new Tests(scope);
