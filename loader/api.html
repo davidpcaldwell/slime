@@ -1060,11 +1060,27 @@ END LICENSE
 								}
 							};
 
+							var coffee = function(scope) {
+								//	TODO	for some reason these (at least sometimes) do not run in browser
+								if ($jsapi.loader.coffee) {
+									var loader = $jsapi.loader.module("test/data/coffee/loader.js");
+									var coffee = $jsapi.loader.module("test/data/coffee/module.coffee");
+									scope.verify(coffee,"coffee").a().is(2);
+									scope.verify(coffee,"coffee").file().b().is(3);
+									scope.verify(loader,"loader").file().b().is(3);
+									var file = $jsapi.loader.file("test/data/coffee/file.coffee");
+									scope.verify(file,"file").b().is(3);
+								} else {
+									scope.verify("No CoffeeScript").is("No CoffeeScript");
+								}
+							}
+
 							this.run = function(scope) {
 								a(scope);
 								b(scope);
 								c(scope);
 								rhino(scope);
+								coffee(scope);
 							}
 						};
 						scope.tests = new Tests(scope);

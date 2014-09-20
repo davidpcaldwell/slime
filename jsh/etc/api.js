@@ -72,8 +72,6 @@
 	components.add("js/debug/", { jsh: { module: true }});
 
 	components.add("loader/rhino/", { jsh: { api: true }});
-	//	TODO	browser currently runs loader/rhino/test/data/1/
-	//	TODO	loader/test/data/coffee/ used to be run when testing Rhino and I believe browser
 
 	components.add("rhino/host/", { jsh: { api: true, module: { javac: true }}});
 	components.add("rhino/file/", { jsh: { api: true, module: { javac: true }}});
