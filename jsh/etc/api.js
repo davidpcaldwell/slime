@@ -65,7 +65,7 @@
 	components.add("js/object/Error.js", { api: true });
 	components.add("js/document/", { api: true, jsh: { module: true }});
 	components.add("js/web/", { browser: { api: true }, jsh: { api: false, module: true }});
-
+	components.add("loader/api/test/data/1/", { api: true });
 	components.add("loader/browser/", { browser: { api: true }});
 
 	components.add("js/mime/", { browser: { api: true }, jsh: { module: true }});
@@ -73,7 +73,6 @@
 
 	components.add("loader/rhino/", { jsh: { api: true }});
 	//	TODO	browser currently runs loader/rhino/test/data/1/
-	//	TODO	browser currently runs loader/api/test/data/1/
 	//	TODO	loader/test/data/coffee/ used to be run when testing Rhino and I believe browser
 
 	components.add("rhino/host/", { jsh: { api: true, module: { javac: true }}});

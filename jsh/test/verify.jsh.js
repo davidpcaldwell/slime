@@ -14,7 +14,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		engine: jsh.script.getopts.ARRAY(String),
-		slime: jsh.file.Pathname,
+		slime: jsh.script.file.parent.parent.parent.pathname,
 		tomcat: jsh.file.Pathname,
 		chrome: jsh.file.Pathname,
 		firefox: jsh.file.Pathname,

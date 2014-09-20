@@ -1040,12 +1040,31 @@ END LICENSE
 								}), "test/data/c/main");
 								module.value().is(13);
 								module.other().is(42);
-							}
+							};
+
+							var rhino = function(scope) {
+								var module = scope.verify(p.loadTestModule("rhino/test/data/1/", {
+								}), "rhino/test/data/1");
+								var $java = (function() {
+									try {
+										Packages.java.lang.Class.forName("slime.Data");
+										return true;
+									} catch (e) {
+										return false;
+									}
+								})();
+								if ($java) {
+									module.data().is("From Java");
+								} else {
+									module.data().is("No Java");
+								}
+							};
 
 							this.run = function(scope) {
 								a(scope);
 								b(scope);
 								c(scope);
+								rhino(scope);
 							}
 						};
 						scope.tests = new Tests(scope);
