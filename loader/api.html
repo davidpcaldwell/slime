@@ -1009,6 +1009,42 @@ END LICENSE
 					</div>
 				</li>
 			</ul>
+			<div jsapi:id="tests">
+				<script type="application/x.jsapi#initialize">
+					if (scope.loadTestModule) {
+						var Tests = function(p) {
+							this.a = function(scope) {
+								if (!scope.verify) throw new Error("No scope.verify; scope keys = " + Object.keys(scope));
+								if (!p.loadTestModule) throw new Error("No p.loadTestModule");
+								var module = scope.verify(p.loadTestModule("a/", {
+									d: 1970
+								}), "test/a");
+								module.a().is(3);
+								module.b().is(4);
+								module.c().is(5);
+								module.d().is(1970);
+								module.e().is(4);
+								module.f().is(6);
+								module.fThis().is("fThis");
+								module.mThis().is("mThis");
+							}
+
+							this.run = function(scope) {
+								this.a(scope);
+							}
+						};
+						scope.tests = new Tests(scope);
+					}
+				</script>
+				<script type="application/x.jsapi#tests">
+					if (scope.tests) {
+						scope.tests.run({
+							test: test,
+							verify: verify
+						});
+					}
+				</script>
+			</div>
 		</div>
 
 		<ul jsapi:id="global">

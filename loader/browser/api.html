@@ -166,6 +166,13 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
+			<script type="application/x.jsapi#initialize">
+				scope.loadTestModule = function(path,context) {
+					return $jsapi.loader.module("../test/data/" + path, context);
+				}
+			</script>
+			<div jsapi:reference="getApi('../api.html').getElement('tests')">
+			</div>
 			<!--
 			<li class="value">
 				<div class="name">$sdk</div>
