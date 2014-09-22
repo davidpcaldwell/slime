@@ -24,7 +24,7 @@
 					try {
 						req = new ActiveXObject("Microsoft.XMLHTTP");
 					} catch(e) {
-						debug("Error instantiating XMLHttpRequest using ActiveX");
+						$context.debug("Error instantiating XMLHttpRequest using ActiveX");
 						throw e;
 					}
 				}
@@ -106,12 +106,12 @@
 			var downloads = {};
 
 			var fetch = function(path) {
-				debug("Fetching: " + path);
+				$context.debug("Fetching: " + path);
 				var req = new XMLHttpRequest();
 				if (arguments.callee.loader && arguments.callee.loader.mapping) {
 					var mapped = arguments.callee.loader.mapping(path);
 					if (typeof(mapped) != "undefined" && mapped != path) {
-						debug("Mapping: " + path + " to: " + mapped);
+						$context.debug("Mapping: " + path + " to: " + mapped);
 						path = mapped;
 					}
 				}
@@ -248,7 +248,7 @@
 			this.debug = new function() {
 				//	TODO	test this when SLIM is up and running
 				this.script = function(path,f) {
-					debug("Storing script: " + path + " as " + f);
+					$context.debug("Storing script: " + path + " as " + f);
 					instantiate[getCachePath(path)] = f;
 				}
 			}
