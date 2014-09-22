@@ -431,13 +431,19 @@ var LocalRepository = function(dir) {
 							e.unreachable = true;
 							throw e;
 						}
-						if (!/^comparing with /.test(parsed.lines[0])) throw "Wrong line 0: " + parsed.lines[0];
+						if (!/^comparing with /.test(parsed.lines[0])) throw new Error("Wrong line 0: " + parsed.lines[0]);
 						//	TODO	probably need to review this with some test cases: what is status when no changes found?
 						if (parsed.status != 0) {
 							throw new Error("Status: " + parsed.status + " err:\n" + parsed.err);
 						}
 						if (parsed.lines[1] != "searching for changes" && parsed.lines[1] != "no changes found") {
-							throw new Error("Wrong line 1: " + parsed.lines[1] + "\nLines:\n" + parsed.lines.join("\n"));
+							var log = target.log();
+							if (log.length) {
+								throw new Error("Wrong line 1: " + parsed.lines[1] + "\nLines:\n" + parsed.lines.join("\n"));
+							} else {
+								//	if this is at changeset 0, for some reason the above output line is omitted
+								//	TODO	probably need to splice it out; need test case
+							}
 						}
 						//	TODO	this may or may not work, depending on variations in output
 						return parseLog(parsed.lines.slice(2));
