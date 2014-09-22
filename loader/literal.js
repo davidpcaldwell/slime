@@ -147,6 +147,7 @@
 
 			methods.value = function(code,scope) {
 				var rv;
+				if (!scope) scope = {};
 				scope.$set = function(v) {
 					rv = v;
 				};
