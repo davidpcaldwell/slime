@@ -37,6 +37,8 @@ var runScope = new function() {
 var runThis = {};
 
 $loader.run("run.js",runScope,runThis);
+var vThis = { description: "vThis" };
+var value = $loader.value("value.js", {b: 4}, vThis);
 
 $exports.a = file.a;
 $exports.b = file.b;
@@ -46,3 +48,5 @@ $exports.e = runScope.result();
 $exports.f = runThis.f;
 $exports.fThis = file.thisName;
 $exports.mThis = module.thisName;
+$exports.vThis = vThis;
+$exports.value = value;
