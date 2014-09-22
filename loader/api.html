@@ -1008,6 +1008,41 @@ END LICENSE
 						<span>An object containing this module's exports.</span>
 					</div>
 				</li>
+				<li class="function" jsapi:id="value">
+					<div class="name">value</div>
+					<div>
+						Identical to <code>run</code>, except that the code to execute is supplied with a <code>$set</code>
+						function in its scope that allows it to set a value to be returned to the caller:
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">$set</div>
+								<span>Allows the code to return a single value to the caller.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">(any)</span>
+											<span>The value to return.</span>
+										</li>
+									</ol>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						See <a href="#Loader.run">run</a>.
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">(any)</span>
+						<span>
+							The value the code to execute passed to <code>$set</code>, or <code>undefined</code> if
+							<code>$set</code> was not invoked.
+						</span>
+					</div>
+				</li>
 			</ul>
 			<div jsapi:id="tests">
 				<script type="application/x.jsapi#initialize">
