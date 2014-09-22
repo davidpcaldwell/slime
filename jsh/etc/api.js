@@ -11,6 +11,11 @@
 //	END LICENSE
 
 (function() {
+	//	Used by:
+	//		jsh/test/browser.jsh.js
+	//		jsh/test/suite.jsh.js
+	//		jsh/etc/build.rhino.js: to determine what modules to build
+	//		jsh/launcher/rhino/test/unbuilt.rhino.js
 	var components = new function() {
 		var byEnvironment = {
 			browser: [],

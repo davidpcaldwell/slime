@@ -115,19 +115,19 @@ var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("use
 //	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
 var modules = (function() {
 	var code = eval(readFile(JSH_SLIME_SRC.getFile("jsh/etc/api.js")));
-	return code.filter(function(module) {
-		return module.module;
-	}).map(function(module) {
+	return code.environment("jsh").filter(function(module) {
 		return module.module;
 	});
 })();
+console("Found " + modules.length + " modules.");
 //	TODO	some of this logic is duplicated in jsh/tools/slime.js
 var MODULE_CLASSPATH = [];
 if (RHINO_JAR) MODULE_CLASSPATH.push(RHINO_JAR);
 MODULE_CLASSPATH.push(LAUNCHER_CLASSES);
 modules.forEach(function(module) {
 	var path = module.path;
-	if (module.javac) {
+	if (module.module && module.module.javac) {
+		console("Compiling: " + path);
 		var files = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/java"));
 		if (!files) throw new Error("Files null for " + path);
 		if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/rhino")));
@@ -139,6 +139,8 @@ modules.forEach(function(module) {
 				"-classpath", MODULE_CLASSPATH.join(colon),
 			].concat(files));
 		}
+	} else {
+		console("No Java compile needed: " + path + " " + JSON.stringify(module));
 	}
 });
 
