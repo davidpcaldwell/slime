@@ -256,6 +256,10 @@ END LICENSE
 						}
 						log(error.stack);
 					}
+					if (error.cause) {
+						error.cause.code = error.code;
+						arguments.callee(error.cause,log);
+					}
 				}
 
 				var scenarios = [];

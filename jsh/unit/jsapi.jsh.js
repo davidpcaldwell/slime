@@ -168,10 +168,6 @@ if (!parameters.options.notest) {
 }
 
 if (parameters.options.doc) {
-	var list = [];
-	modules.forEach( function(item) {
-		list.push({ ns: item.namespace, base: item.base, path: item.path, location: item.location });
-	} );
 	var relative = (function() {
 		if (!parameters.options.index || !parameters.options.index.file) {
 			return null;
@@ -180,9 +176,9 @@ if (parameters.options.doc) {
 	})();
 	jsapi.documentation({
 		index: (parameters.options.index) ? parameters.options.index.file : null,
-		//	TODO	hot platform-independent
+		//	TODO	not platform-independent
 		prefix: (relative) ? new Array(relative.split("/").length).join("../") : null,
-		modules: list,
+		modules: modules,
 		to: parameters.options.doc,
 		getPath: function(pathname) {
 			return getRelativePath(pathname);

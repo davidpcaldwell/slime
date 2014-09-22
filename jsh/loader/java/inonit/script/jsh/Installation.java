@@ -87,7 +87,7 @@ public abstract class Installation {
 							addPluginsTo(rv, f);
 						}
 					}
-				} else if (file.getName().endsWith(".slime")) {
+				} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
 					try {
 						Installation.Plugin p = Installation.Plugin.slime(file);
 						if (p != null) {
@@ -96,12 +96,15 @@ public abstract class Installation {
 					} catch (IOException e) {
 						//	TODO	probably error message or warning
 					}
-				} else if (file.getName().endsWith(".jar")) {
+				} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
 					rv.add(Installation.Plugin.jar(file));
 				} else {
-					//	Ignore, not .slime or directory
+					//	Ignore, exists but not .slime or .jar or directory
 					//	TODO	probably log message of some kind
+					Logging.get().log(Installation.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
 				}
+			} else {
+				Logging.get().log(Installation.class, Level.CONFIG, "Ignoring plugin because file does not exist at %s", file);
 			}
 		}
 

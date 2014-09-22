@@ -11,24 +11,10 @@
 //	END LICENSE
 
 (function() {
-	if (!window.inonit) {
-		window.inonit = {};
-	}
-	var inonit = window.inonit;
-
-	if (!inonit.loader) {
-		//	we will create this object after specifying defaults below
-	} else if (inonit.loader && inonit.loader.module && inonit.loader.script && inonit.loader.namespace) {
-		//	already loaded, what to do?
-		throw "Unimplemented";
-	} else {
-		//	caller created the object inonit.module to configure this object before usage
-		//	debug/XMLHttpRequest/modes are configurable; see initialization below.
-	}
-
-	var debug = (inonit.loader && inonit.loader.debug) ? inonit.loader.debug : function(message) {};
-
-	var XMLHttpRequest = (inonit.loader && inonit.loader.XMLHttpRequest) ? inonit.loader.XMLHttpRequest : (function() {
+	var $context = (window.inonit && window.inonit.loader) ? window.inonit.loader : {
+	};
+	if (!$context.debug) $context.debug = function(message) {};
+	if (!$context.XMLHttpRequest) $context.XMLHttpRequest = (function() {
 		if (typeof(window.XMLHttpRequest) == "undefined") {
 			return function() {
 				var req = false;
@@ -48,11 +34,18 @@
 			return window.XMLHttpRequest;
 		}
 	})();
+	//	Undocumented for now; seemingly unused
+	if (!$context.url) $context.url = void(0);
+	if (!$context.callback) $context.callback = function(){};
 
-	var modes = (inonit.loader && inonit.loader.modes) ? inonit.loader.modes : {};
-	//	TODO	probably rename these properties to runner and loader or something
-	if (!modes.module) modes.module = "evalScope";
-	if (!modes.execute) modes.execute = "call";
+	var $exports = (function() {
+		if (!window.inonit) window.inonit = {};
+		if (window.inonit.loader && window.inonit.loader.run && window.inonit.loader.file && window.inonit.loader.module) {
+			throw new Error("Unimplemented: trying to reload inonit.loader");
+		}
+		window.inonit.loader = {};
+		return window.inonit.loader;
+	})();
 
 	var Bootstrap = function(base) {
 		this.base = base;
@@ -100,14 +93,14 @@
 	}
 
 	var bootstrap = (function() {
-		return (inonit.loader && inonit.loader.url) ? new Bootstrap(inonit.loader.url) : getCurrentScript();
+		return ($context.url) ? new Bootstrap($context.url) : getCurrentScript();
 	})();
 
 	var callback = (inonit.loader && inonit.loader.callback) ? inonit.loader.callback : function(){};
 
 	//	Now even if the object existed before, we have obtained the specified properties and we replace the existing object with
 	//	this one
-	inonit.loader = new function() {
+	(function() {
 
 		var fetcher = new function() {
 			var downloads = {};
@@ -221,13 +214,6 @@
 			return platform.namespace(name);
 		}
 
-		//	TODO	Experimental API currently used by httpd, perhaps should be kept (and possibly made more robust)
-
-		//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
-		//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
-
-		this.base = bootstrap.base;
-
 		this.nugget = new function() {
 			//	This is provided so that others do not have to go through the rigamarole of determining how to instantiate this.
 			this.XMLHttpRequest = XMLHttpRequest;
@@ -235,6 +221,14 @@
 			//	DRY:	Other scripts may want to use this (already have examples)
 			this.getCurrentScript = getCurrentScript;
 		};
+
+		//	TODO	Experimental API currently used by httpd, perhaps should be kept (and possibly made more robust)
+
+		//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
+		//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
+
+		//	Undocumented
+		this.base = bootstrap.base;
 
 		//	For use in scripts that are loaded directly by the browser rather than via this loader
 		this.$api = platform.$api;
@@ -273,11 +267,13 @@
 		//	Used by loader/browser/tools/offline.html, which may be obsolete
 
 		this.setLoader = function(loader) {
+			//	TODO	this would not work currently; fetch is private
 			fetch.loader = loader;
 		}
 
 		//	TODO set to dontenum if possible
 		this.$sdk = sdk;
-	};
-	callback(inonit.loader);
+
+		$context.callback.call(this);
+	}).call($exports);
 })();

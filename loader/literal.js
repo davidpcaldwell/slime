@@ -143,6 +143,15 @@
 				var inner = createFileScope(scope);
 				methods.run.call(this,code,inner);
 				return inner.$exports;
+			};
+
+			methods.value = function(code,scope) {
+				var rv;
+				scope.$set = function(v) {
+					rv = v;
+				};
+				methods.run.call(this,code,scope);
+				return rv;
 			}
 
 			var Loader = function(p) {
@@ -160,6 +169,7 @@
 
 				declare.call(this,"run");
 				declare.call(this,"file");
+				declare.call(this,"value");
 
 				this.module = function(path,scope,target) {
 					var getModuleLocations = function(path) {

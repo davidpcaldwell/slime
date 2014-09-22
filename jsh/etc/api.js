@@ -11,57 +11,65 @@
 //	END LICENSE
 
 (function() {
-	var modules = new function() {
-		var list = [];
-
-		this.add = function(o) {
-			list.push(o);
-		};
-
-		this.array = list;
-	};
-
-	var Module = function(path,configuration) {
-		if (configuration.api) {
-			this.api = { path: path };
+	var components = new function() {
+		var byEnvironment = {
+			browser: [],
+			jsh: []
 		}
-		if (configuration.module) {
-			this.module = { path: path.substring(0,path.length-1) };
-			for (var x in configuration.module) {
-				this.module[x] = configuration.module[x];
+
+		this.add = function(path,p) {
+			if (p.jsh) {
+				p.jsh.path = path;
+				byEnvironment.jsh.push(p.jsh);
+			}
+			if (p.browser) {
+				p.browser.path = path;
+				byEnvironment.browser.push(p.browser);
+			}
+			if (p.api || p.test) {
+				p.path = path;
+				byEnvironment.browser.push(p);
+				byEnvironment.jsh.push(p);
 			}
 		}
+
+		this.environment = function(name) {
+			return byEnvironment[name];
+		}
 	}
-	modules.add({ api: { path: "jsh/launcher/rhino/" } });
-	modules.add({ api: { path: "jsh/loader/plugin.api.html" } });
-	modules.add({ api: { path: "jsh/tools/" } });
-	modules.add({ api: { path: "loader/api/" } });
-	modules.add({ api: { path: "jsh/unit/" } });
-	modules.add({ api: { path: "jsh/loader/loader.api.html" } });
-	modules.add({ api: { path: "loader/" } });
-	modules.add({ api: { path: "loader/rhino/" } });
-	modules.add({ api: { path: "loader/test/data/a/" } });
-	modules.add({ api: { path: "loader/test/data/b/" } });
-	modules.add({ api: { path: "loader/test/data/c/main.js" } });
-	modules.add({ api: { path: "loader/test/data/coffee/" } });
-	modules.add(new Module("js/object/", { api: true, module: true }));
-	modules.add(new Module("js/mime/", { api: false, module: true }));
-	modules.add(new Module("js/web/", { api: false, module: true }));
-	modules.add(new Module("js/debug/", { api: false, module: true }));
-	modules.add(new Module("rhino/host/", { api: true, module: { javac: true } }));
-	modules.add(new Module("rhino/io/", { api: true, module: true }));
-	modules.add(new Module("js/document/", { api: true, module: true }));
-	modules.add(new Module("rhino/document/", { api: true, module: true }));
-	modules.add(new Module("rhino/file/", { api: true, module: { javac: true } }));
-	modules.add(new Module("rhino/shell/", { api: true, module: true }));
-	modules.add({ api: { path: "rhino/shell/jsh.js" } });
-	modules.add(new Module("jsh/script/", { api: true, module: true }));
-	modules.add(new Module("rhino/http/client/", { api: true, module: true }));
-	modules.add(new Module("rhino/tools/", { api: false, module: true }));
+
+	components.add("loader/", { api: true });
+	components.add("loader/api/", { api: true });
+	components.add("js/object/", { api: true, jsh: { module: true }});
+	components.add("js/object/Error.js", { test: true });
+	components.add("js/document/", { api: true, jsh: { module: true }});
+	components.add("js/web/", { browser: { api: true }, jsh: { api: false, module: true }});
+	components.add("loader/api/test/data/1/", { api: true });
+	components.add("loader/browser/", { browser: { api: true }});
+
+	components.add("js/mime/", { browser: { api: true }, jsh: { module: true }});
+	components.add("js/debug/", { jsh: { module: true }});
+
+	components.add("loader/rhino/", { jsh: { api: true }});
+
+	components.add("rhino/host/", { jsh: { api: true, module: { javac: true }}});
+	components.add("rhino/file/", { jsh: { api: true, module: { javac: true }}});
 	//	Servlet module has Java classes but we do not compile them here
 	//	servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with servlet API is supplied by invoker
-	modules.add(new Module("rhino/http/servlet/", { api: true, module: true }));
-	modules.add({ api: { path: "rhino/http/servlet/plugin.jsh.api.html" } });
+	["rhino/io/","rhino/document/","rhino/shell/","jsh/script/","rhino/http/client/","rhino/http/servlet/"].forEach(function(path) {
+		components.add(path, { jsh: { api: true, module: true }});
+	});
+	components.add("rhino/tools/", { jsh: { api: false, module: true }});
+	components.add("rhino/http/servlet/plugin.jsh.api.html", { jsh: { api: true } });
+
 	/*modules.add("rhino/mail/", "jsh.mail");*/
-	return modules.array;
+
+	components.add("jsh/loader/loader.api.html", { jsh: { api: true } });
+	components.add("rhino/shell/jsh.js", { jsh: { api: true } });
+	components.add("jsh/launcher/rhino/", { jsh: { api: true } });
+	components.add("jsh/loader/plugin.api.html", { jsh: { api: true } });
+	components.add("jsh/tools/", { jsh: { api: true } });
+	components.add("jsh/unit/", { jsh: { api: true } });
+
+	return components;
 })()

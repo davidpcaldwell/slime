@@ -44,63 +44,50 @@ END LICENSE
 		<ul>
 			<li class="function" jsapi:id="run">
 				<div class="name"><a id="exports.run">run</a></div>
-				<span jsapi:reference="getApi('../../loader/rhino/api.html').getElement('run/description')">__DESCRIPTION__</span>
-				<div class="arguments">
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run/description')">See the <a href="../../loader/rhino/api.html">Java loader</a> for details.</span>
+				<span>
+					Note that the Java loader adds the ability to pass a
+					<a href="../../loader/rhino/api.html#types.script">Java script</a> as the first argument.
+				</span>
+				<span>
+					Note that the <code>jsh</code> loader adds the ability to pass a
+					<a href="../../rhino/file/api.html#types.Pathname">Pathname</a> as the first argument.
+				</span>
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('global/run/arguments')">
 					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type"><a href="#types.code">code</a></span>
-							<span>The code to execute.</span>
-						</li>
-						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run/arguments[1]')">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="value" jsapi:id="arguments[2]" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run/arguments[2]')">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-					</ol>
+					See the platform loader's <a href="../../loader/api.html#exports.run">run</a> method.
 				</div>
 			</li>
 			<li class="function" jsapi:id="file">
 				<div class="name"><a id="exports.file">file</a></div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/description')">__DESCRIPTION__</span>
-				<div class="arguments">
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/description')">See the <a href="../../loader/rhino/api.html">Java loader</a> for details.</span>
+				<span>
+					Note that the Java loader adds the ability to pass a
+					<a href="../../loader/rhino/api.html#types.script">Java script</a> as the first argument.
+				</span>
+				<span>
+					Note that the <code>jsh</code> loader adds the ability to pass a
+					<a href="../../rhino/file/api.html#types.Pathname">Pathname</a> as the first argument.
+				</span>
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('global/file/arguments')">
 					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type"><a href="#types.code">code</a></span>
-							<span>The code to execute.</span>
-						</li>
-						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/arguments[1]')">
-							<div class="name">__NAME__</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-					</ol>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
 				</div>
 				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/returns')">
 					<div class="label">Returns</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
 				</div>
 			</li>
 			<li class="function" jsapi:id="module">
 				<div class="name"><a id="exports.module">module</a></div>
-				<!--	TODO	wrong
-				<span jsapi:reference="getApi('../../loader/rhino/api.html').getElement('module/description')">
-					Invokes the Rhino loader's <code>module</code> method.
-				</span>
-				<div jsapi:reference="getApi('../../loader/rhino/api.html').getElement('module/description2')"></div>
-				-->
+				<div jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/description')">
+					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
+				</div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="value">
-							<span class="type">jsh.file.Pathname</span>
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
 							<span>
 								The location of the module. If the file is a directory, it is treated as the base of an unpacked
 								module. If the file is a plain file, then if its name ends in <code>.slime</code>, it is treated as
@@ -150,7 +137,7 @@ END LICENSE
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="value">
-									<span class="type">jsh.file.Pathname</span>
+									<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
 									<span>
 										A <code>jsh.file.Pathname</code> pointing to a directory or a JAR file containing Java
 										classes.
@@ -160,6 +147,57 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
+			</li>
+			<li class="function">
+				<div class="name">plugins</div>
+				<span>Loads <code>jsh</code> <a href="plugin.api.html">plugins</a> from a specified source.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+							<div>
+								A source, interpreted
+								as follows:
+								<ul>
+									<li>
+										If the pathname does not represent a directory or file which exists, do nothing.
+									</li>
+									<li>
+										If the pathname is a directory,
+										<ul>
+											<li>
+												and has a <code>plugin.jsh.js</code> file, load the
+												plugin from the directory.
+											</li>
+											<li>
+												<!--	TODO	figure out what the method really should do; what it does do is
+																counterintuitive.
+												-->
+												otherwise, the behavior is undefined.
+											</li>
+										</ul>
+									</li>
+									<li>
+										If the pathname is an ordinary file,
+										<ul>
+											<li>
+												and ends in <code>.slime</code>, load the plugin in SLIME format from the
+												file.
+											</li>
+											<li>
+												and ends in <code>.jar</code>, load the Java-only plugin.
+											</li>
+											<li>
+												otherwise, do nothing.
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+						</li>
+					</ol>
+				</div>
 			</li>
 		</ul>
 	</div>
