@@ -17,24 +17,24 @@ var $workingDirectory = $context.$workingDirectory;
 
 var PRESENT = function() {
 	return new function() {
-		this.parser = function(name,array,rv) {
-			this.value = true;
+		this.parser = function(array) {
+			return true;
 		};
 		this.value = false;
 	}
 };
 var STRING = function(value) {
 	return {
-		parser: function(name,array,rv) {
-			this.value = array.shift();
+		parser: function(array) {
+			return array.shift();
 		},
 		value: value
 	};
 }
 var NUMBER = function(value) {
 	return {
-		parser: function(name,array,rv) {
-			this.value = Number( array.shift() );
+		parser: function(array) {
+			return Number( array.shift() );
 		},
 		value: value
 	}
@@ -60,14 +60,14 @@ var PATHNAME = function(value) {
 	}
 
 	return new function() {
-		this.parser = function(name,array,rv) {
+		this.parser = function(array) {
 			var value = array.shift();
 			if (isAbsolute(value)) {
 				var pathname = $filesystem.Pathname(value);
-				this.value = pathname;
+				return pathname;
 			} else {
 				var pathname = $workingDirectory.getRelativePath(value);
-				this.value = pathname;
+				return pathname;
 			}
 		}
 		this.value = value;
@@ -95,29 +95,21 @@ var ARRAY = function(type) {
 	return new function() {
 		var values = [];
 
-		this.parser = function(name,array,rv) {
-			//	Seems unneeded, so commenting out to see
-//			rv.options[name] = values;
-
-			//	TODO	the below code is unclear
-			var STRING = "foo";
-			var RV = { options: {} };
-
-			typeParser.parser(STRING,array,RV);
-
-			values.push( typeParser.value );
+		this.parser = function(array) {
+			values.push(typeParser.parser(array));
 		};
 
 		this.value = values;
 	}
 };
+
 var OBJECT = function(type) {
 	var parser = getOption(type);
 	if (!parser) throw new TypeError("Unknown type for OBJECT argument: " + type);
 	return new function() {
 		var values = {};
 
-		this.parser = function(name,array,rv) {
+		this.parser = function(array) {
 			throw new Error("Unimplemented.");
 		};
 
@@ -189,6 +181,7 @@ var getopts = function(settings,array) {
 		}
 
 		var others = [];
+		var otherValues = {};
 
 		this.parse = function(array) {
 			var next = array.shift();
@@ -199,10 +192,15 @@ var getopts = function(settings,array) {
 					handler = options[name];
 				} else {
 					handler = {
-						parser: unhandled
+						parser: function() {
+							unhandled(name,array,otherValues)
+						}
 					};
 				}
-				handler.parser(name,array,null);
+				var value = handler.parser(array);
+				if (typeof(value) != "undefined") {
+					handler.value = value;
+				}
 			} else {
 				others.push(next);
 			}
@@ -235,7 +233,7 @@ getopts.ARRAY = ARRAY;
 
 getopts.UNEXPECTED_OPTION_PARSER = {};
 getopts.UNEXPECTED_OPTION_PARSER.ERROR = function(name,array,rv) {
-	throw "Unrecognized option -" + name;
+	throw new Error("Unrecognized option -" + name);
 }
 getopts.UNEXPECTED_OPTION_PARSER.IGNORE = function(name,array,rv) {
 	if (array.length == 0 || array[0].substring(0,1) == "-") {
@@ -252,9 +250,9 @@ getopts.UNEXPECTED_OPTION_PARSER.SKIP = function(name,array,rv) {
 }
 getopts.UNEXPECTED_OPTION_PARSER.INTERPRET = function(name,array,rv) {
 	if (array.length == 0 || array[0].substring(0,1) == "-") {
-		PRESENT().parser(name,array,rv);
+		PRESENT().parser(array);
 	} else {
-		STRING().parser(name,array,rv);
+		STRING().parser(array);
 	}
 }
 
