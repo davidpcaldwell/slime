@@ -16,11 +16,10 @@ var parameters = jsh.script.getopts({
 		engine: jsh.script.getopts.ARRAY(String),
 		slime: jsh.script.file.parent.parent.parent.pathname,
 		tomcat: jsh.file.Pathname,
-		chrome: jsh.file.Pathname,
-		firefox: jsh.file.Pathname,
-		ie: jsh.file.Pathname,
+		browser: false,
 		debug: false
-	}
+	},
+	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
 if (!parameters.options.java.length) {
@@ -82,23 +81,18 @@ parameters.options.java.forEach(function(jre) {
 	});
 });
 
-if (parameters.options.chrome || parameters.options.firefox || parameters.options.ie) {
-	var browsers = [];
-	if (parameters.options.chrome) browsers.push("-chrome", parameters.options.chrome);
-	if (parameters.options.firefox) browsers.push("-firefox", parameters.options.firefox);
-	if (parameters.options.ie) browsers.push("-ie", parameters.options.ie);
+if (parameters.options.browser) {
 	jsh.shell.run({
 		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
 		arguments: [
 			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
 			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString()
-		].concat(browsers),
+		].concat(parameters.arguments),
 		directory: parameters.options.slime.directory,
 		environment: jsh.js.Object.set({}, jsh.shell.environment
 			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 		)
 	});
-	jsh.shell.echo("Browser tests succeeded.");
 }
 
 jsh.shell.echo();
