@@ -223,7 +223,7 @@ var getopts = function(settings,array) {
 getopts.ARRAY = ARRAY;
 
 getopts.UNEXPECTED_OPTION_PARSER = {};
-getopts.UNEXPECTED_OPTION_PARSER.ERROR = function(name,array,rv) {
+getopts.UNEXPECTED_OPTION_PARSER.ERROR = function(rv,name,array) {
 	throw new Error("Unrecognized option -" + name);
 }
 getopts.UNEXPECTED_OPTION_PARSER.IGNORE = function(rv,name,array) {
@@ -239,11 +239,11 @@ getopts.UNEXPECTED_OPTION_PARSER.SKIP = function(rv,name,array) {
 		rv.arguments.push(array.shift());
 	}
 }
-getopts.UNEXPECTED_OPTION_PARSER.INTERPRET = function(name,array,rv) {
+getopts.UNEXPECTED_OPTION_PARSER.INTERPRET = function(rv,name,array) {
 	if (array.length == 0 || array[0].substring(0,1) == "-") {
-		PRESENT().parser(array);
+		rv.options[name] = PRESENT();
 	} else {
-		STRING().parser(array);
+		rv.options[name] = STRING();
 	}
 }
 
