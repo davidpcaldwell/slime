@@ -465,13 +465,18 @@ END LICENSE
 								})();
 							} else {
 								var doc = document.implementation.createHTMLDocument("");
-								var before = new XMLSerializer().serializeToString(doc);
-								doc.open();
-								doc.write(unparsed);
-								doc.close();
-								var after = new XMLSerializer().serializeToString(doc);
-								if (before == after) {
-									//	Added this check for Firefox, for which document.write was not doing the trick
+								//	Added this check for Firefox, for which document.write was not doing the trick
+								var didDocWriteWork = (function(doc) {
+									var before = new XMLSerializer().serializeToString(doc);
+									doc.open();
+									doc.write(unparsed);
+									//	doc.close() apparently implies window.close() in IE, which causes crash
+									//	both Chrome and Firefox seem to work without it
+									if (false) doc.close();
+									var after = new XMLSerializer().serializeToString(doc);
+									return Boolean(before == after);
+								})(doc);
+								if (!didDocWriteWork) {
 									doc.documentElement.innerHTML = unparsed;
 								}
 								var root = doc;

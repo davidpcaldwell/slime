@@ -13,6 +13,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
+		port: Number,
 		chrome: jsh.file.Pathname,
 		firefox: jsh.file.Pathname,
 		ie: jsh.file.Pathname,
@@ -57,10 +58,13 @@ var browseTestPage = function(p) {
 		return string;
 	}
 };
+var port = parameters.options.port;
 
 var browserTest = function(p) {
 	var startServer = function(p) {
-		var tomcat = new jsh.httpd.Tomcat({});
+		var tomcat = new jsh.httpd.Tomcat({
+			port: port
+		});
 		var parameters = {
 			delegate: p.servlet,
 			url: p.success
@@ -103,14 +107,15 @@ var browserTest = function(p) {
 	if (!p.success) {
 		tomcat.run();
 	} else {
+		var name = (this.name) ? this.name : "Browser";
 		if (result === false) {
-			throw new Error("Browser tests failed." + ((p.message) ? (" " + p.message) : ""));
+			throw new Error(name + " tests failed." + ((p.message) ? (" " + p.message) : ""));
 		} else if (result === true) {
-			jsh.shell.echo("Browser tests succeeded." + ((p.message) ? (" " + p.message) : ""));
+			jsh.shell.echo(name + " tests succeeded." + ((p.message) ? (" " + p.message) : ""));
 		} else if (result === null) {
-			throw new Error("Browser tests errored." + ((p.message) ? (" " + p.message) : ""));
+			throw new Error(name + " tests errored." + ((p.message) ? (" " + p.message) : ""));
 		} else {
-			throw new Error("Error launching browser tests: " + result);
+			throw new Error("Error launching " + name + " tests: " + result);
 		}
 	}
 };
@@ -137,6 +142,8 @@ var Browser = function(p) {
 			})();
 		}
 	};
+
+	this.name = p.name;
 
 	this.filter = (p.exclude) ?
 		function(module) {
@@ -175,6 +182,7 @@ var Browser = function(p) {
 var ie;
 if (parameters.options.ie) {
 	ie = new Browser({
+		name: "Internet Explorer",
 		open: function(on) {
 			return function(uri) {
 				jsh.shell.echo("Opening IE ...");
@@ -188,10 +196,6 @@ if (parameters.options.ie) {
 					on: on
 				});
 			};
-		},
-		exclude: function(module) {
-			jsh.shell.echo("Excluding " + module.path + " ...");
-			return true;
 		}
 	});
 }
@@ -200,6 +204,8 @@ var firefox;
 if (parameters.options.firefox) {
 	firefox = new Browser(new function() {
 		var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+		this.name = "Firefox";
 
 		this.open = function(on) {
 			return function(uri) {
@@ -220,6 +226,8 @@ if (parameters.options.firefox) {
 var chrome;
 if (parameters.options.chrome) {
 	chrome = new function() {
+		this.name = "Google Chrome";
+
 		this.filter = function(module) {
 			return true;
 		}
