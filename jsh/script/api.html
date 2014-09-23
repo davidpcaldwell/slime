@@ -384,8 +384,8 @@ END LICENSE
 							<div class="name">options</div>
 							<span class="type">object</span>
 							<span>
-								Each property of this object represents an option parsed; the name of the property indicates the
-								option's name and its value indicates the option's value.
+								Each property of this object represents an option to be parsed; the name of the property indicates
+								the option's name and its value indicates the option's type and/or default value.
 							</span>
 							<div>
 								Several option types are possible.
@@ -439,9 +439,29 @@ END LICENSE
 										<td>(not applicable)</td>
 										<td>
 											The value of the next argument, interpreted as the applicable type. Arguments can be
-											specified multiple times on the same command line by repeating the option.
+											specified multiple times on the same command line by repeating the option and the
+											resulting array will contain all given values.
 										</td>
 										<td>A zero-length array.</td>
+									</tr>
+									<tr>
+										<td>
+											<code>getopts.OBJECT</code>(<i>type</i>) where <i>type</i> is <code>String</code>,
+											<code>Number</code>, <code>Boolean</code>, or <code>jsh.file.Pathname</code>)
+										</td>
+										<td><code>Object</code> containing properties of applicable type</td>
+										<td><code>Object</code></td>
+										<td>
+											A name-value pair created using the next argument, which is of the form
+											<code><i>name</i>=<i>value</i></code>. Arguments can be
+											specified multiple times on the same command line by repeating the option. For each
+											argument, the value is interpreted as an instance of <i>type</i>. The result will be
+											an object with a property for each occurrence, with name <code><i>name</i></code> and
+											value <code><i>value</i></code>.
+										</td>
+										<td>
+											An object with no properties.
+										</td>
 									</tr>
 									<tr>
 										<script type="application/x.jsapi#tests">
@@ -485,6 +505,14 @@ END LICENSE
 											verify(parameters).options().property().relative().evaluate(function() {
 												return this.toString();
 											}).is(jsh.shell.PWD.getRelativePath("foo/bar").toString());
+
+											var parameters = module.getopts({
+												options: {
+													property: Object
+												}
+											},["-property","foo=bar","-property","hello=world"]);
+											verify(parameters).options().property().foo().is("bar");
+											verify(parameters).options().property().hello().is("world");
 										</script>
 									</tr>
 								</table>

@@ -99,6 +99,8 @@ var getOption = function(type) {
 		return PRESENT();
 	} else if (type == $Pathname) {
 		return PATHNAME();
+	} else if (type == Object) {
+		return OBJECT(String);
 	}
 }
 var ARRAY = function(type) {

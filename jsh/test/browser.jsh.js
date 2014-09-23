@@ -14,9 +14,11 @@ var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
 		port: Number,
-		chrome: jsh.file.Pathname,
-		firefox: jsh.file.Pathname,
-		ie: jsh.file.Pathname,
+		ie: false,
+		safari: false,
+		firefox: false,
+		chrome: false,
+		browser: jsh.script.getopts.ARRAY(String),
 		coffeescript: jsh.file.Pathname
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
@@ -31,6 +33,37 @@ if (!jsh.java.Thread) {
 	jsh.shell.echo("Cannot run browser tests; jsh.java.Thread not implemented; use Rhino, not Nashorn", { stream: jsh.shell.stderr });
 	jsh.shell.exit(1);
 }
+
+var browsers = [];
+
+var locations = (function() {
+	var useSpecificBrowsers = (
+		parameters.options.ie || parameters.options.safari || parameters.options.firefox || parameters.options.chrome
+		|| parameters.options.browser.length
+	);
+
+	var rv = {
+		ie: [],
+		safari: [],
+		firefox: [],
+		chrome: []
+	};
+
+	var add = function(browser,path) {
+		if ((!specified || parameters.options[browser]) && !rv[browser].length && jsh.file.Pathname(path).file) {
+			rv[browser].push(jsh.file.Pathname(path).file);
+		}
+	};
+
+	//	Windows
+	add("ie","C:\Program Files\Internet Explorer\iexplore.exe");
+
+	//	Mac OS X
+	add("safari","/Application/Safari.app/Contents/MacOS/Safari");
+	add("firefox","/Applications/Firefox.app/Contents/MacOS/firefox");
+	add("chrome","/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
+	return rv;
+})();
 
 var api = eval(jsh.script.file.getRelativePath("../etc/api.js").file.read(String));
 var all = api.environment("browser").filter(function(declaration) {
@@ -179,15 +212,11 @@ var Browser = function(p) {
 	this.browserTest = browserTest;
 };
 
-var ie;
 if (parameters.options.ie) {
-	ie = new Browser({
+	browsers.push(new Browser({
 		name: "Internet Explorer",
 		open: function(on) {
 			return function(uri) {
-				jsh.shell.echo("Opening IE ...");
-				jsh.shell.echo("Command: " + parameters.options.ie.file);
-				jsh.shell.echo("Arguments: " + uri);
 				jsh.shell.run({
 					command: parameters.options.ie.file,
 					arguments: [
@@ -197,12 +226,28 @@ if (parameters.options.ie) {
 				});
 			};
 		}
-	});
-}
+	}));
+};
 
-var firefox;
+if (parameters.options.safari) {
+	browsers.push(new Browser({
+		name: "Safari",
+		open: function(on) {
+			return function(uri) {
+				jsh.shell.run({
+					command: parameters.options.safari.file,
+					arguments: [
+						uri
+					],
+					on: on
+				});
+			};
+		}
+	}));
+};
+
 if (parameters.options.firefox) {
-	firefox = new Browser(new function() {
+	browsers.push(new Browser(new function() {
 		var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 		this.name = "Firefox";
@@ -220,12 +265,11 @@ if (parameters.options.firefox) {
 				});
 			};
 		};
-	})
+	}))
 }
 
-var chrome;
 if (parameters.options.chrome) {
-	chrome = new function() {
+	browsers.push(new function() {
 		this.name = "Google Chrome";
 
 		this.filter = function(module) {
@@ -278,7 +322,7 @@ if (parameters.options.chrome) {
 
 		this.browseTestPage = browseTestPage;
 		this.browserTest = browserTest;
-	}
+	})
 };
 
 var getBrowserTestRequest = function(modules) {
@@ -308,11 +352,8 @@ var getBrowserTestRequest = function(modules) {
 	};
 };
 
-if (modules) {
-	var browsers = [];
-	if (chrome) browsers.push(chrome);
-	if (ie) browsers.push(ie);
-	if (firefox) browsers.push(firefox);
+if (modules.length && browsers.length) {
+	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
 		browsers.forEach(function(browser) {
 			var request = getBrowserTestRequest(modules.filter(browser.filter));
@@ -340,4 +381,12 @@ if (modules) {
 		}
 		throw e;
 	}
+} else {
+	if (modules.length) {
+		jsh.shell.echo("No modules to run.");
+	}
+	if (browsers.length) {
+		jsh.shell.echo("No browsers selected.");
+	}
+	jsh.shell.exit(1);
 }
