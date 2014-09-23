@@ -149,14 +149,11 @@ var getopts = function(settings,array) {
 		if (settings.options) {
 			for (var x in settings.options) {
 				if (typeof(settings.options[x]) == "string") {
-					var v = STRING(settings.options[x]);
-					options[x] = v;
+					options[x] = STRING(settings.options[x]);
 				} else if (typeof(settings.options[x]) == "number") {
-					var v = NUMBER(settings.options[x]);
-					options[x] = v;
+					options[x] = NUMBER(settings.options[x]);
 				} else if (typeof(settings.options[x]) == "boolean" && !settings.options[x]) {
-					var v = PRESENT();
-					options[x] = v;
+					options[x] = PRESENT();
 				} else if (typeof(settings.options[x]) == "boolean" && settings.options[x]) {
 					throw new Error("A boolean option declared to be true cannot be negated.");
 				} else if (
@@ -166,8 +163,7 @@ var getopts = function(settings,array) {
 				{
 					//	TODO	the check above is a workaround for the fact that instanceof and the constructor property for
 					//			Pathname does not work; we should be doing instanceof $Pathname
-					var v = PATHNAME(settings.options[x]);
-					options[x] = v;
+					options[x] = PATHNAME(settings.options[x]);
 				} else if (getOption(settings.options[x])) {
 					options[x] = getOption(settings.options[x]);
 				} else {
