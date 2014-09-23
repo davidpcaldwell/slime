@@ -18,7 +18,7 @@ var parameters = jsh.script.getopts({
 		safari: false,
 		firefox: false,
 		chrome: false,
-		browser: jsh.script.getopts.ARRAY(String),
+		browser: jsh.script.getopts.OBJECT(jsh.file.Pathname),
 		coffeescript: jsh.file.Pathname
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
@@ -36,30 +36,28 @@ if (!jsh.java.Thread) {
 
 var browsers = [];
 
-var locations = (function() {
+var programs = (function() {
 	var useSpecificBrowsers = (
 		parameters.options.ie || parameters.options.safari || parameters.options.firefox || parameters.options.chrome
-		|| parameters.options.browser.length
+		|| Object.keys(parameters.options.browser).length
 	);
 
-	var rv = {
-		ie: [],
-		safari: [],
-		firefox: [],
-		chrome: []
-	};
+	var rv = {};
+	for (var x in parameters.options.browser) {
+		rv[x] = parameters.options.browser[x].file;
+	}
 
 	var add = function(browser,path) {
-		if ((!specified || parameters.options[browser]) && !rv[browser].length && jsh.file.Pathname(path).file) {
-			rv[browser].push(jsh.file.Pathname(path).file);
+		if ((!useSpecificBrowsers || parameters.options[browser]) && !rv[browser] && jsh.file.Pathname(path).file) {
+			rv[browser] = jsh.file.Pathname(path).file;
 		}
 	};
 
 	//	Windows
-	add("ie","C:\Program Files\Internet Explorer\iexplore.exe");
+	add("ie","C:\\Program Files\\Internet Explorer\\iexplore.exe");
 
 	//	Mac OS X
-	add("safari","/Application/Safari.app/Contents/MacOS/Safari");
+	add("safari","/Applications/Safari.app/Contents/MacOS/Safari");
 	add("firefox","/Applications/Firefox.app/Contents/MacOS/firefox");
 	add("chrome","/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
 	return rv;
@@ -212,13 +210,13 @@ var Browser = function(p) {
 	this.browserTest = browserTest;
 };
 
-if (parameters.options.ie) {
+if (programs.ie) {
 	browsers.push(new Browser({
 		name: "Internet Explorer",
 		open: function(on) {
 			return function(uri) {
 				jsh.shell.run({
-					command: parameters.options.ie.file,
+					command: programs.ie,
 					arguments: [
 						uri
 					],
@@ -229,14 +227,15 @@ if (parameters.options.ie) {
 	}));
 };
 
-if (parameters.options.safari) {
+if (programs.safari) {
 	browsers.push(new Browser({
 		name: "Safari",
 		open: function(on) {
 			return function(uri) {
 				jsh.shell.run({
-					command: parameters.options.safari.file,
+					command: "open",
 					arguments: [
+						"-a", programs.safari.parent.parent.parent.toString(),
 						uri
 					],
 					on: on
@@ -246,7 +245,7 @@ if (parameters.options.safari) {
 	}));
 };
 
-if (parameters.options.firefox) {
+if (programs.firefox) {
 	browsers.push(new Browser(new function() {
 		var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
@@ -255,7 +254,7 @@ if (parameters.options.firefox) {
 		this.open = function(on) {
 			return function(uri) {
 				jsh.shell.run({
-					command: parameters.options.firefox.file,
+					command: programs.firefox,
 					arguments: [
 						"-no-remote",
 						"-profile", PROFILE.toString(),
@@ -268,7 +267,7 @@ if (parameters.options.firefox) {
 	}))
 }
 
-if (parameters.options.chrome) {
+if (programs.chrome) {
 	browsers.push(new function() {
 		this.name = "Google Chrome";
 
@@ -285,7 +284,7 @@ if (parameters.options.chrome) {
 					TMP.getRelativePath("First Run").write("", { append: false });
 					jsh.shell.echo("Running with data directory: " + TMP);
 					jsh.shell.run({
-						command: parameters.options.chrome.file,
+						command: programs.chrome,
 						arguments: [
 							"--user-data-dir=" + TMP,
 							uri
@@ -371,7 +370,8 @@ if (modules.length && browsers.length) {
 				url: request.build(),
 				success: (parameters.options.interactive) ? null : slimepath + "loader/browser/test/success"
 			}, (parameters.options.coffeescript) ? { parameters: { coffeescript: parameters.options.coffeescript } } : {}));
-		})
+		});
+		jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");
 	} catch (e) {
 		if (e.rhinoException) {
 			e.rhinoException.printStackTrace();
@@ -382,10 +382,10 @@ if (modules.length && browsers.length) {
 		throw e;
 	}
 } else {
-	if (modules.length) {
+	if (!modules.length) {
 		jsh.shell.echo("No modules to run.");
 	}
-	if (browsers.length) {
+	if (!browsers.length) {
 		jsh.shell.echo("No browsers selected.");
 	}
 	jsh.shell.exit(1);
