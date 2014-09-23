@@ -633,7 +633,7 @@ $exports.tests = new function() {
 					var target = p.index.getRelativePath(href);
 					var targetFile = target.file;
 					jsh.shell.echo("Copying " + targetFile + " to " + destination.getRelativePath(href) + " ...");
-					targetFile.copy(destination.getRelativePath(href));
+					targetFile.copy(destination.getRelativePath(href), { recursive: true });
 				}
 			}
 			var children = element.children.filter(elements);
