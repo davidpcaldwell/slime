@@ -15,26 +15,28 @@ var $filesystem = $context.$filesystem;
 var $Pathname = $context.$Pathname;
 var $workingDirectory = $context.$workingDirectory;
 
-var PRESENT = {
-	parser: function(name,array,rv) {
-		rv.options[name] = true;
-	},
-	"default": false
-}
+var PRESENT = function() {
+	return new function() {
+		this.parser = function(name,array,rv) {
+			this.value = true;
+		};
+		this.value = false;
+	}
+};
 var STRING = function(value) {
 	return {
 		parser: function(name,array,rv) {
-			rv.options[name] = array.shift();
+			this.value = array.shift();
 		},
-		"default": value
+		value: value
 	};
 }
 var NUMBER = function(value) {
 	return {
 		parser: function(name,array,rv) {
-			rv.options[name] = Number( array.shift() );
+			this.value = Number( array.shift() );
 		},
-		"default": value
+		value: value
 	}
 }
 var PATHNAME = function(value) {
@@ -62,36 +64,35 @@ var PATHNAME = function(value) {
 			var value = array.shift();
 			if (isAbsolute(value)) {
 				var pathname = $filesystem.Pathname(value);
-				rv.options[name] = pathname;
+				this.value = pathname;
 			} else {
 				var pathname = $workingDirectory.getRelativePath(value);
-				rv.options[name] = pathname;
+				this.value = pathname;
 			}
 		}
-		this["default"] = value;
+		this.value = value;
 	}
 }
-var getParser = function(type) {
+var getOption = function(type) {
 	if (false) {
 	} else if (type == String) {
-		return STRING().parser;
+		return STRING();
 	} else if (type == Number) {
-		return NUMBER().parser;
+		return NUMBER();
 	} else if (type == Boolean) {
-		return PRESENT.parser;
+		return PRESENT();
 	} else if (type == $Pathname) {
-		return PATHNAME().parser;
+		return PATHNAME();
 	}
 }
 var ARRAY = function(type) {
-	if (getParser(type)) {
-		var typeFunction = { parser: getParser(type) };
+	if (getOption(type)) {
+		var typeParser = getOption(type);
 	} else {
 		throw new TypeError("Unknown array type: " + type);
 	}
 
 	return new function() {
-		var typeParser = typeFunction.parser;
 		var values = [];
 
 		this.parser = function(name,array,rv) {
@@ -102,16 +103,16 @@ var ARRAY = function(type) {
 			var STRING = "foo";
 			var RV = { options: {} };
 
-			typeParser(STRING,array,RV);
+			typeParser.parser(STRING,array,RV);
 
-			values.push( RV.options[STRING] );
+			values.push( typeParser.value );
 		};
 
-		this["default"] = values;
+		this.value = values;
 	}
 };
 var OBJECT = function(type) {
-	var parser = getParser(type);
+	var parser = getOption(type);
 	if (!parser) throw new TypeError("Unknown type for OBJECT argument: " + type);
 	return new function() {
 		var values = {};
@@ -120,7 +121,7 @@ var OBJECT = function(type) {
 			throw new Error("Unimplemented.");
 		};
 
-		this["default"] = values;
+		this.value = values;
 	}
 }
 
@@ -149,8 +150,7 @@ var getopts = function(settings,array) {
 	var Parser = function(settings) {
 		if (!settings) settings = {};
 
-		var switches = {};
-		var defaults = {};
+		var options = {};
 
 		var unhandled = getopts.UNEXPECTED_OPTION_PARSER.INTERPRET;
 
@@ -158,18 +158,15 @@ var getopts = function(settings,array) {
 			for (var x in settings.options) {
 				if (typeof(settings.options[x]) == "string") {
 					var v = STRING(settings.options[x]);
-					switches[x] = v.parser;
-					defaults[x] = v["default"];
+					options[x] = v;
 				} else if (typeof(settings.options[x]) == "number") {
 					var v = NUMBER(settings.options[x]);
-					switches[x] = v.parser;
-					defaults[x] = v["default"];
+					options[x] = v;
 				} else if (typeof(settings.options[x]) == "boolean" && !settings.options[x]) {
-					var v = PRESENT;
-					switches[x] = v.parser;
-					defaults[x] = v["default"];
+					var v = PRESENT();
+					options[x] = v;
 				} else if (typeof(settings.options[x]) == "boolean" && settings.options[x]) {
-					throw "A boolean option declared to be true cannot be negated.";
+					throw new Error("A boolean option declared to be true cannot be negated.");
 				} else if (
 						settings.options[x].java && settings.options[x].java.adapt
 						&& String(settings.options[x].java.adapt().getClass().getName()) == "java.io.File"
@@ -178,16 +175,11 @@ var getopts = function(settings,array) {
 					//	TODO	the check above is a workaround for the fact that instanceof and the constructor property for
 					//			Pathname does not work; we should be doing instanceof $Pathname
 					var v = PATHNAME(settings.options[x]);
-					switches[x] = v.parser;
-					defaults[x] = v["default"];
-				} else if (getParser(settings.options[x])) {
-					switches[x] = getParser(settings.options[x]);
-					if (settings.options[x] == Boolean) {
-						defaults[x] = false;
-					}
+					options[x] = v;
+				} else if (getOption(settings.options[x])) {
+					options[x] = getOption(settings.options[x]);
 				} else {
-					switches[x] = settings.options[x].parser;
-					defaults[x] = settings.options[x]["default"];
+					options[x] = settings.options[x];
 				}
 			}
 		}
@@ -196,29 +188,37 @@ var getopts = function(settings,array) {
 			unhandled = settings.unhandled;
 		}
 
-		var rv = {
-			options: defaults,
-			arguments: []
-		};
+		var others = [];
 
 		this.parse = function(array) {
 			var next = array.shift();
 			if (next.substring(0,1) == "-") {
 				var name = next.substring(1);
 				var handler;
-				if (switches[name]) {
-					handler = switches[name];
+				if (options[name]) {
+					handler = options[name];
 				} else {
-					handler = unhandled;
+					handler = {
+						parser: unhandled
+					};
 				}
-				handler(name,array,rv);
+				handler.parser(name,array,null);
 			} else {
-				rv.arguments.push(next);
+				others.push(next);
 			}
 		}
 
 		this.parsed = function() {
-			return rv;
+			return {
+				options: (function() {
+					var rv = {};
+					for (var x in options) {
+						rv[x] = options[x].value;
+					}
+					return rv;
+				})(options),
+				arguments: others
+			};
 		}
 	}
 
@@ -252,7 +252,7 @@ getopts.UNEXPECTED_OPTION_PARSER.SKIP = function(name,array,rv) {
 }
 getopts.UNEXPECTED_OPTION_PARSER.INTERPRET = function(name,array,rv) {
 	if (array.length == 0 || array[0].substring(0,1) == "-") {
-		PRESENT.parser(name,array,rv);
+		PRESENT().parser(name,array,rv);
 	} else {
 		STRING().parser(name,array,rv);
 	}
