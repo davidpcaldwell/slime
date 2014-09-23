@@ -173,8 +173,10 @@ var getopts = function(settings,array) {
 			unhandled = settings.unhandled;
 		}
 
-		var others = [];
-		var otherValues = {};
+		var rv = {
+			options: options,
+			arguments: []
+		};
 
 		this.parse = function(array) {
 			var next = array.shift();
@@ -182,7 +184,7 @@ var getopts = function(settings,array) {
 				var name = next.substring(1);
 				if (!options[name]) {
 					//	TODO	do not close this file without improving this
-					throw new Error();
+					unhandled(rv,name,array);
 				}
 				if (options[name]) {
 					var value = options[name].parser(array);
@@ -191,7 +193,7 @@ var getopts = function(settings,array) {
 					}
 				}
 			} else {
-				others.push(next);
+				rv.arguments.push(next);
 			}
 		}
 
@@ -204,7 +206,7 @@ var getopts = function(settings,array) {
 					}
 					return rv;
 				})(options),
-				arguments: others
+				arguments: rv.arguments
 			};
 		}
 	}
@@ -224,13 +226,13 @@ getopts.UNEXPECTED_OPTION_PARSER = {};
 getopts.UNEXPECTED_OPTION_PARSER.ERROR = function(name,array,rv) {
 	throw new Error("Unrecognized option -" + name);
 }
-getopts.UNEXPECTED_OPTION_PARSER.IGNORE = function(name,array,rv) {
+getopts.UNEXPECTED_OPTION_PARSER.IGNORE = function(rv,name,array) {
 	if (array.length == 0 || array[0].substring(0,1) == "-") {
 	} else {
 		array.shift();
 	}
 }
-getopts.UNEXPECTED_OPTION_PARSER.SKIP = function(name,array,rv) {
+getopts.UNEXPECTED_OPTION_PARSER.SKIP = function(rv,name,array) {
 	rv.arguments.push("-" + name);
 	if (array.length == 0 || array[0].substring(0,1) == "-") {
 	} else {

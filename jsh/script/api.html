@@ -265,14 +265,34 @@ END LICENSE
 						<div class="name">UNEXPECTED_OPTION_PARSER</div>
 						<span>A set of possibilities for handling unrecognized options.</span>
 						<div class="label">has properties:</div>
+						<script type="application/x.jsapi#initialize">
+							scope.unexpected = ["-boolean", "-string", "string"];
+							scope.process = function(strategy) {
+								return module.getopts({
+									options: {},
+									unhandled: strategy
+								},scope.unexpected);
+							}
+						</script>
 						<ul>
 							<li class="value">
 								<div class="name">ERROR</div>
 								<span>An unexpected options handler that treats any unrecognized option as an error.</span>
+								<!--	TODO	verify error	-->
 							</li>
 							<li class="value">
 								<div class="name">IGNORE</div>
 								<span>An unexpected options handler that discards any unrecognized options.</span>
+								<script type="application/x.jsapi#tests">
+									var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.IGNORE);
+									verify(parameters).arguments().length().is(0);
+									verify(parameters).options().evaluate(function() {
+										return this.boolean;
+									}).isUndefined();
+									verify(parameters).options().evaluate(function() {
+										return this.string;
+									}).isUndefined();
+								</script>
 							</li>
 							<li class="value">
 								<div class="name">SKIP</div>
@@ -280,6 +300,16 @@ END LICENSE
 									An unexpected options handler that preserves any unrecognized options in the
 									<code>arguments</code> member of the <code>getopts</code> return value.
 								</span>
+								<script type="application/x.jsapi#tests">
+									var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.SKIP);
+									verify(parameters).arguments().length().is(3);
+									verify(parameters).options().evaluate(function() {
+										return this.boolean;
+									}).isUndefined();
+									verify(parameters).options().evaluate(function() {
+										return this.string;
+									}).isUndefined();
+								</script>
 							</li>
 							<li class="value">
 								<div class="name">INTERPRET</div>
