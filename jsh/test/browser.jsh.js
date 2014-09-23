@@ -36,7 +36,7 @@ var all = api.environment("browser").filter(function(declaration) {
 	return declaration.api || declaration.test;
 });
 
-jsh.shell.echo("Running browser unit tests ...");
+jsh.shell.echo("Running " + all.length + " browser unit tests ...");
 var modules = (parameters.arguments.length == 0) ? all : parameters.arguments.map(function(path) { return { path: path } });
 
 var slimepath = "";
@@ -188,6 +188,10 @@ if (parameters.options.ie) {
 					on: on
 				});
 			};
+		},
+		exclude: function(module) {
+			jsh.shell.echo("Excluding " + module.path + " ...");
+			return true;
 		}
 	});
 }
@@ -315,7 +319,7 @@ if (modules) {
 					return rv;
 				})(),
 				servlet: "jsh/test/browser.modules.js",
-				url: (browser != ie) ? request.build() : getBrowserTestRequest([]).build(),
+				url: request.build(),
 				success: (parameters.options.interactive) ? null : slimepath + "loader/browser/test/success"
 			}, (parameters.options.coffeescript) ? { parameters: { coffeescript: parameters.options.coffeescript } } : {}));
 		})

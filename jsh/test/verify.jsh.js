@@ -18,6 +18,7 @@ var parameters = jsh.script.getopts({
 		tomcat: jsh.file.Pathname,
 		chrome: jsh.file.Pathname,
 		firefox: jsh.file.Pathname,
+		ie: jsh.file.Pathname,
 		debug: false
 	}
 });
@@ -81,36 +82,23 @@ parameters.options.java.forEach(function(jre) {
 	});
 });
 
-if (parameters.options.chrome) {
+if (parameters.options.chrome || parameters.options.firefox || parameters.options.ie) {
+	var browsers = [];
+	if (parameters.options.chrome) browsers.push("-chrome", parameters.options.chrome);
+	if (parameters.options.firefox) browsers.push("-firefox", parameters.options.firefox);
+	if (parameters.options.ie) browsers.push("-ie", parameters.options.ie);
 	jsh.shell.run({
 		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
 		arguments: [
 			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
-			"-chrome", parameters.options.chrome
-		],
+			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString()
+		].concat(browsers),
 		directory: parameters.options.slime.directory,
 		environment: jsh.js.Object.set({}, jsh.shell.environment
 			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 		)
 	});
-	jsh.shell.echo("Chrome tests succeeded.");
-}
-
-if (parameters.options.firefox) {
-	jsh.shell.run({
-		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
-		arguments: [
-			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
-			"-firefox", parameters.options.firefox
-		],
-		directory: parameters.options.slime.directory,
-		environment: jsh.js.Object.set({}, jsh.shell.environment
-			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-		)
-	});
-	jsh.shell.echo("Firefox tests succeeded.");
+	jsh.shell.echo("Browser tests succeeded.");
 }
 
 jsh.shell.echo();
