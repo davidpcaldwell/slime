@@ -235,7 +235,7 @@ END LICENSE
 					property; see <code><a href="#exports.Loader">Loader</a></code>).
 				</span>
 			</li>
-			<li class="function">
+			<li class="function" jsapi:id="getopts">
 				<div class="name"><a id="properties.getopts">getopts</a></div>
 				<span>
 					Processes an array of strings as arguments, using an object which specifies how arguments are interpreted.
@@ -423,7 +423,7 @@ END LICENSE
 						[ "-s", "brilliant" ]
 					);
 
-					test( function() { return t_0.options.s == "brilliant" } );
+					verify(t_0.options,"t_0.options").s().is("brilliant");
 
 					var t_1 = getopts(
 						{
@@ -436,9 +436,10 @@ END LICENSE
 						[ "-s", "hello", "-b", "-n", "8" ]
 					);
 
-					test( function() { return t_1.options.n == 8; } );
-					test( function() { return t_1.options.s == "hello"; } );
-					test( function() { return t_1.options.b; } );
+					var verify_t1options = verify(t_1.options,"t_1.options");
+					verify_t1options.n().is(8);
+					verify_t1options.s().is("hello");
+					verify_t1options.b().is(true);
 
 					var t_array = getopts(
 						{
@@ -453,13 +454,14 @@ END LICENSE
 						[ "-s", "sizzle", "-l", "hello", "-l", "world", "-b" ]
 					);
 
-					test( function() { return t_array.options.l.length == 2; } );
-					test( function() { return t_array.options.l[0] == "hello"; } );
-					test( function() { return t_array.options.l[1] == "world"; } );
-					test( function() { return t_array.options.s == "sizzle"; } );
-					test( function() { return t_array.options.b; } );
-					test( function() { return !t_array.options.nob; } );
-					test( function() { return t_array.options.n == 8; } );
+					var verify_t_array_options = verify(t_array.options, "t_array.options");
+					verify_t_array_options.l().length().is(2);
+					verify_t_array_options.l()[0]().is("hello");
+					verify_t_array_options.l()[1]().is("world");
+					verify_t_array_options.s().is("sizzle");
+					verify_t_array_options.b().is(true);
+					verify_t_array_options.nob().is(false);
+					verify_t_array_options.n().is(8);
 
 					var usingArgumentsObject = (function() {
 						return module.getopts({
@@ -500,7 +502,7 @@ END LICENSE
 						[ "-s", "yes" ]
 					);
 
-					test( function() { return t_d_1.options.s == "yes" } );
+					verify(t_d_1.options,"t_d_1.options").s().is("yes");
 
 					var PATHNAME_SEPARATOR = context.$filesystem.$unit.getPathnameSeparator();
 					var anAbsolute = PATHNAME_SEPARATOR + [ "hello", "world" ].join(PATHNAME_SEPARATOR);

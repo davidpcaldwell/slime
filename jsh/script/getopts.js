@@ -87,7 +87,7 @@ var ARRAY = function(type) {
 	if (getParser(type)) {
 		var typeFunction = { parser: getParser(type) };
 	} else {
-		throw "Unknown array type: " + type;
+		throw new TypeError("Unknown array type: " + type);
 	}
 
 	return new function() {
@@ -95,14 +95,29 @@ var ARRAY = function(type) {
 		var values = [];
 
 		this.parser = function(name,array,rv) {
-			rv.options[name] = values;
+			//	Seems unneeded, so commenting out to see
+//			rv.options[name] = values;
 
+			//	TODO	the below code is unclear
 			var STRING = "foo";
 			var RV = { options: {} };
 
 			typeParser(STRING,array,RV);
 
 			values.push( RV.options[STRING] );
+		};
+
+		this["default"] = values;
+	}
+};
+var OBJECT = function(type) {
+	var parser = getParser(type);
+	if (!parser) throw new TypeError("Unknown type for OBJECT argument: " + type);
+	return new function() {
+		var values = {};
+
+		this.parser = function(name,array,rv) {
+			throw new Error("Unimplemented.");
 		};
 
 		this["default"] = values;
@@ -167,6 +182,9 @@ var getopts = function(settings,array) {
 					defaults[x] = v["default"];
 				} else if (getParser(settings.options[x])) {
 					switches[x] = getParser(settings.options[x]);
+					if (settings.options[x] == Boolean) {
+						defaults[x] = false;
+					}
 				} else {
 					switches[x] = settings.options[x].parser;
 					defaults[x] = settings.options[x]["default"];
