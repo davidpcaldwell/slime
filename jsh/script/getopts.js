@@ -75,6 +75,22 @@ var PATHNAME = function(value) {
 }
 var getOption = function(type) {
 	if (false) {
+	} else if (typeof(type) == "string") {
+		return STRING(type);
+	} else if (typeof(type) == "number") {
+		return NUMBER(type);
+	} else if (typeof(type) == "boolean" && !type) {
+		return PRESENT();
+	} else if (typeof(type) == "boolean" && type) {
+		throw new Error("A boolean option declared to be true cannot be negated.");
+	} else if (
+			type.java && type.java.adapt
+			&& String(type.java.adapt().getClass().getName()) == "java.io.File"
+		)
+	{
+		//	TODO	the check above is a workaround for the fact that instanceof and the constructor property for
+		//			Pathname does not work; we should probably be doing instanceof $Pathname
+		return PATHNAME(type);
 	} else if (type == String) {
 		return STRING();
 	} else if (type == Number) {
@@ -148,27 +164,8 @@ var getopts = function(settings,array) {
 
 		if (settings.options) {
 			for (var x in settings.options) {
-				if (typeof(settings.options[x]) == "string") {
-					options[x] = STRING(settings.options[x]);
-				} else if (typeof(settings.options[x]) == "number") {
-					options[x] = NUMBER(settings.options[x]);
-				} else if (typeof(settings.options[x]) == "boolean" && !settings.options[x]) {
-					options[x] = PRESENT();
-				} else if (typeof(settings.options[x]) == "boolean" && settings.options[x]) {
-					throw new Error("A boolean option declared to be true cannot be negated.");
-				} else if (
-						settings.options[x].java && settings.options[x].java.adapt
-						&& String(settings.options[x].java.adapt().getClass().getName()) == "java.io.File"
-					)
-				{
-					//	TODO	the check above is a workaround for the fact that instanceof and the constructor property for
-					//			Pathname does not work; we should be doing instanceof $Pathname
-					options[x] = PATHNAME(settings.options[x]);
-				} else if (getOption(settings.options[x])) {
-					options[x] = getOption(settings.options[x]);
-				} else {
-					options[x] = settings.options[x];
-				}
+				var option = getOption(settings.options[x]);
+				options[x] = (option) ? option : settings.options[x];
 			}
 		}
 
@@ -184,6 +181,7 @@ var getopts = function(settings,array) {
 			if (next.substring(0,1) == "-") {
 				var name = next.substring(1);
 				if (!options[name]) {
+					//	TODO	do not close this file without improving this
 					throw new Error();
 				}
 				if (options[name]) {
