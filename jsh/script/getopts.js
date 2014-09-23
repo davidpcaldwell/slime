@@ -126,7 +126,15 @@ var OBJECT = function(type) {
 		var values = {};
 
 		this.parser = function(array) {
-			throw new Error("Unimplemented.");
+			//	TODO	this doesn't really contemplate Boolean as a possible property
+			if (typeof(parser.value) == "boolean") {
+				values[array.shift()] = true;
+			} else {
+				var tokens = array.shift().split("=");
+				var name = tokens[0];
+				var value = parser.parser([tokens[1]]);
+				values[name] = value;
+			}
 		};
 
 		this.value = values;
@@ -221,6 +229,7 @@ var getopts = function(settings,array) {
 }
 
 getopts.ARRAY = ARRAY;
+getopts.OBJECT = OBJECT;
 
 getopts.UNEXPECTED_OPTION_PARSER = {};
 getopts.UNEXPECTED_OPTION_PARSER.ERROR = function(rv,name,array) {

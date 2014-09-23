@@ -443,6 +443,50 @@ END LICENSE
 										</td>
 										<td>A zero-length array.</td>
 									</tr>
+									<tr>
+										<script type="application/x.jsapi#tests">
+											var strings = ["-property","foo=bar","-property","hello=world"];
+											var parameters = module.getopts({
+												options: {
+													property: module.getopts.OBJECT(String)
+												}
+											},strings);
+											verify(parameters).options().property().foo().is("bar");
+											verify(parameters).options().property().hello().is("world");
+
+											var numbers = ["-property","a=1","-property","b=2"];
+											var parameters = module.getopts({
+												options: {
+													property: module.getopts.OBJECT(Number)
+												}
+											},numbers);
+											verify(parameters).options().property().a().is(1);
+											verify(parameters).options().property().b().is(2);
+
+											var booleans = ["-property","that","-property","it"];
+											var parameters = module.getopts({
+												options: {
+													property: module.getopts.OBJECT(Boolean)
+												}
+											},booleans);
+											verify(parameters).options().property().that().is(true);
+											verify(parameters).options().property().it().is(true);
+
+											var pathnames = ["-property","absolute=" + jsh.script.file.toString(),"-property","relative=foo/bar"];
+											var parameters = module.getopts({
+												options: {
+													property: module.getopts.OBJECT(context.FILE.Pathname)
+												}
+											},pathnames);
+											jsh.shell.echo("property: " + Object.keys(parameters.options.property));
+											verify(parameters).options().property().absolute().evaluate(function() {
+												return this.toString();
+											}).is(jsh.script.file.toString());
+											verify(parameters).options().property().relative().evaluate(function() {
+												return this.toString();
+											}).is(jsh.shell.PWD.getRelativePath("foo/bar").toString());
+										</script>
+									</tr>
 								</table>
 							</div>
 						</li>
