@@ -183,19 +183,14 @@ var getopts = function(settings,array) {
 			var next = array.shift();
 			if (next.substring(0,1) == "-") {
 				var name = next.substring(1);
-				var handler;
-				if (options[name]) {
-					handler = options[name];
-				} else {
-					handler = {
-						parser: function() {
-							unhandled(name,array,otherValues)
-						}
-					};
+				if (!options[name]) {
+					throw new Error();
 				}
-				var value = handler.parser(array);
-				if (typeof(value) != "undefined") {
-					handler.value = value;
+				if (options[name]) {
+					var value = options[name].parser(array);
+					if (typeof(value) != "undefined") {
+						options[name].value = value;
+					}
 				}
 			} else {
 				others.push(next);
