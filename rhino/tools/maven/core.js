@@ -275,13 +275,17 @@ $exports.Project = function(p) {
 			if (versions.length > 1) throw new Error("Too many matches: " + versions.join(","));
 			return versions[0];
 		}
+	};
+
+	var getMavenArguments = function() {
+		return (p.settings) ? ["-s", p.settings] : []
 	}
 
 	this.dependencies = new function() {
 		this.resolve = jsh.js.constant(function() {
 			return $exports.mvn({
 				directory: p.base,
-				arguments: ["dependency:resolve"],
+				arguments: getMavenArguments().concat(["dependency:resolve"]),
 				evaluate: function(s) {
 					//	TODO	platform-dependent
 					var lines = s.split("\n");
