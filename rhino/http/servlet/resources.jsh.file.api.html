@@ -44,6 +44,9 @@
 			verify(one).list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length().is(2);
 			verify(one).list({ path: "WEB-INF/generic/inonit/script/servlet/" })[0]().is("Nashorn.java");
 			verify(one).list({ path: "WEB-INF/generic/inonit/script/servlet/" })[1]().is("Servlet.java");
+			verify(one).list({ path: "WEB-INF/" }).length().is(2);
+			verify(one).list({ path: "WEB-INF/" })[0]().is("generic/");
+			verify(one).list({ path: "WEB-INF/" })[1]().is("mozilla/");
 		</script>
 	</div>
 </body>

@@ -68,6 +68,9 @@ $exports.addJshPluginTo = function(jsh) {
 						rv = rv.concat(directory.list({ type: directory.list.ENTRY }).map(function(entry) {
 							return entry.path;
 						}));
+					} else if (mapping[i].prefix.substring(0,path.length) == path) {
+						var remaining = mapping[i].prefix.substring(path.length);
+						rv.push(remaining.split("/")[0] + "/");
 					}
 				}
 				return rv;
