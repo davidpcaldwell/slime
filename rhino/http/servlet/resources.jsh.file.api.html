@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+		<script type="application/x.jsapi#context">
+			(function() {
+				return new function() {
+					this.getMimeType = function(file) {
+						return "text/plain";
+					}
+				}
+			})()
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+		</ul>
+		<script type="application/x.jsapi#tests">
+			var code = {};
+			var shell = {
+				httpd: code,
+				loader: jsh.loader,
+				io: jsh.io
+			}
+			module.addJshPluginTo(shell);
+			verify(code,"code").Resources().isNotEqualTo(3);
+			var one = code.Resources.script(
+				$module.getResourcePathname("test/resource/1.js").file
+			);
+			verify(one,"one").isNotEqualTo(3);
+			verify(one).list({ path: "WEB-INF/generic/" }).length().is(1);
+			verify(one).list({ path: "WEB-INF/generic/" })[0]().is("inonit/");
+		</script>
+	</div>
+</body>
+</html>

@@ -23,7 +23,7 @@ $exports.addJshPluginTo = function(jsh) {
 		this.map = function(prefix,pathname) {
 			mapping.push({ pathname: pathname, prefix: prefix });
 		}
-
+		
 		this.loader = new jsh.io.Loader({
 			resources: new function() {
 				this.toString = function() {
@@ -55,7 +55,26 @@ $exports.addJshPluginTo = function(jsh) {
 				}
 			}
 		});
-
+		
+		this.list = function(p) {
+			if (typeof(p.path) == "string") {
+				var path = p.path;
+				var rv = [];
+				for (var i=0; i<mapping.length; i++) {
+					var prefix = mapping[i].prefix;
+					if (path.substring(0,prefix.length) == prefix) {
+						var subpath = path.substring(prefix.length);
+						var directory = (subpath.length) ? mapping[i].pathname.directory.getSubdirectory(subpath) : mapping[i].pathname.directory;
+						rv = rv.concat(directory.list({ type: directory.list.ENTRY }).map(function(entry) {
+							if (entry.node.directory) return subpath + entry.path;
+							return subpath + entry.path;
+						}));
+					}
+				}
+				return rv;
+			}
+		}
+		
 		this.build = function(WEBAPP) {
 			var build = function(prefix,pathname) {
 				var to = WEBAPP.getRelativePath(prefix);
