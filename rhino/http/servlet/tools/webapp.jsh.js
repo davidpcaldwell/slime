@@ -15,13 +15,13 @@ var parameters = jsh.script.getopts({
 		to: jsh.file.Pathname,
 		recursive: false,
 		servletapi: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.getRelativePath("lib/tomcat/lib/servlet-api.jar") : jsh.file.Pathname,
+		library: jsh.script.getopts.ARRAY(String),
 		compile: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		resources: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		norhino: false,
 		//	TODO	allow multiple servlets with separate parameters
 		servlet: String,
 		parameter: jsh.script.getopts.ARRAY(String),
-		library: jsh.script.getopts.ARRAY(String),
 		"java:version": String
 	}
 });
