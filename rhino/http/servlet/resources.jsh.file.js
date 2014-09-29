@@ -66,8 +66,7 @@ $exports.addJshPluginTo = function(jsh) {
 						var subpath = path.substring(prefix.length);
 						var directory = (subpath.length) ? mapping[i].pathname.directory.getSubdirectory(subpath) : mapping[i].pathname.directory;
 						rv = rv.concat(directory.list({ type: directory.list.ENTRY }).map(function(entry) {
-							if (entry.node.directory) return subpath + entry.path;
-							return subpath + entry.path;
+							return entry.path;
 						}));
 					}
 				}

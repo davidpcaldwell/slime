@@ -41,6 +41,9 @@
 			verify(one,"one").isNotEqualTo(3);
 			verify(one).list({ path: "WEB-INF/generic/" }).length().is(1);
 			verify(one).list({ path: "WEB-INF/generic/" })[0]().is("inonit/");
+			verify(one).list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length().is(2);
+			verify(one).list({ path: "WEB-INF/generic/inonit/script/servlet/" })[0]().is("Nashorn.java");
+			verify(one).list({ path: "WEB-INF/generic/inonit/script/servlet/" })[1]().is("Servlet.java");
 		</script>
 	</div>
 </body>
