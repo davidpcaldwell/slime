@@ -83,9 +83,13 @@ $exports.addJshPluginTo = function(jsh) {
 					};
 				},
 				Loader: function(subprefix) {
-					return new Loader(prefix + subprefix);
+					var rv = new Loader(prefix + subprefix);
+					return rv;
 				}
 			});
+			rv.toString = function() {
+				return "resources.jsh.file.js loader: prefix=" + prefix;
+			}
 			rv.list = function(p) {
 				return loader.list(prefix+p.path);
 			}
@@ -93,6 +97,18 @@ $exports.addJshPluginTo = function(jsh) {
 		}
 		
 		this.loader = new Loader("");
+		
+		this.Loader = function(p) {
+			var rv = new jsh.file.Loader(p);
+			rv.list = function(m) {
+				var directory = p.directory;
+				var dir = (m.path) ? directory.getSubdirectory(m.path) : directory;
+				return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
+					return entry.path;
+				});
+			}
+			return rv;
+		}
 		
 		this.build = function(WEBAPP) {
 			var build = function(prefix,pathname) {

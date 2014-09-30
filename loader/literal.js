@@ -187,6 +187,8 @@
 					return $api.Constructor.decorated(Default,p.Loader);
 				})(this);
 
+				this.Child = $api.experimental(Child);
+
 				this.module = function(path,scope,target) {
 					var getModuleLocations = function(path) {
 						var tokens = path.split("/");

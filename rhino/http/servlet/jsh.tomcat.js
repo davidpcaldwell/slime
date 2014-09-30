@@ -74,10 +74,10 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 										this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
 
 										this.loaders = {
-											script: new jsh.file.Loader({
+											script: (m.resources) ? new m.resources.Loader({
 												directory: servletDeclaration.file.parent,
 												type: $context.getMimeType
-											}),
+											}) : null,
 											container: (m.resources) ? m.resources.loader : null
 										};
 

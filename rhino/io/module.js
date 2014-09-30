@@ -533,19 +533,22 @@ $exports.Loader = function(p) {
 		//	TODO	currently looks like p.Loader would be ignored if p.resources present
 		rv = new $context.$rhino.Loader({
 			_source: Packages.inonit.script.engine.Code.Source.create(_resources),
-			Loader: function(prefix) {
-				return new $exports.Loader({
-					resources: new function() {
-						this.toString = function() {
-							return "Resources: " + p.resources + " with prefix " + prefix;
-						}
+			Loader: $api.Constructor.decorated(
+				function(prefix) {
+					return new $exports.Loader({
+						resources: new function() {
+							this.toString = function() {
+								return "Resources: " + p.resources + " with prefix " + prefix;
+							}
 
-						this.get = function(path) {
-							return p.resources.get(prefix + path);
+							this.get = function(path) {
+								return p.resources.get(prefix + path);
+							}
 						}
-					}
-				});
-			}
+					});
+				},
+				p.Loader
+			)
 		});
 //		rv.toString = function() {
 //			return "rhino/io with Loader resources " + p.resources;
@@ -557,6 +560,9 @@ $exports.Loader = function(p) {
 		}
 		parameter.Loader = $api.Constructor.decorated(function(prefix) {
 			decorate.call(this);
+			this.toString = function() {
+				return "rhino/io Loader: prefix=" + prefix;
+			}
 		},p.Loader);
 		rv = new $context.$rhino.Loader(parameter);
 	}

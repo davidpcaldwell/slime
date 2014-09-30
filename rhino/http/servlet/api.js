@@ -88,6 +88,21 @@ var bootstrap = (function() {
 
 var Loader = (function() {
 	if (bootstrap) {
+		return function(p) {
+			p.type = function(path) {
+				var _type = $servlet.getMimeType(path);
+				if (_type) return bootstrap.io.mime.Type.parse(String(_type));
+				return null;
+			};
+			p.list = function(m) {
+				throw new Error("list() unimplemented.");
+			}
+			p.Loader = function(prefix) {
+				throw new Error("Loader() unimplemented.");
+			}
+			return new bootstrap.io.Loader(p);
+			
+		}
 		return bootstrap.io.Loader;
 	}
 })();
@@ -108,7 +123,7 @@ var loaders = (function() {
 		var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
 		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
 		return {
-			script: new Loader({
+			script: Loader({
 				_source: $servlet.resources.child(prefix),
 				type: function(path) {
 					var _type = $servlet.getMimeType(path);
@@ -116,7 +131,7 @@ var loaders = (function() {
 					return null;
 				}
 			}),
-			container: new Loader({
+			container: Loader({
 				_source: $servlet.resources,
 				type: function(path) {
 					var _type = $servlet.getMimeType(path);
