@@ -96,6 +96,22 @@ var apiServlet = new function() {
 	}
 };
 
+var manifestServlet = new function() {
+	this.test = function(url) {
+		var client = new jsh.http.Client();
+		var response = client.request({
+			url: url
+		});
+		if (response.status.code != 200) {
+			fail("status = " + response.status.code);
+		}
+		jsh.shell.echo(response.body.type);
+		var value = response.body.stream.character().asString();
+		var json = eval("(" + value + ")");
+		jsh.shell.echo("Got JSON: " + value);
+	}
+}
+
 var coffeeServlet = new function() {
 	var getString = function(response) {
 		if (response.status.code != 200) {
@@ -230,12 +246,22 @@ var suites = {
 		server.start({
 			"slime.hello": "WEB-INF/servlet/test/hello.servlet.js",
 			"slime.file": "WEB-INF/servlet/test/file.servlet.js",
-			"slime.api": "WEB-INF/servlet/test/api.servlet.js"
+			"slime.api": "WEB-INF/servlet/test/api.servlet.js",
+			"slime.manifest": "WEB-INF/servlet/test/manifest.servlet.js"
 		});
 		jsh.shell.echo("Test hello servlet inside Tomcat ...");
 		helloServlet.test("http://127.0.0.1:8080/slime.hello/");
 		fileServlet.test("http://127.0.0.1:8080/slime.file/");
 		apiServlet.test("http://127.0.0.1:8080/slime.api/");
+		jsh.shell.echo("Test manifest servlet inside Tomcat ...");
+		manifestServlet.test("http://127.0.0.1:8080/slime.manifest/");
+		server.stop();
+	},
+	manifest: function() {
+		server.start({
+			"slime.manifest": "WEB-INF/servlet/test/manifest.servlet.js"
+		});		
+		manifestServlet.test("http://127.0.0.1:8080/slime.manifest/");
 		server.stop();
 	},
 	coffee: function() {

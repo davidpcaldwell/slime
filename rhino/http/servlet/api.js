@@ -51,6 +51,15 @@ var $servlet = (function() {
 		rv.getMimeType = function(path) {
 			return $host.getServlet().getServletConfig().getServletContext().getMimeType(path);
 		};
+		rv.getResourcePaths = function(prefix) {
+			var _set = $host.getServlet().getServletContext().getResourcePaths("/" + prefix);
+			var rv = [];
+			var _i = _set.iterator();
+			while(_i.hasNext()) {
+				rv.push(String(_i.next().substring(prefix.length+1)));
+			}
+			return rv;
+		}
 		return rv;
 	}
 })();
@@ -82,28 +91,40 @@ var bootstrap = (function() {
 				java: rv.java
 			}
 		});
+		rv.loader = {
+			paths: function(prefix) {
+				return $servlet.getResourcePaths(prefix);
+			}
+		}
 		return rv;
 	}
 })();
 
 var Loader = (function() {
 	if (bootstrap) {
-		return function(p) {
-			p.type = function(path) {
+		var Loader = function(p,prefix) {
+			var pp = {};
+			pp._source = p._source.child(prefix);
+			pp.type = function(path) {
 				var _type = $servlet.getMimeType(path);
 				if (_type) return bootstrap.io.mime.Type.parse(String(_type));
 				return null;
 			};
-			p.list = function(m) {
-				throw new Error("list() unimplemented.");
+			pp.Loader = function(sub) {
+				return new Loader(p,prefix+sub);
 			}
-			p.Loader = function(prefix) {
-				throw new Error("Loader() unimplemented.");
+			var rv = new bootstrap.io.Loader(pp);
+			rv.list = function(m) {
+				var path = prefix + m.path;
+				var rv = bootstrap.loader.paths(path);
+				return rv;
 			}
-			return new bootstrap.io.Loader(p);
-			
+			return rv;
 		}
-		return bootstrap.io.Loader;
+		
+		return function(p,prefix) {
+			return new Loader(p,prefix);
+		};
 	}
 })();
 
@@ -124,21 +145,11 @@ var loaders = (function() {
 		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
 		return {
 			script: Loader({
-				_source: $servlet.resources.child(prefix),
-				type: function(path) {
-					var _type = $servlet.getMimeType(path);
-					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
-					return null;
-				}
-			}),
+				_source: $servlet.resources
+			},prefix),
 			container: Loader({
-				_source: $servlet.resources,
-				type: function(path) {
-					var _type = $servlet.getMimeType(path);
-					if (_type) return bootstrap.io.mime.Type.parse(String(_type));
-					return null;
-				}
-			})
+				_source: $servlet.resources
+			},"")
 		};
 	} else if ($host.loaders) {
 		return $host.loaders;
