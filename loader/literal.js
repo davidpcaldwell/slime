@@ -186,11 +186,11 @@
 						}
 					};
 
-					var getChildLoader = function(p) {
+					var getChildLoader = function(m) {
 						var Child = function(prefix) {
-							return new p.Loader({
+							return new Callee({
 								toString: function() {
-									return p.parent.toString() + " prefix=" + prefix;
+									return m.parent.toString() + " prefix=" + prefix;
 								},
 								getScript: function(path) {
 									return p.getScript(prefix+path);
@@ -198,8 +198,8 @@
 							});
 						};
 
-						var Constructor = (p.Child) ? $api.Constructor.decorated(Child,p.Child) : Child;
-						return new Constructor(p.prefix);
+						var Constructor = (p.Loader) ? $api.Constructor.decorated(Child,p.Loader) : Child;
+						return new Constructor(m.prefix);
 					};
 
 					var locations = getModuleLocations(path);
@@ -207,12 +207,7 @@
 					var inner = createFileScope(scope);
 					inner.$loader = getChildLoader({
 						parent: this,
-						getScript: function(path) {
-							return p.getScript(path);
-						},
-						Child: p.Loader,
-						prefix: locations.prefix,
-						Loader: Callee
+						prefix: locations.prefix
 					});
 					methods.run.call(target,p.getScript(locations.main),inner);
 					return inner.$exports;
