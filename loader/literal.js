@@ -171,6 +171,21 @@
 				declare.call(this,"run");
 				declare.call(this,"file");
 				declare.call(this,"value");
+				
+				var Child = (function(parent) {
+					var Default = function(prefix) {
+						return new Callee({
+							toString: function() {
+								return parent.toString() + " prefix=" + prefix;
+							},
+							getScript: function(path) {
+								return p.getScript(prefix+path);
+							}
+						});					
+					};
+					
+					return $api.Constructor.decorated(Default,p.Loader);
+				})(this);
 
 				this.module = function(path,scope,target) {
 					var getModuleLocations = function(path) {
@@ -186,29 +201,10 @@
 						}
 					};
 
-					var getChildLoader = function(m) {
-						var Child = function(prefix) {
-							return new Callee({
-								toString: function() {
-									return m.parent.toString() + " prefix=" + prefix;
-								},
-								getScript: function(path) {
-									return p.getScript(prefix+path);
-								}
-							});
-						};
-
-						var Constructor = (p.Loader) ? $api.Constructor.decorated(Child,p.Loader) : Child;
-						return new Constructor(m.prefix);
-					};
-
 					var locations = getModuleLocations(path);
 
 					var inner = createFileScope(scope);
-					inner.$loader = getChildLoader({
-						parent: this,
-						prefix: locations.prefix
-					});
+					inner.$loader = new Child(locations.prefix);
 					methods.run.call(target,p.getScript(locations.main),inner);
 					return inner.$exports;
 				}
