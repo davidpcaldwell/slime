@@ -22,43 +22,32 @@ $exports.addJshPluginTo = function(jsh) {
 
 		this.map = function(prefix,pathname) {
 			mapping.push({ pathname: pathname, prefix: prefix });
-		}
+		};
 		
-		this.loader = new jsh.io.Loader({
-			resources: new function() {
-				this.toString = function() {
-					return "jsh.httpd.Resources [" + mapping.map(function(item) {
-						return item.prefix + "->" + item.pathname;
-					}).join(", ") + "]";
-				};
-
-				this.get = function(path) {
-					for (var i=0; i<mapping.length; i++) {
-						var prefix = mapping[i].prefix;
-						if (path.substring(0,prefix.length) == prefix) {
-							var subpath = path.substring(prefix.length);
-							if (!mapping[i].pathname.directory) {
-								throw new Error("Directory not found at " + mapping[i].pathname);
-							}
-							var file = mapping[i].pathname.directory.getFile(subpath);
-							return (file) ? new jsh.io.Resource({
-								type: $context.getMimeType(file),
-								read: {
-									binary: function() {
-										return file.read(jsh.io.Streams.binary)
-									}
-								}
-							}) : null;
+		var loader = new function() {
+			this.get = function(path) {
+				for (var i=0; i<mapping.length; i++) {
+					var prefix = mapping[i].prefix;
+					if (path.substring(0,prefix.length) == prefix) {
+						var subpath = path.substring(prefix.length);
+						if (!mapping[i].pathname.directory) {
+							throw new Error("Directory not found at " + mapping[i].pathname);
 						}
+						var file = mapping[i].pathname.directory.getFile(subpath);
+						return (file) ? new jsh.io.Resource({
+							type: $context.getMimeType(file),
+							read: {
+								binary: function() {
+									return file.read(jsh.io.Streams.binary)
+								}
+							}
+						}) : null;
 					}
-					return null;
 				}
-			}
-		});
-		
-		this.list = function(p) {
-			if (typeof(p.path) == "string") {
-				var path = p.path;
+				return null;
+			};
+			
+			this.list = function(path) {
 				var rv = [];
 				for (var i=0; i<mapping.length; i++) {
 					var prefix = mapping[i].prefix;
@@ -70,12 +59,40 @@ $exports.addJshPluginTo = function(jsh) {
 						}));
 					} else if (mapping[i].prefix.substring(0,path.length) == path) {
 						var remaining = mapping[i].prefix.substring(path.length);
-						rv.push(remaining.split("/")[0] + "/");
+						var add = remaining.split("/")[0] + "/";
+						if (rv.indexOf(add) == -1) {
+							rv.push(add);
+						}
 					}
 				}
-				return rv;
+				return rv;				
+			};
+			
+			this.toString = function() {
+				return "jsh.httpd.Resources [" + mapping.map(function(item) {
+					return item.prefix + "->" + item.pathname;
+				}).join(", ") + "]";				
 			}
+		};
+		
+		var Loader = function(prefix) {
+			var rv = new jsh.io.Loader({
+				resources: new function() {
+					this.get = function(path) {
+						return loader.get(prefix+path);
+					};
+				},
+				Loader: function(subprefix) {
+					return new Loader(prefix + subprefix);
+				}
+			});
+			rv.list = function(p) {
+				return loader.list(prefix+p.path);
+			}
+			return rv;
 		}
+		
+		this.loader = new Loader("");
 		
 		this.build = function(WEBAPP) {
 			var build = function(prefix,pathname) {
