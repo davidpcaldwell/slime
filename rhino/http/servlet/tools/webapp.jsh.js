@@ -15,6 +15,7 @@ var parameters = jsh.script.getopts({
 		to: jsh.file.Pathname,
 		recursive: false,
 		servletapi: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.getRelativePath("lib/tomcat/lib/servlet-api.jar") : jsh.file.Pathname,
+		//	TODO	switch -library and -parameter to use new Object in jsh.script.getopts
 		library: jsh.script.getopts.ARRAY(String),
 		compile: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		resources: jsh.script.getopts.ARRAY(jsh.file.Pathname),
