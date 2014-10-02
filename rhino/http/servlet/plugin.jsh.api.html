@@ -89,7 +89,11 @@ END LICENSE
 				</li>
 			</ul>
 			<script type="application/x.jsapi#tests">
-				scenario($jsapi.loader.scenario("resources.jsh.file.api.html", { module: $jsapi.loader.file("resources.jsh.file.js") }));
+				scenario($jsapi.loader.scenario("resources.jsh.file.api.html", { module: $jsapi.loader.file("resources.jsh.file.js", {
+					getMimeType: function(path) {
+						return "text/plain";
+					}
+				}) }));
 			</script>
 		</div>
 		<ul>

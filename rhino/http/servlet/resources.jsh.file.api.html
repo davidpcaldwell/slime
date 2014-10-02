@@ -44,9 +44,12 @@
 			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length().is(2);
 			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[0]().is("Nashorn.java");
 			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[1]().is("Servlet.java");
-			verify(one).loader().list({ path: "WEB-INF/" }).length().is(2);
+			verify(one).loader().list({ path: "WEB-INF/" }).length().is(3);
 			verify(one).loader().list({ path: "WEB-INF/" })[0]().is("generic/");
 			verify(one).loader().list({ path: "WEB-INF/" })[1]().is("mozilla/");
+			verify(one).loader().list({ path: "WEB-INF/" })[2]().is("test/");
+			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
+			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
 		</script>
 	</div>
 </body>
