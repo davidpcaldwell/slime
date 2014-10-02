@@ -83,12 +83,12 @@ public abstract class Loader {
 				synchronized(locations) {
 					for (Code.Source source : locations) {
 						try {
-							InputStream in = source.getResourceAsStream(path);
+							Code.Source.File in = source.getFile(path);
 							if (in != null) {
 								if (getPackage(packageName) == null) {
 									definePackage(packageName,null,null,null,null,null,null,null);
 								}
-								byte[] b = streams.readBytes(in);
+								byte[] b = streams.readBytes(in.getInputStream());
 								return defineClass(name, b, 0, b.length);
 							}
 						} catch (IOException e) {

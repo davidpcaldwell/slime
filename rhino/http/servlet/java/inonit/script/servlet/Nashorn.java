@@ -50,8 +50,8 @@ class Nashorn extends Servlet.ScriptContainer {
 				return name;
 			}
 
-			@Override public Reader getReader() {
-				return new InputStreamReader(stream);
+			@Override public InputStream getInputStream() {
+				return stream;
 			}
 		});
 	}

@@ -49,7 +49,7 @@ public abstract class Installation {
 		static Plugin slime(final File slime) throws IOException {
 			//	TODO	what if this .slime contains classes? Should we load them? Right now, we do not
 			Plugin rv = create(Code.slime(slime));
-			if (rv.getCode().getScripts().getResourceAsStream("plugin.jsh.js") != null) {
+			if (rv.getCode().getScripts().getFile("plugin.jsh.js") != null) {
 				return rv;
 			} else {
 				return null;

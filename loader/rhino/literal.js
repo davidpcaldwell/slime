@@ -42,7 +42,7 @@
 				if (script.name && script._in) {
 					//	ready
 				} else if (script._source && script.path) {
-					script._in = script._source.getResourceAsStream(script.path);
+					script._in = script._source.getFile(script.path).getInputStream();
 					if (!script._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
 					script.name = script._source.toString() + ":" + script.path;
 				} else if (script.name && !script._in) {
@@ -72,7 +72,8 @@
 			}
 
 			this._stream = function(path) {
-				return _source.getResourceAsStream(path);
+				var _file = _source.getFile(path);
+				return (_file) ? _file.getInputStream() : null;
 			};
 			this._resource = loader.$api.deprecate(this._stream);
 		}

@@ -36,7 +36,13 @@ public abstract class Code {
 	public static abstract class Source {
 		public static abstract class File {
 			public abstract String getSourceName();
-			public abstract Reader getReader();
+			public abstract InputStream getInputStream();
+			
+			public final Reader getReader() {
+				InputStream in = getInputStream();
+				if (in == null) return null;
+				return new InputStreamReader(in);
+			}
 
 			public static File create(final java.io.File file) {
 				return new File() {
@@ -48,9 +54,9 @@ public abstract class Code {
 						}
 					}
 
-					@Override public Reader getReader() {
+					@Override public InputStream getInputStream() {
 						try {
-							return new FileReader(file);
+							return new FileInputStream(file);
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
@@ -64,8 +70,8 @@ public abstract class Code {
 						return name;
 					}
 
-					@Override public Reader getReader() {
-						return new InputStreamReader(in);
+					@Override public InputStream getInputStream() {
+						return in;
 					}
 				};
 			}
@@ -74,7 +80,7 @@ public abstract class Code {
 		public static Source NULL = new ResourceBased() {
 			@Override public String toString() { return "Code.Source.NULL"; }
 
-			public InputStream getResourceAsStream(String path) {
+			public File getFile(String path) {
 				return null;
 			}
 		};
@@ -84,9 +90,11 @@ public abstract class Code {
 				@Override public String toString() {
 					return "Source: prefix=" + prefix + " loader=" + ClassLoader.getSystemClassLoader();
 				}
-
-				public InputStream getResourceAsStream(String path) {
-					return ClassLoader.getSystemClassLoader().getResourceAsStream(prefix + path);
+				
+				public File getFile(String path) {
+					InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(prefix+path);
+					if (in == null) return null;
+					return File.create("bootclasspath:" + prefix+path, in);
 				}
 			};
 		}
@@ -138,8 +146,10 @@ public abstract class Code {
 					return Code.Source.class.getName() + " resources=" + resources;
 				}
 
-				@Override public InputStream getResourceAsStream(String path) throws IOException {
-					return resources.getResourceAsStream(path);
+				public File getFile(String path) throws IOException {
+					InputStream in = resources.getResourceAsStream(path);
+					if (in == null) return null;
+					return File.create(this.toString() + ":" + path, in);
 				}
 
 				@Override public Classes getClasses() {
@@ -148,11 +158,12 @@ public abstract class Code {
 			};
 		}
 
-		/**
-		 *	Returns a stream that reads the content of the resource at the given path, or <code>null</code> if no resource can
-		 *	be found at that path.
-		 */
-		public abstract InputStream getResourceAsStream(String path) throws IOException;
+//		/**
+//		 *	Returns a stream that reads the content of the resource at the given path, or <code>null</code> if no resource can
+//		 *	be found at that path.
+//		 */
+//		public abstract InputStream getResourceAsStream(String path) throws IOException;
+		public abstract File getFile(String path) throws IOException;
 		public abstract Classes getClasses();
 
 		public final Source child(final String prefix) {
@@ -162,9 +173,9 @@ public abstract class Code {
 				@Override public String toString() {
 					return Code.Source.class.getName() + " source=" + Source.this + " prefix=" + prefix;
 				}
-
-				public InputStream getResourceAsStream(String path) throws IOException {
-					return Source.this.getResourceAsStream(prepend + path);
+				
+				public Source.File getFile(String path) throws IOException {
+					return Source.this.getFile(prepend + path);
 				}
 
 				public Code.Classes getClasses() {
@@ -183,35 +194,64 @@ public abstract class Code {
 
 		private static class UrlBased extends Source {
 			private java.net.URL url;
+			private Classes classes;
 
-			UrlBased(java.net.URL url) {
+			UrlBased(final java.net.URL url) {
 				this.url = url;
-			}
-
-			@Override public String toString() {
-				return Code.Source.class.getName() + " url=" + url;
-			}
-
-			public InputStream getResourceAsStream(String path) {
-				URL url = getClasses().getResource(path);
-				if (url != null) {
-					try {
-						return url.openStream();
-					} catch (IOException e) {
-						//	if we cannot open it, returning null seems fine
-					}
-				}
-				return null;
-			}
-
-			public Classes getClasses() {
-				return new Classes() {
+				this.classes = new Classes() {
 					private java.net.URLClassLoader delegate = new java.net.URLClassLoader(new java.net.URL[] {url});
 
 					@Override public URL getResource(String path) {
 						return delegate.getResource(path);
 					}
 				};
+			}
+
+			@Override public String toString() {
+				return Code.Source.class.getName() + " url=" + url;
+			}
+
+//			public InputStream getResourceAsStream(String path) {
+//				URL url = classes.getResource(path);
+//				if (url != null) {
+//					try {
+//						return url.openStream();
+//					} catch (IOException e) {
+//						//	if we cannot open it, returning null seems fine
+//					}
+//				}
+//				return null;
+//			}
+			
+			private String getSourceName(URL url, String path) {
+				if (url.getProtocol().equals("file")) {
+					try {
+						java.io.File base = new java.io.File(url.toURI());
+						return new java.io.File(base, path).getCanonicalPath();
+					} catch (URISyntaxException e) {
+					} catch (IOException e) {
+					}
+				}
+				return url.toExternalForm();
+			}
+			
+			public File getFile(String path) throws IOException {
+				URL url = classes.getResource(path);
+				if (url == null) return null;
+				try {
+					InputStream in = url.openStream();
+					return File.create(
+						getSourceName(url,path),
+						in
+					);
+				} catch (IOException e) {
+					//	TODO	is this the only way to test whether the URL is available?
+					return null;
+				}
+			}
+
+			public Classes getClasses() {
+				return classes;
 			}
 		}
 
