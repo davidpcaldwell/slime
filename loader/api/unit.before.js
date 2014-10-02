@@ -100,8 +100,9 @@ $exports.Scenario = function(properties) {
 						this[x] = function() {
 							scope.test({
 								success: function() { return false; },
+								error: e,
 								message: function(success) {
-									return name + "threw " + e;
+									return name + " threw " + e;
 								}
 							});
 						}
