@@ -188,8 +188,8 @@ public abstract class Code {
 							return delegate.getResource(prepend+path);
 						}
 					};
-				}			};
-
+				}
+			};
 		}
 
 		private static class UrlBased extends Source {
@@ -226,8 +226,8 @@ public abstract class Code {
 			private String getSourceName(URL url, String path) {
 				if (url.getProtocol().equals("file")) {
 					try {
-						java.io.File base = new java.io.File(url.toURI());
-						return new java.io.File(base, path).getCanonicalPath();
+						java.io.File file = new java.io.File(url.toURI());
+						return file.getCanonicalPath();
 					} catch (URISyntaxException e) {
 					} catch (IOException e) {
 					}

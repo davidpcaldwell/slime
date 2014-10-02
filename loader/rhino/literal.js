@@ -42,9 +42,10 @@
 				if (script.name && script._in) {
 					//	ready
 				} else if (script._source && script.path) {
-					script._in = script._source.getFile(script.path).getInputStream();
+					var _file = script._source.getFile(script.path);
+					script._in = _file.getInputStream();
 					if (!script._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
-					script.name = script._source.toString() + ":" + script.path;
+					script.name = String(_file.getSourceName());
 				} else if (script.name && !script._in) {
 					throw new Error("script._in is null for name = " + script.name);
 				} else {
