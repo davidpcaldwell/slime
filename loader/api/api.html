@@ -363,6 +363,109 @@ END LICENSE
 				sections.
 			</div>
 			<div>
+				<h3>$jsapi</h3>
+				<div>
+					Tests receive a <code>$jsapi</code> variable in their scope which provides various services. Implementations
+					may provide additional properties and methods, but all implementations provide the following:
+				</div>
+				<!--
+					Referenced implementations:
+	
+					jsh/unit/jsapi.js
+					loader/browser/test/client.html
+				-->
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">loader</div>
+						<!--	TODO	can loader be defined in terms of SLIME loader?	-->
+						<!--	TODO	what do these methods do if file not present?	-->
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">module</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The relative path of the module, using the path of the current api.html as the base.</span>
+										</li>
+										<li class="value">
+											<span class="type">object</span>
+											<span>The <code>$context</code> with which to load the module.</span>
+										</li>
+										<li class="value">
+											<span class="type">object</span>
+											<!--	TODO	-->
+											<span>target</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">object</span>
+									<span>The module's exports</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">file</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The relative path of the file, using the path of the current api.html as the base.</span>
+										</li>
+										<li class="value">
+											<span class="type">object</span>
+											<span>The <code>$context</code> with which to load the file.</span>
+										</li>
+										<li class="value">
+											<span class="type">object</span>
+											<!--	TODO	-->
+											<span>target</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">object</span>
+									<span>The file's exports</span>
+								</div>
+							</li>
+							<!--
+							<li class="function">
+								<div class="name">eval</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+							-->
+							<li class="value">
+								<div class="name">coffee</div>
+								<span>
+									If present, indicates that CoffeeScript is present and CoffeeScript code may be loaded via
+									the other methods.
+								</span>
+							</li>
+						</ul>
+					</li>
+					<!--	TODO	disableBreakOnExceptions?	-->
+				</ul>
+			</div>
+			<div>
 				The scope in which tests execute supports the following type:
 			</div>
 			<div class="type">
