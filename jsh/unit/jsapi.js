@@ -290,7 +290,13 @@ $exports.tests = new function() {
 						return arguments.callee.call(this,arguments[1],arguments[0]);
 					}
 					return jsh.loader.module(suite.getRelativePath(name),context);
-				})
+				}),
+				java: {
+					loader: jsh.$jsapi.java,
+					io: {
+						newTemporaryDirectory: $newTemporaryDirectory
+					}
+				}
 			},
 			$java: {
 				io: {
@@ -305,6 +311,8 @@ $exports.tests = new function() {
 			$platform: jsh.$jsapi.$platform,
 			$api: jsh.$jsapi.$api
 		};
+		rv.$java = rv.$jsapi.java;
+		$api.deprecate(rv,"$java");
 		rv.$jsapi.test = $api.deprecate(rv.$jsapi.loader.scenario);
 		return rv;
 	}
