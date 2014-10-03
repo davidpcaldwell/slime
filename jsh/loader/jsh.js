@@ -223,7 +223,7 @@ this.jsh = new function() {
 		$api: loader.$api,
 		$rhino: loader.getRhinoLoader(),
 		$coffee: $jsh.getInstallation().getLibrary("coffee-script.js"),
-		$java: $host.java
+		java: $host.java
 	};
 
 	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {

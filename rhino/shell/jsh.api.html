@@ -67,7 +67,7 @@ END LICENSE
 			new function() {
 				var host = $jsapi.module("../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino,
-					$java: jsh.$jsapi.$java
+					$java: jsh.$jsapi.java
 				});
 				var file = $jsapi.module("../../rhino/file/", new function() {
 					if (jsh.shell.environment.PATHEXT) {
