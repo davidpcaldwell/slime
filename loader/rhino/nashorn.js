@@ -13,8 +13,8 @@
 load("nashorn:mozilla_compat.js");
 
 (function() {
-	(function() {
-		if (Packages.java.lang.System.getenv("DISABLE_NASHORN_ERROR_HACK")) return;
+	var hasNashornErrorHack = (function() {
+		if (Packages.java.lang.System.getenv("DISABLE_NASHORN_ERROR_HACK")) return false;
 		this.Error = function(message) {
 			this.name = "Error";
 			this.message = message;
@@ -52,6 +52,7 @@ load("nashorn:mozilla_compat.js");
 			return rv;
 		};
 		this.TypeError = new Subtype(this.Error,"TypeError");
+		return true;
 	})();
 	
 	var toScope = function(scope) {
@@ -224,6 +225,10 @@ load("nashorn:mozilla_compat.js");
 			this.Array = function(JavaClass,length) {
 				return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
 			}
+			
+			this.test = {
+				HAS_NASHORN_ERROR_HACK: hasNashornErrorHack
+			}			
 		};
 
 		return rv;

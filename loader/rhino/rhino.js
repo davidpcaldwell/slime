@@ -84,6 +84,7 @@
 		this.Array = function(JavaClass,length) {
 			return Packages.java.lang.reflect.Array.newInstance(JavaClass,length);
 		}
+		this.test = {};
 	};
 
 	rv.getDebugger = function() {
