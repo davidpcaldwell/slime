@@ -13,6 +13,47 @@
 load("nashorn:mozilla_compat.js");
 
 (function() {
+	(function() {
+		if (Packages.java.lang.System.getenv("DISABLE_NASHORN_ERROR_HACK")) return;
+		this.Error = function(message) {
+			this.name = "Error";
+			this.message = message;
+			this.stack = (function() {
+				var frames = new Packages.java.lang.Throwable().getStackTrace();
+				var rv = "";
+				for (var i=0; i<frames.length; i++) {
+					rv += "\t" + frames[i].toString() + "\n";
+				}
+				return rv;
+			})();
+		};
+		this.Error.prototype.toString = function() {
+			return this.name + ": " + this.message;
+		};
+		Object.defineProperty(this.Error.prototype, "stack", {
+			get: function() {
+				var _elements = new Packages.java.lang.Throwable().getStackTrace();
+				var stack = "";
+				for (var i=0; i<_elements.length; i++) {
+					if (!/\.java/.test(_elements[i].getFileName())) {
+						stack += "\tat " + _elements[i].getFileName() + ":" + _elements[i].getLineNumber() + "\n";
+					}
+				}
+				return stack;
+			}
+		});
+		
+		var Subtype = function(Error,name) {
+			var rv = function() {
+				Error.apply(this,arguments);
+				this.name = name;
+			};
+			rv.prototype = new Error();
+			return rv;
+		};
+		this.TypeError = new Subtype(this.Error,"TypeError");
+	})();
+	
 	var toScope = function(scope) {
 		var global = (function() { return this; })();
 		if (false) {

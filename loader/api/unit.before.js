@@ -114,7 +114,7 @@ $exports.Scenario = function(properties) {
 							success: function() { return e instanceof type; },
 							message: function(success) {
 								if (success) return name + " threw expected " + type.name;
-								return "Threw " + e + ", not " + type.name;
+								return "Threw " + e + ", not " + new type().name;
 							}
 						});
 					};
