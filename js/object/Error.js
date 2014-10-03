@@ -17,10 +17,6 @@ $exports.Error.Type = function(name) {
 		if (this instanceof arguments.callee) {
 			this.name = name;
 			this.message = message;
-			var template = new Error();
-			if (template.stack) {
-				this.stack = template.stack;
-			}
 			for (var x in properties) {
 				this[x] = properties[x];
 			}
