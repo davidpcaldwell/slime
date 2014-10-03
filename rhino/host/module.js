@@ -159,7 +159,7 @@ var errors = new function() {
 			//			to this file
 			//	TODO	get full stack traces if possible, rather than the limited version being provided now (which has ...more)
 			//			however, could be impossible (getStackTrace may not be overridden while printStackTrace is).
-			created.stack = stack;
+			created.stack = stack.join("\n");
 			return created;
 		}
 		rv.prototype = implementation.prototype;
