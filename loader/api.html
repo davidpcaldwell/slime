@@ -804,7 +804,9 @@ END LICENSE
 								verify(value).require().threw.nothing();
 								verify(value).property("foo").require().threw.type(TypeError);
 								verify(value).property("foo").require().threw.message().is("one.foo is required");
-								if (false) verify(value).property("foo","bar").threw.type(TypeError);
+								if (!$jsapi.java || !$jsapi.java.loader.test.HAS_NASHORN_ERROR_HACK) {
+									verify(value).property("foo","bar").threw.type(TypeError);
+								}
 								verify(value).property("name").require().threw.nothing();
 								verify(value).property("name","length").require().threw.nothing();
 								verify(value).property("nested","value").require().threw.nothing();
