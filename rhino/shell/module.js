@@ -318,7 +318,8 @@ $loader.run("os.js", {
 		environment: $exports.environment,
 		api: {
 			js: $context.api.js,
-			io: $context.api.io
+			io: $context.api.io,
+			file: $context.api.file
 		}
 	},
 	$exports: $exports.os

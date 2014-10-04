@@ -11,43 +11,42 @@
 //	Contributor(s):
 //	END LICENSE
 
-var _lock = new jsh.java.Thread.Monitor();
-var BorderLayout = Packages.java.awt.BorderLayout;
-var _frame = new Packages.javax.swing.JFrame();
-var _label = new Packages.javax.swing.JLabel(jsh.script.arguments[0]);
-var _field = new Packages.javax.swing.JPasswordField();
-var done = false;
-var doneWaiter = new _lock.Waiter({
-	until: function() {
-		return true;
-	},
-	then: function() {
-		_frame.dispose();
-		done = true;
+var parameters = jsh.script.getopts({
+	options: {
+		prompt: String,
+		child: false
 	}
 });
-_field.addKeyListener(new JavaAdapter(Packages.java.awt.event.KeyListener, {
-	keyPressed: function(e) {
-		if (e.getKeyCode() == Packages.java.awt.event.KeyEvent.VK_ENTER) {
-			doneWaiter();
+
+if (!parameters.options.child) {
+	var SUDO_ASKPASS_INVOCATION = [
+		jsh.shell.java.launcher,
+		"-jar",
+		jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+		jsh.script.file.pathname,
+		"-prompt","\"" + parameters.options.prompt + "\"",
+		"-child"
+	].join(" ");
+	var SUDO_ASKPASS_SCRIPT = [
+		"#!/bin/bash",
+		SUDO_ASKPASS_INVOCATION
+	].join("\n");
+	var SUDO_ASKPASS = jsh.shell.TMPDIR.createTemporary({ suffix: ".bash" });
+	jsh.shell.run({
+		command: "chmod",
+		arguments: ["+x",SUDO_ASKPASS]
+	});
+	SUDO_ASKPASS.pathname.write(SUDO_ASKPASS_SCRIPT, { append: false });
+	jsh.shell.stdout.write(SUDO_ASKPASS.pathname.toString());
+} else {
+	var api = jsh.script.loader.file("askpass.js", {
+		api: {
+			java: jsh.java
 		}
-	}
-}));
-_frame.addWindowListener(new JavaAdapter(Packages.java.awt.event.WindowListener, {
-	windowClosing: function(e) {
-		doneWaiter();
-	}
-}));
-_frame.add(_label, BorderLayout.NORTH);
-_frame.add(_field, BorderLayout.CENTER);
-_frame.pack();
-_frame.setVisible(true);
-new _lock.Waiter({
-	until: function() {
-		return done;
-	},
-	then: function() {
-		jsh.shell.echo(_field.getDocument().getText(0,_field.getDocument().getLength()));
-		jsh.shell.exit(0);
-	}
-})();
+	});
+	var typed = api.gui({
+		prompt: parameters.options.prompt
+	});
+	jsh.shell.stdout.write(typed);
+	jsh.shell.exit(0);
+}

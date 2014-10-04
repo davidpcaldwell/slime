@@ -52,5 +52,5 @@ $exports.gui = function(p) {
 			rv = _field.getDocument().getText(0,_field.getDocument().getLength());
 		}
 	})();
-	return rv;
+	return String(rv);
 }
