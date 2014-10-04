@@ -171,7 +171,7 @@
 				declare.call(this,"run");
 				declare.call(this,"file");
 				declare.call(this,"value");
-				
+
 				var Child = (function(parent) {
 					var Default = function(prefix) {
 						return new Callee({
@@ -181,9 +181,9 @@
 							getScript: function(path) {
 								return p.getScript(prefix+path);
 							}
-						});					
+						});
 					};
-					
+
 					return $api.Constructor.decorated(Default,p.Loader);
 				})(this);
 

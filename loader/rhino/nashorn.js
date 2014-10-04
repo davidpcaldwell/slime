@@ -42,7 +42,7 @@ load("nashorn:mozilla_compat.js");
 				return stack;
 			}
 		});
-		
+
 		var Subtype = function(Error,name) {
 			var rv = function() {
 				Error.apply(this,arguments);
@@ -54,7 +54,7 @@ load("nashorn:mozilla_compat.js");
 		this.TypeError = new Subtype(this.Error,"TypeError");
 		return true;
 	})();
-	
+
 	var toScope = function(scope) {
 		var global = (function() { return this; })();
 		if (false) {
@@ -225,10 +225,10 @@ load("nashorn:mozilla_compat.js");
 			this.Array = function(JavaClass,length) {
 				return Packages.java.lang.reflect.Array.newInstance(JavaClass.class,length);
 			}
-			
+
 			this.test = {
 				HAS_NASHORN_ERROR_HACK: hasNashornErrorHack
-			}			
+			}
 		};
 
 		return rv;

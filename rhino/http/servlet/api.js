@@ -121,7 +121,7 @@ var Loader = (function() {
 			}
 			return rv;
 		}
-		
+
 		return function(p,prefix) {
 			return new Loader(p,prefix);
 		};

@@ -48,7 +48,11 @@ var files = BASE.list({
 	},
 	recursive: true,
 	type: BASE.list.ENTRY
-}).filter( function(n) { return !n.node.directory });
+}).filter( function(n) { return !n.node.directory } )
+.filter(function(n) {
+	//	Test data files do not need a license
+	return !/\.txt$/.test(n.node.pathname.basename)
+});
 //jsh.shell.echo(files);
 var extensions = {};
 

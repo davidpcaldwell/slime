@@ -260,7 +260,7 @@ var suites = {
 	manifest: function() {
 		server.start({
 			"slime.manifest": "WEB-INF/servlet/test/manifest.servlet.js"
-		});		
+		});
 		manifestServlet.test("http://127.0.0.1:8080/slime.manifest/");
 		server.stop();
 	},

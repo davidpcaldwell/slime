@@ -231,7 +231,7 @@ $exports.tests = new function() {
 					file: function(name,context,target) {
 						return jsh.loader.file(suite.getRelativePath(name),context,target);
 					},
-					//	TODO	figure out how eval is used and document; why is jsh loader not used? And why is target parameter 
+					//	TODO	figure out how eval is used and document; why is jsh loader not used? And why is target parameter
 					//			omitted?
 					eval: function(name,scope) {
 						var code = suite.getRelativePath(name);

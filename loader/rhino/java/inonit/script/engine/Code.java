@@ -37,7 +37,7 @@ public abstract class Code {
 		public static abstract class File {
 			public abstract String getSourceName();
 			public abstract InputStream getInputStream();
-			
+
 			public final Reader getReader() {
 				InputStream in = getInputStream();
 				if (in == null) return null;
@@ -90,7 +90,7 @@ public abstract class Code {
 				@Override public String toString() {
 					return "Source: prefix=" + prefix + " loader=" + ClassLoader.getSystemClassLoader();
 				}
-				
+
 				public File getFile(String path) {
 					InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(prefix+path);
 					if (in == null) return null;
@@ -173,7 +173,7 @@ public abstract class Code {
 				@Override public String toString() {
 					return Code.Source.class.getName() + " source=" + Source.this + " prefix=" + prefix;
 				}
-				
+
 				public Source.File getFile(String path) throws IOException {
 					return Source.this.getFile(prepend + path);
 				}
@@ -222,7 +222,7 @@ public abstract class Code {
 //				}
 //				return null;
 //			}
-			
+
 			private String getSourceName(URL url, String path) {
 				if (url.getProtocol().equals("file")) {
 					try {
@@ -234,7 +234,7 @@ public abstract class Code {
 				}
 				return url.toExternalForm();
 			}
-			
+
 			public File getFile(String path) throws IOException {
 				URL url = classes.getResource(path);
 				if (url == null) return null;
