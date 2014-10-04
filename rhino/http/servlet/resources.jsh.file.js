@@ -19,7 +19,7 @@
 $exports.addJshPluginTo = function(jsh) {
 	jsh.httpd.Resources = function() {
 		var mapping = [];
-		
+
 		var Mapping = function(p) {
 			if (!p.pathname.directory) {
 				throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
@@ -42,7 +42,7 @@ $exports.addJshPluginTo = function(jsh) {
 				}
 				return null;
 			};
-			
+
 			this.list = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
@@ -51,12 +51,12 @@ $exports.addJshPluginTo = function(jsh) {
 					}
 					var directory = (subpath.length) ? p.pathname.directory.getSubdirectory(subpath) : p.pathname.directory;
 					return directory.list({ type: directory.list.ENTRY }).map(function(entry) {
-						return entry.path;
+						return entry.path.replace(/\\/g, "/");
 					});
 				}
 				return null;
 			}
-			
+
 			this.under = function(path) {
 				if (p.prefix.substring(0,path.length) == path) {
 					var remaining = p.prefix.substring(path.length);
@@ -64,7 +64,7 @@ $exports.addJshPluginTo = function(jsh) {
 					return add;
 				}
 			};
-			
+
 			this.build = function(WEBAPP) {
 				var build = function(prefix,pathname) {
 					var to = WEBAPP.getRelativePath(prefix);
@@ -107,7 +107,7 @@ $exports.addJshPluginTo = function(jsh) {
 		this.map = function(prefix,pathname) {
 			mapping.push(new Mapping({ pathname: pathname, prefix: prefix }));
 		};
-		
+
 		var loader = new function() {
 			this.get = function(path) {
 				for (var i=0; i<mapping.length; i++) {
@@ -116,7 +116,7 @@ $exports.addJshPluginTo = function(jsh) {
 				}
 				return null;
 			};
-			
+
 			this.list = function(path) {
 				var rv = [];
 				for (var i=0; i<mapping.length; i++) {
@@ -130,16 +130,16 @@ $exports.addJshPluginTo = function(jsh) {
 						}
 					}
 				}
-				return rv;				
+				return rv;
 			};
-			
+
 			this.toString = function() {
 				return "jsh.httpd.Resources [" + mapping.map(function(item) {
 					return item.prefix + "->" + item.pathname;
-				}).join(", ") + "]";				
+				}).join(", ") + "]";
 			}
 		};
-		
+
 		var Loader = function(prefix) {
 			var rv = new jsh.io.Loader({
 				resources: new function() {
@@ -160,9 +160,9 @@ $exports.addJshPluginTo = function(jsh) {
 			}
 			return rv;
 		}
-		
+
 		this.loader = new Loader("");
-		
+
 		this.Loader = function(p) {
 			var rv = new jsh.file.Loader(p);
 			rv.list = function(m) {
@@ -174,7 +174,7 @@ $exports.addJshPluginTo = function(jsh) {
 			}
 			return rv;
 		}
-		
+
 		this.build = function(WEBAPP) {
 			mapping.forEach(function(item) {
 				item.build(WEBAPP);
