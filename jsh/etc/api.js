@@ -56,6 +56,9 @@
 	components.add("js/debug/", { jsh: { module: true }});
 
 	components.add("loader/rhino/", { jsh: { api: true }});
+	//	TODO	loader/rhino/java has some tests
+	//	TODO	loader/rhino/test/data/2/ has some tests but they require some classes in classpath
+	//	TODO	rhino/io/mime.api.html has some tests
 
 	components.add("rhino/host/", { jsh: { api: true, module: { javac: true }}});
 	components.add("rhino/file/", { jsh: { api: true, module: { javac: true }}});
