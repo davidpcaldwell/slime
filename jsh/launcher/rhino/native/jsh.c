@@ -91,28 +91,46 @@ char* realpath(char *path, char *other) {
 	return other;
 }
 
-int toAbsolute(char *path, char *absolute) {
+int programAbsolutePath(char *path, char *absolute) {
 	/*	On Windows, at least using gcc/mingw, we don't need an absolute path to find jsh; we seem to receive absolute path.	*/
 	strcpy(absolute,path);
-	return 1;
+	return 0;
 }
 #endif
 
 #if defined __unix__ || defined __APPLE__
+
 #include <stdlib.h>
-#include <limits.h>
-#include <libgen.h>
 const char SLASH = '/';
 
-int toAbsolute(char *path, char *absolute) {
+#if defined __APPLE__
+#include <libproc.h>
+#include <libgen.h>
+#include <unistd.h>
+#define JSH_PATHNAME_BUFFER_SIZE PROC_PIDPATHINFO_MAXSIZE*sizeof(char)
+int programAbsolutePath(char *argsv0, char *rv) {
+    int status = proc_pidpath(getpid(), rv, JSH_PATHNAME_BUFFER_SIZE);
+	printf("rv = %s\n", rv);
+	printf("status = %d\n", status);
+	return (status < 0) ? status : 0;
+}
+#endif
+
+#if defined __unix__
+#include <limits.h>
+#include <libgen.h>
+
+int programAbsolutePath(char *path, char *absolute) {
 	/*	Placeholder for better algorithm which resolves relative paths, searches PATH, etc. For now, just error if it is not
 		absolute.	*/
 	if (path[0] != '/') {
-		return 0;
+		return 1;
 	}
 	strcpy(absolute,path);
-	return 1;
+	return 0;
 }
+#endif
+
 #endif
 
 JNIEnv* create_vm(char *classpath) {
@@ -166,22 +184,22 @@ int main(int argc, char **argv) {
 
 	/*	Get the parent directory of this launcher. */
 	debug("argv[0] = %s\n", argv[0]);
-	char *absolutejshpath = malloc(PATH_MAX);
-	if (!toAbsolute(argv[0],absolutejshpath)) {
+	char *absolutejshpath = malloc(JSH_PATHNAME_BUFFER_SIZE);
+	if (programAbsolutePath(argv[0],absolutejshpath)) {
 		fprintf(stderr, "The native jsh launcher must currently be invoked via its absolute path.\n");
 		fprintf(stderr, "'%s' does not appear to be an absolute path.\n", argv[0]);
 		exit(1);
 	}
 	debug("absolutejshpath = %s\n", absolutejshpath);
-	char *realjshpath = malloc(PATH_MAX);
+	char *realjshpath = malloc(JSH_PATHNAME_BUFFER_SIZE);
 	realpath(absolutejshpath,realjshpath);
 	debug("realjshpath = %s\n", realjshpath);
-	char *jsh_home = malloc(PATH_MAX);
+	char *jsh_home = malloc(JSH_PATHNAME_BUFFER_SIZE);
 	jsh_home = dirname(realjshpath);
 	debug("jsh_home = %s\n", jsh_home);
 
 	/*	Append jsh.jar to the path of the parent directory of this launcher. */
-	char* jar = malloc(PATH_MAX);
+	char* jar = malloc(JSH_PATHNAME_BUFFER_SIZE);
 	char path[9];
 	sprintf(path, "/jsh.jar");
 	path[0] = SLASH;
