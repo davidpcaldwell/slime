@@ -788,6 +788,7 @@ if (nativeLauncher) {
 		}
 	})();
 	addShellToPath(jshInPathCommand,PATH);
+	jsh.shell.run(jshInPathCommand);
 }
 
 jsh.shell.echo("Integration tests complete.");
