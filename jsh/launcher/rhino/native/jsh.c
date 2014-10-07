@@ -76,6 +76,8 @@ END LICENSE
 
 #include <jni.h>
 
+void debug(char* mask, char* string);
+
 #ifdef WIN32
 const char SLASH = '\\';
 #include "shlwapi.h"
@@ -91,7 +93,7 @@ char* realpath(char *path, char *other) {
 	return other;
 }
 
-int programAbsolutePath(char *path, char *absolute) {
+int programAbsolutePath(char *path, char *absolute, int size) {
 	/*	On Windows, at least using gcc/mingw, we don't need an absolute path to find jsh; we seem to receive absolute path.	*/
 	strcpy(absolute,path);
 	return 0;
@@ -99,35 +101,50 @@ int programAbsolutePath(char *path, char *absolute) {
 #endif
 
 #if defined __unix__ || defined __APPLE__
-
 #include <stdlib.h>
+
 const char SLASH = '/';
 
 #if defined __APPLE__
 #include <libproc.h>
 #include <libgen.h>
 #include <unistd.h>
+
 #define JSH_PATHNAME_BUFFER_SIZE PROC_PIDPATHINFO_MAXSIZE*sizeof(char)
-int programAbsolutePath(char *argsv0, char *rv) {
-    int status = proc_pidpath(getpid(), rv, JSH_PATHNAME_BUFFER_SIZE);
-	printf("rv = %s\n", rv);
-	printf("status = %d\n", status);
+int programAbsolutePath(char *argsv0, char *rv, int size) {
+    int status = proc_pidpath(getpid(), rv, size);
+	debug("rv = %s\n", rv);
+	debug("status = %d\n", status);
 	return (status < 0) ? status : 0;
 }
 #endif
 
-#if defined __unix__
+#if defined __unix__ || defined __linux__
 #include <limits.h>
 #include <libgen.h>
 
-int programAbsolutePath(char *path, char *absolute) {
-	/*	Placeholder for better algorithm which resolves relative paths, searches PATH, etc. For now, just error if it is not
-		absolute.	*/
-	if (path[0] != '/') {
-		return 1;
+#define JSH_PATHNAME_BUFFER_SIZE PATH_MAX*sizeof(char)
+
+int programAbsolutePath(char *argsv0, char *rv, int size) {
+	int status;
+	status = readlink("/proc/self/exe", rv, size);
+	if (status > 0) {
+		return 0;
 	}
-	strcpy(absolute,path);
-	return 0;
+	/*	Below code untested in current build process but was tested in earlier versions.	*/
+	if (argsv0[0] == '/') {
+		strcpy(rv,argsv0);
+		return 0;
+	}
+	/*	Could insert better algorithm that attempts to resolve relative paths. Skeletal code below.	*/
+	if (0 && index(argsv0[0], '/') != NULL) {
+		char *getcwdbuffer = malloc(JSH_PATHNAME_BUFFER_SIZE);
+		strcpy(rv,getcwd(getcwdbuffer,JSH_PATHNAME_BUFFER_SIZE));
+		strcat(rv,argsv0);
+		return 0;
+	}
+	/*	Could insert better algorithm that attempts to search PATH. */
+	return 1;
 }
 #endif
 
@@ -185,9 +202,9 @@ int main(int argc, char **argv) {
 	/*	Get the parent directory of this launcher. */
 	debug("argv[0] = %s\n", argv[0]);
 	char *absolutejshpath = malloc(JSH_PATHNAME_BUFFER_SIZE);
-	if (programAbsolutePath(argv[0],absolutejshpath)) {
-		fprintf(stderr, "The native jsh launcher must currently be invoked via its absolute path.\n");
-		fprintf(stderr, "'%s' does not appear to be an absolute path.\n", argv[0]);
+	if (programAbsolutePath(argv[0],absolutejshpath,JSH_PATHNAME_BUFFER_SIZE)) {
+		fprintf(stderr, "Could not locate jsh installation directory.\n");
+		fprintf(stderr, "Try invoking the jsh launcher using its absolute path; was invoked as\n%s.\n", argv[0]);
 		exit(1);
 	}
 	debug("absolutejshpath = %s\n", absolutejshpath);

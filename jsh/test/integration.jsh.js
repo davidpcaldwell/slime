@@ -700,4 +700,27 @@ if (COFFEESCRIPT) {
 	});
 }
 
+var nativeLauncher = jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh");
+if (nativeLauncher) {
+	jsh.shell.run({
+		command: nativeLauncher,
+		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],
+		stdio: {
+			output: String
+		},
+		evaluate: function(result) {
+			if (result.status == 0) {
+				if (result.stdio.output == ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+					jsh.shell.echo();
+				} else {
+					throw new Error("Wrong output: [" + result.stdio.output + "]");
+				}
+			} else {
+				throw new Error("Exit status: [" + result.status + "]");
+			}
+		}
+	})
+}
+
 jsh.shell.echo("Integration tests complete.");
