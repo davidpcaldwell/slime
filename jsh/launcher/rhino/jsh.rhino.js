@@ -658,29 +658,23 @@ try {
 		this.run = function(mode) {
 			var _urls = newArray(Packages.java.net.URL, classpath.elements.length);
 			for (var i=0; i<classpath.elements.length; i++) {
-				Packages.java.lang.System.err.println("classpath: " + classpath.elements[i]);
 				_urls[i] = new Packages.java.io.File(classpath.elements[i]).toURI().toURL();
-				Packages.java.lang.System.err.println("classpath: " + _urls[i]);
 			}
 			var _classloader = new Packages.java.net.URLClassLoader(_urls);
-			Packages.java.lang.System.err.println("Running with " + _classloader);
 			var _class = _classloader.loadClass(mainClassName);
 			var _argumentTypes = newArray(Packages.java.lang.Class,1);
 			var loaderArguments = [];
-			if (script) loaderArguments.push(script);
+			if (script) loaderArguments.push(script.path);
 			loaderArguments.push.apply(loaderArguments,args);
 			var _arguments = newStringArray(loaderArguments.length);
 			for (var i=0; i<loaderArguments.length; i++) {
-				_arguments[i] = new Packages.java.lang.String(args[i]);
+				_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
 			}
 			var _invokeArguments = newArray(Packages.java.lang.Object,1);
 			_invokeArguments[0] = _arguments;
 			_argumentTypes[0] = _arguments.getClass();
 			var _method = _class.getMethod("main",_argumentTypes);
-			Packages.java.lang.System.err.println("method = " + _method);
 			_class.getMethod("main",_argumentTypes).invoke(null,_invokeArguments);
-//			Packages.inonit.script.jsh.launcher.Main.invoke(_method,_arguments);
-			throw new Error("Unimplemented: internal launcher run()")
 		}
 	}
 	debugger;
