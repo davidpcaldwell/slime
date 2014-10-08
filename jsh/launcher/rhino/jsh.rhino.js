@@ -593,6 +593,54 @@ try {
 			}
 		}
 	}
+	command.executable = function(_file) {
+		this.add(_file);
+	}
+	command.classpath = function(path) {
+		this.add("-classpath");
+		this.add(path.toPath());
+	};
+	command.mainClassName = function(name) {
+		this.add(name);
+	}
+	command.script = function(file) {
+		this.add(file);
+	}
+	if (env.JSH_LAUNCHER_INTERNAL) command = new function() {
+		this.jvmProperty = function(name,value) {
+			Packages.java.lang.System.setProperty(name,value);
+		};
+
+		this.executable = function(_file) {
+			//	do nothing
+		};
+
+		var classpath;
+
+		this.classpath = function(path) {
+			classpath = path;
+		};
+
+		var mainClassName;
+
+		this.mainClassName = function(name) {
+			mainClassName = name;
+		};
+
+		var script;
+
+		this.script = function(file) {
+			script = file;
+		};
+
+		this.line = function() {
+			return "(internal)";
+		}
+
+		this.run = function(mode) {
+			throw new Error("Unimplemented: internal launcher run()")
+		}
+	}
 	debugger;
 	var jvmOptions = settings.combine("jvmOptions");
 
@@ -654,9 +702,9 @@ try {
 		//	Nashorn
 		var JJS = false;
 		if (JJS) {
-			command.add(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
+			command.executable(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
 		} else {
-			command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));
+			command.executable(JAVA_HOME.getDirectory("bin").getCommand("java"));
 		}
 		//	TODO	handle JSH_JAVA_DEBUGGER, probably by detecting open port and using that port for dt_socket and server=y
 		//	TODO	handle JSH_SCRIPT_DEBUGGER == "profiler"
@@ -682,7 +730,7 @@ try {
 		}
 	} else {
 		//	Rhino
-		command.add(JAVA_HOME.getDirectory("bin").getCommand("java"));
+		command.executable(JAVA_HOME.getDirectory("bin").getCommand("java"));
 		if (env.JSH_JAVA_DEBUGGER) {
 			//	TODO	this option seems to have changed as of Java 5 or Java 6 to agentlib or agentpath
 			//			see http://docs.oracle.com/javase/6/docs/technotes/guides/jpda/conninv.html
@@ -702,21 +750,26 @@ try {
 				//	emit warning message?
 			}
 		}
-		if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
-			jvmOptions.unshift("-client");
+		if (!env.JSH_LAUNCHER_INTERNAL) {
+			if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
+				jvmOptions.unshift("-client");
+			}
+			command.add(jvmOptions);
+		} else {
+			if (jvmOptions.length) {
+				throw new Error("JVM options specified when using internal launcher: " + jvmOptions.join(" "));
+			}
 		}
-		command.add(jvmOptions);
 		environmentAndProperties();
-		command.add("-classpath");
-		command.add(
+//		command.add("-classpath");
+		command.classpath(
 			settings.get("rhinoClasspath")
 			.append(shellClasspath)
 			.append(scriptClasspath)
-			.toPath()
 		);
-		command.add("inonit.script.jsh.Rhino");
+		command.mainClassName("inonit.script.jsh.Rhino");
 	}
-	command.add(settings.get("script"));
+	command.script(settings.get("script"));
 	var index = (settings.get("script")) ? 1 : 0;
 	for (var i=index; i<arguments.length; i++) {
 		command.add(arguments[i]);
