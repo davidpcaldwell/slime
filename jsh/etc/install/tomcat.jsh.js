@@ -13,7 +13,7 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		version: "7.0.55",
+		version: "7.0.56",
 		jsh: (function() {
 			if (jsh.shell.jsh.home) return jsh.shell.jsh.home.pathname;
 			return jsh.file.Pathname;
