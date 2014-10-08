@@ -16,8 +16,12 @@ var setExitStatus = function(status) {
 	_field.set(null, new Packages.java.lang.Integer(status));
 }
 
+var newArray = function(type,len) {
+	return Packages.java.lang.reflect.Array.newInstance(type,len);
+}
+
 var newStringArray = function(len) {
-	return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,len);
+	return newArray(Packages.java.lang.String,len);
 };
 
 if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
@@ -25,8 +29,8 @@ if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	setExitStatus = function(status) {
 		arguments.callee.value = status;
 	}
-	newStringArray = function(len) {
-		return Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String.class,len);
+	newArray = function(type,len) {
+		return Packages.java.lang.reflect.Array.newInstance(type.class,len);
 	}
 	//	TODO	Exact duplicate of both functions below in jsh/etc/unbuilt.rhino.js
 	var readFile = function(path) {
@@ -612,7 +616,8 @@ try {
 		};
 
 		this.executable = function(_file) {
-			//	do nothing
+			//	do nothing; this was always parent Java process, perhaps with exception of JSH_JAVA_HOME
+			//	TODO	remove JSH_JAVA_HOME from documentation and/or have it pertain only to native launcher
 		};
 
 		var classpath;
@@ -638,6 +643,12 @@ try {
 		}
 
 		this.run = function(mode) {
+			var _url = Packages.java.lang.reflect.Array.newInstance()
+			for (var i=0; i<classpath.length; i++) {
+
+			}
+			var _classloader = new Packages.java.net.URLClassLoader(_urls);
+			Packages.java.lang.System.err.println("Running with " + _classloader);
 			throw new Error("Unimplemented: internal launcher run()")
 		}
 	}
