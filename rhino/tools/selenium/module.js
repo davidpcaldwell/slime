@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var _selenium = Packages.org.openqa.selenium;
 var _ui = Packages.org.openqa.selenium.support.ui;
 
@@ -19,7 +32,7 @@ var SearchContext = function(_driver,_parent) {
 	}
 	var Wait = function(p) {
 		var _peer = new _ui.WebDriverWait(_driver, p.timeout);
-		
+
 		this.until = function(f) {
 			var _condition = new JavaAdapter(
 				_ui.ExpectedCondition,
@@ -28,7 +41,7 @@ var SearchContext = function(_driver,_parent) {
 						var rv = f.call(target);
 						return Packages.java.lang.Boolean.valueOf(Boolean(rv));
 					};
-					
+
 					this.toString = function() {
 						return f.toString();
 					}
@@ -37,7 +50,7 @@ var SearchContext = function(_driver,_parent) {
 			_peer.until(_condition);
 		}
 	};
-	
+
 	var byAdapt = function(p) {
 		if (p.name) {
 			return Packages.org.openqa.selenium.By.name(p.name);
@@ -54,7 +67,7 @@ var SearchContext = function(_driver,_parent) {
 			throw new TypeError();
 		}
 	};
-	
+
 	var findElement = function(_by) {
 		try {
 			return _parent.findElement(_by);
@@ -69,7 +82,7 @@ var SearchContext = function(_driver,_parent) {
 			throw e;
 		}
 	}
-	
+
 	this.findElement = function(p) {
 		var _by = byAdapt(p);
 		if (p.wait) {
@@ -93,7 +106,7 @@ var SearchContext = function(_driver,_parent) {
 						p.wait.log("Exception in findElement on target " + this + " for element " + JSON.stringify(p) + ": " + getExceptionClassName(e));
 					}
 					throw e;
-				}				
+				}
 			});
 		}
 		if (p.wait && p.wait.log) {
@@ -124,7 +137,7 @@ var SearchContext = function(_driver,_parent) {
 						return false;
 					}
 					throw e;
-				}				
+				}
 			});
 		}
 		var _by = byAdapt(p);
@@ -135,21 +148,21 @@ var SearchContext = function(_driver,_parent) {
 		}
 		return rv;
 	};
-	
+
 	this.Wait = Wait;
 }
 
 var WebElement = function(_driver,_peer) {
 	if (!_peer) throw new TypeError("_peer is required");
-	
+
 	this.toString = function() {
 		return "WebElement: " + String(_peer.toString());
 	}
-	
+
 	this.sendKeys = function(string) {
 		_peer.sendKeys(string);
 	};
-	
+
 	this.click = function() {
 		try {
 			_peer.click();
@@ -157,12 +170,12 @@ var WebElement = function(_driver,_peer) {
 			if (getExceptionClassName(e) == "org.openqa.selenium.StaleElementReferenceException") {
 				throw new Error("Element is stale: " + _peer.toString());
 			}
-			throw e;			
+			throw e;
 		}
 	};
-	
+
 	var text = String(_peer.getText());
-	
+
 	Object.defineProperty(this, "text", {
 		get: function() {
 			try {
@@ -175,11 +188,11 @@ var WebElement = function(_driver,_peer) {
 			}
 		}
 	});
-	
+
 	this.isVisible = function() {
 		return _peer.isDisplayed();
 	}
-	
+
 	this.javascript = function(f) {
 		var script = ""
 			+	"var target = arguments[0];\n"
@@ -193,9 +206,9 @@ var WebElement = function(_driver,_peer) {
 			_peer
 		);
 	};
-	
+
 	SearchContext.call(this,_driver,_peer);
-	
+
 	this.wait = {};
 	this.wait.untilVisible = (function(Wait) {
 		return function(p) {
@@ -216,21 +229,21 @@ var WebDriver = function(_driver) {
 	this.toString = function() {
 		return "WebDriver: " + _driver;
 	}
-	
+
 	this.javascript = function(f) {
 		//	TODO	support mapping argument types
 		//	TODO	support mapping return type
 		_driver.executeScript("(" + f.toString() + ")()");
 	}
-	
+
 	this.get = function(url) {
 		_driver.get(url);
 	};
-	
+
 	this.close = function() {
 		_driver.close();
 	}
-	
+
 	SearchContext.call(this,_driver);
 }
 
