@@ -615,7 +615,10 @@ try {
 	command.script = function(file) {
 		this.add(file);
 	}
-	if (env.JSH_LAUNCHER_INTERNAL) command = new function() {
+	command.argument = function(string) {
+		this.add(string);
+	}
+	if (env.JSH_LAUNCHER_INTERNAL && !env.JSH_SHELL_CLASSPATH) command = new function() {
 		this.jvmProperty = function(name,value) {
 			jvmProperty(name,value,function(name,value) {
 				Packages.java.lang.System.setProperty(name,value);
@@ -808,7 +811,7 @@ try {
 	var index = (settings.get("script")) ? 1 : 0;
 	//	TODO	below obviously broken for internal launcher
 	for (var i=index; i<arguments.length; i++) {
-		command.add(arguments[i]);
+		command.argument(arguments[i]);
 	}
 	debug("Environment:");
 	debug(env.toSource());

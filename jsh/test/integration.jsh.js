@@ -97,6 +97,9 @@ for (var x in env) {
 if (env.JSH_ENGINE) {
 	mode.env.JSH_ENGINE = env.JSH_ENGINE;
 }
+if (env.JSH_LAUNCHER_INTERNAL) {
+	mode.env.JSH_LAUNCHER_INTERNAL = env.JSH_LAUNCHER_INTERNAL;
+}
 mode.env.JSH_PLUGINS = String(new File(JSH_HOME, "plugins").getCanonicalPath());
 if (debug.on) {
 	mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
@@ -211,6 +214,11 @@ var testCommandOutput = function(path,tester,p) {
 var checkOutput = function(options,messages) {
 	var expected = messages.join(String(Packages.java.lang.System.getProperty("line.separator")));
 	if (options.output != expected) {
+		Packages.java.lang.System.err.println("Output wrong:");
+		Packages.java.lang.System.err.println("Expected:");
+		Packages.java.lang.System.err.println(expected);
+		Packages.java.lang.System.err.println("Actual:");
+		Packages.java.lang.System.err.println(options.output);
 		Packages.java.lang.System.err.println("Output wrong; dumping stderr:");
 		Packages.java.lang.System.err.println(options.err);
 		throw new Error("Output wrong: it is [" + options.output + "] when expected was [" + expected + "]");
