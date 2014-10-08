@@ -580,22 +580,27 @@ try {
 	//	fi
 
 	var command = new Command();
-	command.jvmProperty = function(name,value) {
+	var jvmProperty = function(name,value,set) {
 		if (typeof(value) != "undefined") {
 			if (typeof(value) == "object" && value != null) {
 				if (value.constructor == File || value.constructor == Directory) {
-					return arguments.callee.call(this,name,value.path);
+					return arguments.callee.call(this,name,value.path,set);
 				} else if (value.constructor == Searchpath) {
-					return arguments.callee.call(this,name,value.toPath());
+					return arguments.callee.call(this,name,value.toPath(),set);
 				} else {
 					throw new Error("Trying to set " + name + " to illegal object value: "  + value);
 				}
 			} else if (typeof(value) == "boolean") {
-				return arguments.callee.call(this,name,String(value));
+				return arguments.callee.call(this,name,String(value),set);
 			} else {
-				this.add("-D" + name + "=" + value);
+				set(name,value);
 			}
 		}
+	}
+	command.jvmProperty = function(name,value) {
+		jvmProperty(name,value,(function(name,value) {
+			this.add("-D" + name + "=" + value);
+		}).bind(this));
 	}
 	command.executable = function(_file) {
 		this.add(_file);
@@ -612,7 +617,9 @@ try {
 	}
 	if (env.JSH_LAUNCHER_INTERNAL) command = new function() {
 		this.jvmProperty = function(name,value) {
-			Packages.java.lang.System.setProperty(name,value);
+			jvmProperty(name,value,function(name,value) {
+				Packages.java.lang.System.setProperty(name,value);
+			});
 		};
 
 		this.executable = function(_file) {
@@ -638,17 +645,41 @@ try {
 			script = file;
 		};
 
+		var args = [];
+
+		this.argument = function(string) {
+			args.push(string);
+		}
+
 		this.line = function() {
 			return "(internal)";
 		}
 
 		this.run = function(mode) {
-			var _url = Packages.java.lang.reflect.Array.newInstance()
-			for (var i=0; i<classpath.length; i++) {
-
+			var _urls = newArray(Packages.java.net.URL, classpath.elements.length);
+			for (var i=0; i<classpath.elements.length; i++) {
+				Packages.java.lang.System.err.println("classpath: " + classpath.elements[i]);
+				_urls[i] = new Packages.java.io.File(classpath.elements[i]).toURI().toURL();
+				Packages.java.lang.System.err.println("classpath: " + _urls[i]);
 			}
 			var _classloader = new Packages.java.net.URLClassLoader(_urls);
 			Packages.java.lang.System.err.println("Running with " + _classloader);
+			var _class = _classloader.loadClass(mainClassName);
+			var _argumentTypes = newArray(Packages.java.lang.Class,1);
+			var loaderArguments = [];
+			if (script) loaderArguments.push(script);
+			loaderArguments.push.apply(loaderArguments,args);
+			var _arguments = newStringArray(loaderArguments.length);
+			for (var i=0; i<loaderArguments.length; i++) {
+				_arguments[i] = new Packages.java.lang.String(args[i]);
+			}
+			var _invokeArguments = newArray(Packages.java.lang.Object,1);
+			_invokeArguments[0] = _arguments;
+			_argumentTypes[0] = _arguments.getClass();
+			var _method = _class.getMethod("main",_argumentTypes);
+			Packages.java.lang.System.err.println("method = " + _method);
+			_class.getMethod("main",_argumentTypes).invoke(null,_invokeArguments);
+//			Packages.inonit.script.jsh.launcher.Main.invoke(_method,_arguments);
 			throw new Error("Unimplemented: internal launcher run()")
 		}
 	}
@@ -781,6 +812,7 @@ try {
 	}
 	command.script(settings.get("script"));
 	var index = (settings.get("script")) ? 1 : 0;
+	//	TODO	below obviously broken for internal launcher
 	for (var i=index; i<arguments.length; i++) {
 		command.add(arguments[i]);
 	}
