@@ -719,14 +719,13 @@ try {
 			}));
 		}
 		environmentAndProperties();
-		command.add("-classpath");
-		command.add(shellClasspath.append(scriptClasspath).toPath());
+		command.classpath(shellClasspath.append(scriptClasspath));
 		if (JJS) {
 			command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("nashorn-host.js").path);
 			command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("jsh.js").path);
 			command.add("--");
 		} else {
-			command.add("inonit.script.jsh.Nashorn");
+			command.mainClassName("inonit.script.jsh.Nashorn");
 		}
 	} else {
 		//	Rhino
