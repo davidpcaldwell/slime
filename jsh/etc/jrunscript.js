@@ -168,7 +168,7 @@ $api.shell.rhino = function(p) {
 	} else {
 		var _command = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,command.length);
 		for (var i=0; i<command.length; i++) {
-			_command[i] = command[i];;
+			_command[i] = command[i];
 		}
 		var _builder = new Packages.java.lang.ProcessBuilder(_command);
 		var USE_JAVA_1_7 = false;
