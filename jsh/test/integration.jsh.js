@@ -708,4 +708,94 @@ if (COFFEESCRIPT) {
 	});
 }
 
+var nativeLauncher = jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh");
+if (nativeLauncher) {
+	jsh.shell.run({
+		command: nativeLauncher,
+		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],
+		stdio: {
+			output: String
+		},
+		evaluate: function(result) {
+			if (result.status == 0) {
+				if (result.stdio.output == ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+					jsh.shell.echo();
+				} else {
+					throw new Error("Wrong output: [" + result.stdio.output + "]");
+				}
+			} else {
+				throw new Error("Exit status: [" + result.status + "]");
+			}
+		}
+	});
+
+	jsh.shell.run({
+		command: "./jsh",
+		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],
+		stdio: {
+			output: String
+		},
+		directory: jsh.shell.jsh.home,
+		evaluate: function(result) {
+			if (result.status == 0) {
+				if (result.stdio.output == ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+					jsh.shell.echo();
+				} else {
+					throw new Error("Wrong output: [" + result.stdio.output + "]");
+				}
+			} else {
+				throw new Error("Exit status: [" + result.status + "]");
+			}
+		}
+	});
+
+	var environment = jsh.js.Object.set({}, jsh.shell.environment);
+	var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames);
+	PATH.pathnames.push(jsh.shell.jsh.home.pathname);
+	var jshInPathCommand = {
+		command: "jsh",
+		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],
+		stdio: {
+			output: String
+		},
+		evaluate: function(result) {
+			if (result.error) {
+				jsh.shell.echo("error: " + result.error);
+				jsh.shell.echo("error keys: " + Object.keys(result.error));
+			}
+			if (result.status == 0) {
+				if (result.stdio.output == ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+					jsh.shell.echo();
+				} else {
+					throw new Error("Wrong output: [" + result.stdio.output + "]");
+				}
+			} else {
+				throw new Error("Exit status: [" + result.status + "]");
+			}
+		}
+	};
+	var addShellToPath = (function() {
+		if (false) {
+			//	For some reason this does not work in Java; supplying the PATH to the subprocess does not mean that it will be
+			//	used for resolving the given command
+			return function(command,PATH) {
+				var environment = jsh.js.Objet.set({}, jsh.shell.environment);
+				environment.PATH = PATH.toString();
+				command.environment = environment;
+			};
+		} else {
+			return function(command,PATH) {
+				//	TODO	should we quote this? What about spaces?
+				command.arguments.unshift("PATH=" + PATH.toString(),command.command);
+				command.command = "env";
+			};
+		}
+	})();
+	addShellToPath(jshInPathCommand,PATH);
+	jsh.shell.run(jshInPathCommand);
+}
+
 jsh.shell.echo("Integration tests complete.");

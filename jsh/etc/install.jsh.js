@@ -380,7 +380,7 @@ if (parameters.options.native) {
 			unix.include.forEach(function(directory) {
 				args.push("-I" + directory);
 			});
-			args.push("src/jsh/launcher/rhino/native/jsh.c");
+			args.push(src.getRelativePath("jsh/launcher/rhino/native/jsh.c"));
 			if (unix.library.path && unix.library.name) {
 				args.push("-L" + unix.library.path);
 				args.push("-l" + unix.library.name);

@@ -245,10 +245,20 @@ if (arguments[0] == "build") {
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
 } else if (arguments[0] == "verify") {
 	var verifyArgs = arguments.slice(1);
+	var buildArgs = [];
 	arguments.splice(0,arguments.length);
+	for (var i=0; i<verifyArgs.length; i++) {
+		if (verifyArgs[i] == "-native") {
+			buildArgs.push("-native");
+			verifyArgs.splice(i,1);
+			i--;
+		} else {
+		}
+	}
 	var JSH_HOME = Packages.java.io.File.createTempFile("jsh-unbuilt.", ".tmp");
 	JSH_HOME.mkdirs();
 	arguments.push(JSH_HOME);
+	arguments.push.apply(arguments,buildArgs);
 	Packages.java.lang.System.setProperty("jsh.build.notest","true");
 	Packages.java.lang.System.setProperty("jsh.build.nodoc","true");
 	//	TODO	set jsh.build.rhino to a java.io.File if it is needed here so that build builds it
