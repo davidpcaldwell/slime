@@ -221,10 +221,12 @@ if ($api.script.url && $api.script.url.getQuery()) {
 		//	Only allows single value for each name; surely sufficient for this purpose
 		var rv = {};
 		var string = String($api.script.url.getQuery());
-		string.split("&").forEach(function(pair) {
+		var pairs = string.split("&");
+		for (var i=0; i<pairs.length; i++) {
+			var pair = pairs[i];
 			var tokens = pair.split("=");
 			rv[tokens[0]] = tokens[1];
-		});
+		}
 		return rv;
 	})();
 	if (parameters.relative) {
