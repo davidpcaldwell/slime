@@ -306,91 +306,9 @@ if (parameters.options.native) {
 		if (!gcc) {
 			jsh.shell.echo("Cannot find gcc in PATH; not building native launcher.");
 		}
-		var unix = (function() {
-			var jdk = jsh.shell.java.home.parent;
-
-			var jni = function(include,rpath) {
-				return {};
-				var vmpath = (function() {
-					var rv;
-					//	Prefer client VM to server VM
-					["client", "server"].forEach(function(vm) {
-						if (!rv) {
-							if (jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm)) {
-								rv = jdk.getSubdirectory("jre/lib/" + jsh.shell.os.arch + "/" + vm);
-							}
-							//	On JDK 7+ on Mac OS X the architecture-specific subdirectories do not appear to be present
-							if (jdk.getSubdirectory("jre/lib/" + vm)) {
-								rv = jdk.getSubdirectory("jre/lib/" + vm);
-							}
-						}
-					});
-					return rv;
-				})();
-
-				if (!vmpath) {
-					throw new Error("Did not find VM under " + jdk);
-				}
-
-				return {
-					include: [
-						jdk.getRelativePath("include"),
-						jdk.getRelativePath("include/" + include)
-					],
-					library: {
-						name: "jvm",
-						path: vmpath
-					},
-					rpath: rpath
-				}
-			}
-
-			var rpath = function(path) {
-				return ["-Wl,-rpath," + path.toString()];
-			};
-
-			if (jsh.shell.os.name == "FreeBSD") {
-				return jni("freebsd", rpath);
-			} else if (jsh.shell.os.name == "Linux") {
-				return jni("linux", rpath);
-			} else if (jsh.shell.os.name == "Mac OS X") {
-				osx.check();
-				if (jdk.getSubdirectory("include")) {
-					return jni("darwin", rpath);
-				} else {
-					return {
-						include: [
-							"/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers"
-						],
-						library: {
-							command: ["-framework", "JavaVM"]
-						}
-					}
-				}
-			} else {
-				jsh.shell.echo("Unsupported Unix-like OS: " + jsh.shell.os.name + "; not building native launcher.");
-			}
-		})();
-		if (gcc && unix) {
-			//	Assume we are running in JRE
-			//	Mac OS X:
-			//	gcc -o core/jsh -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers
-			//		core/src/jsh/launcher/rhino/native/jsh.c
-			//		-framework JavaVM
+		if (gcc) {
 			var args = ["-o", "jsh"];
-			if (unix.include) unix.include.forEach(function(directory) {
-				args.push("-I" + directory);
-			});
 			args.push(src.getRelativePath("jsh/launcher/rhino/native/jsh.c"));
-			if (unix.library && unix.library.path && unix.library.name) {
-				args.push("-L" + unix.library.path);
-				args.push("-l" + unix.library.name);
-			} else if (unix.library && unix.library.command) {
-				args.push.apply(args, unix.library.command);
-			}
-			if (unix.rpath) {
-				args.push.apply(args, unix.rpath(unix.library.path));
-			}
 			jsh.shell.echo("Invoking gcc " + args.join(" ") + " ...");
 			jsh.shell.shell(
 				gcc,
