@@ -17,8 +17,7 @@ var parameters = jsh.script.getopts({
 		jsh: (function() {
 			if (jsh.shell.jsh.home) return jsh.shell.jsh.home.pathname;
 			return jsh.file.Pathname;
-		})(),
-		download: jsh.file.Pathname
+		})()
 	}
 });
 

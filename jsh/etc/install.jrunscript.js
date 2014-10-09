@@ -33,7 +33,11 @@ $engine.run = $engine.resolve(new function() {
 		} else if (property == "true") {
 			set($api.rhino.download());
 		} else {
-			set(new File(property));
+			var _file = new File(property);
+			if (!_file.exists()) {
+				$api.rhino.download().renameTo(_file);
+			}
+			set(_file);
 		}
 		return Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar");
 	};
@@ -60,12 +64,12 @@ $engine.run = $engine.resolve(new function() {
 		} else {
 			//	TODO	In theory if we carefully constructed a ClassLoader we would not have to shell another process,
 			//			maybe?
-                        var properties = {
+			var properties = {
 				"jsh.build.notest": "true"
-                        };
-                        if (Packages.java.lang.System.getProperty("jsh.build.downloads")) {
-                            properties["jsh.build.downloads"] = String(Packages.java.lang.System.getProperty("jsh.build.downloads"));
-                        }
+			};
+			if (Packages.java.lang.System.getProperty("jsh.build.downloads")) {
+				properties["jsh.build.downloads"] = String(Packages.java.lang.System.getProperty("jsh.build.downloads"));
+			}
 			$api.shell.rhino({
 				rhino: configureRhino("true"),
 				properties: properties,

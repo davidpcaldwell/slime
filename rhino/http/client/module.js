@@ -354,11 +354,16 @@ var Client = function(configuration) {
 				}
 			}
 			rv.url = redirectUrl;
+			var callback = new function() {
+				this.next = rv;
+				this.request = p;
+				this.response = response;
+			};
 			if (p.on && p.on.redirect) {
-				p.on.redirect(rv);
+				p.on.redirect(callback);
 			}
 			//	rv.body is undefined
-			return arguments.callee(rv);
+			return (callback.next) ? arguments.callee(callback.next) : response;
 		} else {
 			var parser = (function() {
 				if (p.evaluate) return p.evaluate;
