@@ -64,15 +64,14 @@ $engine.run = $engine.resolve(new function() {
 		} else {
 			//	TODO	In theory if we carefully constructed a ClassLoader we would not have to shell another process,
 			//			maybe?
-			var properties = {
-				"jsh.build.notest": "true"
-			};
+			if (!p.properties) p.properties = {};
+			p.properties["jsh.build.notest"] = "true";
 			if (Packages.java.lang.System.getProperty("jsh.build.downloads")) {
-				properties["jsh.build.downloads"] = String(Packages.java.lang.System.getProperty("jsh.build.downloads"));
+				p.properties["jsh.build.downloads"] = String(Packages.java.lang.System.getProperty("jsh.build.downloads"));
 			}
 			$api.shell.rhino({
 				rhino: configureRhino("true"),
-				properties: properties,
+				properties: p.properties,
 				script: p.script,
 				arguments: p.arguments,
 				directory: p.directory
@@ -122,5 +121,7 @@ var $source = (function() {
 $engine.run({
 	script: new Packages.java.io.File($source, "jsh/etc/unbuilt.rhino.js"),
 	arguments: ["build"].concat($arguments),
-	directory: $source
+	properties: {
+		"jsh.build.base": $source.toString()
+	}
 });
