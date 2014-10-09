@@ -26,15 +26,32 @@ var SHELL = TMP.getRelativePath("jsh");
 
 var rhino = (parameters.options.rhino) ? "-Djsh.build.rhino.jar=" + parameters.options.rhino : "-Djsh.build.rhino=false";
 
+var jrunscript = (function() {
+	if (jsh.shell.jsh.home.getFile("lib/js.jar")) {
+		rhino = "-Djsh.build.rhino.jar=" + jsh.shell.jsh.home.getFile("lib/js.jar");
+		return {
+			command: "java",
+			arguments: [
+				"-jar", jsh.shell.jsh.home.getFile("lib/js.jar"),
+				"-opt", "-1"
+			]
+		};
+	} else {
+		return {
+			command: "jrunscript",
+			arguments: []
+		}
+	}
+})();
+
 jsh.shell.run({
-	command: "jrunscript",
-	arguments: [
-		rhino,
+	command: jrunscript.command,
+	arguments: [rhino].concat(jrunscript.arguments).concat([
 		SRC.getRelativePath("jsh/etc/unbuilt.rhino.js"),
 		"build",
 		SHELL,
 		"-native"
-	],
+	]),
 	environment: jsh.js.Object.set({}, jsh.shell.environment, {
 		JSH_BUILD_NOTEST: "true",
 		JSH_BUILD_NODOC: "true"

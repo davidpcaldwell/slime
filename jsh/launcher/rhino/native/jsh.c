@@ -105,19 +105,6 @@ int programAbsolutePath(char *path, char *absolute, int size) {
 
 const char SLASH = '/';
 
-#if defined __APPLE__
-#include <libproc.h>
-#include <libgen.h>
-#include <unistd.h>
-
-#define JSH_PATHNAME_BUFFER_SIZE PROC_PIDPATHINFO_MAXSIZE*sizeof(char)
-int programAbsolutePath(char *argsv0, char *rv, int size) {
-    int status = proc_pidpath(getpid(), rv, size);
-	debug("rv = %s\n", rv);
-	debug("status = %d\n", status);
-	return (status < 0) ? status : 0;
-}
-
 void strip_trailing_slash(char *path) {
 	if (path[strlen(path)-1] == SLASH) {
 		path[strlen(path)-1] = '\0';
@@ -127,7 +114,8 @@ void strip_trailing_slash(char *path) {
 int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 	debug("JAVA_HOME = %s\n", JAVA_HOME);
 	char **args = malloc( (sizeof(char*) * (argc+2) ) );
-	for (int i=0; i<argc; i++) {
+	int i;
+	for (i=0; i<argc; i++) {
 		args[i+1] = argv[i];
 	}
 	args[argc+1] = NULL;
@@ -144,7 +132,7 @@ int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 		args[0] = "java";
 //		execvp("java",argv);
 	}
-	for (int i=0; i<argc+2; i++) {
+	for (i=0; i<argc+2; i++) {
 		debug("argument %d is %s\n", i, args[i]);
 	}
 	if (JAVA_HOME != NULL) {
@@ -154,6 +142,20 @@ int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 	}
 	return 0;
 }
+
+#if defined __APPLE__
+#include <libproc.h>
+#include <libgen.h>
+#include <unistd.h>
+
+#define JSH_PATHNAME_BUFFER_SIZE PROC_PIDPATHINFO_MAXSIZE*sizeof(char)
+int programAbsolutePath(char *argsv0, char *rv, int size) {
+    int status = proc_pidpath(getpid(), rv, size);
+	debug("rv = %s\n", rv);
+	debug("status = %d\n", status);
+	return (status < 0) ? status : 0;
+}
+
 #endif
 
 #if defined __unix__ || defined __linux__
@@ -264,7 +266,8 @@ int main(int argc, char **argv) {
 	char** javaArguments = malloc(sizeof(char*) * (argc+2));
 	javaArguments[0] = "-jar";
 	javaArguments[1] = jar;
-	for (int i=1; i<argc; i++) {
+	int i;
+	for (i=1; i<argc; i++) {
 		javaArguments[i+1] = argv[i];
 		debug("javaArguments[%d] = %s\n", i+1, argv[i]);
 	}
