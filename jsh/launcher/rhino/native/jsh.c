@@ -76,7 +76,7 @@ END LICENSE
 
 #include <jni.h>
 
-void debug(char* mask, char* string);
+void debug(char* mask, ...);
 
 #ifdef WIN32
 const char SLASH = '\\';
@@ -116,6 +116,43 @@ int programAbsolutePath(char *argsv0, char *rv, int size) {
 	debug("rv = %s\n", rv);
 	debug("status = %d\n", status);
 	return (status < 0) ? status : 0;
+}
+
+void strip_trailing_slash(char *path) {
+	if (path[strlen(path)-1] == SLASH) {
+		path[strlen(path)-1] = '\0';
+	}
+}
+
+int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
+	debug("JAVA_HOME = %s\n", JAVA_HOME);
+	char **args = malloc( (sizeof(char*) * (argc+2) ) );
+	for (int i=0; i<argc; i++) {
+		args[i+1] = argv[i];
+	}
+	args[argc+1] = NULL;
+	if (JAVA_HOME != NULL) {
+		strip_trailing_slash(JAVA_HOME);
+		/*	Rather than doing this manipulation, would it be better to use execvP with JAVA_HOME/bin as PATH? */
+		int length = strlen(JAVA_HOME) + strlen("/bin/java");
+		char* path = malloc( sizeof(char) * length );
+		sprintf(path,"%s/bin/java",JAVA_HOME);
+		debug("Java path: %s\n", path);
+		args[0] = path;
+//		execv()
+	} else {
+		args[0] = "java";
+//		execvp("java",argv);
+	}
+	for (int i=0; i<argc+2; i++) {
+		debug("argument %d is %s\n", i, args[i]);
+	}
+	if (JAVA_HOME != NULL) {
+		execv(args[0],args);
+	} else {
+		execvp(args[0],args);
+	}
+	return 0;
 }
 #endif
 
@@ -189,11 +226,13 @@ void invoke_class(JNIEnv* env, int argc, char **argv) {
 	(*env)->CallStaticVoidMethod(env, helloWorldClass, mainMethod, applicationArgs);
 }
 
-void debug(char* mask, char* string) {
-	//	TODO	remove JSH_LAUNCHER_CONSOLE_DEBUG?
+void debug(char* mask, ...) {
+	va_list args;
+	va_start(args, mask);
 	if (getenv("JSH_LAUNCHER_DEBUG") != NULL || getenv("JSH_LAUNCHER_CONSOLE_DEBUG") != NULL) {
-		printf(mask, string);
+		vprintf(mask, args);
 	}
+    va_end(args);
 }
 
 int main(int argc, char **argv) {
@@ -222,7 +261,26 @@ int main(int argc, char **argv) {
 	path[0] = SLASH;
 	sprintf(jar, "%s%s", jsh_home, path);
 
+	char** javaArguments = malloc(sizeof(char*) * (argc+2));
+	javaArguments[0] = "-jar";
+	javaArguments[1] = jar;
+	for (int i=1; i<argc; i++) {
+		javaArguments[i+1] = argv[i];
+		debug("javaArguments[%d] = %s\n", i+1, argv[i]);
+	}
+	javaArguments[argc+1] = NULL;
+
 	debug("jar = %s\n", jar);
+	char *JAVA_HOME = NULL;
+	if (getenv("JSH_JAVA_HOME") != NULL) {
+		JAVA_HOME = getenv("JSH_JAVA_HOME");
+	}
+	if (getenv("JAVA_HOME") != NULL) {
+		JAVA_HOME = getenv("JAVA_HOME");
+	}
+	javaLaunch(JAVA_HOME,argc+1,javaArguments);
+	/*
 	JNIEnv* env = create_vm(jar);
 	invoke_class(env, argc, argv);
+	 */
 }

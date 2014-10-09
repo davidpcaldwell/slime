@@ -58,4 +58,25 @@ if (typeof(jsh.shell.environment.PATH) == "undefined") {
 		throw new Error("PATH should be empty.");
 	}
 }
+log("");
+log("Arguments:");
+for (var i=0; i<jsh.script.arguments.length; i++) {
+	log("jsh.script.arguments[" + i + "] = [" + jsh.script.arguments[i] + "]");
+}
+log("");
+log("System properties:");
+var i = Packages.java.lang.System.getProperties().entrySet().iterator();
+var ordered = [];
+while(i.hasNext()) {
+	var next = i.next();
+	ordered.push({ name: String(next.getKey()), value: String(next.getValue()) });
+}
+ordered.sort(function(a,b) {
+	if (a.name < b.name) return -1;
+	if (b.name < a.name) return 1;
+	return 0;
+});
+ordered.forEach(function(item) {
+	log(item.name + "=" + item.value);
+});
 jsh.shell.echo("Passed.");
