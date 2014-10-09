@@ -74,8 +74,6 @@ END LICENSE
 #include <stdio.h>
 #include <string.h>
 
-#include <jni.h>
-
 void debug(char* mask, ...);
 
 #ifdef WIN32
@@ -102,6 +100,7 @@ int programAbsolutePath(char *path, char *absolute, int size) {
 
 #if defined __unix__ || defined __APPLE__
 #include <stdlib.h>
+#include <stdarg.h>
 
 const char SLASH = '/';
 
@@ -189,6 +188,7 @@ int programAbsolutePath(char *argsv0, char *rv, int size) {
 
 #endif
 
+/*
 JNIEnv* create_vm(char *classpath) {
 	JavaVM* jvm;
 	JNIEnv* env;
@@ -227,6 +227,7 @@ void invoke_class(JNIEnv* env, int argc, char **argv) {
 
 	(*env)->CallStaticVoidMethod(env, helloWorldClass, mainMethod, applicationArgs);
 }
+*/
 
 void debug(char* mask, ...) {
 	va_list args;

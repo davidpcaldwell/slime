@@ -310,6 +310,7 @@ if (parameters.options.native) {
 			var jdk = jsh.shell.java.home.parent;
 
 			var jni = function(include,rpath) {
+				return {};
 				var vmpath = (function() {
 					var rv;
 					//	Prefer client VM to server VM
@@ -377,14 +378,14 @@ if (parameters.options.native) {
 			//		core/src/jsh/launcher/rhino/native/jsh.c
 			//		-framework JavaVM
 			var args = ["-o", "jsh"];
-			unix.include.forEach(function(directory) {
+			if (unix.include) unix.include.forEach(function(directory) {
 				args.push("-I" + directory);
 			});
 			args.push(src.getRelativePath("jsh/launcher/rhino/native/jsh.c"));
-			if (unix.library.path && unix.library.name) {
+			if (unix.library && unix.library.path && unix.library.name) {
 				args.push("-L" + unix.library.path);
 				args.push("-l" + unix.library.name);
-			} else if (unix.library.command) {
+			} else if (unix.library && unix.library.command) {
 				args.push.apply(args, unix.library.command);
 			}
 			if (unix.rpath) {
