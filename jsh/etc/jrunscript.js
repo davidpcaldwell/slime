@@ -168,7 +168,7 @@ $api.shell.rhino = function(p) {
 	} else {
 		var _command = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.String,command.length);
 		for (var i=0; i<command.length; i++) {
-			_command[i] = command[i];;
+			_command[i] = command[i];
 		}
 		var _builder = new Packages.java.lang.ProcessBuilder(_command);
 		var USE_JAVA_1_7 = false;
@@ -221,10 +221,12 @@ if ($api.script.url && $api.script.url.getQuery()) {
 		//	Only allows single value for each name; surely sufficient for this purpose
 		var rv = {};
 		var string = String($api.script.url.getQuery());
-		string.split("&").forEach(function(pair) {
+		var pairs = string.split("&");
+		for (var i=0; i<pairs.length; i++) {
+			var pair = pairs[i];
 			var tokens = pair.split("=");
 			rv[tokens[0]] = tokens[1];
-		});
+		}
 		return rv;
 	})();
 	if (parameters.relative) {
