@@ -118,16 +118,13 @@ if (parameters.options.test) {
 			jsh.shell.echo("Exit status: "  + result.status);
 		};
 		var agentlib = (parameters.options["test:agentlib"]) ? ["-agentlib:" + parameters.options["test:agentlib"]] : [];
-		var vmarguments = ["-javaagent:" + parameters.options.to].concat(agentlib).concat(["-verbose:class"]);
-		var profiler = (function() {
-			var pairs = [];
-			if (parameters.options["test:output"]) {
-				pairs.push({ name: "output", value: parameters.options["test:output"].toString() });
-			}
-			if (!pairs.length) return "profiler";
-			return "profiler:" + pairs.map(function(pair) { return pair.name + "=" + pair.value; }).join(",");
-		})();
-
+		var pairs = [{ name: "debug", value: "true" }];
+		var profilerSettings = pairs.map(function(pair) { return pair.name + "=" + pair.value; }).join(",");
+		var vmarguments = ["-javaagent:" + parameters.options.to + "=" + profilerSettings].concat(agentlib).concat(["-verbose:class"]);
+		var extdirs = String(Packages.java.lang.System.getProperty("java.ext.dirs"));
+		extdirs += ":" + parameters.options.to.parent.toString();
+		vmarguments.push("-Djava.ext.dirs=" + extdirs);
+		jsh.shell.echo("VM arguments: " + vmarguments);
 		if (true) {
 			jsh.shell.java({
 				vmarguments: (parameters.options["test:internal"]) ? vmarguments : [],
@@ -137,7 +134,7 @@ if (parameters.options.test) {
 				],
 				environment: jsh.js.Object.set({}, jsh.shell.environment, {
 					JSH_LAUNCHER_INTERNAL: (parameters.options["test:internal"]) ? "true" : "",
-					JSH_SCRIPT_DEBUGGER: profiler,
+					JSH_SCRIPT_DEBUGGER: "profiler:" + profilerSettings,
 //					JSH_LAUNCHER_CONSOLE_DEBUG: "true",
 //					JSH_JVM_OPTIONS: (!parameters.options["test:internal"]) ? vmarguments.join(" ") : "",
 					JSH_ENGINE: (parameters.options["test:engine"]) ? parameters.options["test:engine"] : ""

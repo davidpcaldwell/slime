@@ -329,6 +329,7 @@ public class Profiler {
 	}
 
 	private static class Configuration {
+		private boolean debug;
 		private HashMap<String,Boolean> filters = new HashMap<String,Boolean>();
 
 		Configuration() {
@@ -337,8 +338,12 @@ public class Profiler {
 			filters.put("inonit.script.rhino.Engine$Profiler", false);
 		}
 
+		final void debug() {
+			debug = true;
+		}
+
 		final void debug(String message) {
-			//System.err.println(message);
+			if (debug) System.err.println(message);
 		}
 
 		final void exclude(String value) {
@@ -387,8 +392,14 @@ public class Profiler {
 			//	Remove other classes loaded by the agent, but if we make this capable of being loaded separately, this may need to
 			//	change; just do not know enough about the definition of ProtectionDomain
 			if (protectionDomain.equals(Profiler.class.getProtectionDomain())) return null;
+			if (loader.getParent() == null) return null;
 			if (configuration.profile(className)) {
-				configuration.debug("Profiling " + className + " in " + loader);
+				configuration.debug("Profiling " + className + " in " + loader/* + " with protection domain " + protectionDomain*/);
+				ClassLoader parent = loader.getParent();
+				while(parent != null) {
+					configuration.debug("Parent class loader: " + parent);
+					parent = parent.getParent();
+				}
 				try {
 					if (!added.contains(loader)) {
 						added.add(loader);
@@ -509,9 +520,16 @@ public class Profiler {
 				String value = arg.substring(arg.indexOf("=")+1);
 				configuration.exclude(value);
 			}
+			if (arg.equals("debug=true")) {
+				System.err.println("Profiler debugging enabled...");
+				configuration.debug();
+			}
 		}
 		javaagent = new Profiler();
 		System.err.println("Starting profiler ...");
+		configuration.debug("java.ext.dirs=" + System.getProperty("java.ext.dirs"));
+		configuration.debug("Profiler class: " + Profiler.class);
+		configuration.debug("Profiler class loader: " + Profiler.class.getClassLoader());
 		inst.addTransformer(new Transformer(configuration));
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
