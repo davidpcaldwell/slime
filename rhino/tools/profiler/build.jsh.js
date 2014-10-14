@@ -14,7 +14,11 @@ var parameters = jsh.script.getopts({
 	options: {
 		to: jsh.file.Pathname,
 		javassist: jsh.file.Pathname,
-		test: String
+		test: String,
+		"test:engine": String,
+		"test:internal": false,
+		"test:agentlib": String,
+		"test:output": jsh.file.Pathname
 	}
 });
 
@@ -109,24 +113,76 @@ if (parameters.options.test) {
 	}
 	if (parameters.options.test == "script" || parameters.options.test == "all") {
 		//	TODO	would be better to use jsh.shell.jsh, but would need to guarantee forking, which upcoming version may not
-		jsh.shell.shell(
-			jsh.shell.java.home.getFile("bin/java"),
-			[
-				"-classpath", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-				"inonit.script.jsh.launcher.Main",
-				jsh.script.file.getRelativePath("test.jsh.js")
-			],
-			{
+		var evaluate = function(result) {
+			jsh.shell.echo(result.command + " " + result.arguments.join(" "));
+			jsh.shell.echo("Exit status: "  + result.status);
+		};
+		var agentlib = (parameters.options["test:agentlib"]) ? ["-agentlib:" + parameters.options["test:agentlib"]] : [];
+		var vmarguments = ["-javaagent:" + parameters.options.to].concat(agentlib).concat(["-verbose:class"]);
+		var profiler = (function() {
+			var pairs = [];
+			if (parameters.options["test:output"]) {
+				pairs.push({ name: "output", value: parameters.options["test:output"].toString() });
+			}
+			if (!pairs.length) return "profiler";
+			return "profiler:" + pairs.map(function(pair) { return pair.name + "=" + pair.value; }).join(",");
+		})();
+
+		if (true) {
+			jsh.shell.java({
+				vmarguments: (parameters.options["test:internal"]) ? vmarguments : [],
+				jar: jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+				arguments: [
+					jsh.script.file.getRelativePath("../../../jsh/test/jsh.shell/properties.jsh.js")
+				],
 				environment: jsh.js.Object.set({}, jsh.shell.environment, {
-					JSH_JVM_OPTIONS: "-javaagent:" + parameters.options.to,
-					JSH_SCRIPT_DEBUGGER: "profiler"
+					JSH_LAUNCHER_INTERNAL: (parameters.options["test:internal"]) ? "true" : "",
+					JSH_SCRIPT_DEBUGGER: profiler,
+//					JSH_LAUNCHER_CONSOLE_DEBUG: "true",
+//					JSH_JVM_OPTIONS: (!parameters.options["test:internal"]) ? vmarguments.join(" ") : "",
+					JSH_ENGINE: (parameters.options["test:engine"]) ? parameters.options["test:engine"] : ""
 				}),
-				onExit: function(result) {
+				evaluate: evaluate
+			});
+		} else if (true) {
+			jsh.shell.java({
+				vmarguments: [
+					"-javaagent:" + parameters.options.to
+				],
+				jar: jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+				arguments: [
+					jsh.script.file.getRelativePath("../../../jsh/test/jsh.shell/properties.jsh.js")
+				],
+				environment: jsh.js.Object.set({}, jsh.shell.environment, {
+					JSH_LAUNCHER_INTERNAL: "true",
+					JSH_SCRIPT_DEBUGGER: profiler,
+					JSH_LAUNCHER_CONSOLE_DEBUG: "true",
+					JSH_ENGINE: "nashorn"
+				}),
+				evaluate: function(result) {
 					jsh.shell.echo(result.command + " " + result.arguments.join(" "));
 					jsh.shell.echo("Exit status: "  + result.status);
 				}
-			}
-		)
+			});
+		} else {
+			jsh.shell.shell(
+				jsh.shell.java.home.getFile("bin/java"),
+				[
+					"-classpath", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+					"inonit.script.jsh.launcher.Main",
+					jsh.script.file.getRelativePath("test.jsh.js")
+				],
+				{
+					environment: jsh.js.Object.set({}, jsh.shell.environment, {
+						JSH_JVM_OPTIONS: "-javaagent:" + parameters.options.to,
+						JSH_SCRIPT_DEBUGGER: "profiler"
+					}),
+					onExit: function(result) {
+						jsh.shell.echo(result.command + " " + result.arguments.join(" "));
+						jsh.shell.echo("Exit status: "  + result.status);
+					}
+				}
+			)
+		}
 	}
 }
-

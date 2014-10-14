@@ -79,7 +79,7 @@ if (options.listener || options.output) {
 					var _listener = new Packages.java.io.File(options.listener);
 					var pathname = jsh.file.filesystems.os.Pathname(String(_listener.getCanonicalPath()));
 					jsh.loader.run(pathname, {
-						$loader: new loader.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(_listener.getParentFile()) }),
+						$loader: new jsh.io.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(_listener.getParentFile()) }),
 						jsh: jsh,
 						profiles: profiles
 					});
@@ -99,7 +99,7 @@ if (options.listener || options.output) {
 					} else {
 						jsh.shell.echo("Emitting profiling data to " + options.output + " ...", { stream: jsh.shell.stderr });
 						jsh.loader.run(pathname, {
-							$loader: new loader.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(pathname.parent.java.adapt()) }),
+							$loader: new jsh.io.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(pathname.parent.java.adapt()) }),
 //							jsh: jsh,
 							profiles: profiles,
 							to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))

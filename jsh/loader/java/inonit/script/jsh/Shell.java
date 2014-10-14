@@ -136,7 +136,7 @@ public abstract class Shell {
 				private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
 
 				public ClassLoader getClassLoader() {
-					return ClassLoader.getSystemClassLoader();
+					return Shell.Configuration.class.getClassLoader();
 				}
 
 				public Properties getSystemProperties() {

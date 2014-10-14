@@ -238,7 +238,6 @@ this.jsh = new function() {
 				});
 				loader.getRhinoLoader().run(host.getLoader().getLoaderScript("profiler.js"), {
 					jsh: jsh,
-					loader: loader,
 					options: options
 				});
 //				eval(host.getLoader().getLoaderCode("profiler.js"));

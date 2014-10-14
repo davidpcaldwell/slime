@@ -26,7 +26,9 @@ public class Profiler {
 
 	private Timing getProfile() {
 		if (profiles.get(Thread.currentThread()) == null) {
-			profiles.put(Thread.currentThread(), new Timing());
+			synchronized(profiles) {
+				profiles.put(Thread.currentThread(), new Timing());
+			}
 		}
 		return profiles.get(Thread.currentThread());
 	}
@@ -335,6 +337,10 @@ public class Profiler {
 			filters.put("inonit.script.rhino.Engine$Profiler", false);
 		}
 
+		final void debug(String message) {
+			//System.err.println(message);
+		}
+
 		final void exclude(String value) {
 			filters.put(value, Boolean.FALSE);
 		}
@@ -382,7 +388,7 @@ public class Profiler {
 			//	change; just do not know enough about the definition of ProtectionDomain
 			if (protectionDomain.equals(Profiler.class.getProtectionDomain())) return null;
 			if (configuration.profile(className)) {
-//				System.err.println("Profiling " + className);
+				configuration.debug("Profiling " + className + " in " + loader);
 				try {
 					if (!added.contains(loader)) {
 						added.add(loader);
@@ -427,7 +433,7 @@ public class Profiler {
 					throw new RuntimeException(e);
 				}
 			} else {
-//				System.err.println("Not profiling " + className);
+				configuration.debug("Not profiling " + className);
 				return null;
 			}
 		}
@@ -497,7 +503,7 @@ public class Profiler {
 
 	public static void premain(String agentArgs, Instrumentation inst) {
 		Configuration configuration = new Configuration();
-		String[] args = agentArgs.split(",");
+		String[] args = (agentArgs != null) ? agentArgs.split(",") : new String[0];
 		for (String arg : args) {
 			if (arg.startsWith("exclude=")) {
 				String value = arg.substring(arg.indexOf("=")+1);
@@ -514,21 +520,24 @@ public class Profiler {
 				}
 
 				ArrayList<Profile> profiles = new ArrayList<Profile>();
-				for (final Map.Entry<Thread,Timing> entry : javaagent.profiles.entrySet()) {
-					profiles.add(new Profile() {
-						@Override public Thread getThread() {
-							return entry.getKey();
-						}
+				synchronized(javaagent.profiles) {
+					Set<Map.Entry<Thread,Timing>> set = javaagent.profiles.entrySet();
+					for (final Map.Entry<Thread,Timing> entry : set) {
+						profiles.add(new Profile() {
+							@Override public Thread getThread() {
+								return entry.getKey();
+							}
 
-						@Override public Timing getTiming() {
-							return entry.getValue();
-						}
-					});
+							@Override public Timing getTiming() {
+								return entry.getValue();
+							}
+						});
+					}
+					//	TODO	this basically re-sets all the timers so that the timing data, starting now, is unaffected by the
+					//			listeners. But it would probably be better to somehow disable profiling altogether, by setting a state
+					//			variable somewhere that shuts everything off
+					javaagent.profiles.clear();
 				}
-				//	TODO	this basically re-sets all the timers so that the timing data, starting now, is unaffected by the
-				//			listeners. But it would probably be better to somehow disable profiling altogether, by setting a state
-				//			variable somewhere that shuts everything off
-				javaagent.profiles.clear();
 				if (javaagent.listeners.size() == 0) {
 					javaagent.listeners.add(Listener.DEFAULT);
 				}
