@@ -294,13 +294,42 @@ public class Rhino {
 		System.exit(status);
 	}
 
+	private class Run implements Runnable {
+		public Integer call() throws Invocation.CheckedException {
+			return Rhino.this.run();
+		}
+
+		private Integer result;
+		private Throwable threw;
+
+		public Integer result() throws Throwable {
+			if (threw != null) throw threw;
+			return result;
+		}
+
+		public void run() {
+			try {
+				result = call();
+			} catch (Throwable e) {
+				threw = e;
+			}
+		}
+	}
+
 	public static void main(String[] args) throws Throwable {
 		Main.initialize();
 		Logging.get().log(Rhino.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
 		Rhino main = new Rhino();
 		main.arguments = args;
 		try {
-			Integer status = main.run();
+//			Integer status = java.util.concurrent.Executors.newCachedThreadPool().submit(main.new Run()).get();
+			Run run = main.new Run();
+			Thread thread = new Thread(run);
+			thread.setName("Loader");
+			thread.start();
+			thread.join();
+			Integer status = run.result();
+//			Integer status = main.run();
 			Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
 			if (status != null) {
 				exit(status.intValue());

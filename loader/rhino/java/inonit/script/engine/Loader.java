@@ -15,7 +15,9 @@ package inonit.script.engine;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import java.util.logging.*;
 
+import inonit.system.*;
 import inonit.script.engine.*;
 
 public abstract class Loader {
@@ -38,6 +40,7 @@ public abstract class Loader {
 
 	public static abstract class Classes extends ClassLoader {
 		public static Classes create(ClassLoader delegate) {
+			Logging.get().log(Loader.class, Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
 			return new New(delegate);
 		}
 

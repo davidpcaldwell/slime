@@ -29,7 +29,7 @@ if (options.listener || options.output) {
 					this.className = String(_peer.getClassName());
 					this.methodName = String(_peer.getMethodName());
 					this.signature = String(_peer.getSignature());
-				} else if (_peer && _peer.getClass() && String(_peer.getClass().getName()) == "java.lang.String") {
+				} else if (_peer && _peer.getClass && String(_peer.getClass().getName()) == "java.lang.String") {
 					//	TODO	if we want to keep using this we should fix its idiosyncrasies, like the lack of all line numbers
 					var parser = /^(.*) \[(.*)\-(.*)\](?: (.*)\(\))?$/.exec(String(_peer));
 					if (!parser) throw new TypeError("No match for " + String(_peer));
@@ -39,7 +39,39 @@ if (options.listener || options.output) {
 					if (parser[4]) {
 						this.functionName = parser[4];
 					}
+				} else if (_peer && _peer.getMetadata && _peer.getFunction) {
+					var sourceName = String(_peer.getMetadata());
+					var code = _peer.getFunction().toString().split("\n");
+					var recompilableScriptFunctionDataPattern = /^(?:(.*) )?name\=\'(.*)\' (.*)$/;
+					if (true && recompilableScriptFunctionDataPattern.test(sourceName)) {
+						var match = recompilableScriptFunctionDataPattern.exec(sourceName);
+						var metadata = (match[1]) ? match[1].split(":") : [];
+						if (metadata.length) {
+							this.sourceName = metadata.slice(0,metadata.length-1).join(":");
+							var start = Number(metadata[metadata.length-1]);
+							this.lineNumber = start;
+						} else {
+							this.sourceName = "<unknown>";
+						}
+						if (match[2] != "<anonymous>") {
+							this.functionName = match[2];
+						}
+					} else {
+						this.sourceName = String(_peer.getMetadata());
+						this.lineNumbers = [];
+					}
 				} else {
+					var debug = function(s) {};
+					debug("_peer = " + _peer);
+					if (_peer && typeof(_peer) == "object") {
+						if (_peer.getClass) {
+							debug("_peer class = " + _peer.getClass());
+						} else {
+							debug("_peer keys = " + Object.keys(_peer));
+						}
+					} else {
+						debug("_peer type: " + typeof(_peer));
+					}
 				}
 			}
 

@@ -15,6 +15,8 @@ var parameters = jsh.script.getopts({
 		to: jsh.file.Pathname,
 		javassist: jsh.file.Pathname,
 		test: String,
+		"test:debug": false,
+		"test:logging": jsh.file.Pathname,
 		"test:engine": String,
 		"test:internal": false,
 		"test:agentlib": String,
@@ -118,9 +120,24 @@ if (parameters.options.test) {
 			jsh.shell.echo("Exit status: "  + result.status);
 		};
 		var agentlib = (parameters.options["test:agentlib"]) ? ["-agentlib:" + parameters.options["test:agentlib"]] : [];
-		var pairs = [{ name: "debug", value: "true" }];
+		var pairs = [];
+		if (parameters.options["test:debug"]) {
+			pairs.push({
+				name: "debug",
+				value: "true"
+			});
+		}
+		if (parameters.options["test:output"]) {
+			pairs.push({
+				name: "output",
+				value: parameters.options["test:output"].toString()
+			});
+		}
 		var profilerSettings = pairs.map(function(pair) { return pair.name + "=" + pair.value; }).join(",");
-		var vmarguments = ["-javaagent:" + parameters.options.to + "=" + profilerSettings].concat(agentlib).concat(["-verbose:class"]);
+		var vmarguments = ["-javaagent:" + parameters.options.to + "=" + profilerSettings].concat(agentlib).concat((parameters.options["test:debug"]) ? ["-verbose:class"] : []);
+		if (parameters.options["test:logging"]) {
+			vmarguments.push("-Djava.util.logging.config.file=" + parameters.options["test:logging"]);
+		}
 		var extdirs = String(Packages.java.lang.System.getProperty("java.ext.dirs"));
 		extdirs += ":" + parameters.options.to.parent.toString();
 		vmarguments.push("-Djava.ext.dirs=" + extdirs);
@@ -134,7 +151,7 @@ if (parameters.options.test) {
 				],
 				environment: jsh.js.Object.set({}, jsh.shell.environment, {
 					JSH_LAUNCHER_INTERNAL: (parameters.options["test:internal"]) ? "true" : "",
-					JSH_SCRIPT_DEBUGGER: "profiler:" + profilerSettings,
+					JSH_SCRIPT_DEBUGGER: "profiler" + ((profilerSettings) ? ":" + profilerSettings : ""),
 //					JSH_LAUNCHER_CONSOLE_DEBUG: "true",
 //					JSH_JVM_OPTIONS: (!parameters.options["test:internal"]) ? vmarguments.join(" ") : "",
 					JSH_ENGINE: (parameters.options["test:engine"]) ? parameters.options["test:engine"] : ""

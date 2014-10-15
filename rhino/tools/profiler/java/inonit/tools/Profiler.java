@@ -63,6 +63,42 @@ public class Profiler {
 		startImpl(new CustomCode(o));
 	}
 
+	public static class CustomFunction extends Code {
+		private String data;
+		private Object function;
+
+		CustomFunction(String data, Object function) {
+			this.data = data;
+			this.function = function;
+		}
+
+		public String toString() {
+			return this.data;
+		}
+
+		public boolean equals(Object other) {
+			if (other == null) return false;
+			if (!(other instanceof CustomFunction)) return false;
+			return this.function.equals(((CustomFunction)other).function);
+		}
+
+		public int hashCode() {
+			return function.hashCode();
+		}
+
+		public String getMetadata() {
+			return data;
+		}
+
+		public Object getFunction() {
+			return function;
+		}
+	}
+
+	public void start(String name, Object function) {
+		startImpl(new CustomFunction(name, function));
+	}
+
 	public void start(String declaring, String methodName, String signature, Object target) {
 		startImpl(new MethodCode(declaring, methodName, signature));
 	}
@@ -72,6 +108,10 @@ public class Profiler {
 	}
 
 	public void stop(Object o) {
+		stopImpl();
+	}
+
+	public void stop(String name, Object function) {
 		stopImpl();
 	}
 
@@ -420,6 +460,11 @@ public class Profiler {
 							} else {
 								arguments = "(" + quote(b.getDeclaringClass().getName()) + "," + quote(b.getName()) + "," + quote(b.getSignature()) + "," + "$0" + ")";
 							}
+							if (b.getParameterTypes().length > 0) {
+								if (b.getParameterTypes()[0].subclassOf(classes.get("jdk.nashorn.internal.runtime.ScriptFunction"))) {
+									arguments = "($1.toString(), $1)";
+								}
+							}
 							String before = "inonit.tools.Profiler.javaagent().start" + arguments + ";";
 							String after = "inonit.tools.Profiler.javaagent().stop" + arguments + ";";
 							try {
@@ -533,8 +578,10 @@ public class Profiler {
 		inst.addTransformer(new Transformer(configuration));
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
-				for (Timing timing : javaagent.profiles.values()) {
-					timing.finish();
+				synchronized(javaagent.profiles) {
+					for (Timing timing : javaagent.profiles.values()) {
+						timing.finish();
+					}
 				}
 
 				ArrayList<Profile> profiles = new ArrayList<Profile>();

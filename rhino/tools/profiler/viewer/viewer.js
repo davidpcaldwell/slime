@@ -76,9 +76,11 @@ var render = function(profiles,settings) {
 		var nodeName = function(node) {
 			if (node.code.className && node.code.methodName) {
 				return node.code.className + " " + node.code.methodName + " " + node.code.signature;
-			} else if (node.code.sourceName && node.code.lineNumbers) {
-				var nameToken = (node.code.functionName) ? node.code.functionName + " " : "";
-				return node.code.sourceName + " " + nameToken + "[" + node.code.lineNumbers[0] + "-" + node.code.lineNumbers[node.code.lineNumbers.length-1] + "]";
+			} else if (node.code.sourceName) {
+				var location = (node.code.lineNumber) ? node.code.sourceName + ":" + node.code.lineNumber : node.code.sourceName;
+				var nameToken = (node.code.functionName) ? " " + node.code.functionName + "()" : "";
+				var lineRange = (node.code.lineNumbers) ? "[" + node.code.lineNumbers[0] + "-" + node.code.lineNumbers[node.code.lineNumbers.length-1] + "]" : "";
+				return location + nameToken + lineRange;
 			} else if (node.code.self) {
 				return "(self)";
 			} else {

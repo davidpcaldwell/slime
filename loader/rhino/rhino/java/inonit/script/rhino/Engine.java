@@ -14,9 +14,11 @@ package inonit.script.rhino;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 import org.mozilla.javascript.*;
 
+import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Engine {
@@ -469,6 +471,10 @@ public class Engine {
 			}
 		};
 
+		@Override public String toString() {
+			return getClass().getName() + " factory=" + factory;
+		}
+
 		public abstract boolean createClassLoader();
 		public abstract ClassLoader getApplicationClassLoader();
 		public abstract int getOptimizationLevel();
@@ -612,7 +618,11 @@ public class Engine {
 	public static class Errors extends RuntimeException {
 		public static Errors get(Context context) {
 			if (context == null) throw new RuntimeException("'context' must not be null.");
-			return ((Errors.ErrorReporterImpl)context.getErrorReporter()).getErrors();
+			if (context.getErrorReporter() instanceof Errors.ErrorReporterImpl) {
+				return ((Errors.ErrorReporterImpl)context.getErrorReporter()).getErrors();
+			} else {
+				return null;
+			}
 		}
 
 		private ArrayList errors = new ArrayList();
@@ -949,11 +959,13 @@ public class Engine {
 			} else {
 				Errors errors = Errors.get(context);
 				try {
-					errors.reset();
+					if (errors != null) {
+						errors.reset();
+					}
 					final boolean USE_COMPILE = true;
 					return evaluate(dim, context, scope, target, USE_COMPILE);
 				} catch (EvaluatorException e) {
-					if (errors.errors.size() > 0) {
+					if (errors != null && errors.errors.size() > 0) {
 						throw errors;
 					} else {
 						throw e;
@@ -1232,27 +1244,45 @@ public class Engine {
 			Object ignore = null;
 			for (int i=0; i<units.size(); i++) {
 				Errors errors = Errors.get(context);
-				errors.reset();
+				if (errors != null) {
+					errors.reset();
+				}
 				try {
 					ignore = ((Unit)units.get(i)).execute(dim, context, global);
 				} catch (WrappedException e) {
 					//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
 					//			stack trace from the contained Throwable inside the errors object.
 //					throw e;
-					errors.add(e);
-					throw errors;
+					if (errors != null) {
+						errors.add(e);
+						throw errors;
+					} else {
+						throw e;
+					}
 				} catch (EvaluatorException e) {
 					//	TODO	Oh my goodness, is there no better way to do this?
-					if (true || e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1) {
+					if (errors != null && (e.getMessage().indexOf("Compilation produced") == -1 || e.getMessage().indexOf("syntax errors.") == -1)) {
 						errors.add(e);
 					}
-					throw errors;
+					if (errors != null) {
+						throw errors;
+					} else {
+						throw e;
+					}
 				} catch (EcmaError e) {
-					errors.add(e);
-					throw errors;
+					if (errors != null) {
+						errors.add(e);
+						throw errors;
+					} else {
+						throw e;
+					}
 				} catch (JavaScriptException e) {
-					errors.add(e);
-					throw errors;
+					if (errors != null) {
+						errors.add(e);
+						throw errors;
+					} else {
+						throw e;
+					}
 				}
 			}
 			return new Outcome(global, ignore);
