@@ -501,14 +501,16 @@ public class Main {
 
 		public void run() {
 			System.out.flush();
-			Logging.get().log(Main.class, Level.INFO, "Exit status: %d", status);
+			Logging.get().log(Main.class, Level.INFO, "Exit status: %s", String.valueOf(status));
 			System.err.flush();
 		}
 	}
 
 	private void run(String[] args) throws IOException {
 		BeforeExit beforeExit = new BeforeExit();
-		Runtime.getRuntime().addShutdownHook(new Thread(beforeExit));
+		Thread beforeExitThread = new Thread(beforeExit);
+		beforeExitThread.setName("BeforeExit");
+		Runtime.getRuntime().addShutdownHook(beforeExitThread);
 		Invocation invocation = Invocation.create();
 		Integer status = null;
 		try {
