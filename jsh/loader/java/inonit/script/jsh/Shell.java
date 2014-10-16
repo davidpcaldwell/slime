@@ -109,6 +109,28 @@ public abstract class Shell {
 		public abstract OperatingSystem.Environment getEnvironment();
 		public abstract Stdio getStdio();
 
+		public static abstract class Context {
+			public static final Context VM = new Context() {
+				@Override public void exit(int status) {
+					System.exit(status);
+				}
+			};
+
+			public static class Holder extends Context {
+				private Integer status;
+
+				@Override public void exit(int status) {
+					this.status = new Integer(status);
+				}
+
+				public Integer getExit() {
+					return status;
+				}
+			}
+
+			public abstract void exit(int status);
+		}
+
 		/**
 		 *
 		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or

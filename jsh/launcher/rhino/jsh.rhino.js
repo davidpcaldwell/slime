@@ -676,8 +676,8 @@ try {
 			var _invokeArguments = newArray(Packages.java.lang.Object,1);
 			_invokeArguments[0] = _arguments;
 			_argumentTypes[0] = _arguments.getClass();
-			var _method = _class.getMethod("main",_argumentTypes);
-			_class.getMethod("main",_argumentTypes).invoke(null,_invokeArguments);
+			var _method = _class.getMethod("run",_argumentTypes);
+			return _method.invoke(null,_invokeArguments);
 		}
 	}
 	debugger;

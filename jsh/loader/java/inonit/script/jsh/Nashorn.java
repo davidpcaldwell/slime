@@ -43,13 +43,13 @@ public class Nashorn {
 		return execution.execute(shell);
 	}
 
-	private static void main(Shell shell) throws Invocation.CheckedException {
+	private static void main(Shell.Configuration.Context context, Shell shell) throws Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(true);
 		Integer rv = execution.execute(shell);
 		if (rv == null) {
 		} else if (rv.intValue() == 0) {
 		} else {
-			System.exit(rv.intValue());
+			context.exit(rv.intValue());
 		}
 	}
 
@@ -132,8 +132,18 @@ public class Nashorn {
 		}
 	}
 
-	public static void main(final String[] args) throws Invocation.CheckedException {
+	private static void run(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
 		Main.initialize();
-		main(Shell.main(args));
+		main(context, Shell.main(args));
+	}
+
+	public static Integer run(String[] args) throws Invocation.CheckedException {
+		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
+		run(context, args);
+		return context.getExit();
+	}
+
+	public static void main(final String[] args) throws Invocation.CheckedException {
+		run(Shell.Configuration.Context.VM, args);
 	}
 }

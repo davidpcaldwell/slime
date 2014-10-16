@@ -290,9 +290,9 @@ public class Rhino {
 		}
 	}
 
-	private static void exit(int status) {
-		System.exit(status);
-	}
+//	private static void exit(int status) {
+//		System.exit(status);
+//	}
 
 	private class Run implements Runnable {
 		public Integer call() throws Invocation.CheckedException {
@@ -316,7 +316,7 @@ public class Rhino {
 		}
 	}
 
-	public static void main(String[] args) throws Throwable {
+	private static void run(Shell.Configuration.Context context, String[] args) {
 		Main.initialize();
 		Logging.get().log(Rhino.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
 		Rhino main = new Rhino();
@@ -332,7 +332,7 @@ public class Rhino {
 //			Integer status = main.run();
 			Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
 			if (status != null) {
-				exit(status.intValue());
+				context.exit(status.intValue());
 			} else {
 				main.rhino.getEngine().getDebugger().destroy();
 				//	JVM will exit normally when non-daemon threads complete.
@@ -340,7 +340,7 @@ public class Rhino {
 		} catch (Invocation.CheckedException e) {
 			Logging.get().log(Rhino.class, Level.INFO, "Exiting with checked exception.", e);
 			System.err.println(e.getMessage());
-			exit(1);
+			context.exit(1);
 		} catch (Throwable t) {
 			Logging.get().log(Rhino.class, Level.SEVERE, "Exiting with throwable.", t);
 			Throwable target = t;
@@ -369,7 +369,18 @@ public class Rhino {
 				}
 				target = target.getCause();
 			}
-			exit(1);
+			context.exit(1);
 		}
+
+	}
+
+	public static Integer run(String[] args) throws Invocation.CheckedException {
+		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
+		run(context, args);
+		return context.getExit();
+	}
+
+	public static void main(String[] args) throws Throwable {
+		run(Shell.Configuration.Context.VM, args);
 	}
 }
