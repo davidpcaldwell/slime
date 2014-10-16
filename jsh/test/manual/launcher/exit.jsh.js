@@ -20,7 +20,7 @@ var parameters = jsh.script.getopts({
 if (typeof(parameters.options.status) == "undefined") {
 	//	test suite
 	["rhino","nashorn"].forEach(function(engine) {
-		["classloader","fork"].forEach(function(launcher) {
+		["classloader","jvm"].forEach(function(launcher) {
 			jsh.shell.jsh({
 				fork: true,
 				script: jsh.script.file,
@@ -29,9 +29,9 @@ if (typeof(parameters.options.status) == "undefined") {
 				],
 				environment: jsh.js.Object.set({}, jsh.shell.environment,
 					{
-						JSH_ENGINE: engine
-					},
-					(launcher == "classloader") ? { JSH_LAUNCHER_INTERNAL: "true" } : {}
+						JSH_ENGINE: engine,
+						JSH_SHELL_CONTAINER: launcher
+					}
 				),
 				evaluate: function(result) {
 					if (result.status == 42) {

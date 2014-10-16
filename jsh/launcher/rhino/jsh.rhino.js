@@ -578,7 +578,7 @@ try {
 	//			JSH_RHINO_CLASSPATH=$JSH_RHINO_CLASSPATH:$JSH_HOME/lib/xbean.jar:$JSH_HOME/lib/jsr173_1.0_api.jar
 	//		fi
 	//	fi
-
+	var JSH_SHELL_CONTAINER = (env.JSH_SHELL_CONTAINER) ? env.JSH_SHELL_CONTAINER : "jvm";
 	var command = new Command();
 	var jvmProperty = function(name,value,set) {
 		if (typeof(value) != "undefined") {
@@ -618,7 +618,7 @@ try {
 	command.argument = function(string) {
 		this.add(string);
 	}
-	if (env.JSH_LAUNCHER_INTERNAL && !env.JSH_SHELL_CLASSPATH) command = new function() {
+	if (JSH_SHELL_CONTAINER == "classloader" && !env.JSH_SHELL_CLASSPATH) command = new function() {
 		this.jvmProperty = function(name,value) {
 			jvmProperty(name,value,function(name,value) {
 				Packages.java.lang.System.setProperty(name,value);
@@ -776,7 +776,7 @@ try {
 		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
 			//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
 			//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
-			if (settings.get("profiler") && !env.JSH_LAUNCHER_INTERNAL) {
+			if (settings.get("profiler") && JSH_SHELL_CONTAINER == "jvm") {
 				var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
 				if (withParameters) {
 					command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
@@ -788,7 +788,7 @@ try {
 				//	emit warning message?
 			}
 		}
-		if (!env.JSH_LAUNCHER_INTERNAL) {
+		if (JSH_SHELL_CONTAINER == "jvm") {
 			if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
 				jvmOptions.unshift("-client");
 			}
@@ -827,10 +827,6 @@ try {
 	var status = command.run(mode);
 	if (status === null) {
 		throw new Error("Exit status null.");
-	}
-	if (env.JSH_LAUNCHER_INTERNAL && typeof(status) == "undefined") {
-		//	TODO	figure this out more comprehensively
-		status = 0;
 	}
 	setExitStatus(status);
 	debug("Command returned.");

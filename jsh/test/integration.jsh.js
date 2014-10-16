@@ -97,8 +97,8 @@ for (var x in env) {
 if (env.JSH_ENGINE) {
 	mode.env.JSH_ENGINE = env.JSH_ENGINE;
 }
-if (env.JSH_LAUNCHER_INTERNAL) {
-	mode.env.JSH_LAUNCHER_INTERNAL = env.JSH_LAUNCHER_INTERNAL;
+if (env.JSH_SHELL_CONTAINER) {
+	mode.env.JSH_SHELL_CONTAINER = env.JSH_SHELL_CONTAINER;
 }
 mode.env.JSH_PLUGINS = String(new File(JSH_HOME, "plugins").getCanonicalPath());
 if (debug.on) {

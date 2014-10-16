@@ -27,7 +27,7 @@ var parameters = jsh.script.getopts({
 });
 
 if (!parameters.options.launcher.length) {
-	parameters.options.launcher = ["classloader","fork"];
+	parameters.options.launcher = ["classloader","jvm"];
 }
 if (!parameters.options.engine.length) {
 	parameters.options.engine = ["rhino","nashorn"];
@@ -137,7 +137,7 @@ if (parameters.options.tests == "script" || parameters.options.tests == "all") {
 				jsh.script.file.getRelativePath("../../../../jsh/test/jsh.shell/properties.jsh.js")
 			],
 			environment: jsh.js.Object.set({}, jsh.shell.environment, {
-				JSH_LAUNCHER_INTERNAL: (launcher == "classloader") ? "true" : "",
+				JSH_SHELL_CONTAINER: launcher,
 				JSH_SCRIPT_DEBUGGER: "profiler" + ((profilerSettings) ? ":" + profilerSettings : ""),
 //					JSH_LAUNCHER_CONSOLE_DEBUG: "true",
 				JSH_JVM_OPTIONS: (launcher == "fork") ? vmarguments.join(" ") : "",
