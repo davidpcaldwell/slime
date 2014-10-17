@@ -654,6 +654,7 @@ if (RHINO_LIBRARIES) {
 }
 
 if (CATALINA_HOME) {
+	jsh.shell.echo("Testing servlet integration tests ...");
 	jsh.shell.run({
 		command: LAUNCHER_COMMAND[0],
 		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/http.jsh.js")),
@@ -672,6 +673,7 @@ if (CATALINA_HOME) {
 }
 
 if (COFFEESCRIPT) {
+	jsh.shell.echo("Testing CoffeeScript ...");
 	jsh.shell.run({
 		command: LAUNCHER_COMMAND[0],
 		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("coffee/hello.jsh.coffee")),
@@ -710,6 +712,7 @@ if (COFFEESCRIPT) {
 
 var nativeLauncher = jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh");
 if (nativeLauncher) {
+	jsh.shell.echo("Testing native launcher ...");
 	jsh.shell.run({
 		command: nativeLauncher,
 		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],
