@@ -10,6 +10,12 @@
 //	Contributor(s):
 //	END LICENSE
 
+var parameters = jsh.script.getopts({
+	options: {
+		debug: false
+	}
+});
+
 var tomcat = new jsh.httpd.Tomcat({});
 tomcat.map({
 	path: "/",
@@ -34,6 +40,9 @@ var code = client.request({
 jsh.shell.echo(code.body.stream.character().asString());
 jsh.shell.run({
 	command: jsh.shell.java.launcher,
-	arguments: ["-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar")].concat(url)
+	arguments: ["-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar")].concat(url),
+	environment: jsh.js.Object.set({}, jsh.shell.environment, {
+		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
+	})
 });
 jsh.shell.echo("Success launching URL script: " + url);
