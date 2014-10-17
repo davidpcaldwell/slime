@@ -21,6 +21,7 @@ if (typeof(parameters.options.status) == "undefined") {
 	//	test suite
 	["rhino","nashorn"].forEach(function(engine) {
 		["classloader","jvm"].forEach(function(launcher) {
+			var start = new Date();
 			jsh.shell.jsh({
 				fork: true,
 				script: jsh.script.file,
@@ -34,6 +35,8 @@ if (typeof(parameters.options.status) == "undefined") {
 					}
 				),
 				evaluate: function(result) {
+					var end = new Date();
+					jsh.shell.echo(engine + "/" + launcher + ": " + ((end.getTime() - start.getTime())/1000).toFixed(3) + " seconds.");
 					if (result.status == 42) {
 						jsh.shell.echo("Success exit status = 42: " + engine + "/" + launcher);
 					} else {
