@@ -123,8 +123,19 @@ public abstract class Shell {
 					this.status = new Integer(status);
 				}
 
-				public Integer getExit() {
-					return status;
+				public int getExitCode(Run run, String[] arguments) {
+					try {
+						run.run(this, arguments);
+						if (status == null) return 0;
+						return status.intValue();
+					} catch (Throwable t) {
+						if (status == null) return 1;
+						return status.intValue();
+					}
+				}
+
+				public static abstract class Run {
+					public abstract void run(Context context, String[] arguments) throws Throwable;
 				}
 			}
 

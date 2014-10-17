@@ -371,13 +371,17 @@ public class Rhino {
 			}
 			context.exit(1);
 		}
-
 	}
 
-	public static Integer run(String[] args) throws Invocation.CheckedException {
+	private static class Runner extends Shell.Configuration.Context.Holder.Run {
+		public void run(Shell.Configuration.Context context, String[] args) {
+			Rhino.run(context,args);
+		}
+	}
+
+	public static int run(String[] args) throws Invocation.CheckedException {
 		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
-		run(context, args);
-		return context.getExit();
+		return context.getExitCode(new Runner(), args);
 	}
 
 	public static void main(String[] args) throws Throwable {

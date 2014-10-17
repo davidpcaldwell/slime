@@ -70,6 +70,10 @@ platform.io.copyStream = function(i,o) {
 }
 
 var File = function(path) {
+	this.toString = function() {
+		return path;
+	}
+
 	this.path = path;
 
 	this.writeTo = function() {
@@ -111,6 +115,10 @@ var Directory = function(path) {
 
 var Searchpath = function(p) {
 	var elements = [];
+
+	this.toString = function() {
+		return elements.toString();
+	}
 
 	if (typeof(p) == "string") {
 		elements = p.split(colon);
@@ -578,7 +586,7 @@ try {
 	//			JSH_RHINO_CLASSPATH=$JSH_RHINO_CLASSPATH:$JSH_HOME/lib/xbean.jar:$JSH_HOME/lib/jsr173_1.0_api.jar
 	//		fi
 	//	fi
-	var JSH_SHELL_CONTAINER = (env.JSH_SHELL_CONTAINER) ? env.JSH_SHELL_CONTAINER : "jvm";
+	var JSH_SHELL_CONTAINER = (env.JSH_SHELL_CONTAINER) ? env.JSH_SHELL_CONTAINER : "classloader";
 	var command = new Command();
 	var jvmProperty = function(name,value,set) {
 		if (typeof(value) != "undefined") {
@@ -619,6 +627,10 @@ try {
 		this.add(string);
 	}
 	if (JSH_SHELL_CONTAINER == "classloader" && !env.JSH_SHELL_CLASSPATH) command = new function() {
+		this.toString = function() {
+			return "Loader command: jsh=" + mainClassName + " classpath=" + classpath + " script=" + script + " arguments=" + args
+		}
+
 		this.jvmProperty = function(name,value) {
 			jvmProperty(name,value,function(name,value) {
 				Packages.java.lang.System.setProperty(name,value);
@@ -667,7 +679,11 @@ try {
 			var _class = _classloader.loadClass(mainClassName);
 			var _argumentTypes = newArray(Packages.java.lang.Class,1);
 			var loaderArguments = [];
-			if (script) loaderArguments.push(script.path);
+			if (script && typeof(script.path) != "undefined") {
+				loaderArguments.push(script.path);
+			} else if (script && typeof(script) == "string") {
+				loaderArguments.push(script);
+			}
 			loaderArguments.push.apply(loaderArguments,args);
 			var _arguments = newStringArray(loaderArguments.length);
 			for (var i=0; i<loaderArguments.length; i++) {
@@ -826,7 +842,7 @@ try {
 	debug("Running command ...");
 	var status = command.run(mode);
 	if (status === null) {
-		throw new Error("Exit status null.");
+		throw new Error("Exit status null: " + command);
 	}
 	setExitStatus(status);
 	debug("Command returned.");
