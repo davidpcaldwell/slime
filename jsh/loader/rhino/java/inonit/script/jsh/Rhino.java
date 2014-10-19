@@ -374,6 +374,10 @@ public class Rhino {
 	}
 
 	private static class Runner extends Shell.Configuration.Context.Holder.Run {
+		public void threw(Throwable t) {
+			t.printStackTrace();
+		}
+		
 		public void run(Shell.Configuration.Context context, String[] args) {
 			Rhino.run(context,args);
 		}

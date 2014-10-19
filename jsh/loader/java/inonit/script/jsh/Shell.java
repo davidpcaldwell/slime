@@ -118,6 +118,7 @@ public abstract class Shell {
 
 			public static class Holder extends Context {
 				private Integer status;
+				private Throwable uncaught;
 
 				@Override public void exit(int status) {
 					this.status = new Integer(status);
@@ -129,12 +130,14 @@ public abstract class Shell {
 						if (status == null) return 0;
 						return status.intValue();
 					} catch (Throwable t) {
+						run.threw(t);
 						if (status == null) return 1;
 						return status.intValue();
 					}
 				}
 
 				public static abstract class Run {
+					public abstract void threw(Throwable t);
 					public abstract void run(Context context, String[] arguments) throws Throwable;
 				}
 			}
