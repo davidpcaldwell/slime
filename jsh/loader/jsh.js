@@ -111,11 +111,14 @@ this.jsh = new function() {
 	var Loader = eval(host.getLoader().getLoaderScript("loader.js").code);
 
 	var plugins = {
+		//	TODO	remove; let each plugin instantiate its own if it wants one, or share the jsh.io copy (if jsh.file even uses
+		//			one; should check)
 		_streams: new Packages.inonit.script.runtime.io.Streams()
 	};
 	var loadPlugins = eval(host.getLoader().getLoaderScript("plugins.js").code);
 
 	var loader = new Loader();
+	//	TODO	examine why needed by plugins; rename if it is needed
 	plugins.$rhino = loader.getRhinoLoader();
 
 	this.loader = new function() {
@@ -156,9 +159,6 @@ this.jsh = new function() {
 	//	TODO	Lazy-loading
 	var js = loader.bootstrap("js/object",{ globals: true });
 	jsh.js = js;
-
-	var java = loader.bootstrap("rhino/host", { globals: true, $rhino: loader.getRhinoLoader(), $java: $host.java });
-	jsh.java = java;
 
 	loadPlugins(host.getLoader().getPlugins());
 
