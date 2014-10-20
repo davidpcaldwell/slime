@@ -156,10 +156,7 @@ this.jsh = new function() {
 	//	TODO	should separate everything above/below into two files; above is loader implementation, below is
 	//			startup/configuration
 
-	//	TODO	Lazy-loading
-	var js = loader.bootstrap("js/object",{ globals: true });
-	jsh.js = js;
-
+	//	TODO	Lazy-loading of plugins
 	loadPlugins(host.getLoader().getPlugins());
 
 	jsh.$jsapi = {
