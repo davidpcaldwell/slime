@@ -37,6 +37,10 @@ plugin({
 				paths: convert( properties.cygwin.paths )
 			}
 		}
+		var environment = jsh.java.Environment($jsh.getEnvironment());
+		if (environment.PATHEXT) {
+			context.pathext = environment.PATHEXT.split(";");
+		}
 		jsh.file = $loader.module("module.js", context);
 	}
 })
