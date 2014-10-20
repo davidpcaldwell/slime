@@ -121,8 +121,8 @@ if (parameters.options.tests == "script" || parameters.options.tests == "all") {
 			});
 		}
 		var profilerSettings = pairs.map(function(pair) { return pair.name + "=" + pair.value; }).join(",");
-		var vmarguments = (engine == "rhino" && launcher == "fork") ? [] : ["-javaagent:" + parameters.options.jar + "=" + profilerSettings];
-		var vmarguments = vmarguments.concat(agentlib).concat((parameters.options.debug) ? ["-verbose:class"] : []);
+		var vmarguments = (engine == "rhino" && launcher == "jvm") ? [] : ["-javaagent:" + parameters.options.jar + "=" + profilerSettings];
+		var vmarguments = vmarguments.concat(agentlib).concat((parameters.options.debug) ? [/*"-verbose:class"*/] : []);
 		if (parameters.options.logging) {
 			vmarguments.push("-Djava.util.logging.config.file=" + parameters.options.logging);
 		}
@@ -140,7 +140,7 @@ if (parameters.options.tests == "script" || parameters.options.tests == "all") {
 				JSH_SHELL_CONTAINER: launcher,
 				JSH_SCRIPT_DEBUGGER: "profiler" + ((profilerSettings) ? ":" + profilerSettings : ""),
 //					JSH_LAUNCHER_CONSOLE_DEBUG: "true",
-				JSH_JVM_OPTIONS: (launcher == "fork") ? vmarguments.join(" ") : "",
+				JSH_JVM_OPTIONS: (launcher == "jvm") ? vmarguments.join(" ") : "",
 				JSH_ENGINE: (engine) ? engine : ""
 			}),
 			evaluate: evaluate
