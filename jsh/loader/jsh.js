@@ -187,18 +187,6 @@ this.jsh = new function() {
 
 		context.addFinalizer = addFinalizer;
 
-		if ( String(properties.cygwin) != "undefined" ) {
-			var convert = function(value) {
-				if ( String(value) == "undefined" ) return function(){}();
-				if ( String(value) == "null" ) return null;
-				return String(value);
-			}
-			context.cygwin = {
-				root: convert( properties.cygwin.root ),
-				paths: convert( properties.cygwin.paths )
-			}
-		}
-
 		var io = loader.bootstrap("rhino/io", {
 			$java: context._streams
 			,$rhino: loader.getRhinoLoader()
@@ -212,8 +200,6 @@ this.jsh = new function() {
 
 		jsh.io = io;
 		context.api.io = io;
-
-		jsh.file = loader.bootstrap("rhino/file", context);
 	})();
 
 	loadPlugins(host.getLoader().getPlugins());
