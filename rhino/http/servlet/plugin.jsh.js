@@ -12,7 +12,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.java && jsh.java.log && jsh.io.mime && jsh.shell && jsh.file;
+		return jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file;
 	},
 	load: function() {
 		if (!jsh.httpd) {
