@@ -226,22 +226,20 @@ this.jsh = new function() {
 		java: $host.java
 	};
 
-	if ($host.getSystemProperties().getProperty("jsh.script.debugger")) {
+	if ($host.getSystemProperties().get("inonit.tools.Profiler.args")) {
 		(function() {
-			var property = String($host.getSystemProperties().getProperty("jsh.script.debugger"));
-			var parser = /^profiler\:(.*)$/;
-			if (parser.test(property)) {
-				var options = {};
-				parser.exec(property)[1].split(",").forEach(function(declaration) {
-					var tokens = declaration.split("=");
-					options[tokens[0]] = tokens[1];
-				});
-				loader.getRhinoLoader().run(host.getLoader().getLoaderScript("profiler.js"), {
-					jsh: jsh,
-					options: options
-				});
-//				eval(host.getLoader().getLoaderCode("profiler.js"));
+			var _args = $host.getSystemProperties().get("inonit.tools.Profiler.args");
+			var options = {};
+			//	TODO	currently does not contemplate repeated options
+			for (var i=0; i<_args.length; i++) {
+				var pair = String(_args[i]);
+				var tokens = pair.split("=");
+				options[tokens[0]] = tokens[1];
 			}
+			loader.getRhinoLoader().run(host.getLoader().getLoaderScript("profiler.js"), {
+				jsh: jsh,
+				options: options
+			});
 		})();
 	}
 };

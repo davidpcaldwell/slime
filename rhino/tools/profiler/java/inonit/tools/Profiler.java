@@ -560,6 +560,7 @@ public class Profiler {
 	public static void premain(String agentArgs, Instrumentation inst) {
 		Configuration configuration = new Configuration();
 		String[] args = (agentArgs != null) ? agentArgs.split(",") : new String[0];
+		System.getProperties().put(Profiler.class.getName() + ".args", args);
 		for (String arg : args) {
 			if (arg.startsWith("exclude=")) {
 				String value = arg.substring(arg.indexOf("=")+1);
@@ -571,10 +572,11 @@ public class Profiler {
 			}
 		}
 		javaagent = new Profiler();
-		System.err.println("Starting profiler ...");
+		System.err.println("Starting profiler; agentArgs = " + agentArgs + " ...");
 		configuration.debug("java.ext.dirs=" + System.getProperty("java.ext.dirs"));
 		configuration.debug("Profiler class: " + Profiler.class);
 		configuration.debug("Profiler class loader: " + Profiler.class.getClassLoader());
+		configuration.debug("Property inonit.tools.Profiler.args = " + System.getProperties().get("inonit.tools.Profiler.args"));
 		inst.addTransformer(new Transformer(configuration));
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
