@@ -27,10 +27,18 @@ public class Main {
 
 	private static class Invocation {
 		//	TODO	this logic is duplicated in Servlet
+		private static Engine getSpecified(Shell shell, String JSH_ENGINE) {
+			Engine specified = Engine.INSTANCES.get(JSH_ENGINE);
+			if (specified != null && specified.isInstalled(shell)) {
+				return specified;
+			}
+			return null;
+		}
+
 		private static Engine getEngine(Shell shell, String JSH_ENGINE) {
 			if (JSH_ENGINE != null) {
-				Engine specified = Engine.INSTANCES.get(JSH_ENGINE);
-				if (specified != null && specified.isInstalled(shell)) {
+				Engine specified = getSpecified(shell, JSH_ENGINE);
+				if (specified != null) {
 					return specified;
 				}
 			}
@@ -198,13 +206,19 @@ public class Main {
 			private ScriptEngine engine;
 			private ArrayList<String> scripts = new ArrayList<String>();
 
+			private ScriptEngine getEngine() {
+				if (engine == null) {
+					engine = factory.getEngineByName("nashorn");
+				}
+				return engine;
+			}
+
 			Nashorn() {
 				this.factory = new ScriptEngineManager();
-				this.engine = factory.getEngineByName("nashorn");
 			}
 
 			boolean isInstalled(Shell shell) {
-				return new ScriptEngineManager().getEngineByName("nashorn") != null;
+				return getEngine() != null;
 			}
 
 			void initializeSystemProperties(Invocation invocation, Shell shell) {
@@ -224,14 +238,14 @@ public class Main {
 				Logging.get().log(Nashorn.class, Level.FINE, "run(): scripts.length = " + scripts.size());
 				for (String script : scripts) {
 					Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
-					ScriptContext c = engine.getContext();
+					ScriptContext c = getEngine().getContext();
 					c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);
 	//				File file = new File(script);
 					if (new java.io.File(script).exists()) {
 						script = new java.io.File(script).toURI().toURL().toExternalForm();
 					}
 					java.net.URLConnection connection = new java.net.URL(script).openConnection();
-					engine.eval(new InputStreamReader(connection.getInputStream()), c);
+					getEngine().eval(new InputStreamReader(connection.getInputStream()), c);
 					Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
 				}
 				return 0;
