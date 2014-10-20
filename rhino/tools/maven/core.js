@@ -374,3 +374,14 @@ $exports.Project = function(p) {
 		}
 	}
 };
+
+var LocalRepository = function(p) {
+	this.resolve = function(dependency) {
+		return p.directory.getFile(dependency.group.replace(/\./g, "/") + "/" + dependency.artifact + "/" + dependency.version + "/" + dependency.artifact + "-" + dependency.version + ".jar");
+	}
+}
+
+$exports.Repository = function(p) {
+
+};
+$exports.Repository.LOCAL = new LocalRepository({ directory: jsh.shell.HOME.getSubdirectory(".m2/repository") });

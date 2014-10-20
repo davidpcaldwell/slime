@@ -26,6 +26,7 @@ plugin({
 				this.mvn = core.mvn;
 				this.Project = core.Project;
 				this.Pom = core.Pom;
+				this.Repository = core.Repository;
 			};
 		}
 	}
