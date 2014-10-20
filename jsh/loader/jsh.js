@@ -110,10 +110,13 @@ this.jsh = new function() {
 
 	var Loader = eval(host.getLoader().getLoaderScript("loader.js").code);
 
-	var plugins = {};
+	var plugins = {
+		_streams: new Packages.inonit.script.runtime.io.Streams()
+	};
 	var loadPlugins = eval(host.getLoader().getLoaderScript("plugins.js").code);
 
 	var loader = new Loader();
+	plugins.$rhino = loader.getRhinoLoader();
 
 	this.loader = new function() {
 		this.run = loader.run;
@@ -156,51 +159,6 @@ this.jsh = new function() {
 
 	var java = loader.bootstrap("rhino/host", { globals: true, $rhino: loader.getRhinoLoader(), $java: $host.java });
 	jsh.java = java;
-
-	(function() {
-		var context = {};
-		var environment = jsh.java.Environment($host.getEnvironment());
-		var properties = jsh.java.Properties.adapt($host.getSystemProperties());
-
-		context._streams = new Packages.inonit.script.runtime.io.Streams();
-
-		context.api = {
-			loader: loader.getRhinoLoader(),
-			js: js,
-			java: java
-		}
-
-		if (environment.PATHEXT) {
-			context.pathext = environment.PATHEXT.split(";");
-		}
-
-		//	TODO	check to see whether this is used, because if it is, it had a longstanding copy-paste bug
-		context.stdio = new function() {
-			this.$out = $host.getStdio().getStandardOutput();
-			this.$in = $host.getStdio().getStandardInput();
-			this.$err = $host.getStdio().getStandardError();
-		}
-
-		//	TODO	both jsh.file and jsh.shell use this property; consider making it part of host object and/or shell configuration
-		//			and pushing property-mapping back into inonit.script.jsh.Shell
-		context.$pwd = String( $host.getSystemProperties().getProperty("user.dir") );
-
-		context.addFinalizer = addFinalizer;
-
-		var io = loader.bootstrap("rhino/io", {
-			$java: context._streams
-			,$rhino: loader.getRhinoLoader()
-			,stdio: context.stdio
-			,api: {
-				js: js,
-				java: java,
-				mime: loader.bootstrap("js/mime",{})
-			}
-		});
-
-		jsh.io = io;
-		context.api.io = io;
-	})();
 
 	loadPlugins(host.getLoader().getPlugins());
 
