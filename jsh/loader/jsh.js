@@ -92,17 +92,6 @@ this.jsh = new function() {
 
 	var jsh = this;
 
-	var addFinalizer = function(f) {
-		$host.loader.addFinalizer(new JavaAdapter(
-			Packages.java.lang.Runnable,
-			{
-				run: function() {
-					f();
-				}
-			}
-		));
-	}
-
 	var loader = eval($host.loader.getLoaderScript("loader.js").code);
 
 	var loadPlugins = eval($host.loader.getLoaderScript("plugins.js").code);
@@ -117,7 +106,14 @@ this.jsh = new function() {
 
 		//	experimental interface and therefore currently undocumented
 		this.addFinalizer = function(f) {
-			addFinalizer(f);
+			$host.loader.addFinalizer(new JavaAdapter(
+				Packages.java.lang.Runnable,
+				{
+					run: function() {
+						f();
+					}
+				}
+			));
 		}
 
 		this.java = new function() {
