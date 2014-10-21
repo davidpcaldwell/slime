@@ -49,23 +49,24 @@ if (parameters.options.build == "profiler" || parameters.options.build == "all")
 			"-to", parameters.options.jar
 		]
 	});
+	jsh.shell.echo("Built profiler to " + parameters.options.jar);
 }
 
 var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-jsh.java.tools.javac({
-	destination: tmp.getRelativePath("test"),
-	classpath: jsh.file.Searchpath([]),
-	sourcepath: jsh.file.Searchpath([
-		jsh.script.file.getRelativePath("java")
-	]),
-	arguments: [
-		jsh.script.file.getRelativePath("java/inonit/tools/Test.java")
-	]
-});
-jsh.shell.echo("Created test classes at " + tmp.getRelativePath("test"));
-
 if (parameters.options.tests == "java" || parameters.options.tests == "all") {
+	jsh.java.tools.javac({
+		destination: tmp.getRelativePath("test"),
+		classpath: jsh.file.Searchpath([]),
+		sourcepath: jsh.file.Searchpath([
+			jsh.script.file.getRelativePath("java")
+		]),
+		arguments: [
+			jsh.script.file.getRelativePath("java/inonit/tools/Test.java")
+		]
+	});
+	jsh.shell.echo("Created test classes at " + tmp.getRelativePath("test"));
+
 	jsh.shell.shell(
 		jsh.shell.java.home.getFile("bin/java"),
 		[
@@ -141,7 +142,8 @@ if (parameters.options.tests == "script" || parameters.options.tests == "all") {
 				JSH_SCRIPT_DEBUGGER: "profiler" + ((profilerSettings) ? ":" + profilerSettings : ""),
 //					JSH_LAUNCHER_CONSOLE_DEBUG: "true",
 				JSH_JVM_OPTIONS: (launcher == "jvm") ? vmarguments.join(" ") : "",
-				JSH_ENGINE: (engine) ? engine : ""
+				JSH_ENGINE: (engine) ? engine : "",
+				JSH_PROFILER_MODULE: jsh.script.file.getRelativePath("../viewer/module.js").toString()
 			}),
 			evaluate: evaluate
 		});

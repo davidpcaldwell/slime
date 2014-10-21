@@ -124,7 +124,12 @@ if (options.listener || options.output) {
 						profiles: profiles
 					});
 				} else if (options.output && /\.html$/.test(options.output) && jsh.shell.jsh.home) {
-					var pathname = jsh.shell.jsh.home.getRelativePath("tools/profiler/viewer/module.js");
+					var pathname = (function() {
+						//	The JSH_PROFILER_MODULE hack is to support the profiler suite.jsh.js program, but there is probably a
+						//	better long-term design
+						if (jsh.shell.environment.JSH_PROFILER_MODULE) return jsh.file.Pathname(jsh.shell.environment.JSH_PROFILER_MODULE);
+						if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getRelativePath("tools/profiler/viewer/module.js");
+					})();
 					//	TODO	the below would not work because when jsh.loader.module loads the module, it does not
 					//			provide the module with a $loader which has been decorated with the jsh.io stuff
 					//			(that is, the .resource() method). That's a bug and a redesign may be needed.
