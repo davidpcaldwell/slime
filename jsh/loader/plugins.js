@@ -54,7 +54,7 @@
 	var list = [];
 	for (var i=0; i<_plugins.length; i++) {
 		Packages.inonit.system.Logging.get().log(
-			loader.getRhinoLoader().java.getNamedJavaClass("inonit.script.jsh.Shell"),
+			$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
 			Packages.java.util.logging.Level.FINE,
 			"Reading plugins from " + _plugins[i].getCode()
 		);
@@ -89,7 +89,7 @@
 			list.forEach(function(item) {
 				var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
 				Packages.inonit.system.Logging.get().log(
-					loader.getRhinoLoader().java.getNamedJavaClass("inonit.script.jsh.Shell"),
+					$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
 					Packages.java.util.logging.Level.WARNING,
 					"Plugin from " + item._code.getScripts() + " is disabled: " + message
 				);

@@ -19,10 +19,6 @@
 	};
 	var rhinoLoader = $host;
 
-	this.getRhinoLoader = function() {
-		return rhinoLoader;
-	};
-
 	this.$platform = rhinoLoader.$platform;
 	this.$api = rhinoLoader.$api;
 

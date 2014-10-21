@@ -114,7 +114,7 @@ this.jsh = new function() {
 
 	var loader = new Loader();
 	//	TODO	examine why needed by plugins; rename if it is needed
-	plugins.$rhino = loader.getRhinoLoader();
+	plugins.$rhino = $host;
 
 	this.loader = new function() {
 		this.run = loader.run;
@@ -142,7 +142,7 @@ this.jsh = new function() {
 		};
 
 		this.plugins = function(from) {
-			if (from && from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
+			if (from && from.java && from.java.adapt && $host.classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
 				loadPlugins($host.getPlugins(from.java.adapt()));
 			}
 		};
@@ -157,7 +157,7 @@ this.jsh = new function() {
 	jsh.$jsapi = {
 		$platform: loader.$platform,
 		$api: loader.$api,
-		$rhino: loader.getRhinoLoader(),
+		$rhino: $host,
 		$coffee: $jsh.getInstallation().getLibrary("coffee-script.js"),
 		java: $host.java
 	};
@@ -172,7 +172,7 @@ this.jsh = new function() {
 				var tokens = pair.split("=");
 				options[tokens[0]] = tokens[1];
 			}
-			loader.getRhinoLoader().run(host.getLoader().getLoaderScript("profiler.js"), {
+			$host.run($host.loader.getLoaderScript("profiler.js"), {
 				jsh: jsh,
 				options: options
 			});
