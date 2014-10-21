@@ -12,7 +12,7 @@
 
 this.jsh = new function() {
 	var $host = $jsh.host();
-	var host = (function() {
+	(function() {
 		var installation = $jsh.getInstallation();
 		var configuration = $jsh.getConfiguration();
 		var invocation = $jsh.getInvocation();
@@ -41,7 +41,7 @@ this.jsh = new function() {
 			return configuration.getPackagedCode();
 		};
 
-		var loader = new function() {
+		$host.loader = new function() {
 			//	implementation duplicates original
 			this.getBootstrapModule = function(path) {
 				return installation.getShellModuleCode(path);
@@ -85,20 +85,15 @@ this.jsh = new function() {
 			};
 		};
 
-		return {
-			getLoader: function() {
-				return loader;
-			},
-			getPlugins: function(_file) {
-				return Packages.inonit.script.jsh.Installation.Plugin.get(_file);
-			}
+		$host.getPlugins = function(_file) {
+			return Packages.inonit.script.jsh.Installation.Plugin.get(_file);
 		};
 	})();
 
 	var jsh = this;
 
 	var addFinalizer = function(f) {
-		host.getLoader().addFinalizer(new JavaAdapter(
+		$host.loader.addFinalizer(new JavaAdapter(
 			Packages.java.lang.Runnable,
 			{
 				run: function() {
@@ -108,14 +103,14 @@ this.jsh = new function() {
 		));
 	}
 
-	var Loader = eval(host.getLoader().getLoaderScript("loader.js").code);
+	var Loader = eval($host.loader.getLoaderScript("loader.js").code);
 
 	var plugins = {
 		//	TODO	remove; let each plugin instantiate its own if it wants one, or share the jsh.io copy (if jsh.file even uses
 		//			one; should check)
 		_streams: new Packages.inonit.script.runtime.io.Streams()
 	};
-	var loadPlugins = eval(host.getLoader().getLoaderScript("plugins.js").code);
+	var loadPlugins = eval($host.loader.getLoaderScript("plugins.js").code);
 
 	var loader = new Loader();
 	//	TODO	examine why needed by plugins; rename if it is needed
@@ -148,7 +143,7 @@ this.jsh = new function() {
 
 		this.plugins = function(from) {
 			if (from && from.java && from.java.adapt && loader.getRhinoLoader().classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
-				loadPlugins(host.getPlugins(from.java.adapt()));
+				loadPlugins($host.getPlugins(from.java.adapt()));
 			}
 		};
 	};
@@ -157,7 +152,7 @@ this.jsh = new function() {
 	//			startup/configuration
 
 	//	TODO	Lazy-loading of plugins
-	loadPlugins(host.getLoader().getPlugins());
+	loadPlugins($host.loader.getPlugins());
 
 	jsh.$jsapi = {
 		$platform: loader.$platform,

@@ -31,7 +31,7 @@
 
 	this.bootstrap = function(path,context) {
 		var loader = new rhinoLoader.Loader({
-			_code: host.getLoader().getBootstrapModule(path)
+			_code: $host.loader.getBootstrapModule(path)
 		});
 		return loader.module("module.js", context);
 	}
