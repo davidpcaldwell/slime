@@ -106,13 +106,6 @@ this.jsh = new function() {
 	var Loader = eval($host.loader.getLoaderScript("loader.js").code);
 	var loader = new Loader();
 
-	var plugins = {
-		//	TODO	remove; let each plugin instantiate its own if it wants one, or share the jsh.io copy (if jsh.file even uses
-		//			one; should check)
-		_streams: new Packages.inonit.script.runtime.io.Streams(),
-		$rhino: $host
-	};
-
 	var loadPlugins = eval($host.loader.getLoaderScript("plugins.js").code);
 
 	//	TODO	examine why needed by plugins; rename if it is needed

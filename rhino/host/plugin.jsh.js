@@ -15,7 +15,7 @@ plugin({
 	load: function() {
 		jsh.java = $loader.module("module.js", {
 			globals: true,
-			$rhino: plugins.$rhino,
+			$rhino: $jsh,
 			$java: $jsh.java
 		});
 	}

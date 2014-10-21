@@ -17,8 +17,8 @@ plugin({
 	},
 	load: function() {
 		jsh.io = $loader.module("module.js", {
-			$java: plugins._streams,
-			$rhino: plugins.$rhino,
+			$java: new Packages.inonit.script.runtime.io.Streams(),
+			$rhino: $jsh,
 			stdio: new function() {
 				this.$out = $jsh.getStdio().getStandardOutput();
 				this.$in = $jsh.getStdio().getStandardInput();

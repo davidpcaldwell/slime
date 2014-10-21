@@ -12,6 +12,7 @@
 //	END LICENSE
 
 (function(_plugins) {
+	var plugins = {};
 	var readPlugin = function(_code,callbacks) {
 		if (_code.getScripts()) {
 			var scope = {};
