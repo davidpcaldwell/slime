@@ -103,8 +103,7 @@ this.jsh = new function() {
 		));
 	}
 
-	var Loader = eval($host.loader.getLoaderScript("loader.js").code);
-	var loader = new Loader();
+	var loader = eval($host.loader.getLoaderScript("loader.js").code);
 
 	var loadPlugins = eval($host.loader.getLoaderScript("plugins.js").code);
 
@@ -148,6 +147,8 @@ this.jsh = new function() {
 	//	TODO	Lazy-loading of plugins
 	loadPlugins($host.loader.getPlugins());
 
+	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
+	//			$host
 	jsh.$jsapi = {
 		$platform: $host.$platform,
 		$api: $host.$api,
