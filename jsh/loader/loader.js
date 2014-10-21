@@ -17,17 +17,14 @@
 	$host.$api.deprecate.warning = function(o) {
 		debugger;
 	};
-	var rhinoLoader = $host;
+//	var rhinoLoader = $host;
 
-	this.$platform = rhinoLoader.$platform;
-	this.$api = rhinoLoader.$api;
-
-	this.bootstrap = function(path,context) {
-		var loader = new rhinoLoader.Loader({
-			_code: $host.loader.getBootstrapModule(path)
-		});
-		return loader.module("module.js", context);
-	}
+//	this.bootstrap = function(path,context) {
+//		var loader = new rhinoLoader.Loader({
+//			_code: $host.loader.getBootstrapModule(path)
+//		});
+//		return loader.module("module.js", context);
+//	}
 
 	var getCode = function(code) {
 		if (typeof(code) == "undefined") throw new TypeError("'code' must not be undefined.");
@@ -37,7 +34,7 @@
 		//			corresponding to files ... or else what should they do if the file is not found? Maybe file could return
 		//			null or something ... but run would probably have to fail silently, which is not good unless it is
 		//			explicitly specified
-		if (code.java && code.java.adapt() && rhinoLoader.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
+		if (code.java && code.java.adapt() && $host.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
 			return {
 				name: code.toString(),
 				_in: new Packages.java.io.FileInputStream(code.java.adapt())
@@ -49,11 +46,11 @@
 
 	this.plugin = new function() {
 		this.read = function(_code,scope) {
-			var loader = new rhinoLoader.Loader({ _source: _code.getScripts() });
+			var loader = new $host.Loader({ _source: _code.getScripts() });
 			return loader.run("plugin.jsh.js", scope);
 		};
 		this.run = function(_code,path,scope,target) {
-			rhinoLoader.run(
+			$host.run(
 				{
 					_source: _code.getScripts(),
 					path: path
@@ -63,7 +60,7 @@
 			);
 		};
 		this.file = function(_code,path,context) {
-			return rhinoLoader.file(
+			return $host.file(
 				{
 					_source: _code.getScripts(),
 					path: path
@@ -72,20 +69,20 @@
 			);
 		};
 		this.module = function(_code,main,context) {
-			var loader = new rhinoLoader.Loader({ _code: _code });
+			var loader = new $host.Loader({ _code: _code });
 			return loader.module(main, context);
 		};
 		this.addClasses = function(_code) {
-			rhinoLoader.classpath.add(_code.getClasses());
+			$host.classpath.add(_code.getClasses());
 		}
 	}
 
 	this.run = function(code,scope,target) {
-		return rhinoLoader.run(getCode(code),scope,target);
+		return $host.run(getCode(code),scope,target);
 	}
 
 	this.file = function(code,$context) {
-		return rhinoLoader.file(getCode(code),$context);
+		return $host.file(getCode(code),$context);
 	}
 
 	this.module = function(pathname) {
@@ -110,8 +107,8 @@
 			p.$context = arguments[1];
 		}
 		var loader = (function(format) {
-			if (format.slime) return new rhinoLoader.Loader({ _packed: format.slime });
-			if (format.base) return new rhinoLoader.Loader({ _unpacked: format.base });
+			if (format.slime) return new $host.Loader({ _packed: format.slime });
+			if (format.base) return new $host.Loader({ _unpacked: format.base });
 			throw new TypeError("Unreachable code: format.slime and format.base null in jsh loader's module()");
 		})(format);
 		var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
@@ -120,19 +117,19 @@
 
 	this.classpath = new function() {
 		this.toString = function() {
-			return rhinoLoader.classpath.toString();
+			return $host.classpath.toString();
 		}
 
 		this.add = function(_file) {
-			rhinoLoader.classpath.add(Packages.inonit.script.engine.Code.Source.create(_file));
+			$host.classpath.add(Packages.inonit.script.engine.Code.Source.create(_file));
 		};
 
 		this.get = function(name) {
-			return rhinoLoader.classpath.getClass(name);
+			return $host.classpath.getClass(name);
 		}
 	};
 
 	this.namespace = function(name) {
-		return rhinoLoader.namespace(name);
+		return $host.namespace(name);
 	}
 })
