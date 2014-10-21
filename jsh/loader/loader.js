@@ -14,13 +14,10 @@
 (function() {
 	//	TODO	naming conventions are inconsistent in this stuff; look at how there are addClasses methods and classpath.add().
 	//			generally speaking, should probably match the rhinoLoader API across all of these representations of it
-	var rhinoLoader = (function() {
-		var rv = $host;
-		rv.$api.deprecate.warning = function(o) {
-			debugger;
-		}
-		return rv;
-	})();
+	$host.$api.deprecate.warning = function(o) {
+		debugger;
+	};
+	var rhinoLoader = $host;
 
 	this.getRhinoLoader = function() {
 		return rhinoLoader;
