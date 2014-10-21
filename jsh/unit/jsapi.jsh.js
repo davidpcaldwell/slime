@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+jsh.loader.plugins(jsh.script.file.parent.pathname);
+
 var parameters = jsh.script.getopts({
 	options: {
 		//	See api.html for documentation of these options

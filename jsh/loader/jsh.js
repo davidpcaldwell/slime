@@ -88,6 +88,8 @@ this.jsh = new function() {
 		$host.getPlugins = function(_file) {
 			return Packages.inonit.script.jsh.Installation.Plugin.get(_file);
 		};
+
+		$host.coffee = $jsh.getInstallation().getLibrary("coffee-script.js");
 	})();
 
 	var jsh = this;
@@ -95,8 +97,6 @@ this.jsh = new function() {
 	var loader = eval($host.loader.getLoaderScript("loader.js").code);
 
 	var loadPlugins = eval($host.loader.getLoaderScript("plugins.js").code);
-
-	//	TODO	examine why needed by plugins; rename if it is needed
 
 	this.loader = new function() {
 		this.run = loader.run;
@@ -137,21 +137,10 @@ this.jsh = new function() {
 		};
 	};
 
-	//	TODO	should separate everything above/below into two files; above is loader implementation, below is
-	//			startup/configuration
-
-	//	TODO	Lazy-loading of plugins
 	loadPlugins($host.loader.getPlugins());
 
 	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
 	//			$host
-	jsh.$jsapi = {
-		$platform: $host.$platform,
-		$api: $host.$api,
-		$rhino: $host,
-		$coffee: $jsh.getInstallation().getLibrary("coffee-script.js"),
-		java: $host.java
-	};
 
 	if ($host.getSystemProperties().get("inonit.tools.Profiler.args")) {
 		$host.run($host.loader.getLoaderScript("profiler.js"), {
