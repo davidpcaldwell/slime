@@ -69,6 +69,7 @@
 	});
 	components.add("rhino/tools/", { jsh: { api: false, module: true }});
 	components.add("rhino/http/servlet/plugin.jsh.api.html", { jsh: { api: true } });
+	components.add("rhino/ui/", { jsh: { api: false, module: true } });
 
 	/*modules.add("rhino/mail/", "jsh.mail");*/
 

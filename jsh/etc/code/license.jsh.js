@@ -164,6 +164,8 @@ for (var i=0; i<files.length; i++) {
 			original = "the rhino/shell SLIME module";
 		} else if (startsWith("rhino/system/")(relative)) {
 			original = "the SLIME operating system interface";
+		} else if (startsWith("rhino/ui/")(relative)) {
+			original = "the SLIME Java GUI module";
 		} else if (startsWith("jsh/")(relative)) {
 			original = "the jsh JavaScript/Java shell";
 		} else if (startsWith("rhino/http/client/")(relative)) {
