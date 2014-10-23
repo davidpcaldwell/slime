@@ -139,7 +139,7 @@ public class Main {
 			shell.addLauncherScriptsTo(engine);
 		}
 
-		final int run(String[] args) throws IOException, ScriptException {
+		final Integer run(String[] args) throws IOException, ScriptException {
 			if (!inonit.system.Logging.get().isSpecified()) {
 				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
 			}
@@ -169,7 +169,7 @@ public class Main {
 		}
 	}
 
-	private static abstract class Engine {
+	public static abstract class Engine {
 		private static final Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
 
 		static {
@@ -199,7 +199,7 @@ public class Main {
 		abstract boolean isInstalled(Shell shell);
 		abstract void initializeSystemProperties(Invocation invocation, Shell shell) throws IOException;
 		abstract void addScript(String pathname);
-		abstract int run(String[] args) throws IOException, ScriptException;
+		abstract Integer run(String[] args) throws IOException, ScriptException;
 
 		private static class Nashorn extends Engine {
 			private ScriptEngineManager factory;
@@ -229,7 +229,7 @@ public class Main {
 				scripts.add(pathname);
 			}
 
-			int run(String[] args) throws IOException, ScriptException {
+			Integer run(String[] args) throws IOException, ScriptException {
 				Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
 				this.factory.getBindings().put("arguments", args);
 				this.factory.getBindings().put("$arguments", args);
@@ -248,11 +248,13 @@ public class Main {
 					getEngine().eval(new InputStreamReader(connection.getInputStream()), c);
 					Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
 				}
-				return 0;
+				return null;
 			}
 		}
 
-		private static class Rhino extends Engine {
+		public static class Rhino extends Engine {
+			public static final int NULL_EXIT_STATUS = -42;
+
 			private ArrayList<String> scripts = new ArrayList<String>();
 
 			boolean isInstalled(Shell shell) {
@@ -305,14 +307,16 @@ public class Main {
 				return strings.toArray(new String[0]);
 			}
 
-			private int getExitStatus() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+			private Integer getExitStatus() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
 				Class c = getRhinoClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
 				java.lang.reflect.Field field = c.getDeclaredField("exitCode");
 				field.setAccessible(true);
-				return field.getInt(null);
+				int rv = field.getInt(null);
+				if (rv == NULL_EXIT_STATUS) return null;
+				return new Integer(rv);
 			}
 
-			@Override int run(String[] args) throws IOException {
+			@Override Integer run(String[] args) throws IOException {
 				Integer status = null;
 				Logging.get().log(Main.class, Level.FINE, "jsh.launcher.rhino.classpath = %s", System.getProperty("jsh.launcher.rhino.classpath"));
 				try {
@@ -325,7 +329,7 @@ public class Main {
 					}
 					Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
 					main.invoke(null, new Object[] { arguments });
-					status = new Integer(this.getExitStatus());
+					status = this.getExitStatus();
 					Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
@@ -343,7 +347,7 @@ public class Main {
 					e.printStackTrace();
 					status = new Integer(127);
 				}
-				return status.intValue();
+				return status;
 			}
 		}
 
@@ -509,8 +513,8 @@ public class Main {
 	private static class BeforeExit implements Runnable {
 		private Integer status = null;
 
-		void setStatus(int status) {
-			this.status = new Integer(status);
+		void setStatus(Integer status) {
+			this.status = status;
 		}
 
 		public void run() {
@@ -537,7 +541,9 @@ public class Main {
 		} finally {
 			beforeExit.setStatus(status);
 			//	Ensure the VM exits even if the debugger is displayed
-			System.exit(status.intValue());
+			if (status != null) {
+				System.exit(status.intValue());
+			}
 		}
 	}
 

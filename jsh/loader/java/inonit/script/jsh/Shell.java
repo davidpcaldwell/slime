@@ -123,14 +123,13 @@ public abstract class Shell {
 					this.status = new Integer(status);
 				}
 
-				public int getExitCode(Run run, String[] arguments) {
+				public Integer getExitCode(Run run, String[] arguments) {
 					try {
 						run.run(this, arguments);
-						if (status == null) return 0;
-						return status.intValue();
+						return status;
 					} catch (Throwable t) {
-						if (status == null) return 1;
-						return status.intValue();
+						if (status == null) return new Integer(255);
+						return status;
 					}
 				}
 

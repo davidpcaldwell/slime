@@ -143,12 +143,17 @@ public class Nashorn {
 		}
 	}
 
-	public static int run(String[] args) throws Invocation.CheckedException {
+	public static Integer run(String[] args) throws Invocation.CheckedException {
 		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
 		return context.getExitCode(new Runner(), args);
 	}
 
 	public static void main(final String[] args) throws Invocation.CheckedException {
-		run(Shell.Configuration.Context.VM, args);
+		try {
+			run(Shell.Configuration.Context.VM, args);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			System.exit(255);
+		}
 	}
 }

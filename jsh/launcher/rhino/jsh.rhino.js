@@ -13,7 +13,11 @@
 var setExitStatus = function(status) {
 	var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
 	_field.setAccessible(true);
-	_field.set(null, new Packages.java.lang.Integer(status));
+	if (status === null) {
+		_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Main.Engine.Rhino.NULL_EXIT_STATUS));
+	} else {
+		_field.set(null, new Packages.java.lang.Integer(status));
+	}
 }
 
 var newArray = function(type,len) {
@@ -27,7 +31,7 @@ var newStringArray = function(len) {
 if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	arguments = $arguments;
 	setExitStatus = function(status) {
-		arguments.callee.value = status;
+		Packages.java.lang.System.exit(status);
 	}
 	newArray = function(type,len) {
 		return Packages.java.lang.reflect.Array.newInstance(type.class,len);
@@ -841,9 +845,6 @@ try {
 	};
 	debug("Running command ...");
 	var status = command.run(mode);
-	if (status === null) {
-		throw new Error("Exit status null: " + command);
-	}
 	setExitStatus(status);
 	debug("Command returned.");
 } catch (e) {

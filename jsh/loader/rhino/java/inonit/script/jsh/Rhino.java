@@ -379,7 +379,7 @@ public class Rhino {
 		}
 	}
 
-	public static int run(String[] args) throws Invocation.CheckedException {
+	public static Integer run(String[] args) throws Invocation.CheckedException {
 		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
 		return context.getExitCode(new Runner(), args);
 	}
