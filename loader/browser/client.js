@@ -238,6 +238,10 @@
 
 		//	Undocumented
 		this.base = bootstrap.base;
+		
+		if ($context.base) {
+			this.location = $context.base;
+		}
 
 		//	For use in scripts that are loaded directly by the browser rather than via this loader
 		this.$api = platform.$api;
