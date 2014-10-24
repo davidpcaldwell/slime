@@ -54,17 +54,20 @@
 			return this.base + path;
 		}
 	}
+	
+	var getCurrentScriptElement = function() {
+		if ($context.script) return $context.script;
+		var scripts = document.getElementsByTagName("script");
+		return scripts[scripts.length-1];
+	}
 
-	var getCurrentScript = function() {
-		var getCurrentScriptSrc = function() {
-			var scripts = document.getElementsByTagName("script");
-			var url = scripts[scripts.length-1].getAttribute("src");
-			return url;
-		};
-
+	var getCurrentScriptSrc = function() {
+		return getCurrentScriptElement().getAttribute("src");
+	};
+	
+	var getCurrent = function(base) {
 		var getBasePath = function(pathname) {
-			var path = pathname.substring(1);
-			var tokens = path.split("/");
+			var tokens = pathname.split("/");
 			if (tokens.length > 1) {
 				return tokens.slice(0,-1).join("/") + "/";
 			} else {
@@ -72,9 +75,13 @@
 			}
 		};
 
-		var base = window.location.protocol + "//" + window.location.host + "/" + getBasePath(window.location.pathname);
+		return getBasePath(base) + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
+	}
 
-		var current = base + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
+	var getCurrentScript = function() {
+		var base = window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
+
+		var current = getCurrent(base);
 
 		//	TODO	The next block is not very robust but probably works for most, or even all, cases. That said, the js/web
 		//			module has a better implementation of URL canonicalization.
@@ -93,7 +100,9 @@
 	}
 
 	var bootstrap = (function() {
-		return ($context.url) ? new Bootstrap($context.url) : getCurrentScript();
+		if ($context.url) return new Bootstrap($context.url);
+		if ($context.base) return new Bootstrap(getCurrent($context.base));
+		return getCurrentScript();
 	})();
 
 	var callback = (inonit.loader && inonit.loader.callback) ? inonit.loader.callback : function(){};
