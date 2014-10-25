@@ -158,7 +158,7 @@ $exports.Loader = function(p) {
 						type: p.type(file),
 						read: {
 							binary: function() {
-								return file.read(jsh.io.Streams.binary);
+								return file.read($context.api.io.Streams.binary);
 							}
 						}
 					});
