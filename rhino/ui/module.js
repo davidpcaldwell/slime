@@ -40,6 +40,17 @@ $exports.javafx = new function() {
 			});
 		}
 	}
+	
+	this.run = function(f) {
+		var task = new JavaAdapter(
+			Packages.java.lang.Runnable,
+			new function() {
+				this.run = f;
+			}
+		);
+		Packages.javafx.application.Platform.runLater(task);
+		
+	}
 
 	this.launch = function(o) {
 		var invoker = Packages.javax.swing.SwingUtilities.invokeAndWait;
