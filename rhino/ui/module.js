@@ -11,54 +11,56 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.javafx = new function() {
-	var Application = function(o) {
-		var _frame = new Packages.javax.swing.JFrame();
-		_frame.setDefaultCloseOperation(Packages.javax.swing.WindowConstants.EXIT_ON_CLOSE);
-		var _panel = new Packages.javafx.embed.swing.JFXPanel();
+if ($context.javafx) {
+	$exports.javafx = new function() {
+		var Application = function(o) {
+			var _frame = new Packages.javax.swing.JFrame();
+			_frame.setDefaultCloseOperation(Packages.javax.swing.WindowConstants.EXIT_ON_CLOSE);
+			var _panel = new Packages.javafx.embed.swing.JFXPanel();
 
-		if (o.title) _frame.setTitle(o.title);
+			if (o.title) _frame.setTitle(o.title);
 
-		var setScene = function(sceneFactory) {
+			var setScene = function(sceneFactory) {
+				var task = new JavaAdapter(
+					Packages.java.lang.Runnable,
+					new function() {
+						this.run = function() {
+							_panel.setScene(sceneFactory());
+							_frame.add(_panel);
+							_frame.pack();
+							_frame.setVisible(true);
+						}
+					}
+				);
+				Packages.javafx.application.Platform.runLater(task);
+			}
+
+			if (o.Scene) {
+				setScene(function() {
+					return new o.Scene();
+				});
+			}
+		}
+
+		this.run = function(f) {
 			var task = new JavaAdapter(
 				Packages.java.lang.Runnable,
 				new function() {
-					this.run = function() {
-						_panel.setScene(sceneFactory());
-						_frame.add(_panel);
-						_frame.pack();
-						_frame.setVisible(true);
-					}
+					this.run = f;
 				}
 			);
 			Packages.javafx.application.Platform.runLater(task);
+
 		}
 
-		if (o.Scene) {
-			setScene(function() {
-				return new o.Scene();
-			});
+		this.launch = function(o) {
+			var invoker = Packages.javax.swing.SwingUtilities.invokeAndWait;
+			invoker(new JavaAdapter(
+				Packages.java.lang.Runnable,
+				new function() {
+					new Application(o);
+				}
+			));
 		}
-	}
-	
-	this.run = function(f) {
-		var task = new JavaAdapter(
-			Packages.java.lang.Runnable,
-			new function() {
-				this.run = f;
-			}
-		);
-		Packages.javafx.application.Platform.runLater(task);
-		
-	}
-
-	this.launch = function(o) {
-		var invoker = Packages.javax.swing.SwingUtilities.invokeAndWait;
-		invoker(new JavaAdapter(
-			Packages.java.lang.Runnable,
-			new function() {
-				new Application(o);
-			}
-		));
 	}
 }

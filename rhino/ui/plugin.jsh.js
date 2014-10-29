@@ -13,6 +13,8 @@
 
 plugin({
 	load: function() {
-		jsh.ui = $loader.module("module.js");
+		jsh.ui = $loader.module("module.js", {
+			javafx: $jsh.classpath.getClass("javafx.embed.swing.JFXPanel")
+		});
 	}
 });
