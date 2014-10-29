@@ -25,7 +25,10 @@ if ($context.javafx) {
 					Packages.java.lang.Runnable,
 					new function() {
 						this.run = function() {
-							_panel.setScene(sceneFactory());
+							_panel.setScene(sceneFactory.call({
+								_panel: _panel,
+								_frame: _frame
+							}));
 							_frame.add(_panel);
 							_frame.pack();
 							_frame.setVisible(true);
@@ -37,12 +40,12 @@ if ($context.javafx) {
 
 			if (o.Scene) {
 				setScene(function() {
-					return new o.Scene();
+					return o.Scene.call(this);
 				});
 			}
 		}
-
-		this.run = function(f) {
+		
+		var run = function(f) {
 			var task = new JavaAdapter(
 				Packages.java.lang.Runnable,
 				new function() {
@@ -50,8 +53,9 @@ if ($context.javafx) {
 				}
 			);
 			Packages.javafx.application.Platform.runLater(task);
+		};
 
-		}
+		this.run = run;
 
 		this.launch = function(o) {
 			var invoker = Packages.javax.swing.SwingUtilities.invokeAndWait;
