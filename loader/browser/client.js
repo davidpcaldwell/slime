@@ -62,6 +62,7 @@
 	}
 
 	var getCurrentScriptSrc = function() {
+		if (getCurrentScriptElement().getAttribute("inonit.loader.src")) return getCurrentScriptElement().getAttribute("inonit.loader.src");
 		return getCurrentScriptElement().getAttribute("src");
 	};
 	
