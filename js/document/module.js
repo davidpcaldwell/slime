@@ -165,6 +165,8 @@ var Text = function(p) {
 
 	//	TODO	other escapes needed; see DOM3
 	this.serialize = function(m) {
+		var escape = (m && m.escape) ? m.escape : null;
+		if (escape == "none") return this.text.data;
 		return this.text.data.replace(/\</g, "&lt;").replace(/\&/g, "&amp;");
 	};
 };
@@ -322,12 +324,14 @@ var Element = function(p) {
 				return ns + attribute.name + "=" + "\"" + attribute.value + "\"";
 			}).join(" ");
 		}).call(this);
+		var isUnescapedScript = this.element.type.name == "script" && m.doNotEscapeScript;
 		rv.content = this.children.map(function(child) {
 			var params = {};
 			for (var x in m) {
 				params[x] = m[x];
 			}
 			params.namespaces = scope;
+			if (isUnescapedScript) params.escape = "none";
 			return child.serialize(params);
 		}).join("");
 		rv.namespaces = (function() {
@@ -453,6 +457,7 @@ var Document = function(p) {
 		if (!parameters.empty) {
 			if (this.document.getElement().element.type.namespace == "http://www.w3.org/1999/xhtml") {
 				parameters.empty = emptySerializers.xhtml;
+				parameters.doNotEscapeScript = true;
 			}
 		}
 		return this.children.map(function(child) { return child.serialize(parameters); }).join("");
