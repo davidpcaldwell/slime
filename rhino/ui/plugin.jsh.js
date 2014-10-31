@@ -21,7 +21,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.java.tools && jsh.shell && jsh.loader.java && jsh.script && jsh.ui.javafx && jsh.java.Thread && jsh.js.document && jsh.io);
+		return Boolean(jsh.shell && jsh.java.Thread && jsh.ui.javafx && jsh.js.document && jsh.io);
 	},
 	load: function() {
 		var $set = function(v) {
