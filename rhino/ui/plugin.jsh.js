@@ -18,3 +18,18 @@ plugin({
 		});
 	}
 });
+
+plugin({
+	isReady: function() {
+		return Boolean(jsh.java.tools && jsh.shell && jsh.loader.java && jsh.script && jsh.ui.javafx && jsh.java.Thread && jsh.js.document);
+	},
+	load: function() {
+		var $set = function(v) {
+			jsh.ui.javafx.WebView = v;
+		};
+		$loader.run("webview.js", {
+			jsh: jsh,
+			$set: $set
+		});
+	}
+})
