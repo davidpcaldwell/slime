@@ -122,7 +122,7 @@ $set(function(p) {
 					var window = browser.getEngine().executeScript("window");
 					if (after == Packages.javafx.concurrent.Worker.State.RUNNING) {
 						window.setMember("console", new _Console);
-						browser.getEngine().executeScript(jsh.script.loader.resource("window.js").read(String));
+						browser.getEngine().executeScript($loader.resource("window.js").read(String));
 						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.server));
 						if (p.page.initialize) {
 							p.page.initialize.call({ _browser: browser });

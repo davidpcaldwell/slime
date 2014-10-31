@@ -21,13 +21,24 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.java.tools && jsh.shell && jsh.loader.java && jsh.script && jsh.ui.javafx && jsh.java.Thread && jsh.js.document);
+		return Boolean(jsh.java.tools && jsh.shell && jsh.loader.java && jsh.script && jsh.ui.javafx && jsh.java.Thread && jsh.js.document && jsh.io);
 	},
 	load: function() {
 		var $set = function(v) {
 			jsh.ui.javafx.WebView = v;
 		};
+		$loader.resource = function(path) {
+			//	TODO	assumes resource exists
+			return new jsh.io.Resource({
+				read: {
+					binary: function() {
+						return jsh.io.java.adapt($loader._stream(path));
+					}
+				}
+			});
+		}
 		$loader.run("webview.js", {
+			$loader: $loader,
 			jsh: jsh,
 			$set: $set
 		});
