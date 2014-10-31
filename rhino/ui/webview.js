@@ -1,15 +1,4 @@
 $set(function(p) {
-	var destination = jsh.shell.TMPDIR.createTemporary({ directory: true });
-	jsh.java.tools.javac({
-		destination: destination.pathname,
-		arguments: [ 
-			jsh.script.file.getRelativePath("java/inonit/javafx/webview/Server.java").toString(),
-			jsh.script.file.getRelativePath("java/inonit/javafx/webview/Console.java").toString() 
-		]
-	});
-	//jsh.shell.echo("Compiled to " + destination);
-	jsh.loader.java.add(destination.pathname);
-
 	var _ChangeListener = function(f) {
 		return new JavaAdapter(
 			Packages.javafx.beans.value.ChangeListener,
