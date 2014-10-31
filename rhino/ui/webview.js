@@ -30,7 +30,7 @@ $set(function(p) {
 							$context.log.FINE("Generating response asynchronously: " + object.asynchronous);
 							var response = getResponse(object.payload);
 							$context.log.FINE("Generated response asynchronously: " + JSON.stringify(response));
-							jsh.ui.javafx.run(function() {
+							$context.api.thread.javafx(function() {
 								try {
 									window.call("postMessage", JSON.stringify({
 										asynchronous: object.asynchronous,

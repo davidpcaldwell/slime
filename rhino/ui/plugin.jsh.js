@@ -40,12 +40,14 @@ plugin({
 		$loader.run("webview.js", {
 			$loader: $loader,
 			$context: {
-				log: jsh.java.log.named("rhino.ui.javafx.webview")
+				log: jsh.java.log.named("rhino.ui.javafx.webview"),
+				api: {
+					thread: {
+						javafx: jsh.ui.javafx.run
+					}
+				}
 			},
 			jsh: {
-				ui: {
-					javafx: jsh.ui.javafx
-				},
 				js: {
 					document: jsh.js.document
 				},
