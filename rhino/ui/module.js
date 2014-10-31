@@ -67,4 +67,5 @@ if ($context.javafx) {
 			));
 		}
 	}
+	$exports.javafx.WebView = $loader.value("webview.js")
 }
