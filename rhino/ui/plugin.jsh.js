@@ -21,12 +21,9 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.java.log && jsh.java.Thread && jsh.ui.javafx && jsh.js.document && jsh.io);
+		return Boolean(jsh.io && jsh.java.log && jsh.ui.javafx && jsh.java.Thread && jsh.js.document);
 	},
 	load: function() {
-		var $set = function(v) {
-			jsh.ui.javafx.WebView = v;
-		};
 		$loader.resource = function(path) {
 			//	TODO	assumes resource exists
 			return new jsh.io.Resource({
@@ -43,17 +40,19 @@ plugin({
 				log: jsh.java.log.named("rhino.ui.javafx.webview"),
 				api: {
 					thread: {
-						javafx: jsh.ui.javafx.run
+						javafx: jsh.ui.javafx.run,
+						create: function(f) {
+							jsh.java.Thread.start({
+								call: f
+							});
+						}
 					},
 					document: jsh.js.document
 				}
 			},
-			jsh: {
-				java: {
-					Thread: jsh.java.Thread
-				}
-			},
-			$set: $set
+			$set: function(v) {
+				jsh.ui.javafx.WebView = v;
+			}
 		});
 	}
 })

@@ -25,24 +25,22 @@ $set(function(p) {
 				var object = JSON.parse(json);
 				if (object.asynchronous) {
 					$context.log.FINE("Got asynchronous: " + json);
-					jsh.java.Thread.start({
-						call: function() {
-							$context.log.FINE("Generating response asynchronously: " + object.asynchronous);
-							var response = getResponse(object.payload);
-							$context.log.FINE("Generated response asynchronously: " + JSON.stringify(response));
-							$context.api.thread.javafx(function() {
-								try {
-									window.call("postMessage", JSON.stringify({
-										asynchronous: object.asynchronous,
-										payload: response
-									}), "*");
+					$context.api.thread.create(function() {
+						$context.log.FINE("Generating response asynchronously: " + object.asynchronous);
+						var response = getResponse(object.payload);
+						$context.log.FINE("Generated response asynchronously: " + JSON.stringify(response));
+						$context.api.thread.javafx(function() {
+							try {
+								window.call("postMessage", JSON.stringify({
+									asynchronous: object.asynchronous,
+									payload: response
+								}), "*");
 
-									$context.log.FINE("Posted message");
-								} catch (e) {
-									$context.log.WARNING("Did not post message: " + e);
-								}													
-							});
-						}
+								$context.log.FINE("Posted message");
+							} catch (e) {
+								$context.log.WARNING("Did not post message: " + e);
+							}													
+						});
 					});
 				} else {
 					return getResponse(object.payload);
