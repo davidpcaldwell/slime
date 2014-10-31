@@ -40,6 +40,9 @@
 				this.run = function(path,scope,target) {
 					return loader.plugin.run(_code,path,scope,target);
 				};
+				this._stream = function(path,scope,target) {
+					return loader.plugin._stream(_code,path,scope,target);
+				};
 				this.classpath = new function() {
 					this.add = function(pathname) {
 						return loader.classpath.add(pathname.java.adapt());
