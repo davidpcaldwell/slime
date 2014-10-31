@@ -21,7 +21,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.shell && jsh.java.Thread && jsh.ui.javafx && jsh.js.document && jsh.io);
+		return Boolean(jsh.java.log && jsh.java.Thread && jsh.ui.javafx && jsh.js.document && jsh.io);
 	},
 	load: function() {
 		var $set = function(v) {
@@ -39,7 +39,20 @@ plugin({
 		}
 		$loader.run("webview.js", {
 			$loader: $loader,
-			jsh: jsh,
+			$context: {
+				log: jsh.java.log.named("rhino.ui.javafx.webview")
+			},
+			jsh: {
+				ui: {
+					javafx: jsh.ui.javafx
+				},
+				js: {
+					document: jsh.js.document
+				},
+				java: {
+					Thread: jsh.java.Thread
+				}
+			},
 			$set: $set
 		});
 	}

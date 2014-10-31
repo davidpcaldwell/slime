@@ -13,7 +13,7 @@ $set(function(p) {
 			Packages.inonit.javafx.webview.Console,
 			(p.console) ? p.console : new function() {
 				this.log = function(s) {
-					jsh.shell.echo("window.console.log: " + s);
+					$console.log.INFO("window.console.log: " + s);
 				}				
 			}
 		);
@@ -24,12 +24,12 @@ $set(function(p) {
 			this.call = function(json) {
 				var object = JSON.parse(json);
 				if (object.asynchronous) {
-					jsh.shell.echo("Got asynchronous: " + json);
+					$context.log.FINE("Got asynchronous: " + json);
 					jsh.java.Thread.start({
 						call: function() {
-							jsh.shell.echo("Generating response asynchronously: " + object.asynchronous);
+							$context.log.FINE("Generating response asynchronously: " + object.asynchronous);
 							var response = getResponse(object.payload);
-							jsh.shell.echo("Generated response asynchronously: " + JSON.stringify(response));
+							$context.log.FINE("Generated response asynchronously: " + JSON.stringify(response));
 							jsh.ui.javafx.run(function() {
 								try {
 									window.call("postMessage", JSON.stringify({
@@ -37,9 +37,9 @@ $set(function(p) {
 										payload: response
 									}), "*");
 
-									jsh.shell.echo("Posted message");
+									$context.log.FINE("Posted message");
 								} catch (e) {
-									jsh.shell.echo("Did not post message: " + e);
+									$context.log.WARNING("Did not post message: " + e);
 								}													
 							});
 						}
@@ -146,14 +146,14 @@ $set(function(p) {
 				}
 
 				if (node.element && node.element.type.name == "link") {
-					jsh.shell.echo("Found link: " + node);
+					$context.log.FINE("Found link: " + node);
 					var reference = node.element.attributes.get("href");
 
 					if (isRelative(reference)) {
 						node.element.attributes.set("href", location.getLink(reference));
 					}
 				} else if (node.element && node.element.type.name == "script") {
-					jsh.shell.echo("Found script: " + node);
+					$context.log.FINE("Found script: " + node);
 					var reference = node.element.attributes.get("src");
 
 					if (isRelative(reference)) {
