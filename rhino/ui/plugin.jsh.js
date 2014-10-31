@@ -44,13 +44,11 @@ plugin({
 				api: {
 					thread: {
 						javafx: jsh.ui.javafx.run
-					}
+					},
+					document: jsh.js.document
 				}
 			},
 			jsh: {
-				js: {
-					document: jsh.js.document
-				},
 				java: {
 					Thread: jsh.java.Thread
 				}

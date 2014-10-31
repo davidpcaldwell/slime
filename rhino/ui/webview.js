@@ -159,11 +159,7 @@ $set(function(p) {
 					if (isRelative(reference)) {
 						node.element.attributes.set("inonit.loader.src", reference);
 						node.element.attributes.set("src", null);
-						if (true) {
-							node.children.push(new jsh.js.document.Text({ text: location.getCode(reference) }));
-						} else {
-							node.children.push(new jsh.js.document.Cdata({ cdata: location.getCode(reference) }));
-						}
+						node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
 					}
 				}
 			});
