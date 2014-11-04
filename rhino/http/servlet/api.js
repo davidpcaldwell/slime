@@ -194,16 +194,6 @@ scope.httpd.js = api.js;
 scope.httpd.java = api.java;
 scope.httpd.io = api.io;
 
-var server = (function() {
-	if ($host.server) {
-		return $host.server;
-	} else if ($servlet) {
-		return loaders.container.file("WEB-INF/server.js", {
-			api: api
-		});
-	}
-})();
-
 scope.httpd.http = {};
 
 scope.httpd.http.Response = function() {
@@ -232,6 +222,16 @@ scope.$loader = (function() {
 scope.$parameters = $parameters;
 
 $code(scope);
+
+var server = (function() {
+	if ($host.server) {
+		return $host.server;
+	} else if ($servlet) {
+		return loaders.container.file("WEB-INF/server.js", {
+			api: api
+		});
+	}
+})();
 
 var servlet = new server.Servlet(scope.$exports);
 
