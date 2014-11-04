@@ -136,4 +136,21 @@ $exports.Url.query = function(array) {
 	return array.map(function(item) {
 		return $context.escaper.encode(item.name) + "=" + $context.escaper.encode(item.value);
 	}).join("&");
-}
+};
+$exports.Url.query.parse = function(string) {
+	return (function(string) {
+		var decode = function(string) {
+			return $context.escaper.decode(string);
+		}
+
+		if (!string) return null;
+		var tokens = string.split("&");
+		jsh.shell.echo("tokens: " + tokens.length + " " + tokens);
+		return tokens.map(function(pair) {
+			var split = pair.split("=");
+			jsh.shell.echo("split = " + split);
+			if (split.length != 2) throw new Error();
+			return { name: decode(split[0]), value: decode(split[1]) }
+		});
+	})(string);
+};
