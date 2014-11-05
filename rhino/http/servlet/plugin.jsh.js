@@ -22,6 +22,9 @@ plugin({
 		var getMimeType = $loader.file("jsh.mime.js", {
 			jsh: jsh
 		}).getMimeType;
+		
+		jsh.httpd.nugget = {};
+		jsh.httpd.nugget.getMimeType = getMimeType;
 
 		$loader.file("resources.jsh.file.js", {
 			getMimeType: getMimeType
