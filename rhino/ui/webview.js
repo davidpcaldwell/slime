@@ -20,14 +20,14 @@ $set(function(p) {
 	}
 
 	var _Server = function(window) {
-		var Server = function(window,getResponse) {
+		var Server = function(window,serve) {
 			this.call = function(json) {
 				var object = JSON.parse(json);
 				if (object.asynchronous) {
 					$context.log.FINE("Got asynchronous: " + json);
 					$context.api.thread.create(function() {
 						$context.log.FINE("Generating response asynchronously: " + object.asynchronous);
-						var response = getResponse(object.payload);
+						var response = serve(object.payload);
 						$context.log.FINE("Generated response asynchronously: " + JSON.stringify(response));
 						$context.api.thread.javafx(function() {
 							try {
@@ -43,14 +43,14 @@ $set(function(p) {
 						});
 					});
 				} else {
-					return getResponse(object.payload);
+					return serve(object.payload);
 				}
 			}
 		};
 
 		return new JavaAdapter(
 			Packages.inonit.javafx.webview.Server,
-			new Server(window,p.server)
+			new Server(window,p.serve)
 		);
 	}
 
