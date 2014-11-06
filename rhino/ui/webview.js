@@ -73,7 +73,10 @@ $set(function(p) {
 						return String(p.page.base.getRelativePath(path).java.adapt().toURI().toURL());
 					},
 					getCode: function(path) {
-						return p.page.base.getRelativePath(path).file.read(String);
+						var file = p.page.base.getRelativePath(path).file;
+						//	TODO	would empty string work below? Would script render as empty element?
+						if (!file) return "/**/";
+						return file.read(String);
 					}					
 				}
 			} else {
@@ -153,6 +156,7 @@ $set(function(p) {
 				} else if (node.element && node.element.type.name == "script") {
 					$context.log.FINE("Found script: " + node);
 					var reference = node.element.attributes.get("src");
+					if (!reference) throw new Error("Missing src reference: " + node);
 
 					if (isRelative(reference)) {
 						node.element.attributes.set("inonit.loader.src", reference);
