@@ -22,13 +22,22 @@ if ($context.javafx) {
 				source: this
 			});
 			
+			var source = this;
+			
+			this.close = function() {
+				_frame.dispose();
+			}
+			
 			_frame.addWindowListener(new JavaAdapter(
 				Packages.java.awt.event.WindowListener,
 				new function() {
 					this.windowClosing = function(e) {
 						events.fire("close");
 						if (o.on && o.on.close) {
-							o.on.close();
+							//	TODO	perhaps should replicate entire event API here?
+							//	TODO	perhaps should add to $api.Events the ability to create event matching API? Or retrieve
+							//			fired event?
+							o.on.close.call(source);
 						}
 					}
 				}
@@ -59,7 +68,9 @@ if ($context.javafx) {
 					return o.Scene.call(this);
 				});
 			}
-		}
+		};
+		
+		this.Frame = Frame;
 		
 		var Application = function(o) {
 			if (!o.on) o.on = {};
