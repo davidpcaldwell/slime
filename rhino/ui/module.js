@@ -13,7 +13,7 @@
 
 if ($context.javafx) {
 	$exports.javafx = new function() {
-		var Application = function(o) {
+		var Frame = function(o) {
 			var _frame = new Packages.javax.swing.JFrame();
 			_frame.setDefaultCloseOperation(Packages.javax.swing.WindowConstants.EXIT_ON_CLOSE);
 			var _panel = new Packages.javafx.embed.swing.JFXPanel();
@@ -43,6 +43,10 @@ if ($context.javafx) {
 					return o.Scene.call(this);
 				});
 			}
+		}
+		
+		var Application = function(o) {
+			new Frame(o);
 		}
 		
 		var run = function(f) {
