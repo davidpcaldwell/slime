@@ -14,6 +14,9 @@
 plugin({
 	load: function() {
 		jsh.ui = $loader.module("module.js", {
+			exit: function(status) {
+				Packages.java.lang.System.exit(status);
+			},
 			javafx: $jsh.classpath.getClass("javafx.embed.swing.JFXPanel")
 		});
 	}
