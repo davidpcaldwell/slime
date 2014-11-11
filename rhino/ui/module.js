@@ -15,8 +15,21 @@ if ($context.javafx) {
 	$exports.javafx = new function() {
 		var Frame = function(o) {
 			var _frame = new Packages.javax.swing.JFrame();
-			_frame.setDefaultCloseOperation(Packages.javax.swing.WindowConstants.EXIT_ON_CLOSE);
+			_frame.setDefaultCloseOperation(Packages.javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 			var _panel = new Packages.javafx.embed.swing.JFXPanel();
+
+			var events = $api.Events({
+				source: this
+			});
+			
+			_frame.addWindowListener(new JavaAdapter(
+				Packages.java.awt.event.WindowListener,
+				new function() {
+					this.windowClosing = function(e) {
+						events.fire("close");
+					}
+				}
+			));
 
 			if (o.title) _frame.setTitle(o.title);
 
@@ -46,7 +59,10 @@ if ($context.javafx) {
 		}
 		
 		var Application = function(o) {
-			new Frame(o);
+			var frame = new Frame(o);
+			frame.listeners.add("close", function() {
+				Packages.java.lang.System.exit(0);
+			});
 		}
 		
 		var run = function(f) {
