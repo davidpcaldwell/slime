@@ -27,6 +27,9 @@ if ($context.javafx) {
 				new function() {
 					this.windowClosing = function(e) {
 						events.fire("close");
+						if (o.on && o.on.close) {
+							o.on.close();
+						}
 					}
 				}
 			));
@@ -59,10 +62,11 @@ if ($context.javafx) {
 		}
 		
 		var Application = function(o) {
+			if (!o.on) o.on = {};
+			if (!o.on.close) o.on.close = function() {
+				Packages.java.lang.System.exit(0);				
+			}
 			var frame = new Frame(o);
-			frame.listeners.add("close", function() {
-				Packages.java.lang.System.exit(0);
-			});
 		}
 		
 		var run = function(f) {
