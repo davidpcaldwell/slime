@@ -105,6 +105,17 @@ $set(function(p) {
 			}
 		));
 
+		if (p.popup) {
+			browser.getEngine().setCreatePopupHandler(new JavaAdapter(
+				Packages.javafx.util.Callback,
+				new function() {
+					this.call = function(_popup) {
+						return p.popup.call({ _popup: _popup });
+					}
+				}
+			))
+		};
+
 		browser.getEngine().getLoadWorker().stateProperty().addListener(new JavaAdapter(
 			Packages.javafx.beans.value.ChangeListener,
 			new function() {
@@ -166,6 +177,8 @@ $set(function(p) {
 				}
 			});
 		})(xml,location);
+		
+		this._browser = browser;
 
 		if (p.initialize) {
 			p.initialize.call(this);
