@@ -20,9 +20,13 @@ $set(function(p) {
 	}
 
 	var _Server = function(window) {
-		var Server = function(window,serve) {
+		var Server = function(window,serve,navigate) {
 			this.call = function(json) {
 				var object = JSON.parse(json);
+				if (object.navigate) {
+					navigate(object.navigate);
+					return;
+				}
 				if (object.asynchronous) {
 					$context.log.FINE("Got asynchronous: " + json);
 					$context.api.thread.create(function() {
@@ -50,50 +54,50 @@ $set(function(p) {
 
 		return new JavaAdapter(
 			Packages.inonit.javafx.webview.Server,
-			new Server(window,p.serve)
+			new Server(window,p.serve,p.navigate)
 		);
+	};
+	
+	var getXml = function(page) {
+		if (page.file) {
+			//	TODO	parse document from p.page.file
+			throw new Error("Unimplemented");
+		} else if (page.document) {
+			return page.document;
+		} else {
+			throw new Error("Unsupported xml");
+		}		
+	}
+	
+	var getLocation = function(page) {
+		if (page.file) {
+			return {
+				getFileUrl: function(path) {
+					return String(page.file.getRelativePath(path).java.adapt().toURI().toURL());
+				},
+				getCode: function(path) {
+					return page.file.getRelativePath(path).file.read(String);
+				}
+			}
+		} else if (page.document) {
+			return {
+				getFileUrl: function(path) {
+					return String(page.base.getRelativePath(path).java.adapt().toURI().toURL());
+				},
+				getCode: function(path) {
+					var file = page.base.getRelativePath(path).file;
+					//	TODO	would empty string work below? Would script render as empty element?
+					if (!file) return "/**/";
+					return file.read(String);
+				}					
+			}
+		} else {
+			throw new Error("Unsupported");
+		}
 	}
 
 	return function() {
 		var browser = new Packages.javafx.scene.web.WebView();
-
-		var location = (function() {
-			if (p.page.file) {
-				return {
-					getLink: function(path) {
-						return String(p.page.file.getRelativePath(path).java.adapt().toURI().toURL());
-					},
-					getCode: function(path) {
-						return p.page.file.getRelativePath(path).file.read(String);
-					}
-				}
-			} else if (p.page.document) {
-				return {
-					getLink: function(path) {
-						return String(p.page.base.getRelativePath(path).java.adapt().toURI().toURL());
-					},
-					getCode: function(path) {
-						var file = p.page.base.getRelativePath(path).file;
-						//	TODO	would empty string work below? Would script render as empty element?
-						if (!file) return "/**/";
-						return file.read(String);
-					}					
-				}
-			} else {
-				throw new Error("Unsupported");
-			}
-		})();
-
-		var xml = (function() {
-			if (p.page.file) {
-				//	TODO	parse document from p.page.file
-				throw new Error("Unimplemented");
-			} else if (p.page.document) {
-				return p.page.document;
-			} else {
-				throw new Error("Unsupported xml");
-			}
-		})();
 
 		browser.getEngine().setOnAlert(new JavaAdapter(
 			Packages.javafx.event.EventHandler,
@@ -124,7 +128,7 @@ $set(function(p) {
 					if (after == Packages.javafx.concurrent.Worker.State.RUNNING) {
 						window.setMember("console", new _Console);
 						browser.getEngine().executeScript($loader.resource("window.js").read(String));
-						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.server));
+						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.server,p.navigate));
 						if (p.page.initialize) {
 							p.page.initialize.call({ _browser: browser });
 						}
@@ -141,7 +145,7 @@ $set(function(p) {
 			events.fire("title",{ before: before, after: after });
 		}));
 
-		(function preprocess(xml,location) {
+		var content = (function preprocess(xml,location) {
 			//	TODO	below 'preorder' copied from Slim preprocessor; need to build it into document API
 			var preorder = function(node,process) {
 				process(node);
@@ -162,9 +166,10 @@ $set(function(p) {
 					var reference = node.element.attributes.get("href");
 
 					if (isRelative(reference)) {
-						node.element.attributes.set("href", location.getLink(reference));
+						node.element.attributes.set("href", location.getFileUrl(reference));
 					}
-				} else if (node.element && node.element.type.name == "script") {
+				}
+				if (node.element && node.element.type.name == "script") {
 					$context.log.FINE("Found script: " + node);
 					var reference = node.element.attributes.get("src");
 					if (!reference) throw new Error("Missing src reference: " + node);
@@ -176,7 +181,8 @@ $set(function(p) {
 					}
 				}
 			});
-		})(xml,location);
+			return xml.toString();
+		})(getXml(p.page),getLocation(p.page));
 		
 		this._browser = browser;
 
@@ -184,7 +190,7 @@ $set(function(p) {
 			p.initialize.call(this);
 		}
 
-		browser.getEngine().loadContent(xml.toString());
+		browser.getEngine().loadContent(content);
 
 		var rv = new Packages.javafx.scene.Scene(browser, 750, 500, Packages.javafx.scene.paint.Color.web("#666970"));
 		return rv;

@@ -23,6 +23,10 @@
 			this.synchronous = function(payload) {
 				return JSON.parse(server.call(JSON.stringify({ payload: payload })));
 			}
+			
+			this.navigate = function(href) {
+				server.call(JSON.stringify({ navigate: href }));
+			}
 	
 			window.addEventListener("message", function(e) {
 				if (e.origin === "null") {
@@ -38,4 +42,12 @@
 			});
 		}
 	};
+	
+	window.addEventListener("click", function(e) {
+		console.log("clicked something");
+		if (e.target.tagName.toLowerCase() == "a" && (true || e.target.getAttribute("webview")) ) {
+			console.log("Clicked link: " + e.target.href);
+			window.jsh.message.navigate(e.target.href);
+		}
+	})
 })();
