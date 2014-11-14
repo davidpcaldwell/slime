@@ -1,6 +1,5 @@
 (function() {
 	window.alert.jsh = true;
-	alert("window.js");
 	
 	window.jsh = {
 		message: new function() {
@@ -31,7 +30,6 @@
 			
 			this.console = new function() {
 				this.log = function() {
-					alert("writing to console: server = " + server);
 					server.call(JSON.stringify({ console: { log: Array.prototype.slice.call(arguments) }}));
 				};
 			};
