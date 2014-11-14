@@ -1,5 +1,6 @@
 (function() {
 	window.alert.jsh = true;
+	alert("window.js");
 	
 	window.jsh = {
 		message: new function() {
@@ -26,7 +27,14 @@
 			
 			this.navigate = function(href) {
 				server.call(JSON.stringify({ navigate: href }));
-			}
+			};
+			
+			this.console = new function() {
+				this.log = function() {
+					alert("writing to console: server = " + server);
+					server.call(JSON.stringify({ console: { log: Array.prototype.slice.call(arguments) }}));
+				};
+			};
 	
 			window.addEventListener("message", function(e) {
 				if (e.origin === "null") {
@@ -42,6 +50,10 @@
 			});
 		}
 	};
+	
+	window.alert("window.jsh.message.initialize");
+	
+	window.console = window.jsh.message.console;
 	
 	window.addEventListener("click", function(e) {
 		console.log("clicked something");

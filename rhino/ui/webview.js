@@ -8,23 +8,25 @@ $set(function(p) {
 		);
 	};
 
-	var _Console = function(o) {
-		return new JavaAdapter(
-			Packages.inonit.javafx.webview.Console,
-			(p.console) ? p.console : new function() {
-				this.log = function(s) {
-					$console.log.INFO("window.console.log: " + s);
-				}				
+	var _Server = function(window,serve,navigate) {
+		var console = (p.console) ? p.console : new function() {
+			this.log = function(s) {
+				$console.log.INFO("window.console.log: " + s);				
 			}
-		);
-	}
-
-	var _Server = function(window) {
+		}
+		
 		var Server = function(window,serve,navigate) {
 			this.call = function(json) {
 				var object = JSON.parse(json);
+				$context.log.FINE("Received: " + JSON.stringify(object,void(0),"    "));
 				if (object.navigate) {
 					navigate(object.navigate);
+					return;
+				}
+				if (object.console) {
+					if (object.console.log) {
+						console.log.apply(console, object.console.log);
+					}
 					return;
 				}
 				if (object.asynchronous) {
@@ -54,7 +56,7 @@ $set(function(p) {
 
 		return new JavaAdapter(
 			Packages.inonit.javafx.webview.Server,
-			new Server(window,p.serve,p.navigate)
+			new Server(window,serve,navigate)
 		);
 	};
 	
@@ -98,11 +100,20 @@ $set(function(p) {
 
 	return function() {
 		var browser = new Packages.javafx.scene.web.WebView();
+		
+		var page = p.page;
 
+		var target = this;
+		
 		browser.getEngine().setOnAlert(new JavaAdapter(
 			Packages.javafx.event.EventHandler,
 			new function() {
 				this.handle = function(event) {
+					if (event.getData() == "window.jsh.message.initialize") {
+						var window = browser.getEngine().executeScript("window");
+						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.serve,p.navigate.bind(target)));
+						return;
+					}
 					var alert = (p.alert) ? p.alert : function(){};
 					alert(event.getData());
 				}
@@ -119,20 +130,70 @@ $set(function(p) {
 				}
 			))
 		};
+		
+		var onNewPage = function() {
+			var window = browser.getEngine().executeScript("window");
+			var window2 = browser.getEngine().executeScript("window");
+//			Packages.java.lang.System.err.println("window consistent: " + (window === window2));
+//			Packages.java.lang.System.err.println("window: " + window);
+//			Packages.java.lang.System.err.println("setting console");
+//			window.setMember("console", new _Console());
+//			Packages.java.lang.System.err.println("set console");
+//			browser.getEngine().executeScript($loader.resource("window.js").read(String));
+//			Packages.java.lang.System.err.println("ran window.js");
+//			Packages.java.lang.System.err.println("window.document: " + browser.getEngine().executeScript("window.document"));
+//			Packages.java.lang.System.err.println("window.document.title: " + browser.getEngine().executeScript("window.document.title"));
+//			Packages.java.lang.System.err.println("window.jsh: " + browser.getEngine().executeScript("window.jsh"));
+//			browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.serve,p.navigate.bind(target)));
+//			Packages.java.lang.System.err.println("ran window.jsh.message.initialize");
+			if (page.initialize) {
+//				Packages.java.lang.System.err.println("initializing ...");
+				page.initialize.call({ _browser: browser });
+			}
+		}
+		
+		var dumpState = function(prefix) {
+//			Packages.java.lang.System.err.println(prefix + " window.document: " + browser.getEngine().executeScript("document"));
+//			Packages.java.lang.System.err.println(prefix + " window.document.title: " + browser.getEngine().executeScript("window.document.title"));
+//			Packages.java.lang.System.err.println(prefix + " window.jsh: " + browser.getEngine().executeScript("window.jsh"));
+//			Packages.java.lang.System.err.println(prefix + " window.console: " + browser.getEngine().executeScript("window.console"));
+//			Packages.java.lang.System.err.println(prefix + " onalert: " + browser.getEngine().getOnAlert());
+		}
 
 		browser.getEngine().getLoadWorker().stateProperty().addListener(new JavaAdapter(
 			Packages.javafx.beans.value.ChangeListener,
 			new function() {
 				this.changed = function(object,before,after) {
-					var window = browser.getEngine().executeScript("window");
+//					Packages.java.lang.System.err.println("engine: " + browser.getEngine());
 					if (after == Packages.javafx.concurrent.Worker.State.RUNNING) {
-						window.setMember("console", new _Console);
-						browser.getEngine().executeScript($loader.resource("window.js").read(String));
-						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.server,p.navigate));
-						if (p.page.initialize) {
-							p.page.initialize.call({ _browser: browser });
+//						Packages.java.lang.System.err.println("RUNNING");
+						//	initial page
+						if (page == p.page) {
+							onNewPage();
 						}
+						dumpState("r");
+//						Packages.java.lang.System.err.println("finished RUNNING");
 					}
+					if (after == Packages.javafx.concurrent.Worker.State.SUCCEEDED) {
+//						Packages.java.lang.System.err.println("finished loading");
+						dumpState("s");
+					}
+				}
+			}
+		));
+
+		browser.getEngine().documentProperty().addListener(new JavaAdapter(
+			Packages.javafx.beans.value.ChangeListener,
+			new function() {
+				this.changed = function(object,before,after) {
+//					Packages.java.lang.System.err.println("Document changed from " + before + " to " + after);
+					dumpState("db");
+					//	not initial page
+					if (page != p.page) {
+						onNewPage();
+					}
+					dumpState("da");
+//					Packages.java.lang.System.err.println("After document changed");
 				}
 			}
 		));
@@ -144,8 +205,8 @@ $set(function(p) {
 		browser.getEngine().titleProperty().addListener(_ChangeListener(function(object,before,after) {
 			events.fire("title",{ before: before, after: after });
 		}));
-
-		var content = (function preprocess(xml,location) {
+		
+		var preprocess = function(xml,location) {
 			//	TODO	below 'preorder' copied from Slim preprocessor; need to build it into document API
 			var preorder = function(node,process) {
 				process(node);
@@ -158,7 +219,20 @@ $set(function(p) {
 
 			preorder(xml.document.getElement(), function(node) {
 				var isRelative = function(reference) {
+					if (reference == "slime://jsh/window.js") return false;
 					return true;
+				}
+				
+				if (node.element && node.element.type.name == "head") {
+					var windowScript = $loader.resource("window.js").read(String);
+					var scriptElement = new $context.api.document.Element({
+						type: {
+							name: "script"
+						}
+					});
+					scriptElement.element.attributes.set("src", "slime://jsh/window.js");
+					scriptElement.children.push(new $context.api.document.Text({ text: windowScript }));
+					node.children.splice(0,0,scriptElement);
 				}
 
 				if (node.element && node.element.type.name == "link") {
@@ -178,11 +252,22 @@ $set(function(p) {
 						node.element.attributes.set("inonit.loader.src", reference);
 						node.element.attributes.set("src", null);
 						node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
+					} else if (/^slime\:/.test(reference)) {
+						node.element.attributes.set("inonit.loader.src", reference);
+						node.element.attributes.set("src", null);						
 					}
 				}
 			});
+//			Packages.java.lang.System.err.println("xml = " + xml);
 			return xml.toString();
-		})(getXml(p.page),getLocation(p.page));
+		}
+
+		this.navigate = function(to) {
+			page = to;
+			var preprocessed = preprocess(getXml(page),getLocation(page));
+//			Packages.java.lang.System.err.println("loadContent(): " + preprocessed);
+			browser.getEngine().loadContent(preprocessed);
+		}
 		
 		this._browser = browser;
 
@@ -190,7 +275,7 @@ $set(function(p) {
 			p.initialize.call(this);
 		}
 
-		browser.getEngine().loadContent(content);
+		browser.getEngine().loadContent(preprocess(getXml(p.page),getLocation(p.page)));
 
 		var rv = new Packages.javafx.scene.Scene(browser, 750, 500, Packages.javafx.scene.paint.Color.web("#666970"));
 		return rv;
