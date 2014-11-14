@@ -68,7 +68,8 @@
 	
 	var getCurrent = function(base) {
 		var getBasePath = function(pathname) {
-			var tokens = pathname.split("/");
+			var path = pathname.split("?")[0];
+			var tokens = path.split("/");
 			if (tokens.length > 1) {
 				return tokens.slice(0,-1).join("/") + "/";
 			} else {
