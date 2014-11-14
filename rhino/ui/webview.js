@@ -112,6 +112,9 @@ $set(function(p) {
 					if (event.getData() == "window.jsh.message.initialize") {
 						var window = browser.getEngine().executeScript("window");
 						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.serve,p.navigate.bind(target)));
+						if (page.initialize) {
+							page.initialize.call({ _browser: browser });
+						}
 						return;
 					}
 					var alert = (p.alert) ? p.alert : function(){};
@@ -189,9 +192,9 @@ $set(function(p) {
 //					Packages.java.lang.System.err.println("Document changed from " + before + " to " + after);
 					dumpState("db");
 					//	not initial page
-					if (page != p.page) {
-						onNewPage();
-					}
+//					if (page != p.page) {
+//						onNewPage();
+//					}
 					dumpState("da");
 //					Packages.java.lang.System.err.println("After document changed");
 				}
