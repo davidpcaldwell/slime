@@ -142,66 +142,65 @@ $set(function(p) {
 			events.fire("title",{ before: before, after: after });
 		}));
 		
-		var preprocess = function(xml,location) {
-			//	TODO	below 'preorder' copied from Slim preprocessor; need to build it into document API
-			var preorder = function(node,process) {
-				process(node);
-				if (node.children) {
-					node.children.forEach(function(child) {
-						preorder(child,process);
-					});
-				}
-			};
-
-			preorder(xml.document.getElement(), function(node) {
-				var isRelative = function(reference) {
-					if (reference == "slime://jsh/window.js") return false;
-					return true;
-				}
-				
-				if (node.element && node.element.type.name == "head") {
-					var windowScript = $loader.resource("window.js").read(String);
-					var scriptElement = new $context.api.document.Element({
-						type: {
-							name: "script"
-						}
-					});
-					scriptElement.element.attributes.set("src", "slime://jsh/window.js");
-					scriptElement.children.push(new $context.api.document.Text({ text: windowScript }));
-					node.children.splice(0,0,scriptElement);
-				}
-
-				if (node.element && node.element.type.name == "link") {
-					$context.log.FINE("Found link: " + node);
-					var reference = node.element.attributes.get("href");
-
-					if (isRelative(reference)) {
-						node.element.attributes.set("href", location.getFileUrl(reference));
-					}
-				}
-				if (node.element && node.element.type.name == "script") {
-					$context.log.FINE("Found script: " + node);
-					var reference = node.element.attributes.get("src");
-					if (!reference) throw new Error("Missing src reference: " + node);
-
-					if (isRelative(reference)) {
-						node.element.attributes.set("inonit.loader.src", reference);
-						node.element.attributes.set("src", null);
-						node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
-					} else if (/^slime\:/.test(reference)) {
-						node.element.attributes.set("inonit.loader.src", reference);
-						node.element.attributes.set("src", null);						
-					}
-				}
-			});
-//			Packages.java.lang.System.err.println("xml = " + xml);
-			return xml.toString();
-		}
-
 		this.navigate = function(to) {
+			var preprocess = function(xml,location) {
+				//	TODO	below 'preorder' copied from Slim preprocessor; need to build it into document API
+				var preorder = function(node,process) {
+					process(node);
+					if (node.children) {
+						node.children.forEach(function(child) {
+							preorder(child,process);
+						});
+					}
+				};
+
+				preorder(xml.document.getElement(), function(node) {
+					var isRelative = function(reference) {
+						if (reference == "slime://jsh/window.js") return false;
+						return true;
+					}
+
+					if (node.element && node.element.type.name == "head") {
+						var windowScript = $loader.resource("window.js").read(String);
+						var scriptElement = new $context.api.document.Element({
+							type: {
+								name: "script"
+							}
+						});
+						scriptElement.element.attributes.set("src", "slime://jsh/window.js");
+						scriptElement.children.push(new $context.api.document.Text({ text: windowScript }));
+						node.children.splice(0,0,scriptElement);
+					}
+
+					if (node.element && node.element.type.name == "link") {
+						$context.log.FINE("Found link: " + node);
+						var reference = node.element.attributes.get("href");
+
+						if (isRelative(reference)) {
+							node.element.attributes.set("href", location.getFileUrl(reference));
+						}
+					}
+					if (node.element && node.element.type.name == "script") {
+						$context.log.FINE("Found script: " + node);
+						var reference = node.element.attributes.get("src");
+						if (!reference) throw new Error("Missing src reference: " + node);
+
+						if (isRelative(reference)) {
+							node.element.attributes.set("inonit.loader.src", reference);
+							node.element.attributes.set("src", null);
+							node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
+						} else if (/^slime\:/.test(reference)) {
+							node.element.attributes.set("inonit.loader.src", reference);
+							node.element.attributes.set("src", null);						
+						}
+					}
+				});
+	//			Packages.java.lang.System.err.println("xml = " + xml);
+				return xml.toString();
+			}
+
 			page = to;
 			var preprocessed = preprocess(getXml(page),getLocation(page));
-//			Packages.java.lang.System.err.println("loadContent(): " + preprocessed);
 			browser.getEngine().loadContent(preprocessed);
 		}
 		
@@ -210,8 +209,8 @@ $set(function(p) {
 		if (p.initialize) {
 			p.initialize.call(this);
 		}
-
-		browser.getEngine().loadContent(preprocess(getXml(p.page),getLocation(p.page)));
+		
+		this.navigate(p.page);
 
 		var rv = new Packages.javafx.scene.Scene(browser, 750, 500, Packages.javafx.scene.paint.Color.web("#666970"));
 		return rv;
