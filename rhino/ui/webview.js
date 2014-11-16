@@ -195,9 +195,9 @@ $set(function(p) {
 						}
 					}
 				});
-	//			Packages.java.lang.System.err.println("xml = " + xml);
+				$context.log.FINE("xml = " + xml);
 				return xml.toString();
-			}
+			};
 
 			page = to;
 			var preprocessed = preprocess(getXml(page),getLocation(page));
