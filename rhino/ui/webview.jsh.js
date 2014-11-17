@@ -9,7 +9,27 @@ server.map({
 	path: "/",
 	servlets: {
 		"/*": {
-			file: parameters.options.servlet.file
+			file: parameters.options.servlet.file,
+			load: function(scope) {
+				jsh.loader.run(this.file.pathname, scope);
+				scope.$exports.handle = (function(declared) {
+					return function(request) {
+						if (request.path == "webview.initialize.js") {
+							var code = jsh.script.file.getRelativePath("webview.initialize.js").file.read(String);
+							return {
+								status: {
+									code: 200
+								},
+								body: {
+									type: "text/javascript",
+									string: code
+								}
+							}
+						}
+						return declared.apply(this,arguments);
+					}
+				})(scope.$exports.handle);
+			}
 		}
 	}
 });

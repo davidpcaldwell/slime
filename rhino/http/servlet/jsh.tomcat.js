@@ -82,7 +82,11 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 										};
 
 										this.getCode = function(scope) {
-											jsh.loader.run(servletDeclaration.file.pathname, scope);
+											if (servletDeclaration.load) {
+												servletDeclaration.load(scope);
+											} else {
+												jsh.loader.run(servletDeclaration.file.pathname, scope);
+											}
 										}
 
 										this.$exports = {};
