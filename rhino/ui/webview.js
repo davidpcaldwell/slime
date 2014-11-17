@@ -128,13 +128,14 @@ $set(function(p) {
 			new function() {
 				this.handle = function(event) {
 					if (event.getData() == "window.jsh") {
-						Packages.java.lang.System.err.println("WebView initialization call received ...");
-						browser.getEngine().executeScript($loader.resource("window.js").read(String));
+						browser.getEngine().executeScript($loader.resource("webview.window.js").read(String));
 					}
 					if (event.getData() == "window.jsh.message.initialize") {
-						Packages.java.lang.System.err.println("WebView message initialize call received ...");
 						var window = browser.getEngine().executeScript("window");
-						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.serve,p.navigate.bind(target)));
+						browser.getEngine().executeScript("window.jsh.message").call(
+							"initialize", 
+							new _Server(window,p.serve,(p.navigate) ? p.navigate.bind(target) : null)
+						);
 						if (page.initialize) {
 							page.initialize.call({ _browser: browser });
 						}
@@ -166,64 +167,64 @@ $set(function(p) {
 		}));
 		
 		this.navigate = function(to) {
-			var preprocess = function(xml,location) {
-				//	TODO	below 'preorder' copied from Slim preprocessor; need to build it into document API
-				var preorder = function(node,process) {
-					process(node);
-					if (node.children) {
-						node.children.forEach(function(child) {
-							preorder(child,process);
-						});
-					}
-				};
-
-				preorder(xml.document.getElement(), function(node) {
-					var isRelative = function(reference) {
-						if (reference == "slime://jsh/window.js") return false;
-						return true;
-					}
-
-					if (node.element && node.element.type.name == "head") {
-						var windowScript = $loader.resource("window.js").read(String);
-						var scriptElement = new $context.api.document.Element({
-							type: {
-								name: "script"
-							}
-						});
-						scriptElement.element.attributes.set("src", "slime://jsh/window.js");
-						scriptElement.children.push(new $context.api.document.Text({ text: windowScript }));
-						node.children.splice(0,0,scriptElement);
-					}
-
-					if (node.element && node.element.type.name == "link") {
-						$context.log.FINE("Found link: " + node);
-						var reference = node.element.attributes.get("href");
-
-						if (isRelative(reference)) {
-							node.element.attributes.set("href", location.getFileUrl(reference));
-						}
-					}
-					if (node.element && node.element.type.name == "script") {
-						$context.log.FINE("Found script: " + node);
-						var reference = node.element.attributes.get("src");
-						if (!reference) throw new Error("Missing src reference: " + node);
-
-						if (isRelative(reference)) {
-							node.element.attributes.set("inonit.loader.src", reference);
-							node.element.attributes.set("src", null);
-							node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
-						} else if (/^slime\:/.test(reference)) {
-							node.element.attributes.set("inonit.loader.src", reference);
-							node.element.attributes.set("src", null);						
-						}
-					}
-				});
-				$context.log.FINE("xml = " + xml);
-				return xml.toString();
-			};
-
 			page = to;
 			if (!page.url) {
+				var preprocess = function(xml,location) {
+					//	TODO	below 'preorder' copied from Slim preprocessor; need to build it into document API
+					var preorder = function(node,process) {
+						process(node);
+						if (node.children) {
+							node.children.forEach(function(child) {
+								preorder(child,process);
+							});
+						}
+					};
+
+					preorder(xml.document.getElement(), function(node) {
+						var isRelative = function(reference) {
+							if (reference == "slime://jsh/window.js") return false;
+							return true;
+						}
+
+						if (node.element && node.element.type.name == "head") {
+							var windowScript = $loader.resource("window.js").read(String);
+							var scriptElement = new $context.api.document.Element({
+								type: {
+									name: "script"
+								}
+							});
+							scriptElement.element.attributes.set("src", "slime://jsh/window.js");
+							scriptElement.children.push(new $context.api.document.Text({ text: windowScript }));
+							node.children.splice(0,0,scriptElement);
+						}
+
+						if (node.element && node.element.type.name == "link") {
+							$context.log.FINE("Found link: " + node);
+							var reference = node.element.attributes.get("href");
+
+							if (isRelative(reference)) {
+								node.element.attributes.set("href", location.getFileUrl(reference));
+							}
+						}
+						if (node.element && node.element.type.name == "script") {
+							$context.log.FINE("Found script: " + node);
+							var reference = node.element.attributes.get("src");
+							if (!reference) throw new Error("Missing src reference: " + node);
+
+							if (isRelative(reference)) {
+								node.element.attributes.set("inonit.loader.src", reference);
+								node.element.attributes.set("src", null);
+								node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
+							} else if (/^slime\:/.test(reference)) {
+								node.element.attributes.set("inonit.loader.src", reference);
+								node.element.attributes.set("src", null);						
+							}
+						}
+					});
+					$context.log.FINE("xml = " + xml);
+					return xml.toString();
+				};
+
 				var preprocessed = preprocess(getXml(page),getLocation(page));
 				browser.getEngine().loadContent(preprocessed);
 			} else {

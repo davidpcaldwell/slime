@@ -77,7 +77,7 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 											script: (m.resources) ? new m.resources.Loader({
 												directory: servletDeclaration.file.parent,
 												type: $context.getMimeType
-											}) : null,
+											}) : new jsh.file.Loader({ directory: servletDeclaration.file.parent }),
 											container: (m.resources) ? m.resources.loader : null
 										};
 
