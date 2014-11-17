@@ -49,7 +49,7 @@
 		}
 	};
 	
-	window.alert("window.jsh.message.initialize");
+	window.status = "window.jsh.message.initialize";
 	
 	window.console = window.jsh.message.console;
 	

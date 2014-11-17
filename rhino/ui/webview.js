@@ -123,6 +123,29 @@ $set(function(p) {
 			}
 		));
 
+		browser.getEngine().setOnStatusChanged(new JavaAdapter(
+			Packages.javafx.event.EventHandler,
+			new function() {
+				this.handle = function(event) {
+					if (event.getData() == "window.jsh") {
+						Packages.java.lang.System.err.println("WebView initialization call received ...");
+						browser.getEngine().executeScript($loader.resource("window.js").read(String));
+					}
+					if (event.getData() == "window.jsh.message.initialize") {
+						Packages.java.lang.System.err.println("WebView message initialize call received ...");
+						var window = browser.getEngine().executeScript("window");
+						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.serve,p.navigate.bind(target)));
+						if (page.initialize) {
+							page.initialize.call({ _browser: browser });
+						}
+						return;						
+					}
+					var status = (p.status) ? p.status : function(){};
+					status(event.getData());
+				}
+			}
+		));
+
 		if (p.popup) {
 			browser.getEngine().setCreatePopupHandler(new JavaAdapter(
 				Packages.javafx.util.Callback,
@@ -200,8 +223,12 @@ $set(function(p) {
 			};
 
 			page = to;
-			var preprocessed = preprocess(getXml(page),getLocation(page));
-			browser.getEngine().loadContent(preprocessed);
+			if (!page.url) {
+				var preprocessed = preprocess(getXml(page),getLocation(page));
+				browser.getEngine().loadContent(preprocessed);
+			} else {
+				browser.getEngine().load(page.url);
+			}
 		}
 		
 		this._browser = browser;
