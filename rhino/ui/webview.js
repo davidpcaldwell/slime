@@ -187,7 +187,7 @@ $set(function(p) {
 						}
 
 						if (node.element && node.element.type.name == "head") {
-							var windowScript = $loader.resource("window.js").read(String);
+							var windowScript = $loader.resource("webview.window.js").read(String);
 							var scriptElement = new $context.api.document.Element({
 								type: {
 									name: "script"
