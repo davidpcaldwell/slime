@@ -4,7 +4,7 @@ $set(function(p) {
 		path: "/",
 		servlets: {
 			"/*": {
-				file: $context.servlet,
+				file: p.servlet,
 				load: function(scope) {
 					jsh.loader.run(this.file.pathname, scope);
 					scope.$exports.handle = (function(declared) {
