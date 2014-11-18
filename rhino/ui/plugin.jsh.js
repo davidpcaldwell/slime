@@ -58,4 +58,18 @@ plugin({
 			}
 		});
 	}
+});
+
+plugin({
+	isReady: function() {
+		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd.Tomcat;
+	},
+	load: function() {
+		$loader.run("webview.jsh.api.js", {
+			$loader: $loader,
+			$set: function(v) {
+				jsh.ui.javafx.WebView.application = v;
+			}
+		});		
+	}
 })
