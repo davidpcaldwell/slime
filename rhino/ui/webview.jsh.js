@@ -4,6 +4,11 @@ var parameters = jsh.script.getopts({
 	}
 });
 var servlet = parameters.options.servlet.file;
-jsh.script.loader.module("webview.jsh.api.js", {
-	servlet: servlet
+var run = jsh.script.loader.value("webview.jsh.api.js", {
+	$context: {
+		servlet: servlet
+	},
+	$loader: jsh.script.loader
 });
+run();
+
