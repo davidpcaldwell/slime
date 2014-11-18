@@ -5,14 +5,13 @@ $set(function(p) {
 		servlets: {
 			"/*": {
 				file: p.servlet,
+				parameters: p.parameters,
 				load: function(scope) {
 					jsh.loader.run(this.file.pathname, scope);
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {
-								jsh.shell.echo("Loading webview.initialize.js ...");
 								var code = $loader.resource("webview.initialize.js").read(String);
-								jsh.shell.echo("code = " + code);
 								return {
 									status: {
 										code: 200
@@ -28,7 +27,8 @@ $set(function(p) {
 					})(scope.$exports.handle);
 				}
 			}
-		}
+		},
+		resources: p.resources
 	});
 	server.start();
 
