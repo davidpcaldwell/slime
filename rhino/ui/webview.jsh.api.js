@@ -46,7 +46,7 @@ $set(function(p) {
 	jsh.ui.javafx.launch({
 		title: "WebView",	//	TODO	default
 		Scene: jsh.ui.javafx.WebView({
-			page: { url: "http://127.0.0.1:" + server.port + "/" },
+			page: { url: "http://127.0.0.1:" + server.port + "/" + ((p.path) ? p.path : "") },
 			//	TODO	configurable
 			alert: function(s) {
 				jsh.shell.echo("ALERT: " + s);
@@ -82,5 +82,9 @@ $set(function(p) {
 				});
 			}
 		})
-	});	
+	});
+	
+	return {
+		port: server.port
+	};
 });
