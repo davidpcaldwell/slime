@@ -24,6 +24,11 @@ $exports.addJshPluginTo = function(jsh) {
 			if (!p.pathname.directory) {
 				throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
 			}
+			
+			this.toString = function() {
+				return p.prefix + " -> " + p.pathname;
+			};
+			
 			this.get = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
@@ -135,7 +140,7 @@ $exports.addJshPluginTo = function(jsh) {
 
 			this.toString = function() {
 				return "jsh.httpd.Resources [" + mapping.map(function(item) {
-					return item.prefix + "->" + item.pathname;
+					return item.toString();
 				}).join(", ") + "]";
 			}
 		};
