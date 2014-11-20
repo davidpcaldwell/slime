@@ -85,27 +85,77 @@ var osx = new function() {
 		var parsed = parse();
 		jsh.shell.echo("Capabilities: [" + parsed.array + "]");
 		if (parsed.array.indexOf("JNI") == -1) {
-			var SCRIPT = jsh.shell.TMPDIR.createTemporary({ prefix: "askpass.", suffix: ".bash" });
-			SCRIPT.remove();
-			SCRIPT.pathname.write("#!/bin/bash"
-				+ "\n" + jsh.shell.java.launcher + " -jar " + jsh.shell.jsh.home.getRelativePath("jsh.jar")
-				+ " " + jsh.shell.jsh.home.getRelativePath("src/rhino/tools/askpass.jsh.js")
-				+ " " + "\"Enter password to modify JDK installation\""
-			);
-			jsh.shell.run({
-				command: "chmod",
-				arguments: ["+x", SCRIPT.toString()]
+			var SUDO_ASKPASS = jsh.shell.java({
+				jar: install.getFile("jsh.jar"),
+				arguments: [install.getFile("src/rhino/tools/askpass.jsh.js"), "-prompt", "Enter password to modify JDK installation"],
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					return result.stdio.output;
+				}
 			});
+//			var SCRIPT = jsh.shell.TMPDIR.createTemporary({ prefix: "askpass.", suffix: ".bash" });
+//			SCRIPT.remove();
+//			SCRIPT.pathname.write("#!/bin/bash"
+//				+ "\n" + jsh.shell.java.launcher + " -jar " + install.getRelativePath("jsh.jar")
+//				+ " " + install.getRelativePath("src/rhino/tools/askpass.jsh.js")
+//				+ " " + "\"Enter password to modify JDK installation\""
+//			);
+//			jsh.shell.run({
+//				command: "chmod",
+//				arguments: ["+x", SCRIPT.toString()]
+//			});
+			jsh.shell.echo("SUDO_ASKPASS: [" + SUDO_ASKPASS + "]");
 			jsh.shell.echo("Cannot build Mac OS X native installer; JDK must be modified to include JNI capability.");
 			jsh.shell.echo("To build native launcher, enter password in the graphical dialog displayed.");
+//			var password = jsh.shell.run({
+//				command: "/bin/bash",
+//				arguments: [ SUDO_ASKPASS ],
+//				stdio: {
+//					output: String
+//				}
+//			});
 			//	TODO	jsh.shell.os.sudo should be adapted for this purpose
-			jsh.shell.run({
-				command: "sudo",
-				arguments: ["-k", "-A", jsh.shell.java.launcher, "-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"), jsh.script.file, "-OSX-add-JNI-to-JVMCapabilities"],
-				environment: jsh.js.Object.set({}, jsh.shell.environment, {
-					SUDO_ASKPASS: SCRIPT.toString()
-				})
-			});
+//			jsh.shell.echo("script: " + SCRIPT);
+			var SUDO_ASKPASS_WORKS = true;
+			//	TODO	try to get SUDO_ASKPASS to work by appending newline?
+			if (SUDO_ASKPASS_WORKS) {
+				jsh.shell.run({
+					command: "sudo",
+					arguments: ["-k", "-A", jsh.shell.java.launcher, "-jar", install.getRelativePath("jsh.jar"), install.getRelativePath("etc/install.jsh.js"), "-OSX-add-JNI-to-JVMCapabilities"],
+					environment: jsh.js.Object.set({}, jsh.shell.environment, {
+						SUDO_ASKPASS: SUDO_ASKPASS
+					}),
+					evaluate: function(result) {
+						if (result.status) {
+							jsh.shell.echo("Running env SUDO_ASKPASS=" + SUDO_ASKPASS + " " + result.command + " " + result.arguments.join(" "));
+							throw new Error("Exit status " + result.status);
+						}
+					}
+				});				
+			} else {
+				var password = jsh.shell.run({
+					command: "/bin/bash",
+					arguments: [ SUDO_ASKPASS ],
+					stdio: {
+						output: String
+					}
+				});
+				jsh.shell.run({
+					command: "sudo",
+					arguments: ["-k", "-S", jsh.shell.java.launcher, "-jar", install.getRelativePath("jsh.jar"), install.getRelativePath("etc/install.jsh.js"), "-OSX-add-JNI-to-JVMCapabilities"],
+					stdio: {
+						input: password + "\n"
+					},
+					evaluate: function(result) {
+						if (result.status) {
+							jsh.shell.echo("Running env SUDO_ASKPASS=" + SUDO_ASKPASS + " " + result.command + " " + result.arguments.join(" "));
+							throw new Error("Exit status " + result.status);
+						}
+					}
+				});				
+			}
 			var success = (parse().array.indexOf("JNI") != -1);
 			if (!success) {
 				jsh.shell.echo("Could not build native launcher: " + parsed.file + " does not contain JNI in JVMCapabilities.");

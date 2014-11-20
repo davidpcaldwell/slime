@@ -47,6 +47,6 @@ if (!parameters.options.child) {
 	var typed = api.gui({
 		prompt: parameters.options.prompt
 	});
-	jsh.shell.stdout.write(typed);
+	jsh.shell.stdout.write(typed + "\n");
 	jsh.shell.exit(0);
 }
