@@ -353,7 +353,11 @@ if ($context.globals && $context.globals.Array) {
 
 var Thread = function(p) {
 	var synchronize = function(f) {
-		return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(arguments.callee.lock,f);
+		if ($exports.getClass("inonit.script.runtime.Threads")) {
+			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(arguments.callee.lock,f);
+		} else {
+			return sync(f, arguments.callee.lock);
+		}
 	};
 	synchronize.lock = new Packages.java.lang.Object();
 
@@ -434,69 +438,75 @@ var Thread = function(p) {
 	};
 };
 
-//	TODO	implement for Nashorn
-if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-	$exports.Thread = {};
-	$exports.Thread.start = function(p) {
-		return new Thread(p);
+$exports.Thread = {};
+$exports.Thread.start = function(p) {
+	return new Thread(p);
+}
+$exports.Thread.run = function(p) {
+	var callee = arguments.callee;
+	var on = new function() {
+		var result = {};
+
+		this.result = function(rv) {
+			result.returned = { value: rv };
+		}
+
+		this.error = function(t) {
+			result.threw = t;
+		}
+
+		this.timeout = function() {
+			result.timedOut = true;
+		}
+
+		this.evaluate = function() {
+			if (result.returned) return result.returned.value;
+			if (result.threw) throw result.threw;
+			if (result.timedOut) throw callee.TIMED_OUT;
+		}
+	};
+	var o = {};
+	for (var x in p) {
+		o[x] = p[x];
 	}
-	$exports.Thread.run = function(p) {
-		var callee = arguments.callee;
-		var on = new function() {
-			var result = {};
-
-			this.result = function(rv) {
-				result.returned = { value: rv };
-			}
-
-			this.error = function(t) {
-				result.threw = t;
-			}
-
-			this.timeout = function() {
-				result.timedOut = true;
-			}
-
-			this.evaluate = function() {
-				if (result.returned) return result.returned.value;
-				if (result.threw) throw result.threw;
-				if (result.timedOut) throw callee.TIMED_OUT;
-			}
-		};
-		var o = {};
-		for (var x in p) {
-			o[x] = p[x];
-		}
-		o.on = on;
-		var t = new Thread(o);
-		t.join();
-		return on.evaluate();
-	};
-	//	TODO	make the below a subtype of Error
-	//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
-	$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
-		if (!arguments.callee.cached) {
-			arguments.callee.cached = new Error("Timed out.");
-		}
-		return arguments.callee.cached;
-	});
-	$exports.Thread.thisSynchronize = function(f) {
-		//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
-		//			synchronize()
+	o.on = on;
+	var t = new Thread(o);
+	t.join();
+	return on.evaluate();
+};
+//	TODO	make the below a subtype of Error
+//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
+$exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
+	if (!arguments.callee.cached) {
+		arguments.callee.cached = new Error("Timed out.");
+	}
+	return arguments.callee.cached;
+});
+$exports.Thread.thisSynchronize = function(f) {
+	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
+	//			synchronize()
+	if ($exports.getClass("org.mozilla.javascript.Synchronizer")) {
 		return new Packages.org.mozilla.javascript.Synchronizer(f);
-	};
-	$exports.Thread.Monitor = function() {
-		var lock = new Packages.java.lang.Object();
+	} else {
+		return sync(f, this);
+	}
+};
+$exports.Thread.Monitor = function() {
+	var lock = new Packages.java.lang.Object();
 
-		this.Waiter = function(c) {
-			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, function() {
-				while(!c.until.apply(this,arguments)) {
-					lock.wait();
-				}
-				var rv = c.then.apply(this,arguments);
-				lock.notifyAll();
-				return rv;
-			});
+	this.Waiter = function(c) {
+		var f = function() {
+			while(!c.until.apply(this,arguments)) {
+				lock.wait();
+			}
+			var rv = c.then.apply(this,arguments);
+			lock.notifyAll();
+			return rv;
+		};
+		if ($exports.getClass("inonit.script.runtime.Threads")) {
+			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);
+		} else {
+			return sync(f, lock);
 		}
 	}
 }
