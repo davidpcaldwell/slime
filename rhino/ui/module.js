@@ -97,7 +97,9 @@ if ($context.javafx) {
 			invoker(new JavaAdapter(
 				Packages.java.lang.Runnable,
 				new function() {
-					new Application(o);
+					this.run = function() {
+						new Application(o);
+					}
 				}
 			));
 		}
