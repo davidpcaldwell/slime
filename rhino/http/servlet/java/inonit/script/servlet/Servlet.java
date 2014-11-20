@@ -13,9 +13,11 @@
 package inonit.script.servlet;
 
 import java.io.*;
+import java.util.logging.*;
 
 import javax.servlet.http.*;
 
+import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
@@ -92,7 +94,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 
 	@Override protected final void service(HttpServletRequest request, HttpServletResponse response) {
-		System.err.println("Executing request ...");
+		Logging.get().log(Servlet.class, Level.INFO, "Executing request %s ...", request.getPathInfo());
 		script.service(request, response);
 	}
 
@@ -118,6 +120,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		}
 
 		public void register(Script script) {
+			Logging.get().log(Servlet.class, Level.CONFIG, "Initialized servlet with script " + script);
 			servlet.script = script;
 		}
 
