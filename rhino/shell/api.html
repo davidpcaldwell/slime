@@ -31,7 +31,8 @@ END LICENSE
 					api: {
 						java: java,
 						mime: $jsapi.module("../../js/mime/")
-					}
+					},
+					$rhino: jsh.$jsapi.$rhino
 				});
 				this.api = {
 					js: $jsapi.module("../../js/object/"),

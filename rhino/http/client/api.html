@@ -114,7 +114,8 @@ END LICENSE
 							java: java,
 							mime: $jsapi.loader.module("../../../js/mime/")
 						},
-						$java: new Packages.inonit.script.runtime.io.Streams()
+						$java: new Packages.inonit.script.runtime.io.Streams(),
+						$rhino: jsh.$jsapi.$rhino
 					});
 
 					this.api = {

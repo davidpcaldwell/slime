@@ -448,6 +448,47 @@ $exports.Writer = Writer;
 $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
+var decorate = function(p) {
+	if (this._stream) {
+		this.resource = function(path) {
+			var target = this;
+			if (p && p.resources) {
+				//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
+				//			child would need to call the parent loader with the prefix, which probably means we'd have to
+				//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
+				return p.resources.get(path);
+			} else {
+				//	Test for existence so that we can return null if not found
+				var _in = this._stream(path);
+				if (!_in) {
+					return null;
+				} else {
+					_in.close();
+				}
+				var type;
+				if (p.type) {
+					type = p.type.call(this,path);
+				}
+				return new $exports.Resource({
+					type: type,
+					read: {
+						binary: function() {
+							return new InputStream(target._stream(path));
+						}
+					}
+				});
+			}
+		};
+	}
+};
+
+$context.$rhino.Loader.spi(function(underlying) {
+	return function(p) {
+		underlying.apply(this,arguments);
+		decorate.call(this,p);
+	};
+});
+
 $exports.Loader = function(p) {
 	var rv;
 
@@ -476,40 +517,6 @@ $exports.Loader = function(p) {
 	//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
 	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
 	//			.resource decoration?
-	var decorate = function() {
-		if (this._stream) {
-			this.resource = function(path) {
-				var target = this;
-				if (p && p.resources) {
-					//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
-					//			child would need to call the parent loader with the prefix, which probably means we'd have to
-					//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
-					return p.resources.get(path);
-				} else {
-					//	Test for existence so that we can return null if not found
-					var _in = this._stream(path);
-					if (!_in) {
-						return null;
-					} else {
-						_in.close();
-					}
-					var type;
-					if (p.type) {
-						type = p.type.call(this,path);
-					}
-					return new $exports.Resource({
-						type: type,
-						read: {
-							binary: function() {
-								return new InputStream(target._stream(path));
-							}
-						}
-					});
-				}
-			};
-		}
-	};
-
 	if (p.resources) {
 		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 		//			on this package into it
@@ -554,20 +561,22 @@ $exports.Loader = function(p) {
 //			return "rhino/io with Loader resources " + p.resources;
 //		}
 	} else {
-		var parameter = {};
-		for (var x in p) {
-			parameter[x] = p[x];
-		}
-		parameter.Loader = $api.Constructor.decorated(function(prefix) {
-			decorate.call(this);
-			this.toString = function() {
-				return "rhino/io Loader: prefix=" + prefix;
-			}
-		},p.Loader);
-		rv = new $context.$rhino.Loader(parameter);
+		$context.$rhino.Loader.apply(this,arguments);
+//		var parameter = {};
+//		for (var x in p) {
+//			parameter[x] = p[x];
+//		}
+//		parameter.Loader = $api.Constructor.decorated(function(prefix) {
+//			decorate.call(this,p);
+//			this.toString = function() {
+//				return "rhino/io Loader: prefix=" + prefix;
+//			}
+//		},p.Loader);
+//		rv = new $context.$rhino.Loader(parameter);
+		rv = this;
 	}
 
-	decorate.call(rv);
+	decorate.call(rv,p);
 
 	return rv;
 };

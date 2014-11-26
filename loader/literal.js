@@ -234,6 +234,13 @@
 			addTopMethod.call(this,"file");
 
 			this.Loader = Loader;
+			
+			this.Loader.spi = (function(target) {
+				return function(implementation) {
+					target.Loader = implementation(target.Loader);
+					target.Loader.spi = arguments.callee;
+				};				
+			})(this);
 
 			this.namespace = function(string) {
 				//	This construct returns the top-level global object, e.g., window in the browser

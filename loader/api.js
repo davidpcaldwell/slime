@@ -181,7 +181,7 @@
 		var components = [];
 
 		if (arguments.length != 1) {
-			throw new TypeError();
+			throw new TypeError("$api.Function expected 1 argument.");
 		} else {
 			components.push(new $exports.Function.Basic(arguments[0]));
 		}
