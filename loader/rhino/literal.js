@@ -66,43 +66,49 @@
 		}
 	});
 
-	var Loader = function(p) {
-		var decorate = function(_source) {
-			this.toString = function() {
-				return "Java loader: " + _source.toString();
-			}
-
-			this._stream = function(path) {
-				var _file = _source.getFile(path);
-				return (_file) ? _file.getInputStream() : null;
-			};
-			this._resource = loader.$api.deprecate(this._stream);
-		}
-
-		if (!p._source) throw new TypeError("_source must be defined and not be null.");
-
-		var Child = function(prefix) {
-			return new Loader({ _source: p._source.child(prefix) });
-		}
-
-		var parameter = new function() {
-			this.getScript = function(path) {
-				return {
-					_source: p._source,
-					path: path
-				}
-			};
-
-			this.Loader = loader.$api.Constructor.decorated(Child,p.Loader);
-		};
-
-		var rv = new loader.Loader(parameter);
-		decorate.call(rv,p._source);
-		return rv;
-	}
+//	var Loader = function(p) {
+//		var decorate = function(_source) {
+//			this.toString = function() {
+//				return "Java loader: " + _source.toString();
+//			}
+//
+//			this._stream = function(path) {
+//				var _file = _source.getFile(path);
+//				return (_file) ? _file.getInputStream() : null;
+//			};
+//			this._resource = loader.$api.deprecate(this._stream);
+//		}
+//
+//		if (!p._source) throw new TypeError("_source must be defined and not be null.");
+//
+//		var Child = function(prefix) {
+//			return new Loader({ _source: p._source.child(prefix) });
+//		}
+//
+//		var parameter = new function() {
+//			this.getScript = function(path) {
+//				return {
+//					_source: p._source,
+//					path: path
+//				}
+//			};
+//
+//			this.Loader = loader.$api.Constructor.decorated(Child,p.Loader);
+//		};
+//
+//		var rv = new loader.Loader(parameter);
+//		decorate.call(rv,p._source);
+//		return rv;
+//	}
 	
 	loader.Loader.spi(function(underlying) {
 		return function(p) {
+			var Code = Packages.inonit.script.engine.Code;
+			if (p._unpacked) {
+				p._code = Code.unpacked(p._unpacked);
+			} else if (p._packed) {
+				p._code = Code.slime(p._packed);
+			}
 			if (p._code) {
 				$javahost.getClasspath().append(p._code);
 				p._source = p._code.getScripts();
@@ -130,38 +136,38 @@
 		}
 	});
 
-//<<<<<<< local
-	var spi = loader.Loader.spi;
-	loader.Loader = loader.$api.Function(
-//		loader.$api.Function.conditional(
-//			function(p) {
-//				return p._source || p._code;
-//			},
-//			function(p) {
-//				if (p._source) {
-//					return new Loader(p);
-//				} else if (p._code) {
-//					//	TODO	this is probably a bad place to do this, but it will do for now; should this move into the Loader
-//					//			constructor?
-//					$javahost.getClasspath().append(p._code);
-//					return new Loader({
-//						_source: p._code.getScripts(),
-//						Loader: p.Loader
-//					});
-//				}
-//			},
-//			loader.Loader
-//		)
-		loader.Loader
-	).prepare(function(p) {
-		var Code = Packages.inonit.script.engine.Code;
-		if (p._unpacked) {
-			p._code = Code.unpacked(p._unpacked);
-		} else if (p._packed) {
-			p._code = Code.slime(p._packed);
-		}
-	});
-	loader.Loader.spi = spi;
+////<<<<<<< local
+//	var spi = loader.Loader.spi;
+//	loader.Loader = loader.$api.Function(
+////		loader.$api.Function.conditional(
+////			function(p) {
+////				return p._source || p._code;
+////			},
+////			function(p) {
+////				if (p._source) {
+////					return new Loader(p);
+////				} else if (p._code) {
+////					//	TODO	this is probably a bad place to do this, but it will do for now; should this move into the Loader
+////					//			constructor?
+////					$javahost.getClasspath().append(p._code);
+////					return new Loader({
+////						_source: p._code.getScripts(),
+////						Loader: p.Loader
+////					});
+////				}
+////			},
+////			loader.Loader
+////		)
+//		loader.Loader
+//	).prepare(function(p) {
+//		var Code = Packages.inonit.script.engine.Code;
+//		if (p._unpacked) {
+//			p._code = Code.unpacked(p._unpacked);
+//		} else if (p._packed) {
+//			p._code = Code.slime(p._packed);
+//		}
+//	});
+//	loader.Loader.spi = spi;
 //=======
 //			var parameter = new function() {
 //				this.toString = function() {
