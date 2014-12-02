@@ -147,8 +147,12 @@ modules.forEach(function(module) {
 //	TODO	Obviously under Cygwin shell does not include the paths helper
 
 var args = [];
+args.push(Packages.java.lang.System.getProperty("java.home") + "/bin/java");
+//	TODO	if JSH_SHELL_CONTAINER is jvm, debugger will not be run anywhere
+if (AGENTLIB_JDWP && env.JSH_SHELL_CONTAINER != "jvm") {
+	args.push("-agentlib:jdwp=" + AGENTLIB_JDWP);
+}
 args.push(
-	Packages.java.lang.System.getProperty("java.home") + "/bin/java",
 	"-classpath", LAUNCHER_CLASSES,
 	"inonit.script.jsh.launcher.Main"
 );
@@ -156,7 +160,7 @@ args = args.concat(arguments);
 args.push(
 	{
 		env: new (function() {
-			var passthrough = ["JSH_SCRIPT_DEBUGGER","JSH_PLUGINS","JSH_LAUNCHER_DEBUG","JSH_JVM_OPTIONS","JSH_ENGINE","JSH_JAVA_LOGGING_PROPERTIES","JSH_RHINO_OPTIMIZATION"];
+			var passthrough = ["JSH_SCRIPT_DEBUGGER","JSH_PLUGINS","JSH_LAUNCHER_DEBUG","JSH_JVM_OPTIONS","JSH_ENGINE","JSH_JAVA_LOGGING_PROPERTIES","JSH_RHINO_OPTIMIZATION","JSH_SHELL_CONTAINER"];
 			for (var x in env) {
 				if (passthrough.indexOf(x) != -1) {
 					this[x] = env[x];
@@ -179,4 +183,5 @@ args.push(
 	}
 );
 
+Packages.java.lang.System.err.println("Running: " + args.join(" "));
 Packages.java.lang.System.exit(runCommand.apply(null, args));

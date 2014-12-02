@@ -240,6 +240,10 @@ if (arguments[0] == "build") {
 } else if (arguments[0] == "launch") {
 	arguments.splice(0,1);
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
+} else if (arguments[0] == "jdwp" || arguments[0] == "xjdwp") {
+	var AGENTLIB_JDWP = (arguments[0] == "jdwp") ? arguments[1] : void(0);
+	arguments.splice(0,2);
+	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
 } else if (arguments[0] == "develop") {
 	arguments.splice(0,1,String(new Packages.java.io.File(SLIME_SRC, "jsh/etc/develop.jsh.js")));
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
