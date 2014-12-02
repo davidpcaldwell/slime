@@ -31,7 +31,9 @@ var newStringArray = function(len) {
 if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	arguments = $arguments;
 	setExitStatus = function(status) {
-		Packages.java.lang.System.exit(status);
+		if (status !== null) {
+			Packages.java.lang.System.exit(status);
+		}
 	}
 	newArray = function(type,len) {
 		return Packages.java.lang.reflect.Array.newInstance(type.class,len);
@@ -630,7 +632,7 @@ try {
 	command.argument = function(string) {
 		this.add(string);
 	}
-	if (JSH_SHELL_CONTAINER == "classloader" && !env.JSH_SHELL_CLASSPATH) command = new function() {
+	if (JSH_SHELL_CONTAINER == "classloader" && !settings.packaged && (true || !env.JSH_SHELL_CLASSPATH)) command = new function() {
 		this.toString = function() {
 			return "Loader command: jsh=" + mainClassName + " classpath=" + classpath + " script=" + script + " arguments=" + args
 		}
