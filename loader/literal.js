@@ -154,6 +154,8 @@
 				methods.run.call(this,code,scope);
 				return rv;
 			}
+			
+			var target = this;
 
 			var Loader = function(p) {
 				var Callee = arguments.callee;

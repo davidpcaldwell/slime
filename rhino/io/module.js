@@ -485,7 +485,8 @@ var decorate = function(p) {
 $context.$rhino.Loader.spi(function(underlying) {
 	return function(p) {
 		underlying.apply(this,arguments);
-		decorate.call(this,p);
+		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
+		decorate.call(this,arguments[0]);
 	};
 });
 

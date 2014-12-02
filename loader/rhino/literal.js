@@ -121,6 +121,13 @@
 					};
 				};
 			}
+			p.Loader = (function(custom) {
+				return loader.$api.Constructor.decorated(function(prefix) {
+					if (p._source) {
+						return new loader.Loader({ _source: p._source.child(prefix) });
+					}
+				}, custom);
+			})(p.Loader);
 			underlying.apply(this,arguments);
 			if (p._source) {
 				this.toString = function() {
