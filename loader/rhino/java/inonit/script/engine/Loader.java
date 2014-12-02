@@ -46,10 +46,6 @@ public abstract class Loader {
 
 		public abstract Loader.Classpath toScriptClasspath();
 
-		Classes() {
-			super();
-		}
-
 		Classes(ClassLoader delegate) {
 			super(delegate);
 		}
@@ -63,7 +59,7 @@ public abstract class Loader {
 			}
 
 			public String toString() {
-				String rv = getClass().getName() + ": locations=[";
+				String rv = getClass().getName() + ": delegate=" + this.getParent() + " locations=[";
 				synchronized(locations) {
 					for (int i=0; i<locations.size(); i++) {
 						rv += locations.get(i);
