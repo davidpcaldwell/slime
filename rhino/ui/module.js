@@ -31,6 +31,9 @@ if ($context.javafx) {
 			_frame.addWindowListener(new JavaAdapter(
 				Packages.java.awt.event.WindowListener,
 				new function() {
+					var empty = function(e){};
+					this.windowOpened = empty;
+					
 					this.windowClosing = function(e) {
 						events.fire("close");
 						if (o.on && o.on.close) {
@@ -39,7 +42,13 @@ if ($context.javafx) {
 							//			fired event?
 							o.on.close.call(source);
 						}
-					}
+					};
+					
+					this.windowClosed = empty;
+					this.windowIconified = empty;
+					this.windowDeiconified = empty;
+					this.windowActivated = empty;
+					this.windowDeactivated = empty;
 				}
 			));
 
