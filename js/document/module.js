@@ -330,6 +330,12 @@ var Element = function(p) {
 			for (var x in m) {
 				params[x] = m[x];
 			}
+			if (params.pretty) {
+				params.pretty = {
+					current: m.pretty.current + m.pretty.indent,
+					indent: m.pretty.indent
+				}
+			}
 			params.namespaces = scope;
 			if (isUnescapedScript) params.escape = "none";
 			return child.serialize(params);
@@ -346,7 +352,14 @@ var Element = function(p) {
 				;
 			}).join(" ");
 		})();
-		var start = "<" + rv.name + rv.namespaces + rv.attributes;
+		var prefix = (function() {
+			if (m.pretty) {
+				return m.pretty.current;
+			} else {
+				return "";
+			}
+		})();
+		var start = prefix + "<" + rv.name + rv.namespaces + rv.attributes;
 		if (!rv.content) {
 			if (m.empty) {
 				var format = m.empty(this);
@@ -377,7 +390,13 @@ var Element = function(p) {
 				return start + "/>";
 			}
 		} else {
-			return start + ">" + rv.content + "</" + rv.name + ">";
+			var endprefix = (function() {
+				for (var i=0; i<this.children.length; i++) {
+					if (this.children[i].element) return prefix;
+				}
+				return "";
+			}).call(this);
+			return start + ">" + rv.content + endprefix + "</" + rv.name + ">";
 		}
 	};
 };
