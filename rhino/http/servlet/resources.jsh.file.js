@@ -17,7 +17,7 @@
 //
 
 $exports.addJshPluginTo = function(jsh) {
-	jsh.httpd.Resources = function() {
+	var OldResources = function() {
 		var mapping = [];
 
 		var Mapping = function(p) {
@@ -187,8 +187,11 @@ $exports.addJshPluginTo = function(jsh) {
 			});
 		}
 	}
+	jsh.httpd.Resources = function() {
+		return new OldResources();
+	};
 	jsh.httpd.Resources.script = function(/* mapping files */) {
-		var rv = new jsh.httpd.Resources();
+		var rv = new OldResources();
 
 		for (var i=0; i<arguments.length; i++) {
 			var mappingFile = arguments[i];
