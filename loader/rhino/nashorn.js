@@ -21,8 +21,10 @@ load("nashorn:mozilla_compat.js");
 			this.stack = (function() {
 				var frames = new Packages.java.lang.Throwable().getStackTrace();
 				var rv = "";
-				for (var i=0; i<frames.length; i++) {
-					rv += "\t" + frames[i].toString() + "\n";
+				for (var i=2; i<frames.length; i++) {
+					if (frames[i].getFileName() && !/\.java$/.test(frames[i].getFileName())) {
+						rv += "\tat " + frames[i].getFileName() + ":" + frames[i].getLineNumber() + "\n";
+					}
 				}
 				return rv;
 			})();
@@ -30,18 +32,6 @@ load("nashorn:mozilla_compat.js");
 		this.Error.prototype.toString = function() {
 			return this.name + ": " + this.message;
 		};
-		Object.defineProperty(this.Error.prototype, "stack", {
-			get: function() {
-				var _elements = new Packages.java.lang.Throwable().getStackTrace();
-				var stack = "";
-				for (var i=0; i<_elements.length; i++) {
-					if (!/\.java/.test(_elements[i].getFileName())) {
-						stack += "\tat " + _elements[i].getFileName() + ":" + _elements[i].getLineNumber() + "\n";
-					}
-				}
-				return stack;
-			}
-		});
 
 		var Subtype = function(Error,name) {
 			var rv = function() {

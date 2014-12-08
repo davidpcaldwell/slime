@@ -112,7 +112,8 @@ $exports.Servlet = function(delegate) {
 					_response.setContentType(String(response.body.type));
 				}
 				if (response.body && response.body.string) {
-					_response.getWriter().write(response.body.string);
+					//	Wrap in java.lang.String because Nashorn native string type does not unambiguously match .write() signature
+					_response.getWriter().write(new Packages.java.lang.String(response.body.string));
 //				} else if (response.body && response.body.read && response.body.read.text) {
 //					var _stream = response.body.read.text().java.adapt();
 //					_streams.copy(_stream, _response.getWriter());

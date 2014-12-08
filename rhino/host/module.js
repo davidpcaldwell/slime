@@ -122,44 +122,46 @@ var errors = new function() {
 			//	TODO	is this parameterized call already in js/object?
 			var created = eval("new implementation(" + literals + ")");
 
-			var tracer;
-			try {
-				instance.throwException(created.toString());
-			} catch (e) {
-				tracer = e;
-			}
-			var t = tracer.rhinoException;
-			var stack = [];
-			while(t != null) {
-				var sw = new Packages.java.io.StringWriter();
-				var pw = new Packages.java.io.PrintWriter(sw);
-				if (t == tracer.rhinoException) {
-					sw.write(t.getScriptStackTrace());
-				} else {
-					t.printStackTrace(pw);
+			if (!created.stack) {
+				var tracer;
+				try {
+					instance.throwException(created.toString());
+				} catch (e) {
+					tracer = e;
 				}
-				pw.flush();
-				var tstack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
-				if (t == tracer.rhinoException) {
-					tstack = tstack.slice(1,tstack.length);
-				}
-				for (var i=0; i<tstack.length; i++) {
-					if (/^Caused by\:/.test(tstack[i])) {
-						break;
+				var t = tracer.rhinoException;
+				var stack = [];
+				while(t != null) {
+					var sw = new Packages.java.io.StringWriter();
+					var pw = new Packages.java.io.PrintWriter(sw);
+					if (t == tracer.rhinoException) {
+						sw.write(t.getScriptStackTrace());
+					} else {
+						t.printStackTrace(pw);
 					}
-					stack.push(tstack[i]);
+					pw.flush();
+					var tstack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
+					if (t == tracer.rhinoException) {
+						tstack = tstack.slice(1,tstack.length);
+					}
+					for (var i=0; i<tstack.length; i++) {
+						if (/^Caused by\:/.test(tstack[i])) {
+							break;
+						}
+						stack.push(tstack[i]);
+					}
+					t = t.getCause();
+					if (t != null && String(t.getClass().getName()) == "inonit.script.runtime.Throwables$Exception") {
+						t = null;
+					}
 				}
-				t = t.getCause();
-				if (t != null && String(t.getClass().getName()) == "inonit.script.runtime.Throwables$Exception") {
-					t = null;
-				}
+				//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
+				//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
+				//			to this file
+				//	TODO	get full stack traces if possible, rather than the limited version being provided now (which has ...more)
+				//			however, could be impossible (getStackTrace may not be overridden while printStackTrace is).
+				created.stack = stack.join("\n");
 			}
-			//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
-			//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
-			//			to this file
-			//	TODO	get full stack traces if possible, rather than the limited version being provided now (which has ...more)
-			//			however, could be impossible (getStackTrace may not be overridden while printStackTrace is).
-			created.stack = stack.join("\n");
 			return created;
 		}
 		rv.prototype = implementation.prototype;
@@ -172,6 +174,8 @@ $exports.fail = function(message) {
 };
 $api.experimental($exports,"fail");
 
+//	TODO	The below probably only needs to execute under Rhino, but need to figure out how to do that. For now it is effectively
+//			disabled for Nashorn by checking for existence of stack property in errors.decorate
 if ($context.globals) {
 	var global = (function() {
 		var rv = this;
