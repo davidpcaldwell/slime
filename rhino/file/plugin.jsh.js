@@ -16,7 +16,9 @@ plugin({
 		return jsh.loader && jsh.js && jsh.java && jsh.io;
 	},
 	load: function() {
-		var context = {};
+		var context = {
+			$rhino: $jsh			
+		};
 		context.api = {
 			js: jsh.js,
 			java: jsh.java,

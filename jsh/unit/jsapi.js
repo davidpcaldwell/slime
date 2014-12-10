@@ -311,6 +311,10 @@ $exports.tests = new function() {
 			$platform: jsh.$jsapi.$platform,
 			$api: jsh.$jsapi.$api
 		};
+		Object.defineProperty(rv,"$java",{
+			value: rv.$jsapi.java,
+			enumerable: false
+		});
 		rv.$java = rv.$jsapi.java;
 		$api.deprecate(rv,"$java");
 		rv.$jsapi.test = $api.deprecate(rv.$jsapi.loader.scenario);

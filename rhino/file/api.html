@@ -78,6 +78,7 @@ END LICENSE
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
 					}
 					this.$pwd = String(jsh.shell.properties.object.user.dir);
+					this.$rhino = jsh.$jsapi.$rhino;
 					this.addFinalizer = jsh.loader.addFinalizer;
 
 					if (p && p.cygwin) {
@@ -97,17 +98,17 @@ END LICENSE
 					this.$Context = arguments.callee;
 				}
 				$Context.api = new function() {
-					this.js = $jsapi.module("../../js/object/");
-					var java = $jsapi.module("../../rhino/host/", {
+					this.js = $jsapi.loader.module("../../js/object/");
+					var java = $jsapi.loader.module("../../rhino/host/", {
 						$rhino: jsh.$jsapi.$rhino
 					});
 					this.java = java;
-					this.io = $jsapi.module("../../rhino/io/", {
+					this.io = $jsapi.loader.module("../../rhino/io/", {
 						$java: new Packages.inonit.script.runtime.io.Streams()
 						,$rhino: jsh.$jsapi.$rhino
 						,api: {
 							java: java,
-							mime: $jsapi.module("../../js/mime/", {})
+							mime: $jsapi.loader.module("../../js/mime/", {})
 						}
 					});
 				}
@@ -134,7 +135,7 @@ END LICENSE
 				//	Although this is equivalent to $jsapi.newTemporaryDirectory(), we use a separate copy here because we want the
 				//	calls to go to the module being tested, not the module executing the test environment
 				this.newTemporaryDirectory = function() {
-					var $dir = scope.$java.io.newTemporaryDirectory();
+					var $dir = scope.$jsapi.java.io.newTemporaryDirectory();
 					return scope.filesystem.java.adapt($dir).directory;
 //					return scope.filesystem.$unit.Pathname(scope.filesystem.$unit.getNode($dir)).directory;
 				}
@@ -1247,7 +1248,7 @@ END LICENSE
 									return file;
 								}
 
-								tmpdir = $java.io.newTemporaryDirectory();
+								tmpdir = $jsapi.java.io.newTemporaryDirectory();
 
 								hostdir = new Packages.java.io.File(tmpdir, "filetests" );
 								hostdir.mkdirs();
@@ -1285,7 +1286,7 @@ END LICENSE
 			}
 		]]></script>
 		<script type="application/x.jsapi#initialize">
-			var hostdir = new Packages.java.io.File(scope.$java.io.newTemporaryDirectory(), "streamtests");
+			var hostdir = new Packages.java.io.File(scope.$jsapi.java.io.newTemporaryDirectory(), "streamtests");
 			hostdir.mkdirs();
 			var fileA = new Packages.java.io.File(hostdir, "a");
 			var aWriter = new Packages.java.io.PrintWriter( new Packages.java.io.FileWriter( fileA ) );
@@ -1310,7 +1311,7 @@ END LICENSE
 		<div jsapi:id="softlink">
 			<script type="application/x.jsapi#initialize">
 				if (jsh.shell.PATH.getCommand("ln")) {
-					var tmpdir = scope.$java.io.newTemporaryDirectory();
+					var tmpdir = scope.$jsapi.java.io.newTemporaryDirectory();
 					var hostdir = new Packages.java.io.File(tmpdir, "hostdir");
 					hostdir.mkdirs();
 					var linkdir = new Packages.java.io.File( tmpdir, "linkdir" );

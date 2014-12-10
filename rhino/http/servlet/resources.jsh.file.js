@@ -17,100 +17,164 @@
 //
 
 $exports.addJshPluginTo = function(jsh) {
+	var Mapping = function(p) {
+		this.toString = function() {
+			return p.prefix + " -> " + p.loader;
+		}
+		
+		this.get = function(path) {
+			if (path.substring(0,p.prefix.length) == p.prefix) {
+				var subpath = path.substring(p.prefix.length);
+				return p.loader.resource(subpath);
+			}
+			return null;
+		};
+
+		this.list = function(path) {
+			if (path.substring(0,p.prefix.length) == p.prefix) {
+				var subpath = path.substring(p.prefix.length);
+				var loader = (subpath.length) ? new p.loader.Child(subpath) : p.loader;
+				return loader.list();
+			}
+			return null;
+		};
+
+		this.under = function(path) {
+			if (p.prefix.substring(0,path.length) == path) {
+				var remaining = p.prefix.substring(path.length);
+				var add = remaining.split("/")[0] + "/";
+				return add;
+			}
+		};
+
+		this.build = function(WEBAPP) {
+			var build = function(prefix,loader) {
+				var to = WEBAPP.getRelativePath(prefix);
+//				var node = (function() {
+//					if (pathname.file) return pathname.file;
+//					if (pathname.directory) return pathname.directory;
+//					throw new Error("Not directory or file: " + pathname);
+//				})();
+
+				var copy = function(loader,pathname) {
+					throw new Error();
+					var recurse = arguments.callee;
+					if (node.directory) {
+						var to = pathname.createDirectory({
+							ifExists: function(dir) {
+								return false;
+							},
+							recursive: true
+						});
+						var nodes = node.list();
+						nodes.forEach(function(item) {
+							jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
+							recurse(item,to.getRelativePath(item.pathname.basename));
+						});
+					} else {
+						node.copy(pathname, {
+							filter: function(item) {
+								return true;
+							}
+						});
+					}
+				}
+
+				copy(loader,to);
+			}
+
+			build(p.prefix,p.loader);
+		}
+	};
+	
+	var OldMapping = function(p) {
+		if (!p.pathname.directory) {
+			throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
+		}
+		
+		Mapping.call(this,p);
+
+		this.toString = function() {
+			return p.prefix + " -> " + p.pathname;
+		};
+
+		this.get = function(path) {
+			if (path.substring(0,p.prefix.length) == p.prefix) {
+				var subpath = path.substring(p.prefix.length);
+				if (!p.pathname.directory) {
+					return null;
+				}
+				var file = p.pathname.directory.getFile(subpath);
+				return (file) ? new jsh.io.Resource({
+					type: $context.getMimeType(file),
+					read: {
+						binary: function() {
+							return file.read(jsh.io.Streams.binary)
+						}
+					}
+				}) : null;
+			}
+			return null;
+		};
+
+		this.list = function(path) {
+			if (path.substring(0,p.prefix.length) == p.prefix) {
+				var subpath = path.substring(p.prefix.length);
+				if (!p.pathname.directory) {
+					throw new Error("Unimplemented.");
+				}
+				var directory = (subpath.length) ? p.pathname.directory.getSubdirectory(subpath) : p.pathname.directory;
+				return directory.list({ type: directory.list.ENTRY }).map(function(entry) {
+					return entry.path.replace(/\\/g, "/");
+				});
+			}
+			return null;
+		}
+
+		this.build = function(WEBAPP) {
+			var build = function(prefix,pathname) {
+				var to = WEBAPP.getRelativePath(prefix);
+				var node = (function() {
+					if (pathname.file) return pathname.file;
+					if (pathname.directory) return pathname.directory;
+					throw new Error("Not directory or file: " + pathname);
+				})();
+
+				var copy = function(node,pathname) {
+					var recurse = arguments.callee;
+					if (node.directory) {
+						var to = pathname.createDirectory({
+							ifExists: function(dir) {
+								return false;
+							},
+							recursive: true
+						});
+						var nodes = node.list();
+						nodes.forEach(function(item) {
+							jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
+							recurse(item,to.getRelativePath(item.pathname.basename));
+						});
+					} else {
+						node.copy(pathname, {
+							filter: function(item) {
+								return true;
+							}
+						});
+					}
+				}
+
+				copy(node,to);
+			}
+
+			build(p.prefix,p.pathname);
+		}
+	}
+
 	var OldResources = function() {
 		var mapping = [];
 
-		var Mapping = function(p) {
-			if (!p.pathname.directory) {
-				throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
-			}
-			
-			this.toString = function() {
-				return p.prefix + " -> " + p.pathname;
-			};
-			
-			this.get = function(path) {
-				if (path.substring(0,p.prefix.length) == p.prefix) {
-					var subpath = path.substring(p.prefix.length);
-					if (!p.pathname.directory) {
-						return null;
-					}
-					var file = p.pathname.directory.getFile(subpath);
-					return (file) ? new jsh.io.Resource({
-						type: $context.getMimeType(file),
-						read: {
-							binary: function() {
-								return file.read(jsh.io.Streams.binary)
-							}
-						}
-					}) : null;
-				}
-				return null;
-			};
-
-			this.list = function(path) {
-				if (path.substring(0,p.prefix.length) == p.prefix) {
-					var subpath = path.substring(p.prefix.length);
-					if (!p.pathname.directory) {
-						throw new Error("Unimplemented.");
-					}
-					var directory = (subpath.length) ? p.pathname.directory.getSubdirectory(subpath) : p.pathname.directory;
-					return directory.list({ type: directory.list.ENTRY }).map(function(entry) {
-						return entry.path.replace(/\\/g, "/");
-					});
-				}
-				return null;
-			}
-
-			this.under = function(path) {
-				if (p.prefix.substring(0,path.length) == path) {
-					var remaining = p.prefix.substring(path.length);
-					var add = remaining.split("/")[0] + "/";
-					return add;
-				}
-			};
-
-			this.build = function(WEBAPP) {
-				var build = function(prefix,pathname) {
-					var to = WEBAPP.getRelativePath(prefix);
-					var node = (function() {
-						if (pathname.file) return pathname.file;
-						if (pathname.directory) return pathname.directory;
-						throw new Error("Not directory or file: " + pathname);
-					})();
-
-					var copy = function(node,pathname) {
-						var recurse = arguments.callee;
-						if (node.directory) {
-							var to = pathname.createDirectory({
-								ifExists: function(dir) {
-									return false;
-								},
-								recursive: true
-							});
-							var nodes = node.list();
-							nodes.forEach(function(item) {
-								jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
-								recurse(item,to.getRelativePath(item.pathname.basename));
-							});
-						} else {
-							node.copy(pathname, {
-								filter: function(item) {
-									return true;
-								}
-							});
-						}
-					}
-
-					copy(node,to);
-				}
-
-				build(p.prefix,p.pathname);
-			}
-		}
-
 		this.map = function(prefix,pathname) {
-			mapping.push(new Mapping({ pathname: pathname, prefix: prefix }));
+			mapping.push(new OldMapping({ pathname: pathname, prefix: prefix }));
 		};
 
 		var loader = new function() {
@@ -186,7 +250,13 @@ $exports.addJshPluginTo = function(jsh) {
 //				build(item.prefix,item.pathname);
 			});
 		}
-	}
+	};
+	
+	var NewResources = function() {
+		var mapping = [];
+		
+	};
+	
 	jsh.httpd.Resources = function() {
 		return new OldResources();
 	};

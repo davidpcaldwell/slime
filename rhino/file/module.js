@@ -133,40 +133,85 @@ $exports.Searchpath.prototype = prototypes.Searchpath;
 
 //	TODO	this implementation would be much simpler if we could use a normal loader/rhino loader with a _source, but
 //			right now this would cause Cygwin loaders to fail, probably
-$exports.Loader = function(p) {
-	if (arguments.length == 1 && arguments[0].pathname && arguments[0].directory) {
-		p = {
-			directory: arguments[0],
-		};
-	};
-	if (!p.type) {
-		p.type = function(file) {
-			return $context.api.io.mime.Type.guess({ name: file.pathname.basename });
-		};
-	}
-	return new $context.api.io.Loader({
-		resources: new function() {
-			this.toString = function() {
-				return "rhino/file Loader: directory=" + p.directory;
-			}
-
-			this.get = function(path) {
-				var file = p.directory.getFile(path);
-				//	TODO	could we modify this so that file supported Resource?
-				if (file) {
-					return new $context.api.io.Resource({
-						type: p.type(file),
-						read: {
-							binary: function() {
-								return file.read($context.api.io.Streams.binary);
-							}
-						}
-					});
-				}
-				return null;
-			}
+$context.$rhino.Loader.spi(function(underlying) {
+	return function(p) {
+		//	TODO	defensive programming: could we modify arguments in place?
+		var args = Array.prototype.slice.call(arguments);
+		if (args.length == 1 && args[0].pathname && args[0].directory) {
+			args[0] = {
+				directory: p
+			};
 		}
-	});
+		if (args[0].directory) {
+			if (!args[0].type) args[0].type = function(file) {
+				return $context.api.io.mime.Type.guess({ name: file.pathname.basename });				
+			}
+			p = args[0];
+			//	TODO	replace the $context.api.io.Loader method with a decoration strategy
+			return new $context.api.io.Loader({
+				resources: new function() {
+					this.toString = function() {
+						return "rhino/file Loader: directory=" + p.directory;
+					}
+
+					this.get = function(path) {
+						var file = p.directory.getFile(path);
+						//	TODO	could we modify this so that file supported Resource?
+						if (file) {
+							return new $context.api.io.Resource({
+								type: p.type(file),
+								read: {
+									binary: function() {
+										return file.read($context.api.io.Streams.binary);
+									}
+								}
+							});
+						}
+						return null;
+					}
+				}
+			});
+		} else {
+			underlying.apply(this,arguments);
+		}
+	};
+});
+
+$exports.Loader = function(p) {
+//	if (arguments.length == 1 && arguments[0].pathname && arguments[0].directory) {
+//		p = {
+//			directory: arguments[0],
+//		};
+//	};
+//	if (!p.type) {
+//		p.type = function(file) {
+//			return $context.api.io.mime.Type.guess({ name: file.pathname.basename });
+//		};
+//	}
+//	return new $context.api.io.Loader({
+//		resources: new function() {
+//			this.toString = function() {
+//				return "rhino/file Loader: directory=" + p.directory;
+//			}
+//
+//			this.get = function(path) {
+//				var file = p.directory.getFile(path);
+//				//	TODO	could we modify this so that file supported Resource?
+//				if (file) {
+//					return new $context.api.io.Resource({
+//						type: p.type(file),
+//						read: {
+//							binary: function() {
+//								return file.read($context.api.io.Streams.binary);
+//							}
+//						}
+//					});
+//				}
+//				return null;
+//			}
+//		}
+//	});
+	return new $context.$rhino.Loader(p);
 };
 
 //	Possibly used for initial attempt to produce HTTP filesystem, for example

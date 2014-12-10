@@ -42,6 +42,7 @@ END LICENSE
 						if (jsh.shell.environment.PATHEXT) {
 							this.pathext = jsh.shell.environment.PATHEXT.split(";");
 						}
+						this.$rhino = jsh.$jsapi.$rhino;
 						this.api = {
 							io: io,
 							js: jsh.js,

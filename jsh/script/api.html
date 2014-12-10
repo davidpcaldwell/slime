@@ -138,7 +138,8 @@ END LICENSE
 						}),
 						loader: jsh.$jsapi.$rhino
 					},
-					$pwd: String(jsh.shell.properties.object.user.dir)
+					$pwd: String(jsh.shell.properties.object.user.dir),
+					$rhino: jsh.$jsapi.$rhino
 				};
 				var System = Packages.java.lang.System;
 				if (System.getProperty("cygwin.root")) {
