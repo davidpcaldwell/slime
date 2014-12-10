@@ -89,6 +89,8 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 											}
 										}
 
+										this.$java = $context.$java;
+
 										this.$exports = {};
 										this.server = server;
 										this.api = {

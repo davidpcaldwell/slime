@@ -21,19 +21,19 @@ if ($context.javafx) {
 			var events = $api.Events({
 				source: this
 			});
-			
+
 			var source = this;
-			
+
 			this.close = function() {
 				_frame.dispose();
 			}
-			
+
 			_frame.addWindowListener(new JavaAdapter(
 				Packages.java.awt.event.WindowListener,
 				new function() {
 					var empty = function(e){};
 					this.windowOpened = empty;
-					
+
 					this.windowClosing = function(e) {
 						events.fire("close");
 						if (o.on && o.on.close) {
@@ -43,7 +43,7 @@ if ($context.javafx) {
 							o.on.close.call(source);
 						}
 					};
-					
+
 					this.windowClosed = empty;
 					this.windowIconified = empty;
 					this.windowDeiconified = empty;
@@ -78,17 +78,17 @@ if ($context.javafx) {
 				});
 			}
 		};
-		
+
 		this.Frame = Frame;
-		
+
 		var Application = function(o) {
 			if (!o.on) o.on = {};
 			if (!o.on.close) o.on.close = function() {
-				$context.exit(0);				
+				$context.exit(0);
 			}
 			var frame = new Frame(o);
 		}
-		
+
 		var run = function(f) {
 			var task = new JavaAdapter(
 				Packages.java.lang.Runnable,

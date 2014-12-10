@@ -54,7 +54,7 @@
 			return this.base + path;
 		}
 	}
-	
+
 	var getCurrentScriptElement = function() {
 		if ($context.script) return $context.script;
 		var scripts = document.getElementsByTagName("script");
@@ -65,7 +65,7 @@
 		if (getCurrentScriptElement().getAttribute("inonit.loader.src")) return getCurrentScriptElement().getAttribute("inonit.loader.src");
 		return getCurrentScriptElement().getAttribute("src");
 	};
-	
+
 	var getCurrent = function(base) {
 		var getBasePath = function(pathname) {
 			var path = pathname.split("?")[0];
@@ -240,7 +240,7 @@
 
 		//	Undocumented
 		this.base = bootstrap.base;
-		
+
 		if ($context.base) {
 			this.location = $context.base;
 		}

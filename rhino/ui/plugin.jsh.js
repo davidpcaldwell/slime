@@ -72,6 +72,6 @@ plugin({
 			$set: function(v) {
 				jsh.ui.javafx.WebView.application = v;
 			}
-		});		
+		});
 	}
 })

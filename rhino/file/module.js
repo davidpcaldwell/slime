@@ -143,7 +143,7 @@ $context.$rhino.Loader.spi(function(underlying) {
 		}
 		if (arguments[0].directory) {
 			if (!arguments[0].type) arguments[0].type = function(file) {
-				return $context.api.io.mime.Type.guess({ name: file.pathname.basename });				
+				return $context.api.io.mime.Type.guess({ name: file.pathname.basename });
 			}
 			p = arguments[0];
 			p.resources = new function() {

@@ -377,7 +377,7 @@ public class Rhino {
 		public void threw(Throwable t) {
 			t.printStackTrace();
 		}
-		
+
 		public void run(Shell.Configuration.Context context, String[] args) {
 			Rhino.run(context,args);
 		}

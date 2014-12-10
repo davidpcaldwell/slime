@@ -133,7 +133,7 @@ var osx = new function() {
 							throw new Error("Exit status " + result.status);
 						}
 					}
-				});				
+				});
 			} else {
 				var password = jsh.shell.run({
 					command: "/bin/bash",
@@ -154,7 +154,7 @@ var osx = new function() {
 							throw new Error("Exit status " + result.status);
 						}
 					}
-				});				
+				});
 			}
 			var success = (parse().array.indexOf("JNI") != -1);
 			if (!success) {

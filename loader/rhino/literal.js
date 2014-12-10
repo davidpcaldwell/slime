@@ -100,7 +100,7 @@
 //		decorate.call(rv,p._source);
 //		return rv;
 //	}
-	
+
 	loader.Loader.spi(function(underlying) {
 		return function(p) {
 			var Code = Packages.inonit.script.engine.Code;
@@ -138,7 +138,7 @@
 					var _file = p._source.getFile(path);
 					return (_file) ? _file.getInputStream() : null;
 				};
-				this._resource = loader.$api.deprecate(this._stream);				
+				this._resource = loader.$api.deprecate(this._stream);
 			}
 		}
 	});

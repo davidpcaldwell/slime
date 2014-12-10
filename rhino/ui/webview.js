@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME Java GUI module.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 $set(function(p) {
 	var _ChangeListener = function(f) {
 		return new JavaAdapter(
@@ -11,10 +24,10 @@ $set(function(p) {
 	var _Server = function(window,serve,navigate) {
 		var console = (p.console) ? p.console : new function() {
 			this.log = function(s) {
-				$console.log.INFO("window.console.log: " + s);				
+				$console.log.INFO("window.console.log: " + s);
 			}
 		}
-		
+
 		var Server = function(window,serve,navigate) {
 			this.call = function(json) {
 				var object = JSON.parse(json);
@@ -45,7 +58,7 @@ $set(function(p) {
 								$context.log.FINE("Posted message");
 							} catch (e) {
 								$context.log.WARNING("Did not post message: " + e);
-							}													
+							}
 						});
 					});
 				} else {
@@ -59,7 +72,7 @@ $set(function(p) {
 			new Server(window,serve,navigate)
 		);
 	};
-	
+
 	var getXml = function(page) {
 		if (page.file) {
 			//	TODO	parse document from p.page.file
@@ -68,9 +81,9 @@ $set(function(p) {
 			return page.document;
 		} else {
 			throw new Error("Unsupported xml");
-		}		
+		}
 	}
-	
+
 	var getLocation = function(page) {
 		if (page.file) {
 			return {
@@ -91,7 +104,7 @@ $set(function(p) {
 					//	TODO	would empty string work below? Would script render as empty element?
 					if (!file) return "/**/";
 					return file.read(String);
-				}					
+				}
 			}
 		} else {
 			throw new Error("Unsupported");
@@ -100,11 +113,11 @@ $set(function(p) {
 
 	return function() {
 		var browser = new Packages.javafx.scene.web.WebView();
-		
+
 		var page = p.page;
 
 		var target = this;
-		
+
 		browser.getEngine().setOnAlert(new JavaAdapter(
 			Packages.javafx.event.EventHandler,
 			new function() {
@@ -133,13 +146,13 @@ $set(function(p) {
 					if (event.getData() == "window.jsh.message.initialize") {
 						var window = browser.getEngine().executeScript("window");
 						browser.getEngine().executeScript("window.jsh.message").call(
-							"initialize", 
+							"initialize",
 							new _Server(window,p.serve,(p.navigate) ? p.navigate.bind(target) : null)
 						);
 						if (page.initialize) {
 							page.initialize.call({ _browser: browser });
 						}
-						return;						
+						return;
 					}
 					var status = (p.status) ? p.status : function(){};
 					status(event.getData());
@@ -157,7 +170,7 @@ $set(function(p) {
 				}
 			))
 		};
-		
+
 		var events = $api.Events({
 			source: this
 		});
@@ -165,7 +178,7 @@ $set(function(p) {
 		browser.getEngine().titleProperty().addListener(_ChangeListener(function(object,before,after) {
 			events.fire("title",{ before: before, after: after });
 		}));
-		
+
 		this.navigate = function(to) {
 			page = to;
 			if (!page.url) {
@@ -217,7 +230,7 @@ $set(function(p) {
 								node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
 							} else if (/^slime\:/.test(reference)) {
 								node.element.attributes.set("inonit.loader.src", reference);
-								node.element.attributes.set("src", null);						
+								node.element.attributes.set("src", null);
 							}
 						}
 					});
@@ -231,13 +244,13 @@ $set(function(p) {
 				browser.getEngine().load(page.url);
 			}
 		}
-		
+
 		this._browser = browser;
 
 		if (p.initialize) {
 			p.initialize.call(this);
 		}
-		
+
 		this.navigate(p.page);
 
 		var rv = new Packages.javafx.scene.Scene(browser, 750, 500, Packages.javafx.scene.paint.Color.web("#666970"));

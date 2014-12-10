@@ -187,6 +187,10 @@ var $code = (function() {
 }).call(this);
 
 scope.httpd = {};
+scope.httpd.$java = (function() {
+	if ($loader && $servlet) return $loader;
+	return $host.$java;
+})();
 
 scope.httpd.loader = loaders.container;
 

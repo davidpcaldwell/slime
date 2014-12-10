@@ -22,7 +22,7 @@ plugin({
 		var getMimeType = $loader.file("jsh.mime.js", {
 			jsh: jsh
 		}).getMimeType;
-		
+
 		jsh.httpd.nugget = {};
 		jsh.httpd.nugget.getMimeType = getMimeType;
 
@@ -37,6 +37,7 @@ plugin({
 
 		//	TODO	allow system property in addition to environment variable?
 		$loader.module("jsh.tomcat.js", {
+			$java: $jsh,
 			jsh: jsh,
 			CATALINA_HOME: CATALINA_HOME
 		});

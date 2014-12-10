@@ -21,7 +21,7 @@ $exports.addJshPluginTo = function(jsh) {
 		this.toString = function() {
 			return p.prefix + " -> " + p.loader;
 		}
-		
+
 		this.get = function(path) {
 			if (path.substring(0,p.prefix.length) == p.prefix) {
 				var subpath = path.substring(p.prefix.length);
@@ -86,12 +86,12 @@ $exports.addJshPluginTo = function(jsh) {
 			build(p.prefix,p.loader);
 		}
 	};
-	
+
 	var OldMapping = function(p) {
 		if (!p.pathname.directory) {
 			throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
 		}
-		
+
 		Mapping.call(this,p);
 
 		this.toString = function() {
@@ -251,12 +251,12 @@ $exports.addJshPluginTo = function(jsh) {
 			});
 		}
 	};
-	
+
 	var NewResources = function() {
 		var mapping = [];
-		
+
 	};
-	
+
 	jsh.httpd.Resources = function() {
 		return new OldResources();
 	};

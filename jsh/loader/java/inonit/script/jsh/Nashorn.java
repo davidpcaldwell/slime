@@ -141,7 +141,7 @@ public class Nashorn {
 		public void threw(Throwable t) {
 			t.printStackTrace();
 		}
-		
+
 		public void run(Shell.Configuration.Context context, String[] args) throws Throwable {
 			Nashorn.run(context, args);
 		}
