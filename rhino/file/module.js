@@ -147,70 +147,33 @@ $context.$rhino.Loader.spi(function(underlying) {
 				return $context.api.io.mime.Type.guess({ name: file.pathname.basename });				
 			}
 			p = args[0];
-			//	TODO	replace the $context.api.io.Loader method with a decoration strategy
-			return new $context.api.io.Loader({
-				resources: new function() {
-					this.toString = function() {
-						return "rhino/file Loader: directory=" + p.directory;
-					}
-
-					this.get = function(path) {
-						var file = p.directory.getFile(path);
-						//	TODO	could we modify this so that file supported Resource?
-						if (file) {
-							return new $context.api.io.Resource({
-								type: p.type(file),
-								read: {
-									binary: function() {
-										return file.read($context.api.io.Streams.binary);
-									}
-								}
-							});
-						}
-						return null;
-					}
+			p.resources = new function() {
+				this.toString = function() {
+					return "rhino/file Loader: directory=" + p.directory;
 				}
-			});
-		} else {
-			underlying.apply(this,arguments);
+
+				this.get = function(path) {
+					var file = p.directory.getFile(path);
+					//	TODO	could we modify this so that file supported Resource?
+					if (file) {
+						return new $context.api.io.Resource({
+							type: p.type(file),
+							read: {
+								binary: function() {
+									return file.read($context.api.io.Streams.binary);
+								}
+							}
+						});
+					}
+					return null;
+				}
+			};
 		}
+		underlying.apply(this,arguments);
 	};
 });
 
 $exports.Loader = function(p) {
-//	if (arguments.length == 1 && arguments[0].pathname && arguments[0].directory) {
-//		p = {
-//			directory: arguments[0],
-//		};
-//	};
-//	if (!p.type) {
-//		p.type = function(file) {
-//			return $context.api.io.mime.Type.guess({ name: file.pathname.basename });
-//		};
-//	}
-//	return new $context.api.io.Loader({
-//		resources: new function() {
-//			this.toString = function() {
-//				return "rhino/file Loader: directory=" + p.directory;
-//			}
-//
-//			this.get = function(path) {
-//				var file = p.directory.getFile(path);
-//				//	TODO	could we modify this so that file supported Resource?
-//				if (file) {
-//					return new $context.api.io.Resource({
-//						type: p.type(file),
-//						read: {
-//							binary: function() {
-//								return file.read($context.api.io.Streams.binary);
-//							}
-//						}
-//					});
-//				}
-//				return null;
-//			}
-//		}
-//	});
 	return new $context.$rhino.Loader(p);
 };
 

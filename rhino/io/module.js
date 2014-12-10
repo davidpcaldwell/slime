@@ -514,38 +514,6 @@ $context.$rhino.Loader.spi(function(underlying) {
 
 $exports.Loader = function(p) {
 	return new $context.$rhino.Loader(p);
-//	var rv;
-//
-////	var Child = function(prefix) {
-////		var parameter = $context.api.js.Object.set({}, p);
-////		//	TODO	The whole structure below seems like a mess
-////		if (parameter.resources) {
-////			parameter.resources = new function() {
-////				this.get = function(path) {
-////					return p.resources.get(prefix + path);
-////				}
-////			}
-////		} else if (parameter._source) {
-////			parameter._source = parameter._source.child(prefix);
-////		}
-////		var rv = new $exports.Loader(parameter);
-////		if (p.Loader) {
-////			//	TODO	probably should treat this like constructor: if it returns a value, replace the return value rather than
-////			//			simply modifying it
-////			var returned = p.Loader.apply(rv,arguments);
-////			if (returned && typeof(returned) == "object") return returned;
-////		}
-////		return rv;
-////	};
-//
-//	//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
-//	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
-//	//			.resource decoration?
-//	$context.$rhino.Loader.apply(this,arguments);
-//
-//	decorate.call(rv,p);
-//
-//	return rv;
 };
 
 $exports.mime = $loader.file("mime.js", {
