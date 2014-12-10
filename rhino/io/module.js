@@ -484,6 +484,28 @@ var decorate = function(p) {
 
 $context.$rhino.Loader.spi(function(underlying) {
 	return function(p) {
+		if (p.resources) {
+			//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
+			//			on this package into it
+			var _resources = new JavaAdapter(
+				Packages.inonit.script.engine.Code.Source.Resources,
+				new function() {
+					this.toString = function() {
+						return p.resources.toString();
+					}
+
+					this.getResourceAsStream = function(path) {
+						var resource = p.resources.get(String(path));
+						if (resource && resource.read && resource.read.binary) return resource.read.binary().java.adapt();
+						if (resource) {
+							throw new TypeError("Resource not found: " + path);
+						}
+						return null;
+					}
+				}
+			);
+			p._source = Packages.inonit.script.engine.Code.Source.create(_resources);
+		}
 		underlying.apply(this,arguments);
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
 		decorate.call(this,arguments[0]);
@@ -491,60 +513,39 @@ $context.$rhino.Loader.spi(function(underlying) {
 });
 
 $exports.Loader = function(p) {
-	var rv;
-
-//	var Child = function(prefix) {
-//		var parameter = $context.api.js.Object.set({}, p);
-//		//	TODO	The whole structure below seems like a mess
-//		if (parameter.resources) {
-//			parameter.resources = new function() {
-//				this.get = function(path) {
-//					return p.resources.get(prefix + path);
-//				}
-//			}
-//		} else if (parameter._source) {
-//			parameter._source = parameter._source.child(prefix);
-//		}
-//		var rv = new $exports.Loader(parameter);
-//		if (p.Loader) {
-//			//	TODO	probably should treat this like constructor: if it returns a value, replace the return value rather than
-//			//			simply modifying it
-//			var returned = p.Loader.apply(rv,arguments);
-//			if (returned && typeof(returned) == "object") return returned;
-//		}
-//		return rv;
-//	};
-
-	//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
-	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
-	//			.resource decoration?
-	if (p.resources) {
-		//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
-		//			on this package into it
-		var _resources = new JavaAdapter(
-			Packages.inonit.script.engine.Code.Source.Resources,
-			new function() {
-				this.toString = function() {
-					return p.resources.toString();
-				}
-
-				this.getResourceAsStream = function(path) {
-					var resource = p.resources.get(String(path));
-					if (resource && resource.read && resource.read.binary) return resource.read.binary().java.adapt();
-					if (resource) {
-						throw new TypeError("Resource not found: " + path);
-					}
-					return null;
-				}
-			}
-		);
-		p._source = Packages.inonit.script.engine.Code.Source.create(_resources);
-	}
-	$context.$rhino.Loader.apply(this,arguments);
-
-	decorate.call(rv,p);
-
-	return rv;
+	return new $context.$rhino.Loader(p);
+//	var rv;
+//
+////	var Child = function(prefix) {
+////		var parameter = $context.api.js.Object.set({}, p);
+////		//	TODO	The whole structure below seems like a mess
+////		if (parameter.resources) {
+////			parameter.resources = new function() {
+////				this.get = function(path) {
+////					return p.resources.get(prefix + path);
+////				}
+////			}
+////		} else if (parameter._source) {
+////			parameter._source = parameter._source.child(prefix);
+////		}
+////		var rv = new $exports.Loader(parameter);
+////		if (p.Loader) {
+////			//	TODO	probably should treat this like constructor: if it returns a value, replace the return value rather than
+////			//			simply modifying it
+////			var returned = p.Loader.apply(rv,arguments);
+////			if (returned && typeof(returned) == "object") return returned;
+////		}
+////		return rv;
+////	};
+//
+//	//	TODO	this assumes Rhino-based loader with _stream; would we want to allow arbitrary arguments to be passed the way
+//	//			we do in the loader/rhino.Loader constructor, and pass them through to the platform loader, without adding the
+//	//			.resource decoration?
+//	$context.$rhino.Loader.apply(this,arguments);
+//
+//	decorate.call(rv,p);
+//
+//	return rv;
 };
 
 $exports.mime = $loader.file("mime.js", {
