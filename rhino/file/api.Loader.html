@@ -50,6 +50,7 @@ END LICENSE
 				test(typeof(loader.resource) == "function");
 				test(loader.resource("api.html") != null);
 				test(loader.resource("foo.html") == null);
+				verify(loader).list().length().is(14);
 			</script>
 		</li>
 	</ul>

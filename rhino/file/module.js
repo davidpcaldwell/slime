@@ -136,17 +136,16 @@ $exports.Searchpath.prototype = prototypes.Searchpath;
 $context.$rhino.Loader.spi(function(underlying) {
 	return function(p) {
 		//	TODO	defensive programming: could we modify arguments in place?
-		var args = Array.prototype.slice.call(arguments);
-		if (args.length == 1 && args[0].pathname && args[0].directory) {
-			args[0] = {
+		if (arguments.length == 1 && arguments[0].pathname && arguments[0].directory) {
+			arguments[0] = {
 				directory: p
 			};
 		}
-		if (args[0].directory) {
-			if (!args[0].type) args[0].type = function(file) {
+		if (arguments[0].directory) {
+			if (!arguments[0].type) arguments[0].type = function(file) {
 				return $context.api.io.mime.Type.guess({ name: file.pathname.basename });				
 			}
-			p = args[0];
+			p = arguments[0];
 			p.resources = new function() {
 				this.toString = function() {
 					return "rhino/file Loader: directory=" + p.directory;
@@ -170,6 +169,15 @@ $context.$rhino.Loader.spi(function(underlying) {
 			};
 		}
 		underlying.apply(this,arguments);
+		if (arguments[0].directory) {
+			var directory = arguments[0].directory;
+			this.list = function(m) {
+				var dir = (m && m.path) ? directory.getSubdirectory(m.path) : directory;
+				return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
+					return entry.path;
+				});
+			};
+		}
 	};
 });
 
