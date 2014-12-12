@@ -187,7 +187,7 @@ $exports.Scenario = function(properties) {
 
 			this.evaluate = function(f) {
 				var mapped = f.call(o);
-				return rv(mapped,name+"{" + f + "}")
+				return rv(mapped,((name) ? name : "")+"{" + f + "}")
 			}
 
 			for (var x in o) {
