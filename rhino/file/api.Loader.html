@@ -50,7 +50,18 @@ END LICENSE
 				test(typeof(loader.resource) == "function");
 				test(loader.resource("api.html") != null);
 				test(loader.resource("foo.html") == null);
-				verify(loader).list().length().is(14);
+				var list = loader.list();
+				var map = {};
+				list.forEach(function(item) {
+					map[item.path] = item;
+				});
+				verify(list).length().is(14);
+				//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
+				verify(map.java).loader().isNotEqualTo(void(0));
+				verify(map.java).evaluate(function() { return this.resource; }).isUndefined();
+				verify(map.java).evaluate($api.Method.property("resource")).isUndefined();
+				verify(map["java.js"]).evaluate($api.Method.property("loader")).isUndefined();
+				verify(map["java.js"]).resource().isNotEqualTo(void(0));
 			</script>
 		</li>
 	</ul>

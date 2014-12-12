@@ -172,9 +172,22 @@ $context.$rhino.Loader.spi(function(underlying) {
 		if (arguments[0].directory) {
 			var directory = arguments[0].directory;
 			this.list = function(m) {
-				var dir = (m && m.path) ? directory.getSubdirectory(m.path) : directory;
-				return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
-					return entry.path;
+				return directory.list().map(function(node) {
+					if (node.directory) {
+						return { path: node.pathname.basename, loader: new $context.$rhino.Loader({ directory: node }) };
+					} else {
+						return {
+							path: node.pathname.basename,
+							resource: new $context.api.io.Resource({
+								type: p.type(node),
+								read: {
+									binary: function() {
+										return node.read($context.api.io.Streams.binary);
+									}
+								}
+							})
+						};
+					}
 				});
 			};
 		}
