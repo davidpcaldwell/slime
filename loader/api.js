@@ -254,6 +254,17 @@
 			}
 		};
 	};
+	$exports.Method = {};
+	$exports.Method.property = function() {
+		var name = arguments;
+		return function() {
+			var rv = this;
+			for (var i=0; i<name.length; i++) {
+				rv = rv[name[i]];
+			}
+			return rv;
+		}
+	};
 	$exports.Function.conditional = function(test,yes,no) {
 		return function() {
 			var condition = test.apply(this,arguments);
