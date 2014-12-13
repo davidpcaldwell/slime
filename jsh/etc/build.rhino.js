@@ -234,9 +234,9 @@ var RHINO_LIBRARIES = (function() {
 			var matcher = /^file\:(.*)/;
 			if (matcher.exec(url)[1].substring(2,3) == ":") {
 				//	this is a windows path of the form /C:/ ...
-				return [ new File(matcher.exec(url)[1].substring(1)) ];
+				return [ new File(matcher.exec(url)[1].replace(/\%20/g, " ").substring(1)) ];
 			} else {
-				return [ new File(matcher.exec(url)[1]) ];
+				return [ new File(matcher.exec(url)[1].replace(/\%20/g, " ")) ];
 			}
 		})();
 	}

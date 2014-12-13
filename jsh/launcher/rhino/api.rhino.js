@@ -176,7 +176,7 @@ var copyFile = function(from,to,filters) {
 		o.close();
 		i.close();
 	} else {
-		throw "Unimplemented: copying " + from.getCanonicalPath();
+		throw new Error("Unimplemented: copying " + from.getCanonicalPath());
 	}
 }
 
