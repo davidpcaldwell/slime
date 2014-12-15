@@ -362,7 +362,7 @@ if (modules.length && browsers.length) {
 			jsh.shell.echo("fullurl = " + request.build());
 			browser.browserTest(jsh.js.Object.set({}, {
 				resources: (function() {
-					var rv = new jsh.httpd.Resources();
+					var rv = new jsh.httpd.Resources.Old();
 					rv.map("", jsh.script.file.getRelativePath("../../"));
 					return rv;
 				})(),
@@ -378,6 +378,9 @@ if (modules.length && browsers.length) {
 		}
 		if (e.javaException) {
 			e.javaException.printStackTrace();
+		}
+		if (!e.rhinoException && !e.javaException && e.stack) {
+			Packages.java.lang.System.err.println(e.stack);
 		}
 		throw e;
 	}

@@ -57,8 +57,8 @@ $exports.addJshPluginTo = function(jsh) {
 //				})();
 
 				var copy = function(loader,pathname) {
-					throw new Error();
 					var recurse = arguments.callee;
+					throw new Error();
 					if (node.directory) {
 						var to = pathname.createDirectory({
 							ifExists: function(dir) {
@@ -66,12 +66,14 @@ $exports.addJshPluginTo = function(jsh) {
 							},
 							recursive: true
 						});
-						var nodes = node.list();
+						throw new Error();
+						var nodes = loader.list();
 						nodes.forEach(function(item) {
 							jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
 							recurse(item,to.getRelativePath(item.pathname.basename));
 						});
 					} else {
+						throw new Error();
 						node.copy(pathname, {
 							filter: function(item) {
 								return true;
@@ -170,13 +172,7 @@ $exports.addJshPluginTo = function(jsh) {
 		}
 	}
 
-	var OldResources = function() {
-		var mapping = [];
-
-		this.map = function(prefix,pathname) {
-			mapping.push(new OldMapping({ pathname: pathname, prefix: prefix }));
-		};
-
+	var Resources = function(mapping) {
 		var loader = new function() {
 			this.get = function(path) {
 				for (var i=0; i<mapping.length; i++) {
@@ -250,16 +246,36 @@ $exports.addJshPluginTo = function(jsh) {
 //				build(item.prefix,item.pathname);
 			});
 		}
+	}
+
+	var OldResources = function() {
+		var mapping = [];
+
+		Resources.call(this,mapping);
+
+		this.map = function(prefix,pathname) {
+			mapping.push(new OldMapping({ pathname: pathname, prefix: prefix }));
+		};
 	};
 
 	var NewResources = function() {
+		throw new Error("Unimplemented.");
+
 		var mapping = [];
 
+		Resources.call(this,mapping);
+
+		this.add = function(m) {
+			//	prefix, loader properties
+			mapping.push(new Mapping(m));
+		}
 	};
 
 	jsh.httpd.Resources = function() {
-		return new OldResources();
+		return new NewResources();
 	};
+	jsh.httpd.Resources.Old = $api.deprecate(OldResources);
+
 	jsh.httpd.Resources.script = function(/* mapping files */) {
 		var rv = new OldResources();
 

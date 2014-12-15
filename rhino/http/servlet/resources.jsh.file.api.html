@@ -48,7 +48,7 @@ END LICENSE
 				io: jsh.io
 			}
 			module.addJshPluginTo(shell);
-			verify(code,"code").Resources().isNotEqualTo(3);
+//			verify(code,"code").Resources().Old().isNotEqualTo(3);
 			var one = code.Resources.script(
 				$module.getResourcePathname("test/resource/1.js").file
 			);
