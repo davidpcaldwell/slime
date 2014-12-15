@@ -21,12 +21,15 @@ $exports.addJshPluginTo = function(jsh) {
 		var mapping = [];
 		
 		var Mapping = function(p) {
-			if (!p.pathname.directory) {
-				throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
+			if (p.pathname) {
+				if (!p.pathname.directory) {
+					throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
+				}
 			}
 			this.get = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
+					if (p.implementation) return p.implementation.get(subpath);
 					if (!p.pathname.directory) {
 						return null;
 					}
@@ -46,6 +49,7 @@ $exports.addJshPluginTo = function(jsh) {
 			this.list = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
+					if (p.implementation) return p.implementation.list(subpath);
 					if (!p.pathname.directory) {
 						throw new Error("Unimplemented.");
 					}
@@ -66,6 +70,7 @@ $exports.addJshPluginTo = function(jsh) {
 			};
 			
 			this.build = function(WEBAPP) {
+				if (p.implementation) throw new Error("Unimplemented: convert build to use list");
 				var build = function(prefix,pathname) {
 					var to = WEBAPP.getRelativePath(prefix);
 					var node = (function() {
@@ -105,7 +110,11 @@ $exports.addJshPluginTo = function(jsh) {
 		}
 
 		this.map = function(prefix,pathname) {
-			mapping.push(new Mapping({ pathname: pathname, prefix: prefix }));
+			if (pathname.get && pathname.list) {
+				mapping.push(new Mapping({ implementation: pathname, prefix: prefix }));
+			} else {
+				mapping.push(new Mapping({ pathname: pathname, prefix: prefix }));
+			}
 		};
 		
 		var loader = new function() {
