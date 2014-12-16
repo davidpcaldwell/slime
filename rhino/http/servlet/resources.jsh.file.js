@@ -18,6 +18,9 @@
 
 $exports.addJshPluginTo = function(jsh) {
 	var Mapping = function(p) {
+		if (p.directory) {
+			p.loader = new jsh.io.Loader({ directory: p.directory });
+		}
 		this.toString = function() {
 			return p.prefix + " -> " + p.loader;
 		}
