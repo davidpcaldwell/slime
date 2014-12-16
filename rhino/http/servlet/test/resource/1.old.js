@@ -11,6 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-map("WEB-INF/generic/", new jsh.file.Loader({ directory: $mapping.getRelativePath("../../java").directory }));
-map("WEB-INF/mozilla/", new jsh.file.Loader({ directory: $mapping.getRelativePath("../../rhino").directory }));
-map("WEB-INF/test/", new jsh.file.Loader({ directory: $mapping.parent }));
+map("WEB-INF/generic/", $mapping.getRelativePath("../../java"));
+map("WEB-INF/mozilla/", $mapping.getRelativePath("../../rhino"));
+map("WEB-INF/test/", $mapping.parent.pathname);
+

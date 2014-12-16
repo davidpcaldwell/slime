@@ -259,8 +259,6 @@ $exports.addJshPluginTo = function(jsh) {
 	};
 
 	var NewResources = function() {
-		throw new Error("Unimplemented.");
-
 		var mapping = [];
 
 		Resources.call(this,mapping);

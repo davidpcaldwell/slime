@@ -40,7 +40,7 @@ END LICENSE
 		<h1>Exports</h1>
 		<ul>
 		</ul>
-		<script type="application/x.jsapi#tests">
+		<script type="application/x.jsapi#initialize">
 			var code = {};
 			var shell = {
 				httpd: code,
@@ -48,9 +48,11 @@ END LICENSE
 				io: jsh.io
 			}
 			module.addJshPluginTo(shell);
-//			verify(code,"code").Resources().Old().isNotEqualTo(3);
+			scope.code = code;
+		</script>
+		<script type="application/x.jsapi#tests">
 			var one = code.Resources.script(
-				$module.getResourcePathname("test/resource/1.js").file
+				$module.getResourcePathname("test/resource/1.old.js").file
 			);
 			verify(one,"one").isNotEqualTo(3);
 			verify(one).loader().list({ path: "WEB-INF/generic/" }).length().is(1);
@@ -64,6 +66,33 @@ END LICENSE
 			verify(one).loader().list({ path: "WEB-INF/" })[2]().is("test/");
 			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
 			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
+		</script>
+		<script type="application/x.jsapi#tests">
+			verify(code,"code").Resources().isNotEqualTo(3);
+			var one = new code.Resources();
+			var $mapping = $module.getResourcePathname("test/resource/1.old.js").file;
+			one.add({ prefix: "WEB-INF/generic/", loader: new jsh.file.Loader({ directory: $mapping.getRelativePath("../../java").directory })});
+			one.add({ prefix: "WEB-INF/mozilla/", loader: new jsh.file.Loader({ directory: $mapping.getRelativePath("../../rhino").directory })});
+			one.add({ prefix: "WEB-INF/test/", loader: new jsh.file.Loader({ directory: $mapping.parent })});
+			verify(one,"one").isNotEqualTo(3);
+			verify(one).loader().list({ path: "WEB-INF/generic/" }).length().is(1);
+			verify(one).loader().list({ path: "WEB-INF/generic/" })[0]().path().is("inonit");
+			verify(one).loader().list({ path: "WEB-INF/generic/" })[0]().loader().isNotEqualTo(null);
+			var child = new one.loader.Child("WEB-INF/generic/");
+			verify(child).isNotEqualTo(null);
+			verify(child).list({ path: "" }).isNotEqualTo(null);
+			var generic = new one.loader.Child("WEB-INF/generic/");
+			verify(generic,"generic").list({ path: "" }).isNotEqualTo(null);
+			verify(generic,"generic").list({ path: "" }).length().is(1);
+//			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length().is(2);
+//			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[0]().is("Nashorn.java");
+//			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[1]().is("Servlet.java");
+//			verify(one).loader().list({ path: "WEB-INF/" }).length().is(3);
+//			verify(one).loader().list({ path: "WEB-INF/" })[0]().is("generic/");
+//			verify(one).loader().list({ path: "WEB-INF/" })[1]().is("mozilla/");
+//			verify(one).loader().list({ path: "WEB-INF/" })[2]().is("test/");
+//			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
+//			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
 		</script>
 	</div>
 </body>
