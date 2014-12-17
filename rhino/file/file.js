@@ -415,6 +415,7 @@ var Pathname = function(parameters) {
 		}
 
 		this.getSubdirectory = function(name) {
+			if (typeof(name) == "string" && !name.length) return this;
 			if (!name) throw new TypeError("Missing: subdirectory name.");
 			return $filesystem.newPathname( this.getRelativePath(name).toString() ).directory;
 		}

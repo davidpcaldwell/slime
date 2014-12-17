@@ -21,6 +21,9 @@ $exports.addJshPluginTo = function(jsh) {
 		if (p.directory) {
 			p.loader = new jsh.io.Loader({ directory: p.directory });
 		}
+		if (p.loader && !p.loader.list) {
+			var breakpoint = 1;
+		}
 		this.toString = function() {
 			return p.prefix + " -> " + p.loader;
 		}
@@ -32,6 +35,14 @@ $exports.addJshPluginTo = function(jsh) {
 			}
 			return null;
 		};
+
+		this.getScript = function(path) {
+			if (path.substring(0,p.prefix.length) == p.prefix) {
+				var subpath = path.substring(p.prefix.length);
+				return p.loader.spi.getScript(subpath);
+			}
+			return null;
+		}
 
 		this.list = function(path) {
 			if (path.substring(0,p.prefix.length) == p.prefix) {
@@ -175,7 +186,7 @@ $exports.addJshPluginTo = function(jsh) {
 		}
 	}
 
-	var Resources = function(mapping) {
+	var Resources = function(mapping,old) {
 		var loader = new function() {
 			this.get = function(path) {
 				for (var i=0; i<mapping.length; i++) {
@@ -208,7 +219,7 @@ $exports.addJshPluginTo = function(jsh) {
 			}
 		};
 
-		var Loader = function(prefix) {
+		var OldLoader = function(prefix) {
 			var rv = new jsh.io.Loader({
 				resources: new function() {
 					this.get = function(path) {
@@ -216,7 +227,10 @@ $exports.addJshPluginTo = function(jsh) {
 					};
 				},
 				Loader: function(subprefix) {
-					var rv = new Loader(prefix + subprefix);
+					var rv = new OldLoader(prefix + subprefix);
+					rv.list = function(p) {
+						return loader.list(prefix + subprefix + p.path);
+					}
 					return rv;
 				}
 			});
@@ -225,22 +239,49 @@ $exports.addJshPluginTo = function(jsh) {
 			}
 			rv.list = function(p) {
 				return loader.list(prefix+p.path);
-			}
+			};
 			return rv;
+		};
+
+		var NewLoader = function() {
+			var p = new function() {
+				this.getScript = function(path) {
+					for (var i=0; i<mapping.length; i++) {
+						var mapped = mapping[i].get(path);
+						if (mapped) {
+							return mapping[i].getScript(path);
+						}
+					}
+					return null;
+				};
+
+				this.Loader = function(prefix) {
+					Packages.java.lang.System.err.println("Custom NewLoader child " + prefix + " ...");
+					this.list = function() {
+						Packages.java.lang.System.err.println("Custom NewLoader child " + prefix + " list()");
+						var rv = loader.list(prefix);
+						Packages.java.lang.System.err.println("Custom NewLoader child " + prefix + " list() done");
+						return rv;
+					};
+				}
+			}
+			return new jsh.io.Loader(p);
 		}
 
-		this.loader = new Loader("");
+		this.loader = (old) ? new OldLoader("") : new NewLoader();
 
-		this.Loader = function(p) {
-			var rv = new jsh.file.Loader(p);
-			rv.list = function(m) {
-				var directory = p.directory;
-				var dir = (m.path) ? directory.getSubdirectory(m.path) : directory;
-				return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
-					return entry.path;
-				});
-			}
-			return rv;
+		if (old) {
+			this.Loader = function(p) {
+				var rv = new jsh.file.Loader(p);
+				rv.list = function(m) {
+					var directory = p.directory;
+					var dir = (m.path) ? directory.getSubdirectory(m.path) : directory;
+					return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
+						return entry.path;
+					});
+				}
+				return rv;
+			};
 		}
 
 		this.build = function(WEBAPP) {
@@ -254,7 +295,7 @@ $exports.addJshPluginTo = function(jsh) {
 	var OldResources = function() {
 		var mapping = [];
 
-		Resources.call(this,mapping);
+		Resources.call(this,mapping,true);
 
 		this.map = function(prefix,pathname) {
 			mapping.push(new OldMapping({ pathname: pathname, prefix: prefix }));

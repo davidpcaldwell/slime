@@ -167,6 +167,11 @@ $context.$rhino.Loader.spi(function(underlying) {
 					return null;
 				}
 			};
+			p.Loader = function(prefix) {
+				//	Would like to decorate argument here, but instead will need to replace whole loader because of current
+				//	loader structure
+				return new $context.$rhino.Loader({ directory: p.directory.getSubdirectory(prefix) });
+			}
 		}
 		underlying.apply(this,arguments);
 		if (arguments[0].directory) {

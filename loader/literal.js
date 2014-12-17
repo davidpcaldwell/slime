@@ -189,6 +189,8 @@
 
 				this.Child = $api.experimental(Child);
 
+				this.spi = p;
+
 				this.module = function(path,scope,target) {
 					var getModuleLocations = function(path) {
 						var tokens = path.split("/");
