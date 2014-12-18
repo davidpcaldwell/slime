@@ -62,6 +62,9 @@ var fileServlet = new function() {
 			url: url + "file/test/file.servlet.js"
 		});
 		if (response.status.code != 200) {
+			if (response.status.code == 500) {
+				jsh.shell.echo("Status: 500; body = " + response.body.stream.character().asString());
+			}
 			fail("status = " + response.status.code);
 		}
 		jsh.shell.echo(response.body.type);
@@ -84,6 +87,9 @@ var apiServlet = new function() {
 			url: url
 		});
 		if (response.status.code != 200) {
+			if (response.status.code == 500) {
+				jsh.shell.echo("Status: 500; body = " + response.body.stream.character().asString());
+			}
 			fail("status = " + response.status.code);
 		}
 		jsh.shell.echo(response.body.type);
