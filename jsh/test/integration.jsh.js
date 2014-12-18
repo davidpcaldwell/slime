@@ -24,6 +24,46 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (!jsh.shell.jsh.home) {
+	//	unbuilt shell; build and relaunch
+	if (false && jsh.shell.rhino.home) {
+		throw new Error();
+		jsh.shell.run({
+			command: jsh.shell.java.launcher,
+			arguments: []
+		})
+	} else {
+		var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		var bin = jsh.shell.java.launcher.parent.pathname;
+		var jdkbin = bin.parent.parent.directory.getRelativePath("bin")
+		var command = jsh.file.Searchpath([bin,jdkbin]).getCommand("jrunscript");
+		var unbuilt = parameters.options.src.directory.getRelativePath("jsh/etc/unbuilt.rhino.js");
+		jsh.shell.echo("bin: " + bin);
+		jsh.shell.echo("bin: " + jdkbin);
+		jsh.shell.echo("command: " + command);
+		jsh.shell.echo("unbuilt: " + unbuilt);
+		jsh.shell.run({
+			command: command,
+			arguments: [
+				unbuilt,
+				"build", TMP
+			],
+			environment: jsh.js.Object.set({}, jsh.shell.environment, {
+				JSH_BUILD_NOTEST: "true",
+				JSH_BUILD_NODOC: "true"
+			})
+		});
+		var status = jsh.shell.java({
+			jar: TMP.getRelativePath("jsh.jar"),
+			arguments: [jsh.script.file.pathname.toString()],
+			evaluate: function(result) {
+				return result.status;
+			}
+		});
+		jsh.shell.exit(status);
+	}
+}
+
 var src = parameters.options.src.directory;
 
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
