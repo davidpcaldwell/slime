@@ -322,18 +322,23 @@ $exports.addJshPluginTo = function(jsh) {
 			//	prefix, loader properties
 			mapping.push(new Mapping(m));
 		}
+		
+		this.map = function(prefix,pathname) {
+			mapping.push(new Mapping({
+				prefix: prefix,
+				directory: pathname.directory
+			}));
+		}
 	};
 
 	jsh.httpd.Resources = function() {
 		return new NewResources();
 	};
 	jsh.httpd.Resources.Old = $api.deprecate(OldResources);
-
-	jsh.httpd.Resources.script = function(/* mapping files */) {
-		var rv = new OldResources();
-
-		for (var i=0; i<arguments.length; i++) {
-			var mappingFile = arguments[i];
+	
+	var script = function(rv,args) {
+		for (var i=0; i<args.length; i++) {
+			var mappingFile = args[i];
 			jsh.loader.run(mappingFile.pathname, {
 				$mapping: mappingFile,
 				map: function(prefix,pathname) {
@@ -341,7 +346,17 @@ $exports.addJshPluginTo = function(jsh) {
 				}
 			});
 		}
-
 		return rv;
+	}
+
+	jsh.httpd.Resources.script = function(/* mapping files */) {
+		var resources = new NewResources();
+		//	TODO	remove the next line
+		resources = new OldResources();
+		return script(resources, Array.prototype.slice.call(arguments));
+	};
+
+	jsh.httpd.Resources.script.old = function(/* mapping files */) {
+		return script(new OldResources(), Array.prototype.slice.call(arguments));
 	};
 };

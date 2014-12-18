@@ -51,7 +51,7 @@ END LICENSE
 			scope.code = code;
 		</script>
 		<script type="application/x.jsapi#tests">
-			var one = code.Resources.script(
+			var one = code.Resources.script.old(
 				$module.getResourcePathname("test/resource/1.old.js").file
 			);
 			verify(one,"one").isNotEqualTo(3);
