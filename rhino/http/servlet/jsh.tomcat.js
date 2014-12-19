@@ -72,6 +72,11 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 								var apiScope = {
 									$host: new function() {
 										this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
+										
+										if (m.resources) {
+											if (!m.resources.loader) throw new Error("No m.resources.loader");
+											if (!m.resources.Loader) throw new Error("No m.resources.Loader");
+										}
 
 										this.loaders = {
 											script: (m.resources) ? new m.resources.Loader({

@@ -66,41 +66,6 @@
 		}
 	});
 
-//	var Loader = function(p) {
-//		var decorate = function(_source) {
-//			this.toString = function() {
-//				return "Java loader: " + _source.toString();
-//			}
-//
-//			this._stream = function(path) {
-//				var _file = _source.getFile(path);
-//				return (_file) ? _file.getInputStream() : null;
-//			};
-//			this._resource = loader.$api.deprecate(this._stream);
-//		}
-//
-//		if (!p._source) throw new TypeError("_source must be defined and not be null.");
-//
-//		var Child = function(prefix) {
-//			return new Loader({ _source: p._source.child(prefix) });
-//		}
-//
-//		var parameter = new function() {
-//			this.getScript = function(path) {
-//				return {
-//					_source: p._source,
-//					path: path
-//				}
-//			};
-//
-//			this.Loader = loader.$api.Constructor.decorated(Child,p.Loader);
-//		};
-//
-//		var rv = new loader.Loader(parameter);
-//		decorate.call(rv,p._source);
-//		return rv;
-//	}
-
 	loader.Loader.spi(function(underlying) {
 		return function(p) {
 			var Code = Packages.inonit.script.engine.Code;
@@ -143,85 +108,9 @@
 		}
 	});
 
-////<<<<<<< local
-//	var spi = loader.Loader.spi;
-//	loader.Loader = loader.$api.Function(
-////		loader.$api.Function.conditional(
-////			function(p) {
-////				return p._source || p._code;
-////			},
-////			function(p) {
-////				if (p._source) {
-////					return new Loader(p);
-////				} else if (p._code) {
-////					//	TODO	this is probably a bad place to do this, but it will do for now; should this move into the Loader
-////					//			constructor?
-////					$javahost.getClasspath().append(p._code);
-////					return new Loader({
-////						_source: p._code.getScripts(),
-////						Loader: p.Loader
-////					});
-////				}
-////			},
-////			loader.Loader
-////		)
-//		loader.Loader
-//	).prepare(function(p) {
-//		var Code = Packages.inonit.script.engine.Code;
-//		if (p._unpacked) {
-//			p._code = Code.unpacked(p._unpacked);
-//		} else if (p._packed) {
-//			p._code = Code.slime(p._packed);
-//		}
-//	});
-//	loader.Loader.spi = spi;
-//=======
-//			var parameter = new function() {
-//				this.toString = function() {
-//					return "rhino/literal.js: _source = " + p._source;
-//				};
-//
-//				this.getCode = function(path) {
-//					return getCode({
-//						_source: p._source,
-//						path: path
-//					})
-//				};
-//>>>>>>> other
-
-//<<<<<<< local
 	loader.classpath = new function() {
 		this.toString = function() {
 			return String($javahost.getClasspath());
-//=======
-//				this.Child = function(prefix) {
-//					var c = {
-//						_source: p._source.child(prefix),
-//						Loader: (p.Loader) ? function() {
-//							return p.Loader.call(this,prefix);
-//						} : null
-//					};
-//					var rv = new Callee(c);
-//					if (p.Loader) {
-//						var returned = p.Loader.call(rv,prefix);
-//						if (typeof(returned) == "object" && returned != null) {
-//							rv = returned;
-//						}
-//					}
-//					return rv;
-//				}
-//			};
-//
-//			var rv = new loader.Loader(parameter);
-//			rv.toString = function() {
-//				return parameter.toString();
-//			}
-//			rv._stream = function(path) {
-//				return p._source.getResourceAsStream(path);
-//			};
-//			rv._resource = loader.$api.deprecate(rv._stream);
-//			return rv;
-//>>>>>>> other
 		}
 
 		this.add = function(_source) {

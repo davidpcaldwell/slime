@@ -267,12 +267,8 @@ $exports.addJshPluginTo = function(jsh) {
 				};
 
 				this.Loader = function(prefix) {
-					Packages.java.lang.System.err.println("Custom NewLoader child " + prefix + " ...");
 					this.list = function() {
-						Packages.java.lang.System.err.println("Custom NewLoader child " + prefix + " list()");
-						var rv = loader.list(prefix);
-						Packages.java.lang.System.err.println("Custom NewLoader child " + prefix + " list() done");
-						return rv;
+						return loader.list(prefix);
 					};
 				}
 			}
@@ -328,6 +324,10 @@ $exports.addJshPluginTo = function(jsh) {
 				prefix: prefix,
 				directory: pathname.directory
 			}));
+		};
+		
+		this.Loader = function(p) {
+			return new jsh.io.Loader(p);
 		}
 	};
 
