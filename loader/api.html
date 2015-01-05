@@ -741,6 +741,43 @@ END LICENSE
 				<ul>
 				</ul>
 			</li>
+			<li class="object" jsapi:id="Constructor">
+				<!--
+				<div class="name">__NAME__</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+				-->
+				<script type="application/x.jsapi#tests">
+					verify(api.Constructor).isNotEqualTo(void(0));
+					var A = function() {
+						this.a = 1;
+					};
+					var B = function() {
+						this.b = 2;
+					};
+					var C = function() {
+						this.c = 3;
+					};
+					
+					var AB = api.Constructor.decorated(A,B);
+					var ABC = api.Constructor.decorated(AB,C);
+					
+					var abc = new ABC();
+					verify(abc.a).is(1);
+					verify(abc.b).is(2);
+					verify(abc.c).is(3);
+					
+					var BC = api.Constructor.decorated(B,C);
+					var ABC2 = api.Constructor.decorated(A,BC);
+					debugger;
+					var abc2 = new ABC2();
+					verify(abc2.a).is(1);
+					verify(abc2.b).is(2);
+					verify(abc2.c).is(3);
+				</script>
+			</li>
 			<li class="object">
 				<div class="name">Object</div>
 				<span>__DESCRIPTION__</span>
