@@ -316,19 +316,35 @@
 	$exports.Constructor.decorated = function(original,decorator) {
 		if (!decorator) return original;
 		return function() {
-			var delimited = "";
-			for (var i=0; i<arguments.length; i++) {
-				if (i > 0) {
-					delimited += ",";
+			var invokedAsConstructor = this.constructor == arguments.callee;
+			if (false) {
+				var delimited = "";
+				for (var i=0; i<arguments.length; i++) {
+					if (i > 0) {
+						delimited += ",";
+					}
+					delimited += "arguments[" + i + "]";
 				}
-				delimited += "arguments[" + i + "]";
+				var defaulted = eval("new original(" + delimited + ")");
+				var decorated = decorator.apply(defaulted,arguments);
+				if (typeof(decorated) == "object" && decorated !== null) {
+					return decorated;
+				}
+				return defaulted;
+			} else {
+				var rv = (invokedAsConstructor) ? this : {};
+				var functions = [original,decorator];
+				for (var i=0; i<functions.length; i++) {
+					if (invokedAsConstructor) {
+						rv.constructor = functions[i];
+					}
+					var returned = functions[i].apply(rv,arguments);
+					if (typeof(returned) == "object" && returned !== null) {
+						rv = returned;
+					}
+				}
+				if (rv != this) return rv;
 			}
-			var defaulted = eval("new original(" + delimited + ")");
-			var decorated = decorator.apply(defaulted,arguments);
-			if (typeof(decorated) == "object" && decorated !== null) {
-				return decorated;
-			}
-			return defaulted;
 		}
 	}
 //	var UNDEFINED = {};
