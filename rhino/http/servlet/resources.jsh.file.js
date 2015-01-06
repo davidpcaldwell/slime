@@ -361,10 +361,17 @@ $exports.addJshPluginTo = function(jsh) {
 		}
 
 		this.map = function(prefix,pathname) {
-			mapping.push(new Mapping({
-				prefix: prefix,
-				directory: pathname.directory
-			}));
+			if (pathname.directory) {
+				mapping.push(new Mapping({
+					prefix: prefix,
+					directory: pathname.directory
+				}));
+			} else if (pathname.loader) {
+				mapping.push(new Mapping({
+					prefix: prefix,
+					loader: pathname.loader
+				}));
+			}
 		};
 
 		//	TODO	the below method is odd. What does it do?
