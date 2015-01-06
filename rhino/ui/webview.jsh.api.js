@@ -13,15 +13,16 @@
 
 $set(function(p) {
 	var server = new jsh.httpd.Tomcat({});
+	var loader = new jsh.io.Loader({ directory: p.servlet.parent });
 	server.map({
 		path: "/",
 		servlets: {
 			"/*": {
 //				file: p.servlet,
-				$loader: new jsh.io.Loader({ directory: p.servlet.parent }),
+				$loader: loader,
 				parameters: p.parameters,
 				load: function(scope) {
-					jsh.loader.run(p.servlet.pathname, scope);
+					loader.run(p.servlet.pathname.basename, scope);
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {
