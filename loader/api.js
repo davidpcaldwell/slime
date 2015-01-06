@@ -25,6 +25,7 @@
 
 			var deprecateFunction = function(f,object,property) {
 				var rv = function() {
+					var invokedAsConstructor = arguments.callee == this.constructor;
 					var argument = { callee: f, target: this, arguments: Array.prototype.slice.call(arguments), reason: reason };
 					if (object) {
 						argument.object = object;
@@ -39,10 +40,20 @@
 					}
 					//	TODO	Add regression to cover previous mistake of not returning this value (but invoking and then
 					//			returning undefined)
-					return f.apply(this,arguments);
+					if (invokedAsConstructor) {
+						this.constructor = f;
+					}
+					var rv = f.apply(this,arguments);
+					if (invokedAsConstructor) {
+						this.constructor = arguments.callee;
+					}
+					return rv;
 				}
 				for (var x in f) {
 					rv[x] = f[x];
+				}
+				rv.toString = function() {
+					return "/* flagged */ " + f.toString();
 				}
 				return rv;
 			};
@@ -315,7 +326,7 @@
 
 	$exports.Constructor.decorated = function(original,decorator) {
 		if (!decorator) return original;
-		return function() {
+		var rv = function() {
 			var invokedAsConstructor = this.constructor == arguments.callee;
 			if (false) {
 				var delimited = "";
@@ -345,7 +356,11 @@
 				}
 				if (rv != this) return rv;
 			}
+		};
+		rv.toString = function() {
+			return original.toString() + " decorated with " + decorator.toString();
 		}
+		return rv;
 	}
 //	var UNDEFINED = {};
 //

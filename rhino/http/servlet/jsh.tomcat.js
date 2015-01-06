@@ -77,12 +77,23 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 											if (!m.resources.loader) throw new Error("No m.resources.loader");
 											if (!m.resources.Loader) throw new Error("No m.resources.Loader");
 										}
-
+										
+										var script = (function() {
+											if (m.resources) {
+												if (servletDeclaration.file) {
+													return new m.resources.Loader({
+														directory: servletDeclaration.file.parent,
+														type: $context.getMimeType
+													});
+												} else {
+													throw new Error("Unimplemented: servletDeclaration without file property");
+												}
+											}
+											return new jsh.file.Loader({ directory: servletDeclaration.file.parent });
+										})();
+										
 										this.loaders = {
-											script: (m.resources) ? new m.resources.Loader({
-												directory: servletDeclaration.file.parent,
-												type: $context.getMimeType
-											}) : new jsh.file.Loader({ directory: servletDeclaration.file.parent }),
+											script: script,
 											container: (m.resources) ? m.resources.loader : null
 										};
 

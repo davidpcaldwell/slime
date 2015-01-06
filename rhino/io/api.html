@@ -937,6 +937,27 @@ END LICENSE
 					test(loaderModule.grandchildResource("Loader/file.js") == null);
 					test(loaderModule.grandchildResource("test/Loader/file.js") == null);
 				</script>
+				<script type="application/x.jsapi#tests">
+					var sources = function() {
+						var code = {
+							
+						};
+						
+						this.getScript = function(path) {
+							return null;
+						};
+						
+						this.Loader = function(prefix) {
+							this.list = function() {
+								return [];
+							}
+						}
+					}
+					var loader = new module.Loader(sources);
+					verify(loader).evaluate(function() { return this.run; }).isNotEqualTo(null);
+					var child = new loader.Child("prefix/");
+					verify(child).evaluate(function() { return this.run; }).isNotEqualTo(null);
+				</script>
 			</li>
 
 			<li class="object">

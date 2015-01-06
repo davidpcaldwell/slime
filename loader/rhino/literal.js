@@ -104,6 +104,10 @@
 					return (_file) ? _file.getInputStream() : null;
 				};
 				this._resource = loader.$api.deprecate(this._stream);
+			} else if (p._stream) {
+				this._stream = function(path) {
+					return p._stream.call(this,path);
+				};
 			}
 		}
 	});

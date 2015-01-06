@@ -72,28 +72,44 @@ $exports.addJshPluginTo = function(jsh) {
 
 				var copy = function(loader,pathname) {
 					var recurse = arguments.callee;
-					throw new Error();
-					if (node.directory) {
-						var to = pathname.createDirectory({
-							ifExists: function(dir) {
-								return false;
-							},
-							recursive: true
-						});
-						throw new Error();
-						var nodes = loader.list();
-						nodes.forEach(function(item) {
-							jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
-							recurse(item,to.getRelativePath(item.pathname.basename));
-						});
-					} else {
-						throw new Error();
-						node.copy(pathname, {
-							filter: function(item) {
-								return true;
-							}
-						});
-					}
+					var directory = pathname.createDirectory({
+						ifExists: function(dir) {
+							return false;
+						},
+						recursive: true
+					});
+					var items = loader.list();
+//					throw new Error();
+					items.forEach(function(item) {
+						if (item.loader) {
+							recurse(item.loader, directory.getRelativePath(item.path));
+						} else {
+							directory.getRelativePath(item.path).write(item.resource.read(jsh.io.Streams.binary), {
+								append: false
+							});
+						}
+					});
+//					if (node.loader) {
+//						var to = pathname.createDirectory({
+//							ifExists: function(dir) {
+//								return false;
+//							},
+//							recursive: true
+//						});
+//						throw new Error();
+//						var nodes = loader.list();
+//						nodes.forEach(function(item) {
+//							jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
+//							recurse(item,to.getRelativePath(item.pathname.basename));
+//						});
+//					} else {
+//						throw new Error();
+//						node.copy(pathname, {
+//							filter: function(item) {
+//								return true;
+//							}
+//						});
+//					}
 				}
 
 				copy(loader,to);
@@ -265,6 +281,16 @@ $exports.addJshPluginTo = function(jsh) {
 					}
 					return null;
 				};
+				
+				this._stream = function(path) {
+					for (var i=0; i<mapping.length; i++) {
+						var mapped = mapping[i].get(path);
+						if (mapped) {
+							return mapped.read.binary().java.adapt();
+						}
+					}
+					return null;					
+				}
 
 				this.Loader = function(prefix) {
 					this.list = function() {
@@ -352,7 +378,7 @@ $exports.addJshPluginTo = function(jsh) {
 	jsh.httpd.Resources.script = function(/* mapping files */) {
 		var resources = new NewResources();
 		//	TODO	remove the next line
-		resources = new OldResources();
+//		resources = new OldResources();
 		return script(resources, Array.prototype.slice.call(arguments));
 	};
 

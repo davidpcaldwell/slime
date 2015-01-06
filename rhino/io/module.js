@@ -512,9 +512,10 @@ $context.$rhino.Loader.spi(function(underlying) {
 	};
 });
 
-$exports.Loader = function(p) {
-	return new $context.$rhino.Loader(p);
-};
+//$exports.Loader = function(p) {
+//	return new $context.$rhino.Loader(p);
+//};
+$exports.Loader = $context.$rhino.Loader;
 
 $exports.mime = $loader.file("mime.js", {
 	_streams: _java,

@@ -54,7 +54,7 @@ var helloServlet = new function() {
 };
 
 var fileServlet = new function() {
-	var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file;
+	var script = jsh.script.file.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file;
 
 	this.test = function(url) {
 		var client = new jsh.http.Client();
@@ -164,7 +164,7 @@ var plugin = new function() {
 		var tomcat = new jsh.httpd.Tomcat({
 		});
 		jsh.shell.echo("Tomcat port: " + tomcat.port);
-		var script = jsh.script.script.getRelativePath("../../../rhino/http/servlet/test/hello.servlet.js").file;
+		var script = jsh.script.file.getRelativePath("../../../rhino/http/servlet/test/hello.servlet.js").file;
 		tomcat.map({
 			path: "/",
 			servlets: {
@@ -180,7 +180,7 @@ var plugin = new function() {
 	this.file = function() {
 		jsh.shell.echo("file servlet");
 		var tomcat = new jsh.httpd.Tomcat({});
-		var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file
+		var script = jsh.script.file.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file
 		tomcat.map({
 			path: "/",
 			servlets: {
@@ -189,7 +189,30 @@ var plugin = new function() {
 				}
 			},
 			//	TODO	is there a jsh.script.getFile()?
-			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
+//			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
+			resources: (function() {
+				var rv = new jsh.httpd.Resources();
+				jsh.loader.run(jsh.script.file.getRelativePath("httpd.resources.js"), {
+					$mapping: new function() {
+						this.getRelativePath = function(path) {
+							return jsh.script.file.getRelativePath(path)
+						}
+					},
+					map: function(string,pathname) {
+						rv.add({
+							prefix: string,
+							loader: new jsh.io.Loader({ directory: pathname.directory })
+						});
+					}
+				});
+				if (!rv.loader) {
+					throw new Error("rv.loader");
+				}
+				if (!rv.loader.resource) {
+					throw new Error("rv.loader.resource");					
+				}
+				return rv;
+			})()
 		});
 		tomcat.start();
 		fileServlet.test("http://127.0.0.1:" + tomcat.port + "/");
@@ -198,7 +221,7 @@ var plugin = new function() {
 	var run = function(path,tests) {
 		jsh.shell.echo("Plugin: " + path);
 		var tomcat = new jsh.httpd.Tomcat({});
-		var script = jsh.script.getRelativePath("../../../" + path).file
+		var script = jsh.script.file.getRelativePath("../../../" + path).file
 		tomcat.map({
 			path: "/",
 			servlets: {
@@ -216,7 +239,7 @@ var plugin = new function() {
 	this.api = function() {
 		jsh.shell.echo("plugin api servlet");
 		var tomcat = new jsh.httpd.Tomcat({});
-		var script = jsh.script.getRelativePath("../../../rhino/http/servlet/test/api.servlet.js").file
+		var script = jsh.script.file.getRelativePath("../../../rhino/http/servlet/test/api.servlet.js").file
 		tomcat.map({
 			path: "/",
 			servlets: {
