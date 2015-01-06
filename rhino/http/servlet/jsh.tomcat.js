@@ -58,9 +58,9 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 					//	TODO	below may not work if more than one servlet; value changes during loop and may be picked up
 					//			by servlets earlier in loop
 					var servletDeclaration = m.servlets[pattern];
-					if (!servletDeclaration.file) {
-						throw new Error("Incorrect launch.");
-					}
+//					if (!servletDeclaration.file) {
+//						throw new Error("Incorrect launch.");
+//					}
 					var servletName = "slime" + String(id++);
 					var servlet = Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
 						Packages.javax.servlet.http.HttpServlet,
@@ -80,7 +80,9 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 
 										var script = (function() {
 											if (m.resources) {
-												if (servletDeclaration.file) {
+												if (servletDeclaration.$loader) {
+													return servletDeclaration.$loader;
+												} else if (servletDeclaration.file) {
 													return new m.resources.Loader({
 														directory: servletDeclaration.file.parent,
 														type: $context.getMimeType

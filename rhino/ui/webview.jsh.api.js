@@ -17,10 +17,11 @@ $set(function(p) {
 		path: "/",
 		servlets: {
 			"/*": {
-				file: p.servlet,
+//				file: p.servlet,
+				$loader: new jsh.io.Loader({ directory: p.servlet.parent }),
 				parameters: p.parameters,
 				load: function(scope) {
-					jsh.loader.run(this.file.pathname, scope);
+					jsh.loader.run(p.servlet.pathname, scope);
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {
