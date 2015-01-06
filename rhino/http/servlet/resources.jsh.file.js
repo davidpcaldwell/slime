@@ -400,6 +400,14 @@ $exports.addJshPluginTo = function(jsh) {
 		return script(resources, Array.prototype.slice.call(arguments));
 	};
 
+	jsh.httpd.Resources.script.Directory = function(loader) {
+		this.getRelativePath = function(path) {
+			return {
+				loader: new loader.Child(path)
+			};
+		}
+	};
+
 	jsh.httpd.Resources.script.old = function(/* mapping files */) {
 		return script(new OldResources(), Array.prototype.slice.call(arguments));
 	};
