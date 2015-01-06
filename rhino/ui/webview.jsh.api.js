@@ -13,15 +13,24 @@
 
 $set(function(p) {
 	var server = new jsh.httpd.Tomcat({});
+	var servlet = (function() {
+		if (p.servlet.$loader) {
+			return { $loader: p.servlet.$loader, path: p.servlet.path }
+		} else if (p.servlet.resource) {
+			var prefix = p.servlet.resource.split("/").slice(0,-1).join("/");
+			if (prefix) prefix += "/";
+			return { $loader: new p.resources.loader.Child(prefix), path: p.servlet.resource.substring(prefix.length) };
+		}
+	})();
 	server.map({
 		path: "/",
 		servlets: {
 			"/*": {
 //				file: p.servlet,
-				$loader: p.servlet.$loader,
+				$loader: servlet.$loader,
 				parameters: p.parameters,
 				load: function(scope) {
-					p.servlet.$loader.run(p.servlet.path, scope);
+					servlet.$loader.run(servlet.path, scope);
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {

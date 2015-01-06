@@ -327,8 +327,12 @@ $exports.addJshPluginTo = function(jsh) {
 		this.file = function(mappingFile,scope) {
 			if (!scope) scope = {};
 			var rv = this;
-			jsh.loader.run(mappingFile.pathname, jsh.js.Object.set({}, {
-				$mapping: mappingFile,
+			var toRun = (mappingFile.name && mappingFile.code) ? mappingFile : {
+				name: mappingFile.pathname.basename,
+				code: mappingFile.read(String)
+			};
+			jsh.loader.run(toRun, jsh.js.Object.set({}, {
+				$mapping: (mappingFile.pathname) ? mappingFile : void(0),
 				map: function(prefix,pathname) {
 					rv.map(prefix,pathname);
 				}
@@ -363,6 +367,7 @@ $exports.addJshPluginTo = function(jsh) {
 			}));
 		};
 
+		//	TODO	the below method is odd. What does it do?
 		this.Loader = function(p) {
 			return new jsh.io.Loader(p);
 		}
