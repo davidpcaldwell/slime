@@ -72,12 +72,12 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 								var apiScope = {
 									$host: new function() {
 										this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
-										
+
 										if (m.resources) {
 											if (!m.resources.loader) throw new Error("No m.resources.loader");
 											if (!m.resources.Loader) throw new Error("No m.resources.Loader");
 										}
-										
+
 										var script = (function() {
 											if (m.resources) {
 												if (servletDeclaration.file) {
@@ -91,7 +91,7 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 											}
 											return new jsh.file.Loader({ directory: servletDeclaration.file.parent });
 										})();
-										
+
 										this.loaders = {
 											script: script,
 											container: (m.resources) ? m.resources.loader : null

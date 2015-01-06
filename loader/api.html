@@ -760,15 +760,15 @@ END LICENSE
 					var C = function() {
 						this.c = 3;
 					};
-					
+
 					var AB = api.Constructor.decorated(A,B);
 					var ABC = api.Constructor.decorated(AB,C);
-					
+
 					var abc = new ABC();
 					verify(abc.a).is(1);
 					verify(abc.b).is(2);
 					verify(abc.c).is(3);
-					
+
 					var BC = api.Constructor.decorated(B,C);
 					var ABC2 = api.Constructor.decorated(A,BC);
 					debugger;

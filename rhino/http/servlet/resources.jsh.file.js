@@ -213,7 +213,7 @@ $exports.addJshPluginTo = function(jsh) {
 				mapping.push(new Mapping({ pathname: pathname, prefix: prefix }));
 			}
 		};
-		
+
 		var loader = new function() {
 			this.get = function(path) {
 				for (var i=0; i<mapping.length; i++) {
@@ -281,7 +281,7 @@ $exports.addJshPluginTo = function(jsh) {
 					}
 					return null;
 				};
-				
+
 				this._stream = function(path) {
 					for (var i=0; i<mapping.length; i++) {
 						var mapped = mapping[i].get(path);
@@ -289,7 +289,7 @@ $exports.addJshPluginTo = function(jsh) {
 							return mapped.read.binary().java.adapt();
 						}
 					}
-					return null;					
+					return null;
 				}
 
 				this.Loader = function(prefix) {
@@ -323,6 +323,16 @@ $exports.addJshPluginTo = function(jsh) {
 //				build(item.prefix,item.pathname);
 			});
 		}
+
+		this.file = function(mappingFile) {
+			var rv = this;
+			jsh.loader.run(mappingFile.pathname, {
+				$mapping: mappingFile,
+				map: function(prefix,pathname) {
+					rv.map(prefix,pathname);
+				}
+			});
+		}
 	}
 
 	var OldResources = function() {
@@ -344,14 +354,14 @@ $exports.addJshPluginTo = function(jsh) {
 			//	prefix, loader properties
 			mapping.push(new Mapping(m));
 		}
-		
+
 		this.map = function(prefix,pathname) {
 			mapping.push(new Mapping({
 				prefix: prefix,
 				directory: pathname.directory
 			}));
 		};
-		
+
 		this.Loader = function(p) {
 			return new jsh.io.Loader(p);
 		}
@@ -361,16 +371,11 @@ $exports.addJshPluginTo = function(jsh) {
 		return new NewResources();
 	};
 	jsh.httpd.Resources.Old = $api.deprecate(OldResources);
-	
+
 	var script = function(rv,args) {
 		for (var i=0; i<args.length; i++) {
 			var mappingFile = args[i];
-			jsh.loader.run(mappingFile.pathname, {
-				$mapping: mappingFile,
-				map: function(prefix,pathname) {
-					rv.map(prefix,pathname);
-				}
-			});
+			rv.file(mappingFile);
 		}
 		return rv;
 	}

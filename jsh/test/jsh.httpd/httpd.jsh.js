@@ -209,7 +209,7 @@ var plugin = new function() {
 					throw new Error("rv.loader");
 				}
 				if (!rv.loader.resource) {
-					throw new Error("rv.loader.resource");					
+					throw new Error("rv.loader.resource");
 				}
 				return rv;
 			})()
