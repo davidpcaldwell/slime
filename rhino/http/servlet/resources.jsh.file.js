@@ -324,14 +324,15 @@ $exports.addJshPluginTo = function(jsh) {
 			});
 		}
 
-		this.file = function(mappingFile) {
+		this.file = function(mappingFile,scope) {
+			if (!scope) scope = {};
 			var rv = this;
-			jsh.loader.run(mappingFile.pathname, {
+			jsh.loader.run(mappingFile.pathname, jsh.js.Object.set({}, {
 				$mapping: mappingFile,
 				map: function(prefix,pathname) {
 					rv.map(prefix,pathname);
 				}
-			});
+			}, scope));
 		}
 	}
 
