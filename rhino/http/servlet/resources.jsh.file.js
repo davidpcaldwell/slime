@@ -327,16 +327,25 @@ $exports.addJshPluginTo = function(jsh) {
 		this.file = function(mappingFile,scope) {
 			if (!scope) scope = {};
 			var rv = this;
-			var toRun = (mappingFile.name && mappingFile.code) ? mappingFile : {
-				name: mappingFile.pathname.basename,
-				code: mappingFile.read(String)
-			};
-			jsh.loader.run(toRun, jsh.js.Object.set({}, {
-				$mapping: (mappingFile.pathname) ? mappingFile : void(0),
-				map: function(prefix,pathname) {
-					rv.map(prefix,pathname);
-				}
-			}, scope));
+			if (mappingFile.loader) {
+				mappingFile.loader.run(mappingFile.path, jsh.js.Object.set({}, {
+					$mapping: (mappingFile.pathname) ? mappingFile : void(0),
+					map: function(prefix,pathname) {
+						rv.map(prefix,pathname);
+					}
+				}, scope));
+			} else {
+				var toRun = (mappingFile.name && mappingFile.code) ? mappingFile : {
+					name: mappingFile.pathname.basename,
+					code: mappingFile.read(String)
+				};
+				jsh.loader.run(toRun, jsh.js.Object.set({}, {
+					$mapping: (mappingFile.pathname) ? mappingFile : void(0),
+					map: function(prefix,pathname) {
+						rv.map(prefix,pathname);
+					}
+				}, scope));
+			}
 		}
 	}
 
@@ -402,6 +411,7 @@ $exports.addJshPluginTo = function(jsh) {
 
 	jsh.httpd.Resources.script.Directory = function(loader) {
 		this.getRelativePath = function(path) {
+			if (!loader.Child) throw new Error("no loader.Child");
 			return {
 				loader: new loader.Child(path)
 			};
