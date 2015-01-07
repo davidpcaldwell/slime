@@ -30,25 +30,28 @@
 			scope.$jsh = $host;
 			scope.global = (function() { return this; })();
 			scope.jsh = jsh;
-			scope.$loader = new (function(_code) {
-				this.file = function(path,context) {
-					return loader.plugin.file(_code,path,context);
-				};
-				this.module = function(path,context) {
-					return loader.plugin.module(_code,path,context);
-				};
-				this.run = function(path,scope,target) {
-					return loader.plugin.run(_code,path,scope,target);
-				};
-				this._stream = function(path,scope,target) {
-					return loader.plugin._stream(_code,path,scope,target);
-				};
-				this.classpath = new function() {
+
+			var $loader = new $host.Loader({ _code: _code });
+			scope.$loader = new (function($loader) {
+//				this.file = function(path,context) {
+//					return loader.plugin.file(_code,path,context);
+//				};
+//				this.module = function(path,context) {
+//					return loader.plugin.module(_code,path,context);
+//				};
+//				this.run = function(path,scope,target) {
+//					return loader.plugin.run(_code,path,scope,target);
+//				};
+//				this._stream = function(path,scope,target) {
+//					return loader.plugin._stream(_code,path,scope,target);
+//				};
+				$loader.classpath = new function() {
 					this.add = function(pathname) {
 						return loader.classpath.add(pathname.java.adapt());
 					}
 				}
-			})(_code);
+				return $loader;
+			})($loader);
 			loader.plugin.read(_code,scope);
 		} else {
 			callbacks.java({ _code: _code });
