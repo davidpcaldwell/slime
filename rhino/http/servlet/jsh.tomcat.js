@@ -44,10 +44,13 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 		tomcat.setBaseDir(base);
 		tomcat.setPort(port);
 
+		var api = {
+			js: jsh.js,
+			java: jsh.java,
+			io: jsh.io
+		}
 		var server = $loader.file("server.js", {
-			api: {
-				io: jsh.io
-			}
+			api: api
 		});
 
 		this.map = function(m) {
@@ -111,11 +114,7 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 
 										this.$exports = {};
 										this.server = server;
-										this.api = {
-											js: jsh.js,
-											java: jsh.java,
-											io: jsh.io
-										}
+										this.api = api;
 									}
 								};
 								$loader.run("api.js", apiScope);

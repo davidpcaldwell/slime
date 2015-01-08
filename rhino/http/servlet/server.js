@@ -15,7 +15,7 @@ var log = function(message) {
 };
 
 var debug = function(message) {
-	//	log(message);
+	$context.api.java.log(message);
 }
 
 var Request = function(_request) {

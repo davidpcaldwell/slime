@@ -83,6 +83,12 @@ var bootstrap = (function() {
 			$rhino: $loader,
 			$java: $loader.java
 		});
+		rv.java.log = loader.file("WEB-INF/slime/js/debug/logging.java.js", {
+			prefix: "slime",
+			api: {
+				java: rv.java
+			}
+		}).log;
 		rv.io = loader.module("WEB-INF/slime/rhino/io/", {
 			$rhino: $rhino,
 			api: {
