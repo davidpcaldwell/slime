@@ -209,7 +209,10 @@
 
 					var inner = createFileScope(scope);
 					inner.$loader = new Child(locations.prefix);
-					methods.run.call(target,p.getScript(locations.main),inner);
+					var script = p.getScript(locations.main);
+					//	TODO	generalize error handling strategy; add to file, run, value
+					if (!script) throw new Error("Module not found at " + locations.main);
+					methods.run.call(target,script,inner);
 					return inner.$exports;
 				}
 			};
