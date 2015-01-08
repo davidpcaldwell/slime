@@ -152,6 +152,9 @@ args.push(Packages.java.lang.System.getProperty("java.home") + "/bin/java");
 if (AGENTLIB_JDWP && env.JSH_SHELL_CONTAINER != "jvm") {
 	args.push("-agentlib:jdwp=" + AGENTLIB_JDWP);
 }
+if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JAVA_LOGGING_PROPERTIES) {
+	args.push("-Djava.util.logging.config.file=" + env.JSH_JAVA_LOGGING_PROPERTIES)
+}
 args.push(
 	"-classpath", LAUNCHER_CLASSES,
 	"inonit.script.jsh.launcher.Main"
