@@ -64,7 +64,8 @@ END LICENSE
 								this.cygwin.paths = String( System.getProperty("cygwin.paths") );
 							}
 						}
-					})
+					}),
+					document: $jsapi.module("../../js/document")
 				};
 				this._properties = Packages.java.lang.System.getProperties();
 				this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;

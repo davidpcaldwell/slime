@@ -20,7 +20,8 @@ plugin({
 				js: jsh.js,
 				java: jsh.java,
 				io: jsh.io,
-				file: jsh.file
+				file: jsh.file,
+				document: jsh.js.document
 			},
 			_properties: $jsh.getSystemProperties(),
 			_environment: $jsh.getEnvironment()

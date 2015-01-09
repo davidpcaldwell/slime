@@ -325,6 +325,15 @@ $loader.run("os.js", {
 	$exports: $exports.os
 });
 
+$exports.system = {};
+$exports.system.apple = $loader.file("apple.js", {
+	api: {
+		document: $context.api.document,
+		js: $context.api.js,
+		shell: $exports,
+	}
+});
+
 $exports.java = function(p) {
 	//	TODO	check for both p.classpath and p.jar being defined and decide what to do
 	var launcher = arguments.callee.launcher;
