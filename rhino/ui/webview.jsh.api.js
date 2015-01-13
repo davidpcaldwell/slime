@@ -14,7 +14,9 @@
 $set(function(p) {
 	var server = new jsh.httpd.Tomcat({});
 	var servlet = (function() {
-		if (p.servlet.$loader) {
+		if (p.servlet.pathname && p.servlet.pathname.file) {
+			return { $loader: new jsh.file.Loader({ directory: p.servlet.parent }), path: p.servlet.pathname.basename };
+		} else if (p.servlet.$loader) {
 			return { $loader: p.servlet.$loader, path: p.servlet.path }
 		} else if (p.servlet.resource) {
 			var prefix = p.servlet.resource.split("/").slice(0,-1).join("/");
