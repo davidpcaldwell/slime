@@ -116,8 +116,8 @@ public class Logging {
 		@Override
 		public int read() throws IOException {
 			try {
-				waitForAvailable();
-				if (closed) return -1;
+//				waitForAvailable();
+//				if (closed) return -1;
 				reader = Thread.currentThread();
 				int rv = in.read();
 				reader = null;
@@ -127,17 +127,17 @@ public class Logging {
 			} catch (IOException e) {
 				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
 				throw e;
-			} catch (InterruptedException e) {
-				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
-				throw new RuntimeException(e);
+//			} catch (InterruptedException e) {
+//				Logging.get().log(InputStream.class, Level.INFO, "Interrupted in read()", e);
+//				return -1;
 			}
 		}
 
 		@Override
 		public int read(byte[] b) throws IOException {
 			try {
-				waitForAvailable();
-				if (closed) return -1;
+//				waitForAvailable();
+//				if (closed) return -1;
 				reader = Thread.currentThread();
 				int rv = in.read(b);
 				reader = null;
@@ -150,17 +150,17 @@ public class Logging {
 			} catch (IOException e) {
 				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read(byte[])", e);
 				throw e;
-			} catch (InterruptedException e) {
-				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
-				throw new RuntimeException(e);
+//			} catch (InterruptedException e) {
+//				Logging.get().log(InputStream.class, Level.INFO, "Interrupted in read(byte[])", e);
+//				return -1;
 			}
 		}
 
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
 			try {
-				waitForAvailable();
-				if (closed) return -1;
+//				waitForAvailable();
+//				if (closed) return -1;
 				reader = Thread.currentThread();
 				int rv = in.read(b, off, len);
 				reader = null;
@@ -173,9 +173,9 @@ public class Logging {
 			} catch (IOException e) {
 				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read(byte[],int,int)", e);
 				throw e;
-			} catch (InterruptedException e) {
-				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
-				throw new RuntimeException(e);
+//			} catch (InterruptedException e) {
+//				Logging.get().log(InputStream.class, Level.INFO, "Interrupted in read(byte[],int,int)", e);
+//				return -1;
 			}
 		}
 
