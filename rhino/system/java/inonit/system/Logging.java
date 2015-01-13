@@ -87,9 +87,9 @@ public class Logging {
 		private java.io.InputStream in;
 		private boolean wasSystemIn = false;
 
-		private Object lock = new Object();
-		private boolean closed;
-		private Thread reader;
+//		private Object lock = new Object();
+//		private boolean closed;
+//		private Thread reader;
 
 		public InputStream(java.io.InputStream in) {
 			this.in = new java.io.BufferedInputStream(in);
@@ -98,29 +98,29 @@ public class Logging {
 
 		@Override public String toString() {
 			if (wasSystemIn) {
-				return super.toString() + " delegate=System.in closed=" + closed;
+				return super.toString() + " delegate=System.in closed=";// + closed;
 			} else {
-				return super.toString() + " delegate=" + in + " closed=" + closed;
+				return super.toString() + " delegate=" + in + " closed=";// + closed;
 			}
 		}
 
-		private void waitForAvailable() throws IOException, InterruptedException {
-			if (true) return;
-			synchronized(lock) {
-				while(in.available() == 0 && !closed) {
-					lock.wait();
-				}
-			}
-		}
+//		private void waitForAvailable() throws IOException, InterruptedException {
+//			if (true) return;
+//			synchronized(lock) {
+//				while(in.available() == 0 && !closed) {
+//					lock.wait();
+//				}
+//			}
+//		}
 
 		@Override
 		public int read() throws IOException {
 			try {
 //				waitForAvailable();
 //				if (closed) return -1;
-				reader = Thread.currentThread();
+//				reader = Thread.currentThread();
 				int rv = in.read();
-				reader = null;
+//				reader = null;
 				log(Level.FINEST, "Read byte: %d", rv);
 				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read()");
 				return rv;
@@ -138,9 +138,9 @@ public class Logging {
 			try {
 //				waitForAvailable();
 //				if (closed) return -1;
-				reader = Thread.currentThread();
+//				reader = Thread.currentThread();
 				int rv = in.read(b);
-				reader = null;
+//				reader = null;
 				log(Level.FINEST, "Read %d bytes into array.", rv);
 				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read(byte[])");
 				for (int i=0; i<rv; i++) {
@@ -161,9 +161,9 @@ public class Logging {
 			try {
 //				waitForAvailable();
 //				if (closed) return -1;
-				reader = Thread.currentThread();
+//				reader = Thread.currentThread();
 				int rv = in.read(b, off, len);
-				reader = null;
+//				reader = null;
 				log(Level.FINEST, "Read %d bytes into array.", rv);
 				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read(byte[],int,int)");
 				for (int i=0; i<rv; i++) {
@@ -194,19 +194,14 @@ public class Logging {
 			log(Level.FINEST, "Closing %s with delegate %s", this, this.in);
 			if (!wasSystemIn) {
 				in.close();
-				synchronized(lock) {
-					closed = true;
-					lock.notifyAll();
-				}
-			} else {
-				synchronized(lock) {
-					closed = true;
-					lock.notifyAll();
-				}
 			}
-			if (reader != null) {
-				reader.interrupt();
-			}
+//			synchronized(lock) {
+//				closed = true;
+//				lock.notifyAll();
+//			}
+//			if (reader != null) {
+//				reader.interrupt();
+//			}
 			log(Level.FINEST, "Closed %s with delegate %s", this, this.in);
 		}
 
