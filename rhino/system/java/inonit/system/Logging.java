@@ -87,36 +87,60 @@ public class Logging {
 		private java.io.InputStream in;
 		private boolean wasSystemIn = false;
 
+		private Object lock = new Object();
+		private boolean closed;
+		private Thread reader;
+
 		public InputStream(java.io.InputStream in) {
-			this.in = in;
-			this.wasSystemIn = (this.in == System.in);
+			this.in = new java.io.BufferedInputStream(in);
+			this.wasSystemIn = (in == System.in);
 		}
 
 		@Override public String toString() {
 			if (wasSystemIn) {
-				return super.toString() + " delegate=System.in";
+				return super.toString() + " delegate=System.in closed=" + closed;
 			} else {
-				return super.toString() + " delegate=" + in;
+				return super.toString() + " delegate=" + in + " closed=" + closed;
+			}
+		}
+
+		private void waitForAvailable() throws IOException, InterruptedException {
+			if (true) return;
+			synchronized(lock) {
+				while(in.available() == 0 && !closed) {
+					lock.wait();
+				}
 			}
 		}
 
 		@Override
 		public int read() throws IOException {
 			try {
+				waitForAvailable();
+				if (closed) return -1;
+				reader = Thread.currentThread();
 				int rv = in.read();
+				reader = null;
 				log(Level.FINEST, "Read byte: %d", rv);
 				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read()");
 				return rv;
 			} catch (IOException e) {
 				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
 				throw e;
+			} catch (InterruptedException e) {
+				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
+				throw new RuntimeException(e);
 			}
 		}
 
 		@Override
 		public int read(byte[] b) throws IOException {
 			try {
+				waitForAvailable();
+				if (closed) return -1;
+				reader = Thread.currentThread();
 				int rv = in.read(b);
+				reader = null;
 				log(Level.FINEST, "Read %d bytes into array.", rv);
 				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read(byte[])");
 				for (int i=0; i<rv; i++) {
@@ -126,13 +150,20 @@ public class Logging {
 			} catch (IOException e) {
 				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read(byte[])", e);
 				throw e;
+			} catch (InterruptedException e) {
+				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
+				throw new RuntimeException(e);
 			}
 		}
 
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
 			try {
+				waitForAvailable();
+				if (closed) return -1;
+				reader = Thread.currentThread();
 				int rv = in.read(b, off, len);
+				reader = null;
 				log(Level.FINEST, "Read %d bytes into array.", rv);
 				Logging.get().logStackTrace(InputStream.class, Level.FINEST, "read(byte[],int,int)");
 				for (int i=0; i<rv; i++) {
@@ -142,6 +173,9 @@ public class Logging {
 			} catch (IOException e) {
 				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read(byte[],int,int)", e);
 				throw e;
+			} catch (InterruptedException e) {
+				Logging.get().log(InputStream.class, Level.SEVERE, "Error in read()", e);
+				throw new RuntimeException(e);
 			}
 		}
 
@@ -158,7 +192,21 @@ public class Logging {
 		@Override
 		public void close() throws IOException {
 			log(Level.FINEST, "Closing %s with delegate %s", this, this.in);
-			in.close();
+			if (!wasSystemIn) {
+				in.close();
+				synchronized(lock) {
+					closed = true;
+					lock.notifyAll();
+				}
+			} else {
+				synchronized(lock) {
+					closed = true;
+					lock.notifyAll();
+				}
+			}
+			if (reader != null) {
+				reader.interrupt();
+			}
 			log(Level.FINEST, "Closed %s with delegate %s", this, this.in);
 		}
 
