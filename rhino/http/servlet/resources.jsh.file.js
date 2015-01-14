@@ -325,6 +325,7 @@ $exports.addJshPluginTo = function(jsh) {
 		}
 
 		this.file = function(mappingFile,scope) {
+			if (!mappingFile) throw new TypeError("mappingFile must be defined.");
 			if (!scope) scope = {};
 			var rv = this;
 			if (mappingFile.loader) {
