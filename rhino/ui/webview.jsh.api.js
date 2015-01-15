@@ -71,6 +71,11 @@ $set(function(p) {
 
 	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopTomcat));
 
+	var addTitleListener = function() {
+		this.listeners.add("title", function(e) {
+			this._frame.setTitle(e.detail.after);
+		});
+	}
 	jsh.ui.javafx.launch({
 		title: "WebView",	//	TODO	default
 		Scene: jsh.ui.javafx.WebView({
@@ -87,7 +92,7 @@ $set(function(p) {
 					Scene: jsh.ui.javafx.WebView({
 						browser: browser,
 						initialize: function() {
-							jsh.shell.echo("Initializing popup scene ...");
+							addTitleListener.call(this);
 						}
 					}),
 					on: {
@@ -106,9 +111,7 @@ $set(function(p) {
 			},
 			//	TODO	configurable
 			initialize: function() {
-				this.listeners.add("title", function(e) {
-					this._frame.setTitle(e.detail.after);
-				});
+				addTitleListener.call(this);
 			}
 		}),
 		on: p.on
