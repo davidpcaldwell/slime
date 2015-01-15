@@ -82,11 +82,12 @@ $set(function(p) {
 			popup: function(_popup) {
 				if (!_popup) _popup = this._popup;
 				jsh.shell.echo("Creating popup " + _popup + " ...");
-				var view = new Packages.javafx.scene.web.WebView();
-				var frame = new jsh.ui.javafx.Frame({
+				var browser = new Packages.javafx.scene.web.WebView();
+				new jsh.ui.javafx.Frame({
 					Scene: jsh.ui.javafx.WebView({
+						browser: browser,
 						initialize: function() {
-							jsh.shell.echo("Popup initialized ...");
+							jsh.shell.echo("Initializing popup scene ...");
 						}
 					}),
 					on: {
@@ -95,7 +96,7 @@ $set(function(p) {
 						}
 					}
 				});
-				return view.getEngine();
+				return browser.getEngine();
 			},
 			//	TODO	configurable
 			console: new function() {

@@ -112,7 +112,7 @@ $set(function(p) {
 	}
 
 	return function() {
-		var browser = new Packages.javafx.scene.web.WebView();
+		var browser = (p.browser) ? p.browser : new Packages.javafx.scene.web.WebView();
 
 		var page = p.page;
 
@@ -251,7 +251,9 @@ $set(function(p) {
 			p.initialize.call(this);
 		}
 
-		this.navigate(p.page);
+		if (p.page) {
+			this.navigate(p.page);
+		}
 
 		var rv = new Packages.javafx.scene.Scene(browser, 750, 500, Packages.javafx.scene.paint.Color.web("#666970"));
 		return rv;
