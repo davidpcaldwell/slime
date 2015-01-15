@@ -109,7 +109,8 @@ $set(function(p) {
 					this._frame.setTitle(e.detail.after);
 				});
 			}
-		})
+		}),
+		on: p.on
 	});
 
 	return {
