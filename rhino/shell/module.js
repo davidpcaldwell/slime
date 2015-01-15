@@ -325,6 +325,18 @@ $loader.run("os.js", {
 	$exports: $exports.os
 });
 
+$exports.browser = {};
+$loader.run("browsers.js", {
+	$context: {
+		os: $exports.os,
+		run: $exports.run,
+		api: {
+			file: $context.api.file
+		}
+	},
+	$exports: $exports.browser
+});
+
 $exports.system = {};
 $exports.system.apple = $loader.file("apple.js", {
 	api: {
