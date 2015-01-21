@@ -21,9 +21,6 @@ $exports.addJshPluginTo = function(jsh) {
 		if (p.directory) {
 			p.loader = new jsh.io.Loader({ directory: p.directory });
 		}
-		if (p.loader && !p.loader.list) {
-			var breakpoint = 1;
-		}
 		this.toString = function() {
 			return p.prefix + " -> " + p.loader;
 		}
@@ -206,14 +203,6 @@ $exports.addJshPluginTo = function(jsh) {
 	}
 
 	var Resources = function(mapping,old) {
-		this.map = function(prefix,pathname) {
-			if (pathname.get && pathname.list) {
-				mapping.push(new Mapping({ implementation: pathname, prefix: prefix }));
-			} else {
-				mapping.push(new Mapping({ pathname: pathname, prefix: prefix }));
-			}
-		};
-
 		var loader = new function() {
 			this.get = function(path) {
 				for (var i=0; i<mapping.length; i++) {
@@ -303,27 +292,6 @@ $exports.addJshPluginTo = function(jsh) {
 
 		this.loader = (old) ? new OldLoader("") : new NewLoader();
 
-		if (old) {
-			this.Loader = function(p) {
-				var rv = new jsh.file.Loader(p);
-				rv.list = function(m) {
-					var directory = p.directory;
-					var dir = (m.path) ? directory.getSubdirectory(m.path) : directory;
-					return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
-						return entry.path;
-					});
-				}
-				return rv;
-			};
-		}
-
-		this.build = function(WEBAPP) {
-			mapping.forEach(function(item) {
-				item.build(WEBAPP);
-//				build(item.prefix,item.pathname);
-			});
-		}
-
 		this.file = function(mappingFile,scope) {
 			if (!mappingFile) throw new TypeError("mappingFile must be defined.");
 			if (!scope) scope = {};
@@ -348,6 +316,13 @@ $exports.addJshPluginTo = function(jsh) {
 				}, scope));
 			}
 		}
+
+		this.build = function(WEBAPP) {
+			mapping.forEach(function(item) {
+				item.build(WEBAPP);
+//				build(item.prefix,item.pathname);
+			});
+		}
 	}
 
 	var OldResources = function() {
@@ -355,8 +330,29 @@ $exports.addJshPluginTo = function(jsh) {
 
 		Resources.call(this,mapping,true);
 
+		//	Below implementation plugs into an attempt at variability for OldMapping; probably obsolete
+//		this.map = function(prefix,pathname) {
+//			if (pathname.get && pathname.list) {
+//				mapping.push(new Mapping({ implementation: pathname, prefix: prefix }));
+//			} else {
+//				mapping.push(new Mapping({ pathname: pathname, prefix: prefix }));
+//			}
+//		};
+
 		this.map = function(prefix,pathname) {
 			mapping.push(new OldMapping({ pathname: pathname, prefix: prefix }));
+		};
+		
+		this.Loader = function(p) {
+			var rv = new jsh.file.Loader(p);
+			rv.list = function(m) {
+				var directory = p.directory;
+				var dir = (m.path) ? directory.getSubdirectory(m.path) : directory;
+				return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
+					return entry.path;
+				});
+			}
+			return rv;
 		};
 	};
 

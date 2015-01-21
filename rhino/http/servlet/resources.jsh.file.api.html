@@ -15,8 +15,7 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
-	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<title>Servlet resources</title>
 	<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
 	<script src="../../../loader/api/api.js"></script>
 </head>
@@ -38,7 +37,147 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<div class="type">
+			<div class="type">
+				<a class="type" name="types.Resources.Mapping">Mapping</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</div>
+
+			<a class="type" name="types.Resources">Resources</a>
+			<span>
+				An object that is capable of loading resources, as well as enumerating all resources it can load so that they
+				can be written out (for example, to a webapp directory).
+			</span>
+			<div>
+				Resources objects consist of an ordered list of <code>Mapping</code> objects which are searched, in order, for
+				a given resource.
+			</div>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">add</div>
+					<span>Adds a <code>Mapping</code> to this <code>Resources</code>.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.Resource.Mapping">Mapping</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">map</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">file</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<!--	TODO	Loader is undocumented; not sure exactly what it is for, probably to bridge compatibility	-->
+				<li class="value">
+					<div class="name">loader</div>
+					<span class="type"><a href="../../../loader/api.html#types.Loader">Loader</a></span>
+					<span>A loader that loads resources as specified by this <code>Resources</code>.</span>
+				</li>
+				<li class="function">
+					<div class="name">build</div>
+					<span>Copies the resources specified by this <code>Resources</code> to a directory.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="../../file/api.html#types.directory">directory</a></span>
+								<span>The directory to which the resources should be copied.</span>
+							</li>
+						</ol>
+					</div>
+				</li>
+			</ul>
+		</div>
+
 		<ul>
+			<li class="constructor">
+				<div class="name">Resources</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">script</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="constructor">
+								<div class="name">Directory</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">loader</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ol>
+								</div>
+								<div class="instances">
+									<div class="label">Instances</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
 		</ul>
 		<script type="application/x.jsapi#initialize">
 			var code = {};
