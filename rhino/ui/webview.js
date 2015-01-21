@@ -24,7 +24,7 @@ $set(function(p) {
 	var _Server = function(window,serve,navigate) {
 		var console = (p.console) ? p.console : new function() {
 			this.log = function(s) {
-				$console.log.INFO("window.console.log: " + s);
+				$context.log.INFO("window.console.log: " + s);
 			}
 		}
 
@@ -118,19 +118,15 @@ $set(function(p) {
 
 		var target = this;
 
+		//	TODO	why are there two different methods handling these magic messages? Is one obsolete?
+		
 		browser.getEngine().setOnAlert(new JavaAdapter(
 			Packages.javafx.event.EventHandler,
 			new function() {
 				this.handle = function(event) {
-					if (event.getData() == "window.jsh.message.initialize") {
-						var window = browser.getEngine().executeScript("window");
-						browser.getEngine().executeScript("window.jsh.message").call("initialize", new _Server(window,p.serve,p.navigate.bind(target)));
-						if (page.initialize) {
-							page.initialize.call({ _browser: browser });
-						}
-						return;
+					var alert = (p.alert) ? p.alert : function(s) {
+						$context.log.INFO("ALERT: " + s);
 					}
-					var alert = (p.alert) ? p.alert : function(){};
 					alert(event.getData());
 				}
 			}

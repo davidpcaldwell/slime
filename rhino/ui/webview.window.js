@@ -12,6 +12,7 @@
 //	END LICENSE
 
 (function() {
+	//	TODO	upon inspection, seems unnecessary; search for usage and re-implement
 	window.alert.jsh = true;
 
 	window.jsh = {

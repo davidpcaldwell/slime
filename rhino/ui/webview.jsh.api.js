@@ -84,6 +84,12 @@ $set(function(p) {
 			alert: function(s) {
 				jsh.shell.echo("ALERT: " + s);
 			},
+			//	TODO	configurable
+			console: new function() {
+				this.log = function(s) {
+					jsh.shell.echo("CONSOLE: " + s);
+				}
+			},
 			popup: function(_popup) {
 				if (!_popup) _popup = this._popup;
 				jsh.shell.echo("Creating popup " + _popup + " ...");
@@ -102,12 +108,6 @@ $set(function(p) {
 					}
 				});
 				return browser.getEngine();
-			},
-			//	TODO	configurable
-			console: new function() {
-				this.log = function(s) {
-					jsh.shell.echo("CONSOLE: " + s);
-				}
 			},
 			//	TODO	configurable
 			initialize: function() {

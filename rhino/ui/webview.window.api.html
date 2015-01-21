@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME WebView</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		SLIME WebView application run inside an embedded JavaFX browser derived from WebKit.
+	</div>
+	<div>
+		<h1>SLIME Browser</h1>
+		<div>
+			The browser is provided with an implementation of <code>alert</code> that routes messages back to the containing
+			program.
+		</div>
+	</div>
+	<div>
+		<h1><code>webview.initialize.js</code></h1>
+		<div>
+			If the page inside the browser executes a script named <code>window.initialize.js</code>, the
+			page will conditionally load additional features to allow enhanced
+			communication between the page and the embedding process. This script can safely be used in an
+			application that is compatible with running inside or outside WebView, as loading it in an ordinary
+			browser will have no effect.
+		</div>		
+		<div>
+			<h2>window.console</h2>
+			<div>
+				The browser is provided with a console that routes messages back to the containing program.
+			</div>
+		</div>
+	</div>
+</body>
+</html>

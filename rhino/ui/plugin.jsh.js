@@ -42,7 +42,7 @@ plugin({
 		$loader.run("webview.js", {
 			$loader: $loader,
 			$context: {
-				log: jsh.java.log.named("rhino.ui.javafx.webview"),
+				log: jsh.java.log.named("slime.ui.javafx.webview"),
 				api: {
 					thread: {
 						javafx: jsh.ui.javafx.run,
