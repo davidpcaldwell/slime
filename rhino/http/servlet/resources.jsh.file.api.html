@@ -38,34 +38,58 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<div class="type">
-			<div class="type">
-				<a class="type" name="types.Resources.Mapping">Mapping</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-				</ul>
-			</div>
-
 			<a class="type" name="types.Resources">Resources</a>
 			<span>
 				An object that is capable of loading resources, as well as enumerating all resources it can load so that they
 				can be written out (for example, to a webapp directory).
 			</span>
 			<div>
-				Resources objects consist of an ordered list of <code>Mapping</code> objects which are searched, in order, for
+				Resources objects consist of an ordered list of <i>mappings</i> which are searched, in order, for
 				a given resource.
 			</div>
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="function">
 					<div class="name">add</div>
-					<span>Adds a <code>Mapping</code> to this <code>Resources</code>.</span>
+					<span>Adds a <i>mapping</i> to this <code>Resources</code>.</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
-							<li class="value">
-								<span class="type"><a href="#types.Resource.Mapping">Mapping</a></span>
+							<li class="object">
 								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">prefix</div>
+										<span class="type">string</span>
+										<span>
+											All resources under the given directory will be mapped to corresponding
+											paths under this prefix.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">directory</div>
+										<span class="type"><a href="../../file/api.html#types.directory">directory</a></span>
+										<span>A directory.</span>
+									</li>
+								</ul>
+								-or-
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">prefix</div>
+										<span class="type">string</span>
+										<span>
+											All resources available in the given loader will be mapped to corresponding paths
+											under this prefix.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">loader</div>
+										<span class="type"><a href="../../../loader/api.html">loader</a></span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>								
 							</li>
 						</ol>
 					</div>
