@@ -185,8 +185,6 @@
 			var breakpoint = null;
 		}
 
-		var instantiate = {};
-
 		var loader = new platform.Loader({
 			getScript: function(path) {
 				return { name: path, path: path, code: fetcher.getCode(path) };
@@ -249,25 +247,6 @@
 		this.$api = platform.$api;
 
 		var sdk = new function() {
-			var getCachePath = function(string) {
-				if (string.substring(0,1) == "$") {
-					return bootstrap.base + string.substring(1);
-				} else {
-					return string;
-				}
-			}
-
-			//
-			//	API used by scripts that want to register themselves in debugger form
-			//
-			this.debug = new function() {
-				//	TODO	test this when SLIM is up and running
-				this.script = function(path,f) {
-					$context.debug("Storing script: " + path + " as " + f);
-					instantiate[getCachePath(path)] = f;
-				}
-			}
-
 			//	TODO	How is this used?
 			this.fetch = function(url) {
 				return fetcher.fetch(url);
