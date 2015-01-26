@@ -12,7 +12,9 @@
 //	END LICENSE
 
 $set(function(p) {
-	var server = new jsh.httpd.Tomcat({});
+	var server = new jsh.httpd.Tomcat({
+		port: (p.port) ? p.port : void(0)
+	});
 	var servlet = (function() {
 		if (p.servlet.pathname && p.servlet.pathname.file) {
 			return { $loader: new jsh.file.Loader({ directory: p.servlet.parent }), path: p.servlet.pathname.basename };

@@ -155,6 +155,9 @@ if (AGENTLIB_JDWP && env.JSH_SHELL_CONTAINER != "jvm") {
 if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JAVA_LOGGING_PROPERTIES) {
 	args.push("-Djava.util.logging.config.file=" + env.JSH_JAVA_LOGGING_PROPERTIES)
 }
+if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JVM_OPTIONS) {
+	args.push.apply(args,env.JSH_JVM_OPTIONS.split(" "));
+}
 args.push(
 	"-classpath", LAUNCHER_CLASSES,
 	"inonit.script.jsh.launcher.Main"
@@ -172,6 +175,7 @@ args.push(
 					this[x] = env[x];
 				}
 			}
+			if (env.JSH_SHELL_CONTAINER != "jvm") delete this.JSH_JVM_OPTIONS;
 			if (RHINO_JAR) this.JSH_RHINO_CLASSPATH = RHINO_JAR;
 			this.JSH_RHINO_SCRIPT = JSH_SLIME_SRC.getPath("jsh/launcher/rhino/jsh.rhino.js");
 			this.JSH_SHELL_CLASSPATH = LOADER_CLASSES;
