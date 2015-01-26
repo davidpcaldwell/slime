@@ -71,6 +71,11 @@ $set(function(p) {
 
 	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopTomcat));
 
+	var addTitleListener = function() {
+		this.listeners.add("title", function(e) {
+			this._frame.setTitle(e.detail.after);
+		});
+	}
 	jsh.ui.javafx.launch({
 		title: "WebView",	//	TODO	default
 		Scene: jsh.ui.javafx.WebView({
@@ -79,14 +84,21 @@ $set(function(p) {
 			alert: function(s) {
 				jsh.shell.echo("ALERT: " + s);
 			},
+			//	TODO	configurable
+			console: new function() {
+				this.log = function(s) {
+					jsh.shell.echo("CONSOLE: " + s);
+				}
+			},
 			popup: function(_popup) {
 				if (!_popup) _popup = this._popup;
 				jsh.shell.echo("Creating popup " + _popup + " ...");
-				var view = new Packages.javafx.scene.web.WebView();
-				var frame = new jsh.ui.javafx.Frame({
+				var browser = new Packages.javafx.scene.web.WebView();
+				new jsh.ui.javafx.Frame({
 					Scene: jsh.ui.javafx.WebView({
+						browser: browser,
 						initialize: function() {
-							jsh.shell.echo("Popup initialized ...");
+							addTitleListener.call(this);
 						}
 					}),
 					on: {
@@ -95,21 +107,14 @@ $set(function(p) {
 						}
 					}
 				});
-				return view.getEngine();
-			},
-			//	TODO	configurable
-			console: new function() {
-				this.log = function(s) {
-					jsh.shell.echo("CONSOLE: " + s);
-				}
+				return browser.getEngine();
 			},
 			//	TODO	configurable
 			initialize: function() {
-				this.listeners.add("title", function(e) {
-					this._frame.setTitle(e.detail.after);
-				});
+				addTitleListener.call(this);
 			}
-		})
+		}),
+		on: p.on
 	});
 
 	return {
