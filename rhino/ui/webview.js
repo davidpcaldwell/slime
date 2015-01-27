@@ -101,8 +101,12 @@ $set(function(p) {
 				},
 				getCode: function(path) {
 					var file = page.base.getRelativePath(path).file;
-					//	TODO	would empty string work below? Would script render as empty element?
-					if (!file) return "/**/";
+					if (!file) {
+						if (path == "webview.initialize.js") {
+							return $loader.resource("webview.initialize.js").read(String);
+						}
+					}
+					if (!file) return "";
 					return file.read(String);
 				}
 			}
