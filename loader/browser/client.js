@@ -66,25 +66,7 @@
 		return getCurrentScriptElement().getAttribute("src");
 	};
 
-	var getCurrent = function(base) {
-		var getBasePath = function(pathname) {
-			var path = pathname.split("?")[0];
-			var tokens = path.split("/");
-			if (tokens.length > 1) {
-				return tokens.slice(0,-1).join("/") + "/";
-			} else {
-				return "";
-			}
-		};
-
-		return getBasePath(base) + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
-	}
-
-	var getCurrentScript = function() {
-		var base = window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
-
-		var current = getCurrent(base);
-
+	var canonicalize = function(current) {
 		//	TODO	The next block is not very robust but probably works for most, or even all, cases. That said, the js/web
 		//			module has a better implementation of URL canonicalization.
 		//			This mostly matters for debuggers that try to map URLs to files or whatever; they may not be able to handle
@@ -97,6 +79,29 @@
 			}
 		}
 		current = tokens.join("/");
+		return current;
+	}
+
+	var getCurrent = function(base) {
+		var getBasePath = function(pathname) {
+			var path = pathname.split("?")[0];
+			var tokens = path.split("/");
+			if (tokens.length > 1) {
+				return tokens.slice(0,-1).join("/") + "/";
+			} else {
+				return "";
+			}
+		};
+
+		var rv = getBasePath(base) + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
+		rv = canonicalize(rv);
+		return rv;
+	}
+
+	var getCurrentScript = function() {
+		var base = window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
+
+		var current = getCurrent(base);
 
 		return new Bootstrap(current);
 	}
