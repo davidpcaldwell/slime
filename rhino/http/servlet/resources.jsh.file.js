@@ -414,6 +414,10 @@ $exports.addJshPluginTo = function(jsh) {
 	};
 
 	jsh.httpd.Resources.script.Directory = function(loader) {
+		this.pathname = {
+			loader: loader
+		};
+		
 		this.getRelativePath = function(path) {
 			if (!loader.Child) throw new Error("no loader.Child");
 			return {
