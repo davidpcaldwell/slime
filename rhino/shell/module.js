@@ -329,8 +329,11 @@ $exports.browser = {};
 $loader.run("browsers.js", {
 	$context: {
 		os: $exports.os,
+		HOME: $exports.HOME,
 		run: $exports.run,
 		api: {
+			js: $context.api.js,
+			java: $context.api.java,
 			file: $context.api.file
 		}
 	},
