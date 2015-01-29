@@ -33,7 +33,7 @@ $set(function(p) {
 				var object = JSON.parse(json);
 				$context.log.FINE("Received: " + JSON.stringify(object,void(0),"    "));
 				if (object.navigate) {
-					navigate(object.navigate);
+					if (navigate) navigate(object.navigate);
 					return;
 				}
 				if (object.console) {
