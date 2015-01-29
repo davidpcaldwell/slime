@@ -56,6 +56,8 @@ plugin({
 				} else if (e.commandNotFound) {
 					jsh.shell.echo("Command not found: " + e.commandNotFound);
 					jsh.shell.exit(1);
+				} else {
+					throw e;
 				}
 			}
 		};

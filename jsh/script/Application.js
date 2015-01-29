@@ -34,7 +34,7 @@ $exports.Application = function(o) {
 				);
 			}
 		} else {
-			throw new Error("Unsupported format: lacking getopts/command");
+			throw new Error("Unsupported command format: lacking getopts");
 		}
 	};
 
