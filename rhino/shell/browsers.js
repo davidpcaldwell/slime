@@ -26,6 +26,7 @@ var Chrome = function(b) {
 
 			if (localState) {
 				var ProfileData = function(p) {
+					this.directory = p.base;
 					this.name = p.name;
 					this.data = p.data;
 
@@ -88,6 +89,8 @@ var Chrome = function(b) {
 		}
 
 		var Profile = function(data) {
+			this.directory = data.directory;
+			this.id = data.name;
 			this.name = data.data.name;
 
 			if (u.install) {
