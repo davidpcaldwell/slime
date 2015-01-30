@@ -73,42 +73,53 @@ public abstract class Installation {
 			}
 		}
 
-		static void addPluginsTo(List<Installation.Plugin> rv, File file) {
+		private static void addPluginsTo(List<Installation.Plugin> rv, File file, boolean warn) {
 			if (file.exists()) {
 				if (file.isDirectory()) {
 					if (new File(file, "plugin.jsh.js").exists()) {
 						//	interpret as unpacked module
+						Logging.get().log(Installation.class, Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
 						rv.add(Installation.Plugin.unpacked(file));
 					} else {
-						//	interpret as directory of slime
+						//	interpret as directory that may contain plugins
 						File[] list = file.listFiles();
 						Arrays.sort(list, new PluginComparator());
 						for (File f : list) {
-							addPluginsTo(rv, f);
+							addPluginsTo(rv, f, false);
 						}
 					}
 				} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
 					try {
 						Installation.Plugin p = Installation.Plugin.slime(file);
 						if (p != null) {
+							Logging.get().log(Installation.class, Level.WARNING, "Loading plugin from %s ...", file);
 							rv.add(p);
+						} else {
+							Logging.get().log(Installation.class, Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
 						}
 					} catch (IOException e) {
 						//	TODO	probably error message or warning
 					}
 				} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+					Logging.get().log(Installation.class, Level.CONFIG, "Loading Java plugin from " + file + " ...");
 					rv.add(Installation.Plugin.jar(file));
 				} else {
 					//	Ignore, exists but not .slime or .jar or directory
 					//	TODO	probably log message of some kind
-					Logging.get().log(Installation.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
+					if (warn) Logging.get().log(Installation.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
 				}
 			} else {
-				Logging.get().log(Installation.class, Level.CONFIG, "Ignoring plugin because file does not exist at %s", file);
+				Logging.get().log(Installation.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
 			}
 		}
+		
+		static void addPluginsTo(List<Installation.Plugin> rv, File file) {
+			addPluginsTo(rv, file, true);
+		}
 
+		//	Called by applications to load plugins
 		public static Plugin[] get(File file) {
+			Logging.get().log(Installation.class, Level.INFO, "Application: load plugins from " + file);
 			List<Plugin> rv = new ArrayList<Plugin>();
 			addPluginsTo(rv, file);
 			return rv.toArray(new Plugin[rv.size()]);
@@ -123,7 +134,7 @@ public abstract class Installation {
 		File[] roots = getPluginRoots();
 		ArrayList<Plugin> rv = new ArrayList<Plugin>();
 		for (int i=0; i<roots.length; i++) {
-			Logging.get().log(Installation.class, Level.CONFIG, "Loading plugins from %s ...", roots[i]);
+			Logging.get().log(Installation.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
 			Plugin.addPluginsTo(rv, roots[i]);
 		}
 		return rv.toArray(new Plugin[rv.size()]);
@@ -214,15 +225,15 @@ public abstract class Installation {
 				return Code.slime(getModulePath(path));
 			}
 
-			private void addPluginsTo(List<Plugin> rv, String property) {
-				if (property != null) {
-					String[] tokens = property.split(File.pathSeparator);
-					for (String token : tokens) {
-						File file = new File(token);
-						Plugin.addPluginsTo(rv, file);
-					}
-				}
-			}
+//			private void addPluginsTo(List<Plugin> rv, String property) {
+//				if (property != null) {
+//					String[] tokens = property.split(File.pathSeparator);
+//					for (String token : tokens) {
+//						File file = new File(token);
+//						Plugin.addPluginsTo(rv, file);
+//					}
+//				}
+//			}
 
 			public File[] getPluginRoots() {
 				//	Defaults for jsh.plugins: installation modules directory? Probably obsolete given that we will be loading
