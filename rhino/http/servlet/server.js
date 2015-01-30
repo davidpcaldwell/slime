@@ -10,12 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-var log = function(message) {
-	Packages.java.lang.System.out.println(message);
-};
+var log = $context.api.java.log.named("rhino.http.servlet.server");
 
 var debug = function(message) {
-	$context.api.java.log(message);
+	log.INFO(message);
 }
 
 var Request = function(_request) {
@@ -60,22 +58,19 @@ var Request = function(_request) {
 	this.headers = headers;
 
 	//	TODO	it would make more sense for this property to be absent if there is no content
-	debug("Creating request body.");
 	this.body = new function() {
 		//	TODO	what happens if there is no content? Presumably type is null, and is stream empty?
-		debug("Creating request type.");
-		debug("Content type: " + String(_request.getContentType()));
-		debug("mime module: " + $context.api.io.mime);
+		log.CONFIG("Request body content type: " + String(_request.getContentType()));
 		try {
 			this.type = (_request.getContentType()) ? $context.api.io.mime.Type.parse(String(_request.getContentType())) : null;
 		} catch (e) {
-			log("Error creating request type.");
+			log.SEVERE("Error creating request type.");
 			throw e;
 		}
-		debug("Created request type.");
+		log.FINE("Created request type.");
 		this.stream = $context.api.io.java.adapt(_request.getInputStream());
 	}
-	debug("Created request body.");
+	log.FINE("Created request body.");
 }
 
 $exports.Servlet = function(delegate) {
