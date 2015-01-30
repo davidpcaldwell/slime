@@ -109,6 +109,8 @@ var Chrome = function(b) {
 		if (data.profiles) this.profiles = data.profiles.map(function(profile) {
 			return new Profile(profile);
 		});
+		
+		this.directory = u.directory;
 
 		if (u.install) {
 			this.open = function(m) {
