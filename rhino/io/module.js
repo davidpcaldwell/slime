@@ -473,8 +473,13 @@ var decorate = function(p) {
 				if (p.type) {
 					type = p.type.call(this,path);
 				}
+				var length;
+				if (p.length) {
+					length = p.length.call(this,path);
+				}
 				return new $exports.Resource({
 					type: type,
+					length: length,
 					read: {
 						binary: function() {
 							return new InputStream(target._stream(path));

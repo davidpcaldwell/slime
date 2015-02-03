@@ -104,6 +104,12 @@
 					return (_file) ? _file.getInputStream() : null;
 				};
 				this._resource = loader.$api.deprecate(this._stream);
+				
+				p.length = function(path) {
+					var _file = p._source.getFile(path);
+					var length = _file.getLength();
+					if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
+				};
 			} else if (p._stream) {
 				this._stream = function(path) {
 					return p._stream.call(this,path);

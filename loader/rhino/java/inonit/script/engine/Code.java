@@ -37,6 +37,8 @@ public abstract class Code {
 		public static abstract class File {
 			public abstract String getSourceName();
 			public abstract InputStream getInputStream();
+			public abstract Long getLength();
+			public abstract java.util.Date getLastModified();
 
 			public final Reader getReader() {
 				InputStream in = getInputStream();
@@ -53,6 +55,14 @@ public abstract class Code {
 							throw new RuntimeException(e);
 						}
 					}
+					
+					@Override public Long getLength() {
+						return new Long(file.length());
+					}
+					
+					@Override public java.util.Date getLastModified() {
+						return new java.util.Date(file.lastModified());
+					}
 
 					@Override public InputStream getInputStream() {
 						try {
@@ -64,16 +74,29 @@ public abstract class Code {
 				};
 			}
 
-			public static File create(final String name, final InputStream in) {
+			//	TODO	Where is this called, and does it need a length argument?
+			public static File create(final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new File() {
 					@Override public String getSourceName() {
 						return name;
+					}
+					
+					@Override public Long getLength() {
+						return length;
+					}
+					
+					@Override public java.util.Date getLastModified() {
+						return modified;
 					}
 
 					@Override public InputStream getInputStream() {
 						return in;
 					}
 				};
+			}
+			
+			public static File create(final String name, final InputStream in) {
+				return create(name, null, null, in);
 			}
 		}
 
@@ -137,6 +160,8 @@ public abstract class Code {
 		}
 
 		public static abstract class Resources {
+			public abstract Long getLength(String path) throws IOException;
+			public abstract java.util.Date getLastModified(String path) throws IOException;
 			public abstract InputStream getResourceAsStream(String path) throws IOException;
 		}
 
@@ -149,7 +174,7 @@ public abstract class Code {
 				public File getFile(String path) throws IOException {
 					InputStream in = resources.getResourceAsStream(path);
 					if (in == null) return null;
-					return File.create(this.toString() + ":" + path, in);
+					return File.create(this.toString() + ":" + path, resources.getLength(path), resources.getLastModified(path), in);
 				}
 
 				@Override public Classes getClasses() {
@@ -239,10 +264,14 @@ public abstract class Code {
 				URL url = classes.getResource(path);
 				if (url == null) return null;
 				try {
-					InputStream in = url.openStream();
+					URLConnection connection = url.openConnection();
+					Long length = (connection.getContentLengthLong() == -1) ? null : new Long(connection.getContentLengthLong());
+					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
 					return File.create(
 						getSourceName(url,path),
-						in
+						length,
+						modified,
+						connection.getInputStream()
 					);
 				} catch (IOException e) {
 					//	TODO	is this the only way to test whether the URL is available?

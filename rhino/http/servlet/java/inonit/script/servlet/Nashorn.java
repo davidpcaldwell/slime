@@ -50,6 +50,16 @@ class Nashorn extends Servlet.ScriptContainer {
 				return name;
 			}
 
+			//	TODO	implement?
+			@Override public java.util.Date getLastModified() {
+				return null;
+			}
+
+			//	TODO	implement?
+			@Override public Long getLength() {
+				return null;
+			}
+
 			@Override public InputStream getInputStream() {
 				return stream;
 			}

@@ -22,7 +22,7 @@ $exports.addJshPluginTo = function(jsh) {
 			p.loader = new jsh.io.Loader({ directory: p.directory });
 		}
 		this.toString = function() {
-			return p.prefix + " -> " + p.loader;
+			return p.prefix + " -> " + p.loader + " (dir=" + p.directory + ")";
 		}
 
 		this.get = function(path) {
@@ -137,6 +137,7 @@ $exports.addJshPluginTo = function(jsh) {
 				var file = p.pathname.directory.getFile(subpath);
 				return (file) ? new jsh.io.Resource({
 					type: $context.getMimeType(file),
+					length: file.resource.length,
 					read: {
 						binary: function() {
 							return file.read(jsh.io.Streams.binary)
@@ -270,15 +271,24 @@ $exports.addJshPluginTo = function(jsh) {
 					}
 					return null;
 				};
-
-				this._stream = function(path) {
+				
+				var getResource = function(path) {
 					for (var i=0; i<mapping.length; i++) {
 						var mapped = mapping[i].get(relative+path);
-						if (mapped) {
-							return mapped.read.binary().java.adapt();
-						}
+						if (mapped) return mapped;
 					}
-					return null;
+				}
+
+				this._stream = function(path) {
+					var resource = getResource(path);
+					if (!resource) return null;
+					return resource.read.binary().java.adapt();
+				};
+				
+				this.length = function(path) {
+					var resource = getResource(path);
+					if (!resource) return null;
+					return resource.length;
 				}
 				
 				this.type = function(path) {
@@ -297,6 +307,11 @@ $exports.addJshPluginTo = function(jsh) {
 			};
 			var rv = new jsh.io.Loader(new Parameter(""));
 			//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
+			rv.toString = function() {
+				return "NewLoader: [" + mapping.map(function(map) {
+					return String(map);
+				}).join("\n");
+			}
 			rv.list = function() {
 				return loader.list("");
 			}
