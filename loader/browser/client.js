@@ -177,7 +177,7 @@
 			return function(script) {
 				if (!/\.coffee$/.test(script.path)) {
 					//	Add sourceURL for JavaScript debuggers
-					script.code = script.code + "//# sourceURL=" + script.path;
+					script.code = script.code + "\n//# sourceURL=" + script.path;
 				}
 			}
 		});
