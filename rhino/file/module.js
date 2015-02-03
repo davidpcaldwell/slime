@@ -157,6 +157,7 @@ $context.$rhino.Loader.spi(function(underlying) {
 					if (file) {
 						return new $context.api.io.Resource({
 							type: p.type(file),
+							length: file.resource.length,
 							read: {
 								binary: function() {
 									return file.read($context.api.io.Streams.binary);

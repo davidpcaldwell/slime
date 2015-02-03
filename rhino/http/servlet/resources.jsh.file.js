@@ -280,6 +280,12 @@ $exports.addJshPluginTo = function(jsh) {
 					}
 					return null;
 				}
+				
+				this.type = function(path) {
+					if (/\.js$/.test(path)) {
+						return "text/javascript";
+					}
+				}
 
 				this.Loader = function(prefix) {
 					var rv = new jsh.io.Loader(new Parameter(relative+prefix));

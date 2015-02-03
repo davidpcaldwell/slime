@@ -106,6 +106,10 @@ $exports.Servlet = function(delegate) {
 					//	Documented to accept js/mime Type and string
 					_response.setContentType(String(response.body.type));
 				}
+				if (response.body && response.body.length) {
+					//	Documented to accept js/mime Type and string
+					_response.setContentLength(String(response.body.length));
+				}
 				if (response.body && response.body.string) {
 					//	Wrap in java.lang.String because Nashorn native string type does not unambiguously match .write() signature
 					_response.getWriter().write(new Packages.java.lang.String(response.body.string));

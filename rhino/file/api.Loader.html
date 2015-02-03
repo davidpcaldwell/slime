@@ -45,8 +45,10 @@ END LICENSE
 				<div class="label">Instances</div>
 				<span class="type"><a href="../io/api.html#types.Loader">Loader</a></span>
 			</div>
+			<script type="application/x.jsapi#initialize">
+				scope.loader = new module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+			</script>
 			<script type="application/x.jsapi#tests">
-				var loader = new module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
 				test(typeof(loader.resource) == "function");
 				test(loader.resource("api.html") != null);
 				test(loader.resource("foo.html") == null);
@@ -62,6 +64,10 @@ END LICENSE
 				verify(map.java).evaluate($api.Method.property("resource")).isUndefined();
 				verify(map["java.js"]).evaluate($api.Method.property("loader")).isUndefined();
 				verify(map["java.js"]).resource().isNotEqualTo(void(0));
+			</script>
+			<script type="application/x.jsapi#tests">
+				var api = loader.resource("api.html");
+				verify(api).length().isNotEqualTo(null);
 			</script>
 		</li>
 	</ul>

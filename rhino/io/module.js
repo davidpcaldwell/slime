@@ -386,6 +386,10 @@ var Resource = function(p) {
 			return stream.readLines.apply(stream,arguments);
 		};
 	}
+	
+	if (typeof(p.length) == "number") {
+		this.length = p.length;
+	}
 
 	if (p.write) {
 		var writeBinary = (function() {

@@ -382,6 +382,7 @@ var Pathname = function(parameters) {
 
 		this.directory = false;
 
+		var length = pathname.java.adapt().length();
 		var resource = new $context.Resource({
 			read: {
 				binary: function() {
@@ -390,7 +391,8 @@ var Pathname = function(parameters) {
 				text: function() {
 					return $filesystem.read.character(peer);
 				}
-			}
+			},
+			length: length
 		});
 
 		this.resource = resource;
