@@ -87,9 +87,9 @@ $set(function(p) {
 				jsh.shell.echo("ALERT: " + s);
 			},
 			//	TODO	configurable
-			console: new function() {
+			console: (p.console) ? p.console : new function() {
 				this.log = function(s) {
-					jsh.shell.echo("CONSOLE: " + s);
+					jsh.shell.echo("WEBVIEW CONSOLE: " + s);
 				}
 			},
 			popup: function(_popup) {
