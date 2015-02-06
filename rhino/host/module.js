@@ -497,6 +497,10 @@ $exports.Thread.thisSynchronize = function(f) {
 };
 $exports.Thread.Monitor = function() {
 	var lock = new Packages.java.lang.Object();
+	
+	this.toString = function() {
+		return "Thread.Monitor [id=" + Packages.java.lang.System.identityHashCode(lock) + "]";
+	}
 
 	this.Waiter = function(c) {
 		var f = function() {
