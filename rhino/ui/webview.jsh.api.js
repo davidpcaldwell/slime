@@ -88,8 +88,8 @@ $set(function(p) {
 			},
 			//	TODO	configurable
 			console: (p.console) ? p.console : new function() {
-				this.log = function(s) {
-					jsh.shell.echo("WEBVIEW CONSOLE: " + s);
+				this.log = function() {
+					jsh.shell.echo("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
 				}
 			},
 			popup: function(_popup) {

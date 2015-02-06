@@ -44,7 +44,10 @@
 
 			this.console = new function() {
 				this.log = function() {
-					server.call(JSON.stringify({ console: { log: Array.prototype.slice.call(arguments) }}));
+					var message = Array.prototype.slice.call(arguments).map(function(value) {
+						return String(value);
+					});
+					server.call(JSON.stringify({ console: { log: message }}));
 				};
 			};
 

@@ -23,8 +23,8 @@ $set(function(p) {
 
 	var _Server = function(window,serve,navigate) {
 		var console = (p.console) ? p.console : new function() {
-			this.log = function(s) {
-				$context.log.INFO("window.console.log: " + s);
+			this.log = function() {
+				$context.log.INFO("window.console.log: " + Array.prototype.slice.call(arguments).join("|"));
 			}
 		}
 
@@ -62,7 +62,8 @@ $set(function(p) {
 						});
 					});
 				} else {
-					return serve(object.payload);
+					if (serve) return serve(object.payload);
+					$context.log.WARNING("No serve for payload " + json);
 				}
 			}
 		};
