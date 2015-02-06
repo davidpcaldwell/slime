@@ -82,7 +82,7 @@ $exports.Servlet = function(delegate) {
 	};
 
 	this.service = function(_request,_response) {
-		debug("Received request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
+		debug("Received Java request: method=" + _request.getMethod() + " path=" + _request.getPathInfo());
 		try {
 			var request = new Request(_request);
 			debug("Received request: " + request);
@@ -130,6 +130,7 @@ $exports.Servlet = function(delegate) {
 				throw new TypeError("Servlet response is not of a known type.");
 			}
 		} catch (e) {
+			debug("Error creating request peer: " + e + " stack " + e.stack);
 			_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
