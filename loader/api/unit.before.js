@@ -10,222 +10,213 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.Scenario = function(properties) {
-	if (!properties) {
-		throw new TypeError("'properties' argument must be present.");
-	}
-	var Scenario = arguments.callee;
-	var scenario = this;
+var Verify = function(scope,vars) {
+	var Value = function(v,name) {
+		var prefix = (name) ? (name + " ") : "";
 
-	this.name = properties.name;
+		if (typeof(v) != "object" || !v) {
+			this.name = name;
+			this.value = v;
+		}
 
-	var Verify = function(scope,vars) {
-		var Value = function(v,name) {
-			var prefix = (name) ? (name + " ") : "";
-
-			if (typeof(v) != "object" || !v) {
-				this.name = name;
-				this.value = v;
-			}
-
-			if (typeof(v) == "string") {
-				var expression = (name) ? name : "\"" + v + "\"";
-				this.length = function() {
-					return new Value(v.length, expression + ".length");
-				};
-			}
-
-			this.isUndefined = function() {
-				scope.test({
-					success: function() { return typeof(v) === "undefined"; },
-					message: function(success) {
-						return prefix + ((success) ? "is undefined" : "" + v + " is not undefined");
-					}
-				});
+		if (typeof(v) == "string") {
+			var expression = (name) ? name : "\"" + v + "\"";
+			this.length = function() {
+				return new Value(v.length, expression + ".length");
 			};
+		}
 
-			var toLiteral = function(v) {
-				if (typeof(v) == "string") return "\"" + v + "\"";
-				return String(v);
-			}
-
-			var represent = function(value) {
-				if (value instanceof Value) {
-					return value;
-				} else {
-					return {
-						value: value,
-						name: toLiteral(value)
-					};
+		this.isUndefined = function() {
+			scope.test({
+				success: function() { return typeof(v) === "undefined"; },
+				message: function(success) {
+					return prefix + ((success) ? "is undefined" : "" + v + " is not undefined");
 				}
-			}
-
-			this.is = function(value) {
-				var specified = represent(value);
-				scope.test({
-					success: function() { return v === specified.value; },
-					message: function(success) {
-						return prefix + ((success) ? "is " + specified.name : "is " + toLiteral(v) + ", not " + specified.name);
-					}
-				});
-			};
-
-			this.isNotEqualTo = function(value) {
-				var specified = represent(value);
-				scope.test({
-					success: function() { return v != value; },
-					message: function(success) {
-						return prefix + ((success) ? "is not equal to " + specified.name : " equals " + specified.name + " (value: " + v + "), but should not.");
-					}
-				})
-			};
+			});
 		};
 
-		var Object = function(o,name) {
-			Value.call(this,o,name);
-			var prefix = function(x) {
-				var isNumber = function(x) {
-					return !isNaN(Number(x));
+		var toLiteral = function(v) {
+			if (typeof(v) == "string") return "\"" + v + "\"";
+			return String(v);
+		}
+
+		var represent = function(value) {
+			if (value instanceof Value) {
+				return value;
+			} else {
+				return {
+					value: value,
+					name: toLiteral(value)
 				};
-
-				var access = (isNumber(x)) ? "[" + x + "]" : "." + x;
-				return (name) ? (name + access) : access;
 			}
+		}
 
-			var wrap = function(x) {
-				var DidNotReturn = function(e,name) {
-					var delegate = new Value(void(0),name);
+		this.is = function(value) {
+			var specified = represent(value);
+			scope.test({
+				success: function() { return v === specified.value; },
+				message: function(success) {
+					return prefix + ((success) ? "is " + specified.name : "is " + toLiteral(v) + ", not " + specified.name);
+				}
+			});
+		};
 
-					for (var x in delegate) {
-						this[x] = function() {
-							scope.test({
-								success: function() { return false; },
-								error: e,
-								message: function(success) {
-									return name + " threw " + e;
-								}
-							});
-						}
-					}
+		this.isNotEqualTo = function(value) {
+			var specified = represent(value);
+			scope.test({
+				success: function() { return v != value; },
+				message: function(success) {
+					return prefix + ((success) ? "is not equal to " + specified.name : " equals " + specified.name + " (value: " + v + "), but should not.");
+				}
+			})
+		};
+	};
 
-					this.threw = new Object(e,name + " thrown");
-					this.threw.type = function(type) {
-						scope.test({
-							success: function() { return e instanceof type; },
-							message: function(success) {
-								if (success) return name + " threw expected " + type.name;
-								return "Threw " + e + ", not " + new type().name;
-							}
-						});
-					};
-					this.threw.nothing = function() {
+	var Object = function(o,name) {
+		Value.call(this,o,name);
+		var prefix = function(x) {
+			var isNumber = function(x) {
+				return !isNaN(Number(x));
+			};
+
+			var access = (isNumber(x)) ? "[" + x + "]" : "." + x;
+			return (name) ? (name + access) : access;
+		}
+
+		var wrap = function(x) {
+			var DidNotReturn = function(e,name) {
+				var delegate = new Value(void(0),name);
+
+				for (var x in delegate) {
+					this[x] = function() {
 						scope.test({
 							success: function() { return false; },
+							error: e,
 							message: function(success) {
-								return prefix + "threw " + e;
+								return name + " threw " + e;
 							}
 						});
 					}
-				};
+				}
 
-				var DidNotThrow = function(returned,name) {
-					var delegate = new Value(void(0),name);
-
-					for (var x in delegate) {
-						this[x] = function() {
-							scope.test({
-								success: function() { return false; },
-								message: function(success) {
-									return name + " did not throw; returned " + returned;
-								}
-							});
+				this.threw = new Object(e,name + " thrown");
+				this.threw.type = function(type) {
+					scope.test({
+						success: function() { return e instanceof type; },
+						message: function(success) {
+							if (success) return name + " threw expected " + type.name;
+							return "Threw " + e + ", not " + new type().name;
 						}
-					}
+					});
+				};
+				this.threw.nothing = function() {
+					scope.test({
+						success: function() { return false; },
+						message: function(success) {
+							return prefix + "threw " + e;
+						}
+					});
+				}
+			};
 
-					this.nothing = function() {
-						scope.test({
-							success: function() { return true; },
-							message: function(success) {
-								return name + " did not error. (returned: " + returned + ")";
-							}
-						});
-					};
+			var DidNotThrow = function(returned,name) {
+				var delegate = new Value(void(0),name);
 
-					this.type = function(type) {
+				for (var x in delegate) {
+					this[x] = function() {
 						scope.test({
 							success: function() { return false; },
 							message: function(success) {
 								return name + " did not throw; returned " + returned;
 							}
-						})
+						});
 					}
 				}
 
-				return function() {
-					var argumentToString = function(v) {
-						if (typeof(v) == "string") return "\"" + v + "\"";
-						return String(v);
-					}
-					var strings = Array.prototype.map.call(arguments,argumentToString);
-					var name = prefix(x)+"(" + strings.join() + ")";
-					try {
-						var returned = o[x].apply(o,arguments);
-						var value = rv(returned,name);
-						value.threw = new DidNotThrow(returned,name);
-						return value;
-					} catch (e) {
-						return new DidNotReturn(e,name);
-					}
-				}
-			};
-
-			var wrapProperty = function(x) {
-				return function() {
-					return rv(o[x],prefix(x));
-				}
-			};
-
-			this.evaluate = function(f) {
-				var mapped = f.call(o);
-				return rv(mapped,((name) ? name : "")+"{" + f + "}")
-			}
-
-			for (var x in o) {
-				if (typeof(o[x]) == "function") {
-					this[x] = wrap(x);
-				} else {
-					this[x] = wrapProperty(x);
-				}
-			}
-			if (o instanceof Array) {
-				this.length = wrapProperty("length");
-			}
-			if (o instanceof Error) {
-				this.message = wrapProperty("message");
-			}
-		};
-
-		var delegates = [];
-
-		var rv = function(value,name) {
-			for (var i=0; i<delegates.length; i++) {
-				if (delegates[i].accept(value)) {
-					return delegates[i].wrap(value);
-				}
-			}
-			if (value && typeof(value) == "object") {
-				var localName = (function() {
-					if (name) return name;
-					for (var x in vars) {
-						if (vars[x] == value) {
-							return x;
+				this.nothing = function() {
+					scope.test({
+						success: function() { return true; },
+						message: function(success) {
+							return name + " did not error. (returned: " + returned + ")";
 						}
-					}
-				})();
-				return new Object(value,localName);
+					});
+				};
+
+				this.type = function(type) {
+					scope.test({
+						success: function() { return false; },
+						message: function(success) {
+							return name + " did not throw; returned " + returned;
+						}
+					})
+				}
 			}
-			return new Value(value,name);
+
+			return function() {
+				var argumentToString = function(v) {
+					if (typeof(v) == "string") return "\"" + v + "\"";
+					return String(v);
+				}
+				var strings = Array.prototype.map.call(arguments,argumentToString);
+				var name = prefix(x)+"(" + strings.join() + ")";
+				try {
+					var returned = o[x].apply(o,arguments);
+					var value = rv(returned,name);
+					value.threw = new DidNotThrow(returned,name);
+					return value;
+				} catch (e) {
+					return new DidNotReturn(e,name);
+				}
+			}
 		};
+
+		var wrapProperty = function(x) {
+			return function() {
+				return rv(o[x],prefix(x));
+			}
+		};
+
+		this.evaluate = function(f) {
+			var mapped = f.call(o);
+			return rv(mapped,((name) ? name : "")+"{" + f + "}")
+		}
+
+		for (var x in o) {
+			if (typeof(o[x]) == "function") {
+				this[x] = wrap(x);
+			} else {
+				this[x] = wrapProperty(x);
+			}
+		}
+		if (o instanceof Array) {
+			this.length = wrapProperty("length");
+		}
+		if (o instanceof Error) {
+			this.message = wrapProperty("message");
+		}
+	};
+
+	var delegates = [];
+
+	var rv = function(value,name) {
+		for (var i=0; i<delegates.length; i++) {
+			if (delegates[i].accept(value)) {
+				return delegates[i].wrap(value);
+			}
+		}
+		if (value && typeof(value) == "object") {
+			var localName = (function() {
+				if (name) return name;
+				for (var x in vars) {
+					if (vars[x] == value) {
+						return x;
+					}
+				}
+			})();
+			return new Object(value,localName);
+		}
+		return new Value(value,name);
+	};
 //		var $document = rv(inonit.slim.getDocument(),"inonit.slim.getDocument()");
 //		for (var x in $document) {
 //			rv[x] = $document[x];
@@ -253,8 +244,19 @@ $exports.Scenario = function(properties) {
 //				rv[x] = rv(vars[x]);
 //			}
 //		}
-		return rv;
-	};
+	return rv;
+};
+
+$exports.Verify = Verify;
+
+$exports.Scenario = function(properties) {
+	if (!properties) {
+		throw new TypeError("'properties' argument must be present.");
+	}
+	var Scenario = arguments.callee;
+	var scenario = this;
+
+	this.name = properties.name;
 
 	var Scope = function(console,callback) {
 		var self = this;
