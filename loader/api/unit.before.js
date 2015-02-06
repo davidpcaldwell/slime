@@ -231,19 +231,19 @@ var Verify = function(scope,vars) {
 //		rv.map = function(object,f) {
 //			return object.evaluate(f);
 //		};
-//		for (var x in vars) {
-//			if (typeof(vars[x]) == "function") {
-//				rv[x] = (function(delegate,name) {
-//					return function() {
-//						var v = delegate.apply(inonit.slim.getDocument(),arguments);
-//						//	TODO	the below does a poor job at creating the prefix to use
-//						return rv(v,name);
-//					}
-//				})(vars[x],x)
-//			} else {
-//				rv[x] = rv(vars[x]);
-//			}
-//		}
+	for (var x in vars) {
+		if (typeof(vars[x]) == "function") {
+			rv[x] = (function(delegate,name) {
+				return function() {
+					var v = delegate.apply(inonit.slim.getDocument(),arguments);
+					//	TODO	the below does a poor job at creating the prefix to use
+					return rv(v,name);
+				}
+			})(vars[x],x)
+		} else {
+			rv[x] = rv(vars[x]);
+		}
+	}
 	return rv;
 };
 
