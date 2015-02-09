@@ -150,7 +150,7 @@ $set(function(p) {
 							"initialize",
 							new _Server(window,p.serve,(p.navigate) ? p.navigate.bind(target) : null)
 						);
-						if (page.initialize) {
+						if (page && page.initialize) {
 							page.initialize.call({ _browser: browser });
 						}
 						return;
