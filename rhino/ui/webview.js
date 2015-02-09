@@ -12,6 +12,28 @@
 //	END LICENSE
 
 $set(function(p) {
+	if (!p.window) p.window = {};
+	//	TODO	develop more sophisticated defaults
+	if (true) var screen = (function() {
+		var _awt = Packages.java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+		if (false) {
+			var _screen = Packages.javafx.stage.Screen.getPrimary().getVisualBounds();
+			return {
+				width: _screen.getWidth(),
+				height: _screen.getHeight()
+			};
+		} else {
+			return {
+				width: _awt.getWidth(),
+				height: _awt.getHeight()
+			}
+		}
+	})();
+	if (!p.window.width) p.window.width = screen.width * 3/4;
+	if (!p.window.height) p.window.height = screen.height * 3/4;
+	if (!p.window.width) p.window.width = 750;
+	if (!p.window.height) p.window.height = 500;
+	
 	var _ChangeListener = function(f) {
 		return new JavaAdapter(
 			Packages.javafx.beans.value.ChangeListener,
@@ -316,7 +338,7 @@ $set(function(p) {
 			this.navigate(p.page);
 		}
 
-		var rv = new Packages.javafx.scene.Scene(browser, 750, 500, Packages.javafx.scene.paint.Color.web("#666970"));
+		var rv = new Packages.javafx.scene.Scene(browser, p.window.width, p.window.height, Packages.javafx.scene.paint.Color.web("#666970"));
 		return rv;
 	}
 });
