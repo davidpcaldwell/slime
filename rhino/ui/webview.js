@@ -21,13 +21,13 @@ $set(function(p) {
 		);
 	};
 
-	var _Server = function(window,serve,navigate) {
-		var console = (p.console) ? p.console : new function() {
-			this.log = function() {
-				$context.log.INFO("window.console.log: " + Array.prototype.slice.call(arguments).join("|"));
-			}
+	var console = (p.console) ? p.console : new function() {
+		this.log = function() {
+			$context.log.INFO("window.console.log: " + Array.prototype.slice.call(arguments).join("|"));
 		}
+	};
 
+	var _Server = function(window,serve,navigate) {
 		var Server = function(window,serve,navigate) {
 			this.call = function(json) {
 				var object = JSON.parse(json);
@@ -124,49 +124,89 @@ $set(function(p) {
 		var target = this;
 
 		//	TODO	why are there two different methods handling these magic messages? Is one obsolete?
-
-		browser.getEngine().setOnAlert(new JavaAdapter(
-			Packages.javafx.event.EventHandler,
-			new function() {
-				this.handle = function(event) {
-					var alert = (p.alert) ? p.alert : function(s) {
-						$context.log.INFO("ALERT: " + s);
-					}
-					alert(event.getData());
-				}
-			}
-		));
-
-		browser.getEngine().setOnStatusChanged(new JavaAdapter(
-			Packages.javafx.event.EventHandler,
-			new function() {
-				this.handle = function(event) {
-					if (event.getData() == "window.jsh") {
-						browser.getEngine().executeScript($loader.resource("webview.window.js").read(String));
-					}
-					if (event.getData() == "window.jsh.message.initialize") {
-						var window = browser.getEngine().executeScript("window");
-						browser.getEngine().executeScript("window.jsh.message").call(
-							"initialize",
-							new _Server(window,p.serve,(p.navigate) ? p.navigate.bind(target) : null)
-						);
-						if (page && page.initialize) {
-							page.initialize.call({ _browser: browser });
+		
+		
+		var setAlertHandler = function(engine) {
+			var alertHandler = new JavaAdapter(
+				Packages.javafx.event.EventHandler,
+				new function() {
+					this.handle = function(event) {
+						var alert = (p.alert) ? p.alert : function(s) {
+							$context.log.INFO("ALERT: " + s);
 						}
-						return;
+						alert(event.getData());
 					}
-					var status = (p.status) ? p.status : function(){};
-					status(event.getData());
 				}
-			}
-		));
+			);
+
+			engine.setOnAlert(alertHandler);			
+		};
+		
+		var addStatusChangeListener = function(engine) {
+			engine.setOnStatusChanged(new JavaAdapter(
+				Packages.javafx.event.EventHandler,
+				new function() {
+					this.handle = function(event) {
+						if (event.getData() == "window.jsh") {
+							browser.getEngine().executeScript($loader.resource("webview.window.js").read(String));
+						}
+						if (event.getData() == "window.jsh.message.initialize") {
+							var window = browser.getEngine().executeScript("window");
+							browser.getEngine().executeScript("window.jsh.message").call(
+								"initialize",
+								new _Server(window,p.serve,(p.navigate) ? p.navigate.bind(target) : null)
+							);
+							if (page && page.initialize) {
+								page.initialize.call({ _browser: browser });
+							}
+							return;
+						}
+						var status = (p.status) ? p.status : function(){};
+						status(event.getData());
+					}
+				}
+			));			
+		};
+		
+		var addLoadWorkerListener = function(engine) {
+			engine.getLoadWorker().stateProperty().addListener(new JavaAdapter(
+				Packages.javafx.beans.value.ChangeListener,
+				new function() {
+					this.changed = function(observableValue,oldState,newState) {
+						if (String(newState.toString()) == "RUNNING") {
+							engine.executeScript("window").setMember(
+								"console", 
+								new JavaAdapter(
+									Packages.inonit.javafx.webview.Console,
+									console
+								)
+							);
+							engine.executeScript($loader.resource("webview.initialize.js").read(String));
+						}
+						if (String(newState.toString()) == "SUCCEEDED") {
+							engine.executeScript($loader.resource("webview.window.onload.js").read(String));
+						}
+					}
+				}
+			));
+		}
+		
+		var configureEngine = function(engine) {
+			setAlertHandler(engine);		
+			addLoadWorkerListener(engine);
+			addStatusChangeListener(engine);			
+		};
+		
+		configureEngine(browser.getEngine());
 
 		if (p.popup) {
 			browser.getEngine().setCreatePopupHandler(new JavaAdapter(
 				Packages.javafx.util.Callback,
 				new function() {
 					this.call = function(_popup) {
-						return p.popup.call({ _popup: _popup });
+						var rv = p.popup.call({ _popup: _popup });
+						configureEngine(rv);
+						return rv;
 					}
 				}
 			))
@@ -247,6 +287,26 @@ $set(function(p) {
 		}
 
 		this._browser = browser;
+
+		if (false) {
+			browser.setOnKeyPressed(new JavaAdapter(
+				Packages.javafx.event.EventHandler,
+				new function() {
+					this.handle = function(event) {
+						Packages.java.lang.System.err.println("key pressed: " + event);
+					}
+				}
+			));
+
+			browser.setOnKeyTyped(new JavaAdapter(
+				Packages.javafx.event.EventHandler,
+				new function() {
+					this.handle = function(event) {
+						Packages.java.lang.System.err.println("key typed: " + event);
+					}
+				}
+			));
+		}
 
 		if (p.initialize) {
 			p.initialize.call(this);

@@ -68,13 +68,6 @@
 
 	window.status = "window.jsh.message.initialize";
 
-	window.console = window.jsh.message.console;
-
-	window.addEventListener("click", function(e) {
-		console.log("clicked something; location = " + document.location.href);
-		if (e.target.tagName.toLowerCase() == "a" && (true || e.target.getAttribute("webview")) ) {
-			console.log("Clicked link: " + e.target.href);
-			window.jsh.message.navigate(e.target.href);
-		}
-	})
+	//	TODO	Now that console is defined externally, this can probably go away if the new definition works well
+	if (!window.console) window.console = window.jsh.message.console;
 })();
