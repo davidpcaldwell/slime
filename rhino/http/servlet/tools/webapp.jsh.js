@@ -32,6 +32,16 @@ if (!parameters.options.to) {
 	jsh.shell.exit(1);
 }
 
+if (!parameters.options.servletapi) {
+	if (jsh.shell.environment.CATALINA_HOME) {
+		parameters.options.servletapi = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory.getRelativePath("lib/servlet-api.jar");
+	} else {
+		jsh.shell.echo("Tomcat not installed in this shell; must explicitly specify servlet API location.");
+		jsh.shell.echo("Required: -servletapi <pathname>");
+		jsh.shell.exit(1);
+	}
+}
+
 var destination = (function() {
 	if (/\.war$/.test(parameters.options.to)) {
 		return {
