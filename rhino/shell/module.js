@@ -345,7 +345,7 @@ $exports.system.apple = $loader.file("apple.js", {
 	api: {
 		document: $context.api.document,
 		js: $context.api.js,
-		shell: $exports,
+		shell: $exports
 	}
 });
 
