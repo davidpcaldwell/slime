@@ -58,6 +58,18 @@ var shell = function(p) {
 			} : {});
 			return p.evaluate(myresult);
 		}
+	} else if (p.stdio) {
+		invocation.stdio = p.stdio;
+		invocation.evaluate = function(result) {
+			//	TODO	should standard rhino/shell behave this way?
+			if (result.status != 0) {
+				var error = new Error("Exit status " + result.status + " from " + result.command + " " + result.arguments.join(" "));
+				error.stdio = result.stdio;
+				throw error;
+			} else {
+				return result;
+			}
+		}
 	}
 
 	invocation.command = $context.install;
@@ -577,6 +589,7 @@ var LocalRepository = function(dir) {
 		return shell({
 			repository: this,
 			config: (p && p.config) ? p.config : {},
+			stdio: (p && p.stdio) ? p.stdio : void(0),
 			command: "push",
 			arguments: args
 		});
