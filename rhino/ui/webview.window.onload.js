@@ -16,7 +16,7 @@ window.addEventListener("keydown", function(e) {
 	if (e.keyIdentifier == "Right" && e.metaKey) {
 		window.history.forward();
 	}
-	if (true) {
+	if (false) {
 		console.log("Platform: " + navigator.platform);
 		for (var x in e) {
 			console.log("keydown " + x + ": " + e[x]);
