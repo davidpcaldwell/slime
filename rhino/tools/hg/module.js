@@ -565,6 +565,7 @@ var LocalRepository = function(dir) {
 		return shell({
 			repository: this,
 			config: (p && p.config) ? p.config : {},
+			stdio: (p && p.stdio) ? p.stdio : void(0),
 			command: "pull",
 			arguments: args
 		});
