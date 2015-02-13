@@ -619,6 +619,25 @@ var LocalRepository = function(dir) {
 	this.shell = function(p) {
 		return shell($context.api.js.Object.set({}, { repository: this }, p));
 	}
+	
+	//	TODO	it is unclear what various forms of the .hgsub entry format are allowed, and how they work. So not documenting this
+	//			API
+	this.getSubrepositories = function() {
+		if (!dir.getFile(".hgsub")) return [];
+		var hgsub = new $exports.Hgrc({ file: dir.getFile(".hgsub"), section: "" });
+		var entries = hgsub.get();
+		var rv = [];
+		for (var x in entries) {
+			if (/^subpaths\./.test(x)) {
+				//	ignore
+			} else {
+				var sub = dir.getSubdirectory(x);
+				if (!sub) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(entries));
+				rv.push(new LocalRepository(dir.getSubdirectory(x)));
+			}
+		}
+		return rv;
+	}
 };
 
 var RemoteRepository = function(url) {
@@ -833,14 +852,21 @@ $exports.Hgrc = function(p) {
 		//	entry. Leading whitespace is removed from values. Empty lines are skipped. Lines beginning with # or ; are ignored
 		//	and may be used to provide comments
 
-		var rv = {
-			lines: [],
-			get: function(name) {
-				var rv = null;
+		var rv = new function() {
+			this.lines = [];
+			
+			var getName = function(line) {
+				return (typeof(line.section) != "undefined" && line.name) ? ((line.section) ? (line.section + ".") : line.section) + line.name : null;
+			}
+			
+			this.get = function(name) {
+				var single = (arguments.length > 0);
+				var rv = (single) ? null : {};
 				this.lines.forEach(function(line) {
-					var fullname = (line.section && line.name) ? line.section + "." + line.name : null;
-					if (fullname == name) {
+					if (single && getName(line) == name) {
 						rv = line.value;
+					} else if (!single) {
+						if (getName(line)) rv[getName(line)] = line.value;
 					}
 				});
 				return rv;
@@ -848,6 +874,12 @@ $exports.Hgrc = function(p) {
 		};
 
 		var section;
+		if (typeof(p.section) != "undefined") {
+			section = {
+				name: p.section,
+				lines: []
+			}
+		}
 		lines.forEach(function(line) {
 			var current = { line: line };
 			rv.lines.push(current);
@@ -875,7 +907,11 @@ $exports.Hgrc = function(p) {
 	};
 
 	this.get = function(name) {
-		return parse().get(name)
+		if (arguments.length > 0) {
+			return parse().get(name)
+		} else {
+			return parse().get();
+		}
 	};
 
 	this.set = function(section,name,value) {
