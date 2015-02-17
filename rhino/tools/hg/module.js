@@ -835,9 +835,8 @@ $exports.init = function(dir) {
 	shell({
 		command: "init",
 		directory: dir
-
 	});
-	return new $exports.Repository(dir);
+	return new $exports.Repository({ local: dir });
 };
 
 $exports.Hgrc = function(p) {
