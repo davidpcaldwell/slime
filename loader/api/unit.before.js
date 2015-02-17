@@ -183,9 +183,10 @@ var Verify = function(scope,vars) {
 
 		for (var x in o) {
 			try {
-				if (o.tagName == "INPUT" && o.type == "button" && x == "selectionDirection") continue;
-				if (o.tagName == "INPUT" && o.type == "button" && x == "selectionEnd") continue;
-				if (o.tagName == "INPUT" && o.type == "button" && x == "selectionStart") continue;
+				var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
+				if (noSelection && x == "selectionDirection") continue;
+				if (noSelection && x == "selectionEnd") continue;
+				if (noSelection && x == "selectionStart") continue;
 				var value = o[x];
 				if (typeof(value) == "function") {
 					this[x] = wrap(x);
