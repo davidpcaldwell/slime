@@ -11,8 +11,10 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	TODO	is the below a reasonable default on Windows?
-var downloads = (jsh.shell.environment.JSH_BUILD_DOWNLOADS) ? jsh.file.Pathname(jsh.shell.environment.JSH_BUILD_DOWNLOADS).directory : null;
+var downloads = (function() {
+	if ($context.downloads) return $context.downloads;
+	return (jsh.shell.environment.JSH_BUILD_DOWNLOADS) ? jsh.file.Pathname(jsh.shell.environment.JSH_BUILD_DOWNLOADS).directory : null;
+})();
 var client = new jsh.http.Client();
 
 $exports.downloads = downloads;
