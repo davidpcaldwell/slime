@@ -20,7 +20,8 @@ plugin({
 				var mvn = jsh.shell.PATH.getCommand("mvn");
 
 				var core = $loader.module("core.js", {
-					mvn: mvn
+					mvn: mvn,
+					HOME: jsh.shell.HOME
 				});
 
 				this.mvn = core.mvn;

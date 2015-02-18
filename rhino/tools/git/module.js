@@ -229,6 +229,9 @@ var LocalRepository = function(o) {
 		if (p && p.force) {
 			args.push("-f");
 		}
+		if (p && p.delete) {
+			args.push("-d");
+		}
 		if (p && p.name) args.push(p.name);
 		if (p && p.start) args.push(p.start);
 		if (p && p.all) {

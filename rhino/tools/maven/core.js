@@ -384,4 +384,4 @@ var LocalRepository = function(p) {
 $exports.Repository = function(p) {
 
 };
-$exports.Repository.LOCAL = new LocalRepository({ directory: jsh.shell.HOME.getSubdirectory(".m2/repository") });
+$exports.Repository.LOCAL = new LocalRepository({ directory: $context.HOME.getSubdirectory(".m2/repository") });
