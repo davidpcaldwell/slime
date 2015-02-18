@@ -13,7 +13,18 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		version: "7.0.57",
+		version: (function() {
+			var downloadRawHtml = new jsh.http.Client().request({
+				url: "http://tomcat.apache.org/download-70.cgi",
+				evaluate: function(result) {
+					return result.body.stream.character().asString()
+				}
+			});
+			var matcher = /\<h3 id=\"(7\..*)\"\>/;
+			var match = matcher.exec(downloadRawHtml);
+			var version = match[1];
+			return version;
+		})(),
 		jsh: (function() {
 			if (jsh.shell.jsh.home) return jsh.shell.jsh.home.pathname;
 			return jsh.file.Pathname;
