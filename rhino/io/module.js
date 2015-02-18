@@ -510,7 +510,15 @@ $context.$rhino.Loader.spi(function(underlying) {
 							throw new TypeError("Resource not found: " + path);
 						}
 						return null;
-					}
+					};
+					
+					this.getLength = function() {
+						return null;
+					};
+					
+					this.getLastModified = function() {
+						return null;
+					};
 				}
 			);
 			p._source = Packages.inonit.script.engine.Code.Source.create(_resources);
