@@ -159,29 +159,29 @@ public abstract class Code {
 			}
 		}
 
-		public static abstract class Resources {
-			public abstract Long getLength(String path) throws IOException;
-			public abstract java.util.Date getLastModified(String path) throws IOException;
-			public abstract InputStream getResourceAsStream(String path) throws IOException;
-		}
-
-		public static Source create(final Resources resources) {
-			return new ResourceBased() {
-				@Override public String toString() {
-					return Code.Source.class.getName() + " resources=" + resources;
-				}
-
-				public File getFile(String path) throws IOException {
-					InputStream in = resources.getResourceAsStream(path);
-					if (in == null) return null;
-					return File.create(this.toString() + ":" + path, resources.getLength(path), resources.getLastModified(path), in);
-				}
-
-				@Override public Classes getClasses() {
-					return null;
-				}
-			};
-		}
+//		public static abstract class Resources {
+//			public abstract Long getLength(String path) throws IOException;
+//			public abstract java.util.Date getLastModified(String path) throws IOException;
+//			public abstract InputStream getResourceAsStream(String path) throws IOException;
+//		}
+//
+//		public static Source create(final Resources resources) {
+//			return new ResourceBased() {
+//				@Override public String toString() {
+//					return Code.Source.class.getName() + " resources=" + resources;
+//				}
+//
+//				public File getFile(String path) throws IOException {
+//					InputStream in = resources.getResourceAsStream(path);
+//					if (in == null) return null;
+//					return File.create(this.toString() + ":" + path, resources.getLength(path), resources.getLastModified(path), in);
+//				}
+//
+//				@Override public Classes getClasses() {
+//					return null;
+//				}
+//			};
+//		}
 
 //		/**
 //		 *	Returns a stream that reads the content of the resource at the given path, or <code>null</code> if no resource can

@@ -497,23 +497,33 @@ $context.$rhino.Loader.spi(function(underlying) {
 			//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 			//			on this package into it
 			var _resources = new JavaAdapter(
-				Packages.inonit.script.engine.Code.Source.Resources,
+				Packages.inonit.script.engine.Code.Source,
 				new function() {
 					this.toString = function() {
 						return p.resources.toString();
 					}
 
-					this.getResourceAsStream = function(path) {
+					this.getFile = function(path) {
 						var resource = p.resources.get(String(path));
-						if (resource && resource.read && resource.read.binary) return resource.read.binary().java.adapt();
+						if (resource && resource.read && resource.read.binary) {
+							return Packages.inonit.script.engine.Code.Source.File.create(
+								p.resources.toString() + "!" + String(path),
+								resource.read.binary().java.adapt()
+							);
+						}
 						if (resource) {
 							throw new TypeError("Resource not found: " + path);
 						}
 						return null;
+					};
+					
+					this.getClasses = function() {
+						return null;
 					}
 				}
 			);
-			p._source = Packages.inonit.script.engine.Code.Source.create(_resources);
+//			p._source = Packages.inonit.script.engine.Code.Source.create(_resources);
+			p._source = _resources;
 		}
 		underlying.apply(this,arguments);
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
