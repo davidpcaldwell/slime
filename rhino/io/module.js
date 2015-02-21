@@ -529,7 +529,7 @@ $context.$rhino.Loader.spi(function(underlying) {
 					
 					this.getClasses = function() {
 						return null;
-					}
+					};
 				}
 			);
 //			p._source = Packages.inonit.script.engine.Code.Source.create(_resources);
