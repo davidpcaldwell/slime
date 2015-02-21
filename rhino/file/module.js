@@ -149,13 +149,14 @@ $context.$rhino.Loader.spi(function(underlying) {
 			p.resources = new function() {
 				this.toString = function() {
 					return "rhino/file Loader: directory=" + p.directory;
-				}
+				};
 
 				this.get = function(path) {
 					var file = p.directory.getFile(path);
 					//	TODO	could we modify this so that file supported Resource?
 					if (file) {
-						return new $context.api.io.Resource({
+						return /*new $context.api.io.Resource(*/{
+							name: p.directory.toString() + path,
 							type: p.type(file),
 							length: file.resource.length,
 							read: {
@@ -163,7 +164,7 @@ $context.$rhino.Loader.spi(function(underlying) {
 									return file.read($context.api.io.Streams.binary);
 								}
 							}
-						});
+						}/*)*/;
 					}
 					return null;
 				}

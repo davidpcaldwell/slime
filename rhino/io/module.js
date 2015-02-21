@@ -502,12 +502,22 @@ $context.$rhino.Loader.spi(function(underlying) {
 					this.toString = function() {
 						return p.resources.toString();
 					}
+					
+					var defined = function(value,otherwise,transform) {
+						if (value === null) return otherwise;
+						if (typeof(value) == "undefined") return otherwise;
+						return (transform) ? transform(value) : value;
+					}
 
 					this.getFile = function(path) {
 						var resource = p.resources.get(String(path));
 						if (resource && resource.read && resource.read.binary) {
 							return Packages.inonit.script.engine.Code.Source.File.create(
-								p.resources.toString() + "!" + String(path),
+								defined(resource.name, p.resources.toString() + "!" + String(path)),
+								defined(resource.length, null),
+								defined(resource.modified, null, function(modified) {
+									return new Packages.java.util.Date(modified.getTime())
+								}),
 								resource.read.binary().java.adapt()
 							);
 						}
