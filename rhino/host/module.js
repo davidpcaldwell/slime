@@ -492,7 +492,7 @@ $exports.Thread.thisSynchronize = function(f) {
 	if ($exports.getClass("org.mozilla.javascript.Synchronizer")) {
 		return new Packages.org.mozilla.javascript.Synchronizer(f);
 	} else {
-		return sync(f, this);
+		return sync(f);
 	}
 };
 $exports.Thread.Monitor = function() {
