@@ -150,7 +150,7 @@ var LocalRepository = function(o) {
 						},
 						committer: {
 							name: tokens[1],
-							date: new jsh.time.When({ unix: Number(tokens[3])*1000 })
+							date: (jsh.time) ? new jsh.time.When({ unix: Number(tokens[3])*1000 }) : Number(tokens[3])*1000
 						},
 						subject: tokens[2]
 					}
@@ -276,7 +276,26 @@ var LocalRepository = function(o) {
 		} else {
 			jsh.shell.echo("git push " + args.join(" "));
 		}
-	}
+	};
+	
+	this.mergeBase = function(p) {
+		var args = [];
+		args = args.concat(p.commits);
+		return execute({
+			command: "merge-base",
+			arguments: args,
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				if (result.status == 0) {
+					return result.stdio.output;
+				} else {
+					throw new Error("git exited with status " + result.status);
+				}
+			}
+		})
+	};
 }
 
 $exports.Repository = function(p) {
