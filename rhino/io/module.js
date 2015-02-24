@@ -460,7 +460,9 @@ var decorate = function(p) {
 				//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
 				//			child would need to call the parent loader with the prefix, which probably means we'd have to
 				//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
-				return p.resources.get(path);
+				var descriptor = p.resources.get(path);
+				if (!descriptor) return null;
+				return new Resource(descriptor);
 			} else {
 				//	Test for existence so that we can return null if not found
 				var _in = this._stream(path);
