@@ -292,11 +292,11 @@ END LICENSE
 								<span>An unexpected options handler that discards any unrecognized options.</span>
 								<script type="application/x.jsapi#tests">
 									var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.IGNORE);
-									verify(parameters).arguments().length().is(0);
-									verify(parameters).options().evaluate(function() {
+									verify(parameters).arguments.length.is(0);
+									verify(parameters).options.evaluate(function() {
 										return this.boolean;
 									}).isUndefined();
-									verify(parameters).options().evaluate(function() {
+									verify(parameters).options.evaluate(function() {
 										return this.string;
 									}).isUndefined();
 								</script>
@@ -309,11 +309,11 @@ END LICENSE
 								</span>
 								<script type="application/x.jsapi#tests">
 									var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.SKIP);
-									verify(parameters).arguments().length().is(3);
-									verify(parameters).options().evaluate(function() {
+									verify(parameters).arguments.length.is(3);
+									verify(parameters).options.evaluate(function() {
 										return this.boolean;
 									}).isUndefined();
-									verify(parameters).options().evaluate(function() {
+									verify(parameters).options.evaluate(function() {
 										return this.string;
 									}).isUndefined();
 								</script>
@@ -328,11 +328,11 @@ END LICENSE
 								</span>
 								<script type="application/x.jsapi#tests">
 									var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.INTERPRET);
-									verify(parameters).arguments().length().is(0);
-									verify(parameters).options().evaluate(function() {
+									verify(parameters).arguments.length.is(0);
+									verify(parameters).options.evaluate(function() {
 										return this.boolean;
 									}).is(true);
-									verify(parameters).options().evaluate(function() {
+									verify(parameters).options.evaluate(function() {
 										return this.string;
 									}).is("string");
 								</script>
@@ -472,8 +472,8 @@ END LICENSE
 													property: module.getopts.OBJECT(String)
 												}
 											},strings);
-											verify(parameters).options().property().foo().is("bar");
-											verify(parameters).options().property().hello().is("world");
+											verify(parameters).options.property.foo.is("bar");
+											verify(parameters).options.property.hello.is("world");
 
 											var numbers = ["-property","a=1","-property","b=2"];
 											var parameters = module.getopts({
@@ -481,8 +481,8 @@ END LICENSE
 													property: module.getopts.OBJECT(Number)
 												}
 											},numbers);
-											verify(parameters).options().property().a().is(1);
-											verify(parameters).options().property().b().is(2);
+											verify(parameters).options.property.a.is(1);
+											verify(parameters).options.property.b.is(2);
 
 											var booleans = ["-property","that","-property","it"];
 											var parameters = module.getopts({
@@ -490,8 +490,8 @@ END LICENSE
 													property: module.getopts.OBJECT(Boolean)
 												}
 											},booleans);
-											verify(parameters).options().property().that().is(true);
-											verify(parameters).options().property().it().is(true);
+											verify(parameters).options.property.that.is(true);
+											verify(parameters).options.property.it.is(true);
 
 											var pathnames = ["-property","absolute=" + jsh.script.file.toString(),"-property","relative=foo/bar"];
 											var parameters = module.getopts({
@@ -500,10 +500,10 @@ END LICENSE
 												}
 											},pathnames);
 											jsh.shell.echo("property: " + Object.keys(parameters.options.property));
-											verify(parameters).options().property().absolute().evaluate(function() {
+											verify(parameters).options.property.absolute.evaluate(function() {
 												return this.toString();
 											}).is(jsh.script.file.toString());
-											verify(parameters).options().property().relative().evaluate(function() {
+											verify(parameters).options.property.relative.evaluate(function() {
 												return this.toString();
 											}).is(jsh.shell.PWD.getRelativePath("foo/bar").toString());
 
@@ -512,8 +512,8 @@ END LICENSE
 													property: Object
 												}
 											},["-property","foo=bar","-property","hello=world"]);
-											verify(parameters).options().property().foo().is("bar");
-											verify(parameters).options().property().hello().is("world");
+											verify(parameters).options.property.foo.is("bar");
+											verify(parameters).options.property.hello.is("world");
 										</script>
 									</tr>
 								</table>
@@ -542,7 +542,7 @@ END LICENSE
 						[ "-s", "brilliant" ]
 					);
 
-					verify(t_0.options,"t_0.options").s().is("brilliant");
+					verify(t_0.options,"t_0.options").s.is("brilliant");
 
 					var t_1 = getopts(
 						{
@@ -556,9 +556,9 @@ END LICENSE
 					);
 
 					var verify_t1options = verify(t_1.options,"t_1.options");
-					verify_t1options.n().is(8);
-					verify_t1options.s().is("hello");
-					verify_t1options.b().is(true);
+					verify_t1options.n.is(8);
+					verify_t1options.s.is("hello");
+					verify_t1options.b.is(true);
 
 					var t_array = getopts(
 						{
@@ -574,13 +574,13 @@ END LICENSE
 					);
 
 					var verify_t_array_options = verify(t_array.options, "t_array.options");
-					verify_t_array_options.l().length().is(2);
-					verify_t_array_options.l()[0]().is("hello");
-					verify_t_array_options.l()[1]().is("world");
-					verify_t_array_options.s().is("sizzle");
-					verify_t_array_options.b().is(true);
-					verify_t_array_options.nob().is(false);
-					verify_t_array_options.n().is(8);
+					verify_t_array_options.l.length.is(2);
+					verify_t_array_options.l[0].is("hello");
+					verify_t_array_options.l[1].is("world");
+					verify_t_array_options.s.is("sizzle");
+					verify_t_array_options.b.is(true);
+					verify_t_array_options.nob.is(false);
+					verify_t_array_options.n.is(8);
 
 					var usingArgumentsObject = (function() {
 						return module.getopts({
@@ -621,7 +621,7 @@ END LICENSE
 						[ "-s", "yes" ]
 					);
 
-					verify(t_d_1.options,"t_d_1.options").s().is("yes");
+					verify(t_d_1.options,"t_d_1.options").s.is("yes");
 
 					var PATHNAME_SEPARATOR = context.$filesystem.$unit.getPathnameSeparator();
 					var anAbsolute = PATHNAME_SEPARATOR + [ "hello", "world" ].join(PATHNAME_SEPARATOR);

@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+var defineProperty = Object.defineProperty;
+
 var Verify = function(scope,vars) {
 	var Value = function(v,name) {
 		var prefix = (name) ? (name + " ") : "";
@@ -171,9 +173,11 @@ var Verify = function(scope,vars) {
 		};
 
 		var wrapProperty = function(x) {
-			return function() {
-				return rv(o[x],prefix(x));
-			}
+			defineProperty(this, x, {
+				get: function() {
+					return rv(o[x],prefix(x));
+				}
+			});
 		};
 
 		this.evaluate = function(f) {
@@ -191,16 +195,16 @@ var Verify = function(scope,vars) {
 				if (typeof(value) == "function") {
 					this[x] = wrap(x);
 				} else {
-					this[x] = wrapProperty(x);
+					wrapProperty.call(this,x);
 				}
 			} catch (e) {				
 			}
 		}
 		if (o instanceof Array) {
-			this.length = wrapProperty("length");
+			wrapProperty.call(this,"length");
 		}
-		if (o instanceof Error) {
-			this.message = wrapProperty("message");
+		if (o instanceof Error && !this.message) {
+			wrapProperty.call(this,"message");
 		}
 	};
 

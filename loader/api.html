@@ -840,7 +840,7 @@ END LICENSE
 							$jsapi.disableBreakOnExceptions(function() {
 								verify(value).require().threw.nothing();
 								verify(value).property("foo").require().threw.type(TypeError);
-								verify(value).property("foo").require().threw.message().is("one.foo is required");
+								verify(value).property("foo").require().threw.message.is("one.foo is required");
 								if (!$jsapi.java || !$jsapi.java.loader.test.HAS_NASHORN_ERROR_HACK) {
 									verify(value).property("foo","bar").threw.type(TypeError);
 								}
@@ -848,7 +848,7 @@ END LICENSE
 								verify(value).property("name","length").require().threw.nothing();
 								verify(value).property("nested","value").require().threw.nothing();
 								verify(value).property("nested","value1").require().threw.type(TypeError);
-								verify(one).nested().method().is("method");
+								verify(one).nested.method().is("method");
 							})();
 						</script>
 					</li>
@@ -887,19 +887,19 @@ END LICENSE
 						received.push(e);
 					};
 
-					verify(received).length().is(0);
+					verify(received).length.is(0);
 					source.doIt();
-					verify(received).length().is(0);
+					verify(received).length.is(0);
 					source.listeners.add("other", counter);
-					verify(received).length().is(0);
+					verify(received).length.is(0);
 					source.doIt();
-					verify(received).length().is(0);
+					verify(received).length.is(0);
 					source.listeners.add("done", counter);
 					source.doIt();
-					verify(received).length().is(1);
+					verify(received).length.is(1);
 					source.listeners.remove("done", counter);
 					source.doIt();
-					verify(received).length().is(1);
+					verify(received).length.is(1);
 				</script>
 			</li>
 		</ul>
@@ -1093,29 +1093,29 @@ END LICENSE
 								var module = scope.verify(p.loadTestModule("test/data/a/", {
 									d: 1970
 								}), "test/data/a");
-								module.a().is(3);
-								module.b().is(4);
-								module.c().is(5);
-								module.d().is(1970);
-								module.e().is(4);
-								module.f().is(6);
-								module.fThis().is("fThis");
-								module.mThis().is("mThis");
-								module.value().is(5);
-								module.vThis().thisName().is("vThis:4");
+								module.a.is(3);
+								module.b.is(4);
+								module.c.is(5);
+								module.d.is(1970);
+								module.e.is(4);
+								module.f.is(6);
+								module.fThis.is("fThis");
+								module.mThis.is("mThis");
+								module.value.is(5);
+								module.vThis.thisName.is("vThis:4");
 							};
 
 							var b = function(scope) {
 								var module = scope.verify(p.loadTestModule("test/data/b/", {
 								}), "test/data/b");
-								module.submodule().message().is("ititit");
+								module.submodule.message.is("ititit");
 							}
 
 							var c = function(scope) {
 								var module = scope.verify(p.loadTestModule("test/data/c/main.js", {
 								}), "test/data/c/main");
-								module.value().is(13);
-								module.other().is(42);
+								module.value.is(13);
+								module.other.is(42);
 							};
 
 							var rhino = function(scope) {
@@ -1130,9 +1130,9 @@ END LICENSE
 									}
 								})();
 								if ($java) {
-									module.data().is("From Java");
+									module.data.is("From Java");
 								} else {
-									module.data().is("No Java");
+									module.data.is("No Java");
 								}
 							};
 
@@ -1141,11 +1141,11 @@ END LICENSE
 								if ($jsapi.loader.coffee) {
 									var loader = $jsapi.loader.module("test/data/coffee/loader.js");
 									var coffee = $jsapi.loader.module("test/data/coffee/module.coffee");
-									scope.verify(coffee,"coffee").a().is(2);
-									scope.verify(coffee,"coffee").file().b().is(3);
-									scope.verify(loader,"loader").file().b().is(3);
+									scope.verify(coffee,"coffee").a.is(2);
+									scope.verify(coffee,"coffee").file.b.is(3);
+									scope.verify(loader,"loader").file.b.is(3);
 									var file = $jsapi.loader.file("test/data/coffee/file.coffee");
-									scope.verify(file,"file").b().is(3);
+									scope.verify(file,"file").b.is(3);
 								} else {
 									scope.verify("No CoffeeScript").is("No CoffeeScript");
 								}
