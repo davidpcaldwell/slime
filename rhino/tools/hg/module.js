@@ -619,7 +619,7 @@ var LocalRepository = function(dir) {
 	this.shell = function(p) {
 		return shell($context.api.js.Object.set({}, { repository: this }, p));
 	}
-	
+
 	//	TODO	it is unclear what various forms of the .hgsub entry format are allowed, and how they work. So not documenting this
 	//			API
 	this.getSubrepositories = function() {
@@ -853,11 +853,11 @@ $exports.Hgrc = function(p) {
 
 		var rv = new function() {
 			this.lines = [];
-			
+
 			var getName = function(line) {
 				return (typeof(line.section) != "undefined" && line.name) ? ((line.section) ? (line.section + ".") : line.section) + line.name : null;
 			}
-			
+
 			this.get = function(name) {
 				var single = (arguments.length > 0);
 				var rv = (single) ? null : {};

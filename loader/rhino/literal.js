@@ -104,7 +104,7 @@
 					return (_file) ? _file.getInputStream() : null;
 				};
 				this._resource = loader.$api.deprecate(this._stream);
-				
+
 				p.length = function(path) {
 					var _file = p._source.getFile(path);
 					var length = _file.getLength();

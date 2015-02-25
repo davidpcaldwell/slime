@@ -386,7 +386,7 @@ var Resource = function(p) {
 			return stream.readLines.apply(stream,arguments);
 		};
 	}
-	
+
 	if (typeof(p.length) == "number") {
 		this.length = p.length;
 	}
@@ -504,7 +504,7 @@ $context.$rhino.Loader.spi(function(underlying) {
 					this.toString = function() {
 						return p.resources.toString();
 					}
-					
+
 					var defined = function(value,otherwise,transform) {
 						if (value === null) return otherwise;
 						if (typeof(value) == "undefined") return otherwise;
@@ -528,7 +528,7 @@ $context.$rhino.Loader.spi(function(underlying) {
 						}
 						return null;
 					};
-					
+
 					this.getClasses = function() {
 						return null;
 					};

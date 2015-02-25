@@ -277,7 +277,7 @@ var LocalRepository = function(o) {
 			jsh.shell.echo("git push " + args.join(" "));
 		}
 	};
-	
+
 	this.mergeBase = function(p) {
 		var args = [];
 		args = args.concat(p.commits);
