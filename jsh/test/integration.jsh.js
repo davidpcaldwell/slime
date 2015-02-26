@@ -668,6 +668,11 @@ jsh.shell.run({
 	}
 });
 
+jsh.shell.run({
+	command: LAUNCHER_COMMAND[0],
+	arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
+});
+
 if (RHINO_LIBRARIES) {
 	jsh.shell.echo("Testing Rhino optimization ...");
 	(function(level) {

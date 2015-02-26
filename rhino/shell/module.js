@@ -430,6 +430,43 @@ $exports.java = function(p) {
 
 	//	TODO	Document
 	this.launcher = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("java");
-	
-	this.script = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("jrunscript");
+
+	this.jrunscript = $context.api.file.Searchpath([this.home.getRelativePath("bin"),this.home.getRelativePath("../bin")]).getCommand("jrunscript");
 }).call($exports.java);
+
+var addPropertyArgumentsTo = function(jargs,properties) {
+	if (properties) {
+		for (var x in properties) {
+			jargs.push("-D" + x + "=" + properties[x]);
+		}
+	}
+};
+
+$exports.jrunscript = function(p) {
+	var jargs = [];
+	addPropertyArgumentsTo(jargs,p);
+	var launch = (function() {
+		if ($exports.properties.get("jsh.launcher.rhino")) {
+			return {
+				command: $exports.java.launcher,
+				arguments: [
+					"-jar", $exports.rhino.classpath.pathnames[0],
+					"-opt", "-1"
+				]
+			};
+		} else {
+			if (!$exports.java.jrunscript) {
+				Packages.java.lang.System.err.println("No jrunscript in " + $exports.java.home);
+				throw new Error("No jrunscript");
+			}
+			return {
+				command: $exports.java.jrunscript,
+				arguments: []
+			}
+		}
+	})();
+	return jsh.shell.run($context.api.js.Object.set({}, p, {
+		command: launch.command,
+		arguments: jargs.concat(launch.arguments).concat(p.arguments)
+	}));
+}

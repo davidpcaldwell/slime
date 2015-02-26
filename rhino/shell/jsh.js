@@ -175,28 +175,14 @@ if ($exports.properties.get("jsh.launcher.rhino")) {
 	};
 };
 
-var jrunscript = function(p) {
-	var launch = (function() {
-		if ($exports.properties.get("jsh.launcher.rhino")) {
-			return {
-				command: $exports.java.launcher,
-				arguments: [
-					"-jar", $exports.rhino.classpath.pathmames[0],
-					"-opt", "-1"
-				]
-			};
-		} else {
-			return {
-				command: $exports.java.jrunscript,
-				arguments: []
-			}
+//	TODO	move a version of this into module.js for java() to use
+var addPropertyArgumentsTo = function(jargs,properties) {
+	if (properties) {
+		for (var x in properties) {
+			jargs.push("-D" + x + "=" + properties[x]);
 		}
-	})();
-	return jsh.shell.run($context.api.js.Object.set({}, {
-		command: launch.command,
-		arguments: launch.arguments.concat(p.arguments)
-	}, p));
-}
+	}
+};
 
 $exports.jsh = function(p) {
 	if (!arguments[0].script && !arguments[0].arguments) {
@@ -207,7 +193,7 @@ $exports.jsh = function(p) {
 			};
 			for (var x in arguments[2]) {
 				p[x] = arguments[2][x];
-			}			
+			}
 		}).apply(this,arguments);
 	}
 	if (!p.script) {
@@ -230,6 +216,7 @@ $exports.jsh = function(p) {
 		if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
 		if (p.environment && p.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
 		if (p.environment && p.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
+		if (p.shell) return true;
 		return false;
 	})();
 
@@ -260,25 +247,7 @@ $exports.jsh = function(p) {
 		//	TODO	can we use $exports.java.home here?
 //		var jdk = $context.api.file.filesystems.os.Pathname($exports.properties.get("java.home")).directory;
 //		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java");
-//		
-		//	Set defaults from this shell
-		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
-
-		var jargs = [];
-		if (p.properties) {
-			for (var x in p.properties) {
-				jargs.push("-D" + x + "=" + p.properties[x]);
-			}
-		}
-		jargs.push("-classpath");
-		jargs.push(LAUNCHER_CLASSPATH);
-		jargs.push("inonit.script.jsh.launcher.Main");
-
-		jargs.push(p.script);
-		p.arguments.forEach( function(arg) {
-			jargs.push(arg);
-		});
-
+//
 		var evaluate = (function() {
 			if (p.evaluate) {
 				return function(result) {
@@ -292,14 +261,61 @@ $exports.jsh = function(p) {
 			}
 		})();
 
-		var shell = $context.api.js.Object.set({}, p, {
-			command: $exports.java.launcher,
-			arguments: jargs,
-			environment: environment,
-			evaluate: evaluate
-		});
+		var addCommandTo = function(jargs) {
+			jargs.push(p.script);
+			p.arguments.forEach( function(arg) {
+				jargs.push(arg);
+			});
+			return jargs;
+		}
 
-		return $exports.run(shell);
+		if (!p.shell) {
+			//	Set defaults from this shell
+			var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
+
+			var jargs = [];
+			addPropertyArgumentsTo(jargs);
+			jargs.push("-classpath");
+			jargs.push(LAUNCHER_CLASSPATH);
+			jargs.push("inonit.script.jsh.launcher.Main");
+
+			addCommandTo(jargs);
+			jargs.push(p.script);
+			p.arguments.forEach( function(arg) {
+				jargs.push(arg);
+			});
+
+			var shell = $context.api.js.Object.set({}, p, {
+				command: $exports.java.launcher,
+				arguments: jargs,
+				environment: environment,
+				evaluate: evaluate
+			});
+
+			return $exports.run(shell);
+		} else {
+			if (p.shell.getFile("jsh.jar")) {
+				//	Built shell
+				var jargs = [];
+				addPropertyArgumentsTo(jargs);
+
+				return $exports.java($context.api.js.Object.set({}, p, {
+					vmarguments: ((p.vmarguments) ? p.vmarguments : []).concat(jargs),
+					jar: p.shell.getFile("jsh.jar"),
+					arguments: addCommandTo([])
+				}));
+			} else if (p.shell.getFile("jsh/etc/unbuilt.rhino.js")) {
+				var jsargs = [];
+				addPropertyArgumentsTo(jsargs);
+				jsargs.push(p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch");
+				addCommandTo(jsargs);
+				return $exports.jrunscript($context.api.js.Object.set({}, p, {
+					arguments: jsargs
+				}));
+			} else {
+				throw new Error("Shell not found: " + p.shell);
+			}
+		}
 	} else {
 		var configuration = new JavaAdapter(
 			Packages.inonit.script.jsh.Shell.Configuration,
