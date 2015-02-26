@@ -197,7 +197,7 @@ var Verify = function(scope,vars) {
 				} else {
 					wrapProperty.call(this,x);
 				}
-			} catch (e) {				
+			} catch (e) {
 			}
 		}
 		if (o instanceof Array) {

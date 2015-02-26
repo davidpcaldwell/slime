@@ -112,7 +112,7 @@ public abstract class Installation {
 				Logging.get().log(Installation.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
 			}
 		}
-		
+
 		static void addPluginsTo(List<Installation.Plugin> rv, File file) {
 			addPluginsTo(rv, file, true);
 		}

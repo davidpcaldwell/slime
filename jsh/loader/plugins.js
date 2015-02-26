@@ -83,7 +83,7 @@
 				Packages.inonit.system.Logging.get().log(
 					$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
 					Packages.java.util.logging.Level.WARNING,
-					"Plugin from " + item._code.getScripts() + " is disabled: " + message
+					"Plugin from " + String(item._code.getScripts()).replace(/\%/g, "%%") + " is disabled: " + message
 				);
 			});
 		}
