@@ -173,17 +173,42 @@ if ($exports.properties.get("jsh.launcher.rhino")) {
 			this.classpath = $exports.properties.searchpath("jsh.launcher.rhino.classpath");
 		}
 	};
+};
+
+var jrunscript = function(p) {
+	var launch = (function() {
+		if ($exports.properties.get("jsh.launcher.rhino")) {
+			return {
+				command: $exports.java.launcher,
+				arguments: [
+					"-jar", $exports.rhino.classpath.pathmames[0],
+					"-opt", "-1"
+				]
+			};
+		} else {
+			return {
+				command: $exports.java.jrunscript,
+				arguments: []
+			}
+		}
+	})();
+	return jsh.shell.run($context.api.js.Object.set({}, {
+		command: launch.command,
+		arguments: launch.arguments.concat(p.arguments)
+	}, p));
 }
 
 $exports.jsh = function(p) {
 	if (!arguments[0].script && !arguments[0].arguments) {
-		p = {
-			script: arguments[0],
-			arguments: (arguments[1]) ? arguments[1] : []
-		};
-		for (var x in arguments[2]) {
-			p[x] = arguments[2][x];
-		}
+		$api.deprecate(function() {
+			p = {
+				script: arguments[0],
+				arguments: (arguments[1]) ? arguments[1] : []
+			};
+			for (var x in arguments[2]) {
+				p[x] = arguments[2][x];
+			}			
+		}).apply(this,arguments);
 	}
 	if (!p.script) {
 		throw new TypeError("Required: script property indicating script to run.");
@@ -233,8 +258,9 @@ $exports.jsh = function(p) {
 
 	if (fork) {
 		//	TODO	can we use $exports.java.home here?
-		var jdk = $context.api.file.filesystems.os.Pathname($exports.properties.get("java.home")).directory;
-		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java");
+//		var jdk = $context.api.file.filesystems.os.Pathname($exports.properties.get("java.home")).directory;
+//		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java");
+//		
 		//	Set defaults from this shell
 		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
 
@@ -266,15 +292,14 @@ $exports.jsh = function(p) {
 			}
 		})();
 
-		var shell = {
-			command: executable,
+		var shell = $context.api.js.Object.set({}, p, {
+			command: $exports.java.launcher,
 			arguments: jargs,
 			environment: environment,
-			stdio: $exports.run.stdio(p),
 			evaluate: evaluate
-		};
+		});
 
-		return $exports.shell(shell);
+		return $exports.run(shell);
 	} else {
 		var configuration = new JavaAdapter(
 			Packages.inonit.script.jsh.Shell.Configuration,

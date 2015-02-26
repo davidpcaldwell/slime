@@ -430,4 +430,6 @@ $exports.java = function(p) {
 
 	//	TODO	Document
 	this.launcher = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("java");
+	
+	this.script = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("jrunscript");
 }).call($exports.java);
