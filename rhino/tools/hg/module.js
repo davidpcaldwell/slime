@@ -657,6 +657,8 @@ $exports.Repository = function(p) {
 			return new RemoteRepository(p.url);
 		} else if (p.directory && p.pathname) {
 			return new LocalRepository(p);
+		} else {
+			throw new Error("Required: local or url");
 		}
 	} else {
 		throw new TypeError();
