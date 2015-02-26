@@ -280,10 +280,6 @@ $exports.jsh = function(p) {
 			jargs.push("inonit.script.jsh.launcher.Main");
 
 			addCommandTo(jargs);
-			jargs.push(p.script);
-			p.arguments.forEach( function(arg) {
-				jargs.push(arg);
-			});
 
 			var shell = $context.api.js.Object.set({}, p, {
 				command: $exports.java.launcher,
