@@ -274,7 +274,7 @@ $exports.jsh = function(p) {
 			var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
 
 			var jargs = [];
-			addPropertyArgumentsTo(jargs);
+			addPropertyArgumentsTo(jargs,p.properties);
 			jargs.push("-classpath");
 			jargs.push(LAUNCHER_CLASSPATH);
 			jargs.push("inonit.script.jsh.launcher.Main");
@@ -293,20 +293,22 @@ $exports.jsh = function(p) {
 			if (p.shell.getFile("jsh.jar")) {
 				//	Built shell
 				var jargs = [];
-				addPropertyArgumentsTo(jargs);
+				addPropertyArgumentsTo(jargs,p.properties);
 
 				return $exports.java($context.api.js.Object.set({}, p, {
 					vmarguments: ((p.vmarguments) ? p.vmarguments : []).concat(jargs),
 					jar: p.shell.getFile("jsh.jar"),
-					arguments: addCommandTo([])
+					arguments: addCommandTo([]),
+					environment: environment
 				}));
 			} else if (p.shell.getFile("jsh/etc/unbuilt.rhino.js")) {
 				var jsargs = [];
-				addPropertyArgumentsTo(jsargs);
+				addPropertyArgumentsTo(jsargs,p.properties);
 				jsargs.push(p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch");
 				addCommandTo(jsargs);
 				return $exports.jrunscript($context.api.js.Object.set({}, p, {
-					arguments: jsargs
+					arguments: jsargs,
+					environment: environment
 				}));
 			} else {
 				throw new Error("Shell not found: " + p.shell);
