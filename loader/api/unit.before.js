@@ -53,15 +53,25 @@ var Verify = function(scope,vars) {
 			}
 		}
 
-		this.is = function(value) {
+		var is = function(value,not) {
 			var specified = represent(value);
 			scope.test({
-				success: function() { return v === specified.value; },
+				success: function() { return (not) ? v !== specified.value : v === specified.value; },
 				message: function(success) {
-					return prefix + ((success) ? "is " + specified.name : "is " + toLiteral(v) + ", not " + specified.name);
+					return (not)
+						? prefix + ((success) ? "is " + toLiteral(v) + ", not " + specified.name : "is " + toLiteral(v))
+						: prefix + ((success) ? "is " + specified.name : "is " + toLiteral(v) + ", not " + specified.name)
+					;
 				}
-			});
+			});			
+		}
+
+		this.is = function(value) {
+			is(value);
 		};
+		this.is.not = function(value) {
+			is(value,true);
+		}
 
 		this.isNotEqualTo = function(value) {
 			var specified = represent(value);
