@@ -62,7 +62,7 @@ $exports.run = function(p) {
 
 		var toCommandToken = function(arg) {
 			var index = (arguments.length > 1) ? arguments[1] : null;
-			var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "'" + arg + "'";
+			var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "command";
 			if (typeof(arg) == "undefined") {
 				throw new TypeError(label + " cannot be undefined.");
 			}
