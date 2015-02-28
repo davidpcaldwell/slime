@@ -349,6 +349,14 @@ $exports.system.apple = $loader.file("apple.js", {
 	}
 });
 
+var addPropertyArgumentsTo = function(jargs,properties) {
+	if (properties) {
+		for (var x in properties) {
+			jargs.push("-D" + x + "=" + properties[x]);
+		}
+	}
+};
+
 $exports.java = function(p) {
 	//	TODO	check for both p.classpath and p.jar being defined and decide what to do
 	var launcher = arguments.callee.launcher;
@@ -363,6 +371,8 @@ $exports.java = function(p) {
 			args.push("-classpath", p[x]);
 		} else if (x == "jar") {
 			args.push("-jar", p[x]);
+		} else if (x == "properties") {
+			addPropertyArgumentsTo(vmarguments,p[x]);
 		} else {
 			shell[x] = p[x];
 		}
@@ -434,17 +444,7 @@ $exports.java = function(p) {
 	this.jrunscript = $context.api.file.Searchpath([this.home.getRelativePath("bin"),this.home.getRelativePath("../bin")]).getCommand("jrunscript");
 }).call($exports.java);
 
-var addPropertyArgumentsTo = function(jargs,properties) {
-	if (properties) {
-		for (var x in properties) {
-			jargs.push("-D" + x + "=" + properties[x]);
-		}
-	}
-};
-
 $exports.jrunscript = function(p) {
-	var jargs = [];
-	addPropertyArgumentsTo(jargs,p);
 	var launch = (function() {
 		if ($exports.properties.get("jsh.launcher.rhino")) {
 			return {
@@ -452,7 +452,8 @@ $exports.jrunscript = function(p) {
 				arguments: [
 					"-jar", $exports.rhino.classpath.pathnames[0],
 					"-opt", "-1"
-				]
+				],
+				vmArgumentPrefix: ""
 			};
 		} else {
 			if (!$exports.java.jrunscript) {
@@ -461,12 +462,24 @@ $exports.jrunscript = function(p) {
 			}
 			return {
 				command: $exports.java.jrunscript,
-				arguments: []
+				arguments: [],
+				vmArgumentPrefix: "-J"
 			}
 		}
 	})();
+	
+	var vmargs = [];
+	
+	addPropertyArgumentsTo(vmargs,p);
+	
+	if (p.vmarguments) {
+		for (var i=0; i<p.vmarguments.length; i++) {
+			vmargs.push(launch.prefix + p.vmarguments[i]);
+		}
+	}
+
 	return jsh.shell.run($context.api.js.Object.set({}, p, {
 		command: launch.command,
-		arguments: jargs.concat(launch.arguments).concat(p.arguments)
+		arguments: vmargs.concat(launch.arguments).concat(p.arguments)
 	}));
 }

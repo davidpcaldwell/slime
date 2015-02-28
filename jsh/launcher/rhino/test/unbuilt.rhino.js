@@ -158,6 +158,10 @@ if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JAVA_LOGGING_PROPERTIES) {
 if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JVM_OPTIONS) {
 	args.push.apply(args,env.JSH_JVM_OPTIONS.split(" "));
 }
+//	Allow sending arguments beginning with dash that will be interpreted as VM switches
+while(arguments.length > 0 && arguments[0].substring(0,1) == "-") {
+	args.push(arguments.shift());
+}
 args.push(
 	"-classpath", LAUNCHER_CLASSES,
 	"inonit.script.jsh.launcher.Main"
