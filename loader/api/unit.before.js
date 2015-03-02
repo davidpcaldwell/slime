@@ -483,11 +483,11 @@ $exports.Scenario = function(properties) {
 
 		this.verify = verify;
 
-		this.start = function(console) {
+		this.start = function() {
 			if (console.start) console.start(scenario);
 		}
 
-		this.end = function(console) {
+		this.end = function() {
 			if (callback) {
 				var self = this;
 				var runUnit = function(units,index) {
