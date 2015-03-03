@@ -366,7 +366,7 @@ $exports.java = function(p) {
 	var args = [];
 	var vmarguments = (p.vmarguments) ? p.vmarguments : [];
 	if (p.properties) {
-		addPropertyArgumentsTo(vmarguments,p[x]);		
+		addPropertyArgumentsTo(vmarguments,p.properties);		
 	}
 	args.push.apply(args,vmarguments);
 	for (var x in p) {
