@@ -118,7 +118,7 @@ $exports.addJshPluginTo = function(jsh) {
 
 	var OldMapping = function(p) {
 		if (!p.pathname.directory) {
-			throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
+			throw new Error("Unimplemented: pathname " + p.pathname + " is not directory, semantics not defined.");
 		}
 
 		Mapping.call(this,p);
