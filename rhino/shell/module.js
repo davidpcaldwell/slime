@@ -365,6 +365,9 @@ $exports.java = function(p) {
 	};
 	var args = [];
 	var vmarguments = (p.vmarguments) ? p.vmarguments : [];
+	if (p.properties) {
+		addPropertyArgumentsTo(vmarguments,p[x]);		
+	}
 	args.push.apply(args,vmarguments);
 	for (var x in p) {
 		if (x == "classpath") {
@@ -372,7 +375,6 @@ $exports.java = function(p) {
 		} else if (x == "jar") {
 			args.push("-jar", p[x]);
 		} else if (x == "properties") {
-			addPropertyArgumentsTo(vmarguments,p[x]);
 		} else {
 			shell[x] = p[x];
 		}
@@ -470,16 +472,18 @@ $exports.jrunscript = function(p) {
 	
 	var vmargs = [];
 	
-	addPropertyArgumentsTo(vmargs,p);
+	addPropertyArgumentsTo(vmargs,p.properties);
 	
 	if (p.vmarguments) {
 		for (var i=0; i<p.vmarguments.length; i++) {
 			vmargs.push(launch.prefix + p.vmarguments[i]);
 		}
 	}
-
-	return jsh.shell.run($context.api.js.Object.set({}, p, {
+	
+	var args = vmargs.concat(launch.arguments).concat(p.arguments);
+	
+	return $exports.run($context.api.js.Object.set({}, p, {
 		command: launch.command,
-		arguments: vmargs.concat(launch.arguments).concat(p.arguments)
+		arguments: args
 	}));
 }
