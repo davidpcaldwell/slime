@@ -271,6 +271,119 @@ var Verify = function(scope,vars) {
 
 $exports.Verify = Verify;
 
+var BooleanTest = function(b) {
+	var MESSAGE = function(success) {
+		return (success) ? "Success." : "FAILED!";
+	};
+
+	return function() {
+		return {
+			success: b,
+			message: MESSAGE(b)
+		}
+	};
+};
+
+var ErrorTest = function(e) {
+	return function() {
+		return {
+			success: null,
+			message: "Exception thrown: " + e,
+			error: e
+		};
+	}
+};
+
+var adaptAssertion = new function() {
+	this.assertion = function(assertion) {
+		if (typeof(assertion) == "function") return assertion;
+		var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
+			return function(success) {
+				var messages = {
+					success: assertion_messages.success,
+					failure: assertion_messages.failure
+				};
+				if (messages && typeof(messages.success) == "string") {
+					messages.success = (function(value) {
+						return function() {
+							return value;
+						}
+					})(messages.success)
+				}
+				if (messages && typeof(messages.failure) == "string") {
+					messages.failure = (function(value) {
+						return function() {
+							return value;
+						}
+					})(messages.failure)
+				}
+				return (success) ? messages.success() : messages.failure();
+			}
+		};
+		if (typeof(assertion) == "boolean") {
+			return BooleanTest(assertion);
+		} else if (typeof(assertion) == "undefined") {
+			throw new TypeError("Assertion is undefined.");
+		} else if (assertion === null) {
+			return BooleanTest(assertion);
+		} else if (
+				(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
+				|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
+			) {
+			return (function(object) {
+				return function() {
+					return {
+						success: object.success,
+						error: object.error,
+						message: MESSAGE_FOR_MESSAGES(object.messages)(object.success)
+					}
+				};
+			})(assertion);
+		} else if (typeof(assertion) == "object" && typeof(assertion.success) == "function") {
+			if (typeof(assertion.message) == "function") {
+				return (function(was) {
+					return function() {
+						var success = was.success();
+						var message = was.message(success);
+						return {
+							success: success,
+							message: message,
+							error: was.error
+						};
+					}
+				})(assertion);
+			} else if (typeof(assertion.messages) == "object") {
+				return (function(was) {
+					return function() {
+						var success = was.success();
+						return {
+							success: success,
+							message: (success) ? was.messages.success() : was.messages.failure(),
+							error: was.error
+						};
+					}
+				})(assertion);
+			} else {
+				throw new TypeError("Assertion object with success but no messages: " + Object.keys(assertion));
+			}
+		} else if (true || typeof(assertion) != "object" || typeof(assertion.success) != "function") {
+			var error = new TypeError("Assertion is not valid format; see this error's 'assertion' property for incorrect value");
+			error.assertion = assertion;
+			throw error;
+		}
+	};
+	
+	this.result = function(result) {
+		if (typeof(result) == "boolean") {
+			return {
+				success: result,
+				message: (result) ? "Success." : "FAILED!"
+			};
+		}
+		return result;
+	}
+}
+
 $exports.Scenario = function(o) {
 	if (!o) {
 		throw new TypeError("arguments[0] must be present.");
@@ -279,19 +392,6 @@ $exports.Scenario = function(o) {
 
 	this.name = o.name;
 	
-	var BooleanTest = function(b) {
-		var MESSAGE = function(success) {
-			return (success) ? "Success." : "FAILED!";
-		};
-		
-		return function() {
-			return {
-				success: b,
-				message: MESSAGE(b)
-			}
-		};
-	}
-
 	var Scope = function(scenario,console,callback) {
 		var success = true;
 		defineProperty(this,"success",{
@@ -351,163 +451,12 @@ $exports.Scenario = function(o) {
 		}
 
 		var runTest = function(assertion,next) {
-			var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
-				return function(success) {
-					var messages = {
-						success: assertion_messages.success,
-						failure: assertion_messages.failure
-					};
-					if (messages && typeof(messages.success) == "string") {
-						messages.success = (function(value) {
-							return function() {
-								return value;
-							}
-						})(messages.success)
-					}
-					if (messages && typeof(messages.failure) == "string") {
-						messages.failure = (function(value) {
-							return function() {
-								return value;
-							}
-						})(messages.failure)
-					}
-					return (success) ? messages.success() : messages.failure();
-				}
-			};
-			if (typeof(assertion) == "boolean") {
-				assertion = BooleanTest(assertion);
-//				assertion = (function(b) {
-//					return (function() {
-//						if (callback) {
-//							//	warning: test probably did not work as expected asynchronously
-//							//	debugger;
-//						}
-//						return {
-//							success: function() { return b; },
-//							message: MESSAGE
-//						};
-//					})();
-//				})(assertion);
-			} else if (typeof(assertion) == "undefined") {
-				throw new TypeError("Assertion is undefined.");
-			} else if (assertion === null) {
-				assertion = BooleanTest(assertion);
-//				assertion = function() {
-//					return {
-//						success: function() { return null; },
-//						message: MESSAGE
-//					}
-//				};
-			} else if (
-					(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
-					|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
-				) {
-				assertion = (function(object) {
-					return function() {
-						return {
-							success: object.success,
-							error: object.error,
-							message: MESSAGE_FOR_MESSAGES(object.messages)(object.success)
-						}
-					};
-//					return new function() {
-//						this.success = function() {
-//							return object.success;
-//						};
-//
-//						if (object.error) {
-//							this.error = object.error;
-//						}
-//
-//						if (object.messages) {
-//							this.message = MESSAGE_FOR_MESSAGES(object.messages);
-//						} else {
-//							this.message = MESSAGE;
-//						}
-//					}
-				})(assertion);
-			} else if (typeof(assertion) == "object" && typeof(assertion.success) == "function") {
-				if (typeof(assertion.message) == "function") {
-					return (function(was) {
-						return function() {
-							var success = was.success();
-							var message = was.message(success);
-							return {
-								success: success,
-								message: message,
-								error: was.error
-							};
-						}
-					})(assertion);
-				} else if (typeof(assertion.messages) == "object") {
-					return (function(was) {
-						return function() {
-							var success = was.success();
-							return {
-								success: success,
-								message: (success) ? was.messages.success() : was.messages.failure(),
-								error: was.error
-							};
-						}
-					})(assertion);
-				} else {
-					throw new TypeError("Assertion object with success but no messages: " + Object.keys(assertion));
-				}
-			} else if (true || typeof(assertion) != "object" || typeof(assertion.success) != "function") {
-				var error = new TypeError("Assertion is not valid format; see this error's 'assertion' property for incorrect value");
-				error.assertion = assertion;
-				throw error;
-			}
-//			var success = assertion.success();
-//			if (!success) {
-//				fail();
-//			}
-//			var result = {
-//				success: success,
-//				message: function() {
-//					//	TODO	this may be an expensive operation, which is why it is a function in the first place; should cache
-//					//			the value in case callers invoke it multiple times
-//					try {
-//						if (assertion.messages && !assertion.message) {
-//							assertion.message = function(success) {
-//								if (success) return assertion.messages.success();
-//								return assertion.messages.failure();
-//							}
-//						}
-//						return assertion.message(success);
-//					} catch (e) {
-//						return "Error occurred when trying to generate message: " + e;
-//					}
-//				}
-//			};
+			assertion = adaptAssertion.assertion(assertion);
 			var result = assertion();
+			result = adaptAssertion.result(result);
 			if (!result.success) {
 				fail();
 			}
-//				assertion = (function(f) {
-//					var v = f();
-//					if (typeof(v) == "boolean") {
-//						v = (function(value) {
-//							return new function() {
-//								this.success = function() {
-//									return value;
-//								};
-//
-//								this.message = MESSAGE;
-//							}
-//						})(v);
-//					};
-//					return new function() {
-//						this.success = function() {
-//							return v.success;
-//						};
-//
-//						this.message = MESSAGE_FOR_MESSAGES;
-//					}
-//				})(assertion);
-//			if (assertion.error) {
-//				result.error = assertion.error;
-//			}
 			if (console.test) console.test(result);
 			if (next) {
 				if ($context.asynchronous && $context.asynchronous.test) {
@@ -583,21 +532,7 @@ $exports.Scenario = function(o) {
 			try {
 				initializeAndExecute.call(this,scope);
 			} catch (e) {
-				//	The next line works around a behavior of the Rhino debugger (as of 1.7R2). The debugger does not put 'e' in the
-				//	local scope, and it therefore cannot be examined. Assigning it to the variable error allows the 'error'
-				//	variable to be evaluated and viewed in the debugger when running in Rhino.
-				var error = e;
-				scope.test({
-					success: function() {
-						return null;
-					},
-					error: e,
-					messages: {
-						failure: function() {
-							return "Exception thrown: " + e;
-						}
-					}
-				});
+				scope.test(ErrorTest(e));
 			}
 		}
 		if (o.destroy) {
