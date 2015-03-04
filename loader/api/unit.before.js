@@ -271,33 +271,45 @@ var Verify = function(scope,vars) {
 
 $exports.Verify = Verify;
 
-$exports.Scenario = function(properties) {
-	if (!properties) {
-		throw new TypeError("'properties' argument must be present.");
+$exports.Scenario = function(o) {
+	if (!o) {
+		throw new TypeError("arguments[0] must be present.");
 	}
 	var Scenario = arguments.callee;
-	var scenario = this;
 
-	this.name = properties.name;
+	this.name = o.name;
+	
+	var BooleanTest = function(b) {
+		var MESSAGE = function(success) {
+			return (success) ? "Success." : "FAILED!";
+		};
+		
+		return function() {
+			return {
+				success: b,
+				message: MESSAGE(success)
+			}
+		};
+	}
 
-	var Scope = function(console,callback) {
-		var self = this;
-		if (Object.prototype.__defineGetter__) {
-			var success = true;
-			this.__defineGetter__("success", function() {
+	var Scope = function(scenario,console,callback) {
+		var success = true;
+		defineProperty(this,"success",{
+			get: function() {
 				return success;
-			});
-			var fail = function() {
-				debugger;
-				success = false;
 			}
-		} else {
-			this.success = true;
-			var fail = function() {
-				debugger;
-				self.success = false;
-			}
-		}
+		});
+		var fail = function() {
+			debugger;
+			success = false;
+		};
+		//	IE8-compatible implementation below
+		//		var self = this;
+		//		this.success = true;
+		//		var fail = function() {
+		//			debugger;
+		//			self.success = false;
+		//		}
 
 		var units = [];
 
@@ -339,10 +351,6 @@ $exports.Scenario = function(properties) {
 		}
 
 		var runTest = function(assertion,next) {
-			var MESSAGE = function(success) {
-				return (success) ? "Success." : "FAILED!";
-			};
-
 			var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
 				return function(success) {
 					var messages = {
@@ -367,100 +375,139 @@ $exports.Scenario = function(properties) {
 				}
 			};
 			if (typeof(assertion) == "boolean") {
-				assertion = (function(b) {
-					return (function() {
-						if (callback) {
-							//	warning: test probably did not work as expected asynchronously
-							//	debugger;
-						}
-						return {
-							success: function() { return b; },
-							message: MESSAGE
-						};
-					})();
-				})(assertion);
+				assertion = BooleanTest(assertion);
+//				assertion = (function(b) {
+//					return (function() {
+//						if (callback) {
+//							//	warning: test probably did not work as expected asynchronously
+//							//	debugger;
+//						}
+//						return {
+//							success: function() { return b; },
+//							message: MESSAGE
+//						};
+//					})();
+//				})(assertion);
 			} else if (typeof(assertion) == "undefined") {
 				throw new TypeError("Assertion is undefined.");
 			} else if (assertion === null) {
-				assertion = function() {
-					return {
-						success: function() { return null; },
-						message: MESSAGE
-					}
-				};
+				assertion = BooleanTest(assertion);
+//				assertion = function() {
+//					return {
+//						success: function() { return null; },
+//						message: MESSAGE
+//					}
+//				};
 			} else if (
 					(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
 					|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
 				) {
 				assertion = (function(object) {
-					return new function() {
-						this.success = function() {
-							return object.success;
-						};
-
-						if (object.error) {
-							this.error = object.error;
+					return function() {
+						return {
+							success: object.success,
+							error: object.error,
+							message: MESSAGE_FOR_MESSAGES(object.messages)(object.success)
 						}
-
-						if (object.messages) {
-							this.message = MESSAGE_FOR_MESSAGES(object.messages);
-						} else {
-							this.message = MESSAGE;
-						}
-					}
-				})(assertion);
-			} else if (typeof(assertion) == "function") {
-				assertion = (function(f) {
-					var v = f();
-					if (typeof(v) == "boolean") {
-						v = (function(value) {
-							return new function() {
-								this.success = function() {
-									return value;
-								};
-
-								this.message = MESSAGE;
-							}
-						})(v);
 					};
-					return new function() {
-						this.success = function() {
-							return v.success;
-						};
-
-						this.message = MESSAGE_FOR_MESSAGES;
-					}
+//					return new function() {
+//						this.success = function() {
+//							return object.success;
+//						};
+//
+//						if (object.error) {
+//							this.error = object.error;
+//						}
+//
+//						if (object.messages) {
+//							this.message = MESSAGE_FOR_MESSAGES(object.messages);
+//						} else {
+//							this.message = MESSAGE;
+//						}
+//					}
 				})(assertion);
-			} else if (typeof(assertion) != "object" || typeof(assertion.success) != "function") {
+			} else if (typeof(assertion) == "object" && typeof(assertion.success) == "function") {
+				if (typeof(assertion.message) == "function") {
+					return (function(was) {
+						return function() {
+							var success = was.success();
+							var message = was.message(success);
+							return {
+								success: success,
+								message: message,
+								error: was.error
+							};
+						}
+					})(assertion);
+				} else if (typeof(assertion.messages) == "object") {
+					return (function(was) {
+						return function() {
+							var success = was.success();
+							return {
+								success: success,
+								message: (success) ? was.messages.success() : was.messages.failure(),
+								error: was.error
+							};
+						}
+					})(assertion);
+				} else {
+					throw new TypeError("Assertion object with success but no messages: " + Object.keys(assertion));
+				}
+			} else if (true || typeof(assertion) != "object" || typeof(assertion.success) != "function") {
 				var error = new TypeError("Assertion is not valid format; see this error's 'assertion' property for incorrect value");
 				error.assertion = assertion;
 				throw error;
 			}
-			var success = assertion.success();
-			if (!success) {
+//			var success = assertion.success();
+//			if (!success) {
+//				fail();
+//			}
+//			var result = {
+//				success: success,
+//				message: function() {
+//					//	TODO	this may be an expensive operation, which is why it is a function in the first place; should cache
+//					//			the value in case callers invoke it multiple times
+//					try {
+//						if (assertion.messages && !assertion.message) {
+//							assertion.message = function(success) {
+//								if (success) return assertion.messages.success();
+//								return assertion.messages.failure();
+//							}
+//						}
+//						return assertion.message(success);
+//					} catch (e) {
+//						return "Error occurred when trying to generate message: " + e;
+//					}
+//				}
+//			};
+			var result = assertion();
+			if (!result.success) {
 				fail();
 			}
-			var result = {
-				success: success,
-				message: function() {
-					//	TODO	this may be an expensive operation, which is why it is a function in the first place; should cache
-					//			the value in case callers invoke it multiple times
-					try {
-						if (assertion.messages && !assertion.message) {
-							assertion.message = function(success) {
-								if (success) return assertion.messages.success();
-								return assertion.messages.failure();
-							}
-						}
-						return assertion.message(success);
-					} catch (e) {
-						return "Error occurred when trying to generate message: " + e;
-					}
-				}
-			};
-			if (assertion.error) {
-				result.error = assertion.error;
-			}
+//				assertion = (function(f) {
+//					var v = f();
+//					if (typeof(v) == "boolean") {
+//						v = (function(value) {
+//							return new function() {
+//								this.success = function() {
+//									return value;
+//								};
+//
+//								this.message = MESSAGE;
+//							}
+//						})(v);
+//					};
+//					return new function() {
+//						this.success = function() {
+//							return v.success;
+//						};
+//
+//						this.message = MESSAGE_FOR_MESSAGES;
+//					}
+//				})(assertion);
+//			if (assertion.error) {
+//				result.error = assertion.error;
+//			}
 			if (console.test) console.test(result);
 			if (next) {
 				if ($context.asynchronous && $context.asynchronous.test) {
@@ -489,12 +536,11 @@ $exports.Scenario = function(properties) {
 
 		this.end = function() {
 			if (callback) {
-				var self = this;
 				var runUnit = function(units,index) {
 					var recurse = arguments.callee;
 					if (index == units.length) {
-						if (console.end) console.end(scenario,self.success);
-						callback.success(self.success);
+						if (console.end) console.end(scenario,this.success);
+						callback.success(this.success);
 					} else {
 						var next = function() {
 							recurse(units,index+1)
@@ -509,15 +555,15 @@ $exports.Scenario = function(properties) {
 					}
 				}
 
-				runUnit(units,0);
+				runUnit.call(this,units,0);
 			} else {
 				if (console.end) console.end(scenario, this.success);
 			}
 		}
 	}
 
-	var run = function(console,callback) {
-		var scope = new Scope(console,callback);
+	var run = function(scenario,console,callback) {
+		var scope = new Scope(scenario,console,callback);
 
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
@@ -527,8 +573,8 @@ $exports.Scenario = function(properties) {
 		scope.start(console);
 
 		var initializeAndExecute = function(scope) {
-			if (properties.initialize) properties.initialize.call(this);
-			properties.execute.call(this,scope);
+			if (o.initialize) o.initialize();
+			o.execute(scope);
 		}
 
 		if (Scenario.HALT_ON_EXCEPTION) {
@@ -554,8 +600,8 @@ $exports.Scenario = function(properties) {
 				});
 			}
 		}
-		if (properties.destroy) {
-			properties.destroy.call(this);
+		if (o.destroy) {
+			o.destroy();
 		}
 		scope.end(console);
 		if (!callback) {
@@ -564,11 +610,11 @@ $exports.Scenario = function(properties) {
 	}
 
 	this.start = function(console,callback) {
-		run(console,callback);
+		run(this,console,callback);
 	}
 
 	this.run = function(console) {
-		return run(console);
+		return run(this,console);
 	}
 
 	this.toString = function() {
