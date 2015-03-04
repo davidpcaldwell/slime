@@ -287,7 +287,7 @@ $exports.Scenario = function(o) {
 		return function() {
 			return {
 				success: b,
-				message: MESSAGE(success)
+				message: MESSAGE(b)
 			}
 		};
 	}
