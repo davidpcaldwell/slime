@@ -386,7 +386,7 @@ var adaptAssertion = new function() {
 	}
 }
 
-var Scope = function(scenario,console,callback,Scenario) {
+var Scope = function(o) {
 	var success = true;
 	defineProperty(this,"success",{
 		get: function() {
@@ -408,7 +408,7 @@ var Scope = function(scenario,console,callback,Scenario) {
 	var units = [];
 
 	var runScenario = function(object,next) {
-		var child = new Scenario(object);
+		var child = new o.Scenario(object);
 
 		var runNext = function(next) {
 			if ($context.asynchronous && $context.asynchronous.scenario) {
@@ -418,8 +418,8 @@ var Scope = function(scenario,console,callback,Scenario) {
 			}
 		}
 
-		if (callback) {
-			child.start(console,{
+		if (o.callback) {
+			child.start(o.console,{
 				success: function(b) {
 					if (!b) {
 						fail();
@@ -428,7 +428,7 @@ var Scope = function(scenario,console,callback,Scenario) {
 				}
 			})
 		} else {
-			var result = child.run(console);
+			var result = child.run(o.console);
 			if (!result) {
 				fail();
 			}
@@ -437,7 +437,7 @@ var Scope = function(scenario,console,callback,Scenario) {
 	}
 
 	this.scenario = function(object) {
-		if (!callback) {
+		if (!o.callback) {
 			runScenario(object);
 		} else {
 			units.push({ scenario: object });
@@ -451,7 +451,7 @@ var Scope = function(scenario,console,callback,Scenario) {
 		if (!result.success) {
 			fail();
 		}
-		if (console.test) console.test(result);
+		if (o.console.test) o.console.test(result);
 		if (next) {
 			if ($context.asynchronous && $context.asynchronous.test) {
 				$context.asynchronous.test(next);
@@ -462,28 +462,26 @@ var Scope = function(scenario,console,callback,Scenario) {
 	}
 
 	this.test = function(assertion) {
-		if (!callback) {
+		if (!o.callback) {
 			runTest(assertion);
 		} else {
 			units.push({ test: assertion });
 		}
 	};
 
-	var verify = new Verify(this);
-
-	this.verify = verify;
+	this.verify = new Verify(this);
 
 	this.start = function() {
-		if (console.start) console.start(scenario);
+		if (o.console.start) o.console.start(o.scenario);
 	}
 
 	this.end = function() {
-		if (callback) {
+		if (o.callback) {
 			var runUnit = function(units,index) {
 				var recurse = arguments.callee;
 				if (index == units.length) {
-					if (console.end) console.end(scenario,this.success);
-					callback.success(this.success);
+					if (o.console.end) o.console.end(o.scenario,this.success);
+					o.callback.success(this.success);
 				} else {
 					var next = function() {
 						recurse(units,index+1)
@@ -500,7 +498,7 @@ var Scope = function(scenario,console,callback,Scenario) {
 
 			runUnit.call(this,units,0);
 		} else {
-			if (console.end) console.end(scenario, this.success);
+			if (o.console.end) o.console.end(o.scenario, this.success);
 		}
 	}
 }
@@ -514,7 +512,7 @@ $exports.Scenario = function(o) {
 	this.name = o.name;
 	
 	var run = function(scenario,console,callback) {
-		var scope = new Scope(scenario,console,callback,Scenario);
+		var scope = new Scope({ scenario: scenario, console: console, callback: callback, Scenario: Scenario});
 
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
