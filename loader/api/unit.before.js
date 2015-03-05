@@ -544,19 +544,20 @@ $exports.Scenario = function(o) {
 		}
 	}
 
-	this.start = $api.deprecate(function(console,callback) {
-		run(this,console,callback);
-	});
-
-	this.run = function(console) {
+	this.run = function(o) {
 		if (arguments.length == 1 && arguments[0].console) {
 			return run(this,arguments[0].console,arguments[0].callback);
 		} else {
 			return $api.deprecate(function() {
+				var console = o;
 				return run(this,console);				
 			}).call(this);
 		}
 	}
+
+	this.start = $api.deprecate(function(console,callback) {
+		run(this,console,callback);
+	});
 
 	this.toString = function() {
 		return "Scenario: " + this.name;
