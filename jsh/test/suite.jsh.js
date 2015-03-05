@@ -21,22 +21,6 @@ var parameters = jsh.script.getopts({
 
 var java = jsh.file.Searchpath([parameters.options.java.directory.getRelativePath("bin")]).getCommand("java");
 
-//	Unit tests
-var modules = eval(parameters.options.src.directory.getFile("jsh/etc/api.js").read(String)).environment("jsh");
-modules = jsh.js.Array(modules);
-var apiArguments = modules.fold(function(array) {
-	if (this.api) array.push("-api",this.path);
-	if (this.test) array.push("-test",this.path);
-	return array;
-},[]);
-
-var subenv = {};
-for (var x in jsh.shell.environment) {
-	if (!/^JSH_/.test(x)) {
-		subenv[x] = jsh.shell.environment[x];
-	}
-}
-
 if (!parameters.options.jsh) {
 	parameters.options.jsh = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 	jsh.shell.jrunscript({
@@ -55,9 +39,7 @@ if (!parameters.options.jsh) {
 jsh.shell.echo("Running unit tests ...");
 jsh.shell.jsh({
 	shell: parameters.options.jsh.directory,
-	script: parameters.options.src.directory.getRelativePath("jsh/unit/jsapi.jsh.js"),
-	arguments: apiArguments,
-	environment: subenv
+	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js")
 });
 
 jsh.shell.echo("Running system tests ...");
