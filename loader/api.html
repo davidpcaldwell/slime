@@ -513,20 +513,19 @@ END LICENSE
 					verify(warnings).is(2);
 				]]></script>
 				<script jsapi:id="deprecate.object" type="application/x.jsapi#tests"><![CDATA[
-					var was = $api.deprecate.warning;
 					var called = 0;
 					var warnings = [];
 					var warning = function(p) {
 						warnings.push(p);
 					}
-					$api.deprecate.warning = warning;
+					api.deprecate.warning = warning;
 					var o = new function() {
 						this.p = 1;
 						this.m = function() {
 							return 2;
 						};
 					};
-					var rv = $api.deprecate(o);
+					var rv = api.deprecate(o);
 					test(typeof(rv) == "undefined");
 					var p = o.p;
 					test(p == 1);
@@ -534,13 +533,12 @@ END LICENSE
 					test(m == 2);
 					test(warnings.length == 2);
 					//	TODO	test content of warnings
-					$api.deprecate.warning = was;
 				]]></script>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					scenario( new function() {
 						this.name = "deprecate";
 						this.execute = function(scope) {
-							var deprecate = $api.deprecate;
+							var deprecate = api.deprecate;
 
 							//	TODO	Add a test somewhere in here where we attempt to set a deprecated property, do not really
 							//			set it, and confirm that our callback receives the attempted (not actual) value
@@ -573,7 +571,7 @@ END LICENSE
 										})
 									}
 								}
-								$api.deprecate.warning = rv;
+								api.deprecate.warning = rv;
 								//$unit.context.setWarning(rv);
 								return rv;
 							}
