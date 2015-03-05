@@ -507,26 +507,25 @@ $exports.Scenario = function(o) {
 	if (!o) {
 		throw new TypeError("arguments[0] must be present.");
 	}
-	var Scenario = arguments.callee;
-
+	
 	this.name = o.name;
 	
-	var run = function(scenario,console,callback) {
-		var scope = new Scope({ scenario: scenario, console: console, callback: callback, Scenario: Scenario});
+	var run = function(p) {
+		var scope = new Scope({ scenario: p.scenario, console: p.console, callback: p.callback, Scenario: p.Scenario});
 
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
 		//	to the callee as __parent__.test but not as test
 		//	this.__parent__ = scope;
 		//	this.test = scope.test;
-		scope.start(console);
+		scope.start(p.console);
 
 		var initializeAndExecute = function(scope) {
 			if (o.initialize) o.initialize();
 			o.execute(scope);
 		}
 
-		if (Scenario.HALT_ON_EXCEPTION) {
+		if (p.Scenario.HALT_ON_EXCEPTION) {
 			initializeAndExecute.call(this,scope);
 		} else {
 			try {
@@ -538,19 +537,20 @@ $exports.Scenario = function(o) {
 		if (o.destroy) {
 			o.destroy();
 		}
-		scope.end(console);
-		if (!callback) {
+		scope.end(p.console);
+		if (!p.callback) {
 			return scope.success;
 		}
 	}
 
+	var Scenario = arguments.callee;
 	this.run = function(o) {
 		if (arguments.length == 1 && arguments[0].console) {
-			return run(this,arguments[0].console,arguments[0].callback);
+			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario });
 		} else {
 			return $api.deprecate(function() {
 				var console = o;
-				return run(this,console);				
+				return run({ scenario: this, console: console, Scenario: Scenario });				
 			}).call(this);
 		}
 	}
