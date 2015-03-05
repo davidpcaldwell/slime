@@ -13,7 +13,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.shell.java.home.pathname,
-		jsh: jsh.shell.jsh.home.pathname,
+		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
 		src: jsh.script.file.getRelativePath("../.."),
 		debug: false
 	}
@@ -36,17 +36,27 @@ for (var x in jsh.shell.environment) {
 		subenv[x] = jsh.shell.environment[x];
 	}
 }
+
+if (!parameters.options.jsh) {
+	parameters.options.jsh = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+	jsh.shell.jrunscript({
+		fork: true,
+		arguments: [parameters.options.src.directory.getRelativePath("jsh/etc/unbuilt.rhino.js"), "build", parameters.options.jsh],
+		environment: jsh.js.Object.set({}, jsh.shell.environment, {
+			JSH_BUILD_NOTEST: "true",
+			JSH_BUILD_NODOC: "true"
+		})
+	});
+}
 //	Provide way to set CATALINA_HOME?
 //	Provide way to set JSH_LAUNCHER_DEBUG?
 //	Provide way to set JSH_SCRIPT_DEBUGGER?
 //	Provide way to set JSH_ENGINE?
 jsh.shell.echo("Running unit tests ...");
-jsh.shell.run({
-	command: java,
-	arguments: [
-		"-jar", parameters.options.jsh.directory.getRelativePath("jsh.jar"),
-		parameters.options.src.directory.getRelativePath("jsh/unit/jsapi.jsh.js")
-	].concat(apiArguments),
+jsh.shell.jsh({
+	shell: parameters.options.jsh.directory,
+	script: parameters.options.src.directory.getRelativePath("jsh/unit/jsapi.jsh.js"),
+	arguments: apiArguments,
 	environment: subenv
 });
 
@@ -56,7 +66,7 @@ jsh.shell.run({
 	arguments: [
 		"-Djsh.home=" + parameters.options.jsh,
 		"-Dslime.src=" + parameters.options.src,
-		"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+		"-jar", parameters.options.jsh.directory.getRelativePath("jsh.jar"),
 		parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
 		"-src", parameters.options.src
 	],
