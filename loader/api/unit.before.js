@@ -386,6 +386,125 @@ var adaptAssertion = new function() {
 	}
 }
 
+var Scope = function(scenario,console,callback,Scenario) {
+	var success = true;
+	defineProperty(this,"success",{
+		get: function() {
+			return success;
+		}
+	});
+	var fail = function() {
+		debugger;
+		success = false;
+	};
+	//	IE8-compatible implementation below
+	//		var self = this;
+	//		this.success = true;
+	//		var fail = function() {
+	//			debugger;
+	//			self.success = false;
+	//		}
+
+	var units = [];
+
+	var runScenario = function(object,next) {
+		var child = new Scenario(object);
+
+		var runNext = function(next) {
+			if ($context.asynchronous && $context.asynchronous.scenario) {
+				$context.asynchronous.scenario(next);
+			} else {
+				next();
+			}
+		}
+
+		if (callback) {
+			child.start(console,{
+				success: function(b) {
+					if (!b) {
+						fail();
+					}
+					if (next) runNext(next);
+				}
+			})
+		} else {
+			var result = child.run(console);
+			if (!result) {
+				fail();
+			}
+			if (next) runNext(next);
+		}
+	}
+
+	this.scenario = function(object) {
+		if (!callback) {
+			runScenario(object);
+		} else {
+			units.push({ scenario: object });
+		}
+	}
+
+	var runTest = function(assertion,next) {
+		assertion = adaptAssertion.assertion(assertion);
+		var result = assertion();
+		result = adaptAssertion.result(result);
+		if (!result.success) {
+			fail();
+		}
+		if (console.test) console.test(result);
+		if (next) {
+			if ($context.asynchronous && $context.asynchronous.test) {
+				$context.asynchronous.test(next);
+			} else {
+				next();
+			}
+		}
+	}
+
+	this.test = function(assertion) {
+		if (!callback) {
+			runTest(assertion);
+		} else {
+			units.push({ test: assertion });
+		}
+	};
+
+	var verify = new Verify(this);
+
+	this.verify = verify;
+
+	this.start = function() {
+		if (console.start) console.start(scenario);
+	}
+
+	this.end = function() {
+		if (callback) {
+			var runUnit = function(units,index) {
+				var recurse = arguments.callee;
+				if (index == units.length) {
+					if (console.end) console.end(scenario,this.success);
+					callback.success(this.success);
+				} else {
+					var next = function() {
+						recurse(units,index+1)
+					};
+					if (typeof(units[index].scenario) != "undefined") {
+						runScenario(units[index].scenario,next);
+					} else if (typeof(units[index].test) != "undefined") {
+						runTest(units[index].test,next);
+					} else {
+						throw new Error("Unreachable");
+					}
+				}
+			}
+
+			runUnit.call(this,units,0);
+		} else {
+			if (console.end) console.end(scenario, this.success);
+		}
+	}
+}
+
 $exports.Scenario = function(o) {
 	if (!o) {
 		throw new TypeError("arguments[0] must be present.");
@@ -394,127 +513,8 @@ $exports.Scenario = function(o) {
 
 	this.name = o.name;
 	
-	var Scope = function(scenario,console,callback) {
-		var success = true;
-		defineProperty(this,"success",{
-			get: function() {
-				return success;
-			}
-		});
-		var fail = function() {
-			debugger;
-			success = false;
-		};
-		//	IE8-compatible implementation below
-		//		var self = this;
-		//		this.success = true;
-		//		var fail = function() {
-		//			debugger;
-		//			self.success = false;
-		//		}
-
-		var units = [];
-
-		var runScenario = function(object,next) {
-			var child = new Scenario(object);
-
-			var runNext = function(next) {
-				if ($context.asynchronous && $context.asynchronous.scenario) {
-					$context.asynchronous.scenario(next);
-				} else {
-					next();
-				}
-			}
-
-			if (callback) {
-				child.start(console,{
-					success: function(b) {
-						if (!b) {
-							fail();
-						}
-						if (next) runNext(next);
-					}
-				})
-			} else {
-				var result = child.run(console);
-				if (!result) {
-					fail();
-				}
-				if (next) runNext(next);
-			}
-		}
-
-		this.scenario = function(object) {
-			if (!callback) {
-				runScenario(object);
-			} else {
-				units.push({ scenario: object });
-			}
-		}
-
-		var runTest = function(assertion,next) {
-			assertion = adaptAssertion.assertion(assertion);
-			var result = assertion();
-			result = adaptAssertion.result(result);
-			if (!result.success) {
-				fail();
-			}
-			if (console.test) console.test(result);
-			if (next) {
-				if ($context.asynchronous && $context.asynchronous.test) {
-					$context.asynchronous.test(next);
-				} else {
-					next();
-				}
-			}
-		}
-
-		this.test = function(assertion) {
-			if (!callback) {
-				runTest(assertion);
-			} else {
-				units.push({ test: assertion });
-			}
-		};
-
-		var verify = new Verify(this);
-
-		this.verify = verify;
-
-		this.start = function() {
-			if (console.start) console.start(scenario);
-		}
-
-		this.end = function() {
-			if (callback) {
-				var runUnit = function(units,index) {
-					var recurse = arguments.callee;
-					if (index == units.length) {
-						if (console.end) console.end(scenario,this.success);
-						callback.success(this.success);
-					} else {
-						var next = function() {
-							recurse(units,index+1)
-						};
-						if (typeof(units[index].scenario) != "undefined") {
-							runScenario(units[index].scenario,next);
-						} else if (typeof(units[index].test) != "undefined") {
-							runTest(units[index].test,next);
-						} else {
-							throw new Error("Unreachable");
-						}
-					}
-				}
-
-				runUnit.call(this,units,0);
-			} else {
-				if (console.end) console.end(scenario, this.success);
-			}
-		}
-	}
-
 	var run = function(scenario,console,callback) {
-		var scope = new Scope(scenario,console,callback);
+		var scope = new Scope(scenario,console,callback,Scenario);
 
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
