@@ -61,15 +61,9 @@ jsh.shell.jsh({
 });
 
 jsh.shell.echo("Running system tests ...");
-jsh.shell.run({
-	command: java,
-	arguments: [
-		"-Djsh.home=" + parameters.options.jsh,
-		"-Dslime.src=" + parameters.options.src,
-		"-jar", parameters.options.jsh.directory.getRelativePath("jsh.jar"),
-		parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
-		"-src", parameters.options.src
-	],
+jsh.shell.jsh({
+	shell: parameters.options.jsh.directory,
+	script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
 	environment: jsh.js.Object.set({}, jsh.shell.environment, {
 		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
 	})
