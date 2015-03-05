@@ -419,16 +419,21 @@ var Scope = function(o) {
 		}
 
 		if (o.callback) {
-			child.start(o.console,{
-				success: function(b) {
+			child.start({
+				console: o.console,
+				callback: function(b) {
 					if (!b) {
 						fail();
 					}
 					if (next) runNext(next);
-				}
-			})
+				},
+				haltOnException: o.haltOnException
+			});
 		} else {
-			var result = child.run(o.console);
+			var result = child.run({ 
+				console: o.console,
+				haltOnException: o.haltOnException
+			});
 			if (!result) {
 				fail();
 			}
@@ -525,7 +530,7 @@ $exports.Scenario = function(o) {
 			o.execute(scope);
 		}
 
-		if (p.Scenario.HALT_ON_EXCEPTION) {
+		if (p.haltOnException) {
 			initializeAndExecute.call(this,scope);
 		} else {
 			try {
@@ -546,7 +551,7 @@ $exports.Scenario = function(o) {
 	var Scenario = arguments.callee;
 	this.run = function(o) {
 		if (arguments.length == 1 && arguments[0].console) {
-			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario });
+			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else {
 			return $api.deprecate(function() {
 				var console = o;
@@ -563,4 +568,3 @@ $exports.Scenario = function(o) {
 		return "Scenario: " + this.name;
 	}
 }
-$exports.Scenario.HALT_ON_EXCEPTION = false;

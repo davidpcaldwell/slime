@@ -210,7 +210,7 @@ END LICENSE
 					}
 				});
 				var apiHtmlScript = inonit.loader.file(parameters.jsapi+"api.html.js");
-				jsapi.Scenario.HALT_ON_EXCEPTION = Boolean(parameters.nocatch);
+				var HALT_ON_EXCEPTION = Boolean(parameters.nocatch);
 
 				var toErrorMessage = function(e) {
 					if (e.message) return e.message + " at line " + e.lineNumber + " in " + e.fileName;
@@ -629,14 +629,13 @@ END LICENSE
 						};
 					}
 				})();
-				if (ASYNCHRONOUS) {
-					scenario.start(console,{
-						success: function(success) {
-							onResult(success);
-						}
-					});
-				} else {
-					var result = scenario.run(console);
+				var run = {
+					console: console,
+					haltOnException: HALT_ON_EXCEPTION,
+					callback: (ASYNCHRONOUS) ? function(success) { onResult(success) } : void(0)
+				};
+				var result = scenario.run(run);
+				if (!ASYNCHRONOUS) {
 					onResult(result);
 				}
 			}
