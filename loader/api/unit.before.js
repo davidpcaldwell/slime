@@ -544,12 +544,18 @@ $exports.Scenario = function(o) {
 		}
 	}
 
-	this.start = function(console,callback) {
+	this.start = $api.deprecate(function(console,callback) {
 		run(this,console,callback);
-	}
+	});
 
 	this.run = function(console) {
-		return run(this,console);
+		if (arguments.length == 1 && arguments[0].console) {
+			return run(this,arguments[0].console,arguments[0].callback);
+		} else {
+			return $api.deprecate(function() {
+				return run(this,console);				
+			}).call(this);
+		}
 	}
 
 	this.toString = function() {
