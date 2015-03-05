@@ -3,7 +3,8 @@ var parameters = jsh.script.getopts({
 		java: jsh.shell.java.home.pathname,
 		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
 		src: jsh.script.file.getRelativePath("../.."),
-		debug: false
+		debug: false,
+		logging: jsh.file.Pathname
 	}
 });
 
@@ -34,9 +35,14 @@ for (var x in jsh.shell.environment) {
 		subenv[x] = jsh.shell.environment[x];
 	}
 }
+var properties = {};
+if (parameters.options.logging) {
+	properties["java.util.logging.config.file"] = parameters.options.logging.toString();
+}
 
 jsh.shell.jsh({
 	shell: parameters.options.jsh.directory,
+	properties: properties,
 	script: parameters.options.src.directory.getRelativePath("jsh/unit/jsapi.jsh.js"),
 	arguments: apiArguments,
 	environment: subenv
