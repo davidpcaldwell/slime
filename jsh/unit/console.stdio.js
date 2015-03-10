@@ -18,9 +18,11 @@ $exports.subprocess = function() {
 		
 		this.test = function(result) {
 			jsh.shell.echo(JSON.stringify({
-				success: result.success,
-				message: result.message,
-				error: jsonError(result.error)
+				test: {
+					success: result.success,
+					message: result.message,
+					error: jsonError(result.error)
+				}
 			}));
 		}
 		
@@ -103,7 +105,11 @@ $exports.Parent = function(p) {
 							var scenario = new Scenario(action.start.scenario);
 							scope.scenario(scenario);
 						} else if (action.test) {
-							scope.test(action.test);
+							scope.test((function(result) {
+								return function() {
+									return result;
+								};
+							})(action.test));
 						} else if (action.end) {
 							more = false;
 						}
