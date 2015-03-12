@@ -62,7 +62,7 @@ $exports.run = function(p) {
 
 		var toCommandToken = function(arg) {
 			var index = (arguments.length > 1) ? arguments[1] : null;
-			var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "'" + arg + "'";
+			var label = (typeof(index) == "number") ? "token " + String(index) + " '" + arg + "'" : "command";
 			if (typeof(arg) == "undefined") {
 				throw new TypeError(label + " cannot be undefined.");
 			}
@@ -349,6 +349,14 @@ $exports.system.apple = $loader.file("apple.js", {
 	}
 });
 
+var addPropertyArgumentsTo = function(jargs,properties) {
+	if (properties) {
+		for (var x in properties) {
+			jargs.push("-D" + x + "=" + properties[x]);
+		}
+	}
+};
+
 $exports.java = function(p) {
 	//	TODO	check for both p.classpath and p.jar being defined and decide what to do
 	var launcher = arguments.callee.launcher;
@@ -357,12 +365,16 @@ $exports.java = function(p) {
 	};
 	var args = [];
 	var vmarguments = (p.vmarguments) ? p.vmarguments : [];
+	if (p.properties) {
+		addPropertyArgumentsTo(vmarguments,p.properties);		
+	}
 	args.push.apply(args,vmarguments);
 	for (var x in p) {
 		if (x == "classpath") {
 			args.push("-classpath", p[x]);
 		} else if (x == "jar") {
 			args.push("-jar", p[x]);
+		} else if (x == "properties") {
 		} else {
 			shell[x] = p[x];
 		}
@@ -434,17 +446,7 @@ $exports.java = function(p) {
 	this.jrunscript = $context.api.file.Searchpath([this.home.getRelativePath("bin"),this.home.getRelativePath("../bin")]).getCommand("jrunscript");
 }).call($exports.java);
 
-var addPropertyArgumentsTo = function(jargs,properties) {
-	if (properties) {
-		for (var x in properties) {
-			jargs.push("-D" + x + "=" + properties[x]);
-		}
-	}
-};
-
 $exports.jrunscript = function(p) {
-	var jargs = [];
-	addPropertyArgumentsTo(jargs,p);
 	var launch = (function() {
 		if ($exports.properties.get("jsh.launcher.rhino")) {
 			return {
@@ -452,7 +454,8 @@ $exports.jrunscript = function(p) {
 				arguments: [
 					"-jar", $exports.rhino.classpath.pathnames[0],
 					"-opt", "-1"
-				]
+				],
+				vmArgumentPrefix: ""
 			};
 		} else {
 			if (!$exports.java.jrunscript) {
@@ -461,12 +464,26 @@ $exports.jrunscript = function(p) {
 			}
 			return {
 				command: $exports.java.jrunscript,
-				arguments: []
+				arguments: [],
+				vmArgumentPrefix: "-J"
 			}
 		}
 	})();
-	return jsh.shell.run($context.api.js.Object.set({}, p, {
+	
+	var vmargs = [];
+	
+	addPropertyArgumentsTo(vmargs,p.properties);
+	
+	if (p.vmarguments) {
+		for (var i=0; i<p.vmarguments.length; i++) {
+			vmargs.push(launch.prefix + p.vmarguments[i]);
+		}
+	}
+	
+	var args = vmargs.concat(launch.arguments).concat(p.arguments);
+	
+	return $exports.run($context.api.js.Object.set({}, p, {
 		command: launch.command,
-		arguments: jargs.concat(launch.arguments).concat(p.arguments)
+		arguments: args
 	}));
 }

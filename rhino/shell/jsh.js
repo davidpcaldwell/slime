@@ -175,15 +175,6 @@ if ($exports.properties.get("jsh.launcher.rhino")) {
 	};
 };
 
-//	TODO	move a version of this into module.js for java() to use
-var addPropertyArgumentsTo = function(jargs,properties) {
-	if (properties) {
-		for (var x in properties) {
-			jargs.push("-D" + x + "=" + properties[x]);
-		}
-	}
-};
-
 $exports.jsh = function(p) {
 	if (!arguments[0].script && !arguments[0].arguments) {
 		$api.deprecate(function() {
@@ -270,43 +261,43 @@ $exports.jsh = function(p) {
 		}
 
 		if (!p.shell) {
-			//	Set defaults from this shell
-			var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
-
-			var jargs = [];
-			addPropertyArgumentsTo(jargs);
-			jargs.push("-classpath");
-			jargs.push(LAUNCHER_CLASSPATH);
-			jargs.push("inonit.script.jsh.launcher.Main");
-
-			addCommandTo(jargs);
-
 			var shell = $context.api.js.Object.set({}, p, {
-				command: $exports.java.launcher,
-				arguments: jargs,
+				//	Set default classpath from this shell
+				classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
+				main: "inonit.script.jsh.launcher.Main",
+				arguments: addCommandTo([]),
 				environment: environment,
 				evaluate: evaluate
 			});
 
-			return $exports.run(shell);
+			return $exports.java(shell);
 		} else {
 			if (p.shell.getFile("jsh.jar")) {
 				//	Built shell
-				var jargs = [];
-				addPropertyArgumentsTo(jargs);
-
 				return $exports.java($context.api.js.Object.set({}, p, {
-					vmarguments: ((p.vmarguments) ? p.vmarguments : []).concat(jargs),
 					jar: p.shell.getFile("jsh.jar"),
-					arguments: addCommandTo([])
+					arguments: addCommandTo([]),
+					environment: environment,
+					evaluate: evaluate
 				}));
 			} else if (p.shell.getFile("jsh/etc/unbuilt.rhino.js")) {
-				var jsargs = [];
-				addPropertyArgumentsTo(jsargs);
-				jsargs.push(p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch");
-				addCommandTo(jsargs);
+				var args = [p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch"];
+				//	TODO	will only work if they start with dash, which they must, right?
+				if (p.properties) {
+					for (var x in p.properties) {
+						args.push("-D" + x + "=" + p.properties[x]);
+					}
+					delete p.properties;
+				}
+				if (p.vmarguments) {
+					for (var i=0; i<p.vmarguments.length; i++) {
+						args.push(p.vmarguments[i]);
+					}
+				}
 				return $exports.jrunscript($context.api.js.Object.set({}, p, {
-					arguments: jsargs
+					arguments: addCommandTo(args),
+					environment: environment,
+					evaluate: evaluate
 				}));
 			} else {
 				throw new Error("Shell not found: " + p.shell);

@@ -115,6 +115,9 @@
 			var methods = {};
 
 			methods.run = function(script,scope) {
+				if (!script) {
+					throw new TypeError("Script must be an object, not " + script);
+				}
 				if (preprocess) {
 					preprocess(script);
 				}

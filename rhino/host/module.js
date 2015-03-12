@@ -357,7 +357,7 @@ if ($context.globals && $context.globals.Array) {
 
 var Thread = function(p) {
 	var synchronize = function(f) {
-		if ($exports.getClass("inonit.script.runtime.Threads")) {
+		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context")) {
 			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(arguments.callee.lock,f);
 		} else {
 			return sync(f, arguments.callee.lock);
@@ -511,7 +511,7 @@ $exports.Thread.Monitor = function() {
 			lock.notifyAll();
 			return rv;
 		};
-		if ($exports.getClass("inonit.script.runtime.Threads")) {
+		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context")) {
 			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);
 		} else {
 			return sync(f, lock);
