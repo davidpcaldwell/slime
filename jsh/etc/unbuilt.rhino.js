@@ -234,6 +234,17 @@ var runCommand = function() {
 	return rv;
 };
 
+if (!arguments.splice) {
+	//	Nashorn in 8u40 apparently made arguments a Java array
+	arguments = (function(were) {
+		var rv = [];
+		for (var i=0; i<were.length; i++) {
+			rv[i] = were[i];
+		}
+		return rv;
+	})(arguments);	
+}
+
 if (arguments[0] == "build") {
 	arguments.splice(0,1);
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/etc/build.rhino.js"));
