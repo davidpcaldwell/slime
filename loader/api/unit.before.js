@@ -55,15 +55,19 @@ var Verify = function(scope,vars) {
 
 		var is = function(value,not) {
 			var specified = represent(value);
-			scope.test({
-				success: function() { return (not) ? v !== specified.value : v === specified.value; },
-				message: function(success) {
-					return (not)
-						? prefix + ((success) ? "is " + toLiteral(v) + ", not " + specified.name : "is " + toLiteral(v))
-						: prefix + ((success) ? "is " + specified.name : "is " + toLiteral(v) + ", not " + specified.name)
-					;
+			scope.test(function() {
+				var success = (not) ? v !== specified.value : v === specified.value;
+				var message = prefix + (function() {
+					if (!not && success) return "is " + specified.name;
+					if (!not && !success) return "is " + toLiteral(v) + ", not " + specified.name;
+					if (not && success) return "is " + toLiteral(v) + ", not " + specified.name;
+					if (not && !success) return "is " + toLiteral(v);
+				})();
+				return {
+					success: success,
+					message: message
 				}
-			});			
+			});
 		}
 
 		this.is = function(value) {
