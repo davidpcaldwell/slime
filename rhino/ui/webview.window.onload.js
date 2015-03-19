@@ -23,6 +23,11 @@ window.addEventListener("keydown", function(e) {
 	if (e.keyIdentifier == "U+0052" && e.metaKey) {
 		window.location.reload();
 	}
+	if (e.keyIdentifier == "F5") {
+		//	navigator.platform = Linux x86_64
+		//	Presumably all Windows
+		window.location.reload();
+	}
 	if (e.keyIdentifier == "Left" && e.metaKey) {
 		window.history.back();
 	}

@@ -12,7 +12,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.java && jsh.io && jsh.file;
+		return jsh.js && jsh.js.document && jsh.java && jsh.io && jsh.file;
 	},
 	load: function() {
 		var $shell = $loader.module("module.js", {
