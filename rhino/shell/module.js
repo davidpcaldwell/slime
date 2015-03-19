@@ -366,7 +366,7 @@ $exports.java = function(p) {
 	var args = [];
 	var vmarguments = (p.vmarguments) ? p.vmarguments : [];
 	if (p.properties) {
-		addPropertyArgumentsTo(vmarguments,p.properties);		
+		addPropertyArgumentsTo(vmarguments,p.properties);
 	}
 	args.push.apply(args,vmarguments);
 	for (var x in p) {
@@ -469,19 +469,19 @@ $exports.jrunscript = function(p) {
 			}
 		}
 	})();
-	
+
 	var vmargs = [];
-	
+
 	addPropertyArgumentsTo(vmargs,p.properties);
-	
+
 	if (p.vmarguments) {
 		for (var i=0; i<p.vmarguments.length; i++) {
 			vmargs.push(launch.prefix + p.vmarguments[i]);
 		}
 	}
-	
+
 	var args = vmargs.concat(launch.arguments).concat(p.arguments);
-	
+
 	return $exports.run($context.api.js.Object.set({}, p, {
 		command: launch.command,
 		arguments: args

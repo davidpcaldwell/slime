@@ -156,6 +156,6 @@ if ($context.os.name == "Linux") {
 		$exports.chrome = new Chrome({
 			program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
 			user: $context.HOME.getSubdirectory(".config/google-chrome")
-		});		
+		});
 	}
 }

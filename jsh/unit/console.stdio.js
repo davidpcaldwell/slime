@@ -1,9 +1,22 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 $exports.subprocess = function() {
 	return new function() {
 		this.start = function(scenario) {
 			jsh.shell.echo(JSON.stringify({ start: { scenario: { name: scenario.name } } }));
 		};
-		
+
 		var jsonError = function(error) {
 			if (error) {
 				return {
@@ -15,7 +28,7 @@ $exports.subprocess = function() {
 				return void(0);
 			}
 		}
-		
+
 		this.test = function(result) {
 			jsh.shell.echo(JSON.stringify({
 				test: {
@@ -25,7 +38,7 @@ $exports.subprocess = function() {
 				}
 			}));
 		}
-		
+
 		this.end = function(scenario,success) {
 			jsh.shell.echo(JSON.stringify({ end: { scenario: { name: scenario.name }, success: success }}));
 		}
@@ -34,13 +47,13 @@ $exports.subprocess = function() {
 
 $exports.Parent = function(p) {
 	var stack = [];
-	
+
 	var lock = new jsh.java.Thread.Monitor();
-	
+
 	var t = function() {
 		return " " + Packages.java.lang.Thread.currentThread().getName();
 	}
-	
+
 	var queued = [];
 
 	var queue = function(json) {
@@ -53,22 +66,22 @@ $exports.Parent = function(p) {
 			}
 		})();
 	}
-		
+
 	var Scenario = function(json,top) {
 		var ended = false;
-		
+
 		stack.push(this);
-		
+
 		this.toString = function() {
 			return "console.stdio.js scenario: " + json.name;
 		}
-		
+
 		this.name = json.name;
-		
+
 		var self = this;
-		
+
 		var done = false;
-		
+
 		this.done = function() {
 			lock.Waiter({
 				until: function() {
@@ -79,7 +92,7 @@ $exports.Parent = function(p) {
 				}
 			})();
 		}
-		
+
 		this.execute = function(scope) {
 			lock.Waiter({
 				until: function() {
@@ -124,7 +137,7 @@ $exports.Parent = function(p) {
 //							jsh.shell.echo("Processing start: " + self + t());
 //							var scenario = new Scenario(action.start.scenario);
 ////							stack.push(scenario);
-//							scope.scenario(scenario);							
+//							scope.scenario(scenario);
 //						} else if (action.test) {
 //							jsh.shell.echo("Processing test: " + self + t());
 //							scope.test(action.test);
@@ -159,19 +172,19 @@ $exports.Parent = function(p) {
 //					return true;
 //				},
 //				then: function() {
-//					
+//
 //				}
 //			})();
 //			jsh.shell.echo("ended: " + this + t() + " with top of stack " + stack[stack.length-1]);
 		}
 	};
-	
+
 	var top = new Scenario({
 		name: p.name
 	},true);
-	
+
 	this.top = top;
-	
+
 	jsh.java.Thread.start(function() {
 		p.stream.character().readLines(function(line) {
 			lock.Waiter({

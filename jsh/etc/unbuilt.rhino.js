@@ -242,7 +242,7 @@ if (!arguments.splice) {
 			rv[i] = were[i];
 		}
 		return rv;
-	})(arguments);	
+	})(arguments);
 }
 
 if (arguments[0] == "build") {

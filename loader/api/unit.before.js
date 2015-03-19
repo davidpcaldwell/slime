@@ -376,14 +376,14 @@ var adaptAssertion = new function() {
 			throw error;
 		}
 	};
-	
+
 	this.result = function(result) {
 		if (typeof(result) == "boolean") {
 			return $api.deprecate((function(b) {
 				return {
 					success: b,
 					message: (b) ? "Success." : "FAILED!"
-				};				
+				};
 			}))(result);
 		}
 		return result;
@@ -434,7 +434,7 @@ var Scope = function(o) {
 				haltOnException: o.haltOnException
 			});
 		} else {
-			var result = child.run({ 
+			var result = child.run({
 				console: o.console,
 				haltOnException: o.haltOnException
 			});
@@ -516,9 +516,9 @@ $exports.Scenario = function(o) {
 	if (!o) {
 		throw new TypeError("arguments[0] must be present.");
 	}
-	
+
 	this.name = o.name;
-	
+
 	var run = function(p) {
 		var scope = new Scope({ scenario: p.scenario, console: p.console, callback: p.callback, Scenario: p.Scenario});
 
@@ -559,7 +559,7 @@ $exports.Scenario = function(o) {
 		} else {
 			return $api.deprecate(function() {
 				var console = o;
-				return run({ scenario: this, console: console, Scenario: Scenario });				
+				return run({ scenario: this, console: console, Scenario: Scenario });
 			}).call(this);
 		}
 	}

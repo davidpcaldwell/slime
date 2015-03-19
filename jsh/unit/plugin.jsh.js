@@ -20,7 +20,7 @@ plugin({
 			$coffee: $jsh.coffee,
 			java: $jsh.java
 		};
-		
+
 	}
 });
 

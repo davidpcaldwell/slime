@@ -48,7 +48,7 @@ $jsh.setHost((function() {
 
 	//	TODO	NASHORN	Regression in 8u40 causes this extra variable to be necessary
 	var NASHORN_IN_SCOPE_$jsh = $jsh;
-	
+
 	rv.jsh = function(configuration,invocation) {
 		return scripts.subshell(function() {
 			try {

@@ -40,20 +40,20 @@ var parameters = jsh.script.getopts({
 							var match = pattern.exec(name);
 							return Number(match[1])*10000 + Number(match[2])*100 + Number(match[3]);
 						};
-						
+
 						var getVersionString = function(node) {
 							var match = pattern.exec(node.pathname.basename);
-							return match[1] + "." + match[2] + "." + match[3]							
+							return match[1] + "." + match[2] + "." + match[3]
 						}
-						
+
 						local.forEach(function(node) {
 							jsh.shell.echo("Found version " + getVersionString(node));
 						})
-						
+
 						local.sort(function(a,b) {
 							return getVersion(b) - getVersion(a);
 						});
-						
+
 						jsh.shell.echo("Latest version is " + getVersionString(local[0]));
 						return getVersionString(local[0]);
 					}
