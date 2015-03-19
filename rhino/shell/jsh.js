@@ -211,28 +211,33 @@ $exports.jsh = function(p) {
 		return false;
 	})();
 
-	var environment = (function() {
-		//	TODO	this code below is counter-intuitive and should be cleaned up and/or documented; order is reverse of what you'd
-		//			think (and what jsh.js.Object.set(...) for example would do).
-		var addProperties = function(from) {
-			for (var x in from) {
-				if (x != "JSH_LAUNCHER_DEBUG") {
-					if (typeof(rv[x]) == "undefined") {
-						//	Conversion to string is necessary for $exports.properties.jsh.launcher.environment, which
-						//	contains host objects
-						rv[x] = String(from[x]);
-					}
-				}
-			}
-		}
+	//	TODO	Probably if p.shell is specified and p.environment is not, we should strip out all variables starting with JSH_,
+	//			which would provide the least counterintuitive behavior. For example, if called from unbuilt shell, we would want
+	//			a launched built shell to have all the unbuilt shell environment variables removed.
 
-		var rv = {};
-		addProperties((p.environment) ? p.environment : {});
-		addProperties($exports.properties.object.jsh.launcher.environment);
-		addProperties($exports.environment);
-
-		return rv;
-	})();
+//	var environment = (function() {
+//		//	TODO	this code below is counter-intuitive and should be cleaned up and/or documented; order is reverse of what you'd
+//		//			think (and what jsh.js.Object.set(...) for example would do).
+//		var addProperties = function(from) {
+//			for (var x in from) {
+//				if (x != "JSH_LAUNCHER_DEBUG") {
+//					if (typeof(rv[x]) == "undefined") {
+//						//	Conversion to string is necessary for $exports.properties.jsh.launcher.environment, which
+//						//	contains host objects
+//						rv[x] = String(from[x]);
+//					}
+//				}
+//			}
+//		}
+//
+//		var rv = {};
+//		addProperties((p.environment) ? p.environment : {});
+//		addProperties($exports.properties.object.jsh.launcher.environment);
+//		addProperties($exports.environment);
+//
+//		return rv;
+//	})();
+	var environment = (p.environment) ? p.environment : $exports.environment;
 
 	if (fork) {
 		//	TODO	can we use $exports.java.home here?
