@@ -356,6 +356,7 @@ $exports.tests = new function() {
 							scope.module = suite.loadWith(contexts[i]);
 							scope.context = contexts[i];
 							var scenario = suite.getScenario(scope);
+							scenario.name = suite.name;
 							scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
 							topscope.scenario( scenario );
 						} else {

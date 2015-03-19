@@ -187,12 +187,18 @@ END LICENSE
 			var one = code.Resources.script.old(
 				$module.getResourcePathname("test/resource/1.old.js").file
 			);
+			var indexOf = function(value) {
+				return function() {
+					return this.indexOf(value);
+				}
+			};
 			verify(one,"one").isNotEqualTo(3);
 			verify(one).loader.list({ path: "WEB-INF/generic/" }).length.is(1);
 			verify(one).loader.list({ path: "WEB-INF/generic/" })[0].is("inonit/");
 			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length.is(2);
-			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" })[0].is("Nashorn.java");
-			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" })[1].is("Servlet.java");
+			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("Servlet.java")).isNotEqualTo(-1);
+			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("Nashorn.java")).isNotEqualTo(-1);
+			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("JarJarBinks.java")).is(-1);
 			verify(one).loader.list({ path: "WEB-INF/" }).length.is(3);
 			verify(one).loader.list({ path: "WEB-INF/" })[0].is("generic/");
 			verify(one).loader.list({ path: "WEB-INF/" })[1].is("mozilla/");
