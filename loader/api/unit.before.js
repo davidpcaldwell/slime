@@ -423,14 +423,14 @@ var Scope = function(o) {
 		}
 
 		if (o.callback) {
-			child.start({
+			child.run({
 				console: o.console,
-				callback: function(b) {
+				callback: { success: function(b) {
 					if (!b) {
 						fail();
 					}
 					if (next) runNext(next);
-				},
+				}},
 				haltOnException: o.haltOnException
 			});
 		} else {
@@ -535,10 +535,10 @@ $exports.Scenario = function(o) {
 		}
 
 		if (p.haltOnException) {
-			initializeAndExecute.call(this,scope);
+			initializeAndExecute(scope);
 		} else {
 			try {
-				initializeAndExecute.call(this,scope);
+				initializeAndExecute(scope);
 			} catch (e) {
 				scope.test(ErrorTest(e));
 			}
@@ -554,18 +554,19 @@ $exports.Scenario = function(o) {
 
 	var Scenario = arguments.callee;
 	this.run = function(o) {
+		var callback = arguments[1];
 		if (arguments.length == 1 && arguments[0].console) {
 			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else {
 			return $api.deprecate(function() {
 				var console = o;
-				return run({ scenario: this, console: console, Scenario: Scenario });
+				return run({ scenario: this, console: console, Scenario: Scenario, callback: callback });
 			}).call(this);
 		}
 	}
 
 	this.start = $api.deprecate(function(console,callback) {
-		run(this,console,callback);
+		run(console,callback);
 	});
 
 	this.toString = function() {

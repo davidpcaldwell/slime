@@ -502,7 +502,13 @@
 				}
 			}
 		};
-	}
+	};
+	
+	$exports.needs = (function() {
+		var $exports = {};
+		eval($slime.getCode("needs.js"));
+		return $exports;
+	})();
 
 	return $exports;
 })()

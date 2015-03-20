@@ -335,6 +335,9 @@ END LICENSE
 											return eval(inonit.loader.Loader.getCode(base + self.top + path));
 										}
 									};
+									this.string = function(path) {
+										return inonit.loader.Loader.getCode(base + self.top + path);
+									};
 									this.coffee = window.CoffeeScript;
 
 									//	TODO	add this.scenario; see jsh/unit/jsapi.js

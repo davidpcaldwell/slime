@@ -242,6 +242,9 @@ $exports.tests = new function() {
 						}
 //						return jsh.loader.run(suite.getRelativePath(name),scope);
 					},
+					string: function(name) {
+						return suite.getRelativePath(name).file.read(String);
+					},
 					coffee: jsh.$jsapi.$coffee,
 					scenario: function(path,p) {
 						var apifile = getApiHtml(suite.getRelativePath(path));
