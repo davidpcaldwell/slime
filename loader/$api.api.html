@@ -573,11 +573,74 @@
 					<ul>
 					</ul>
 					<script type="application/x.jsapi#tests">
-						verify(api).loadedByJsapi.is(true);
-						verify(api).steps.isNotEqualTo(null);
-						verify(api).steps.evaluate(function() { return this.resolve }).isNotEqualTo(null);
+						verify(api,"$api").loadedByJsapi.is(true);
+						verify(api,"$api").steps.isNotEqualTo(null);
+						verify(api,"$api").steps.evaluate(function() { return this.run }).isNotEqualTo(null);
 
+						var $steps = verify(api,"$api").steps;
+						$steps.run({ list: [] }).threw.nothing();
 						
+						var A = function(shared) {
+							this.ready = function() {
+								return true;
+							}
+							
+							this.run = function() {
+								shared.a = true;
+							}
+						};
+						
+						var B = function(shared) {
+							this.ready = function() {
+								return shared.a;
+							};
+							
+							this.run = function() {
+								shared.b = true;
+							}
+						}
+						
+						var Shared = function() {
+							this.a = false;
+							this.b = false;
+						};
+						
+						var Listener = function() {
+							var unready = [];
+							
+							this.on = {
+								unready: function(e) {
+									unready.push(e.detail);
+								}
+							}
+							
+							this.unready = unready;
+						}
+						
+						var s1 = new Shared();
+						$steps.run({
+							list: [ new A(s1) ]
+						});
+						verify(s1).a.is(true);
+						
+						var s2 = new Shared();
+						$steps.run({
+							list: [ new B(s2), new A(s2) ]
+						});
+						verify(s2).a.is(true);
+						verify(s2).b.is(true);
+						
+						var s3 = new Shared();
+						var b3 = new B(s3);
+						var l3 = new Listener();
+						$steps.run({
+							list: [ b3 ],
+							on: l3
+						});
+						verify(s3).a.is(false);
+						verify(s3).b.is(false);
+						verify(l3).unready.length.is(1);
+						verify(l3).unready[0].is(b3);
 					</script>
 				</li>
 			</ul>

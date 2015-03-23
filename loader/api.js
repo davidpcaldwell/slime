@@ -466,6 +466,14 @@
 	};
 
 	$exports.Events = function(p) {
+		if (!p.source && p.on) {
+			var source = {};
+			var rv = $exports.Events({ source: source });
+			for (var x in p.on) {
+				source.listeners.add(x,p.on[x]);
+			}
+			return rv;
+		}
 		return new function() {
 			var byType = {};
 
@@ -504,11 +512,11 @@
 		};
 	};
 	
-	$exports.steps = (function() {
+	$exports.steps = (function($context) {
 		var $exports = {};
 		eval($slime.getCode("steps.js"));
 		return $exports;
-	})();
+	})($exports);
 
 	return $exports;
 })()
