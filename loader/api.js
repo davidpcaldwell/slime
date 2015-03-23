@@ -504,9 +504,9 @@
 		};
 	};
 	
-	$exports.needs = (function() {
+	$exports.steps = (function() {
 		var $exports = {};
-		eval($slime.getCode("needs.js"));
+		eval($slime.getCode("steps.js"));
 		return $exports;
 	})();
 

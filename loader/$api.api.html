@@ -567,15 +567,17 @@
 					</script>
 				</li>
 				<li class="object">
-					<div class="name">needs</div>
+					<div class="name">steps</div>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
 					</ul>
 					<script type="application/x.jsapi#tests">
 						verify(api).loadedByJsapi.is(true);
-						verify(api).needs.isNotEqualTo(null);
-						verify(api).needs.evaluate(function() { return this.resolve }).isNotEqualTo(null);
+						verify(api).steps.isNotEqualTo(null);
+						verify(api).steps.evaluate(function() { return this.resolve }).isNotEqualTo(null);
+
+						
 					</script>
 				</li>
 			</ul>
