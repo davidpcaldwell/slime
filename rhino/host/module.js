@@ -517,6 +517,46 @@ $exports.Thread.Monitor = function() {
 			return sync(f, lock);
 		}
 	}
+};
+$exports.Thread.Task = function(p) {
+	if (p.call) {
+		return function(tell) {
+			if (tell) {
+				var result;
+				var starter = new p.monitor.Waiter({
+					until: function() {
+						return true;
+					},
+					then: function() {
+						try {
+							result = { returned: p.call() };
+						} catch (e) {
+							result = { threw: e };
+						}
+					}
+				});
+				var teller = new p.monitor.Waiter({
+					until: function() {
+//						jsh.shell.echo("teller result = " + result);
+						return result;
+					},
+					then: function() {
+						if (tell.length == 2) {
+							tell(result.threw, result.returned);
+						} else {
+							tell(result);
+						}
+					}
+				});
+				$exports.Thread.start({ call: starter });
+				$exports.Thread.start({ call: teller });				
+			} else {
+				return p.call();
+			}
+		}
+	} else {
+		throw new TypeError();
+	}
 }
 
 $exports.Environment = function(_environment) {

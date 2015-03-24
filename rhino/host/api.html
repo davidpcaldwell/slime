@@ -503,6 +503,42 @@ END LICENSE
 							}
 						]]></script>
 					</li>
+					<li class="constructor" jsapi:id="Task">
+						<div class="name">Task</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var monitor = new module.Thread.Monitor();
+							var task = new module.Thread.Task({
+								monitor: monitor,
+								call: function() {
+									return 2*2;
+								}
+							});
+							var finished;
+							task(function(error,returned) {
+								finished = returned;
+							});
+							new monitor.Waiter({
+								until: function() {
+									return finished;
+								},
+								then: function() {
+									//	continue
+								}
+							})();
+							verify(finished).is(4);
+						</script>
+					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
 					if (module.Thread) {
