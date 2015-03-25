@@ -523,6 +523,7 @@ $exports.Thread.Monitor = function() {
 };
 $exports.Thread.Task = function(p) {
 	return function(tell) {
+		arguments.callee.p = p;
 		if (tell) {
 			$exports.Thread.start({ 
 				call: function() {

@@ -549,6 +549,113 @@ END LICENSE
 							}
 							verify(finished).is(4);
 						</script>
+						<script type="application/x.jsapi#tests">
+							var $$api = $jsapi.loader.eval("../../loader/api.js", {
+								$slime: {
+									getCode: function(path) {
+										return $jsapi.loader.string("../../loader/" + path);
+									}
+								}
+							});
+							verify($$api,"$$api").isNotEqualTo(null);
+							
+							var monitor = new module.Thread.Monitor();
+							
+							var Event = function(f) {
+								return function(error,returned) {
+									monitor.Waiter({
+										until: function() {
+											return true;
+										},
+										then: function() {
+											f();
+										}
+									})();
+								}
+							};
+							
+							var A = function(shared) {
+								return {
+									ready: function() {
+										return true;
+									},
+									task: new module.Thread.Task({
+										call: Event(function() {
+											shared.a = true;
+										})
+									})
+								};
+							};
+							var B = function(shared) {
+								return {
+									ready: function() {
+										return shared.a;
+									},
+									task: new module.Thread.Task({
+										call: Event(function() {
+											shared.b = true;
+										})
+									})
+								};
+							};
+							var C = function(shared) {
+								return {
+									toString: function() {
+										return "C";
+									},
+									ready: function() {
+										var nincompoop = 1;
+										return false;
+									},
+									task: function(tell) {
+										throw new Error();
+									}
+								}
+							};
+							
+							var steps = new function() {
+								var shared = { a: false, b: false };
+								
+								this.shared = shared;
+								this.c = new C(shared);
+								
+								this.list = [new A(shared), new B(shared), this.c];
+							};
+							
+							var task = $$api.steps.Task(steps);
+							
+							var unready = [];
+							
+							task.listeners.add("unready", function(e) {
+								unready.push(e.detail);
+							});
+							
+							var finished = false;
+							
+							task(monitor.Waiter({
+								until: function() {
+									return true;
+								},
+								then: function() {
+									finished = true;
+								}
+							}));
+							
+							monitor.Waiter({
+								until: function() {
+									return finished;
+								},
+								then: function() {
+								}
+							})();
+							
+							verify(steps).shared.a.is(true);
+							verify(steps).shared.b.is(true);
+							verify(unready).length.is(1);
+							//	TODO	verify(unready[0]).ready.is(steps.c.ready) does not work because ready property of the
+							//			verify object does not have is() method. Probably addressable in unit test framework.
+							verify(unready[0]).is(steps.c);
+						</script>
 					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
