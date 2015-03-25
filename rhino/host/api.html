@@ -524,18 +524,23 @@ END LICENSE
 									return 2*2;
 								}
 							});
+							var events = [];
 							var finished;
 							task(function(error,returned) {
-								finished = returned;
+								events.push(function() {
+									finished = returned;
+								});
 							});
-							new monitor.Waiter({
-								until: function() {
-									return finished;
-								},
-								then: function() {
-									//	continue
-								}
-							})();
+							while(!finished) {
+								new monitor.Waiter({
+									until: function() {
+										return events.length;
+									},
+									then: function() {
+										events.shift()();
+									}
+								})();
+							}
 							verify(finished).is(4);
 						</script>
 					</li>
