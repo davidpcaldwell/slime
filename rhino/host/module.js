@@ -501,63 +501,48 @@ $exports.Thread.Monitor = function() {
 	this.toString = function() {
 		return "Thread.Monitor [id=" + Packages.java.lang.System.identityHashCode(lock) + "]";
 	}
+	
+	var synchronize = function(f) {
+		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context")) {
+			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);
+		} else {
+			return sync(f, lock);
+		}		
+	};
 
 	this.Waiter = function(c) {
-		var f = function() {
+		return synchronize(function() {
 			while(!c.until.apply(this,arguments)) {
 				lock.wait();
 			}
 			var rv = c.then.apply(this,arguments);
 			lock.notifyAll();
 			return rv;
-		};
-		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context")) {
-			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);
-		} else {
-			return sync(f, lock);
-		}
-	}
+		});
+	};
 };
 $exports.Thread.Task = function(p) {
-	if (p.call) {
-		return function(tell) {
-			if (tell) {
-				var result;
-				var monitor = new $exports.Thread.Monitor();
-				var starter = new monitor.Waiter({
-					until: function() {
-						return true;
-					},
-					then: function() {
-						try {
-							result = { returned: p.call() };
-						} catch (e) {
-							result = { threw: e };
-						}
+	return function(tell) {
+		if (tell) {
+			$exports.Thread.start({ 
+				call: function() {
+					var result;
+					try {
+						result = { returned: p.call() }
+					} catch (e) {
+						result = { threw: e }
 					}
-				});
-				var teller = new monitor.Waiter({
-					until: function() {
-//						jsh.shell.echo("teller result = " + result);
-						return result;
-					},
-					then: function() {
-						if (tell.length == 2) {
-							tell(result.threw, result.returned);
-						} else {
-							tell(result);
-						}
+					if (tell.length == 2) {
+						tell(result.threw, result.returned);
+					} else {
+						tell(result);
 					}
-				});
-				$exports.Thread.start({ call: starter });
-				$exports.Thread.start({ call: teller });				
-			} else {
-				return p.call();
-			}
+				}
+			});
+		} else {
+			return p.call();
 		}
-	} else {
-		throw new TypeError();
-	}
+	};
 }
 
 $exports.Environment = function(_environment) {
