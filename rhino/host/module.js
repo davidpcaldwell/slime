@@ -523,7 +523,8 @@ $exports.Thread.Task = function(p) {
 		return function(tell) {
 			if (tell) {
 				var result;
-				var starter = new p.monitor.Waiter({
+				var monitor = new $exports.Thread.Monitor();
+				var starter = new monitor.Waiter({
 					until: function() {
 						return true;
 					},
@@ -535,7 +536,7 @@ $exports.Thread.Task = function(p) {
 						}
 					}
 				});
-				var teller = new p.monitor.Waiter({
+				var teller = new monitor.Waiter({
 					until: function() {
 //						jsh.shell.echo("teller result = " + result);
 						return result;

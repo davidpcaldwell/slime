@@ -519,7 +519,6 @@ END LICENSE
 						<script type="application/x.jsapi#tests">
 							var monitor = new module.Thread.Monitor();
 							var task = new module.Thread.Task({
-								monitor: monitor,
 								call: function() {
 									return 2*2;
 								}
@@ -527,12 +526,19 @@ END LICENSE
 							var events = [];
 							var finished;
 							task(function(error,returned) {
-								events.push(function() {
-									finished = returned;
-								});
+								monitor.Waiter({
+									until: function() {
+										return true;
+									},
+									then: function() {
+										events.push(function() {
+											finished = returned;
+										})
+									}
+								})();
 							});
 							while(!finished) {
-								new monitor.Waiter({
+								monitor.Waiter({
 									until: function() {
 										return events.length;
 									},
