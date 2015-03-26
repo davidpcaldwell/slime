@@ -85,7 +85,12 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 					})()
 				}
 			}
-			jsh.loader.run(source,scope);
+			try {
+				jsh.loader.run(source,scope);
+			} catch (e) {
+				Packages.java.lang.System.err.println("Error executing " + code);
+				throw e;
+			}
 		}
 
 		if (jsh.$jsapi.$rhino.jsapi && jsh.$jsapi.$rhino.jsapi.script) {
