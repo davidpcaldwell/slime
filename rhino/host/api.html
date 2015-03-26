@@ -539,17 +539,10 @@ END LICENSE
 							}
 							verify(finished).is(4);
 						</script>
-						<script type="application/x.jsapi#tests">
-							var $$api = $jsapi.loader.eval("../../loader/api.js", {
-								$slime: {
-									getCode: function(path) {
-										return $jsapi.loader.string("../../loader/" + path);
-									}
-								}
-							});
-							verify($$api,"$$api").isNotEqualTo(null);
-							
+						<script type="application/x.jsapi#initialize">
 							var monitor = new module.Thread.Monitor();
+							
+							scope.monitor = monitor;
 							
 							var Multithreaded = function(step) {
 								var Event = function(f) {
@@ -578,7 +571,7 @@ END LICENSE
 								};
 							}
 							
-							var A = function(shared) {
+							scope.A = function(shared) {
 								return new Multithreaded({
 									ready: function() {
 										return true;
@@ -588,7 +581,7 @@ END LICENSE
 									}
 								});
 							};
-							var B = function(shared) {
+							scope.B = function(shared) {
 								return new Multithreaded({
 									ready: function() {
 										return shared.a;
@@ -598,7 +591,7 @@ END LICENSE
 									}
 								});
 							};
-							var C = function(shared) {
+							scope.C = function(shared) {
 								return new Multithreaded({
 									toString: function() {
 										return "C";
@@ -611,6 +604,16 @@ END LICENSE
 									}
 								});
 							};
+						</script>
+						<script type="application/x.jsapi#tests">
+							var $$api = $jsapi.loader.eval("../../loader/api.js", {
+								$slime: {
+									getCode: function(path) {
+										return $jsapi.loader.string("../../loader/" + path);
+									}
+								}
+							});
+							verify($$api,"$$api").isNotEqualTo(null);
 							
 							var steps = new function() {
 								var shared = { a: false, b: false };
