@@ -540,6 +540,15 @@ END LICENSE
 							verify(finished).is(4);
 						</script>
 						<script type="application/x.jsapi#initialize">
+							var $$api = $jsapi.loader.eval("../../loader/api.js", {
+								$slime: {
+									getCode: function(path) {
+										return $jsapi.loader.string("../../loader/" + path);
+									}
+								}
+							});
+							scope.$$api = $$api;
+							
 							var monitor = new module.Thread.Monitor();
 							
 							scope.monitor = monitor;
@@ -606,15 +615,6 @@ END LICENSE
 							};
 						</script>
 						<script type="application/x.jsapi#tests">
-							var $$api = $jsapi.loader.eval("../../loader/api.js", {
-								$slime: {
-									getCode: function(path) {
-										return $jsapi.loader.string("../../loader/" + path);
-									}
-								}
-							});
-							verify($$api,"$$api").isNotEqualTo(null);
-							
 							var steps = new function() {
 								var shared = { a: false, b: false };
 								
