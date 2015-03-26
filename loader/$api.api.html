@@ -578,7 +578,7 @@
 						verify(api,"$api").threads.steps.evaluate(function() { return this.run }).isNotEqualTo(null);
 
 						var $steps = verify(api,"$api").threads.steps;
-						$steps.run({ list: [] }).threw.nothing();
+						$steps.run({ steps: [] }).threw.nothing();
 						
 						var A = function(shared) {
 							this.ready = function() {
@@ -619,13 +619,13 @@
 						
 						var s1 = new Shared();
 						$steps.run({
-							list: [ new A(s1) ]
+							steps: [ new A(s1) ]
 						});
 						verify(s1).a.is(true);
 						
 						var s2 = new Shared();
 						$steps.run({
-							list: [ new B(s2), new A(s2) ]
+							steps: [ new B(s2), new A(s2) ]
 						});
 						verify(s2).a.is(true);
 						verify(s2).b.is(true);
@@ -634,7 +634,7 @@
 						var b3 = new B(s3);
 						var l3 = new Listener();
 						$steps.run({
-							list: [ b3 ],
+							steps: [ b3 ],
 							on: l3.on
 						});
 						verify(s3).a.is(false);

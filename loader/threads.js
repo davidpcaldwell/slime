@@ -2,7 +2,7 @@ $exports.steps = {};
 
 $exports.steps.run = function(p) {
 	var events = (p.on) ? $context.Events(p) : $context.Events({ source: {} });
-	var list = p.list.slice();
+	var list = p.steps.slice();
 	var more = true;
 	while(list.length && more) {
 		more = false;
@@ -21,7 +21,7 @@ $exports.steps.run = function(p) {
 }
 
 $exports.steps.Task = function(p) {
-	var list = p.list.slice();
+	var list = p.steps.slice();
 	var rv = function task(tell) {
 		var more = true;
 		var running = (tell) ? [] : null;
