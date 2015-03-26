@@ -83,6 +83,6 @@ $exports.Task = function(p) {
 			}
 		}		
 	};
-	var events = $context.Events({ source: rv });
+	var events = $context.Events({ source: rv, on: p.on });
 	return rv;
 }

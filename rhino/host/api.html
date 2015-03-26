@@ -622,17 +622,21 @@ END LICENSE
 								this.c = new C(shared);
 								
 								this.list = [new A(shared), new B(shared), this.c];
+								
+								var unready = [];
+								
+								this.unready = unready;
+								
+								this.on = {
+									unready: function(e) {
+										unready.push(e.detail);
+									}
+								}
 							};
 							
 							var steps = new Steps();
 							
 							var task = $$api.steps.Task(steps);
-							
-							var unready = [];
-							
-							task.listeners.add("unready", function(e) {
-								unready.push(e.detail);
-							});
 							
 							var finished = false;
 							
@@ -655,10 +659,10 @@ END LICENSE
 							
 							verify(steps).shared.a.is(true);
 							verify(steps).shared.b.is(true);
-							verify(unready).length.is(1);
+							verify(steps).unready.length.is(1);
 							//	TODO	verify(unready[0]).ready.is(steps.c.ready) does not work because ready property of the
 							//			verify object does not have is() method. Probably addressable in unit test framework.
-							verify(unready[0]).is(steps.c);
+							verify(steps).unready[0].is(steps.c);
 							
 							unready = [];
 							
