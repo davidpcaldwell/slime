@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Firebase Google Login Test</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="https://cdn.firebase.com/js/client/1.0.15/firebase.js"></script>
+		<script src="https://cdn.firebase.com/js/simple-login/1.6.0/firebase-simple-login.js"></script>
+		<script>
+			window.addEventListener("load", function() {
+				document.getElementById("login").addEventListener("click", function() {
+					var chatRef = new Firebase("https://scorching-fire-4668.firebaseio.com/");
+					var auth = new FirebaseSimpleLogin(chatRef, function(error, user) {
+						if (error) {
+							console.log(error);
+						} else if (user) {
+							console.log(user);
+						} else {
+							console.log("Logged out.");
+						}
+					});
+					auth.login("google");
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<input type="button" id="login" value="Login"/>
+	</body>
+</html>

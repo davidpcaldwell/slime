@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+		<script type="application/x.jsapi#context">
+			//	TODO	mercilessly copied from Derby; perhaps should modularize
+			(function() {
+				var js = $jsapi.module("../../../slime/js/object/");
+				var java = $jsapi.module("../../../slime/rhino/host/");
+				var io = $jsapi.module("../../../slime/rhino/io/", {
+					api: {
+						js: js,
+						java: java,
+						mime: {
+							Type: {}
+						}
+					}
+				});
+				var parentContext = new function() {
+					this.api = {
+						js: js,
+						java: java,
+						io: io,
+						core: $jsapi.module("../core.js")
+					};
+				};
+				return $jsapi.module("../drivers.js", parentContext);
+			})()
+		</script>		
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+		</ul>
+		<script type="application/x.jsapi#initialize">
+			scope.database = new module.Database({
+				host: $jsapi.environment.mysql.host,
+				port: $jsapi.environment.mysql.port,
+				credentials: {
+					user: $jsapi.environment.mysql.user,
+					password: $jsapi.environment.mysql.password
+				}
+			});
+		</script>
+		<script type="application/x.jsapi#tests">
+			jsh.shell.echo("Database: " + database);
+			var catalogs = database.getCatalogs();
+			catalogs.forEach(function(catalog) {
+				jsh.shell.echo("Catalog: " + catalog);
+			});
+		</script>
+		<div jsapi:id="blob">
+			<div jsapi:reference="getApi('../api.html').getElement('blob')">
+			</div>
+			<script type="application/x.jsapi#tests">
+				var catalog = database.getCatalog({ name: "test" });
+				jsh.shell.echo("catalog = " + catalog);
+				var schemas = catalog.getSchemas();
+				jsh.shell.echo("schema count: " + schemas.length);
+				schemas.forEach(function(schema) {
+					jsh.shell.echo("schema: " + schema.name);
+				});
+
+				var schema = catalog.getSchema({ name: "test" , descriptor: [
+					{
+						applied: function(s) {
+							jsh.shell.echo("getTables(): " + s.getTables().map(function(table) {
+								return table.name;
+							}));
+							jsh.shell.echo("getTable(data): " + s.getTable({ name: "data" }));
+							return s.getTable({ name: "data" });
+						},
+						apply: function(context) {
+							context.execute({ sql: "CREATE TABLE data (a INTEGER, b BLOB)" });
+						}
+					}
+				]});
+
+				//	TODO	make this work
+				if (false) blob(schema,test);
+			</script>
+		</div>
+	</div>
+</body>
+</html>
