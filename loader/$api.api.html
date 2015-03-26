@@ -574,10 +574,10 @@
 					</ul>
 					<script type="application/x.jsapi#tests">
 						verify(api,"$api").loadedByJsapi.is(true);
-						verify(api,"$api").steps.isNotEqualTo(null);
-						verify(api,"$api").steps.evaluate(function() { return this.run }).isNotEqualTo(null);
+						verify(api,"$api").threads.steps.isNotEqualTo(null);
+						verify(api,"$api").threads.steps.evaluate(function() { return this.run }).isNotEqualTo(null);
 
-						var $steps = verify(api,"$api").steps;
+						var $steps = verify(api,"$api").threads.steps;
 						$steps.run({ list: [] }).threw.nothing();
 						
 						var A = function(shared) {

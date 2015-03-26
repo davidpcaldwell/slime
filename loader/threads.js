@@ -1,4 +1,6 @@
-$exports.run = function(p) {
+$exports.steps = {};
+
+$exports.steps.run = function(p) {
 	var events = (p.on) ? $context.Events(p) : $context.Events({ source: {} });
 	var list = p.list.slice();
 	var more = true;
@@ -18,7 +20,7 @@ $exports.run = function(p) {
 	});
 }
 
-$exports.Task = function(p) {
+$exports.steps.Task = function(p) {
 	var list = p.list.slice();
 	var rv = function task(tell) {
 		var more = true;

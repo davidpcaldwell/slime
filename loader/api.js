@@ -509,9 +509,9 @@
 		return rv;
 	};
 	
-	$exports.steps = (function($context) {
+	$exports.threads = (function($context) {
 		var $exports = {};
-		eval($slime.getCode("steps.js"));
+		eval($slime.getCode("threads.js"));
 		return $exports;
 	})($exports);
 

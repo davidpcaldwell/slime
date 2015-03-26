@@ -636,7 +636,7 @@ END LICENSE
 							
 							var steps = new Steps();
 							
-							var task = $$api.steps.Task(steps);
+							var task = $$api.threads.steps.Task(steps);
 							
 							var finished = false;
 							
@@ -667,7 +667,7 @@ END LICENSE
 							var ssteps = new Steps();
 							verify(ssteps).shared.a.is(false);
 							
-							var stask = $$api.steps.Task(ssteps);
+							var stask = $$api.threads.steps.Task(ssteps);
 							
 							stask();
 							
