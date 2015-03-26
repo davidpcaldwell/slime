@@ -42,7 +42,7 @@ $exports.Task = function(p) {
 					if (list[i].ready()) {
 						trace("Starting: " + list[i].task);
 						var task = list[i].task;
-						running.push(task);
+						if (running) running.push(task);
 						list.splice(i,1);
 						if (tell) {
 							trace("Executing task " + task);
@@ -50,7 +50,7 @@ $exports.Task = function(p) {
 							i--;
 						} else {
 							task();
-							i = 0;
+							i = -1;
 						}
 					} else {
 						trace("Not starting (not ready): " + list[i].ready);

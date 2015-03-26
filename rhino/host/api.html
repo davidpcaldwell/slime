@@ -664,8 +664,19 @@ END LICENSE
 							//			verify object does not have is() method. Probably addressable in unit test framework.
 							verify(steps).unready[0].is(steps.c);
 							
-							unready = [];
+							var ssteps = new Steps();
+							verify(ssteps).shared.a.is(false);
 							
+							var stask = $$api.steps.Task(ssteps);
+							
+							stask();
+							
+							verify(ssteps).shared.a.is(true);
+							verify(ssteps).shared.b.is(true);
+							verify(ssteps).unready.length.is(1);
+							if (ssteps.unready.length) {
+								verify(ssteps).unready[0].is(ssteps.c);
+							}
 						</script>
 					</li>
 				</ul>
