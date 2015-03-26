@@ -466,24 +466,17 @@
 	};
 
 	$exports.Events = function(p) {
-		if (!p.source && p.on) {
-			var source = {};
-			var rv = $exports.Events({ source: source });
-			for (var x in p.on) {
-				source.listeners.add(x,p.on[x]);
-			}
-			return rv;
-		}
-		return new function() {
+		var source = (p.source) ? p.source : {};
+		var rv = new function() {
 			var byType = {};
 
 			var Event = function(type,detail) {
 				this.type = type;
-				this.source = p.source;
+				this.source = source;
 				this.detail = detail;
 			};
 
-			p.source.listeners = new function() {
+			source.listeners = new function() {
 				this.add = function(name,handler) {
 					if (!byType[name]) {
 						byType[name] = [];
@@ -505,11 +498,15 @@
 				if (byType[type]) {
 					byType[type].forEach(function(listener) {
 						//	In a DOM-like structure, we would need something other than 'source' to act as 'this'
-						listener.call(p.source,new Event(type,detail))
+						listener.call(source,new Event(type,detail))
 					});
 				}
 			}
 		};
+		for (var x in p.on) {
+			source.listeners.add(x,p.on[x]);
+		}
+		return rv;
 	};
 	
 	$exports.steps = (function($context) {

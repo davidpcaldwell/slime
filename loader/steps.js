@@ -1,5 +1,5 @@
 $exports.run = function(p) {
-	var events = (p.on) ? $context.Events(p.on) : $context.Events({ source: {} });
+	var events = (p.on) ? $context.Events(p) : $context.Events({ source: {} });
 	var list = p.list.slice();
 	var more = true;
 	while(list.length && more) {

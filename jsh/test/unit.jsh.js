@@ -58,5 +58,6 @@ jsh.shell.jsh({
 	properties: properties,
 	script: parameters.options.src.directory.getRelativePath("jsh/unit/jsapi.jsh.js"),
 	arguments: apiArguments,
-	environment: subenv
+	environment: subenv,
+	directory: parameters.options.src.directory
 });

@@ -88,7 +88,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 			try {
 				jsh.loader.run(source,scope);
 			} catch (e) {
-				Packages.java.lang.System.err.println("Error executing " + code);
+				Packages.java.lang.System.out.println("Error executing " + code);
 				throw e;
 			}
 		}

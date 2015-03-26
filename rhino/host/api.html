@@ -615,7 +615,7 @@ END LICENSE
 							};
 						</script>
 						<script type="application/x.jsapi#tests">
-							var steps = new function() {
+							var Steps = function() {
 								var shared = { a: false, b: false };
 								
 								this.shared = shared;
@@ -623,6 +623,8 @@ END LICENSE
 								
 								this.list = [new A(shared), new B(shared), this.c];
 							};
+							
+							var steps = new Steps();
 							
 							var task = $$api.steps.Task(steps);
 							
@@ -657,6 +659,9 @@ END LICENSE
 							//	TODO	verify(unready[0]).ready.is(steps.c.ready) does not work because ready property of the
 							//			verify object does not have is() method. Probably addressable in unit test framework.
 							verify(unready[0]).is(steps.c);
+							
+							unready = [];
+							
 						</script>
 					</li>
 				</ul>

@@ -635,7 +635,7 @@
 						var l3 = new Listener();
 						$steps.run({
 							list: [ b3 ],
-							on: l3
+							on: l3.on
 						});
 						verify(s3).a.is(false);
 						verify(s3).b.is(false);
