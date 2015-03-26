@@ -158,16 +158,6 @@ END LICENSE
 					test( typeof(scriptStrings[0]) == "string" && scriptStrings[0] == "Hello" );
 				]]></script>
 			</li>
-			<script type="application/x.jsapi#tests" jsapi:id="Properties"><![CDATA[
-				var $p = new Packages.java.util.Properties();
-				$p.setProperty("a.a", "a");
-				$p.setProperty("a.b", "b");
-				$p.setProperty("a.c", "c");
-				var p = new module.Properties($p);
-				//	Note that for-in loop would yield four properties, including toString(), but this seems fine
-				Packages.java.lang.System.err.println(Object.keys(p.a));
-				test(Object.keys(p.a).length == 3);
-			]]></script>
 			<li class="object">
 				<div class="name">Thread</div>
 				<div class="type">
@@ -561,56 +551,65 @@ END LICENSE
 							
 							var monitor = new module.Thread.Monitor();
 							
-							var Event = function(f) {
-								return function(error,returned) {
-									monitor.Waiter({
-										until: function() {
-											return true;
-										},
-										then: function() {
-											f();
-										}
-									})();
-								}
-							};
+							var Multithreaded = function(step) {
+								var Event = function(f) {
+									return function(error,returned) {
+										monitor.Waiter({
+											until: function() {
+												return true;
+											},
+											then: function() {
+												f();
+											}
+										})();
+									}
+								};
+
+								return {
+									toString: function() {
+										return step.toString();
+									},
+									ready: function() {
+										return step.ready();
+									},
+									task: new module.Thread.Task({
+										call: Event(step.call)
+									})
+								};
+							}
 							
 							var A = function(shared) {
-								return {
+								return new Multithreaded({
 									ready: function() {
 										return true;
 									},
-									task: new module.Thread.Task({
-										call: Event(function() {
-											shared.a = true;
-										})
-									})
-								};
+									call: function() {
+										shared.a = true;
+									}
+								});
 							};
 							var B = function(shared) {
-								return {
+								return new Multithreaded({
 									ready: function() {
 										return shared.a;
 									},
-									task: new module.Thread.Task({
-										call: Event(function() {
-											shared.b = true;
-										})
-									})
-								};
+									call: function() {
+										shared.b = true;
+									}
+								});
 							};
 							var C = function(shared) {
-								return {
+								return new Multithreaded({
 									toString: function() {
 										return "C";
 									},
 									ready: function() {
-										var nincompoop = 1;
 										return false;
 									},
-									task: function(tell) {
+									call: function() {
 										throw new Error();
 									}
-								}
+								});
 							};
 							
 							var steps = new function() {
@@ -786,6 +785,16 @@ END LICENSE
 				});
 			-->
 		</ul>
+		<script type="application/x.jsapi#tests" jsapi:id="Properties"><![CDATA[
+			var $p = new Packages.java.util.Properties();
+			$p.setProperty("a.a", "a");
+			$p.setProperty("a.b", "b");
+			$p.setProperty("a.c", "c");
+			var p = new module.Properties($p);
+			//	Note that for-in loop would yield four properties, including toString(), but this seems fine
+			Packages.java.lang.System.err.println(Object.keys(p.a));
+			test(Object.keys(p.a).length == 3);
+		]]></script>
 	</div>
 </body>
 </html>
