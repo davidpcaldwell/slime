@@ -13,15 +13,15 @@
 $exports.Error = {};
 
 $exports.Error.Type = function(name) {
-	var rv = function(message,properties) {
-		if (this instanceof arguments.callee) {
+	var rv = function Subtype(message,properties) {
+		if (this instanceof Subtype) {
 			this.name = name;
-			this.message = message;
+			this.message = (typeof(message) == "string") ? message : "";
 			for (var x in properties) {
 				this[x] = properties[x];
 			}
 		} else {
-			return new arguments.callee(message);
+			return new Subtype(message);
 		}
 	};
 	rv.prototype = new Error();
