@@ -51,6 +51,18 @@ var types = new function() {
 		}
 	};
 	
+	var DOUBLE = new function() {
+		this.decode = function(rs,column) {
+			return Number(rs.getDouble(column));
+		};
+		
+		this.cast = function(value) {
+			return cast("DOUBLE",value,function(i) {
+				return String(i);
+			});
+		}
+	};
+	
 	var DECIMAL = function(precision,scale) {
 		return new function() {
 			this.decode = function(rs,column) {
@@ -109,6 +121,7 @@ var types = new function() {
 		if (type.code == Types.INTEGER) return INTEGER;
 		if (type.code == Types.SMALLINT) return INTEGER;
 		if (type.code == Types.BIGINT) return INTEGER;
+		if (type.code == Types.DOUBLE) return DOUBLE;
 		if (type.code == Types.TIMESTAMP) return TIMESTAMP;
 		if (type.code == Types.DECIMAL) return new DECIMAL(type.precision,type.scale);
 		if (type.code == Types.BLOB) return BLOB;
@@ -218,9 +231,12 @@ var Mapper = function(o) {
 					var row = {};
 					columns.forEach( function(column,index) {
 						if (!types.getCodec(column.type)) {
-							throw new TypeError("No codec for " + column.type + " code=" + column.type.code);
+							throw new TypeError("No codec for " + column.type.name + " code=" + column.type.code);
 						}
 						row[column.name.toLowerCase()] = types.getCodec(column.type).decode(rs,index+1);
+						if (rs.wasNull()) {
+							row[column.name.toLowerCase()] = null;
+						}
 					} );
 					return row;				
 				}
