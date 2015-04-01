@@ -174,10 +174,16 @@ $set(function(p) {
 						}
 						if (event.getData() == "window.jsh.message.initialize") {
 							var window = browser.getEngine().executeScript("window");
-							browser.getEngine().executeScript("window.jsh.message").call(
-								"initialize",
-								new _Server(window,p.serve,(p.navigate) ? p.navigate.bind(target) : null)
-							);
+							var message = browser.getEngine().executeScript("window.jsh.message");
+							var _server = new _Server(window,p.serve,(p.navigate) ? p.navigate.bind(target) : null);
+							if (typeof(message.call) == "function") {
+								message.call(
+									"initialize",
+									_server
+								);
+							} else {
+								message.initialize(_server);
+							}
 							if (page && page.initialize) {
 								page.initialize.call({ _browser: browser });
 							}
@@ -196,13 +202,18 @@ $set(function(p) {
 				new function() {
 					this.changed = function(observableValue,oldState,newState) {
 						if (String(newState.toString()) == "RUNNING") {
-							engine.executeScript("window").setMember(
-								"console",
-								new JavaAdapter(
-									Packages.inonit.javafx.webview.Console,
-									console
-								)
+							var window = engine.executeScript("window");
+							var _console = new JavaAdapter(
+								Packages.inonit.javafx.webview.Console,
+								console
 							);
+							if (typeof(window.setMember) == "function") {
+								//	Rhino sees window as netscape.javascript.JSObject
+								window.setMember("console", _console);
+							} else if (window.window) {
+								//	Nashorn sees window as normal JavaScript object
+								window.console = _console;
+							}
 							engine.executeScript($loader.resource("webview.initialize.js").read(String));
 						}
 						if (String(newState.toString()) == "SUCCEEDED") {
