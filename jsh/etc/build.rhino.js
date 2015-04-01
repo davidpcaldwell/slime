@@ -531,6 +531,33 @@ if (!destination.installer) {
 	}
 }
 
+var setTestEnvironment = function(command) {
+	var subenv = {};
+	for (var x in env) {
+		if (!/^JSH_/.test(x)) {
+			subenv[x] = env[x];
+		}
+	}
+	if (getSetting("jsh.build.tomcat.home")) {
+		//	TODO	is this the best way to do it? Or would simply adding CATALINA_HOME to the environment cause the jsh.httpd
+		//			plugin to do this for us?
+		subenv.CATALINA_HOME = getSetting("jsh.build.tomcat.home");
+	} else {
+		console("Tomcat not found (use environment variable JSH_BUILD_TOMCAT_HOME or system property jsh.build.tomcat.home)");
+		console("Tests for HTTP client and server will not be run.");
+	}
+	if (env.JSH_BUILD_DEBUG) {
+		subenv.JSH_LAUNCHER_DEBUG = "true";
+		subenv.JSH_SCRIPT_DEBUGGER = "rhino";
+	}
+	if (env.JSH_ENGINE) {
+		subenv.JSH_ENGINE = env.JSH_ENGINE;
+	}
+	subenv.JSH_PLUGINS = "";
+	command.push({
+		env: subenv
+	});
+}
 if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSetting("jsh.build.nodoc")) {
 } else {
 	console("Running JSAPI ...");
@@ -568,31 +595,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			command.add("-index", String(new File(SLIME_SRC,"jsh/etc/index.html").getCanonicalPath()));
 		}
 
-		var subenv = {};
-		for (var x in env) {
-			if (!/^JSH_/.test(x)) {
-				subenv[x] = env[x];
-			}
-		}
-		if (getSetting("jsh.build.tomcat.home")) {
-			//	TODO	is this the best way to do it? Or would simply adding CATALINA_HOME to the environment cause the jsh.httpd
-			//			plugin to do this for us?
-			subenv.CATALINA_HOME = getSetting("jsh.build.tomcat.home");
-		} else {
-			console("Tomcat not found (use environment variable JSH_BUILD_TOMCAT_HOME or system property jsh.build.tomcat.home)");
-			console("Unit tests for HTTP client and server will not be run.");
-		}
-		if (env.JSH_BUILD_DEBUG) {
-			subenv.JSH_LAUNCHER_DEBUG = "true";
-			subenv.JSH_SCRIPT_DEBUGGER = "rhino";
-		}
-		if (env.JSH_ENGINE) {
-			subenv.JSH_ENGINE = env.JSH_ENGINE;
-		}
-		subenv.JSH_PLUGINS = "";
-		command.add({
-			env: subenv
-		});
+		setTestEnvironment(command);
 
 		console("JSAPI command:");
 		console(command.map(function(item) {
@@ -615,12 +618,13 @@ if (!getSetting("jsh.build.notest")) {
 		var command = LAUNCHER_COMMAND.slice();
 		var script = new File(SLIME_SRC,"jsh/test/integration.jsh.js");
 		command.push(getPath(script));
+		setTestEnvironment(command);
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");
 		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
 		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
 		var status = runCommand.apply(this,command);
 		if (status != 0) {
-			throw new Error("Integration tests failed.");
+			throw new Error("Integration tests failed: " + command.join(" "));
 		}
 	}
 

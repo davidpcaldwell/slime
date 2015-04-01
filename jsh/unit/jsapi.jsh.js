@@ -25,7 +25,8 @@ var parameters = jsh.script.getopts({
 		environment: jsh.script.getopts.ARRAY( String ),
 
 		doc: jsh.file.Pathname,
-		index: jsh.file.Pathname
+		index: jsh.file.Pathname,
+		stdio: false
 	}
 });
 
@@ -55,6 +56,11 @@ var modules = parameters.options.api.map( function(pathname) {
 	return rv;
 } );
 
+var stdio = (function() {
+	var api = jsh.script.loader.file("console.stdio.js");
+	return api.subprocess();
+})();
+
 var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,
 	html: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("api.html.js"), new function() {
@@ -79,7 +85,12 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 					})()
 				}
 			}
-			jsh.loader.run(source,scope);
+			try {
+				jsh.loader.run(source,scope);
+			} catch (e) {
+				Packages.java.lang.System.out.println("Error executing " + code);
+				throw e;
+			}
 		}
 
 		if (jsh.$jsapi.$rhino.jsapi && jsh.$jsapi.$rhino.jsapi.script) {
@@ -94,7 +105,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 		}
 	},
 	Scenario: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.before.js") ).Scenario,
-	console: jsh.loader.file( jsh.script.file.getRelativePath("jsunit.after.js"), {
+	console: (parameters.options.stdio) ? stdio : jsh.loader.file( jsh.script.file.getRelativePath("jsunit.after.js"), {
 		console: {
 			println: function(s) {
 				if (arguments.length == 0) {

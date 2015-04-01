@@ -466,16 +466,17 @@
 	};
 
 	$exports.Events = function(p) {
-		return new function() {
+		var source = (p.source) ? p.source : {};
+		var rv = new function() {
 			var byType = {};
 
 			var Event = function(type,detail) {
 				this.type = type;
-				this.source = p.source;
+				this.source = source;
 				this.detail = detail;
 			};
 
-			p.source.listeners = new function() {
+			source.listeners = new function() {
 				this.add = function(name,handler) {
 					if (!byType[name]) {
 						byType[name] = [];
@@ -497,12 +498,22 @@
 				if (byType[type]) {
 					byType[type].forEach(function(listener) {
 						//	In a DOM-like structure, we would need something other than 'source' to act as 'this'
-						listener.call(p.source,new Event(type,detail))
+						listener.call(source,new Event(type,detail))
 					});
 				}
 			}
 		};
-	}
+		for (var x in p.on) {
+			source.listeners.add(x,p.on[x]);
+		}
+		return rv;
+	};
+	
+	$exports.threads = (function($context) {
+		var $exports = {};
+		eval($slime.getCode("threads.js"));
+		return $exports;
+	})($exports);
 
 	return $exports;
 })()

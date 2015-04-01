@@ -55,11 +55,11 @@ public abstract class Code {
 							throw new RuntimeException(e);
 						}
 					}
-					
+
 					@Override public Long getLength() {
 						return new Long(file.length());
 					}
-					
+
 					@Override public java.util.Date getLastModified() {
 						return new java.util.Date(file.lastModified());
 					}
@@ -80,11 +80,11 @@ public abstract class Code {
 					@Override public String getSourceName() {
 						return name;
 					}
-					
+
 					@Override public Long getLength() {
 						return length;
 					}
-					
+
 					@Override public java.util.Date getLastModified() {
 						return modified;
 					}
@@ -94,7 +94,7 @@ public abstract class Code {
 					}
 				};
 			}
-			
+
 			public static File create(final String name, final InputStream in) {
 				return create(name, null, null, in);
 			}

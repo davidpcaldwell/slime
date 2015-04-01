@@ -158,16 +158,6 @@ END LICENSE
 					test( typeof(scriptStrings[0]) == "string" && scriptStrings[0] == "Hello" );
 				]]></script>
 			</li>
-			<script type="application/x.jsapi#tests" jsapi:id="Properties"><![CDATA[
-				var $p = new Packages.java.util.Properties();
-				$p.setProperty("a.a", "a");
-				$p.setProperty("a.b", "b");
-				$p.setProperty("a.c", "c");
-				var p = new module.Properties($p);
-				//	Note that for-in loop would yield four properties, including toString(), but this seems fine
-				Packages.java.lang.System.err.println(Object.keys(p.a));
-				test(Object.keys(p.a).length == 3);
-			]]></script>
 			<li class="object">
 				<div class="name">Thread</div>
 				<div class="type">
@@ -503,6 +493,192 @@ END LICENSE
 							}
 						]]></script>
 					</li>
+					<li class="constructor" jsapi:id="Task">
+						<div class="name">Task</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var monitor = new module.Thread.Monitor();
+							var task = new module.Thread.Task({
+								call: function() {
+									return 2*2;
+								}
+							});
+							var events = [];
+							var finished;
+							task(function(error,returned) {
+								monitor.Waiter({
+									until: function() {
+										return true;
+									},
+									then: function() {
+										events.push(function() {
+											finished = returned;
+										})
+									}
+								})();
+							});
+							while(!finished) {
+								monitor.Waiter({
+									until: function() {
+										return events.length;
+									},
+									then: function() {
+										events.shift()();
+									}
+								})();
+							}
+							verify(finished).is(4);
+						</script>
+						<script type="application/x.jsapi#initialize">
+							var $$api = $jsapi.loader.eval("../../loader/api.js", {
+								$slime: {
+									getCode: function(path) {
+										return $jsapi.loader.string("../../loader/" + path);
+									}
+								}
+							});
+							scope.$$api = $$api;
+							
+							var monitor = new module.Thread.Monitor();
+							
+							scope.monitor = monitor;
+							
+							var Multithreaded = function(step) {
+								var Event = function(f) {
+									return function(error,returned) {
+										monitor.Waiter({
+											until: function() {
+												return true;
+											},
+											then: function() {
+												f();
+											}
+										})();
+									}
+								};
+
+								return {
+									toString: function() {
+										return step.toString();
+									},
+									ready: function() {
+										return step.ready();
+									},
+									task: new module.Thread.Task({
+										call: Event(step.call)
+									})
+								};
+							}
+							
+							scope.A = function(shared) {
+								return new Multithreaded({
+									ready: function() {
+										return true;
+									},
+									call: function() {
+										shared.a = true;
+									}
+								});
+							};
+							scope.B = function(shared) {
+								return new Multithreaded({
+									ready: function() {
+										return shared.a;
+									},
+									call: function() {
+										shared.b = true;
+									}
+								});
+							};
+							scope.C = function(shared) {
+								return new Multithreaded({
+									toString: function() {
+										return "C";
+									},
+									ready: function() {
+										return false;
+									},
+									call: function() {
+										throw new Error();
+									}
+								});
+							};
+						</script>
+						<script type="application/x.jsapi#tests">
+							var Steps = function() {
+								var shared = { a: false, b: false };
+								
+								this.shared = shared;
+								this.c = new C(shared);
+								
+								this.steps = [new A(shared), new B(shared), this.c];
+								
+								var unready = [];
+								
+								this.unready = unready;
+								
+								this.on = {
+									unready: function(e) {
+										unready.push(e.detail);
+									}
+								}
+							};
+							
+							var steps = new Steps();
+							
+							var task = $$api.threads.steps.Task(steps);
+							
+							var finished = false;
+							
+							task(monitor.Waiter({
+								until: function() {
+									return true;
+								},
+								then: function() {
+									finished = true;
+								}
+							}));
+							
+							monitor.Waiter({
+								until: function() {
+									return finished;
+								},
+								then: function() {
+								}
+							})();
+							
+							verify(steps).shared.a.is(true);
+							verify(steps).shared.b.is(true);
+							verify(steps).unready.length.is(1);
+							//	TODO	verify(unready[0]).ready.is(steps.c.ready) does not work because ready property of the
+							//			verify object does not have is() method. Probably addressable in unit test framework.
+							verify(steps).unready[0].is(steps.c);
+							
+							var ssteps = new Steps();
+							verify(ssteps).shared.a.is(false);
+							
+							var stask = $$api.threads.steps.Task(ssteps);
+							
+							stask();
+							
+							verify(ssteps).shared.a.is(true);
+							verify(ssteps).shared.b.is(true);
+							verify(ssteps).unready.length.is(1);
+							if (ssteps.unready.length) {
+								verify(ssteps).unready[0].is(ssteps.c);
+							}
+						</script>
+					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
 					if (module.Thread) {
@@ -632,6 +808,16 @@ END LICENSE
 				});
 			-->
 		</ul>
+		<script type="application/x.jsapi#tests" jsapi:id="Properties"><![CDATA[
+			var $p = new Packages.java.util.Properties();
+			$p.setProperty("a.a", "a");
+			$p.setProperty("a.b", "b");
+			$p.setProperty("a.c", "c");
+			var p = new module.Properties($p);
+			//	Note that for-in loop would yield four properties, including toString(), but this seems fine
+			Packages.java.lang.System.err.println(Object.keys(p.a));
+			test(Object.keys(p.a).length == 3);
+		]]></script>
 	</div>
 </body>
 </html>

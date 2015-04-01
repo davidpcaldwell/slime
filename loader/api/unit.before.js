@@ -10,6 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+var defineProperty = Object.defineProperty;
+
 var Verify = function(scope,vars) {
 	var Value = function(v,name) {
 		var prefix = (name) ? (name + " ") : "";
@@ -51,15 +53,29 @@ var Verify = function(scope,vars) {
 			}
 		}
 
-		this.is = function(value) {
+		var is = function(value,not) {
 			var specified = represent(value);
-			scope.test({
-				success: function() { return v === specified.value; },
-				message: function(success) {
-					return prefix + ((success) ? "is " + specified.name : "is " + toLiteral(v) + ", not " + specified.name);
+			scope.test(function() {
+				var success = (not) ? v !== specified.value : v === specified.value;
+				var message = prefix + (function() {
+					if (!not && success) return "is " + specified.name;
+					if (!not && !success) return "is " + toLiteral(v) + ", not " + specified.name;
+					if (not && success) return "is " + toLiteral(v) + ", not " + specified.name;
+					if (not && !success) return "is " + toLiteral(v);
+				})();
+				return {
+					success: success,
+					message: message
 				}
 			});
+		}
+
+		this.is = function(value) {
+			is(value);
 		};
+		this.is.not = function(value) {
+			is(value,true);
+		}
 
 		this.isNotEqualTo = function(value) {
 			var specified = represent(value);
@@ -171,9 +187,11 @@ var Verify = function(scope,vars) {
 		};
 
 		var wrapProperty = function(x) {
-			return function() {
-				return rv(o[x],prefix(x));
-			}
+			defineProperty(this, x, {
+				get: function() {
+					return rv(o[x],prefix(x));
+				}
+			});
 		};
 
 		this.evaluate = function(f) {
@@ -191,16 +209,16 @@ var Verify = function(scope,vars) {
 				if (typeof(value) == "function") {
 					this[x] = wrap(x);
 				} else {
-					this[x] = wrapProperty(x);
+					wrapProperty.call(this,x);
 				}
-			} catch (e) {				
+			} catch (e) {
 			}
 		}
 		if (o instanceof Array) {
-			this.length = wrapProperty("length");
+			wrapProperty.call(this,"length");
 		}
-		if (o instanceof Error) {
-			this.message = wrapProperty("message");
+		if (o instanceof Error && !this.message) {
+			wrapProperty.call(this,"message");
 		}
 	};
 
@@ -257,308 +275,301 @@ var Verify = function(scope,vars) {
 
 $exports.Verify = Verify;
 
-$exports.Scenario = function(properties) {
-	if (!properties) {
-		throw new TypeError("'properties' argument must be present.");
+var BooleanTest = function(b) {
+	var MESSAGE = function(success) {
+		return (success) ? "Success." : "FAILED!";
+	};
+
+	return $api.deprecate(function() {
+		return {
+			success: b,
+			message: MESSAGE(b)
+		}
+	});
+};
+
+var ErrorTest = function(e) {
+	return function() {
+		return {
+			success: null,
+			message: "Exception thrown: " + e,
+			error: e
+		};
 	}
-	var Scenario = arguments.callee;
-	var scenario = this;
+};
 
-	this.name = properties.name;
-
-	var Scope = function(console,callback) {
-		var self = this;
-		if (Object.prototype.__defineGetter__) {
-			var success = true;
-			this.__defineGetter__("success", function() {
-				return success;
-			});
-			var fail = function() {
-				debugger;
-				success = false;
-			}
-		} else {
-			this.success = true;
-			var fail = function() {
-				debugger;
-				self.success = false;
-			}
-		}
-
-		var units = [];
-
-		var runScenario = function(object,next) {
-			var child = new Scenario(object);
-
-			var runNext = function(next) {
-				if ($context.asynchronous && $context.asynchronous.scenario) {
-					$context.asynchronous.scenario(next);
-				} else {
-					next();
-				}
-			}
-
-			if (callback) {
-				child.start(console,{
-					success: function(b) {
-						if (!b) {
-							fail();
-						}
-						if (next) runNext(next);
-					}
-				})
-			} else {
-				var result = child.run(console);
-				if (!result) {
-					fail();
-				}
-				if (next) runNext(next);
-			}
-		}
-
-		this.scenario = function(object) {
-			if (!callback) {
-				runScenario(object);
-			} else {
-				units.push({ scenario: object });
-			}
-		}
-
-		var runTest = function(assertion,next) {
-			var MESSAGE = function(success) {
-				return (success) ? "Success." : "FAILED!";
-			};
-
-			var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
-				return function(success) {
-					var messages = {
-						success: assertion_messages.success,
-						failure: assertion_messages.failure
-					};
-					if (messages && typeof(messages.success) == "string") {
-						messages.success = (function(value) {
-							return function() {
-								return value;
-							}
-						})(messages.success)
-					}
-					if (messages && typeof(messages.failure) == "string") {
-						messages.failure = (function(value) {
-							return function() {
-								return value;
-							}
-						})(messages.failure)
-					}
-					return (success) ? messages.success() : messages.failure();
-				}
-			};
-			if (typeof(assertion) == "boolean") {
-				assertion = (function(b) {
-					return (function() {
-						if (callback) {
-							//	warning: test probably did not work as expected asynchronously
-							//	debugger;
-						}
-						return {
-							success: function() { return b; },
-							message: MESSAGE
+var adaptAssertion = new function() {
+	this.assertion = function(assertion) {
+		if (typeof(assertion) == "function") return assertion;
+		if (typeof(assertion) == "boolean") {
+			return BooleanTest(assertion);
+		} else if (typeof(assertion) == "undefined") {
+			throw new TypeError("Assertion is undefined.");
+		} else if (assertion === null) {
+			return BooleanTest(assertion);
+		} else if (
+				(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
+				|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
+			) {
+			return (function(object) {
+				var MESSAGE_FOR_MESSAGES = function(assertion_messages) {
+					return function(success) {
+						var messages = {
+							success: assertion_messages.success,
+							failure: assertion_messages.failure
 						};
-					})();
-				})(assertion);
-			} else if (typeof(assertion) == "undefined") {
-				throw new TypeError("Assertion is undefined.");
-			} else if (assertion === null) {
-				assertion = function() {
-					return {
-						success: function() { return null; },
-						message: MESSAGE
+						if (messages && typeof(messages.success) == "string") {
+							messages.success = (function(value) {
+								return function() {
+									return value;
+								}
+							})(messages.success)
+						}
+						if (messages && typeof(messages.failure) == "string") {
+							messages.failure = (function(value) {
+								return function() {
+									return value;
+								}
+							})(messages.failure)
+						}
+						return (success) ? messages.success() : messages.failure();
 					}
 				};
-			} else if (
-					(typeof(assertion) == "object" && assertion != null && typeof(assertion.success) == "boolean")
-					|| (typeof(assertion) == "object" && assertion != null && assertion.success === null)
-				) {
-				assertion = (function(object) {
-					return new function() {
-						this.success = function() {
-							return object.success;
-						};
-
-						if (object.error) {
-							this.error = object.error;
-						}
-
-						if (object.messages) {
-							this.message = MESSAGE_FOR_MESSAGES(object.messages);
-						} else {
-							this.message = MESSAGE;
-						}
+				return $api.deprecate(function() {
+					return {
+						success: object.success,
+						error: object.error,
+						message: MESSAGE_FOR_MESSAGES(object.messages)(object.success)
 					}
-				})(assertion);
-			} else if (typeof(assertion) == "function") {
-				assertion = (function(f) {
-					var v = f();
-					if (typeof(v) == "boolean") {
-						v = (function(value) {
-							return new function() {
-								this.success = function() {
-									return value;
-								};
-
-								this.message = MESSAGE;
-							}
-						})(v);
-					};
-					return new function() {
-						this.success = function() {
-							return v.success;
+				});
+			})(assertion);
+		} else if (typeof(assertion) == "object" && typeof(assertion.success) == "function") {
+			if (typeof(assertion.message) == "function") {
+				return (function(was) {
+					return $api.deprecate(function() {
+						var success = was.success();
+						var message = was.message(success);
+						return {
+							success: success,
+							message: message,
+							error: was.error
 						};
-
-						this.message = MESSAGE_FOR_MESSAGES;
-					}
+					})
 				})(assertion);
-			} else if (typeof(assertion) != "object" || typeof(assertion.success) != "function") {
-				var error = new TypeError("Assertion is not valid format; see this error's 'assertion' property for incorrect value");
-				error.assertion = assertion;
-				throw error;
+			} else if (typeof(assertion.messages) == "object") {
+				return (function(was) {
+					return $api.deprecate(function() {
+						var success = was.success();
+						return {
+							success: success,
+							message: (success) ? was.messages.success() : was.messages.failure(),
+							error: was.error
+						};
+					});
+				})(assertion);
+			} else {
+				throw new TypeError("Assertion object with success but no messages: " + Object.keys(assertion));
 			}
-			var success = assertion.success();
-			if (!success) {
+		} else if (true || typeof(assertion) != "object" || typeof(assertion.success) != "function") {
+			var error = new TypeError("Assertion is not valid format; see this error's 'assertion' property for incorrect value");
+			error.assertion = assertion;
+			throw error;
+		}
+	};
+
+	this.result = function(result) {
+		if (typeof(result) == "boolean") {
+			return $api.deprecate((function(b) {
+				return {
+					success: b,
+					message: (b) ? "Success." : "FAILED!"
+				};
+			}))(result);
+		}
+		return result;
+	}
+}
+
+var Scope = function(o) {
+	var success = true;
+	defineProperty(this,"success",{
+		get: function() {
+			return success;
+		}
+	});
+	var fail = function() {
+		debugger;
+		success = false;
+	};
+	//	IE8-compatible implementation below
+	//		var self = this;
+	//		this.success = true;
+	//		var fail = function() {
+	//			debugger;
+	//			self.success = false;
+	//		}
+
+	var units = [];
+
+	var runScenario = function(object,next) {
+		var child = new o.Scenario(object);
+
+		var runNext = function(next) {
+			if ($context.asynchronous && $context.asynchronous.scenario) {
+				$context.asynchronous.scenario(next);
+			} else {
+				next();
+			}
+		}
+
+		if (o.callback) {
+			child.run({
+				console: o.console,
+				callback: { success: function(b) {
+					if (!b) {
+						fail();
+					}
+					if (next) runNext(next);
+				}},
+				haltOnException: o.haltOnException
+			});
+		} else {
+			var result = child.run({
+				console: o.console,
+				haltOnException: o.haltOnException
+			});
+			if (!result) {
 				fail();
 			}
-			var result = {
-				success: success,
-				message: function() {
-					//	TODO	this may be an expensive operation, which is why it is a function in the first place; should cache
-					//			the value in case callers invoke it multiple times
-					try {
-						if (assertion.messages && !assertion.message) {
-							assertion.message = function(success) {
-								if (success) return assertion.messages.success();
-								return assertion.messages.failure();
-							}
-						}
-						return assertion.message(success);
-					} catch (e) {
-						return "Error occurred when trying to generate message: " + e;
-					}
-				}
-			};
-			if (assertion.error) {
-				result.error = assertion.error;
-			}
-			if (console.test) console.test(result);
-			if (next) {
-				if ($context.asynchronous && $context.asynchronous.test) {
-					$context.asynchronous.test(next);
-				} else {
-					next();
-				}
-			}
+			if (next) runNext(next);
 		}
+	}
 
-		this.test = function(assertion) {
-			if (!callback) {
-				runTest(assertion);
-			} else {
-				units.push({ test: assertion });
-			}
-		};
-
-		var verify = new Verify(this);
-
-		this.verify = verify;
-
-		this.start = function(console) {
-			if (console.start) console.start(scenario);
+	this.scenario = function(object) {
+		if (!o.callback) {
+			runScenario(object);
+		} else {
+			units.push({ scenario: object });
 		}
+	}
 
-		this.end = function(console) {
-			if (callback) {
-				var self = this;
-				var runUnit = function(units,index) {
-					var recurse = arguments.callee;
-					if (index == units.length) {
-						if (console.end) console.end(scenario,self.success);
-						callback.success(self.success);
-					} else {
-						var next = function() {
-							recurse(units,index+1)
-						};
-						if (typeof(units[index].scenario) != "undefined") {
-							runScenario(units[index].scenario,next);
-						} else if (typeof(units[index].test) != "undefined") {
-							runTest(units[index].test,next);
-						} else {
-							throw new Error("Unreachable");
-						}
-					}
-				}
-
-				runUnit(units,0);
+	var runTest = function(assertion,next) {
+		assertion = adaptAssertion.assertion(assertion);
+		var result = assertion();
+		result = adaptAssertion.result(result);
+		if (!result.success) {
+			fail();
+		}
+		if (o.console.test) o.console.test(result);
+		if (next) {
+			if ($context.asynchronous && $context.asynchronous.test) {
+				$context.asynchronous.test(next);
 			} else {
-				if (console.end) console.end(scenario, this.success);
+				next();
 			}
 		}
 	}
 
-	var run = function(console,callback) {
-		var scope = new Scope(console,callback);
+	this.test = function(assertion) {
+		if (!o.callback) {
+			runTest(assertion);
+		} else {
+			units.push({ test: assertion });
+		}
+	};
+
+	this.verify = new Verify(this);
+
+	this.start = function() {
+		if (o.console.start) o.console.start(o.scenario);
+	}
+
+	this.end = function() {
+		if (o.callback) {
+			var runUnit = function(units,index) {
+				var recurse = arguments.callee;
+				if (index == units.length) {
+					if (o.console.end) o.console.end(o.scenario,this.success);
+					o.callback.success(this.success);
+				} else {
+					var next = function() {
+						recurse(units,index+1)
+					};
+					if (typeof(units[index].scenario) != "undefined") {
+						runScenario(units[index].scenario,next);
+					} else if (typeof(units[index].test) != "undefined") {
+						runTest(units[index].test,next);
+					} else {
+						throw new Error("Unreachable");
+					}
+				}
+			}
+
+			runUnit.call(this,units,0);
+		} else {
+			if (o.console.end) o.console.end(o.scenario, this.success);
+		}
+	}
+}
+
+$exports.Scenario = function(o) {
+	if (!o) {
+		throw new TypeError("arguments[0] must be present.");
+	}
+
+	this.name = o.name;
+
+	var run = function(p) {
+		var scope = new Scope({ scenario: p.scenario, console: p.console, callback: p.callback, Scenario: p.Scenario});
 
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
 		//	to the callee as __parent__.test but not as test
 		//	this.__parent__ = scope;
 		//	this.test = scope.test;
-		scope.start(console);
+		scope.start(p.console);
 
 		var initializeAndExecute = function(scope) {
-			if (properties.initialize) properties.initialize.call(this);
-			properties.execute.call(this,scope);
+			if (o.initialize) o.initialize();
+			o.execute(scope);
 		}
 
-		if (Scenario.HALT_ON_EXCEPTION) {
-			initializeAndExecute.call(this,scope);
+		if (p.haltOnException) {
+			initializeAndExecute(scope);
 		} else {
 			try {
-				initializeAndExecute.call(this,scope);
+				initializeAndExecute(scope);
 			} catch (e) {
-				//	The next line works around a bug in the Rhino debugger (as of 1.7R2) that does not put 'e' in the local scope
-				//	so that it cannot be examined. Assigning it to the variable error allows the 'error' variable to be evaluated
-				//	and viewed in the debugger when running in Rhino.
-				var error = e;
-				scope.test({
-					success: function() {
-						return null;
-					},
-					error: e,
-					messages: {
-						failure: function() {
-							return "Exception thrown: " + e;
-						}
-					}
-				});
+				scope.test(ErrorTest(e));
 			}
 		}
-		if (properties.destroy) {
-			properties.destroy.call(this);
+		if (o.destroy) {
+			o.destroy();
 		}
-		scope.end(console);
-		if (!callback) {
+		scope.end(p.console);
+		if (!p.callback) {
 			return scope.success;
 		}
 	}
 
-	this.start = function(console,callback) {
-		run(console,callback);
+	var Scenario = arguments.callee;
+	this.run = function(o) {
+		var callback = arguments[1];
+		if (arguments.length == 1 && arguments[0].console) {
+			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
+		} else {
+			return $api.deprecate(function() {
+				var console = o;
+				return run({ scenario: this, console: console, Scenario: Scenario, callback: callback });
+			}).call(this);
+		}
 	}
 
-	this.run = function(console) {
-		return run(console);
-	}
+	this.start = $api.deprecate(function(console,callback) {
+		run(console,callback);
+	});
 
 	this.toString = function() {
 		return "Scenario: " + this.name;
 	}
 }
-$exports.Scenario.HALT_ON_EXCEPTION = false;

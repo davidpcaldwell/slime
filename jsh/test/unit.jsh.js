@@ -2,10 +2,11 @@
 //	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
 //	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
+//
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
@@ -15,11 +16,10 @@ var parameters = jsh.script.getopts({
 		java: jsh.shell.java.home.pathname,
 		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
 		src: jsh.script.file.getRelativePath("../.."),
-		debug: false
+		debug: false,
+		logging: jsh.file.Pathname
 	}
 });
-
-var java = jsh.file.Searchpath([parameters.options.java.directory.getRelativePath("bin")]).getCommand("java");
 
 if (!parameters.options.jsh) {
 	parameters.options.jsh = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
@@ -32,21 +32,32 @@ if (!parameters.options.jsh) {
 		})
 	});
 }
-//	Provide way to set CATALINA_HOME?
-//	Provide way to set JSH_LAUNCHER_DEBUG?
-//	Provide way to set JSH_SCRIPT_DEBUGGER?
-//	Provide way to set JSH_ENGINE?
-jsh.shell.echo("Running unit tests ...");
-jsh.shell.jsh({
-	shell: parameters.options.jsh.directory,
-	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js")
-});
 
-jsh.shell.echo("Running system tests ...");
+//	Unit tests
+var modules = eval(parameters.options.src.directory.getFile("jsh/etc/api.js").read(String)).environment("jsh");
+modules = jsh.js.Array(modules);
+var apiArguments = modules.fold(function(array) {
+	if (this.api) array.push("-api",this.path);
+	if (this.test) array.push("-test",this.path);
+	return array;
+},[]);
+
+var subenv = {};
+for (var x in jsh.shell.environment) {
+	if (!/^JSH_/.test(x)) {
+		subenv[x] = jsh.shell.environment[x];
+	}
+}
+var properties = {};
+if (parameters.options.logging) {
+	properties["java.util.logging.config.file"] = parameters.options.logging.toString();
+}
+
 jsh.shell.jsh({
 	shell: parameters.options.jsh.directory,
-	script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
-	environment: jsh.js.Object.set({}, jsh.shell.environment, {
-		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
-	})
+	properties: properties,
+	script: parameters.options.src.directory.getRelativePath("jsh/unit/jsapi.jsh.js"),
+	arguments: apiArguments,
+	environment: subenv,
+	directory: parameters.options.src.directory
 });

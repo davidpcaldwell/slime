@@ -14,9 +14,36 @@
 (function() {
 	//	TODO	naming conventions are inconsistent in this stuff; look at how there are addClasses methods and classpath.add().
 	//			generally speaking, should probably match the rhinoLoader API across all of these representations of it
+
+	//	TODO	The name prefix used below is duplicative of the one in js/debug/plugin.jsh.js, so not DRY currently
+	var _log = function(_logger,_level,mask) {
+		var substitutions = Array.prototype.slice.call(arguments,3);
+		if (_logger.isLoggable(_level)) {
+			var _message = Packages.java.lang.String.format(mask, substitutions);
+			_logger.log(_level, _message);
+		}
+	}
+
 	$host.$api.deprecate.warning = function(o) {
+		var name = arguments.callee.javaLogName;
+		var _level = Packages.java.util.logging.Level.WARNING;
+		var _logger = Packages.java.util.logging.Logger.getLogger(name);
+		var _traceLevel = Packages.java.util.logging.Level.FINE;
+		if (o.callee) {
+			if (o.object && o.property) {
+				_log(_logger, _level, "Use of deprecated method %s of object %s", String(o.property), String(o.object));
+			} else {
+				_log(_logger, _level, "Use of deprecated function %s", String(o.callee));
+			}
+		} else if (o.object && o.property) {
+			_log(_logger, _level, "Access to deprecated property %s of object %s", String(o.property), String(o.object));
+		}
+		if (_logger.isLoggable(_traceLevel)) {
+			_log(_logger, _traceLevel, "Stack trace of deprecated usage:\n%s", String(new Error().stack));
+		}
 		debugger;
 	};
+	$host.$api.deprecate.warning.javaLogName = "inonit.script.jsh.Shell.log.$api.deprecate";
 //	var rhinoLoader = $host;
 
 //	this.bootstrap = function(path,context) {

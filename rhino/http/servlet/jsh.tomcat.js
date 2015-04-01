@@ -94,7 +94,9 @@ if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
 													throw new Error("Unimplemented: servletDeclaration without file property");
 												}
 											}
-											return new jsh.file.Loader({ directory: servletDeclaration.file.parent });
+											if (servletDeclaration.file) {
+												return new jsh.file.Loader({ directory: servletDeclaration.file.parent });
+											}
 										})();
 
 										this.loaders = {

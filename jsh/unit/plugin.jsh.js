@@ -20,5 +20,15 @@ plugin({
 			$coffee: $jsh.coffee,
 			java: $jsh.java
 		};
+
 	}
-})
+});
+
+plugin({
+	isReady: function() {
+		return Boolean(jsh.java && jsh.shell && jsh.unit);
+	},
+	load: function() {
+		jsh.unit.console = $loader.file("console.stdio.js");
+	}
+});

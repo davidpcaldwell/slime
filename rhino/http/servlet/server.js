@@ -17,7 +17,7 @@ var debug = function(message) {
 }
 
 var Request = function(_request) {
-	debug("Creating request peer for " + _request);
+	log.INFO("Creating request peer for %s", _request);
 
 	this.source = new function() {
 		this.ip = String(_request.getRemoteAddr());

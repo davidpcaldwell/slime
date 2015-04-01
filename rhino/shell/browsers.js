@@ -21,7 +21,7 @@ var Chrome = function(b) {
 			var read = function(path) {
 				return eval("(" + p.base.getFile(path).read(String) + ")");
 			}
-			
+
 			var localState = (p.base.getFile("Local State")) ? read("Local State") : null;
 
 			if (localState) {
@@ -45,12 +45,12 @@ var Chrome = function(b) {
 				};
 			}
 		};
-		
+
 		var addProfileArguments = function(args,m) {
 			if (u.directory) args.push("--user-data-dir=" + u.directory);
 			if (m.profile) args.push("--profile-directory=" + m.profile);
 		};
-		
+
 		var isRunning = function() {
 			return u.directory.list().filter(function(node) {
 				return node.pathname.basename == "RunningChromeVersion";
@@ -67,9 +67,9 @@ var Chrome = function(b) {
 			$context.run({
 				command: "/usr/bin/open",
 				arguments: args
-			});			
+			});
 		};
-		
+
 		var launch = function(m) {
 			var args = [];
 			addProfileArguments(args,m);
@@ -85,7 +85,7 @@ var Chrome = function(b) {
 						}
 					}
 				}
-			});			
+			});
 		}
 
 		var Profile = function(data) {
@@ -112,7 +112,7 @@ var Chrome = function(b) {
 		if (data.profiles) this.profiles = data.profiles.map(function(profile) {
 			return new Profile(profile);
 		});
-		
+
 		this.directory = u.directory;
 
 		if (u.install) {
@@ -123,14 +123,14 @@ var Chrome = function(b) {
 			this.run = function(m) {
 				launch(m);
 			};
-			
+
 			this.launch = function(m) {
 				//	TODO	Could consider having this API block until process was started and then return it
 				$context.api.java.Thread.start({
 					call: function() {
 						launch(m);
 					}
-				});				
+				});
 			};
 		}
 	};
@@ -148,6 +148,14 @@ if ($context.os.name == "Mac OS X") {
 		$exports.chrome = new Chrome({
 			program: $context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file,
 			user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
+		});
+	}
+}
+if ($context.os.name == "Linux") {
+	if ($context.api.file.Pathname("/opt/google/chrome/chrome").file) {
+		$exports.chrome = new Chrome({
+			program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
+			user: $context.HOME.getSubdirectory(".config/google-chrome")
 		});
 	}
 }

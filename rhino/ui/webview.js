@@ -33,7 +33,7 @@ $set(function(p) {
 	if (!p.window.height) p.window.height = screen.height * 3/4;
 	if (!p.window.width) p.window.width = 750;
 	if (!p.window.height) p.window.height = 500;
-	
+
 	var _ChangeListener = function(f) {
 		return new JavaAdapter(
 			Packages.javafx.beans.value.ChangeListener,
@@ -146,8 +146,8 @@ $set(function(p) {
 		var target = this;
 
 		//	TODO	why are there two different methods handling these magic messages? Is one obsolete?
-		
-		
+
+
 		var setAlertHandler = function(engine) {
 			var alertHandler = new JavaAdapter(
 				Packages.javafx.event.EventHandler,
@@ -161,9 +161,9 @@ $set(function(p) {
 				}
 			);
 
-			engine.setOnAlert(alertHandler);			
+			engine.setOnAlert(alertHandler);
 		};
-		
+
 		var addStatusChangeListener = function(engine) {
 			engine.setOnStatusChanged(new JavaAdapter(
 				Packages.javafx.event.EventHandler,
@@ -187,9 +187,9 @@ $set(function(p) {
 						status(event.getData());
 					}
 				}
-			));			
+			));
 		};
-		
+
 		var addLoadWorkerListener = function(engine) {
 			engine.getLoadWorker().stateProperty().addListener(new JavaAdapter(
 				Packages.javafx.beans.value.ChangeListener,
@@ -197,7 +197,7 @@ $set(function(p) {
 					this.changed = function(observableValue,oldState,newState) {
 						if (String(newState.toString()) == "RUNNING") {
 							engine.executeScript("window").setMember(
-								"console", 
+								"console",
 								new JavaAdapter(
 									Packages.inonit.javafx.webview.Console,
 									console
@@ -212,13 +212,13 @@ $set(function(p) {
 				}
 			));
 		}
-		
+
 		var configureEngine = function(engine) {
-			setAlertHandler(engine);		
+			setAlertHandler(engine);
 			addLoadWorkerListener(engine);
-			addStatusChangeListener(engine);			
+			addStatusChangeListener(engine);
 		};
-		
+
 		configureEngine(browser.getEngine());
 
 		if (p.popup) {

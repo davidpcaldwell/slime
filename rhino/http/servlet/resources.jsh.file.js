@@ -118,7 +118,7 @@ $exports.addJshPluginTo = function(jsh) {
 
 	var OldMapping = function(p) {
 		if (!p.pathname.directory) {
-			throw new Error("Unimplemented: pathname is not directory, semantics not defined.");
+			throw new Error("Unimplemented: pathname " + p.pathname + " is not directory, semantics not defined.");
 		}
 
 		Mapping.call(this,p);
@@ -271,7 +271,7 @@ $exports.addJshPluginTo = function(jsh) {
 					}
 					return null;
 				};
-				
+
 				var getResource = function(path) {
 					for (var i=0; i<mapping.length; i++) {
 						var mapped = mapping[i].get(relative+path);
@@ -284,13 +284,13 @@ $exports.addJshPluginTo = function(jsh) {
 					if (!resource) return null;
 					return resource.read.binary().java.adapt();
 				};
-				
+
 				this.length = function(path) {
 					var resource = getResource(path);
 					if (!resource) return null;
 					return resource.length;
 				}
-				
+
 				this.type = function(path) {
 					if (/\.js$/.test(path)) {
 						return "text/javascript";
@@ -438,7 +438,7 @@ $exports.addJshPluginTo = function(jsh) {
 		this.pathname = {
 			loader: loader
 		};
-		
+
 		this.getRelativePath = function(path) {
 			if (!loader.Child) throw new Error("no loader.Child");
 			return {

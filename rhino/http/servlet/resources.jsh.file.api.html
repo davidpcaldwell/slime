@@ -187,18 +187,24 @@ END LICENSE
 			var one = code.Resources.script.old(
 				$module.getResourcePathname("test/resource/1.old.js").file
 			);
+			var indexOf = function(value) {
+				return function() {
+					return this.indexOf(value);
+				}
+			};
 			verify(one,"one").isNotEqualTo(3);
-			verify(one).loader().list({ path: "WEB-INF/generic/" }).length().is(1);
-			verify(one).loader().list({ path: "WEB-INF/generic/" })[0]().is("inonit/");
-			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length().is(2);
-			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[0]().is("Nashorn.java");
-			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[1]().is("Servlet.java");
-			verify(one).loader().list({ path: "WEB-INF/" }).length().is(3);
-			verify(one).loader().list({ path: "WEB-INF/" })[0]().is("generic/");
-			verify(one).loader().list({ path: "WEB-INF/" })[1]().is("mozilla/");
-			verify(one).loader().list({ path: "WEB-INF/" })[2]().is("test/");
-			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
-			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
+			verify(one).loader.list({ path: "WEB-INF/generic/" }).length.is(1);
+			verify(one).loader.list({ path: "WEB-INF/generic/" })[0].is("inonit/");
+			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length.is(2);
+			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("Servlet.java")).isNotEqualTo(-1);
+			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("Nashorn.java")).isNotEqualTo(-1);
+			verify(one).loader.list({ path: "WEB-INF/generic/inonit/script/servlet/" }).evaluate(indexOf("JarJarBinks.java")).is(-1);
+			verify(one).loader.list({ path: "WEB-INF/" }).length.is(3);
+			verify(one).loader.list({ path: "WEB-INF/" })[0].is("generic/");
+			verify(one).loader.list({ path: "WEB-INF/" })[1].is("mozilla/");
+			verify(one).loader.list({ path: "WEB-INF/" })[2].is("test/");
+			verify(one).loader.file("WEB-INF/test/1.file.js").isNotEqualTo(null);
+			verify(one).loader.resource("WEB-INF/test/1.txt").read(String).is("1");
 		</script>
 		<script type="application/x.jsapi#tests">
 			verify(code,"code").Resources().isNotEqualTo(3);
@@ -216,7 +222,7 @@ END LICENSE
 			verify(child).list({ path: "" }).isNotEqualTo(null);
 			var generic = new one.loader.Child("WEB-INF/generic/");
 			verify(generic,"generic").list({ path: "" }).isNotEqualTo(null);
-			verify(generic,"generic").list({ path: "" }).length().is(1);
+			verify(generic,"generic").list({ path: "" }).length.is(1);
 			var servlet = new one.loader.Child("WEB-INF/generic/inonit/script/servlet/");
 			verify(servlet,"servlet").isNotEqualTo(null);
 			var list = servlet.list();

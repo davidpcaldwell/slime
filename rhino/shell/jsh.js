@@ -173,17 +173,19 @@ if ($exports.properties.get("jsh.launcher.rhino")) {
 			this.classpath = $exports.properties.searchpath("jsh.launcher.rhino.classpath");
 		}
 	};
-}
+};
 
 $exports.jsh = function(p) {
 	if (!arguments[0].script && !arguments[0].arguments) {
-		p = {
-			script: arguments[0],
-			arguments: (arguments[1]) ? arguments[1] : []
-		};
-		for (var x in arguments[2]) {
-			p[x] = arguments[2][x];
-		}
+		$api.deprecate(function() {
+			p = {
+				script: arguments[0],
+				arguments: (arguments[1]) ? arguments[1] : []
+			};
+			for (var x in arguments[2]) {
+				p[x] = arguments[2][x];
+			}
+		}).apply(this,arguments);
 	}
 	if (!p.script) {
 		throw new TypeError("Required: script property indicating script to run.");
@@ -205,54 +207,43 @@ $exports.jsh = function(p) {
 		if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
 		if (p.environment && p.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
 		if (p.environment && p.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
+		if (p.shell) return true;
 		return false;
 	})();
 
-	var environment = (function() {
-		//	TODO	this code below is counter-intuitive and should be cleaned up and/or documented; order is reverse of what you'd
-		//			think (and what jsh.js.Object.set(...) for example would do).
-		var addProperties = function(from) {
-			for (var x in from) {
-				if (x != "JSH_LAUNCHER_DEBUG") {
-					if (typeof(rv[x]) == "undefined") {
-						//	Conversion to string is necessary for $exports.properties.jsh.launcher.environment, which
-						//	contains host objects
-						rv[x] = String(from[x]);
-					}
-				}
-			}
-		}
+	//	TODO	Probably if p.shell is specified and p.environment is not, we should strip out all variables starting with JSH_,
+	//			which would provide the least counterintuitive behavior. For example, if called from unbuilt shell, we would want
+	//			a launched built shell to have all the unbuilt shell environment variables removed.
 
-		var rv = {};
-		addProperties((p.environment) ? p.environment : {});
-		addProperties($exports.properties.object.jsh.launcher.environment);
-		addProperties($exports.environment);
-
-		return rv;
-	})();
+//	var environment = (function() {
+//		//	TODO	this code below is counter-intuitive and should be cleaned up and/or documented; order is reverse of what you'd
+//		//			think (and what jsh.js.Object.set(...) for example would do).
+//		var addProperties = function(from) {
+//			for (var x in from) {
+//				if (x != "JSH_LAUNCHER_DEBUG") {
+//					if (typeof(rv[x]) == "undefined") {
+//						//	Conversion to string is necessary for $exports.properties.jsh.launcher.environment, which
+//						//	contains host objects
+//						rv[x] = String(from[x]);
+//					}
+//				}
+//			}
+//		}
+//
+//		var rv = {};
+//		addProperties((p.environment) ? p.environment : {});
+//		addProperties($exports.properties.object.jsh.launcher.environment);
+//		addProperties($exports.environment);
+//
+//		return rv;
+//	})();
+	var environment = (p.environment) ? p.environment : $exports.environment;
 
 	if (fork) {
 		//	TODO	can we use $exports.java.home here?
-		var jdk = $context.api.file.filesystems.os.Pathname($exports.properties.get("java.home")).directory;
-		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java");
-		//	Set defaults from this shell
-		var LAUNCHER_CLASSPATH = (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath");
-
-		var jargs = [];
-		if (p.properties) {
-			for (var x in p.properties) {
-				jargs.push("-D" + x + "=" + p.properties[x]);
-			}
-		}
-		jargs.push("-classpath");
-		jargs.push(LAUNCHER_CLASSPATH);
-		jargs.push("inonit.script.jsh.launcher.Main");
-
-		jargs.push(p.script);
-		p.arguments.forEach( function(arg) {
-			jargs.push(arg);
-		});
-
+//		var jdk = $context.api.file.filesystems.os.Pathname($exports.properties.get("java.home")).directory;
+//		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java");
+//
 		var evaluate = (function() {
 			if (p.evaluate) {
 				return function(result) {
@@ -266,15 +257,57 @@ $exports.jsh = function(p) {
 			}
 		})();
 
-		var shell = {
-			command: executable,
-			arguments: jargs,
-			environment: environment,
-			stdio: $exports.run.stdio(p),
-			evaluate: evaluate
-		};
+		var addCommandTo = function(jargs) {
+			jargs.push(p.script);
+			p.arguments.forEach( function(arg) {
+				jargs.push(arg);
+			});
+			return jargs;
+		}
 
-		return $exports.shell(shell);
+		if (!p.shell) {
+			var shell = $context.api.js.Object.set({}, p, {
+				//	Set default classpath from this shell
+				classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
+				main: "inonit.script.jsh.launcher.Main",
+				arguments: addCommandTo([]),
+				environment: environment,
+				evaluate: evaluate
+			});
+
+			return $exports.java(shell);
+		} else {
+			if (p.shell.getFile("jsh.jar")) {
+				//	Built shell
+				return $exports.java($context.api.js.Object.set({}, p, {
+					jar: p.shell.getFile("jsh.jar"),
+					arguments: addCommandTo([]),
+					environment: environment,
+					evaluate: evaluate
+				}));
+			} else if (p.shell.getFile("jsh/etc/unbuilt.rhino.js")) {
+				var args = [p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch"];
+				//	TODO	will only work if they start with dash, which they must, right?
+				if (p.properties) {
+					for (var x in p.properties) {
+						args.push("-D" + x + "=" + p.properties[x]);
+					}
+					delete p.properties;
+				}
+				if (p.vmarguments) {
+					for (var i=0; i<p.vmarguments.length; i++) {
+						args.push(p.vmarguments[i]);
+					}
+				}
+				return $exports.jrunscript($context.api.js.Object.set({}, p, {
+					arguments: addCommandTo(args),
+					environment: environment,
+					evaluate: evaluate
+				}));
+			} else {
+				throw new Error("Shell not found: " + p.shell);
+			}
+		}
 	} else {
 		var configuration = new JavaAdapter(
 			Packages.inonit.script.jsh.Shell.Configuration,

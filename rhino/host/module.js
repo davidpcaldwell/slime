@@ -357,7 +357,7 @@ if ($context.globals && $context.globals.Array) {
 
 var Thread = function(p) {
 	var synchronize = function(f) {
-		if ($exports.getClass("inonit.script.runtime.Threads")) {
+		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context")) {
 			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(arguments.callee.lock,f);
 		} else {
 			return sync(f, arguments.callee.lock);
@@ -497,26 +497,53 @@ $exports.Thread.thisSynchronize = function(f) {
 };
 $exports.Thread.Monitor = function() {
 	var lock = new Packages.java.lang.Object();
-	
+
 	this.toString = function() {
 		return "Thread.Monitor [id=" + Packages.java.lang.System.identityHashCode(lock) + "]";
 	}
+	
+	var synchronize = function(f) {
+		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context")) {
+			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);
+		} else {
+			return sync(f, lock);
+		}		
+	};
 
 	this.Waiter = function(c) {
-		var f = function() {
+		return synchronize(function() {
 			while(!c.until.apply(this,arguments)) {
 				lock.wait();
 			}
 			var rv = c.then.apply(this,arguments);
 			lock.notifyAll();
 			return rv;
-		};
-		if ($exports.getClass("inonit.script.runtime.Threads")) {
-			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);
+		});
+	};
+};
+$exports.Thread.Task = function(p) {
+	return function(tell) {
+		arguments.callee.p = p;
+		if (tell) {
+			$exports.Thread.start({ 
+				call: function() {
+					var result;
+					try {
+						result = { returned: p.call() }
+					} catch (e) {
+						result = { threw: e }
+					}
+					if (tell.length == 2) {
+						tell(result.threw, result.returned);
+					} else {
+						tell(result);
+					}
+				}
+			});
 		} else {
-			return sync(f, lock);
+			return p.call();
 		}
-	}
+	};
 }
 
 $exports.Environment = function(_environment) {

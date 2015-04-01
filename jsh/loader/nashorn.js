@@ -46,10 +46,13 @@ $jsh.setHost((function() {
 		}
 	}
 
+	//	TODO	NASHORN	Regression in 8u40 causes this extra variable to be necessary
+	var NASHORN_IN_SCOPE_$jsh = $jsh;
+
 	rv.jsh = function(configuration,invocation) {
 		return scripts.subshell(function() {
 			try {
-				return Packages.inonit.script.jsh.Nashorn.execute($jsh.subshell(configuration,invocation));
+				return Packages.inonit.script.jsh.Nashorn.execute(NASHORN_IN_SCOPE_$jsh.subshell(configuration,invocation));
 			} catch (e) {
 				if (e.getClass && e.getClass().getName().equals("inonit.script.jsh.Nashorn$UncaughtException")) {
 					e = e.getCause();

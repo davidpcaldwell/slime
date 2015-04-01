@@ -242,6 +242,9 @@ $exports.tests = new function() {
 						}
 //						return jsh.loader.run(suite.getRelativePath(name),scope);
 					},
+					string: function(name) {
+						return suite.getRelativePath(name).file.read(String);
+					},
 					coffee: jsh.$jsapi.$coffee,
 					scenario: function(path,p) {
 						var apifile = getApiHtml(suite.getRelativePath(path));
@@ -356,6 +359,7 @@ $exports.tests = new function() {
 							scope.module = suite.loadWith(contexts[i]);
 							scope.context = contexts[i];
 							var scenario = suite.getScenario(scope);
+							scenario.name = suite.name;
 							scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
 							topscope.scenario( scenario );
 						} else {
