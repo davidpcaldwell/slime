@@ -10,14 +10,128 @@
 //	Contributor(s):
 //	END LICENSE
 
-var api = $context.api;
-
 var toNativePath = function(pathname) {
-	if (api.file.filesystems.cygwin) {
-		return api.file.filesystems.cygwin.toWindows(pathname).toString();
+	if ($context.api.file.filesystems.cygwin) {
+		return $context.api.file.filesystems.cygwin.toWindows(pathname).toString();
 	} else {
 		return pathname.toString();
 	}
+}
+
+var parseLog = function(lines) {
+	var parser = /^([a-z]+)\:(?:\s*)(.*)$/;
+	var rv = [];
+	var changeset;
+	lines.forEach( function(line) {
+		if (line == "") {
+			changeset = null;
+			return;
+		}
+		var parsed = parser.exec(line);
+		if (!parsed) throw "Not parsable: [" + line + "]";
+		if (!changeset) {
+			changeset = {};
+			rv.push(changeset);
+		}
+
+		var name = parsed[1];
+		var value = parsed[2];
+
+		var canHaveMultipleWithThisName = (name == "parent" || name == "bookmark");
+
+		//	TODO	parse the dates
+
+		if (name == "changeset") {
+			var tokens = value.split(":");
+			changeset[name] = { local: Number(tokens[0]), global: tokens[1] };
+		} else if (name == "date" && $context.api.time) {
+			var tokens = value.split(" ");
+			var months = {
+				Jan: "01",
+				Feb: "02",
+				Mar: "03",
+				Apr: "04",
+				May: "05",
+				Jun: "06",
+				Jul: "07",
+				Aug: "08",
+				Sep: "09",
+				Oct: "10",
+				Nov: "11",
+				Dec: "12"
+			}
+			var rfc3339 = tokens[4] + "-" + months[tokens[1]] + "-" + tokens[2] + "T" + tokens[3] + tokens[5].substring(0,3) + ":" + tokens[5].substring(3,5);
+			var when = $context.api.time.When.codec.rfc3339.decode(rfc3339);
+			changeset[name] = new Date(when.unix);
+		} else if (canHaveMultipleWithThisName) {
+			if (!changeset[name]) changeset[name] = [];
+			changeset[name].push(value);
+		} else {
+			if (changeset[name]) throw new Error("Duplicate values for " + name + ": " + changeset[name] + " and " + value);
+			changeset[name] = value;
+		}
+	});
+	return rv;
+};
+
+var Installation = function(o) {
+	var shell = function(p) {
+		var invocation = {};
+
+		var args = [];
+
+		if (p.config) {
+			for (var x in p.config) {
+				args.push("--config", x + "=" + p.config[x]);
+			}
+		}
+		if (p.repository) {
+			args.push("-R", p.repository.reference);
+			if (p.repository.config) {
+				for (var x in p.repository.config) {
+					args.push("--config", x + "=" + p.repository.config[x]);
+				}
+			}
+		}
+		args.push(p.command);
+		args.push.apply(args,p.arguments);
+
+		if (p.directory) {
+			invocation.directory = p.directory;
+		}
+
+		if (p.evaluate) {
+			invocation.stdio = {
+				output: String,
+				error: String
+			}
+			//	TODO	get rid of out/err below and reference now-standard rhino/shell result.stdio in callers
+			invocation.evaluate = function(result) {
+				var myresult = $context.api.js.Object.set({}, result, (result.stdio) ? {
+					out: result.stdio.output,
+					err: result.stdio.error
+				} : {});
+				return p.evaluate(myresult);
+			}
+		} else if (p.stdio) {
+			invocation.stdio = p.stdio;
+			invocation.evaluate = function(result) {
+				//	TODO	should standard rhino/shell behave this way?
+				if (result.status != 0) {
+					var error = new Error("Exit status " + result.status + " from " + result.command + " " + result.arguments.join(" "));
+					error.stdio = result.stdio;
+					throw error;
+				} else {
+					return result;
+				}
+			}
+		}
+
+		invocation.command = $context.install;
+		invocation.arguments = args;
+
+		return $context.api.shell.run(invocation);
+	};	
 }
 
 var shell = function(p) {
@@ -76,62 +190,6 @@ var shell = function(p) {
 	invocation.arguments = args;
 
 	return $context.api.shell.run(invocation);
-};
-
-var parseLog = function(lines) {
-	var parser = /^([a-z]+)\:(?:\s*)(.*)$/;
-	var rv = [];
-	var changeset;
-	lines.forEach( function(line) {
-		if (line == "") {
-			changeset = null;
-			return;
-		}
-		var parsed = parser.exec(line);
-		if (!parsed) throw "Not parsable: [" + line + "]";
-		if (!changeset) {
-			changeset = {};
-			rv.push(changeset);
-		}
-
-		var name = parsed[1];
-		var value = parsed[2];
-
-		var canHaveMultipleWithThisName = (name == "parent" || name == "bookmark");
-
-		//	TODO	parse the dates
-
-		if (name == "changeset") {
-			var tokens = value.split(":");
-			changeset[name] = { local: Number(tokens[0]), global: tokens[1] };
-		} else if (name == "date" && $context.api.time) {
-			var tokens = value.split(" ");
-			var months = {
-				Jan: "01",
-				Feb: "02",
-				Mar: "03",
-				Apr: "04",
-				May: "05",
-				Jun: "06",
-				Jul: "07",
-				Aug: "08",
-				Sep: "09",
-				Oct: "10",
-				Nov: "11",
-				Dec: "12"
-			}
-			var rfc3339 = tokens[4] + "-" + months[tokens[1]] + "-" + tokens[2] + "T" + tokens[3] + tokens[5].substring(0,3) + ":" + tokens[5].substring(3,5);
-			var when = $context.api.time.When.codec.rfc3339.decode(rfc3339);
-			changeset[name] = new Date(when.unix);
-		} else if (canHaveMultipleWithThisName) {
-			if (!changeset[name]) changeset[name] = [];
-			changeset[name].push(value);
-		} else {
-			if (changeset[name]) throw new Error("Duplicate values for " + name + ": " + changeset[name] + " and " + value);
-			changeset[name] = value;
-		}
-	});
-	return rv;
 };
 
 var Repository = function() {
@@ -365,14 +423,14 @@ var LocalRepository = function(dir) {
 						} else if (new RegExp("^file://").test(parsed[2])) {
 							var _file = new Packages.java.io.File(new Packages.java.net.URI(parsed[2]));
 							//	the rhino/file module may have a better way to convert a java.io.File to a pathname
-							var pathname = api.file.filesystems.os.Pathname(String(_file.getPath()));
+							var pathname = $context.api.file.filesystems.os.Pathname(String(_file.getPath()));
 							rv[parsed[1]] = pathnameToRepository(pathname);
 						} else {
 							//	Hmmm ... may need this for unresolved references
-							var pathname = api.file.filesystems.os.Pathname(parsed[2]);
-							if (api.file.filesystems.cygwin) {
+							var pathname = $context.api.file.filesystems.os.Pathname(parsed[2]);
+							if ($context.api.file.filesystems.cygwin) {
 								try {
-									pathname = api.file.filesystems.cygwin.toUnix(pathname);
+									pathname = $context.api.file.filesystems.cygwin.toUnix(pathname);
 								} catch (e) {
 									//	TODO	emit a log message? Only known case currently is when "device is not ready"
 								}
@@ -790,11 +848,11 @@ $exports.Repository = function(p) {
 	};
 
 	this.outgoing = function(destination,m) {
-		return inout("outgoing",destination,api.js.Object.set({},p,m));
+		return inout("outgoing",destination,$context.api.js.Object.set({},p,m));
 	}
 
 	this.incoming = function(destination,m) {
-		return inout("incoming",destination,api.js.Object.set({},p,m));
+		return inout("incoming",destination,$context.api.js.Object.set({},p,m));
 	}
 
 	this.pull = function(from) {
