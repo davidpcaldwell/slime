@@ -662,6 +662,22 @@ var Installation = function(environment) {
 		});
 		return new rv.LocalRepository(dir);
 	};
+	
+	rv.Repository = function(p) {
+		if (typeof(p) == "object" && p) {
+			if (p.local) {
+				return new LocalRepository(p.local);
+			} else if (p.url) {
+				return new RemoteRepository(p.url);
+			} else if (p.directory && p.pathname) {
+				return new LocalRepository(p);
+			} else {
+				throw new Error("Required: local or url");
+			}
+		} else {
+			throw new TypeError();
+		}		
+	}
 
 	return rv;
 };
@@ -671,19 +687,7 @@ var installation = Installation({
 });
 
 $exports.Repository = function(p) {
-	if (typeof(p) == "object" && p) {
-		if (p.local) {
-			return new installation.LocalRepository(p.local);
-		} else if (p.url) {
-			return new installation.RemoteRepository(p.url);
-		} else if (p.directory && p.pathname) {
-			return new installation.LocalRepository(p);
-		} else {
-			throw new Error("Required: local or url");
-		}
-	} else {
-		throw new TypeError();
-	}
+	return new installation.Repository(p);
 
 	this.__defineGetter__("changesets", function() {
 		var rv = {};
