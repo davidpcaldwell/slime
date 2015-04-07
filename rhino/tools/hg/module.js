@@ -642,8 +642,6 @@ var Installation = function(environment) {
 		}
 	};
 	
-	rv.LocalRepository = LocalRepository;
-
 	var RemoteRepository = function(url) {
 		Repository.call(this);
 		this.reference = url;
@@ -653,14 +651,12 @@ var Installation = function(environment) {
 		};
 	};
 	
-	rv.RemoteRepository = RemoteRepository;
-	
 	rv.init = function(dir) {
 		shell({
 			command: "init",
 			directory: dir
 		});
-		return new rv.LocalRepository(dir);
+		return new LocalRepository(dir);
 	};
 	
 	rv.Repository = function(p) {
@@ -685,6 +681,10 @@ var Installation = function(environment) {
 var installation = Installation({
 	install: $context.install
 });
+
+$exports.Installation = function(o) {
+	return Installation(o);
+}
 
 $exports.Repository = function(p) {
 	return new installation.Repository(p);
