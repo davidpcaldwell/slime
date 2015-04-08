@@ -207,7 +207,7 @@ var Installation = function(environment) {
 			return rv;
 		};
 	};
-	
+
 	var LocalRepository = function(dir) {
 		if (dir == null) throw new RangeError("Attempt to create Repository with null dir");
 		if (!dir.getSubdirectory) throw new TypeError("dir " + dir + " must be a directory");
@@ -641,7 +641,7 @@ var Installation = function(environment) {
 			return rv;
 		}
 	};
-	
+
 	var RemoteRepository = function(url) {
 		Repository.call(this);
 		this.reference = url;
@@ -650,7 +650,7 @@ var Installation = function(environment) {
 			return "hg repository: " + url;
 		};
 	};
-	
+
 	rv.init = function(dir) {
 		shell({
 			command: "init",
@@ -658,7 +658,7 @@ var Installation = function(environment) {
 		});
 		return new LocalRepository(dir);
 	};
-	
+
 	rv.Repository = function(p) {
 		if (typeof(p) == "object" && p) {
 			if (p.local) {
@@ -672,7 +672,7 @@ var Installation = function(environment) {
 			}
 		} else {
 			throw new TypeError();
-		}		
+		}
 	}
 
 	return rv;

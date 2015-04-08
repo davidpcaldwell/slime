@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var client = new httpd.slim.http.Client();
 
 var loadForeignCode = function(url,exports) {
@@ -20,7 +33,7 @@ var loadForeignCode = function(url,exports) {
 			type: "text/javascript",
 			string: lines.join("\n")
 		}
-	};	
+	};
 }
 
 var $exports = {};
@@ -35,17 +48,17 @@ $set($exports);
 
 $exports.Service = function(references) {
 	var client = new httpd.slim.http.Client();
-	
+
 	var evaluate = function(response) {
 		if (response.status.code != 200) {
 			throw new Error("Status: " + response.status.code);
 		}
 		return eval("(" + response.body.stream.character().asString() + ")");
 	}
-	
+
 	var Location = function(url) {
 		this.url = url;
-		
+
 		this.get = function(p) {
 			Packages.java.lang.System.err.println("GET parameters: " + JSON.stringify(p));
 			return client.request({
@@ -76,7 +89,7 @@ $exports.Service = function(references) {
 				});
 			}
 		};
-		
+
 		this.push = function(v,p) {
 			return client.request({
 				method: "POST",
@@ -98,10 +111,10 @@ $exports.Service = function(references) {
 		}
 		return {};
 	};
-	
+
 	var Value = function(url,p) {
 		this.url = url;
-		
+
 		var location = new Location(url);
 		var json = (function() {
 			if (typeof(p) == "undefined") return (function() {})();
@@ -121,21 +134,21 @@ $exports.Service = function(references) {
 		} else {
 			this.data = null;
 		}
-		
+
 		this.toString = function() {
 			return "Value: url=" + url + " data=" + this.data;
 		}
-		
+
 		this.save = function(v,p) {
 			location.save(v,p);
 			this.data = v;
 		};
 	}
-	
+
 	var types = this;
-	
+
 	this.Location = rest.Type({
-		remote: function(o) {			
+		remote: function(o) {
 			this.read = rest.Query(function(p) {
 				Packages.java.lang.System.err.println("headers: " + JSON.stringify(arguments[1].headers));
 				var parameters = httpd.js.Object.set({}, p, toParameters(arguments[1]));
@@ -146,7 +159,7 @@ $exports.Service = function(references) {
 					return null;
 				}
 			}, { returns: types.Reference });
-			
+
 			this.write = rest.Action(function(p) {
 				Packages.java.lang.System.err.println("headers: " + JSON.stringify(arguments[1].headers));
 //				var parameters = httpd.js.Object.set({}, p, toParameters(arguments[1]));
@@ -165,9 +178,9 @@ $exports.Service = function(references) {
 			resolve: function(s) {
 				return new Location("https://" + s);
 			}
-		})		
+		})
 	});
-			
+
 	this.Reference = rest.Type({
 		remote: function(o) {
 			//	Interesting modeling problem; there are operations like PUT and DELETE where we will not want to read these
@@ -176,8 +189,8 @@ $exports.Service = function(references) {
 			for (var x in o.object.data) {
 				//	TODO	if these are objects it might be ideal to treat them as Slim objects themselves but we will have to see
 				this[x] = o.object.data[x];
-			}				
-			
+			}
+
 			this.PUT = function(v) {
 				this.save(v,toParameters(arguments[1]));
 			};
@@ -195,16 +208,16 @@ $exports.Service = function(references) {
 			}
 		})
 	});
-	
+
 	this.location = rest.Query(function(p) {
 		return new Location(p.url);
 	}, { returns: this.Location });
-	
+
 	this.reference = rest.Query(function(p) {
 		var rv = new Value(p.url, { parameters: p });
 		if (rv.data) return rv;
 		return null;
-	}, { returns: this.Reference });	
+	}, { returns: this.Reference });
 }
 
 //(function() {
@@ -242,5 +255,5 @@ $exports.Service = function(references) {
 //
 //	this.connect = rest.Query(function(p) {
 //
-//	}, { returns: this.Location });	
+//	}, { returns: this.Location });
 //})

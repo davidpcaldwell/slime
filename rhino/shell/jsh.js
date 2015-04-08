@@ -243,7 +243,7 @@ $exports.jsh = function(p) {
 			var rv = {};
 			for (var x in $exports.environment) {
 				if (/^JSH_/.test(x)) {
-					
+
 				} else {
 					rv[x] = $exports.environment[x];
 				}

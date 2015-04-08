@@ -508,7 +508,7 @@
 		}
 		return rv;
 	};
-	
+
 	$exports.threads = (function($context) {
 		var $exports = {};
 		eval($slime.getCode("threads.js"));

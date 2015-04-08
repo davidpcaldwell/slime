@@ -1,3 +1,17 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME JDK interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
@@ -149,7 +163,7 @@
 			test(db.getCatalog("a") != null);
 			var schemas = catalog.getSchemas();
 			test(schemas.length == 1);
-			
+
 			//	TODO	when fully implemented, remove this code from top-level module api.js
 			scenario(new function() {
 				this.name = "Manual DDL";
@@ -165,7 +179,7 @@
 					var delimited = catalog.createSchema({ name: { string: "CaseSensitive" }});
 					scope.test(undelimited.name == "CASESENSITIVE");
 					scope.test(delimited.name == "CaseSensitive");
-					
+
 					var schemas = catalog.getSchemas();
 					var schemaNames = schemas.map(function(schema) { return schema.name; });
 					scope.test(schemas.length == 5);
@@ -173,14 +187,14 @@
 					scope.test(schemaNames.indexOf("IGNORE") != -1);
 					scope.test(schemaNames.indexOf("CaseSensitive") != -1);
 					scope.test(schemaNames.indexOf("CASESENSITIVE") != -1);
-					
+
 					ignore.perform(function(context) {
 						context.execute({ sql: "CREATE TABLE ignore (a INTEGER)" });
 					});
 
 					scope.test(schema.getTables().length == 0);
 					scope.test(ignore.getTables().length == 1);
-					
+
 					schema.perform(function(context) {
 						context.execute({ sql: "CREATE TABLE a (a INTEGER)" })
 					});
@@ -250,7 +264,7 @@
 				test(schema1.getTable({ name: "A" }) != null);
 				test(schema1.getTable({ name: "A" }).getColumns().length == 1);
 
-				var schema = catalog.getSchema({ 
+				var schema = catalog.getSchema({
 					name: "descriptor",
 					descriptor: new Descriptor()
 				});

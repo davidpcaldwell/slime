@@ -501,13 +501,13 @@ $exports.Thread.Monitor = function() {
 	this.toString = function() {
 		return "Thread.Monitor [id=" + Packages.java.lang.System.identityHashCode(lock) + "]";
 	}
-	
+
 	var synchronize = function(f) {
 		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context")) {
 			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);
 		} else {
 			return sync(f, lock);
-		}		
+		}
 	};
 
 	this.Waiter = function(c) {
@@ -525,7 +525,7 @@ $exports.Thread.Task = function(p) {
 	return function(tell) {
 		arguments.callee.p = p;
 		if (tell) {
-			$exports.Thread.start({ 
+			$exports.Thread.start({
 				call: function() {
 					var result;
 					try {

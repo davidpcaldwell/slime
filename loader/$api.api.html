@@ -1,3 +1,17 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
@@ -579,57 +593,57 @@
 
 						var $steps = verify(api,"$api").threads.steps;
 						$steps.run({ steps: [] }).threw.nothing();
-						
+
 						var A = function(shared) {
 							this.ready = function() {
 								return true;
 							}
-							
+
 							this.run = function() {
 								shared.a = true;
 							}
 						};
-						
+
 						var B = function(shared) {
 							this.ready = function() {
 								return shared.a;
 							};
-							
+
 							this.run = function() {
 								shared.b = true;
 							}
 						}
-						
+
 						var Shared = function() {
 							this.a = false;
 							this.b = false;
 						};
-						
+
 						var Listener = function() {
 							var unready = [];
-							
+
 							this.on = {
 								unready: function(e) {
 									unready.push(e.detail);
 								}
 							}
-							
+
 							this.unready = unready;
 						}
-						
+
 						var s1 = new Shared();
 						$steps.run({
 							steps: [ new A(s1) ]
 						});
 						verify(s1).a.is(true);
-						
+
 						var s2 = new Shared();
 						$steps.run({
 							steps: [ new B(s2), new A(s2) ]
 						});
 						verify(s2).a.is(true);
 						verify(s2).b.is(true);
-						
+
 						var s3 = new Shared();
 						var b3 = new B(s3);
 						var l3 = new Listener();

@@ -93,7 +93,7 @@ var Chrome = function(b) {
 			this.directory = data.directory;
 			this.id = data.name;
 			this.name = data.data.name;
-			
+
 			this.bookmarks = data.read("Bookmarks");
 
 			if (u.install) {

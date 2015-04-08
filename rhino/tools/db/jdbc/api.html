@@ -1,3 +1,17 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME JDK interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
 		<title>Slime JDBC API</title>
@@ -6,7 +20,7 @@
 	</head>
 	<body>
 		<div>
-			Uses presence/absence of classes to provide implementations for <a href="derby/api.html">Derby</a>, 
+			Uses presence/absence of classes to provide implementations for <a href="derby/api.html">Derby</a>,
 			<a href="mysql/api.html">MySQL</a>, PostgreSQL.
 		</div>
 		<script type="application/x.jsapi#context">
@@ -20,7 +34,7 @@
 					this.getJavaClass = function(name) {
 						return jsh.java.getClass(name);
 					}
-					
+
 					this.api = {
 						js: jsh.js,
 						java: jsh.java,
@@ -37,9 +51,9 @@
 					test(table != null);
 					var bytes = [0,1,2,3,4,5,6,7,8,9];
 					var _array = jsh.java.Array.create({
-						type: Packages.java.lang.Byte.TYPE, 
+						type: Packages.java.lang.Byte.TYPE,
 						array: bytes.map(function(js) {
-							return new Packages.java.lang.Byte(js); 
+							return new Packages.java.lang.Byte(js);
 						})
 					});
 					var stream = jsh.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_array));

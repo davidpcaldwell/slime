@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var $js = $context.$js;
 var log = $context.log;
 
@@ -9,7 +22,7 @@ var toValue = function(array) {
 
 var TIMESTAMP = new function() {
 	this.string = "TIMESTAMP";
-	
+
 	this.decode = function(rs,index) {
 		return new Date( rs.getTimestamp(index+1).getTime() );
 	}
@@ -24,7 +37,7 @@ var TIMESTAMP = new function() {
 var VARCHAR = function(precision) {
 	return new function() {
 		this.string = "VARCHAR(" + precision + ")";
-		
+
 		this.decode = function(rs,index) {
 			return String( rs.getString(index+1) );
 		}
@@ -37,7 +50,7 @@ var VARCHAR = function(precision) {
 
 var DATE = new function() {
 	var TimeZone = Packages.java.util.TimeZone;
-	
+
 	this.string = "DATE";
 
 	this.decode = function(rs,index) {
@@ -57,7 +70,7 @@ var DATE = new function() {
 
 var SMALLINT = new function() {
 	this.string = "SMALLINT";
-	
+
 	this.decode = function(rs,index) {
 		return Number( rs.getInt(index+1) );
 	}
@@ -69,7 +82,7 @@ var SMALLINT = new function() {
 
 var INTEGER = new function() {
 	this.string = "INTEGER";
-	
+
 	this.decode = function(rs,index) {
 		return Number( rs.getInt(index+1) );
 	}
@@ -81,7 +94,7 @@ var INTEGER = new function() {
 
 var BIGINT = new function() {
 	this.string = "BIGINT";
-	
+
 	this.decode = function(rs,index) {
 		return Number( rs.getLong(index+1) );
 	}
@@ -93,7 +106,7 @@ var BIGINT = new function() {
 
 var DOUBLE = new function() {
 	this.string = "DOUBLE";
-	
+
 	this.decode = function(rs,index) {
 		return Number( rs.getDouble(index+1) );
 	}
@@ -105,7 +118,7 @@ var DOUBLE = new function() {
 
 var BOOLEAN = new function() {
 	this.string = "BOOLEAN";
-	
+
 	this.decode = function(rs,index) {
 		return rs.getBoolean(index+1);
 	}
@@ -119,11 +132,11 @@ var IMPLEMENTATION = new function() {
 	var quoteIdentifier = function(string) {
 		return "\"" + string + "\"";
 	}
-	
+
 	var escapeQuote = function(string) {
 		return "'" + string.replace("'", "''", "g") + "'";
 	}
-	
+
 	var cast = function(type,value,toString) {
 		if (typeof(toString) == "undefined") throw "Missing cast toString function";
 		if (value == null) return "NULL";
@@ -131,10 +144,10 @@ var IMPLEMENTATION = new function() {
 		return type + " " + escapeQuote(toString(value));
 		//	return "CAST (" + escapeQuote(string) + " AS " + type + ")";
 	}
-	
+
 	var TIMESTAMP_MASK = "yyyy-MM-dd HH:mm:ss.SSS";
 	var DATE_MASK = "yyyy-MM-dd";
-	
+
 	var $ANY = new function() {
 		this.cast = function(value) {
 			if (value instanceof Date) {
@@ -148,10 +161,10 @@ var IMPLEMENTATION = new function() {
 			}
 		}
 	}
-	
+
 	var TYPES = new function() {
 		 var $Types = Packages.java.sql.Types;
-		 
+
 		 this.getCodec = function(data) {
 			if (data.code == $Types.VARCHAR) {
 				return VARCHAR(data.precision);
@@ -201,9 +214,9 @@ var IMPLEMENTATION = new function() {
 			debugger;
 		}
 	}
-	
+
 	this.TYPES = TYPES;
-	
+
 	//	args are properties for data source: server,port,superuser,superpassword
 	this.Database = function(dbsettings) {
 		var bootstrapDatasource = getDataSource("postgres", dbsettings.user, dbsettings.password, false);
@@ -213,7 +226,7 @@ var IMPLEMENTATION = new function() {
 			var query = bootstrapDatasource.createQuery("SELECT datname FROM pg_catalog.pg_database");
 			return query.toArray().map( function(item) { return new Catalog(item[0]); } );
 		}
-		
+
 		this.getCatalog = function(name) {
 			if (this.getCatalogs) {
 				//	check for existence
@@ -224,7 +237,7 @@ var IMPLEMENTATION = new function() {
 				return new Catalog(name);
 			}
 		}
-		
+
 		this.createCatalog = function(name) {
 			bootstrapDatasource.executeStandalone("CREATE DATABASE " + name);
 			return this.getCatalog(name);
@@ -236,7 +249,7 @@ var IMPLEMENTATION = new function() {
 	}
 }
 $exports.IMPLEMENTATION = IMPLEMENTATION;
-			
+
 var dataSources = {};
 
 var getDataSource = function(host,port,db,user,password,pool) {
@@ -265,7 +278,7 @@ var Catalog = function(dbstring,dbsettings) {
 
 		//	used by Schema toString
 		var catalogToString = this.toString;
-		
+
 		var dataSource = getDataSource(dbsettings.host,dbsettings.port,name,dbsettings.user,dbsettings.password,true);
 
 		var createConnection = function() {
@@ -393,7 +406,7 @@ var Catalog = function(dbstring,dbsettings) {
 				this.VARCHAR = wrap(VARCHAR);
 				this.BOOLEAN = wrap(BOOLEAN);
 				this.DATE = wrap(DATE);
-			}		
+			}
 		}
 
 		var perform = function(transaction,schema) {
@@ -501,7 +514,7 @@ var Catalog = function(dbstring,dbsettings) {
 			this.toString = function() {
 				return name + " in " + catalogToString();
 			}
-			
+
 			this.name = name;
 
 			this.createContext = function() {
@@ -561,13 +574,13 @@ var Database = function(p) {
 			return query.toArray().map( function(item) { return new Catalog(item[0]); } );
 		}
 	}
-	
+
 	var jdbcDatabase = new $context.Database(Catalog(this.toString(),p))
-	
+
 	this.getCatalog = jdbcDatabase.getCatalog;
-	
+
 	this.createCatalog = function(name) {
-		throw new Error("Unimplemented");		
+		throw new Error("Unimplemented");
 	}
 }
 
