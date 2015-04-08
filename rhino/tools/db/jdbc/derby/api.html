@@ -1,0 +1,312 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Slime JavaDB API</title>
+	<link rel="stylesheet" type="text/css" href="../../../slime/loader/api/api.css" />
+	<script src="../../../slime/loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		In this module, the term <i>database</i> is used to refer to a set of databases stored under a single directory. The term
+		<i>catalog</i> is used to refer to a single Derby database.
+	</div>
+	<div>
+		<script type="application/x.jsapi#context">
+			(function() {
+				var js = $jsapi.module("../../../slime/js/object/");
+				var java = $jsapi.module("../../../slime/rhino/host/");
+				var io = $jsapi.module("../../../slime/rhino/io/", {
+					api: {
+						js: js,
+						java: java,
+						mime: {
+							Type: {}
+						}
+					}
+				});
+				var parentContext = new function() {
+					this.api = {
+						js: js,
+						java: java,
+						io: io,
+						core: $jsapi.module("../core.js")
+					};
+				};
+				return $jsapi.module("../drivers.js", parentContext);
+			})()
+		</script>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="constructor">
+				<div class="name">Database</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">directory</div>
+									<span class="type">rhino/file directory</span>
+									<span>
+										(optional)
+										If specified, this directory is used as the parent directory for the catalogs refernced by
+										this <code>Database</code>. Otherwise, the standard Derby system directory is used.
+									</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">getCatalog</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A logical path.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.catalog"></a></span>
+								<span>
+									Returns the catalog corresponding to the given path, or <code>null</code> if there is no such
+									catalog.
+								</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">createCatalog</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The path at which to create the new catalog.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.catalog">catalog</a></span>
+								<span>The catalog created at the given path.</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="type">
+					<a class="type" name="types.catalog">catalog</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">getSchemas</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">Array of <a href="#types.schema">schema</a></span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="type">
+					<a class="type" name="types.schema">schema</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</div>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#initialize">
+			scope.dir = $jsapi.newTemporaryDirectory();
+		</script>
+		<script type="application/x.jsapi#tests">
+			var db = new module.Database(dir.getRelativePath("database").createDirectory());
+			test(db.getCatalog("a") == null);
+			var catalog = db.createCatalog("a");
+			test(db.getCatalog("a") != null);
+			var schemas = catalog.getSchemas();
+			test(schemas.length == 1);
+			
+			//	TODO	when fully implemented, remove this code from top-level module api.js
+			scenario(new function() {
+				this.name = "Manual DDL";
+				this.execute = function(scope) {
+					var schema = catalog.createSchema({ name: "unit" });
+					scope.test(schema.name == "UNIT");
+
+					//	create another schema just so we can test schema-level metadata reliably
+					var ignore = catalog.createSchema({ name: "ignore" });
+					scope.test(ignore.name == "IGNORE");
+
+					var undelimited = catalog.createSchema({ name: "CaseSensitive" });
+					var delimited = catalog.createSchema({ name: { string: "CaseSensitive" }});
+					scope.test(undelimited.name == "CASESENSITIVE");
+					scope.test(delimited.name == "CaseSensitive");
+					
+					var schemas = catalog.getSchemas();
+					var schemaNames = schemas.map(function(schema) { return schema.name; });
+					scope.test(schemas.length == 5);
+					scope.test(schemaNames.indexOf("UNIT") != -1);
+					scope.test(schemaNames.indexOf("IGNORE") != -1);
+					scope.test(schemaNames.indexOf("CaseSensitive") != -1);
+					scope.test(schemaNames.indexOf("CASESENSITIVE") != -1);
+					
+					ignore.perform(function(context) {
+						context.execute({ sql: "CREATE TABLE ignore (a INTEGER)" });
+					});
+
+					scope.test(schema.getTables().length == 0);
+					scope.test(ignore.getTables().length == 1);
+					
+					schema.perform(function(context) {
+						context.execute({ sql: "CREATE TABLE a (a INTEGER)" })
+					});
+					scope.test(schema.getTables().length == 1);
+					if (false) jsh.shell.echo("cd " + dir);
+					var a = schema.getTables()[0];
+					scope.test(a.name == "A");
+				}
+			});
+		</script>
+		<script type="application/x.jsapi#tests" jsapi:id="Catalog">
+			//	TODO	test create = false
+			var catalog = new module.Catalog({
+				pathname: dir.getRelativePath("catalog"),
+				create: true
+			});
+			test(catalog.getSchemas().length == 1);
+			catalog.createSchema({ name: "unit" });
+			test(catalog.getSchemas().length == 2);
+			var c2 = new module.Catalog({
+				pathname: dir.getRelativePath("catalog")
+			});
+			test(c2.getSchemas().length == 2);
+			var c3 = new module.Catalog({
+				directory: dir.getSubdirectory("catalog")
+			});
+			test(c3.getSchemas().length == 2);
+		</script>
+		<div jsapi:id="descriptor">
+			<script type="application/x.jsapi#tests">
+				//	TODO	test create = false
+				var catalog = new module.Catalog({
+					pathname: dir.getRelativePath("descriptor"),
+					create: true
+				});
+
+				//	TODO	in some previous incarnations of this design, it was possible to retrieve a version of the database other
+				//			than the current version
+
+				var Descriptor = function() {
+					var rv = [
+						{
+							applied: function(s) {
+								return s.getTable({ name: "A" }) != null;
+							},
+							apply: function(context) {
+								context.execute({ sql: "CREATE TABLE a (a INTEGER)" });
+							}
+						},
+						{
+							applied: function(s) {
+								return s.getTable({ name: "A" }).getColumn("B") != null;
+							},
+							apply: function(context) {
+								context.execute({ sql: "ALTER TABLE a ADD COLUMN b TIMESTAMP" });
+							}
+						}
+					];
+					return rv;
+				};
+
+				var schema1 = catalog.getSchema({
+					name: "descriptor1",
+					descriptor: Descriptor().slice(0,1)
+				});
+
+				test(schema1.getTable({ name: "A" }) != null);
+				test(schema1.getTable({ name: "A" }).getColumns().length == 1);
+
+				var schema = catalog.getSchema({ 
+					name: "descriptor",
+					descriptor: new Descriptor()
+				});
+
+				test(schema.getTable({ name: "A" }) != null);
+				test(schema.getTable({ name: "A" }).getColumns().length == 2);
+			</script>
+		</div>
+		<div jsapi:id="blob">
+			<div jsapi:reference="getApi('../api.html').getElement('blob')">
+			</div>
+			<script type="application/x.jsapi#tests">
+				var catalog = new module.Catalog({
+					pathname: dir.getRelativePath("blob"),
+					create: true
+				});
+
+				var schema = catalog.getSchema({ name: "app" , descriptor: [
+					{
+						applied: function(s) {
+							return false;
+						},
+						apply: function(context) {
+							context.execute({ sql: "CREATE TABLE data (a INTEGER, b BLOB)" });
+						}
+					}
+				]});
+
+				blob(schema,test);
+			</script>
+		</div>
+		<div jsapi:id="generated">
+			<script type="application/x.jsapi#tests">
+				var catalog = new module.Catalog({
+					pathname: dir.getRelativePath("generated"),
+					create: true
+				});
+
+				var schema = catalog.getSchema({ name: "app" , descriptor: [
+					{
+						applied: function(s) {
+							return false;
+						},
+						apply: function(context) {
+							context.execute({ sql: "CREATE TABLE data (a INTEGER GENERATED ALWAYS AS IDENTITY, b VARCHAR(10))" });
+						}
+					}
+				]});
+
+				var table = schema.getTable({ name: "data" });
+				var row = { b: "David" };
+				test(typeof(row.a) == "undefined");
+				table.insert(row);
+				test(typeof(row.a) != "undefined");
+			</script>
+		</div>
+	</div>
+</body>
+</html>
