@@ -79,12 +79,11 @@ var Verify = function(scope,vars) {
 
 		this.isNotEqualTo = function(value) {
 			var specified = represent(value);
-			scope.test({
-				success: function() { return v != value; },
-				message: function(success) {
-					return prefix + ((success) ? "is not equal to " + specified.name : " equals " + specified.name + " (value: " + v + "), but should not.");
-				}
-			})
+			scope.test(function() {
+				var success = (v != value);
+				var message = prefix + ((success) ? "is not equal to " + specified.name : " equals " + specified.name + " (value: " + v + "), but should not.");
+				return { success: success, message: message };
+			});
 		};
 	};
 
