@@ -12,7 +12,7 @@ Portions created by the Initial Developer are Copyright (C) 2015 the Initial Dev
 Contributor(s):
 END LICENSE
 -->
-<!DOCTYPE html "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
 		<title>__TITLE__</title>
 		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
@@ -101,6 +101,17 @@ END LICENSE
 					</div>
 				</li>
 			</ul>
+			<script type="application/x.jsapi#tests">
+				var unit = $jsapi.loader.file("unit.before.js");
+				var s = {
+					test: function() {
+						test.apply(scope,arguments);
+					}
+				};
+				var v = new unit.Verify(s);
+				v(1).is(1);
+				v("x").length.is(1);
+			</script>
 		</div>
 	</body>
 </html>

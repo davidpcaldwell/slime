@@ -23,9 +23,7 @@ var Verify = function(scope,vars) {
 
 		if (typeof(v) == "string") {
 			var expression = (name) ? name : "\"" + v + "\"";
-			this.length = function() {
-				return new Value(v.length, expression + ".length");
-			};
+			this.length = new Value(v.length, expression + ".length");
 		}
 
 		this.isUndefined = function() {
@@ -257,6 +255,7 @@ var Verify = function(scope,vars) {
 //		rv.map = function(object,f) {
 //			return object.evaluate(f);
 //		};
+	//	TODO	remove Slim cross-dependency, if it is in fact used
 	for (var x in vars) {
 		if (typeof(vars[x]) == "function") {
 			rv[x] = (function(delegate,name) {
