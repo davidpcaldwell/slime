@@ -26,15 +26,6 @@ var Verify = function(scope,vars) {
 			this.length = new Value(v.length, expression + ".length");
 		}
 
-		this.isUndefined = function() {
-			scope.test({
-				success: function() { return typeof(v) === "undefined"; },
-				message: function(success) {
-					return prefix + ((success) ? "is undefined" : "" + v + " is not undefined");
-				}
-			});
-		};
-
 		var toLiteral = function(v) {
 			if (typeof(v) == "string") return "\"" + v + "\"";
 			return String(v);
@@ -68,22 +59,44 @@ var Verify = function(scope,vars) {
 			});
 		}
 
+		var isEqualTo = function(value,not) {
+			var specified = represent(value);
+			scope.test(function() {
+				var success = (not) ? v != specified.value : v == specified.value;
+				var message = prefix + (function() {
+					if (!not && success) return "is equal to " + specified.name;
+					if (!not && !success) return "is " + toLiteral(v) + ", which is not equal to " + specified.name;
+					if (not && success) return "is not equal to " + specified.name;
+					if (not && !success) return "is " + toLiteral(v) + ", which equals " + specified.name + ", but should not.";
+				})();
+				return {
+					success: success,
+					message: message
+				}
+			});
+		};
+
 		this.is = function(value) {
 			is(value);
 		};
 		this.is.not = function(value) {
 			is(value,true);
+		};
+
+		this.is.equalTo = function(value) {
+			return isEqualTo(value,false);
+		}
+		this.is.not.equalTo = function(value) {
+			return isEqualTo(value,true);
 		}
 
-		this.isNotEqualTo = function(value) {
-			var specified = represent(value);
-			scope.test({
-				success: function() { return v != value; },
-				message: function(success) {
-					return prefix + ((success) ? "is not equal to " + specified.name : " equals " + specified.name + " (value: " + v + "), but should not.");
-				}
-			})
-		};
+		this.isUndefined = $api.deprecate(function() {
+			is(void(0));
+		});
+
+		this.isNotEqualTo = $api.deprecate(function(value) {
+			return isEqualTo(value,true);
+		});
 	};
 
 	var Object = function(o,name) {
@@ -192,11 +205,6 @@ var Verify = function(scope,vars) {
 			});
 		};
 
-		this.evaluate = function(f) {
-			var mapped = f.call(o);
-			return rv(mapped,((name) ? name : "")+"{" + f + "}")
-		}
-
 		for (var x in o) {
 			try {
 				var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
@@ -217,6 +225,11 @@ var Verify = function(scope,vars) {
 		}
 		if (o instanceof Error && !this.message) {
 			wrapProperty.call(this,"message");
+		}
+
+		this.evaluate = function(f) {
+			var mapped = f.call(o);
+			return rv(mapped,((name) ? name : "")+"{" + f + "}")
 		}
 	};
 
