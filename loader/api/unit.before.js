@@ -215,7 +215,9 @@ var Verify = function(scope,vars) {
 				if (typeof(value) == "function") {
 					this[x] = wrap(x);
 				} else {
-					wrapProperty.call(this,x);
+					if (x != "is" && x != "evaluate") {
+						wrapProperty.call(this,x);
+					}
 				}
 			} catch (e) {
 			}
@@ -230,6 +232,9 @@ var Verify = function(scope,vars) {
 		this.evaluate = function(f) {
 			var mapped = f.call(o);
 			return rv(mapped,((name) ? name : "")+"{" + f + "}")
+		};
+		this.evaluate.property = function(property) {
+			return rv(o[property], ((name) ? name : "")+"." + property);
 		}
 	};
 

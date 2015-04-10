@@ -111,6 +111,9 @@ END LICENSE
 				var v = new unit.Verify(s);
 				v(1).is(1);
 				v("x").length.is(1);
+				var withHidden = { is: "hey", evaluate: "dude" };
+				v(withHidden,"withHidden").evaluate.property("is").is("hey");
+				v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
 			</script>
 		</div>
 	</body>

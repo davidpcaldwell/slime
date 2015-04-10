@@ -295,10 +295,10 @@ END LICENSE
 									verify(parameters).arguments.length.is(0);
 									verify(parameters).options.evaluate(function() {
 										return this.boolean;
-									}).isUndefined();
+									}).is(void(0));
 									verify(parameters).options.evaluate(function() {
 										return this.string;
-									}).isUndefined();
+									}).is(void(0));
 								</script>
 							</li>
 							<li class="value">
@@ -312,10 +312,10 @@ END LICENSE
 									verify(parameters).arguments.length.is(3);
 									verify(parameters).options.evaluate(function() {
 										return this.boolean;
-									}).isUndefined();
+									}).is(void(0));
 									verify(parameters).options.evaluate(function() {
 										return this.string;
-									}).isUndefined();
+									}).is(void(0));
 								</script>
 							</li>
 							<li class="value">
