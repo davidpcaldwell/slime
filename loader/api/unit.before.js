@@ -90,13 +90,13 @@ var Verify = function(scope,vars) {
 			return isEqualTo(value,true);
 		}
 
-		this.isUndefined = $api.deprecate(function() {
-			is(void(0));
-		});
-
-		this.isNotEqualTo = $api.deprecate(function(value) {
-			return isEqualTo(value,true);
-		});
+//		this.isUndefined = $api.deprecate(function() {
+//			is(void(0));
+//		});
+//
+//		this.isNotEqualTo = $api.deprecate(function(value) {
+//			return isEqualTo(value,true);
+//		});
 	};
 
 	var Object = function(o,name) {

@@ -59,15 +59,15 @@ END LICENSE
 				});
 				verify(list).length.is(14);
 				//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
-				verify(map.java).loader.isNotEqualTo(void(0));
+				verify(map.java).loader.is.not.equalTo(void(0));
 				verify(map.java).evaluate(function() { return this.resource; }).isUndefined();
 				verify(map.java).evaluate($api.Method.property("resource")).isUndefined();
 				verify(map["java.js"]).evaluate($api.Method.property("loader")).isUndefined();
-				verify(map["java.js"]).resource.isNotEqualTo(void(0));
+				verify(map["java.js"]).resource.is.not.equalTo(void(0));
 			</script>
 			<script type="application/x.jsapi#tests">
 				var api = loader.resource("api.html");
-				verify(api).length.isNotEqualTo(null);
+				verify(api).length.is.not.equalTo(null);
 			</script>
 		</li>
 	</ul>

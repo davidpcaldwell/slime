@@ -428,7 +428,7 @@ END LICENSE
 					</ul>
 					-->
 					<script type="application/x.jsapi#tests">
-						verify(api.Constructor).isNotEqualTo(void(0));
+						verify(api.Constructor).is.not.equalTo(void(0));
 						var A = function() {
 							this.a = 1;
 						};
@@ -475,8 +475,8 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</div>
 							<script type="application/x.jsapi#tests">
-								verify(api.Object).isNotEqualTo(void(0));
-								verify(api.Object.property).isNotEqualTo(void(0));
+								verify(api.Object).is.not.equalTo(void(0));
+								verify(api.Object.property).is.not.equalTo(void(0));
 								var test = {
 									name: "value"
 								};
@@ -504,7 +504,7 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</div>
 							<script type="application/x.jsapi#tests">
-								verify(api.Value).isNotEqualTo(void(0));
+								verify(api.Value).is.not.equalTo(void(0));
 								var one = {
 									name: "value1",
 									nested: {
@@ -588,8 +588,8 @@ END LICENSE
 					</ul>
 					<script type="application/x.jsapi#tests">
 						verify(api,"$api").loadedByJsapi.is(true);
-						verify(api,"$api").threads.steps.isNotEqualTo(null);
-						verify(api,"$api").threads.steps.evaluate(function() { return this.run }).isNotEqualTo(null);
+						verify(api,"$api").threads.steps.is.not.equalTo(null);
+						verify(api,"$api").threads.steps.evaluate(function() { return this.run }).is.not.equalTo(null);
 
 						var $steps = verify(api,"$api").threads.steps;
 						$steps.run({ steps: [] }).threw.nothing();
