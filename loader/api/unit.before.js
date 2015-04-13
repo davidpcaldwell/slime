@@ -412,7 +412,9 @@ var Scope = function(o) {
 	var units = [];
 
 	var runScenario = function(object,next) {
-		var child = new o.Scenario(object);
+		//	TODO	definite code smell here as we try to hold together the scenario public "wrapper" with the scenario
+		//			implementation; should improve this
+		var child = (object instanceof o.Scenario) ? object : new o.Scenario(object);
 
 		var runNext = function(next) {
 			if ($context.asynchronous && $context.asynchronous.scenario) {
@@ -518,6 +520,29 @@ $exports.Scenario = function(o) {
 	}
 
 	this.name = o.name;
+	
+	if (o.composite && o.execute) {
+		throw new Error();
+	}
+	if (o.composite) {
+		(function() {
+			var parts = [];
+
+			this.add = function(part) {
+				parts.push(part);
+			};
+
+			o.execute = function(scope) {
+				parts.forEach(function(part) {
+					if (part.scenario) {
+						scope.scenario(part.scenario);
+					} else {
+						throw new Error("Part is not scenario");
+					}
+				});
+			};
+		}).call(this);
+	}
 
 	var run = function(p) {
 		var scope = new Scope({ scenario: p.scenario, console: p.console, callback: p.callback, Scenario: p.Scenario});
@@ -531,7 +556,12 @@ $exports.Scenario = function(o) {
 
 		var initializeAndExecute = function(scope) {
 			if (o.initialize) o.initialize();
-			o.execute(scope);
+			if (o.verify) {
+				var verify = new Verify(scope);
+				o.execute(verify);				
+			} else {
+				o.execute(scope);
+			}
 		}
 
 		if (p.haltOnException) {

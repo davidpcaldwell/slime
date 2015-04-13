@@ -323,8 +323,8 @@ $exports.tests = new function() {
 		rv.$jsapi.test = $api.deprecate(rv.$jsapi.loader.scenario);
 		return rv;
 	}
-
-	this.run = function(successWas) {
+	
+	this.toScenario = function() {
 		var $scenario = {};
 		$scenario.name = "Unit tests";
 		var suites = [];
@@ -396,7 +396,11 @@ $exports.tests = new function() {
 		} );
 
 		var SCENARIO = new $context.Scenario($scenario);
-		successWas(SCENARIO.run( $context.console ));
+		return SCENARIO;
+	}
+
+	this.run = function(successWas) {
+		successWas(this.toScenario().run( $context.console ));
 	}
 };
 
@@ -641,7 +645,12 @@ $exports.tests = new function() {
 		});
 
 		["api.css","api.js"].forEach( function(name) {
-			destination.getRelativePath(name).write($context.api.getFile(name).read(jsh.io.Streams.binary));
+			var read = function(name) {
+				if ($context.api) return $context.api.getFile(name).read(jsh.io.Streams.binary);
+				//	TODO	probably $loader.resource() and run jsapi.js as a module rather than file
+				throw new Error();
+			}
+			destination.getRelativePath(name).write(read(name));
 		});
 
 		modules.forEach( function(item) {
