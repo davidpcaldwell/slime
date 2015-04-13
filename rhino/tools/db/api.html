@@ -4,10 +4,10 @@ This Source Code Form is subject to the terms of the Mozilla Public License, v. 
 distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-The Original Code is the jsh JavaScript/Java shell.
+The Original Code is the SLIME JDK interface.
 
 The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
 
 Contributor(s):
 END LICENSE
@@ -15,12 +15,29 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
+	<title>Slime DB API</title>
 	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-	<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" type="text/css" href="http://slime.googlecode.com/hg/loader/api/api.css" />
 	<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
 </head>
 <body>
+	<div><a href="jdbc/api.html">JDBC</a></div>
+	<!--	TODO	migrate this old code	-->
+	<!--
+var postgresql = $loader.script("js/postgresql.js", {
+	$js: $context.js,
+	log: $context.log
+});
+
+var schema = $loader.script("js/schema.js", {
+	Database: postgresql.IMPLEMENTATION.Database
+}, "js/schema.js");
+
+$exports.Database = postgresql.IMPLEMENTATION.Database;
+$exports.schema = {
+	get: schema.get
+}
+	-->
 	<div>__DESCRIPTION__</div>
 	<div>
 		<h1>Context</h1>
@@ -30,12 +47,6 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<ul>
-			<script type="application/x.jsapi#tests">
-				verify(scope.a,"scope.a").is(void(0));
-			</script>
-			<script type="application/x.jsapi#initialize">
-				scope.a = 4;
-			</script>
 		</ul>
 	</div>
 </body>

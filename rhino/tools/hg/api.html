@@ -56,8 +56,9 @@ END LICENSE
 								js: js,
 								java: java,
 								io: io
-							},
-							cygwin: (String(jsh.shell.properties.object.cygwin) == "undefined") ? function(){}() : jsh.shell.properties.object.cygwin
+							}
+							,$rhino: jsh.$jsapi.$rhino
+							,cygwin: (String(jsh.shell.properties.object.cygwin) == "undefined") ? function(){}() : jsh.shell.properties.object.cygwin
 						});
 
 						this.shell = $jsapi.module("../../../rhino/shell/", {
@@ -65,7 +66,8 @@ END LICENSE
 								js: js,
 								java: java,
 								io: io,
-								file: this.file
+								file: this.file,
+								document: $jsapi.module("../../../js/document/")
 							}
 						});
 					};
@@ -585,6 +587,31 @@ END LICENSE
 		-->
 		<ul>
 			<li class="constructor">
+				<div class="name">Installation</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">install</div>
+									<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+									<span>A Mercurial executable.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="constructor">
 				<div class="name">Repository</div>
 				<span>Creates an object representing a Mercurial repository given its location.</span>
 				<div class="arguments">
@@ -678,13 +705,13 @@ END LICENSE
 					var hgrc = new module.Hgrc({ file: $module.getResourcePathname("test/1.hgrc").file });
 					var LENGTH = 29;
 					verify(hgrc,"1.hgrc").get("ui.username").is("I use it <iuseit@aol.com>");
-					verify(hgrc,"1.hgrc").unit().lines().length().is(LENGTH);
+					verify(hgrc,"1.hgrc").unit.lines.length.is(LENGTH);
 					hgrc.set("ui","username","I also use it");
 					verify(hgrc,"1.hgrc").get("ui.username").is("I also use it");
-					verify(hgrc,"1.hgrc").unit().lines().length().is(LENGTH+2);
+					verify(hgrc,"1.hgrc").unit.lines.length.is(LENGTH+2);
 					hgrc.normalize();
 					//	Should remove the duplicate header
-					verify(hgrc,"1.hgrc").unit().lines().length().is(LENGTH-1);
+					verify(hgrc,"1.hgrc").unit.lines.length.is(LENGTH-1);
 					verify(hgrc,"1.hgrc").get("ui.username").is("I also use it");
 				]]></script>
 			</li>

@@ -31,6 +31,7 @@ var Chrome = function(b) {
 					this.data = p.data;
 
 					this.read = function(path) {
+						if (!p.base.getFile(path)) return null;
 						return eval("(" + p.base.getFile(path).read(String) + ")");
 					}
 				};
@@ -92,6 +93,8 @@ var Chrome = function(b) {
 			this.directory = data.directory;
 			this.id = data.name;
 			this.name = data.data.name;
+
+			this.bookmarks = data.read("Bookmarks");
 
 			if (u.install) {
 				this.open = function(m) {

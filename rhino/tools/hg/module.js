@@ -10,73 +10,13 @@
 //	Contributor(s):
 //	END LICENSE
 
-var api = $context.api;
-
 var toNativePath = function(pathname) {
-	if (api.file.filesystems.cygwin) {
-		return api.file.filesystems.cygwin.toWindows(pathname).toString();
+	if ($context.api.file.filesystems.cygwin) {
+		return $context.api.file.filesystems.cygwin.toWindows(pathname).toString();
 	} else {
 		return pathname.toString();
 	}
 }
-
-var shell = function(p) {
-	var invocation = {};
-
-	var args = [];
-
-	if (p.config) {
-		for (var x in p.config) {
-			args.push("--config", x + "=" + p.config[x]);
-		}
-	}
-	if (p.repository) {
-		args.push("-R", p.repository.reference);
-		if (p.repository.config) {
-			for (var x in p.repository.config) {
-				args.push("--config", x + "=" + p.repository.config[x]);
-			}
-		}
-	}
-	args.push(p.command);
-	args.push.apply(args,p.arguments);
-
-	if (p.directory) {
-		invocation.directory = p.directory;
-	}
-
-	if (p.evaluate) {
-		invocation.stdio = {
-			output: String,
-			error: String
-		}
-		//	TODO	get rid of out/err below and reference now-standard rhino/shell result.stdio in callers
-		invocation.evaluate = function(result) {
-			var myresult = $context.api.js.Object.set({}, result, (result.stdio) ? {
-				out: result.stdio.output,
-				err: result.stdio.error
-			} : {});
-			return p.evaluate(myresult);
-		}
-	} else if (p.stdio) {
-		invocation.stdio = p.stdio;
-		invocation.evaluate = function(result) {
-			//	TODO	should standard rhino/shell behave this way?
-			if (result.status != 0) {
-				var error = new Error("Exit status " + result.status + " from " + result.command + " " + result.arguments.join(" "));
-				error.stdio = result.stdio;
-				throw error;
-			} else {
-				return result;
-			}
-		}
-	}
-
-	invocation.command = $context.install;
-	invocation.arguments = args;
-
-	return $context.api.shell.run(invocation);
-};
 
 var parseLog = function(lines) {
 	var parser = /^([a-z]+)\:(?:\s*)(.*)$/;
@@ -134,535 +74,620 @@ var parseLog = function(lines) {
 	return rv;
 };
 
-var Repository = function() {
-	//	reference property defined by implementations
-	this.on = {};
+var Installation = function(environment) {
+	var shell = function(p) {
+		var invocation = {};
 
-	this.clone = function(p) {
-		if (this.on.access) this.on.access.call(this);
-		var todir = (function(p) {
-			if (p.directory === true && p.pathname) return p;
-			if (p.createDirectory) {
-				return p.createDirectory({
-					ifExists: function(dir) {
-						return false;
-					}
-				});
+		var args = [];
+
+		if (p.config) {
+			for (var x in p.config) {
+				args.push("--config", x + "=" + p.config[x]);
 			}
-			if (p.to) return arguments.callee(p.to);
-			throw new TypeError("Argument must be directory or pathname")
-		})(p);
-		return shell({
-			command: "clone",
-			arguments: [this.reference, todir.toString()],
-			config: (p && p.config) ? p.config : {},
-			evaluate: function(result) {
-				if (result.status != 0) {
-					//	TODO	develop test for clone error and then switch this to use newer API
-					throw new Error(result.err + " args=" + result.arguments.join(","));
+		}
+		if (p.repository) {
+			args.push("-R", p.repository.reference);
+			if (p.repository.config) {
+				for (var x in p.repository.config) {
+					args.push("--config", x + "=" + p.repository.config[x]);
 				}
-				var rv = new $exports.Repository({ local: todir });
-				//	Manually emulate hg 2.4+ behavior of updating to the @ bookmark. Should be merely redundant if hg client
-				//	is version 2.4+. Could, I suppose, check to see whether revision is the same as bookmark before update command
-				var bookmarks = rv.bookmarks();
-				var magic = $context.api.js.Array.choose(bookmarks, $context.api.js.Filter.property("name", $context.api.js.Filter.equals("@")));
-				if (magic && !p.update) {
-					rv.update({
-						revision: magic.changeset.global
+			}
+		}
+		args.push(p.command);
+		args.push.apply(args,p.arguments);
+
+		if (p.directory) {
+			invocation.directory = p.directory;
+		}
+
+		if (p.evaluate) {
+			invocation.stdio = {
+				output: String,
+				error: String
+			}
+			//	TODO	get rid of out/err below and reference now-standard rhino/shell result.stdio in callers
+			invocation.evaluate = function(result) {
+				var myresult = $context.api.js.Object.set({}, result, (result.stdio) ? {
+					out: result.stdio.output,
+					err: result.stdio.error
+				} : {});
+				return p.evaluate(myresult);
+			}
+		} else if (p.stdio) {
+			invocation.stdio = p.stdio;
+			invocation.evaluate = function(result) {
+				//	TODO	should standard rhino/shell behave this way?
+				if (result.status != 0) {
+					var error = new Error("Exit status " + result.status + " from " + result.command + " " + result.arguments.join(" "));
+					error.stdio = result.stdio;
+					throw error;
+				} else {
+					return result;
+				}
+			}
+		}
+
+		invocation.command = environment.install;
+		invocation.arguments = args;
+
+		return $context.api.shell.run(invocation);
+	};
+
+	var rv = {};
+
+	var Repository = function() {
+		//	reference property defined by implementations
+		this.on = {};
+
+		this.clone = function(p) {
+			if (this.on.access) this.on.access.call(this);
+			var todir = (function(p) {
+				if (p.directory === true && p.pathname) return p;
+				if (p.createDirectory) {
+					return p.createDirectory({
+						ifExists: function(dir) {
+							return false;
+						}
 					});
 				}
-				return rv;
-			}
-		});
+				if (p.to) return arguments.callee(p.to);
+				throw new TypeError("Argument must be directory or pathname")
+			})(p);
+			return shell({
+				command: "clone",
+				arguments: [this.reference, todir.toString()],
+				config: (p && p.config) ? p.config : {},
+				evaluate: function(result) {
+					if (result.status != 0) {
+						//	TODO	develop test for clone error and then switch this to use newer API
+						throw new Error(result.err + " args=" + result.arguments.join(","));
+					}
+					var rv = new LocalRepository(todir);
+					//	Manually emulate hg 2.4+ behavior of updating to the @ bookmark. Should be merely redundant if hg client
+					//	is version 2.4+. Could, I suppose, check to see whether revision is the same as bookmark before update command
+					var bookmarks = rv.bookmarks();
+					var magic = $context.api.js.Array.choose(bookmarks, $context.api.js.Filter.property("name", $context.api.js.Filter.equals("@")));
+					if (magic && !p.update) {
+						rv.update({
+							revision: magic.changeset.global
+						});
+					}
+					return rv;
+				}
+			});
+		};
+
+		this.identify = function(p) {
+			if (this.on.access) this.on.access.call(this);
+			//	TODO	hg help identify claims there is a way that this can include two parent identifiers, but cannot so far reproduce
+			//			that
+			var local = Boolean(this.directory);
+			var rv = shell({
+				command: "identify",
+				arguments: ((local) ? ["-ni"] : []).concat([this.reference]),
+				evaluate: function(result) {
+					var output = result.out.split("\n").slice(0,-1)[0];
+					if (local) {
+						var match = /([0-9a-f]+)(\+?)\s+(\-?[0-9]+)(\+?)/.exec(output);
+						if (!match) {
+							throw new Error("No match for: [" + output + "]");
+						}
+						return {
+							changeset: {
+								global: match[1],
+								local: Number(match[3])
+							},
+							modified: Boolean(match[2])
+						};
+					} else {
+						return { changeset: { global: output } };
+					}
+				}
+			});
+			return rv;
+		};
 	};
 
-	this.identify = function(p) {
-		if (this.on.access) this.on.access.call(this);
-		//	TODO	hg help identify claims there is a way that this can include two parent identifiers, but cannot so far reproduce
-		//			that
-		var local = Boolean(this.directory);
-		var rv = shell({
-			command: "identify",
-			arguments: ((local) ? ["-ni"] : []).concat([this.reference]),
-			evaluate: function(result) {
-				var output = result.out.split("\n").slice(0,-1)[0];
-				if (local) {
-					var match = /([0-9a-f]+)(\+?)\s+(\-?[0-9]+)(\+?)/.exec(output);
-					if (!match) {
-						throw new Error("No match for: [" + output + "]");
+	var LocalRepository = function(dir) {
+		if (dir == null) throw new RangeError("Attempt to create Repository with null dir");
+		if (!dir.getSubdirectory) throw new TypeError("dir " + dir + " must be a directory");
+		if (!dir.getSubdirectory(".hg")) throw new RangeError("No repository located at: " + dir);
+
+		Repository.call(this);
+
+		this.toString = function() {
+			return "hg repository: " + dir.pathname.toString();
+		}
+
+		this.reference = toNativePath(dir.pathname);
+
+		this.__defineGetter__("directory", function() {
+			return dir;
+		});
+
+		this.heads = function() {
+			return shell({
+				repository: this,
+				command: "heads",
+				evaluate: function(result) {
+					return parseLog(result.stdio.output.split("\n"));
+				}
+			});
+		};
+
+		this.parents = function() {
+			return shell({
+				repository: this,
+				command: "parents",
+				evaluate: function(result) {
+					return parseLog(result.stdio.output.split("\n"));
+				}
+			});
+		}
+
+		this.status = function(p) {
+			var subrepositories = (function(dir,p) {
+				if (p && p.subrepos === true) return true;
+				if (p && p.subrepos === false) return false;
+				return Boolean(dir.getFile(".hgsub"));
+			})(dir,p);
+			var args = [];
+			if (subrepositories) {
+				args.push("-S");
+			}
+			return shell({
+				repository: this,
+				command: "status",
+				arguments: args,
+				evaluate: function(result) {
+					var lines = result.out.split("\n").slice(0,-1);
+					var rv = {};
+					lines.forEach( function(line) {
+						rv[line.substring(2).replace(/\\/g, "/")] = line.substring(0,1);
+					});
+					return rv;
+				}
+			});
+		};
+
+		this.add = function(p) {
+			var args = [];
+			if (p.files) {
+				args.push.apply(args,p.files);
+			}
+			return shell({
+				repository: this,
+				command: "add",
+				arguments: args
+			});
+		}
+
+		this.commit = function(p) {
+			if (typeof(p) == "undefined") throw new TypeError("Required: argument to commit.");
+			if (p === null) throw new TypeError("Required: non-null argument to commit.");
+			if (typeof(p) != "object") throw new TypeError("Required: object argument to commit.");
+			if (!p.message) throw new TypeError("Required: message property representing commit message.");
+			var args = [];
+			for (var x in p) {
+				if (x == "addremove") {
+					args.push("--addremove");
+				} else if (x == "message") {
+					args.push("--message",p[x]);
+				}
+			};
+			if (p.files) {
+				args.push.apply(args,p.files);
+			}
+			return shell({
+				repository: this,
+				command: "commit",
+				arguments: args
+			});
+		};
+
+		this.update = function(p) {
+			var args = [];
+			if (p && p.revision) {
+				args.push(p.revision);
+			}
+			return shell({
+				repository: this,
+				command: "update",
+				arguments: args
+			});
+		};
+
+		this.merge = function(p) {
+			var args = [];
+			if (p && p.revision) {
+				args.push("-r", p.revision);
+			}
+			return shell({
+				repository: this,
+				arguments: args,
+				command: "merge"
+			});
+		}
+
+		this.tip = function() {
+			return shell({
+				repository: this,
+				command: "tip",
+				evaluate: function(result) {
+					return parseLog(result.stdio.output.split("\n"))[0];
+				}
+			});
+		};
+
+		$context.api.js.lazy(this,"paths",function() {
+			return shell({
+				repository: this,
+				command: "paths",
+				evaluate: function(result) {
+					var rv = {};
+					var parser = /^(\w+)(?:\s*)\=(?:\s*)(.*)$/;
+					var lines = result.out.split("\n");
+					lines.forEach( function(line) {
+						if (line != "") {
+							var parsed = parser.exec(line);
+
+							var pathnameToRepository = function(pathname) {
+								if (pathname.directory && pathname.directory.getSubdirectory(".hg")) {
+									return new LocalRepository(pathname.directory);
+								} else {
+									throw new TypeError("Does not appear to be a local repository location: " + pathname);
+								}
+							};
+
+							if (
+								new RegExp("^http(s?)://").test(parsed[2])
+								|| new RegExp("^ssh://").test(parsed[2])
+							) {
+								rv[parsed[1]] = new RemoteRepository(parsed[2]);
+							} else if (new RegExp("^file://").test(parsed[2])) {
+								var _file = new Packages.java.io.File(new Packages.java.net.URI(parsed[2]));
+								//	the rhino/file module may have a better way to convert a java.io.File to a pathname
+								var pathname = $context.api.file.filesystems.os.Pathname(String(_file.getPath()));
+								rv[parsed[1]] = pathnameToRepository(pathname);
+							} else {
+								//	Hmmm ... may need this for unresolved references
+								var pathname = $context.api.file.filesystems.os.Pathname(parsed[2]);
+								if ($context.api.file.filesystems.cygwin) {
+									try {
+										pathname = $context.api.file.filesystems.cygwin.toUnix(pathname);
+									} catch (e) {
+										//	TODO	emit a log message? Only known case currently is when "device is not ready"
+									}
+								}
+								rv[parsed[1]] = pathnameToRepository(pathname);
+							}
+						}
+					});
+					return rv;
+				}
+			});
+		});
+
+		var inout = (function(target) {
+			return function(verb,m) {
+				var MyError = function(p) {
+					var rv = new Error();
+					jsh.js.Object.set(rv,p);
+					return rv;
+				}
+
+				var parse = function(result) {
+					if (result.err == "abort: repository is unrelated\n") {
+						throw new MyError({ unrelated: true });
+					} else if (result.status != 0) {
+						if (/^abort\: repository (.*) not found\!\n$/.test(result.err)) {
+							throw new MyError({ notFound: true });
+						}
 					}
 					return {
-						changeset: {
-							global: match[1],
-							local: Number(match[3])
-						},
-						modified: Boolean(match[2])
+						status: result.status,
+						err: result.err,
+						lines: result.out.split("\n")
 					};
-				} else {
-					return { changeset: { global: output } };
+				};
+
+				var targetargs = (function() {
+					if (!m) return [];
+					var other;
+					if (verb == "incoming") other = m.source;
+					if (verb == "outgoing") other = m.destination;
+					return (other) ? [other.reference] : [];
+				})();
+
+				var config = (m && m.config) ? m.config : {};
+
+				if (m && m.revision) {
+					targetargs.push("-r", m.revision);
 				}
-			}
-		});
-		return rv;
-	};
-};
 
-var LocalRepository = function(dir) {
-	if (dir == null) throw new RangeError("Attempt to create Repository with null dir");
-	if (!dir.getSubdirectory(".hg")) throw new RangeError("No repository located at: " + dir);
-
-	Repository.call(this);
-
-	this.toString = function() {
-		return "hg repository: " + dir.pathname.toString();
-	}
-
-	this.reference = toNativePath(dir.pathname);
-
-	this.__defineGetter__("directory", function() {
-		return dir;
-	});
-
-	this.heads = function() {
-		return shell({
-			repository: this,
-			command: "heads",
-			evaluate: function(result) {
-				return parseLog(result.stdio.output.split("\n"));
-			}
-		});
-	};
-
-	this.parents = function() {
-		return shell({
-			repository: this,
-			command: "parents",
-			evaluate: function(result) {
-				return parseLog(result.stdio.output.split("\n"));
-			}
-		});
-	}
-
-	this.status = function(p) {
-		var subrepositories = (function(dir,p) {
-			if (p && p.subrepos === true) return true;
-			if (p && p.subrepos === false) return false;
-			return Boolean(dir.getFile(".hgsub"));
-		})(dir,p);
-		var args = [];
-		if (subrepositories) {
-			args.push("-S");
-		}
-		return shell({
-			repository: this,
-			command: "status",
-			arguments: args,
-			evaluate: function(result) {
-				var lines = result.out.split("\n").slice(0,-1);
-				var rv = {};
-				lines.forEach( function(line) {
-					rv[line.substring(2).replace(/\\/g, "/")] = line.substring(0,1);
-				});
-				return rv;
-			}
-		});
-	};
-
-	this.add = function(p) {
-		var args = [];
-		if (p.files) {
-			args.push.apply(args,p.files);
-		}
-		return shell({
-			repository: this,
-			command: "add",
-			arguments: args
-		});
-	}
-
-	this.commit = function(p) {
-		if (typeof(p) == "undefined") throw new TypeError("Required: argument to commit.");
-		if (p === null) throw new TypeError("Required: non-null argument to commit.");
-		if (typeof(p) != "object") throw new TypeError("Required: object argument to commit.");
-		if (!p.message) throw new TypeError("Required: message property representing commit message.");
-		var args = [];
-		for (var x in p) {
-			if (x == "addremove") {
-				args.push("--addremove");
-			} else if (x == "message") {
-				args.push("--message",p[x]);
-			}
-		};
-		if (p.files) {
-			args.push.apply(args,p.files);
-		}
-		return shell({
-			repository: this,
-			command: "commit",
-			arguments: args
-		});
-	};
-
-	this.update = function(p) {
-		var args = [];
-		if (p && p.revision) {
-			args.push(p.revision);
-		}
-		return shell({
-			repository: this,
-			command: "update",
-			arguments: args
-		});
-	};
-
-	this.merge = function(p) {
-		var args = [];
-		if (p && p.revision) {
-			args.push("-r", p.revision);
-		}
-		return shell({
-			repository: this,
-			arguments: args,
-			command: "merge"
-		});
-	}
-
-	this.tip = function() {
-		return shell({
-			repository: this,
-			command: "tip",
-			evaluate: function(result) {
-				return parseLog(result.stdio.output.split("\n"))[0];
-			}
-		});
-	};
-
-	$context.api.js.lazy(this,"paths",function() {
-		return shell({
-			repository: this,
-			command: "paths",
-			evaluate: function(result) {
-				var rv = {};
-				var parser = /^(\w+)(?:\s*)\=(?:\s*)(.*)$/;
-				var lines = result.out.split("\n");
-				lines.forEach( function(line) {
-					if (line != "") {
-						var parsed = parser.exec(line);
-
-						var pathnameToRepository = function(pathname) {
-							if (pathname.directory && pathname.directory.getSubdirectory(".hg")) {
-								return new $exports.Repository({ local: pathname.directory });
-							} else {
-								throw new TypeError("Does not appear to be a local repository location: " + pathname);
-							}
-						};
-
-						if (
-							new RegExp("^http(s?)://").test(parsed[2])
-							|| new RegExp("^ssh://").test(parsed[2])
-						) {
-							rv[parsed[1]] = new $exports.Repository({ url: parsed[2] });
-						} else if (new RegExp("^file://").test(parsed[2])) {
-							var _file = new Packages.java.io.File(new Packages.java.net.URI(parsed[2]));
-							//	the rhino/file module may have a better way to convert a java.io.File to a pathname
-							var pathname = api.file.filesystems.os.Pathname(String(_file.getPath()));
-							rv[parsed[1]] = pathnameToRepository(pathname);
+				return shell({
+					repository: target,
+					command: verb,
+					arguments: targetargs,
+					config: config,
+					evaluate: function(result) {
+						var parsed = parse(result);
+						if ( (parsed.lines[1] == "no changes found" || parsed.lines[2] == "no changes found") && parsed.status == 1) {
+							return [];
+						} else if (/abort\: http authorization/.test(parsed.err)) {
+							var other = (targetargs[0]) ? targetargs[0] : target.paths["default"].reference;
+							var e = new Error("HTTP authorization required for " + other);
+							e.unauthorized = true;
+							throw e;
 						} else {
-							//	Hmmm ... may need this for unresolved references
-							var pathname = api.file.filesystems.os.Pathname(parsed[2]);
-							if (api.file.filesystems.cygwin) {
-								try {
-									pathname = api.file.filesystems.cygwin.toUnix(pathname);
-								} catch (e) {
-									//	TODO	emit a log message? Only known case currently is when "device is not ready"
+							if (parsed.err && parsed.err.split("\n")[0] == "abort: error: nodename nor servname provided, or not known") {
+								var e = new Error("Unable to use DNS to identify repository server");
+								e.unreachable = true;
+								throw e;
+							}
+							if (!/^comparing with /.test(parsed.lines[0])) throw new Error("Wrong line 0: " + parsed.lines[0]);
+							//	TODO	probably need to review this with some test cases: what is status when no changes found?
+							if (parsed.status != 0) {
+								throw new Error("Status: " + parsed.status + " err:\n" + parsed.err);
+							}
+							if (parsed.lines[1] != "searching for changes" && parsed.lines[1] != "no changes found") {
+								var log = target.log();
+								if (log.length) {
+									throw new Error("Wrong line 1: " + parsed.lines[1] + "\nLines:\n" + parsed.lines.join("\n"));
+								} else {
+									//	if this is at changeset 0, for some reason the above output line is omitted
+									//	TODO	probably need to splice it out; need test case
 								}
 							}
-							rv[parsed[1]] = pathnameToRepository(pathname);
+							//	TODO	this may or may not work, depending on variations in output
+							return parseLog(parsed.lines.slice(2));
 						}
 					}
 				});
-				return rv;
-			}
-		});
-	});
-
-	var inout = (function(target) {
-		return function(verb,m) {
-			var MyError = function(p) {
-				var rv = new Error();
-				jsh.js.Object.set(rv,p);
-				return rv;
-			}
-
-			var parse = function(result) {
-				if (result.err == "abort: repository is unrelated\n") {
-					throw new MyError({ unrelated: true });
-				} else if (result.status != 0) {
-					if (/^abort\: repository (.*) not found\!\n$/.test(result.err)) {
-						throw new MyError({ notFound: true });
-					}
-				}
-				return {
-					status: result.status,
-					err: result.err,
-					lines: result.out.split("\n")
-				};
 			};
+		})(this);
 
-			var targetargs = (function() {
-				if (!m) return [];
-				var other;
-				if (verb == "incoming") other = m.source;
-				if (verb == "outgoing") other = m.destination;
-				return (other) ? [other.reference] : [];
-			})();
+		this.outgoing = function(m) {
+			return inout("outgoing",m);
+		}
 
-			var config = (m && m.config) ? m.config : {};
+		this.incoming = function(m) {
+			return inout("incoming",m);
+		}
 
-			if (m && m.revision) {
-				targetargs.push("-r", m.revision);
+		this.log = function(p) {
+			var args = [];
+			if (p && p.revision) {
+				args.push("-r", p.revision);
 			}
-
 			return shell({
-				repository: target,
-				command: verb,
-				arguments: targetargs,
-				config: config,
+				repository: this,
+				command: "log",
+				arguments: args,
 				evaluate: function(result) {
-					var parsed = parse(result);
-					if ( (parsed.lines[1] == "no changes found" || parsed.lines[2] == "no changes found") && parsed.status == 1) {
-						return [];
-					} else if (/abort\: http authorization/.test(parsed.err)) {
-						var other = (targetargs[0]) ? targetargs[0] : target.paths["default"].reference;
-						var e = new Error("HTTP authorization required for " + other);
-						e.unauthorized = true;
-						throw e;
-					} else {
-						if (parsed.err && parsed.err.split("\n")[0] == "abort: error: nodename nor servname provided, or not known") {
-							var e = new Error("Unable to use DNS to identify repository server");
-							e.unreachable = true;
-							throw e;
-						}
-						if (!/^comparing with /.test(parsed.lines[0])) throw new Error("Wrong line 0: " + parsed.lines[0]);
-						//	TODO	probably need to review this with some test cases: what is status when no changes found?
-						if (parsed.status != 0) {
-							throw new Error("Status: " + parsed.status + " err:\n" + parsed.err);
-						}
-						if (parsed.lines[1] != "searching for changes" && parsed.lines[1] != "no changes found") {
-							var log = target.log();
-							if (log.length) {
-								throw new Error("Wrong line 1: " + parsed.lines[1] + "\nLines:\n" + parsed.lines.join("\n"));
-							} else {
-								//	if this is at changeset 0, for some reason the above output line is omitted
-								//	TODO	probably need to splice it out; need test case
-							}
-						}
-						//	TODO	this may or may not work, depending on variations in output
-						return parseLog(parsed.lines.slice(2));
-					}
+					return parseLog(result.stdio.output.split("\n"));
 				}
 			});
 		};
-	})(this);
 
-	this.outgoing = function(m) {
-		return inout("outgoing",m);
-	}
-
-	this.incoming = function(m) {
-		return inout("incoming",m);
-	}
-
-	this.log = function(p) {
-		var args = [];
-		if (p && p.revision) {
-			args.push("-r", p.revision);
-		}
-		return shell({
-			repository: this,
-			command: "log",
-			arguments: args,
-			evaluate: function(result) {
-				return parseLog(result.stdio.output.split("\n"));
-			}
-		});
-	};
-
-	this.bookmarks = function(p) {
-		if (p && p.name) {
-			if (p.delete) {
-				return shell({
-					repository: this,
-					command: "bookmarks",
-					arguments: ["-d", p.name]
+		this.bookmarks = function(p) {
+			if (p && p.name) {
+				if (p.delete) {
+					return shell({
+						repository: this,
+						command: "bookmarks",
+						arguments: ["-d", p.name]
+					});
+				} else {
+					var revision = (p.revision) ? ["-r", p.revision] : [];
+					return shell({
+						repository: this,
+						command: "bookmarks",
+						arguments: ((p.force) ? ["--force"] : []).concat((p.inactive) ? ["--inactive"] : []).concat(revision).concat([p.name])
+					});
+				}
+			} else if (p && p.name === null) {
+				var active = $context.api.js.Array.choose(this.bookmarks(), function(bookmark) {
+					return bookmark.active;
 				});
-			} else {
-				var revision = (p.revision) ? ["-r", p.revision] : [];
-				return shell({
-					repository: this,
-					command: "bookmarks",
-					arguments: ((p.force) ? ["--force"] : []).concat((p.inactive) ? ["--inactive"] : []).concat(revision).concat([p.name])
-				});
+				if (active) {
+					return shell({
+						repository: this,
+						command: "bookmarks",
+						arguments: ["-i", active.name]
+					});
+				}
 			}
-		} else if (p && p.name === null) {
-			var active = $context.api.js.Array.choose(this.bookmarks(), function(bookmark) {
-				return bookmark.active;
+			return shell({
+				repository: this,
+				command: "bookmarks",
+				evaluate: function(result) {
+					var lines = result.stdio.output.split("\n");
+					var matcher = /(?:(\*)\s+)?(\S+)\s+(\S+)\:(\S+)/;
+					var nonblank = lines
+						.filter(function(line) {
+							return Boolean(line);
+						})
+					;
+					if (nonblank.length == 1 && nonblank[0] == "no bookmarks set") return [];
+					var rv = nonblank
+						.map(function(line) {
+							var match = matcher.exec(line);
+							if (!match) throw new TypeError("No match for: [" + line + "]");
+							return {
+								active: Boolean(match[1]),
+								name: match[2],
+								changeset: {
+									global: match[4],
+									local: Number(match[3])
+								}
+							};
+						})
+					;
+					rv.forEach(function(bookmark) {
+						if (isNaN(Number(bookmark.name))) {
+							rv[bookmark.name] = bookmark;
+						}
+					});
+					return rv;
+				}
 			});
-			if (active) {
-				return shell({
-					repository: this,
-					command: "bookmarks",
-					arguments: ["-i", active.name]
-				});
-			}
 		}
-		return shell({
-			repository: this,
-			command: "bookmarks",
-			evaluate: function(result) {
-				var lines = result.stdio.output.split("\n");
-				var matcher = /(?:(\*)\s+)?(\S+)\s+(\S+)\:(\S+)/;
-				var nonblank = lines
-					.filter(function(line) {
-						return Boolean(line);
-					})
-				;
-				if (nonblank.length == 1 && nonblank[0] == "no bookmarks set") return [];
-				var rv = nonblank
-					.map(function(line) {
-						var match = matcher.exec(line);
-						if (!match) throw new TypeError("No match for: [" + line + "]");
-						return {
-							active: Boolean(match[1]),
-							name: match[2],
-							changeset: {
-								global: match[4],
-								local: Number(match[3])
-							}
-						};
-					})
-				;
-				rv.forEach(function(bookmark) {
-					if (isNaN(Number(bookmark.name))) {
-						rv[bookmark.name] = bookmark;
-					}
-				});
-				return rv;
-			}
-		});
-	}
 
-	this.pull = function(p) {
-		var source = (p && p.source) ? p.source : null;
-		//	TODO	should fall back to default and/or default-push to call on.access
-		if (source && source.on.access) {
-			source.on.access.call(source);
+		this.pull = function(p) {
+			var source = (p && p.source) ? p.source : null;
+			//	TODO	should fall back to default and/or default-push to call on.access
+			if (source && source.on.access) {
+				source.on.access.call(source);
+			}
+			var args = [];
+			if (p && p.source) {
+				args.push(p.source.reference);
+			}
+			return shell({
+				repository: this,
+				config: (p && p.config) ? p.config : {},
+				stdio: (p && p.stdio) ? p.stdio : void(0),
+				command: "pull",
+				arguments: args
+			});
 		}
-		var args = [];
-		if (p && p.source) {
-			args.push(p.source.reference);
-		}
-		return shell({
-			repository: this,
-			config: (p && p.config) ? p.config : {},
-			stdio: (p && p.stdio) ? p.stdio : void(0),
-			command: "pull",
-			arguments: args
-		});
-	}
 
-	this.push = function(p) {
-		var destination = (p && p.destination) ? p.destination : null;
-		//	TODO	should fall back to default and/or default-push to call on.access
-		if (destination && destination.on.access) {
-			destination.on.access.call(destination);
+		this.push = function(p) {
+			var destination = (p && p.destination) ? p.destination : null;
+			//	TODO	should fall back to default and/or default-push to call on.access
+			if (destination && destination.on.access) {
+				destination.on.access.call(destination);
+			}
+			var args = [];
+			if (p && p.force) {
+				args.push("-f");
+			}
+			if (p && p.revision) {
+				args.push("-r", p.revision);
+			}
+			if (p && p.destination) {
+				args.push(p.destination.reference);
+			}
+			return shell({
+				repository: this,
+				config: (p && p.config) ? p.config : {},
+				stdio: (p && p.stdio) ? p.stdio : void(0),
+				command: "push",
+				arguments: args
+			});
+		};
+
+		this.archive = function(p) {
+			var args = [];
+			if (p.exclude) {
+				if (p.exclude.forEach) {
+					p.exclude.forEach(function(exclude) {
+						args.push("--exclude",exclude);
+					})
+				} else {
+					//	TODO	verify this is a string
+					args.push("--exclude",p.exclude);
+				}
+			}
+			args.push(String(p.destination));
+			return shell({
+				repository: this,
+				command: "archive",
+				arguments: args
+			});
 		}
-		var args = [];
-		if (p && p.force) {
-			args.push("-f");
+
+		this.shell = function(p) {
+			return shell($context.api.js.Object.set({}, { repository: this }, p));
 		}
-		if (p && p.revision) {
-			args.push("-r", p.revision);
+
+		//	TODO	it is unclear what various forms of the .hgsub entry format are allowed, and how they work. So not documenting this
+		//			API
+		this.getSubrepositories = function() {
+			if (!dir.getFile(".hgsub")) return [];
+			var hgsub = new $exports.Hgrc({ file: dir.getFile(".hgsub"), section: "" });
+			var entries = hgsub.get();
+			var rv = [];
+			for (var x in entries) {
+				if (/^subpaths\./.test(x)) {
+					//	ignore
+				} else {
+					var sub = dir.getSubdirectory(x);
+					if (!sub) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(entries));
+					rv.push(new LocalRepository(dir.getSubdirectory(x)));
+				}
+			}
+			return rv;
 		}
-		if (p && p.destination) {
-			args.push(p.destination.reference);
-		}
-		return shell({
-			repository: this,
-			config: (p && p.config) ? p.config : {},
-			stdio: (p && p.stdio) ? p.stdio : void(0),
-			command: "push",
-			arguments: args
-		});
 	};
 
-	this.archive = function(p) {
-		var args = [];
-		if (p.exclude) {
-			if (p.exclude.forEach) {
-				p.exclude.forEach(function(exclude) {
-					args.push("--exclude",exclude);
-				})
-			} else {
-				//	TODO	verify this is a string
-				args.push("--exclude",p.exclude);
-			}
-		}
-		args.push(String(p.destination));
-		return shell({
-			repository: this,
-			command: "archive",
-			arguments: args
-		});
-	}
+	var RemoteRepository = function(url) {
+		Repository.call(this);
+		this.reference = url;
 
-	this.shell = function(p) {
-		return shell($context.api.js.Object.set({}, { repository: this }, p));
-	}
-
-	//	TODO	it is unclear what various forms of the .hgsub entry format are allowed, and how they work. So not documenting this
-	//			API
-	this.getSubrepositories = function() {
-		if (!dir.getFile(".hgsub")) return [];
-		var hgsub = new $exports.Hgrc({ file: dir.getFile(".hgsub"), section: "" });
-		var entries = hgsub.get();
-		var rv = [];
-		for (var x in entries) {
-			if (/^subpaths\./.test(x)) {
-				//	ignore
-			} else {
-				var sub = dir.getSubdirectory(x);
-				if (!sub) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(entries));
-				rv.push(new LocalRepository(dir.getSubdirectory(x)));
-			}
-		}
-		return rv;
-	}
-};
-
-var RemoteRepository = function(url) {
-	Repository.call(this);
-	this.reference = url;
-
-	this.toString = function() {
-		return "hg repository: " + url;
+		this.toString = function() {
+			return "hg repository: " + url;
+		};
 	};
+
+	rv.init = function(dir) {
+		shell({
+			command: "init",
+			directory: dir
+		});
+		return new LocalRepository(dir);
+	};
+
+	rv.Repository = function(p) {
+		if (typeof(p) == "object" && p) {
+			if (p.local) {
+				return new LocalRepository(p.local);
+			} else if (p.url) {
+				return new RemoteRepository(p.url);
+			} else if (p.directory && p.pathname) {
+				return new LocalRepository(p);
+			} else {
+				throw new Error("Required: local or url");
+			}
+		} else {
+			throw new TypeError();
+		}
+	}
+
+	return rv;
 };
+
+var installation = Installation({
+	install: $context.install
+});
+
+$exports.Installation = function(o) {
+	return Installation(o);
+}
 
 $exports.Repository = function(p) {
-	if (typeof(p) == "object" && p) {
-		if (p.local) {
-			return new LocalRepository(p.local);
-		} else if (p.url) {
-			return new RemoteRepository(p.url);
-		} else if (p.directory && p.pathname) {
-			return new LocalRepository(p);
-		} else {
-			throw new Error("Required: local or url");
-		}
-	} else {
-		throw new TypeError();
-	}
+	return new installation.Repository(p);
 
 	this.__defineGetter__("changesets", function() {
 		var rv = {};
@@ -790,11 +815,11 @@ $exports.Repository = function(p) {
 	};
 
 	this.outgoing = function(destination,m) {
-		return inout("outgoing",destination,api.js.Object.set({},p,m));
+		return inout("outgoing",destination,$context.api.js.Object.set({},p,m));
 	}
 
 	this.incoming = function(destination,m) {
-		return inout("incoming",destination,api.js.Object.set({},p,m));
+		return inout("incoming",destination,$context.api.js.Object.set({},p,m));
 	}
 
 	this.pull = function(from) {
@@ -834,11 +859,12 @@ $exports.Repository = function(p) {
 };
 
 $exports.init = function(dir) {
-	shell({
-		command: "init",
-		directory: dir
-	});
-	return new $exports.Repository({ local: dir });
+	return installation.init(dir);
+//	shell({
+//		command: "init",
+//		directory: dir
+//	});
+//	return new $exports.Repository({ local: dir });
 };
 
 $exports.Hgrc = function(p) {

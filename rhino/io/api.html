@@ -954,9 +954,9 @@ END LICENSE
 						}
 					}
 					var loader = new module.Loader(sources);
-					verify(loader).evaluate(function() { return this.run; }).isNotEqualTo(null);
+					verify(loader).evaluate(function() { return this.run; }).is.not.equalTo(null);
 					var child = new loader.Child("prefix/");
-					verify(child).evaluate(function() { return this.run; }).isNotEqualTo(null);
+					verify(child).evaluate(function() { return this.run; }).is.not.equalTo(null);
 				</script>
 			</li>
 

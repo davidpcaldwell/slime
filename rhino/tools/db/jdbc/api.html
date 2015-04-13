@@ -1,0 +1,109 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME JDK interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>Slime JDBC API</title>
+		<link rel="stylesheet" type="text/css" href="http://slime.googlecode.com/hg/loader/api/api.css" />
+		<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+	</head>
+	<body>
+		<div>
+			Uses presence/absence of classes to provide implementations for <a href="derby/api.html">Derby</a>,
+			<a href="mysql/api.html">MySQL</a>, PostgreSQL.
+		</div>
+		<script type="application/x.jsapi#context">
+			(function() {
+				if (jsh.shell.java.home.getSubdirectory("db")) {
+					jsh.loader.java.add(jsh.shell.java.home.getRelativePath("db/lib/derby.jar"));
+				} else if (jsh.shell.java.home.getRelativePath("../db")) {
+					jsh.loader.java.add(jsh.shell.java.home.getRelativePath("../db/lib/derby.jar"));
+				}
+				return new function() {
+					this.getJavaClass = function(name) {
+						return jsh.java.getClass(name);
+					}
+
+					this.api = {
+						js: jsh.js,
+						java: jsh.java,
+						io: jsh.io,
+						debug: jsh.debug
+					};
+				}
+			})()
+		</script>
+		<div jsapi:id="blob">
+			<script type="application/x.jsapi#initialize"><![CDATA[
+				scope.blob = function(schema,test) {
+					var table = schema.getTable({ name: "DATA" });
+					test(table != null);
+					var bytes = [0,1,2,3,4,5,6,7,8,9];
+					var _array = jsh.java.Array.create({
+						type: Packages.java.lang.Byte.TYPE,
+						array: bytes.map(function(js) {
+							return new Packages.java.lang.Byte(js);
+						})
+					});
+					var stream = jsh.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_array));
+
+					var inserted = false;
+					schema.perform(function(context) {
+						table.insert({
+							a: 1,
+							b: stream
+						});
+						inserted = true;
+					});
+					test(inserted);
+
+					var completed = false;
+					schema.perform(function(context) {
+						var rows = context.createQuery({ sql: "SELECT * FROM DATA" }).toArray();
+						test(rows.length == 1);
+						test(rows[0].a == 1);
+						if (rows[0].a) {
+							//	TODO	add test for reading inserted blob
+							var _bytes = new Packages.inonit.script.runtime.io.Streams().readBytes(rows[0].b.java.adapt());
+							for (var i=0; i<_bytes.length; i++) {
+								test(_bytes[i] == bytes[i]);
+							}
+						} else {
+							test(false);
+						}
+						completed = true;
+					});
+					test(completed);
+				}
+			]]></script>
+		</div>
+		<script type="application/x.jsapi#tests">
+			if (module.derby) {
+				scenario($jsapi.test("derby/", { module: module.derby }));
+			} else {
+				jsh.shell.echo("Skipping Derby; jsh.shell.java.home = " + jsh.shell.java.home);
+			}
+			if (module.mysql) {
+				if ($jsapi.environment.mysql) {
+					scenario($jsapi.test("mysql/", { module: module.mysql }));
+				} else {
+					jsh.shell.echo("Skipping MySQL: no configuration specified.");
+				}
+			} else {
+				jsh.shell.echo("Skipping MySQL: JDBC driver not present.");
+			}
+			test(1 == 1);
+		</script>
+	</body>
+</html>
