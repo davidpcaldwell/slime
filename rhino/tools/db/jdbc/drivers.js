@@ -26,6 +26,10 @@ var types = new function() {
 
 	var VARCHAR = function(precision) {
 		return new function() {
+			this.toString = function() {
+				return "VARCHAR(" + precision + ")";
+			}
+			
 			this.decode = function(rs,column) {
 				return String(rs.getString(column));
 			};
@@ -39,7 +43,30 @@ var types = new function() {
 		}
 	};
 	
+	var LONGVARCHAR = function(precision) {
+		return new function() {
+			this.toString = function() {
+				return "LONGVARCHAR(" + precision + ")";
+			}
+			
+			this.decode = function(rs,column) {
+				return String(rs.getString(column));
+			};
+		
+			this.cast = function(value) {
+				return cast("LONGVARCHAR(" + precision + ")",value,function(s) {
+					//	TODO	secape
+					return "'" + String(s) + "'";
+				});
+			}
+		}
+	};
+	
 	var INTEGER = new function() {
+		this.toString = function() {
+			return "INTEGER";
+		}
+
 		this.decode = function(rs,column) {
 			return Number(rs.getLong(column));
 		};
@@ -52,6 +79,10 @@ var types = new function() {
 	};
 	
 	var DOUBLE = new function() {
+		this.toString = function() {
+			return "DOUBLE";
+		}
+
 		this.decode = function(rs,column) {
 			return Number(rs.getDouble(column));
 		};
@@ -64,6 +95,10 @@ var types = new function() {
 	};
 	
 	var DECIMAL = function(precision,scale) {
+		this.toString = function() {
+			return "DECIMAL(" + precision + "," + scale + ")";
+		}
+
 		return new function() {
 			this.decode = function(rs,column) {
 				var _bd = rs.getBigDecimal(column);
@@ -73,7 +108,9 @@ var types = new function() {
 	};
 	
 	var TIMESTAMP = new function() {
-		this.string = "TIMESTAMP";
+		this.toString = function() {
+			return "TIMESTAMP";
+		}
 
 		this.decode = function(rs,column) {
 			return new Date( rs.getTimestamp(column).getTime() );
@@ -87,6 +124,10 @@ var types = new function() {
 	};
 	
 	var BLOB = new function() {
+		this.toString = function() {
+			return "BLOB";
+		};
+		
 		this.decode = function(rs,column) {
 			var _blob = rs.getBlob(column);
 			//	TODO	decorate with closure method that fires when input stream closed?
@@ -105,6 +146,10 @@ var types = new function() {
 	};
 	
 	var BIT = new function() {
+		this.toString = function() {
+			return "BIT";
+		};
+		
 		this.decode = function(rs,index) {
 			return Boolean(rs.getBoolean(index));
 		};
@@ -121,6 +166,9 @@ var types = new function() {
 		if (type.code == Types.INTEGER) return INTEGER;
 		if (type.code == Types.SMALLINT) return INTEGER;
 		if (type.code == Types.BIGINT) return INTEGER;
+		if (type.code == Types.REAL) return DOUBLE;
+		if (type.code == Types.LONGVARCHAR) return LONGVARCHAR(type.precision);
+		if (type.code == Types.FLOAT) return DOUBLE;
 		if (type.code == Types.DOUBLE) return DOUBLE;
 		if (type.code == Types.TIMESTAMP) return TIMESTAMP;
 		if (type.code == Types.DECIMAL) return new DECIMAL(type.precision,type.scale);
@@ -765,7 +813,7 @@ var Table = function(c) {
 //		var type = IMPLEMENTATION.TYPES.get(row);
 		//	TODO	write test for scale being correct for DECIMAL types
 		var type = c.dataSource.types.getCodec({ code: row.data_type, precision: row.column_size, scale: row.decimal_digits })
-		if (!type) throw new Error("No type for " + $context.api.js.toLiteral(row) + " using " + c.dataSource.types.getCodec);
+		if (!type) throw new Error("No type for " + row.type_name + " " + $context.api.js.toLiteral(row) + " using " + c.dataSource.types.getCodec);
 		//	TODO	list some sort of DDL here?
 		
 		var yesno = function(s) {
