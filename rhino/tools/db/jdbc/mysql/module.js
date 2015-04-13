@@ -1,12 +1,25 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var types = new function() {
 	var Types = Packages.java.sql.Types;
-	
+
 	var Character = function(precision) {
 		return new function() {
 			this.decode = function(rs,index) {
 				return String(rs.getString(index));
 			}
-		}		
+		}
 	};
 
 	var CHAR = function(precision) {
@@ -16,25 +29,25 @@ var types = new function() {
 	var VARCHAR = function(precision) {
 		return new Character(precision);
 	};
-	
+
 	var Numeric = function() {
 		this.decode = function(rs,index) {
 			return Number(rs.getString(index));
 		}
 	};
-	
+
 	var Bit = function() {
 		this.decode = function(rs,index) {
 			return Boolean(rs.getBoolean(index));
 		}
 	};
-	
+
 	var BIGINT = new Numeric();
 	var BIT = new Bit();
 	var INT = new Numeric();
 	var SMALLINT = new Numeric();
 	var DOUBLE = new Numeric();
-	
+
 	this.getCodec = function(type) {
 //		if (type.code == Types.VARCHAR) return VARCHAR(type.precision);
 		if (type.code == Types.CHAR) return CHAR(type.precision);
@@ -58,10 +71,10 @@ var Catalog = function(p,name) {
 		peer: _ds,
 		types: types
 	});
-	
+
 	$context.Catalog.call(this, {
 	});
-	
+
 	this.getSchemas = function() {
 		var only = new $context.Schema({
 			name: name,
@@ -72,7 +85,7 @@ var Catalog = function(p,name) {
 						this.get = function() {
 							return ds.getConnection();
 						};
-						
+
 						this.release = function(connection) {
 							connection.close();
 						}
@@ -89,21 +102,21 @@ var Catalog = function(p,name) {
 		});
 		return [only];
 	};
-	
+
 	this.name = name;
-	
+
 	this.toString = function() {
 		return "Catalog: " + name;
 	}
-	
+
 	this.rows = function(sql) {
 		return ds.getConnection().createQuery(sql).toArray();
 	}
-	
+
 	this.forEachRow = function(sql,f) {
 		ds.getConnection().createQuery(sql).forEach(f);
 	}
-	
+
 	this.execute = function(sql) {
 		var connection = ds.getConnection();
 		var rv = connection.execute(sql);
@@ -111,7 +124,7 @@ var Catalog = function(p,name) {
 		connection.close();
 		return rv;
 	};
-	
+
 	this.getReferencingKeys = function(name) {
 		return ds.createMetadataQuery(function(metadata) {
 			var table = (name) ? name : null;
@@ -124,18 +137,18 @@ $exports.Database = function(p) {
 	$context.Database.call(this,function(name) {
 		return new Catalog(p,name);
 	});
-	
+
 	var _ds = new Packages.com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
 	if (typeof(p.host) != "undefined") _ds.setServerName(p.host);
 	if (typeof(p.port) != "undefined") _ds.setPort(p.port);
 	_ds.setUser(p.credentials.user);
 	_ds.setPassword(p.credentials.password);
-	
+
 	var ds = new $context.DataSource({
 		peer: _ds,
 		types: types
 	});
-	
+
 	this.getCatalogs = function() {
 		var connection = ds.getConnection();
 		return connection.createMetadataQuery(function(metadata) {
@@ -145,4 +158,3 @@ $exports.Database = function(p) {
 		});
 	};
 }
-

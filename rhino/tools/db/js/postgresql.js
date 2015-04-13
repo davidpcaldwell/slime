@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var $js = $context.$js;
 var log = $context.log;
 
@@ -22,11 +35,11 @@ var IMPLEMENTATION = new function() {
 			for (var i=0; i<count; i++) {
 				columns.push({
 					type: {
-						code: Number(metadata.getColumnType(i+1)), 
+						code: Number(metadata.getColumnType(i+1)),
 						name: String(metadata.getColumnTypeName(i+1)),
-						precision: Number(metadata.getPrecision(i+1)), 
+						precision: Number(metadata.getPrecision(i+1)),
 						scale: Number(metadata.getScale(i+1))
-					}, 
+					},
 					name: String(metadata.getColumnName(i+1))
 				});
 			}
@@ -48,11 +61,11 @@ var IMPLEMENTATION = new function() {
 	var quoteIdentifier = function(string) {
 		return "\"" + string + "\"";
 	}
-	
+
 	var escapeQuote = function(string) {
 		return "'" + string.replace("'", "''", "g") + "'";
 	}
-	
+
 	var cast = function(type,value,toString) {
 		if (typeof(toString) == "undefined") throw "Missing cast toString function";
 		if (value == null) return "NULL";
@@ -60,10 +73,10 @@ var IMPLEMENTATION = new function() {
 		return type + " " + escapeQuote(toString(value));
 		//	return "CAST (" + escapeQuote(string) + " AS " + type + ")";
 	}
-	
+
 	var TIMESTAMP_MASK = "yyyy-MM-dd HH:mm:ss.SSS";
 	var DATE_MASK = "yyyy-MM-dd";
-	
+
 	var $ANY = new function() {
 		this.cast = function(value) {
 			if (value instanceof Date) {
@@ -77,7 +90,7 @@ var IMPLEMENTATION = new function() {
 			}
 		}
 	}
-	
+
 	var VARCHAR = function(precision) {
 		return new function() {
 			this.decode = function(rs,index) {
@@ -89,42 +102,42 @@ var IMPLEMENTATION = new function() {
 			}
 		}
 	}
-	
+
 	var TIMESTAMP = new function() {
 		this.decode = function(rs,index) {
 			return new Date( rs.getTimestamp(index+1).getTime() );
 		}
-		
+
 		this.cast = function(value) {
 			return cast("TIMESTAMP", value, function(value) {
 				return String(new Packages.java.text.SimpleDateFormat(TIMESTAMP_MASK).format( value.getTime() ));
 			} );
 		}
 	}
-	
+
 	var DATE = new function() {
 		var TimeZone = Packages.java.util.TimeZone;
-		
+
 		this.decode = function(rs,index) {
 			return new Date( rs.getTimestamp(index+1).getTime() );
 		}
-		
+
 		var toUtc = function(value) {
 			var formatter = new Packages.java.text.SimpleDateFormat(DATE_MASK);
 			formatter.setTimeZone(TimeZone.getTimeZone("Universal"));
 			return String(formatter.format(value.getTime()));
 		}
-		
+
 		this.cast = function(value) {
 			return cast("DATE", value, toUtc);
 		}
 	}
-	
+
 	var SMALLINT = new function() {
 		this.decode = function(rs,index) {
 			return Number( rs.getInt(index+1) );
 		}
-		
+
 		this.cast = function(value) {
 			return cast("SMALLINT", value, String);
 		}
@@ -149,12 +162,12 @@ var IMPLEMENTATION = new function() {
 			return cast("BIGINT", value, String);
 		}
 	}
-	
+
 	var BOOLEAN = new function() {
 		this.decode = function(rs,index) {
 			return rs.getBoolean(index+1);
 		}
-		
+
 		this.cast = function(value) {
 			return cast("BOOLEAN", value, function(v) { return (v) ? "TRUE" : "FALSE" });
 		}
@@ -162,7 +175,7 @@ var IMPLEMENTATION = new function() {
 
 	var TYPES = new function() {
 		 var $Types = Packages.java.sql.Types;
-		 
+
 		 this.getCodec = function(data) {
 			if (data.code == $Types.VARCHAR) {
 				return VARCHAR(data.precision);
@@ -206,7 +219,7 @@ var IMPLEMENTATION = new function() {
 			return TIMESTAMP;
 		}
 	}
-	
+
 	//	args are properties for data source: server,port,superuser,superpassword
 	this.Database = function(dbsettings) {
 		var createQueryMethod = function(argumentsFactoryMethod) {
@@ -220,9 +233,9 @@ var IMPLEMENTATION = new function() {
 				//debugger;
 				return new Connection(peer.getConnection());
 			}
-			
+
 			var self = this;
-			
+
 			this.executeDdl = function(ddl) {
 				try {
 					var connection = self.getConnection();
@@ -231,7 +244,7 @@ var IMPLEMENTATION = new function() {
 					connection.close();
 				}
 			}
-			
+
 			this.executeStandalone = function(ddl) {
 				try {
 					var connection = new Connection(peer.getConnection(), { standalone: true });
@@ -240,12 +253,12 @@ var IMPLEMENTATION = new function() {
 					connection.close();
 				}
 			}
-			
+
 			var createQueryArguments = function(sql) {
 				return new function() {
 					var connection;
 					var resources;
-					
+
 					this.open = function() {
 						if (!connection) {
 							connection = self.getConnection();
@@ -253,7 +266,7 @@ var IMPLEMENTATION = new function() {
 						}
 						return resources.open();
 					}
-					
+
 					this.close = function() {
 						try {
 							resources.close();
@@ -263,9 +276,9 @@ var IMPLEMENTATION = new function() {
 							connection = null;
 						}
 					}
-				}			
+				}
 			}
-			
+
 			var createMetadataQueryArguments = function(resultSetFactory) {
 				return new function() {
 					var connection;
@@ -290,12 +303,12 @@ var IMPLEMENTATION = new function() {
 					}
 				}
 			}
-			
+
 			this.createMetadataQuery = createQueryMethod(createMetadataQueryArguments);
 			this.createQuery = createQueryMethod(createQueryArguments);
 		}
 		var dataSources = {};
-		
+
 		var getDataSource = function(db,user,password,pool) {
 			var dbid = db + "/" + user;
 			if (!dataSources[dbid]) {
@@ -313,13 +326,13 @@ var IMPLEMENTATION = new function() {
 			}
 			return dataSources[dbid];
 		}
-		
+
 		var Connection = function(peer,mode) {
 			if (!mode) mode = {};
 			if (!mode.standalone) {
 				peer.setAutoCommit(false);
 			}
-			
+
 			var execute = function(sql) {
 				try {
 					var statement = peer.createStatement();
@@ -329,19 +342,19 @@ var IMPLEMENTATION = new function() {
 					statement.close();
 				}
 			}
-			
+
 			this.execute = execute;
-			
+
 //			this.query = function(sql) {
 //				var statement = peer.createStatement();
 //				var rs = peer.executeQuery(sql);
 //			}
-			
+
 			var createQueryArguments = function(sql) {
 				return new function() {
 					var statement;
 					var rs;
-					
+
 					this.open = function() {
 						if (!statement) {
 							if (log) log(sql);
@@ -358,7 +371,7 @@ var IMPLEMENTATION = new function() {
 						}
 						return rs;
 					}
-					
+
 					this.close = function() {
 						try {
 							rs.close();
@@ -371,7 +384,7 @@ var IMPLEMENTATION = new function() {
 				}
 			}
 			this.$createQueryArguments = createQueryArguments;
-			
+
 			var createMetadataQueryArguments = function(resultSetFactory) {
 				return new function() {
 					var rs;
@@ -392,27 +405,27 @@ var IMPLEMENTATION = new function() {
 					}
 				}
 			}
-			
+
 			this.createMetadataQuery = createQueryMethod(createMetadataQueryArguments);
 			this.createQuery = createQueryMethod(createQueryArguments);
-			
+
 			this.close = function() {
 				peer.close();
 			}
-			
+
 			this.rollback = function() {
 				peer.rollback();
 			}
-			
+
 			this.commit = function() {
 				peer.commit();
 			}
-			
+
 			this.$getMetaData = function() {
 				return peer.getMetaData();
 			}
 		}
-		
+
 		var bootstrapDatasource = getDataSource("postgres", dbsettings.user, dbsettings.password, false);
 
 		//	This JDBC-standard implementation does not work, at least on postgresql 8.2 with 8.2 drivers.
@@ -428,7 +441,7 @@ var IMPLEMENTATION = new function() {
 			var query = bootstrapDatasource.createQuery("SELECT datname FROM pg_catalog.pg_database");
 			return query.toArray().map( function(item) { return new Catalog(item[0]); } );
 		}
-		
+
 		this.getCatalog = function(name) {
 			if (this.getCatalogs) {
 				//	check for existence
@@ -439,7 +452,7 @@ var IMPLEMENTATION = new function() {
 				return new Catalog(name);
 			}
 		}
-		
+
 		this.createCatalog = function(name) {
 			bootstrapDatasource.executeStandalone("CREATE DATABASE " + name);
 			return this.getCatalog(name);
@@ -448,16 +461,16 @@ var IMPLEMENTATION = new function() {
 		this.dropCatalog = function(name) {
 			bootstrapDatasource.executeStandalone("DROP DATABASE " + name);
 		}
-			
+
 		var Catalog = function(name) {
 			var dataSource = getDataSource(name,dbsettings.user,dbsettings.password,true);
-			
+
 			var createConnection = function() {
 				return dataSource.getConnection();
 			}
-			
+
 			this.name = name;
-			
+
 			var getSchemas = function(connection) {
 				return connection.createMetadataQuery( function(metadata) { return metadata.getSchemas() }).toArray()
 					//	postgres violates JDBC standard by omitting second column here
@@ -477,7 +490,7 @@ var IMPLEMENTATION = new function() {
 			var dropSchema = function(connection,name) {
 				connection.execute("DROP SCHEMA " + name + " CASCADE");
 			}
-			
+
 			var pin = function(connection,f) {
 				return function() {
 					var array = [ connection ];
@@ -487,7 +500,7 @@ var IMPLEMENTATION = new function() {
 					return f.apply(null, array);
 				}
 			}
-			
+
 			var stateless = function(f) {
 				return function() {
 					var connection = createConnection();
@@ -505,14 +518,14 @@ var IMPLEMENTATION = new function() {
 			this.getSchema = stateless(getSchema);
 			this.createSchema = stateless(createSchema);
 			this.dropSchema = stateless(dropSchema);
-			
+
 			var Context = function(schema) {
 				var connection = createConnection();
 				if (!schema) {
 					var cwrap = function(f) {
 						return pin(connection,f);
 					}
-					
+
 					this.getSchemas = cwrap(getSchemas);
 					this.getSchema = cwrap(getSchema);
 					this.createSchema = cwrap(createSchema);
@@ -520,15 +533,15 @@ var IMPLEMENTATION = new function() {
 				} else {
 					connection.execute("SET search_path TO " + schema);
 				}
-				
+
 				this.rows = function(sql) {
 					return connection.createQuery(String(sql)).toArray();
 				}
-				
+
 				this.row = function(sql) {
 					return toValue(this.rows(String(sql)));
 				}
-				
+
 				this.execute = function(sql) {
 					connection.execute(String(sql));
 				}
@@ -548,15 +561,15 @@ var IMPLEMENTATION = new function() {
 					} ).join(",") + ")";
 					connection.execute(sql);
 				}
-				
+
 				this.commit = function() {
 					connection.commit();
 				}
-				
+
 				this.rollback = function() {
 					connection.rollback();
 				}
-				
+
 				this.destroy = function() {
 					//	Maybe we should just replace the properties with a method that throws an exception?
 					for (var x in this) {
@@ -571,15 +584,15 @@ var IMPLEMENTATION = new function() {
 							return { castLiteral: type.cast(value) };
 						}
 					}
-					
+
 					this.TIMESTAMP = wrap(TIMESTAMP);
 					this.SMALLINT = wrap(SMALLINT);
 					this.VARCHAR = wrap(VARCHAR);
 					this.BOOLEAN = wrap(BOOLEAN);
 					this.DATE = wrap(DATE);
-				}		
+				}
 			}
-			
+
 			var perform = function(transaction,schema) {
 				var context = new Context(schema);
 				try {
@@ -589,11 +602,11 @@ var IMPLEMENTATION = new function() {
 					context.destroy();
 				}
 			}
-			
+
 			this.perform = function(transaction) {
 				perform(transaction);
 			}
-			
+
 			var Table = function(schemaName,tableName) {
 				var qname = schemaName + "." + tableName;
 				this.qname = qname;
@@ -682,15 +695,15 @@ var IMPLEMENTATION = new function() {
 
 			var Schema = function(name) {
 				this.name = name;
-				
+
 				this.createContext = function() {
 					return new Context(name);
 				}
-				
+
 				this.perform = function(transaction) {
 					perform(transaction,name);
 				}
-				
+
 				this.rows = function(sql) {
 					var rv;
 					perform(function(db) {
@@ -698,11 +711,11 @@ var IMPLEMENTATION = new function() {
 					}, name);
 					return rv;
 				}
-				
+
 				this.row = function(sql) {
 					return toValue(this.rows(sql));
 				}
-				
+
 				this.test = function() {
 					var breakpoint = 1;
 				}

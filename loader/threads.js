@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME loader infrastructure.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 $exports.steps = {};
 
 $exports.steps.run = function(p) {
@@ -25,18 +38,18 @@ $exports.steps.Task = function(p) {
 	var rv = function task(tell) {
 		var more = true;
 		var running = (tell) ? [] : null;
-		
+
 		var finish = function() {
 			list.forEach(function(item) {
 				events.fire("unready", item);
 			});
 		};
-		
+
 		var trace = function(s){
 		};
 		while(list.length && more) {
 			more = false;
-			
+
 			var startReady = function() {
 				trace("startReady: list.length=" + list.length);
 				var i = 0;
@@ -60,7 +73,7 @@ $exports.steps.Task = function(p) {
 					i++;
 				}
 			}
-			
+
 			var ItemTell = function(item) {
 				if (tell) return function(result) {
 					trace("item tell for " + item.p.call);
@@ -78,12 +91,12 @@ $exports.steps.Task = function(p) {
 					}
 				}
 			};
-			
+
 			startReady();
 			if (!tell) {
 				finish();
 			}
-		}		
+		}
 	};
 	var events = $context.Events({ source: rv, on: p.on });
 	return rv;

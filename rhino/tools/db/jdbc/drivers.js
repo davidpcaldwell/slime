@@ -1,7 +1,20 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	TODO	an error message below uses $context.api.js and we should get that in ASAP to simplify some of this code
 var types = new function() {
 	var Types = Packages.java.sql.Types;
-	
+
 	var cast = function(to,value,toLiteral) {
 		return "CAST (" + toLiteral(value) + " AS " + to + ")";
 	};
@@ -33,7 +46,7 @@ var types = new function() {
 			this.decode = function(rs,column) {
 				return String(rs.getString(column));
 			};
-		
+
 			this.cast = function(value) {
 				return cast("VARCHAR(" + precision + ")",value,function(s) {
 					//	TODO	secape
@@ -42,7 +55,7 @@ var types = new function() {
 			}
 		}
 	};
-	
+
 	var LONGVARCHAR = function(precision) {
 		return new function() {
 			this.toString = function() {
@@ -70,14 +83,14 @@ var types = new function() {
 		this.decode = function(rs,column) {
 			return Number(rs.getLong(column));
 		};
-		
+
 		this.cast = function(value) {
 			return cast("INTEGER",value,function(i) {
 				return String(i);
 			});
 		}
 	};
-	
+
 	var DOUBLE = new function() {
 		this.toString = function() {
 			return "DOUBLE";
@@ -86,14 +99,14 @@ var types = new function() {
 		this.decode = function(rs,column) {
 			return Number(rs.getDouble(column));
 		};
-		
+
 		this.cast = function(value) {
 			return cast("DOUBLE",value,function(i) {
 				return String(i);
 			});
 		}
 	};
-	
+
 	var DECIMAL = function(precision,scale) {
 		this.toString = function() {
 			return "DECIMAL(" + precision + "," + scale + ")";
@@ -106,7 +119,7 @@ var types = new function() {
 			}
 		}
 	};
-	
+
 	var TIMESTAMP = new function() {
 		this.toString = function() {
 			return "TIMESTAMP";
@@ -122,7 +135,7 @@ var types = new function() {
 			} );
 		}
 	};
-	
+
 	var BLOB = new function() {
 		this.toString = function() {
 			return "BLOB";
@@ -134,7 +147,7 @@ var types = new function() {
 			var _in = _blob.getBinaryStream();
 			return new $context.api.io.InputStream(_in);
 		};
-		
+
 		//	TODO	should come up with a non-cast solution for large BLOBs
 		this.cast = function(value) {
 			return {
@@ -144,7 +157,7 @@ var types = new function() {
 			}
 		}
 	};
-	
+
 	var BIT = new function() {
 		this.toString = function() {
 			return "BIT";
@@ -153,14 +166,14 @@ var types = new function() {
 		this.decode = function(rs,index) {
 			return Boolean(rs.getBoolean(index));
 		};
-		
+
 		this.cast = function(b) {
 			return cast("BIT", b, function(b) {
 				return String(b);
 			});
 		}
 	};
-	
+
 	this.getCodec = function(type) {
 		if (type.code == Types.VARCHAR) return VARCHAR(type.precision);
 		if (type.code == Types.INTEGER) return INTEGER;
@@ -176,13 +189,13 @@ var types = new function() {
 		if (type.code == Types.LONGVARBINARY) return BLOB;
 		if (type.code == Types.BIT) return BIT;
 	};
-	
+
 //	this.decode = function(type,rs,index) {
 //		var isNull = function(rs,index) {
 //			var ignore = rs.getString(index+1);
 //			return rs.wasNull();
 //		};
-//		
+//
 //		if (isNull(rs,index)) return null;
 //		var codec = this.getCodec(type);
 //		if (!codec) {
@@ -196,7 +209,7 @@ var Iterator = function(forEach) {
 	this.forEach = function(callback) {
 		forEach(callback);
 	};
-	
+
 	this.toArray = function() {
 		var rv = [];
 		forEach(function(item) {
@@ -204,7 +217,7 @@ var Iterator = function(forEach) {
 		});
 		return rv;
 	};
-	
+
 	this.map = function(mapper,target) {
 		return new Iterator(function(callback) {
 			forEach(function(item) {
@@ -212,7 +225,7 @@ var Iterator = function(forEach) {
 			})
 		});
 	};
-	
+
 	this.one = function() {
 		var rv = null;
 		forEach(function(item) {
@@ -227,7 +240,7 @@ var NamingAlgorithmSelector = function() {
 	return new function() {
 		var insensitive = {};
 		var sensitive = {};
-		
+
 		this.add = function(name) {
 			if (!isNaN(name)) {
 				sensitive = null;
@@ -246,7 +259,7 @@ var NamingAlgorithmSelector = function() {
 				sensitive[name] = true;
 			}
 		};
-		
+
 		this.select = function(algorithms) {
 			if (insensitive) return algorithms.insensitive;
 			if (sensitive) return algorithms.sensitive;
@@ -257,7 +270,7 @@ var NamingAlgorithmSelector = function() {
 
 var Mapper = function(o) {
 	var delegate;
-	
+
 	var array = function(types,columns) {
 		return function(rs) {
 			var row = [];
@@ -267,7 +280,7 @@ var Mapper = function(o) {
 			return row;
 		}
 	};
-	
+
 	var getDefaultAlgorithm = function(columns) {
 		var selector = new NamingAlgorithmSelector();
 		for (var i=0; i<columns.length; i++) {
@@ -286,7 +299,7 @@ var Mapper = function(o) {
 							row[column.name.toLowerCase()] = null;
 						}
 					} );
-					return row;				
+					return row;
 				}
 			},
 			sensitive: function(types,columns) {
@@ -295,7 +308,7 @@ var Mapper = function(o) {
 					columns.forEach( function(column,index) {
 						row[column.name] = types.decode(column.type,rs,index+1);
 					} );
-					return row;				
+					return row;
 				}
 			},
 			array: function(types,columns) {
@@ -372,13 +385,13 @@ var DataSource = function(c) {
 				mapper: new Mapper({ types: c.types })
 			});
 		};
-		
+
 		var execute = function(p) {
 			var sql = p.sql;
 			var generated = p.generated;
 			try {
 				if (log) log(sql);
-				
+
 				if (generated) {
 					var _names = $context.api.java.Array.create({
 						type: Packages.java.lang.String,
@@ -418,7 +431,7 @@ var DataSource = function(c) {
 		}
 
 		this.execute = execute;
-		
+
 		this.executeDdl = execute;
 
 //			this.query = function(sql) {
@@ -484,7 +497,7 @@ var DataSource = function(c) {
 
 		this.createMetadataQuery = createQueryFactory(Query,createMetadataQueryArguments);
 		this.createQuery = createQueryFactory(Query,createQueryArguments);
-		
+
 		this.createQuery = function(p) {
 			return new Query({ results: createQueryArguments(p.sql), mapper: (p.mapper) ? p.mapper : new Mapper({ types: c.types }) });
 		}
@@ -504,10 +517,10 @@ var DataSource = function(c) {
 		this.$getMetaData = function() {
 			return peer.getMetaData();
 		}
-		
+
 		this.types = c.types;
 	}
-		
+
 	this.getConnection = function() {
 		//debugger;
 		return new Connection(c.peer.getConnection());
@@ -558,7 +571,7 @@ var DataSource = function(c) {
 					connection = null;
 				}
 			}
-		}			
+		}
 	}
 
 	var createMetadataQueryArguments = function(resultSetFactory) {
@@ -592,7 +605,7 @@ var DataSource = function(c) {
 		return new Query({ results: createMetadataQueryArguments(metadataToResultSet), mapper: new Mapper({ types: c.types }) });
 	};
 	this.createQuery = createQueryFactory(Query,createQueryArguments);
-	
+
 	this.types = c.types;
 }
 
@@ -626,7 +639,7 @@ var Context = function(p) {
 							row[column.name] = types.decode(column.type,rs,index);
 						} );
 						return row;
-					};					
+					};
 				}
 			})
 		}
@@ -645,7 +658,7 @@ var Context = function(p) {
 //			return row;
 //		};
 //	};
-//	
+//
 	};
 
 	this.createQuery = function(p) {
@@ -707,7 +720,7 @@ var Context = function(p) {
 //		this.VARCHAR = wrap(VARCHAR);
 //		this.BOOLEAN = wrap(BOOLEAN);
 //		this.DATE = wrap(DATE);
-//	}		
+//	}
 };
 Context.perform = function(context,transaction) {
 	try {
@@ -719,7 +732,7 @@ Context.perform = function(context,transaction) {
 		if (jsh.java.log) {
 			try {
 				jsh.java.log.named("db").WARNING("Error executing %s", transaction.toString());
-				jsh.java.log.named("db").WARNING("Stack trace: %s", e.stack);				
+				jsh.java.log.named("db").WARNING("Stack trace: %s", e.stack);
 			} catch (loge) {
 			}
 		}
@@ -769,7 +782,7 @@ var Identifier = function(p) {
 
 var Catalog = function(c) {
 	this.getSchemas = function() {
-		var query = c.dataSource.createMetadataQuery(function(_metadata) {				
+		var query = c.dataSource.createMetadataQuery(function(_metadata) {
 			return _metadata.getSchemas();
 		});
 		return query.map( function(row) {
@@ -777,7 +790,7 @@ var Catalog = function(c) {
 			return new c.Schema({ name: new Identifier({ string: row.table_schem }) });
 		}).toArray();
 	};
-	
+
 	this.getSchema = function(p) {
 		var name = new Identifier(p.name);
 		var rv = $context.api.js.Array.choose(this.getSchemas(), function(schema) {
@@ -795,7 +808,7 @@ var Catalog = function(c) {
 		}
 		if (!rv) return null;
 		return rv;
-	};	
+	};
 };
 
 var Table = function(c) {
@@ -805,7 +818,7 @@ var Table = function(c) {
 		array: [],
 		autoincrement: null
 	};
-	
+
 	c.dataSource.createMetadataQuery(
 		//	TODO	would not work in multi-catalog database; would need to filter on catalog
 		function(metadata) { return metadata.getColumns(null,c.schema.name,c.name.toString(),null) }
@@ -815,12 +828,12 @@ var Table = function(c) {
 		var type = c.dataSource.types.getCodec({ code: row.data_type, precision: row.column_size, scale: row.decimal_digits })
 		if (!type) throw new Error("No type for " + row.type_name + " " + $context.api.js.toLiteral(row) + " using " + c.dataSource.types.getCodec);
 		//	TODO	list some sort of DDL here?
-		
+
 		var yesno = function(s) {
 			if (s == "YES") return true;
 			if (s == "NO") return false;
 		}
-		
+
 		var column = { name: row.column_name, type: type, generated: yesno(row.is_generatedcolumn), autoincrement: yesno(row.is_autoincrement) };
 		if (column.autoincrement) {
 			columns.autoincrement = column;
@@ -836,17 +849,17 @@ var Table = function(c) {
 		columns.sensitive[row.column_name] = column;
 		columns.array.push(column);
 	});
-	
+
 	this.name = c.name.toString();
-	
+
 	this.getColumns = function(p) {
 		return columns.array;
 	};
-	
+
 	this.getColumn = function(p) {
 		return columns.sensitive[p.name];
 	};
-	
+
 	this.insert = function(data) {
 		//	TODO	what should be done if property values are undefined?
 		//	TODO	cannot insert data with lowercase column names
@@ -879,9 +892,9 @@ var Table = function(c) {
 			}
 		} );
 		//	TODO	should use metadata and Identifier to get case correct for names in these cases
-		var sql = "INSERT INTO " + c.schema.name + "." + c.name.toString() 
+		var sql = "INSERT INTO " + c.schema.name + "." + c.name.toString()
 			+ " (" + names.join(", ") + ")"
-			+ " VALUES " 
+			+ " VALUES "
 			+ " (" + values.join(", ") + ")"
 		;
 		c.schema.perform(function(context) {
@@ -898,13 +911,13 @@ var Table = function(c) {
 
 var Schema = function(c) {
 	this.name = c.name.toString();
-	
+
 	this.perform = function(transaction) {
 //		var context = new p.dataSource.SchemaContext(p.name.sql);
 		var context = new c.Context();
 		return Context.perform(context,transaction);
 	};
-	
+
 	this.getTables = function() {
 		return c.dataSource.createMetadataQuery( function(metadata) {
 			//	TODO	this would not work in a multi-catalog database; would need to also filter on catalog
@@ -913,7 +926,7 @@ var Schema = function(c) {
 			return new c.Table({ schema: this, dataSource: c.dataSource, name: new Identifier({ string: row.table_name })});
 		}, this ).toArray();
 	};
-	
+
 	this.getTable = function(p) {
 		var tables = this.getTables();
 		var rv = $context.api.js.Array.choose(tables, function(table) {

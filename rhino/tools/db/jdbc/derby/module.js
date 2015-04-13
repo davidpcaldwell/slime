@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var types = $context.types;
 
 var DataSource = function() {
@@ -15,8 +28,8 @@ var DataSource = function() {
 					connection.close();
 				}
 			}
-		});		
-	}	
+		});
+	}
 }
 
 var EmbeddedDataSource = function(p) {
@@ -42,34 +55,34 @@ var Schema = function(c) {
 			return new c.ds.SchemaContext(c.name.sql());
 		},
 		Table: $context.Table
-	});	
+	});
 }
 
 var Catalog = function(p) {
 	var ds = new EmbeddedDataSource(p);
-	
+
 	var MySchema = function(c) {
 		return new Schema({
 			name: c.name,
 			ds: ds
 		});
 	}
-	
+
 	//	TODO	types argument is redundant in next line?
 	$context.Catalog.call(this,{
 		dataSource: ds,
 		Schema: MySchema
 	});
-	
+
 	//	TODO	check and see if this is standard SQL92; if so, move this implementation to the JDBC layer
 	this.createSchema = function(p) {
 		var name = new $context.Identifier(p.name);
 		ds.executeDdl("CREATE SCHEMA " + name.sql());
 		return new MySchema({ name: name });
 	};
-	
+
 	var SYSTEM_SCHEMAS = ["NULLID","SQLJ","SYS","SYSCAT","SYSCS_DIAG","SYSCS_UTIL","SYSFUN","SYSIBM","SYSPROC","SYSSTAT"];
-	
+
 	this.getSchemas = (function(jdbc) {
 		return function() {
 			var rv = jdbc.apply(this,arguments);
@@ -82,27 +95,27 @@ var Catalog = function(p) {
 
 var Database = function(directory) {
 	if (!directory) throw new Error("Required: database directory.");
-	
+
 	//	TODO	there are two implementations that seem to make sense; one that lists subdirectories (but what if one is manually
 	//			created?) and one that attempts to open a connection to each subdirectory, figuring if it succeeds then that is a
 	//			catalog
 //	this.getCatalogs = function() {
 //		throw new Error("Unimplemented.");
 //	}
-	
+
 	this.createCatalog = function(path) {
 		return new Catalog({
 			pathname: directory.getRelativePath(path),
 			create: true
 		});
 	};
-	
+
 	this.getCatalog = function(path) {
 		if (directory) {
 			if (directory.getSubdirectory(path)) {
 				return new Catalog({
 					pathname: directory.getRelativePath(path)
-				});				
+				});
 			} else {
 				return null;
 			}

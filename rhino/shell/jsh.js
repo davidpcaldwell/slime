@@ -237,7 +237,21 @@ $exports.jsh = function(p) {
 //
 //		return rv;
 //	})();
-	var environment = (p.environment) ? p.environment : $exports.environment;
+	var environment = (function() {
+		if (p.environment) return p.environment;
+		if (p.shell) {
+			var rv = {};
+			for (var x in $exports.environment) {
+				if (/^JSH_/.test(x)) {
+
+				} else {
+					rv[x] = $exports.environment[x];
+				}
+			}
+			return rv;
+		}
+		return $exports.environment;
+	})();
 
 	if (fork) {
 		//	TODO	can we use $exports.java.home here?

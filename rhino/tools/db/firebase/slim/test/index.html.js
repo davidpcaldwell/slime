@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 if (inonit.slim.$reload) inonit.slim.$reload();
 
 inonit.slim.initialize(function() {
@@ -6,7 +19,7 @@ inonit.slim.initialize(function() {
 		var service = this.rest.Service({
 			protocol: protocol
 		});
-		
+
 		var firebase = inonit.slim.loader.module("db/firebase/slim/client.js", {
 			service: service.GET().firebase,
 			protocol: function(value) {
@@ -22,9 +35,9 @@ inonit.slim.initialize(function() {
 				}).bind(this)
 			}
 		});
-		
+
 		this.database = database;
-		
+
 		this.update.add(function() {
 			if (!this.model) {
 				this.getComponent("state").element.style.display = "none";
@@ -36,7 +49,7 @@ inonit.slim.initialize(function() {
 				this.getComponent("logout").element.style.display = "";
 				this.getComponent("state").set({
 					user: this.model.returned.email
-				});				
+				});
 			} else if (this.model && this.model.returned == null) {
 				this.getComponent("state").element.style.display = "none";
 				this.getComponent("login").element.style.display = "";
@@ -50,7 +63,7 @@ inonit.slim.initialize(function() {
 			call: function(e) {
 				database.session.login("google");
 			}
-		});		
+		});
 
 		this.action({
 			child: "logout",
@@ -58,6 +71,6 @@ inonit.slim.initialize(function() {
 			call: function(e) {
 				database.session.logout();
 			}
-		});		
+		});
 	};
 });
