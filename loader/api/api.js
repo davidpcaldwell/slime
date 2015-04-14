@@ -56,4 +56,48 @@ window.onload = function() {
 	fixFunctionDivs("arguments", "Arguments");
 	fixFunctionDivs("returns", "Returns");
 	fixFunctionDivs("instances", "Instances");
+	
+	fixScriptElements = function() {
+		var matchingScriptElements = getElements(function(e) {
+			return e.tagName.toLowerCase() == "script" && e.type == "application/x.jsapi#tests";
+		});
+		matchingScriptElements.forEach(function(element) {
+			console.log(element);
+			var lines = element.innerHTML.split("\n");
+			var prefix;
+			var matcher = /^(\s+)(\S+)/;
+			for (var i=0; i<lines.length; i++) {
+				var match = matcher.exec(lines[i]);
+				if (match) {
+					console.log("match = ", JSON.stringify(match[1]), JSON.stringify(match[2]));
+					if (typeof(prefix) == "undefined") {
+						prefix = match[1];
+					} else if (match[1].length > prefix.length) {
+						if (match[1].substring(0,prefix.length) == prefix) {
+							//	do nothing
+						} else {
+							prefix = "";
+						}
+					} else {
+						if (prefix.substring(0,match[1].length) == match[1]) {
+							prefix = match[1];
+						}
+					}
+				} else {
+					console.log("no match: ", JSON.stringify(lines[i]));
+				}
+			}
+			var fixed = lines.map(function(line) {
+				if (line.substring(0,prefix.length) == prefix) {
+					return line.substring(prefix.length);
+				} else {
+					return line;
+				}
+			});
+			element.innerHTML = fixed.join("\n");
+			console.log(JSON.stringify(element.innerHTML));
+		});
+	};
+	
+	fixScriptElements();
 }

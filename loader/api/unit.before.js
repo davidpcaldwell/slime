@@ -50,7 +50,7 @@ var Verify = function(scope,vars) {
 					if (!not && success) return "is " + specified.name;
 					if (!not && !success) return "is " + toLiteral(v) + ", not " + specified.name;
 					if (not && success) return "is " + toLiteral(v) + ", not " + specified.name;
-					if (not && !success) return "is " + toLiteral(v);
+					if (not && !success) return "is " + toLiteral(v) + ", but should not be.";
 				})();
 				return {
 					success: success,
