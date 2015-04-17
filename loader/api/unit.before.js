@@ -48,7 +48,7 @@ var Verify = function(scope,vars) {
 				var success = (not) ? v !== specified.value : v === specified.value;
 				var message = prefix + (function() {
 					if (!not && success) return "is " + specified.name;
-					if (!not && !success) return "is " + toLiteral(v) + ", not " + specified.name;
+					if (!not && !success) return "is " + toLiteral(v) + ", but should be " + specified.name;
 					if (not && success) return "is " + toLiteral(v) + ", not " + specified.name;
 					if (not && !success) return "is " + toLiteral(v) + ", but should not be.";
 				})();
