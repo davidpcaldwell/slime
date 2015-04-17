@@ -193,76 +193,47 @@ var moduleToItem = function(moduleDescriptor,unit) {
 	}
 }
 
-$exports.Tests = function() {
-	var environment;
-
-	this.environment = function(v) {
-		environment = v;
+var Scope = function(suite,environment) {
+	var $newTemporaryDirectory = function() {
+		var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
+		var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
+		var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
+		dir.mkdirs();
+		return dir;
 	};
 
-	var testGroups = [];
+	//	TODO	it appears that for the purpose of this method suite must just support getRelativePath()
+	//	TODO	it also uses getResourcePathname; is there any difference? Would a scope created via $jsapi.test support
+	//			it? (probably not)
+	//	TODO	document $relative if it is used by tests
+	this.$relative = function(getRelativePath) {
+		return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath });
+	};
 
-	this.add = function(module,unit) {
-		testGroups.push(moduleToItem(module,unit));
-	}
-
-	var Scope = function(suite) {
-		var $newTemporaryDirectory = function() {
-			var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
-			var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
-			var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
-			dir.mkdirs();
-			return dir;
-		};
-
-		//	TODO	it appears that for the purpose of this method suite must just support getRelativePath()
-		//	TODO	it also uses getResourcePathname; is there any difference? Would a scope created via $jsapi.test support
-		//			it? (probably not)
-		//	TODO	document $relative if it is used by tests
-		this.$relative = function(getRelativePath) {
-			return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath });
-		};
-
-		this.$jsapi = {
-			loader: {
-				module: function(name,context,target) {
-					return jsh.loader.module(suite.getRelativePath(name),context,target);
-				},
-				file: function(name,context,target) {
-					return jsh.loader.file(suite.getRelativePath(name),context,target);
-				},
-				//	TODO	figure out how eval is used and document; why is jsh loader not used? And why is target parameter
-				//			omitted?
-				eval: function(name,scope) {
-					var code = suite.getRelativePath(name);
-					if (!code.file) throw new Error("No file at " + code + " path=" + name);
-					var scope = (scope) ? scope : {};
-					with(scope) {
-						return eval(code.file.read(String));
-					}
-//						return jsh.loader.run(suite.getRelativePath(name),scope);
-				},
-				string: function(name) {
-					return suite.getRelativePath(name).file.read(String);
-				},
-				coffee: jsh.$jsapi.$coffee,
-				scenario: function(path,p) {
-					var apifile = getApiHtml(suite.getRelativePath(path));
-					var page = loadApiHtml(apifile);
-					var name = path;
-					var tests = new $context.html.ApiHtmlTests(page,name);
-					var subscope = new Scope(moduleToItem({
-						location: suite.getRelativePath(path),
-						path: path
-					}));
-					subscope.module = p.module;
-					//	TODO	we wish we could set context but we may not be able to do that
-					var scenario = tests.getScenario(subscope);
-					return scenario;
-//							throw new Error("Unimplemented: $jsapi.test");
-				}
+	this.$jsapi = {
+		loader: {
+			module: function(name,context,target) {
+				return jsh.loader.module(suite.getRelativePath(name),context,target);
 			},
-			test: function(path,p) {
+			file: function(name,context,target) {
+				return jsh.loader.file(suite.getRelativePath(name),context,target);
+			},
+			//	TODO	figure out how eval is used and document; why is jsh loader not used? And why is target parameter
+			//			omitted?
+			eval: function(name,scope) {
+				var code = suite.getRelativePath(name);
+				if (!code.file) throw new Error("No file at " + code + " path=" + name);
+				var scope = (scope) ? scope : {};
+				with(scope) {
+					return eval(code.file.read(String));
+				}
+//						return jsh.loader.run(suite.getRelativePath(name),scope);
+			},
+			string: function(name) {
+				return suite.getRelativePath(name).file.read(String);
+			},
+			coffee: jsh.$jsapi.$coffee,
+			scenario: function(path,p) {
 				var apifile = getApiHtml(suite.getRelativePath(path));
 				var page = loadApiHtml(apifile);
 				var name = path;
@@ -276,101 +247,130 @@ $exports.Tests = function() {
 				var scenario = tests.getScenario(subscope);
 				return scenario;
 //							throw new Error("Unimplemented: $jsapi.test");
-			},
-			newTemporaryDirectory: function() {
-				var $path = $newTemporaryDirectory();
-				var pathstring = String($path.getCanonicalPath());
-				var os = jsh.file.filesystems.os.Pathname(pathstring);
-				return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
-			},
-			disableBreakOnExceptions: function(f) {
-				return jsh.debug.disableBreakOnExceptionsFor(f);
-			},
-			environment: environment,
-			module: $api.deprecate(function(name,context) {
-				if (typeof(name) == "object" && typeof(context) == "string") {
-					jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
-					return arguments.callee.call(this,arguments[1],arguments[0]);
-				}
-				return jsh.loader.module(suite.getRelativePath(name),context);
-			}),
-			java: {
-				loader: jsh.$jsapi.java,
-				io: {
-					newTemporaryDirectory: $newTemporaryDirectory
-				}
+			}
+		},
+		test: function(path,p) {
+			var apifile = getApiHtml(suite.getRelativePath(path));
+			var page = loadApiHtml(apifile);
+			var name = path;
+			var tests = new $context.html.ApiHtmlTests(page,name);
+			var subscope = new Scope(moduleToItem({
+				location: suite.getRelativePath(path),
+				path: path
+			}));
+			subscope.module = p.module;
+			//	TODO	we wish we could set context but we may not be able to do that
+			var scenario = tests.getScenario(subscope);
+			return scenario;
+//							throw new Error("Unimplemented: $jsapi.test");
+		},
+		newTemporaryDirectory: function() {
+			var $path = $newTemporaryDirectory();
+			var pathstring = String($path.getCanonicalPath());
+			var os = jsh.file.filesystems.os.Pathname(pathstring);
+			return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
+		},
+		disableBreakOnExceptions: function(f) {
+			return jsh.debug.disableBreakOnExceptionsFor(f);
+		},
+		environment: environment,
+		module: $api.deprecate(function(name,context) {
+			if (typeof(name) == "object" && typeof(context) == "string") {
+				jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
+				return arguments.callee.call(this,arguments[1],arguments[0]);
+			}
+			return jsh.loader.module(suite.getRelativePath(name),context);
+		}),
+		java: {
+			loader: jsh.$jsapi.java,
+			io: {
+				newTemporaryDirectory: $newTemporaryDirectory
+			}
+		}
+	};
+
+	this.$module = new function() {
+		this.getResourcePathname = function(path) {
+			return suite.getResourcePathname(path);
+		}
+	};
+
+	this.$platform = jsh.$jsapi.$platform;
+	this.$api = jsh.$jsapi.$api;
+}
+
+var Scenario = function(suite,environment) {
+	var scope = new Scope(suite,(environment) ? environment : {});
+	try {
+		var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
+	} catch (e) {
+		var error = e;
+		return new function() {
+			this.name = suite.name;
+
+			this.execute = function(scope) {
+				scope.test({
+					success: null,
+					error: error,
+					messages: {
+						failure: suite.name + " threw error instantiating context"
+					}
+				});
 			}
 		};
-
-		this.$module = new function() {
-			this.getResourcePathname = function(path) {
-				return suite.getResourcePathname(path);
-			}
-		};
-
-		this.$platform = jsh.$jsapi.$platform;
-		this.$api = jsh.$jsapi.$api;
 	}
 
-	var Scenario = function(suite) {
-		var scope = new Scope(suite);
+	var rv = new $context.Scenario({ composite: true, name: suite.name });
+
+	for (var i=0; i<contexts.length; i++) {
 		try {
-			var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
+			if (suite.getScenario) {
+				scope.module = suite.loadWith(contexts[i]);
+				scope.context = contexts[i];
+				var scenario = suite.getScenario(scope);
+				scenario.name = suite.name;
+				scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
+				rv.add( { scenario: scenario } );
+			} else {
+				rv.add({ scenario: new function() {
+					this.name = suite.name + " (NO TESTS)";
+
+					this.execute = function(scope) {
+						scope.test({
+							success: false,
+							messages: {
+								failure: suite.name + " has no api.html file containing tests."
+							}
+						});
+					}
+				}})
+			}
 		} catch (e) {
-			var error = e;
-			return new function() {
+			//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
+			rv.add({ scenario: new function() {
 				this.name = suite.name;
 
 				this.execute = function(scope) {
-					scope.test({
-						success: null,
-						error: error,
-						messages: {
-							failure: suite.name + " threw error instantiating context"
-						}
-					});
+					throw e;
 				}
-			};
+			}});
 		}
+	}
 
-		var rv = new $context.Scenario({ composite: true, name: suite.name });
+	return rv;
+}
 
-		for (var i=0; i<contexts.length; i++) {
-			try {
-				if (suite.getScenario) {
-					scope.module = suite.loadWith(contexts[i]);
-					scope.context = contexts[i];
-					var scenario = suite.getScenario(scope);
-					scenario.name = suite.name;
-					scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
-					rv.add( { scenario: scenario } );
-				} else {
-					rv.add({ scenario: new function() {
-						this.name = suite.name + " (NO TESTS)";
+$exports.Tests = function() {
+	var environment;
 
-						this.execute = function(scope) {
-							scope.test({
-								success: false,
-								messages: {
-									failure: suite.name + " has no api.html file containing tests."
-								}
-							});
-						}
-					}})
-				}
-			} catch (e) {
-				//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
-				rv.add({ scenario: new function() {
-					this.name = suite.name;
+	this.environment = function(v) {
+		environment = v;
+	};
 
-					this.execute = function(scope) {
-						throw e;
-					}
-				}});
-			}
-		}
+	var testGroups = [];
 
-		return rv;
+	this.add = function(module,unit) {
+		testGroups.push(moduleToItem(module,unit));
 	}
 
 	this.toScenario = function() {
@@ -378,7 +378,7 @@ $exports.Tests = function() {
 
 		//	var item is expected to be $scope.$unit
 		testGroups.forEach( function(suite) {
-			rv.add({ scenario: new Scenario(suite) });
+			rv.add({ scenario: new Scenario(suite,environment) });
 		} );
 		return rv;
 	}
