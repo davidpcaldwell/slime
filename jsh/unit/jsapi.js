@@ -218,51 +218,35 @@ $exports.Tests = function() {
 		//	TODO	it appears that for the purpose of this method suite must just support getRelativePath()
 		//	TODO	it also uses getResourcePathname; is there any difference? Would a scope created via $jsapi.test support
 		//			it? (probably not)
-		var rv = {
-			//	TODO	document $relative if it is used by tests
-			$relative: function(getRelativePath) {
-				return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath });
-			},
-			$jsapi: {
-				loader: {
-					module: function(name,context,target) {
-						return jsh.loader.module(suite.getRelativePath(name),context,target);
-					},
-					file: function(name,context,target) {
-						return jsh.loader.file(suite.getRelativePath(name),context,target);
-					},
-					//	TODO	figure out how eval is used and document; why is jsh loader not used? And why is target parameter
-					//			omitted?
-					eval: function(name,scope) {
-						var code = suite.getRelativePath(name);
-						if (!code.file) throw new Error("No file at " + code + " path=" + name);
-						var scope = (scope) ? scope : {};
-						with(scope) {
-							return eval(code.file.read(String));
-						}
-//						return jsh.loader.run(suite.getRelativePath(name),scope);
-					},
-					string: function(name) {
-						return suite.getRelativePath(name).file.read(String);
-					},
-					coffee: jsh.$jsapi.$coffee,
-					scenario: function(path,p) {
-						var apifile = getApiHtml(suite.getRelativePath(path));
-						var page = loadApiHtml(apifile);
-						var name = path;
-						var tests = new $context.html.ApiHtmlTests(page,name);
-						var subscope = new Scope(moduleToItem({
-							location: suite.getRelativePath(path),
-							path: path
-						}));
-						subscope.module = p.module;
-						//	TODO	we wish we could set context but we may not be able to do that
-						var scenario = tests.getScenario(subscope);
-						return scenario;
-	//							throw new Error("Unimplemented: $jsapi.test");
-					}
+		//	TODO	document $relative if it is used by tests
+		this.$relative = function(getRelativePath) {
+			return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath });
+		};
+
+		this.$jsapi = {
+			loader: {
+				module: function(name,context,target) {
+					return jsh.loader.module(suite.getRelativePath(name),context,target);
 				},
-				test: function(path,p) {
+				file: function(name,context,target) {
+					return jsh.loader.file(suite.getRelativePath(name),context,target);
+				},
+				//	TODO	figure out how eval is used and document; why is jsh loader not used? And why is target parameter
+				//			omitted?
+				eval: function(name,scope) {
+					var code = suite.getRelativePath(name);
+					if (!code.file) throw new Error("No file at " + code + " path=" + name);
+					var scope = (scope) ? scope : {};
+					with(scope) {
+						return eval(code.file.read(String));
+					}
+//						return jsh.loader.run(suite.getRelativePath(name),scope);
+				},
+				string: function(name) {
+					return suite.getRelativePath(name).file.read(String);
+				},
+				coffee: jsh.$jsapi.$coffee,
+				scenario: function(path,p) {
 					var apifile = getApiHtml(suite.getRelativePath(path));
 					var page = loadApiHtml(apifile);
 					var name = path;
@@ -276,52 +260,56 @@ $exports.Tests = function() {
 					var scenario = tests.getScenario(subscope);
 					return scenario;
 //							throw new Error("Unimplemented: $jsapi.test");
-				},
-				newTemporaryDirectory: function() {
-					var $path = $newTemporaryDirectory();
-					var pathstring = String($path.getCanonicalPath());
-					var os = jsh.file.filesystems.os.Pathname(pathstring);
-					return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
-				},
-				disableBreakOnExceptions: function(f) {
-					return jsh.debug.disableBreakOnExceptionsFor(f);
-				},
-				environment: environment,
-				module: $api.deprecate(function(name,context) {
-					if (typeof(name) == "object" && typeof(context) == "string") {
-						jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
-						return arguments.callee.call(this,arguments[1],arguments[0]);
-					}
-					return jsh.loader.module(suite.getRelativePath(name),context);
-				}),
-				java: {
-					loader: jsh.$jsapi.java,
-					io: {
-						newTemporaryDirectory: $newTemporaryDirectory
-					}
 				}
 			},
-			$java: {
+			test: function(path,p) {
+				var apifile = getApiHtml(suite.getRelativePath(path));
+				var page = loadApiHtml(apifile);
+				var name = path;
+				var tests = new $context.html.ApiHtmlTests(page,name);
+				var subscope = new Scope(moduleToItem({
+					location: suite.getRelativePath(path),
+					path: path
+				}));
+				subscope.module = p.module;
+				//	TODO	we wish we could set context but we may not be able to do that
+				var scenario = tests.getScenario(subscope);
+				return scenario;
+//							throw new Error("Unimplemented: $jsapi.test");
+			},
+			newTemporaryDirectory: function() {
+				var $path = $newTemporaryDirectory();
+				var pathstring = String($path.getCanonicalPath());
+				var os = jsh.file.filesystems.os.Pathname(pathstring);
+				return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
+			},
+			disableBreakOnExceptions: function(f) {
+				return jsh.debug.disableBreakOnExceptionsFor(f);
+			},
+			environment: environment,
+			module: $api.deprecate(function(name,context) {
+				if (typeof(name) == "object" && typeof(context) == "string") {
+					jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
+					return arguments.callee.call(this,arguments[1],arguments[0]);
+				}
+				return jsh.loader.module(suite.getRelativePath(name),context);
+			}),
+			java: {
+				loader: jsh.$jsapi.java,
 				io: {
 					newTemporaryDirectory: $newTemporaryDirectory
 				}
-			},
-			$module: new function() {
-				this.getResourcePathname = function(path) {
-					return suite.getResourcePathname(path);
-				}
-			},
-			$platform: jsh.$jsapi.$platform,
-			$api: jsh.$jsapi.$api
+			}
 		};
-//		Object.defineProperty(rv,"$java",{
-//			value: rv.$jsapi.java,
-//			enumerable: false
-//		});
-//		rv.$java = rv.$jsapi.java;
-//		$api.deprecate(rv,"$java");
-//		rv.$jsapi.test = $api.deprecate(rv.$jsapi.loader.scenario);
-		return rv;
+
+		this.$module = new function() {
+			this.getResourcePathname = function(path) {
+				return suite.getResourcePathname(path);
+			}
+		};
+
+		this.$platform = jsh.$jsapi.$platform;
+		this.$api = jsh.$jsapi.$api;
 	}
 
 	this.toScenario = function() {
