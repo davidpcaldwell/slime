@@ -404,8 +404,6 @@ $exports.Tests = function() {
 	}
 };
 
-$exports.tests = new $exports.Tests();
-
 (function() {
 	var jsdom = $context.jsdom;
 	var ns = "http://www.w3.org/1999/xhtml";

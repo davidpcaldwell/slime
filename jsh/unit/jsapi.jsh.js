@@ -152,10 +152,12 @@ if (!parameters.options.notest) {
 		return rv;
 	})();
 
-	jsapi.tests.environment(ENVIRONMENT);
+	var tests = new jsapi.Tests();
+
+	tests.environment(ENVIRONMENT);
 
 	modules.forEach( function(module) {
-		jsapi.tests.add(module);
+		tests.add(module);
 	});
 	parameters.options.test.forEach( function(test) {
 		var getModule = function(path) {
@@ -166,9 +168,9 @@ if (!parameters.options.notest) {
 
 		var tokens = test.split(":");
 		if (tokens.length == 1) {
-			jsapi.tests.add(getModule(test));
+			tests.add(getModule(test));
 		} else {
-			jsapi.tests.add(getModule(tokens[0]),tokens.slice(1).join("."));
+			tests.add(getModule(tokens[0]),tokens.slice(1).join("."));
 		}
 	});
 	var UNIT_TESTS_COMPLETED = function(success) {
@@ -179,7 +181,7 @@ if (!parameters.options.notest) {
 			jsh.shell.echo("Tests passed.");
 		}
 	}
-	UNIT_TESTS_COMPLETED(jsapi.tests.run());
+	UNIT_TESTS_COMPLETED(tests.run());
 }
 
 if (parameters.options.doc) {

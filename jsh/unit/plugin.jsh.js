@@ -44,20 +44,21 @@ plugin({
 			return api.console;
 		};
 		jsh.unit.console.subprocess = $loader.file("console.stdio.js");
+		var jshapi = $loader.file("jsapi.js", {
+			Scenario: jsh.unit.Scenario,
+			html: jsh.unit.html
+		});
 		jsh.unit.html.Scenario = function(p) {
-			var jshapi = $loader.file("jsapi.js", {
-				Scenario: jsh.unit.Scenario,
-				html: jsh.unit.html
-			});
+			var tests = new jshapi.Tests();
 			if (p.environment) {
-				jshapi.tests.environment(p.environment);
+				tests.environment(p.environment);
 			} else {
-				jshapi.tests.environment({});
+				tests.environment({});
 			}
 			p.pages.forEach(function(page) {
-				jshapi.tests.add({ location: page.pathname });
+				tests.add({ location: page.pathname });
 			});
-			return jshapi.tests.toScenario();
+			return tests.toScenario();
 		};
 	}
 });
