@@ -398,10 +398,6 @@ $exports.Tests = function() {
 		var SCENARIO = new $context.Scenario($scenario);
 		return SCENARIO;
 	}
-
-	this.run = function() {
-		return this.toScenario().run( $context.console );
-	}
 };
 
 (function() {
