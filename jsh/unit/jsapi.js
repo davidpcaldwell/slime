@@ -146,6 +146,53 @@ var loadApiHtml = function(file) {
 	return arguments.callee.cache[file.pathname.toString()];
 }
 
+var moduleToItem = function(moduleDescriptor,unit) {
+	return new function() {
+		this.name = moduleDescriptor.location.toString();
+
+		if (!moduleDescriptor.location.directory && !moduleDescriptor.location.file) {
+			throw new Error("Not found: " + moduleDescriptor.location);
+		}
+		var apiHtmlFile = getApiHtml(moduleDescriptor.location);
+		if (apiHtmlFile) {
+			var page = loadApiHtml(apiHtmlFile);
+
+			var name = moduleDescriptor.path;
+			if (unit) {
+				name += "." + unit;
+			}
+			this.html = new $context.html.ApiHtmlTests(page,name);
+			this.getScenario = function(scope) {
+				return this.html.getScenario(scope,unit);
+			}
+		}
+
+		this.toString = function() {
+			return "moduleToItem: name=" + this.name + " page=" + page + " this.html = " + this.html;
+		}
+
+		this.namespace = moduleDescriptor.namespace;
+
+		this.loadWith = function(context) {
+			if (/\.html/.test(moduleDescriptor.location.basename)) {
+				return {};
+			} else {
+				return jsh.loader.module(moduleDescriptor.location, (context) ? context : {});
+			}
+		}
+
+		this.getRelativePath = function(path) {
+			return getApiHtml(moduleDescriptor.location).getRelativePath(path);
+		}
+
+		this.getResourcePathname = function(path) {
+			if (moduleDescriptor.location.directory) return moduleDescriptor.location.directory.getRelativePath(path);
+			if (moduleDescriptor.location.file) return moduleDescriptor.location.file.parent.getRelativePath(path);
+			throw new Error("Unimplemented");
+		}
+	}
+}
+
 $exports.Tests = function() {
 	var environment;
 
@@ -154,53 +201,6 @@ $exports.Tests = function() {
 	};
 
 	var testGroups = [];
-
-	var moduleToItem = function(moduleDescriptor,unit) {
-		return new function() {
-			this.name = moduleDescriptor.location.toString();
-
-			if (!moduleDescriptor.location.directory && !moduleDescriptor.location.file) {
-				throw new Error("Not found: " + moduleDescriptor.location);
-			}
-			var apiHtmlFile = getApiHtml(moduleDescriptor.location);
-			if (apiHtmlFile) {
-				var page = loadApiHtml(apiHtmlFile);
-
-				var name = moduleDescriptor.path;
-				if (unit) {
-					name += "." + unit;
-				}
-				this.html = new $context.html.ApiHtmlTests(page,name);
-				this.getScenario = function(scope) {
-					return this.html.getScenario(scope,unit);
-				}
-			}
-
-			this.toString = function() {
-				return "moduleToItem: name=" + this.name + " page=" + page + " this.html = " + this.html;
-			}
-
-			this.namespace = moduleDescriptor.namespace;
-
-			this.loadWith = function(context) {
-				if (/\.html/.test(moduleDescriptor.location.basename)) {
-					return {};
-				} else {
-					return jsh.loader.module(moduleDescriptor.location, (context) ? context : {});
-				}
-			}
-
-			this.getRelativePath = function(path) {
-				return getApiHtml(moduleDescriptor.location).getRelativePath(path);
-			}
-
-			this.getResourcePathname = function(path) {
-				if (moduleDescriptor.location.directory) return moduleDescriptor.location.directory.getRelativePath(path);
-				if (moduleDescriptor.location.file) return moduleDescriptor.location.file.parent.getRelativePath(path);
-				throw new Error("Unimplemented");
-			}
-		}
-	}
 
 	this.add = function(module,unit) {
 		testGroups.push(moduleToItem(module,unit));
