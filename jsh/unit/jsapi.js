@@ -315,23 +315,14 @@ $exports.Tests = function() {
 	this.toScenario = function() {
 		var rv = new $context.Scenario({ composite: true, name: "Unit tests" });
 
-		var suites = testGroups;
-
-		//	Refactoring, not a scope at all
-		var topscope = {
-			scenario: function(o) {
-				rv.add({ scenario: o });
-			}
-		}
-
 		//	var item is expected to be $scope.$unit
-		suites.forEach( function(suite) {
+		testGroups.forEach( function(suite) {
 			var scope = new Scope(suite);
 			try {
 				var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
 			} catch (e) {
 				var error = e;
-				topscope.scenario(new function() {
+				rv.add({ scenario: new function() {
 					this.name = suite.name;
 
 					this.execute = function(scope) {
@@ -343,7 +334,7 @@ $exports.Tests = function() {
 							}
 						});
 					}
-				});
+				}});
 				return;
 			}
 
@@ -355,9 +346,9 @@ $exports.Tests = function() {
 						var scenario = suite.getScenario(scope);
 						scenario.name = suite.name;
 						scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
-						topscope.scenario( scenario );
+						rv.add( { scenario: scenario } );
 					} else {
-						topscope.scenario(new function() {
+						rv.add({ scenario: new function() {
 							this.name = suite.name + " (NO TESTS)";
 
 							this.execute = function(scope) {
@@ -368,17 +359,17 @@ $exports.Tests = function() {
 									}
 								});
 							}
-						})
+						}})
 					}
 				} catch (e) {
 					//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
-					topscope.scenario(new function() {
+					rv.add({ scenario: new function() {
 						this.name = suite.name;
 
 						this.execute = function(scope) {
 							throw e;
 						}
-					});
+					}});
 				}
 			}
 		} );
