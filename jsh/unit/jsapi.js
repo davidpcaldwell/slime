@@ -146,20 +146,20 @@ var loadApiHtml = function(file) {
 	return arguments.callee.cache[file.pathname.toString()];
 }
 
-var Suite = function(moduleDescriptor,unit) {
+var Suite = function(pathname,unit) {
 	return new function() {
-		this.name = moduleDescriptor.location.toString();
+		this.name = pathname.toString();
 
-		if (!moduleDescriptor.location.directory && !moduleDescriptor.location.file) {
-			throw new Error("Not found: " + moduleDescriptor.location);
+		if (!pathname.directory && !pathname.file) {
+			throw new Error("Not found: " + pathname);
 		}
-		var apiHtmlFile = getApiHtml(moduleDescriptor.location);
+		var apiHtmlFile = getApiHtml(pathname);
 		if (apiHtmlFile) {
 			var page = loadApiHtml(apiHtmlFile);
 
-			var name = moduleDescriptor.path;
+			var name = pathname.toString();
 			if (unit) {
-				name += "." + unit;
+				name += "#" + unit;
 			}
 			this.html = new $context.html.ApiHtmlTests(page,name);
 			this.getScenario = function(scope) {
@@ -168,26 +168,24 @@ var Suite = function(moduleDescriptor,unit) {
 		}
 
 		this.toString = function() {
-			return "moduleToItem: name=" + this.name + " page=" + page + " this.html = " + this.html;
+			return "Suite: name=" + this.name + " page=" + page + " this.html = " + this.html;
 		}
 
-		this.namespace = moduleDescriptor.namespace;
-
 		this.loadWith = function(context) {
-			if (/\.html/.test(moduleDescriptor.location.basename)) {
+			if (/\.html/.test(pathname.basename)) {
 				return {};
 			} else {
-				return jsh.loader.module(moduleDescriptor.location, (context) ? context : {});
+				return jsh.loader.module(pathname, (context) ? context : {});
 			}
 		}
 
 		this.getRelativePath = function(path) {
-			return getApiHtml(moduleDescriptor.location).getRelativePath(path);
+			return getApiHtml(pathname).getRelativePath(path);
 		}
 
 		this.getResourcePathname = function(path) {
-			if (moduleDescriptor.location.directory) return moduleDescriptor.location.directory.getRelativePath(path);
-			if (moduleDescriptor.location.file) return moduleDescriptor.location.file.parent.getRelativePath(path);
+			if (pathname.directory) return pathname.directory.getRelativePath(path);
+			if (pathname.file) return pathname.file.parent.getRelativePath(path);
 			throw new Error("Unimplemented");
 		}
 	}
@@ -238,10 +236,7 @@ var Scope = function(suite,environment) {
 				var page = loadApiHtml(apifile);
 				var name = path;
 				var tests = new $context.html.ApiHtmlTests(page,name);
-				var subscope = new Scope(new Suite({
-					location: suite.getRelativePath(path),
-					path: path
-				}));
+				var subscope = new Scope(new Suite(suite.getRelativePath(path)));
 				subscope.module = p.module;
 				//	TODO	we wish we could set context but we may not be able to do that
 				var scenario = tests.getScenario(subscope);
@@ -358,6 +353,10 @@ var Scenario = function(suite,environment) {
 	}
 
 	return rv;
+};
+
+$exports.Scenario = function(p) {
+	return new Scenario(new Suite(p.location,p.unit))
 }
 
 $exports.Tests = function() {
@@ -370,7 +369,7 @@ $exports.Tests = function() {
 	var rv = new $context.Scenario({ composite: true, name: "Unit tests" });
 
 	this.add = function(module,unit) {
-		rv.add({ scenario: new Scenario(new Suite(module,unit), environment) });
+		rv.add({ scenario: new Scenario(new Suite(module.location,unit), environment) });
 	}
 
 	this.toScenario = function() {
