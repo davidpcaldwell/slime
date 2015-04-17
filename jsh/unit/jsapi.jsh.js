@@ -175,9 +175,11 @@ if (!parameters.options.notest) {
 		if (!success) {
 			jsh.shell.echo("Tests failed; exiting with status 1.", { stream: jsh.shell.stdio.error });
 			jsh.shell.exit(1);
+		} else {
+			jsh.shell.echo("Tests passed.");
 		}
 	}
-	jsapi.tests.run(UNIT_TESTS_COMPLETED);
+	UNIT_TESTS_COMPLETED(jsapi.tests.run());
 }
 
 if (parameters.options.doc) {

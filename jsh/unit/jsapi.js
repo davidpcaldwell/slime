@@ -146,7 +146,7 @@ var loadApiHtml = function(file) {
 	return arguments.callee.cache[file.pathname.toString()];
 }
 
-$exports.tests = new function() {
+$exports.Tests = function() {
 	var environment;
 
 	this.environment = function(v) {
@@ -399,10 +399,12 @@ $exports.tests = new function() {
 		return SCENARIO;
 	}
 
-	this.run = function(successWas) {
-		successWas(this.toScenario().run( $context.console ));
+	this.run = function() {
+		return this.toScenario().run( $context.console );
 	}
 };
+
+$exports.tests = new $exports.Tests();
 
 (function() {
 	var jsdom = $context.jsdom;
