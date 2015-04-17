@@ -356,25 +356,7 @@ var Scenario = function(suite,environment) {
 };
 
 $exports.Scenario = function(p) {
-	return new Scenario(new Suite(p.location,p.unit))
-}
-
-$exports.Tests = function() {
-	var environment;
-
-	this.environment = function(v) {
-		environment = v;
-	};
-
-	var rv = new $context.Scenario({ composite: true, name: "Unit tests" });
-
-	this.add = function(module,unit) {
-		rv.add({ scenario: new Scenario(new Suite(module.location,unit), environment) });
-	}
-
-	this.toScenario = function() {
-		return rv;
-	}
+	return new Scenario(new Suite(p.pathname,p.unit), p.environment);
 };
 
 (function() {

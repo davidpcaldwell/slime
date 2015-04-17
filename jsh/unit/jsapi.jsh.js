@@ -10,8 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-jsh.loader.plugins(jsh.script.file.parent.pathname);
-
 var parameters = jsh.script.getopts({
 	options: {
 		//	See api.html for documentation of these options
@@ -29,6 +27,9 @@ var parameters = jsh.script.getopts({
 		stdio: false
 	}
 });
+
+jsh.loader.plugins(parameters.options.jsapi);
+jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 if (!parameters.options.jsapi.directory) {
 	jsh.shell.echo("Not a directory: -jsapi " + parameters.options.jsapi);
@@ -123,7 +124,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 			return jsh.script.file.getRelativePath(path).file;
 		}
 	},
-	Scenario: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.before.js") ).Scenario,
+	Scenario: jsh.unit.Scenario//jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.before.js") ).Scenario,
 });
 
 if (!parameters.options.notest) {
@@ -153,13 +154,14 @@ if (!parameters.options.notest) {
 		return rv;
 	})();
 
-	var tests = new jsapi.Tests();
+	var tests = new jsh.unit.Scenario({ composite: true, name: "jsapi.jsh.js unit tests" });
 
-	tests.environment(ENVIRONMENT);
+	//tests.environment(ENVIRONMENT);
 
 	modules.forEach( function(module) {
-		tests.add(module);
+		tests.add({ scenario: new jsapi.Scenario({ pathname: module.location, environment: ENVIRONMENT }) });
 	});
+
 	parameters.options.test.forEach( function(test) {
 		var getModule = function(path) {
 			return {
@@ -169,9 +171,9 @@ if (!parameters.options.notest) {
 
 		var tokens = test.split(":");
 		if (tokens.length == 1) {
-			tests.add(getModule(test));
+			tests.add({ scenario: new jsapi.Scenario({ pathname: getModule(test).location, environment: ENVIRONMENT }) });
 		} else {
-			tests.add(getModule(tokens[0]),tokens.slice(1).join("."));
+			tests.add({ scenario: new jsapi.Scenario({ pathname: getModule(tokens[0]).locaation, unit: tokens.slice(1).join("."), environment: ENVIRONMENT }) });
 		}
 	});
 	var UNIT_TESTS_COMPLETED = function(success) {
@@ -182,7 +184,7 @@ if (!parameters.options.notest) {
 			jsh.shell.echo("Tests passed.");
 		}
 	}
-	UNIT_TESTS_COMPLETED(tests.toScenario().run(console));
+	UNIT_TESTS_COMPLETED(tests.run({ console: console }));
 }
 
 if (parameters.options.doc) {

@@ -49,16 +49,17 @@ plugin({
 			html: jsh.unit.html
 		});
 		jsh.unit.html.Scenario = function(p) {
-			var tests = new jshapi.Tests();
-			if (p.environment) {
-				tests.environment(p.environment);
-			} else {
-				tests.environment({});
-			}
-			p.pages.forEach(function(page) {
-				tests.add({ location: page.pathname });
-			});
-			return tests.toScenario();
+			return new jshapi.Scenario(p);
+//			var tests = new jshapi.Tests();
+//			if (p.environment) {
+//				tests.environment(p.environment);
+//			} else {
+//				tests.environment({});
+//			}
+//			p.pages.forEach(function(page) {
+//				tests.add({ location: page.pathname });
+//			});
+//			return tests.toScenario();
 		};
 	}
 });
