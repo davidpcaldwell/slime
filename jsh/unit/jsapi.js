@@ -313,78 +313,84 @@ $exports.Tests = function() {
 	}
 
 	this.toScenario = function() {
-		var $scenario = {};
-		$scenario.name = "Unit tests";
+		var rv = new $context.Scenario({ composite: true, name: "Unit tests" });
+
 		var suites = [];
-		$scenario.execute = function(topscope) {
-			jsh.shell.echo("Environments present: " + Object.keys(environment));
-			//	var item is expected to be $scope.$unit
-			suites.forEach( function(suite) {
-				var scope = new Scope(suite);
-				try {
-					var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
-				} catch (e) {
-					var error = e;
-					topscope.scenario(new function() {
-						this.name = suite.name;
-
-						this.execute = function(scope) {
-							scope.test({
-								success: null,
-								error: error,
-								messages: {
-									failure: suite.name + " threw error instantiating context"
-								}
-							});
-						}
-					});
-					return;
-				}
-
-				for (var i=0; i<contexts.length; i++) {
-					try {
-						if (suite.getScenario) {
-							scope.module = suite.loadWith(contexts[i]);
-							scope.context = contexts[i];
-							var scenario = suite.getScenario(scope);
-							scenario.name = suite.name;
-							scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
-							topscope.scenario( scenario );
-						} else {
-							topscope.scenario(new function() {
-								this.name = suite.name + " (NO TESTS)";
-
-								this.execute = function(scope) {
-									scope.test({
-										success: false,
-										messages: {
-											failure: suite.name + " has no api.html file containing tests."
-										}
-									});
-								}
-							})
-						}
-					} catch (e) {
-						//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
-						topscope.scenario(new function() {
-							this.name = suite.name;
-
-							this.execute = function(scope) {
-								throw e;
-							}
-						});
-					}
-				}
-			} );
-		}
 
 		testGroups.forEach( function(item) {
 			jsh.shell.echo("Processing: " + item.name + ((item.namespace) ? (" " + item.namespace) : ""));
 			suites.push(item);
 		} );
 
-		var SCENARIO = new $context.Scenario($scenario);
-		return SCENARIO;
+		//	Refactoring, not a scope at all
+		var topscope = {
+			scenario: function(o) {
+				rv.add({ scenario: o });
+			}
+		}
+
+		//	var item is expected to be $scope.$unit
+		suites.forEach( function(suite) {
+			var scope = new Scope(suite);
+			try {
+				var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
+			} catch (e) {
+				var error = e;
+				topscope.scenario(new function() {
+					this.name = suite.name;
+
+					this.execute = function(scope) {
+						scope.test({
+							success: null,
+							error: error,
+							messages: {
+								failure: suite.name + " threw error instantiating context"
+							}
+						});
+					}
+				});
+				return;
+			}
+
+			for (var i=0; i<contexts.length; i++) {
+				try {
+					if (suite.getScenario) {
+						scope.module = suite.loadWith(contexts[i]);
+						scope.context = contexts[i];
+						var scenario = suite.getScenario(scope);
+						scenario.name = suite.name;
+						scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
+						topscope.scenario( scenario );
+					} else {
+						topscope.scenario(new function() {
+							this.name = suite.name + " (NO TESTS)";
+
+							this.execute = function(scope) {
+								scope.test({
+									success: false,
+									messages: {
+										failure: suite.name + " has no api.html file containing tests."
+									}
+								});
+							}
+						})
+					}
+				} catch (e) {
+					//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
+					topscope.scenario(new function() {
+						this.name = suite.name;
+
+						this.execute = function(scope) {
+							throw e;
+						}
+					});
+				}
+			}
+		} );
+		return rv;
+//
+//		var SCENARIO = new $context.Scenario($scenario);
+//		return SCENARIO;
 	}
 };
 
