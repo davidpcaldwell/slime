@@ -31,7 +31,7 @@ plugin({
 	load: function() {
 		jsh.unit.console = {};
 		jsh.unit.console.Stream = function(p) {
-			var api = loader.file("platform/slim/slime/jsh/unit/jsunit.after.js", {
+			var api = $loader.file("jsunit.after.js", {
 				console: {
 					println: function(s) {
 						p.writer.write(s + "\n");
@@ -44,5 +44,20 @@ plugin({
 			return api.console;
 		};
 		jsh.unit.console.subprocess = $loader.file("console.stdio.js");
+		jsh.unit.html.Scenario = function(p) {
+			var jshapi = $loader.file("jsapi.js", {
+				Scenario: jsh.unit.Scenario,
+				html: jsh.unit.html
+			});
+			if (p.environment) {
+				jshapi.tests.environment(p.environment);
+			} else {
+				jshapi.tests.environment({});
+			}
+			p.pages.forEach(function(page) {
+				jshapi.tests.add({ location: page.pathname });
+			});
+			return jshapi.tests.toScenario();
+		};
 	}
 });
