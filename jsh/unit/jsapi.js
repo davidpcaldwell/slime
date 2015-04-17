@@ -315,12 +315,7 @@ $exports.Tests = function() {
 	this.toScenario = function() {
 		var rv = new $context.Scenario({ composite: true, name: "Unit tests" });
 
-		var suites = [];
-
-		testGroups.forEach( function(item) {
-			jsh.shell.echo("Processing: " + item.name + ((item.namespace) ? (" " + item.namespace) : ""));
-			suites.push(item);
-		} );
+		var suites = testGroups;
 
 		//	Refactoring, not a scope at all
 		var topscope = {
