@@ -42,7 +42,7 @@ var types = new function() {
 			this.toString = function() {
 				return "VARCHAR(" + precision + ")";
 			}
-			
+
 			this.decode = function(rs,column) {
 				return String(rs.getString(column));
 			};
@@ -61,11 +61,11 @@ var types = new function() {
 			this.toString = function() {
 				return "LONGVARCHAR(" + precision + ")";
 			}
-			
+
 			this.decode = function(rs,column) {
 				return String(rs.getString(column));
 			};
-		
+
 			this.cast = function(value) {
 				return cast("LONGVARCHAR(" + precision + ")",value,function(s) {
 					//	TODO	secape
@@ -74,7 +74,7 @@ var types = new function() {
 			}
 		}
 	};
-	
+
 	var INTEGER = new function() {
 		this.toString = function() {
 			return "INTEGER";
@@ -140,7 +140,7 @@ var types = new function() {
 		this.toString = function() {
 			return "BLOB";
 		};
-		
+
 		this.decode = function(rs,column) {
 			var _blob = rs.getBlob(column);
 			//	TODO	decorate with closure method that fires when input stream closed?
@@ -162,7 +162,7 @@ var types = new function() {
 		this.toString = function() {
 			return "BIT";
 		};
-		
+
 		this.decode = function(rs,index) {
 			return Boolean(rs.getBoolean(index));
 		};

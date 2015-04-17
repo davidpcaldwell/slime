@@ -323,7 +323,7 @@ $exports.tests = new function() {
 		rv.$jsapi.test = $api.deprecate(rv.$jsapi.loader.scenario);
 		return rv;
 	}
-	
+
 	this.toScenario = function() {
 		var $scenario = {};
 		$scenario.name = "Unit tests";

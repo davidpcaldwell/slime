@@ -29,6 +29,20 @@ plugin({
 		return Boolean(jsh.java && jsh.shell && jsh.unit);
 	},
 	load: function() {
-		jsh.unit.console = $loader.file("console.stdio.js");
+		jsh.unit.console = {};
+		jsh.unit.console.Stream = function(p) {
+			var api = loader.file("platform/slim/slime/jsh/unit/jsunit.after.js", {
+				console: {
+					println: function(s) {
+						p.writer.write(s + "\n");
+					},
+					print: function(s) {
+						p.writer.write(s);
+					}
+				}
+			});
+			return api.console;
+		};
+		jsh.unit.console.subprocess = $loader.file("console.stdio.js");
 	}
 });

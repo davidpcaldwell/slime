@@ -537,7 +537,7 @@ $exports.Scenario = function(o) {
 	}
 
 	this.name = o.name;
-	
+
 	if (o.composite && o.execute) {
 		throw new Error();
 	}
@@ -575,7 +575,7 @@ $exports.Scenario = function(o) {
 			if (o.initialize) o.initialize();
 			if (o.verify) {
 				var verify = new Verify(scope);
-				o.execute(verify);				
+				o.execute(verify);
 			} else {
 				o.execute(scope);
 			}

@@ -56,7 +56,7 @@ window.onload = function() {
 	fixFunctionDivs("arguments", "Arguments");
 	fixFunctionDivs("returns", "Returns");
 	fixFunctionDivs("instances", "Instances");
-	
+
 	fixScriptElements = function() {
 		var matchingScriptElements = getElements(function(e) {
 			return e.tagName.toLowerCase() == "script" && e.type == "application/x.jsapi#tests";
@@ -98,6 +98,6 @@ window.onload = function() {
 			console.log(JSON.stringify(element.innerHTML));
 		});
 	};
-	
+
 	fixScriptElements();
 }
