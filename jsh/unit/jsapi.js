@@ -146,7 +146,7 @@ var loadApiHtml = function(file) {
 	return arguments.callee.cache[file.pathname.toString()];
 }
 
-var moduleToItem = function(moduleDescriptor,unit) {
+var Suite = function(moduleDescriptor,unit) {
 	return new function() {
 		this.name = moduleDescriptor.location.toString();
 
@@ -238,7 +238,7 @@ var Scope = function(suite,environment) {
 				var page = loadApiHtml(apifile);
 				var name = path;
 				var tests = new $context.html.ApiHtmlTests(page,name);
-				var subscope = new Scope(moduleToItem({
+				var subscope = new Scope(new Suite({
 					location: suite.getRelativePath(path),
 					path: path
 				}));
@@ -367,19 +367,13 @@ $exports.Tests = function() {
 		environment = v;
 	};
 
-	var testGroups = [];
+	var rv = new $context.Scenario({ composite: true, name: "Unit tests" });
 
 	this.add = function(module,unit) {
-		testGroups.push(moduleToItem(module,unit));
+		rv.add({ scenario: new Scenario(new Suite(module,unit), environment) });
 	}
 
 	this.toScenario = function() {
-		var rv = new $context.Scenario({ composite: true, name: "Unit tests" });
-
-		//	var item is expected to be $scope.$unit
-		testGroups.forEach( function(suite) {
-			rv.add({ scenario: new Scenario(suite,environment) });
-		} );
 		return rv;
 	}
 };
