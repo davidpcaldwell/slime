@@ -16,6 +16,6 @@ jsh.loader.plugins(jsh.script.file.getRelativePath("../../../jsh/unit"));
 var scenario = new jsh.unit.html.Scenario({
 	pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.api.html")
 });
-var success = scenario.run(new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output }));
+var success = scenario.run({ console: new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output }) });
 jsh.shell.echo("success? " + success);
 jsh.shell.exit( (success) ? 0 : 1 );

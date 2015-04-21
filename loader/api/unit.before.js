@@ -531,7 +531,7 @@ var Scope = function(o) {
 	}
 }
 
-$exports.Scenario = function(o) {
+var Scenario = function(o) {
 	if (!o) {
 		throw new TypeError("arguments[0] must be present.");
 	}
@@ -599,24 +599,25 @@ $exports.Scenario = function(o) {
 		}
 	}
 
-	var Scenario = arguments.callee;
 	this.run = function(o) {
-		var callback = arguments[1];
 		if (arguments.length == 1 && arguments[0].console) {
 			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else {
-			return $api.deprecate(function() {
-				var console = o;
-				return run({ scenario: this, console: console, Scenario: Scenario, callback: callback });
-			}).call(this);
+			throw new Error();
+//			return $api.deprecate(function() {
+//				var console = o;
+//				return run({ scenario: this, console: arguments[0], Scenario: Scenario, callback: arguments[1] });
+//			}).apply(this,arguments);
 		}
 	}
 
-	this.start = $api.deprecate(function(console,callback) {
-		run(console,callback);
-	});
+//	this.start = $api.deprecate(function(console,callback) {
+//		run(console,callback);
+//	});
 
 	this.toString = function() {
 		return "Scenario: " + this.name;
 	}
-}
+};
+
+$exports.Scenario = Scenario;
