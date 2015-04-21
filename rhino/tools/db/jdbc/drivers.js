@@ -16,7 +16,8 @@ var types = new function() {
 	var Types = Packages.java.sql.Types;
 
 	var cast = function(to,value,toLiteral) {
-		return "CAST (" + toLiteral(value) + " AS " + to + ")";
+		var literal = (value === null) ? "NULL" : toLiteral(value);
+		return "CAST (" + literal + " AS " + to + ")";
 	};
 	cast.binary = function(value) {
 		var s = "";
