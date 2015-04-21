@@ -45,7 +45,7 @@ $exports.subprocess = function() {
 	}
 };
 
-$exports.Parent = function(p) {
+var Listener = function(p) {
 	var stack = [];
 
 	var lock = new jsh.java.Thread.Monitor();
@@ -185,27 +185,18 @@ $exports.Parent = function(p) {
 
 	this.top = top;
 
-	jsh.java.Thread.start(function() {
-		p.stream.character().readLines(function(line) {
-			lock.Waiter({
-				until: function() {
-//					jsh.shell.echo("Trying to proceed with line" + t());
-					return Boolean(top.scope);
-				},
-				then: function() {
-//					jsh.shell.echo("Got line: " + line + t());
-					try {
-						if (line.substring(0,1) == "{") {
-							var json = JSON.parse(line);
-							queue(json);
-						}
-					} catch (e) {
-						Packages.java.lang.System.err.println(e);
-						Packages.java.lang.System.err.println(e.stack);
-					}
-				}
-			})();
-		});
+	this.queue = function(json) {
+		lock.Waiter({
+			until: function() {
+				return Boolean(top.scope);
+			},
+			then: function() {
+				queue(json);
+			}
+		})();
+	};
+
+	this.finish = function() {
 		lock.Waiter({
 			until: function() {
 				return true;
@@ -214,5 +205,19 @@ $exports.Parent = function(p) {
 				top.done();
 			}
 		})();
+	}
+}
+
+$exports.Parent = function(p) {
+	Listener.call(this,p);
+	var queue = this.queue;
+	var finish = this.finish;
+	jsh.java.Thread.start(function() {
+		p.stream.character().readLines(function(line) {
+			if (line.substring(0,1) == "{") {
+				queue(JSON.parse(line));
+			}
+		});
+		finish();
 	});
 }

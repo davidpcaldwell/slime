@@ -17,6 +17,11 @@ jsh.shell.jsh({
 });
 jsh.shell.jsh({
 	fork: true,
+	script: jsh.script.file.getRelativePath("jsh.unit.html.Scenario.jsh.js"),
+	arguments: ["-mode","stdio.parent"]
+});
+jsh.shell.jsh({
+	fork: true,
 	script: jsh.script.file.getRelativePath("../unit.jsh.js")
 });
 jsh.shell.jsh({
