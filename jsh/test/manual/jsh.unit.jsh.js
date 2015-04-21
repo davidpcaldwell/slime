@@ -19,3 +19,7 @@ jsh.shell.jsh({
 	fork: true,
 	script: jsh.script.file.getRelativePath("../unit.jsh.js")
 });
+jsh.shell.jsh({
+	fork: true,
+	script: jsh.script.file.getRelativePath("../browser.jsh.js")
+});

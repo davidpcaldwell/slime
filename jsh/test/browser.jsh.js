@@ -60,6 +60,9 @@ var programs = (function() {
 	add("safari","/Applications/Safari.app/Contents/MacOS/Safari");
 	add("firefox","/Applications/Firefox.app/Contents/MacOS/firefox");
 	add("chrome","/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
+
+	//	Linux
+	add("chrome", "/opt/google/chrome/chrome");
 	return rv;
 })();
 
