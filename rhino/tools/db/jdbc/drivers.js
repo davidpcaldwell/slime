@@ -178,6 +178,7 @@ var types = new function() {
 	this.getCodec = function(type) {
 		if (type.code == Types.VARCHAR) return VARCHAR(type.precision);
 		if (type.code == Types.INTEGER) return INTEGER;
+		if (type.code == Types.TINYINT) return INTEGER;
 		if (type.code == Types.SMALLINT) return INTEGER;
 		if (type.code == Types.BIGINT) return INTEGER;
 		if (type.code == Types.REAL) return DOUBLE;
