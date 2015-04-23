@@ -66,10 +66,37 @@ var programs = (function() {
 	return rv;
 })();
 
-var modules = parameters.arguments.map(function(path) { return { path: path } });
+var modules = parameters.arguments.map(function(argument) { return jsh.file.Pathname(argument); });
 jsh.shell.echo("Running " + modules.length + " browser unit tests ...");
+jsh.shell.echo(modules.map(function(object) { return object; }).join(" "));
+var common = (function() {
+	var isCommonAncestor = function(directory,list) {
+		for (var i=0; i<list.length; i++) {
+			var prefix = directory.toString();
+			if (list[i].toString().substring(0,prefix.length) != prefix) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-var slimepath = "";
+	var paths = [jsh.script.file.pathname].concat(modules.map(function(module) { return module; }));
+	var directory = jsh.script.file.parent;
+	while(!isCommonAncestor(directory,paths)) {
+		directory = directory.parent;
+	}
+	return directory;
+})();
+jsh.shell.echo("common = " + common);
+
+var slimepath = jsh.script.file.parent.toString().substring(common.toString().length).split("/").slice(0,-3).join("/") + "/";
+jsh.shell.echo("slimepath = " + slimepath);
+
+modules = modules.map(function(pathname) {
+	var string = (pathname.directory) ? pathname.directory.toString() : pathname.toString();
+	return { path: string.substring(common.toString().length) };
+});
+jsh.shell.echo("modules = " + modules.map(function(module) { return module.path; }));
 
 var browseTestPage = function(p) {
 	var opened = this.browse(p.tomcat.url(p.url));
@@ -132,6 +159,7 @@ var browserTest = function(p) {
 	};
 
 	var tomcat = startServer(p);
+	jsh.shell.echo("Browsing test page ... " + p.url);
 	var result = this.browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
 	if (!p.success) {
 		tomcat.run();
@@ -361,10 +389,10 @@ if (modules.length && browsers.length) {
 			browser.browserTest(jsh.js.Object.set({}, {
 				resources: (function() {
 					var rv = new jsh.httpd.Resources.Old();
-					rv.map("", jsh.script.file.getRelativePath("../../"));
+					rv.map("", common.pathname);
 					return rv;
 				})(),
-				servlet: "jsh/test/browser.modules.js",
+				servlet: slimepath + "jsh/test/browser.modules.js",
 				url: request.build(),
 				success: (parameters.options.interactive) ? null : slimepath + "loader/browser/test/success"
 			}, (parameters.options.coffeescript) ? { parameters: { coffeescript: parameters.options.coffeescript } } : {}));
