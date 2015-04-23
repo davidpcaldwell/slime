@@ -15,25 +15,25 @@
 var lock = new jsh.java.Thread.Monitor();
 var success;
 
-var delegate = (function() {
-	var scope = {
-		$exports: {},
-		httpd: httpd,
-		$parameters: $parameters,
-		$loader: new httpd.io.Loader({
-			resources: new function() {
-				var prefix = $parameters.delegate.split("/").slice(0,-1).join("/") + "/";
-
-				this.get = function(path) {
-					return httpd.loader.resource(prefix + path);
-				}
-			}
-		})
-	};
-	jsh.shell.echo("Running: " + $parameters.delegate);
-	httpd.loader.run($parameters.delegate, scope);
-	return scope.$exports;
-})();
+//var delegate = (function() {
+//	var scope = {
+//		$exports: {},
+//		httpd: httpd,
+//		$parameters: $parameters,
+//		$loader: new httpd.io.Loader({
+//			resources: new function() {
+//				var prefix = $parameters.delegate.split("/").slice(0,-1).join("/") + "/";
+//
+//				this.get = function(path) {
+//					return httpd.loader.resource(prefix + path);
+//				}
+//			}
+//		})
+//	};
+//	jsh.shell.echo("Running: " + $parameters.delegate);
+//	httpd.loader.run($parameters.delegate, scope);
+//	return scope.$exports;
+//})();
 
 $exports.handle = function(request) {
 	//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
@@ -108,7 +108,44 @@ $exports.handle = function(request) {
 		}
 	};
 
-	return delegate.handle(request);
+	var handle = function(request) {
+		var resource = httpd.loader.resource(request.path);
+		jsh.shell.echo("browser.modules.js mapping " + request.path + " = " + resource);
+		if (resource) {
+			var type;
+			//	TODO	wire this into servlet container MIME type specification
+			if (false) {
+
+			} else if (/\.html$/.test(request.path)) {
+				type = "text/html";
+			} else if (/\.js$/.test(request.path)) {
+				//	TODO	check for correctness
+				type = "application/javascript";
+			} else if (/\.coffee$/.test(request.path)) {
+				//	TODO	check for correctness
+				type = "text/coffeescript";
+			} else {
+				throw new Error("Unknown type: " + request.path);
+			}
+			return {
+				status: {
+					code: 200
+				},
+				body: {
+					type: type,
+					stream: resource.read(jsh.io.Streams.binary)
+				}
+			};
+		} else {
+			return {
+				status: {
+					code: 404
+				}
+			};
+		}
+	};
+
+	return handle(request);
 };
 
 $exports.destroy = function() {
