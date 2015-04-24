@@ -102,6 +102,52 @@ var Modules = function(slime,pathnames) {
 	});
 	jsh.shell.echo("modules = " + modules.map(function(module) { return module.path; }));
 	this.modules = modules;
+
+	this.test = function(p) {
+		var getBrowserTestRequest = function(modules) {
+			jsh.shell.echo("Testing modules ...");
+			modules.forEach(function(item) {
+				jsh.shell.echo("Testing module: " + item.path);
+			});
+			debugger;
+			var url = slimepath + "loader/browser/test/client.html";
+			var parameters = [];
+			modules.forEach(function(item) {
+				parameters.push({ name: "module", value: "../../../" + slimepath.split("/").map(function(item) { return ""; }).join("../") + item.path });
+			});
+			return {
+				url: url,
+				parameters: parameters,
+				build: function() {
+					//	TODO	do we not have a library somewhere that does this?
+					var urlencode = function(s) {
+						return String(Packages.java.net.URLEncoder.encode(s));
+					};
+
+					return this.url + "?" + this.parameters.map(function(item) {
+						return urlencode(item.name) + "=" + urlencode(item.value);
+					}).join("&");
+				}
+			};
+		};
+
+		var request = getBrowserTestRequest(modules.filter(p.browser.filter));
+		if (!parameters.options.interactive) {
+			request.parameters.push({ name: "callback", value: "server" });
+		}
+		jsh.shell.echo("fullurl = " + request.build());
+		browserTest(jsh.js.Object.set({}, {
+			browser: p.browser,
+			resources: (function() {
+				var rv = new jsh.httpd.Resources.Old();
+				rv.map("", common.pathname);
+				return rv;
+			})(),
+			servlet: slimepath + "jsh/test/browser.modules.js",
+			url: request.build(),
+			success: (p.interactive) ? null : slimepath + "loader/browser/test/success"
+		}, (p.coffeescript) ? { parameters: { coffeescript: p.coffeescript } } : {}));
+	}
 }
 
 var MODULES = new Modules(jsh.script.file.parent.parent.parent,modules);
@@ -382,49 +428,10 @@ if (modules.length && browsers.length) {
 	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
 		browsers.forEach(function(browser) {
-			var getBrowserTestRequest = function(modules) {
-				jsh.shell.echo("Testing modules ...");
-				modules.forEach(function(item) {
-					jsh.shell.echo("Testing module: " + item.path);
-				});
-				debugger;
-				var url = slimepath + "loader/browser/test/client.html";
-				var parameters = [];
-				modules.forEach(function(item) {
-					parameters.push({ name: "module", value: "../../../" + slimepath.split("/").map(function(item) { return ""; }).join("../") + item.path });
-				});
-				return {
-					url: url,
-					parameters: parameters,
-					build: function() {
-						//	TODO	do we not have a library somewhere that does this?
-						var urlencode = function(s) {
-							return String(Packages.java.net.URLEncoder.encode(s));
-						};
-
-						return this.url + "?" + this.parameters.map(function(item) {
-							return urlencode(item.name) + "=" + urlencode(item.value);
-						}).join("&");
-					}
-				};
-			};
-
-			var request = getBrowserTestRequest(modules.filter(browser.filter));
-			if (!parameters.options.interactive) {
-				request.parameters.push({ name: "callback", value: "server" });
-			}
-			jsh.shell.echo("fullurl = " + request.build());
-			browserTest(jsh.js.Object.set({}, {
-				browser: browser,
-				resources: (function() {
-					var rv = new jsh.httpd.Resources.Old();
-					rv.map("", common.pathname);
-					return rv;
-				})(),
-				servlet: slimepath + "jsh/test/browser.modules.js",
-				url: request.build(),
-				success: (parameters.options.interactive) ? null : slimepath + "loader/browser/test/success"
-			}, (parameters.options.coffeescript) ? { parameters: { coffeescript: parameters.options.coffeescript } } : {}));
+			(function(p) {
+				MODULES.test(p);
+				//	TODO	parameters.options below really is only for
+			})(jsh.js.Object.set({}, { interactive: parameters.options.interactive, coffeescript: parameters.options.coffeescript }, { browser: browser }))
 		});
 		jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");
 	} catch (e) {
