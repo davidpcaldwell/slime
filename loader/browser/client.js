@@ -204,7 +204,11 @@
 			return loader.file.apply(loader,arguments);
 		};
 
-		this.module = function(path,scope,target) {
+		this.module = function(path,$context) {
+			return loader.module.apply(loader,arguments);
+		}
+
+		this.value = function(path,scope,target) {
 			return loader.module.apply(loader,arguments);
 		}
 
