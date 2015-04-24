@@ -45,6 +45,8 @@ $exports.subprocess = function() {
 	}
 };
 
+//	The 'top' member of this implementation can be used as an argument to the Scenario constructor; it then needs to be fed
+//	information via the queue() method, and then the finish() method.
 var Listener = function(p) {
 	var stack = [];
 
@@ -129,53 +131,6 @@ var Listener = function(p) {
 					}
 				})();
 			}
-//			lock.Waiter({
-//				until: function() {
-//					if (queued.length && stack[stack.length-1] == self) {
-//						var action = queued.shift();
-//						if (action.start) {
-//							jsh.shell.echo("Processing start: " + self + t());
-//							var scenario = new Scenario(action.start.scenario);
-////							stack.push(scenario);
-//							scope.scenario(scenario);
-//						} else if (action.test) {
-//							jsh.shell.echo("Processing test: " + self + t());
-//							scope.test(action.test);
-//						} else if (action.end) {
-//							jsh.shell.echo("Processing end: " + self + t());
-//							ended = true;
-//						} else {
-//							jsh.shell.echo("Action: " + JSON.stringify(action));
-//						}
-//					} else if (!ended) {
-//						if (!queued.length) {
-//							jsh.shell.echo("Nothing queued: " + self + t());
-//						} else {
-//							jsh.shell.echo("Not target: " + self + t() + " target is " + stack[stack.length-1]);
-//						}
-//					} else {
-//						jsh.shell.echo("Ended already: " + self);
-//					}
-//					return ended;
-//				},
-//				then: function() {
-//					var last = stack.pop();
-//					jsh.shell.echo("Popped " + last + " off stack; self = " + self);
-//					jsh.shell.echo("New last = " + stack[stack.length-1]);
-//					if (last != self) {
-//						jsh.shell.echo("Warning: last " + last + " self " + self);
-//					}
-//				}
-//			})();
-//			lock.Waiter({
-//				until: function() {
-//					return true;
-//				},
-//				then: function() {
-//
-//				}
-//			})();
-//			jsh.shell.echo("ended: " + this + t() + " with top of stack " + stack[stack.length-1]);
 		}
 	};
 
