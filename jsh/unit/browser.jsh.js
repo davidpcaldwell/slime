@@ -110,7 +110,7 @@ var slimepath = MODULES.slimepath;
 var common = MODULES.common;
 
 var browseTestPage = function(p) {
-	var opened = this.browse(p.tomcat.url(p.url));
+	var opened = p.browser.browse(p.tomcat.url(p.url));
 	if (p.success) {
 		var output = p.client.request({
 			url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
@@ -180,8 +180,7 @@ var browserTest = function(p) {
 
 	var tomcat = startServer(p);
 	jsh.shell.echo("Browsing test page ... " + p.url);
-	jsh.shell.echo("this = " + Object.keys(this));
-	var result = browseTestPage.call(this,jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
+	var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client(), browser: this }, p));
 	if (!p.success) {
 		tomcat.run();
 	} else {
