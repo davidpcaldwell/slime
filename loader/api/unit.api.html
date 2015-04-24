@@ -16,8 +16,8 @@ END LICENSE
 	<head>
 		<title>__TITLE__</title>
 		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-		<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
-		<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+		<link href="api.css" rel="stylesheet" type="text/css" />
+		<script src="api.js"></script>
 	</head>
 	<body>
 		<div>__DESCRIPTION__</div>
@@ -31,6 +31,67 @@ END LICENSE
 		-->
 		<div>
 			<h1>Exports</h1>
+			<div class="type">
+				<a class="type" name="types.Scenario">Scenario</a>
+				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.Scenario.console">console</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="function">
+						<div class="name">add</div>
+						<span>
+							(conditional: not present if not a composite scenario)
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">run</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">console</div>
+											<span class="type"><a href="#types.console">console</a></span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
+
 			<ul>
 				<li class="constructor">
 					<div class="name">Scenario</div>

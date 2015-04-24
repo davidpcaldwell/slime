@@ -14,7 +14,7 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>api.html format</title>
+	<title>Interface specification</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 	<style type="text/css">
@@ -322,264 +322,272 @@ END LICENSE
 		<!--	TODO	define file locations and names in relation to files being tested and documented	-->
 		<h1>Unit testing</h1>
 		<div>
-			Unit tests are implemented using special <code>&lt;script></code> elements with <code>type</code> attributes beginning
-			with <code>application/x.jsapi</code> and a qualifier indicating when they should be executed.
-		</div>
-		<div>
-			<h2>Context</h2>
+			<h2>In HTML interface specifications</h2>
 			<div>
-				Each <code>&lt;script></code> element with <code>type="application/x.jsapi#context"</code> specifies a configuration
-				with which the declared tests should be run. The content of the element is a literal that either evaluates to an
-				object or an array (or <code>null</code> or <code>undefined</code>). If the literal evaluates to an object, it is
-				used as the <code>$context</code> for instantiating the module being tested. If the literal evaluates to an array,
-				each element of that array is used a a <code>$context</code> for instantiating the module.
+				Unit tests are implemented using special <code>&lt;script></code> elements with <code>type</code> attributes beginning
+				with <code>application/x.jsapi</code> and a qualifier indicating when they should be executed.
 			</div>
 			<div>
-				For each declared context, the module is instantiated with that context and the tests are run with the resulting
-				module. If no contexts are declared, a single, empty context will be supplied.
-			</div>
-			<div>
-				Context scripts can use elements placed in the scope by <code>initialize</code> scripts; see below.
-			</div>
-		</div>
-		<div>
-			<h2>Initialization</h2>
-			<div>
-				<!--	TODO	which initializers run, exactly? Somehow related to document structure.	-->
-				Throughout the code we can have scripts with <code>type="application/x.jsapi#initialize"</code> that contain
-				initialization code. They will have access
-				to the <code>module</code> object instantiated for the current context, and access to the scope in which tests will be
-				run via a variable called <code>scope</code>. Before a test is run, all initializers that precede it as siblings are
-				run, as well as any initializers that are (direct) children of its ancestors.
-			</div>
-		</div>
-		<div>
-			<h2>Tests</h2>
-			<div>
-				Throughout the code we can have scripts with <code>type="application/x.jsapi#tests"</code> that contain tests to be run.
-				These scripts also will have access to the <code>module</code> object, representing the module being tested. Further,
-				they are supplied with variables corresponding to the properties of the <code>scope</code> object; these properties
-				might come from the test execution environment or might come from <code>type="application/x.jsapi#initialize"</code>
-				sections.
-			</div>
-			<div>
-				<h3>$jsapi</h3>
+				<h3>Context</h3>
 				<div>
-					Tests receive a <code>$jsapi</code> variable in their scope which provides various services. Implementations
-					may provide additional properties and methods, but all implementations provide the following:
+					Each <code>&lt;script></code> element with <code>type="application/x.jsapi#context"</code> specifies a configuration
+					with which the declared tests should be run. The content of the element is a literal that either evaluates to an
+					object or an array (or <code>null</code> or <code>undefined</code>). If the literal evaluates to an object, it is
+					used as the <code>$context</code> for instantiating the module being tested. If the literal evaluates to an array,
+					each element of that array is used a a <code>$context</code> for instantiating the module.
 				</div>
-				<!--
-					Referenced implementations:
-
-					jsh/unit/jsapi.js
-					loader/browser/test/client.html
-				-->
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="object">
-						<div class="name">loader</div>
-						<!--	TODO	can loader be defined in terms of SLIME loader?	-->
-						<!--	TODO	what do these methods do if file not present?	-->
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">module</div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type">string</span>
-											<span>The relative path of the module, using the path of the current api.html as the base.</span>
-										</li>
-										<li class="value">
-											<span class="type">object</span>
-											<span>The <code>$context</code> with which to load the module.</span>
-										</li>
-										<li class="value">
-											<span class="type">object</span>
-											<!--	TODO	-->
-											<span>target</span>
-										</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">object</span>
-									<span>The module's exports</span>
-								</div>
-							</li>
-							<li class="function">
-								<div class="name">file</div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type">string</span>
-											<span>The relative path of the file, using the path of the current api.html as the base.</span>
-										</li>
-										<li class="value">
-											<span class="type">object</span>
-											<span>The <code>$context</code> with which to load the file.</span>
-										</li>
-										<li class="value">
-											<span class="type">object</span>
-											<!--	TODO	-->
-											<span>target</span>
-										</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">object</span>
-									<span>The file's exports</span>
-								</div>
-							</li>
-							<!--
-							<li class="function">
-								<div class="name">eval</div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</div>
-							</li>
-							-->
-							<li class="value">
-								<div class="name">coffee</div>
-								<span>
-									If present, indicates that CoffeeScript is present and CoffeeScript code may be loaded via
-									the other methods.
-								</span>
-							</li>
-						</ul>
-					</li>
-					<!--	TODO	disableBreakOnExceptions?	-->
-				</ul>
+				<div>
+					For each declared context, the module is instantiated with that context and the tests are run with the resulting
+					module. If no contexts are declared, a single, empty context will be supplied.
+				</div>
+				<div>
+					Context scripts can use elements placed in the scope by <code>initialize</code> scripts; see below.
+				</div>
 			</div>
 			<div>
-				The scope in which tests execute supports the following type:
+				<h3>Initialization</h3>
+				<div>
+					<!--	TODO	which initializers run, exactly? Somehow related to document structure.	-->
+					Throughout the code we can have scripts with <code>type="application/x.jsapi#initialize"</code> that contain
+					initialization code. They will have access
+					to the <code>module</code> object instantiated for the current context, and access to the scope in which tests will be
+					run via a variable called <code>scope</code>. Before a test is run, all initializers that precede it as siblings are
+					run, as well as any initializers that are (direct) children of its ancestors.
+				</div>
 			</div>
-			<div class="type">
-				<a class="type" name="types.scope">scope</a>
-				<span>A scope in which tests execute.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">test</div>
-						<span>Evaluates a test.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
+			<div>
+				<h3>Tests</h3>
+				<div>
+					Throughout the code we can have scripts with <code>type="application/x.jsapi#tests"</code> that contain tests to be run.
+					These scripts also will have access to the <code>module</code> object, representing the module being tested. Further,
+					they are supplied with variables corresponding to the properties of the <code>scope</code> object; these properties
+					might come from the test execution environment or might come from <code>type="application/x.jsapi#initialize"</code>
+					sections.
+				</div>
+				<div>
+					<h4>$jsapi</h4>
+					<div>
+						Tests receive a <code>$jsapi</code> variable in their scope which provides various services. Implementations
+						may provide additional properties and methods, but all implementations provide the following:
+					</div>
+					<!--
+						Referenced implementations:
+
+						jsh/unit/jsapi.js
+						loader/browser/test/client.html
+					-->
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="object">
+							<div class="name">loader</div>
+							<!--	TODO	can loader be defined in terms of SLIME loader?	-->
+							<!--	TODO	what do these methods do if file not present?	-->
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">module</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>The relative path of the module, using the path of the current api.html as the base.</span>
+											</li>
+											<li class="value">
+												<span class="type">object</span>
+												<span>The <code>$context</code> with which to load the module.</span>
+											</li>
+											<li class="value">
+												<span class="type">object</span>
+												<!--	TODO	-->
+												<span>target</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">object</span>
+										<span>The module's exports</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">file</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>The relative path of the file, using the path of the current api.html as the base.</span>
+											</li>
+											<li class="value">
+												<span class="type">object</span>
+												<span>The <code>$context</code> with which to load the file.</span>
+											</li>
+											<li class="value">
+												<span class="type">object</span>
+												<!--	TODO	-->
+												<span>target</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">object</span>
+										<span>The file's exports</span>
+									</div>
+								</li>
+								<!--
+								<li class="function">
+									<div class="name">eval</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+								</li>
+								-->
 								<li class="value">
-									<span class="type">object</span>
-									(or <span class="type">boolean</span>)
-									<span>An object implementing methods specifying the test, or a shorthand form.</span>
-									<div>
-										The complete form is an object implementing the following interface:
+									<div class="name">coffee</div>
+									<span>
+										If present, indicates that CoffeeScript is present and CoffeeScript code may be loaded via
+										the other methods.
+									</span>
+								</li>
+							</ul>
+						</li>
+						<!--	TODO	disableBreakOnExceptions?	-->
+					</ul>
+				</div>
+				<div>
+					The scope in which tests execute supports the following type:
+				</div>
+				<div class="type">
+					<a class="type" name="types.scope">scope</a>
+					<span>A scope in which tests execute.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">test</div>
+							<span>Evaluates a test.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										(or <span class="type">boolean</span>)
+										<span>An object implementing methods specifying the test, or a shorthand form.</span>
+										<div>
+											The complete form is an object implementing the following interface:
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function">
+													<div class="name">success</div>
+													<span>Implements the test, returning a boolean value to represent the result.</span>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">boolean</span>
+														<span>
+															Returns <code>true</code> to denote success, <code>false</code> to denote failure,
+															and <code>null</code> to denote an error condition.
+														</span>
+													</div>
+												</li>
+												<li class="function">
+													<div class="name">message</div>
+													<span>Returns a message describing the result of a test.</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<div class="name">success</div>
+																<span class="type">boolean</span>
+																<span>Whether this test succeeded.</span>
+															</li>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">string</span>
+														<span>A string suitable for display to a console.</span>
+													</div>
+												</li>
+											</ul>
+											If the given argument is a <code>boolean</code>, it is interpreted as a test that would return
+											the given boolean from <code>success</code> and is supplied with a default <code>message</code>
+											that indicates success or failure.
+										</div>
+									</li>
+								</ol>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">scenario</div>
+							<span>
+								Invokes a <i>scenario</i>: an object representing a set of tests, with an interface that supports
+								initialization and cleanup.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>An object implementing the test scenario.</span>
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="function">
-												<div class="name">success</div>
-												<span>Implements the test, returning a boolean value to represent the result.</span>
-												<div class="returns">
-													<div class="label">Returns</div>
-													<span class="type">boolean</span>
-													<span>
-														Returns <code>true</code> to denote success, <code>false</code> to denote failure,
-														and <code>null</code> to denote an error condition.
-													</span>
-												</div>
+												<div class="name">initialize</div>
+												<span>(optional) Invoked before the scenario executes.</span>
 											</li>
 											<li class="function">
-												<div class="name">message</div>
-												<span>Returns a message describing the result of a test.</span>
+												<div class="name">execute</div>
+												<span>Implements this test scenario.</span>
 												<div class="arguments">
 													<div class="label">Arguments</div>
 													<ol>
 														<li class="value">
-															<div class="name">success</div>
-															<span class="type">boolean</span>
-															<span>Whether this test succeeded.</span>
+															<span class="type"><a href="#types.scope">scope</a></span>
+															<span>A test scope.</span>
 														</li>
 													</ol>
 												</div>
-												<div class="returns">
-													<div class="label">Returns</div>
-													<span class="type">string</span>
-													<span>A string suitable for display to a console.</span>
-												</div>
+											</li>
+											<li class="function">
+												<div class="name">destroy</div>
+												<span>(optional) Invoked after the scenario executes.</span>
 											</li>
 										</ul>
-										If the given argument is a <code>boolean</code>, it is interpreted as a test that would return
-										the given boolean from <code>success</code> and is supplied with a default <code>message</code>
-										that indicates success or failure.
-									</div>
-								</li>
-							</ol>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">scenario</div>
-						<span>
-							Invokes a <i>scenario</i>: an object representing a set of tests, with an interface that supports
-							initialization and cleanup.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<span>An object implementing the test scenario.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">initialize</div>
-											<span>(optional) Invoked before the scenario executes.</span>
-										</li>
-										<li class="function">
-											<div class="name">execute</div>
-											<span>Implements this test scenario.</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type"><a href="#types.scope">scope</a></span>
-														<span>A test scope.</span>
-													</li>
-												</ol>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">destroy</div>
-											<span>(optional) Invoked after the scenario executes.</span>
-										</li>
-									</ul>
-								</li>
+									</li>
 
-							</ol>
-						</div>
-					</li>
-				</ul>
+								</ol>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div>
+				Script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
+				<code>http://www.inonit.com/jsapi</code>) which will be used as the scenario label when executing the tests within the
+				element.
+			</div>
+			<div>
+				<h3>Cleanup</h3>
+				Finally, we can have scripts with <code>type="application/x.jsapi#destroy"</code>. These have access to the same scope
+				in the same way as <code>type="application/x.jsapi#initialize"</code> scripts, and can be used to destroy resources
+				after tests are run.
 			</div>
 		</div>
 		<div>
-			Script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
-			<code>http://www.inonit.com/jsapi</code>) which will be used as the scenario label when executing the tests within the
-			element.
-		</div>
-		<div>
-			<h2>Cleanup</h2>
-			Finally, we can have scripts with <code>type="application/x.jsapi#destroy"</code>. These have access to the same scope
-			in the same way as <code>type="application/x.jsapi#initialize"</code> scripts, and can be used to destroy resources
-			after tests are run.
+			<h2>Programmatic interface</h2>
+			Tests can also be invoked programmatically.
+			See <a href="unit.api.html">detailed documentation</a>.
 		</div>
 	</div>
 </body>
