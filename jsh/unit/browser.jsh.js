@@ -66,27 +66,23 @@ jsh.shell.echo("browsers = " + browsers);
 if (MODULES && browsers.length) {
 	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
+		var scenario = new jsh.unit.Scenario({ composite: true, name: "Browser tests" });
 		browsers.forEach(function(browser) {
 			(function(p) {
-				var runnable = MODULES.test(p);
-				runnable.run({
-					console: new jsh.unit.console.Stream({
-						writer: jsh.shell.stdio.output
-					})
-				});
-//			if (result.success === false) {
-//				throw new Error(name + " tests failed." + ((p.message) ? (" " + p.message) : ""));
-//			} else if (result.success === true) {
-//				jsh.shell.echo(name + " tests succeeded." + ((p.message) ? (" " + p.message) : ""));
-//			} else if (result.success === null) {
-//				throw new Error(name + " tests errored." + ((p.message) ? (" " + p.message) : ""));
-//			} else {
-//				throw new Error("Error launching " + name + " tests: " + result);
-//			}
-				//	TODO	parameters.options below really is only for
+				var s = MODULES.test(p);
+				scenario.add({ scenario: s });
 			})(jsh.js.Object.set({}, { port: parameters.options.port, interactive: parameters.options.interactive, coffeescript: parameters.options.coffeescript }, { browser: browser }))
 		});
-		jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");
+		var rv = scenario.run({
+			console: new jsh.unit.console.Stream({
+				writer: jsh.shell.stdio.output
+			})
+		});
+		if (rv) {
+			jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");
+		} else {
+			jsh.shell.echo("Tests failed.");
+		}
 	} catch (e) {
 		if (e.rhinoException) {
 			e.rhinoException.printStackTrace();
