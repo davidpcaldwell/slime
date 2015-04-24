@@ -120,17 +120,17 @@ $exports.Modules = function(slime,pathnames) {
 			tomcat.run();
 		} else {
 			var name = (p.browser.name) ? p.browser.name : "Browser";
-			var console = new jsh.unit.console.subprocess.Receiver({ name: name });
-			var scenario = new jsh.unit.Scenario(console.top);
+			var receiver = new jsh.unit.console.subprocess.Receiver({ name: name });
+			var scenario = new jsh.unit.Scenario(receiver.top);
 			return new function() {
 				this.run = function(p) {
 					var thread = jsh.java.Thread.start(function() {
 						scenario.run(p);
 					});
 					result.console.forEach(function(event) {
-						console.queue(event);
+						receiver.queue(event);
 					});
-					console.finish();
+					receiver.finish();
 					thread.join();
 				}
 			};
