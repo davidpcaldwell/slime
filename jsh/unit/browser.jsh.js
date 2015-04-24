@@ -68,10 +68,14 @@ if (MODULES && browsers.length) {
 	try {
 		var scenario = new jsh.unit.Scenario({ composite: true, name: "Browser tests" });
 		browsers.forEach(function(browser) {
-			(function(p) {
-				var s = MODULES.test(p);
-				scenario.add({ scenario: s });
-			})(jsh.js.Object.set({}, { port: parameters.options.port, interactive: parameters.options.interactive, coffeescript: parameters.options.coffeescript }, { browser: browser }))
+			scenario.add({
+				scenario: MODULES.test({
+					coffeescript: parameters.options.coffeescript,
+					port: parameters.options.port,
+					browser: browser,
+					interactive: parameters.options.interactive
+				})
+			});
 		});
 		var rv = scenario.run({
 			console: new jsh.unit.console.Stream({
