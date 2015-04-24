@@ -122,27 +122,24 @@ $exports.Modules = function(slime,pathnames) {
 			var name = (p.browser.name) ? p.browser.name : "Browser";
 			var receiver = new jsh.unit.console.subprocess.Receiver({ name: name });
 			var scenario = new jsh.unit.Scenario(receiver.top);
-			return new function() {
-				this.run = function(p) {
+			scenario.run = (function(was) {
+				return function() {
+					//	TODO	is there a more elegant way to do the this/arguments stuff (maybe even rv) for threads?
+					var self = this;
+					var args = arguments;
+					var rv;
 					var thread = jsh.java.Thread.start(function() {
-						scenario.run(p);
+						rv = was.apply(self,args);
 					});
 					result.console.forEach(function(event) {
 						receiver.queue(event);
 					});
 					receiver.finish();
 					thread.join();
+					return rv;
 				}
-			};
-			if (result.success === false) {
-				throw new Error(name + " tests failed." + ((p.message) ? (" " + p.message) : ""));
-			} else if (result.success === true) {
-				jsh.shell.echo(name + " tests succeeded." + ((p.message) ? (" " + p.message) : ""));
-			} else if (result.success === null) {
-				throw new Error(name + " tests errored." + ((p.message) ? (" " + p.message) : ""));
-			} else {
-				throw new Error("Error launching " + name + " tests: " + result);
-			}
+			})(scenario.run);
+			return scenario;
 		}
 	};
 

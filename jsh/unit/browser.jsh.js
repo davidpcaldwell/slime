@@ -74,6 +74,15 @@ if (MODULES && browsers.length) {
 						writer: jsh.shell.stdio.output
 					})
 				});
+//			if (result.success === false) {
+//				throw new Error(name + " tests failed." + ((p.message) ? (" " + p.message) : ""));
+//			} else if (result.success === true) {
+//				jsh.shell.echo(name + " tests succeeded." + ((p.message) ? (" " + p.message) : ""));
+//			} else if (result.success === null) {
+//				throw new Error(name + " tests errored." + ((p.message) ? (" " + p.message) : ""));
+//			} else {
+//				throw new Error("Error launching " + name + " tests: " + result);
+//			}
 				//	TODO	parameters.options below really is only for
 			})(jsh.js.Object.set({}, { port: parameters.options.port, interactive: parameters.options.interactive, coffeescript: parameters.options.coffeescript }, { browser: browser }))
 		});
