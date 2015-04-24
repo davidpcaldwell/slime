@@ -104,19 +104,23 @@ var browseTestPage = function(p) {
 		var output = p.client.request({
 			url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
 		});
-		jsh.shell.echo("output: " + output.status.code);
-		jsh.shell.echo(output.body.stream.character().asString());
 		var response = p.client.request({
 			url: p.tomcat.url(p.success)
 		});
 		if (opened && opened.close) {
 			opened.close();
 		}
-		var string = response.body.stream.character().asString();
-		if (string == "false") return false;
-		if (string == "true") return true;
-		if (string == "null") return null;
-		return string;
+		var success = (function(string) {
+			if (string == "false") return false;
+			if (string == "true") return true;
+			if (string == "null") return null;
+			return string;
+		})(response.body.stream.character().asString());
+
+		return {
+			console: JSON.parse(output.body.stream.character().asString()),
+			success: success
+		};
 	}
 };
 var port = parameters.options.port;
@@ -170,11 +174,25 @@ var browserTest = function(p) {
 		tomcat.run();
 	} else {
 		var name = (this.name) ? this.name : "Browser";
-		if (result === false) {
+		var console = new jsh.unit.console.subprocess.Receiver({ name: name });
+		var scenario = new jsh.unit.Scenario(console.top);
+		var thread = jsh.java.Thread.start(function() {
+			scenario.run({
+				console: new jsh.unit.console.Stream({
+					writer: jsh.shell.stdio.output
+				})
+			});
+		});
+		result.console.forEach(function(event) {
+			console.queue(event);
+		});
+		console.finish();
+		thread.join();
+		if (result.success === false) {
 			throw new Error(name + " tests failed." + ((p.message) ? (" " + p.message) : ""));
-		} else if (result === true) {
+		} else if (result.success === true) {
 			jsh.shell.echo(name + " tests succeeded." + ((p.message) ? (" " + p.message) : ""));
-		} else if (result === null) {
+		} else if (result.success === null) {
 			throw new Error(name + " tests errored." + ((p.message) ? (" " + p.message) : ""));
 		} else {
 			throw new Error("Error launching " + name + " tests: " + result);

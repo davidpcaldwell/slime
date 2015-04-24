@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.Remote = function(p) {
+$exports.Forwarder = function(p) {
 	this.start = function(scenario) {
 		p.send({ start: { scenario: { name: scenario.name } } });
 	};

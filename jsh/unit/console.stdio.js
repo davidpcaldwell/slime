@@ -47,7 +47,7 @@ $exports.subprocess = function() {
 
 //	The 'top' member of this implementation can be used as an argument to the Scenario constructor; it then needs to be fed
 //	information via the queue() method, and then the finish() method.
-var Listener = function(p) {
+var Receiver = function(p) {
 	var stack = [];
 
 	var lock = new jsh.java.Thread.Monitor();
@@ -161,10 +161,12 @@ var Listener = function(p) {
 			}
 		})();
 	}
-}
+};
+
+$exports.Receiver = Receiver;
 
 $exports.Parent = function(p) {
-	Listener.call(this,p);
+	Receiver.call(this,p);
 	var queue = this.queue;
 	var finish = this.finish;
 	jsh.java.Thread.start(function() {
