@@ -180,11 +180,11 @@ var browserTest = function(p) {
 
 	var tomcat = startServer(p);
 	jsh.shell.echo("Browsing test page ... " + p.url);
-	var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client(), browser: this }, p));
+	var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
 	if (!p.success) {
 		tomcat.run();
 	} else {
-		var name = (this.name) ? this.name : "Browser";
+		var name = (p.browser.name) ? p.browser.name : "Browser";
 		var console = new jsh.unit.console.subprocess.Receiver({ name: name });
 		var scenario = new jsh.unit.Scenario(console.top);
 		var thread = jsh.java.Thread.start(function() {
@@ -265,8 +265,6 @@ var Browser = function(p) {
 		});
 		return returner();
 	};
-
-	this.browserTest = browserTest;
 };
 
 if (programs.ie) {
@@ -377,8 +375,6 @@ if (programs.chrome) {
 			});
 			return returner();
 		};
-
-		this.browserTest = browserTest;
 	})
 };
 
@@ -418,7 +414,8 @@ if (modules.length && browsers.length) {
 				request.parameters.push({ name: "callback", value: "server" });
 			}
 			jsh.shell.echo("fullurl = " + request.build());
-			browser.browserTest(jsh.js.Object.set({}, {
+			browserTest(jsh.js.Object.set({}, {
+				browser: browser,
 				resources: (function() {
 					var rv = new jsh.httpd.Resources.Old();
 					rv.map("", common.pathname);
