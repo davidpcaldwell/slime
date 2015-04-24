@@ -34,35 +34,26 @@ if (!jsh.java.Thread) {
 	jsh.shell.exit(1);
 }
 
-var browsers = [];
-
-var programs = (function() {
+var browsers = (function() {
 	var useSpecificBrowsers = (
 		parameters.options.ie || parameters.options.safari || parameters.options.firefox || parameters.options.chrome
 		|| Object.keys(parameters.options.browser).length
 	);
 
-	var rv = {};
-	for (var x in parameters.options.browser) {
-		rv[x] = parameters.options.browser[x].file;
-	}
+	var rv = [];
 
-	var add = function(browser,path) {
-		if ((!useSpecificBrowsers || parameters.options[browser]) && !rv[browser] && jsh.file.Pathname(path).file) {
-			rv[browser] = jsh.file.Pathname(path).file;
+	["IE","Safari","Firefox","Chrome"].forEach(function(name) {
+		var property = name.toLowerCase();
+		if (!useSpecificBrowsers || parameters.options[property]) {
+			var pathname = parameters.options.browser[property];
+			if (pathname) {
+				rv.push(new jsh.unit.browser[name]({ program: pathname.file }));
+			} else if (jsh.unit.browser.installed[property]) {
+				rv.push(jsh.unit.browser.installed[property]);
+			}
 		}
-	};
+	});
 
-	//	Windows
-	add("ie","C:\\Program Files\\Internet Explorer\\iexplore.exe");
-
-	//	Mac OS X
-	add("safari","/Applications/Safari.app/Contents/MacOS/Safari");
-	add("firefox","/Applications/Firefox.app/Contents/MacOS/firefox");
-	add("chrome","/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
-
-	//	Linux
-	add("chrome", "/opt/google/chrome/chrome");
 	return rv;
 })();
 
@@ -70,122 +61,9 @@ var modules = parameters.arguments.map(function(argument) { return jsh.file.Path
 jsh.shell.echo("Running " + modules.length + " browser unit tests ...");
 jsh.shell.echo(modules.map(function(object) { return object; }).join(" "));
 
-var MODULES = new jsh.unit.browser.Modules(jsh.script.file.parent.parent.parent,modules);
-
-var Browser = jsh.unit.browser.Browser;
-
-if (programs.ie) {
-	browsers.push(new Browser({
-		name: "Internet Explorer",
-		open: function(on) {
-			return function(uri) {
-				jsh.shell.run({
-					command: programs.ie,
-					arguments: [
-						uri
-					],
-					on: on
-				});
-			};
-		}
-	}));
-};
-
-if (programs.safari) {
-	browsers.push(new Browser({
-		name: "Safari",
-		open: function(on) {
-			return function(uri) {
-				jsh.shell.run({
-					command: "open",
-					arguments: [
-						"-a", programs.safari.parent.parent.parent.toString(),
-						uri
-					],
-					on: on
-				});
-			};
-		}
-	}));
-};
-
-if (programs.firefox) {
-	browsers.push(new Browser(new function() {
-		var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-		this.name = "Firefox";
-
-		this.open = function(on) {
-			return function(uri) {
-				jsh.shell.run({
-					command: programs.firefox,
-					arguments: [
-						"-no-remote",
-						"-profile", PROFILE.toString(),
-						uri
-					],
-					on: on
-				});
-			};
-		};
-	}))
-}
-
-if (programs.chrome) {
-	browsers.push(new function() {
-		this.name = "Google Chrome";
-
-		this.filter = function(module) {
-			return true;
-		}
-
-		this.browse = function(uri) {
-			var lock = new jsh.java.Thread.Monitor();
-			var opened;
-			jsh.java.Thread.start({
-				call: function() {
-					var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					TMP.getRelativePath("First Run").write("", { append: false });
-					jsh.shell.echo("Running with data directory: " + TMP);
-					jsh.shell.run({
-						command: programs.chrome,
-						arguments: [
-							"--user-data-dir=" + TMP,
-							uri
-						],
-						on: {
-							start: function(p) {
-								new lock.Waiter({
-									until: function() {
-										return true;
-									},
-									then: function() {
-										opened = new function() {
-											this.close = function() {
-												p.kill();
-											}
-										}
-									}
-								})();
-							}
-						}
-					});
-				}
-			});
-			var returner = new lock.Waiter({
-				until: function() {
-					return Boolean(opened);
-				},
-				then: function() {
-					return opened;
-				}
-			});
-			return returner();
-		};
-	})
-};
-
-if (modules.length && browsers.length) {
+var MODULES = (modules.length) ? new jsh.unit.browser.Modules(jsh.script.file.parent.parent.parent,modules) : null;
+jsh.shell.echo("browsers = " + browsers);
+if (MODULES && browsers.length) {
 	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
 		browsers.forEach(function(browser) {
@@ -208,7 +86,7 @@ if (modules.length && browsers.length) {
 		throw e;
 	}
 } else {
-	if (!modules.length) {
+	if (!MODULES) {
 		jsh.shell.echo("No modules to run.");
 	}
 	if (!browsers.length) {

@@ -92,21 +92,22 @@ $exports.Modules = function(slime,pathnames) {
 				var output = p.client.request({
 					url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
 				});
+				var consoleJson = JSON.parse(output.body.stream.character().asString());
 				var response = p.client.request({
 					url: p.tomcat.url(p.success)
 				});
-				if (opened && opened.close) {
-					opened.close();
-				}
 				var success = (function(string) {
 					if (string == "false") return false;
 					if (string == "true") return true;
 					if (string == "null") return null;
 					return string;
 				})(response.body.stream.character().asString());
+				if (opened && opened.close) {
+					opened.close();
+				}
 
 				return {
-					console: JSON.parse(output.body.stream.character().asString()),
+					console: consoleJson,
 					success: success
 				};
 			}
@@ -249,3 +250,136 @@ var Browser = function(p) {
 };
 
 $exports.Browser = Browser;
+
+$exports.IE = function(p) {
+	return new Browser({
+		name: (p.name) ? p.name : "Internet Explorer",
+		open: function(on) {
+			return function(uri) {
+				jsh.shell.run({
+					command: p.program,
+					arguments: [
+						uri
+					],
+					on: on
+				});
+			};
+		}
+	})
+};
+
+if (jsh.shell.os.name == "Mac OS X") {
+	$exports.Safari = function(p) {
+		return new Browser({
+			name: (p.name) ? p.name : "Safari",
+			open: function(on) {
+				return function(uri) {
+					jsh.shell.run({
+						command: "open",
+						arguments: [
+							"-a", p.program.parent.parent.parent.toString(),
+							uri
+						],
+						on: on
+					});
+				};
+			}
+		});
+	}
+}
+
+$exports.Firefox = function(p) {
+	return new Browser(new function() {
+		var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+		this.name = (p.name) ? p.name : "Firefox";
+
+		this.open = function(on) {
+			return function(uri) {
+				jsh.shell.run({
+					command: p.program,
+					arguments: [
+						"-no-remote",
+						"-profile", PROFILE.toString(),
+						uri
+					],
+					on: on
+				});
+			};
+		};
+	});
+};
+
+$exports.Chrome = function(p) {
+	this.name = (p.name) ? p.name : "Google Chrome";
+
+	this.filter = function(module) {
+		return true;
+	}
+
+	this.browse = function(uri) {
+		var lock = new jsh.java.Thread.Monitor();
+		var opened;
+		jsh.java.Thread.start({
+			call: function() {
+				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				TMP.getRelativePath("First Run").write("", { append: false });
+				jsh.shell.echo("Running with data directory: " + TMP);
+				jsh.shell.run({
+					command: p.program,
+					arguments: [
+						"--user-data-dir=" + TMP,
+						uri
+					],
+					on: {
+						start: function(p) {
+							new lock.Waiter({
+								until: function() {
+									return true;
+								},
+								then: function() {
+									opened = new function() {
+										this.close = function() {
+											p.kill();
+										}
+									}
+								}
+							})();
+						}
+					}
+				});
+			}
+		});
+		var returner = new lock.Waiter({
+			until: function() {
+				return Boolean(opened);
+			},
+			then: function() {
+				return opened;
+			}
+		});
+		return returner();
+	};
+};
+
+$exports.installed = {};
+
+var add = function(name,program) {
+	var constructor = $exports[name];
+	debugger;
+	if (jsh.file.Pathname(program).file && constructor) {
+		$exports.installed[name.toLowerCase()] = new constructor({ program: jsh.file.Pathname(program).file })
+	}
+}
+
+//	Windows
+add("IE","C:\\Program Files\\Internet Explorer\\iexplore.exe");
+
+//	Mac OS X
+add("Safari","/Applications/Safari.app/Contents/MacOS/Safari");
+add("Firefox","/Applications/Firefox.app/Contents/MacOS/firefox");
+add("Chrome","/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
+
+//	Linux
+add("Chrome","/opt/google/chrome/chrome");
+add("Firefox", "/usr/bin/firefox");

@@ -480,7 +480,7 @@ END LICENSE
 									//	both Chrome and Firefox seem to work without it
 									if (false) doc.close();
 									var after = new XMLSerializer().serializeToString(doc);
-									return Boolean(before == after);
+									return Boolean(before != after);
 								})(doc);
 								if (!didDocWriteWork) {
 									doc.documentElement.innerHTML = unparsed;

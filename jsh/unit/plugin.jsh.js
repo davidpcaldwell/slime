@@ -66,9 +66,11 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.shell && jsh.httpd && jsh.unit && jsh.unit.console && jsh.java;
+		return jsh.js && jsh.shell && jsh.httpd && jsh.unit && jsh.unit.console && jsh.java && jsh.file;
 	},
 	load: function() {
-		jsh.unit.browser = $loader.file("plugin.jsh.browser.js");
+		var $exports = {};
+		$loader.run("plugin.jsh.browser.js", { $exports: $exports, jsh: jsh });
+		jsh.unit.browser = $exports;
 	}
 })
