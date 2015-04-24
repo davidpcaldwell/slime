@@ -68,7 +68,12 @@ if (MODULES && browsers.length) {
 	try {
 		browsers.forEach(function(browser) {
 			(function(p) {
-				MODULES.test(p);
+				var runnable = MODULES.test(p);
+				runnable.run({
+					console: new jsh.unit.console.Stream({
+						writer: jsh.shell.stdio.output
+					})
+				});
 				//	TODO	parameters.options below really is only for
 			})(jsh.js.Object.set({}, { port: parameters.options.port, interactive: parameters.options.interactive, coffeescript: parameters.options.coffeescript }, { browser: browser }))
 		});

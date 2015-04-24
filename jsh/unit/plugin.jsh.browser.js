@@ -122,18 +122,18 @@ $exports.Modules = function(slime,pathnames) {
 			var name = (p.browser.name) ? p.browser.name : "Browser";
 			var console = new jsh.unit.console.subprocess.Receiver({ name: name });
 			var scenario = new jsh.unit.Scenario(console.top);
-			var thread = jsh.java.Thread.start(function() {
-				scenario.run({
-					console: new jsh.unit.console.Stream({
-						writer: jsh.shell.stdio.output
-					})
-				});
-			});
-			result.console.forEach(function(event) {
-				console.queue(event);
-			});
-			console.finish();
-			thread.join();
+			return new function() {
+				this.run = function(p) {
+					var thread = jsh.java.Thread.start(function() {
+						scenario.run(p);
+					});
+					result.console.forEach(function(event) {
+						console.queue(event);
+					});
+					console.finish();
+					thread.join();
+				}
+			};
 			if (result.success === false) {
 				throw new Error(name + " tests failed." + ((p.message) ? (" " + p.message) : ""));
 			} else if (result.success === true) {
@@ -179,7 +179,7 @@ $exports.Modules = function(slime,pathnames) {
 			request.parameters.push({ name: "callback", value: "server" });
 		}
 		jsh.shell.echo("fullurl = " + request.build());
-		browserTest(jsh.js.Object.set({}, {
+		return browserTest(jsh.js.Object.set({}, {
 			browser: p.browser,
 			resources: (function() {
 				var rv = new jsh.httpd.Resources.Old();
