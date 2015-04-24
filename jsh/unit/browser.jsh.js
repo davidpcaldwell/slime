@@ -103,6 +103,107 @@ var Modules = function(slime,pathnames) {
 	jsh.shell.echo("modules = " + modules.map(function(module) { return module.path; }));
 	this.modules = modules;
 
+	var browserTest = function(p) {
+		var startServer = function(p) {
+			var tomcat = new jsh.httpd.Tomcat({
+				port: p.port
+			});
+			var parameters = {
+				delegate: p.servlet,
+				url: p.success
+			};
+			for (var x in p.parameters) {
+				parameters[x] = p.parameters[x];
+			}
+			jsh.shell.echo("Starting server ...");
+			tomcat.map({
+				path: "",
+				servlets: {
+					//	alternative would be to allow an actual servlet, rather than file, to be specified using servlet plugin
+					//	and then somehow control threading from here: servlet could be defined above and could receive browser
+					//	callback and release lock allowing loop to proceed
+					//	TODO	should we enhance the servlet plugin interface to allow something other than a file?
+					"/*": {
+						file: jsh.script.file.getRelativePath("browser.servlet.js").file,
+						parameters: parameters
+					}
+				},
+				resources: p.resources
+			});
+			tomcat.start();
+			jsh.shell.echo("Tomcat base directory: " + tomcat.base);
+			return new function() {
+				this.port = tomcat.port;
+
+				this.url = function(url) {
+					return "http://127.0.0.1:" + tomcat.port + "/" + url;
+				};
+
+				this.run = function() {
+					tomcat.run();
+				}
+			};
+		};
+
+		var browseTestPage = function(p) {
+			var opened = p.browser.browse(p.tomcat.url(p.url));
+			if (p.success) {
+				var output = p.client.request({
+					url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
+				});
+				var response = p.client.request({
+					url: p.tomcat.url(p.success)
+				});
+				if (opened && opened.close) {
+					opened.close();
+				}
+				var success = (function(string) {
+					if (string == "false") return false;
+					if (string == "true") return true;
+					if (string == "null") return null;
+					return string;
+				})(response.body.stream.character().asString());
+
+				return {
+					console: JSON.parse(output.body.stream.character().asString()),
+					success: success
+				};
+			}
+		};
+
+		var tomcat = startServer(p);
+		jsh.shell.echo("Browsing test page ... " + p.url);
+		var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
+		if (!p.success) {
+			tomcat.run();
+		} else {
+			var name = (p.browser.name) ? p.browser.name : "Browser";
+			var console = new jsh.unit.console.subprocess.Receiver({ name: name });
+			var scenario = new jsh.unit.Scenario(console.top);
+			var thread = jsh.java.Thread.start(function() {
+				scenario.run({
+					console: new jsh.unit.console.Stream({
+						writer: jsh.shell.stdio.output
+					})
+				});
+			});
+			result.console.forEach(function(event) {
+				console.queue(event);
+			});
+			console.finish();
+			thread.join();
+			if (result.success === false) {
+				throw new Error(name + " tests failed." + ((p.message) ? (" " + p.message) : ""));
+			} else if (result.success === true) {
+				jsh.shell.echo(name + " tests succeeded." + ((p.message) ? (" " + p.message) : ""));
+			} else if (result.success === null) {
+				throw new Error(name + " tests errored." + ((p.message) ? (" " + p.message) : ""));
+			} else {
+				throw new Error("Error launching " + name + " tests: " + result);
+			}
+		}
+	};
+
 	this.test = function(p) {
 		var getBrowserTestRequest = function(modules) {
 			jsh.shell.echo("Testing modules ...");
@@ -132,7 +233,7 @@ var Modules = function(slime,pathnames) {
 		};
 
 		var request = getBrowserTestRequest(modules.filter(p.browser.filter));
-		if (!parameters.options.interactive) {
+		if (!p.interactive) {
 			request.parameters.push({ name: "callback", value: "server" });
 		}
 		jsh.shell.echo("fullurl = " + request.build());
@@ -151,112 +252,9 @@ var Modules = function(slime,pathnames) {
 }
 
 var MODULES = new Modules(jsh.script.file.parent.parent.parent,modules);
-modules = MODULES.modules;
-var slimepath = MODULES.slimepath;
-var common = MODULES.common;
-
-var port = parameters.options.port;
-
-var browserTest = function(p) {
-	var startServer = function(p) {
-		var tomcat = new jsh.httpd.Tomcat({
-			port: port
-		});
-		var parameters = {
-			delegate: p.servlet,
-			url: p.success
-		};
-		for (var x in p.parameters) {
-			parameters[x] = p.parameters[x];
-		}
-		jsh.shell.echo("Starting server ...");
-		tomcat.map({
-			path: "",
-			servlets: {
-				//	alternative would be to allow an actual servlet, rather than file, to be specified using servlet plugin
-				//	and then somehow control threading from here: servlet could be defined above and could receive browser
-				//	callback and release lock allowing loop to proceed
-				//	TODO	should we enhance the servlet plugin interface to allow something other than a file?
-				"/*": {
-					file: jsh.script.file.getRelativePath("browser.servlet.js").file,
-					parameters: parameters
-				}
-			},
-			resources: p.resources
-		});
-		tomcat.start();
-		jsh.shell.echo("Tomcat base directory: " + tomcat.base);
-		return new function() {
-			this.port = tomcat.port;
-
-			this.url = function(url) {
-				return "http://127.0.0.1:" + tomcat.port + "/" + url;
-			};
-
-			this.run = function() {
-				tomcat.run();
-			}
-		};
-	};
-
-	var browseTestPage = function(p) {
-		var opened = p.browser.browse(p.tomcat.url(p.url));
-		if (p.success) {
-			var output = p.client.request({
-				url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
-			});
-			var response = p.client.request({
-				url: p.tomcat.url(p.success)
-			});
-			if (opened && opened.close) {
-				opened.close();
-			}
-			var success = (function(string) {
-				if (string == "false") return false;
-				if (string == "true") return true;
-				if (string == "null") return null;
-				return string;
-			})(response.body.stream.character().asString());
-
-			return {
-				console: JSON.parse(output.body.stream.character().asString()),
-				success: success
-			};
-		}
-	};
-
-	var tomcat = startServer(p);
-	jsh.shell.echo("Browsing test page ... " + p.url);
-	var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
-	if (!p.success) {
-		tomcat.run();
-	} else {
-		var name = (p.browser.name) ? p.browser.name : "Browser";
-		var console = new jsh.unit.console.subprocess.Receiver({ name: name });
-		var scenario = new jsh.unit.Scenario(console.top);
-		var thread = jsh.java.Thread.start(function() {
-			scenario.run({
-				console: new jsh.unit.console.Stream({
-					writer: jsh.shell.stdio.output
-				})
-			});
-		});
-		result.console.forEach(function(event) {
-			console.queue(event);
-		});
-		console.finish();
-		thread.join();
-		if (result.success === false) {
-			throw new Error(name + " tests failed." + ((p.message) ? (" " + p.message) : ""));
-		} else if (result.success === true) {
-			jsh.shell.echo(name + " tests succeeded." + ((p.message) ? (" " + p.message) : ""));
-		} else if (result.success === null) {
-			throw new Error(name + " tests errored." + ((p.message) ? (" " + p.message) : ""));
-		} else {
-			throw new Error("Error launching " + name + " tests: " + result);
-		}
-	}
-};
+//modules = MODULES.modules;
+//var slimepath = MODULES.slimepath;
+//var common = MODULES.common;
 
 var Browser = function(p) {
 	var lock = new jsh.java.Thread.Monitor();
@@ -432,7 +430,7 @@ if (modules.length && browsers.length) {
 			(function(p) {
 				MODULES.test(p);
 				//	TODO	parameters.options below really is only for
-			})(jsh.js.Object.set({}, { interactive: parameters.options.interactive, coffeescript: parameters.options.coffeescript }, { browser: browser }))
+			})(jsh.js.Object.set({}, { port: parameters.options.port, interactive: parameters.options.interactive, coffeescript: parameters.options.coffeescript }, { browser: browser }))
 		});
 		jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");
 	} catch (e) {
