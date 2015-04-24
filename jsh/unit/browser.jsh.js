@@ -71,65 +71,8 @@ jsh.shell.echo("Running " + modules.length + " browser unit tests ...");
 jsh.shell.echo(modules.map(function(object) { return object; }).join(" "));
 
 var MODULES = new jsh.unit.browser.Modules(jsh.script.file.parent.parent.parent,modules);
-//modules = MODULES.modules;
-//var slimepath = MODULES.slimepath;
-//var common = MODULES.common;
 
-var Browser = function(p) {
-	var lock = new jsh.java.Thread.Monitor();
-	var opened;
-
-	var on = {
-		start: function(p) {
-			new lock.Waiter({
-				until: function() {
-					return true;
-				},
-				then: function() {
-					opened = new function() {
-						this.close = function() {
-							jsh.shell.echo("Killing browser process " + p + " ...");
-							p.kill();
-							jsh.shell.echo("Killed.");
-						}
-					}
-				}
-			})();
-		}
-	};
-
-	this.name = p.name;
-
-	this.filter = (p.exclude) ?
-		function(module) {
-			if (p.exclude(module)) {
-				return false;
-			}
-			return true;
-		}
-		: function(module) {
-			return true;
-		}
-	;
-
-	this.browse = function(uri) {
-		jsh.shell.echo("Starting browser thread...");
-		jsh.java.Thread.start({
-			call: function() {
-				p.open(on)(uri);
-			}
-		});
-		var returner = new lock.Waiter({
-			until: function() {
-				return Boolean(opened);
-			},
-			then: function() {
-				return opened;
-			}
-		});
-		return returner();
-	};
-};
+var Browser = jsh.unit.browser.Browser;
 
 if (programs.ie) {
 	browsers.push(new Browser({

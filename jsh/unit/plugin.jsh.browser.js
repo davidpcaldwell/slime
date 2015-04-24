@@ -190,5 +190,62 @@ $exports.Modules = function(slime,pathnames) {
 			success: (p.interactive) ? null : slimepath + "loader/browser/test/success"
 		}, (p.coffeescript) ? { parameters: { coffeescript: p.coffeescript } } : {}));
 	}
-}
+};
 
+var Browser = function(p) {
+	var lock = new jsh.java.Thread.Monitor();
+	var opened;
+
+	var on = {
+		start: function(p) {
+			new lock.Waiter({
+				until: function() {
+					return true;
+				},
+				then: function() {
+					opened = new function() {
+						this.close = function() {
+							jsh.shell.echo("Killing browser process " + p + " ...");
+							p.kill();
+							jsh.shell.echo("Killed.");
+						}
+					}
+				}
+			})();
+		}
+	};
+
+	this.name = p.name;
+
+	this.filter = (p.exclude) ?
+		function(module) {
+			if (p.exclude(module)) {
+				return false;
+			}
+			return true;
+		}
+		: function(module) {
+			return true;
+		}
+	;
+
+	this.browse = function(uri) {
+		jsh.shell.echo("Starting browser thread...");
+		jsh.java.Thread.start({
+			call: function() {
+				p.open(on)(uri);
+			}
+		});
+		var returner = new lock.Waiter({
+			until: function() {
+				return Boolean(opened);
+			},
+			then: function() {
+				return opened;
+			}
+		});
+		return returner();
+	};
+};
+
+$exports.Browser = Browser;
