@@ -266,7 +266,6 @@ var Browser = function(p) {
 		return returner();
 	};
 
-	this.browseTestPage = browseTestPage;
 	this.browserTest = browserTest;
 };
 
