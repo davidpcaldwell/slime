@@ -378,37 +378,37 @@ if (programs.chrome) {
 	})
 };
 
-var getBrowserTestRequest = function(modules) {
-	jsh.shell.echo("Testing modules ...");
-	modules.forEach(function(item) {
-		jsh.shell.echo("Testing module: " + item.path);
-	});
-	debugger;
-	var url = slimepath + "loader/browser/test/client.html";
-	var parameters = [];
-	modules.forEach(function(item) {
-		parameters.push({ name: "module", value: "../../../" + slimepath.split("/").map(function(item) { return ""; }).join("../") + item.path });
-	});
-	return {
-		url: url,
-		parameters: parameters,
-		build: function() {
-			//	TODO	do we not have a library somewhere that does this?
-			var urlencode = function(s) {
-				return String(Packages.java.net.URLEncoder.encode(s));
-			};
-
-			return this.url + "?" + this.parameters.map(function(item) {
-				return urlencode(item.name) + "=" + urlencode(item.value);
-			}).join("&");
-		}
-	};
-};
-
 if (modules.length && browsers.length) {
 	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
 		browsers.forEach(function(browser) {
+			var getBrowserTestRequest = function(modules) {
+				jsh.shell.echo("Testing modules ...");
+				modules.forEach(function(item) {
+					jsh.shell.echo("Testing module: " + item.path);
+				});
+				debugger;
+				var url = slimepath + "loader/browser/test/client.html";
+				var parameters = [];
+				modules.forEach(function(item) {
+					parameters.push({ name: "module", value: "../../../" + slimepath.split("/").map(function(item) { return ""; }).join("../") + item.path });
+				});
+				return {
+					url: url,
+					parameters: parameters,
+					build: function() {
+						//	TODO	do we not have a library somewhere that does this?
+						var urlencode = function(s) {
+							return String(Packages.java.net.URLEncoder.encode(s));
+						};
+
+						return this.url + "?" + this.parameters.map(function(item) {
+							return urlencode(item.name) + "=" + urlencode(item.value);
+						}).join("&");
+					}
+				};
+			};
+
 			var request = getBrowserTestRequest(modules.filter(browser.filter));
 			if (!parameters.options.interactive) {
 				request.parameters.push({ name: "callback", value: "server" });
