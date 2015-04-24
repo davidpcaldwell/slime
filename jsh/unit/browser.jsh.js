@@ -69,34 +69,45 @@ var programs = (function() {
 var modules = parameters.arguments.map(function(argument) { return jsh.file.Pathname(argument); });
 jsh.shell.echo("Running " + modules.length + " browser unit tests ...");
 jsh.shell.echo(modules.map(function(object) { return object; }).join(" "));
-var common = (function() {
-	var isCommonAncestor = function(directory,list) {
-		for (var i=0; i<list.length; i++) {
-			var prefix = directory.toString();
-			if (list[i].toString().substring(0,prefix.length) != prefix) {
-				return false;
+
+var Modules = function(slime,pathnames) {
+	var common = (function() {
+		var isCommonAncestor = function(directory,list) {
+			for (var i=0; i<list.length; i++) {
+				var prefix = directory.toString();
+				if (list[i].toString().substring(0,prefix.length) != prefix) {
+					return false;
+				}
 			}
+			return true;
 		}
-		return true;
-	}
 
-	var paths = [jsh.script.file.pathname].concat(modules.map(function(module) { return module; }));
-	var directory = jsh.script.file.parent;
-	while(!isCommonAncestor(directory,paths)) {
-		directory = directory.parent;
-	}
-	return directory;
-})();
-jsh.shell.echo("common = " + common);
+		var paths = [slime.getRelativePath("jsh/unit")].concat(pathnames);
+		var directory = slime.getSubdirectory("jsh/unit");
+		while(!isCommonAncestor(directory,paths)) {
+			directory = directory.parent;
+		}
+		return directory;
+	})();
+	jsh.shell.echo("common = " + common);
+	this.common = common;
 
-var slimepath = jsh.script.file.parent.toString().substring(common.toString().length).split("/").slice(0,-3).join("/") + "/";
-jsh.shell.echo("slimepath = " + slimepath);
+	var slimepath = slime.toString().substring(common.toString().length).split("/").slice(0,-1).join("/") + "/";
+	jsh.shell.echo("slimepath = " + slimepath);
+	this.slimepath = slimepath;
 
-modules = modules.map(function(pathname) {
-	var string = (pathname.directory) ? pathname.directory.toString() : pathname.toString();
-	return { path: string.substring(common.toString().length) };
-});
-jsh.shell.echo("modules = " + modules.map(function(module) { return module.path; }));
+	modules = pathnames.map(function(pathname) {
+		var string = (pathname.directory) ? pathname.directory.toString() : pathname.toString();
+		return { path: string.substring(common.toString().length) };
+	});
+	jsh.shell.echo("modules = " + modules.map(function(module) { return module.path; }));
+	this.modules = modules;
+}
+
+var MODULES = new Modules(jsh.script.file.parent.parent.parent,modules);
+modules = MODULES.modules;
+var slimepath = MODULES.slimepath;
+var common = MODULES.common;
 
 var browseTestPage = function(p) {
 	var opened = this.browse(p.tomcat.url(p.url));
