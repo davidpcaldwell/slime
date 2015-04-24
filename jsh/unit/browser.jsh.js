@@ -155,31 +155,6 @@ modules = MODULES.modules;
 var slimepath = MODULES.slimepath;
 var common = MODULES.common;
 
-var browseTestPage = function(p) {
-	var opened = p.browser.browse(p.tomcat.url(p.url));
-	if (p.success) {
-		var output = p.client.request({
-			url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
-		});
-		var response = p.client.request({
-			url: p.tomcat.url(p.success)
-		});
-		if (opened && opened.close) {
-			opened.close();
-		}
-		var success = (function(string) {
-			if (string == "false") return false;
-			if (string == "true") return true;
-			if (string == "null") return null;
-			return string;
-		})(response.body.stream.character().asString());
-
-		return {
-			console: JSON.parse(output.body.stream.character().asString()),
-			success: success
-		};
-	}
-};
 var port = parameters.options.port;
 
 var browserTest = function(p) {
@@ -222,6 +197,32 @@ var browserTest = function(p) {
 				tomcat.run();
 			}
 		};
+	};
+
+	var browseTestPage = function(p) {
+		var opened = p.browser.browse(p.tomcat.url(p.url));
+		if (p.success) {
+			var output = p.client.request({
+				url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
+			});
+			var response = p.client.request({
+				url: p.tomcat.url(p.success)
+			});
+			if (opened && opened.close) {
+				opened.close();
+			}
+			var success = (function(string) {
+				if (string == "false") return false;
+				if (string == "true") return true;
+				if (string == "null") return null;
+				return string;
+			})(response.body.stream.character().asString());
+
+			return {
+				console: JSON.parse(output.body.stream.character().asString()),
+				success: success
+			};
+		}
 	};
 
 	var tomcat = startServer(p);
