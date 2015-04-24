@@ -180,7 +180,8 @@ var browserTest = function(p) {
 
 	var tomcat = startServer(p);
 	jsh.shell.echo("Browsing test page ... " + p.url);
-	var result = this.browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
+	jsh.shell.echo("this = " + Object.keys(this));
+	var result = browseTestPage.call(this,jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
 	if (!p.success) {
 		tomcat.run();
 	} else {
@@ -378,7 +379,6 @@ if (programs.chrome) {
 			return returner();
 		};
 
-		this.browseTestPage = browseTestPage;
 		this.browserTest = browserTest;
 	})
 };
