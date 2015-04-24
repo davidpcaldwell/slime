@@ -63,3 +63,12 @@ plugin({
 		};
 	}
 });
+
+plugin({
+	isReady: function() {
+		return jsh.js && jsh.shell && jsh.httpd && jsh.unit && jsh.unit.console && jsh.java;
+	},
+	load: function() {
+		jsh.unit.browser = $loader.file("plugin.jsh.browser.js");
+	}
+})
