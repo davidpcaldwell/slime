@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.Console = function(p) {
+$exports.Remote = function(p) {
 	this.start = function(scenario) {
 		p.send({ start: { scenario: { name: scenario.name } } });
 	};
