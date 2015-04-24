@@ -209,6 +209,7 @@ END LICENSE
 						}
 					}
 				});
+				var Console = inonit.loader.file(parameters.jsapi+"console.js").Console;
 				var apiHtmlScript = inonit.loader.file(parameters.jsapi+"api.html.js");
 				var HALT_ON_EXCEPTION = Boolean(parameters.nocatch);
 
@@ -561,6 +562,13 @@ END LICENSE
 				}
 				var scenario = new jsapi.Scenario(_scenario);
 				var console = new function() {
+					var events = [];
+					var poster = new Console({
+						send: function(o) {
+							events.push(o);
+						}
+					});
+
 					var log = function(message) {
 						var child = document.createElement("div");
 						child.appendChild(document.createTextNode(message));
@@ -576,6 +584,7 @@ END LICENSE
 						now.appendChild(document.createTextNode("Running: " + scenario.name));
 						current.appendChild(now);
 						current = now;
+						poster.start(scenario);
 					}
 
 					this.end = function(scenario, success) {
@@ -583,6 +592,7 @@ END LICENSE
 						current.appendChild(document.createTextNode(result + " " + scenario.name))
 						current = current.parentNode;
 						log("END Scenario: " + scenario.name);
+						poster.end(scenario);
 					};
 
 					this.test = function(test) {
@@ -598,6 +608,14 @@ END LICENSE
 						var div = document.createElement("div");
 						div.appendChild(document.createTextNode(test.message));
 						current.appendChild(div);
+						poster.test(test);
+					}
+
+					this.send = function() {
+						events.push({ close: true });
+						var req = new inonit.loader.nugget.XMLHttpRequest();
+						req.open("POST", "console", false);
+						req.send(JSON.stringify(events));
 					}
 				};
 				var ASYNCHRONOUS = Boolean(parameters.asynchronous);
@@ -617,6 +635,7 @@ END LICENSE
 						};
 					} else if (parameters.callback == "server") {
 						return function(success) {
+							console.send();
 							var req = new inonit.loader.nugget.XMLHttpRequest();
 							req.open("POST", "success", false);
 							req.send(success);

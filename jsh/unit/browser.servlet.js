@@ -13,6 +13,7 @@
 //	TODO	remove direct jsh references from this file
 
 var lock = new jsh.java.Thread.Monitor();
+var consoleLock = new jsh.java.Thread.Monitor();
 var success;
 
 //var delegate = (function() {
@@ -35,6 +36,8 @@ var success;
 //	return scope.$exports;
 //})();
 
+var console = [];
+
 $exports.handle = function(request) {
 	//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
 	if (httpd.$reload) delete httpd.$reload;
@@ -55,6 +58,48 @@ $exports.handle = function(request) {
 					string: "No $parameters.coffeescript"
 				}
 			}
+		}
+	}
+	if (request.path == $parameters.url.split("/").slice(0,-1).join("/") + "/console") {
+		if (request.method == "POST") {
+			var body = JSON.parse(request.body.stream.character().asString());
+			body.forEach(function(entry) {
+				if (!entry.close) {
+					console.push(entry);
+				} else {
+					new consoleLock.Waiter({
+						until: function() {
+							return true;
+						},
+						then: function() {
+							jsh.shell.echo("Unblocking console lock.");
+							console.finished = true;
+						}
+					})();
+				}
+			});
+			return {
+				status: {
+					code: 200
+				}
+			};
+		} else if (request.method == "GET") {
+			new consoleLock.Waiter({
+				until: function() {
+					return console.finished;
+				},
+				then: function() {
+				}
+			})();
+			return {
+				status: {
+					code: 200
+				},
+				body: {
+					type: "application/json",
+					string: JSON.stringify(console)
+				}
+			};
 		}
 	}
 	if (request.path == $parameters.url) {

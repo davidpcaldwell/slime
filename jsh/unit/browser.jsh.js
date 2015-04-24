@@ -101,6 +101,11 @@ jsh.shell.echo("modules = " + modules.map(function(module) { return module.path;
 var browseTestPage = function(p) {
 	var opened = this.browse(p.tomcat.url(p.url));
 	if (p.success) {
+		var output = p.client.request({
+			url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
+		});
+		jsh.shell.echo("output: " + output.status.code);
+		jsh.shell.echo(output.body.stream.character().asString());
 		var response = p.client.request({
 			url: p.tomcat.url(p.success)
 		});
