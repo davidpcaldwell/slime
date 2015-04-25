@@ -84,8 +84,10 @@ if (MODULES && browsers.length) {
 		});
 		if (rv) {
 			jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");
+			jsh.shell.exit(0);
 		} else {
 			jsh.shell.echo("Tests failed.");
+			jsh.shell.exit(1);
 		}
 	} catch (e) {
 		if (e.rhinoException) {
