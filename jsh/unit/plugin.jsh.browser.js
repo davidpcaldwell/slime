@@ -30,19 +30,13 @@ $exports.Modules = function(slime,pathnames) {
 		}
 		return directory;
 	})();
-	jsh.shell.echo("common = " + common);
-	this.common = common;
 
 	var slimepath = slime.toString().substring(common.toString().length).split("/").slice(0,-1).join("/") + "/";
-	jsh.shell.echo("slimepath = " + slimepath);
-	this.slimepath = slimepath;
 
-	modules = pathnames.map(function(pathname) {
+	var modules = pathnames.map(function(pathname) {
 		var string = (pathname.directory) ? pathname.directory.toString() : pathname.toString();
 		return { path: string.substring(common.toString().length) };
 	});
-	jsh.shell.echo("modules = " + modules.map(function(module) { return module.path; }));
-	this.modules = modules;
 
 	var browserTest = function(p) {
 		var successUrl = (p.interactive) ? null : slimepath + "loader/browser/test/success";
