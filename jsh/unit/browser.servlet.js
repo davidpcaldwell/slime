@@ -60,7 +60,7 @@ $exports.handle = function(request) {
 			}
 		}
 	}
-	if (request.path == $parameters.url.split("/").slice(0,-1).join("/") + "/console") {
+	if ($parameters.url && request.path == $parameters.url.split("/").slice(0,-1).join("/") + "/console") {
 		if (request.method == "POST") {
 			var body = JSON.parse(request.body.stream.character().asString());
 			body.forEach(function(entry) {

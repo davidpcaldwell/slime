@@ -45,13 +45,15 @@ $exports.Modules = function(slime,pathnames) {
 	this.modules = modules;
 
 	var browserTest = function(p) {
+		var successUrl = (p.interactive) ? null : slimepath + "loader/browser/test/success";
+
 		var startServer = function(p) {
 			var tomcat = new jsh.httpd.Tomcat({
 				port: p.port
 			});
 			var parameters = {
 				delegate: p.servlet,
-				url: p.success
+				url: successUrl
 			};
 			for (var x in p.parameters) {
 				parameters[x] = p.parameters[x];
@@ -88,13 +90,13 @@ $exports.Modules = function(slime,pathnames) {
 
 		var browseTestPage = function(p) {
 			var opened = p.browser.browse(p.tomcat.url(p.url));
-			if (p.success) {
+			if (!p.interactive) {
 				var output = p.client.request({
-					url: p.tomcat.url(p.success.split("/").slice(0,-1).join("/") + "/console")
+					url: p.tomcat.url(successUrl.split("/").slice(0,-1).join("/") + "/console")
 				});
 				var consoleJson = JSON.parse(output.body.stream.character().asString());
 				var response = p.client.request({
-					url: p.tomcat.url(p.success)
+					url: p.tomcat.url(successUrl)
 				});
 				var success = (function(string) {
 					if (string == "false") return false;
@@ -116,7 +118,7 @@ $exports.Modules = function(slime,pathnames) {
 		var tomcat = startServer(p);
 		jsh.shell.echo("Browsing test page ... " + p.url);
 		var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
-		if (!p.success) {
+		if (p.interactive) {
 			tomcat.run();
 		} else {
 			var name = (p.browser.name) ? p.browser.name : "Browser";
@@ -149,7 +151,6 @@ $exports.Modules = function(slime,pathnames) {
 			modules.forEach(function(item) {
 				jsh.shell.echo("Testing module: " + item.path);
 			});
-			debugger;
 			var url = slimepath + "loader/browser/test/client.html";
 			var parameters = [];
 			modules.forEach(function(item) {
@@ -185,7 +186,7 @@ $exports.Modules = function(slime,pathnames) {
 			})(),
 			servlet: slimepath + "jsh/test/browser.modules.js",
 			url: request.build(),
-			success: (p.interactive) ? null : slimepath + "loader/browser/test/success"
+			interactive: p.interactive
 		}, (p.coffeescript) ? { parameters: { coffeescript: p.coffeescript } } : {}));
 	}
 };
@@ -363,7 +364,6 @@ $exports.installed = {};
 
 var add = function(name,program) {
 	var constructor = $exports[name];
-	debugger;
 	if (jsh.file.Pathname(program).file && constructor) {
 		$exports.installed[name.toLowerCase()] = new constructor({ program: jsh.file.Pathname(program).file })
 	}
