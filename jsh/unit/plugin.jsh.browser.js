@@ -31,6 +31,7 @@ $exports.Modules = function(slime,pathnames) {
 		return directory;
 	})();
 
+	//	TODO	could not slimepath be ../../ something if the page is under jsh? And does that matter?
 	var slimepath = slime.toString().substring(common.toString().length).split("/").slice(0,-1).join("/") + "/";
 
 	var modules = pathnames.map(function(pathname) {
