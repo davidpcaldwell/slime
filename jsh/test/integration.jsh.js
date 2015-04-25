@@ -20,7 +20,8 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		src: jsh.script.file.getRelativePath("../..")
+		src: jsh.script.file.getRelativePath("../.."),
+		rhino: jsh.file.Pathname
 	}
 });
 
@@ -42,12 +43,16 @@ if (!jsh.shell.jsh.home) {
 		jsh.shell.echo("bin: " + jdkbin);
 		jsh.shell.echo("command: " + command);
 		jsh.shell.echo("unbuilt: " + unbuilt);
+		var properties = [];
+		if (parameters.options.rhino) {
+			properties.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
+		}
 		jsh.shell.run({
 			command: command,
-			arguments: [
+			arguments: properties.concat([
 				unbuilt,
 				"build", TMP
-			],
+			]),
 			environment: jsh.js.Object.set({}, jsh.shell.environment, {
 				JSH_BUILD_NOTEST: "true",
 				JSH_BUILD_NODOC: "true"
@@ -671,6 +676,11 @@ jsh.shell.run({
 jsh.shell.run({
 	command: LAUNCHER_COMMAND[0],
 	arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
+});
+
+jsh.shell.run({
+	command: LAUNCHER_COMMAND[0],
+	arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
 });
 
 if (RHINO_LIBRARIES) {
