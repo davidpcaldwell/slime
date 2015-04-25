@@ -16,7 +16,8 @@ var types = new function() {
 	var Types = Packages.java.sql.Types;
 
 	var cast = function(to,value,toLiteral) {
-		return "CAST (" + toLiteral(value) + " AS " + to + ")";
+		var literal = (value === null) ? "NULL" : toLiteral(value);
+		return "CAST (" + literal + " AS " + to + ")";
 	};
 	cast.binary = function(value) {
 		var s = "";
@@ -177,6 +178,7 @@ var types = new function() {
 	this.getCodec = function(type) {
 		if (type.code == Types.VARCHAR) return VARCHAR(type.precision);
 		if (type.code == Types.INTEGER) return INTEGER;
+		if (type.code == Types.TINYINT) return INTEGER;
 		if (type.code == Types.SMALLINT) return INTEGER;
 		if (type.code == Types.BIGINT) return INTEGER;
 		if (type.code == Types.REAL) return DOUBLE;
