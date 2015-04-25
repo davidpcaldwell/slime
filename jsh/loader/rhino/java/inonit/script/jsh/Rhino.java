@@ -180,25 +180,12 @@ public class Rhino {
 			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $rhino);
 			Integer ignore = execution.execute(shell);
 			return null;
+		} catch (ExitError e) {
+			return new Integer(e.getStatus());
 		} catch (Engine.Errors e) {
 			Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
 			Engine.Errors.ScriptError[] errors = e.getErrors();
 			Logging.get().log(Shell.class, Level.FINER, "Engine.Errors length: %d", errors.length);
-			for (int i=0; i<errors.length; i++) {
-				Logging.get().log(Shell.class, Level.FINER, "Engine.Errors errors[%d]: %s", i, errors[i].getThrowable());
-				Throwable t = errors[i].getThrowable();
-				if (t instanceof WrappedException) {
-					WrappedException wrapper = (WrappedException)t;
-					if (wrapper.getWrappedException() instanceof ExitException) {
-						ExitException exit = (ExitException)wrapper.getWrappedException();
-						int status = exit.getStatus();
-						Logging.get().log(Shell.class, Level.INFO, "Engine.Errors errors[%d] is ExitException with status %d", i, status);
-						Logging.get().log(Shell.class, Level.INFO, "Engine.Errors element stack trace", exit);
-						Logging.get().log(Shell.class, Level.INFO, "Script stack trace: %s", wrapper.getScriptStackTrace());
-						return status;
-					}
-				}
-			}
 			Logging.get().log(Shell.class, Level.FINE, "Logging errors to %s.", rhino.getLog());
 			e.dump(rhino.getLog(), "[jsh] ");
 			return -1;
@@ -211,10 +198,10 @@ public class Rhino {
 //		return Host.create(installation, configuration, rhino, invocation).load();
 //	}
 
-	static class ExitException extends Exception {
+	static class ExitError extends Error {
 		private int status;
 
-		ExitException(int status) {
+		ExitError(int status) {
 			this.status = status;
 		}
 
@@ -255,9 +242,9 @@ public class Rhino {
 			return debugger;
 		}
 
-		public void exit(int status) throws ExitException {
+		public void exit(int status) {
 			debugger.setBreakOnExceptions(false);
-			throw new ExitException(status);
+			throw new ExitError(status);
 		}
 
 		private Interface subinterface() {
