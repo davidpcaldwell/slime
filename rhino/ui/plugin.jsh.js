@@ -64,7 +64,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd.Tomcat;
+		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat;
 	},
 	load: function() {
 		$loader.run("webview.jsh.api.js", {
