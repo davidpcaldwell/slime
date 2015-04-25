@@ -46,7 +46,6 @@ $exports.Modules = function(slime,pathnames) {
 				port: p.port
 			});
 			var parameters = {
-				delegate: p.servlet,
 				url: successUrl
 			};
 			for (var x in p.parameters) {
@@ -178,7 +177,6 @@ $exports.Modules = function(slime,pathnames) {
 				rv.map("", common.pathname);
 				return rv;
 			})(),
-			servlet: slimepath + "jsh/test/browser.modules.js",
 			url: request.build(),
 			interactive: p.interactive
 		}, (p.coffeescript) ? { parameters: { coffeescript: p.coffeescript } } : {}));
