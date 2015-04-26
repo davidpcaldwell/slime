@@ -39,7 +39,7 @@ $exports.Modules = function(slime,pathnames) {
 
 	var modules = pathnames.map(function(pathname) {
 		var string = (pathname.directory) ? pathname.directory.toString() : pathname.toString();
-		return { path: string.substring(common.toString().length) };
+		return { path: string.substring(common.toString().length).replace(/\\/g, "/") };
 	});
 
 	var browserTest = function(p) {

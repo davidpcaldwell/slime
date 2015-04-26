@@ -10,6 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("loader/api"))
+jsh.loader.plugins(jsh.script.file.parent.pathname);
+
 var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
