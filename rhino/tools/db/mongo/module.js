@@ -115,6 +115,10 @@ var Collection = function(_db,name) {
 	this.insert = function(object) {
 		_db.getCollection(name).insert(_wrap(object));
 	}
+
+	this.save = function(object) {
+		_db.getCollection(name).save(_wrap(object));
+	}
 };
 
 //	Corresponds to the Mongo shell db object
@@ -138,7 +142,6 @@ var Database = function(_db) {
 
 $exports.Client = function(p) {
 	//	See ServerAddress documentation for defaults given below; probably should call the driver to get them
-	debugger;
 	if (!p) p = {};
 	var server = (typeof(p.server) == "undefined") ? "127.0.0.1" : p.server;
 	var port = (typeof(p.port) == "undefined") ? 27017 : p.port;

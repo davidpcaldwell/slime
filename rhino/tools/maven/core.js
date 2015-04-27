@@ -35,22 +35,23 @@ $exports.mvn = function(m) {
 		},
 		(function() {
 			if (m.evaluate) {
-				return new function() {
-					var buffer = new jsh.io.Buffer();
-
-					this.stdout = buffer.writeBinary();
-					this.evaluate = function(result) {
-						buffer.close();
+				return {
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
 						if (result.status != 0) {
 							throw new Error("Exit status: " + result.status + " running " + result.command + " " + result.arguments.join(" ") + " in " + result.directory);
 						}
-						return m.evaluate(buffer.readText().asString());
+						return m.evaluate(result.stdio.output);
 					}
-				};
+				}
 			} else {
 				return {
-					stdout: m.stdout,
-					stderr: m.stderr
+					stdio: {
+						output: m.stdout,
+						error: m.stderr
+					}
 				};
 			}
 		})()

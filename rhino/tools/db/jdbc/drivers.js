@@ -353,7 +353,6 @@ var DataSource = function(c) {
 	var createQueryFactory = function(Query,argumentsFactoryMethod) {
 		if (!Query) throw new RangeError("No Query given.");
 		return function() {
-			debugger;
 			return new Query({ results: argumentsFactoryMethod.apply(null, arguments), mapper: new Mapper({ types: c.types }) });
 		}
 	}
@@ -931,8 +930,8 @@ var Schema = function(c) {
 
 	this.getTable = function(p) {
 		var tables = this.getTables();
-		var rv = $context.api.js.Array.choose(tables, function(table) {
-			return table.name == new Identifier(p.name).toString();
+		var rv = $context.api.js.Array(tables).one(function(table) {
+			return this.name == new Identifier(p.name).toString();
 		});
 		return (rv) ? rv : null;
 	}
