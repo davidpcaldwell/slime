@@ -86,7 +86,8 @@ var Cursor = function(_collection,criteria,projection) {
 
 	this.toArray = function() {
 		var _descriptors = peer().toArray().toArray();
-		var descriptors = $context.api.java.toJsArray(_descriptors, _unwrap);
+		var descriptors = $context.api.java.Array.adapt(_descriptors).map(_unwrap);
+//		var descriptors = $context.api.java.toJsArray(_descriptors, _unwrap);
 		return descriptors;
 	}
 
