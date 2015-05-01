@@ -516,16 +516,16 @@ END LICENSE
 								};
 								var value = $api.Value(one,"one");
 								$jsapi.disableBreakOnExceptions(function() {
-									verify(value).require().threw.nothing();
-									verify(value).property("foo").require().threw.type(TypeError);
-									verify(value).property("foo").require().threw.message.is("one.foo is required");
+									verify(value).evaluate(function() { return this.require(); }).threw.nothing();
+									verify(value).property("foo").evaluate(function() { return this.require() }).threw.type(TypeError);
+									verify(value).property("foo").evaluate(function() { return this.require(); }).threw.message.is("one.foo is required");
 									if (!$jsapi.java || !$jsapi.java.loader.test.HAS_NASHORN_ERROR_HACK) {
-										verify(value).property("foo","bar").threw.type(TypeError);
+										verify(value).evaluate(function() { return this.property("foo","bar"); }).threw.type(TypeError);
 									}
-									verify(value).property("name").require().threw.nothing();
-									verify(value).property("name","length").require().threw.nothing();
-									verify(value).property("nested","value").require().threw.nothing();
-									verify(value).property("nested","value1").require().threw.type(TypeError);
+									verify(value).property("name").evaluate(function() { return this.require() }).threw.nothing();
+									verify(value).property("name","length").evaluate(function() { return this.require() }).threw.nothing();
+									verify(value).property("nested","value").evaluate(function() { return this.require() }).threw.nothing();
+									verify(value).property("nested","value1").evaluate(function() { return this.require() }).threw.type(TypeError);
 									verify(one).nested.method().is("method");
 								})();
 							</script>
@@ -592,7 +592,8 @@ END LICENSE
 						verify(api,"$api").threads.steps.evaluate.property("run").is.not.equalTo(null);
 
 						var $steps = verify(api,"$api").threads.steps;
-						$steps.run({ steps: [] }).threw.nothing();
+						var $run = $steps.evaluate(function() { return this.run({ steps: [] }) });
+						$run.threw.nothing();
 
 						var A = function(shared) {
 							this.ready = function() {

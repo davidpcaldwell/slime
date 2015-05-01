@@ -281,10 +281,10 @@ END LICENSE
 								<span>An unexpected options handler that treats any unrecognized option as an error.</span>
 								<!--	TODO	verify error	-->
 								<script type="application/x.jsapi#tests">
-									verify(module).getopts({
+									verify(module).evaluate(function() { return this.getopts({
 										options: {},
 										unhandled: module.getopts.UNEXPECTED_OPTION_PARSER.ERROR
-									}, unexpected).threw.type(Error);
+									}, unexpected); }).threw.type(Error);
 								</script>
 							</li>
 							<li class="value">

@@ -111,6 +111,57 @@ var Verify = function(scope,vars) {
 		}
 
 		var wrap = function(x) {
+			return function() {
+				var argumentToString = function(v) {
+					if (typeof(v) == "string") return "\"" + v + "\"";
+					return String(v);
+				}
+				var strings = Array.prototype.map.call(arguments,argumentToString);
+				var name = prefix(x)+"(" + strings.join() + ")";
+//				try {
+					var returned = o[x].apply(o,arguments);
+					var value = rv(returned,name);
+//					value.threw = new DidNotThrow(returned,name);
+					return value;
+//				} catch (e) {
+//					return new DidNotReturn(e,name);
+//				}
+			}
+		};
+
+		var wrapProperty = function(x) {
+			defineProperty(this, x, {
+				get: function() {
+					return rv(o[x],prefix(x));
+				}
+			});
+		};
+
+		for (var x in o) {
+			try {
+				var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
+				if (noSelection && x == "selectionDirection") continue;
+				if (noSelection && x == "selectionEnd") continue;
+				if (noSelection && x == "selectionStart") continue;
+				var value = o[x];
+				if (typeof(value) == "function") {
+					this[x] = wrap(x);
+				} else {
+					if (x != "is" && x != "evaluate") {
+						wrapProperty.call(this,x);
+					}
+				}
+			} catch (e) {
+			}
+		}
+		if (o instanceof Array) {
+			wrapProperty.call(this,"length");
+		}
+		if (o instanceof Error && !this.message) {
+			wrapProperty.call(this,"message");
+		}
+
+		this.evaluate = function(f) {
 			var DidNotReturn = function(e,name) {
 				var delegate = new Value(void(0),name);
 
@@ -177,61 +228,16 @@ var Verify = function(scope,vars) {
 						}
 					})
 				}
-			}
+			};
 
-			return function() {
-				var argumentToString = function(v) {
-					if (typeof(v) == "string") return "\"" + v + "\"";
-					return String(v);
-				}
-				var strings = Array.prototype.map.call(arguments,argumentToString);
-				var name = prefix(x)+"(" + strings.join() + ")";
-				try {
-					var returned = o[x].apply(o,arguments);
-					var value = rv(returned,name);
-					value.threw = new DidNotThrow(returned,name);
-					return value;
-				} catch (e) {
-					return new DidNotReturn(e,name);
-				}
-			}
-		};
-
-		var wrapProperty = function(x) {
-			defineProperty(this, x, {
-				get: function() {
-					return rv(o[x],prefix(x));
-				}
-			});
-		};
-
-		for (var x in o) {
 			try {
-				var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
-				if (noSelection && x == "selectionDirection") continue;
-				if (noSelection && x == "selectionEnd") continue;
-				if (noSelection && x == "selectionStart") continue;
-				var value = o[x];
-				if (typeof(value) == "function") {
-					this[x] = wrap(x);
-				} else {
-					if (x != "is" && x != "evaluate") {
-						wrapProperty.call(this,x);
-					}
-				}
+				var mapped = f.call(o);
+				var value = rv(mapped,((name) ? name : "")+"{" + f + "}");
+				value.threw = new DidNotThrow(mapped,"{" + f + "}");
+				return value;
 			} catch (e) {
+				return new DidNotReturn(e,"{" + f + "}");
 			}
-		}
-		if (o instanceof Array) {
-			wrapProperty.call(this,"length");
-		}
-		if (o instanceof Error && !this.message) {
-			wrapProperty.call(this,"message");
-		}
-
-		this.evaluate = function(f) {
-			var mapped = f.call(o);
-			return rv(mapped,((name) ? name : "")+"{" + f + "}")
 		};
 		this.evaluate.property = function(property) {
 			return rv(o[property], ((name) ? name : "")+"." + property);
