@@ -589,7 +589,7 @@ END LICENSE
 					<script type="application/x.jsapi#tests">
 						verify(api,"$api").loadedByJsapi.is(true);
 						verify(api,"$api").threads.steps.is.not.equalTo(null);
-						verify(api,"$api").threads.steps.evaluate(function() { return this.run }).is.not.equalTo(null);
+						verify(api,"$api").threads.steps.evaluate.property("run").is.not.equalTo(null);
 
 						var $steps = verify(api,"$api").threads.steps;
 						$steps.run({ steps: [] }).threw.nothing();
