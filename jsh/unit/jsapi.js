@@ -205,7 +205,7 @@ var Scope = function(suite,environment) {
 	//			it? (probably not)
 	//	TODO	document $relative if it is used by tests
 	this.$relative = function(getRelativePath) {
-		return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath });
+		return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath }, environment);
 	};
 
 	this.$jsapi = {
