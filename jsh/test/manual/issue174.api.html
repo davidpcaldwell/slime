@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+		</ul>
+		<script type="application/x.jsapi#tests">
+			var o = new function() {
+				this.x = function() {
+					return "x";
+				}
+				this.x.y = 2;
+				this.z = 3;
+			};
+			verify(o).z.is(3);
+			verify(o).evaluate(function() { return this.x.y }).is(2);
+			verify(o).x.evaluate(function() { return this.y }).is(2);
+			verify(o).x.y.is(2);
+		</script>
+	</div>
+</body>
+</html>
