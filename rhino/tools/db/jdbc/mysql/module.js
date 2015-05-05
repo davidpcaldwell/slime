@@ -60,17 +60,32 @@ var types = new function() {
 	};
 };
 
-var Catalog = function(p,name) {
-	var _ds = new Packages.com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
-	if (typeof(p.host) != "undefined") _ds.setServerName(p.host);
-	if (typeof(p.port) != "undefined") _ds.setPort(p.port);
-	_ds.setUser(p.credentials.user);
-	_ds.setPassword(p.credentials.password);
-	_ds.setDatabaseName(name.toString().toLowerCase());
-	var ds = new $context.DataSource({
-		peer: _ds,
+var createDataSource = function(p,name) {
+	var _dataSource = (function() {
+		if (p._dataSource) return p._dataSource;
+		var _ds = new Packages.com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
+		if (typeof(p.host) != "undefined") _ds.setServerName(p.host);
+		if (typeof(p.port) != "undefined") _ds.setPort(p.port);
+		_ds.setUser(p.credentials.user);
+		_ds.setPassword(p.credentials.password);
+		if (name) {
+			_ds.setDatabaseName(name.toString().toLowerCase());
+		}
+		return _ds;
+	})();
+	return new $context.DataSource({
+		peer: _dataSource,
 		types: types
 	});
+}
+
+var Catalog = function(p,name) {
+	var ds = createDataSource(p,name);
+	if (!name) {
+		var c = ds.getConnection();
+		name = new $context.Identifier({ string: c.$getCatalog().toUpperCase() });
+		c.close();
+	}
 
 	$context.Catalog.call(this, {
 	});
@@ -133,21 +148,16 @@ var Catalog = function(p,name) {
 	};
 }
 
+$exports.Catalog = function(p) {
+	return new Catalog(p)
+}
+
 $exports.Database = function(p) {
 	$context.Database.call(this,function(name) {
 		return new Catalog(p,name);
 	});
 
-	var _ds = new Packages.com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
-	if (typeof(p.host) != "undefined") _ds.setServerName(p.host);
-	if (typeof(p.port) != "undefined") _ds.setPort(p.port);
-	_ds.setUser(p.credentials.user);
-	_ds.setPassword(p.credentials.password);
-
-	var ds = new $context.DataSource({
-		peer: _ds,
-		types: types
-	});
+	var ds = createDataSource(p);
 
 	this.getCatalogs = function() {
 		var connection = ds.getConnection();

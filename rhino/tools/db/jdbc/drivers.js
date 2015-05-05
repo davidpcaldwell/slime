@@ -517,6 +517,10 @@ var DataSource = function(c) {
 
 		this.$getMetaData = function() {
 			return peer.getMetaData();
+		};
+		
+		this.$getCatalog = function() {
+			return String(peer.getCatalog());
 		}
 
 		this.types = c.types;
