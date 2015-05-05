@@ -265,7 +265,9 @@ public abstract class Code {
 				if (url == null) return null;
 				try {
 					URLConnection connection = url.openConnection();
-					Long length = (connection.getContentLengthLong() == -1) ? null : new Long(connection.getContentLengthLong());
+					//	TODO	Do something fancier to retain backward compatibility with 1.6
+//					Long length = (connection.getContentLengthLong() == -1) ? null : new Long(connection.getContentLengthLong());
+					Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
 					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
 					return File.create(
 						getSourceName(url,path),
