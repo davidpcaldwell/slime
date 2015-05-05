@@ -102,6 +102,19 @@ var Collection = function(_db,name) {
 	this.find = function(criteria,projection) {
 		return new Cursor(_db.getCollection(name),criteria,projection);
 	};
+	
+	this.distinct = function(field) {
+		var _rv = _db.getCollection(name).distinct(field);
+		var rv = [];
+		for (var i=0; i<_rv.size(); i++) {
+			if (_rv.get(i).getClass().getName().equals("java.lang.String")) {
+				rv[i] = String(_rv.get(i));
+			} else {
+				throw new Error("Unsupported Java type: " + _rv.get(i).getClass());
+			}
+		}
+		return rv;
+	};
 
 	this.drop = function() {
 		_db.getCollection(name).drop();
