@@ -56,7 +56,25 @@ var types = new function() {
 //		if (type.code == Types.BIT) return BIT;
 //		if (type.code == Types.INTEGER) return INT;
 //		if (type.code == Types.DOUBLE) return DOUBLE;
-		return $context.types.getCodec(type);
+		var rv = $context.types.getCodec(type);
+		if (rv.toString() == "INTEGER") {
+			rv.cast = (function(was) {
+				return function() {
+					var rv = was.apply(this,arguments);
+					rv = rv.replace(/INTEGER/g, "SIGNED");
+					return rv;
+				}
+			})(rv.cast);
+		} else if (/^VARCHAR/.test(rv.toString())) {
+			rv.cast = (function(was) {
+				return function() {
+					var rv = was.apply(this,arguments);
+					rv = rv.replace(/VARCHAR/g, "CHAR");
+					return rv;
+				}
+			})(rv.cast);
+		}
+		return rv;
 	};
 };
 

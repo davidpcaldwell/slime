@@ -17,7 +17,7 @@ var types = new function() {
 
 	var cast = function(to,value,toLiteral) {
 		var literal = (value === null) ? "NULL" : toLiteral(value);
-		return "CAST (" + literal + " AS " + to + ")";
+		return "CAST(" + literal + " AS " + to + ")";
 	};
 	cast.binary = function(value) {
 		var s = "";
@@ -191,6 +191,8 @@ var types = new function() {
 		if (type.code == Types.LONGVARBINARY) return BLOB;
 		if (type.code == Types.BIT) return BIT;
 	};
+	
+	this.cast = cast;
 
 //	this.decode = function(type,rs,index) {
 //		var isNull = function(rs,index) {
