@@ -57,7 +57,7 @@ var types = new function() {
 //		if (type.code == Types.INTEGER) return INT;
 //		if (type.code == Types.DOUBLE) return DOUBLE;
 		var rv = $context.types.getCodec(type);
-		if (rv.toString() == "INTEGER") {
+		if (rv && rv.toString() == "INTEGER") {
 			rv.cast = (function(was) {
 				return function() {
 					var rv = was.apply(this,arguments);
@@ -65,7 +65,7 @@ var types = new function() {
 					return rv;
 				}
 			})(rv.cast);
-		} else if (/^VARCHAR/.test(rv.toString())) {
+		} else if (rv && /^VARCHAR/.test(rv.toString())) {
 			rv.cast = (function(was) {
 				return function() {
 					var rv = was.apply(this,arguments);
