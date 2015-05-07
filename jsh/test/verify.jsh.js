@@ -40,6 +40,37 @@ if (!jsh.java.Thread && (parameters.options.chrome || parameters.options.firefox
 	jsh.shell.exit(1);
 }
 
+var SLIME = jsh.script.file.parent.parent.parent;
+jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
+jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
+
+var top = new jsh.unit.Scenario({
+	composite: true,
+	name: "SLIME verify"
+});
+
+var CommandScenario = function(p) {
+	return new jsh.unit.Scenario({
+		name: p.arguments[2] + " " + p.command + " " + p.environment.JSH_ENGINE,
+		execute: function(scope) {
+			jsh.shell.run(jsh.js.Object.set({}, p, {
+				evaluate: function(result) {
+					scope.test(function() {
+						return {
+							success: !result.status,
+							message: "Exit status " + result.status
+						}
+					});
+				}
+			}))
+		}
+	});
+};
+
+var command = function(p) {
+	top.add({ scenario: new CommandScenario(p) });
+}
+
 parameters.options.java.forEach(function(jre) {
 	parameters.options.engine.forEach(function(engine) {
 		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin")]);
@@ -65,7 +96,7 @@ parameters.options.java.forEach(function(jre) {
 		} else {
 			jsh.shell.echo("Running with Java " + launcher + " and engine " + engine + " ...");
 
-			jsh.shell.run({
+			command({
 				command: launcher,
 				arguments: [
 					"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
@@ -82,7 +113,7 @@ parameters.options.java.forEach(function(jre) {
 });
 
 if (parameters.options.browser) {
-	jsh.shell.run({
+	command({
 		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
 		arguments: [
 			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
@@ -94,6 +125,10 @@ if (parameters.options.browser) {
 		)
 	});
 }
+
+top.run({
+	console: new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output })
+});
 
 jsh.shell.echo();
 jsh.shell.echo("Finished at " + new Date());

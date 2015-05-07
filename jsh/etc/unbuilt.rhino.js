@@ -270,7 +270,7 @@ if (arguments[0] == "build") {
 		} else {
 		}
 	}
-	var JSH_HOME = Packages.java.io.File.createTempFile("jsh-unbuilt.", ".tmp");
+	var JSH_HOME = Packages.java.io.File.createTempFile("jsh-verify.", ".tmp");
 	JSH_HOME.mkdirs();
 	arguments.push(JSH_HOME);
 	arguments.push.apply(arguments,buildArgs);
