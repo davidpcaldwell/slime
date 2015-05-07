@@ -188,6 +188,7 @@ var types = new function() {
 		if (type.code == Types.TIMESTAMP) return TIMESTAMP;
 		if (type.code == Types.DECIMAL) return new DECIMAL(type.precision,type.scale);
 		if (type.code == Types.BLOB) return BLOB;
+		if (type.code == Types.BINARY) return BLOB;
 		if (type.code == Types.LONGVARBINARY) return BLOB;
 		if (type.code == Types.BIT) return BIT;
 	};
@@ -856,6 +857,10 @@ var Table = function(c) {
 		columns.sensitive[row.column_name] = column;
 		columns.array.push(column);
 	});
+	
+	this.toString = function() {
+		return "Table: " + c.name.toString();
+	}
 
 	this.name = c.name.toString();
 
@@ -935,11 +940,25 @@ var Schema = function(c) {
 	};
 
 	this.getTable = function(p) {
-		var tables = this.getTables();
-		var rv = $context.api.js.Array(tables).one(function(table) {
-			return this.name == new Identifier(p.name).toString();
+//		var tables = this.getTables();
+		var name = new Identifier({ string: p.name });
+		var candidateTables = c.dataSource.createMetadataQuery( function(metadata) {
+			//	TODO	this would not work in a multi-catalog database; would need to also filter on catalog
+			return metadata.getTables(null,c.name.toString(),name.toString(),null)
+		} ).toArray();
+		var row = $context.api.js.Array(candidateTables).one(function() {
+			return this.table_name == name.toString();
 		});
-		return (rv) ? rv : null;
+		return (row) ? new c.Table({ schema: this, dataSource: c.dataSource, name: new Identifier({ string: row.table_name })}) : null;
+//		return new c.Table({ schema: this, dataSource: c.dataSource, name: )
+//		.one( function() {
+//			return row.table_name == name.toString();
+//		}, this ).toArray();
+
+//		var rv = $context.api.js.Array(tables).one(function(table) {
+//			return this.name == new Identifier(p.name).toString();
+//		});
+//		return (rv) ? rv : null;
 	}
 }
 
