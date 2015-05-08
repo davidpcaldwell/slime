@@ -157,18 +157,36 @@ var Database = function(_db) {
 $exports.Client = function(p) {
 	//	See ServerAddress documentation for defaults given below; probably should call the driver to get them
 	if (!p) p = {};
-	var server = (typeof(p.server) == "undefined") ? "127.0.0.1" : p.server;
-	var port = (typeof(p.port) == "undefined") ? 27017 : p.port;
-	var _address = new Packages.com.mongodb.ServerAddress(server, port);
-	//var _options = Packages.com.mongodb.MongoClientOptions.builder();
-	var _options = new Packages.com.mongodb.MongoOptions();
+	
+	var _Address = function(p) {
+		var host = (function(host,server) {
+			if (host) return host;
+			if (server) return server;
+			return "127.0.0.1";
+		})(p.host,p.server);
+		var port = (typeof(p.port) == "undefined") ? 27017 : p.port;
+		return new Packages.com.mongodb.ServerAddress(host,port);
+	};
+	
+	var _address;
+	var _addresses;
+	if (p.seeds) {
+		_addresses = new Packages.java.util.ArrayList();
+		p.seeds.forEach(function(address) {
+			_addresses.add(new _Address(address));
+		});
+	} else {
+		_address = new _Server(p);
+	}
+	var _options = new Packages.com.mongodb.MongoClientOptions.Builder();
 	if (p._options) {
 		p._options.call(this, _options);
 	}
 	if (p.replica) {
 		_options.readPreference(Packages.com.mongodb.ReadPreference.secondaryPreferred());
 	}
-	var mongoClient = new Packages.com.mongodb.Mongo(_address, _options);
+	var _argument = (_addresses) ? _addresses : _address;
+	var mongoClient = new Packages.com.mongodb.MongoClient(_argument, _options.build());
 
 	return new function() {
 		this.connect = function(p) {
