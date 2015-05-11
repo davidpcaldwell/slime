@@ -176,7 +176,7 @@ $exports.Client = function(p) {
 			_addresses.add(new _Address(address));
 		});
 	} else {
-		_address = new _Server(p);
+		_address = new _Address(p);
 	}
 	var _options = new Packages.com.mongodb.MongoClientOptions.Builder();
 	if (p._options) {
