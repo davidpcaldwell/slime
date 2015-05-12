@@ -13,14 +13,14 @@
 
 plugin({
 	isReady: function() {
-		return jsh.unit;
+		return jsh.js && jsh.unit;
 	},
 	load: function() {
-		jsh.unit.CommandScenario = function(p) {
+		var ForkScenario = function(p) {
 			return new jsh.unit.Scenario({
 				name: p.name,
 				execute: function(scope) {
-					jsh.shell.run(jsh.js.Object.set({}, p, {
+					p.method(jsh.js.Object.set({}, p, {
 						evaluate: function(result) {
 							scope.test(function() {
 								return {
@@ -32,6 +32,12 @@ plugin({
 					}))
 				}
 			});
+		}
+
+		jsh.unit.CommandScenario = function(p) {
+			return new ForkScenario(jsh.js.Object.set({}, p, {
+				method: jsh.shell.run
+			}));
 		};
 	}
 })
