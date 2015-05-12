@@ -39,5 +39,10 @@ plugin({
 				method: jsh.shell.run
 			}));
 		};
+		jsh.unit.ScriptScenario = function(p) {
+			return new ForkScenario(jsh.js.Object.set({}, p, {
+				method: jsh.shell.jsh
+			}));
+		};
 	}
 })

@@ -10,6 +10,11 @@
 //	Contributor(s):
 //	END LICENSE
 
+var SLIME = jsh.script.file.parent.parent.parent;
+jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
+jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
+jsh.loader.plugins(jsh.script.file.parent.pathname);
+
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.shell.java.home.pathname,
@@ -32,21 +37,33 @@ if (!parameters.options.jsh) {
 		})
 	});
 }
+
+var top = new jsh.unit.Scenario({
+	composite: true,
+	name: "SLIME suite"
+});
+
 //	Provide way to set CATALINA_HOME?
 //	Provide way to set JSH_LAUNCHER_DEBUG?
 //	Provide way to set JSH_SCRIPT_DEBUGGER?
 //	Provide way to set JSH_ENGINE?
 jsh.shell.echo("Running unit tests ...");
-jsh.shell.jsh({
+top.add({ scenario: new jsh.unit.ScriptScenario({
+	name: "Unit tests",
 	shell: parameters.options.jsh.directory,
 	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js")
-});
+}) });
 
 jsh.shell.echo("Running system tests ...");
-jsh.shell.jsh({
-	shell: parameters.options.jsh.directory,
-	script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
-	environment: jsh.js.Object.set({}, jsh.shell.environment, {
-		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
+top.add({
+	scenario: new jsh.unit.ScriptScenario({
+		name: "Integration tests",
+		shell: parameters.options.jsh.directory,
+		script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
+		environment: jsh.js.Object.set({}, jsh.shell.environment, {
+			JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
+		})
 	})
 });
+var success = top.run({ console: new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output }) });
+jsh.shell.exit( (success) ? 0 : 1 );
