@@ -494,13 +494,17 @@
 				};
 			};
 
-			this.fire = function(type,detail) {
-				if (byType[type]) {
-					byType[type].forEach(function(listener) {
+			var handle = function(event) {
+				if (byType[event.type]) {
+					byType[event.type].forEach(function(listener) {
 						//	In a DOM-like structure, we would need something other than 'source' to act as 'this'
-						listener.call(source,new Event(type,detail))
+						listener.call(source,event)
 					});
 				}
+			}
+
+			this.fire = function(type,detail) {
+				handle(new Event(type,detail));
 			}
 		};
 		for (var x in p.on) {
