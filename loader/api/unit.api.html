@@ -163,13 +163,12 @@ END LICENSE
 				</li>
 			</ul>
 			<script type="application/x.jsapi#tests">
-				var unit = $jsapi.loader.file("unit.before.js");
 				var s = {
 					test: function() {
 						test.apply(scope,arguments);
 					}
 				};
-				var v = new unit.Verify(s);
+				var v = new module.Verify(s);
 				v(1).is(1);
 				v("x").length.is(1);
 				var withHidden = { is: "hey", evaluate: "dude" };

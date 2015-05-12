@@ -124,7 +124,7 @@ var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 			return jsh.script.file.getRelativePath(path).file;
 		}
 	},
-	Scenario: jsh.unit.Scenario//jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.before.js") ).Scenario,
+	Scenario: jsh.unit.Scenario//jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.js") ).Scenario,
 });
 
 if (!parameters.options.notest) {

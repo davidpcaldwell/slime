@@ -13,7 +13,7 @@
 
 plugin({
 	load: function() {
-		jsh.unit = $loader.file("unit.before.js");
+		jsh.unit = $loader.file("unit.js");
 		jsh.unit.html = $loader.file("api.html.js");
 	}
 });

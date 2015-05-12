@@ -117,7 +117,7 @@ var getElement = function(root,path) {
 
 //	Creates an object representing an api.html given its HTML and a 'name' used to name the top-level scenario; this object can:
 //		.getContexts(scope): produce the list of contexts declared on the page
-//		.getScenario(scope,unit): produce a unit.before.js/Scenario given a scope and a test path
+//		.getScenario(scope,unit): produce a unit.js/Scenario given a scope and a test path
 //
 $exports.ApiHtmlTests = function(html,name) {
 	this.toString = function() {
