@@ -43,6 +43,7 @@ if (!jsh.java.Thread && (parameters.options.chrome || parameters.options.firefox
 var SLIME = jsh.script.file.parent.parent.parent;
 jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
 jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
+jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 var top = new jsh.unit.Scenario({
 	composite: true,
@@ -50,21 +51,9 @@ var top = new jsh.unit.Scenario({
 });
 
 var CommandScenario = function(p) {
-	return new jsh.unit.Scenario({
-		name: p.arguments[2] + " " + p.command + " " + p.environment.JSH_ENGINE,
-		execute: function(scope) {
-			jsh.shell.run(jsh.js.Object.set({}, p, {
-				evaluate: function(result) {
-					scope.test(function() {
-						return {
-							success: !result.status,
-							message: "Exit status " + result.status
-						}
-					});
-				}
-			}))
-		}
-	});
+	return new jsh.unit.CommandScenario(jsh.js.Object.set({}, p, {
+		name: p.arguments[2] + " " + p.command + " " + p.environment.JSH_ENGINE
+	}));
 };
 
 var command = function(p) {
