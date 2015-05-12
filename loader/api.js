@@ -501,6 +501,13 @@
 						listener.call(source,event)
 					});
 				}
+				if (p.parent) {
+					p.parent.bubble(event);
+				}
+			}
+
+			this.bubble = function(event) {
+				handle(event);
 			}
 
 			this.fire = function(type,detail) {

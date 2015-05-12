@@ -579,6 +579,47 @@ END LICENSE
 						source.doIt();
 						verify(received).length.is(1);
 					</script>
+					<script type="application/x.jsapi#tests">
+						var Child = function(parentEvents) {
+							var events = $api.Events({ source: this, parent: parentEvents });
+
+							this.doIt = function() {
+								events.fire("a", { hello: "world" });
+							}
+						};
+
+						var Parent = function() {
+							var events = $api.Events({ source: this });
+
+							this.addChild = function() {
+								return new Child(events);
+							}
+
+							this.doIt = function() {
+								events.fire("a", { hello: "world" });
+							}
+						};
+
+						var parent = new Parent();
+						var child = parent.addChild();
+
+						var parentEvents = 0;
+						var childEvents = 0;
+						parent.listeners.add("a", function() {
+							parentEvents++;
+						});
+						child.listeners.add("a", function() {
+							childEvents++;
+						});
+
+						parent.doIt();
+						verify(parentEvents).is(1);
+						verify(childEvents).is(0);
+
+						child.doIt();
+						verify(parentEvents).is(2);
+						verify(childEvents).is(1);
+					</script>
 				</li>
 				<li class="object">
 					<div class="name">steps</div>
