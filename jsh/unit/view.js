@@ -2,34 +2,42 @@
 //	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
 //	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
+//
 //	The Original Code is the jsh JavaScript/Java shell.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
 
-$exports.console = new function() {
+$exports.Console = function(o) {
+	var console = new function() {
+		this.println = function(s) {
+			if (typeof(s) == "undefined") s = "";
+			o.writer.write( s + "\n");
+		};
+
+		this.print = function(s) {
+			o.writer.write(s);
+		}
+	};
+
 	var stack = [];
 
 	var indent = function() {
-		var m = "";
-		for (var i=0; i<stack.length; i++) {
-			m += "  ";
-		}
-		return m;
+		return new Array(stack.length+1).join("  ");
 	}
 
 	var log = function(message) {
-		$context.console.println(indent() + message);
+		console.println(indent() + message);
 	}
 
 	var dots = false;
 
 	this.start = function(scenario) {
 		if (dots) {
-			$context.console.println();
+			console.println();
 			dots = false;
 		}
 		log("Running: " + scenario.name);
@@ -40,20 +48,20 @@ $exports.console = new function() {
 	}
 
 	var printError = function(e) {
-		$context.console.println(e);
+		console.println(e);
 		if (e.message) {
-			$context.console.println(e.message);
+			console.println(e.message);
 		}
 		if (e.stack) {
 			if (e.stack.join) {
-				$context.console.println(e.stack.join("\n"));
+				console.println(e.stack.join("\n"));
 			} else {
 				//	TODO	When running jsh/unit tests on FreeBSD this property is a string, is it ever an array? Harmonize
-				$context.console.println(e.stack);
+				console.println(e.stack);
 			}
 		}
 		if (e.cause) {
-			$context.console.println("Executing code: " + e.code);
+			console.println("Executing code: " + e.code);
 			if (e.cause == e) {
 				throw new Error("Bug in setting cause");
 			}
@@ -62,7 +70,7 @@ $exports.console = new function() {
 		if (e.getStackTrace) {
 			var trace = e.getStackTrace();
 			for (var i=0; i<trace.length; i++) {
-				$context.console.println("\t" + trace[i]);
+				console.println("\t" + trace[i]);
 			}
 		}
 		if (e.getCause) {
@@ -71,11 +79,11 @@ $exports.console = new function() {
 	}
 
 	this.caught = function(p) {
-		$context.console.println("Caught something in .caught()");
+		console.println("Caught something in .caught()");
 		if (p.initialize) {
-			$context.console.println("typeof(p.initialize) = " + typeof(p.initialize));
-			$context.console.println("Caught error in initializer: code = ");
-			$context.console.println(String(p.initialize));
+			console.println("typeof(p.initialize) = " + typeof(p.initialize));
+			console.println("Caught error in initializer: code = ");
+			console.println(String(p.initialize));
 		}
 		printError(p.error);
 	}
@@ -86,27 +94,27 @@ $exports.console = new function() {
 		if (old) {
 			if (!success) {
 				if (!dots) {
-					$context.console.print(indent());
+					console.print(indent());
 					dots = true;
 				}
 				var code = (success == null) ? "*" : "X";
-				$context.console.print(code);
+				console.print(code);
 				if (test.error) {
 					printError(test.error);
 				} else if (success == null) {
-					$context.console.println("No error property provided for test.")
+					console.println("No error property provided for test.")
 				}
 				stack[stack.length-1].success = false;
 			} else {
 				if (!dots) {
-					$context.console.print(indent());
+					console.print(indent());
 					dots = true;
 				}
-				$context.console.print(".");
+				console.print(".");
 			}
 		} else {
-			$context.console.print(indent());
-			$context.console.println(test.message);
+			console.print(indent());
+			console.println(test.message);
 			if (!success) {
 //				if (!dots) {
 //					$context.console.print(indent());
@@ -118,7 +126,7 @@ $exports.console = new function() {
 				if (test.error) {
 					printError(test.error);
 				} else if (success == null) {
-					$context.console.println("No error property provided for test.")
+					console.println("No error property provided for test.")
 				}
 				stack[stack.length-1].success = false;
 			} else {
@@ -135,12 +143,12 @@ $exports.console = new function() {
 
 	this.end = function(scenario) {
 		if (dots) {
-			$context.console.println();
+			console.println();
 			dots = false;
 		}
 		var item = stack.pop();
 		if (item.scenario != scenario) {
-			throw "Scenario stack is corrupted.";
+			throw new Error("Scenario stack is corrupted.");
 		}
 		var prefix = (item.success) ? "PASSED:  " : "FAILED:  ";
 		log(prefix + scenario.name);

@@ -62,24 +62,7 @@ var stdio = (function() {
 	return api.subprocess();
 })();
 
-var console = (parameters.options.stdio) ? stdio : jsh.loader.file( jsh.script.file.getRelativePath("jsunit.after.js"), {
-	console: {
-		println: function(s) {
-			if (arguments.length == 0) {
-				Packages.java.lang.System.out.println();
-			} else {
-				//	NASHORN	under some scenarios when running test suite failing to wrap s in a string causes a
-				//			NullPointerException to get thrown out of Nashorn
-				Packages.java.lang.System.out.println(String(s));
-			}
-		},
-		print: function(s) {
-			Packages.java.lang.System.out.print(s);
-			Packages.java.lang.System.out.flush();
-		}
-	},
-	verbose: true
-} ).console;
+var console = (parameters.options.stdio) ? stdio : new jsh.unit.console.Stream( { writer: jsh.shell.stdio.output } );
 
 var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,

@@ -30,18 +30,11 @@ plugin({
 	},
 	load: function() {
 		jsh.unit.console = {};
+
+		var view = $loader.file("view.js");
+
 		jsh.unit.console.Stream = function(p) {
-			var api = $loader.file("jsunit.after.js", {
-				console: {
-					println: function(s) {
-						p.writer.write(s + "\n");
-					},
-					print: function(s) {
-						p.writer.write(s);
-					}
-				}
-			});
-			return api.console;
+			return new view.Console(p);
 		};
 		jsh.unit.console.subprocess = $loader.file("console.stdio.js");
 		var jshapi = $loader.file("jsapi.js", {
