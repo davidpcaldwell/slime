@@ -656,7 +656,8 @@ var Scenario = function(o) {
 
 	this.run = function() {
 		if (arguments.length == 1 && arguments[0].console) {
-			addConsoleListener(this,arguments[0].console);
+			var view = new $exports.View(arguments[0].console);
+			view.listen(this);
 			return run({ scenario: this, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else if (arguments.length == 1) {
 			return run({ scenario: this, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
@@ -679,3 +680,27 @@ var Scenario = function(o) {
 };
 
 $exports.Scenario = Scenario;
+
+$exports.View = function(o) {
+	var addConsoleListener = function(scenario,implementation) {
+		scenario.listeners.add("scenario", function(e) {
+			if (e.detail.start) {
+				if (implementation.start) {
+					implementation.start(e.detail.start);
+				}
+			} else if (e.detail.end) {
+				if (implementation.end) {
+					implementation.end(e.detail.end, e.detail.success);
+				}
+			}
+		});
+
+		scenario.listeners.add("test", function(e) {
+			if (implementation.test) implementation.test(e.detail);
+		});
+	};
+
+	this.listen = function(scenario) {
+		addConsoleListener(scenario,o);
+	}
+};

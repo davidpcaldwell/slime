@@ -11,39 +11,39 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.subprocess = function() {
-	return new function() {
-		this.start = function(scenario) {
-			jsh.shell.echo(JSON.stringify({ start: { scenario: { name: scenario.name } } }));
-		};
-
-		var jsonError = function(error) {
-			if (error) {
-				return {
-					type: error.type,
-					message: error.message,
-					stack: error.stack
-				}
-			} else {
-				return void(0);
-			}
-		}
-
-		this.test = function(result) {
-			jsh.shell.echo(JSON.stringify({
-				test: {
-					success: result.success,
-					message: result.message,
-					error: jsonError(result.error)
-				}
-			}));
-		}
-
-		this.end = function(scenario,success) {
-			jsh.shell.echo(JSON.stringify({ end: { scenario: { name: scenario.name }, success: success }}));
-		}
-	}
-};
+//$exports.subprocess = function() {
+//	return new function() {
+//		this.start = function(scenario) {
+//			jsh.shell.echo(JSON.stringify({ start: { scenario: { name: scenario.name } } }));
+//		};
+//
+//		var jsonError = function(error) {
+//			if (error) {
+//				return {
+//					type: error.type,
+//					message: error.message,
+//					stack: error.stack
+//				}
+//			} else {
+//				return void(0);
+//			}
+//		}
+//
+//		this.test = function(result) {
+//			jsh.shell.echo(JSON.stringify({
+//				test: {
+//					success: result.success,
+//					message: result.message,
+//					error: jsonError(result.error)
+//				}
+//			}));
+//		}
+//
+//		this.end = function(scenario,success) {
+//			jsh.shell.echo(JSON.stringify({ end: { scenario: { name: scenario.name }, success: success }}));
+//		}
+//	}
+//};
 
 //	The 'top' member of this implementation can be used as an argument to the Scenario constructor; it then needs to be fed
 //	information via the queue() method, and then the finish() method.

@@ -31,12 +31,23 @@ plugin({
 	load: function() {
 		jsh.unit.console = {};
 
-		var view = $loader.file("view.js");
+		var view = $loader.file("view.js", {
+			api: {
+				unit: jsh.unit
+			}
+		});
 
 		jsh.unit.console.Stream = function(p) {
 			return new view.Console(p);
 		};
 		jsh.unit.console.subprocess = $loader.file("console.stdio.js");
+		jsh.unit.console.subprocess.subprocess = function() {
+			return new view.JSON.Encoder({
+				send: function(s) {
+					jsh.shell.echo(s);
+				}
+			});
+		}
 		var jshapi = $loader.file("jsapi.js", {
 			Scenario: jsh.unit.Scenario,
 			html: jsh.unit.html

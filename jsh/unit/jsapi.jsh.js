@@ -58,8 +58,9 @@ var modules = parameters.options.api.map( function(pathname) {
 } );
 
 var stdio = (function() {
-	var api = jsh.script.loader.file("console.stdio.js");
-	return api.subprocess();
+	return jsh.unit.console.subprocess.subprocess();
+//	var api = jsh.script.loader.file("console.stdio.js");
+//	return api.subprocess();
 })();
 
 var console = (parameters.options.stdio) ? stdio : new jsh.unit.console.Stream( { writer: jsh.shell.stdio.output } );
