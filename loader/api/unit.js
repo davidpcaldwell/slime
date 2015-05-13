@@ -413,6 +413,15 @@ var adaptAssertion = new function() {
 	}
 }
 
+var relationships = [];
+var getParentEvents = function(scenario) {
+	for (var i=0; i<relationships.length; i++) {
+		if (relationships[i].child == scenario) {
+			return relationships[i].parentEvents;
+		}
+	}
+};
+
 var Scope = function(o) {
 	var success = true;
 	defineProperty(this,"success",{
@@ -439,11 +448,8 @@ var Scope = function(o) {
 		//			implementation; should improve this
 		var child = (function() {
 			if (object instanceof o.Scenario) {
-				return (false) ? object : new o.Scenario({
-					events: o.events,
-					run: object.run,
-					toString: object.toString
-				});
+				relationships.push({ parentEvents: o.events, child: object });
+				return object;
 			}
 			var argument = {};
 			for (var x in object) {
@@ -561,7 +567,12 @@ var Scenario = function(o) {
 		throw new TypeError("arguments[0] must be present.");
 	}
 
-	var events = $api.Events({ source: this, parent: (o.events) ? o.events : null });
+	var getParent = (function() {
+		if (o.events) return o.events;
+		return getParentEvents(this);
+	}).bind(this);
+
+	var events = $api.Events({ source: this, getParent: getParent });
 
 	this.name = o.name;
 
