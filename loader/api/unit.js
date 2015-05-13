@@ -437,7 +437,16 @@ var Scope = function(o) {
 	var runScenario = function(object,next) {
 		//	TODO	definite code smell here as we try to hold together the scenario public "wrapper" with the scenario
 		//			implementation; should improve this
-		var child = (object instanceof o.Scenario) ? object : new o.Scenario(object);
+		var child = (function() {
+			if (object instanceof o.Scenario) return object;
+			var argument = {};
+			for (var x in object) {
+				argument[x] = object[x];
+			}
+			argument.events = o.events;
+			return new o.Scenario(argument);
+		})(object);
+//		var child = (object instanceof o.Scenario) ? object : new o.Scenario(object);
 
 		var runNext = function(next) {
 			if ($context.asynchronous && $context.asynchronous.scenario) {
@@ -485,6 +494,7 @@ var Scope = function(o) {
 		if (!result.success) {
 			fail();
 		}
+		o.events.fire("test",result);
 		if (o.console.test) o.console.test(result);
 		if (next) {
 			if ($context.asynchronous && $context.asynchronous.test) {
@@ -506,6 +516,7 @@ var Scope = function(o) {
 	this.verify = new Verify(this);
 
 	this.start = function() {
+		o.events.fire("scenario", { start: o.scenario });
 		if (o.console.start) o.console.start(o.scenario);
 	}
 
@@ -514,6 +525,7 @@ var Scope = function(o) {
 			var runUnit = function(units,index) {
 				var recurse = arguments.callee;
 				if (index == units.length) {
+					o.events.fire("scenario", { end: o.scenario });
 					if (o.console.end) o.console.end(o.scenario,this.success);
 					o.callback.success(this.success);
 				} else {
@@ -532,6 +544,7 @@ var Scope = function(o) {
 
 			runUnit.call(this,units,0);
 		} else {
+			o.events.fire("scenario", { end: o.scenario });
 			if (o.console.end) o.console.end(o.scenario, this.success);
 		}
 	}
@@ -541,6 +554,8 @@ var Scenario = function(o) {
 	if (!o) {
 		throw new TypeError("arguments[0] must be present.");
 	}
+
+	var events = $api.Events({ source: this, parent: (o.events) ? o.events : null });
 
 	this.name = o.name;
 
@@ -568,7 +583,7 @@ var Scenario = function(o) {
 	}
 
 	var run = function(p) {
-		var scope = new Scope({ scenario: p.scenario, console: p.console, callback: p.callback, Scenario: p.Scenario});
+		var scope = new Scope({ scenario: p.scenario, console: p.console, callback: p.callback, Scenario: p.Scenario, events: events});
 
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
