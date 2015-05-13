@@ -175,6 +175,42 @@ END LICENSE
 				v(withHidden,"withHidden").evaluate.property("is").is("hey");
 				v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
 			</script>
+			<script type="application/x.jsapi#tests">
+				var top = new module.Scenario({
+					composite: true,
+					name: "top"
+				});
+				var starts = [];
+				var ends = [];
+				var tests = [];
+				top.listeners.add("scenario", function(e) {
+					if (e.detail.start) {
+						starts.push(e.detail);
+						jsh.shell.echo("Start: " + e.detail.start.name);
+					} else if (e.detail.end) {
+						jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+						ends.push(e.detail);
+					}
+				});
+				top.listeners.add("test", function(e) {
+					jsh.shell.echo("Test: " + e.detail.message);
+					tests.push(e.detail);
+				});
+				var child = new function() {
+					this.name = "child";
+					this.execute = function(scope) {
+						scope.test(function() {
+							return {
+								success: true,
+								message: "Hello, World!"
+							}
+						});
+					}
+				};
+				top.add({ scenario: child });
+				top.run({});
+				verify(starts).length.is(2);
+			</script>
 		</div>
 	</body>
 </html>

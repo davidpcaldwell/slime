@@ -468,6 +468,7 @@
 	$exports.Events = function(p) {
 		var source = (p.source) ? p.source : {};
 		var rv = new function() {
+			var parent = p.parent;
 			var byType = {};
 
 			var Event = function(type,detail) {
@@ -501,9 +502,13 @@
 						listener.call(source,event)
 					});
 				}
-				if (p.parent) {
-					p.parent.bubble(event);
+				if (parent) {
+					parent.bubble(event);
 				}
+			}
+
+			this.setParent = function() {
+				parent = arguments[0];
 			}
 
 			this.bubble = function(event) {

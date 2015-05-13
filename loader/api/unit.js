@@ -438,7 +438,13 @@ var Scope = function(o) {
 		//	TODO	definite code smell here as we try to hold together the scenario public "wrapper" with the scenario
 		//			implementation; should improve this
 		var child = (function() {
-			if (object instanceof o.Scenario) return object;
+			if (object instanceof o.Scenario) {
+				return (false) ? object : new o.Scenario({
+					events: o.events,
+					run: object.run,
+					toString: object.toString
+				});
+			}
 			var argument = {};
 			for (var x in object) {
 				argument[x] = object[x];
@@ -495,7 +501,7 @@ var Scope = function(o) {
 			fail();
 		}
 		o.events.fire("test",result);
-		if (o.console.test) o.console.test(result);
+		if (o.console && o.console.test) o.console.test(result);
 		if (next) {
 			if ($context.asynchronous && $context.asynchronous.test) {
 				$context.asynchronous.test(next);
@@ -517,7 +523,7 @@ var Scope = function(o) {
 
 	this.start = function() {
 		o.events.fire("scenario", { start: o.scenario });
-		if (o.console.start) o.console.start(o.scenario);
+		if (o.console && o.console.start) o.console.start(o.scenario);
 	}
 
 	this.end = function() {
@@ -525,8 +531,8 @@ var Scope = function(o) {
 			var runUnit = function(units,index) {
 				var recurse = arguments.callee;
 				if (index == units.length) {
-					o.events.fire("scenario", { end: o.scenario });
-					if (o.console.end) o.console.end(o.scenario,this.success);
+					o.events.fire("scenario", { end: o.scenario, success: this.success });
+					if (o.console && o.console.end) o.console.end(o.scenario,this.success);
 					o.callback.success(this.success);
 				} else {
 					var next = function() {
@@ -544,8 +550,8 @@ var Scope = function(o) {
 
 			runUnit.call(this,units,0);
 		} else {
-			o.events.fire("scenario", { end: o.scenario });
-			if (o.console.end) o.console.end(o.scenario, this.success);
+			o.events.fire("scenario", { end: o.scenario, success: this.success });
+			if (o.console && o.console.end) o.console.end(o.scenario, this.success);
 		}
 	}
 }
@@ -580,6 +586,11 @@ var Scenario = function(o) {
 				});
 			};
 		}).call(this);
+	}
+	if (o.run) {
+		this.run = o.run;
+		this.toString = o.toString;
+		return;
 	}
 
 	var run = function(p) {
@@ -618,10 +629,31 @@ var Scenario = function(o) {
 		if (!p.callback) {
 			return scope.success;
 		}
+	};
+
+	var addConsoleListener = function(scenario,implementation) {
+		scenario.listeners.add("scenario", function(e) {
+			if (e.detail.start) {
+				if (implementation.start) {
+					implementation.start(e.detail.start);
+				}
+			} else if (e.detail.end) {
+				if (implementation.end) {
+					implementation.end(e.detail.end, e.detail.success);
+				}
+			}
+		});
+
+		scenario.listeners.add("test", function(e) {
+			if (implementation.test) implementation.test(e.detail);
+		});
 	}
 
-	this.run = function(o) {
+	this.run = function() {
 		if (arguments.length == 1 && arguments[0].console) {
+			if (false) addConsoleListener(this,arguments[0].console);
+			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
+		} else if (arguments.length == 1) {
 			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else {
 			throw new Error();
