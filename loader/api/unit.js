@@ -470,7 +470,6 @@ var Scope = function(o) {
 
 		if (o.callback) {
 			child.run({
-				console: o.console,
 				callback: { success: function(b) {
 					if (!b) {
 						fail();
@@ -481,7 +480,6 @@ var Scope = function(o) {
 			});
 		} else {
 			var result = child.run({
-				console: o.console,
 				haltOnException: o.haltOnException
 			});
 			if (!result) {
@@ -507,7 +505,6 @@ var Scope = function(o) {
 			fail();
 		}
 		o.events.fire("test",result);
-		if (o.console && o.console.test) o.console.test(result);
 		if (next) {
 			if ($context.asynchronous && $context.asynchronous.test) {
 				$context.asynchronous.test(next);
@@ -529,7 +526,6 @@ var Scope = function(o) {
 
 	this.start = function() {
 		o.events.fire("scenario", { start: o.scenario });
-		if (o.console && o.console.start) o.console.start(o.scenario);
 	}
 
 	this.end = function() {
@@ -538,7 +534,6 @@ var Scope = function(o) {
 				var recurse = arguments.callee;
 				if (index == units.length) {
 					o.events.fire("scenario", { end: o.scenario, success: this.success });
-					if (o.console && o.console.end) o.console.end(o.scenario,this.success);
 					o.callback.success(this.success);
 				} else {
 					var next = function() {
@@ -557,7 +552,6 @@ var Scope = function(o) {
 			runUnit.call(this,units,0);
 		} else {
 			o.events.fire("scenario", { end: o.scenario, success: this.success });
-			if (o.console && o.console.end) o.console.end(o.scenario, this.success);
 		}
 	}
 }
@@ -605,14 +599,14 @@ var Scenario = function(o) {
 	}
 
 	var run = function(p) {
-		var scope = new Scope({ scenario: p.scenario, console: p.console, callback: p.callback, Scenario: p.Scenario, events: events});
+		var scope = new Scope({ scenario: p.scenario, callback: p.callback, Scenario: p.Scenario, events: events});
 
 		//	Could we use this to make syntax even terser?
 		//	After a bunch of trying, I was able to get scope.test to be available
 		//	to the callee as __parent__.test but not as test
 		//	this.__parent__ = scope;
 		//	this.test = scope.test;
-		scope.start(p.console);
+		scope.start();
 
 		var initializeAndExecute = function(scope) {
 			if (o.initialize) o.initialize();
@@ -636,7 +630,7 @@ var Scenario = function(o) {
 		if (o.destroy) {
 			o.destroy();
 		}
-		scope.end(p.console);
+		scope.end();
 		if (!p.callback) {
 			return scope.success;
 		}
@@ -661,12 +655,11 @@ var Scenario = function(o) {
 	}
 
 	this.run = function() {
-		var NO_CONSOLE = true;
 		if (arguments.length == 1 && arguments[0].console) {
-			if (NO_CONSOLE) addConsoleListener(this,arguments[0].console);
-			return run({ scenario: this, console: (NO_CONSOLE) ? null : arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
+			addConsoleListener(this,arguments[0].console);
+			return run({ scenario: this, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else if (arguments.length == 1) {
-			return run({ scenario: this, console: (NO_CONSOLE) ? null : arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
+			return run({ scenario: this, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else {
 			throw new Error();
 //			return $api.deprecate(function() {
