@@ -661,11 +661,12 @@ var Scenario = function(o) {
 	}
 
 	this.run = function() {
+		var NO_CONSOLE = true;
 		if (arguments.length == 1 && arguments[0].console) {
-			if (false) addConsoleListener(this,arguments[0].console);
-			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
+			if (NO_CONSOLE) addConsoleListener(this,arguments[0].console);
+			return run({ scenario: this, console: (NO_CONSOLE) ? null : arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else if (arguments.length == 1) {
-			return run({ scenario: this, console: arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
+			return run({ scenario: this, console: (NO_CONSOLE) ? null : arguments[0].console, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else {
 			throw new Error();
 //			return $api.deprecate(function() {

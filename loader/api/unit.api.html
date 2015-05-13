@@ -19,7 +19,7 @@ END LICENSE
 		<link href="api.css" rel="stylesheet" type="text/css" />
 		<script src="api.js"></script>
 	</head>
-	<body>
+	<body jsapi:id="top">
 		<div>__DESCRIPTION__</div>
 		<!--	TODO	investigate $context.asynchronous	-->
 		<!--
@@ -186,14 +186,14 @@ END LICENSE
 				top.listeners.add("scenario", function(e) {
 					if (e.detail.start) {
 						starts.push(e.detail);
-						jsh.shell.echo("Start: " + e.detail.start.name);
+						//	jsh.shell.echo("Start: " + e.detail.start.name);
 					} else if (e.detail.end) {
-						jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+						//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
 						ends.push(e.detail);
 					}
 				});
 				top.listeners.add("test", function(e) {
-					jsh.shell.echo("Test: " + e.detail.message);
+					//	jsh.shell.echo("Test: " + e.detail.message);
 					tests.push(e.detail);
 				});
 				var child = new function() {
