@@ -737,10 +737,10 @@ Context.perform = function(context,transaction) {
 		return rv;
 	} catch (e) {
 		//	Use feature test and try-catch because feature is new and early versions were buggy
-		if (jsh.java.log) {
+		if ($context.api.java.log) {
 			try {
-				jsh.java.log.named("db").WARNING("Error executing %s", transaction.toString());
-				jsh.java.log.named("db").WARNING("Stack trace: %s", e.stack);
+				$context.api.java.log.named("db").WARNING("Error executing %s", transaction.toString());
+				$context.api.java.log.named("db").WARNING("Stack trace: %s", e.stack);
 			} catch (loge) {
 			}
 		}
