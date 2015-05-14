@@ -22,7 +22,7 @@ jsh.shell.echo(pathnames);
 jsh.shell.jsh({
 	fork: true,
 	script: SRC.getFile("jsh/unit/browser.jsh.js"),
-	arguments: pathnames.map(function(pathname) { return pathname.toString() }),
+	arguments: jsh.script.arguments.concat(pathnames.map(function(pathname) { return pathname.toString() })),
 	evaluate: function(result) {
 		jsh.shell.exit(result.status);
 	}

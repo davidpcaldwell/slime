@@ -60,6 +60,23 @@ var command = function(p) {
 	top.add({ scenario: new CommandScenario(p) });
 }
 
+var subprocess = function(p) {
+	var buffer = new jsh.io.Buffer();
+	var stream = jsh.shell.run(jsh.js.Object.set({}, p, {
+		stdio: {
+			output: buffer.writeBinary()
+		},
+		evaluate: function(result) {
+			buffer.close();
+			return buffer.readBinary();
+		}
+	}));
+	top.add({ scenario: new jsh.unit.console.subprocess.Parent({
+		name: p.name,
+		stream: stream
+	}).top });
+}
+
 parameters.options.java.forEach(function(jre) {
 	parameters.options.engine.forEach(function(engine) {
 		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin")]);
@@ -102,11 +119,13 @@ parameters.options.java.forEach(function(jre) {
 });
 
 if (parameters.options.browser) {
-	command({
+	subprocess({
+		name: "Browser Verification Tests",
 		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
 		arguments: [
 			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString()
+			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
+			"-stdio"
 		].concat(parameters.arguments),
 		directory: parameters.options.slime.directory,
 		environment: jsh.js.Object.set({}, jsh.shell.environment

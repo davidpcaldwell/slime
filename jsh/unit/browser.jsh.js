@@ -16,6 +16,7 @@ jsh.loader.plugins(jsh.script.file.parent.pathname);
 var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
+		stdio: false,
 		port: Number,
 		ie: false,
 		safari: false,
@@ -70,6 +71,17 @@ if (MODULES && browsers.length) {
 	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
 		var scenario = new jsh.unit.Scenario({ composite: true, name: "Browser tests" });
+		if (parameters.options.stdio) {
+			new jsh.unit.JSON.Encoder({
+				send: function(s) {
+					jsh.shell.echo(s);
+				}
+			}).listen(scenario);
+		} else {
+			new jsh.unit.View(jsh.unit.console.Stream({
+				writer: jsh.shell.stdio.output
+			})).listen(scenario);
+		}
 		browsers.forEach(function(browser) {
 			scenario.add({
 				scenario: MODULES.test({
@@ -80,11 +92,7 @@ if (MODULES && browsers.length) {
 				})
 			});
 		});
-		var rv = scenario.run({
-			console: new jsh.unit.console.Stream({
-				writer: jsh.shell.stdio.output
-			})
-		});
+		var rv = scenario.run({});
 		if (rv) {
 			jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");
 			jsh.shell.exit(0);
