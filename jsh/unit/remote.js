@@ -130,6 +130,82 @@ var Remote = function(p) {
 	}
 };
 
+$exports.Events = function(o) {
+	var monitor = new $context.api.java.Thread.Monitor();
+	var top;
+	var queue = [];
+
+	var Scenario = function Scenario(detail) {
+		//Packages.java.lang.System.out.println("Event: " + JSON.stringify(detail));
+		this.name = detail.start.name;
+
+		this.execute = function(scope) {
+			var more = true;
+			var rv;
+			while(more) {
+				monitor.Waiter({
+					until: function() {
+						return queue.length;
+					},
+					then: function() {
+						var e = queue.shift();
+						//Packages.java.lang.System.out.println("Processing: " + JSON.stringify(e));
+						if (e.type == "scenario" && e.detail.start) {
+							scope.scenario(new Scenario(e.detail));
+						} else if (e.type == "scenario" && e.detail.end) {
+							rv = e.detail.end.success;
+							more = false;
+						} else if (e.type == "test") {
+							scope.test(function(result) {
+								return e.detail;
+							});
+						}
+					}
+				})();
+			}
+		}
+	}
+
+	var received = function(e) {
+		monitor.Waiter({
+			until: function() {
+				return true;
+			},
+			then: function() {
+				//Packages.java.lang.System.out.println("Received: " + JSON.stringify(e));
+				if (!top && e.type == "scenario" && e.detail.start) {
+					top = new Scenario(e.detail);
+				} else {
+					queue.push(e);
+				}
+			}
+		})();
+	}
+
+	o.source.listeners.add("scenario", received);
+	o.source.listeners.add("test", received);
+
+	var name = (o.name) ? o.name : "Event scenario: unstarted";
+
+	Object.defineProperty(this, "name", {
+		get: function() {
+			return name;
+		}
+	});
+
+	this.execute = function(scope) {
+		monitor.Waiter({
+			until: function() {
+				return top;
+			},
+			then: function() {
+			}
+		})();
+		name = top.name;
+		return top.execute(scope);
+	};
+}
+
 $exports.Remote = Remote;
 
 $exports.Parent = function(p) {
