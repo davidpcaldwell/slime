@@ -41,7 +41,7 @@ var Receiver = function(p) {
 		stack.push(this);
 
 		this.toString = function() {
-			return "console.stdio.js scenario: " + json.name;
+			return "Remote scenario: " + json.name;
 		}
 
 		this.name = json.name;
@@ -84,7 +84,7 @@ var Receiver = function(p) {
 						var event = queued.shift();
 						var action = event.detail;
 						if (event.type == "scenario" && action.start) {
-							var scenario = new Scenario(action.start.scenario);
+							var scenario = new Scenario(action.start);
 							scope.scenario(scenario);
 						} else if (event.type == "test") {
 							scope.test((function(result) {

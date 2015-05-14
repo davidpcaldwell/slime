@@ -47,7 +47,6 @@ plugin({
 		jsh.unit.console.Stream = function(p) {
 			return new view.Console(p);
 		};
-//		jsh.unit.console.subprocess = $loader.file("console.stdio.js");
 		jsh.unit.console.subprocess = {};
 		jsh.unit.console.subprocess.Receiver = remote.Receiver;
 		jsh.unit.console.subprocess.Parent = remote.Parent;

@@ -131,6 +131,7 @@ $exports.Modules = function(slime,pathnames) {
 						rv = was.apply(self,args);
 					});
 					result.console.forEach(function(event) {
+//						jsh.shell.echo("Queue: " + JSON.stringify(event));
 						receiver.queue(event);
 					});
 					receiver.finish();

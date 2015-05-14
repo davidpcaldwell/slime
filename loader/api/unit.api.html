@@ -168,10 +168,6 @@ END LICENSE
 						test.apply(scope,arguments);
 					}
 				};
-				jsh.shell.echo("verify = " + verify);
-				jsh.shell.echo("module = " + module);
-				jsh.shell.echo("module = " + Object.keys(module));
-				jsh.shell.echo("module.Verify = " + module.Verify);
 				var v = new module.Verify(s);
 				v(1).is(1);
 				v("x").length.is(1);
