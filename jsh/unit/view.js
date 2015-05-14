@@ -163,38 +163,38 @@ $exports.Console = function(o) {
 	}
 };
 
-$exports.JSON = new function() {
-	this.Encoder = function(o) {
-		return new $context.api.unit.View(new function() {
-			this.start = function(scenario) {
-				o.send(JSON.stringify({ start: { scenario: { name: scenario.name } } }));
-			};
-
-			var jsonError = function(error) {
-				if (error) {
-					return {
-						type: error.type,
-						message: error.message,
-						stack: error.stack
-					}
-				} else {
-					return void(0);
-				}
-			}
-
-			this.test = function(result) {
-				o.send(JSON.stringify({
-					test: {
-						success: result.success,
-						message: result.message,
-						error: jsonError(result.error)
-					}
-				}));
-			}
-
-			this.end = function(scenario,success) {
-				o.send(JSON.stringify({ end: { scenario: { name: scenario.name }, success: success }}));
-			}
-		});
-	}
-};
+//$exports.JSON = new function() {
+//	this.Encoder = function(o) {
+//		return new $context.api.unit.View(new function() {
+//			this.start = function(scenario) {
+//				o.send(JSON.stringify({ start: { scenario: { name: scenario.name } } }));
+//			};
+//
+//			var jsonError = function(error) {
+//				if (error) {
+//					return {
+//						type: error.type,
+//						message: error.message,
+//						stack: error.stack
+//					}
+//				} else {
+//					return void(0);
+//				}
+//			}
+//
+//			this.test = function(result) {
+//				o.send(JSON.stringify({
+//					test: {
+//						success: result.success,
+//						message: result.message,
+//						error: jsonError(result.error)
+//					}
+//				}));
+//			}
+//
+//			this.end = function(scenario,success) {
+//				o.send(JSON.stringify({ end: { scenario: { name: scenario.name }, success: success }}));
+//			}
+//		});
+//	}
+//};

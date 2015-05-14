@@ -37,12 +37,22 @@ plugin({
 			}
 		});
 
+		var remote = $loader.file("remote.js", {
+			api: {
+				java: jsh.java,
+				unit: jsh.unit
+			}
+		});
+
 		jsh.unit.console.Stream = function(p) {
 			return new view.Console(p);
 		};
-		jsh.unit.console.subprocess = $loader.file("console.stdio.js");
+//		jsh.unit.console.subprocess = $loader.file("console.stdio.js");
+		jsh.unit.console.subprocess = {};
+		jsh.unit.console.subprocess.Receiver = remote.Receiver;
+		jsh.unit.console.subprocess.Parent = remote.Parent;
 		jsh.unit.console.subprocess.subprocess = function() {
-			return new view.JSON.Encoder({
+			return new jsh.unit.JSON.Encoder({
 				send: function(s) {
 					jsh.shell.echo(s);
 				}

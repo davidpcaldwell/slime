@@ -656,7 +656,7 @@ var Scenario = function(o) {
 
 	this.run = function() {
 		if (arguments.length == 1 && arguments[0].console) {
-			var view = new $exports.View(arguments[0].console);
+			var view = (arguments[0].console instanceof $exports.View) ? arguments[0].console : new $exports.View(arguments[0].console);
 			view.listen(this);
 			return run({ scenario: this, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else if (arguments.length == 1) {
@@ -702,5 +702,56 @@ $exports.View = function(o) {
 
 	this.listen = function(scenario) {
 		addConsoleListener(scenario,o);
+	}
+};
+
+$exports.JSON = new function() {
+	this.Encoder = function(o) {
+		return new $exports.View(new function() {
+			this.start = function(scenario) {
+				o.send(JSON.stringify({ type: "scenario", detail: { start: { scenario: { name: scenario.name } } } }));
+			};
+
+			var jsonError = function(error) {
+				if (error) {
+					return {
+						type: error.type,
+						message: error.message,
+						stack: error.stack
+					}
+				} else {
+					return void(0);
+				}
+			}
+
+			this.test = function(result) {
+				o.send(JSON.stringify({
+					type: "test",
+					detail: {
+						success: result.success,
+						message: result.message,
+						error: jsonError(result.error)
+					}
+				}));
+			}
+
+			this.end = function(scenario,success) {
+				o.send(
+					JSON.stringify({
+						type: "scenario",
+						detail: { end: { scenario: { name: scenario.name }, success: success }}
+					})
+				);
+			}
+		});
+	};
+
+	this.Decoder = function() {
+		var events = $api.Events({ source: this });
+
+		this.decode = function(string) {
+			var json = JSON.parse(string);
+			events.fire(json.type, json.detail);
+		}
 	}
 };

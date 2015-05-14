@@ -21,7 +21,7 @@ var parameters = jsh.script.getopts({
 });
 if (!parameters.options.mode) {
 	var scenario = new jsh.unit.html.Scenario({
-		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.api.html")
+		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
 	});
 	var success = scenario.run({ console: new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output }) });
 	jsh.shell.echo("success? " + success);
@@ -44,8 +44,9 @@ if (!parameters.options.mode) {
 	jsh.shell.echo("subprocess success? " + success);
 	jsh.shell.exit( (success) ? 0 : 1 );
 } else if (parameters.options.mode == "stdio.child") {
+	jsh.shell.echo("running child");
 	var scenario = new jsh.unit.html.Scenario({
-		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.api.html")
+		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
 	});
 	scenario.run({ console: jsh.unit.console.subprocess.subprocess() });
 }
