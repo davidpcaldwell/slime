@@ -13,7 +13,7 @@
 
 //	The 'top' member of this implementation can be used as an argument to the Scenario constructor; it then needs to be fed
 //	information via the queue() method, and then the finish() method.
-var Receiver = function(p) {
+var Remote = function(p) {
 	var stack = [];
 
 	var lock = new $context.api.java.Thread.Monitor();
@@ -130,10 +130,10 @@ var Receiver = function(p) {
 	}
 };
 
-$exports.Receiver = Receiver;
+$exports.Remote = Remote;
 
 $exports.Parent = function(p) {
-	Receiver.call(this,p);
+	Remote.call(this,p);
 	var remote = new $context.api.unit.JSON.Decoder();
 	var self = this;
 	remote.listeners.add("scenario", function(e) {

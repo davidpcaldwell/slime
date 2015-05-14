@@ -119,7 +119,7 @@ $exports.Modules = function(slime,pathnames) {
 			tomcat.run();
 		} else {
 			var name = (p.browser.name) ? p.browser.name : "Browser";
-			var receiver = new jsh.unit.console.subprocess.Receiver({ name: name });
+			var receiver = new jsh.unit.console.subprocess.Remote({ name: name });
 			var scenario = new jsh.unit.Scenario(receiver.top);
 			scenario.run = (function(was) {
 				return function() {

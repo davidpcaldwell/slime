@@ -48,7 +48,7 @@ plugin({
 			return new view.Console(p);
 		};
 		jsh.unit.console.subprocess = {};
-		jsh.unit.console.subprocess.Receiver = remote.Receiver;
+		jsh.unit.console.subprocess.Remote = remote.Remote;
 		jsh.unit.console.subprocess.Parent = remote.Parent;
 		jsh.unit.console.subprocess.subprocess = function() {
 			return new jsh.unit.JSON.Encoder({
