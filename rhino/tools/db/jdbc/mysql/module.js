@@ -57,6 +57,15 @@ var types = new function() {
 //		if (type.code == Types.INTEGER) return INT;
 //		if (type.code == Types.DOUBLE) return DOUBLE;
 		var rv = $context.types.getCodec(type);
+		if (rv && rv.toString() == "BIT") {
+			rv.cast = (function(was) {
+				return function() {
+					var rv = was.apply(this,arguments);
+					rv = rv.replace(/BIT/g, "SIGNED");
+					return rv;
+				}
+			})(rv.cast);			
+		}
 		if (rv && rv.toString() == "INTEGER") {
 			rv.cast = (function(was) {
 				return function() {
