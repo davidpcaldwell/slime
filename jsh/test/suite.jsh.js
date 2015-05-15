@@ -49,10 +49,12 @@ var top = new jsh.unit.Scenario({
 //	Provide way to set JSH_SCRIPT_DEBUGGER?
 //	Provide way to set JSH_ENGINE?
 jsh.shell.echo("Running unit tests ...");
-top.add({ scenario: new jsh.unit.ScriptScenario({
+top.add({ scenario: new jsh.unit.Scenario.Fork({
 	name: "Unit tests",
+	run: jsh.shell.jsh,
 	shell: parameters.options.jsh.directory,
-	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js")
+	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
+	arguments: ["-stdio"]
 }) });
 
 jsh.shell.echo("Running system tests ...");

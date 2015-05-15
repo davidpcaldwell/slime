@@ -18,7 +18,8 @@ var parameters = jsh.script.getopts({
 		src: jsh.script.file.getRelativePath("../.."),
 		debug: false,
 		logging: jsh.file.Pathname
-	}
+	},
+	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
 if (!parameters.options.jsh) {
@@ -40,7 +41,7 @@ var apiArguments = modules.fold(function(array) {
 	if (this.api) array.push("-api",this.path);
 	if (this.test) array.push("-test",this.path);
 	return array;
-},[]);
+},parameters.arguments);
 
 var subenv = {};
 for (var x in jsh.shell.environment) {
