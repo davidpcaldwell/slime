@@ -562,7 +562,8 @@ END LICENSE
 				}
 				var scenario = new jsapi.Scenario(_scenario);
 				var events = [];
-				//	TODO	merge into framework somewhere
+				//	TODO	merge into framework somewhere? Need to generalize more (does it buffer all events; is the array
+				//			mutable to callers, and so forth
 				var poster = new function() {
 					var push = function(e) {
 						events.push(e);

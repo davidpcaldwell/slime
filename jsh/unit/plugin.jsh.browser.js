@@ -119,19 +119,9 @@ $exports.Modules = function(slime,pathnames) {
 			tomcat.run();
 		} else {
 			var name = (p.browser.name) ? p.browser.name : "Browser";
-			//	TODO	merge into framework somewhere
-			var queuer = new function() {
-				var events = $api.Events({ source: this });
-
-				this.fire = function() {
-					result.console.forEach(function(event) {
-						events.fire(event.type,event.detail);
-					},this);
-				}
-			};
 			var scenario = new jsh.unit.Scenario.Events({
 				name: name,
-				source: queuer
+				events: result.console
 			});
 			jsh.java.Thread.start(function() {
 				queuer.fire();

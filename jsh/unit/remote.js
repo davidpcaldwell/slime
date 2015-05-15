@@ -17,6 +17,18 @@ $exports.Events = function(o) {
 	var monitor = new $context.api.java.Thread.Monitor();
 	var top;
 	var queue = [];
+	var source = (function() {
+		if (o.source) return o.source;
+		if (o.events) return new function() {
+			var events = $api.Events({ source: this });
+
+			this.fire = function() {
+				o.events.forEach(function(event) {
+					events.fire(event.type,event.detail);
+				},this);
+			}
+		};
+	})();
 
 	var Scenario = function Scenario(detail) {
 		//Packages.java.lang.System.out.println("Event: " + JSON.stringify(detail));
@@ -65,8 +77,14 @@ $exports.Events = function(o) {
 		})();
 	}
 
-	o.source.listeners.add("scenario", received);
-	o.source.listeners.add("test", received);
+	source.listeners.add("scenario", received);
+	source.listeners.add("test", received);
+
+	if (o.events) {
+		$context.api.java.Thread.start(function() {
+			source.fire();
+		})
+	}
 
 	var name = (o.name) ? o.name : "Event scenario: unstarted";
 
