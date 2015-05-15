@@ -22,7 +22,7 @@ var parameters = jsh.script.getopts({
 
 if (parameters.options.mode == "stdio.parent") {
 	var top = new jsh.unit.Scenario({ composite: true, name: "Top" });
-	top.add({ scenario: new jsh.unit.html.Scenario({
+	top.add({ scenario: new jsh.unit.Scenario.Html({
 		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
 	}) });
 	var buffer = new jsh.io.Buffer();
@@ -44,7 +44,7 @@ if (parameters.options.mode == "stdio.parent") {
 	jsh.shell.exit( (success) ? 0 : 1 );
 } else if (parameters.options.mode == "stdio.child") {
 	jsh.shell.echo("running child");
-	var scenario = new jsh.unit.html.Scenario({
+	var scenario = new jsh.unit.Scenario.Html({
 		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
 	});
 	new jsh.unit.JSON.Encoder({

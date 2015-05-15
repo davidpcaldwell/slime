@@ -360,7 +360,7 @@ $exports.Scenario = function(p) {
 };
 
 (function() {
-	var jsdom = $context.jsdom;
+	//	TODO	$context.jsdom appears to be unprovided so is presumably unused
 	var ns = "http://www.w3.org/1999/xhtml";
 
 	var ApiHtml = function(p) {
@@ -601,7 +601,8 @@ $exports.Scenario = function(p) {
 
 		["api.css","api.js"].forEach( function(name) {
 			var read = function(name) {
-				if ($context.api) return $context.api.getFile(name).read(jsh.io.Streams.binary);
+				return $loader.resource(name).read($context.io.Streams.binary);
+//				if ($context.api) return $context.api.getFile(name).read(jsh.io.Streams.binary);
 				//	TODO	probably $loader.resource() and run jsapi.js as a module rather than file
 				throw new Error();
 			}

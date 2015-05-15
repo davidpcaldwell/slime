@@ -59,51 +59,12 @@ var modules = parameters.options.api.map( function(pathname) {
 
 var console = (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console( { writer: jsh.shell.stdio.output } );
 
-var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
-	api: parameters.options.jsapi.directory,
-	html: jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("api.html.js"), new function() {
-		var seq = 0;
-
-		this.run = function(code,scope) {
-			var source = code;
-			if (typeof(source) == "string") {
-				//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
-				//			properties. This code, after being moved to jsh loader, can then invoke rhino loader with name/_in
-				//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
-				//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
-				source = {
-					name: "<eval>:" + String(++seq),
-					_in: (function() {
-						var out = new Packages.java.io.ByteArrayOutputStream();
-						var writer = new Packages.java.io.OutputStreamWriter(out);
-						writer.write(String(code));
-						writer.flush();
-						writer.close();
-						return new Packages.java.io.ByteArrayInputStream(out.toByteArray());
-					})()
-				}
-			}
-			try {
-				jsh.loader.run(source,scope);
-			} catch (e) {
-				Packages.java.lang.System.out.println("Error executing " + code);
-				throw e;
-			}
-		}
-
-		if (jsh.$jsapi.$rhino.jsapi && jsh.$jsapi.$rhino.jsapi.script) {
-			this.script = function(name,code,scope) {
-				return jsh.$jsapi.$rhino.jsapi.script(name, String(code), scope);
-			}
-		}
-	} ),
-	jsapi: {
-		getFile: function(path) {
-			return jsh.script.file.getRelativePath(path).file;
-		}
-	},
-	Scenario: jsh.unit.Scenario//jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.js") ).Scenario,
-});
+//var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("html.js"), {
+//	api: parameters.options.jsapi.directory,
+//	html: jsh.unit.html,
+//	Scenario: jsh.unit.Scenario//jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.js") ).Scenario,
+//});
+//var jsapi = jsh.unit.html;
 
 if (!parameters.options.notest) {
 	parameters.options.classpath.forEach( function(pathname) {
@@ -137,7 +98,7 @@ if (!parameters.options.notest) {
 	//tests.environment(ENVIRONMENT);
 
 	modules.forEach( function(module) {
-		tests.add({ scenario: new jsapi.Scenario({ pathname: module.location, environment: ENVIRONMENT }) });
+		tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: module.location, environment: ENVIRONMENT }) });
 	});
 
 	parameters.options.test.forEach( function(test) {
@@ -149,9 +110,9 @@ if (!parameters.options.notest) {
 
 		var tokens = test.split(":");
 		if (tokens.length == 1) {
-			tests.add({ scenario: new jsapi.Scenario({ pathname: getModule(test).location, environment: ENVIRONMENT }) });
+			tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(test).location, environment: ENVIRONMENT }) });
 		} else {
-			tests.add({ scenario: new jsapi.Scenario({ pathname: getModule(tokens[0]).locaation, unit: tokens.slice(1).join("."), environment: ENVIRONMENT }) });
+			tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(tokens[0]).locaation, unit: tokens.slice(1).join("."), environment: ENVIRONMENT }) });
 		}
 	});
 	var UNIT_TESTS_COMPLETED = function(success) {

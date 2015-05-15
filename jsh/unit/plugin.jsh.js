@@ -26,7 +26,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.java && jsh.shell && jsh.unit);
+		return Boolean(jsh.java && jsh.io && jsh.shell && jsh.unit);
 	},
 	load: function() {
 		var remote = $loader.file("remote.js", {
@@ -58,12 +58,13 @@ plugin({
 			return new view.Events(p);
 		};
 
-		var jshapi = $loader.file("jsapi.js", {
+		var html = $loader.file("html.js", {
 			Scenario: jsh.unit.Scenario,
-			html: jsh.unit.html
+			html: jsh.unit.html,
+			io: jsh.io
 		});
-		jsh.unit.html.Scenario = function(p) {
-			return new jshapi.Scenario(p);
+		jsh.unit.Scenario.Html = function(p) {
+			return new html.Scenario(p);
 //			var tests = new jshapi.Tests();
 //			if (p.environment) {
 //				tests.environment(p.environment);
