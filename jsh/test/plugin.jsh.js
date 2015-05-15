@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.unit;
+		return jsh.js && jsh.shell && jsh.unit;
 	},
 	load: function() {
 		var ForkScenario = function(p) {

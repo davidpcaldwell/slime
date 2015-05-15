@@ -21,7 +21,11 @@ var parameters = jsh.script.getopts({
 });
 
 if (parameters.options.mode == "stdio.parent") {
-	var top = new jsh.unit.Scenario({ composite: true, name: "Top" });
+	var top = new jsh.unit.Scenario({
+		composite: true,
+		name: "Top",
+		view: new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
+	});
 	top.add({ scenario: new jsh.unit.Scenario.Html({
 		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
 	}) });
@@ -38,8 +42,7 @@ if (parameters.options.mode == "stdio.parent") {
 		buffer.close();
 	});
 	top.add({ scenario: new jsh.unit.Scenario.Stream({ name: "subprocess", stream: buffer.readBinary() }) });
-	new jsh.unit.view.Console({ writer: jsh.shell.stdio.output }).listen(top);
-	var success = top.run({});
+	var success = top.run();
 	jsh.shell.echo("subprocess success? " + success);
 	jsh.shell.exit( (success) ? 0 : 1 );
 } else if (parameters.options.mode == "stdio.child") {
