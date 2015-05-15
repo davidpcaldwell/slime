@@ -145,10 +145,10 @@ $exports.Url.query.parse = function(string) {
 
 		if (!string) return null;
 		var tokens = string.split("&");
-		jsh.shell.echo("tokens: " + tokens.length + " " + tokens);
+		//jsh.shell.echo("tokens: " + tokens.length + " " + tokens);
 		return tokens.map(function(pair) {
 			var split = pair.split("=");
-			jsh.shell.echo("split = " + split);
+			//jsh.shell.echo("split = " + split);
 			if (split.length != 2) throw new Error();
 			return { name: decode(split[0]), value: decode(split[1]) }
 		});

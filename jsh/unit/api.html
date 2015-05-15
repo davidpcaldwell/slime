@@ -219,53 +219,5 @@ END LICENSE
 			</div>
 		</div>
 	</div>
-	<div>
-		<script type="application/x.jsapi#tests">
-			var remote = $jsapi.loader.file("remote.js", {
-				api: {
-					java: jsh.java
-				}
-			});
-			verify(remote).is.not(void(0));
-			var subscenario = new function() {
-				this.name = "Sub";
-				this.execute = function(scope) {
-					scope.test(function() {
-						return {
-							success: true,
-							message: "yes, we can"
-						}
-					});
-				}
-			}
-			var scenario = new jsh.unit.Scenario({
-				name: "Target",
-				execute: function(scope) {
-					scope.test(function() {
-						return {
-							success: true,
-							message: "it is true"
-						}
-					});
-					scope.scenario(subscenario);
-				}
-			});
-			new jsh.unit.View(
-				new jsh.unit.console.Stream({
-					writer: jsh.shell.stdio.output
-				})
-			).listen(scenario);
-			var listener = new jsh.unit.Scenario(new remote.Events({
-				source: scenario
-			}));
-			scenario.run({});
-			new jsh.unit.View(
-				new jsh.unit.console.Stream({
-					writer: jsh.shell.stdio.output
-				})
-			).listen(listener);
-			new jsh.unit.Scenario(listener).run({})
-		</script>
-	</div>
 </body>
 </html>

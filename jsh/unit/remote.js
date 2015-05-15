@@ -153,7 +153,7 @@ $exports.Events = function(o) {
 						if (e.type == "scenario" && e.detail.start) {
 							scope.scenario(new Scenario(e.detail));
 						} else if (e.type == "scenario" && e.detail.end) {
-							rv = e.detail.end.success;
+							rv = e.detail.success;
 							more = false;
 						} else if (e.type == "test") {
 							scope.test(function(result) {
@@ -190,7 +190,8 @@ $exports.Events = function(o) {
 	Object.defineProperty(this, "name", {
 		get: function() {
 			return name;
-		}
+		},
+		enumerable: true
 	});
 
 	this.execute = function(scope) {
@@ -204,6 +205,22 @@ $exports.Events = function(o) {
 		name = top.name;
 		return top.execute(scope);
 	};
+};
+
+$exports.Stream = function(o) {
+	var decoder = new $context.api.unit.JSON.Decoder();
+	var scenario = new $exports.Events({
+		name: o.name,
+		source: decoder
+	});
+	$context.api.java.Thread.start(function() {
+		o.stream.character().readLines(function(line) {
+			if (line.substring(0,1) == "{") {
+				decoder.decode(line);
+			}
+		});
+	});
+	return scenario;
 }
 
 $exports.Remote = Remote;

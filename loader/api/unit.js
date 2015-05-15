@@ -709,7 +709,7 @@ $exports.JSON = new function() {
 	this.Encoder = function(o) {
 		return new $exports.View(new function() {
 			this.start = function(scenario) {
-				o.send(JSON.stringify({ type: "scenario", detail: { start: { scenario: { name: scenario.name } } } }));
+				o.send(JSON.stringify({ type: "scenario", detail: { start: { name: scenario.name } } }));
 			};
 
 			var jsonError = function(error) {
@@ -739,7 +739,7 @@ $exports.JSON = new function() {
 				o.send(
 					JSON.stringify({
 						type: "scenario",
-						detail: { end: { scenario: { name: scenario.name }, success: success }}
+						detail: { end: { name: scenario.name }, success: success }
 					})
 				);
 			}

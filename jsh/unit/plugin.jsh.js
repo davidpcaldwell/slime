@@ -29,17 +29,21 @@ plugin({
 		return Boolean(jsh.java && jsh.shell && jsh.unit);
 	},
 	load: function() {
-		jsh.unit.console = {};
-
-		var view = $loader.file("view.js", {
+		var remote = $loader.file("remote.js", {
 			api: {
+				java: jsh.java,
 				unit: jsh.unit
 			}
 		});
 
-		var remote = $loader.file("remote.js", {
+		jsh.unit.Scenario.Stream = function(p) {
+			return new remote.Stream(p);
+		}
+
+		jsh.unit.console = {};
+
+		var view = $loader.file("view.js", {
 			api: {
-				java: jsh.java,
 				unit: jsh.unit
 			}
 		});
