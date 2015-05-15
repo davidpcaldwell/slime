@@ -72,10 +72,6 @@ var subprocess = function(p) {
 			return buffer.readBinary();
 		}
 	}));
-//	top.add({ scenario: new jsh.unit.console.subprocess.Parent({
-//		name: p.name,
-//		stream: stream
-//	}).top });
 	top.add({
 		scenario: new jsh.unit.Scenario.Stream({
 			name: p.name,

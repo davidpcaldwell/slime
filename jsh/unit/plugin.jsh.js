@@ -36,9 +36,12 @@ plugin({
 			}
 		});
 
+		jsh.unit.Scenario.Events = function(p) {
+			return new remote.Events(p);
+		}
 		jsh.unit.Scenario.Stream = function(p) {
 			return new remote.Stream(p);
-		}
+		};
 
 
 		var view = $loader.file("view.js", {
@@ -55,10 +58,6 @@ plugin({
 			return new view.Events(p);
 		};
 
-		jsh.unit.console = {};
-		jsh.unit.console.subprocess = {};
-		jsh.unit.console.subprocess.Remote = remote.Remote;
-		jsh.unit.console.subprocess.Parent = remote.Parent;
 		var jshapi = $loader.file("jsapi.js", {
 			Scenario: jsh.unit.Scenario,
 			html: jsh.unit.html
@@ -81,7 +80,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.shell && jsh.httpd && jsh.unit && jsh.unit.console && jsh.java && jsh.file;
+		return jsh.js && jsh.shell && jsh.httpd && jsh.http && jsh.unit && jsh.unit.Scenario.Events && jsh.java && jsh.file;
 	},
 	load: function() {
 		var $exports = {};

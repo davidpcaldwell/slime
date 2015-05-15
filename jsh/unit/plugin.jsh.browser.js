@@ -119,26 +119,23 @@ $exports.Modules = function(slime,pathnames) {
 			tomcat.run();
 		} else {
 			var name = (p.browser.name) ? p.browser.name : "Browser";
-			var receiver = new jsh.unit.console.subprocess.Remote({ name: name });
-			var scenario = new jsh.unit.Scenario(receiver.top);
-			scenario.run = (function(was) {
-				return function() {
-					//	TODO	is there a more elegant way to do the this/arguments stuff (maybe even rv) for threads?
-					var self = this;
-					var args = arguments;
-					var rv;
-					var thread = jsh.java.Thread.start(function() {
-						rv = was.apply(self,args);
-					});
+			//	TODO	merge into framework somewhere
+			var queuer = new function() {
+				var events = $api.Events({ source: this });
+
+				this.fire = function() {
 					result.console.forEach(function(event) {
-//						jsh.shell.echo("Queue: " + JSON.stringify(event));
-						receiver.queue(event);
-					});
-					receiver.finish();
-					thread.join();
-					return rv;
+						events.fire(event.type,event.detail);
+					},this);
 				}
-			})(scenario.run);
+			};
+			var scenario = new jsh.unit.Scenario.Events({
+				name: name,
+				source: queuer
+			});
+			jsh.java.Thread.start(function() {
+				queuer.fire();
+			});
 			return scenario;
 		}
 	};
