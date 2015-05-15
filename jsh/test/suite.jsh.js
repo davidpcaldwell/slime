@@ -40,7 +40,8 @@ if (!parameters.options.jsh) {
 
 var top = new jsh.unit.Scenario({
 	composite: true,
-	name: "SLIME suite"
+	name: "SLIME suite",
+	view: new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
 });
 
 //	Provide way to set CATALINA_HOME?
@@ -65,5 +66,5 @@ top.add({
 		})
 	})
 });
-var success = top.run({ console: new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output }) });
+var success = top.run();
 jsh.shell.exit( (success) ? 0 : 1 );

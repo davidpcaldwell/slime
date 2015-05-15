@@ -47,7 +47,8 @@ jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 var top = new jsh.unit.Scenario({
 	composite: true,
-	name: "SLIME verify"
+	name: "SLIME verify",
+	view: new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
 });
 
 var CommandScenario = function(p) {
@@ -140,9 +141,7 @@ if (parameters.options.browser) {
 	});
 }
 
-top.run({
-	console: new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output })
-});
+top.run();
 
 jsh.shell.echo();
 jsh.shell.echo("Finished at " + new Date());

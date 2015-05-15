@@ -68,21 +68,17 @@ END LICENSE
 					}
 				});
 				encoder.listen(scenario);
-				new jsh.unit.View(
-					new jsh.unit.console.Stream({
-						writer: jsh.shell.stdio.output
-					})
-				).listen(scenario);
+				new jsh.unit.view.Console({
+					writer: jsh.shell.stdio.output
+				}).listen(scenario);
 				var listener = new jsh.unit.Scenario(new remote.Events({
 					source: decoder
 				}));
-				scenario.run({});
-				new jsh.unit.View(
-					new jsh.unit.console.Stream({
+				scenario.run();
+				new jsh.unit.view.Console({
 						writer: jsh.shell.stdio.output
-					})
-				).listen(listener);
-				listener.run({})
+				}).listen(listener);
+				listener.run()
 			</script>
 		</div>
 	</body>

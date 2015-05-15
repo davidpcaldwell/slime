@@ -40,7 +40,6 @@ plugin({
 			return new remote.Stream(p);
 		}
 
-		jsh.unit.console = {};
 
 		var view = $loader.file("view.js", {
 			api: {
@@ -53,9 +52,7 @@ plugin({
 			return new jsh.unit.View(new view.Console(p));
 		}
 
-		jsh.unit.console.Stream = function(p) {
-			return new view.Console(p);
-		};
+		jsh.unit.console = {};
 		jsh.unit.console.subprocess = {};
 		jsh.unit.console.subprocess.Remote = remote.Remote;
 		jsh.unit.console.subprocess.Parent = remote.Parent;

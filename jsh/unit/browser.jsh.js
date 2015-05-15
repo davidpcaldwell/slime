@@ -70,18 +70,19 @@ jsh.shell.echo("browsers = " + browsers);
 if (MODULES && browsers.length) {
 	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
-		var scenario = new jsh.unit.Scenario({ composite: true, name: "Browser tests" });
-		if (parameters.options.stdio) {
-			new jsh.unit.JSON.Encoder({
-				send: function(s) {
-					jsh.shell.echo(s);
-				}
-			}).listen(scenario);
-		} else {
-			new jsh.unit.View(jsh.unit.console.Stream({
-				writer: jsh.shell.stdio.output
-			})).listen(scenario);
-		}
+		var scenario = new jsh.unit.Scenario({
+			composite: true,
+			name: "Browser tests",
+			view: (parameters.options.stdio)
+				? new jsh.unit.JSON.Encoder({
+					send: function(s) {
+						jsh.shell.echo(s);
+					}
+				})
+				: new jsh.unit.view.Console({
+					writer: jsh.shell.stdio.output
+				})
+		});
 		browsers.forEach(function(browser) {
 			scenario.add({
 				scenario: MODULES.test({
@@ -92,7 +93,7 @@ if (MODULES && browsers.length) {
 				})
 			});
 		});
-		var rv = scenario.run({});
+		var rv = scenario.run();
 		if (rv) {
 			jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");
 			jsh.shell.exit(0);

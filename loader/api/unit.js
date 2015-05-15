@@ -636,24 +636,6 @@ var Scenario = function(o) {
 		}
 	};
 
-	var addConsoleListener = function(scenario,implementation) {
-		scenario.listeners.add("scenario", function(e) {
-			if (e.detail.start) {
-				if (implementation.start) {
-					implementation.start(e.detail.start);
-				}
-			} else if (e.detail.end) {
-				if (implementation.end) {
-					implementation.end(e.detail.end, e.detail.success);
-				}
-			}
-		});
-
-		scenario.listeners.add("test", function(e) {
-			if (implementation.test) implementation.test(e.detail);
-		});
-	}
-
 	this.run = function() {
 		if (arguments.length == 1 && arguments[0].console) {
 			var view = (arguments[0].console instanceof $exports.View) ? arguments[0].console : new $exports.View(arguments[0].console);
@@ -661,6 +643,8 @@ var Scenario = function(o) {
 			return run({ scenario: this, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
 		} else if (arguments.length == 1) {
 			return run({ scenario: this, callback: arguments[0].callback, Scenario: Scenario, haltOnException: arguments[0].haltOnException });
+		} else if (arguments.length == 0) {
+			return run({ scenario: this, Scenario: Scenario });
 		} else {
 			throw new Error();
 //			return $api.deprecate(function() {
@@ -668,6 +652,10 @@ var Scenario = function(o) {
 //				return run({ scenario: this, console: arguments[0], Scenario: Scenario, callback: arguments[1] });
 //			}).apply(this,arguments);
 		}
+	}
+
+	if (o.view) {
+		o.view.listen(this);
 	}
 
 //	this.start = $api.deprecate(function(console,callback) {
