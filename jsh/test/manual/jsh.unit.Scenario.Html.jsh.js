@@ -29,19 +29,13 @@ if (parameters.options.mode == "stdio.parent") {
 	top.add({ scenario: new jsh.unit.Scenario.Html({
 		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
 	}) });
-	var buffer = new jsh.io.Buffer();
-	jsh.java.Thread.start(function() {
-		jsh.shell.jsh({
-			fork: true,
-			script: jsh.script.file,
-			arguments: ["-mode","stdio.child"],
-			stdio: {
-				output: buffer.writeBinary()
-			}
-		});
-		buffer.close();
-	});
-	top.add({ scenario: new jsh.unit.Scenario.Stream({ name: "subprocess", stream: buffer.readBinary() }) });
+	top.add({ scenario: new jsh.unit.Scenario.Fork({
+		name: "subprocess",
+		run: jsh.shell.jsh,
+		fork: true,
+		script: jsh.script.file,
+		arguments: ["-mode","stdio.child"]
+	})});
 	var success = top.run();
 	jsh.shell.echo("subprocess success? " + success);
 	jsh.shell.exit( (success) ? 0 : 1 );
