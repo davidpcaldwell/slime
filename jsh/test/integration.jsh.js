@@ -21,55 +21,48 @@
 var parameters = jsh.script.getopts({
 	options: {
 		src: jsh.script.file.getRelativePath("../.."),
-		rhino: jsh.file.Pathname
+		rhino: jsh.file.Pathname,
+		stdio: false
 	}
 });
 
-if (!jsh.shell.jsh.home) {
-	//	unbuilt shell; build and relaunch
-	if (false && jsh.shell.rhino.home) {
-		throw new Error();
-		jsh.shell.run({
-			command: jsh.shell.java.launcher,
-			arguments: []
-		})
-	} else {
-		var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-		var bin = jsh.shell.java.launcher.parent.pathname;
-		var jdkbin = bin.parent.parent.directory.getRelativePath("bin")
-		var command = jsh.file.Searchpath([bin,jdkbin]).getCommand("jrunscript");
-		var unbuilt = parameters.options.src.directory.getRelativePath("jsh/etc/unbuilt.rhino.js");
-		jsh.shell.echo("bin: " + bin);
-		jsh.shell.echo("bin: " + jdkbin);
-		jsh.shell.echo("command: " + command);
-		jsh.shell.echo("unbuilt: " + unbuilt);
-		var properties = [];
-		if (parameters.options.rhino) {
-			properties.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
-		}
-		jsh.shell.run({
-			command: command,
-			arguments: properties.concat([
-				unbuilt,
-				"build", TMP
-			]),
-			environment: jsh.js.Object.set({}, jsh.shell.environment, {
-				JSH_BUILD_NOTEST: "true",
-				JSH_BUILD_NODOC: "true"
-			})
-		});
-		var status = jsh.shell.java({
-			jar: TMP.getRelativePath("jsh.jar"),
-			arguments: [jsh.script.file.pathname.toString()],
-			evaluate: function(result) {
-				return result.status;
-			}
-		});
-		jsh.shell.exit(status);
-	}
-}
+jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("loader/api"));
+jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/unit"));
 
 var src = parameters.options.src.directory;
+
+if (!jsh.shell.jsh.home) {
+	//	unbuilt shell; build and relaunch
+	var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	var bin = jsh.shell.java.launcher.parent.pathname;
+	var jdkbin = bin.parent.parent.directory.getRelativePath("bin")
+	var command = jsh.file.Searchpath([bin,jdkbin]).getCommand("jrunscript");
+	var unbuilt = src.getRelativePath("jsh/etc/unbuilt.rhino.js");
+	var properties = [];
+	if (parameters.options.rhino) {
+		properties.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
+	}
+	//	TODO	use jsh.shell.jrunscript?
+	jsh.shell.run({
+		command: command,
+		arguments: properties.concat([
+			unbuilt,
+			"build", TMP
+		]),
+		environment: jsh.js.Object.set({}, jsh.shell.environment, {
+			JSH_BUILD_NOTEST: "true",
+			JSH_BUILD_NODOC: "true"
+		})
+	});
+	var status = jsh.shell.java({
+		jar: TMP.getRelativePath("jsh.jar"),
+		arguments: [jsh.script.file.pathname.toString()],
+		evaluate: function(result) {
+			return result.status;
+		}
+	});
+	jsh.shell.exit(status);
+}
 
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
@@ -315,6 +308,14 @@ var jshPackage = function(p) {
 	}
 	return to;
 };
+
+var scenario = new jsh.unit.Scenario({
+	composite: true,
+	name: "jsh Integration Tests",
+	view: (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
+});
+
+var legacy = function() {
 
 (function() {
 	var mymode = {
@@ -855,5 +856,27 @@ if (nativeLauncher) {
 	addShellToPath(jshInPathCommand,PATH);
 	jsh.shell.run(jshInPathCommand);
 }
+};
+
+scenario.add({ scenario: new function() {
+	this.name = "Legacy tests";
+
+	this.execute = function(scope) {
+		scope.test(function() {
+			caught = false;
+			try {
+				legacy();
+			} catch (e) {
+				caught = true;
+			}
+			return {
+				success: !caught,
+				message: "caught error: " + caught
+			}
+		});
+	}
+}});
+
+scenario.run();
 
 jsh.shell.echo("Integration tests complete.");

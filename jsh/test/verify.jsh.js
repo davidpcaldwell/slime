@@ -62,21 +62,18 @@ var command = function(p) {
 }
 
 var subprocess = function(p) {
-	var buffer = new jsh.io.Buffer();
-	var stream = jsh.shell.run(jsh.js.Object.set({}, p, {
-		stdio: {
-			output: buffer.writeBinary()
-		},
-		evaluate: function(result) {
-			buffer.close();
-			return buffer.readBinary();
-		}
-	}));
+//	var buffer = new jsh.io.Buffer();
+//	var stream = jsh.shell.run(jsh.js.Object.set({}, p, {
+//		stdio: {
+//			output: buffer.writeBinary()
+//		},
+//		evaluate: function(result) {
+//			buffer.close();
+//			return buffer.readBinary();
+//		}
+//	}));
 	top.add({
-		scenario: new jsh.unit.Scenario.Stream({
-			name: p.name,
-			stream: stream
-		})
+		scenario: new jsh.unit.Scenario.Fork(p)
 	});
 }
 
@@ -105,11 +102,14 @@ parameters.options.java.forEach(function(jre) {
 		} else {
 			jsh.shell.echo("Running with Java " + launcher + " and engine " + engine + " ...");
 
-			command({
+			subprocess({
+				name: "Java tests: engine [" + engine + "]; launcher " + launcher,
+				run: jsh.shell.run,
 				command: launcher,
 				arguments: [
 					"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-					parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString()
+					parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
+					"-stdio"
 				],
 				directory: parameters.options.slime.directory,
 				environment: jsh.js.Object.set({}, jsh.shell.environment
@@ -123,6 +123,7 @@ parameters.options.java.forEach(function(jre) {
 
 if (parameters.options.browser) {
 	subprocess({
+		run: jsh.shell.run,
 		name: "Browser tests",
 		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
 		arguments: [

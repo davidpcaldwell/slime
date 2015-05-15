@@ -20,7 +20,8 @@ var parameters = jsh.script.getopts({
 		java: jsh.shell.java.home.pathname,
 		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
 		src: jsh.script.file.getRelativePath("../.."),
-		debug: false
+		debug: false,
+		stdio: false
 	}
 });
 
@@ -41,7 +42,7 @@ if (!parameters.options.jsh) {
 var top = new jsh.unit.Scenario({
 	composite: true,
 	name: "SLIME suite",
-	view: new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
+	view: (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
 });
 
 //	Provide way to set CATALINA_HOME?
@@ -59,10 +60,12 @@ top.add({ scenario: new jsh.unit.Scenario.Fork({
 
 jsh.shell.echo("Running system tests ...");
 top.add({
-	scenario: new jsh.unit.ScriptScenario({
+	scenario: new jsh.unit.Scenario.Fork({
 		name: "Integration tests",
+		run: jsh.shell.jsh,
 		shell: parameters.options.jsh.directory,
 		script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
+		arguments: ["-stdio"],
 		environment: jsh.js.Object.set({}, jsh.shell.environment, {
 			JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
 		})
