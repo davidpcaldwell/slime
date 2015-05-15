@@ -48,6 +48,11 @@ plugin({
 			}
 		});
 
+		jsh.unit.view = {};
+		jsh.unit.view.Console = function(p) {
+			return new jsh.unit.View(new view.Console(p));
+		}
+
 		jsh.unit.console.Stream = function(p) {
 			return new view.Console(p);
 		};

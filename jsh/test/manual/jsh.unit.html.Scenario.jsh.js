@@ -16,17 +16,15 @@ jsh.loader.plugins(jsh.script.file.getRelativePath("../../../jsh/unit"));
 
 var parameters = jsh.script.getopts({
 	options: {
-		mode: String
+		mode: "stdio.parent"
 	}
 });
-if (!parameters.options.mode) {
-	var scenario = new jsh.unit.html.Scenario({
+
+if (parameters.options.mode == "stdio.parent") {
+	var top = new jsh.unit.Scenario({ composite: true, name: "Top" });
+	top.add({ scenario: new jsh.unit.html.Scenario({
 		pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
-	});
-	var success = scenario.run({ console: new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output }) });
-	jsh.shell.echo("success? " + success);
-	jsh.shell.exit( (success) ? 0 : 1 );
-} else if (parameters.options.mode == "stdio.parent") {
+	}) });
 	var buffer = new jsh.io.Buffer();
 	jsh.java.Thread.start(function() {
 		jsh.shell.jsh({
@@ -39,10 +37,9 @@ if (!parameters.options.mode) {
 		});
 		buffer.close();
 	});
-	var top = new jsh.unit.Scenario({ composite: true, name: "Top" });
-	var scenario = new jsh.unit.Scenario.Stream({ name: "subprocess", stream: buffer.readBinary() });
-	top.add({ scenario: scenario });
-	var success = top.run({ console: new jsh.unit.console.Stream({ writer: jsh.shell.stdio.output }) });
+	top.add({ scenario: new jsh.unit.Scenario.Stream({ name: "subprocess", stream: buffer.readBinary() }) });
+	new jsh.unit.view.Console({ writer: jsh.shell.stdio.output }).listen(top);
+	var success = top.run({});
 	jsh.shell.echo("subprocess success? " + success);
 	jsh.shell.exit( (success) ? 0 : 1 );
 } else if (parameters.options.mode == "stdio.child") {

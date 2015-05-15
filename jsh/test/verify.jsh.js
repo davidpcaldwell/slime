@@ -126,7 +126,7 @@ parameters.options.java.forEach(function(jre) {
 
 if (parameters.options.browser) {
 	subprocess({
-		name: "Browser Verification Tests",
+		name: "Browser tests",
 		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
 		arguments: [
 			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
