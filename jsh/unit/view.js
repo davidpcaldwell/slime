@@ -163,6 +163,14 @@ $exports.Console = function(o) {
 	}
 };
 
+$exports.Events = function(p) {
+	return new jsh.unit.JSON.Encoder({
+		send: function(s) {
+			p.writer.write(s + String(Packages.java.lang.System.getProperty("line.separator")));
+		}
+	});
+}
+
 //$exports.JSON = new function() {
 //	this.Encoder = function(o) {
 //		return new $context.api.unit.View(new function() {

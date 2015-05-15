@@ -57,11 +57,7 @@ var modules = parameters.options.api.map( function(pathname) {
 	return rv;
 } );
 
-var stdio = (function() {
-	return jsh.unit.console.subprocess.subprocess();
-})();
-
-var console = (parameters.options.stdio) ? stdio : new jsh.unit.view.Console( { writer: jsh.shell.stdio.output } );
+var console = (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console( { writer: jsh.shell.stdio.output } );
 
 var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("jsapi.js"), {
 	api: parameters.options.jsapi.directory,
