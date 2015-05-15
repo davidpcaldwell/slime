@@ -439,4 +439,8 @@ $exports.ApiHtmlTests = function(html,name) {
 		var container = (unit) ? getContainer(element) : { initializes: [], destroys: [] };
 		return getScenario(scope,element,container);
 	}
+};
+
+$exports.getCode = function(path) {
+	return $loader.resource(path).read(String);
 }

@@ -14,7 +14,7 @@
 plugin({
 	load: function() {
 		jsh.unit = $loader.file("unit.js");
-		jsh.unit.html = $loader.file("api.html.js", new function() {
+		jsh.unit.html = $loader.module("api.html.js", new function() {
 			var seq = 0;
 
 			this.run = function(code,scope) {

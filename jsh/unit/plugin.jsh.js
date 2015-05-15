@@ -76,6 +76,7 @@ plugin({
 //			});
 //			return tests.toScenario();
 		};
+		jsh.unit.html.documentation = html.documentation;
 	}
 });
 

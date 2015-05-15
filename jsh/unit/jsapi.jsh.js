@@ -133,7 +133,7 @@ if (parameters.options.doc) {
 		}
 		return getRelativePath(parameters.options.index);
 	})();
-	jsapi.documentation({
+	jsh.unit.html.documentation({
 		index: (parameters.options.index) ? parameters.options.index.file : null,
 		//	TODO	not platform-independent
 		prefix: (relative) ? new Array(relative.split("/").length).join("../") : null,

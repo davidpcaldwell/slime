@@ -601,7 +601,7 @@ $exports.Scenario = function(p) {
 
 		["api.css","api.js"].forEach( function(name) {
 			var read = function(name) {
-				return $loader.resource(name).read($context.io.Streams.binary);
+				return $context.html.getCode(name);
 //				if ($context.api) return $context.api.getFile(name).read(jsh.io.Streams.binary);
 				//	TODO	probably $loader.resource() and run jsapi.js as a module rather than file
 				throw new Error();
