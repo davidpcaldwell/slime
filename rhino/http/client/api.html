@@ -521,6 +521,15 @@ END LICENSE
 							}
 						}
 					};
+					scope.getServerRequestCookies = function(request) {
+						if (request.getCookies() === null) return [];
+						return jsh.java.Array.adapt(request.getCookies()).filter(function(_cookie) {
+							return _cookie.getName() != "JSESSIONID";
+						}).map(function(_cookie) {
+							return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
+						});
+					};
+					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
 				</script>
 				<script type="application/x.jsapi#tests" jsapi:id="Hello World"><![CDATA[
 					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
@@ -561,10 +570,10 @@ END LICENSE
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
 						var client = new module.Client();
 						servlet.set(function(request,response) {
-							test(request.getCookies() == null);
+							verify(request,"initial servlet request").getCookies().is(null);
 							response.addCookie(new Cookie("cname", "cvalue"));
 							response.setContentType("text/plain");
 							response.getWriter().print("Hello, World!");
@@ -573,32 +582,44 @@ END LICENSE
 							method: "GET"
 							,url: "http://127.0.0.1:" + context.port + "/"
 						});
-						test(response.body.type.split(";")[0] == "text/plain");
+						var type = response.body.type.toString();
+						verify(type).is.not(null);
+						verify(type.split(";"))[0].is.not(null);
+						verify(response,"initial response").body.evaluate(function() { return this.type.toString().split(";")[0] }).is("text/plain");
 						servlet.set(function(request,response) {
-							test(Boolean(request.getCookies()) && request.getCookies().length == 1);
-							test(Boolean(request.getCookies()) && request.getCookies()[0].getName() == "cname");
-							test(Boolean(request.getCookies()) && request.getCookies()[0].getValue() == "cvalue");
+							var cookies = getServerRequestCookies(request);
+//							verify(request,"second servlet request").getCookies().length.is(1);
+							verify(cookies,"second servlet request cookies").length.is(1);
+							verify(cookies,"cookies")[0].name.is("cname");
+							verify(cookies,"cookies")[0].value.is("cvalue");
+//							test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+//							test(Boolean(request.getCookies()) && request.getCookies()[0].getName() == "cname");
+//							test(Boolean(request.getCookies()) && request.getCookies()[0].getValue() == "cvalue");
 						});
 						client.request({
 							method: "GET"
 							,url: "http://127.0.0.1:" + context.port + "/"
 						});
 					} else {
-						test(skip("No Tomcat"));
+						test(skip("No Tomcat, or WebView present"));
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
 						var client = new module.Client();
 						var redirected = false;
 						servlet.set(function(request,response) {
+							jsh.shell.echo("getting cookies " + request.getCookies());
+							var cookies = getServerRequestCookies(request);
+							jsh.shell.echo("cookies: " + JSON.stringify(cookies));
 							if (request.getRequestURI() == "/") {
-								test(request.getCookies() == null);
+								verify(cookies).length.is(0);
 								response.addCookie(new Cookie("rname", "rvalue"));
 								response.sendRedirect("./redirected");
 							} else if (request.getRequestURI() == "/redirected") {
 								redirected = true;
-								test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+								verify(cookies).length.is(1);
+//								test(Boolean(request.getCookies()) && request.getCookies().length == 1);
 								response.setContentType("text/plain");
 								response.getWriter().print("Redirected!");
 							} else {
@@ -610,11 +631,14 @@ END LICENSE
 							method: "GET",
 							url: "http://127.0.0.1:" + context.port + "/"
 							,evaluate: function(response) {
+								jsh.shell.echo("response = " + response.status.code);
+								jsh.shell.echo("error = ")
+								return response;
 							}
 						});
-						test(redirected);
+						verify(redirected,"redirected").is(true);
 					} else {
-						test(skip("No Tomcat"));
+						test(skip("No Tomcat, or WebView present"));
 					}
 				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="spi"><![CDATA[

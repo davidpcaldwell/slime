@@ -177,8 +177,11 @@ if (!parameters.options.notest) {
 	});
 	var UNIT_TESTS_COMPLETED = function(success) {
 		if (!success) {
-			jsh.shell.echo("Tests failed; exiting with status 1.", { stream: jsh.shell.stdio.error });
-			jsh.shell.exit(1);
+			//	TODO	make the below a polymorphic method on view
+			if (parameters.options.view != "webview") {
+				jsh.shell.echo("Tests failed; exiting with status 1.", { stream: jsh.shell.stdio.error });
+				jsh.shell.exit(1);
+			}
 		} else {
 			jsh.shell.echo("Tests passed.");
 		}

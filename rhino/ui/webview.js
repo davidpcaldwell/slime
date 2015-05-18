@@ -348,7 +348,11 @@ $set(function(p) {
 		this.postMessage = function(e) {
 			$context.api.thread.javafx(function() {
 				var window = browser.getEngine().executeScript("window");
-				window.call("postMessage", JSON.stringify(e), "*");
+				try {
+					window.call("postMessage", JSON.stringify(e), "*");
+				} catch (ex) {
+					Packages.java.lang.System.err.println("Error posting " + e);
+				}
 			});
 		}
 
