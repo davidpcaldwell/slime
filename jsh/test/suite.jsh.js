@@ -55,7 +55,7 @@ top.add({ scenario: new jsh.unit.Scenario.Fork({
 	run: jsh.shell.jsh,
 	shell: parameters.options.jsh.directory,
 	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
-	arguments: ["-stdio"]
+	arguments: ["-view","stdio"]
 }) });
 
 jsh.shell.echo("Running system tests ...");

@@ -24,9 +24,25 @@ var parameters = jsh.script.getopts({
 
 		doc: jsh.file.Pathname,
 		index: jsh.file.Pathname,
-		stdio: false
+		view: "console"
 	}
 });
+
+var views = {
+	console: function() {
+		return new jsh.unit.view.Console( { writer: jsh.shell.stdio.output } );
+	},
+	stdio: function() {
+		return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output })
+	},
+	webview: function() {
+		var html = new jsh.document.Document({ string: jsh.script.loader.resource("webview.html").read(String) });
+		var webview = new jsh.ui.javafx.WebView({ page: { document: html, base: jsh.script.file.parent } });
+		jsh.ui.javafx.launch({
+			Scene: webview
+		});
+	}
+}
 
 jsh.loader.plugins(parameters.options.jsapi);
 jsh.loader.plugins(jsh.script.file.parent.pathname);
@@ -57,7 +73,7 @@ var modules = parameters.options.api.map( function(pathname) {
 	return rv;
 } );
 
-var console = (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console( { writer: jsh.shell.stdio.output } );
+var console = views[parameters.options.view]();
 
 //var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("html.js"), {
 //	api: parameters.options.jsapi.directory,
