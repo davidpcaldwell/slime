@@ -32,30 +32,19 @@
 			return rv;
 		}
 
-		document.getElementById("scenario").appendChild(line({ text: "message: " + Object.keys(message) }));
-
-		document.getElementById("scenario").appendChild(line({ text: "message: " + message.type + " detail=" + Object.keys(message.detail) }));
-		try {
-			if (message.type == "scenario") {
-				if (true && true) {
-				}
-//				if (message.type == "scenario" && typeof(message.detail) != "undefined") {
-//
-//				}
+		if (message.type == "scenario" && message.detail.start) {
+			var div = document.createElement("div");
+			div.appendChild(line({ text: "Running: " + message.detail.start.name }));
+			if (!current) {
+				current = document.getElementById("scenario");
 			}
-		} catch (e) {
-			document.getElementById("scenario").appendChild(line({ text: e.type + " " + e.message }));
+			current.appendChild(div);
+			current = div;
+		} else if (message.type == "scenario" && message.detail.end) {
+			var result = (message.detail.success) ? "Passed" : "Failed";
+			current.appendChild(line({ text: result + ": " + message.detail.end.name }));
+			current = current.parentNode;
+		} else if (message.type == "test") {
 		}
-//		if (message.type == "scenario" && message.detail.start) {
-//			var div = document.createElement("div");
-//			div.appendChild(line({ text: "Running: " + message.detail.start.name }));
-//			if (!current) {
-//				current = document.getElementById("scenario");
-//			}
-//			current.appendChild(div);
-//			current = div;
-//		} else if (message.type == "scenario" && message.detail.end) {
-//
-//		}
 	});
 })();
