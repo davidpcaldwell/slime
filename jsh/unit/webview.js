@@ -34,11 +34,17 @@
 
 		document.getElementById("scenario").appendChild(line({ text: "message: " + Object.keys(message) }));
 
-		if (message.type) {
+		document.getElementById("scenario").appendChild(line({ text: "message: " + message.type + " detail=" + Object.keys(message.detail) }));
+		try {
 			if (message.type == "scenario") {
-
+				if (true && true) {
+				}
+//				if (message.type == "scenario" && typeof(message.detail) != "undefined") {
+//
+//				}
 			}
-			document.getElementById("scenario").appendChild(line({ text: "message: " + message.type + " detail=" + Object.keys(message.detail) }));
+		} catch (e) {
+			document.getElementById("scenario").appendChild(line({ text: e.type + " " + e.message }));
 		}
 //		if (message.type == "scenario" && message.detail.start) {
 //			var div = document.createElement("div");

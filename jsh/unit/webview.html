@@ -13,7 +13,11 @@ Contributor(s):
 END LICENSE
 -->
 <!DOCTYPE html>
-<html>
+<!--
+	TODO	remove need for this namespace declaration; currently if not XHTML namespace default serialization of preprocessed
+				file causes && to be escaped in scripts
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>Unit test results</title>
 	<meta charset="UTF-8" />
@@ -26,6 +30,7 @@ END LICENSE
 		Hello, World!
 	</div>
 	<div id="jsh-s">
+		Initial
 	</div>
 	<div id="scenario">
 	</div>

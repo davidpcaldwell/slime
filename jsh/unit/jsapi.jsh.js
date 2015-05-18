@@ -41,14 +41,6 @@ var views = {
 			var buffer = [];
 			var send;
 
-			this.initialize = function(postMessage) {
-				send = postMessage;
-				for (var i=0; i<buffer.length; i++) {
-					send(buffer[i]);
-				}
-				buffer = null;
-			}
-
 			var add = function(e) {
 				var json = {
 					type: e.type,
@@ -60,6 +52,14 @@ var views = {
 					buffer.push(json);
 				}
 			};
+
+			this.initialize = function(postMessage) {
+				send = postMessage;
+				for (var i=0; i<buffer.length; i++) {
+					send(buffer[i]);
+				}
+				buffer = null;
+			}
 
 			this.listen = function(scenario) {
 				scenario.listeners.add("scenario",add);
