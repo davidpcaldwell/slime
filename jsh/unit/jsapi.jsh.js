@@ -37,10 +37,50 @@ var views = {
 	},
 	webview: function() {
 		var html = new jsh.document.Document({ string: jsh.script.loader.resource("webview.html").read(String) });
-		var webview = new jsh.ui.javafx.WebView({ page: { document: html, base: jsh.script.file.parent } });
+		var rv = new function() {
+			var buffer = [];
+			var send;
+
+			this.initialize = function(postMessage) {
+				send = postMessage;
+				for (var i=0; i<buffer.length; i++) {
+					send(buffer[i]);
+				}
+				buffer = null;
+			}
+
+			var add = function(e) {
+				var json = {
+					type: e.type,
+					detail: e.detail
+				};
+				if (send) {
+					send(json);
+				} else {
+					buffer.push(json);
+				}
+			};
+
+			this.listen = function(scenario) {
+				scenario.listeners.add("scenario",add);
+				scenario.listeners.add("test",add);
+			}
+		};
+		var webview = new jsh.ui.javafx.WebView({
+			page: { document: html, base: jsh.script.file.parent },
+			serve: function(p) {
+				return { served: "Served!", request: p };
+			},
+			initialize: function(p) {
+				rv.initialize((function(message) {
+					this.postMessage(message);
+				}).bind(this));
+			}
+		});
 		jsh.ui.javafx.launch({
 			Scene: webview
 		});
+		return rv;
 	}
 }
 
@@ -109,7 +149,11 @@ if (!parameters.options.notest) {
 		return rv;
 	})();
 
-	var tests = new jsh.unit.Scenario({ composite: true, name: "jsapi.jsh.js unit tests" });
+	var tests = new jsh.unit.Scenario({
+		composite: true,
+		name: "jsapi.jsh.js unit tests",
+		view: console
+	});
 
 	//tests.environment(ENVIRONMENT);
 
@@ -139,7 +183,7 @@ if (!parameters.options.notest) {
 			jsh.shell.echo("Tests passed.");
 		}
 	}
-	UNIT_TESTS_COMPLETED(tests.run({ console: console }));
+	UNIT_TESTS_COMPLETED(tests.run());
 }
 
 if (parameters.options.doc) {

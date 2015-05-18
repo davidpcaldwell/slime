@@ -84,7 +84,11 @@ $set(function(p) {
 						});
 					});
 				} else {
-					if (serve) return serve(object.payload);
+					if (serve) {
+						var rv = serve(object.payload);
+						jsh.shell.echo("server returning " + rv);
+						return JSON.stringify(rv);
+					}
 					$context.log.WARNING("No serve for payload " + json);
 				}
 			}
@@ -339,6 +343,13 @@ $set(function(p) {
 					}
 				}
 			));
+		}
+
+		this.postMessage = function(e) {
+			$context.api.thread.javafx(function() {
+				var window = browser.getEngine().executeScript("window");
+				window.call("postMessage", JSON.stringify(e), "*");
+			});
 		}
 
 		if (p.initialize) {

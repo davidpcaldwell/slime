@@ -51,6 +51,12 @@
 				};
 			};
 
+			var handlers = [];
+
+			this.handler = function(f) {
+				handlers.push(f);
+			}
+
 			window.addEventListener("message", function(e) {
 				if (e.origin === "null") {
 					var data = JSON.parse(e.data);
@@ -60,6 +66,9 @@
 						delete pending[data.asynchronous];
 					} else {
 						console.log("Received message: " + JSON.stringify(data, void(0), "    "));
+						for (var i=0; i<handlers.length; i++) {
+							handlers[i](data);
+						}
 					}
 				}
 			});
