@@ -32,11 +32,20 @@
 			return rv;
 		}
 
-		document.getElementById("scenario").appendChild(line({ text: "message" }));
+		document.getElementById("scenario").appendChild(line({ text: "message: " + Object.keys(message) }));
 
+		if (message.type) {
+			if (message.type == "scenario") {
+
+			}
+			document.getElementById("scenario").appendChild(line({ text: "message: " + message.type + " detail=" + Object.keys(message.detail) }));
+		}
 //		if (message.type == "scenario" && message.detail.start) {
 //			var div = document.createElement("div");
 //			div.appendChild(line({ text: "Running: " + message.detail.start.name }));
+//			if (!current) {
+//				current = document.getElementById("scenario");
+//			}
 //			current.appendChild(div);
 //			current = div;
 //		} else if (message.type == "scenario" && message.detail.end) {
