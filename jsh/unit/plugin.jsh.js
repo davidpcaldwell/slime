@@ -88,6 +88,55 @@ plugin({
 				buffer.close();
 			});
 			return new jsh.unit.Scenario.Stream({ name: p.name, stream: buffer.readBinary() });
+		};
+	}
+});
+
+plugin({
+	isReady: function() {
+		return Boolean(jsh.unit && jsh.unit.view && jsh.document && jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView);
+	},
+	load: function() {
+		jsh.unit.view.WebView = function() {
+			var html = new jsh.document.Document({ string: $loader.resource("webview.html").read(String) });
+			var rv = new function() {
+				var buffer = [];
+				var send;
+
+				var add = function(e) {
+					var json = {
+						type: e.type,
+						detail: e.detail
+					};
+					if (send) {
+						send(json);
+					} else {
+						buffer.push(json);
+					}
+				};
+
+				this.initialize = function(postMessage) {
+					send = postMessage;
+					for (var i=0; i<buffer.length; i++) {
+						send(buffer[i]);
+					}
+					buffer = null;
+				}
+
+				this.view = new jsh.unit.View(add);
+			};
+			var webview = new jsh.ui.javafx.WebView({
+				page: { document: html, loader: $loader },
+				initialize: function(p) {
+					rv.initialize((function(message) {
+						this.postMessage(message);
+					}).bind(this));
+				}
+			});
+			jsh.ui.javafx.launch({
+				Scene: webview
+			});
+			return rv.view;
 		}
 	}
 });

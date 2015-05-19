@@ -671,21 +671,26 @@ $exports.Scenario = Scenario;
 
 $exports.View = function(o) {
 	var addConsoleListener = function(scenario,implementation) {
-		scenario.listeners.add("scenario", function(e) {
-			if (e.detail.start) {
-				if (implementation.start) {
-					implementation.start(e.detail.start);
+		if (typeof(implementation) == "function") {
+			scenario.listeners.add("scenario", implementation);
+			scenario.listeners.add("test", implementation);
+		} else if (implementation && typeof(implementation) == "object") {
+			scenario.listeners.add("scenario", function(e) {
+				if (e.detail.start) {
+					if (implementation.start) {
+						implementation.start(e.detail.start);
+					}
+				} else if (e.detail.end) {
+					if (implementation.end) {
+						implementation.end(e.detail.end, e.detail.success);
+					}
 				}
-			} else if (e.detail.end) {
-				if (implementation.end) {
-					implementation.end(e.detail.end, e.detail.success);
-				}
-			}
-		});
+			});
 
-		scenario.listeners.add("test", function(e) {
-			if (implementation.test) implementation.test(e.detail);
-		});
+			scenario.listeners.add("test", function(e) {
+				if (implementation.test) implementation.test(e.detail);
+			});
+		}
 	};
 
 	this.listen = function(scenario) {
