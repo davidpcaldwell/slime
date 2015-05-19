@@ -26,7 +26,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.java && jsh.io && jsh.shell && jsh.unit);
+		return Boolean(jsh.java && jsh.io && jsh.shell && jsh.unit && jsh.document);
 	},
 	load: function() {
 		var remote = $loader.file("remote.js", {
@@ -58,6 +58,41 @@ plugin({
 			return new view.Events(p);
 		};
 
+		jsh.unit.view.WebView = function() {
+			var html = new jsh.document.Document({ string: $loader.resource("webview.html").read(String) });
+			var rv = new function() {
+				var buffer = [];
+				var send;
+
+				var add = function(e) {
+					var json = {
+						type: e.type,
+						detail: e.detail
+					};
+					if (send) {
+						send(json);
+					} else {
+						buffer.push(json);
+					}
+				};
+
+				this.initialize = function(postMessage) {
+					send = postMessage;
+					for (var i=0; i<buffer.length; i++) {
+						send(buffer[i]);
+					}
+					buffer = null;
+				}
+
+				this.listen = function(scenario) {
+					scenario.listeners.add("scenario",add);
+					scenario.listeners.add("test",add);
+				}
+			};
+			rv.html = html;
+			return rv;
+		}
+
 		var html = $loader.file("html.js", {
 			Scenario: jsh.unit.Scenario,
 			html: jsh.unit.html,
@@ -88,7 +123,7 @@ plugin({
 				buffer.close();
 			});
 			return new jsh.unit.Scenario.Stream({ name: p.name, stream: buffer.readBinary() });
-		}
+		};
 	}
 });
 
