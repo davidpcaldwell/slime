@@ -29,16 +29,19 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			//	TODO	mercilessly copied from Derby; perhaps should modularize
 			(function() {
-				var js = $jsapi.module("../../../slime/js/object/");
-				var java = $jsapi.module("../../../slime/rhino/host/");
-				var io = $jsapi.module("../../../slime/rhino/io/", {
+				var js = $jsapi.module("../../../../../js/object/");
+				var java = $jsapi.module("../../../../../rhino/host/", {
+					$rhino: jsh.$jsapi.$rhino
+				});
+				var io = $jsapi.module("../../../../../rhino/io/", {
 					api: {
 						js: js,
 						java: java,
 						mime: {
 							Type: {}
 						}
-					}
+					},
+					$rhino: jsh.$jsapi.$rhino
 				});
 				var parentContext = new function() {
 					this.api = {
@@ -73,6 +76,28 @@ END LICENSE
 				jsh.shell.echo("Catalog: " + catalog);
 			});
 		</script>
+		<script type="application/x.jsapi#tests"><![CDATA[
+			var $mysql = $jsapi.environment.mysql;
+			if ($mysql.catalog) {
+				var _ds = new com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
+				if ($mysql.host) {
+					_ds.setServerName($mysql.host);
+				}
+				if ($mysql.port) {
+					_ds.setPort($mysql.port);
+				}
+				if ($mysql.user && $mysql.password) {
+					_ds.setUser($mysql.user);
+					_ds.setPassword($mysql.password);
+				}
+				_ds.setDatabaseName($mysql.catalog);
+				
+				var catalog = new module.Catalog({
+					_dataSource: _ds
+				});
+				jsh.shell.echo("Catalog specified: " + catalog);
+			}
+		]]></script>
 		<div jsapi:id="blob">
 			<div jsapi:reference="getApi('../api.html').getElement('blob')">
 			</div>

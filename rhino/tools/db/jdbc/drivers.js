@@ -17,7 +17,7 @@ var types = new function() {
 
 	var cast = function(to,value,toLiteral) {
 		var literal = (value === null) ? "NULL" : toLiteral(value);
-		return "CAST (" + literal + " AS " + to + ")";
+		return "CAST(" + literal + " AS " + to + ")";
 	};
 	cast.binary = function(value) {
 		var s = "";
@@ -188,9 +188,12 @@ var types = new function() {
 		if (type.code == Types.TIMESTAMP) return TIMESTAMP;
 		if (type.code == Types.DECIMAL) return new DECIMAL(type.precision,type.scale);
 		if (type.code == Types.BLOB) return BLOB;
+		if (type.code == Types.BINARY) return BLOB;
 		if (type.code == Types.LONGVARBINARY) return BLOB;
 		if (type.code == Types.BIT) return BIT;
 	};
+	
+	this.cast = cast;
 
 //	this.decode = function(type,rs,index) {
 //		var isNull = function(rs,index) {
@@ -517,6 +520,10 @@ var DataSource = function(c) {
 
 		this.$getMetaData = function() {
 			return peer.getMetaData();
+		};
+		
+		this.$getCatalog = function() {
+			return String(peer.getCatalog());
 		}
 
 		this.types = c.types;
@@ -730,10 +737,10 @@ Context.perform = function(context,transaction) {
 		return rv;
 	} catch (e) {
 		//	Use feature test and try-catch because feature is new and early versions were buggy
-		if (jsh.java.log) {
+		if ($context.api.java.log) {
 			try {
-				jsh.java.log.named("db").WARNING("Error executing %s", transaction.toString());
-				jsh.java.log.named("db").WARNING("Stack trace: %s", e.stack);
+				$context.api.java.log.named("db").WARNING("Error executing %s", transaction.toString());
+				$context.api.java.log.named("db").WARNING("Stack trace: %s", e.stack);
 			} catch (loge) {
 			}
 		}
@@ -850,6 +857,10 @@ var Table = function(c) {
 		columns.sensitive[row.column_name] = column;
 		columns.array.push(column);
 	});
+	
+	this.toString = function() {
+		return "Table: " + c.name.toString();
+	}
 
 	this.name = c.name.toString();
 
@@ -929,11 +940,25 @@ var Schema = function(c) {
 	};
 
 	this.getTable = function(p) {
-		var tables = this.getTables();
-		var rv = $context.api.js.Array(tables).one(function(table) {
-			return this.name == new Identifier(p.name).toString();
+//		var tables = this.getTables();
+		var name = new Identifier({ string: p.name });
+		var candidateTables = c.dataSource.createMetadataQuery( function(metadata) {
+			//	TODO	this would not work in a multi-catalog database; would need to also filter on catalog
+			return metadata.getTables(null,c.name.toString(),name.toString(),null)
+		} ).toArray();
+		var row = $context.api.js.Array(candidateTables).one(function() {
+			return this.table_name == name.toString();
 		});
-		return (rv) ? rv : null;
+		return (row) ? new c.Table({ schema: this, dataSource: c.dataSource, name: new Identifier({ string: row.table_name })}) : null;
+//		return new c.Table({ schema: this, dataSource: c.dataSource, name: )
+//		.one( function() {
+//			return row.table_name == name.toString();
+//		}, this ).toArray();
+
+//		var rv = $context.api.js.Array(tables).one(function(table) {
+//			return this.name == new Identifier(p.name).toString();
+//		});
+//		return (rv) ? rv : null;
 	}
 }
 
