@@ -123,10 +123,7 @@ plugin({
 					buffer = null;
 				}
 
-				this.listen = function(scenario) {
-					scenario.listeners.add("scenario",add);
-					scenario.listeners.add("test",add);
-				}
+				this.view = new jsh.unit.View(add);
 			};
 			var webview = new jsh.ui.javafx.WebView({
 				page: { document: html, loader: $loader },
@@ -139,7 +136,7 @@ plugin({
 			jsh.ui.javafx.launch({
 				Scene: webview
 			});
-			return rv;
+			return rv.view;
 		}
 	}
 });
