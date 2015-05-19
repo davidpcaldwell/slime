@@ -36,19 +36,7 @@ var views = {
 		return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output })
 	},
 	webview: function() {
-		var rv = new jsh.unit.view.WebView();
-		var webview = new jsh.ui.javafx.WebView({
-			page: { document: rv.html, base: jsh.script.file.parent },
-			initialize: function(p) {
-				rv.initialize((function(message) {
-					this.postMessage(message);
-				}).bind(this));
-			}
-		});
-		jsh.ui.javafx.launch({
-			Scene: webview
-		});
-		return rv;
+		return new jsh.unit.view.WebView();
 	}
 }
 

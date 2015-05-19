@@ -114,29 +114,38 @@ $set(function(p) {
 	var getLocation = function(page) {
 		if (page.file) {
 			return {
-				getFileUrl: function(path) {
-					return String(page.file.getRelativePath(path).java.adapt().toURI().toURL());
-				},
 				getCode: function(path) {
 					return page.file.getRelativePath(path).file.read(String);
 				}
-			}
-		} else if (page.document) {
+			};
+		} else if (page.base) {
 			return {
-				getFileUrl: function(path) {
-					return String(page.base.getRelativePath(path).java.adapt().toURI().toURL());
-				},
 				getCode: function(path) {
 					var file = page.base.getRelativePath(path).file;
 					if (!file) {
 						if (path == "webview.initialize.js") {
 							return $loader.resource("webview.initialize.js").read(String);
+						} else {
+							return "";
 						}
 					}
-					if (!file) return "";
 					return file.read(String);
 				}
-			}
+			};
+		} else if (page.loader) {
+			return {
+				getCode: function(path) {
+					var file = page.loader.resource(path);
+					if (!file) {
+						if (path == "webview.initialize.js") {
+							return $loader.resource("webview.initialize.js").read(String);
+						} else {
+							return "";
+						}
+					}
+					return file.read(String);
+				}
+			};
 		} else {
 			throw new Error("Unsupported");
 		}
@@ -289,12 +298,19 @@ $set(function(p) {
 							node.children.splice(0,0,scriptElement);
 						}
 
-						if (node.element && node.element.type.name == "link") {
-							$context.log.FINE("Found link: " + node);
+						if (node.element && node.element.type.name == "link" && node.element.attributes.get("rel") == "stylesheet") {
+							$context.log.FINE("Found link rel=stylesheet: " + node);
 							var reference = node.element.attributes.get("href");
 
 							if (isRelative(reference)) {
-								node.element.attributes.set("href", location.getFileUrl(reference));
+								//	Replace with style element
+								//	keep type attribute if present
+								//	keep media attribute if present
+								node.element.type.name = "style";
+								node.element.attributes.set("href", null);
+//								node.element.attributes.set("href", location.getFileUrl(reference));
+								node.element.attributes.set("rel", null);
+								node.children.push(new $context.api.document.Text({ text: location.getCode(reference) }));
 							}
 						}
 						if (node.element && node.element.type.name == "script") {
