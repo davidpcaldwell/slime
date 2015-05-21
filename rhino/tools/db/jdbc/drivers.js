@@ -192,7 +192,7 @@ var types = new function() {
 		if (type.code == Types.LONGVARBINARY) return BLOB;
 		if (type.code == Types.BIT) return BIT;
 	};
-	
+
 	this.cast = cast;
 
 //	this.decode = function(type,rs,index) {
@@ -521,7 +521,7 @@ var DataSource = function(c) {
 		this.$getMetaData = function() {
 			return peer.getMetaData();
 		};
-		
+
 		this.$getCatalog = function() {
 			return String(peer.getCatalog());
 		}
@@ -857,7 +857,7 @@ var Table = function(c) {
 		columns.sensitive[row.column_name] = column;
 		columns.array.push(column);
 	});
-	
+
 	this.toString = function() {
 		return "Table: " + c.name.toString();
 	}

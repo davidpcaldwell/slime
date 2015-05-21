@@ -102,7 +102,7 @@ var Collection = function(_db,name) {
 	this.find = function(criteria,projection) {
 		return new Cursor(_db.getCollection(name),criteria,projection);
 	};
-	
+
 	this.distinct = function(field) {
 		var _rv = _db.getCollection(name).distinct(field);
 		var rv = [];
@@ -157,7 +157,7 @@ var Database = function(_db) {
 $exports.Client = function(p) {
 	//	See ServerAddress documentation for defaults given below; probably should call the driver to get them
 	if (!p) p = {};
-	
+
 	var _Address = function(p) {
 		var host = (function(host,server) {
 			if (host) return host;
@@ -167,7 +167,7 @@ $exports.Client = function(p) {
 		var port = (typeof(p.port) == "undefined") ? 27017 : p.port;
 		return new Packages.com.mongodb.ServerAddress(host,port);
 	};
-	
+
 	var _address;
 	var _addresses;
 	if (p.seeds) {

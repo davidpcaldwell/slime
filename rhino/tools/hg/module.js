@@ -564,6 +564,9 @@ var Installation = function(environment) {
 			if (p && p.source) {
 				args.push(p.source.reference);
 			}
+			if (p && p.force) {
+				args.push("-f");
+			}
 			return shell({
 				repository: this,
 				config: (p && p.config) ? p.config : {},
