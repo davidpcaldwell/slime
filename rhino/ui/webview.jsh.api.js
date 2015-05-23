@@ -114,7 +114,8 @@ $set(function(p) {
 			//	TODO	configurable
 			initialize: function() {
 				addTitleListener.call(this);
-			}
+			},
+			zoom: p.zoom
 		}),
 		on: p.on
 	});

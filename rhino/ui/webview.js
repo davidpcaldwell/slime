@@ -140,6 +140,10 @@ $set(function(p) {
 
 	return function() {
 		var browser = (p.browser) ? p.browser : new Packages.javafx.scene.web.WebView();
+		
+		if (typeof(p.zoom) != "undefined") {
+			browser.setZoom(p.zoom);
+		}
 
 		var page = p.page;
 
