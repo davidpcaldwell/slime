@@ -10,6 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	clean up the plugin; rename plugin.jsh.api.html and include jsh.tomcat.js in this file or one with a better name
 plugin({
 	isReady: function() {
 		return jsh.js && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file;
