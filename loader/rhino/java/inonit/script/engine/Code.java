@@ -175,7 +175,7 @@ public abstract class Code {
 		}
 
 		public static Source system(final String prefix) {
-//			return system().child(prefix);
+			if (true) return system().child(prefix);
 			return new Source() {
 				@Override public String toString() {
 					return "Source: prefix=" + prefix + " loader=" + ClassLoader.getSystemClassLoader();
@@ -208,9 +208,15 @@ public abstract class Code {
 		public abstract File getFile(String path) throws IOException;
 		public abstract Classes getClasses();
 
+		private String getChildPrefix(String prefix) {
+			if (prefix == null || prefix.length() == 0) return "";
+			if (prefix.endsWith("/")) return prefix;
+			return prefix + "/";
+		}
+
 		public final Source child(final String prefix) {
-			//	TODO	should figure out /; maybe should only add it if we don't already end in it
-			final String prepend = (prefix != null && prefix.length() > 0) ? (prefix + "/") : "";
+			final String prepend = getChildPrefix(prefix);
+//			final String prepend = (prefix != null && prefix.length() > 0) ? (prefix + "/") : "";
 			return new Code.Source() {
 				@Override public String toString() {
 					return Code.Source.class.getName() + " source=" + Source.this + " prefix=" + prefix;
