@@ -14,6 +14,9 @@ package inonit.script.engine;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
+import javax.lang.model.element.*;
+import javax.tools.*;
 
 public abstract class Code {
 	public static abstract class Classes {
@@ -35,6 +38,7 @@ public abstract class Code {
 
 	public static abstract class Source {
 		public static abstract class File {
+			public abstract URI getURI();
 			public abstract String getSourceName();
 			public abstract InputStream getInputStream();
 			public abstract Long getLength();
@@ -48,6 +52,10 @@ public abstract class Code {
 
 			public static File create(final java.io.File file) {
 				return new File() {
+					@Override public URI getURI() {
+						return file.toURI();
+					}
+
 					@Override public String getSourceName() {
 						try {
 							return file.getCanonicalPath();
@@ -77,6 +85,10 @@ public abstract class Code {
 			//	TODO	Where is this called, and does it need a length argument?
 			public static File create(final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new File() {
+					@Override public URI getURI() {
+						throw new UnsupportedOperationException();
+					}
+
 					@Override public String getSourceName() {
 						return name;
 					}
@@ -357,11 +369,281 @@ public abstract class Code {
 		};
 	}
 
+	private static javax.tools.JavaCompiler javac;
+
+	private static class MemoryJavaClasses {
+		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
+
+		private class OutputClass implements JavaFileObject {
+			private String name;
+			private ByteArrayOutputStream out;
+
+			OutputClass(String name) {
+				this.name = name;
+			}
+
+			public Kind getKind() {
+				return Kind.CLASS;
+			}
+
+			public boolean isNameCompatible(String simpleName, Kind kind) {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public NestingKind getNestingKind() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Modifier getAccessLevel() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public URI toUri() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public String getName() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public InputStream openInputStream() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public OutputStream openOutputStream() throws IOException {
+				out = new ByteArrayOutputStream();
+				return out;
+			}
+
+			public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Writer openWriter() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public long getLastModified() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public boolean delete() {
+				classes.put(name, null);
+				return true;
+			}
+
+		}
+
+		JavaFileObject forOutput(String className) {
+			if (classes.get(className) != null) {
+				throw new UnsupportedOperationException("Duplicate!");
+			} else {
+				classes.put(className, new OutputClass(className));
+			}
+			return classes.get(className);
+		}
+	}
+
+	private static class SourceFileObject implements JavaFileObject {
+		private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
+
+		private Source.File delegate;
+
+		SourceFileObject(Source.File delegate) {
+			this.delegate = delegate;
+		}
+
+		public Kind getKind() {
+			return Kind.SOURCE;
+		}
+
+		public boolean isNameCompatible(String simpleName, Kind kind) {
+			if (simpleName.equals("package-info")) return false;
+			if (kind == JavaFileObject.Kind.SOURCE) {
+				String basename = delegate.getSourceName().substring(delegate.getSourceName().lastIndexOf("/")+1);
+				String className = basename.substring(0,basename.length()-".java".length());
+				return className.equals(simpleName);
+			}
+			throw new UnsupportedOperationException("simpleName = " + simpleName + " kind=" + kind);
+		}
+
+		public NestingKind getNestingKind() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public Modifier getAccessLevel() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public URI toUri() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public String getName() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public InputStream openInputStream() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public OutputStream openOutputStream() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+			return streams.readString(delegate.getInputStream());
+		}
+
+		public Writer openWriter() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public long getLastModified() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public boolean delete() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+	}
+
+	private static Source getCompiledClasses(final Source source) {
+		return new Source() {
+			private javax.tools.JavaFileManager jfm;
+
+			private ClassLoader classpath = new ClassLoader() {
+				protected Class findClass(String name) throws ClassNotFoundException{
+					throw new ClassNotFoundException(name);
+				}
+			};
+
+			private JavaFileObject getFileObject(final Source.File java) {
+				return new SourceFileObject(java);
+			}
+
+			@Override
+			public Source.File getFile(String path) throws IOException {
+				String className = path.substring(0,path.length()-".class".length());
+				String sourceName = className + ".java";
+//				className = className.replace("/", ".");
+				Source.File java = source.getFile("java/" + sourceName);
+				if (java == null) {
+					java = source.getFile("rhino/" + path);
+				}
+				if (java != null) {
+					if (javac == null) {
+						javac = javax.tools.ToolProvider.getSystemJavaCompiler();
+					}
+					if (jfm == null) {
+						jfm = new javax.tools.JavaFileManager() {
+							private javax.tools.JavaFileManager delegate = javac.getStandardFileManager(null, null, null);
+							private MemoryJavaClasses compiled = new MemoryJavaClasses();
+
+							public ClassLoader getClassLoader(JavaFileManager.Location location) {
+								if (location == StandardLocation.CLASS_PATH) return classpath;
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
+								if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
+								System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
+								return Arrays.asList(new JavaFileObject[0]);
+							}
+
+							public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
+								if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public boolean isSameFile(FileObject a, FileObject b) {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public boolean handleOption(String current, Iterator<String> remaining) {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public boolean hasLocation(JavaFileManager.Location location) {
+								if (location == StandardLocation.ANNOTATION_PROCESSOR_PATH) return false;
+								if (location == StandardLocation.SOURCE_PATH) return true;
+								if (location == StandardLocation.NATIVE_HEADER_OUTPUT) return false;
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
+								if (location == StandardLocation.CLASS_OUTPUT) {
+									return compiled.forOutput(className);
+								}
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public FileObject getFileForInput(JavaFileManager.Location location, String packageName, String relativeName) throws IOException {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public FileObject getFileForOutput(JavaFileManager.Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public void flush() throws IOException {
+							}
+
+							public void close() throws IOException {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public int isSupportedOption(String option) {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+						};
+					}
+					javax.tools.JavaFileObject jfo = getFileObject(java);
+					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, jfm, null, null, null, Arrays.asList(new JavaFileObject[] { jfo }));
+					boolean success = task.call();
+					if (!success) {
+						throw new RuntimeException("Failure");
+					}
+				}
+				return null;
+			}
+
+			private Classes classes = new Classes() {
+				@Override
+				public URL getResource(String path) {
+					System.err.println("getResource(" + path + ")");
+					return null;
+				}
+			};
+
+			@Override
+			public Classes getClasses() {
+				System.err.println("getClasses()");
+				return null;
+			}
+		};
+	}
+
 	public static Code unpacked(final File base) {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(base + " is not a directory.");
 		}
 		return new Code() {
+			private Source source = Source.create(base);
+			private Source classes = getCompiledClasses(source);
+
 			public String toString() {
 				try {
 					String rv = getClass().getName() + ": base=" + base.getCanonicalPath();
@@ -372,11 +654,12 @@ public abstract class Code {
 			}
 
 			public Source getScripts() {
-				return Source.create(base);
+				return source;
 			}
 
 			public Source getClasses() {
-				return Source.NULL;
+				boolean COMPILE_IN_MEMORY = false;
+				return (COMPILE_IN_MEMORY) ? classes : Source.NULL;
 			}
 		};
 	}
