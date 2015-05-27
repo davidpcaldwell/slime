@@ -493,6 +493,24 @@ var decorate = function(p) {
 	}
 };
 
+var identifiers = new function() {
+	var lock = new $context.api.java.Thread.Monitor();
+
+	var id = 0;
+
+	//	TODO	thread safety
+	this.get = function() {
+		return new lock.Waiter({
+			until: function() {
+				return true;
+			},
+			then: function() {
+				return id++;
+			}
+		})();
+	}
+};
+
 $context.$rhino.Loader.spi(function(underlying) {
 	return function(p) {
 		if (p.resources) {
@@ -514,7 +532,9 @@ $context.$rhino.Loader.spi(function(underlying) {
 					this.getFile = function(path) {
 						var resource = p.resources.get(String(path));
 						if (resource && resource.read && resource.read.binary) {
+							var id = identifiers.get();
 							return Packages.inonit.script.engine.Code.Source.File.create(
+								Packages.inonit.script.engine.Code.Source.URI.script("rhino/io/" + id, String(path)),
 								defined(resource.name, p.resources.toString() + "!" + String(path)),
 								defined(resource.length, null),
 								defined(resource.modified, null, function(modified) {

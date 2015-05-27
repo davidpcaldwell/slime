@@ -37,6 +37,46 @@ public abstract class Code {
 //	}
 
 	public static abstract class Source {
+		public static class URI {
+			private static java.net.URI string(String s) {
+				try {
+					return new java.net.URI("slime://" + s);
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			public static URI create(URL url) {
+				try {
+					return new URI(url.toURI());
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			public static URI script(String scriptName, String path) {
+				return new URI(string("script/" + scriptName.replace("/", "-") + "/" + path));
+			}
+
+			public static URI jvm(Class c, String path) {
+				return new URI(string("java/" + c.getName() + "/" + path));
+			}
+
+			private java.net.URI delegate;
+
+			private URI(java.net.URI delegate) {
+				this.delegate = delegate;
+			}
+
+			java.net.URI adapt() {
+				return delegate;
+			}
+
+			static URI create(java.io.File file) {
+				return new URI(file.toURI());
+			}
+		}
+
 		public static abstract class File {
 			public abstract URI getURI();
 			public abstract String getSourceName();
@@ -53,7 +93,7 @@ public abstract class Code {
 			public static File create(final java.io.File file) {
 				return new File() {
 					@Override public URI getURI() {
-						return file.toURI();
+						return URI.create(file);
 					}
 
 					@Override public String getSourceName() {
@@ -82,11 +122,11 @@ public abstract class Code {
 				};
 			}
 
-			//	TODO	Where is this called, and does it need a length argument?
-			public static File create(final String name, final Long length, final java.util.Date modified, final InputStream in) {
+			//	Used in rhino/io to create Code.Source.File objects in resources implementation
+			public static File create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new File() {
 					@Override public URI getURI() {
-						throw new UnsupportedOperationException();
+						return uri;
 					}
 
 					@Override public String getSourceName() {
@@ -107,8 +147,13 @@ public abstract class Code {
 				};
 			}
 
+			public static File create(URI uri, String name, final InputStream in) {
+				return create(uri, name, null, null, in);
+			}
+
 			public static File create(final String name, final InputStream in) {
-				return create(name, null, null, in);
+				throw new UnsupportedOperationException("Need URI");
+//				return create(name, null, null, in);
 			}
 		}
 
@@ -129,7 +174,7 @@ public abstract class Code {
 				public File getFile(String path) {
 					InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(prefix+path);
 					if (in == null) return null;
-					return File.create("bootclasspath:" + prefix+path, in);
+					return File.create(new URI(URI.string("bootclasspath/" + prefix+path)), "bootclasspath:" + prefix+path, in);
 				}
 			};
 		}
@@ -282,6 +327,7 @@ public abstract class Code {
 					Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
 					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
 					return File.create(
+						new URI(new URL(url,path).toURI()),
 						getSourceName(url,path),
 						length,
 						modified,
@@ -290,6 +336,9 @@ public abstract class Code {
 				} catch (IOException e) {
 					//	TODO	is this the only way to test whether the URL is available?
 					return null;
+				} catch (URISyntaxException e) {
+					//	TODO	is this the only way to test whether the URL is available?
+					throw new RuntimeException(e);
 				}
 			}
 

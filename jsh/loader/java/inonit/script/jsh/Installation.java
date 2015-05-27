@@ -250,7 +250,7 @@ public abstract class Installation {
 			}
 
 			public Code.Source.File getPlatformLoader(String path) {
-				return Code.Source.File.create("[slime]:" + path, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
+				return Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/platform/" + path),"[slime]:" + path, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
 			}
 
 			public Code.Source.File getJshLoader(String path) {
@@ -258,7 +258,7 @@ public abstract class Installation {
 				if (in == null) {
 					throw new RuntimeException("Not found in system class loader: $jsh/" + path + "; system class path is " + System.getProperty("java.class.path"));
 				}
-				return Code.Source.File.create("jsh/" + path, in);
+				return Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/jsh/" + path), "jsh/" + path, in);
 			}
 
 			public Code getShellModuleCode(String path) {

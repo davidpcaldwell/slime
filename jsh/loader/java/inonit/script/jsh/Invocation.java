@@ -79,7 +79,8 @@ public abstract class Invocation {
 	public static Invocation packaged(final String[] arguments) {
 		return new Invocation() {
 			public Script getScript() {
-				return Script.create(Code.Source.File.create("main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
+				//	TODO	DRY with Installation.java; may go away as we refactor URI management
+				return Script.create(Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/main.jsh.js"), "main.jsh.js", ClassLoader.getSystemResourceAsStream("main.jsh.js")));
 			}
 
 			public String[] getArguments() {
@@ -122,7 +123,7 @@ public abstract class Invocation {
 
 						@Override
 						public Code.Source.File getSource() {
-							return Code.Source.File.create(scriptPath, stream);
+							return Code.Source.File.create(Code.Source.URI.create(url), scriptPath, stream);
 						}
 					};
 				}
