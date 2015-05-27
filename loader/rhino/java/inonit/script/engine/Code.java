@@ -658,7 +658,7 @@ public abstract class Code {
 			}
 
 			public Source getClasses() {
-				boolean COMPILE_IN_MEMORY = false;
+				boolean COMPILE_IN_MEMORY = System.getenv("JSH_HASJAVAC") != null;
 				return (COMPILE_IN_MEMORY) ? classes : Source.NULL;
 			}
 		};

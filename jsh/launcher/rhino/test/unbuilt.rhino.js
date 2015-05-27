@@ -132,7 +132,7 @@ modules.forEach(function(module) {
 		if (!files) throw new Error("Files null for " + path);
 		if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/rhino")));
 
-		if (files.length > 0) {
+		if (files.length > 0 && !env.JSH_HASJAVAC) {
 			platform.jdk.compile([
 				"-d", MODULE_CLASSES,
 				//	LOADER_CLASSES not currently necessary
@@ -170,7 +170,7 @@ args = args.concat(arguments);
 args.push(
 	{
 		env: new (function() {
-			var passthrough = ["JSH_SCRIPT_DEBUGGER","JSH_PLUGINS","JSH_LAUNCHER_DEBUG","JSH_JVM_OPTIONS","JSH_ENGINE","JSH_JAVA_LOGGING_PROPERTIES","JSH_RHINO_OPTIMIZATION","JSH_SHELL_CONTAINER"];
+			var passthrough = ["JSH_SCRIPT_DEBUGGER","JSH_PLUGINS","JSH_LAUNCHER_DEBUG","JSH_JVM_OPTIONS","JSH_ENGINE","JSH_JAVA_LOGGING_PROPERTIES","JSH_RHINO_OPTIMIZATION","JSH_SHELL_CONTAINER","JSH_HASJAVAC"];
 			for (var x in env) {
 				if (passthrough.indexOf(x) != -1) {
 					this[x] = env[x];
