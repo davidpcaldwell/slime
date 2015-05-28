@@ -275,11 +275,21 @@ $exports.Array = new function() {
 
 	this.adapt = function(_p) {
 		//	TODO	probably can be done with Array.prototype.slice()
-		var rv = [];
-		for (var i=0; i<_p.length; i++) {
-			rv[i] = _p[i];
+		if (typeof(_p.length) == "number") {
+			var rv = [];
+			for (var i=0; i<_p.length; i++) {
+				rv[i] = _p[i];
+			}
+			return rv;
+		} else if (typeof(_p.size) == "function") {
+			var rv = [];
+			for (var i=0; i<_p.size(); i++) {
+				rv[i] = _p.get(i);
+			}
+			return rv;
+		} else {
+			throw new Error("Unsupported type for Array.adapt");
 		}
-		return rv;
 	}
 };
 
