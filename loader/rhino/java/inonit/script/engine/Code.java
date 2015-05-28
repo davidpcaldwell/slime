@@ -133,15 +133,6 @@ public abstract class Code {
 					}
 				};
 			}
-
-			public static File create(URI uri, String name, final InputStream in) {
-				return create(uri, name, null, null, in);
-			}
-
-			public static File create(final String name, final InputStream in) {
-				throw new UnsupportedOperationException("Need URI");
-//				return create(name, null, null, in);
-			}
 		}
 
 		public static Source NULL = new Source() {
@@ -165,7 +156,7 @@ public abstract class Code {
 				public File getFile(String path) {
 					InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(path);
 					if (in == null) return null;
-					return File.create(new URI(URI.string("bootclasspath/" + path)), "bootclasspath:" + path, in);
+					return File.create(new URI(URI.string("bootclasspath/" + path)), "bootclasspath:" + path, null, null, in);
 				}
 
 				public Classes getClasses() {
