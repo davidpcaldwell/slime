@@ -175,22 +175,7 @@ public abstract class Code {
 		}
 
 		public static Source system(final String prefix) {
-			if (true) return system().child(prefix);
-			return new Source() {
-				@Override public String toString() {
-					return "Source: prefix=" + prefix + " loader=" + ClassLoader.getSystemClassLoader();
-				}
-
-				public File getFile(String path) {
-					InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(prefix+path);
-					if (in == null) return null;
-					return File.create(new URI(URI.string("bootclasspath/" + prefix+path)), "bootclasspath:" + prefix+path, in);
-				}
-
-				public Classes getClasses() {
-					return null;
-				}
-			};
+			return system().child(prefix);
 		}
 
 		public static Source create(final java.net.URL url) {
@@ -216,7 +201,6 @@ public abstract class Code {
 
 		public final Source child(final String prefix) {
 			final String prepend = getChildPrefix(prefix);
-//			final String prepend = (prefix != null && prefix.length() > 0) ? (prefix + "/") : "";
 			return new Code.Source() {
 				@Override public String toString() {
 					return Code.Source.class.getName() + " source=" + Source.this + " prefix=" + prefix;
