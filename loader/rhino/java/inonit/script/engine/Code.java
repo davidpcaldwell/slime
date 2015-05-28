@@ -411,12 +411,50 @@ public abstract class Code {
 		}
 
 		JavaFileObject forOutput(String className) {
+			System.err.println("forOutput: " + className);
 			if (classes.get(className) != null) {
 				throw new UnsupportedOperationException("Duplicate!");
 			} else {
 				classes.put(className, new OutputClass(className));
 			}
 			return classes.get(className);
+		}
+
+		Source.File getCompiledClass(String className) {
+			System.err.println("getCompiledClass: " + className);
+			if (classes.get(className) != null) {
+				final OutputClass oc = classes.get(className);
+				return new Source.File() {
+					@Override
+					public Source.URI getURI() {
+						return new Source.URI(oc.toUri());
+					}
+
+					@Override
+					public String getSourceName() {
+						return null;
+					}
+
+					@Override
+					public InputStream getInputStream() {
+						return new ByteArrayInputStream(oc.out.toByteArray());
+					}
+
+					@Override
+					public Long getLength() {
+						//	TODO	length of array
+						return null;
+					}
+
+					@Override
+					public Date getLastModified() {
+						//	TODO	might as well store
+						return null;
+					}
+				};
+			} else {
+				return null;
+			}
 		}
 	}
 
@@ -452,11 +490,12 @@ public abstract class Code {
 		}
 
 		public URI toUri() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			return delegate.getURI().adapt();
 		}
 
 		public String getName() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			//	Specification does not specify but a relative path would be a good idea
+			return delegate.getSourceName();
 		}
 
 		public InputStream openInputStream() throws IOException {
@@ -490,6 +529,7 @@ public abstract class Code {
 
 	private static Source getCompiledClasses(final Source source) {
 		return new Source() {
+			private MemoryJavaClasses compiled = new MemoryJavaClasses();
 			private javax.tools.JavaFileManager jfm;
 
 			private ClassLoader classpath = new ClassLoader() {
@@ -504,6 +544,7 @@ public abstract class Code {
 
 			@Override
 			public Source.File getFile(String path) throws IOException {
+				System.err.println("getCompiledClasses(" + source + "): " + path);
 				String className = path.substring(0,path.length()-".class".length());
 				String sourceName = className + ".java";
 //				className = className.replace("/", ".");
@@ -518,7 +559,6 @@ public abstract class Code {
 					if (jfm == null) {
 						jfm = new javax.tools.JavaFileManager() {
 							private javax.tools.JavaFileManager delegate = javac.getStandardFileManager(null, null, null);
-							private MemoryJavaClasses compiled = new MemoryJavaClasses();
 
 							public ClassLoader getClassLoader(JavaFileManager.Location location) {
 								if (location == StandardLocation.CLASS_PATH) return classpath;
@@ -527,12 +567,14 @@ public abstract class Code {
 
 							public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
 								if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
+								if (location == StandardLocation.CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
 								System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
 								return Arrays.asList(new JavaFileObject[0]);
 							}
 
 							public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
 								if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
+								if (location == StandardLocation.CLASS_PATH) return delegate.inferBinaryName(location, file);
 								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 							}
 
@@ -583,13 +625,14 @@ public abstract class Code {
 						};
 					}
 					javax.tools.JavaFileObject jfo = getFileObject(java);
+					System.err.println("Compiling: " + jfo.toUri());
 					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, jfm, null, null, null, Arrays.asList(new JavaFileObject[] { jfo }));
 					boolean success = task.call();
 					if (!success) {
 						throw new RuntimeException("Failure");
 					}
 				}
-				return null;
+				return compiled.getCompiledClass(className.replace("/","."));
 			}
 
 			private Classes classes = new Classes() {
