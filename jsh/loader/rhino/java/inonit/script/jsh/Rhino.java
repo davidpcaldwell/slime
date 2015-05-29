@@ -234,7 +234,7 @@ public class Rhino {
 			return rhino.getEngine().script(name, code, scope, target);
 		}
 
-		public Loader.Classpath getClasspath() {
+		public Loader.Classes.Interface getClasspath() {
 			return rhino.getEngine().getClasspath();
 		}
 

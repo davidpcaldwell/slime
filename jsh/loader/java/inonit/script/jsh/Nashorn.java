@@ -21,7 +21,7 @@ import inonit.script.engine.*;
 public class Nashorn {
 	public static abstract class Host {
 		public abstract boolean isTop();
-		public abstract Loader.Classpath getClasspath();
+		public abstract Loader.Classes.Interface getClasspath();
 		public abstract void exit(int status);
 	}
 
@@ -82,7 +82,7 @@ public class Nashorn {
 
 		@Override public void addEngine() {
 			host("$nashorn", new Host() {
-				@Override public Loader.Classpath getClasspath() {
+				@Override public Loader.Classes.Interface getClasspath() {
 					return host.getClasspath();
 				}
 

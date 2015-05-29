@@ -44,7 +44,7 @@ public class Host {
 		scripts.add(script);
 	}
 
-	public Loader.Classpath getClasspath() {
+	public Loader.Classes.Interface getClasspath() {
 		return classes.getInterface();
 	}
 

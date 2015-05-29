@@ -91,7 +91,7 @@ class Nashorn extends Servlet.ScriptContainer {
 			return getLoader().getCoffeeScript();
 		}
 
-		public Loader.Classpath getClasspath() {
+		public Loader.Classes.Interface getClasspath() {
 			return host.getClasspath();
 		}
 	}

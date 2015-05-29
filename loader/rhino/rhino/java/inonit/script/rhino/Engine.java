@@ -485,7 +485,7 @@ public class Engine {
 			return Context.getCurrentContext();
 		}
 
-		final Loader.Classpath getClasspath() {
+		final Loader.Classes.Interface getClasspath() {
 			return factory.getClasspath();
 		}
 
@@ -531,7 +531,7 @@ public class Engine {
 				return this.classes.getApplicationClassLoader();
 			}
 
-			final Loader.Classpath getClasspath() {
+			final Loader.Classes.Interface getClasspath() {
 				initializeClassLoaders();
 				return this.classes.getInterface();
 			}
@@ -1452,7 +1452,7 @@ public class Engine {
 //		return this.contexts.getLoaderClasses();
 //	}
 
-	public Loader.Classpath getClasspath() {
+	public Loader.Classes.Interface getClasspath() {
 		return this.contexts.getClasspath();
 	}
 }
