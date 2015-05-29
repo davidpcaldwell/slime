@@ -485,9 +485,13 @@ public class Engine {
 			return Context.getCurrentContext();
 		}
 
-		final Loader.Classes getLoaderClasses() {
-			return factory.getLoaderClasses();
+		final Loader.Classpath getClasspath() {
+			return factory.getClasspath();
 		}
+
+//		final Loader.Classes getLoaderClasses() {
+//			return factory.getLoaderClasses();
+//		}
 
 		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
 			dim.attachTo(factory);
@@ -527,10 +531,15 @@ public class Engine {
 				return this.classes.getApplicationClassLoader();
 			}
 
-			final Loader.Classes getLoaderClasses() {
+			final Loader.Classpath getClasspath() {
 				initializeClassLoaders();
-				return this.classes.getScriptClasses();
+				return this.classes.getInterface();
 			}
+
+//			final Loader.Classes getLoaderClasses() {
+//				initializeClassLoaders();
+//				return this.classes.getScriptClasses();
+//			}
 
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
@@ -1444,7 +1453,6 @@ public class Engine {
 //	}
 
 	public Loader.Classpath getClasspath() {
-		if (this.contexts.getLoaderClasses() == null) return null;
-		return this.contexts.getLoaderClasses().toScriptClasspath();
+		return this.contexts.getClasspath();
 	}
 }

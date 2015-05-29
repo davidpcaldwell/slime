@@ -28,8 +28,8 @@ public abstract class Classes {
 				}
 
 				@Override
-				public Loader.Classes getScriptClasses() {
-					return loaderClasses;
+				public Loader.Classpath getInterface() {
+					return loaderClasses.toScriptClasspath();
 				}
 			};
 		} else {
@@ -41,7 +41,7 @@ public abstract class Classes {
 				}
 
 				@Override
-				public Loader.Classes getScriptClasses() {
+				public Loader.Classpath getInterface() {
 					return null;
 				}
 			};
@@ -49,5 +49,6 @@ public abstract class Classes {
 	}
 
 	public abstract ClassLoader getApplicationClassLoader();
-	public abstract Loader.Classes getScriptClasses();
+//	public abstract Loader.Classes getScriptClasses();
+	public abstract Loader.Classpath getInterface();
 }

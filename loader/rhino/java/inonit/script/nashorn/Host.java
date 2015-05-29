@@ -45,7 +45,7 @@ public class Host {
 	}
 
 	public Loader.Classpath getClasspath() {
-		return classes.getScriptClasses().toScriptClasspath();
+		return classes.getInterface();
 	}
 
 	public Object run() throws ScriptException {
