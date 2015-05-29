@@ -131,14 +131,6 @@ modules.forEach(function(module) {
 		var files = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/java"));
 		if (!files) throw new Error("Files null for " + path);
 		if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/rhino")));
-
-		if (files.length > 0 && !env.JSH_HASJAVAC) {
-			platform.jdk.compile([
-				"-d", MODULE_CLASSES,
-				//	LOADER_CLASSES not currently necessary
-				"-classpath", MODULE_CLASSPATH.join(colon),
-			].concat(files));
-		}
 	} else {
 		console("No Java compile needed: " + path + " " + JSON.stringify(module));
 	}
