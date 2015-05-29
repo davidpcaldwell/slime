@@ -29,24 +29,6 @@ var LAUNCHER_CLASSES = createTemporaryDirectory();
 //	TODO	duplicated almost exactly in jsh/etc/build.rhino.js
 slime.launcher.compile(LAUNCHER_CLASSES);
 
-var addJavaSourceFilesFrom = function(dir,rv) {
-	if (typeof(rv) == "undefined") {
-		rv = [];
-	}
-	var files = dir.listFiles();
-	if (!files) return [];
-	for (var i=0; i<files.length; i++) {
-		if (files[i].isDirectory()) {
-			addJavaSourceFilesFrom(files[i],rv);
-		} else {
-			if (files[i].getName().endsWith(".java")) {
-				rv.push(files[i]);
-			}
-		}
-	}
-	return rv;
-}
-
 var RHINO_JAR = (function() {
 	//	TODO	brutally plagiarized from jsh/etc/build.rhino.js
 	var File = Packages.java.io.File;
@@ -78,11 +60,11 @@ var RHINO_JAR = (function() {
 //	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
 //	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
 var LOADER_CLASSES = createTemporaryDirectory();
-var toCompile = addJavaSourceFilesFrom(slime.src.getFile("loader/rhino/java"));
-if (RHINO_JAR) toCompile = toCompile.concat(addJavaSourceFilesFrom(slime.src.getFile("loader/rhino/rhino")));
-toCompile = toCompile.concat(addJavaSourceFilesFrom(slime.src.getFile("rhino/system/java")));
-toCompile = toCompile.concat(addJavaSourceFilesFrom(slime.src.getFile("jsh/loader/java")));
-if (RHINO_JAR) toCompile = toCompile.concat(addJavaSourceFilesFrom(slime.src.getFile("jsh/loader/rhino")));
+var toCompile = slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/java"));
+if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/rhino")));
+toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("rhino/system/java")));
+toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/java")));
+if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/rhino")));
 
 platform.jdk.compile([
 	"-d", LOADER_CLASSES
@@ -106,9 +88,9 @@ modules.forEach(function(module) {
 	var path = module.path;
 	if (module.module && module.module.javac) {
 		console("Compiling: " + path);
-		var files = addJavaSourceFilesFrom(slime.src.getFile(path + "/java"));
+		var files = slime.src.getSourceFilesUnder(slime.src.getFile(path + "/java"));
 		if (!files) throw new Error("Files null for " + path);
-		if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(slime.src.getFile(path + "/rhino")));
+		if (RHINO_JAR) files = files.concat(slime.src.getSourceFilesUnder(slime.src.getFile(path + "/rhino")));
 	} else {
 		console("No Java compile needed: " + path + " " + JSON.stringify(module));
 	}

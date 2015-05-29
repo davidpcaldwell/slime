@@ -78,14 +78,23 @@ var SLIME_SRC = (function() {
 //	System.err.println("java -Djsh.build.base=/path/to/slime/source -jar /path/to/rhino/js.jar /path/to/slime/source/jsh/etc/build.rhino.js");
 //	System.exit(1);
 
+	Packages.java.lang.System.out.println("SLIME_SRC = " + SLIME_SRC.getCanonicalPath());
 	return SLIME_SRC;
 })();
 
 if (Packages.java.lang.System.getProperties().get("jsh.unbuilt.arguments")) {
 	arguments = Packages.java.lang.System.getProperties().get("jsh.unbuilt.arguments");
 }
-
-Packages.java.lang.System.out.println("SLIME_SRC = " + SLIME_SRC.getCanonicalPath());
+if (!arguments.splice) {
+	//	Nashorn in 8u40 apparently made arguments a Java array
+	arguments = (function(were) {
+		var rv = [];
+		for (var i=0; i<were.length; i++) {
+			rv[i] = were[i];
+		}
+		return rv;
+	})(arguments);
+}
 
 var load = (function(before) {
 	return function(path) {
@@ -257,39 +266,46 @@ var runCommand = function() {
 	return rv;
 };
 
-if (!arguments.splice) {
-	//	Nashorn in 8u40 apparently made arguments a Java array
-	arguments = (function(were) {
-		var rv = [];
-		for (var i=0; i<were.length; i++) {
-			rv[i] = were[i];
-		}
-		return rv;
-	})(arguments);
-}
-
 var slime = {
 	src: new (function() {
 		var _base = SLIME_SRC;
 
 		this.toString = function() {
 			return String(SLIME_SRC.getCanonicalPath().toString());
-		}
+		};
 
 		var getFile = function(path) {
 			return new Packages.java.io.File(_base, path);
-		}
+		};
 
 		var getPath = function(path) {
 			return String(getFile(path).getCanonicalPath());
-		}
+		};
 
 		this.getFile = function(path) {
 			return getFile(path);
-		}
+		};
 
 		this.getPath = function(path) {
 			return getPath(path);
+		};
+
+		this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
+			if (typeof(rv) == "undefined") {
+				rv = [];
+			}
+			var files = dir.listFiles();
+			if (!files) return [];
+			for (var i=0; i<files.length; i++) {
+				if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
+					getSourceFilesUnder(files[i],rv);
+				} else {
+					if (files[i].getName().endsWith(".java")) {
+						rv.push(files[i]);
+					}
+				}
+			}
+			return rv;
 		}
 	})(),
 	launcher: {
@@ -350,7 +366,6 @@ if (arguments[0] == "build") {
 	if (status) {
 		throw new Error("Verification failed with status: " + status);
 	}
-//	load(new Packages.java.io.File(SLIME_SRC, "jsh/launcher/rhino/test/unbuilt.rhino.js"));
 } else if (arguments[0] == "test") {
 	arguments.splice(0,1);
 	//	create temporary file
@@ -359,7 +374,6 @@ if (arguments[0] == "build") {
 	arguments.push(JSH_HOME.getCanonicalPath());
 	Packages.java.lang.System.setProperty("jsh.build.nounit", "true");
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/etc/build.rhino.js"));
-//	load(new Packages.java.io.File(SLIME_SRC, "jsh/test/suite.rhino.js"));
 } else {
 	Packages.java.lang.System.err.println("Usage:");
 	Packages.java.lang.System.err.println("unbuilt.rhino.js build <arguments>");

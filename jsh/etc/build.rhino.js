@@ -249,26 +249,15 @@ var tmpClasses = new File(tmp,"classes");
 tmpClasses.mkdir();
 var javaSources = [];
 
-var addJavaFiles = function(f) {
-	if (f.isDirectory() && f.getName() != ".hg") {
-		var files = f.listFiles();
-		for (var i=0; i<files.length; i++) {
-			addJavaFiles(files[i]);
-		}
-	} else if (f.getName().endsWith(".java")) {
-		javaSources.push(String(f.getCanonicalPath()));
-	}
-}
-
 console("Building jsh application ...");
-addJavaFiles(new File(SLIME_SRC,"loader/rhino/java"));
+slime.src.getSourceFilesUnder(new File(SLIME_SRC,"loader/rhino/java"),javaSources);
 if (RHINO_LIBRARIES) {
-	addJavaFiles(new File(SLIME_SRC,"loader/rhino/rhino/java"));
+	slime.src.getSourceFilesUnder(new File(SLIME_SRC,"loader/rhino/rhino/java"),javaSources);
 }
-addJavaFiles(new File(SLIME_SRC,"rhino/system/java"));
-addJavaFiles(new File(SLIME_SRC,"jsh/loader/java"));
+slime.src.getSourceFilesUnder(new File(SLIME_SRC,"rhino/system/java"),javaSources);
+slime.src.getSourceFilesUnder(new File(SLIME_SRC,"jsh/loader/java"),javaSources);
 if (RHINO_LIBRARIES) {
-	addJavaFiles(new File(SLIME_SRC,"jsh/loader/rhino/java"));
+	slime.src.getSourceFilesUnder(new File(SLIME_SRC,"jsh/loader/rhino/java"),javaSources);
 }
 //	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
 var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
