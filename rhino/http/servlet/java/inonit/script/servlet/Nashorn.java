@@ -25,7 +25,7 @@ class Nashorn extends Servlet.ScriptContainer {
 
 	@Override void initialize(Servlet servlet) {
 		this.servlet = servlet;
-		this.host = Host.create(new Classes.Configuration() {
+		this.host = Host.create(new Loader.Classes.Configuration() {
 			@Override public boolean canCreateClassLoaders() {
 				return true;
 			}

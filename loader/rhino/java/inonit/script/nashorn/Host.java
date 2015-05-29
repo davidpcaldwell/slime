@@ -19,18 +19,18 @@ import javax.script.*;
 import inonit.script.engine.*;
 
 public class Host {
-	public static Host create(Classes.Configuration configuration) {
-		Classes classes = Classes.create(configuration);
+	public static Host create(Loader.Classes.Configuration configuration) {
+		Loader.Classes classes = Loader.Classes.create(configuration);
 		Thread.currentThread().setContextClassLoader(classes.getApplicationClassLoader());
 		return new Host(classes);
 	}
 
 	private ScriptEngineManager factory;
 	private ScriptEngine engine;
-	private Classes classes;
+	private Loader.Classes classes;
 	private List<Code.Source.File> scripts = new ArrayList<Code.Source.File>();
 
-	private Host(Classes classes) {
+	private Host(Loader.Classes classes) {
 		this.factory = new ScriptEngineManager();
 		this.engine = factory.getEngineByName("nashorn");
 		this.classes = classes;

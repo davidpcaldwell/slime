@@ -37,19 +37,60 @@ public abstract class Loader {
 		}
 	}
 
-	public static abstract class Classes extends ClassLoader {
-		public static Classes create(ClassLoader delegate) {
+	public static abstract class Classes {
+		public static abstract class Configuration {
+			public abstract boolean canCreateClassLoaders();
+			public abstract ClassLoader getApplicationClassLoader();
+		}
+
+		public static Classes create(Configuration configuration) {
+			if (configuration.canCreateClassLoaders()) {
+				final ClassesOld loaderClasses = ClassesOld.create(configuration.getApplicationClassLoader());
+				return new Classes() {
+					@Override
+					public ClassLoader getApplicationClassLoader() {
+						return loaderClasses;
+					}
+
+					@Override
+					public Loader.Classpath getInterface() {
+						return loaderClasses.toScriptClasspath();
+					}
+				};
+			} else {
+				final ClassLoader loader = configuration.getApplicationClassLoader();
+				return new Classes() {
+					@Override
+					public ClassLoader getApplicationClassLoader() {
+						return loader;
+					}
+
+					@Override
+					public Loader.Classpath getInterface() {
+						return null;
+					}
+				};
+			}
+		}
+
+		public abstract ClassLoader getApplicationClassLoader();
+	//	public abstract Loader.Classes getScriptClasses();
+		public abstract Loader.Classpath getInterface();
+	}
+
+	private static abstract class ClassesOld extends ClassLoader {
+		static ClassesOld create(ClassLoader delegate) {
 			Logging.get().log(Loader.class, Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
 			return new New(delegate);
 		}
 
 		public abstract Loader.Classpath toScriptClasspath();
 
-		Classes(ClassLoader delegate) {
+		ClassesOld(ClassLoader delegate) {
 			super(delegate);
 		}
 
-		private static class New extends Classes {
+		private static class New extends ClassesOld {
 			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
 

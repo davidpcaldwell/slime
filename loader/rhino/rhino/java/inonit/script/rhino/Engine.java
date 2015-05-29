@@ -502,7 +502,7 @@ public class Engine {
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
-			private Classes classes;
+			private Loader.Classes classes;
 //			private ClassLoader classLoader;
 //			private Loader.Classes classes;
 
@@ -513,7 +513,7 @@ public class Engine {
 
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
-					this.classes = Classes.create(new Classes.Configuration() {
+					this.classes = Loader.Classes.create(new Loader.Classes.Configuration() {
 						@Override public boolean canCreateClassLoaders() {
 							return Configuration.this.createClassLoader();
 						}
