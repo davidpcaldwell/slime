@@ -24,32 +24,12 @@ var _base = SLIME_SRC;
 
 debug.on = true;
 debug("Source: " + String(_base.getCanonicalPath()));
-var JSH_SLIME_SRC = new (function() {
-	var getFile = function(path) {
-		return new Packages.java.io.File(_base, path);
-	}
-
-	var getPath = function(path) {
-		return String(getFile(path).getCanonicalPath());
-	}
-
-	this.getFile = function(path) {
-		return getFile(path);
-	}
-
-	this.getPath = function(path) {
-		return getPath(path);
-	}
-})();
+var JSH_SLIME_SRC = slime.src;
 
 //	Build the launcher classes
 var LAUNCHER_CLASSES = createTemporaryDirectory();
 //	TODO	duplicated almost exactly in jsh/etc/build.rhino.js
-platform.jdk.compile([
-	"-d", LAUNCHER_CLASSES,
-	"-sourcepath", JSH_SLIME_SRC.getPath("rhino/system/java"),
-	JSH_SLIME_SRC.getPath("jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java")
-]);
+slime.launcher.compile(LAUNCHER_CLASSES);
 
 var addJavaSourceFilesFrom = function(dir,rv) {
 	if (typeof(rv) == "undefined") {

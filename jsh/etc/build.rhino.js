@@ -315,13 +315,14 @@ zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
 console("Building launcher ...");
 var tmpLauncher = new File(tmp,"launcher");
 tmpLauncher.mkdir();
-platform.jdk.compile(compileOptions.concat([
-	"-d", tmpLauncher.getCanonicalPath(),
-	"-sourcepath", [
-		String(new File(SLIME_SRC,"rhino/system/java").getCanonicalPath())
-	].join(colon),
-	String(new File(SLIME_SRC,"jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java").getCanonicalPath())
-]));
+slime.launcher.compile(tmpLauncher.getCanonicalPath());
+//platform.jdk.compile(compileOptions.concat([
+//	"-d", tmpLauncher.getCanonicalPath(),
+//	"-sourcepath", [
+//		String(new File(SLIME_SRC,"rhino/system/java").getCanonicalPath())
+//	].join(colon),
+//	String(new File(SLIME_SRC,"jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java").getCanonicalPath())
+//]));
 var metainf = new File(tmpLauncher,"META-INF");
 metainf.mkdir();
 platform.io.write(new File(metainf, "MANIFEST.MF"), function(writer) {

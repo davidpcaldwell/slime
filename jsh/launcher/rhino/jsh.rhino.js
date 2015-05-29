@@ -14,7 +14,7 @@ var setExitStatus = function(status) {
 	var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
 	_field.setAccessible(true);
 	if (status === null) {
-		_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Main.Engine.Rhino.NULL_EXIT_STATUS));
+		_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
 	} else {
 		_field.set(null, new Packages.java.lang.Integer(status));
 	}

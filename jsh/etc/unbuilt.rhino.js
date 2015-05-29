@@ -245,6 +245,37 @@ if (!arguments.splice) {
 	})(arguments);
 }
 
+var slime = {
+	src: new (function() {
+		var _base = SLIME_SRC;
+
+		var getFile = function(path) {
+			return new Packages.java.io.File(_base, path);
+		}
+
+		var getPath = function(path) {
+			return String(getFile(path).getCanonicalPath());
+		}
+
+		this.getFile = function(path) {
+			return getFile(path);
+		}
+
+		this.getPath = function(path) {
+			return getPath(path);
+		}
+	})(),
+	launcher: {
+		compile: function(LAUNCHER_CLASSES) {
+			platform.jdk.compile([
+				"-d", LAUNCHER_CLASSES,
+				"-sourcepath", slime.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + slime.src.getPath("jsh/launcher/rhino/java"),
+				slime.src.getPath("jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java")
+			]);
+		}
+	}
+}
+
 if (arguments[0] == "build") {
 	arguments.splice(0,1);
 	load(new Packages.java.io.File(SLIME_SRC, "jsh/etc/build.rhino.js"));
