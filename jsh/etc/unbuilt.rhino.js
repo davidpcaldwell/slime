@@ -15,52 +15,75 @@
 //	It places the following variables in the scope:
 //	SLIME_SRC	A Packages.java.io.File representing the SLIME source root
 
-var SLIME_SRC;
+//	TODO	get rid of SLIME_SRC
+var SLIME_SRC = (function() {
+	var SLIME_SRC;
 
-if (Packages.java.lang.System.getProperties().get("jsh.unbuilt.src")) {
-	SLIME_SRC = Packages.java.lang.System.getProperties().get("jsh.unbuilt.src");
-};
+	if (Packages.java.lang.System.getProperties().get("jsh.unbuilt.src")) {
+		SLIME_SRC = Packages.java.lang.System.getProperties().get("jsh.unbuilt.src");
+	};
+//	if (new File(SLIME_SRC,"jsh/etc/build.rhino.js").exists() && new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js").exists()) {
+//	SLIME_SRC = (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));
+
+	if (!SLIME_SRC) SLIME_SRC = (function() {
+		var thisfile;
+		if (typeof(Packages.org.mozilla.javascript.WrappedException) == "function") {
+			//	TODO	could this fail under certain kinds of optimization?
+			var frames;
+			try {
+				throw new Packages.org.mozilla.javascript.WrappedException(Packages.java.lang.RuntimeException());
+			} catch (e) {
+	//			debugger;
+				var error = e;
+				frames = error.getScriptStack();
+			}
+			//	Packages.java.lang.System.err.println("stack trace length: " + frames.length);
+			for (var i=0; i<frames.length; i++) {
+				//	Packages.java.lang.System.err.println("stack trace: " + frames[i].fileName);
+				thisfile = String(frames[i].fileName);
+			}
+		} else {
+			thisfile = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
+		}
+		if (thisfile && /unbuilt\.rhino\.js/.test(thisfile)) {
+			return new Packages.java.io.File(thisfile).getCanonicalFile().getParentFile().getParentFile().getParentFile();
+		}
+		//	TODO	below is included defensively in case some optimizations cause the above to fail
+		//	TODO	probably would not work for Cygwin; see below logic from earlier version
+	//	if (platform.cygwin) {
+	//		_base = new Packages.java.io.File(platform.cygwin.cygpath.windows(String(env.JSH_SLIME_SRC)));
+	//	} else {
+	//		_base = new Packages.java.io.File(String(env.JSH_SLIME_SRC));
+	//	}
+		if (Packages.java.lang.System.getenv("SLIME_SRC")) return new Packages.java.io.File(Packages.java.lang.System.getenv("SLIME_SRC"));
+		Packages.java.lang.System.err.println("Could not determine SLIME source location. Probable solutions:");
+		Packages.java.lang.System.err.println("* Run Rhino in interpreted mode (try -opt -1 on the command line)");
+		Packages.java.lang.System.err.println("* Define the SLIME_SRC environment variable to point to the SLIME source directory.");
+		Packages.java.lang.System.exit(1);
+	})();
+	//	TODO	A way to get around this would be to have the Rhino shell somehow make available the location from which
+	//			the currently executing script was loaded, and then walk up the source tree to where the root must be; this can
+	//			apparently be done in CommonJS mode
+	//	TODO	Another way would be to examine the arguments given to js.jar, knowing that this script would be the first
+	//			argument and it would tell us the location, but currently we cannot access this
+//	System.err.println("ERROR: Could not locate source code at: " + SLIME_SRC.getCanonicalPath());
+//	System.err.println();
+//	System.err.println("Either execute this script from the top-level directory of the SLIME source distribution, or specify where");
+//	System.err.println("the source distribution can be found by setting the jsh.build.base system property. For example:");
+//	System.err.println();
+//	System.err.println("cd /path/to/slime/source; java -jar /path/to/rhino/js.jar jsh/etc/build.rhino.js");
+//	System.err.println();
+//	System.err.println("or");
+//	System.err.println();
+//	System.err.println("java -Djsh.build.base=/path/to/slime/source -jar /path/to/rhino/js.jar /path/to/slime/source/jsh/etc/build.rhino.js");
+//	System.exit(1);
+
+	return SLIME_SRC;
+})();
 
 if (Packages.java.lang.System.getProperties().get("jsh.unbuilt.arguments")) {
 	arguments = Packages.java.lang.System.getProperties().get("jsh.unbuilt.arguments");
 }
-
-if (!SLIME_SRC) SLIME_SRC = (function() {
-	var thisfile;
-	if (typeof(Packages.org.mozilla.javascript.WrappedException) == "function") {
-		//	TODO	could this fail under certain kinds of optimization?
-		var frames;
-		try {
-			throw new Packages.org.mozilla.javascript.WrappedException(Packages.java.lang.RuntimeException());
-		} catch (e) {
-//			debugger;
-			var error = e;
-			frames = error.getScriptStack();
-		}
-		//	Packages.java.lang.System.err.println("stack trace length: " + frames.length);
-		for (var i=0; i<frames.length; i++) {
-			//	Packages.java.lang.System.err.println("stack trace: " + frames[i].fileName);
-			thisfile = String(frames[i].fileName);
-		}
-	} else {
-		thisfile = new Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
-	}
-	if (thisfile && /unbuilt\.rhino\.js/.test(thisfile)) {
-		return new Packages.java.io.File(thisfile).getCanonicalFile().getParentFile().getParentFile().getParentFile();
-	}
-	//	TODO	below is included defensively in case some optimizations cause the above to fail
-	//	TODO	probably would not work for Cygwin; see below logic from earlier version
-//	if (platform.cygwin) {
-//		_base = new Packages.java.io.File(platform.cygwin.cygpath.windows(String(env.JSH_SLIME_SRC)));
-//	} else {
-//		_base = new Packages.java.io.File(String(env.JSH_SLIME_SRC));
-//	}
-	if (Packages.java.lang.System.getenv("SLIME_SRC")) return new Packages.java.io.File(Packages.java.lang.System.getenv("SLIME_SRC"));
-	Packages.java.lang.System.err.println("Could not determine SLIME source location. Probable solutions:");
-	Packages.java.lang.System.err.println("* Run Rhino in interpreted mode (try -opt -1 on the command line)");
-	Packages.java.lang.System.err.println("* Define the SLIME_SRC environment variable to point to the SLIME source directory.");
-	Packages.java.lang.System.exit(1);
-})();
 
 Packages.java.lang.System.out.println("SLIME_SRC = " + SLIME_SRC.getCanonicalPath());
 
@@ -70,7 +93,7 @@ var load = (function(before) {
 	}
 })(load);
 
-load(new Packages.java.io.File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"));
+load(new Packages.java.io.File(SLIME_SRC,"jsh/etc/api.rhino.js"));
 
 //	These methods are included in the Rhino shell but not in the Nashorn shell. We define them here. This incompatibility was
 //	reported on the nashorn-dev mailing list in the thread "Rhino shell compatibility"
@@ -248,6 +271,10 @@ if (!arguments.splice) {
 var slime = {
 	src: new (function() {
 		var _base = SLIME_SRC;
+
+		this.toString = function() {
+			return String(SLIME_SRC.getCanonicalPath().toString());
+		}
 
 		var getFile = function(path) {
 			return new Packages.java.io.File(_base, path);

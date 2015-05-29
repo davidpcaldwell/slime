@@ -125,31 +125,6 @@ var getSetting = function(systemPropertyName) {
 	}
 }
 
-var SLIME_SRC;
-if (typeof(SLIME_SRC) == "undefined") {
-	SLIME_SRC = (getSetting("jsh.build.base")) ? new File(getSetting("jsh.build.base")) : new File(System.getProperty("user.dir"));
-}
-
-if (new File(SLIME_SRC,"jsh/etc/build.rhino.js").exists() && new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js").exists()) {
-} else {
-	//	TODO	A way to get around this would be to have the Rhino shell somehow make available the location from which
-	//			the currently executing script was loaded, and then walk up the source tree to where the root must be; this can
-	//			apparently be done in CommonJS mode
-	//	TODO	Another way would be to examine the arguments given to js.jar, knowing that this script would be the first
-	//			argument and it would tell us the location, but currently we cannot access this
-	System.err.println("ERROR: Could not locate source code at: " + SLIME_SRC.getCanonicalPath());
-	System.err.println();
-	System.err.println("Either execute this script from the top-level directory of the SLIME source distribution, or specify where");
-	System.err.println("the source distribution can be found by setting the jsh.build.base system property. For example:");
-	System.err.println();
-	System.err.println("cd /path/to/slime/source; java -jar /path/to/rhino/js.jar jsh/etc/build.rhino.js");
-	System.err.println();
-	System.err.println("or");
-	System.err.println();
-	System.err.println("java -Djsh.build.base=/path/to/slime/source -jar /path/to/rhino/js.jar /path/to/slime/source/jsh/etc/build.rhino.js");
-	System.exit(1);
-}
-
 if (getSetting("jsh.build.debug")) debug.on = true;
 
 debug("java.io.tmpdir = " + System.getProperty("java.io.tmpdir"));
@@ -255,8 +230,8 @@ console("Creating directories ...");
 });
 
 console("Copying launcher scripts ...");
-copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
-copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
+copyFile(slime.src.getFile("jsh/etc/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
+copyFile(slime.src.getFile("jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
 
 if (RHINO_LIBRARIES) {
 	console("Copying Rhino libraries ...");
@@ -524,6 +499,7 @@ if (!destination.installer) {
 	if (getSetting("jsh.build.downloads")) {
 		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
 	}
+//	subenv.JSH_SLIME_SRC = slime.src.toString();
 	debug("subenv = " + JSON.stringify(subenv));
 	command.push({ env: subenv });
 	var status = runCommand.apply(this,command);

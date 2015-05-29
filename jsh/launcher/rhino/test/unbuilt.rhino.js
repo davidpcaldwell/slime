@@ -13,18 +13,16 @@
 //	Script to launch a script in an unbuilt jsh. Should be invoked via the jsh/etc/unbuilt.rhino.js tool; see that tool for
 //	details
 
-var SLIME_SRC;
-if (typeof(SLIME_SRC) == "undefined") {
+var slime;
+if (typeof(slime) == "undefined") {
 	Packages.java.lang.System.err.println("This script should be invoked from the jsh/etc/unbuilt.rhino.js script; see that"
 		+ " script for details."
 	);
 	Packages.java.lang.System.exit(1);
 }
-var _base = SLIME_SRC;
 
 debug.on = true;
-debug("Source: " + String(_base.getCanonicalPath()));
-var JSH_SLIME_SRC = slime.src;
+debug("Source: " + slime.src);
 
 //	Build the launcher classes
 var LAUNCHER_CLASSES = createTemporaryDirectory();
@@ -80,11 +78,11 @@ var RHINO_JAR = (function() {
 //	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
 //	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
 var LOADER_CLASSES = createTemporaryDirectory();
-var toCompile = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("loader/rhino/java"));
-if (RHINO_JAR) toCompile = toCompile.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("loader/rhino/rhino")));
-toCompile = toCompile.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("rhino/system/java")));
-toCompile = toCompile.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("jsh/loader/java")));
-if (RHINO_JAR) toCompile = toCompile.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile("jsh/loader/rhino")));
+var toCompile = addJavaSourceFilesFrom(slime.src.getFile("loader/rhino/java"));
+if (RHINO_JAR) toCompile = toCompile.concat(addJavaSourceFilesFrom(slime.src.getFile("loader/rhino/rhino")));
+toCompile = toCompile.concat(addJavaSourceFilesFrom(slime.src.getFile("rhino/system/java")));
+toCompile = toCompile.concat(addJavaSourceFilesFrom(slime.src.getFile("jsh/loader/java")));
+if (RHINO_JAR) toCompile = toCompile.concat(addJavaSourceFilesFrom(slime.src.getFile("jsh/loader/rhino")));
 
 platform.jdk.compile([
 	"-d", LOADER_CLASSES
@@ -94,7 +92,7 @@ var MODULE_CLASSES = createTemporaryDirectory();
 var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.dir"));
 //	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
 var modules = (function() {
-	var code = eval(readFile(JSH_SLIME_SRC.getFile("jsh/etc/api.js")));
+	var code = eval(readFile(slime.src.getFile("jsh/etc/api.js")));
 	return code.environment("jsh").filter(function(module) {
 		return module.module;
 	});
@@ -108,9 +106,9 @@ modules.forEach(function(module) {
 	var path = module.path;
 	if (module.module && module.module.javac) {
 		console("Compiling: " + path);
-		var files = addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/java"));
+		var files = addJavaSourceFilesFrom(slime.src.getFile(path + "/java"));
 		if (!files) throw new Error("Files null for " + path);
-		if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(JSH_SLIME_SRC.getFile(path + "/rhino")));
+		if (RHINO_JAR) files = files.concat(addJavaSourceFilesFrom(slime.src.getFile(path + "/rhino")));
 	} else {
 		console("No Java compile needed: " + path + " " + JSON.stringify(module));
 	}
@@ -153,13 +151,14 @@ args.push(
 			}
 			if (env.JSH_SHELL_CONTAINER != "jvm") delete this.JSH_JVM_OPTIONS;
 			if (RHINO_JAR) this.JSH_RHINO_CLASSPATH = RHINO_JAR;
-			this.JSH_RHINO_SCRIPT = JSH_SLIME_SRC.getPath("jsh/launcher/rhino/jsh.rhino.js");
+			this.JSH_SLIME_SRC = slime.src.toString();
+			this.JSH_RHINO_SCRIPT = slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
 			this.JSH_SHELL_CLASSPATH = LOADER_CLASSES;
 			this.JSH_SCRIPT_CLASSPATH = MODULE_CLASSES;
-			this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_SLIME_SRC.getPath("loader");
-			this.JSH_LIBRARY_SCRIPTS_RHINO = JSH_SLIME_SRC.getPath("loader/rhino");
-			this.JSH_LIBRARY_SCRIPTS_JSH = JSH_SLIME_SRC.getPath("jsh/loader");
-			this.JSH_LIBRARY_MODULES = JSH_SLIME_SRC.getPath(".");
+			this.JSH_LIBRARY_SCRIPTS_LOADER = slime.src.getPath("loader");
+			this.JSH_LIBRARY_SCRIPTS_RHINO = slime.src.getPath("loader/rhino");
+			this.JSH_LIBRARY_SCRIPTS_JSH = slime.src.getPath("jsh/loader");
+			this.JSH_LIBRARY_MODULES = slime.src.getPath(".");
 		})()
 		//	Cannot be enabled at this time; see issue 152
 		,input: Packages.java.lang.System["in"]

@@ -243,12 +243,15 @@ public class Main {
 			String JSH_RHINO_JS = getRhinoScript();
 			String RHINO_JS = null;
 			if (JSH_RHINO_JS != null) {
-				RHINO_JS = new java.io.File(new java.io.File(JSH_RHINO_JS).getParentFile(), "api.rhino.js").getCanonicalPath();
+				RHINO_JS = getLauncherApi();
 			}
-			if (JSH_RHINO_JS == null || !new java.io.File(JSH_RHINO_JS).exists() || !new java.io.File(RHINO_JS).exists()) {
-				throw new RuntimeException("Could not find jsh.rhino.js and api.rhino.js in " + this + ": JSH_RHINO_SCRIPT = "
-					+ System.getenv("JSH_RHINO_SCRIPT")
+			if (JSH_RHINO_JS == null || RHINO_JS == null) {
+				throw new RuntimeException(
+					"Could not find jsh.rhino.js and api.rhino.js in " + this + ": "
+					+ "RHINO_JS = " + RHINO_JS
+					+ "JSH_RHINO_JS = " + JSH_RHINO_JS
 				);
+
 			}
 			rhino.addScript(RHINO_JS);
 			rhino.addScript(JSH_RHINO_JS);
@@ -265,10 +268,16 @@ public class Main {
 
 		abstract String getRhinoClasspath() throws IOException;
 		abstract File getJshHome();
+		abstract String getLauncherApi() throws IOException;
 		abstract String getRhinoScript() throws IOException;
 	}
 
 	private static class UnbuiltShell extends UnpackagedShell {
+		private File getSlimeSourceroot() {
+			if (System.getenv("JSH_SLIME_SRC") == null) return null;
+			return new File(System.getenv("JSH_SLIME_SRC"));
+		}
+
 		private String toWindowsPath(String value) throws IOException {
 			inonit.system.cygwin.Cygwin cygwin = inonit.system.cygwin.Cygwin.locate();
 			if (cygwin != null) {
@@ -292,10 +301,14 @@ public class Main {
 			return toWindowsPath(rv);
 		}
 
-		String getRhinoScript() {
-			String rv = System.getenv("JSH_RHINO_SCRIPT");
-			if (rv == null) return null;
-			return rv;
+		String getLauncherApi() throws IOException {
+			if (getSlimeSourceroot() == null) return null;
+			return new File(getSlimeSourceroot(), "jsh/etc/api.rhino.js").getCanonicalPath();
+		}
+
+		String getRhinoScript() throws IOException {
+			if (getSlimeSourceroot() == null) return null;
+			return new File(getSlimeSourceroot(), "jsh/launcher/rhino/jsh.rhino.js").getCanonicalPath();
 		}
 	}
 
@@ -318,6 +331,11 @@ public class Main {
 		String getRhinoClasspath() throws java.io.IOException {
 			if (explicit.getRhinoClasspath() != null) return explicit.getRhinoClasspath();
 			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
+		}
+
+		String getLauncherApi() throws java.io.IOException {
+			if (explicit.getLauncherApi() != null) return explicit.getRhinoScript();
+			return new java.io.File(HOME, "script/launcher/api.rhino.js").getCanonicalPath();
 		}
 
 		String getRhinoScript() throws java.io.IOException {

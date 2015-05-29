@@ -10,9 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-var slime = {
-	build: {}
-};
+var slime;
+if (!slime) slime = {};
+slime.build = {};
 
 //	Build using Rhino shell; used by jsh build
 slime.build.rhino = function(from,build,api,javac) {
