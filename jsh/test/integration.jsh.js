@@ -66,6 +66,7 @@ if (!jsh.shell.jsh.home) {
 
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
+//	TODO	remove the below dependency
 eval(src.getFile("jsh/etc/api.rhino.js").read(String));
 
 var File = Packages.java.io.File;
@@ -297,7 +298,7 @@ var jshPackage = function(p) {
 			invocation.push("-plugin", getJshPathname(new File(SLIME_SRC,"jsh/test/" + plugin)));
 		});
 	}
-	var packaged = createTemporaryDirectory();
+	var packaged = platform.io.createTemporaryDirectory();
 	packaged.mkdirs();
 	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
 	invocation.push("-to",getJshPathname(to));
@@ -332,7 +333,7 @@ var legacy = function() {
 	]), mymode);
 
 	delete mymode.env.JSH_JAVA_LOGGING_PROPERTIES;
-	var tmp = createTemporaryDirectory();
+	var tmp = platform.io.createTemporaryDirectory();
 	run(LAUNCHER_COMMAND.concat([
 		getSourceFilePath("jsh/tools/slime.jsh.js"),
 		"-from", getPath(SLIME_SRC,"loader/rhino/test/data/1"),
@@ -353,7 +354,7 @@ var legacy = function() {
 testCommandOutput("loader/child.jsh.js", function(options) {
 });
 
-var classes = createTemporaryDirectory();
+var classes = platform.io.createTemporaryDirectory();
 classes.mkdirs();
 
 var CATALINA_HOME = (function() {
@@ -867,11 +868,12 @@ scenario.add({ scenario: new function() {
 			try {
 				legacy();
 			} catch (e) {
-				caught = true;
+				caught = e;
 			}
 			return {
 				success: !caught,
-				message: "caught error: " + caught
+				message: "caught error: " + caught,
+				error: caught
 			}
 		});
 	}

@@ -25,7 +25,7 @@ debug.on = true;
 debug("Source: " + slime.src);
 
 //	Build the launcher classes
-var LAUNCHER_CLASSES = createTemporaryDirectory();
+var LAUNCHER_CLASSES = platform.io.createTemporaryDirectory();
 //	TODO	duplicated almost exactly in jsh/etc/build.rhino.js
 slime.launcher.compile(LAUNCHER_CLASSES);
 
@@ -59,7 +59,7 @@ var RHINO_JAR = (function() {
 })();
 //	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
 //	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
-var LOADER_CLASSES = createTemporaryDirectory();
+var LOADER_CLASSES = platform.io.createTemporaryDirectory();
 var toCompile = slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/java"));
 if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/rhino")));
 toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("rhino/system/java")));
@@ -70,7 +70,7 @@ platform.jdk.compile([
 	"-d", LOADER_CLASSES
 ].concat(toCompile));
 
-var MODULE_CLASSES = createTemporaryDirectory();
+var MODULE_CLASSES = platform.io.createTemporaryDirectory();
 var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.dir"));
 //	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
 var modules = (function() {

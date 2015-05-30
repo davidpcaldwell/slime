@@ -311,7 +311,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			return readUrl( ClassLoader.getSystemResource("main.jsh.js") );
 		});
 
-		var tmpdir = new Directory(String(createTemporaryDirectory().getCanonicalPath()));
+		var tmpdir = new Directory(String(platform.io.createTemporaryDirectory().getCanonicalPath()));
 
 		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
 		if (rhino) {

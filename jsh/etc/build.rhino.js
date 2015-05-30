@@ -147,7 +147,7 @@ var destination = (function() {
 
 	var Installer = function(to) {
 		this.installer = new File(toNativePath(to));
-		this.shell = createTemporaryDirectory();
+		this.shell = platform.io.createTemporaryDirectory();
 		this.arguments = [];
 	};
 
@@ -230,20 +230,20 @@ console("Creating directories ...");
 });
 
 console("Copying launcher scripts ...");
-copyFile(slime.src.getFile("jsh/etc/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
-copyFile(slime.src.getFile("jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
+platform.io.copyFile(slime.src.getFile("jsh/etc/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
+platform.io.copyFile(slime.src.getFile("jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
 
 if (RHINO_LIBRARIES) {
 	console("Copying Rhino libraries ...");
 	RHINO_LIBRARIES.forEach( function(file,index,array) {
 		var name = (array.length == 1) ? "js.jar" : file.getName();
-		copyFile(file,new File(JSH_HOME,"lib/" + name));
+		platform.io.copyFile(file,new File(JSH_HOME,"lib/" + name));
 	});
 } else {
 	console("Rhino libraries not present; building for Nashorn only.");
 }
 
-var tmp = createTemporaryDirectory();
+var tmp = platform.io.createTemporaryDirectory();
 
 var tmpClasses = new File(tmp,"classes");
 tmpClasses.mkdir();
@@ -297,7 +297,7 @@ debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
 zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
 
 console("Copying script implementations ...")
-copyFile(new File(SLIME_SRC,"loader"), new File(JSH_HOME,"script/loader"), [
+platform.io.copyFile(new File(SLIME_SRC,"loader"), new File(JSH_HOME,"script/loader"), [
 	{
 		accept: function(f) {
 			return (f.isDirectory() && f.getName() == ".hg")
@@ -312,7 +312,7 @@ copyFile(new File(SLIME_SRC,"loader"), new File(JSH_HOME,"script/loader"), [
 		}
 	}
 ]);
-copyFile(new File(SLIME_SRC,"loader/rhino"), new File(JSH_HOME,"script/loader/rhino"), [
+platform.io.copyFile(new File(SLIME_SRC,"loader/rhino"), new File(JSH_HOME,"script/loader/rhino"), [
 	{
 		accept: function(f) {
 			return f.isDirectory() && f.getName() == "test"
@@ -323,7 +323,7 @@ copyFile(new File(SLIME_SRC,"loader/rhino"), new File(JSH_HOME,"script/loader/rh
 		}
 	}
 ]);
-copyFile(new File(SLIME_SRC,"jsh/loader"), new File(JSH_HOME,"script/jsh"), [
+platform.io.copyFile(new File(SLIME_SRC,"jsh/loader"), new File(JSH_HOME,"script/jsh"), [
 	{
 		accept: function(f) {
 			return f.getName() == "api.html"
@@ -353,7 +353,7 @@ var module = function(path,compile) {
 	var tmp = new File(tmpModules,path);
 	tmp.mkdirs();
 	slime.build.rhino(new File(SLIME_SRC,path), tmp, {
-		copyFile: copyFile,
+		copyFile: platform.io.copyFile,
 		compile: compile
 	}, {
 		source: JAVA_VERSION,
@@ -411,7 +411,7 @@ var LAUNCHER_COMMAND = [
 console("Creating tools ...");
 var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
-copyFile(new File(SLIME_SRC,"jsh/tools"),JSH_TOOLS);
+platform.io.copyFile(new File(SLIME_SRC,"jsh/tools"),JSH_TOOLS);
 
 var getPath = function(file) {
 	var path = String(file.getCanonicalPath());
@@ -441,7 +441,7 @@ if (getSetting("jsh.build.javassist.jar")) {
 			throw new Error("Exit status when building profile: " + status);
 		}
 		new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
-		copyFile(new File(SLIME_SRC,"rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
+		platform.io.copyFile(new File(SLIME_SRC,"rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
 	}).call(this);
 } else {
 	debug("Javassist location not specified; not building profiler.");
@@ -449,22 +449,22 @@ if (getSetting("jsh.build.javassist.jar")) {
 
 if (getSetting("jsh.build.coffeescript.path")) {
 	console("Copying CoffeeScript from " + getSetting("jsh.build.coffeescript.path") + " ...");
-	copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
+	platform.io.copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
 } else {
 	debug("CoffeeScript location not specified; not including CoffeeScript.");
 }
 
 console("Creating install scripts ...");
 new File(JSH_HOME,"etc").mkdir();
-copyFile(new File(SLIME_SRC,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
-copyFile(new File(SLIME_SRC,"jsh/etc/install"), new File(JSH_HOME, "etc/install"));
+platform.io.copyFile(new File(SLIME_SRC,"jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
+platform.io.copyFile(new File(SLIME_SRC,"jsh/etc/install"), new File(JSH_HOME, "etc/install"));
 
 var JSH_SRC = new File(JSH_HOME,"src");
 console("Bundling source code ...");
 JSH_SRC.mkdir();
 
 ["js","loader","rhino","jsh"].forEach( function(base) {
-	copyFile(new File(SLIME_SRC,base), new File(JSH_SRC,base), [
+	platform.io.copyFile(new File(SLIME_SRC,base), new File(JSH_SRC,base), [
 		{
 			accept: function(f) {
 				return f.isDirectory() && f.getName() == ".hg";
@@ -601,7 +601,7 @@ if (destination.installer) {
 	//	TODO	allow getting named resource as stream from within jsh
 	//	TODO	allow jsh.file.unzip to take a stream as its source
 	console("Build installer to " + destination.installer);
-	var zipdir = createTemporaryDirectory();
+	var zipdir = platform.io.createTemporaryDirectory();
 	var build = new File(zipdir,"build.zip");
 	console("Build build.zip to " + build.getCanonicalPath());
 	zip(JSH_HOME,build);

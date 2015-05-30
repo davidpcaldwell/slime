@@ -122,7 +122,49 @@ platform.io.copyStream = function(i,o) {
 	while( (r = i.read()) != -1 ) {
 		o.write(r);
 	}
-}
+};
+platform.io.copyFile = function copyFile(from,to,filters) {
+	if (!filters) filters = [];
+	for (var i=0; i<filters.length; i++) {
+		if (filters[i].accept(from)) {
+			filters[i].process(from,to);
+			return;
+		}
+	}
+	if (from.isDirectory()) {
+		to.mkdir();
+		var files = from.listFiles();
+		for (var i=0; i<files.length; i++) {
+			copyFile(files[i], new File(to,files[i].getName()));
+		}
+	} else if (from.exists()) {
+		var i = new Packages.java.io.BufferedInputStream(new Packages.java.io.FileInputStream(from));
+		var o = new Packages.java.io.BufferedOutputStream(new Packages.java.io.FileOutputStream(to));
+		platform.io.copyStream(i,o);
+		o.close();
+		i.close();
+	} else {
+		throw new Error("Unimplemented: copying " + from.getCanonicalPath());
+	}
+};
+platform.io.createTemporaryDirectory = function() {
+	var tmpfile;
+	for (var i=0; i<20; i++) {
+		try {
+			tmpfile = Packages.java.io.File.createTempFile("jsh",null);
+		} catch (e) {
+			Packages.java.lang.System.err.println("Warning: " + String(i+1) + " failures creating temp file in " + Packages.java.lang.System.getProperty("java.io.tmpdir"));
+		}
+	}
+	if (tmpfile) {
+		tmpfile["delete"]();
+		tmpfile.mkdirs();
+		return tmpfile;
+	} else {
+		throw "Could not create temporary file.";
+	}
+};
+
 platform.jdk = {};
 (function() {
 	var tried = false;
@@ -154,46 +196,3 @@ platform.jdk = {};
 		}
 	});
 })();
-
-var copyFile = function(from,to,filters) {
-	if (!filters) filters = [];
-	for (var i=0; i<filters.length; i++) {
-		if (filters[i].accept(from)) {
-			filters[i].process(from,to);
-			return;
-		}
-	}
-	if (from.isDirectory()) {
-		to.mkdir();
-		var files = from.listFiles();
-		for (var i=0; i<files.length; i++) {
-			copyFile(files[i], new File(to,files[i].getName()), filters);
-		}
-	} else if (from.exists()) {
-		var i = new Packages.java.io.BufferedInputStream(new Packages.java.io.FileInputStream(from));
-		var o = new Packages.java.io.BufferedOutputStream(new Packages.java.io.FileOutputStream(to));
-		platform.io.copyStream(i,o);
-		o.close();
-		i.close();
-	} else {
-		throw new Error("Unimplemented: copying " + from.getCanonicalPath());
-	}
-}
-
-var createTemporaryDirectory = function() {
-	var tmpfile;
-	for (var i=0; i<20; i++) {
-		try {
-			tmpfile = Packages.java.io.File.createTempFile("jsh",null);
-		} catch (e) {
-			Packages.java.lang.System.err.println("Warning: " + String(i+1) + " failures creating temp file in " + Packages.java.lang.System.getProperty("java.io.tmpdir"));
-		}
-	}
-	if (tmpfile) {
-		tmpfile["delete"]();
-		tmpfile.mkdirs();
-		return tmpfile;
-	} else {
-		throw "Could not create temporary file.";
-	}
-}
