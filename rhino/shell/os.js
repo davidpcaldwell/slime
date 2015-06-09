@@ -11,7 +11,7 @@
 //	END LICENSE
 
 var ps = new function() {
-	this["Mac OS X"] = function() {
+	var unix = function() {
 		//	Was thinking about developing an algorithm to try to detect left- and right-justification using the header
 		//	row, but instead going to try an approach where we determine justification by experiment and hard-code it in the code.
 		//	There are some constraints about justification and spaces; see the loop that determines the column indices in evaluate()
@@ -97,11 +97,11 @@ var ps = new function() {
 			}
 		});
 		return result;
-	};
-
-	if (false) this.Linux = function() {
-		throw new Error("Unimplemented: Linux");
 	}
+
+	this["Mac OS X"] = unix;
+
+	this.Linux = unix;
 }
 
 var myps = ps[$context.os.name];
