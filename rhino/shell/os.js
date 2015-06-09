@@ -10,9 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-if ($context.os.name == "Mac OS X") {
-	$exports.process = {};
-	$exports.process.list = function() {
+var ps = new function() {
+	this["Mac OS X"] = function() {
 		//	Was thinking about developing an algorithm to try to detect left- and right-justification using the header
 		//	row, but instead going to try an approach where we determine justification by experiment and hard-code it in the code.
 		//	There are some constraints about justification and spaces; see the loop that determines the column indices in evaluate()
@@ -98,7 +97,17 @@ if ($context.os.name == "Mac OS X") {
 			}
 		});
 		return result;
+	};
+
+	if (false) this.Linux = function() {
+		throw new Error("Unimplemented: Linux");
 	}
+}
+
+var myps = ps[$context.os.name];
+if (myps) {
+	$exports.process = {};
+	$exports.process.list = myps;
 }
 
 if ($context.os.name == "Mac OS X") {

@@ -64,7 +64,7 @@ var types = new function() {
 					rv = rv.replace(/BIT/g, "SIGNED");
 					return rv;
 				}
-			})(rv.cast);			
+			})(rv.cast);
 		}
 		if (rv && rv.toString() == "INTEGER") {
 			rv.cast = (function(was) {
