@@ -14,11 +14,31 @@
 //	details
 
 var slime;
+var $script;
+var debug;
+var platform;
+var AGENTLIB_JDWP;
 if (typeof(slime) == "undefined") {
-	Packages.java.lang.System.err.println("This script should be invoked from the jsh/etc/unbuilt.rhino.js script; see that"
-		+ " script for details."
-	);
-	Packages.java.lang.System.exit(1);
+	if (typeof($api.script) != "undefined") {
+		//	TODO	next line sets debug, platform
+		$api.script.resolve("../../../etc/api.jrunscript.js").load();
+		debug = $api.debug;
+		platform = new function() {
+			this.io = new function() {
+				this.createTemporaryDirectory = function() {
+					return $api.io.tmpdir();
+				}
+			};
+
+			this.jdk = $api.platform.jdk;
+		};
+		console = $api.console;
+	} else {
+		Packages.java.lang.System.err.println("This script should be invoked from the jsh/etc/unbuilt.rhino.js script; see that"
+			+ " script for details."
+		);
+		Packages.java.lang.System.exit(1);
+	}
 }
 
 debug.on = true;
@@ -110,15 +130,22 @@ if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JAVA_LOGGING_PROPERTIES) {
 if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JVM_OPTIONS) {
 	args.push.apply(args,env.JSH_JVM_OPTIONS.split(" "));
 }
+var _arguments = (this.$api && $api.script) ? $api.arguments : arguments;
 //	Allow sending arguments beginning with dash that will be interpreted as VM switches
-while(arguments.length > 0 && arguments[0].substring(0,1) == "-") {
-	args.push(arguments.shift());
+while(_arguments.length > 0 && _arguments[0].substring(0,1) == "-") {
+	args.push(_arguments.shift());
 }
 args.push(
 	"-classpath", LAUNCHER_CLASSES,
 	"inonit.script.jsh.launcher.Main"
 );
-args = args.concat(arguments);
+if ($script) {
+	args = args.concat(_arguments);
+} else {
+	for (var i=0; i<_arguments.length; i++) {
+		args.push(_arguments[i]);
+	}
+}
 args.push(
 	{
 		env: new (function() {
@@ -147,5 +174,6 @@ args.push(
 	}
 );
 
+//Packages.java.lang.System.err.println("$api.script: " + this.$api.script);
 Packages.java.lang.System.err.println("Running: " + args.join(" "));
 Packages.java.lang.System.exit(runCommand.apply(null, args));
