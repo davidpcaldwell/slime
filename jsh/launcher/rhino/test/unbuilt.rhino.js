@@ -91,32 +91,6 @@ $api.jdk.compile([
 	"-d", LOADER_CLASSES
 ].concat(toCompile));
 
-var MODULE_CLASSES = $api.io.tmpdir();
-var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.dir"));
-//	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
-var modules = (function() {
-	var code = eval(readFile(slime.src.getFile("jsh/etc/api.js")));
-	return code.environment("jsh").filter(function(module) {
-		return module.module;
-	});
-})();
-$api.console("Found " + modules.length + " modules.");
-//	TODO	some of this logic is duplicated in jsh/tools/slime.js
-var MODULE_CLASSPATH = [];
-if (RHINO_JAR) MODULE_CLASSPATH.push(RHINO_JAR);
-MODULE_CLASSPATH.push(LAUNCHER_CLASSES);
-modules.forEach(function(module) {
-	var path = module.path;
-	if (false && module.module && module.module.javac) {
-		$api.console("Compiling: " + path);
-		var files = slime.src.getSourceFilesUnder(slime.src.getFile(path + "/java"));
-		if (!files) throw new Error("Files null for " + path);
-		if (RHINO_JAR) files = files.concat(slime.src.getSourceFilesUnder(slime.src.getFile(path + "/rhino")));
-	} else {
-		$api.console("No Java compile needed: " + path + " " + JSON.stringify(module));
-	}
-});
-
 //	TODO	Obviously under Cygwin shell does not include the paths helper
 
 var args = [];
@@ -164,7 +138,6 @@ args.push(
 			this.JSH_SLIME_SRC = slime.src.toString();
 			this.JSH_RHINO_SCRIPT = slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
 			this.JSH_SHELL_CLASSPATH = LOADER_CLASSES;
-			this.JSH_SCRIPT_CLASSPATH = MODULE_CLASSES;
 			this.JSH_LIBRARY_SCRIPTS_LOADER = slime.src.getPath("loader");
 			this.JSH_LIBRARY_SCRIPTS_RHINO = slime.src.getPath("loader/rhino");
 			this.JSH_LIBRARY_SCRIPTS_JSH = slime.src.getPath("jsh/loader");
