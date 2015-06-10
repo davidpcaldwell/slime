@@ -32,6 +32,15 @@ if (!this.$api) {
 				return Packages.java.lang.reflect.Array.newInstance(type,p.length);
 			};
 		}
+
+		this.io = new function() {
+			this.copy = function(i,o) {
+				if (!arguments.callee.delegate) {
+					arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
+				}
+				arguments.callee.delegate.copy(i,o);
+			};
+		}
 	};
 }
 
@@ -63,15 +72,9 @@ $api.jsh.arguments = $api.engine.resolve({
 
 if ($api.jsh.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	console("Usage: jsh.rhino.js <script-path> [arguments]");
+	//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
+	//			java.lang.Error so that it is not caught
 	Packages.java.lang.System.exit(1);
-}
-
-//	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.rhino.js
-platform.io.copyStream = function(i,o) {
-	if (!arguments.callee.delegate) {
-		arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
-	}
-	arguments.callee.delegate.copy(i,o);
 }
 
 var File = function(path) {
@@ -317,7 +320,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			debug("Copying rhino ...");
 			var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
 			var writeTo = rhinoCopiedTo.writeTo();
-			platform.io.copyStream(rhino,writeTo);
+			$api.io.copy(rhino,writeTo);
 			rhino.close();
 			writeTo.close();
 		}
@@ -346,7 +349,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		while( plugin = getPlugin(index) ) {
 			var copyTo = tmpdir.getFile(plugin.name);
 			var writeTo = copyTo.writeTo();
-			platform.io.copyStream(plugin.stream,writeTo);
+			$api.io.copy(plugin.stream,writeTo);
 			plugin.stream.close();
 			writeTo.close();
 			plugins.push(copyTo);
@@ -363,7 +366,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		if (cygwin != null && platform.cygwin) {
 			debug("Copying Cygwin paths helper ...");
 			var cygwinTo = tmpdir.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").writeTo();
-			platform.io.copyStream(cygwin,cygwinTo);
+			$api.io.copy(cygwin,cygwinTo);
 			cygwin.close();
 			cygwinTo.close();
 			debug("Copied Cygwin paths helper to " + tmpdir);

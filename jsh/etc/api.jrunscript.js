@@ -11,6 +11,14 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
+$api.io.copy = function(i,o) {
+	if (!arguments.callee.delegate) {
+		arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
+	}
+	arguments.callee.delegate.copy(i,o);
+};
+
 $api.debug = function(message) {
 	if (arguments.callee.on) Packages.java.lang.System.err.println(message);
 };
