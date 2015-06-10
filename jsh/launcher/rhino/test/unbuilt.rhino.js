@@ -13,25 +13,16 @@
 //	Script to launch a script in an unbuilt jsh. Should be invoked via the jsh/etc/unbuilt.rhino.js tool; see that tool for
 //	details
 
+var $api;
 var slime;
 var $script;
 var debug;
 var platform;
 var AGENTLIB_JDWP;
 if (typeof(slime) == "undefined") {
-	if (typeof($api.script) != "undefined") {
-		//	TODO	next line sets debug, platform
+	if ($api && $api.script) {
 		$api.script.resolve("../../../etc/api.jrunscript.js").load();
 		debug = $api.debug;
-		platform = new function() {
-			this.io = new function() {
-				this.createTemporaryDirectory = function() {
-					return $api.io.tmpdir();
-				}
-			};
-
-			this.jdk = $api.platform.jdk;
-		};
 		console = $api.console;
 	} else {
 		Packages.java.lang.System.err.println("This script should be invoked from the jsh/etc/unbuilt.rhino.js script; see that"
@@ -39,13 +30,23 @@ if (typeof(slime) == "undefined") {
 		);
 		Packages.java.lang.System.exit(1);
 	}
+} else {
+	if (platform) {
+		if (!$api) $api = {
+			io: {}
+		};
+		$api.io.tmpdir = function() {
+			return platform.io.createTemporaryDirectory();
+		};
+		$api.jdk = platform.jdk;
+	}
 }
 
 debug.on = true;
 debug("Source: " + slime.src);
 
 //	Build the launcher classes
-var LAUNCHER_CLASSES = platform.io.createTemporaryDirectory();
+var LAUNCHER_CLASSES = $api.io.tmpdir();
 //	TODO	duplicated almost exactly in jsh/etc/build.rhino.js
 slime.launcher.compile(LAUNCHER_CLASSES);
 
@@ -79,18 +80,18 @@ var RHINO_JAR = (function() {
 })();
 //	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
 //	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
-var LOADER_CLASSES = platform.io.createTemporaryDirectory();
+var LOADER_CLASSES = $api.io.tmpdir();
 var toCompile = slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/java"));
 if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/rhino")));
 toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("rhino/system/java")));
 toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/java")));
 if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/rhino")));
 
-platform.jdk.compile([
+$api.jdk.compile([
 	"-d", LOADER_CLASSES
 ].concat(toCompile));
 
-var MODULE_CLASSES = platform.io.createTemporaryDirectory();
+var MODULE_CLASSES = $api.io.tmpdir();
 var _file = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.dir"));
 //	TODO	this list of modules is duplicated in jsh/etc/build.rhino.js
 var modules = (function() {

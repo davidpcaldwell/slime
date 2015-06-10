@@ -242,6 +242,8 @@ var slime = new function() {
 		}
 	};
 
+	$api.jdk = platform.jdk;
+
 	$api.platform = platform;
 
 	this.launcher = new function() {
