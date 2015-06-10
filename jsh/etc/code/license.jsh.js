@@ -174,6 +174,8 @@ for (var i=0; i<files.length; i++) {
 			original = "the SLIME servlet interface";
 		} else if (startsWith("rhino/tools/")(relative)) {
 			original = "the SLIME JDK interface";
+		} else if (startsWith("rhino/jrunscript/")(relative)) {
+			original = "the InOnIt jrunscript API";
 		} else {
 			throw new Error("Unimplemented: " + relative);
 		}

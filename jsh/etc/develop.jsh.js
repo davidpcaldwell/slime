@@ -62,11 +62,13 @@ if (jsh.script.arguments.length == 0) {
 			if (/\.def$/.test(entry.path)) {
 				return true;
 			}
+			if (entry.path == ".hgsub") return true;
+			if (entry.path == ".hgsubstate") return false;
 			return code.files.isText(entry.node);
 		},
 		on: {
 			unknownFileType: function(entry) {
-				throw new Error("Unknown file type: " + entry.node);
+				throw new Error("Unknown file type; cannot determine whether text: " + entry.node);
 			},
 			change: function(p) {
 				jsh.shell.echo("Changed " + p.path + " at line " + p.line.number);

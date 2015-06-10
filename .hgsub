@@ -1,0 +1,4 @@
+rhino/jrunscript = rhino/jrunscript
+
+[subpaths]
+https://davidpcaldwell@bitbucket\.org/davidpcaldwell/slime/rhino/jrunscript = https://davidpcaldwell@bitbucket.org/davidpcaldwell/jrunscript/

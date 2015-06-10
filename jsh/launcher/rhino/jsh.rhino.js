@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!this.$api) {
+	this.$api = {};
+}
+
 var setExitStatus = function(status) {
 	var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
 	_field.setAccessible(true);
