@@ -52,16 +52,16 @@ $api.jsh.setExitStatus = $api.engine.resolve({
 		}
 	}
 });
+$api.jsh.arguments = $api.engine.resolve({
+	rhino: function(a) {
+		return a;
+	},
+	nashorn: function() {
+		return $arguments;
+	}
+})(arguments);
 
-var newStringArray = function(len) {
-	return new $api.java.Array({ type: Packages.java.lang.String, length: len });
-};
-
-if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
-	arguments = $arguments;
-}
-
-if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
+if ($api.jsh.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	console("Usage: jsh.rhino.js <script-path> [arguments]");
 	Packages.java.lang.System.exit(1);
 }
@@ -168,6 +168,7 @@ var Command = function() {
 		return tokens.join(" ");
 	}
 
+	//	TODO	replace with version from $api
 	var runCommand = function() {
 		var context = new function() {
 			var mode;
@@ -229,7 +230,7 @@ var Command = function() {
 					}
 
 					this.getArguments = function() {
-						var rv = newStringArray(list.length-1);
+						var rv = new $api.java.Array({ type: Packages.java.lang.String, length: list.length-1 });
 						for (var i=1; i<list.length; i++) {
 							rv[i-1] = new Packages.java.lang.String(list[i]);
 						}
@@ -263,7 +264,6 @@ var os = function(pathname,path) {
 }
 
 var UNDEFINED = function(){}();
-var ARGUMENTS = arguments;
 
 if (env.JSH_LAUNCHER_DEBUG) {
 	debug.on = true;
@@ -439,11 +439,11 @@ settings.explicit = new function() {
 
 	if (!settings.packaged) {
 		var httpUrlPattern = /^http(?:s?)\:\/\/(.*)/;
-		if (httpUrlPattern.test(ARGUMENTS[0])) {
+		if (httpUrlPattern.test($api.jsh.arguments[0])) {
 			debugger;
-			this.script = ARGUMENTS[0];
+			this.script = $api.jsh.arguments[0];
 
-			this.source = readUrl(ARGUMENTS[0]);
+			this.source = readUrl($api.jsh.arguments[0]);
 		} else {
 			this.script = (function(path) {
 //				TODO	move this documentation somewhere more relevant
@@ -485,7 +485,7 @@ settings.explicit = new function() {
 					console("Script not found: " + path)
 					Packages.java.lang.System.exit(1);
 				}
-			})(ARGUMENTS[0]);
+			})($api.jsh.arguments[0]);
 
 			this.source = readFile(this.script.path);
 		}
@@ -690,7 +690,7 @@ try {
 				loaderArguments.push(script);
 			}
 			loaderArguments.push.apply(loaderArguments,args);
-			var _arguments = newStringArray(loaderArguments.length);
+			var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
 			for (var i=0; i<loaderArguments.length; i++) {
 				_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
 			}
@@ -831,8 +831,8 @@ try {
 	command.script(settings.get("script"));
 	var index = (settings.get("script")) ? 1 : 0;
 	//	TODO	below obviously broken for internal launcher
-	for (var i=index; i<arguments.length; i++) {
-		command.argument(arguments[i]);
+	for (var i=index; i<$api.jsh.arguments.length; i++) {
+		command.argument($api.jsh.arguments[i]);
 	}
 	debug("Environment:");
 	debug(env.toSource());
