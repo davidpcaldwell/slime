@@ -107,7 +107,7 @@ if (RHINO_JAR) MODULE_CLASSPATH.push(RHINO_JAR);
 MODULE_CLASSPATH.push(LAUNCHER_CLASSES);
 modules.forEach(function(module) {
 	var path = module.path;
-	if (module.module && module.module.javac) {
+	if (false && module.module && module.module.javac) {
 		$api.console("Compiling: " + path);
 		var files = slime.src.getSourceFilesUnder(slime.src.getFile(path + "/java"));
 		if (!files) throw new Error("Files null for " + path);
