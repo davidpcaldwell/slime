@@ -1,0 +1,97 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader for web browsers.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:inonit="http://www.inonit.com/slime">
+<head>
+	<title>Offline Loader Test</title>
+	<script type="application/javascript">
+		var $debug = function(message) {
+			if (arguments.callee.buffer) {
+				arguments.callee.buffer.push(message);
+			} else {
+				var div = document.createElement("div");
+				document.body.appendChild(div);
+				div.innerHTML = message;
+			}
+		}
+		$debug.buffer = [];
+		window.onload = function() {
+			var b = $debug.buffer;
+			$debug.buffer = null;
+			for (var i=0; b.length>i; i++) {
+				$debug(b[i]);
+			}
+		}
+		var inonit = {};
+		inonit.module = {};
+		inonit.module.debug = $debug;
+	</script>
+	<script type="application/javascript" src="../client.js"></script>
+	<script type="application/javascript" inonit:when="offline">
+		inonit.module.setLoader(new function() {
+			this.mapping = function(path) {
+				var tokens = path.split("/");
+				if (tokens.slice(0,2).join("/") == "../module") {
+					return "../../../" + tokens.slice(2).join("/");
+				}
+			}
+		});
+	</script>
+	<script type="application/javascript" inonit:when="debug" inonit:module="../module/js/platform/test/data/format/1/a/" inonit:src="../../../js/platform/test/data/format/1/a/module.js" src="../../../tmp/offline/js/platform/test/data/format/1/a/module.js"></script>
+	<script type="application/javascript" inonit:when="debug" inonit:file="../module/js/platform/test/data/format/1/a/file.js" inonit:src="../../../js/platform/test/data/format/1/a/file.js" src="../../../tmp/offline/js/platform/test/data/format/1/a/file.js"></script>
+	<script type="application/javascript" inonit:when="debug" inonit:module="../module/rhino/test/slime/1/" inonit:src="../../../rhino/test/slime/1/module.js" src="../../../tmp/offline/rhino/test/slime/1/module.js"></script>
+	<script type="application/javascript">
+		inonit.module.initialize("../module/js/platform/module.js");
+		var module = inonit.module.load({ path: "../module/js/platform/test/data/format/1/a/", context: { d: 1970 } });
+	</script>
+	<script type="application/javascript">
+		var success = true;
+
+		var $unit = {};
+	</script>
+	<script type="application/javascript" src="../../../js/platform/test/data/format/1/a/api.js"></script>
+	<script type="application/javascript">
+		var scope = {
+			test: function(b) {
+				$debug(b);
+				if (!b) success = false;
+			}
+		}
+
+		$unit.execute(scope);
+		alert("Success: " + success);
+	</script>
+	<script type="application/javascript">
+		var success = true;
+
+		var $unit = {};
+
+		$debug("Executing rhino/test/slime/1");
+		module = inonit.module.load({ path: "../module/rhino/test/slime/1/" });
+	</script>
+	<script type="application/javascript" src="../../../rhino/test/slime/1/api.js"></script>
+	<script type="application/javascript">
+		var scope = {
+			test: function(b) {
+				$debug(b);
+				if (!b) success = false;
+			}
+		}
+
+		$unit.execute(scope);
+		alert("Success: " + success);
+	</script>
+</head>
+<body>
+</body>
+</html>

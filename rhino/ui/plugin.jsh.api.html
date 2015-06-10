@@ -1,0 +1,204 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME Java GUI module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh.ui</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		The <code>jsh.ui</code> package extends the functionality available in the <a href="api.html">UI module</a>. The
+		UI module is configured as follows:
+		<ul>
+			<li>
+				JavaFX is enabled if the <code>javafx.embed.swing.JFXPanel</code> Java class is present. In practice, this
+				currently limits JavaFX usage to Java 1.8 and higher.
+			</li>
+			<li>When an application exits, <code>java.lang.System.exit()</code> is called.</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<div>
+			In addition to the interface provided by the <a href="api.html">UI module</a>, the following exports are provided:
+		</div>
+		<ul>
+			<li class="object">
+				<div class="name">javafx</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">WebView</div>
+						<span>
+							A function that returns an implementation of <code>Scene</code> suitable for use when creating a
+							<code>Frame</code>. The implementation loads a page in an
+							<a href="webview.window.api.html">embedded browser</a>.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>Configuration for the embedded browser.</span>
+									<div>Messages written to the <code>window.console</code>
+									log are written to a <code>java.util.logging</code> log.</div>
+									<div class="label">has properties:</div>
+									<ul>
+										<!--	browser: used internally for popups	-->
+										<li class="object">
+											<div class="name">page</div>
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">url</div>
+													<span class="type">string</span>
+													<span>A URL that should be opened when the browser opens.</span>
+												</li>
+												<!--	initialize: used internally for popups	-->
+											</ul>
+											- OR -
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">document</div>
+													<span class="type"><a href="../../js/document/api.html#types.document">document</a></span>
+													<span>The HTML of the page to open.</span>
+												</li>
+												<li class="value">
+													<div class="name">base</div>
+													<span class="type"><a href="../../rhino/file/api.html#types.node">node</a></span>
+													<span>
+														The base that should be used for locating scripts and stylesheets
+														embedded in this document.
+													</span>
+												</li>
+												<!--	initialize: used internally for popups	-->
+											</ul>
+										</li>
+										<li class="function">
+											<div class="name">alert</div>
+											<span>
+												(optional; if unspecified, messages are logged to a <code>java.util.logging</code>
+												log)
+												Used to handle calls to
+												<code>window.alert</code> coming from the underlying browser.
+											</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">string</span>
+														<span>A message.</span>
+													</li>
+												</ol>
+											</div>
+										</li>
+										<!--	TODO	console; after documenting here, also update webview.window.api.html
+														documentation
+										-->
+										<!--	TODO	popup: used by webview.jsh.api.js to implement popups by opening another
+														frame.
+										-->
+										<!--	TODO	initialize: used to, for example, set title listener	-->
+										<!--	TODO	status: probably totally optional	-->
+
+										<!--	TODO	serve: possibly only used in experimental structures	-->
+										<!--	TODO	navigate: possibly only used in experimental structures	-->
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">function</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name"><a id="exports.javafx.WebView.application">application</a></div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="object">
+											<span>__DESCRIPTION__</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<!--	TODO	other forms of servlet	-->
+												<li class="value">
+													<div class="name">servlet</div>
+													<span class="type"><a href="../file/api.html#types.file">file</a></span>
+													<span>A <a href="../http/servlet/api.html#servlet">servlet</a> <!-- TODO check link --> to run.</span>
+												</li>
+												<li class="value">
+													<div class="name">parameters</div>
+													<span class="type">object</span>
+													<span>
+														An object to supply to the servlet as its <code>$parameters</code> object.
+													</span>
+												</li>
+												<li class="value">
+													<div class="name">resources</div>
+													<span class="type"><a href="../http/servlet/resources.jsh.file.api.html">Resources</a></span>
+													<span>The resources available to the server resource loader.<!--	TODO	hyperlink?	--></span>
+												</li>
+												<li class="value">
+													<div class="name">path</div>
+													<span class="type">string</span>
+													<span>The relative path of the page to open.</span>
+												</li>
+												<li class="value">
+													<div class="name">on</div>
+													<span class="type">object</span>
+													<span>
+														(optional)
+														Event handlers passed through to the underlying
+														<!--	TODO	better hyperlink	-->
+														<a href="api.html">Frame</a>.
+													</span>
+												</li>
+											</ul>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">object</span>
+									<span>
+										An object describing the application.
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">port</div>
+											<span class="type">number</span>
+											<span>The port number on which the application is running.</span>
+										</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME Web API</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<div class="type">
+		<a class="type" name="types.pair">pair</a>
+		<span>An object representing a name-value pair.</span>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="value">
+				<div class="name">name</div>
+				<span class="type">string</span>
+				<span></span>
+			</li>
+			<li class="value">
+				<div class="name">value</div>
+				<span class="type">string</span>
+				<span></span>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Context</h1>
+		<script type="application/x.jsapi#context">
+			(function() {
+				var rv = [];
+				var global = (function() {
+					return this;
+				})();
+				if (global == global.window) {
+					rv.push({
+						escaper: {
+							encode: window.escape,
+							decode: window.unescape
+						}
+					});
+				}
+				if (global.jsh) {
+					rv.push($jsapi.loader.file("context.java.js"));
+				}
+				return rv;
+			})()
+		</script>
+		<ul>
+			<li class="object">
+				<div class="name">escaper</div>
+				<span>
+					An object capable of handling the <a href="http://tools.ietf.org/html/rfc3986#section-2.1">percent-encoding</a>
+					or "URL-encoding") algorithm.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">encode</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">decode</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.Url">Url</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">scheme</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">host</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">port</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">path</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">query</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">fragment</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="function">
+					<div class="name">resolve</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A reference.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.Url">Url</a></span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests"><![CDATA[
+						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
+						(function() {
+							var relative = base.resolve("../foo.js");
+							test(relative.toString() == "http://www.example.com/path/foo.js");
+						})();
+					]]></script>
+				</li>
+			</ul>
+		</div>
+
+		<ul>
+			<li class="constructor">
+				<div class="name">Url</div>
+				<span>See <a href="http://tools.ietf.org/html/rfc3986">RFC 3986</a>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="name">__NAME__</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var one = new module.Url({
+						path: "path",
+						query: [
+							{ name: "foo", value: "bar" }
+						]
+					});
+					test(one.toString() == "path?foo=bar");
+				</script>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">parse</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var one = module.Url.parse("scheme://server.com:999/path?q=query#section");
+							test(one.scheme == "scheme");
+							test(one.host == "server.com");
+							test(one.port === 999);
+							test(one.path == "/path");
+							test(one.query == "q=query");
+							test(one.fragment == "section");
+
+							(function() {
+								var url = module.Url.parse("scheme://server.com/path?q=query#section");
+								//	TODO	test optional port, since it is a number
+								test(url.scheme == "scheme");
+								test(url.host == "server.com");
+								//	TODO	should port be null or undefined
+								test(url.path == "/path");
+								test(url.query == "q=query");
+								test(url.fragment == "section");
+							})();
+
+							(function() {
+								var url = module.Url.parse("hello.html");
+								test(url.path == "hello.html");
+							})();
+						</script>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

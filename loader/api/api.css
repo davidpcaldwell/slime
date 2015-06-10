@@ -1,0 +1,79 @@
+/*
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+*/
+body { font-family: verdana }
+body { font-size: 11pt; }
+
+h1 { font-size: 14pt; }
+h2 { font-size: 13pt; }
+h3 { font-size: 12pt; }
+
+li { margin: 0.5em 0em; }
+ol li { margin: 0.25em 0em; }
+ul { margin: -0.25em 0em 0em 0em; }
+
+div { margin: 0.5em 0em; }
+div.label { margin: 0.2em 0em; }
+
+ol { counter-reset: item -1 }
+ol>li { display: block; }
+ol>li:before { content: "arguments[" counter(item) "] "; counter-increment: item; }
+ol>li:before { content: "[" counter(item) "] "; counter-increment: item; }
+ol>li:before { font-family: "lucida console", "courier new", monospace; font-weight: normal }
+
+
+/*	Selectors below will not work in IE6	*/
+/* li.constructor { background: #c0ffff; } */
+/*
+li.function>div.name, li.constructor>div.name { background: #c0c0ff; }
+li.object>div.name { background: #ffc0c0; }
+li.value>div.name { background: #c0ffc0; }
+*/
+li.function, li.constructor { border: 1px solid; padding: 0.2em; }
+
+/*
+	In rhino/file, there is an argument property which can be a function or a RegExp; this improves readability in that instance
+	but it's not clear it's general enough to justify.
+*/
+div.function { border: 1px solid; padding: 0.2em; }
+
+li.function>div.name, div.function>div.name { background: #c00000; color: #ffffff; }
+li.constructor>div.name { background: #a0a000; color: #ffffff; }
+li.object>div.name, li.value>div.name { background: #0040c0; color: #ffffff; }
+
+/*
+li.function>div.name, li.constructor>div.name, li.object>div.name, li.value>div.name { font-weight: bold }
+*/
+
+div.name { display: inline; padding: 0.1em 0.2em; }
+
+div.type { border-style: double; padding: 0.2em; margin: 0.5em 0em; }
+
+div.type a.type { /* background: #ffff80; */ font-style: italic; text-decoration: underline }
+span.type a { font-style: italic; }
+
+span.type {
+	/* background: #80ff80; */
+	border: 1px solid;
+	font-size: 70%;
+	font-family: "lucida console", "courier new", monospace;
+	padding: 0.2em 0.4em 0.2em 0.2em;
+	font-weight: bold;
+	vertical-align: middle;
+}
+
+div.name, code { font-family: "lucida console", "courier new" }
+div.label, span.label { font-weight: bold; font-size: 90%; }
+/* pre.tests, pre.context, pre.initialize, pre.scope { display: none } */
+/* div.arguments, div.returns, div.instances { border-style: solid; border-width: 1px; padding: 0.2em 0.2em } */
+.error { background: #ffff00; }

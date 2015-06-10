@@ -1,0 +1,75 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the rhino/file SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>rhino/file Loader</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<ul>
+		<li class="constructor" jsapi:id="main">
+			<div class="name">Loader</div>
+			<span>
+				Creates a <a href="../io/api.html#types.Loader">Loader</a> that loads resources from the filesystem.
+			</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="object">
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">directory</div>
+								<span class="type"><a href="api.html#types.directory">directory</a></span>
+								<span>The directory to use as the base for loading resources.</span>
+							</li>
+						</ul>
+					</li>
+				</ol>
+			</div>
+			<div class="instances">
+				<div class="label">Instances</div>
+				<span class="type"><a href="../io/api.html#types.Loader">Loader</a></span>
+			</div>
+			<script type="application/x.jsapi#initialize">
+				scope.loader = new module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+			</script>
+			<script type="application/x.jsapi#tests">
+				test(typeof(loader.resource) == "function");
+				test(loader.resource("api.html") != null);
+				test(loader.resource("foo.html") == null);
+				var list = loader.list();
+				var map = {};
+				list.forEach(function(item) {
+					map[item.path] = item;
+				});
+				verify(list).length.is(14);
+				//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
+				verify(map.java).loader.is.not.equalTo(void(0));
+				verify(map.java).evaluate(function() { return this.resource; }).is(void(0));
+				verify(map.java).evaluate($api.Method.property("resource")).is(void(0));
+				verify(map["java.js"]).evaluate($api.Method.property("loader")).is(void(0));
+				verify(map["java.js"]).resource.is.not.equalTo(void(0));
+			</script>
+			<script type="application/x.jsapi#tests">
+				var api = loader.resource("api.html");
+				verify(api).length.is.not.equalTo(null);
+			</script>
+		</li>
+	</ul>
+</body>
+</html>

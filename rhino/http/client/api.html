@@ -1,0 +1,794 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the rhino/http/client SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>HTTP client</title>
+	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../../loader/api/api.js"></script>
+</head>
+<body>
+	<!--
+	<script type="application/x.jsapi#context">
+		new $Context(false)
+	</script>
+	<script type="application/x.jsapi#context">
+		new $Context(true)
+	</script>
+	-->
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="object">
+				<div class="name">api</div>
+				<span>Modules used in implementing the HTTP client.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">js</div>
+						<span>The <a href="../../../js/object/">js/object</a> module.</span>
+					</li>
+					<li class="value">
+						<div class="name">io</div>
+						<span>The <a href="../../../rhino/io/">rhino/io</a> module.</span>
+					</li>
+				</ul>
+			</li>
+			<li class="value">
+				<div class="name">gae</div>
+				<span class="type">boolean</span>
+				<span>
+					If true, avoids the use of classes that are not whitelisted in Google App Engine. Currently, this means
+					that a custom cookie handler is supplied, rather than using the default from the <code>java.net</code> package.
+				</span>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#context"><![CDATA[
+			//	TODO	Deal with possibility Tomcat classes are not present
+			(function() {
+				var tomcatPresent = (typeof(Packages.org.apache.catalina.startup.Tomcat) == "function");
+				var global = (function() { return this; })();
+				var tomcat;
+				var servlet;
+				var port;
+				if (!global.tomcat && !$jsapi.environment.windowsSocketsError10106 && tomcatPresent) {
+					tomcat = new Packages.org.apache.catalina.startup.Tomcat();
+					servlet = new function() {
+						var implementation;
+
+						this.set = function(f) {
+							implementation = f;
+						}
+
+						this.service = function(request,response) {
+							implementation.call(this,request,response);
+						}
+					};
+
+					port = (function() {
+						var address = new Packages.java.net.ServerSocket(0);
+						var rv = address.getLocalPort();
+						address.close();
+						return rv;
+					})();
+
+					(function() {
+						var base = $jsapi.newTemporaryDirectory();
+						tomcat.setPort(port);
+						tomcat.setBaseDir(base);
+						var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
+						Packages.org.apache.catalina.startup.Tomcat.addServlet(context,"aName",new JavaAdapter(
+							Packages.javax.servlet.http.HttpServlet,
+							servlet
+						));
+						context.addServletMapping("/*","aName");
+						tomcat.start();
+					})();
+					global.tomcat = tomcat;
+					global.servlet = servlet;
+				} else {
+					tomcat = global.tomcat;
+					servlet = global.servlet;
+				}
+
+				var Cookie = Packages.javax.servlet.http.Cookie;
+
+				scope.$Context = function(gae) {
+					var js = $jsapi.loader.module("../../../js/object/");
+					var java = $jsapi.loader.module("../../../rhino/host/", {
+						$rhino: jsh.$jsapi.$rhino
+					});
+					var io = $jsapi.loader.module("../../../rhino/io", {
+						api: {
+							java: java,
+							mime: $jsapi.loader.module("../../../js/mime/")
+						},
+						$java: new Packages.inonit.script.runtime.io.Streams(),
+						$rhino: jsh.$jsapi.$rhino
+					});
+
+					this.api = {
+						js: js,
+						io: io,
+						web: $jsapi.loader.module("../../../js/web/", {
+							escaper: $jsapi.loader.file("../../../js/web/context.java.js")
+						})
+					};
+					this.io = io;
+					this.port = port;
+					this.gae = gae;
+				};
+
+				if (tomcat) {
+					return [ new $Context(false), new $Context(true) ];
+				} else {
+					var context = new $Context(false);
+					context.notomcat = true;
+					return [ context ];
+				}
+			})()
+		]]></script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.pair">pair</a>
+			<span>See <a href="../../../js/http/api.html#types.pair">pair</a>.</span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.values">values</a>
+			<span>
+				An object with properties. Each named property represents one or more <a href="#types.pair">pair</a> objects. If
+				the value of the property is a <code>string</code>, the property represents a single pair with the given name and
+				the given value. If the value of the property is an <code>Array</code> of <code>string</code>, the property
+				represents a collection of pairs with the given name and the <code>string</code> values contained in the array.
+			</span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.parameters">parameters</a>
+			<span>Either an <code>Array</code> of <a href="#types.pair">pair</a>, or a <a href="#types.values">values</a>.</span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.query">query</a>
+			<span>Either a <a href="#types.parameters">parameters</a>, or a <code>string</code> representing a query string.</span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.body">body</a>
+			<span>A message body.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">type</div>
+					<span class="type">string</span>
+					<span>
+						(optional)
+						The MIME type of the message body.
+					</span>
+				</li>
+				<li class="value">
+					<div class="name">stream</div>
+					<span class="type"><a href="../../io/api.html#types.binput">byte input stream</a></span>
+					<span>
+						(optional)
+						A stream from which the content of the message body can be read.
+					</span>
+				</li>
+				<li class="value">
+					<div class="name">string</div>
+					<span class="type">string</span>
+					<span>
+						(optional)
+						The content of the message body, as a string.
+					</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.authorization">authorization</a>
+			<span>A header value for the <code>Authorization</code> header suitable for authorizing a request.</span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.response">response</a>
+			<span>
+				Represents an HTTP response.
+				See <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC 2616, section 6</a>.
+			</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">status</div>
+					<span>An object describing the response status. See
+						<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1">RFC 2616 section 6.1</a>.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">code</div>
+							<span class="type">number</span>
+							<span>
+								The status code.
+							</span>
+						</li>
+						<li class="value">
+							<div class="name">reason</div>
+							<span class="type">string</span>
+							<span>
+								The message associated with the status code (RFC calls it "reason phrase").
+							</span>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">headers</div>
+					<span><code>Array</code> of <a href="#types.pair">pair</a>, augmented as follows:</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">get</div>
+							<span>Provides the value or values of a given header.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A header name; case-insensitive.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">string</span>
+								-or-
+								<span class="type">Array of string</span>
+								<span>
+									Returns the single value of the given header, if it has one, or an array of values if there are
+									multiple values. If the header has no values, <code>null</code> is returned.
+								</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">body</div>
+					<span class="type"><a href="#types.body">body</a></span>
+					<span>
+						Returns the message body associated with this response. This message body will have a <code>stream</code>
+						property, but no <code>string</code> property.
+					</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.parser">parser</a>
+			<span>A function intended to process an HTTP response.</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="value">
+						<span class="type"><a href="#types.response">response</a></span>
+						<span>The response to the request.</span>
+					</li>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span>A JavaScript value.</span>
+			</div>
+		</div>
+		<ul>
+			<li class="constructor">
+				<div class="name">Client</div>
+				<span>Creates an object capable of issuing HTTP requests and returning their responses.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>An object describing the configuration of this HTTP client.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">TREAT_302_AS_303</div>
+									<span class="type">boolean</span>
+									<span>
+										(optional)
+										Instructs the client to handle responses with status 302 as though they were responses
+										with status 303, as most browsers erroneously do. See the note at
+										the end of
+										<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.3">RFC 2616 10.3.3</a>
+										for details.
+									</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">request</div>
+							<span>
+								Issues a request to a server and returns that server's response, after following any redirects.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>
+											An object representing the request, with an optional <code>parse</code> property that
+											processes the response.
+										</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">method</div>
+												<span class="type">string</span>
+												<span>
+													(optional)
+													The HTTP request method to use. If omitted, a <code>GET</code> is issued.
+												</span>
+											</li>
+											<li class="value">
+												<!--	TODO	merge with same notion from client side?	-->
+												<div class="name">url</div>
+												<span class="type">string</span>
+												<span>The URL to which to issue the request.</span>
+											</li>
+											<li class="value">
+												<div class="name">parameters</div>
+												<span class="type"><a href="#types.parameters">parameters</a></span>
+												<span>
+													(optional)
+													Additional parameters to send to the request as part of the URL.
+												</span>
+											</li>
+											<li class="value">
+												<div class="name">authorization</div>
+												<span class="type"><a href="#types.authorization">authorization</a></span>
+												<span>Credentials information to be used to authorize this request.</span>
+											</li>
+											<li class="value">
+												<div class="name">headers</div>
+												<span class="type"><a href="#types.parameters">parameters</a></span>
+												<span>
+													(optional)
+													Additional headers to send with this request.
+												</span>
+											</li>
+											<li class="object">
+												<div class="name">body</div>
+												<span class="type"><a href="#types.body">body</a></span>
+												<span>
+													(optional)
+													The message body to use with the HTTP request. If no <code>type</code> property
+													is provided, <code>application/octet-stream</code> will be used. Must specify
+													its content in some way. If a <code>stream</code> property is present, it
+													will be read to provide the content of the message body. Otherwise, if a
+													<code>string</code> property is present, its content will be used.
+												</span>
+											</li>
+											<li class="object">
+												<div class="name">proxy</div>
+												<span>
+													Information used to specify a proxy server for this request. This object should
+													contain an <code>http</code> property or a <code>socks</code> property
+													specifying information about the proxy to use.
+													<!--	What if both are absent? What if both are present?	-->
+												</span>
+												<div class="type">
+													<a class="type" name="types.proxy.server">proxy.server</a>
+													<span>Information specifying a proxy server.</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="value">
+															<div class="name">host</div>
+															<span class="type">String</span>
+															<span>A host name.</span>
+														</li>
+														<li class="value">
+															<div class="name">port</div>
+															<span class="type">number</span>
+															<span>A port number.</span>
+														</li>
+													</ul>
+												</div>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">http</div>
+														<span class="type"><a href="#types.proxy.server">proxy.server</a></span>
+														<span>
+															(optional)
+															Specifies an HTTP proxy to use for this request.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">socks</div>
+														<span class="type"><a href="#types.proxy.server">proxy.server</a></span>
+														<span>
+															(optional)
+															Specifies a SOCKS proxy to use for this request.
+														</span>
+													</li>
+												</ul>
+											</li>
+											<li class="object">
+												<div class="name">timeout</div>
+												<span>
+													(optional)
+												</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">connect</div>
+														<span class="type">number</span>
+														<span>
+															A timeout, in milliseconds, that should be used when attempting
+															to connect to a remote URL.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">read</div>
+														<span class="type">number</span>
+														<span>
+															A timeout, in milliseconds, that should be used when attempting to
+															read a remote URL.
+														</span>
+													</li>
+												</ul>
+											</li>
+											<li class="object">
+												<div class="name">on</div>
+												<span>An object containing a set of properties representing callbacks.</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="function">
+														<div class="name">redirect</div>
+														<!--	What 'this' parameter will be used?	-->
+														<span>A function that will be invoked if the request is redirected.</span>
+														<div class="arguments">
+															<div class="label">Arguments</div>
+															<ol>
+																<li class="value">
+																	<div class="name">url</div>
+																	<span class="type">string</span>
+																	<span>
+																		The URL to which the request was redirected, excluding
+																		parameters.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">parameters</div>
+																	<span class="type">Array of <a href="#types.pair">pair</a></span>
+																	<span>
+																		An array of parameters representing the query string of the
+																		URL to which the request was rediected, or a zero-length
+																		array if there were no parameters.
+																	</span>
+																</li>
+															</ol>
+														</div>
+													</li>
+												</ul>
+											</li>
+											<li class="function">
+												<div class="name">evaluate</div>
+												<span class="type"><a href="#types.parser">parser</a></span>
+												<span>
+													(optional)
+													A function that interprets the response from the server and returns it to the
+													caller of <code>request()</code> automatically.
+												</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.response">response</a></span>
+								-or-
+								<span class="type">(any)</span>
+								<span>
+									Returns the response, unless a <code>parse</code> function was
+									provided; in that case, the result of that function is returned.
+								</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.Cookie = Packages.javax.servlet.http.Cookie;
+					scope.skip = function(verify) {
+						verify("Skipping: no Tomcat").is("Skipping: no Tomcat");
+					};
+					scope.skip = function(message) {
+						return {
+							success: true,
+							messages: {
+								success: "SKIP: " + message
+							}
+						}
+					};
+					scope.getServerRequestCookies = function(request) {
+						if (request.getCookies() === null) return [];
+						return jsh.java.Array.adapt(request.getCookies()).filter(function(_cookie) {
+							return _cookie.getName() != "JSESSIONID";
+						}).map(function(_cookie) {
+							return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
+						});
+					};
+					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="Hello World"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+						var client = new module.Client();
+						servlet.set(function(request,response) {
+							test(request.getMethod().toUpperCase() == "GET");
+							response.getWriter().print("Hello, World!");
+						});
+						var response = client.request({
+							method: "GET"
+							,url: "http://127.0.0.1:" + context.port + "/"
+							,evaluate: function(response) {
+								return response.body.stream.character().asString();
+							}
+						});
+						test(response == "Hello, World!");
+					} else {
+						test(skip("No Tomcat"));
+					}
+				]]></script>
+				<script type="application/x.jsapi#tests" jsapi:id="Parameters"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+						var client = new module.Client();
+						servlet.set(function(request,response) {
+							response.getWriter().print(request.getRequestURL()+"?"+request.getQueryString());
+						});
+						var url = "http://127.0.0.1:" + context.port + "/hello?world=earth";
+						var response = client.request({
+							method: "GET"
+							,url: url
+							,evaluate: function(response) {
+								return response.body.stream.character().asString();
+							}
+						});
+						verify(response).is(url);
+					} else {
+						test(skip("No Tomcat"));
+					}
+				]]></script>
+				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
+						var client = new module.Client();
+						servlet.set(function(request,response) {
+							verify(request,"initial servlet request").getCookies().is(null);
+							response.addCookie(new Cookie("cname", "cvalue"));
+							response.setContentType("text/plain");
+							response.getWriter().print("Hello, World!");
+						});
+						var response = client.request({
+							method: "GET"
+							,url: "http://127.0.0.1:" + context.port + "/"
+						});
+						var type = response.body.type.toString();
+						verify(type).is.not(null);
+						verify(type.split(";"))[0].is.not(null);
+						verify(response,"initial response").body.evaluate(function() { return this.type.toString().split(";")[0] }).is("text/plain");
+						servlet.set(function(request,response) {
+							var cookies = getServerRequestCookies(request);
+//							verify(request,"second servlet request").getCookies().length.is(1);
+							verify(cookies,"second servlet request cookies").length.is(1);
+							verify(cookies,"cookies")[0].name.is("cname");
+							verify(cookies,"cookies")[0].value.is("cvalue");
+//							test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+//							test(Boolean(request.getCookies()) && request.getCookies()[0].getName() == "cname");
+//							test(Boolean(request.getCookies()) && request.getCookies()[0].getValue() == "cvalue");
+						});
+						client.request({
+							method: "GET"
+							,url: "http://127.0.0.1:" + context.port + "/"
+						});
+					} else {
+						test(skip("No Tomcat, or WebView present"));
+					}
+				]]></script>
+				<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
+						var client = new module.Client();
+						var redirected = false;
+						servlet.set(function(request,response) {
+							jsh.shell.echo("getting cookies " + request.getCookies());
+							var cookies = getServerRequestCookies(request);
+							jsh.shell.echo("cookies: " + JSON.stringify(cookies));
+							if (request.getRequestURI() == "/") {
+								verify(cookies).length.is(0);
+								response.addCookie(new Cookie("rname", "rvalue"));
+								response.sendRedirect("./redirected");
+							} else if (request.getRequestURI() == "/redirected") {
+								redirected = true;
+								verify(cookies).length.is(1);
+//								test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+								response.setContentType("text/plain");
+								response.getWriter().print("Redirected!");
+							} else {
+								debugger;
+								test(false, "Wrong URL: " + request.getRequestURI());
+							}
+						});
+						var response = client.request({
+							method: "GET",
+							url: "http://127.0.0.1:" + context.port + "/"
+							,evaluate: function(response) {
+								jsh.shell.echo("response = " + response.status.code);
+								jsh.shell.echo("error = ")
+								return response;
+							}
+						});
+						verify(redirected,"redirected").is(true);
+					} else {
+						test(skip("No Tomcat, or WebView present"));
+					}
+				]]></script>
+				<script type="application/x.jsapi#tests" jsapi:id="spi"><![CDATA[
+					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+						var client = new module.Client({
+							spi: function(original) {
+								return function(p) {
+									var buffer = new context.io.Buffer();
+									//	TODO	below was buffer.writeText("Hello, Dude!"), which counterintuitively, silently
+									//			failed; consider alternatives for rhino/io
+									buffer.writeText().write("Hello, Dude!");
+									buffer.close();
+									return {
+										status: {
+											code: 200,
+											reason: "OK"
+										},
+										headers: [
+											{ name: "Content-Type", value: "text/plain" }
+										],
+										stream: buffer.readBinary()
+									}
+								}
+							}
+						});
+						var redirected = false;
+						servlet.set(function(request,response) {
+							response.setContentType("text/plain");
+							response.getWriter().print("Hello, World!");
+						});
+						var response = client.request({
+							method: "GET",
+							url: "http://127.0.0.1:" + context.port + "/"
+							,evaluate: function(response) {
+								return response;
+							}
+						});
+						//	TODO	add rhino/io Resource capability
+						verify(response.body.stream.character().asString()).is("Hello, Dude!");
+					} else {
+						test(skip("No Tomcat"));
+					}
+				]]></script>
+			</li>
+			<!--
+				TODO	Better API would have Form object that could be translated into query string and body, and probably
+						have two subtypes: one for ordinary forms, another for multipart
+			-->
+			<li class="object">
+				<div class="name">Body</div>
+				<span>Contains methods for creating request bodies.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Form</div>
+						<span>
+							Creates request bodies representing HTML non-multipart
+							(<code>application/x-www-form-urlencoded</code>) forms.
+							See <a href="http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3">HTML 4.01 section 17.13.3</a>.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type"><a href="#types.query">query</a></span>
+									<span>An object specifying the form.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type"><a href="#types.body">body</a></span>
+							<span>Objects suitable as request bodies.</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">Authentication</div>
+				<span>Contains interfaces for implementing HTTP authentication.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">Basic</div>
+						<span>
+							The Basic authentication scheme, described by
+							<a href="http://www.ietf.org/rfc/rfc2617.txt">RFC 2617</a> section 2.
+						</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="constructor">
+								<div class="name">Authorization</div>
+								<span>Creates objects representing a particular set of authorization credentials.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="object">
+											<span>A set of credentials.</span>
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="value">
+													<div class="name">user</div>
+													<span class="type">string</span>
+												</li>
+												<li class="value">
+													<div class="name">password</div>
+													<span class="type">string</span>
+												</li>
+											</ul>
+										</li>
+									</ol>
+								</div>
+								<div class="instances">
+									<div class="label">Instances</div>
+									<span class="type"><a href="#types.authorization">authorization</a></span>
+								</div>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">Parser</div>
+				<span>Contains interfaces for manipulating parsers.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">ok</div>
+						<span>A function that creates parsers that throw errors when unsuccessful responses are received.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type"><a href="#types.parser">parser</a></span>
+									<span>A parser for successful responses.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.parser">parser</a></span>
+							<span>
+								A parser that invokes the given parser for successful responses, but throws an error for
+								non-successful responses.
+							</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

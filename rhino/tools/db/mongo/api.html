@@ -1,0 +1,82 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME JDK interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>__TITLE__</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="../../slime/loader/api/api.css" />
+	<script src="../../slime/loader/api/api.js"></script>
+</head>
+<body>
+	<div>__DESCRIPTION__</div>
+	<a href="http://docs.mongodb.org/ecosystem/drivers/java/">Java driver</a>
+	<a href="http://api.mongodb.org/java/current/">(API)</a>
+	<a href="http://docs.mongodb.org/manual/reference/method/">Mongo shell methods</a>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+		<script type="application/x.jsapi#context">
+			(function() {
+				return new function() {
+				};
+			})()
+		</script>
+	</div>
+	<div>
+		<script type="application/x.jsapi#initialize"><![CDATA[
+			if ($jsapi.environment.mongo && $jsapi.environment.mongo.install) {
+				var port = $jsapi.module("../../slime/rhino/ip/").tcp.getEphemeralPortNumber();
+				var server = $jsapi.module("mongod.js", { install: jsh.file.Pathname($jsapi.environment.mongo.install).directory });
+				var data = $jsapi.newTemporaryDirectory();
+				jsh.shell.echo("Mongo install at " + $jsapi.environment.mongo.install + " starting on port " + port + " with dbpath " + data);
+				scope.mongod = new server.Server({ port: port, dbpath: data });
+				//	TODO	want to get rid of this; need to do some thread synchronization in the daemon implementation
+				Packages.java.lang.Thread.sleep(5000);
+			} else {
+				jsh.shell.echo("No Mongo install: $jsapi.environment keys = " + Object.keys($jsapi.environment));
+				if ($jsapi.environment.mongo) {
+					jsh.shell.echo("install=" + $jsapi.environment.mongo.install);
+				}
+			}
+		]]></script>
+		<div class="type">
+			<a class="type" name="types.cursor">cursor</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.collection">collection</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+			</ul>
+		</div>
+		<h1>Exports</h1>
+		<ul>
+		</ul>
+		<script type="application/x.jsapi#destroy">
+			if (scope.mongod) {
+				jsh.shell.echo("Destroying ...");
+				mongod.stop();
+				jsh.shell.echo("Stopped.");
+			}
+		</script>
+	</div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html>
+<head>
+	<title>jsh Tools</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		<h1>slime.jsh.js</h1>
+		<div>
+			Creates a <i>Slime</i> file.
+		</div>
+		<div>
+			A Slime file contains JavaScript code. It can also contain supporting Java classes that will be made available to the
+			JavaScript code.
+		</div>
+		<div>
+			Usage:
+			<blockquote><code>slime.jsh.js -from &lt;source-directory> -to &lt;destination-path></code></blockquote>
+		</div>
+		<div>
+			The <code>source-directory</code> should be a directory containing scripts. It can also contain Java source code in
+			a <code>java</code> subdirectory; all <code>.java</code> files under that directory will be compiled and their classes
+			will be added to the Slime file.
+		</div>
+		<div>
+			The <code>destination-path</code> can be any path, but it is recommended that it use the <code>.slime</code> file
+			extension, as some other components (the jsh plugin architecture, for example) detect Slime files using that
+			extension.
+		</div>
+	</div>
+</body>
+</html>

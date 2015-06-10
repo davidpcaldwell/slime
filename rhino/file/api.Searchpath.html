@@ -1,0 +1,161 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the rhino/file SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>rhino/file Searchpath</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<ul>
+		<li class="function" jsapi:id="main">
+			<div class="name">Searchpath</div>
+			<div class="type">
+				<a class="type" name="types.Searchpath">Searchpath</a>
+				<span>
+					An object representing a search path in the local file system.
+					<!--	TODO	improve	-->
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">pathnames</div>
+						<span class="type">Array of <a href="#types.Pathname">Pathname</a></span>
+						<span>The set of <code>Pathname</code>s that make up this search path.</span>
+					</li>
+					<li class="function">
+						<div class="name">toString</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">string</span>
+							<span>
+								A <code>string</code> representation of this <code>Searchpath</code>.
+								<!--	TODO	describe better	-->
+							</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">getCommand</div>
+						<span>Returns a file representing a given command within this Searchpath.</span>
+						<div>
+							The implementation searches each directory within this Searchpath, looking for a file that corresponds to the
+							given command. If the <code>pathext</code> property of the module context is specified, each extension in the
+							<code>pathext</code> variable is appended to the given command name in succession in an attempt to locate the
+							file. If this variable is not present, the system simply looks for raw files with the given name in each
+							directory in the Searchpath.
+							<!--	TODO	could be written more clearly	-->
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A name representing an executable command.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="./api.html#types.file">file</a></span>
+							<span>
+								A file object corresponding to the given command, or <code>null</code> if no corresponding command could
+								be found in this Searchpath.
+							</span>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div class="arguments" jsapi:id="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<!--	TODO	should array of directory be allowed? array of string? mixture?	-->
+					<li class="value">
+						<span class="type">Array of <a href="#types.Pathname">Pathname</a></span>
+						<span>The list of paths to search.</span>
+					</li>
+				</ol>
+			</div>
+			<div class="returns" jsapi:id="returns">
+				<div class="label">Returns</div>
+				<span class="type" jsapi:id="typelink"><a href="#types.Searchpath">Searchpath</a></span>
+				<span>A <code>Searchpath</code> which searches the given <code>Pathname</code>s, in order.</span>
+			</div>
+			<script type="application/x.jsapi#tests"><![CDATA[
+				var x = module.Searchpath([]);
+				test(x instanceof module.Searchpath);
+				test(x instanceof module.filesystems.os.Searchpath);
+				var jhome = jsh.shell.java.home;
+				var jdk = module.Searchpath([
+					jhome.getRelativePath("bin")
+				]);
+				var command = jdk.getCommand("java");
+				test(typeof(command) == "object" && command && typeof(command.pathname) == "object");
+			]]></script>
+			<script type="application/x.jsapi#tests">
+				scenario( new function() {
+					var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+					var dir = filesystem.$unit.temporary(null, { directory: true });
+					var Searchpath = module.Searchpath;
+
+					this.name = "Searchpath";
+
+					this.execute = function(scope) {
+						var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
+						if (typeof(pathelements[0]) == "undefined") throw "No/0";
+						if (typeof(pathelements[1]) == "undefined") throw "No/1";
+						var searchpath = Searchpath(pathelements);
+						scope.test(
+							(
+								searchpath.toString()
+								== (
+									dir.getRelativePath("c").toString()
+									+ String( filesystem.$unit.getSearchpathSeparator() )
+									+ dir.getRelativePath("e").toString()
+								)
+							)
+							||
+							//	TODO	the below branch is necessary for Mac OS X, which somehow is confusing /var and
+							//			/private/var ... this could be a bug having to do with canonical paths, symlinks, etc.
+							(
+								searchpath.toString()
+								== (
+									String(dir.getRelativePath("c").java.adapt())
+									+ String(filesystem.$unit.getSearchpathSeparator())
+									+ String(dir.getRelativePath("e").java.adapt())
+								)
+							)
+						);
+						if (module.filesystems.cygwin) {
+							scope.scenario( new function() {
+								this.name = "Mixed paths";
+								this.execute = function(scope) {
+									var a = module.filesystems.os.Pathname("C:\\cygwin\\etc");
+									var b = module.filesystems.cygwin.Pathname("/usr/local/bin");
+									var searchpath = module.Searchpath([a,b]);
+									var upath = module.filesystems.cygwin.toUnix(searchpath);
+									var wpath = module.filesystems.cygwin.toWindows(searchpath);
+									scope.test( upath.toString() == "/etc:/usr/local/bin" );
+									scope.test( wpath.toString() == "C:\\cygwin\\etc;C:\\cygwin\\usr\\local\\bin" );
+									scope.test( searchpath.toString() == upath.toString() );
+								}
+							} );
+						}
+					}
+				} );
+			</script>
+		</li>
+	</ul>
+</body>
+</html>

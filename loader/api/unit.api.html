@@ -1,0 +1,216 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>__TITLE__</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<link href="api.css" rel="stylesheet" type="text/css" />
+		<script src="api.js"></script>
+	</head>
+	<body jsapi:id="top">
+		<div>__DESCRIPTION__</div>
+		<!--	TODO	investigate $context.asynchronous	-->
+		<!--
+		<div>
+			<h1>Context</h1>
+			<ul>
+			</ul>
+		</div>
+		-->
+		<div>
+			<h1>Exports</h1>
+			<div class="type">
+				<a class="type" name="types.Scenario">Scenario</a>
+				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.Scenario.console">console</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="function">
+						<div class="name">add</div>
+						<span>
+							(conditional: not present if not a composite scenario)
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">run</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">console</div>
+											<span class="type"><a href="#types.console">console</a></span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<ul>
+				<li class="constructor">
+					<div class="name">Scenario</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<div class="name">__NAME__</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">name</div>
+										<span class="type">string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="function">
+										<div class="name">initialize</div>
+										<span>__DESCRIPTION__</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+									<li class="function">
+										<div class="name">test</div>
+										<span>__DESCRIPTION__</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+									<li class="function">
+										<div class="name">destroy</div>
+										<span>__DESCRIPTION__</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+			<script type="application/x.jsapi#tests">
+				var s = {
+					test: function() {
+						test.apply(scope,arguments);
+					}
+				};
+				var v = new module.Verify(s);
+				v(1).is(1);
+				v("x").length.is(1);
+				var withHidden = { is: "hey", evaluate: "dude" };
+				v(withHidden,"withHidden").evaluate.property("is").is("hey");
+				v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
+			</script>
+			<script type="application/x.jsapi#tests">
+				var top = new module.Scenario({
+					composite: true,
+					name: "top"
+				});
+				var starts = [];
+				var ends = [];
+				var tests = [];
+				top.listeners.add("scenario", function(e) {
+					if (e.detail.start) {
+						starts.push(e.detail);
+						//	jsh.shell.echo("Start: " + e.detail.start.name);
+					} else if (e.detail.end) {
+						//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+						ends.push(e.detail);
+					}
+				});
+				top.listeners.add("test", function(e) {
+					//	jsh.shell.echo("Test: " + e.detail.message);
+					tests.push(e.detail);
+				});
+				var child = new function() {
+					this.name = "child";
+					this.execute = function(scope) {
+						scope.test(function() {
+							return {
+								success: true,
+								message: "Hello, World!"
+							}
+						});
+					}
+				};
+				top.add({ scenario: child });
+				top.run({});
+				verify(starts).length.is(2);
+			</script>
+		</div>
+	</body>
+</html>

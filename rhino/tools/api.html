@@ -1,0 +1,196 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME JDK interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>rhino/tools</title>
+	<script src="../../loader/api/api.js"></script>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+</head>
+<body>
+	<div>
+		<h1>Context</h1>
+		<!--	TODO	make the context below load the module definitions from source	-->
+		<script type="application/x.jsapi#context">
+			{
+				api: {
+					js: $jsapi.module("../../js/object/"),
+					java: $jsapi.module("../../rhino/host/", {
+						$rhino: jsh.$jsapi.$rhino
+					})
+				}
+			}
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="function">
+				<div class="name">javac</div>
+				<span><strong>(experimental: API likely to evolve in future versions)</strong></span>
+				<div class="type">
+					<a class="type" name="types.javac.result">result</a>
+					<span>The result of a compilation.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">arguments</div>
+							<span class="type">Array of string</span>
+							<span>The set of arguments sent to the <code>javac</code> command.</span>
+						</li>
+						<li class="value">
+							<div class="name">status</div>
+							<span class="type">number</span>
+							<span>The exit status returned by <code>javac</code>.</span>
+						</li>
+					</ul>
+				</div>
+				<span>
+					(conditional: present only if the Java compiler is available because the execution environment is a JDK rather
+					than a JRE)
+					Executes the Java compiler. See the documentation for
+					<a href="http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/javac.html">UNIX</a> and
+					<a href="http://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">Windows</a> operating
+					systems.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">debug</div>
+									<span class="type">boolean</span>
+									<span>
+										If <code>true</code>, debugging information is emitted by the compiler using the
+										<code>-g</code> flag.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">destination</div>
+									<span class="type"><a href="../file/api.html#types.Pathname">Pathname</a></span>
+									<span>
+										(optional)
+										Represents a directory to which files should be emitted, which will be supplied to
+										<code>javac</code> as the <code>-d</code> argument. The directory will be created if it
+										does not exist; if its parent does not exist, an exception will be thrown.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">classpath</div>
+									<span class="type"><a href="../file/api.Searchpath.html">Searchpath</a></span>
+									<span>
+										(optional)
+										A path from which to load class dependencies, which will be supplied to <code>javac</code>
+										as the <code>-classpath</code> argument.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">sourcepath</div>
+									<span class="type"><a href="../file/api.Searchpath.html">Searchpath</a></span>
+									<span>
+										(optional)
+										A path from which to load source dependencies, which will be supplied to <code>javac</code>
+										as the <code>-sourcepath</code> argument.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">source</div>
+									<span class="type">string</span>
+									<span>
+										(optional)
+										A release version which will be supplied to <code>javac</code> as the <code>-source</code>
+										argument.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">target</div>
+									<span class="type">string</span>
+									<span>
+										(optional)
+										A release version which will be supplied to <code>javac</code> as the <code>-target</code>
+										argument.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">arguments</div>
+									<span class="type">Array of <a href="../file/api.html#types.file">file</a></span>
+									<span>A set of source files to compile.</span>
+								</li>
+								<li class="function">
+									<div class="name">evaluate</div>
+									<div>
+										A function that will be invoked when compilation is complete, will be provided with
+										information about the result, and specifies the return value of <code>javac</code>.
+									</div>
+									<div>
+										If omitted, an implementation is provided that throws an exception if the exit status is
+										non-zero and returns its argument if the exit status is zero.
+									</div>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type"><a href="#types.javac.result">result</a></span>
+												<span>The result of the compilation.</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">(any)</span>
+										<span>A value to be returned by the <code>javac</code> method.</span>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type"><a href="#types.javac.result">result</a></span>
+					-OR-
+					<span class="type">(any)</span>
+					<span>
+						The value returned by the <code>evaluate</code> function if one is supplied; otherwise, the
+						<a href="#types.javac.result">result</a> of the compilation.
+					</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var source = $module.getResourcePathname("test/java/Hello.java");
+					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					module.javac({
+						destination: tmp.pathname,
+						arguments: [source.file]
+					});
+					jsh.shell.echo("Compiled to " + tmp);
+					var buffer = new jsh.io.Buffer();
+					var output = jsh.shell.java({
+						classpath: jsh.file.Searchpath([tmp.pathname]),
+						main: "Hello",
+						stdout: buffer.writeBinary(),
+						evaluate: function(result) {
+							buffer.close();
+							return buffer.readText().asString();
+						}
+					});
+					jsh.shell.echo("output: [" + output + "]");
+					test(output == String(Packages.java.lang.String.format("Hello, World!%n")));
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

@@ -1,0 +1,657 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh.shell</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="object">
+				<div class="name">api</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">java</div>
+						<span>The rhino/host module.</span>
+					</li>
+					<li class="value">
+						<div class="name">shell</div>
+						<span>The rhino/shell module.</span>
+					</li>
+					<li class="value">
+						<div class="name">file</div>
+						<span>The rhino/file module.</span>
+					</li>
+				</ul>
+			</li>
+			<li class="function">
+				<div class="name">getSystemProperty</div>
+				<span>Provides the value of a given system property.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>The name of a system property.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">string</span>
+					<span>The value of that system property, or <code>null</code>.</span>
+				</div>
+			</li>
+			<li class="value">
+				<div class="name">exit</div>
+				<span>An implementation of <a href="#$exports.exit"><code>$exports.exit</code></a>.</span>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#context">
+			new function() {
+				var host = $jsapi.module("../../rhino/host/", {
+					$rhino: jsh.$jsapi.$rhino,
+					$java: jsh.$jsapi.java
+				});
+				var file = $jsapi.module("../../rhino/file/", new function() {
+					if (jsh.shell.environment.PATHEXT) {
+						this.pathext = jsh.shell.environment.PATHEXT.split(";");
+					}
+					this.$rhino = jsh.$jsapi.$rhino;
+					this.api = {
+						io: jsh.io,
+						js: jsh.js,
+						java: jsh.java
+					};
+					this.$pwd = String(jsh.shell.properties.object.user.dir);
+					this.addFinalizer = jsh.loader.addFinalizer;
+					//	TODO	below copy-pasted from rhino/file/api.html
+					//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+					var System = Packages.java.lang.System;
+					if (System.getProperty("cygwin.root")) {
+						this.cygwin = {
+							root: String( System.getProperty("cygwin.root") )
+						};
+						if (System.getProperty("cygwin.paths")) {
+							//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+							//	the SDK server
+							//	TODO	check this
+							this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+						}
+					}
+				});
+				var shell = $jsapi.module("../../rhino/shell/", {
+					api: {
+						js: $jsapi.module("../../js/object/"),
+						java: host,
+						io: jsh.io,
+						file: file,
+						document: $jsapi.module("../../js/document/")
+					},
+					_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
+					_properties: Packages.java.lang.System.getProperties()
+				});
+				this.api = {
+					js: $jsapi.module("../../js/object/"),
+					java: host,
+					shell: shell,
+					file: file
+				};
+
+				this.getSystemProperty = function(name) {
+					return String(Packages.java.lang.System.getProperty(name));
+				}
+
+				this._getSystemProperties = function() {
+					return Packages.java.lang.System.getProperties();
+				}
+
+				this.stdio = new function() {
+					this.input = (jsh.shell.stdio) ? jsh.shell.stdio.input : jsh.shell.stdin;
+					this.output = (jsh.shell.stdio) ? jsh.shell.stdio.output : jsh.shell.stdout;
+					this.error = (jsh.shell.stdio) ? jsh.shell.stdio.error : jsh.shell.stderr;
+				}
+
+				this.exit = function() {
+				}
+
+				this.jsh = function(configuration,invocation) {
+					return jsh.$jsapi.$rhino.jsh(configuration,invocation);
+				}
+			}
+		</script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<script type="application/x.jsapi#initialize" jsapi:reference="getApi('api.html').getElement('script.initialize')">
+			//	see code in api.html
+		</script>
+		<div class="type">
+			<a class="type" name="types.consolei">console input</a>
+			<span class="type">supports <a href="../../rhino/io/api.html#types.binput">byte input stream</a></span>
+			<span class="type">supports <a href="../../rhino/io/api.html#types.cinput">character input stream</a></span>
+		</div>
+		<div class="type">
+			<a class="type" name="types.consoleo">console output</a>
+			<span class="type">supports <a href="../../rhino/io/api.html#types.boutput">byte output stream</a></span>
+			<span class="type">supports <a href="../../rhino/io/api.html#types.coutput">character output stream</a></span>
+		</div>
+		<ul>
+			<li class="function">
+				<div class="name">run</div>
+				<span jsapi:reference="getApi('api.html').getElement('run/description')">See <a href="api.html#exports.run">rhino/shell</a>.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<span>
+						The arguments are interpreted identically to those in the corresponding
+						<a href="api.html#exports.run">rhino/shell</a>
+						method except that if the stdio.output or stdio.error properties are omitted, the output from the subprocess
+						will be sent to the corresponding stream for the executing shell.
+					</span>
+					<ol jsapi:reference="getApi('api.html').getElement('run/arguments')">
+					</ol>
+				</div>
+				<div class="returns" jsapi:reference="getApi('api.html').getElement('run/returns')">
+					<div class="label">Returns</div>
+					See <a href="api.html#exports.run">rhino/shell</a>.
+				</div>
+			</li>
+			<li class="function">
+				<div class="name"><a name="$exports.exit">exit</a></div>
+				<span>Exits from this process.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">number</span>
+							<span>The exit code to return to the parent process.</span>
+						</li>
+					</ol>
+				</div>
+			</li>
+			<li class="value" jsapi:reference="getApi('api.html').getElement('environment')">
+				<div class="name"><a name="$exports.environment">environment</a></div>
+				<span>The rhino/shell environment.</span>
+			</li>
+			<li class="value" jsapi:reference="getApi('api.html').getElement('properties')">
+				<div class="name"><a name="$exports.properties">properties</a></div>
+				<span>The rhino/shell properties.</span>
+			</li>
+			<li class="value">
+				<div class="name">stdin</div>
+				<span class="type"><a href="#types.consolei">console input</a></span>
+				<span>The standard input stream for this shell.</span>
+			</li>
+			<li class="value">
+				<div class="name">stdout</div>
+				<span class="type"><a href="#types.consoleo">console output</a></span>
+				<span>The standard output stream for this shell.</span>
+				<script type="application/x.jsapi#tests">
+					test(typeof(module.stdio.output.write) == "function");
+					test(typeof(module.stdio.output.close) == "function");
+				</script>
+			</li>
+			<li class="value">
+				<div class="name">stderr</div>
+				<span class="type"><a href="#types.consoleo">console output</a></span>
+				<span>The standard error stream for this shell.</span>
+				<script type="application/x.jsapi#tests">
+					test(typeof(module.stdio.error.write) == "function");
+					test(typeof(module.stdio.error.close) == "function");
+				</script>
+			</li>
+			<li class="function">
+				<div class="name">echo</div>
+				<span>Writes a message to the console, or to another specified destination.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">string</span>
+							<span>A message to echo.</span>
+						</li>
+						<li class="object">
+							<span>
+								(optional) Specifies a destination. The <code>console</code> function, if present, specifies a
+								handler for messages. Otherwise, the <code>stream</code> property, if present, specifies a stream to
+								which to write messages. If neither is defined, or this argument is omitted entirely, the message
+								is written to the <code>stdout</code> stream.
+							</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">console</div>
+									<span>(optional) A <code>function</code> that is able to process messages.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>A message.</span>
+											</li>
+										</ol>
+									</div>
+								</li>
+								<li class="value">
+									<div class="name">stream</div>
+									<span class="type"><a href="../../rhino/io/api.html#types.coutput">character output stream</a></span>
+									<span>(optional) A destination stream for messages.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name"><a id="shell">shell</a></div>
+				<span>Executes a subprocess.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span></span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">command</div>
+									<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+									<span>The executable to run.</span>
+								</li>
+								<li class="value">
+									<div class="name">arguments</div>
+									<span class="type">Array</span>
+									<span>
+										An array containing strings and/or
+										<a href="../../rhino/file/api.html#types.Pathname">Pathname</a>
+										objects.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">filesystem</div>
+									<span class="type"><a href="../../rhino/file/api.html#types.filesystem">filesystem</a></span>
+									<span>
+										(optional) If present, all arguments of type
+										<code><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></code>
+										are converted
+										into pathnames in this filesystem before the subprocess is launched.
+									</span>
+								</li>
+								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.environment')">
+									<div class="name">environment</div>
+									<span><a href="../../rhino/shell/api.html#run.environment">See rhino/shell</a></span>
+								</li>
+								<li class="value">
+									<div class="name">stdio</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.directory')">
+									<div class="name">directory</div>
+									<span><a href="../../rhino/shell/api.html#run.directory">See rhino/shell</a></span>
+								</li>
+								<li class="function" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('run/arguments/run.evaluate')">
+									<div class="name">evaluate</div>
+									<span><a href="../../rhino/shell/api.html#run.evaluate">See rhino/shell</a></span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<script jsapi:id="shell" type="application/x.jsapi#tests">
+					var launcher = module.java.home.getFile("bin/java");
+					if (!launcher) launcher = module.java.home.getFile("bin/java.exe");
+					if (!launcher) throw new Error("Could not find Java launcher under " + module.java.home);
+					var success = module.shell({
+						command: launcher,
+						arguments: ["-version"],
+						evaluate: function(result) {
+							return (result.status == 0) ? "success" : "failure";
+						}
+					});
+					test(success == "success");
+				</script>
+			</li>
+			<li class="function" jsapi:id="jsh">
+				<div class="name">jsh</div>
+				<span>Runs a jsh script.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type">object</span>
+							<span>
+								An argument with the same semantics as the argument to <code>shell</code>, except that
+								it includes the following properties in addition:
+							</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">script</div>
+									<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+									<span>The pathname of the script to run.</span>
+								</li>
+								<!--	TODO	update the below using jsapi:reference	-->
+								<li class="value">
+									<div class="name">arguments</div>
+									<span class="type">Array</span>
+									<span>An argument with the same semantics as the second argument to <code>shell</code>.</span>
+								</li>
+								<li class="value">
+									<div class="name">fork</div>
+									<span class="type">boolean</span>
+									<span>
+										If <code>true</code>, the script is forced to execute in a separate process. Otherwise,
+										jsh may attempt to execute it in-process if it deems the script to be compatible with its
+										execution environment.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">classpath</div>
+									<span class="type">string</span>
+									<span>The classpath to use when running the jsh launcher.</span>
+								</li>
+								<li class="function">
+									<div class="name">evaluate</div>
+									<span>
+										A function which is called after the script executes, and receives information about the
+										result. It specifies the return value of the call to <code>jsh</code> by returning a value.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="object">
+												<span>
+													An object with the same properties as those of
+													the evaluate property of the argument to
+													<a href="#shell">shell</a>,
+													with the following differences:
+												</span>
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="object">
+														<div class="name">jsh</div>
+														<span>An additional argument which describes the jsh invocation.</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">script</div>
+																<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+																<span>The script that was launched.</span>
+															</li>
+															<li class="value">
+																<div class="name">arguments</div>
+																<span class="type">Array of string</span>
+																<span>The arguments passed to the script.</span>
+															</li>
+														</ul>
+													</li>
+													<li class="value">
+														<div class="name">classpath</div>
+														<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
+														<span>The classpath supplied to the given script, as specified by the caller.</span>
+													</li>
+													<li class="value">
+														<div class="name">command</div>
+														<!--
+														<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+														-->
+														<span class="type">string</span>
+														<span>
+															(if an operating system shell was created) The operating system command
+															invoked. Not present if the subshell was executed in-process.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">arguments</div>
+														<span class="type">Array of string</span>
+														<span>
+															(if an operating system shell was created) The arguments sent to the
+															operating system command. Not present if the subshell was
+															executed in-process.
+														</span>
+													</li>
+												</ul>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">(any)</span>
+										<span>An arbitrary value to return from the <code>jsh</code> method.</span>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					var unforked = module.jsh({
+						script: $module.getResourcePathname("test/jsh.jsh.js").file,
+						arguments: [],
+						evaluate: function(result) {
+							return result;
+						}
+					});
+					test(unforked.status == 2);
+					test(typeof(unforked.command) == "undefined");
+					test(typeof(unforked.arguments) == "undefined");
+					test(Boolean(unforked.jsh) && Boolean(unforked.jsh.script));
+
+					var forked = module.jsh({
+						script: $module.getResourcePathname("test/jsh.jsh.js").file,
+						arguments: [],
+						evaluate: function(result) {
+							return result;
+						},
+						fork: true
+					});
+					test(forked.status == 2);
+					test(typeof(forked.command) != "undefined" && typeof(forked.command) == "object" && forked.command != null);
+					test(forked.command.toString() == jsh.shell.java.launcher.toString());
+					test(typeof(forked.arguments) != "undefined");
+					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
+
+					var issue82 = module.jsh({
+						script: $module.getResourcePathname("test/jsh.jsh.js").file,
+						evaluate: function(result) {
+							return (result.status == 2) ? "worked" : "did not work";
+						}
+					});
+					test(issue82 == "worked");
+				]]></script>
+				<script type="application/x.jsapi#tests">
+					debugger;
+					var buffer = new jsh.io.Buffer();
+					module.jsh({
+						script: $module.getResourcePathname("test/plugins.jsh.js"),
+						fork: true,
+						environment: jsh.js.Object.set({}, jsh.shell.environment, {
+							JSH_PLUGINS: $module.getResourcePathname("test").toString()
+						}),
+						stdout: buffer.writeBinary()
+					});
+					buffer.close();
+					var output = buffer.readText().asString();
+					var expected = $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator");
+					test(output == expected);
+				</script>
+			</li>
+		</ul>
+	</div>
+<!--
+$doc.members.echo = new $Doc.Function({
+	summary: "Prints information to a console.",
+	asFunction: {
+		description: <>Prints an argument to a console.  Normally, the console is provided by the execution environment, but
+			this behavior can be controlled with the mode argument.
+		</>,
+		arguments: {
+			list: [
+				{
+					comment: <>(optional) An argument which will be converted to a string using the following algorithm:
+						<ul>
+							<li>If the argument is a string, it will not be altered</li>
+							<li>If the argument is an object, its <code>toString()</code> method will be invoked</li>
+							<li>Otherwise, the result of the conversion is not defined.</li>
+						</ul>
+						If not present, this method simply prints a blank line.
+					</>
+				},
+				{
+					comment: <>(optional) An object representing the mode of operation for this function.</>,
+					type: new $Doc.Type({
+						members: {
+							stream: {
+								type: $doc.types.coutput,
+								summary: <>A character stream to which to direct console messages.  If
+									<code>console</code> is not present, messages will be directed to this stream.  If neither
+									is present, messages will be sent to a default location.
+								</>,
+							},
+							console: {
+								type: "function",
+								summary: <>A function which takes a single string argument and emits it.</>,
+							}
+						}
+					})
+				}
+			]
+		}
+	}
+});
+
+$doc.members.shell = new $Doc.Function({
+	summary: "Executes a subprocess.",
+	asFunction: {
+		description: <>Launches a subprocess of this process to execute a specified command with specified arguments.</>,
+		arguments: {
+			description: <>By default, the standard input, standard output, standard error, and working directory will be inherited
+				from this process, unless overridden by the mode argument.
+			</>,
+			list: [
+				{ type: "string", comment: "The command to run" },
+				{ type: "Array of string", comment: "The arguments to pass to the subprocess" },
+				{
+					comment: "An object representing the mode of execution for this function.",
+					type: new $Doc.Type({
+						members: {
+							stdin: {
+								name: "stdin",
+								type: $doc.types.binput,
+								summary: <>A stream that will be used as the standard input stream for the subprocess</>,
+							},
+							stdout: {
+								name: "stdout",
+								type: $doc.types.boutput,
+								summary: <>A stream to which the standard output stream of the subprocess will be written.  If
+									<code>null</code>, the output will be discarded.  The default is
+									<code>jsh.file.Streams.stdout</code>.
+								</>,
+							},
+							stderr: {
+								name: "stderr",
+								type: $doc.types.boutput,
+								summary: <>A stream to which the standard error stream of the subprocess will be written.  If
+									<code>null</code>, the output will be discarded.  The default is
+									<code>jsh.file.Streams.stderr</code>.</>,
+							},
+							workingDirectory: {
+								name: "workingDirectory",
+								type: $doc.types.Directory,
+								summary: <>A directory that will be used as the current working directory for the subprocess</>,
+							},
+							environment: {
+								name: "environment",
+								type: "object",
+								summary: <>An object containing the environment to send to the subprocess.  If <code>null</code> or
+									<code>undefined</code>, the subprocess will inherit this process's environment.
+								</>
+							},
+							onExit: {
+								name: "onExit",
+								type: new $Doc.Type({
+									summary: "Information about a subprocess",
+									members: {
+										command: {
+											name: "command",
+											type: "string",
+											summary: "The command invoked.",
+										},
+										arguments: {
+											name: "arguments",
+											type: "Array of string",
+											summary: "The arguments sent to the command.",
+										},
+										status: {
+											name: "status",
+											type: "number",
+											summary: "The exit status of the command",
+										}
+									}
+								}),
+								summary: <>A callback function that will be invoked when the subprocess exits.  The function will
+									be invoked with an argument containing information about the subprocess.
+								</>,
+							},
+							filesystem: {
+								type: $doc.types.Filesystem,
+								summary: <>If provided, all file-related arguments to the program will be converted to the given
+									filesystem.
+								</>,
+							}
+						}
+					})
+				}
+			]
+		}
+	}
+});
+
+var $run;
+
+$unit.environment = function() {
+	$run = function(tokens,mode) {
+		Packages.java.lang.System.err.println("SIMULATED SHELL: command=" + tokens.join(",") + " mode=" +
+			mode.toSource()
+		);
+	}
+}
+
+$unit.execute = function(scope) {
+/*
+	scope.scenario( new function() {
+		this.name = "run()";
+		this.execute = function(scope) {
+			scope.scenario( new function() {
+				this.name = "working directory";
+
+				this.execute = function(scope) {
+					scope.test(
+						run.$createWork(new java.io.File(Packages.java.lang.System.getProperty("user.dir")))["class"].name
+						== "java.io.File"
+					)
+				}
+			} );
+		}
+	} );
+*/
+}
+-->
+</body>
+</html>

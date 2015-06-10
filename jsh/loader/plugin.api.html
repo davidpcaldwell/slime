@@ -1,0 +1,259 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Interface for plugins</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		A jsh plugin can modify a local jsh installation to add or modify existing functionality. As a matter of design philosophy,
+		the plugin architecture allows plugins enormous freedom to modify the existing installation, rather than restricting plugins
+		to a narrow, safe set of modifications.
+	</div>
+	<div>
+		<h1>Types</h1>
+		<div>
+			jsh allows authors to add local extensions to jsh. These plugins are, by default, found in the
+			<code>plugins</code> subdirectory of the installation and in the
+			<code>$HOME/.jsh</code>
+			directory. There are two types of plugins:
+			<ul>
+				<li><strong>Java-only</strong>:
+					A Java-only plugin adds Java classes to the script's execution environment, but does not otherwise modify
+					the shell.
+				</li>
+				<li>
+					<strong>Slime</strong>:
+					A scripting plugin can add JavaScript objects to the shell, as well as adding Java classes. The Java classes
+					may be used in implementing the given JavaScript objects, but will also be available to scripts.
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div>
+		<h1>Structure</h1>
+		<div>
+			<h2>Java-only</h2>
+			<div>
+				Java-only plugins are deployed as simple <code>.jar</code> files, and can be installed by simply dropping a
+				<code>.jar</code> file into the plugins directory.
+			</div>
+		</div>
+		<div>
+			<h2>Slime</h2>
+			<div>
+				A Slime plugin can contain both JavaScript and Java code. Any Slime plugin can be deployed as a <code>.slime</code>
+				file. <code>.slime</code> files can be built using the <code>slime.jsh.js</code> script found in the
+				<code>tools</code> subdirectory of the jsh installation.
+			</div>
+			<!--
+				TODO	describe the directory format for plugins
+				TODO	remove the limitation that only script-only plugins may be deployed as directories; learn to compile the
+						Java in plugins at runtime (basically, create a way to embed the logic of slime.jsh.js into the shell).
+			-->
+			<div>
+				A Slime plugin must contain a <code>plugin.jsh.js</code> file at its top level. This file contains
+				JavaScript code which uses the interface described below.
+			</div>
+		</div>
+	</div>
+	<div>
+		<h1>Interface</h1>
+		<div>
+			<h2>Scope</h2>
+			<div>
+				The following variables are supplied to the plugin in its scope.
+				<div class="label">has properties:</div>
+				<ul>
+					<!--	undocumented: $host	-->
+					<!--	TODO	analyze whether external plugins need ability to access $host	-->
+					<li class="value">
+						<div class="name">plugins</div>
+						<span class="type">object</span>
+						<span>
+							A namespace plugins can use for inter-plugin communication; a plugin can add properties to this
+							object that other plugins use.
+						</span>
+					</li>
+					<li class="value">
+						<div class="name">jsh</div>
+						<span class="type">object</span>
+						<span>
+							The existing jsh namespace, containing jsh modules that have been loaded so far. Plugins may add to
+							this namespace.
+						</span>
+					</li>
+					<li class="value">
+						<div class="name">global</div>
+						<span class="type">object</span>
+						<div>
+							<div>
+								The existing global namespace. Allows a plugin to define a new top-level namespace that
+								will be available to scripts.
+							</div>
+							<div>
+								Properties of this namespace are currently undocumented and subject to change without notice; usage
+								of, or modification of, these properties is strongly discouraged.
+							</div>
+						</div>
+					</li>
+					<li class="object">
+						<div class="name">$loader</div>
+						<span>An object that allows this plugin to load code.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">module</div>
+								<span>
+									Loads a SLIME module. See
+									the SLIME <a href="../../loader.html">loader</a> for a description of how modules are loaded.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path to the module's main file, relative to the plugin file.</span>
+										</li>
+										<li class="value">
+											<!--	TODO	jsapi:reference?	-->
+											<span class="type">object</span>
+											<span>The <code>$context</code> object to provide to the module.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/returns')">
+									<div class="label">Returns</div>
+									<span class="type">object</span>
+									<span>The module's exports.</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">file</div>
+								<span>
+									Loads a script file from the given path. See
+									the SLIME <a href="../../loader.html">loader</a> for a description of how files are loaded.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path to the file to load, relative to the plugin file.</span>
+										</li>
+										<li class="value">
+											<span class="type">object</span>
+											<span>The <code>$context</code> object to provide to the file.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/returns')">
+									<div class="label">Returns</div>
+									<span class="type">objects</span>
+									<span>The file's exports.</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">run</div>
+								<span>
+									Executes a script file from the given path in a particular scope, and with a particular value
+									for <code>this</code>. See the SLIME <a href="../../loader.html">loader</a> for a description
+									of how files are loaded.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The path of the file to execute, relative to the plugin file.</span>
+										</li>
+										<li class="value">
+											<!--	TODO	jsapi:reference?	-->
+											<span class="type">object</span>
+											<span>The scope in which to execute the file.</span>
+										</li>
+										<li class="value">
+											<!--	TODO	jsapi:reference?	-->
+											<span class="type">object</span>
+											<span>The object to use as <code>this</code> when executing the file.</span>
+										</li>
+									</ol>
+								</div>
+							</li>
+							<li class="object">
+								<div class="name">classpath</div>
+								<span>An object representing the classpath visible to scripts</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">add</div>
+										<span>Adds a particular location to the script classpath</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type"><a href="../../rhino/file/api.html#types.Pathname">jsh.file.Pathname</a></span>
+													<span>A jsh.file.Pathname containing classes to add to the script classpath.</span>
+												</li>
+											</ol>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+					<li class="function">
+						<div class="name">plugin</div>
+						<span>Used to specify a plugin to be loaded.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>An object specifying the plugin.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">isReady</div>
+											<span>
+												(optional)
+												A function that returns <code>true</code> if this plugin is ready to be loaded.
+												This function should return <code>false</code> if the plugin's dependencies are
+												not available. If absent, the plugin is assumed to be ready to be loaded.
+											</span>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">boolean</span>
+												<span>
+													<code>true</code> to indicate all of the plugin's dependencies are available;
+													<code>false</code> otherwise.
+												</span>
+											</div>
+										</li>
+										<li class="function">
+											<div class="name">load</div>
+											<span>A function that loads the plugin.</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2012-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Interface specification</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+	<style type="text/css">
+		div.template {
+			padding: 1em;
+			background: #c0c080;
+		}
+
+		div.template span.heading {
+			font-weight: bold
+		}
+	</style>
+	<script>//<![CDATA[
+		debugger;
+		window.addEventListener("load", function() {
+			var getInnerHtml = function(element) {
+				var rv = "";
+				for (var i=0; i<element.childNodes.length; i++) {
+					var child = element.childNodes[i];
+					if (child.nodeType == document.CDATA_SECTION_NODE) {
+						debugger;
+						rv += child.nodeData;
+					} else if (child.nodeType == document.COMMENT_NODE) {
+						//	NetBeans 7.3 JavaScript parser was confused by comment delimiters before they were broken up below
+						rv += "<" + "!--" + child.nodeValue + "--" + ">";
+					} else if (child.nodeType == document.TEXT_NODE) {
+						rv += child.nodeValue;
+					} else if (child.outerHTML) {
+						if (child.nodeName.toLowerCase() == "ul") {
+							rv += child.innerHTML;
+						} else {
+							rv += child.outerHTML;
+						}
+					} else {
+						throw new TypeError();
+					}
+				}
+				return rv;
+			}
+
+			var all = document.getElementsByTagName("*");
+			var match = [];
+			for (var i=0; i<all.length; i++) {
+				if (all[i].getAttribute("class") == "template") {
+					match.push(all[i]);
+				}
+			}
+			for (var i=0; i<match.length; i++) {
+				var inner = getInnerHtml(match[i]);
+				inner = inner.split("\n");
+				if (inner.length == 1) {
+					throw new Error();
+				}
+				var tabs = 0;
+				var more = true;
+				while(more) {
+					var allMatched = true;
+					for (var j=0; j<inner.length-1; j++) {
+						var matched = true;
+						for (var k=0; k<tabs+1; k++) {
+							if (inner[j].length > 0 && inner[j].substring(k,k+1) != "\t") {
+								matched = false;
+							}
+						}
+						if (!matched) {
+							allMatched = false;
+						}
+					}
+					if (allMatched) {
+						tabs++;
+					} else {
+						more = false;
+					}
+				}
+				for (j=0; j<inner.length-1; j++) {
+					if (inner[j].length >= tabs) {
+						inner[j] = inner[j].substring(tabs);
+					}
+					inner[inner.length-1] = "";
+				}
+				var pre = document.createElement("pre");
+				match[i].innerHTML = "";
+				var span = document.createElement("span");
+				span.className = "heading";
+				span.appendChild(document.createTextNode("Template"));
+				match[i].appendChild(span);
+				match[i].appendChild(pre);
+				//	${cursor} is NetBeans-only
+				pre.innerHTML = inner.join("\n").replace(/\</g, "&lt;").replace(/\>/g, "&gt;").replace(/\$\{cursor\}/g, "");
+			}
+		}, false);
+	//]]></script>
+</head>
+<body>
+	<div>
+		<h1>Notation</h1>
+		<p>
+			For the purposes of this document, <code>p.type</code> may be read as "a <code>p</code> element with
+			<code>class="type"</code>."
+		</p>
+		<h1>Documentation</h1>
+		<div>
+			<strong>Context</strong> and <strong>Exports</strong> are objects. They should be contained in <code>div</code>
+			elements with an appropriate <code>h1</code> element containing the word "Context" or "Exports." After this
+			information, they can commence with the <code>ul</code> described below containing their properties.
+			<div id="template.body" class="template">
+				<div>${cursor}__DESCRIPTION__</div>
+				<div>
+					<h1>Context</h1>
+					<ul>
+					</ul>
+				</div>
+				<div>
+					<h1>Exports</h1>
+					<ul>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div>
+			An object is an unordered list (<code>ul</code>) of properties.
+		</div>
+		<div>
+			Each property is a <code>li</code> which can be a <code>li.object</code>, <code>li.function</code>,
+			<code>li.constructor</code>, or <code>li.value</code>. If a function can be called both as a function and a constructor,
+			it may appear twice in the list.
+		</div>
+		<div>
+			The type of a value (for example, the types of non-object properties, or function arguments or return values) can be
+			specified using a <code>span.type</code> at the beginning of their content.
+		</div>
+		<div>
+			These property <code>li</code> elements each contain a <code>div.name</code>. This is the name of
+			the property.
+		</div>
+		<div>
+			The description may mark the property as optional or conditional. Optional properties are those that need not be
+			supplied by the caller. Conditional properties are those that may or may not be supplied by the callee. For optional
+			properties, a description of what happens if the property is omitted can be included. For conditional
+			properties, a description of the conditions under which the property will be included/omitted can be included.
+		</div>
+		<div><div class="template" id="template.value">
+			<ul><li class="value">
+				<div class="name">${cursor}__NAME__</div>
+				<span class="type">__TYPE__</span>
+				<span>__DESCRIPTION__</span>
+			</li></ul>
+		</div></div>
+		<div>
+			<code>li.object</code> elements should contain a <code>div.label</code> containing
+			the text "has properties." This will cause the description of that object to display comprehensibly.
+			<div class="template" id="template.object">
+				<ul><li class="object">
+					<div class="name">${cursor}__NAME__</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</li></ul>
+			</div>
+		</div>
+		<div>
+			<h2>Function / Constructor</h2>
+			<p>
+				Can describe itself directly after the <code>div</code> containing its name.
+			</p>
+			<p>
+				Then may contain either or both of the following <code>div</code> elements.
+			</p>
+			<p>
+				<code>div.arguments</code>. Should begin with <code>div.label</code>
+				containing the word "Arguments." Then can contain HTML describing the arguments in a freeform way, or an
+				<code>ol</code> element containing <code>li</code> elements with the same semantics as object properties.
+			</p>
+			<p>
+				<code>div.returns</code> (function) OR <code>div.instances</code> (constructor). Should begin with
+				<code>div.label</code> containing the word "Returns" or "Instances" as appropriate. Then can contain HTML
+				describing the return value(s) expected and the circumstances under which each value might be expected.
+			</p>
+			<div class="template" id="template.function">
+				<ul><li class="function">
+					<div class="name">${cursor}__NAME__</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li></ul>
+			</div>
+			<div class="template" id="template.constructor">
+				<ul><li class="constructor">
+					<div class="name">${cursor}__NAME__</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li></ul>
+			</div>
+			<p>
+				<!--	TODO	Add div.prototype?, "serves as extra stuff for new." I believe this meant that this would further
+								describe the use of this object as a constructor.	-->
+			</p>
+		</div>
+		<div>
+			<h2>Types</h2>
+			<div>
+				Types can be declared anywhere using a <code>div.type</code>. They should contain an <code>a.type</code> that
+				contains the name of the type (a logical name for display) and also provides a <code>name</code> attribute so that
+				the type can be hyperlinked (convention is to use <code>types.<i>name</i></code>). Types then contain a
+				description <code>span</code> and a <code>ul</code> of properties (preceded by a <code>div.label</code> with the
+				text "has properties:"). Other code can then link to types using links to <code>#types.<i>name</i></code>.
+			</div>
+			<div><div class="template" id="template.type">
+				<div class="type">
+					<a class="type" name="types.__NAME__">__NAME__</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</div>
+			</div></div>
+			<div>
+				An object can indicate it supports a given type with:
+				<div class="template">
+					<span class="type">supports <a href="../path/to/reference.api.html#types.__NAME__">__NAME__</a></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div>
+		<h1>Preprocessing</h1>
+		<div>
+			Any element that specifies a <code>jsapi:reference</code> attribute will have its contents replaced by the target of the
+			reference. The reference is written as a snippet of JavaScript code that is expected to evaluate to a specific HTML
+			element. The API available to the reference is as follows:
+			<div class="type">
+				<a class="type" name="types.api">api</a>
+				<span>An object representing an <i>api.html</i> file.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">getElement</div>
+						<span>Returns a specific element within the given file.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>
+										A logical "path" to the element within the file; the path is delimited by <code>/</code> and its
+										components are made up of <code>jsapi:id</code> attributes.
+									</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">element</span>
+							<span>
+								An opaque object representing the element that is ultimately determined to be the target of the
+								reference. References can be chained: if the element at the given location also has a
+								<code>jsapi:reference</code> attribute, the target of that reference is returned.
+							</span>
+							<!--	TODO	what is return value if not found? Or does the script error?	-->
+						</div>
+					</li>
+				</ul>
+			</div>
+			<ul>
+				<li class="function">
+					<div class="name">getApi</div>
+					<span>Returns a specific <i>api.html</i> given its path.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A relative path.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="#types.api">api</a></span>
+						<span>The <code>api</code> with the given path, resolved relatively to the current file.</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div>
+		<!--	TODO	define file locations and names in relation to files being tested and documented	-->
+		<h1>Unit testing</h1>
+		<div>
+			<h2>In HTML interface specifications</h2>
+			<div>
+				Unit tests are implemented using special <code>&lt;script></code> elements with <code>type</code> attributes beginning
+				with <code>application/x.jsapi</code> and a qualifier indicating when they should be executed.
+			</div>
+			<div>
+				<h3>Context</h3>
+				<div>
+					Each <code>&lt;script></code> element with <code>type="application/x.jsapi#context"</code> specifies a configuration
+					with which the declared tests should be run. The content of the element is a literal that either evaluates to an
+					object or an array (or <code>null</code> or <code>undefined</code>). If the literal evaluates to an object, it is
+					used as the <code>$context</code> for instantiating the module being tested. If the literal evaluates to an array,
+					each element of that array is used a a <code>$context</code> for instantiating the module.
+				</div>
+				<div>
+					For each declared context, the module is instantiated with that context and the tests are run with the resulting
+					module. If no contexts are declared, a single, empty context will be supplied.
+				</div>
+				<div>
+					Context scripts can use elements placed in the scope by <code>initialize</code> scripts; see below.
+				</div>
+			</div>
+			<div>
+				<h3>Initialization</h3>
+				<div>
+					<!--	TODO	which initializers run, exactly? Somehow related to document structure.	-->
+					Throughout the code we can have scripts with <code>type="application/x.jsapi#initialize"</code> that contain
+					initialization code. They will have access
+					to the <code>module</code> object instantiated for the current context, and access to the scope in which tests will be
+					run via a variable called <code>scope</code>. Before a test is run, all initializers that precede it as siblings are
+					run, as well as any initializers that are (direct) children of its ancestors.
+				</div>
+			</div>
+			<div>
+				<h3>Tests</h3>
+				<div>
+					Throughout the code we can have scripts with <code>type="application/x.jsapi#tests"</code> that contain tests to be run.
+					These scripts also will have access to the <code>module</code> object, representing the module being tested. Further,
+					they are supplied with variables corresponding to the properties of the <code>scope</code> object; these properties
+					might come from the test execution environment or might come from <code>type="application/x.jsapi#initialize"</code>
+					sections.
+				</div>
+				<div>
+					<h4>$jsapi</h4>
+					<div>
+						Tests receive a <code>$jsapi</code> variable in their scope which provides various services. Implementations
+						may provide additional properties and methods, but all implementations provide the following:
+					</div>
+					<!--
+						Referenced implementations:
+
+						jsh/unit/jsapi.js
+						loader/browser/test/client.html
+					-->
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="object">
+							<div class="name">loader</div>
+							<!--	TODO	can loader be defined in terms of SLIME loader?	-->
+							<!--	TODO	what do these methods do if file not present?	-->
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">module</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>The relative path of the module, using the path of the current api.html as the base.</span>
+											</li>
+											<li class="value">
+												<span class="type">object</span>
+												<span>The <code>$context</code> with which to load the module.</span>
+											</li>
+											<li class="value">
+												<span class="type">object</span>
+												<!--	TODO	-->
+												<span>target</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">object</span>
+										<span>The module's exports</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">file</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>The relative path of the file, using the path of the current api.html as the base.</span>
+											</li>
+											<li class="value">
+												<span class="type">object</span>
+												<span>The <code>$context</code> with which to load the file.</span>
+											</li>
+											<li class="value">
+												<span class="type">object</span>
+												<!--	TODO	-->
+												<span>target</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">object</span>
+										<span>The file's exports</span>
+									</div>
+								</li>
+								<!--
+								<li class="function">
+									<div class="name">eval</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+								</li>
+								-->
+								<li class="value">
+									<div class="name">coffee</div>
+									<span>
+										If present, indicates that CoffeeScript is present and CoffeeScript code may be loaded via
+										the other methods.
+									</span>
+								</li>
+							</ul>
+						</li>
+						<!--	TODO	disableBreakOnExceptions?	-->
+					</ul>
+				</div>
+				<div>
+					The scope in which tests execute supports the following type:
+				</div>
+				<div class="type">
+					<a class="type" name="types.scope">scope</a>
+					<span>A scope in which tests execute.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">test</div>
+							<span>Evaluates a test.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										(or <span class="type">boolean</span>)
+										<span>An object implementing methods specifying the test, or a shorthand form.</span>
+										<div>
+											The complete form is an object implementing the following interface:
+											<div class="label">has properties:</div>
+											<ul>
+												<li class="function">
+													<div class="name">success</div>
+													<span>Implements the test, returning a boolean value to represent the result.</span>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">boolean</span>
+														<span>
+															Returns <code>true</code> to denote success, <code>false</code> to denote failure,
+															and <code>null</code> to denote an error condition.
+														</span>
+													</div>
+												</li>
+												<li class="function">
+													<div class="name">message</div>
+													<span>Returns a message describing the result of a test.</span>
+													<div class="arguments">
+														<div class="label">Arguments</div>
+														<ol>
+															<li class="value">
+																<div class="name">success</div>
+																<span class="type">boolean</span>
+																<span>Whether this test succeeded.</span>
+															</li>
+														</ol>
+													</div>
+													<div class="returns">
+														<div class="label">Returns</div>
+														<span class="type">string</span>
+														<span>A string suitable for display to a console.</span>
+													</div>
+												</li>
+											</ul>
+											If the given argument is a <code>boolean</code>, it is interpreted as a test that would return
+											the given boolean from <code>success</code> and is supplied with a default <code>message</code>
+											that indicates success or failure.
+										</div>
+									</li>
+								</ol>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">scenario</div>
+							<span>
+								Invokes a <i>scenario</i>: an object representing a set of tests, with an interface that supports
+								initialization and cleanup.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>An object implementing the test scenario.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">initialize</div>
+												<span>(optional) Invoked before the scenario executes.</span>
+											</li>
+											<li class="function">
+												<div class="name">execute</div>
+												<span>Implements this test scenario.</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type"><a href="#types.scope">scope</a></span>
+															<span>A test scope.</span>
+														</li>
+													</ol>
+												</div>
+											</li>
+											<li class="function">
+												<div class="name">destroy</div>
+												<span>(optional) Invoked after the scenario executes.</span>
+											</li>
+										</ul>
+									</li>
+
+								</ol>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div>
+				Script elements can be given a <code>jsapi:id</code> attribute (where the <code>jsapi</code> namespace is
+				<code>http://www.inonit.com/jsapi</code>) which will be used as the scenario label when executing the tests within the
+				element.
+			</div>
+			<div>
+				<h3>Cleanup</h3>
+				Finally, we can have scripts with <code>type="application/x.jsapi#destroy"</code>. These have access to the same scope
+				in the same way as <code>type="application/x.jsapi#initialize"</code> scripts, and can be used to destroy resources
+				after tests are run.
+			</div>
+		</div>
+		<div>
+			<h2>Programmatic interface</h2>
+			Tests can also be invoked programmatically.
+			See <a href="unit.api.html">detailed documentation</a>.
+		</div>
+	</div>
+</body>
+</html>

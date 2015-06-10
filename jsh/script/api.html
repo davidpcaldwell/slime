@@ -1,0 +1,657 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh.script</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+	<style type="text/css">
+		#getopts { border-collapse: collapse; margin: 0em 0.5em; }
+		#getopts td { border: 1px solid; padding: 0.2em; }
+		#getopts th { padding: 0em 0.4em; }
+	</style>
+</head>
+<body>
+	<script type="application/x.jsapi#initialize">
+	</script>
+	<div>
+		<h1>Context</h1>
+		<ul>
+			<li class="object">
+				<div class="name">api</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">js</div>
+						<span>The js/object module.</span>
+					</li>
+					<li class="value">
+						<div class="name">file</div>
+						<span>The rhino/file module.</span>
+					</li>
+					<li class="function">
+						<div class="name">addClasses</div>
+						<span>Adds a file to the classpath of this script.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">jsh.file Pathname</span>
+									<span>A file to add to the classpath (either a directory or a .jar file)</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="value">
+				<div class="name">file</div>
+				<span class="type">rhino/file file</span>
+				<span>
+					The object representing the main file this shell is running, if it is an ordinary file.
+				</span>
+			</li>
+			<li class="value">
+				<div class="name">uri</div>
+				<span class="type">string</span>
+				<span>The URL from which the main script file was loaded.</span>
+			</li>
+			<li class="object">
+				<div class="name">packaged</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">file</div>
+						<span class="type">rhino/file file</span>
+						<span>The object representing the package file this shell is running.</span>
+					</li>
+					<li class="value">
+						<div class="name">loader</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+				</ul>
+			</li>
+			<li class="value">
+				<div class="name">arguments</div>
+				<span class="type">Array of string</span>
+				<span>The arguments passed to the script.</span>
+			</li>
+			<li class="constructor">
+				<!--	TODO	modularize; get this description from the export property below	-->
+				<div class="name">Loader</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../../rhino/file/api.html#types.directory">rhino/file directory</a></span>
+							<span>The base directory for this loader.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Loader">Loader</a></span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
+			<li class="value">
+				<div class="name">loader</div>
+				<span class="type"><a href="#types.Loader">Loader</a></span>
+				<span>
+					(optional)
+					An object that can load code from the currently running package file, if the current script is packaged.
+				</span>
+			</li>
+		</ul>
+		<script type="application/x.jsapi#context"><![CDATA[
+			(function() {
+				var js = $jsapi.module("../../js/object/");
+				var host = $jsapi.module("../../rhino/host/", {
+					$rhino: jsh.$jsapi.$rhino
+				});
+				var context = {
+					api: {
+						js: js,
+						java: host,
+						io: $jsapi.module("../../rhino/io/", {
+							$java: new Packages.inonit.script.runtime.io.Streams(),
+							$rhino: jsh.$jsapi.$rhino,
+							api: {
+								java: host,
+								mime: $jsapi.module("../../js/mime/", {})
+							}
+						}),
+						loader: jsh.$jsapi.$rhino
+					},
+					$pwd: String(jsh.shell.properties.object.user.dir),
+					$rhino: jsh.$jsapi.$rhino
+				};
+				var System = Packages.java.lang.System;
+				if (System.getProperty("cygwin.root")) {
+					context.cygwin = {
+						root: String(System.getProperty("cygwin.root"))
+					};
+					if (System.getProperty("cygwin.paths")) {
+						context.cygwin.paths = String(System.getProperty("cygwin.paths"));
+					}
+				};
+				var file = $jsapi.module("../../rhino/file/", context);
+				var $filesystem = file.filesystem;
+				var FILE = file;
+				return new function() {
+					this.api = new function() {
+						this.js = js;
+						this.file = file;
+						this.addClasses = jsh.loader.addClasses;
+					};
+
+					this.directory = jsh.shell.PWD;
+
+					this.file = jsh.script.file;
+					this.arguments = ["a","bb","C"];
+
+					this.Loader = jsh.script.Loader;
+					//	loader
+
+					//	TODO	what are the next two for?
+					this.$filesystem = $filesystem;
+					this.FILE = file;
+				};
+			})()
+		]]></script>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="value">
+				<div class="name">file</div>
+				<span class="type">jsh.file file</span>
+				<span>
+					(conditional)
+					The object representing the main file being executed.
+					In the case of an ordinary script, this is the script that was launched.
+					In the case of a packaged script, it is the package file.
+				</span>
+			</li>
+			<li class="value">
+				<div class="name">script</div>
+				<span class="type">jsh.file file</span>
+				<span>
+					(conditional)
+					The object representing the script being executed. In the case of a packaged script, this value will be absent
+					as the script is embedded in the package file itself.
+				</span>
+			</li>
+			<li class="value">
+				<div class="name">arguments</div>
+				<span class="type">Array of string</span>
+				<span>An array containing the arguments passed to the shell.</span>
+			</li>
+			<li class="constructor">
+				<div class="name"><a id="exports.Loader">Loader</a></div>
+				<span>A constructor that can be used by scripts to create <a href="#types.Loader">Loader</a>s.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../../rhino/file/api.html#types.directory">rhino/file directory</a></span>
+							<span>
+								A base directory. Paths within this loader will be resolved as pathnames relative to this
+								directory.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.Loader">Loader</a></span>
+					<span>An object that loads code from the files and subdirectories of the given directory.</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					test(typeof(module.loader.resource) == "function");
+				</script>
+			</li>
+			<li class="value">
+				<div class="name">loader</div>
+				<span class="type"><a href="#types.Loader">Loader</a></span>
+				<span>
+					An object that can be used to load code associated with this script. For packaged scripts, this object loads
+					modules and files packaged with the script using the packaging tool. For unpackaged scripts, this object loads
+					modules and files relative to the directory from which the script was run (although a script can replace this
+					property; see <code><a href="#exports.Loader">Loader</a></code>).
+				</span>
+			</li>
+			<li class="function" jsapi:id="getopts">
+				<div class="name"><a id="properties.getopts">getopts</a></div>
+				<span>
+					Processes an array of strings as arguments, using an object which specifies how arguments are interpreted.
+				</span>
+				<div>
+					An "option" is an argument which is prefixed with a dash (<code>-</code>) character. The argument immediately
+					following the option is, depending on the option's type, interpreted as a value for that option.
+				</div>
+				<div>
+					For example, the following code:
+					<pre>var parameters = jsh.script.getopts({
+	options: {
+		s: String,
+		n: Number,
+		num: 8,
+		b: false,
+		p: Boolean,
+		list: jsh.script.getopts.ARRAY(String)
+	}
+}, [ "-s", "aString", "-n", 42, "-b", "-list", "a", "-list", "b" ]);</pre>
+					produces an object equivalent to:
+					<pre>var parameters = { options: { s: "aString", n: 42, num: 8, b: true, p: false, list: ["a", "b"] } };</pre>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">UNEXPECTED_OPTION_PARSER</div>
+						<span>A set of possibilities for handling unrecognized options.</span>
+						<div class="label">has properties:</div>
+						<script type="application/x.jsapi#initialize">
+							scope.unexpected = ["-boolean", "-string", "string"];
+							scope.process = function(strategy) {
+								return module.getopts({
+									options: {},
+									unhandled: strategy
+								},scope.unexpected);
+							}
+						</script>
+						<ul>
+							<li class="value">
+								<div class="name">ERROR</div>
+								<span>An unexpected options handler that treats any unrecognized option as an error.</span>
+								<!--	TODO	verify error	-->
+								<script type="application/x.jsapi#tests">
+									verify(module).evaluate(function() { return this.getopts({
+										options: {},
+										unhandled: module.getopts.UNEXPECTED_OPTION_PARSER.ERROR
+									}, unexpected); }).threw.type(Error);
+								</script>
+							</li>
+							<li class="value">
+								<div class="name">IGNORE</div>
+								<span>An unexpected options handler that discards any unrecognized options.</span>
+								<script type="application/x.jsapi#tests">
+									var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.IGNORE);
+									verify(parameters).arguments.length.is(0);
+									verify(parameters).options.evaluate(function() {
+										return this.boolean;
+									}).is(void(0));
+									verify(parameters).options.evaluate(function() {
+										return this.string;
+									}).is(void(0));
+								</script>
+							</li>
+							<li class="value">
+								<div class="name">SKIP</div>
+								<span>
+									An unexpected options handler that preserves any unrecognized options in the
+									<code>arguments</code> member of the <code>getopts</code> return value.
+								</span>
+								<script type="application/x.jsapi#tests">
+									var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.SKIP);
+									verify(parameters).arguments.length.is(3);
+									verify(parameters).options.evaluate(function() {
+										return this.boolean;
+									}).is(void(0));
+									verify(parameters).options.evaluate(function() {
+										return this.string;
+									}).is(void(0));
+								</script>
+							</li>
+							<li class="value">
+								<div class="name">INTERPRET</div>
+								<span>
+									An unexpected options handler that attempts to handle unrecognized options.  If the argument
+									following the unrecognized option name is another option, the argument will be interpreted as a
+									<code>boolean</code> argument with value <code>true</code>.  Otherwise, the argument will be
+									interpreted as a <code>string</code> argument with its value specified by the next argument.
+								</span>
+								<script type="application/x.jsapi#tests">
+									var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.INTERPRET);
+									verify(parameters).arguments.length.is(0);
+									verify(parameters).options.evaluate(function() {
+										return this.boolean;
+									}).is(true);
+									verify(parameters).options.evaluate(function() {
+										return this.string;
+									}).is("string");
+								</script>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>An object describing how the arguments should be processed.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">options</div>
+									<span class="type">object</span>
+									<span>
+										Each named property of this object is the name of a recognized option. The value of
+										a property describes the possible values of the option.
+									</span>
+									<div>
+
+									</div>
+								</li>
+								<li class="value">
+									<div class="name">unhandled</div>
+									<span>
+										(optional) One of the properties of the <code>UNEXPECTED_OPTION_PARSER</code>
+										object.
+									</span>
+								</li>
+							</ul>
+						</li>
+						<li class="value">
+							<span class="type">Array of string</span>
+							<span>
+								(optional) A list of arguments to be processed.  If omitted, the values in
+								<code>jsh.script.arguments</code> will be processed.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span>An object containing the result of parsing the argument list.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">options</div>
+							<span class="type">object</span>
+							<span>
+								Each property of this object represents an option to be parsed; the name of the property indicates
+								the option's name and its value indicates the option's type and/or default value.
+							</span>
+							<div>
+								Several option types are possible.
+								<table id="getopts">
+									<tr>
+										<th>Declaration</th>
+										<th>Type</th>
+										<th>Declaration with default value</th>
+										<th>Value if present</th>
+										<th>Value if not present and no default</th>
+									</tr>
+									<tr>
+										<td><code>Boolean</code></td>
+										<td><code>boolean</code></td>
+										<td><code>false</code> (<code>true</code> is illegal, as value would not be negatable)</td>
+										<td><code>true</code></td>
+										<td><code>false</code></td>
+									</tr>
+									<tr>
+										<td><code>String</code></td>
+										<td><code>string</code></td>
+										<td>A value of type <code>string</code></td>
+										<td>The value of the next argument</td>
+										<td><code>undefined</code></td>
+									</tr>
+									<tr>
+										<td><code>Number</code></td>
+										<td><code>number</code></td>
+										<td>A value of type <code>number</code></td>
+										<td>The value of the next argument, interpreted as a number</td>
+										<td><code>undefined</code></td>
+									</tr>
+									<tr>
+										<td><code>jsh.file.Pathname</code></td>
+										<td><code>jsh.file.Pathname</code></td>
+										<td>A value of type <code>jsh.file.Pathname</code></td>
+										<td>
+											The value of the next argument, interpreted as a <code>jsh.file.Pathname</code>. If the
+											next argument is an absolute path, the equivalent <code>jsh.file.Pathname</code> is
+											returned. Otherwise, the next argument is interpreted as a path relative to the current
+											working directory.
+										</td>
+										<td><code>undefined</code></td>
+									</tr>
+									<tr>
+										<td>
+											<code>getopts.ARRAY</code>(<i>type</i>) where <i>type</i> is <code>String</code>,
+											<code>Number</code> or <code>jsh.file.Pathname</code>)
+										</td>
+										<td><code>Array</code> of applicable type</td>
+										<td>(not applicable)</td>
+										<td>
+											The value of the next argument, interpreted as the applicable type. Arguments can be
+											specified multiple times on the same command line by repeating the option and the
+											resulting array will contain all given values.
+										</td>
+										<td>A zero-length array.</td>
+									</tr>
+									<tr>
+										<td>
+											<code>getopts.OBJECT</code>(<i>type</i>) where <i>type</i> is <code>String</code>,
+											<code>Number</code>, <code>Boolean</code>, or <code>jsh.file.Pathname</code>)
+										</td>
+										<td><code>Object</code> containing properties of applicable type</td>
+										<td><code>Object</code></td>
+										<td>
+											A name-value pair created using the next argument, which is of the form
+											<code><i>name</i>=<i>value</i></code>. Arguments can be
+											specified multiple times on the same command line by repeating the option. For each
+											argument, the value is interpreted as an instance of <i>type</i>. The result will be
+											an object with a property for each occurrence, with name <code><i>name</i></code> and
+											value <code><i>value</i></code>.
+										</td>
+										<td>
+											An object with no properties.
+										</td>
+									</tr>
+									<tr>
+										<script type="application/x.jsapi#tests">
+											var strings = ["-property","foo=bar","-property","hello=world"];
+											var parameters = module.getopts({
+												options: {
+													property: module.getopts.OBJECT(String)
+												}
+											},strings);
+											verify(parameters).options.property.foo.is("bar");
+											verify(parameters).options.property.hello.is("world");
+
+											var numbers = ["-property","a=1","-property","b=2"];
+											var parameters = module.getopts({
+												options: {
+													property: module.getopts.OBJECT(Number)
+												}
+											},numbers);
+											verify(parameters).options.property.a.is(1);
+											verify(parameters).options.property.b.is(2);
+
+											var booleans = ["-property","that","-property","it"];
+											var parameters = module.getopts({
+												options: {
+													property: module.getopts.OBJECT(Boolean)
+												}
+											},booleans);
+											verify(parameters).options.property.that.is(true);
+											verify(parameters).options.property.it.is(true);
+
+											var pathnames = ["-property","absolute=" + jsh.script.file.toString(),"-property","relative=foo/bar"];
+											var parameters = module.getopts({
+												options: {
+													property: module.getopts.OBJECT(context.FILE.Pathname)
+												}
+											},pathnames);
+											jsh.shell.echo("property: " + Object.keys(parameters.options.property));
+											verify(parameters).options.property.absolute.evaluate(function() {
+												return this.toString();
+											}).is(jsh.script.file.toString());
+											verify(parameters).options.property.relative.evaluate(function() {
+												return this.toString();
+											}).is(jsh.shell.PWD.getRelativePath("foo/bar").toString());
+
+											var parameters = module.getopts({
+												options: {
+													property: Object
+												}
+											},["-property","foo=bar","-property","hello=world"]);
+											verify(parameters).options.property.foo.is("bar");
+											verify(parameters).options.property.hello.is("world");
+										</script>
+									</tr>
+								</table>
+							</div>
+						</li>
+						<li class="value">
+							<div class="name">arguments</div>
+							<span class="type">Array of string</span>
+							<span>
+								The arguments that were not parsed, either because they were skipped, or because they were
+								"values" (arguments not beginning with a dash) that did not follow an "option" (an argument
+								beginning with a dash).
+							</span>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="jsh.script.getopts">
+					var getopts = module.getopts;
+
+					var t_0 = getopts(
+						{
+							options: {
+								s: String
+							},
+						},
+						[ "-s", "brilliant" ]
+					);
+
+					verify(t_0.options,"t_0.options").s.is("brilliant");
+
+					var t_1 = getopts(
+						{
+							options: {
+								n: Number,
+								s: String,
+								b: Boolean
+							}
+						},
+						[ "-s", "hello", "-b", "-n", "8" ]
+					);
+
+					var verify_t1options = verify(t_1.options,"t_1.options");
+					verify_t1options.n.is(8);
+					verify_t1options.s.is("hello");
+					verify_t1options.b.is(true);
+
+					var t_array = getopts(
+						{
+							options: {
+								l: getopts.ARRAY( String ),
+								b: Boolean,
+								nob: Boolean,
+								n: 8,
+								s: "nodefault",
+							}
+						},
+						[ "-s", "sizzle", "-l", "hello", "-l", "world", "-b" ]
+					);
+
+					var verify_t_array_options = verify(t_array.options, "t_array.options");
+					verify_t_array_options.l.length.is(2);
+					verify_t_array_options.l[0].is("hello");
+					verify_t_array_options.l[1].is("world");
+					verify_t_array_options.s.is("sizzle");
+					verify_t_array_options.b.is(true);
+					verify_t_array_options.nob.is(false);
+					verify_t_array_options.n.is(8);
+
+					var usingArgumentsObject = (function() {
+						return module.getopts({
+							options: {
+								a: String
+							}
+						}, arguments);
+					})("-a", "b");
+					test(usingArgumentsObject.options.a == "b");
+
+					var expectError = $jsapi.disableBreakOnExceptions(function(f) {
+						try {
+							f.apply(this,arguments);
+							return false;
+						} catch (e) {
+							return true;
+						}
+					});
+
+					test(expectError(function() {
+						var args;
+						var parameters = module.getopts({
+							options: {
+							}
+						}, args);
+					}));
+
+					//
+					//	Deprecated usage
+					//
+
+					var t_d_1 = getopts(
+						{
+							options: {
+								s: String
+							},
+						},
+						[ "-s", "yes" ]
+					);
+
+					verify(t_d_1.options,"t_d_1.options").s.is("yes");
+
+					var PATHNAME_SEPARATOR = context.$filesystem.$unit.getPathnameSeparator();
+					var anAbsolute = PATHNAME_SEPARATOR + [ "hello", "world" ].join(PATHNAME_SEPARATOR);
+					var pathsOptions = getopts({
+							options: {
+								absolute: context.FILE.Pathname,
+								relative: context.FILE.Pathname
+							}
+						},
+						[ "-absolute", anAbsolute, "-relative", "hello" ]
+					);
+					if (pathsOptions.options.absolute.toString().substring(0,2) == "\\\\") {
+						//	Deal with Windows "absolute" paths including \\SERVER\SHARE paths when running tests against shared
+						//	folder
+						var absolute = pathsOptions.options.absolute.toString();
+						verify(absolute.substring(absolute.length-anAbsolute.length)).is(anAbsolute);
+					} else {
+						test( pathsOptions.options.absolute.toString() == anAbsolute );
+					}
+					test( pathsOptions.options.relative.toString() == context.FILE.workingDirectory.toString() + "hello" );
+
+				</script>
+			</li>
+			<li class="constructor">
+				<div class="name">Application</div>
+				<div jsapi:reference="getApi('Application.api.html').getElement('api')">
+					<span>See <a href="Application.api.html">detailed documentation</a>.</span>
+				</div>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

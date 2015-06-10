@@ -1,0 +1,33 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME JDK interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:slim="http://www.inonit.com/slim">
+	<head>
+		<title></title>
+		<script slim:when="debug" slim:src="browser/test/initialize.js"></script>
+		<script slim:src="slime/loader/browser/client.js"></script>
+		<script slim:src="slim/client/loader.js"></script>
+		<script slim:when="debug" slim:src="slim/client/unit.js"></script>
+		<script slim:when="debug" src="index.test.js"></script>
+		<script src="index.html.js"></script>
+	</head>
+	<body>
+		<div slim:id="session">
+			<span slim:id="state">Logged in as <span slim:id="user"></span></span>
+			<span>Database:</span><input slim:id="connect" size="50" value="https://sizzling-fire-9494.firebaseio.com/"/>
+			<input type="button" slim:id="login" value="Login"/>
+			<input type="button" slim:id="logout" value="Logout"/>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,401 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME servlet interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME servlets</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css" />
+	<script src="../../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>The SLIME servlet implementation allows Java servlets to be authored in JavaScript.</div>
+	<div>
+		<div class="type">
+			<a class="type" name="types.header">header</a>
+			<span>Represents an HTTP header.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">name</div>
+					<span class="type">string</span>
+					<span>The name of the header.</span>
+				</li>
+				<li class="value">
+					<div class="name">value</div>
+					<span class="type">string</span>
+					<span>The value of the header.</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.pair">pair</a>
+			<span>Represents a name-value pair.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">name</div>
+					<span class="type">string</span>
+				</li>
+				<li class="value">
+					<div class="name">value</div>
+					<span class="type">string</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.request">request</a>
+			<span>An HTTP request from a client.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">method</div>
+					<span class="type">string</span>
+					<span>The HTTP method used for the request, as an uppercase string.</span>
+				</li>
+				<li class="value">
+					<div class="name">path</div>
+					<span class="type">string</span>
+					<span>
+						The path used for the request, relative to the webapp. Note that unlike in Java servlets, and many other
+						HTTP server environments, this path does not contain a leading <code>/</code>.
+					</span>
+				</li>
+				<li class="value">
+					<div class="name">parameters</div>
+					<span class="type">Array of <a href="#types.pair">pair</a></span>
+					<span>
+						The query string parameters provided as part of this request. Note that these parameters do <em>not</em>
+						include form data provided as part of a <code>POST</code> request.
+					</span>
+				</li>
+				<li class="object">
+					<div class="name">body</div>
+					<span>The body of the request.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">type</div>
+							<span class="type">MIME <a href="../../../js/mime/api.html#types.type">type</a></span>
+							<span>The MIME type of the request body.</span>
+						</li>
+						<li class="value">
+							<div class="name">stream</div>
+							<span class="type"><a href="../../../rhino/io/api.html#types.binput">byte input stream</a></span>
+							<span>A stream from which the request body can be read.</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.response">response</a>
+			<span>A response to be sent to a client in response to a request.</span>
+			<div class="type">
+				<a class="type" name="types.body">body</a>
+				<span>
+					The body must specify its content in some way; either a
+					<code>string</code> property specifying the content as a string or a <code>stream</code> property from
+					which the content can be read must be present.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">type</div>
+						<span class="type">string</span>
+						-OR-
+						<span class="type">MIME <a href="../../../js/mime/api.html#types.type">type</a></span>
+						<span>(optional) The MIME type of the request body.</span>
+					</li>
+					<li class="value">
+						<div class="name">string</div>
+						<span class="type">string</span>
+						<span>(optional) The message body to send to the client, as a string.</span>
+					</li>
+					<li class="value">
+						<div class="name">stream</div>
+						<span class="type"><a href="../../../rhino/io/api.html#types.binput">binary input stream</a></span>
+						<span>(optional) A stream from which the message body to send to the client may be read.</span>
+					</li>
+				</ul>
+			</div>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">status</div>
+					<span>The status to use in the response.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">code</div>
+							<span class="type">number</span>
+							<span>The HTTP status code to use in the response to the client.</span>
+						</li>
+					</ul>
+				</li>
+				<li class="value">
+					<div class="name">headers</div>
+					<span class="type">Array of <a href="#types.header">header</a></span>
+					<span>(optional) Headers to use in the response.</span>
+				</li>
+				<li class="value">
+					<div class="name">body</div>
+					<span class="type"><a href="../../io/api.html#types.Resource">Resource</a></span>
+					-or-
+					<span class="type"><a href="#types.body">body</a></span>
+					<span>
+						The HTTP request body to send to the client.
+					</span>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div>
+		<h1>Scope</h1>
+		The SLIME servlet implementation provides the servlet with various objects and APIs that allow the servlet to interact
+		with its environment, answer requests, and do various computations.
+		<div>
+			<h2><a id="scope.httpd">httpd</a></h2>
+			The <code>httpd</code> property represents APIs available to every servlet. It implements the following interface:
+			<ul>
+				<li class="value">
+					<div class="name">loader</div>
+					<span class="type"><a href="../../../rhino/io/api.html#types.Loader">Loader</a></span>
+					<span>
+						Loads code (and potentially other resources) from the servlet resource loader. Note that unlike Java
+						servlet resource loaders, SLIME loaders do not use a leading slash as part of the resource path.
+					</span>
+				</li>
+				<li class="value">
+					<div class="name">js</div>
+					<span>The <a href="../../../js/object/api.html">js/object</a> module.</span>
+				</li>
+				<li class="value">
+					<div class="name">java</div>
+					<span>The <a href="../../../rhino/host/api.html">rhino/host</a> module.</span>
+				</li>
+				<li class="value">
+					<div class="name">io</div>
+					<span>The <a href="../../../rhino/io/api.html">rhino/io</a> module.</span>
+				</li>
+				<li class="object">
+					<div class="name">http</div>
+					<span>Provides HTTP constructs to be used in constructing responses.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">Response</div>
+							<span>Reserved for future use.</span>
+							<!--
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							-->
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">text</div>
+									<span>Convenience method for returning a <code>text/plain</code> response.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>The text to return.</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type"><a href="#types.response">response</a></span>
+										<span>
+											A response object which returns the given response, with a <code>200 OK</code> status
+											and no additional headers.
+										</span>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h2>$loader</h2>
+			The <code>$loader</code> object is a <em>servlet-specific</em> <a href="../../../rhino/io/api.html#Loader">Loader</a>
+			that loads resources <em>relative to the servlet's path</em>. The <code>httpd.loader</code> object loads them
+			from the application path. So if a servlet is located at <code>/WEB-INF/myapp/servlet.js</code>, it can load a
+			JavaScript file at <code>/WEB-INF/myapp/code.js</code> via:
+			<ul>
+				<li><code>httpd.loader.file("WEB-INF/myapp/code.js")</code>, or</li>
+				<li><code>$loader.file("code.js")</code>.</li>
+			</ul>
+		</div>
+		<div>
+			<h2><a id="scope.$parameters">$parameters</a></h2>
+			The <code>$parameters</code> object contains the set of servlet initialization parameters available to the servlet.
+			These are set via the <code>web.xml</code> file when the servlet is declared. <code>$parameters</code> is a JavaScript
+			object containing a property for each parameter whose name is the name of the parameter and whose value is the value
+			of that parameter.
+		</div>
+	</div>
+	<div>
+		<h1><a id="servlet">Servlet Interface</a></h1>
+		<div>
+			The servlet interacts with its container by assigning properties to its <code>$exports</code> object, provided in the
+			scope. Each servlet must, at a minimum, assign a function to <code>$exports.handle</code>:
+			<blockquote><code>
+				$exports.handle = function(request) {
+					return httpd.http.Response.text("Hello, World!");
+				}
+			</code></blockquote>
+		</div>
+		<div>
+			SLIME servlets do not have a separate initialization procedure as Java servlets do; they may perform any initialization
+			in their script.
+		</div>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="function">
+				<div class="name">handle</div>
+				<span>Implements the behavior of the servlet: receives a call for each request, and returns a response.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="#types.request">request</a></span>
+							<span>A request from a client.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type"><a href="#types.response">response</a></span>
+					<span>
+						The servlet must not return <code>undefined</code>; if it does, the server will return a
+						<code>500 Internal Server Error</code> status.
+						If the servlet returns <code>null</code>, the server will return a <code>404 Not Found</code> status.
+					</span>
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">destroy</div>
+				<span>(optional) Called by the container when the servlet is destroyed.</span>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<h1><a id="deployment">Deployment</a></h1>
+		<div>
+			<div class="type">
+				<a class="type" name="types.resource-mapping-script">resource mapping script</a>
+				<span>A <a href="../../../rhino/file/api.html#types.file">file</a> which specifies a mapping between resource paths and the locations at which those resources can be found.</span>
+				<div>
+					A <i>resource mapping script</i> is executed with the following two properties in its scope:
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">$mapping</div>
+							<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+							<span>The mapping script itself.</span>
+						</li>
+						<li class="function">
+							<div class="name">map</div>
+							<span>Maps a given prefix to a location on the file system.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A prefix, which does <em>not</em> include a leading <code>/</code>.</span>
+									</li>
+									<li class="value">
+										<span class="type"><a href="../../file/api.html#types.Pathname">Pathname</a></span>
+										<span>A pathname.</span>
+									</li>
+								</ol>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+			SLIME servlets may be built into ordinary Java web applications using the <code>webapp.jsh.js</code> tool included with
+			SLIME in the <code>rhino/http/servlet/tools</code> directory.
+			The <code>webapp.jsh.js</code> script is a <code>jsh</code> script, and takes the following command-line arguments:
+			<ul>
+				<li>
+					<strong><code>-to <i>pathname</i></code></strong>
+					The pathname to which to build the webapp. If not present, it will be created. If present, it will be deleted
+					and re-created.
+				</li>
+				<li>
+					<strong><code>-recursive</code></strong>
+					Whether to create the parent directories of the <code>-to</code> pathname if they are not present.
+				</li>
+				<li>
+					<strong><code>-library <i>name</i>=<i>pathname</i></code></strong>
+					(optional; can be specified multiple times)
+					Specifies the name and location of a Java library to be added to the resulting webapp.
+				</li>
+				<li>
+					<strong><code>-servletapi <i>pathname</i></code></strong>
+					(optional if Tomcat is installed in the invoked <code>jsh</code>; in that case, the Java servlet API used by
+					Tomcat will be used)
+					The pathname at which the Java Servlet API can be found.
+				</li>
+				<li>
+					<strong><code>-compile <i>pathname</i></code></strong> (optional; can be specified multiple times):
+					A pathname under which Java files can be found which should be compiled and added to the webapp.
+				</li>
+				<li>
+					<strong><code>-resources <i>pathname</i></code></strong> (can be specified multiple times):
+					The pathname of a <a href="#types.resource-mapping-script">resource mapping script</a> that specifies resources
+					to be included in the webapp.
+				</li>
+				<!--
+				<li>
+					<strong><code>-norhino</code></strong>
+					Indicates that Mozilla Rhino should not be included in the web application.
+				</li>
+				-->
+				<li>
+					<!--
+						TODO	this is a lot of indirection. Should we bother trying to reverse-engineer the path from the servlet
+								location or just explain it better?
+					-->
+					<strong><code>-servlet <i>path</i></code></strong>
+					The path to the SLIME servlet in the context of this web application: in other words, the relative path
+					to the SLIME servlet in the resulting web application directory, based on the mapping specified by the
+					<code>-resources</code> argument(s).
+				</li>
+				<li>
+					<strong><code>-parameter <i>name=value</i></code></strong>
+					Specifies a servlet parameter to use in <code>web.xml</code>.
+				</li>
+				<li>
+					<strong><code>-java:version <i>version</i></code></strong> (optional)
+					Specifies a target Java version to use when compiling the web application.
+				</li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>

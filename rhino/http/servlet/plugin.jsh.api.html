@@ -1,0 +1,248 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME servlet interface.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh Servlet Plugin</title>
+	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css"/>
+	<script src="../../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		The jsh Servlet Plugin allows a servlet container to be configured with SLIME servlets and embedded inside a
+		<code>jsh</code> script, so that the servlet container can serve HTTP requests. See the
+		<a href="api.html">SLIME servlets</a> documentation for details on authoring SLIME servlets and deploying them to
+		containers other than <code>jsh</code>.
+	</div>
+	<div>
+		The jsh Servlet Plugin does not itself implement a servlet container. It relies on Apache Tomcat to be installed and
+		its location specified via the <code>CATALINA_HOME</code> environment variable.
+	</div>
+	<div>
+		<strong>If <code>CATALINA_HOME</code> is not specified, the jsh Servlet Plugin will not be available.</strong>
+	</div>
+	<!--
+		TODO	create a WAR
+	-->
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.servlet">servlet</a>
+			<span>A declaration for a script-based servlet.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">file</div>
+					<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
+					<span>The file providing the implementation of the servlet.</span>
+				</li>
+				<li class="value">
+					<div class="name">parameters</div>
+					<span class="type">object</span>
+					<span>
+						A set of servlet parameters to make available to the servlet via its <code>$parameters</code> variable.
+						This object can contain properties of any type, but if the servlet is deployed and run in an ordinary
+						container, the <code>$parameters</code> variable will contain the names and values of the servlet
+						parameters, and hence may only have string values.
+					</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.resources">resources</a>
+			<span>An object that specifies a mapping between logical paths and resources.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name"><a name="resources.map">map</a></div>
+					Has semantics equivalent to the <code>map()</code> method in a resource mapping script. See
+					<a href="api.html#types.resource-mapping-script">resource mapping script</a> for details.
+				</li>
+				<li class="value">
+					<div class="name">loader</div>
+					<span class="type"><a href="../../../rhino/io/api.html#types.Loader">Loader</a></span>
+					<span>A loader that uses this mapping to find code.</span>
+				</li>
+				<li class="function">
+					<div class="name">build</div>
+					<span>Copies the resources mapped by this mapping into a directory.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+								<span>A directory (presumably a webapp directory).</span>
+							</li>
+						</ol>
+					</div>
+				</li>
+			</ul>
+			<script type="application/x.jsapi#tests">
+				scenario($jsapi.loader.scenario("resources.jsh.file.api.html", { module: $jsapi.loader.file("resources.jsh.file.js", {
+					getMimeType: function(path) {
+						return "text/plain";
+					}
+				}) }));
+			</script>
+		</div>
+		<ul>
+			<li class="constructor">
+				<div class="name">Resources</div>
+				<span>Creates an empty <a href="#types.resources">resources</a>.</span>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="#types.resources">resources</a></span>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">script</div>
+						<div>
+							Creates a <a href="#types.resources">resources</a> from one or more <a href="api.html#types.resource-mapping-script">resource mapping script</a>s.
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+
+							Zero or more <span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>s that are resource mapping scripts.
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.resources">resources</a></span>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="constructor">
+				<div class="name">Tomcat</div>
+				<span>
+					Creates an embedded Tomcat server that can run script-based web applications. The server must have at least one
+					application added via <code>map</code> before it will function.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>An object specifying the configuration of the embedded server.</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">base</div>
+									<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+									<span>
+										(optional)
+										The directory to use as Tomcat's <i>base</i> directory. Analogous to environment variable
+										CATALINA_BASE. If omitted, a temporary directory will be created and used.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">port</div>
+									<span class="type">number</span>
+									<span>
+										(optional) The port number on which to run the HTTP server. If omitted, an ephemeral port
+										will be used.
+									</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<a id="Tomcat"></a>
+					<span>The created object implements the following interface:</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">base</div>
+							<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+							<span>The base directory being used by this instance of Tomcat.</span>
+						</li>
+						<li class="value">
+							<div class="name">port</div>
+							<span class="type">number</span>
+							<span>The port on which this instance of Tomcat is running.</span>
+						</li>
+						<li class="function">
+							<div class="name">map</div>
+							<span>
+								Configures the server to route requests for a particular request path to a particular webapp.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>An object mapping a server path to a webapp.</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">path</div>
+												<span class="type">string</span>
+												<!--	TODO	it appears the empty string works for the below as well	-->
+												<span>The path at which to deploy the webapp specified by the given argument, including the leading <code>/</code>.</span>
+											</li>
+											<li class="value">
+												<div class="name">servlets</div>
+												<span class="type">object</span> with property values of type <span class="type"><a href="#types.servlet">servlet</a></span>
+												<!--	TODO	add reference to URL patterns from servlet specification	-->
+												<span>An object whose property names are interpreted as URL patterns and property values are interpreted as servlet declarations.</span>
+											</li>
+											<li class="value">
+												<div class="name">resources</div>
+												<span class="type"><a href="#types.resources">resources</a></span>
+												<span>The resources to provide to the servlets.</span>
+											</li>
+											<!--
+											TODO	disabled because it does not work
+											<li class="value">
+												<div class="name">webapp</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											-->
+										</ul>
+									</li>
+								</ol>
+							</div>
+						</li>
+						<!--
+							See jsh/test/manual/httpd.lifecycle.jsh.js for tests of the below.
+						-->
+						<li class="function">
+							<div class="name">start</div>
+							<span>
+								Starts the server. When this method completes, the server is ready to serve requests. This method
+								does not block the script from exiting; if the end of the script is reached, the server will be
+								terminated.
+							</span>
+						</li>
+						<li class="function">
+							<div class="name">run</div>
+							<span>
+								Starts the server, and then blocks until the server terminates
+								(for example, because <code>stop</code> is called). Note that if the server is started
+								in the shell's main thread, and there are no other threads in use, the shell will never terminate.
+							</span>
+						</li>
+						<li class="function">
+							<div class="name">stop</div>
+							<span>Stops the server.</span>
+							<!--	TODO	 when this method returns, has the server stopped?	-->
+						</li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

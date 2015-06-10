@@ -1,0 +1,85 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>__TITLE__</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+	</head>
+	<body>
+		<div>__DESCRIPTION__</div>
+		<div>
+			<h1>Context</h1>
+			<ul>
+			</ul>
+		</div>
+		<div>
+			<h1>Exports</h1>
+			<ul>
+			</ul>
+			<script type="application/x.jsapi#tests">
+				var remote = $jsapi.loader.file("remote.js", {
+					api: {
+						java: jsh.java
+					}
+				});
+				verify(remote).is.not(void(0));
+				var subscenario = new function() {
+					this.name = "Sub";
+					this.execute = function(scope) {
+						scope.test(function() {
+							return {
+								success: true,
+								message: "yes, we can"
+							}
+						});
+					}
+				}
+				var scenario = new jsh.unit.Scenario({
+					name: "Target",
+					execute: function(scope) {
+						scope.test(function() {
+							return {
+								success: true,
+								message: "it is true"
+							}
+						});
+						scope.scenario(subscenario);
+					}
+				});
+				var decoder = new jsh.unit.JSON.Decoder();
+				var encoder = new jsh.unit.JSON.Encoder({
+					send: function(e) {
+						decoder.decode(e);
+					}
+				});
+				encoder.listen(scenario);
+				new jsh.unit.view.Console({
+					writer: jsh.shell.stdio.output
+				}).listen(scenario);
+				var listener = new jsh.unit.Scenario(new remote.Events({
+					source: decoder
+				}));
+				scenario.run();
+				new jsh.unit.view.Console({
+						writer: jsh.shell.stdio.output
+				}).listen(listener);
+				listener.run()
+			</script>
+		</div>
+	</body>
+</html>

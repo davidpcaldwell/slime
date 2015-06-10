@@ -1,0 +1,570 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the rhino/shell SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3c.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Rhino-based interaction with shell</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		<h1>Context</h1>
+		<script type="application/x.jsapi#context">
+			new function() {
+				var java = $jsapi.module("../../rhino/host/", {
+					$rhino: jsh.$jsapi.$rhino,
+					$java: jsh.$jsapi.java
+				});
+				var io = $jsapi.module("../../rhino/io/", {
+					api: {
+						java: java,
+						mime: $jsapi.module("../../js/mime/")
+					},
+					$rhino: jsh.$jsapi.$rhino
+				});
+				this.api = {
+					js: $jsapi.module("../../js/object/"),
+					java: java,
+					io: io,
+					file: $jsapi.module("../../rhino/file/", new function() {
+						if (jsh.shell.environment.PATHEXT) {
+							this.pathext = jsh.shell.environment.PATHEXT.split(";");
+						}
+						this.$rhino = jsh.$jsapi.$rhino;
+						this.api = {
+							io: io,
+							js: jsh.js,
+							java: jsh.java
+						};
+						this.$pwd = String(jsh.shell.properties.object.user.dir);
+						this.addFinalizer = jsh.loader.addFinalizer;
+						//	TODO	below copy-pasted from rhino/file/api.html
+						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+						var System = Packages.java.lang.System;
+						if (System.getProperty("cygwin.root")) {
+							this.cygwin = {
+								root: String( System.getProperty("cygwin.root") )
+							};
+							if (System.getProperty("cygwin.paths")) {
+								//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+								//	the SDK server
+								//	TODO	check this
+								this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+							}
+						}
+					}),
+					document: $jsapi.module("../../js/document")
+				};
+				this._properties = Packages.java.lang.System.getProperties();
+				this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
+			}
+		</script>
+		<ul>
+			<li class="object">
+				<div class="name">api</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">java</div>
+						<span>The <a href="../host/api.html">rhino/host</a> module.</span>
+					</li>
+					<li class="value">
+						<div class="name">io</div>
+						<span>The <a href="../io/api.html">rhino/io</a> module.</span>
+					</li>
+					<li class="value">
+						<div class="name">file</div>
+						<span>The <a href="../file/api.html">rhino/file</a> module.</span>
+					</li>
+				</ul>
+			</li>
+			<li class="value">
+				<div class="name">_environment</div>
+				<span class="type">Packages.inonit.system.OperatingSystem.Environment</span>
+				<span>
+					(optional: if omitted, the actual operating system environment will be used.)
+					An object representing the operating system environment.
+				</span>
+			</li>
+			<li class="value">
+				<div class="name">_properties</div>
+				<span class="type">Packages.java.util.Properties</span>
+				<span>
+					(optional: if omitted, the actual system properties will be used.)
+					A set of properties representing Java system properties.
+				</span>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<script type="application/x.jsapi#initialize" jsapi:id="script.initialize">
+			scope.getJavaProgram = function(name) {
+				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				jsh.java.tools.javac({
+					destination: to.pathname,
+					arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/" + name + ".java")]
+				});
+				return {
+					classpath: jsh.file.Searchpath([to.pathname]),
+					main: "inonit.jsh.test." + name
+				}
+			};
+		</script>
+		<h1>Exports</h1>
+		<ul>
+			<div class="type">
+				<a class="type" name="types.stdio">stdio</a>
+				<span>The standard I/O streams for a process.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">input</div>
+						<span class="type"><a href="../io/api.html#types.binput">byte input stream</a></span>
+						<span>The standard input stream (stdin).</span>
+					</li>
+					<li class="value">
+						<div class="name">output</div>
+						<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
+						<span>The standard output stream (stdout).</span>
+					</li>
+					<li class="value">
+						<div class="name">error</div>
+						<span class="type"><a href="../io/api.html#types.boutput">byte output stream</a></span>
+						<span>The standard error stream (stdout).</span>
+					</li>
+				</ul>
+			</div>
+			<li class="function" jsapi:id="run">
+				<div class="name"><a id="exports.run">run</a></div>
+				<div jsapi:id="description">Launches a subprocess using the operating system.</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<div class="type">
+						<a class="type" name="types.token">token</a>
+						<span>
+							A value that can be used as a command token. If the value is a string, it will be used as-is. If it is an object, it will be coerced
+							to string using the String global function. Otherwise, a TypeError will be thrown.
+						</span>
+					</div>
+					<ol jsapi:id="arguments">
+						<li class="object">
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">command</div>
+									<span class="type"><a href="#types.token">token</a></span>
+									<span>The command to pass to the underlying operating system.</span>
+								</li>
+								<li class="value">
+									<div class="name">arguments</div>
+									<span class="type">Array of <a href="#types.token">token</a></span>
+									<span>The command arguments to pass to the underlying operating system.</span>
+								</li>
+								<li class="object">
+									<div class="name">stdio</div>
+									<span class="type"><a href="#types.stdio">stdio</a></span>
+									<span>
+										(optional: defaults to stream-specific results as specified)
+										The streams that will be attached to the subprocess as its standard I/O streams. If the
+										value is <code>null</code> the subprocess will receive empty input and all output will be
+										discarded. Otherwise, the properties are interpreted for each stream as specified below.
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">input</div>
+											<ul>
+												<li>
+													If omitted or <code>null</code>, an empty stream is supplied as
+													input.
+												</li>
+												<li>
+													If a string, the string is supplied as input.
+												</li>
+												<li>
+													If a <a href="../io/api.html#types.binput">byte stream</a>, the stream is supplied as input.
+												</li>
+											</ul>
+										</li>
+										<li class="value">
+											<div class="name">output</div>
+											<span>(optional; if omitted, a stream that discards all output is supplied.)</span>
+											<ul>
+												<li>
+													If <code>null</code>, an stream that discards all output is supplied to the
+													subprocess.
+												</li>
+												<li>
+													If the <code>String</code> global function is supplied, subprocess output is
+													buffered and converted to a string and is returned as the output property of the
+													stdio property of the result of the subprocess.
+												</li>
+												<li>
+													If a <a href="../io/api.html#types.boutput">byte stream</a>, output from the subprocess is sent to that stream.
+												</li>
+											</ul>
+										</li>
+										<li class="value">
+											<div class="name">error</div>
+											<span>See the <code>output</code> property for detailed specification.</span>
+										</li>
+									</ul>
+									<script type="application/x.jsapi#tests">
+										var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+										jsh.java.tools.javac({
+											destination: to.pathname,
+											arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/Echo.java")]
+										});
+										var buffer = new jsh.io.Buffer();
+										var output = module.java({
+											classpath: jsh.file.Searchpath([to.pathname]),
+											main: "inonit.jsh.test.Echo",
+											stdio: {
+												input: "Hello, World!",
+												output: String
+											},
+											evaluate: function(result) {
+												return result.stdio.output;
+											}
+										});
+										test(output == "Hello, World!");
+									</script>
+								</li>
+								<li class="value" jsapi:id="run.environment">
+									<div class="name">environment</div>
+									<span class="type">object</span>
+									<span>
+										(optional: If <code>null</code> or <code>undefined</code>, the module environment is used.)
+										A set of names and values that will be passed to the subprocess as its environment.
+
+										If an individual property in the object has the value <code>null</code>, the environment
+										variable is omitted from the list passed to the subprocess.
+
+										<!--
+											TODO	how are non-string property values handled? undefined, object, number, boolean
+										-->
+									</span>
+								</li>
+								<li class="value" jsapi:id="run.directory">
+									<div class="name">directory</div>
+									<span class="type"><a href="../file/api.html#types.directory">directory</a></span>
+									<span>
+										(optional)
+										The working directory to use for the subprocess. If not specified, the working directory
+										of the parent process will be used.
+									</span>
+									<!--
+										TODO	if this property is null, we should error, assuming the caller made a mistake
+										passing a non-existent directory.
+									-->
+									<script type="application/x.jsapi#tests">
+										var program = getJavaProgram("Directory");
+										var dir = $jsapi.newTemporaryDirectory();
+										var workdir = module.java({
+											classpath: program.classpath,
+											main: program.main,
+											stdio: {
+												output: String
+											},
+											directory: dir,
+											evaluate: function(result) {
+												return result.stdio.output;
+											}
+										});
+										test(workdir == dir.toString());
+									</script>
+								</li>
+								<li class="function" jsapi:id="run.evaluate">
+									<div class="name"><a name="run.evaluate">evaluate</a></div>
+									<div>
+										A function that will be invoked when the subprocess terminates, will be provided with
+										information about the result, and specifies the return value of <code>run</code>.
+									</div>
+									<div>
+										If this property is omitted, a default will be used that throws an exception if the
+										exit status of the subprocess is not zero or the subprocess cannot be launched, and returns
+										its argument.
+									</div>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="object">
+												<div class="label">has properties:</div>
+												<ul>
+													<li class="value">
+														<div class="name">status</div>
+														<span class="type">number</span>
+														<span>The exit status of the subprocess, if it was launched successfully.</span>
+													</li>
+													<li class="value">
+														<div class="name">error</div>
+														<span class="type">JavaClass java.lang.Throwable</span>
+														<span>The <code>java.lang.Throwable</code> that was thrown by the Java
+														virtual machine when attempting to execute the subprocess, if it was not
+														successfully launched.</span>
+													</li>
+													<li class="value">
+														<div class="name">command</div>
+														<span>The program that was run.</span>
+													</li>
+													<li class="value">
+														<div class="name">arguments</div>
+														<span class="type">Array</span>
+														<span>The arguments that were passed to the program.</span>
+													</li>
+													<li class="value">
+														<div class="name">environment</div>
+														<span class="type">object</span>
+														<span>
+															(optional)
+															The environment that was passed to the program, if any.
+														</span>
+													</li>
+													<li class="value">
+														<div class="name">directory</div>
+														<span>
+															(optional)
+															The working directory that was specified for running the
+															program, if any.
+														</span>
+													</li>
+													<li class="object">
+														<div class="name">stdio</div>
+														<span>
+															(optional)
+															The output of the subprocess, if the caller specified that it should be
+															buffered and returned.
+														</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">output</div>
+																<span class="type">string</span>
+																<span>
+																	(optional)
+																	The output of the subprocess, if it was buffered.
+																</span>
+															</li>
+															<li class="value">
+																<div class="name">error</div>
+																<span class="type">string</span>
+																<span>
+																	(optional)
+																	The output of the subprocess that was written to the error
+																	stream, if it was buffered.
+																</span>
+															</li>
+														</ul>
+													</li>
+													<!--	TODO	is there any reason not to return stdio?	-->
+												</ul>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">(any)</span>
+										<span>An arbitrary value to return as the return value of <code>run</code>.</span>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns">
+					<div class="label">Returns</div>
+					<span class="type">(any)</span>
+					<span>
+						The value returned by the function given as the <code>evaluate</code> property of the argument, or
+						by the default implementation of <code>evaluate</code>.
+					</span>
+				</div>
+			</li>
+			<li class="value" jsapi:id="environment">
+				<div class="name">environment</div>
+				<span class="type">object</span>
+				<span>
+					An object describing the operating system process environment under which this script was executed. Each
+					variable defined in the environment is represented as a property in this object, with its name being the name
+					of the property and its value being the value of that property. This object uses JavaScript semantics, and
+					thus this object has case-sensitive names. In the event that the underlying operating system has
+					environment variables that are <em>not</em> case-sensitive, all properties of this object will have
+					UPPERCASE names.
+				</span>
+				<script type="application/x.jsapi#tests">
+					scenario( new function() {
+						this.name = "System environment";
+
+						this.execute = function(scope) {
+							var environment = module.environment;
+
+							scope.test( typeof(environment.PATH) != "undefined" );
+							scope.test( typeof(environment.ZZFF) == "undefined" );
+						}
+					} );
+				</script>
+			</li>
+			<li class="value" jsapi:id="properties">
+				<div class="name">properties</div>
+				<span>
+					<b>(experimental)</b>
+					An object that attempts to allow the use of JavaScript semantics to access Java system properties. For example,
+					the <code>java.home</code> system property is referenced as <code>properties.java.home</code>. This value can be
+					examined using <code>String(properties.java.home)</code> to obtain its value as a <code>string</code>.
+				</span>
+			</li>
+			<li class="value">
+				<div class="name">TMPDIR</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<span>A temporary directory that may be used by this shell.</span>
+			</li>
+			<li class="value">
+				<div class="name">HOME</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<span>The home directory of the user executing this shell.</span>
+			</li>
+			<li class="value">
+				<div class="name">PWD</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<!--	TODO	can this be changed while the shell is running?	-->
+				<span>The current working directory.</span>
+			</li>
+			<li class="function" jsapi:id="java">
+				<div class="name">java</div>
+				<span>Launches a Java program.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>
+								An argument with the same specification as that for <code>shell</code>, with the following
+								differences:
+							</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">classpath</div>
+									<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
+									<span>The classpath to pass to the Java process.</span>
+								</li>
+								<li class="value">
+									<div class="name">main</div>
+									<span class="type">string</span>
+									<span>The name of the main class to execute.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">(any)</span>
+					<span>The return value of the <code>evaluate</code> property of the argument.</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					debugger;
+					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.java.tools.javac({
+						destination: to.pathname,
+						arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/Program.java")]
+					});
+					var buffer = new jsh.io.Buffer();
+					var output = module.java({
+						classpath: jsh.file.Searchpath([to.pathname]),
+						main: "inonit.jsh.test.Program",
+						stdout: buffer.writeBinary(),
+						evaluate: function(result) {
+							buffer.close();
+							return buffer.readText().asString();
+						}
+					});
+					test(output == "Hello");
+				</script>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">home</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+						<span>The home directory of the Java installation used to run this shell.</span>
+						<script type="application/x.jsapi#tests">
+							test(Boolean(module.java.home));
+						</script>
+					</li>
+					<li class="value">
+						<div class="name">launcher</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+						<span>The Java launcher program, that is, the executable used to launch Java programs.</span>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	//	TODO	rewrite the below tests in light of whatever we decide the correct semantics for properties are
+	<script type="application/x.jsapi#tests">
+	if (false) scenario( new function() {
+		this.name = "System properties";
+
+		var properties = module.properties.object;
+
+		this.initialize = function() {
+			properties.foo = "bar";
+			properties.foo.bar = "baz";
+
+			properties.composite = {
+				david: "caldwell",
+				katie: "alex",
+				home: "/home/inonit",
+			}
+		}
+
+		this.execute = function(scope) {
+			scope.test(properties.foo == "bar");
+			scope.test(properties.foo.bar == "baz");
+
+			scope.test( String(properties.java) == "null" );
+			scope.test( String(properties.java.version) != "null" );
+			scope.test( typeof(properties.java.version) == "object" );
+
+			scope.test( String(properties.composite.david) == "caldwell" );
+			scope.test( String(properties.composite.david).substring(1,4) == "ald" );
+
+			scope.test( String(properties.blah) == "undefined" );
+
+			var explore = function() {
+				var list = function(prefix,p) {
+					for (var x in p) {
+						if (p[x]) {
+							Packages.java.lang.System.err.println(prefix+x + "=" + p[x]);
+						}
+						list(prefix+x+".",p[x]);
+					}
+				}
+
+				Packages.java.lang.System.err.println("BEFORE:");
+				list("",properties);
+
+				Packages.java.lang.System.err.println("AFTER:");
+				delete properties.foo;
+				list("",properties);
+
+				Packages.java.lang.System.err.println("JAVA:");
+				list("",properties.java);
+			}
+			//	explore();
+		}
+	} );
+	</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh loader</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('1')"></div>
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('2')"></div>
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('3')"></div>
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('$platform')">
+	</div>
+	<div jsapi:reference="getApi('../../loader/$api.api.html').getElement('top')">
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.code">code</a>
+			<span>A type that can be processed by the <code>run</code> and <code>file</code> methods.</span>
+			<div>
+				<span class="type"><a href="../../rhino/file/api.html#types.Pathname">rhino/file Pathname</a></span>
+				<strong>-or-</strong>
+				<span>Any type supported by the rhino loader.</span>
+			</div>
+		</div>
+		<div class="type" jsapi:id="Loader" jsapi:reference="getApi('../../loader/api.html').getElement('Loader')">
+			<a class="type" name="types.Loader">Loader</a>
+			See <a href="../../loader/api.html#types.Loader">platform loader</a>.
+		</div>
+		<ul>
+			<li class="function" jsapi:id="run">
+				<div class="name"><a id="exports.run">run</a></div>
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run/description')">See the <a href="../../loader/rhino/api.html">Java loader</a> for details.</span>
+				<span>
+					Note that the Java loader adds the ability to pass a
+					<a href="../../loader/rhino/api.html#types.script">Java script</a> as the first argument.
+				</span>
+				<span>
+					Note that the <code>jsh</code> loader adds the ability to pass a
+					<a href="../../rhino/file/api.html#types.Pathname">Pathname</a> as the first argument.
+				</span>
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('global/run/arguments')">
+					<div class="label">Arguments</div>
+					See the platform loader's <a href="../../loader/api.html#exports.run">run</a> method.
+				</div>
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name"><a id="exports.file">file</a></div>
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/description')">See the <a href="../../loader/rhino/api.html">Java loader</a> for details.</span>
+				<span>
+					Note that the Java loader adds the ability to pass a
+					<a href="../../loader/rhino/api.html#types.script">Java script</a> as the first argument.
+				</span>
+				<span>
+					Note that the <code>jsh</code> loader adds the ability to pass a
+					<a href="../../rhino/file/api.html#types.Pathname">Pathname</a> as the first argument.
+				</span>
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('global/file/arguments')">
+					<div class="label">Arguments</div>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
+				</div>
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/returns')">
+					<div class="label">Returns</div>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
+				</div>
+			</li>
+			<li class="function" jsapi:id="module">
+				<div class="name"><a id="exports.module">module</a></div>
+				<div jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/description')">
+					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+							<span>
+								The location of the module. If the file is a directory, it is treated as the base of an unpacked
+								module. If the file is a plain file, then if its name ends in <code>.slime</code>, it is treated as
+								a packed module. Otherwise, the given file is treated as the main file of a module whose base is the
+								directory in which the file is located.
+							</span>
+						</li>
+						<li class="value" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/arguments[1]')">
+							<span class="type">object</span>
+							<!--	TODO	what if this is omitted? Does the module receive null context, or empty?	-->
+							<span>
+								(optional) The object to use as the <code>$context</code> object for this module; if not
+								specified, an empty object will be supplied.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/returns')">
+					<!--
+						TODO	Document that this method returns null if the module cannot be found, and check whether that is also
+								true of the Rhino loader's module()
+					-->
+					<div class="label">Returns</div>
+					<span>The return value of the Rhino loader's <code>module</code> method.</span>
+				</div>
+			</li>
+			<li class="function" jsapi:reference="getApi('../../loader/api.html').getElement('global/namespace')">
+				<div class="name">namespace</div>
+				Invokes the Rhino loader's <code>namespace</code> method.
+			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<span>The Java code available to the script.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">add</div>
+						<!--	TODO	should accept a file or directory as well, and probably should ignore null	-->
+						<!--
+								TODO	write tests: need to be able to compile Java classes and add them to the classpath. They
+										probably must be jsh/test tests. Also we need to test whether the Packages variable still
+										behaves "incorrectly," i.e., caches failed lookups, preventing new classes from being found
+										once they've been sought.
+						-->
+						<span>Adds a directory or JAR file to the Java classpath of this script.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+									<span>
+										A <code>jsh.file.Pathname</code> pointing to a directory or a JAR file containing Java
+										classes.
+									</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="function">
+				<div class="name">plugins</div>
+				<span>Loads <code>jsh</code> <a href="plugin.api.html">plugins</a> from a specified source.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+							<div>
+								A source, interpreted
+								as follows:
+								<ul>
+									<li>
+										If the pathname does not represent a directory or file which exists, do nothing.
+									</li>
+									<li>
+										If the pathname is a directory,
+										<ul>
+											<li>
+												and has a <code>plugin.jsh.js</code> file, load the
+												plugin from the directory.
+											</li>
+											<li>
+												<!--	TODO	figure out what the method really should do; what it does do is
+																counterintuitive.
+												-->
+												otherwise, the behavior is undefined.
+											</li>
+										</ul>
+									</li>
+									<li>
+										If the pathname is an ordinary file,
+										<ul>
+											<li>
+												and ends in <code>.slime</code>, load the plugin in SLIME format from the
+												file.
+											</li>
+											<li>
+												and ends in <code>.jar</code>, load the Java-only plugin.
+											</li>
+											<li>
+												otherwise, do nothing.
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+						</li>
+					</ol>
+				</div>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

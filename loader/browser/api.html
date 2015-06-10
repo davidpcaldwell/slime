@@ -1,0 +1,240 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader for web browsers.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>SLIME: browser loader</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		The SLIME browser-based code loader.
+	</div>
+	<div>
+		<h1><a name="configuration">Configuration</a></h1>
+		<div>
+			The <code>inonit.loader</code> module is configured specially, given that it bootstraps the module system. To configure
+			the module, one must create a global <code>inonit</code> object with a <code>loader</code> property containing
+			configuration information. If this <code>inonit.loader</code> object is present, its properties are used to create the
+			functioning <code>inonit.loader</code> object (which replaces the configuration object).
+		</div>
+		<div>
+			The following properties are used for configuration:
+			<ul>
+				<li class="function">
+					<div class="name">debug</div>
+					<span>
+						(optional; if unspecified, a default implementation that does nothing will be supplied)
+						A one-argument function that is passed a string argument corresponding to a message
+						this module would like to log.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A message to emit.</span>
+							</li>
+						</ol>
+					</div>
+				</li>
+				<li class="value">
+					<div class="name">XMLHttpRequest</div>
+					<span class="type">function</span>
+					<span>
+						The implementation of <code>XMLHttpRequest</code> to use. By default, the
+						implementation attempts to use the native implementation in the browser (including ActiveX implementations).
+					</span>
+				</li>
+				<li class="function">
+					<div class="name">callback</div>
+					<span>
+						A callback function that will be invoked when the loader finishes initializing. The function will be
+						invoked with the loader as <code>this</code>.
+					</span>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="function" jsapi:id="run">
+				<div class="name"><a id="exports.run">run</a></div>
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/run/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
+				<span>
+					Note that the browser loader adds the ability to pass a string as the first argument.
+				</span>
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('global/run/arguments')">
+					<div class="label">Arguments</div>
+					See the platform loader's <a href="../../loader/api.html#exports.run">run</a> method.
+				</div>
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name"><a id="exports.file">file</a></div>
+				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
+				<span>
+					Note that the browser loader adds the ability to pass a string as the first argument.
+				</span>
+				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('global/file/arguments')">
+					<div class="label">Arguments</div>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
+				</div>
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/file/returns')">
+					<div class="label">Returns</div>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
+				</div>
+			</li>
+			<li class="function">
+				<div class="name">module</div>
+				<div jsapi:reference="getApi('../../loader/api.html').getElement('Loader/module/description')">
+					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
+				</div>
+			</li>
+			<li class="constructor">
+				<div class="name">Loader</div>
+				<span>Creates a SLIME <a href="./../loader/api.html#types.Loader">Loader</a></span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<div>
+						Arguments to be used to invoke the SLIME <a href="../../loader/api.html#exports.Loader">Loader</a>
+						constructor,
+					</div>
+					-or-
+					<div>
+						<ol>
+							<li class="value">
+								<span class="type">string</span>
+								<span>A URL which should be used as the base URL of the loader.</span>
+							</li>
+						</ol>
+					</div>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type"><a href="./../loader/api.html#types.Loader">Loader</a></span>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">getCode</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">fetch</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="function">
+				<div class="name">namespace</div>
+				<span>Invokes the platform loader's <a href="../../loader/api.html"><code>namespace</code></a> method.</span>
+				<script type="application/x.jsapi#tests">
+					test(typeof(window.foo) == "undefined");
+					var ns = inonit.loader.namespace("foo.bar.baz");
+					test(ns == window.foo.bar.baz);
+				</script>
+				<script type="application/x.jsapi#tests" jsapi:id="top-level scope">
+					var f = function() {
+						return this;
+					}
+
+					var x = new function() {
+						this.f = f;
+					}
+
+					test(f() == window);
+					test(x.f() != window);
+				</script>
+			</li>
+			<li class="object">
+				<div class="name">nugget</div>
+				Contains useful pieces of code that are exported for general use.
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">XMLHttpRequest</div>
+						<div>The XMLHttpRequest constructor being used by this module.</div>
+					</li>
+					<li class="function">
+						<div class="name">getCurrentScript</div>
+						<div>
+							Returns an object based on the current script being loaded (that is, the script from which the
+							method is invoked).
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">base</div>
+									<div>The base URL of this script: the URL of the script, excluding the file name.</div>
+								</li>
+								<li class="function">
+									<div class="name">getRelativePath</div>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value"><span class="type">string</span> A relative path.</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<div>A full path representing the specified relative path relative to the base URL
+											of this script.</div>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<script type="application/x.jsapi#initialize">
+				scope.loadTestModule = function(path,context) {
+					return $jsapi.loader.module("../" + path, context);
+				}
+			</script>
+			<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')">
+			</div>
+			<!--
+			<li class="value">
+				<div class="name">$sdk</div>
+				(undocumented) Used to support development-related functions.
+			</li>
+			-->
+		</ul>
+	</div>
+</body>
+</html>

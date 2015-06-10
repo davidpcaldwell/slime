@@ -1,0 +1,168 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the jsh JavaScript/Java shell.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Application</title>
+	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>Creates the <code>Application</code> implementation.</div>
+	<div>
+		<h1>Context</h1>
+		<ul>
+		</ul>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<ul>
+			<li class="constructor">
+				<div class="name">Application</div>
+				<div jsapi:id="api">
+					<div>
+						Creates a top-level application that can have multiple <i>commands</i>, each of which have their own arguments,
+						as well as global arguments that apply to all commands.
+					</div>
+					<div>
+						The application arguments are interpreted as follows:
+						<ul>
+							<li>Global arguments are interpreted,</li>
+							<li>The first token that is not a global argument is interpreted as the <i>command</i> to run,</li>
+							<li>All other arguments are interpreted as arguments to that command.</li>
+						</ul>
+					</div>
+					<div class="type">
+						<a class="type" name="types.Application.command">command</a>
+						<span>Describes an individual command in this application.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">getopts</div>
+								<span>Interpreted as an argument to the <a href="api.html#properties.getopts"><code>getopts</code></a> method of this module.</span>
+							</li>
+							<li class="function">
+								<div class="name">run</div>
+								<span>Implements a particular command in this application.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li>
+											The result of the <a href="api.html#properties.getopts"><code>getopts</code></a> call for this command.
+											The result will have an additional property <code>global</code> containing the global
+											options passed to the application.
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">(any)</span>
+									<span>A "result" of the command that can be used by the caller.</span>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<div class="type">
+						<a class="type" name="types.Application.descriptor">descriptor</a>
+						<span>Describes an application.</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">options</div>
+								<span>Interpreted as an argument to the <a href="api.html#properties.getopts"><code>getopts</code></a> method of this module.</span>
+							</li>
+							<li class="object">
+								<div class="name">commands</div>
+								<div>
+									Generally, an object whose properties are command names and whose values are
+									<a href="#types.Application.command">command</a>s.
+								</div>
+								<div>
+									However, the object may contain nested commands. For example, if it has a <code>foo</code>
+									property with a <code>bar</code> property, a <code>foo.bar</code> command will be created
+									using the property.
+									<!--	TODO	What if the property is not of type command?	-->
+								</div>
+							</li>
+						</ul>
+					</div>
+
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.Application.descriptor">descriptor</a></span>
+								<span>Describes the application.</span>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">run</div>
+								<span>Executes the application.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<span>The list of string arguments to pass to the application.</span>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">(any)</span>
+									<span>The value returned by the command that is executed.</span>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var returnParsedArguments = function() {
+							return jsh.js.Object.set({}, {
+								target: this
+							}, arguments[0]);
+						};
+
+						var one = new module.Application({
+							property: "value",
+							options: {
+								global: String,
+								gboolean: false
+							},
+							commands: {
+								doIt: {
+									getopts: {
+										options: {
+											local: Number
+										}
+									},
+									run: returnParsedArguments
+								}
+							}
+						});
+
+						var oneAnswer = one.run("-gboolean", "-global", "globalValue", "doIt", "-local", "4");
+						test(oneAnswer.global.gboolean);
+						test(oneAnswer.global.global === "globalValue");
+						test(oneAnswer.options.local === 4);
+
+						//	Tests undocumented feature
+						test(oneAnswer.target.property === "value");
+					</script>
+				</div>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

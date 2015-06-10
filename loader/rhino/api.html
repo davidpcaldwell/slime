@@ -1,0 +1,189 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+The Original Code is the SLIME loader for rhino.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>Rhino loader</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		The Rhino SLIME loader contains a bundle of Java and JavaScript code that is knitted together at runtime. Users of the Rhino
+		loader can create one inside a Java host object and provide it to scripts. Inside the Java host object, an instance of
+		<code>inonit.script.rhino.Engine</code> must be created, and then
+		<code>inonit.script.rhino.Loader.load(inonit.script.rhino.Engine,inonit.script.rhino.Loader)</code> must be invoked
+		with an instance of <code>Loader</code> that knows how to locate the platform loader code (loader/literal.js) and the
+		Rhino loader script (loader/rhino/literal.js).
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.script">script</a>
+			<span class="type">supports SLIME <a href="../api.html#types.script">script</a></span>
+			<span>
+				An object describing a script. If the <code>_in</code> property is present, it represents an input stream from
+				which the code can be read (and will supply the value for the <code>code</code> property).
+			</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">_in</div>
+					<span class="type">JavaClass java.io.InputStream</span>
+					<span>An input stream from which the file can be read.</span>
+				</li>
+			</ul>
+		</div>
+		<ul>
+			<li class="function" jsapi:id="run">
+				<div class="name">run</div>
+				<span jsapi:id="description">
+					The platform loader's <a href="../api.html#exports.run"><code>run</code></a> method. Note that this version
+					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
+				</span>
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name">file</div>
+				<span>
+					The platform loader's <a href="../api.html#exports.file"><code>file</code></a> method.  Note that this version
+					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
+				</span>
+			</li>
+			<!--
+			<li class="function" jsapi:id="module">
+				<div class="name">module</div>
+				<span jsapi:id="description" jsapi:reference="getApi('../api.html').getElement('global/module/description')">Invokes the platform loader's <code>module</code> method.</span>
+				<div jsapi:id="description2" jsapi:reference="getApi('../api.html').getElement('Loader/module/description2')"></div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<div>
+								The first argument to the platform loader <a href="../api.html#exports.module">module</a> method, or an object with
+								the following type:
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">_code</div>
+										<span class="type">JavaClass inonit.script.engine.Code</span>
+										<span>An object describing how to load scripts and/or Java classes from this module.</span>
+									</li>
+									<li class="value">
+										<!-|-	TODO	what if this path contains a /? Where is base for loader? Where should it be?	-|->
+										<div class="name">main</div>
+										<span class="type">string</span>
+										<span>The path to the main file within this module.</span>
+									</li>
+								</ul>
+							</div>
+						</li>
+						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../api.html').getElement('Loader/module/arguments[1]')">
+							<span>The second argument to the platform loader's <code>module</code> method.</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../api.html').getElement('Loader/module/returns')">
+					<div class="label">Returns</div>
+					<span>The return value of the platform loader's <code>module</code> method.</span>
+				</div>
+			</li>
+			-->
+			<li class="constructor">
+				<div class="type">
+					<a class="type" name="types.Loader">Loader</a>
+					<span class="type">supports SLIME <a href="../api.html#types.Loader">Loader</a></span>
+					<span>A SLIME Loader that additionally supports retrieving Java byte streams for resources.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">_stream</div>
+							<span>Opens a native Java stream that reads the contents of a resource.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>A path at which the resource can be found.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">JavaClass java.io.InputStream</span>
+								<span>
+									A stream that reads from the given resource, or <code>null</code> if there is no resource
+									corresponding to the path.
+								</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="name"><a name="exports.Loader">Loader</a></div>
+				<div>
+					Creates a SLIME <a href="../api.html#types.Loader">Loader</a>. Has the same API as the platform
+					<code>Loader</code> constructor, with additional features.
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">_source</div>
+										<span class="type">JavaClass inonit.script.engine.Code.Source</span>
+										<span>An object representing resources that can be loaded by this Loader.</span>
+									</li>
+								</ul>
+								-OR-
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">_code</div>
+										<span class="type">JavaClass inonit.script.engine.Code</span>
+										<span>
+											An object representing resources and Java classes that can be loaded by this
+											Loader.
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span>
+						<span class="type">SLIME <a href="#types.Loader">Loader</a></span>, which may be a
+						<span class="type">Java <a href="#types.Loader">Loader</a></span>,
+						depending on the arguments. If a <code>_source</code> or <code>_code</code> property is specified, returns
+						a Java Loader with
+						additional properties. Otherwise returns a SLIME Loader without them.
+					</span>
+				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.loadTestModule = function(path,context) {
+						return $jsapi.loader.module("../" + path, context);
+					}
+				</script>
+				<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')">
+				</div>
+			</li>
+			<li class="function" jsapi:id="namespace" jsapi:reference="getApi('../api.html').getElement('global/namespace')">
+				<div class="name">namespace</div>
+				<span>The platform loader's <a href="../api.html#exports.namespace"><code>namespace</code></a> method.</span>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>
