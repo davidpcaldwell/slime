@@ -222,7 +222,7 @@ var slime = new function() {
 				}
 				if (compiler) {
 					return function(args) {
-						debug("Compiling with: " + args);
+						$api.debug("Compiling with: " + args);
 						var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
 						for (var i=0; i<jarray.length; i++) {
 							jarray[i] = new Packages.java.lang.String(args[i]);

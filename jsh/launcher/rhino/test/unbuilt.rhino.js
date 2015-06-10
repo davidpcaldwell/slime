@@ -14,36 +14,36 @@
 //	details
 
 var $api;
-var slime;
-var $script;
-var debug;
-var platform;
-var AGENTLIB_JDWP;
-if (typeof(slime) == "undefined") {
+
+if (typeof(this.slime) == "undefined") {
 	if ($api && $api.script) {
 		$api.script.resolve("../../../etc/api.jrunscript.js").load();
-		debug = $api.debug;
-		console = $api.console;
 	} else {
 		Packages.java.lang.System.err.println("This script should be invoked from the jsh/etc/unbuilt.rhino.js script; see that"
 			+ " script for details."
 		);
 		Packages.java.lang.System.exit(1);
 	}
-} else {
-	if (platform) {
-		if (!$api) $api = {
-			io: {}
+}
+
+if (!$api) {
+	if (this.platform && this.debug && this.console) {
+		$api = {
+			io: {},
+			debug: this.debug,
+			console: this.console
 		};
 		$api.io.tmpdir = function() {
 			return platform.io.createTemporaryDirectory();
 		};
 		$api.jdk = platform.jdk;
+	} else {
+		throw new Error("No $api, no platform");
 	}
 }
 
-debug.on = true;
-debug("Source: " + slime.src);
+$api.debug.on = true;
+$api.debug("Source: " + slime.src);
 
 //	Build the launcher classes
 var LAUNCHER_CLASSES = $api.io.tmpdir();
@@ -75,7 +75,7 @@ var RHINO_JAR = (function() {
 			return matcher.exec(url)[1];
 		}
 	}();
-	debug("RHINO_PATH = " + RHINO_PATH);
+	$api.debug("RHINO_PATH = " + RHINO_PATH);
 	return new File(RHINO_PATH).getCanonicalPath();
 })();
 //	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
@@ -100,7 +100,7 @@ var modules = (function() {
 		return module.module;
 	});
 })();
-console("Found " + modules.length + " modules.");
+$api.console("Found " + modules.length + " modules.");
 //	TODO	some of this logic is duplicated in jsh/tools/slime.js
 var MODULE_CLASSPATH = [];
 if (RHINO_JAR) MODULE_CLASSPATH.push(RHINO_JAR);
@@ -108,12 +108,12 @@ MODULE_CLASSPATH.push(LAUNCHER_CLASSES);
 modules.forEach(function(module) {
 	var path = module.path;
 	if (module.module && module.module.javac) {
-		console("Compiling: " + path);
+		$api.console("Compiling: " + path);
 		var files = slime.src.getSourceFilesUnder(slime.src.getFile(path + "/java"));
 		if (!files) throw new Error("Files null for " + path);
 		if (RHINO_JAR) files = files.concat(slime.src.getSourceFilesUnder(slime.src.getFile(path + "/rhino")));
 	} else {
-		console("No Java compile needed: " + path + " " + JSON.stringify(module));
+		$api.console("No Java compile needed: " + path + " " + JSON.stringify(module));
 	}
 });
 
@@ -122,8 +122,8 @@ modules.forEach(function(module) {
 var args = [];
 args.push(Packages.java.lang.System.getProperty("java.home") + "/bin/java");
 //	TODO	if JSH_SHELL_CONTAINER is jvm, debugger will not be run anywhere
-if (AGENTLIB_JDWP && env.JSH_SHELL_CONTAINER != "jvm") {
-	args.push("-agentlib:jdwp=" + AGENTLIB_JDWP);
+if (this.AGENTLIB_JDWP && env.JSH_SHELL_CONTAINER != "jvm") {
+	args.push("-agentlib:jdwp=" + this.AGENTLIB_JDWP);
 }
 if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JAVA_LOGGING_PROPERTIES) {
 	args.push("-Djava.util.logging.config.file=" + env.JSH_JAVA_LOGGING_PROPERTIES)
@@ -140,7 +140,7 @@ args.push(
 	"-classpath", LAUNCHER_CLASSES,
 	"inonit.script.jsh.launcher.Main"
 );
-if ($script) {
+if ($api.script) {
 	args = args.concat(_arguments);
 } else {
 	for (var i=0; i<_arguments.length; i++) {
