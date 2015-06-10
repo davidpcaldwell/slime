@@ -11,19 +11,37 @@
 //	END LICENSE
 
 if (!this.$api) {
-	this.$api = {};
+	this.$api = new function() {
+		this.engine = new function() {
+			this.resolve = function(p) {
+				if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) return p.nashorn;
+				return p.rhino;
+			}
+		}
+	};
 }
 
-var setExitStatus = function(status) {
-	var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
-	_field.setAccessible(true);
-	if (status === null) {
-		_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
-	} else {
-		_field.set(null, new Packages.java.lang.Integer(status));
+$api.jsh = {};
+$api.jsh.setExitStatus = $api.engine.resolve({
+	rhino: function(status) {
+		var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
+		_field.setAccessible(true);
+		if (status === null) {
+			_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
+		} else {
+			_field.set(null, new Packages.java.lang.Integer(status));
+		}
+	},
+	nashorn: function(status) {
+		if (status !== null) {
+			Packages.java.lang.System.exit(status);
+		}
 	}
+});
+if (!$api.jsh.setExitStatus) {
+	Packages.java.lang.System.err.println($api.engine.resolve);
+	throw new Error();
 }
-
 var newArray = function(type,len) {
 	return Packages.java.lang.reflect.Array.newInstance(type,len);
 }
@@ -34,36 +52,9 @@ var newStringArray = function(len) {
 
 if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	arguments = $arguments;
-	setExitStatus = function(status) {
-		if (status !== null) {
-			Packages.java.lang.System.exit(status);
-		}
-	}
 	newArray = function(type,len) {
 		return Packages.java.lang.reflect.Array.newInstance(type.class,len);
 	}
-	//	TODO	Exact duplicate of both functions below in jsh/etc/unbuilt.rhino.js
-	var readFile = function(path) {
-		var rv = "";
-		var reader = new Packages.java.io.FileReader(path);
-		var c;
-		while((c = reader.read()) != -1) {
-			var _character = new Packages.java.lang.Character(c);
-			rv += _character.toString();
-		}
-		return rv;
-	};
-	var readUrl = function(path) {
-		var rv = "";
-		var connection = new Packages.java.net.URL(path).openConnection();
-		var reader = new Packages.java.io.InputStreamReader(connection.getInputStream());
-		var c;
-		while((c = reader.read()) != -1) {
-			var _character = new Packages.java.lang.Character(c);
-			rv += _character.toString();
-		}
-		return rv;
-	};
 }
 
 if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
@@ -851,7 +842,7 @@ try {
 	};
 	debug("Running command ...");
 	var status = command.run(mode);
-	setExitStatus(status);
+	$api.jsh.setExitStatus(status);
 	debug("Command returned.");
 } catch (e) {
 	debug("Error:");
@@ -869,9 +860,10 @@ try {
 	}
 	var error = e;
 	debugger;
-	setExitStatus(1);
+	$api.jsh.setExitStatus(1);
 } finally {
-	if (typeof(setExitStatus.value) != "undefined") {
-		exit(setExitStatus.value);
-	}
+	//	TODO	the below may be dead code; remove it if it is
+//	if (typeof(setExitStatus.value) != "undefined") {
+//		exit(setExitStatus.value);
+//	}
 }
