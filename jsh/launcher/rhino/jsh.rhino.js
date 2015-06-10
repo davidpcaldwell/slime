@@ -18,6 +18,20 @@ if (!this.$api) {
 				return p.rhino;
 			}
 		}
+
+		this.java = new function() {
+			this.Array = function(p) {
+				var type = $api.engine.resolve({
+					rhino: function(type) {
+						return type;
+					},
+					nashorn: function(type) {
+						return type.class;
+					}
+				})(p.type);
+				return Packages.java.lang.reflect.Array.newInstance(type,p.length);
+			};
+		}
 	};
 }
 
@@ -38,23 +52,13 @@ $api.jsh.setExitStatus = $api.engine.resolve({
 		}
 	}
 });
-if (!$api.jsh.setExitStatus) {
-	Packages.java.lang.System.err.println($api.engine.resolve);
-	throw new Error();
-}
-var newArray = function(type,len) {
-	return Packages.java.lang.reflect.Array.newInstance(type,len);
-}
 
 var newStringArray = function(len) {
-	return newArray(Packages.java.lang.String,len);
+	return new $api.java.Array({ type: Packages.java.lang.String, length: len });
 };
 
 if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
 	arguments = $arguments;
-	newArray = function(type,len) {
-		return Packages.java.lang.reflect.Array.newInstance(type.class,len);
-	}
 }
 
 if (arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
@@ -672,13 +676,13 @@ try {
 		}
 
 		this.run = function(mode) {
-			var _urls = newArray(Packages.java.net.URL, classpath.elements.length);
+			var _urls = new $api.java.Array({ type: Packages.java.net.URL, length: classpath.elements.length });
 			for (var i=0; i<classpath.elements.length; i++) {
 				_urls[i] = new Packages.java.io.File(classpath.elements[i]).toURI().toURL();
 			}
 			var _classloader = new Packages.java.net.URLClassLoader(_urls);
 			var _class = _classloader.loadClass(mainClassName);
-			var _argumentTypes = newArray(Packages.java.lang.Class,1);
+			var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
 			var loaderArguments = [];
 			if (script && typeof(script.path) != "undefined") {
 				loaderArguments.push(script.path);
@@ -690,7 +694,7 @@ try {
 			for (var i=0; i<loaderArguments.length; i++) {
 				_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
 			}
-			var _invokeArguments = newArray(Packages.java.lang.Object,1);
+			var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 1 });
 			_invokeArguments[0] = _arguments;
 			_argumentTypes[0] = _arguments.getClass();
 			var _method = _class.getMethod("run",_argumentTypes);
