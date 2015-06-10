@@ -154,9 +154,9 @@ public class Main {
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 			this.initializeSystemProperties();
 			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
-			Engine rhino = this.engine;
-			rhino.initialize(this);
-			return rhino.run(args);
+			Engine engine = this.engine;
+			engine.initialize(this);
+			return engine.run(args);
 		}
 
 		private ClassLoader mainClassLoader;
@@ -250,6 +250,9 @@ public class Main {
 
 		//	TODO	push Rhino-specific properties back into Rhino engine
 		final void initializeSystemProperties() throws java.io.IOException {
+			if (getJrunscriptApi() != null) {
+				System.setProperty("inonit.jrunscript.api.passive", "true");
+			}
 			System.setProperty("jsh.launcher.rhino.script", getLauncherScript());
 			if (getJshHome() != null) {
 				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());
