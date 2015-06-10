@@ -37,6 +37,8 @@ if (!$api) {
 			return platform.io.createTemporaryDirectory();
 		};
 		$api.jdk = platform.jdk;
+		$api.engine = {};
+		$api.engine.runCommand = runCommand;
 	} else {
 		throw new Error("No $api, no platform");
 	}
@@ -150,4 +152,4 @@ args.push(
 
 //Packages.java.lang.System.err.println("$api.script: " + this.$api.script);
 Packages.java.lang.System.err.println("Running: " + args.join(" "));
-Packages.java.lang.System.exit(runCommand.apply(null, args));
+Packages.java.lang.System.exit($api.engine.runCommand.apply(null, args));
