@@ -13,6 +13,8 @@
 //	Script to launch a script in an unbuilt jsh. Should be invoked via the jsh/etc/unbuilt.rhino.js tool; see that tool for
 //	details
 
+var env = $api.shell.environment;
+
 var $api;
 
 if (typeof(this.slime) == "undefined") {

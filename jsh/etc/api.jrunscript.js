@@ -29,16 +29,18 @@ $api.console = function(message) {
 
 var slime = new function() {
 	this.src = new function() {
+		var script = $api.script;
+
 		this.toString = function() {
-			return $api.script.resolve("../../../..").toString();
+			return script.resolve("../../").toString();
 		};
 
 		this.getPath = function(path) {
-			return $api.script.resolve("../../../../" + path).toString();
+			return script.resolve("../../" + path).toString();
 		}
 
 		this.getFile = function(path) {
-			return $api.script.resolve("../../../../" + path).file;
+			return script.resolve("../../" + path).file;
 		}
 
 		this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
@@ -100,7 +102,7 @@ var slime = new function() {
 	this.launcher = new function() {
 		this.compile = function(to) {
 			platform.jdk.compile([
-				"-d", LAUNCHER_CLASSES,
+				"-d", to,
 				"-sourcepath", slime.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + slime.src.getPath("jsh/launcher/rhino/java"),
 				slime.src.getPath("jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java")
 			]);

@@ -17,7 +17,7 @@ var src = jsh.script.file.parent.parent.parent.parent;
 var unbuilt = src.getFile("jsh/etc/unbuilt.rhino.js");
 jsh.shell.echo("Building shell ...");
 jsh.shell.jrunscript({
-	arguments: [unbuilt, "build", build],
+	arguments: [src.getFile("rhino/jrunscript/api.js"), unbuilt, "build", build],
 	environment: jsh.js.Object.set({}, jsh.shell.environment, {
 		JSH_BUILD_NOTEST: "true",
 		JSH_BUILD_NODOC: "true"

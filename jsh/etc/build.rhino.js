@@ -47,6 +47,13 @@
 //	Policy decision to support 1.6 and up
 var JAVA_VERSION = "1.6";
 
+var debug = $api.debug;
+var console = $api.console;
+var platform = new function() {
+	this.jdk = $api.jdk;
+};
+//	TODO	remove this load
+$api.script.resolve("api.rhino.js").load();
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
 
@@ -175,7 +182,7 @@ var destination = (function() {
 	} else {
 		return rv;
 	}
-}).apply(this,arguments);
+}).apply(this,$api.arguments);
 
 var JSH_HOME = destination.shell;
 debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());

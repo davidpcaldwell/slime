@@ -734,6 +734,15 @@ public abstract class Code {
 				}
 			}
 
+			private boolean hasClass(String name) {
+				try {
+					Class c = Code.class.getClassLoader().loadClass(name);
+					return c != null;
+				} catch (ClassNotFoundException e) {
+					return false;
+				}
+			}
+
 			@Override
 			public Source.File getFile(String path) throws IOException {
 				//System.err.println("getCompiledClasses(" + source + "): " + path);
@@ -741,7 +750,7 @@ public abstract class Code {
 				String sourceName = className + ".java";
 //				className = className.replace("/", ".");
 				Source.File java = source.getFile("java/" + sourceName);
-				if (java == null) {
+				if (java == null && hasClass("org.mozilla.javascript.Context")) {
 					java = source.getFile("rhino/java/" + sourceName);
 				}
 				if (java != null) {

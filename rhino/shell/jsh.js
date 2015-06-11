@@ -300,7 +300,7 @@ $exports.jsh = function(p) {
 					evaluate: evaluate
 				}));
 			} else if (p.shell.getFile("jsh/etc/unbuilt.rhino.js")) {
-				var args = [p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch"];
+				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch"];
 				//	TODO	will only work if they start with dash, which they must, right?
 				if (p.properties) {
 					for (var x in p.properties) {
