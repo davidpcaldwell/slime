@@ -17,7 +17,8 @@ var parameters = jsh.script.getopts({
 		slime: jsh.script.file.parent.parent.parent.pathname,
 		tomcat: jsh.file.Pathname,
 		browser: false,
-		debug: false
+		debug: false,
+		view: "console"
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -48,7 +49,10 @@ jsh.loader.plugins(jsh.script.file.parent.pathname);
 var top = new jsh.unit.Scenario({
 	composite: true,
 	name: "SLIME verify",
-	view: new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
+	view: (function(id) {
+		if (id == "console") return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
+		if (id == "webview") return new jsh.unit.view.WebView();
+	})(parameters.options.view)
 });
 
 var CommandScenario = function(p) {
