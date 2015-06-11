@@ -168,15 +168,16 @@ if ($api.arguments[0] == "build") {
 //	load(slime.src.getFile("jsh/etc/build.rhino.js"));
 } else if ($api.arguments[0] == "launch") {
 	$api.arguments.splice(0,1);
-//	load(slime.src.getFile("jsh/launcher/rhino/test/unbuilt.rhino.js"));
-	$api.script.resolve("../../jsh/launcher/rhino/test/unbuilt.rhino.js").load();
+	$api.script.resolve("../../jsh/launcher/rhino/jsh.jrunscript.js").load();
 } else if (arguments[0] == "jdwp" || arguments[0] == "xjdwp") {
+	//	TODO	convert to new $api structure
 	var AGENTLIB_JDWP = (arguments[0] == "jdwp") ? arguments[1] : void(0);
 	arguments.splice(0,2);
-	load(slime.src.getFile("jsh/launcher/rhino/test/unbuilt.rhino.js"));
+	load(slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"));
 } else if (arguments[0] == "develop") {
+	//	TODO	convert to new $api structure
 	arguments.splice(0,1,String(slime.src.getFile("jsh/etc/develop.jsh.js")));
-	load(slime.src.getFile("jsh/launcher/rhino/test/unbuilt.rhino.js"));
+	load(slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"));
 } else if ($api.arguments[0] == "verify") {
 	var verifyArgs = $api.arguments.slice(1);
 	var buildArgs = [];
@@ -211,6 +212,7 @@ if ($api.arguments[0] == "build") {
 		throw new Error("Verification failed with status: " + status);
 	}
 } else if (arguments[0] == "test") {
+	//	TODO	convert to new $api structure
 	arguments.splice(0,1);
 	//	create temporary file
 	var JSH_HOME = Packages.java.io.File.createTempFile("jsh-unbuilt.", ".tmp");
@@ -223,8 +225,4 @@ if ($api.arguments[0] == "build") {
 	Packages.java.lang.System.err.println("unbuilt.rhino.js build <arguments>");
 	Packages.java.lang.System.err.println("unbuilt.rhino.js launch <arguments>");
 	Packages.java.lang.System.exit(1);
-}
-
-if (false) {
-	Packages.java.lang.System.out.println("arguments = " + arguments);
 }
