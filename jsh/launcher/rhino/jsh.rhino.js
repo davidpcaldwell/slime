@@ -10,6 +10,19 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	rename this file to jsh.launcher.js
+
+if (!this.slime) {
+	$api.script.resolve("../../jsh/etc/api.jrunscript.js").load();
+}
+
+var env = $api.shell.environment;
+var debug = $api.debug;
+var platform = new function() {
+
+};
+var colon = String(Packages.java.io.File.pathSeparator);
+
 if (!this.$api) {
 	this.$api = new function() {
 		this.engine = new function() {
@@ -310,10 +323,10 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		var ClassLoader = Packages.java.lang.ClassLoader;
 
 		this.__defineGetter__("source", function() {
-			return readUrl( ClassLoader.getSystemResource("main.jsh.js") );
+			return $api.engine.readUrl( ClassLoader.getSystemResource("main.jsh.js") );
 		});
 
-		var tmpdir = new Directory(String(platform.io.createTemporaryDirectory().getCanonicalPath()));
+		var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
 
 		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
 		if (rhino) {
@@ -446,7 +459,7 @@ settings.explicit = new function() {
 			debugger;
 			this.script = $api.jsh.arguments[0];
 
-			this.source = readUrl($api.jsh.arguments[0]);
+			this.source = $api.engine.readUrl($api.jsh.arguments[0]);
 		} else {
 			this.script = (function(path) {
 //				TODO	move this documentation somewhere more relevant
@@ -490,7 +503,7 @@ settings.explicit = new function() {
 				}
 			})($api.jsh.arguments[0]);
 
-			this.source = readFile(this.script.path);
+			this.source = $api.engine.readFile(this.script.path);
 		}
 	}
 

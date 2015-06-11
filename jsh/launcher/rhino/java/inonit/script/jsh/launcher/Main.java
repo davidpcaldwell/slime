@@ -205,11 +205,13 @@ public class Main {
 		}
 
 		void addLauncherScriptsTo(Engine rhino) {
-			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.rhino.js").toExternalForm());
+			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.jrunscript.js").toExternalForm());
+			rhino.addScript(ClassLoader.getSystemResource("$jsh/slime.api.jrunscript.js").toExternalForm());
 			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
 		}
 
 		void initializeSystemProperties() {
+			System.setProperty("inonit.jrunscript.api.passive", "true");
 			System.setProperty("jsh.launcher.packaged", location);
 		}
 	}
@@ -333,14 +335,13 @@ public class Main {
 			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
 		}
 
-		String getJrunscriptApi() {
-			//	TODO	temporary, while migration occurs; need to implement as part of build process
-			return null;
+		String getJrunscriptApi() throws java.io.IOException {
+			return new java.io.File(HOME, "script/launcher/api.jrunscript.js").getCanonicalPath();
 		}
 
 		String getLauncherApi() throws java.io.IOException {
 			if (explicit.getLauncherApi() != null) return explicit.getLauncherApi();
-			return new java.io.File(HOME, "script/launcher/api.rhino.js").getCanonicalPath();
+			return new java.io.File(HOME, "script/launcher/slime.api.jrunscript.js").getCanonicalPath();
 		}
 
 		String getLauncherScript() throws java.io.IOException {
