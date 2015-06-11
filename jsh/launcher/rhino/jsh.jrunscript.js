@@ -15,37 +15,6 @@
 
 var env = $api.shell.environment;
 
-//var $api;
-//
-//if (typeof(this.slime) == "undefined") {
-//	if ($api && $api.script) {
-//		$api.script.resolve("../../../etc/api.jrunscript.js").load();
-//	} else {
-//		Packages.java.lang.System.err.println("This script should be invoked from the jsh/etc/unbuilt.rhino.js script; see that"
-//			+ " script for details."
-//		);
-//		Packages.java.lang.System.exit(1);
-//	}
-//}
-//
-//if (!$api) {
-//	if (this.platform && this.debug && this.console) {
-//		$api = {
-//			io: {},
-//			debug: this.debug,
-//			console: this.console
-//		};
-//		$api.io.tmpdir = function() {
-//			return platform.io.createTemporaryDirectory();
-//		};
-//		$api.jdk = platform.jdk;
-//		$api.engine = {};
-//		$api.engine.runCommand = runCommand;
-//	} else {
-//		throw new Error("No $api, no platform");
-//	}
-//}
-
 $api.debug.on = true;
 $api.debug("Source: " + slime.src);
 
