@@ -51,18 +51,18 @@ var RHINO_JAR = (function() {
 	$api.debug("RHINO_PATH = " + RHINO_PATH);
 	return new File(RHINO_PATH).getCanonicalPath();
 })();
-//	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
-//	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
-var LOADER_CLASSES = $api.io.tmpdir();
-var toCompile = slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/java"));
-if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/rhino")));
-toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("rhino/system/java")));
-toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/java")));
-if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/rhino")));
+////	TODO	duplicates logic in jsh/etc/build.rhino.js, but with very different strategy
+////	apparently we do not have to have Rhino in the classpath here because it is in the system classpath
+//var LOADER_CLASSES = $api.io.tmpdir();
+//var toCompile = slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/java"));
+//if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/rhino")));
+//toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("rhino/system/java")));
+//toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/java")));
+//if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/rhino")));
 
-$api.jdk.compile([
-	"-d", LOADER_CLASSES
-].concat(toCompile));
+//$api.jdk.compile([
+//	"-d", LOADER_CLASSES
+//].concat(toCompile));
 
 //	TODO	Obviously under Cygwin shell does not include the paths helper
 
@@ -111,7 +111,7 @@ args.push(
 			if (RHINO_JAR) this.JSH_RHINO_CLASSPATH = RHINO_JAR;
 			this.JSH_SLIME_SRC = slime.src.toString();
 			this.JSH_RHINO_SCRIPT = slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
-			this.JSH_SHELL_CLASSPATH = LOADER_CLASSES;
+//			this.JSH_SHELL_CLASSPATH = LOADER_CLASSES;
 			this.JSH_LIBRARY_SCRIPTS_LOADER = slime.src.getPath("loader");
 			this.JSH_LIBRARY_SCRIPTS_RHINO = slime.src.getPath("loader/rhino");
 			this.JSH_LIBRARY_SCRIPTS_JSH = slime.src.getPath("jsh/loader");

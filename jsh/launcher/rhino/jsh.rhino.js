@@ -161,6 +161,16 @@ var Searchpath = function(p) {
 	this.toPath = function() {
 		return elements.join(colon);
 	}
+
+	this.ClassLoader = function() {
+		var _urls = new $api.java.Array({ type: Packages.java.net.URL, length: elements.length });
+		for (var i=0; i<elements.length; i++) {
+			_urls[i] = new Packages.java.io.File(elements[i]).toURI().toURL();
+			debug("classpath: " + elements[i]);
+		}
+		var _classloader = new Packages.java.net.URLClassLoader(_urls);
+		return _classloader;
+	}
 }
 
 var Command = function() {
@@ -412,17 +422,69 @@ if (getProperty("jsh.launcher.home")) {
 	}
 }
 
+settings.use = [settings.defaults];
+if (settings.packaged) {
+	debug("Using packaged jsh.");
+	settings.use.push(settings.packaged);
+} else {
+	debug("Not using packaged jsh.");
+	if (settings.built) {
+		settings.use.push(settings.built);
+	}
+}
+settings.get = function(id) {
+	var rv;
+	for (var i=0; i<this.use.length; i++) {
+		if (typeof(this.use[i][id]) != "undefined") {
+			rv = this.use[i][id];
+		}
+	}
+	return rv;
+};
+
 settings.explicit = new function() {
-	var shellClasspath = (function() {
-		if (!env.JSH_SHELL_CLASSPATH) return UNDEFINED;
-		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
-		if (!settings.packaged) return specified;
-		//	if we are running in a packaged application, we set the loader shell classpath to the specified value plus the package
-		//	file location. If the user-specified JSH_SHELL_CLASSPATH contains other classes contained in the package file,
-		//	those classes will preferentially be used to those in the package.
-		//	TODO	More thinking required about this. The analogous problem exists for unpackaged applications as well.
-		return specified.append(settings.packaged.shellClasspath);
-	})();
+	var getShellClasspath = function() {
+		debugger;
+		if (!arguments.callee.cached) {
+			if (env.JSH_SHELL_CLASSPATH) {
+				var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
+				arguments.callee.cached = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
+			} else if (env.JSH_SLIME_SRC) {
+				//	TODO	this may work, because of the existing slime variable, but it may not, or may by coincidence, because
+				//			it is not well-thought-out.
+				var LOADER_CLASSES = $api.io.tmpdir();
+				var RHINO_JAR = settings.get("rhinoClasspath");
+				var _cl = new RHINO_JAR.ClassLoader();
+				try {
+					_cl.loadClass("org.mozilla.javascript.Context");
+				} catch (e) {
+					RHINO_JAR = null;
+				}
+				var toCompile = slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/java"));
+				if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/rhino")));
+				toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("rhino/system/java")));
+				toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/java")));
+				if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/rhino")));
+				var rhinoClasspath = (RHINO_JAR) ? ["-classpath", RHINO_JAR] : [];
+				$api.jdk.compile([
+					"-d", LOADER_CLASSES
+				].concat(rhinoClasspath).concat(toCompile));
+				arguments.callee.cached = new Searchpath(String(LOADER_CLASSES.getCanonicalPath()));
+			}
+		}
+		return arguments.callee.cached;
+	}
+	var shellClasspath = getShellClasspath();
+//	var shellClasspath = (function() {
+//		if (!env.JSH_SHELL_CLASSPATH) return UNDEFINED;
+//		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
+//		if (!settings.packaged) return specified;
+//		//	if we are running in a packaged application, we set the loader shell classpath to the specified value plus the package
+//		//	file location. If the user-specified JSH_SHELL_CLASSPATH contains other classes contained in the package file,
+//		//	those classes will preferentially be used to those in the package.
+//		//	TODO	More thinking required about this. The analogous problem exists for unpackaged applications as well.
+//		return specified.append(settings.packaged.shellClasspath);
+//	})();
 	if (shellClasspath) {
 		this.shellClasspath = shellClasspath;
 	}
@@ -562,29 +624,10 @@ settings.directives = function(source) {
 	this.scriptClasspath = directives.classpath.concat(directives.jdkLibraries);
 }
 
-settings.use = [settings.defaults];
-if (settings.packaged) {
-	debug("Using packaged jsh.");
-	settings.use.push(settings.packaged);
-} else {
-	debug("Not using packaged jsh.");
-	if (settings.built) {
-		settings.use.push(settings.built);
-	}
-}
 //	TODO	probably need more thought into which explicit preferences should really apply to packaged applications
 //			classpaths are a candidate for things that should not apply
 settings.use.push(settings.explicit);
 
-settings.get = function(id) {
-	var rv;
-	for (var i=0; i<this.use.length; i++) {
-		if (typeof(this.use[i][id]) != "undefined") {
-			rv = this.use[i][id];
-		}
-	}
-	return rv;
-}
 settings.use.push(new settings.directives(settings.get("source")));
 settings.combine = function(id) {
 	var rv = [];
@@ -692,11 +735,7 @@ try {
 		}
 
 		this.run = function(mode) {
-			var _urls = new $api.java.Array({ type: Packages.java.net.URL, length: classpath.elements.length });
-			for (var i=0; i<classpath.elements.length; i++) {
-				_urls[i] = new Packages.java.io.File(classpath.elements[i]).toURI().toURL();
-			}
-			var _classloader = new Packages.java.net.URLClassLoader(_urls);
+			var _classloader = new classpath.ClassLoader();
 			var _class = _classloader.loadClass(mainClassName);
 			var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
 			var loaderArguments = [];
