@@ -52,31 +52,44 @@ public class Main {
 			throw new RuntimeException("No JavaScript execution engine found.");
 		}
 
-		static Shell shell() throws IOException {
-			java.net.URL codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation();
-			String codeUrlString = codeLocation.toExternalForm();
-			codeUrlString = new java.net.URLDecoder().decode(codeUrlString);
-			String launcherLocation = null;
-			if (codeUrlString.startsWith("file:")) {
-				if (codeUrlString.charAt(7) == ':') {
-					//	Windows
-					launcherLocation = codeUrlString.substring("file:/".length());
-				} else {
-					//	UNIX
-					launcherLocation = codeUrlString.substring("file:".length());
-				}
-			} else {
-				throw new RuntimeException("Unreachable: code source = " + codeUrlString);
+		private static java.net.URI getMainClassSource() {
+			try {
+				return Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+			} catch (java.net.URISyntaxException e) {
+				throw new RuntimeException(e);
 			}
+		}
+
+		static Shell shell() throws IOException {
+			java.net.URI codeLocation = getMainClassSource();
+			File launcherFile = null;
+			if (codeLocation.getScheme().equals("file")) {
+				launcherFile = new File(codeLocation);
+			} else {
+				throw new RuntimeException("Unreachable: code source = " + codeLocation);
+			}
+//			String codeUrlString = codeLocation.toExternalForm();
+//			codeUrlString = new java.net.URLDecoder().decode(codeUrlString);
+//			String launcherLocation = null;
+//			if (codeUrlString.startsWith("file:")) {
+//				if (codeUrlString.charAt(7) == ':') {
+//					//	Windows
+//					launcherLocation = codeUrlString.substring("file:/".length());
+//				} else {
+//					//	UNIX
+//					launcherLocation = codeUrlString.substring("file:".length());
+//				}
+//			} else {
+//			}
 			Shell shell = null;
 			if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-				shell = new PackagedShell(launcherLocation);
+				shell = new PackagedShell(launcherFile);
 			} else {
 				java.io.File JSH_HOME = null;
-				if (launcherLocation.endsWith("jsh.jar")) {
-					JSH_HOME = new java.io.File(launcherLocation.substring(0, launcherLocation.length()-"jsh.jar".length()-1));
+				if (launcherFile.getName().equals("jsh.jar")) {
+					JSH_HOME = launcherFile.getParentFile();
 				}
-				shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : new UnbuiltShell();
+				shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : UnbuiltShell.create();
 				//	TODO	This might miss some exotic situations, like loading this class in its own classloader
 			}
 			return shell;
@@ -177,10 +190,10 @@ public class Main {
 	}
 
 	private static class PackagedShell extends Shell {
-		private String location;
+		private File file;
 
-		PackagedShell(String location) {
-			this.location = location;
+		PackagedShell(File file) {
+			this.file = file;
 		}
 
 		String getRhinoClasspath() {
@@ -212,7 +225,11 @@ public class Main {
 
 		void initializeSystemProperties() {
 			System.setProperty("inonit.jrunscript.api.passive", "true");
-			System.setProperty("jsh.launcher.packaged", location);
+			try {
+				System.setProperty("jsh.launcher.packaged", file.getCanonicalPath());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
@@ -255,6 +272,10 @@ public class Main {
 			if (getJrunscriptApi() != null) {
 				System.setProperty("inonit.jrunscript.api.passive", "true");
 			}
+			String launcherScript = getLauncherScript();
+			if (launcherScript == null) {
+				throw new RuntimeException("Launcher script null in " + this);
+			}
 			System.setProperty("jsh.launcher.rhino.script", getLauncherScript());
 			if (getJshHome() != null) {
 				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());
@@ -270,12 +291,29 @@ public class Main {
 	}
 
 	private static class UnbuiltShell extends UnpackagedShell {
-		private File getSlimeSourceroot() {
-			if (System.getenv("JSH_SLIME_SRC") == null) return null;
-			return new File(System.getenv("JSH_SLIME_SRC"));
+		static UnbuiltShell create() {
+			File src = null;
+			if (System.getenv("JSH_SLIME_SRC") != null) {
+				src = new File(System.getenv("JSH_SLIME_SRC"));
+			}
+			String rhino = System.getenv("JSH_RHINO_CLASSPATH");
+			return new UnbuiltShell(src,rhino);
+		}
+
+		private File sourceroot;
+		private String rhinoClasspath;
+
+		UnbuiltShell(File sourceroot, String rhinoClasspath) {
+			this.sourceroot = sourceroot;
+			this.rhinoClasspath = rhinoClasspath;
+		}
+
+		public String toString() {
+			return "Unbuilt: sourceroot=" + sourceroot + " rhino=" + rhinoClasspath;
 		}
 
 		private String toWindowsPath(String value) throws IOException {
+			if (value == null) return null;
 			inonit.system.cygwin.Cygwin cygwin = inonit.system.cygwin.Cygwin.locate();
 			if (cygwin != null) {
 				try {
@@ -293,30 +331,28 @@ public class Main {
 		}
 
 		String getRhinoClasspath() throws IOException {
-			String rv = System.getenv("JSH_RHINO_CLASSPATH");
-			if (rv == null) return null;
-			return toWindowsPath(rv);
+			return toWindowsPath(rhinoClasspath);
 		}
 
 		String getJrunscriptApi() throws IOException {
-			if (getSlimeSourceroot() == null) return null;
-			return new File(getSlimeSourceroot(), "rhino/jrunscript/api.js").getCanonicalPath();
+			if (sourceroot == null) return null;
+			return new File(sourceroot, "rhino/jrunscript/api.js").getCanonicalPath();
 		}
 
 		String getLauncherApi() throws IOException {
-			if (getSlimeSourceroot() == null) return null;
-			return new File(getSlimeSourceroot(), "jsh/etc/api.rhino.js").getCanonicalPath();
+			if (sourceroot == null) return null;
+			return new File(sourceroot, "jsh/etc/api.rhino.js").getCanonicalPath();
 		}
 
 		String getLauncherScript() throws IOException {
-			if (getSlimeSourceroot() == null) return null;
-			return new File(getSlimeSourceroot(), "jsh/launcher/rhino/jsh.rhino.js").getCanonicalPath();
+			if (sourceroot == null) return null;
+			return new File(sourceroot, "jsh/launcher/rhino/jsh.rhino.js").getCanonicalPath();
 		}
 	}
 
 	private static class BuiltShell extends UnpackagedShell {
 		private java.io.File HOME;
-		private UnbuiltShell explicit = new UnbuiltShell();
+		private UnbuiltShell explicit = UnbuiltShell.create();
 
 		BuiltShell(java.io.File HOME) throws java.io.IOException {
 			this.HOME = HOME;

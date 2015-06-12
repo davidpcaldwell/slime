@@ -12,7 +12,6 @@
 
 $api.script.resolve("api.jrunscript.js").load();
 
-Packages.java.lang.System.err.println("arguments=" + $api.arguments);
 if ($api.arguments[0] == "build") {
 	$api.arguments.splice(0,1);
 	$api.script.resolve("build.rhino.js").load();

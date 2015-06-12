@@ -69,7 +69,6 @@ var slime = new function() {
 
 			this.compile = (function(array) {
 				if (!tried) {
-					Packages.java.lang.System.err.println("Loading Java compiler ...");
 					compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
 					tried = true;
 				}
@@ -100,12 +99,15 @@ var slime = new function() {
 	$api.platform = platform;
 
 	this.launcher = new function() {
-		this.compile = function(to) {
+		this.compile = function(p) {
+			var to = (p && p.to) ? p.to : $api.io.tmpdir();
 			platform.jdk.compile([
+				"-Xlint:deprecation",
 				"-d", to,
 				"-sourcepath", slime.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + slime.src.getPath("jsh/launcher/rhino/java"),
 				slime.src.getPath("jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java")
 			]);
+			if (!p || !p.to) return to;
 		}
 	}
 };

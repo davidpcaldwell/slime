@@ -288,7 +288,7 @@ zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
 console("Building launcher ...");
 var tmpLauncher = new File(tmp,"launcher");
 tmpLauncher.mkdir();
-slime.launcher.compile(tmpLauncher.getCanonicalPath());
+slime.launcher.compile({ to: tmpLauncher.getCanonicalPath() });
 //platform.jdk.compile(compileOptions.concat([
 //	"-d", tmpLauncher.getCanonicalPath(),
 //	"-sourcepath", [
