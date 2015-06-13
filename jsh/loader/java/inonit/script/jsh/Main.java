@@ -231,4 +231,32 @@ public class Main {
 			};
 		}
 	}
+
+	public static abstract class Engine {
+		public abstract void main(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException;
+
+		public final void shell(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
+			Shell.initialize();
+			main(context, args);
+		}
+
+		private class Runner extends Shell.Configuration.Context.Holder.Run {
+			public void threw(Throwable t) {
+				t.printStackTrace();
+			}
+
+			public void run(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
+				Engine.this.shell(context,args);
+			}
+		}
+
+		public final Integer embed(String[] args) throws Invocation.CheckedException {
+			Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
+			return context.getExitCode(new Runner(), args);
+		}
+
+		public final void cli(String[] args) throws Invocation.CheckedException {
+			shell(Shell.Configuration.Context.VM, args);
+		}
+	}
 }

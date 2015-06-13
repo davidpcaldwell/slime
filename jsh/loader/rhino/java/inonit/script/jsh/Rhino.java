@@ -303,79 +303,74 @@ public class Rhino {
 		}
 	}
 
-	private static void run(Shell.Configuration.Context context, String[] args) {
-		Shell.initialize();
-		Logging.get().log(Rhino.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
-		Rhino main = new Rhino();
-		main.arguments = args;
-		try {
-//			Integer status = java.util.concurrent.Executors.newCachedThreadPool().submit(main.new Run()).get();
-			Run run = main.new Run();
-			Thread thread = new Thread(run);
-			thread.setName("Loader");
-			thread.start();
-			thread.join();
-			Integer status = run.result();
-//			Integer status = main.run();
-			Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
-			if (status != null) {
-				context.exit(status.intValue());
-			} else {
-				main.rhino.getEngine().getDebugger().destroy();
-				//	JVM will exit normally when non-daemon threads complete.
-			}
-		} catch (Invocation.CheckedException e) {
-			Logging.get().log(Rhino.class, Level.INFO, "Exiting with checked exception.", e);
-			System.err.println(e.getMessage());
-			context.exit(1);
-		} catch (Throwable t) {
-			Logging.get().log(Rhino.class, Level.SEVERE, "Exiting with throwable.", t);
-			Throwable target = t;
-			System.err.println("Error executing " + Rhino.class.getName());
-			String argsString = "";
-			for (int i=0; i<args.length; i++) {
-				argsString += args[i];
-				if (i+1 != args.length) {
-					argsString += ",";
+	private static class EngineImpl extends Main.Engine {
+		private static void run(Shell.Configuration.Context context, String[] args) {
+			Shell.initialize();
+			Logging.get().log(Rhino.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
+			Rhino main = new Rhino();
+			main.arguments = args;
+			try {
+	//			Integer status = java.util.concurrent.Executors.newCachedThreadPool().submit(main.new Run()).get();
+				Run run = main.new Run();
+				Thread thread = new Thread(run);
+				thread.setName("Loader");
+				thread.start();
+				thread.join();
+				Integer status = run.result();
+	//			Integer status = main.run();
+				Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
+				if (status != null) {
+					context.exit(status.intValue());
+				} else {
+					main.rhino.getEngine().getDebugger().destroy();
+					//	JVM will exit normally when non-daemon threads complete.
 				}
-			}
-			System.err.println("Arguments " + argsString);
-			System.err.println("System properties " + System.getProperties().toString());
-			System.err.println("Heap size: max = " + Runtime.getRuntime().maxMemory());
-			System.err.println("Heap size: free = " + Runtime.getRuntime().freeMemory());
-			System.err.println("Stack trace of error:");
-			while(target != null) {
-				if (target != t) {
-					System.err.println("Caused by:");
+			} catch (Invocation.CheckedException e) {
+				Logging.get().log(Rhino.class, Level.INFO, "Exiting with checked exception.", e);
+				System.err.println(e.getMessage());
+				context.exit(1);
+			} catch (Throwable t) {
+				Logging.get().log(Rhino.class, Level.SEVERE, "Exiting with throwable.", t);
+				Throwable target = t;
+				System.err.println("Error executing " + Rhino.class.getName());
+				String argsString = "";
+				for (int i=0; i<args.length; i++) {
+					argsString += args[i];
+					if (i+1 != args.length) {
+						argsString += ",";
+					}
 				}
-				System.err.println(target.getClass().getName() + ": " + target.getMessage());
-				StackTraceElement[] elements = target.getStackTrace();
-				for (int i=0; i<elements.length; i++) {
-					StackTraceElement e = elements[i];
-					System.err.println("\tat " + e);
+				System.err.println("Arguments " + argsString);
+				System.err.println("System properties " + System.getProperties().toString());
+				System.err.println("Heap size: max = " + Runtime.getRuntime().maxMemory());
+				System.err.println("Heap size: free = " + Runtime.getRuntime().freeMemory());
+				System.err.println("Stack trace of error:");
+				while(target != null) {
+					if (target != t) {
+						System.err.println("Caused by:");
+					}
+					System.err.println(target.getClass().getName() + ": " + target.getMessage());
+					StackTraceElement[] elements = target.getStackTrace();
+					for (int i=0; i<elements.length; i++) {
+						StackTraceElement e = elements[i];
+						System.err.println("\tat " + e);
+					}
+					target = target.getCause();
 				}
-				target = target.getCause();
+				context.exit(1);
 			}
-			context.exit(1);
-		}
-	}
-
-	private static class Runner extends Shell.Configuration.Context.Holder.Run {
-		public void threw(Throwable t) {
-			t.printStackTrace();
 		}
 
-		public void run(Shell.Configuration.Context context, String[] args) {
-			Rhino.run(context,args);
+		public void main(Shell.Configuration.Context context, String[] args) {
+			run(context, args);
 		}
 	}
 
 	public static Integer run(String[] args) throws Invocation.CheckedException {
-		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
-		return context.getExitCode(new Runner(), args);
+		return new EngineImpl().embed(args);
 	}
 
 	public static void main(String[] args) throws Throwable {
-		run(Shell.Configuration.Context.VM, args);
+		new EngineImpl().cli(args);
 	}
 }

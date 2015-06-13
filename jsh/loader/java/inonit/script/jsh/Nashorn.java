@@ -18,7 +18,7 @@ import javax.script.*;
 
 import inonit.script.engine.*;
 
-public class Nashorn {
+public class Nashorn extends Main.Engine {
 	public static abstract class Host {
 		public abstract boolean isTop();
 		public abstract Loader.Classes.Interface getClasspath();
@@ -43,7 +43,7 @@ public class Nashorn {
 		return execution.execute(shell);
 	}
 
-	private static void main(Shell.Configuration.Context context, Shell shell) throws Invocation.CheckedException {
+	public void main(Shell.Configuration.Context context, Shell shell) throws Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(true);
 		Integer rv = execution.execute(shell);
 		if (rv == null) {
@@ -51,6 +51,10 @@ public class Nashorn {
 		} else {
 			context.exit(rv.intValue());
 		}
+	}
+
+	public void main(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
+		main(context, Main.shell(args));
 	}
 
 	public static class UncaughtException extends RuntimeException {
@@ -132,29 +136,13 @@ public class Nashorn {
 		}
 	}
 
-	private static void run(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
-		Shell.initialize();
-		main(context, Main.shell(args));
-	}
-
-	private static class Runner extends Shell.Configuration.Context.Holder.Run {
-		public void threw(Throwable t) {
-			t.printStackTrace();
-		}
-
-		public void run(Shell.Configuration.Context context, String[] args) throws Throwable {
-			Nashorn.run(context, args);
-		}
-	}
-
 	public static Integer run(String[] args) throws Invocation.CheckedException {
-		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
-		return context.getExitCode(new Runner(), args);
+		return new Nashorn().embed(args);
 	}
 
 	public static void main(final String[] args) throws Invocation.CheckedException {
 		try {
-			run(Shell.Configuration.Context.VM, args);
+			new Nashorn().cli(args);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			System.exit(255);
