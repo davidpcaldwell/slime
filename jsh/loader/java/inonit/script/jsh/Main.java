@@ -433,9 +433,9 @@ public class Main {
 			}
 		}
 
-		public final Integer embed(String[] args) throws Shell.Invocation.CheckedException {
+		public final Integer embed(Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
 			Shell.Container.Holder context = new Shell.Container.Holder();
-			return context.getExitCode(new Runner(), Main.shell(args));
+			return context.getExitCode(new Runner(), configuration);
 		}
 
 		public final void cli(String[] args) throws Shell.Invocation.CheckedException {
@@ -443,7 +443,12 @@ public class Main {
 		}
 	}
 
+	//	Perhaps a future launcher could access this interface directly
+	public static Integer run(Engine engine, Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
+		return engine.embed(configuration);
+	}
+
 	public static Integer run(Engine engine, String[] args) throws Shell.Invocation.CheckedException {
-		return engine.embed(args);
+		return run(engine, shell(args));
 	}
 }
