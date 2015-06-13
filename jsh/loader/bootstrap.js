@@ -12,7 +12,7 @@
 
 new (function() {
 	this.getLoaderCode = function(path) {
-		return $jsh.getStreams().readString($jsh.getInstallation().getPlatformLoader(path).getReader());
+		return $jsh.getStreams().readString($jsh.getInstallation().getPlatformLoader().getFile(path).getReader());
 	};
 
 	this.getCoffeeScript = function() {

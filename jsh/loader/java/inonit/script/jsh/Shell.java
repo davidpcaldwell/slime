@@ -21,7 +21,39 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public abstract class Shell {
-	public abstract Installation getInstallation();
+	public static void initialize() {
+		if (!inonit.system.Logging.get().isSpecified()) {
+			inonit.system.Logging.get().initialize(new java.util.Properties());
+		}
+		Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			public void uncaughtException(Thread t, Throwable e) {
+				Throwable error = e;
+				java.io.PrintWriter writer = new java.io.PrintWriter(System.err,true);
+				while(error != null) {
+					writer.println(error.getClass().getName() + ": " + error.getMessage());
+					StackTraceElement[] trace = error.getStackTrace();
+					for (StackTraceElement line : trace) {
+						writer.println("\t" + line);
+					}
+					error = error.getCause();
+					if (error != null) {
+						writer.print("Caused by: ");
+					}
+				}
+			}
+		});
+	}
+
+	private Installation installation;
+
+	public abstract Installation.Configuration getInstallationConfiguration();
+
+	public final Installation getInstallation() {
+		if (installation == null) {
+			installation = Installation.create(getInstallationConfiguration());
+		}
+		return installation;
+	}
 
 	private Streams streams = new Streams();
 
@@ -34,15 +66,15 @@ public abstract class Shell {
 	}
 
 	public Shell subshell(Configuration configuration, Invocation invocation) {
-		return create(this.getInstallation(), configuration, invocation);
+		return create(this.getInstallationConfiguration(), configuration, invocation);
 	}
 
 	public abstract Configuration getConfiguration();
 	public abstract Invocation getInvocation() throws Invocation.CheckedException;
 
-	public static Shell create(final Installation installation, final Configuration configuration, final Invocation invocation) {
+	public static Shell create(final Installation.Configuration installation, final Configuration configuration, final Invocation invocation) {
 		return new Shell() {
-			@Override public Installation getInstallation() {
+			@Override public Installation.Configuration getInstallationConfiguration() {
 				return installation;
 			}
 
@@ -64,42 +96,6 @@ public abstract class Shell {
 
 	public final Object host() {
 		return $host;
-	}
-
-	public static Shell main(final String[] arguments) {
-		final Configuration configuration = Configuration.main();
-		if (System.getProperty("jsh.launcher.packaged") != null) {
-			return new Shell() {
-				@Override public Installation getInstallation() {
-					return Installation.packaged();
-				}
-
-				@Override public Configuration getConfiguration() {
-					return configuration;
-				}
-
-				@Override public Invocation getInvocation() {
-					return Invocation.packaged(arguments);
-				}
-			};
-		} else {
-			if (arguments.length == 0) {
-				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
-			}
-			return new Shell() {
-				@Override public Installation getInstallation() {
-					return Installation.unpackaged();
-				}
-
-				@Override public Configuration getConfiguration() {
-					return configuration;
-				}
-
-				@Override public Invocation getInvocation() throws Invocation.CheckedException {
-					return Invocation.create(arguments);
-				}
-			};
-		}
 	}
 
 	public static abstract class Configuration {
@@ -144,76 +140,22 @@ public abstract class Shell {
 			public abstract void exit(int status);
 		}
 
-		/**
-		 *
-		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
-		 *	<code>null</code> if it is not.
-		 */
-		public abstract Code.Source getPackagedCode();
+		public static abstract class Packaged {
+			/**
+			 *
+			 *	@return An object capable of loading modules and scripts bundled with a script.
+			 */
+			public abstract Code.Source getCode();
 
-		public abstract File getPackageFile();
+			public abstract File getFile();
+		}
+
+		public abstract Packaged getPackaged();
 
 		public static abstract class Stdio {
 			public abstract InputStream getStandardInput();
 			public abstract OutputStream getStandardOutput();
 			public abstract OutputStream getStandardError();
-		}
-
-		public static Configuration main() {
-			return new Shell.Configuration() {
-				private InputStream stdin = new Logging.InputStream(System.in);
-				//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
-				//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
-				//	ultimately buffering the stdout to the console or other ultimate destination.
-				private OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
-				//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
-				//	device and bytes will never need to be immediately available
-				private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
-
-				public ClassLoader getClassLoader() {
-					return Shell.Configuration.class.getClassLoader();
-				}
-
-				public Properties getSystemProperties() {
-					return System.getProperties();
-				}
-
-				public OperatingSystem.Environment getEnvironment() {
-					return OperatingSystem.Environment.SYSTEM;
-				}
-
-				public Stdio getStdio() {
-					return new Stdio() {
-						public InputStream getStandardInput() {
-							return stdin;
-						}
-
-						public OutputStream getStandardOutput() {
-							return stdout;
-						}
-
-						public OutputStream getStandardError() {
-							return stderr;
-						}
-					};
-				}
-
-				@Override public Code.Source getPackagedCode() {
-					if (System.getProperty("jsh.launcher.packaged") != null) {
-						return Code.Source.system("$packaged/");
-					} else {
-						return null;
-					}
-				}
-
-				@Override public File getPackageFile() {
-					if (System.getProperty("jsh.launcher.packaged") != null) {
-						return new java.io.File(System.getProperty("jsh.launcher.packaged"));
-					} else {
-						return null;
-					}
-				}
-			};
 		}
 	}
 

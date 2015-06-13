@@ -33,13 +33,19 @@ this.jsh = new function() {
 			return invocation;
 		};
 
-		$host.getPackageFile = function() {
-			return configuration.getPackageFile();
+		$host.getPackaged = function() {
+			return configuration.getPackaged();
 		}
 
-		$host.getPackagedCode = function() {
-			return configuration.getPackagedCode();
-		};
+//		$host.getPackageFile = function() {
+//			var packaged = configuration.getPackaged();
+//			return (packaged) ? packaged.getFile() : null;
+//		}
+//
+//		$host.getPackagedCode = function() {
+//			var packaged = configuration.getPackaged();
+//			return (packaged) ? packaged.getCode() : null;
+//		};
 
 		$host.loader = new function() {
 			//	implementation duplicates original

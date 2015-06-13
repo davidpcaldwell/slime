@@ -25,10 +25,10 @@ plugin({
 				}
 				rv.uri = String(_uri.normalize().toString());
 			}
-			if ($jsh.getPackageFile()) {
+			if ($jsh.getPackaged()) {
 				rv.packaged = {
-					file: jsh.file.filesystem.java.adapt($jsh.getPackageFile()).file,
-					loader: new jsh.io.Loader({ _source: $jsh.getPackagedCode() })
+					file: jsh.file.filesystem.java.adapt($jsh.getPackaged().getFile()).file,
+					loader: new jsh.io.Loader({ _source: $jsh.getPackaged().getCode() })
 				}
 			}
 			return rv;

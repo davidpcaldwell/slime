@@ -133,8 +133,8 @@ public class Nashorn {
 	}
 
 	private static void run(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
-		Main.initialize();
-		main(context, Shell.main(args));
+		Shell.initialize();
+		main(context, Main.shell(args));
 	}
 
 	private static class Runner extends Shell.Configuration.Context.Holder.Run {

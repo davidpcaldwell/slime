@@ -429,13 +429,9 @@ $exports.jsh = function(p) {
 					return stdio;
 				}
 
-				this.getPackagedCode = function() {
+				this.getPackaged = function() {
 					return null;
 				};
-
-				this.getPackageFile = function() {
-					return null;
-				}
 			}
 		);
 

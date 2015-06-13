@@ -156,7 +156,7 @@ public class Rhino {
 	}
 
 	private Integer run() throws Invocation.CheckedException {
-		Shell shell = Shell.main(arguments);
+		Shell shell = Main.shell(arguments);
 
 		this.rhino = Configuration.main(shell.getConfiguration());
 
@@ -172,7 +172,7 @@ public class Rhino {
 
 	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Invocation.CheckedException {
 		rhino.initialize(shell.getConfiguration());
-		return Rhino.execute(shell, rhino, new Interface(shell.getInstallation(), rhino));
+		return Rhino.execute(shell, rhino, new Interface(shell, rhino));
 	}
 
 	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Invocation.CheckedException {
@@ -211,19 +211,19 @@ public class Rhino {
 	}
 
 	public static class Interface {
-		private Installation installation;
+		private Shell shell;
 		private Configuration rhino;
 		private Engine.Debugger debugger;
 		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
 
-		Interface(Installation installation, Rhino.Configuration rhino) {
-			this.installation = installation;
+		Interface(Shell shell, Rhino.Configuration rhino) {
+			this.shell = shell;
 			this.rhino = rhino;
 			this.debugger = rhino.getEngine().getDebugger();
 		}
 
-		private Interface(Installation installation, Rhino.Configuration rhino, Engine.Debugger debugger) {
-			this.installation = installation;
+		private Interface(Shell shell, Rhino.Configuration rhino, Engine.Debugger debugger) {
+			this.shell = shell;
 			this.rhino = rhino;
 			this.debugger = debugger;
 		}
@@ -249,12 +249,12 @@ public class Rhino {
 
 		private Interface subinterface() {
 			//	TODO	provide separate classloader for child script
-			return new Interface(installation,rhino,debugger);
+			return new Interface(shell,rhino,debugger);
 		}
 
 		public int jsh(final Shell.Configuration configuration, final Invocation invocation) throws IOException, Invocation.CheckedException {
 			boolean breakOnExceptions = debugger.isBreakOnExceptions();
-			Shell subshell = Shell.create(installation, configuration, invocation);
+			Shell subshell = Shell.create(shell.getInstallationConfiguration(), configuration, invocation);
 			Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
 			debugger.setBreakOnExceptions(breakOnExceptions);
 			if (rv == null) return 0;
@@ -304,7 +304,7 @@ public class Rhino {
 	}
 
 	private static void run(Shell.Configuration.Context context, String[] args) {
-		Main.initialize();
+		Shell.initialize();
 		Logging.get().log(Rhino.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
 		Rhino main = new Rhino();
 		main.arguments = args;
