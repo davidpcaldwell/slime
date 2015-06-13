@@ -270,6 +270,21 @@ public class Shell {
 		}
 	}
 
+	public static class Interface {
+		//	Called by applications to load plugins
+		public Code[] getPlugins(File file) {
+			return Main.getPlugins(file);
+		}
+
+		public Invocation invocation(File script, String[] arguments) {
+			return Main.invocation(script, arguments);
+		}
+	}
+
+	public Interface getInterface() {
+		return new Interface();
+	}
+
 	public static abstract class Execution {
 		private Shell shell;
 

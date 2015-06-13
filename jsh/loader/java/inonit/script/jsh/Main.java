@@ -79,7 +79,7 @@ public class Main {
 	}
 
 	//	Called by applications to load plugins
-	public static Code[] getPlugins(File file) {
+	static Code[] getPlugins(File file) {
 		Logging.get().log(Installation.class, Level.INFO, "Application: load plugins from " + file);
 		List<Code> rv = new ArrayList<Code>();
 		addPluginsTo(rv, file);
@@ -145,7 +145,7 @@ public class Main {
 		};
 	}
 
-	public static Shell.Invocation invocation(final File script, final String[] arguments) {
+	static Shell.Invocation invocation(final File script, final String[] arguments) {
 		return new Shell.Invocation() {
 			@Override public String toString() {
 				String rv = String.valueOf(script);

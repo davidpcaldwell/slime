@@ -36,6 +36,10 @@ this.jsh = new function() {
 			return configuration.getPackaged();
 		}
 
+		$host.getInterface = function() {
+			return $jsh.getInterface();
+		}
+
 //		$host.getPackageFile = function() {
 //			var packaged = configuration.getPackaged();
 //			return (packaged) ? packaged.getFile() : null;
@@ -91,7 +95,7 @@ this.jsh = new function() {
 		};
 
 		$host.getPlugins = function(_file) {
-			return Packages.inonit.script.jsh.Main.getPlugins(_file);
+			return $jsh.getInterface().getPlugins(_file);
 		};
 
 		$host.coffee = $jsh.getLibrary("coffee-script.js");

@@ -65,11 +65,11 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var host = $jsapi.module("../../rhino/host/", {
+				var host = $jsapi.loader.module("../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino,
 					$java: jsh.$jsapi.java
 				});
-				var file = $jsapi.module("../../rhino/file/", new function() {
+				var file = $jsapi.loader.module("../../rhino/file/", new function() {
 					if (jsh.shell.environment.PATHEXT) {
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
 					}
@@ -96,19 +96,19 @@ END LICENSE
 						}
 					}
 				});
-				var shell = $jsapi.module("../../rhino/shell/", {
+				var shell = $jsapi.loader.module("../../rhino/shell/", {
 					api: {
-						js: $jsapi.module("../../js/object/"),
+						js: $jsapi.loader.module("../../js/object/"),
 						java: host,
 						io: jsh.io,
 						file: file,
-						document: $jsapi.module("../../js/document/")
+						document: $jsapi.loader.module("../../js/document/")
 					},
 					_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
 					_properties: Packages.java.lang.System.getProperties()
 				});
 				this.api = {
-					js: $jsapi.module("../../js/object/"),
+					js: $jsapi.loader.module("../../js/object/"),
 					java: host,
 					shell: shell,
 					file: file
@@ -131,8 +131,15 @@ END LICENSE
 				this.exit = function() {
 				}
 
-				this.jsh = function(configuration,invocation) {
-					return jsh.$jsapi.$rhino.jsh(configuration,invocation);
+				this.jsh = function(configuration,script,args) {
+					var $jsh = jsh.$jsapi.$rhino;
+					var _invocation = $jsh.getInterface().invocation(
+						script.pathname.java.adapt(),
+						jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
+							return new Packages.java.lang.String(s);
+						})
+					);
+					return jsh.$jsapi.$rhino.jsh(configuration,_invocation);
 				}
 			}
 		</script>

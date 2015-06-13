@@ -50,10 +50,16 @@ plugin({
 		};
 		context.exit = function(code) {
 			$jsh.exit(code);
-		}
-		context.jsh = function(configuration,invocation) {
-			return $jsh.jsh(configuration,invocation)
-		}
+		};
+		context.jsh = function(configuration,script,args) {
+			var _invocation = $jsh.getInterface().invocation(
+				script.pathname.java.adapt(),
+				jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
+					return new Packages.java.lang.String(s);
+				})
+			);
+			return $jsh.jsh(configuration,_invocation)
+		};
 		$loader.run(
 			"jsh.js",
 			{
