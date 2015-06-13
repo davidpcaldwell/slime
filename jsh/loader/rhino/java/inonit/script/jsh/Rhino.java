@@ -148,7 +148,7 @@ public class Rhino {
 		}
 	}
 
-	private String[] arguments;
+	private Shell shell;
 
 	private Configuration rhino;
 
@@ -156,8 +156,6 @@ public class Rhino {
 	}
 
 	private Integer run() throws Invocation.CheckedException {
-		Shell shell = Main.shell(arguments);
-
 		this.rhino = Configuration.main(shell.getConfiguration());
 
 		Integer rv = Rhino.execute(
@@ -303,12 +301,10 @@ public class Rhino {
 		}
 	}
 
-	private static class EngineImpl extends Main.Engine {
-		private static void run(Shell.Configuration.Context context, String[] args) {
-			Shell.initialize();
-			Logging.get().log(Rhino.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
+	public static class EngineImpl extends Main.Engine {
+		private static void run(Shell.Configuration.Context context, Shell shell) {
 			Rhino main = new Rhino();
-			main.arguments = args;
+			main.shell = shell;
 			try {
 	//			Integer status = java.util.concurrent.Executors.newCachedThreadPool().submit(main.new Run()).get();
 				Run run = main.new Run();
@@ -333,14 +329,21 @@ public class Rhino {
 				Logging.get().log(Rhino.class, Level.SEVERE, "Exiting with throwable.", t);
 				Throwable target = t;
 				System.err.println("Error executing " + Rhino.class.getName());
-				String argsString = "";
-				for (int i=0; i<args.length; i++) {
-					argsString += args[i];
-					if (i+1 != args.length) {
-						argsString += ",";
-					}
-				}
-				System.err.println("Arguments " + argsString);
+				//	TODO	this error handling can no longer print arguments because they are not passed here, and regardless,
+				//			should be handled at a higher level
+//				String script = shell.getInvocation().getScript().getUri().toString();
+//				String[] args = shell.getInvocation().getArguments();
+//				String argsString = script;
+//				for (int i=0; i<args.length; i++) {
+//					if (i == 0) {
+//						argsString += " ";
+//					}
+//					argsString += args[i];
+//					if (i+1 != args.length) {
+//						argsString += ",";
+//					}
+//				}
+//				System.err.println("Arguments " + argsString);
 				System.err.println("System properties " + System.getProperties().toString());
 				System.err.println("Heap size: max = " + Runtime.getRuntime().maxMemory());
 				System.err.println("Heap size: free = " + Runtime.getRuntime().freeMemory());
@@ -358,19 +361,21 @@ public class Rhino {
 					target = target.getCause();
 				}
 				context.exit(1);
+			} finally {
+
 			}
 		}
 
-		public void main(Shell.Configuration.Context context, String[] args) {
-			run(context, args);
+		public void main(Shell.Configuration.Context context, Shell shell) {
+			run(context, shell);
 		}
 	}
 
-	public static Integer run(String[] args) throws Invocation.CheckedException {
-		return new EngineImpl().embed(args);
+	public static Main.Engine engine() {
+		return new EngineImpl();
 	}
 
 	public static void main(String[] args) throws Throwable {
-		new EngineImpl().cli(args);
+		engine().cli(args);
 	}
 }

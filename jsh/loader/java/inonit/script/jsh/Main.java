@@ -15,6 +15,7 @@ package inonit.script.jsh;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 import inonit.system.*;
 import inonit.script.engine.*;
@@ -196,7 +197,7 @@ public class Main {
 		};
 	}
 
-	public static Shell shell(final String[] arguments) {
+	private static Shell shell(final String[] arguments) throws Invocation.CheckedException {
 		final Shell.Configuration configuration = shell();
 		if (System.getProperty("jsh.launcher.packaged") != null) {
 			return new Shell() {
@@ -216,6 +217,7 @@ public class Main {
 			if (arguments.length == 0) {
 				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
 			}
+			final Invocation invocation = Invocation.create(arguments);
 			return new Shell() {
 				@Override public Installation.Configuration getInstallationConfiguration() {
 					return unpackagedInstallation();
@@ -225,19 +227,21 @@ public class Main {
 					return configuration;
 				}
 
-				@Override public Invocation getInvocation() throws Invocation.CheckedException {
-					return Invocation.create(arguments);
+				@Override public Invocation getInvocation() {
+					return invocation;
 				}
 			};
 		}
 	}
 
 	public static abstract class Engine {
-		public abstract void main(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException;
+		public abstract void main(Shell.Configuration.Context context, Shell shell) throws Invocation.CheckedException;
 
 		public final void shell(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
 			Shell.initialize();
-			main(context, args);
+			Logging.get().log(Main.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
+			Shell shell = Main.shell(args);
+			main(context, shell);
 		}
 
 		private class Runner extends Shell.Configuration.Context.Holder.Run {
@@ -258,5 +262,9 @@ public class Main {
 		public final void cli(String[] args) throws Invocation.CheckedException {
 			shell(Shell.Configuration.Context.VM, args);
 		}
+	}
+
+	public static Integer run(Engine engine, String[] args) throws Invocation.CheckedException {
+		return engine.embed(args);
 	}
 }

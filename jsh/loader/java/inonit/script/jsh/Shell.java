@@ -70,7 +70,7 @@ public abstract class Shell {
 	}
 
 	public abstract Configuration getConfiguration();
-	public abstract Invocation getInvocation() throws Invocation.CheckedException;
+	public abstract Invocation getInvocation();
 
 	public static Shell create(final Installation.Configuration installation, final Configuration configuration, final Invocation invocation) {
 		return new Shell() {
@@ -82,7 +82,7 @@ public abstract class Shell {
 				return configuration;
 			}
 
-			@Override public Invocation getInvocation() throws Invocation.CheckedException {
+			@Override public Invocation getInvocation() {
 				return invocation;
 			}
 		};

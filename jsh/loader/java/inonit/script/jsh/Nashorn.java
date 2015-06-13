@@ -53,10 +53,6 @@ public class Nashorn extends Main.Engine {
 		}
 	}
 
-	public void main(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
-		main(context, Main.shell(args));
-	}
-
 	public static class UncaughtException extends RuntimeException {
 		UncaughtException(ScriptException e) {
 			super(e);
@@ -136,13 +132,13 @@ public class Nashorn extends Main.Engine {
 		}
 	}
 
-	public static Integer run(String[] args) throws Invocation.CheckedException {
-		return new Nashorn().embed(args);
+	public static Main.Engine engine() {
+		return new Nashorn();
 	}
 
 	public static void main(final String[] args) throws Invocation.CheckedException {
 		try {
-			new Nashorn().cli(args);
+			engine().cli(args);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			System.exit(255);

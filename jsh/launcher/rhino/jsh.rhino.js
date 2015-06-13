@@ -736,8 +736,11 @@ try {
 
 		this.run = function(mode) {
 			var _classloader = new classpath.ClassLoader();
+			var _main = _classloader.loadClass("inonit.script.jsh.Main");
 			var _class = _classloader.loadClass(mainClassName);
-			var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
+			var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
+			var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
+
 			var loaderArguments = [];
 			if (script && typeof(script.path) != "undefined") {
 				loaderArguments.push(script.path);
@@ -745,14 +748,19 @@ try {
 				loaderArguments.push(script);
 			}
 			loaderArguments.push.apply(loaderArguments,args);
+
 			var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
 			for (var i=0; i<loaderArguments.length; i++) {
 				_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
 			}
-			var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 1 });
-			_invokeArguments[0] = _arguments;
-			_argumentTypes[0] = _arguments.getClass();
-			var _method = _class.getMethod("run",_argumentTypes);
+
+			var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 2 });
+			var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 2 });
+			_invokeArguments[0] = _engine;
+			_argumentTypes[0] = _classloader.loadClass("inonit.script.jsh.Main$Engine");
+			_invokeArguments[1] = _arguments;
+			_argumentTypes[1] = _arguments.getClass();
+			var _method = _main.getMethod("run",_argumentTypes);
 			return _method.invoke(null,_invokeArguments);
 		}
 	}
