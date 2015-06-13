@@ -21,8 +21,73 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Main {
-	public static Shell.Configuration shell() {
-		return new Shell.Configuration() {
+	static class PluginComparator implements Comparator<File> {
+		private int evaluate(File file) {
+			if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+				return -1;
+			}
+			return 0;
+		}
+
+		public int compare(File o1, File o2) {
+			return evaluate(o1) - evaluate(o2);
+		}
+	}
+
+	private static void addPluginsTo(List<Code> rv, File file, boolean warn) {
+		if (file.exists()) {
+			if (file.isDirectory()) {
+				if (new File(file, "plugin.jsh.js").exists()) {
+					//	interpret as unpacked module
+					Logging.get().log(Installation.class, Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
+					rv.add(Code.unpacked(file));
+				} else {
+					//	interpret as directory that may contain plugins
+					File[] list = file.listFiles();
+					Arrays.sort(list, new PluginComparator());
+					for (File f : list) {
+						addPluginsTo(rv, f, false);
+					}
+				}
+			} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
+				try {
+					Code p = Code.slime(file);
+					if (p.getScripts().getFile("plugin.jsh.js") != null) {
+						Logging.get().log(Installation.class, Level.WARNING, "Loading plugin from %s ...", file);
+						rv.add(p);
+					} else {
+						Logging.get().log(Installation.class, Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
+					}
+				} catch (IOException e) {
+					//	TODO	probably error message or warning
+				}
+			} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+				Logging.get().log(Installation.class, Level.CONFIG, "Loading Java plugin from " + file + " ...");
+				rv.add(Code.jar(file));
+			} else {
+				//	Ignore, exists but not .slime or .jar or directory
+				//	TODO	probably log message of some kind
+				if (warn) Logging.get().log(Installation.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
+			}
+		} else {
+			Logging.get().log(Installation.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
+		}
+	}
+
+	static void addPluginsTo(List<Code> rv, File file) {
+		addPluginsTo(rv, file, true);
+	}
+
+	//	Called by applications to load plugins
+	public static Code[] getPlugins(File file) {
+		Logging.get().log(Installation.class, Level.INFO, "Application: load plugins from " + file);
+		List<Code> rv = new ArrayList<Code>();
+		addPluginsTo(rv, file);
+		return rv.toArray(new Code[rv.size()]);
+	}
+
+	public static Shell.Environment shell() {
+		return new Shell.Environment() {
 			private InputStream stdin = new Logging.InputStream(System.in);
 			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
 			//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
@@ -33,7 +98,7 @@ public class Main {
 			private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
 
 			public ClassLoader getClassLoader() {
-				return Shell.Configuration.class.getClassLoader();
+				return Shell.Environment.class.getClassLoader();
 			}
 
 			public Properties getSystemProperties() {
@@ -80,8 +145,104 @@ public class Main {
 		};
 	}
 
-	public static Installation.Configuration unpackagedInstallation() {
-		return new Installation.Configuration() {
+	public static Shell.Invocation invocation(final File script, final String[] arguments) {
+		return new Shell.Invocation() {
+			@Override public String toString() {
+				String rv = String.valueOf(script);
+				for (String s : arguments) {
+					rv += " " + s;
+				}
+				return rv;
+			}
+
+			@Override public Shell.Script getScript() {
+				return Shell.Script.create(script);
+			}
+
+			@Override public String[] getArguments() {
+				return arguments;
+			}
+		};
+	}
+
+	static Shell.Invocation packaged(final String[] arguments) {
+		return new Shell.Invocation() {
+			public Shell.Script getScript() {
+				//	TODO	DRY with Installation.java; may go away as we refactor URI management
+				return Shell.Script.create(Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/main.jsh.js"), "main.jsh.js", null, null, ClassLoader.getSystemResourceAsStream("main.jsh.js")));
+			}
+
+			public String[] getArguments() {
+				return arguments;
+			}
+		};
+	}
+
+	static Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
+		if (arguments.length == 0) {
+			throw new IllegalArgumentException("At least one argument, representing the script, is required.");
+		}
+		final List<String> args = new ArrayList<String>();
+		args.addAll(Arrays.asList(arguments));
+		final String scriptPath = args.remove(0);
+		if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
+			final java.net.URL url;
+			final java.io.InputStream stream;
+			try {
+				url = new java.net.URL(scriptPath);
+				stream = url.openStream();
+			} catch (java.net.MalformedURLException e) {
+				throw new Shell.Invocation.CheckedException("Malformed URL: " + scriptPath, e);
+			} catch (IOException e) {
+				throw new Shell.Invocation.CheckedException("Could not open: " + scriptPath, e);
+			}
+			return new Shell.Invocation() {
+				public Shell.Script getScript() {
+					return new Shell.Script() {
+						@Override
+						public java.net.URI getUri() {
+							try {
+								return url.toURI();
+							} catch (java.net.URISyntaxException e) {
+								//	TODO	when can this happen? Probably should refactor to do this parsing earlier and use
+								//			CheckedException
+								throw new RuntimeException(e);
+							}
+						}
+
+						@Override
+						public Code.Source.File getSource() {
+							return Code.Source.File.create(Code.Source.URI.create(url), scriptPath, null, null, stream);
+						}
+					};
+				}
+
+				public String[] getArguments() {
+					return args.toArray(new String[args.size()]);
+				}
+			};
+		} else {
+			final File mainScript = new File(scriptPath);
+			if (!mainScript.exists()) {
+				//	TODO	this really should not happen if the launcher is launching this
+				throw new Shell.Invocation.CheckedException("File not found: " + scriptPath);
+			}
+			if (mainScript.isDirectory()) {
+				throw new Shell.Invocation.CheckedException("Filename: " + scriptPath + " is a directory");
+			}
+			return new Shell.Invocation() {
+				public Shell.Script getScript() {
+					return Shell.Script.create(mainScript);
+				}
+
+				public String[] getArguments() {
+					return (String[]) args.toArray(new String[0]);
+				}
+			};
+		}
+	}
+	public static Shell.Configuration.Installation unpackagedInstallation() {
+		return new Shell.Configuration.Installation() {
 			public String toString() {
 				return getClass().getName()
 					+ " jsh.library.scripts.loader=" + System.getProperty("jsh.library.scripts.loader")
@@ -105,6 +266,14 @@ public class Main {
 //				}
 //			}
 
+			public Code.Source getPlatformLoader() {
+				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.loader")));
+			}
+
+			public Code.Source getJshLoader() {
+				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.jsh")));
+			}
+
 			private File getModulePath(String path) {
 				String property = System.getProperty("jsh.library.modules");
 				File directory = new File(property + "/" + path);
@@ -115,14 +284,6 @@ public class Main {
 					return file;
 				}
 				throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
-			}
-
-			public Code.Source getPlatformLoader() {
-				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.loader")));
-			}
-
-			public Code.Source getJshLoader() {
-				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.jsh")));
 			}
 
 			public Code getShellModuleCode(String path) {
@@ -137,8 +298,8 @@ public class Main {
 		};
 	}
 
-	public static Installation.Configuration packagedInstallation() {
-		return new Installation.Configuration() {
+	public static Shell.Configuration.Installation packagedInstallation() {
+		return new Shell.Configuration.Installation() {
 			public String toString() {
 				return getClass().getName() + " [packaged]";
 			}
@@ -197,37 +358,38 @@ public class Main {
 		};
 	}
 
-	private static Shell shell(final String[] arguments) throws Invocation.CheckedException {
-		final Shell.Configuration configuration = shell();
+	private static Shell.Configuration shell(final String[] arguments) throws Shell.Invocation.CheckedException {
+		Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
+		final Shell.Environment configuration = shell();
 		if (System.getProperty("jsh.launcher.packaged") != null) {
-			return new Shell() {
-				@Override public Installation.Configuration getInstallationConfiguration() {
+			return new Shell.Configuration() {
+				@Override public Shell.Configuration.Installation getInstallation() {
 					return packagedInstallation();
 				}
 
-				@Override public Shell.Configuration getConfiguration() {
+				@Override public Shell.Environment getEnvironment() {
 					return configuration;
 				}
 
-				@Override public Invocation getInvocation() {
-					return Invocation.packaged(arguments);
+				@Override public Shell.Invocation getInvocation() {
+					return packaged(arguments);
 				}
 			};
 		} else {
 			if (arguments.length == 0) {
 				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
 			}
-			final Invocation invocation = Invocation.create(arguments);
-			return new Shell() {
-				@Override public Installation.Configuration getInstallationConfiguration() {
+			final Shell.Invocation invocation = invocation(arguments);
+			return new Shell.Configuration() {
+				@Override public Shell.Configuration.Installation getInstallation() {
 					return unpackagedInstallation();
 				}
 
-				@Override public Shell.Configuration getConfiguration() {
+				@Override public Shell.Environment getEnvironment() {
 					return configuration;
 				}
 
-				@Override public Invocation getInvocation() {
+				@Override public Shell.Invocation getInvocation() {
 					return invocation;
 				}
 			};
@@ -235,36 +397,53 @@ public class Main {
 	}
 
 	public static abstract class Engine {
-		public abstract void main(Shell.Configuration.Context context, Shell shell) throws Invocation.CheckedException;
+		public abstract void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException;
 
-		public final void shell(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
-			Shell.initialize();
-			Logging.get().log(Main.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
-			Shell shell = Main.shell(args);
-			main(context, shell);
+		public final void shell(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
+			if (!inonit.system.Logging.get().isSpecified()) {
+				inonit.system.Logging.get().initialize(new java.util.Properties());
+			}
+			Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+				public void uncaughtException(Thread t, Throwable e) {
+					Throwable error = e;
+					java.io.PrintWriter writer = new java.io.PrintWriter(System.err,true);
+					while(error != null) {
+						writer.println(error.getClass().getName() + ": " + error.getMessage());
+						StackTraceElement[] trace = error.getStackTrace();
+						for (StackTraceElement line : trace) {
+							writer.println("\t" + line);
+						}
+						error = error.getCause();
+						if (error != null) {
+							writer.print("Caused by: ");
+						}
+					}
+				}
+			});
+			main(context, Shell.create(shell));
 		}
 
-		private class Runner extends Shell.Configuration.Context.Holder.Run {
+		private class Runner extends Shell.Container.Holder.Run {
 			public void threw(Throwable t) {
 				t.printStackTrace();
 			}
 
-			public void run(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
-				Engine.this.shell(context,args);
+			public void run(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
+				Engine.this.shell(context,shell);
 			}
 		}
 
-		public final Integer embed(String[] args) throws Invocation.CheckedException {
-			Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
-			return context.getExitCode(new Runner(), args);
+		public final Integer embed(String[] args) throws Shell.Invocation.CheckedException {
+			Shell.Container.Holder context = new Shell.Container.Holder();
+			return context.getExitCode(new Runner(), Main.shell(args));
 		}
 
-		public final void cli(String[] args) throws Invocation.CheckedException {
-			shell(Shell.Configuration.Context.VM, args);
+		public final void cli(String[] args) throws Shell.Invocation.CheckedException {
+			shell(Shell.Container.VM, Main.shell(args));
 		}
 	}
 
-	public static Integer run(Engine engine, String[] args) throws Invocation.CheckedException {
+	public static Integer run(Engine engine, String[] args) throws Shell.Invocation.CheckedException {
 		return engine.embed(args);
 	}
 }

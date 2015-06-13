@@ -324,7 +324,7 @@ $exports.jsh = function(p) {
 		}
 	} else {
 		var configuration = new JavaAdapter(
-			Packages.inonit.script.jsh.Shell.Configuration,
+			Packages.inonit.script.jsh.Shell.Environment,
 			new function() {
 //				this.getOptimizationLevel = function() {
 //					return -1;
@@ -343,7 +343,7 @@ $exports.jsh = function(p) {
 //				}
 
 				var stdio = new JavaAdapter(
-					Packages.inonit.script.jsh.Shell.Configuration.Stdio,
+					Packages.inonit.script.jsh.Shell.Environment.Stdio,
 					new function() {
 						var Streams = Packages.inonit.script.runtime.io.Streams;
 
@@ -441,7 +441,7 @@ $exports.jsh = function(p) {
 		//	TODO	Does Rhino 1.7R3 obviate the need for the Java array conversion stuff?
 		var status = $context.jsh(
 			configuration
-			,Packages.inonit.script.jsh.Invocation.jsh(
+			,Packages.inonit.script.jsh.Main.invocation(
 				p.script.pathname.java.adapt(),
 				$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
 					return new Packages.java.lang.String(s);

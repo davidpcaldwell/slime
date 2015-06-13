@@ -49,7 +49,11 @@ public class Rhino {
 
 		@Override public void addEngine() {
 			host("$rhino", $rhino);
-			script(this.getShell().getInstallation().getJshLoader("rhino.js"));
+			try {
+				script(this.getShell().getJshLoader().getFile("rhino.js"));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override public void script(Code.Source.File script) {
@@ -71,7 +75,7 @@ public class Rhino {
 
 		private Engine engine;
 
-		final void initialize(final Shell.Configuration shell) {
+		final void initialize(final Shell.Environment shell) {
 			Engine.Configuration contexts = new Engine.Configuration() {
 				@Override public ClassLoader getApplicationClassLoader() {
 					return shell.getClassLoader();
@@ -92,7 +96,7 @@ public class Rhino {
 			return engine;
 		}
 
-		static Configuration main(final Shell.Configuration shell) {
+		static Configuration main(final Shell.Environment shell) {
 			return new Configuration() {
 				public int getOptimizationLevel() {
 					int optimization = -1;
@@ -155,8 +159,8 @@ public class Rhino {
 	private Rhino() {
 	}
 
-	private Integer run() throws Invocation.CheckedException {
-		this.rhino = Configuration.main(shell.getConfiguration());
+	private Integer run() throws Shell.Invocation.CheckedException {
+		this.rhino = Configuration.main(shell.getEnvironment());
 
 		Integer rv = Rhino.execute(
 			shell,
@@ -168,12 +172,12 @@ public class Rhino {
 
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Invocation.CheckedException {
-		rhino.initialize(shell.getConfiguration());
+	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Shell.Invocation.CheckedException {
+		rhino.initialize(shell.getEnvironment());
 		return Rhino.execute(shell, rhino, new Interface(shell, rhino));
 	}
 
-	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Invocation.CheckedException {
+	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Shell.Invocation.CheckedException {
 		try {
 			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $rhino);
 			Integer ignore = execution.execute(shell);
@@ -192,7 +196,7 @@ public class Rhino {
 		}
 	}
 
-//	public static Scriptable load(Installation installation, Shell.Configuration configuration, Rhino.Configuration rhino, Invocation invocation) {
+//	public static Scriptable load(Installation installation, Shell.Environment configuration, Rhino.Configuration rhino, Invocation invocation) {
 //		return Host.create(installation, configuration, rhino, invocation).load();
 //	}
 
@@ -250,9 +254,9 @@ public class Rhino {
 			return new Interface(shell,rhino,debugger);
 		}
 
-		public int jsh(final Shell.Configuration configuration, final Invocation invocation) throws IOException, Invocation.CheckedException {
+		public int jsh(final Shell.Environment configuration, final Shell.Invocation invocation) throws IOException, Shell.Invocation.CheckedException {
 			boolean breakOnExceptions = debugger.isBreakOnExceptions();
-			Shell subshell = Shell.create(shell.getInstallationConfiguration(), configuration, invocation);
+			Shell subshell = shell.subshell(configuration, invocation);
 			Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
 			debugger.setBreakOnExceptions(breakOnExceptions);
 			if (rv == null) return 0;
@@ -280,7 +284,7 @@ public class Rhino {
 //	}
 
 	private class Run implements Runnable {
-		public Integer call() throws Invocation.CheckedException {
+		public Integer call() throws Shell.Invocation.CheckedException {
 			return Rhino.this.run();
 		}
 
@@ -302,7 +306,7 @@ public class Rhino {
 	}
 
 	public static class EngineImpl extends Main.Engine {
-		private static void run(Shell.Configuration.Context context, Shell shell) {
+		private static void run(Shell.Container context, Shell shell) {
 			Rhino main = new Rhino();
 			main.shell = shell;
 			try {
@@ -321,7 +325,7 @@ public class Rhino {
 					main.rhino.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}
-			} catch (Invocation.CheckedException e) {
+			} catch (Shell.Invocation.CheckedException e) {
 				Logging.get().log(Rhino.class, Level.INFO, "Exiting with checked exception.", e);
 				System.err.println(e.getMessage());
 				context.exit(1);
@@ -366,7 +370,7 @@ public class Rhino {
 			}
 		}
 
-		public void main(Shell.Configuration.Context context, Shell shell) {
+		public void main(Shell.Container context, Shell shell) {
 			run(context, shell);
 		}
 	}
