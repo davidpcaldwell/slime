@@ -172,6 +172,10 @@ public class Shell {
 	public static abstract class Script {
 		private static Script create(final Code.Source.File delegate, final java.net.URI uri) {
 			return new Script() {
+				@Override public String toString() {
+					return Script.class.getName() + " delegate=" + delegate + " uri=" + uri;
+				}
+
 				@Override public java.net.URI getUri() {
 					return uri;
 				}
@@ -230,6 +234,34 @@ public class Shell {
 	}
 
 	public static abstract class Environment {
+		public static Environment create(final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
+			return new Environment() {
+				@Override
+				public ClassLoader getClassLoader() {
+					return loader;
+				}
+
+				@Override
+				public Properties getSystemProperties() {
+					return properties;
+				}
+
+				@Override
+				public OperatingSystem.Environment getEnvironment() {
+					return environment;
+				}
+
+				@Override
+				public Stdio getStdio() {
+					return stdio;
+				}
+
+				@Override
+				public Packaged getPackaged() {
+					return packaged;
+				}
+			};
+		}
 		public abstract ClassLoader getClassLoader();
 
 		public abstract Properties getSystemProperties();
@@ -237,6 +269,19 @@ public class Shell {
 		public abstract Stdio getStdio();
 
 		public static abstract class Packaged {
+			public static Packaged create(final Code.Source code, final File file) {
+				return new Packaged() {
+					@Override
+					public Code.Source getCode() {
+						return code;
+					}
+
+					@Override
+					public File getFile() {
+						return file;
+					}
+				};
+			}
 			/**
 			 *
 			 *	@return An object capable of loading modules and scripts bundled with a script.
@@ -249,6 +294,22 @@ public class Shell {
 		public abstract Packaged getPackaged();
 
 		public static abstract class Stdio {
+			public static Stdio create(final InputStream in, final OutputStream out, final OutputStream err) {
+				return new Stdio() {
+					@Override public InputStream getStandardInput() {
+						return in;
+					}
+
+					@Override public OutputStream getStandardOutput() {
+						return out;
+					}
+
+					@Override public OutputStream getStandardError() {
+						return err;
+					}
+				};
+			}
+
 			public abstract InputStream getStandardInput();
 			public abstract OutputStream getStandardOutput();
 			public abstract OutputStream getStandardError();
@@ -256,6 +317,27 @@ public class Shell {
 	}
 
 	public static abstract class Invocation {
+		public static Invocation create(final Script script, final String[] arguments) {
+			//	TODO	probably should copy arguments array to make it immutable
+			return new Invocation() {
+				@Override public String toString() {
+					String rv = String.valueOf(script);
+					for (String s : arguments) {
+						rv += " " + s;
+					}
+					return rv;
+				}
+
+				@Override public Script getScript() {
+					return script;
+				}
+
+				@Override public String[] getArguments() {
+					return arguments;
+				}
+			};
+		}
+
 		public abstract Script getScript();
 		public abstract String[] getArguments();
 

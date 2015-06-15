@@ -86,99 +86,152 @@ public class Main {
 		return rv.toArray(new Code[rv.size()]);
 	}
 
-	public static Shell.Environment shell() {
-		return new Shell.Environment() {
-			private InputStream stdin = new Logging.InputStream(System.in);
-			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
-			//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
-			//	ultimately buffering the stdout to the console or other ultimate destination.
-			private OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
-			//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
-			//	device and bytes will never need to be immediately available
-			private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
-
-			public ClassLoader getClassLoader() {
-				return Shell.Environment.class.getClassLoader();
+	private static Shell.Configuration.Installation unpackagedInstallation() {
+		return new Shell.Configuration.Installation() {
+			public String toString() {
+				return getClass().getName()
+					+ " jsh.library.scripts.loader=" + System.getProperty("jsh.library.scripts.loader")
+					+ " jsh.library.scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
+					+ " jsh.library.modules=" + System.getProperty("jsh.library.modules")
+					+ " jsh.plugins=" + System.getProperty("jsh.plugins")
+				;
 			}
 
-			public Properties getSystemProperties() {
-				return System.getProperties();
+//			File getFile(String prefix, String name) {
+//				String propertyName = "jsh.library.scripts." + prefix;
+//				if (System.getProperty(propertyName) != null) {
+//					File dir = new File(System.getProperty(propertyName));
+//					return new File(dir, name);
+//				} else if (System.getProperty("jsh.library.scripts") != null) {
+//					File root = new File(System.getProperty("jsh.library.scripts"));
+//					File dir = new File(root, prefix);
+//					return new File(dir, name);
+//				} else {
+//					throw new RuntimeException("Script not found: " + prefix + "/" + name);
+//				}
+//			}
+
+			public Code.Source getPlatformLoader() {
+				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.loader")));
 			}
 
-			public OperatingSystem.Environment getEnvironment() {
-				return OperatingSystem.Environment.SYSTEM;
+			public Code.Source getJshLoader() {
+				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.jsh")));
 			}
 
-			public Stdio getStdio() {
-				return new Stdio() {
-					public InputStream getStandardInput() {
-						return stdin;
+			private File getModulePath(String path) {
+				String property = System.getProperty("jsh.library.modules");
+				File directory = new File(property + "/" + path);
+				File file = new File(property + "/" + path.replace('/', '.') + ".slime");
+				if (directory.exists() && directory.isDirectory()) {
+					return directory;
+				} else if (file.exists()) {
+					return file;
+				}
+				throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
+			}
+
+			public Code getShellModuleCode(String path) {
+				return Code.slime(getModulePath(path));
+			}
+
+			public File[] getPluginRoots() {
+				//	Defaults for jsh.plugins: installation modules directory? Probably obsolete given that we will be loading
+				//	them. $HOME/.jsh/plugins?
+				return getPluginRoots(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
+			}
+		};
+	}
+
+	private static Shell.Configuration.Installation packagedInstallation() {
+		return new Shell.Configuration.Installation() {
+			public String toString() {
+				return getClass().getName() + " [packaged]";
+			}
+
+			//	TODO	the below mess was constructed to quickly get through adapting some APIs and should be revisited
+
+			private Code.Source.File getPlatformLoader(String path) {
+				return Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/platform/" + path),"[slime]:" + path, null, null, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
+			}
+
+			public Code.Source getPlatformLoader() {
+				return new Code.Source() {
+					@Override
+					public Code.Source.File getFile(String path) throws IOException {
+						return getPlatformLoader(path);
 					}
 
-					public OutputStream getStandardOutput() {
-						return stdout;
-					}
-
-					public OutputStream getStandardError() {
-						return stderr;
+					@Override
+					public Code.Classes getClasses() {
+						return null;
 					}
 				};
 			}
 
-			@Override public Packaged getPackaged() {
-				if (System.getProperty("jsh.launcher.packaged") != null) {
-					return new Packaged() {
-						@Override
-						public Code.Source getCode() {
-							return Code.Source.system("$packaged/");
-						}
-
-						@Override
-						public File getFile() {
-							return new java.io.File(System.getProperty("jsh.launcher.packaged"));
-						}
-					};
-				} else {
-					return null;
+			private Code.Source.File getJshLoader(String path) {
+				InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/" + path);
+				if (in == null) {
+					throw new RuntimeException("Not found in system class loader: $jsh/" + path + "; system class path is " + System.getProperty("java.class.path"));
 				}
+				return Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/jsh/" + path), "jsh/" + path, null, null, in);
+			}
+
+			public Code.Source getJshLoader() {
+				return new Code.Source() {
+					@Override
+					public Code.Source.File getFile(String path) throws IOException {
+						return getJshLoader(path);
+					}
+
+					@Override
+					public Code.Classes getClasses() {
+						return null;
+					}
+				};
+			}
+
+			public Code getShellModuleCode(String path) {
+				return Code.system(
+					"$jsh/modules/" + path + "/"
+				);
+			}
+
+			public File[] getPluginRoots() {
+				return getPluginRoots(System.getProperty("jsh.plugins"));
 			}
 		};
+	}
+
+	private static Shell.Environment environment() {
+		InputStream stdin = new Logging.InputStream(System.in);
+		//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
+		//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
+		//	ultimately buffering the stdout to the console or other ultimate destination.
+		OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
+		//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
+		//	device and bytes will never need to be immediately available
+		OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
+		final Shell.Environment.Stdio stdio = Shell.Environment.Stdio.create(stdin, stdout, stderr);
+		final Shell.Environment.Packaged packaged = (System.getProperty("jsh.launcher.packaged") != null)
+			? Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), new java.io.File(System.getProperty("jsh.launcher.packaged")))
+			: null
+		;
+		return Shell.Environment.create(Shell.Environment.class.getClassLoader(), System.getProperties(), OperatingSystem.Environment.SYSTEM, stdio, packaged);
 	}
 
 	static Shell.Invocation invocation(final File script, final String[] arguments) {
-		return new Shell.Invocation() {
-			@Override public String toString() {
-				String rv = String.valueOf(script);
-				for (String s : arguments) {
-					rv += " " + s;
-				}
-				return rv;
-			}
-
-			@Override public Shell.Script getScript() {
-				return Shell.Script.create(script);
-			}
-
-			@Override public String[] getArguments() {
-				return arguments;
-			}
-		};
+		return Shell.Invocation.create(Shell.Script.create(script), arguments);
 	}
 
 	static Shell.Invocation packaged(final String[] arguments) {
-		return new Shell.Invocation() {
-			public Shell.Script getScript() {
-				//	TODO	DRY with Installation.java; may go away as we refactor URI management
-				return Shell.Script.create(Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/main.jsh.js"), "main.jsh.js", null, null, ClassLoader.getSystemResourceAsStream("main.jsh.js")));
-			}
-
-			public String[] getArguments() {
-				return arguments;
-			}
-		};
+		return Shell.Invocation.create(
+			Shell.Script.create(Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/main.jsh.js"), "main.jsh.js", null, null, ClassLoader.getSystemResourceAsStream("main.jsh.js"))),
+			arguments
+		);
 	}
 
-	static Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
+	private static Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
 		if (arguments.length == 0) {
 			throw new IllegalArgumentException("At least one argument, representing the script, is required.");
 		}
@@ -241,158 +294,16 @@ public class Main {
 			};
 		}
 	}
-	public static Shell.Configuration.Installation unpackagedInstallation() {
-		return new Shell.Configuration.Installation() {
-			public String toString() {
-				return getClass().getName()
-					+ " jsh.library.scripts.loader=" + System.getProperty("jsh.library.scripts.loader")
-					+ " jsh.library.scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
-					+ " jsh.library.modules=" + System.getProperty("jsh.library.modules")
-					+ " jsh.plugins=" + System.getProperty("jsh.plugins")
-				;
-			}
 
-//			File getFile(String prefix, String name) {
-//				String propertyName = "jsh.library.scripts." + prefix;
-//				if (System.getProperty(propertyName) != null) {
-//					File dir = new File(System.getProperty(propertyName));
-//					return new File(dir, name);
-//				} else if (System.getProperty("jsh.library.scripts") != null) {
-//					File root = new File(System.getProperty("jsh.library.scripts"));
-//					File dir = new File(root, prefix);
-//					return new File(dir, name);
-//				} else {
-//					throw new RuntimeException("Script not found: " + prefix + "/" + name);
-//				}
-//			}
-
-			public Code.Source getPlatformLoader() {
-				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.loader")));
-			}
-
-			public Code.Source getJshLoader() {
-				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.jsh")));
-			}
-
-			private File getModulePath(String path) {
-				String property = System.getProperty("jsh.library.modules");
-				File directory = new File(property + "/" + path);
-				File file = new File(property + "/" + path.replace('/', '.') + ".slime");
-				if (directory.exists() && directory.isDirectory()) {
-					return directory;
-				} else if (file.exists()) {
-					return file;
-				}
-				throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
-			}
-
-			public Code getShellModuleCode(String path) {
-				return Code.slime(getModulePath(path));
-			}
-
-			public File[] getPluginRoots() {
-				//	Defaults for jsh.plugins: installation modules directory? Probably obsolete given that we will be loading
-				//	them. $HOME/.jsh/plugins?
-				return getPluginRoots(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
-			}
-		};
-	}
-
-	public static Shell.Configuration.Installation packagedInstallation() {
-		return new Shell.Configuration.Installation() {
-			public String toString() {
-				return getClass().getName() + " [packaged]";
-			}
-
-			//	TODO	the below mess was constructed to quickly get through adapting some APIs and should be revisited
-
-			private Code.Source.File getPlatformLoader(String path) {
-				return Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/platform/" + path),"[slime]:" + path, null, null, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
-			}
-
-			public Code.Source getPlatformLoader() {
-				return new Code.Source() {
-					@Override
-					public Code.Source.File getFile(String path) throws IOException {
-						return getPlatformLoader(path);
-					}
-
-					@Override
-					public Code.Classes getClasses() {
-						return null;
-					}
-				};
-			}
-
-			private Code.Source.File getJshLoader(String path) {
-				InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/" + path);
-				if (in == null) {
-					throw new RuntimeException("Not found in system class loader: $jsh/" + path + "; system class path is " + System.getProperty("java.class.path"));
-				}
-				return Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/jsh/" + path), "jsh/" + path, null, null, in);
-			}
-
-			public Code.Source getJshLoader() {
-				return new Code.Source() {
-					@Override
-					public Code.Source.File getFile(String path) throws IOException {
-						return getJshLoader(path);
-					}
-
-					@Override
-					public Code.Classes getClasses() {
-						return null;
-					}
-				};
-			}
-
-			public Code getShellModuleCode(String path) {
-				return Code.system(
-					"$jsh/modules/" + path + "/"
-				);
-			}
-
-			public File[] getPluginRoots() {
-				return getPluginRoots(System.getProperty("jsh.plugins"));
-			}
-		};
-	}
-
-	private static Shell.Configuration shell(final String[] arguments) throws Shell.Invocation.CheckedException {
+	private static Shell.Configuration configuration(final String[] arguments) throws Shell.Invocation.CheckedException {
 		Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
-		final Shell.Environment configuration = shell();
 		if (System.getProperty("jsh.launcher.packaged") != null) {
-			return new Shell.Configuration() {
-				@Override public Shell.Configuration.Installation getInstallation() {
-					return packagedInstallation();
-				}
-
-				@Override public Shell.Environment getEnvironment() {
-					return configuration;
-				}
-
-				@Override public Shell.Invocation getInvocation() {
-					return packaged(arguments);
-				}
-			};
+			return Shell.Configuration.create(packagedInstallation(), environment(), packaged(arguments));
 		} else {
 			if (arguments.length == 0) {
 				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
 			}
-			final Shell.Invocation invocation = invocation(arguments);
-			return new Shell.Configuration() {
-				@Override public Shell.Configuration.Installation getInstallation() {
-					return unpackagedInstallation();
-				}
-
-				@Override public Shell.Environment getEnvironment() {
-					return configuration;
-				}
-
-				@Override public Shell.Invocation getInvocation() {
-					return invocation;
-				}
-			};
+			return Shell.Configuration.create(unpackagedInstallation(), environment(), invocation(arguments));
 		}
 	}
 
@@ -439,7 +350,7 @@ public class Main {
 		}
 
 		public final void cli(String[] args) throws Shell.Invocation.CheckedException {
-			shell(Shell.Container.VM, Main.shell(args));
+			shell(Shell.Container.VM, Main.configuration(args));
 		}
 	}
 
@@ -449,6 +360,6 @@ public class Main {
 	}
 
 	public static Integer run(Engine engine, String[] args) throws Shell.Invocation.CheckedException {
-		return run(engine, shell(args));
+		return run(engine, configuration(args));
 	}
 }
