@@ -140,6 +140,7 @@ public class Shell {
 		return $host;
 	}
 
+	//	TODO	certainly appears this can be merged with Code.Source.File, now that Code.Source.File has concept of URI
 	public static abstract class Script {
 		private static Script create(final Code.Source.File delegate, final java.net.URI uri) {
 			return new Script() {

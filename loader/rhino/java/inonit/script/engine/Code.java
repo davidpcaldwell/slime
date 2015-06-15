@@ -109,6 +109,55 @@ public abstract class Code {
 				};
 			}
 
+			public static File create(final URL url) {
+				return new File() {
+					@Override public URI getURI() {
+						return URI.create(url);
+					}
+
+					@Override public String getSourceName() {
+						return url.toExternalForm();
+					}
+
+					private URLConnection connection;
+
+					private URLConnection connect() throws IOException {
+						if (connection == null) {
+							connection = url.openConnection();
+						}
+						return connection;
+					}
+
+					@Override public InputStream getInputStream() {
+						try {
+							return connect().getInputStream();
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+
+					@Override public Long getLength() {
+						try {
+							int i = connect().getContentLength();
+							if (i == -1) return null;
+							return Long.valueOf(i);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+
+					@Override public Date getLastModified() {
+						try {
+							long l = connect().getLastModified();
+							if (l == -1) return null;
+							return new Date(l);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				};
+			}
+
 			//	Used in rhino/io to create Code.Source.File objects in resources implementation
 			public static File create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new File() {
@@ -154,9 +203,9 @@ public abstract class Code {
 				}
 
 				public File getFile(String path) {
-					InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(path);
-					if (in == null) return null;
-					return File.create(new URI(URI.string("bootclasspath/" + path)), "bootclasspath:" + path, null, null, in);
+					URL url = ClassLoader.getSystemClassLoader().getResource(path);
+					if (url == null) return null;
+					return File.create(url);
 				}
 
 				public Classes getClasses() {

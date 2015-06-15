@@ -146,57 +146,9 @@ public class Main {
 	private static Shell.Installation packagedInstallation() {
 		final Code[] plugins = plugins(System.getProperty("jsh.plugins"));
 		final Code.Source[] libraries = libraries(System.getProperty("jsh.plugins"));
-		return new Shell.Installation() {
-			public String toString() {
-				return getClass().getName() + " [packaged]";
-			}
-
-			//	TODO	the below mess was constructed to quickly get through adapting some APIs and should be revisited
-
-			private Code.Source.File getPlatformLoader(String path) {
-				return Code.Source.File.create(Code.Source.URI.jvm(Main.class, "packaged/platform/" + path),"[slime]:" + path, null, null, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
-			}
-
-			public Code.Source getPlatformLoader() {
-				return new Code.Source() {
-					@Override public Code.Source.File getFile(String path) throws IOException {
-						return getPlatformLoader(path);
-					}
-
-					@Override public Code.Classes getClasses() {
-						return null;
-					}
-				};
-			}
-
-			private Code.Source.File getJshLoader(String path) {
-				InputStream in = ClassLoader.getSystemResourceAsStream("$jsh/" + path);
-				if (in == null) {
-					throw new RuntimeException("Not found in system class loader: $jsh/" + path + "; system class path is " + System.getProperty("java.class.path"));
-				}
-				return Code.Source.File.create(Code.Source.URI.jvm(Main.class, "packaged/jsh/" + path), "jsh/" + path, null, null, in);
-			}
-
-			public Code.Source getJshLoader() {
-				return new Code.Source() {
-					@Override public Code.Source.File getFile(String path) throws IOException {
-						return getJshLoader(path);
-					}
-
-					@Override public Code.Classes getClasses() {
-						return null;
-					}
-				};
-			}
-
-			public Code[] getPlugins() {
-				return plugins;
-			}
-
-			public Code.Source[] getLibraries() {
-				return libraries;
-			}
-		};
+		final Code.Source platform = Code.Source.system("$jsh/loader/");
+		final Code.Source jsh = Code.Source.system("$jsh/");
+		return Shell.Installation.create(platform, jsh, plugins, libraries);
 	}
 
 	private static Shell.Environment environment() {
@@ -221,8 +173,9 @@ public class Main {
 	}
 
 	static Shell.Invocation packaged(final String[] arguments) {
+		Code.Source.File main = Code.Source.File.create(ClassLoader.getSystemResource("main.jsh.js"));
 		return Shell.Invocation.create(
-			Shell.Script.create(Code.Source.File.create(Code.Source.URI.jvm(Main.class, "packaged/main.jsh.js"), "main.jsh.js", null, null, ClassLoader.getSystemResourceAsStream("main.jsh.js"))),
+			Shell.Script.create(main),
 			arguments
 		);
 	}
