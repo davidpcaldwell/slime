@@ -46,6 +46,7 @@ if (!jsh.shell.jsh.home) {
 	jsh.shell.run({
 		command: command,
 		arguments: properties.concat([
+			src.getRelativePath("rhino/jrunscript/api.js"),
 			unbuilt,
 			"build", TMP
 		]),
@@ -54,9 +55,17 @@ if (!jsh.shell.jsh.home) {
 			JSH_BUILD_NODOC: "true"
 		})
 	});
+	jsh.shell.echo("Relaunching in built shell ...");
+	var environment = jsh.js.Object.set({}, jsh.shell.environment);
+	for (var x in environment) {
+		if (/^JSH_/.test(x)) {
+			delete environment[x];
+		}
+	}
 	var status = jsh.shell.java({
 		jar: TMP.getRelativePath("jsh.jar"),
 		arguments: [jsh.script.file.pathname.toString()],
+		environment: environment,
 		evaluate: function(result) {
 			return result.status;
 		}

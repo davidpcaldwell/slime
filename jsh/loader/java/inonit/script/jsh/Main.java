@@ -34,12 +34,12 @@ public class Main {
 		}
 	}
 
-	private static void addPluginsTo(List<Code> rv, File file, boolean warn) {
+	private static void addPluginsTo(List<Code> rv, final File file, boolean warn) {
 		if (file.exists()) {
 			if (file.isDirectory()) {
 				if (new File(file, "plugin.jsh.js").exists()) {
 					//	interpret as unpacked module
-					Logging.get().log(Installation.class, Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
+					Logging.get().log(Main.class, Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
 					rv.add(Code.unpacked(file));
 				} else {
 					//	interpret as directory that may contain plugins
@@ -53,24 +53,24 @@ public class Main {
 				try {
 					Code p = Code.slime(file);
 					if (p.getScripts().getFile("plugin.jsh.js") != null) {
-						Logging.get().log(Installation.class, Level.WARNING, "Loading plugin from %s ...", file);
+						Logging.get().log(Main.class, Level.WARNING, "Loading plugin from %s ...", file);
 						rv.add(p);
 					} else {
-						Logging.get().log(Installation.class, Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
+						Logging.get().log(Main.class, Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
 					}
 				} catch (IOException e) {
 					//	TODO	probably error message or warning
 				}
 			} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
-				Logging.get().log(Installation.class, Level.CONFIG, "Loading Java plugin from " + file + " ...");
+				Logging.get().log(Main.class, Level.CONFIG, "Loading Java plugin from " + file + " ...");
 				rv.add(Code.jar(file));
 			} else {
 				//	Ignore, exists but not .slime or .jar or directory
 				//	TODO	probably log message of some kind
-				if (warn) Logging.get().log(Installation.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
+				if (warn) Logging.get().log(Main.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
 			}
 		} else {
-			Logging.get().log(Installation.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
+			Logging.get().log(Main.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
 		}
 	}
 
@@ -80,13 +80,30 @@ public class Main {
 
 	//	Called by applications to load plugins
 	static Code[] getPlugins(File file) {
-		Logging.get().log(Installation.class, Level.INFO, "Application: load plugins from " + file);
+		Logging.get().log(Main.class, Level.INFO, "Application: load plugins from " + file);
 		List<Code> rv = new ArrayList<Code>();
 		addPluginsTo(rv, file);
 		return rv.toArray(new Code[rv.size()]);
 	}
 
-	static File[] getPluginRoots(String... searchpaths) {
+	private static Code[] plugins(final File[] roots) {
+		ArrayList<Code> rv = new ArrayList<Code>();
+		for (int i=0; i<roots.length; i++) {
+			Logging.get().log(Main.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
+			Main.addPluginsTo(rv, roots[i]);
+		}
+		return rv.toArray(new Code[rv.size()]);
+	}
+
+	private static Code.Source[] libraries(final File[] roots) {
+		ArrayList<Code.Source> rv = new ArrayList<Code.Source>();
+		for (int i=0; i<roots.length; i++) {
+			rv.add(Code.Source.create(roots[i]));
+		}
+		return rv.toArray(new Code.Source[rv.size()]);
+	}
+
+	private static File[] getPluginRoots(String... searchpaths) {
 		ArrayList<File> files = new ArrayList<File>();
 		for (String searchpath : searchpaths) {
 			if (searchpath != null) {
@@ -104,95 +121,32 @@ public class Main {
 		return files.toArray(new File[files.size()]);
 	}
 
-	private static Shell.Configuration.Installation.Plugins plugins(final File[] roots) {
-		return new Shell.Configuration.Installation.Plugins() {
-			public final Code[] get() {
-				ArrayList<Code> rv = new ArrayList<Code>();
-				for (int i=0; i<roots.length; i++) {
-					Logging.get().log(Installation.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
-					Main.addPluginsTo(rv, roots[i]);
-				}
-				return rv.toArray(new Code[rv.size()]);
-			}
-
-			public final Code.Source.File getFile(String path) {
-				Logging.get().log(Installation.class, Level.FINE, "Searching for library %s ...", path);
-				Code.Source.File rv = null;
-				for (File root : roots) {
-					Logging.get().log(Installation.class, Level.FINER, "Searching for library %s in %s ...", path, root);
-					if (new File(root, path).exists()) {
-						Logging.get().log(Installation.class, Level.FINE, "Found library %s in %s ...", path, root);
-						rv = Code.Source.File.create(new File(root, path));
-					}
-				}
-				if (rv == null) {
-					Logging.get().log(Installation.class, Level.FINE, "Did not find library %s.", path);
-				}
-				return rv;
-			}
-		};
-	}
-
-	private static Shell.Configuration.Installation.Plugins plugins(String... searchpaths) {
+	private static Code[] plugins(String... searchpaths) {
 		File[] roots = getPluginRoots(searchpaths);
 		return plugins(roots);
 	}
 
-	private static Shell.Configuration.Installation unpackagedInstallation() {
-		final Shell.Configuration.Installation.Plugins plugins = plugins(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
-		return new Shell.Configuration.Installation() {
-			public String toString() {
-				return getClass().getName()
-					+ " jsh.library.scripts.loader=" + System.getProperty("jsh.library.scripts.loader")
-					+ " jsh.library.scripts.jsh=" + System.getProperty("jsh.library.scripts.jsh")
-					+ " jsh.library.modules=" + System.getProperty("jsh.library.modules")
-					+ " jsh.plugins=" + System.getProperty("jsh.plugins")
-				;
-			}
-
-//			File getFile(String prefix, String name) {
-//				String propertyName = "jsh.library.scripts." + prefix;
-//				if (System.getProperty(propertyName) != null) {
-//					File dir = new File(System.getProperty(propertyName));
-//					return new File(dir, name);
-//				} else if (System.getProperty("jsh.library.scripts") != null) {
-//					File root = new File(System.getProperty("jsh.library.scripts"));
-//					File dir = new File(root, prefix);
-//					return new File(dir, name);
-//				} else {
-//					throw new RuntimeException("Script not found: " + prefix + "/" + name);
-//				}
-//			}
-
-			public Code.Source getPlatformLoader() {
-				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.loader")));
-			}
-
-			public Code.Source getJshLoader() {
-				return Code.Source.create(new File(System.getProperty("jsh.library.scripts.jsh")));
-			}
-
-			private File getModulePath(String path) {
-				String property = System.getProperty("jsh.library.modules");
-				File directory = new File(property + "/" + path);
-				File file = new File(property + "/" + path.replace('/', '.') + ".slime");
-				if (directory.exists() && directory.isDirectory()) {
-					return directory;
-				} else if (file.exists()) {
-					return file;
-				}
-				throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
-			}
-
-			public Plugins getPlugins() {
-				return plugins;
-			}
-		};
+	private static Code.Source[] libraries(String... searchpaths) {
+		return libraries(getPluginRoots(searchpaths));
 	}
 
-	private static Shell.Configuration.Installation packagedInstallation() {
-		final Shell.Configuration.Installation.Plugins plugins = plugins(System.getProperty("jsh.plugins"));
-		return new Shell.Configuration.Installation() {
+	private static Shell.Installation unpackagedInstallation() {
+		Logging.get().log(Main.class, Level.CONFIG, "jsh.library.modules=" + System.getProperty("jsh.library.modules"));
+		Logging.get().log(Main.class, Level.CONFIG, "jsh.plugins=" + System.getProperty("jsh.plugins"));
+		final Code[] plugins = plugins(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
+		final Code.Source[] libraries = libraries(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
+		return Shell.Installation.create(
+			Code.Source.create(new File(System.getProperty("jsh.library.scripts.loader"))),
+			Code.Source.create(new File(System.getProperty("jsh.library.scripts.jsh"))),
+			plugins,
+			libraries
+		);
+	}
+
+	private static Shell.Installation packagedInstallation() {
+		final Code[] plugins = plugins(System.getProperty("jsh.plugins"));
+		final Code.Source[] libraries = libraries(System.getProperty("jsh.plugins"));
+		return new Shell.Installation() {
 			public String toString() {
 				return getClass().getName() + " [packaged]";
 			}
@@ -200,7 +154,7 @@ public class Main {
 			//	TODO	the below mess was constructed to quickly get through adapting some APIs and should be revisited
 
 			private Code.Source.File getPlatformLoader(String path) {
-				return Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/platform/" + path),"[slime]:" + path, null, null, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
+				return Code.Source.File.create(Code.Source.URI.jvm(Main.class, "packaged/platform/" + path),"[slime]:" + path, null, null, ClassLoader.getSystemResourceAsStream("$jsh/loader/" + path));
 			}
 
 			public Code.Source getPlatformLoader() {
@@ -220,7 +174,7 @@ public class Main {
 				if (in == null) {
 					throw new RuntimeException("Not found in system class loader: $jsh/" + path + "; system class path is " + System.getProperty("java.class.path"));
 				}
-				return Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/jsh/" + path), "jsh/" + path, null, null, in);
+				return Code.Source.File.create(Code.Source.URI.jvm(Main.class, "packaged/jsh/" + path), "jsh/" + path, null, null, in);
 			}
 
 			public Code.Source getJshLoader() {
@@ -235,14 +189,12 @@ public class Main {
 				};
 			}
 
-			public Code getShellModuleCode(String path) {
-				return Code.system(
-					"$jsh/modules/" + path + "/"
-				);
+			public Code[] getPlugins() {
+				return plugins;
 			}
 
-			public Plugins getPlugins() {
-				return plugins;
+			public Code.Source[] getLibraries() {
+				return libraries;
 			}
 		};
 	}
@@ -270,7 +222,7 @@ public class Main {
 
 	static Shell.Invocation packaged(final String[] arguments) {
 		return Shell.Invocation.create(
-			Shell.Script.create(Code.Source.File.create(Code.Source.URI.jvm(Installation.class, "packaged/main.jsh.js"), "main.jsh.js", null, null, ClassLoader.getSystemResourceAsStream("main.jsh.js"))),
+			Shell.Script.create(Code.Source.File.create(Code.Source.URI.jvm(Main.class, "packaged/main.jsh.js"), "main.jsh.js", null, null, ClassLoader.getSystemResourceAsStream("main.jsh.js"))),
 			arguments
 		);
 	}

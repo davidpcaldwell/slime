@@ -230,7 +230,7 @@ var plugin = new function() {
 				}
 			},
 			//	TODO	is there a jsh.script.getFile()?
-			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
+			resources: jsh.httpd.Resources.script(jsh.script.file.getRelativePath("httpd.resources.js").file)
 		});
 		tomcat.start();
 		tests.test("http://127.0.0.1:" + tomcat.port + "/");
@@ -248,7 +248,7 @@ var plugin = new function() {
 				}
 			},
 			//	TODO	is there a jsh.script.getFile()?
-			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
+			resources: jsh.httpd.Resources.script(jsh.script.file.getRelativePath("httpd.resources.js").file)
 		});
 		tomcat.start();
 		apiServlet.test("http://127.0.0.1:" + tomcat.port + "/");

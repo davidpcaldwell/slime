@@ -38,17 +38,6 @@ public class Shell {
 			};
 		}
 
-		public static abstract class Installation {
-			public abstract Code.Source getPlatformLoader();
-			public abstract Code.Source getJshLoader();
-			public abstract Plugins getPlugins();
-
-			public static abstract class Plugins {
-				public abstract Code[] get();
-				public abstract Code.Source.File getFile(String path);
-			}
-		}
-
 		public abstract Installation getInstallation();
 
 		public abstract Environment getEnvironment();
@@ -80,28 +69,47 @@ public class Shell {
 	}
 
 	private Configuration configuration;
-	private Installation installation;
 
 	private Shell() {
 	}
 
-	private Installation getInstallation() {
-		if (installation == null) {
-			installation = Installation.create(configuration.getInstallation());
-		}
-		return installation;
-	}
-
 	public Code.Source.File getLibrary(String path) {
-		return getInstallation().getLibrary(path);
+		Code.Source[] plugins = configuration.getInstallation().getLibraries();
+		Logging.get().log(Shell.class, Level.FINE, "Searching for library %s ...", path);
+		Code.Source.File rv = null;
+		for (Code.Source root : plugins) {
+			Logging.get().log(Shell.class, Level.FINER, "Searching for library %s in %s ...", path, root);
+			Code.Source.File file = null;
+			try {
+				file = root.getFile(path);
+			} catch (IOException e) {
+				//	TODO	log
+			}
+			if (file != null) {
+				Logging.get().log(Main.class, Level.FINE, "Found library %s in %s ...", path, root);
+				rv = file;
+			}
+		}
+		if (rv == null) {
+			Logging.get().log(Main.class, Level.FINE, "Did not find library %s.", path);
+		}
+		return rv;
 	}
 
 	public Code.Source getPlatformLoader() {
-		return getInstallation().getPlatformLoader();
+		return configuration.getInstallation().getPlatformLoader();
+	}
+
+	public final String getLoaderCode() throws IOException {
+		return streams.readString(configuration.getInstallation().getJshLoader().getFile("bootstrap.js").getReader());
 	}
 
 	public Code.Source getJshLoader() {
-		return getInstallation().getJshLoader();
+		return configuration.getInstallation().getJshLoader();
+	}
+
+	public final Code[] getPlugins() {
+		return configuration.getInstallation().getPlugins();
 	}
 
 	private Streams streams = new Streams();
@@ -110,16 +118,8 @@ public class Shell {
 		return streams;
 	}
 
-	public final String getLoaderCode() throws IOException {
-		return streams.readString(getInstallation().getJshLoader("bootstrap.js").getReader());
-	}
-
 	public Shell subshell(Environment configuration, Shell.Invocation invocation) {
 		return create(this.configuration.subshell(configuration, invocation));
-	}
-
-	public final Code[] getPlugins() {
-		return installation.getPlugins();
 	}
 
 	public final Environment getEnvironment() {
@@ -202,6 +202,33 @@ public class Shell {
 		}
 
 		public abstract void exit(int status);
+	}
+
+	public static abstract class Installation {
+		public static Installation create(final Code.Source platform, final Code.Source jsh, final Code[] plugins, final Code.Source[] libraries) {
+			return new Installation() {
+				@Override public Code.Source getPlatformLoader() {
+					return platform;
+				}
+
+				@Override public Code.Source getJshLoader() {
+					return jsh;
+				}
+
+				@Override public Code.Source[] getLibraries() {
+					return libraries;
+				}
+
+				@Override public Code[] getPlugins() {
+					return plugins;
+				}
+			};
+		}
+
+		public abstract Code.Source getPlatformLoader();
+		public abstract Code.Source getJshLoader();
+		public abstract Code.Source[] getLibraries();
+		public abstract Code[] getPlugins();
 	}
 
 	public static abstract class Environment {
@@ -353,7 +380,11 @@ public class Shell {
 			final Execution execution = this;
 			execution.initialize(_this);
 			execution.addEngine();
-			execution.script(_this.getInstallation().getJshLoader("jsh.js"));
+			try {
+				execution.script(_this.configuration.getInstallation().getJshLoader().getFile("jsh.js"));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			return execution.execute();
 		}
 	}
