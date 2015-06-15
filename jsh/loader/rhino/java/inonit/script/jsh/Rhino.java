@@ -112,8 +112,7 @@ public class Rhino {
 					if (id == null) return null;
 					if (id.equals("rhino")) {
 						Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-							@Override
-							public void uncaughtException(Thread t, Throwable e) {
+							@Override public void uncaughtException(Thread t, Throwable e) {
 								if (t.getName().startsWith("AWT")) {
 									//	do nothing
 									Logging.get().log(Rhino.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);

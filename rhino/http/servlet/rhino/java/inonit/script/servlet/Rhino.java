@@ -60,13 +60,11 @@ public class Rhino extends Servlet.ScriptContainer {
 				return true;
 			}
 
-			@Override
-			public ClassLoader getApplicationClassLoader() {
+			@Override public ClassLoader getApplicationClassLoader() {
 				return Servlet.class.getClassLoader();
 			}
 
-			@Override
-			public int getOptimizationLevel() {
+			@Override public int getOptimizationLevel() {
 				return -1;
 			}
 		});
@@ -93,8 +91,7 @@ public class Rhino extends Servlet.ScriptContainer {
 		} catch (Engine.Errors errors) {
 			errors.dump(
 				new Engine.Log() {
-					@Override
-					public void println(String message) {
+					@Override public void println(String message) {
 						System.err.println(message);
 					}
 				},
@@ -117,8 +114,7 @@ public class Rhino extends Servlet.ScriptContainer {
 			System.err.println("Caught errors.");
 			errors.dump(
 				new Engine.Log() {
-					@Override
-					public void println(String message) {
+					@Override public void println(String message) {
 						System.err.println(message);
 					}
 				},

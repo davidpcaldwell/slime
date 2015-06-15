@@ -100,6 +100,30 @@ if (jsh.script.arguments.length == 0) {
 			failed = true;
 		}
 	});
+	var javaFiles = jsh.script.file.parent.parent.parent.list({
+		filter: function(node) {
+			if (node.directory) return false;
+			if (/\.java$/.test(node.pathname.basename)) return true;
+			return false;
+		},
+		descendants: function(directory) {
+			if (directory.pathname.basename == ".hg") return false;
+			return true;
+		}
+	});
+	javaFiles.forEach(function(item) {
+		var changed = false;
+		var code = item.read(String);
+		while (/\@Override\n\s*/.test(code)) {
+			changed = true;
+			failed = true;
+			code = code.replace(/@Override\n\s*/, "@Override ");
+		}
+		if (changed) {
+			jsh.shell.echo("Reformatted Java: " + item);
+			item.pathname.write(code, { append: false });
+		}
+	});
 	//jsh.shell.echo("Failed: " + failed);
 	if (failed) {
 		jsh.shell.exit(1);

@@ -100,8 +100,7 @@ public class Logging {
 			}
 		}
 
-		@Override
-		public int read() throws IOException {
+		@Override public int read() throws IOException {
 			try {
 				int rv = in.read();
 				log(Level.FINEST, "Read byte: %d", rv);
@@ -113,8 +112,7 @@ public class Logging {
 			}
 		}
 
-		@Override
-		public int read(byte[] b) throws IOException {
+		@Override public int read(byte[] b) throws IOException {
 			try {
 				int rv = in.read(b);
 				log(Level.FINEST, "Read %d bytes into array.", rv);
@@ -129,8 +127,7 @@ public class Logging {
 			}
 		}
 
-		@Override
-		public int read(byte[] b, int off, int len) throws IOException {
+		@Override public int read(byte[] b, int off, int len) throws IOException {
 			try {
 				int rv = in.read(b, off, len);
 				log(Level.FINEST, "Read %d bytes into array.", rv);
@@ -145,18 +142,15 @@ public class Logging {
 			}
 		}
 
-		@Override
-		public long skip(long n) throws IOException {
+		@Override public long skip(long n) throws IOException {
 			return in.skip(n);
 		}
 
-		@Override
-		public int available() throws IOException {
+		@Override public int available() throws IOException {
 			return in.available();
 		}
 
-		@Override
-		public void close() throws IOException {
+		@Override public void close() throws IOException {
 			log(Level.FINEST, "Closing %s with delegate %s", this, this.in);
 			if (!wasSystemIn) {
 				in.close();
@@ -164,18 +158,15 @@ public class Logging {
 			log(Level.FINEST, "Closed %s with delegate %s", this, this.in);
 		}
 
-		@Override
-		public synchronized void mark(int readlimit) {
+		@Override public synchronized void mark(int readlimit) {
 			in.mark(readlimit);
 		}
 
-		@Override
-		public synchronized void reset() throws IOException {
+		@Override public synchronized void reset() throws IOException {
 			in.reset();
 		}
 
-		@Override
-		public boolean markSupported() {
+		@Override public boolean markSupported() {
 			return in.markSupported();
 		}
 	}
@@ -198,22 +189,19 @@ public class Logging {
 			log(Level.FINEST, "Wrote byte %d.", b);
 		}
 
-		@Override
-		public void close() throws IOException {
+		@Override public void close() throws IOException {
 			log(Level.FINEST, "Closing...");
 			delegate.close();
 			log(Level.FINE, "Closed.");
 		}
 
-		@Override
-		public void flush() throws IOException {
+		@Override public void flush() throws IOException {
 			log(Level.FINEST, "Flushing ...");
 			delegate.flush();
 			log(Level.FINEST, "Flushed.");
 		}
 
-		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
+		@Override public void write(byte[] b, int off, int len) throws IOException {
 			log(Level.FINEST, "Writing %d bytes starting with %d in array of length %d.", len, off, b.length);
 			for (int i=0; i<len; i++) {
 				log(Level.FINEST, "Byte %d/%d: %d", i, len, b[off+i]);
@@ -222,8 +210,7 @@ public class Logging {
 			log(Level.FINEST, "Wrote %d bytes from buffer.", len);
 		}
 
-		@Override
-		public void write(byte[] b) throws IOException {
+		@Override public void write(byte[] b) throws IOException {
 			log(Level.FINEST, "Writing %d bytes", b.length);
 			for (int i=0; i<b.length; i++) {
 				log(Level.FINEST, "Byte %d/%d: %d", i, b.length, b[i]);

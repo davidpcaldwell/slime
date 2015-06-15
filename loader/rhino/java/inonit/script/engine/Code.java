@@ -425,29 +425,24 @@ public abstract class Code {
 			if (classes.get(className) != null) {
 				final OutputClass oc = classes.get(className);
 				return new Source.File() {
-					@Override
-					public Source.URI getURI() {
+					@Override public Source.URI getURI() {
 						return new Source.URI(oc.toUri());
 					}
 
-					@Override
-					public String getSourceName() {
+					@Override public String getSourceName() {
 						return null;
 					}
 
-					@Override
-					public InputStream getInputStream() {
+					@Override public InputStream getInputStream() {
 						return new ByteArrayInputStream(oc.out.toByteArray());
 					}
 
-					@Override
-					public Long getLength() {
+					@Override public Long getLength() {
 						//	TODO	length of array
 						return null;
 					}
 
-					@Override
-					public Date getLastModified() {
+					@Override public Date getLastModified() {
 						//	TODO	might as well store
 						return null;
 					}
@@ -660,8 +655,7 @@ public abstract class Code {
 				this.directory = new File(url.toURI());
 			}
 
-			@Override
-			List<JavaFileObject> list(String packageName) {
+			@Override List<JavaFileObject> list(String packageName) {
 				//System.err.println("list classes in directory: " + packageName);
 				String path = packageName.replace(".","/");
 				File root = new File(directory,path);
@@ -695,8 +689,7 @@ public abstract class Code {
 				}
 			}
 
-			@Override
-			List<JavaFileObject> list(String packageName) {
+			@Override List<JavaFileObject> list(String packageName) {
 				ArrayList<JavaFileObject> rv = new ArrayList<JavaFileObject>();
 				for (ClassRepository delegate : delegates) {
 					rv.addAll(delegate.list(packageName));
@@ -743,8 +736,7 @@ public abstract class Code {
 				}
 			}
 
-			@Override
-			public Source.File getFile(String path) throws IOException {
+			@Override public Source.File getFile(String path) throws IOException {
 				//System.err.println("getCompiledClasses(" + source + "): " + path);
 				String className = path.substring(0,path.length()-".class".length());
 				String sourceName = className + ".java";
@@ -858,15 +850,13 @@ public abstract class Code {
 			}
 
 			private Classes classes = new Classes() {
-				@Override
-				public URL getResource(String path) {
+				@Override public URL getResource(String path) {
 					//System.err.println("getResource(" + path + ")");
 					return null;
 				}
 			};
 
-			@Override
-			public Classes getClasses() {
+			@Override public Classes getClasses() {
 				//System.err.println("getClasses()");
 				return null;
 			}

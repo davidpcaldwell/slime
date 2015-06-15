@@ -51,26 +51,22 @@ public abstract class Loader {
 			if (configuration.canCreateClassLoaders()) {
 				final ClassLoaderImpl loaderClasses = ClassLoaderImpl.create(configuration.getApplicationClassLoader());
 				return new Classes() {
-					@Override
-					public ClassLoader getApplicationClassLoader() {
+					@Override public ClassLoader getApplicationClassLoader() {
 						return loaderClasses;
 					}
 
-					@Override
-					public Interface getInterface() {
+					@Override public Interface getInterface() {
 						return loaderClasses.toInterface();
 					}
 				};
 			} else {
 				final ClassLoader loader = configuration.getApplicationClassLoader();
 				return new Classes() {
-					@Override
-					public ClassLoader getApplicationClassLoader() {
+					@Override public ClassLoader getApplicationClassLoader() {
 						return loader;
 					}
 
-					@Override
-					public Interface getInterface() {
+					@Override public Interface getInterface() {
 						return null;
 					}
 				};

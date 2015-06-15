@@ -80,18 +80,15 @@ public class Shell {
 		final Configuration subshell(final Environment environment, final Invocation invocation) {
 			final Installation installation = getInstallation();
 			return new Configuration() {
-				@Override
-				public Installation getInstallation() {
+				@Override public Installation getInstallation() {
 					return installation;
 				}
 
-				@Override
-				public Environment getEnvironment() {
+				@Override public Environment getEnvironment() {
 					return environment;
 				}
 
-				@Override
-				public Invocation getInvocation() {
+				@Override public Invocation getInvocation() {
 					return invocation;
 				}
 			};
@@ -236,28 +233,23 @@ public class Shell {
 	public static abstract class Environment {
 		public static Environment create(final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
 			return new Environment() {
-				@Override
-				public ClassLoader getClassLoader() {
+				@Override public ClassLoader getClassLoader() {
 					return loader;
 				}
 
-				@Override
-				public Properties getSystemProperties() {
+				@Override public Properties getSystemProperties() {
 					return properties;
 				}
 
-				@Override
-				public OperatingSystem.Environment getEnvironment() {
+				@Override public OperatingSystem.Environment getEnvironment() {
 					return environment;
 				}
 
-				@Override
-				public Stdio getStdio() {
+				@Override public Stdio getStdio() {
 					return stdio;
 				}
 
-				@Override
-				public Packaged getPackaged() {
+				@Override public Packaged getPackaged() {
 					return packaged;
 				}
 			};
@@ -271,13 +263,11 @@ public class Shell {
 		public static abstract class Packaged {
 			public static Packaged create(final Code.Source code, final File file) {
 				return new Packaged() {
-					@Override
-					public Code.Source getCode() {
+					@Override public Code.Source getCode() {
 						return code;
 					}
 
-					@Override
-					public File getFile() {
+					@Override public File getFile() {
 						return file;
 					}
 				};

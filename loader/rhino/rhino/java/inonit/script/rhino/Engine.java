@@ -307,8 +307,7 @@ public class Engine {
 		public static abstract class Configuration {
 			public static Configuration create(final Ui.Factory uiFactory) {
 				return new Configuration() {
-					@Override
-					public Ui.Factory getUiFactory() {
+					@Override public Ui.Factory getUiFactory() {
 						return uiFactory;
 					}
 				};

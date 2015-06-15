@@ -157,13 +157,11 @@ public class Main {
 
 			public Code.Source getPlatformLoader() {
 				return new Code.Source() {
-					@Override
-					public Code.Source.File getFile(String path) throws IOException {
+					@Override public Code.Source.File getFile(String path) throws IOException {
 						return getPlatformLoader(path);
 					}
 
-					@Override
-					public Code.Classes getClasses() {
+					@Override public Code.Classes getClasses() {
 						return null;
 					}
 				};
@@ -179,13 +177,11 @@ public class Main {
 
 			public Code.Source getJshLoader() {
 				return new Code.Source() {
-					@Override
-					public Code.Source.File getFile(String path) throws IOException {
+					@Override public Code.Source.File getFile(String path) throws IOException {
 						return getJshLoader(path);
 					}
 
-					@Override
-					public Code.Classes getClasses() {
+					@Override public Code.Classes getClasses() {
 						return null;
 					}
 				};
@@ -252,8 +248,7 @@ public class Main {
 			return new Shell.Invocation() {
 				public Shell.Script getScript() {
 					return new Shell.Script() {
-						@Override
-						public java.net.URI getUri() {
+						@Override public java.net.URI getUri() {
 							try {
 								return url.toURI();
 							} catch (java.net.URISyntaxException e) {
@@ -263,8 +258,7 @@ public class Main {
 							}
 						}
 
-						@Override
-						public Code.Source.File getSource() {
+						@Override public Code.Source.File getSource() {
 							return Code.Source.File.create(Code.Source.URI.create(url), scriptPath, null, null, stream);
 						}
 					};
