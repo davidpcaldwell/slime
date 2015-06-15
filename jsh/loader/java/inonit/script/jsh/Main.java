@@ -86,7 +86,60 @@ public class Main {
 		return rv.toArray(new Code[rv.size()]);
 	}
 
+	static File[] getPluginRoots(String... searchpaths) {
+		ArrayList<File> files = new ArrayList<File>();
+		for (String searchpath : searchpaths) {
+			if (searchpath != null) {
+				int next = searchpath.indexOf(File.pathSeparator);
+				while(next != -1) {
+					files.add(new File(searchpath.substring(0,next)));
+					searchpath = searchpath.substring(next+File.pathSeparator.length());
+					next = searchpath.indexOf(File.pathSeparator);
+				}
+				if (searchpath.length() > 0) {
+					files.add(new File(searchpath));
+				}
+			}
+		}
+		return files.toArray(new File[files.size()]);
+	}
+
+	private static Shell.Configuration.Installation.Plugins plugins(final File[] roots) {
+		return new Shell.Configuration.Installation.Plugins() {
+			public final Code[] get() {
+				ArrayList<Code> rv = new ArrayList<Code>();
+				for (int i=0; i<roots.length; i++) {
+					Logging.get().log(Installation.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
+					Main.addPluginsTo(rv, roots[i]);
+				}
+				return rv.toArray(new Code[rv.size()]);
+			}
+
+			public final Code.Source.File getFile(String path) {
+				Logging.get().log(Installation.class, Level.FINE, "Searching for library %s ...", path);
+				Code.Source.File rv = null;
+				for (File root : roots) {
+					Logging.get().log(Installation.class, Level.FINER, "Searching for library %s in %s ...", path, root);
+					if (new File(root, path).exists()) {
+						Logging.get().log(Installation.class, Level.FINE, "Found library %s in %s ...", path, root);
+						rv = Code.Source.File.create(new File(root, path));
+					}
+				}
+				if (rv == null) {
+					Logging.get().log(Installation.class, Level.FINE, "Did not find library %s.", path);
+				}
+				return rv;
+			}
+		};
+	}
+
+	private static Shell.Configuration.Installation.Plugins plugins(String... searchpaths) {
+		File[] roots = getPluginRoots(searchpaths);
+		return plugins(roots);
+	}
+
 	private static Shell.Configuration.Installation unpackagedInstallation() {
+		final Shell.Configuration.Installation.Plugins plugins = plugins(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
 		return new Shell.Configuration.Installation() {
 			public String toString() {
 				return getClass().getName()
@@ -131,19 +184,14 @@ public class Main {
 				throw new RuntimeException("Not found: " + path + " jsh.library.modules=" + property);
 			}
 
-			public Code getShellModuleCode(String path) {
-				return Code.slime(getModulePath(path));
-			}
-
-			public File[] getPluginRoots() {
-				//	Defaults for jsh.plugins: installation modules directory? Probably obsolete given that we will be loading
-				//	them. $HOME/.jsh/plugins?
-				return getPluginRoots(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
+			public Plugins getPlugins() {
+				return plugins;
 			}
 		};
 	}
 
 	private static Shell.Configuration.Installation packagedInstallation() {
+		final Shell.Configuration.Installation.Plugins plugins = plugins(System.getProperty("jsh.plugins"));
 		return new Shell.Configuration.Installation() {
 			public String toString() {
 				return getClass().getName() + " [packaged]";
@@ -193,8 +241,8 @@ public class Main {
 				);
 			}
 
-			public File[] getPluginRoots() {
-				return getPluginRoots(System.getProperty("jsh.plugins"));
+			public Plugins getPlugins() {
+				return plugins;
 			}
 		};
 	}

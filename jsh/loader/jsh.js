@@ -51,11 +51,6 @@ this.jsh = new function() {
 //		};
 
 		$host.loader = new function() {
-			//	implementation duplicates original
-			this.getBootstrapModule = function(path) {
-				return $jsh.getShellModuleCode(path);
-			};
-
 			this.getPlugins = function() {
 				return $jsh.getPlugins();
 			}

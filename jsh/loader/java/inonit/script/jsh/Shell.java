@@ -39,36 +39,14 @@ public class Shell {
 		}
 
 		public static abstract class Installation {
-			protected final File[] getPluginRoots(String... searchpaths) {
-				ArrayList<File> files = new ArrayList<File>();
-				for (String searchpath : searchpaths) {
-					if (searchpath != null) {
-						int next = searchpath.indexOf(File.pathSeparator);
-						while(next != -1) {
-							files.add(new File(searchpath.substring(0,next)));
-							searchpath = searchpath.substring(next+File.pathSeparator.length());
-							next = searchpath.indexOf(File.pathSeparator);
-						}
-						if (searchpath.length() > 0) {
-							files.add(new File(searchpath));
-						}
-					}
-				}
-				return files.toArray(new File[files.size()]);
-			}
-
 			public abstract Code.Source getPlatformLoader();
 			public abstract Code.Source getJshLoader();
+			public abstract Plugins getPlugins();
 
-			/**
-			 *	Specifies where code for "shell modules" -- modules included with jsh itself -- can be found.
-			 *
-			 *	@param path A logical path to the module; e.g., js/object for the jsh.js module.
-			 *
-			 *	@return An object that can load the specified module.
-			 */
-			public abstract Code getShellModuleCode(String path);
-			public abstract File[] getPluginRoots();
+			public static abstract class Plugins {
+				public abstract Code[] get();
+				public abstract Code.Source.File getFile(String path);
+			}
 		}
 
 		public abstract Installation getInstallation();
@@ -124,10 +102,6 @@ public class Shell {
 
 	public Code.Source getJshLoader() {
 		return getInstallation().getJshLoader();
-	}
-
-	public Code getShellModuleCode(String path) {
-		return configuration.getInstallation().getShellModuleCode(path);
 	}
 
 	private Streams streams = new Streams();
