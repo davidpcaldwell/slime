@@ -28,6 +28,9 @@ load("nashorn:mozilla_compat.js");
 				}
 				return rv;
 			})();
+			var _jlogging = Packages.java.util.logging;
+			_jlogging.Logger.getLogger("inonit.script.nashorn.Host.script").log(_jlogging.Level.INFO, this.message);
+			_jlogging.Logger.getLogger("inonit.script.nashorn.Host.script").log(_jlogging.Level.INFO, this.stack);
 		};
 		this.Error.prototype.toString = function() {
 			return this.name + ": " + this.message;
