@@ -15,6 +15,20 @@
 
 var env = $api.shell.environment;
 
+if (!this.slime) {
+	//	TODO	merge this with unbuilt implementation
+	this.slime = {
+		launcher: {
+			compile: function() {
+				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
+			}
+		}
+	};
+	$api.debug = function(message) {
+		if (arguments.callee.on) Packages.java.lang.System.err.println(message);
+	};
+}
+
 $api.debug.on = Boolean(env.JSH_LAUNCHER_DEBUG);
 $api.debug("Source: " + slime.src);
 
@@ -66,12 +80,14 @@ Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 			}
 			if (env.JSH_SHELL_CONTAINER != "jvm") delete this.JSH_JVM_OPTIONS;
 			if ($api.rhino.classpath) this.JSH_RHINO_CLASSPATH = $api.rhino.classpath;
-			this.JSH_SLIME_SRC = slime.src.toString();
-			this.JSH_RHINO_SCRIPT = slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
-			this.JSH_LIBRARY_SCRIPTS_LOADER = slime.src.getPath("loader");
-			this.JSH_LIBRARY_SCRIPTS_RHINO = slime.src.getPath("loader/rhino");
-			this.JSH_LIBRARY_SCRIPTS_JSH = slime.src.getPath("jsh/loader");
-			this.JSH_LIBRARY_MODULES = slime.src.getPath(".");
+			if (slime.src) {
+				this.JSH_SLIME_SRC = slime.src.toString();
+				this.JSH_RHINO_SCRIPT = slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
+				this.JSH_LIBRARY_SCRIPTS_LOADER = slime.src.getPath("loader");
+				this.JSH_LIBRARY_SCRIPTS_RHINO = slime.src.getPath("loader/rhino");
+				this.JSH_LIBRARY_SCRIPTS_JSH = slime.src.getPath("jsh/loader");
+				this.JSH_LIBRARY_MODULES = slime.src.getPath(".");
+			}
 		})()
 		//	Cannot be enabled at this time; see issue 152
 		,input: Packages.java.lang.System["in"]

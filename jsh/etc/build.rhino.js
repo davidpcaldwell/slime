@@ -237,6 +237,8 @@ console("Creating directories ...");
 });
 
 console("Copying launcher scripts ...");
+platform.io.copyFile(slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"jsh.js"));
+platform.io.copyFile(slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"), new File(JSH_HOME,"main.js"));
 platform.io.copyFile(slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"script/launcher/api.jrunscript.js"));
 platform.io.copyFile(slime.src.getFile("jsh/etc/api.jrunscript.js"), new File(JSH_HOME,"script/launcher/slime.api.jrunscript.js"));
 //platform.io.copyFile(slime.src.getFile("jsh/etc/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
