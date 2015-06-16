@@ -12,7 +12,7 @@
 
 //	TODO	rename this file to jsh.launcher.js
 
-if (!this.slime) {
+if (!this.$api.slime) {
 	$api.script.resolve("../../jsh/etc/api.jrunscript.js").load();
 }
 
@@ -460,11 +460,11 @@ settings.explicit = new function() {
 				} catch (e) {
 					RHINO_JAR = null;
 				}
-				var toCompile = slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/java"));
-				if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/rhino")));
-				toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("rhino/system/java")));
-				toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/java")));
-				if (RHINO_JAR) toCompile = toCompile.concat(slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/rhino")));
+				var toCompile = $api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/java"));
+				if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/rhino")));
+				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder($api.slime.src.getFile("rhino/system/java")));
+				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/java")));
+				if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/rhino")));
 				var rhinoClasspath = (RHINO_JAR) ? ["-classpath", RHINO_JAR] : [];
 				$api.jdk.compile([
 					"-d", LOADER_CLASSES

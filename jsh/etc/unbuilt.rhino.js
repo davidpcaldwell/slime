@@ -19,10 +19,11 @@ if ($api.arguments[0] == "build") {
 } else if ($api.arguments[0] == "launch") {
 	$api.arguments.splice(0,1);
 	$api.script.resolve("../../jsh/launcher/rhino/jsh.jrunscript.js").load();
-} else if (arguments[0] == "jdwp" || arguments[0] == "xjdwp") {
-	//	TODO	convert to new $api structure
-	var AGENTLIB_JDWP = (arguments[0] == "jdwp") ? arguments[1] : void(0);
-	arguments.splice(0,2);
+} else if ($api.arguments[0] == "jdwp" || $api.arguments[0] == "xjdwp") {
+	if ($api.arguments[0] == "jdwp") {
+		Packages.java.lang.System.setProperty("jsh.debug.jdwp", new Packages.java.lang.String($api.arguments[1]))
+	}
+	$api.arguments.splice(0,2);
 	load(slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"));
 } else if (arguments[0] == "develop") {
 	//	TODO	convert to new $api structure

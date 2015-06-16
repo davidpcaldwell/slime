@@ -15,39 +15,58 @@
 
 var env = $api.shell.environment;
 
-if (!this.slime) {
-	//	TODO	merge this with unbuilt implementation
-	this.slime = {
-		launcher: {
-			compile: function() {
-				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
-			}
-		}
+if (!$api.slime) {
+	$api.slime = {
+		built: $api.script.file.getParentFile()
 	};
-	$api.debug = function(message) {
-		if (arguments.callee.on) Packages.java.lang.System.err.println(message);
-	};
+	$api.script.resolve("slime.js").load();
 }
 
 $api.debug.on = Boolean(env.JSH_LAUNCHER_DEBUG);
-$api.debug("Source: " + slime.src);
+$api.debug("Source: " + $api.slime.src);
 
 //	Build the launcher classes
-var LAUNCHER_CLASSES = slime.launcher.compile();
+var LAUNCHER_CLASSES = $api.slime.launcher.compile();
 
 //	TODO	Obviously under Cygwin shell does not include the paths helper
 var args = {
-	vm: []
+	vm: [],
+	launcher: []
 };
+
+var container = (function() {
+	var containers = {
+		jvm: function() {
+			return new function() {
+				this.vmargument = function(s) {
+					args.launcher.push(s);
+				}
+			}
+		},
+		classloader: function() {
+			return new function() {
+				this.vmargument = function(s) {
+					args.vm.push(s);
+				}
+			}
+		}
+	};
+
+	var id = (env.JSH_SHELL_CONTAINER) ? env.JSH_SHELL_CONTAINER : "classloader";
+	return containers[id]();
+})();
+
 //	TODO	if JSH_SHELL_CONTAINER is jvm, debugger will not be run anywhere
-if (this.AGENTLIB_JDWP && env.JSH_SHELL_CONTAINER != "jvm") {
-	args.vm.push("-agentlib:jdwp=" + this.AGENTLIB_JDWP);
+if (Packages.java.lang.System.getProperty("jsh.debug.jdwp")) {
+	container.vmargument("-agentlib:jdwp=" + String(Packages.java.lang.System.getProperty("jsh.debug.jdwp")));
 }
-if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JAVA_LOGGING_PROPERTIES) {
-	args.vm.push("-Djava.util.logging.config.file=" + env.JSH_JAVA_LOGGING_PROPERTIES)
+if (env.JSH_JAVA_LOGGING_PROPERTIES) {
+	container.vmargument("-Djava.util.logging.config.file=" + env.JSH_JAVA_LOGGING_PROPERTIES)
 }
-if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JVM_OPTIONS) {
-	args.vm.push.apply(args,env.JSH_JVM_OPTIONS.split(" "));
+if (env.JSH_JVM_OPTIONS) {
+	env.JSH_JVM_OPTIONS.split(" ").forEach(function(argument) {
+		container.vmargument(argument);
+	});
 }
 
 //	Allow sending arguments beginning with dash that will be interpreted as VM switches
@@ -57,6 +76,8 @@ while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
 
 $api.debug("$api.script: " + $api.script);
 $api.debug("Running: " + $api.arguments.join(" "));
+//	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
+//			instead create a classloader using LAUNCHER_CLASSES and call main() on inonit.script.jsh.launcher.Main
 Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 	$api.java.launcher
 ].concat(
@@ -65,6 +86,8 @@ Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 	"-classpath", LAUNCHER_CLASSES,
 	"inonit.script.jsh.launcher.Main"
 ]).concat(
+	args.launcher
+).concat(
 	$api.arguments
 ).concat([
 	{
@@ -80,13 +103,13 @@ Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 			}
 			if (env.JSH_SHELL_CONTAINER != "jvm") delete this.JSH_JVM_OPTIONS;
 			if ($api.rhino.classpath) this.JSH_RHINO_CLASSPATH = $api.rhino.classpath;
-			if (slime.src) {
-				this.JSH_SLIME_SRC = slime.src.toString();
-				this.JSH_RHINO_SCRIPT = slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
-				this.JSH_LIBRARY_SCRIPTS_LOADER = slime.src.getPath("loader");
-				this.JSH_LIBRARY_SCRIPTS_RHINO = slime.src.getPath("loader/rhino");
-				this.JSH_LIBRARY_SCRIPTS_JSH = slime.src.getPath("jsh/loader");
-				this.JSH_LIBRARY_MODULES = slime.src.getPath(".");
+			if ($api.slime.src) {
+				this.JSH_SLIME_SRC = $api.slime.src.toString();
+				this.JSH_RHINO_SCRIPT = $api.slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
+				this.JSH_LIBRARY_SCRIPTS_LOADER = $api.slime.src.getPath("loader");
+				this.JSH_LIBRARY_SCRIPTS_RHINO = $api.slime.src.getPath("loader/rhino");
+				this.JSH_LIBRARY_SCRIPTS_JSH = $api.slime.src.getPath("jsh/loader");
+				this.JSH_LIBRARY_MODULES = $api.slime.src.getPath(".");
 			}
 		})()
 		//	Cannot be enabled at this time; see issue 152
