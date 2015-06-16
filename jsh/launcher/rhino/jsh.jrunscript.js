@@ -25,9 +25,6 @@ if (!$api.slime) {
 $api.debug.on = Boolean(env.JSH_LAUNCHER_DEBUG);
 $api.debug("Source: " + $api.slime.src);
 
-//	Build the launcher classes
-var LAUNCHER_CLASSES = $api.slime.launcher.compile();
-
 //	TODO	Obviously under Cygwin shell does not include the paths helper
 var args = {
 	vm: [],
@@ -77,13 +74,13 @@ while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
 $api.debug("$api.script: " + $api.script);
 $api.debug("Running: " + $api.arguments.join(" "));
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
-//			instead create a classloader using LAUNCHER_CLASSES and call main() on inonit.script.jsh.launcher.Main
+//			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
 Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 	$api.java.launcher
 ].concat(
 	args.vm
 ).concat([
-	"-classpath", LAUNCHER_CLASSES,
+	"-classpath", $api.slime.launcher.getClasses(),
 	"inonit.script.jsh.launcher.Main"
 ]).concat(
 	args.launcher

@@ -41,7 +41,7 @@ if (!parameters.options.script.file) {
 	jsh.shell.exit(1);
 }
 
-var slime = jsh.loader.file(jsh.script.getRelativePath("slime.js")).slime;
+var slime = jsh.loader.file(jsh.script.file.getRelativePath("slime.js")).slime;
 
 var compile = function(args) {
 	Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
@@ -67,9 +67,9 @@ if (!parameters.options.norhino) {
 }
 
 jsh.file.unzip({ zip: JSH.getFile("jsh.jar"), to: to });
-to.getRelativePath("$jsh/api.jrunscript.js").write(JSH.getFile("script/launcher/api.jrunscript.js").read(String), { recursive: true });
-to.getRelativePath("$jsh/slime.api.jrunscript.js").write(JSH.getFile("script/launcher/slime.api.jrunscript.js").read(String), { recursive: true });
-to.getRelativePath("$jsh/jsh.rhino.js").write(JSH.getFile("script/launcher/jsh.rhino.js").read(String), { recursive: true });
+["jsh.js","slime.js","launcher.js"].forEach(function(name) {
+	to.getRelativePath("$jsh/launcher/" + name).write(JSH.getFile(name).read(String), { recursive: true });
+});
 
 jsh.file.unzip({ zip: JSH.getFile("lib/jsh.jar"), to: to });
 

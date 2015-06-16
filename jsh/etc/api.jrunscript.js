@@ -60,9 +60,9 @@ $api.jdk = new function() {
 $api.slime = (function(was) {
 	if (was && was.built) {
 		was.launcher = new function() {
-			this.compile = function(p) {
+			this.getClasses = function() {
 				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
-			}
+			};
 		}
 		return was;
 	} else {
@@ -113,6 +113,10 @@ $api.slime = (function(was) {
 					rv.src.getPath("jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java")
 				]);
 				if (!p || !p.to) return to;
+			};
+
+			this.getClasses = function() {
+				return this.compile();
 			}
 		}
 

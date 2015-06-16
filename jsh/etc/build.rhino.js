@@ -52,7 +52,8 @@ var console = $api.console;
 var platform = new function() {
 	this.jdk = $api.jdk;
 };
-//	TODO	remove this load
+//	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
+//			ability to build modules
 $api.script.resolve("api.rhino.js").load();
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
@@ -236,16 +237,16 @@ console("Creating directories ...");
 	new File(JSH_HOME,path).mkdir();
 });
 
-var slime = $api.slime;
-
 console("Copying launcher scripts ...");
-platform.io.copyFile(slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"jsh.js"));
-platform.io.copyFile(slime.src.getFile("jsh/etc/api.jrunscript.js"), new File(JSH_HOME,"slime.js"));
-platform.io.copyFile(slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"), new File(JSH_HOME,"main.js"));
-platform.io.copyFile(slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"script/launcher/api.jrunscript.js"));
-platform.io.copyFile(slime.src.getFile("jsh/etc/api.jrunscript.js"), new File(JSH_HOME,"script/launcher/slime.api.jrunscript.js"));
-//platform.io.copyFile(slime.src.getFile("jsh/etc/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
-platform.io.copyFile(slime.src.getFile("jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
+platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"jsh.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/etc/api.jrunscript.js"), new File(JSH_HOME,"slime.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"), new File(JSH_HOME,"main.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"launcher.js"));
+//	TODO	should be able to modify Java launcher to use above locations and remove next three lines
+//platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"script/launcher/api.jrunscript.js"));
+//platform.io.copyFile($api.slime.src.getFile("jsh/etc/api.jrunscript.js"), new File(JSH_HOME,"script/launcher/slime.api.jrunscript.js"));
+////platform.io.copyFile(slime.src.getFile("jsh/etc/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
+//platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
 
 if (RHINO_LIBRARIES) {
 	console("Copying Rhino libraries ...");
@@ -264,14 +265,14 @@ tmpClasses.mkdir();
 var javaSources = [];
 
 console("Building jsh application ...");
-slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/java"),javaSources);
+$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/java"),javaSources);
 if (RHINO_LIBRARIES) {
-	slime.src.getSourceFilesUnder(slime.src.getFile("loader/rhino/rhino/java"),javaSources);
+	$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/rhino/java"),javaSources);
 }
-slime.src.getSourceFilesUnder(slime.src.getFile("rhino/system/java"),javaSources);
-slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/java"),javaSources);
+$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("rhino/system/java"),javaSources);
+$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/java"),javaSources);
 if (RHINO_LIBRARIES) {
-	slime.src.getSourceFilesUnder(slime.src.getFile("jsh/loader/rhino/java"),javaSources);
+	$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/rhino/java"),javaSources);
 }
 //	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
 var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
@@ -293,7 +294,7 @@ zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
 console("Building launcher ...");
 var tmpLauncher = new File(tmp,"launcher");
 tmpLauncher.mkdir();
-slime.launcher.compile({ to: tmpLauncher.getCanonicalPath() });
+$api.slime.launcher.compile({ to: tmpLauncher.getCanonicalPath() });
 //platform.jdk.compile(compileOptions.concat([
 //	"-d", tmpLauncher.getCanonicalPath(),
 //	"-sourcepath", [
@@ -311,7 +312,7 @@ debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
 zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
 
 console("Copying script implementations ...")
-platform.io.copyFile(slime.src.getFile("loader"), new File(JSH_HOME,"script/loader"), [
+platform.io.copyFile($api.slime.src.getFile("loader"), new File(JSH_HOME,"script/loader"), [
 	{
 		accept: function(f) {
 			return (f.isDirectory() && f.getName() == ".hg")
@@ -326,7 +327,7 @@ platform.io.copyFile(slime.src.getFile("loader"), new File(JSH_HOME,"script/load
 		}
 	}
 ]);
-platform.io.copyFile(slime.src.getFile("loader/rhino"), new File(JSH_HOME,"script/loader/rhino"), [
+platform.io.copyFile($api.slime.src.getFile("loader/rhino"), new File(JSH_HOME,"script/loader/rhino"), [
 	{
 		accept: function(f) {
 			return f.isDirectory() && f.getName() == "test"
@@ -337,7 +338,7 @@ platform.io.copyFile(slime.src.getFile("loader/rhino"), new File(JSH_HOME,"scrip
 		}
 	}
 ]);
-platform.io.copyFile(slime.src.getFile("jsh/loader"), new File(JSH_HOME,"script/jsh"), [
+platform.io.copyFile($api.slime.src.getFile("jsh/loader"), new File(JSH_HOME,"script/jsh"), [
 	{
 		accept: function(f) {
 			return f.getName() == "api.html"
@@ -350,7 +351,8 @@ platform.io.copyFile(slime.src.getFile("jsh/loader"), new File(JSH_HOME,"script/
 ]);
 
 console("Creating bundled modules ...")
-load(slime.src.getFile("jsh/tools/slime.js").getCanonicalPath());
+//	TODO	remove or modify this; appears to redefine the slime global object
+load($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath());
 var tmpModules = new File(tmp,"modules");
 tmpModules.mkdir();
 var MODULE_CLASSPATH = (function() {
@@ -366,7 +368,7 @@ var MODULE_CLASSPATH = (function() {
 var module = function(path,compile) {
 	var tmp = new File(tmpModules,path);
 	tmp.mkdirs();
-	slime.build.rhino(slime.src.getFile(path), tmp, {
+	slime.build.rhino($api.slime.src.getFile(path), tmp, {
 		copyFile: platform.io.copyFile,
 		compile: compile
 	}, {
@@ -384,7 +386,7 @@ var module = function(path,compile) {
 	console("Created module file: " + to.getCanonicalPath());
 };
 
-var modules = eval(readFile(slime.src.getFile("jsh/etc/api.js"))).environment("jsh");
+var modules = eval(readFile($api.slime.src.getFile("jsh/etc/api.js"))).environment("jsh");
 
 modules.forEach(function(item) {
 	if (item.module) {
@@ -425,7 +427,7 @@ var LAUNCHER_COMMAND = [
 console("Creating tools ...");
 var JSH_TOOLS = new File(JSH_HOME,"tools");
 JSH_TOOLS.mkdir();
-platform.io.copyFile(slime.src.getFile("jsh/tools"),JSH_TOOLS);
+platform.io.copyFile($api.slime.src.getFile("jsh/tools"),JSH_TOOLS);
 
 var getPath = function(file) {
 	var path = String(file.getCanonicalPath());
@@ -439,7 +441,7 @@ if (getSetting("jsh.build.javassist.jar")) {
 	(function() {
 		console("Building profiler to " + getPath(new File(JSH_HOME,"tools/profiler.jar")) + " ...");
 		var command = LAUNCHER_COMMAND.slice(0);
-		command.push(getPath(slime.src.getFile("rhino/tools/profiler/build.jsh.js")));
+		command.push(getPath($api.slime.src.getFile("rhino/tools/profiler/build.jsh.js")));
 		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
 		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
 		var subenv = {};
@@ -470,15 +472,15 @@ if (getSetting("jsh.build.coffeescript.path")) {
 
 console("Creating install scripts ...");
 new File(JSH_HOME,"etc").mkdir();
-platform.io.copyFile(slime.src.getFile("jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
-platform.io.copyFile(slime.src.getFile("jsh/etc/install"), new File(JSH_HOME, "etc/install"));
+platform.io.copyFile($api.slime.src.getFile("jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/etc/install"), new File(JSH_HOME, "etc/install"));
 
 var JSH_SRC = new File(JSH_HOME,"src");
 console("Bundling source code ...");
 JSH_SRC.mkdir();
 
 ["js","loader","rhino","jsh"].forEach( function(base) {
-	platform.io.copyFile(slime.src.getFile(base), new File(JSH_SRC,base), [
+	platform.io.copyFile($api.slime.src.getFile(base), new File(JSH_SRC,base), [
 		{
 			accept: function(f) {
 				return f.isDirectory() && f.getName() == ".hg";
@@ -549,8 +551,8 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 				this.push(arguments[i]);
 			}
 		}
-		command.add(slime.src.getFile("jsh/unit/jsapi.jsh.js").getCanonicalPath());
-		var JSH_JSAPI_BASE = slime.src.toString();
+		command.add($api.slime.src.getFile("jsh/unit/jsapi.jsh.js").getCanonicalPath());
+		var JSH_JSAPI_BASE = $api.slime.src.toString();
 		if (platform.cygwin) {
 			JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
 		}
@@ -561,8 +563,8 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		command.add("-base", JSH_JSAPI_BASE);
 
 		modules.forEach( function(module) {
-			if (module.api) command.add("-api",String(slime.src.getFile(module.path).getCanonicalPath()));
-			if (module.test) command.add("-test",String(slime.src.getFile(module.path).getCanonicalPath()));
+			if (module.api) command.add("-api",String($api.slime.src.getFile(module.path).getCanonicalPath()));
+			if (module.test) command.add("-test",String($api.slime.src.getFile(module.path).getCanonicalPath()));
 		});
 
 		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());
@@ -572,7 +574,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		if (getSetting("jsh.build.nodoc")) {
 		} else {
 			command.add("-doc",JSAPI_DOC);
-			command.add("-index", String(slime.src.getFile("jsh/etc/index.html").getCanonicalPath()));
+			command.add("-index", String($api.slime.src.getFile("jsh/etc/index.html").getCanonicalPath()));
 		}
 
 		setTestEnvironment(command);
@@ -596,7 +598,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 if (!getSetting("jsh.build.notest")) {
 	var integrationTests = function() {
 		var command = LAUNCHER_COMMAND.slice();
-		var script = slime.src.getFile("jsh/test/integration.jsh.js");
+		var script = $api.slime.src.getFile("jsh/test/integration.jsh.js");
 		command.push(getPath(script));
 		setTestEnvironment(command);
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");

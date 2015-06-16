@@ -226,15 +226,15 @@ public class Main {
 		}
 
 		@Override String getJrunscriptApi() throws IOException {
-			return ClassLoader.getSystemResource("$jsh/api.jrunscript.js").toExternalForm();
+			return ClassLoader.getSystemResource("$jsh/launcher/jsh.js").toExternalForm();
 		}
 
 		@Override String getLauncherApi() throws IOException {
-			return ClassLoader.getSystemResource("$jsh/slime.api.jrunscript.js").toExternalForm();
+			return ClassLoader.getSystemResource("$jsh/launcher/slime.js").toExternalForm();
 		}
 
 		@Override String getLauncherScript() throws IOException {
-			return ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm();
+			return ClassLoader.getSystemResource("$jsh/launcher/launcher.js").toExternalForm();
 		}
 
 		void initializeSystemProperties() {
@@ -360,15 +360,15 @@ public class Main {
 		}
 
 		String getJrunscriptApi() throws java.io.IOException {
-			return new java.io.File(HOME, "script/launcher/api.jrunscript.js").getCanonicalPath();
+			return new java.io.File(HOME, "jsh.js").getCanonicalPath();
 		}
 
 		String getLauncherApi() throws java.io.IOException {
-			return new java.io.File(HOME, "script/launcher/slime.api.jrunscript.js").getCanonicalPath();
+			return new java.io.File(HOME, "slime.js").getCanonicalPath();
 		}
 
 		String getLauncherScript() throws java.io.IOException {
-			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
+			return new java.io.File(HOME, "launcher.js").getCanonicalPath();
 		}
 	}
 
