@@ -37,8 +37,11 @@ END LICENSE
 			<div>
 				<h2>Inputs</h2>
 				<ul>
-					<li><code>JSH_LAUNCHER_DEBUG</code>: whether to emit debugging output to the console.</li>
-
+					<li><code>jsh.launcher.debug</code>: whether to emit debugging output to the console.</li>
+					<li><code>jsh.shell.container</code>: affects how VM-level configuration is applied.</li>
+					<li><code>jsh.debug.jdwp</code>: configures the jsh JVM to run with the given value as its <code>-agentlib:jdwp</code> argument.</li>
+					<li><code>jsh.java.logging.properties</code>: configures the jsh JVM to run with the given value as its logging configuration.</li>
+					<li><code>jsh.jvm.options</code>: configures the jsh JVM to run with the given options (delimited by spaces).</li>
 				</ul>
 			</div>
 			<div>

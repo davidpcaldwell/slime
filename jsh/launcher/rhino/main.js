@@ -22,8 +22,69 @@ if (!$api.slime) {
 	$api.script.resolve("slime.js").load();
 }
 
-$api.debug.on = Boolean(env.JSH_LAUNCHER_DEBUG);
+var settings = new function() {
+	var all = {};
+	var NONE = {
+		property: false,
+		environment: false
+	};
+	var LOCAL = {
+		property: true,
+		environment: false
+	};
+	var INHERIT = {
+		property: true,
+		environment: true
+	};
+
+	var map = function(name,type) {
+		all[name] = {
+			type: type,
+			value: $api.slime.setting(name)
+		};
+	};
+
+	map("jsh.launcher.debug", LOCAL);
+	map("jsh.shell.container", LOCAL);
+	map("jsh.debug.jdwp", NONE);
+	map("jsh.java.logging.properties", NONE);
+	map("jsh.jvm.options", NONE);
+	map("jsh.rhino.classpath", INHERIT);
+	map("jsh.slime.src", INHERIT);
+	map("jsh.engine", INHERIT);
+	map("jsh.script.debugger", LOCAL);
+
+	this.get = function(name) {
+		return all[name].value;
+	}
+
+	this.set = function(name,value) {
+		all[name].value = value;
+	}
+
+	this.properties = function() {
+		var rv = [];
+		for (var x in all) {
+			if (all[x].type.property && all[x].value) {
+				rv.push("-D" + x + "=" + String(all[x].value));
+			}
+		}
+		return rv;
+	};
+
+	this.environment = function(rv) {
+		for (var x in all) {
+			if (all[x].type.environment && all[x].value) {
+				rv[x] = String(all[x].value);
+			}
+		}
+	}
+};
+
+$api.debug.on = Boolean(settings.get("jsh.launcher.debug"));
+
 $api.debug("Source: " + $api.slime.src);
+$api.debug("$api.script: " + $api.script);
 
 //	TODO	Obviously under Cygwin shell does not include the paths helper
 var args = {
@@ -33,35 +94,35 @@ var args = {
 
 var container = (function() {
 	var containers = {
-		jvm: function() {
-			return new function() {
-				this.vmargument = function(s) {
-					args.launcher.push(s);
-				}
-			}
-		},
 		classloader: function() {
 			return new function() {
 				this.vmargument = function(s) {
 					args.vm.push(s);
 				}
 			}
+		},
+		jvm: function() {
+			return new function() {
+				this.vmargument = function(s) {
+					args.launcher.push(s);
+				}
+			}
 		}
 	};
 
-	var id = (env.JSH_SHELL_CONTAINER) ? env.JSH_SHELL_CONTAINER : "classloader";
+	var id = (settings.get("jsh.shell.container")) ? settings.get("jsh.shell.container") : "classloader";
 	return containers[id]();
 })();
 
 //	TODO	if JSH_SHELL_CONTAINER is jvm, debugger will not be run anywhere
-if (Packages.java.lang.System.getProperty("jsh.debug.jdwp")) {
-	container.vmargument("-agentlib:jdwp=" + String(Packages.java.lang.System.getProperty("jsh.debug.jdwp")));
+if (settings.get("jsh.debug.jdwp")) {
+	container.vmargument("-agentlib:jdwp=" + settings.get("jsh.debug.jdwp"));
 }
-if (env.JSH_JAVA_LOGGING_PROPERTIES) {
-	container.vmargument("-Djava.util.logging.config.file=" + env.JSH_JAVA_LOGGING_PROPERTIES)
+if (settings.get("jsh.java.logging.properties")) {
+	container.vmargument("-Djava.util.logging.config.file=" + settings.get("jsh.java.logging.properties"));
 }
-if (env.JSH_JVM_OPTIONS) {
-	env.JSH_JVM_OPTIONS.split(" ").forEach(function(argument) {
+if (settings.get("jsh.jvm.options")) {
+	settings.get("jsh.jvm.options").split(" ").forEach(function(argument) {
 		container.vmargument(argument);
 	});
 }
@@ -71,14 +132,24 @@ while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
 	args.vm.push($api.arguments.shift());
 }
 
-$api.debug("$api.script: " + $api.script);
-$api.debug("Running: " + $api.arguments.join(" "));
+$api.engine.runCommand = (function(was) {
+	return function() {
+		$api.debug("Running: " + Array.prototype.slice.call(arguments).join(" "));
+		return was.apply(this,arguments);
+	}
+})($api.engine.runCommand);
+
+settings.set("jsh.rhino.classpath", $api.rhino.classpath);
+settings.set("jsh.slime.src", $api.slime.src);
+
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
 //			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
 Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 	$api.java.launcher
 ].concat(
 	args.vm
+).concat(
+	settings.properties()
 ).concat([
 	"-classpath", $api.slime.launcher.getClasses(),
 	"inonit.script.jsh.launcher.Main"
@@ -89,22 +160,23 @@ Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 ).concat([
 	{
 		env: new (function() {
-			var passthrough = ["JSH_SCRIPT_DEBUGGER","JSH_PLUGINS","JSH_LAUNCHER_DEBUG","JSH_JVM_OPTIONS","JSH_ENGINE","JSH_JAVA_LOGGING_PROPERTIES","JSH_RHINO_OPTIMIZATION","JSH_SHELL_CONTAINER","JSH_HASJAVAC"];
 			for (var x in env) {
-				if (passthrough.indexOf(x) != -1) {
-					this[x] = env[x];
-				} else if (/^JSH_/.test(x)) {
+				if (/^JSH_/.test(x)) {
 				} else {
 					this[x] = env[x];
 				}
 			}
-			if (env.JSH_SHELL_CONTAINER != "jvm") delete this.JSH_JVM_OPTIONS;
-			if ($api.rhino.classpath) this.JSH_RHINO_CLASSPATH = $api.rhino.classpath;
+			settings.environment(this);
+
+			//	Below here is legacy stuff we need to think through and delete
+			var passthrough = ["JSH_PLUGINS","JSH_RHINO_OPTIMIZATION","JSH_HASJAVAC"];
+			passthrough.forEach(function(name) {
+				if (env[name]) {
+					this[name] = env[name];
+				}
+			},this);
 			if ($api.slime.src) {
-				this.JSH_SLIME_SRC = $api.slime.src.toString();
-				this.JSH_RHINO_SCRIPT = $api.slime.src.getPath("jsh/launcher/rhino/launcher.js");
 				this.JSH_LIBRARY_SCRIPTS_LOADER = $api.slime.src.getPath("loader");
-				this.JSH_LIBRARY_SCRIPTS_RHINO = $api.slime.src.getPath("loader/rhino");
 				this.JSH_LIBRARY_SCRIPTS_JSH = $api.slime.src.getPath("jsh/loader");
 				this.JSH_LIBRARY_MODULES = $api.slime.src.getPath(".");
 			}

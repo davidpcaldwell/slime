@@ -58,15 +58,16 @@ $api.jdk = new function() {
 };
 
 $api.slime = (function(was) {
+	var rv;
 	if (was && was.built) {
-		was.launcher = new function() {
+		rv = was;
+		rv.launcher = new function() {
 			this.getClasses = function() {
 				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
 			};
 		}
-		return was;
 	} else {
-		var rv = {};
+		rv = {};
 
 		rv.src = new function() {
 			var script = $api.script;
@@ -128,7 +129,18 @@ $api.slime = (function(was) {
 				return this.compile();
 			}
 		}
-
-		return rv;
 	}
+
+	rv.setting = function(name) {
+		if (Packages.java.lang.System.getProperty(name)) {
+			return String(Packages.java.lang.System.getProperty(name));
+		}
+		var ename = name.replace(/\./g, "_").toUpperCase();
+		if (Packages.java.lang.System.getenv(ename)) {
+			return String(Packages.java.lang.System.getenv(ename));
+		}
+		return null;
+	};
+
+	return rv;
 })($api.slime);

@@ -23,40 +23,6 @@ var platform = new function() {
 };
 var colon = String(Packages.java.io.File.pathSeparator);
 
-if (!this.$api) {
-	this.$api = new function() {
-		this.engine = new function() {
-			this.resolve = function(p) {
-				if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) return p.nashorn;
-				return p.rhino;
-			}
-		}
-
-		this.java = new function() {
-			this.Array = function(p) {
-				var type = $api.engine.resolve({
-					rhino: function(type) {
-						return type;
-					},
-					nashorn: function(type) {
-						return type.class;
-					}
-				})(p.type);
-				return Packages.java.lang.reflect.Array.newInstance(type,p.length);
-			};
-		}
-
-		this.io = new function() {
-			this.copy = function(i,o) {
-				if (!arguments.callee.delegate) {
-					arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
-				}
-				arguments.callee.delegate.copy(i,o);
-			};
-		}
-	};
-}
-
 $api.jsh = {};
 $api.jsh.setExitStatus = $api.engine.resolve({
 	rhino: function(status) {
@@ -84,7 +50,7 @@ $api.jsh.arguments = $api.engine.resolve({
 })(arguments);
 
 if ($api.jsh.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
-	$api.console("Usage: jsh.rhino.js <script-path> [arguments]");
+	$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
 	//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
 	//			java.lang.Error so that it is not caught
 	Packages.java.lang.System.exit(1);
@@ -449,7 +415,7 @@ settings.explicit = new function() {
 			if (env.JSH_SHELL_CLASSPATH) {
 				var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
 				arguments.callee.cached = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
-			} else if (env.JSH_SLIME_SRC) {
+			} else if ($api.slime.setting("jsh.slime.src")) {
 				//	TODO	this may work, because of the existing slime variable, but it may not, or may by coincidence, because
 				//			it is not well-thought-out.
 				var LOADER_CLASSES = $api.io.tmpdir();

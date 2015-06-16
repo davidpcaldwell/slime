@@ -424,15 +424,15 @@ public class Main {
 			}
 
 			String engine() {
-				return System.getenv("JSH_ENGINE");
+				return System.getProperty("jsh.engine");
 			}
 
 			String src() {
-				return System.getenv("JSH_SLIME_SRC");
+				return System.getProperty("jsh.slime.src");
 			}
 
 			String rhino() {
-				return System.getenv("JSH_RHINO_CLASSPATH");
+				return System.getProperty("jsh.rhino.classpath");
 			}
 		};
 		if (args.length == 1 && args[0].equals("-engines")) {
