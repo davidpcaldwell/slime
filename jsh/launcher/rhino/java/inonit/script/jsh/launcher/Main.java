@@ -60,7 +60,7 @@ public class Main {
 			}
 		}
 
-		static Shell shell() throws IOException {
+		private static Shell shell(Configuration configuration) throws IOException {
 			java.net.URI codeLocation = getMainClassSource();
 			File launcherFile = null;
 			if (codeLocation.getScheme().equals("file")) {
@@ -89,26 +89,24 @@ public class Main {
 				if (launcherFile.getName().equals("jsh.jar")) {
 					JSH_HOME = launcherFile.getParentFile();
 				}
-				shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : UnbuiltShell.create();
+				shell = (JSH_HOME != null) ? new BuiltShell(JSH_HOME) : UnbuiltShell.create(configuration.src(), configuration.rhino());
 				//	TODO	This might miss some exotic situations, like loading this class in its own classloader
 			}
 			return shell;
 		}
 
-		static ArrayList<String> engines() throws IOException {
-			Shell shell = shell();
+		static ArrayList<String> engines(Configuration configuration) throws IOException {
 			ArrayList<String> rv = new ArrayList<String>();
 			for (Map.Entry<String,Engine> entry : Engine.entries()) {
-				if (entry.getValue().isInstalled(shell)) {
+				if (entry.getValue().isInstalled(shell(configuration))) {
 					rv.add(entry.getKey());
 				}
 			}
 			return rv;
 		}
 
-		static Invocation create() throws IOException {
-			boolean debug = (System.getenv("JSH_LAUNCHER_DEBUG") != null);
-			return new Invocation(shell(), System.getenv("JSH_ENGINE"), debug);
+		static Invocation create(Configuration configuration) throws IOException {
+			return new Invocation(shell(configuration), configuration.engine(), configuration.debug());
 		}
 
 		private Shell shell;
@@ -165,6 +163,7 @@ public class Main {
 			System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
 			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
+			System.setProperty("inonit.jrunscript.api.passive", "true");
 			this.initializeSystemProperties();
 			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
 			Engine engine = this.engine;
@@ -185,8 +184,17 @@ public class Main {
 	static abstract class Shell {
 		abstract String getRhinoClasspath() throws IOException;
 		abstract ClassLoader getRhinoClassLoader() throws IOException;
-		abstract void addLauncherScriptsTo(Engine rhino) throws IOException;
 		abstract void initializeSystemProperties() throws IOException;
+
+		final void addLauncherScriptsTo(Engine engine) throws IOException {
+			engine.addScript(getJrunscriptApi());
+			engine.addScript(getLauncherApi());
+			engine.addScript(getLauncherScript());
+		}
+
+		abstract String getJrunscriptApi() throws IOException;
+		abstract String getLauncherApi() throws IOException;
+		abstract String getLauncherScript() throws IOException;
 	}
 
 	private static class PackagedShell extends Shell {
@@ -217,14 +225,19 @@ public class Main {
 			}
 		}
 
-		void addLauncherScriptsTo(Engine rhino) {
-			rhino.addScript(ClassLoader.getSystemResource("$jsh/api.jrunscript.js").toExternalForm());
-			rhino.addScript(ClassLoader.getSystemResource("$jsh/slime.api.jrunscript.js").toExternalForm());
-			rhino.addScript(ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm());
+		@Override String getJrunscriptApi() throws IOException {
+			return ClassLoader.getSystemResource("$jsh/api.jrunscript.js").toExternalForm();
+		}
+
+		@Override String getLauncherApi() throws IOException {
+			return ClassLoader.getSystemResource("$jsh/slime.api.jrunscript.js").toExternalForm();
+		}
+
+		@Override String getLauncherScript() throws IOException {
+			return ClassLoader.getSystemResource("$jsh/jsh.rhino.js").toExternalForm();
 		}
 
 		void initializeSystemProperties() {
-			System.setProperty("inonit.jrunscript.api.passive", "true");
 			try {
 				System.setProperty("jsh.launcher.packaged", file.getCanonicalPath());
 			} catch (IOException e) {
@@ -258,24 +271,8 @@ public class Main {
 			return rhinoClassLoader;
 		}
 
-		final void addLauncherScriptsTo(Engine rhino) throws IOException {
-			//	TODO	allowed to be null for now, while migration occurs
-			if (getJrunscriptApi() != null) {
-				rhino.addScript(getJrunscriptApi());
-			}
-			rhino.addScript(getLauncherApi());
-			rhino.addScript(getLauncherScript());
-		}
-
 		//	TODO	push Rhino-specific properties back into Rhino engine
 		final void initializeSystemProperties() throws java.io.IOException {
-			if (getJrunscriptApi() != null) {
-				System.setProperty("inonit.jrunscript.api.passive", "true");
-			}
-			String launcherScript = getLauncherScript();
-			if (launcherScript == null) {
-				throw new RuntimeException("Launcher script null in " + this);
-			}
 			System.setProperty("jsh.launcher.rhino.script", getLauncherScript());
 			if (getJshHome() != null) {
 				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());
@@ -285,19 +282,12 @@ public class Main {
 
 		abstract String getRhinoClasspath() throws IOException;
 		abstract File getJshHome();
-		abstract String getJrunscriptApi() throws IOException;
-		abstract String getLauncherApi() throws IOException;
-		abstract String getLauncherScript() throws IOException;
 	}
 
 	private static class UnbuiltShell extends UnpackagedShell {
-		static UnbuiltShell create() {
-			File src = null;
-			if (System.getenv("JSH_SLIME_SRC") != null) {
-				src = new File(System.getenv("JSH_SLIME_SRC"));
-			}
-			String rhino = System.getenv("JSH_RHINO_CLASSPATH");
-			return new UnbuiltShell(src,rhino);
+		static UnbuiltShell create(String src, String rhino) {
+			File sourceroot = new File(src);
+			return new UnbuiltShell(sourceroot,rhino);
 		}
 
 		private File sourceroot;
@@ -352,7 +342,6 @@ public class Main {
 
 	private static class BuiltShell extends UnpackagedShell {
 		private java.io.File HOME;
-		private UnbuiltShell explicit = UnbuiltShell.create();
 
 		BuiltShell(java.io.File HOME) throws java.io.IOException {
 			this.HOME = HOME;
@@ -367,7 +356,6 @@ public class Main {
 		}
 
 		String getRhinoClasspath() throws java.io.IOException {
-			if (explicit.getRhinoClasspath() != null) return explicit.getRhinoClasspath();
 			return new java.io.File(HOME, "lib/js.jar").getCanonicalPath();
 		}
 
@@ -376,12 +364,10 @@ public class Main {
 		}
 
 		String getLauncherApi() throws java.io.IOException {
-			if (explicit.getLauncherApi() != null) return explicit.getLauncherApi();
 			return new java.io.File(HOME, "script/launcher/slime.api.jrunscript.js").getCanonicalPath();
 		}
 
 		String getLauncherScript() throws java.io.IOException {
-			if (explicit.getLauncherScript() != null) return explicit.getLauncherScript();
 			return new java.io.File(HOME, "script/launcher/jsh.rhino.js").getCanonicalPath();
 		}
 	}
@@ -400,12 +386,12 @@ public class Main {
 		}
 	}
 
-	private void run(String[] args) throws IOException {
+	private void run(Configuration configuration, String[] args) throws IOException {
 		BeforeExit beforeExit = new BeforeExit();
 		Thread beforeExitThread = new Thread(beforeExit);
 		beforeExitThread.setName("BeforeExit");
 		Runtime.getRuntime().addShutdownHook(beforeExitThread);
-		Invocation invocation = Invocation.create();
+		Invocation invocation = Invocation.create(configuration);
 		Integer status = null;
 		try {
 			status = invocation.run(args);
@@ -416,17 +402,41 @@ public class Main {
 			Logging.get().log(Main.class, Level.FINER, "Completed with stack trace.");
 		} finally {
 			beforeExit.setStatus(status);
-			//	Ensure the VM exits even if the debugger is displayed
+			//	Ensure the VM exits even if the Rhino debugger is displayed
 			if (status != null) {
 				System.exit(status.intValue());
 			}
 		}
 	}
 
+	private static abstract class Configuration {
+		abstract boolean debug();
+		abstract String engine();
+		abstract String src();
+		abstract String rhino();
+	}
+
 	public static void main(String[] args) throws java.io.IOException {
 		Main main = new Main();
+		Configuration configuration = new Configuration() {
+			boolean debug() {
+				return System.getenv("JSH_LAUNCHER_DEBUG") != null;
+			}
+
+			String engine() {
+				return System.getenv("JSH_ENGINE");
+			}
+
+			String src() {
+				return System.getenv("JSH_SLIME_SRC");
+			}
+
+			String rhino() {
+				return System.getenv("JSH_RHINO_CLASSPATH");
+			}
+		};
 		if (args.length == 1 && args[0].equals("-engines")) {
-			List<String> engines = Invocation.engines();
+			List<String> engines = Invocation.engines(configuration);
 			System.out.print("[");
 			for (int i=0; i<engines.size(); i++) {
 				if (i > 0) {
@@ -437,7 +447,10 @@ public class Main {
 			System.out.print("]");
 		} else {
 			Logging.get().log(Main.class, Level.FINEST, "Launcher Main executing ...");
-			main.run(args);
+			main.run(
+				configuration,
+				args
+			);
 		}
 	}
 }

@@ -17,11 +17,47 @@ END LICENSE
 	<title>jsh Launcher</title>
 	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../../loader/api/api.js"></script>
+	<!--	TODO	document directives	-->
 </head>
 <body>
-	<!--	TODO	document directives	-->
+	<div>
+		<div>
+			The <code>jsh</code> launcher starts a <code>jsh</code> shell that runs a main script.
+		</div>
+		<div>
+			A shell may be <i>built</i> or <i>unbuilt</i>. An unbuilt shell is run directly from the SLIME source code, while a
+			built shell is produced via the <code>jsh</code> installer.
+		</div>
+		The launcher consists of the following components:
+	</div>
+	<div>
+		<h1>Unbuilt launcher</h1>
+		<div>
+			The unbuilt launcher prepares the Java launcher when running in an unbuilt shell.
+			<div>
+				<h2>Inputs</h2>
+				<ul>
+					<li><code>JSH_LAUNCHER_DEBUG</code>: whether to emit debugging output to the console.</li>
+
+				</ul>
+			</div>
+			<div>
+			</div>
+			<!--	TODO	should download Rhino if needed	-->
+		</div>
+	</div>
 	<div>
 		<h1>Java launcher (inonit.script.jsh.launcher.Main)</h1>
+		<div>
+			The Java launcher provides the normal entry point for running a <code>jsh</code> script. In theory, it could be
+			combined with the unbuilt launcher (which could be modified to detect a built shell), but providing the main jsh file
+			as an executable JAR file makes it more convenient to execute than invoking the unbuilt launcher (which is in turn
+			invoked by/requires another script).
+		</div>
+		<div>
+			The Java launcher also can, if invoked with the <code>-engines</code> argument (and that argument alone), provide a
+			list of Java script engines that the launcher is capable of using.
+		</div>
 		<div>
 			<h2>Resources used</h2>
 			<ul>

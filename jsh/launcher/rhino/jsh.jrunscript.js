@@ -15,45 +15,44 @@
 
 var env = $api.shell.environment;
 
-$api.debug.on = false;
+$api.debug.on = Boolean(env.JSH_LAUNCHER_DEBUG);
 $api.debug("Source: " + slime.src);
 
 //	Build the launcher classes
 var LAUNCHER_CLASSES = slime.launcher.compile();
-var RHINO_JAR = $api.rhino.classpath;
 
 //	TODO	Obviously under Cygwin shell does not include the paths helper
-
-var args = [];
-args.push($api.java.launcher);
+var args = {
+	vm: []
+};
 //	TODO	if JSH_SHELL_CONTAINER is jvm, debugger will not be run anywhere
 if (this.AGENTLIB_JDWP && env.JSH_SHELL_CONTAINER != "jvm") {
-	args.push("-agentlib:jdwp=" + this.AGENTLIB_JDWP);
+	args.vm.push("-agentlib:jdwp=" + this.AGENTLIB_JDWP);
 }
 if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JAVA_LOGGING_PROPERTIES) {
-	args.push("-Djava.util.logging.config.file=" + env.JSH_JAVA_LOGGING_PROPERTIES)
+	args.vm.push("-Djava.util.logging.config.file=" + env.JSH_JAVA_LOGGING_PROPERTIES)
 }
 if (env.JSH_SHELL_CONTAINER != "jvm" && env.JSH_JVM_OPTIONS) {
-	args.push.apply(args,env.JSH_JVM_OPTIONS.split(" "));
+	args.vm.push.apply(args,env.JSH_JVM_OPTIONS.split(" "));
 }
-//	TODO	if the below works, remove the layer of indirection
-var _arguments = $api.arguments;
+
 //	Allow sending arguments beginning with dash that will be interpreted as VM switches
-while(_arguments.length > 0 && _arguments[0].substring(0,1) == "-") {
-	args.push(_arguments.shift());
+while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
+	args.vm.push($api.arguments.shift());
 }
-args.push(
+
+$api.debug("$api.script: " + $api.script);
+$api.debug("Running: " + $api.arguments.join(" "));
+Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
+	$api.java.launcher
+].concat(
+	args.vm
+).concat([
 	"-classpath", LAUNCHER_CLASSES,
 	"inonit.script.jsh.launcher.Main"
-);
-if ($api.script) {
-	args = args.concat(_arguments);
-} else {
-	for (var i=0; i<_arguments.length; i++) {
-		args.push(_arguments[i]);
-	}
-}
-args.push(
+]).concat(
+	$api.arguments
+).concat([
 	{
 		env: new (function() {
 			var passthrough = ["JSH_SCRIPT_DEBUGGER","JSH_PLUGINS","JSH_LAUNCHER_DEBUG","JSH_JVM_OPTIONS","JSH_ENGINE","JSH_JAVA_LOGGING_PROPERTIES","JSH_RHINO_OPTIMIZATION","JSH_SHELL_CONTAINER","JSH_HASJAVAC"];
@@ -66,7 +65,7 @@ args.push(
 				}
 			}
 			if (env.JSH_SHELL_CONTAINER != "jvm") delete this.JSH_JVM_OPTIONS;
-			if (RHINO_JAR) this.JSH_RHINO_CLASSPATH = RHINO_JAR;
+			if ($api.rhino.classpath) this.JSH_RHINO_CLASSPATH = $api.rhino.classpath;
 			this.JSH_SLIME_SRC = slime.src.toString();
 			this.JSH_RHINO_SCRIPT = slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
 			this.JSH_LIBRARY_SCRIPTS_LOADER = slime.src.getPath("loader");
@@ -77,8 +76,4 @@ args.push(
 		//	Cannot be enabled at this time; see issue 152
 		,input: Packages.java.lang.System["in"]
 	}
-);
-
-//Packages.java.lang.System.err.println("$api.script: " + this.$api.script);
-Packages.java.lang.System.err.println("Running: " + args.join(" "));
-Packages.java.lang.System.exit($api.engine.runCommand.apply(null, args));
+])));
