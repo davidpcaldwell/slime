@@ -13,13 +13,13 @@
 //	TODO	rename this file to jsh.launcher.js
 
 if (!this.$api.slime) {
-	$api.script.resolve("../../jsh/etc/api.jrunscript.js").load();
+	$api.script.resolve("slime.js").load();
+	$api.debug("Loaded slime.js");
 }
 
 var env = $api.shell.environment;
 var debug = $api.debug;
 var platform = new function() {
-
 };
 var colon = String(Packages.java.io.File.pathSeparator);
 
@@ -84,7 +84,7 @@ $api.jsh.arguments = $api.engine.resolve({
 })(arguments);
 
 if ($api.jsh.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
-	console("Usage: jsh.rhino.js <script-path> [arguments]");
+	$api.console("Usage: jsh.rhino.js <script-path> [arguments]");
 	//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
 	//			java.lang.Error so that it is not caught
 	Packages.java.lang.System.exit(1);
@@ -460,11 +460,11 @@ settings.explicit = new function() {
 				} catch (e) {
 					RHINO_JAR = null;
 				}
-				var toCompile = $api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/java"));
-				if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/rhino")));
-				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder($api.slime.src.getFile("rhino/system/java")));
-				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/java")));
-				if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/rhino")));
+				var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
+				if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
+				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
+				if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
 				var rhinoClasspath = (RHINO_JAR) ? ["-classpath", RHINO_JAR] : [];
 				$api.jdk.compile([
 					"-d", LOADER_CLASSES
@@ -548,6 +548,7 @@ settings.explicit = new function() {
 				if (new Packages.java.io.File(path).exists()) {
 					return new File( String(new Packages.java.io.File(path).getCanonicalPath()) );
 				}
+				var slash = Packages.java.io.File.separator;
 				if (path.indexOf(slash) == -1) {
 					debug("PATH = " + env.PATH);
 					var search = env.PATH.split(colon);
@@ -556,11 +557,11 @@ settings.explicit = new function() {
 							return new File(String(new Packages.java.io.File(search[i] + slash + path).getCanonicalPath()));
 						}
 					}
-					console("Not found in PATH: " + path);
+					$api.console("Not found in PATH: " + path);
 					Packages.java.lang.System.exit(1);
 				} else {
 					debug("Working directory: PWD=" + env.PWD);
-					console("Script not found: " + path)
+					$api.console("Script not found: " + path)
 					Packages.java.lang.System.exit(1);
 				}
 			})($api.jsh.arguments[0]);
@@ -611,7 +612,7 @@ settings.directives = function(source) {
 			if (!settings.packaged) {
 				directives.classpath.push(new File(pathElement));
 			} else {
-				console("Warning: ignoring #CLASSPATH directive in packaged script: " + match[1]);
+				$api.console("Warning: ignoring #CLASSPATH directive in packaged script: " + match[1]);
 			}
 		} else if (match = /^JDK_LIBRARY\s+(.*)/.exec(item)) {
 			directives.jdkLibraries.push(JAVA_HOME.getFile(match[1]));
@@ -791,8 +792,8 @@ try {
 			command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
 			//	TODO	check for existence of the executable?
 			if (!settings.get("JSH_LIBRARY_NATIVE")) {
-				console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
-				console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
+				$api.console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
+				$api.console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
 			} else {
 				command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
 			}
@@ -814,7 +815,7 @@ try {
 
 	var shellClasspath = settings.get("shellClasspath");
 	if (!shellClasspath) {
-		console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
+		$api.console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
 		Packages.java.lang.System.exit(1);
 	}
 

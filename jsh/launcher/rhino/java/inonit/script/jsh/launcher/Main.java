@@ -331,12 +331,12 @@ public class Main {
 
 		String getLauncherApi() throws IOException {
 			if (sourceroot == null) return null;
-			return new File(sourceroot, "jsh/etc/api.rhino.js").getCanonicalPath();
+			return new File(sourceroot, "jsh/launcher/rhino/slime.js").getCanonicalPath();
 		}
 
 		String getLauncherScript() throws IOException {
 			if (sourceroot == null) return null;
-			return new File(sourceroot, "jsh/launcher/rhino/jsh.rhino.js").getCanonicalPath();
+			return new File(sourceroot, "jsh/launcher/rhino/launcher.js").getCanonicalPath();
 		}
 	}
 

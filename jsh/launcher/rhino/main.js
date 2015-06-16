@@ -102,7 +102,7 @@ Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 			if ($api.rhino.classpath) this.JSH_RHINO_CLASSPATH = $api.rhino.classpath;
 			if ($api.slime.src) {
 				this.JSH_SLIME_SRC = $api.slime.src.toString();
-				this.JSH_RHINO_SCRIPT = $api.slime.src.getPath("jsh/launcher/rhino/jsh.rhino.js");
+				this.JSH_RHINO_SCRIPT = $api.slime.src.getPath("jsh/launcher/rhino/launcher.js");
 				this.JSH_LIBRARY_SCRIPTS_LOADER = $api.slime.src.getPath("loader");
 				this.JSH_LIBRARY_SCRIPTS_RHINO = $api.slime.src.getPath("loader/rhino");
 				this.JSH_LIBRARY_SCRIPTS_JSH = $api.slime.src.getPath("jsh/loader");

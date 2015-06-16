@@ -239,9 +239,9 @@ console("Creating directories ...");
 
 console("Copying launcher scripts ...");
 platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"jsh.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/etc/api.jrunscript.js"), new File(JSH_HOME,"slime.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"), new File(JSH_HOME,"main.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"launcher.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/slime.js"), new File(JSH_HOME,"slime.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/main.js"), new File(JSH_HOME,"main.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/launcher.js"), new File(JSH_HOME,"launcher.js"));
 //	TODO	should be able to modify Java launcher to use above locations and remove next three lines
 //platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"script/launcher/api.jrunscript.js"));
 //platform.io.copyFile($api.slime.src.getFile("jsh/etc/api.jrunscript.js"), new File(JSH_HOME,"script/launcher/slime.api.jrunscript.js"));

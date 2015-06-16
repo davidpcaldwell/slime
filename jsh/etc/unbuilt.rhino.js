@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-$api.script.resolve("api.jrunscript.js").load();
+$api.script.resolve("../../jsh/launcher/rhino/slime.js").load();
 
 if ($api.arguments[0] == "build") {
 	$api.arguments.splice(0,1);
@@ -18,17 +18,17 @@ if ($api.arguments[0] == "build") {
 //	load(slime.src.getFile("jsh/etc/build.rhino.js"));
 } else if ($api.arguments[0] == "launch") {
 	$api.arguments.splice(0,1);
-	$api.script.resolve("../../jsh/launcher/rhino/jsh.jrunscript.js").load();
+	$api.script.resolve("../../jsh/launcher/rhino/main.js").load();
 } else if ($api.arguments[0] == "jdwp" || $api.arguments[0] == "xjdwp") {
 	if ($api.arguments[0] == "jdwp") {
 		Packages.java.lang.System.setProperty("jsh.debug.jdwp", new Packages.java.lang.String($api.arguments[1]))
 	}
 	$api.arguments.splice(0,2);
-	load(slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"));
+	$api.script.resolve("../../jsh/launcher/rhino/main.js").load();
 } else if (arguments[0] == "develop") {
 	//	TODO	convert to new $api structure
 	arguments.splice(0,1,String(slime.src.getFile("jsh/etc/develop.jsh.js")));
-	load(slime.src.getFile("jsh/launcher/rhino/jsh.jrunscript.js"));
+	load(slime.src.getFile("jsh/launcher/rhino/launcher.js"));
 } else if ($api.arguments[0] == "verify") {
 	var verifyArgs = $api.arguments.slice(1);
 	var buildArgs = [];
