@@ -130,14 +130,71 @@ public class Main {
 		return libraries(getPluginRoots(searchpaths));
 	}
 
+	private static abstract class Unpackaged {
+		abstract String getModules();
+		abstract File getLoader();
+		abstract File getJsh();
+	}
+
+	private static class Unbuilt extends Unpackaged {
+		private File src;
+
+		Unbuilt() {
+			this.src = new File(System.getProperty("jsh.slime.src"));
+		}
+
+		String getModules() {
+			return this.src.getAbsolutePath();
+		}
+
+		File getLoader() {
+			return new File(this.src, "loader");
+		}
+
+		File getJsh() {
+			return new File(new File(this.src, "jsh"), "loader");
+		}
+	}
+
+	private static class Built extends Unpackaged {
+		private File home;
+
+		Built() {
+			this.home = new File(System.getProperty("jsh.home"));
+		}
+
+		String getModules() {
+			return new File(this.home, "modules").getAbsolutePath();
+		}
+
+		private File getScripts() {
+			return new File(this.home, "script");
+		}
+
+		File getLoader() {
+			return new File(getScripts(), "loader");
+		}
+
+		File getJsh() {
+			return new File(getScripts(), "jsh");
+		}
+	}
+
+	private static Unpackaged getUnpackaged() {
+		if (System.getProperty("jsh.home") != null) return new Built();
+		if (System.getProperty("jsh.slime.src") != null) return new Unbuilt();
+		return null;
+	}
+
 	private static Shell.Installation unpackagedInstallation() {
-		Logging.get().log(Main.class, Level.CONFIG, "jsh.library.modules=" + System.getProperty("jsh.library.modules"));
-		Logging.get().log(Main.class, Level.CONFIG, "jsh.plugins=" + System.getProperty("jsh.plugins"));
-		final Code[] plugins = plugins(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
-		final Code.Source[] libraries = libraries(System.getProperty("jsh.library.modules"), System.getProperty("jsh.plugins"));
+		Logging.get().log(Main.class, Level.CONFIG, "jsh.home=" + System.getProperty("jsh.home"));
+		Logging.get().log(Main.class, Level.CONFIG, "jsh.slime.src=" + System.getProperty("jsh.slime.src"));
+		Unpackaged unpackaged = getUnpackaged();
+		final Code[] plugins = plugins(unpackaged.getModules(), System.getProperty("jsh.plugins"));
+		final Code.Source[] libraries = libraries(unpackaged.getModules(), System.getProperty("jsh.plugins"));
 		return Shell.Installation.create(
-			Code.Source.create(new File(System.getProperty("jsh.library.scripts.loader"))),
-			Code.Source.create(new File(System.getProperty("jsh.library.scripts.jsh"))),
+			Code.Source.create(unpackaged.getLoader()),
+			Code.Source.create(unpackaged.getJsh()),
 			plugins,
 			libraries
 		);

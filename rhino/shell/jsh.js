@@ -479,5 +479,7 @@ var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($ex
 //			so jsh.jar is still first. An earlier implementation made sure the launcher classpath length was 1 also, but that is no
 //			longer true in the profiling case.
 if (launcherClasspath.pathnames[0] && launcherClasspath.pathnames[0].basename == "jsh.jar") {
+	//	TODO	find better way to get this value; if using global, should use jsh.home system property, but should actually find
+	//			a way to pass it through the shell instantiation process
 	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
 }

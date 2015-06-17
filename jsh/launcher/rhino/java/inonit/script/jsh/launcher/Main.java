@@ -282,7 +282,7 @@ public class Main {
 		final void initializeSystemProperties() throws java.io.IOException {
 			System.setProperty("jsh.launcher.rhino.script", getLauncherScript());
 			if (getJshHome() != null) {
-				System.setProperty("jsh.launcher.home", getJshHome().getCanonicalPath());
+				System.setProperty("jsh.home", getJshHome().getCanonicalPath());
 			}
 			System.setProperty("jsh.launcher.classpath", System.getProperty("java.class.path"));
 		}

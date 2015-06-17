@@ -421,18 +421,16 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			this.JSH_LIBRARY_NATIVE = tmpdir;
 		}
 	}
-}
-
-if (getProperty("jsh.launcher.home")) {
+} else if (getProperty("jsh.home")) {
 	settings.built = new function() {
-		var JSH_HOME = new Directory( getProperty("jsh.launcher.home") );
+		var JSH_HOME = new Directory( getProperty("jsh.home") );
 		debug("JSH_HOME = " + JSH_HOME.path);
 
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
-		this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_HOME.getDirectory("script/loader");
-		this.JSH_LIBRARY_SCRIPTS_JSH = JSH_HOME.getDirectory("script/jsh");
-		this.JSH_LIBRARY_MODULES = JSH_HOME.getDirectory("modules");
+//		this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_HOME.getDirectory("script/loader");
+//		this.JSH_LIBRARY_SCRIPTS_JSH = JSH_HOME.getDirectory("script/jsh");
+//		this.JSH_LIBRARY_MODULES = JSH_HOME.getDirectory("modules");
 
 		if (platform.cygwin) {
 			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
@@ -492,9 +490,9 @@ if (getProperty("jsh.launcher.home")) {
 			this.shellClasspath = shellClasspath;
 		}
 		this.scriptClasspath = [];
-		this.JSH_LIBRARY_SCRIPTS_LOADER = SLIME_SRC.getDirectory("loader");
-		this.JSH_LIBRARY_SCRIPTS_JSH = SLIME_SRC.getDirectory("jsh/loader");
-		this.JSH_LIBRARY_MODULES = SLIME_SRC;
+//		this.JSH_LIBRARY_SCRIPTS_LOADER = SLIME_SRC.getDirectory("loader");
+//		this.JSH_LIBRARY_SCRIPTS_JSH = SLIME_SRC.getDirectory("jsh/loader");
+//		this.JSH_LIBRARY_MODULES = SLIME_SRC;
 		if (platform.cygwin) {
 			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
 		}
@@ -511,13 +509,10 @@ if (getProperty("jsh.launcher.home")) {
 if (settings.packaged) {
 	debug("Using packaged jsh.");
 	settings.use.push(settings.packaged);
-} else {
-	debug("Not using packaged jsh.");
-	if (settings.built) {
-		settings.use.push(settings.built);
-	} else if (settings.unbuilt) {
-		settings.use.push(settings.unbuilt);
-	}
+} else if (settings.built) {
+	settings.use.push(settings.built);
+} else if (settings.unbuilt) {
+	settings.use.push(settings.unbuilt);
 }
 
 settings.explicit = new function() {
@@ -528,8 +523,8 @@ settings.explicit = new function() {
 
 	var self = this;
 	[
-		"JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_JSH",
-		"JSH_LIBRARY_MODULES",
+//		"JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_JSH",
+//		"JSH_LIBRARY_MODULES",
 		"JSH_LIBRARY_NATIVE",
 		"JSH_TMPDIR"
 	].forEach( function(name) {
@@ -699,8 +694,8 @@ try {
 	var environmentAndProperties = function() {
 		[
 			"JSH_RHINO_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
-			,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
-			,"JSH_LIBRARY_MODULES"
+//			,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
+//			,"JSH_LIBRARY_MODULES"
 			,"JSH_PLUGINS"
 			,"JSH_OS_ENV_UNIX"
 		].forEach(function(name) {
@@ -726,6 +721,14 @@ try {
 				command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
 			}
 		}
+
+		[
+			"jsh.home", "jsh.slime.src"
+		].forEach(function(property) {
+			if ($api.slime.setting(property)) {
+				command.jvmProperty(property, $api.slime.setting(property));
+			}
+		});
 
 		[
 			"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
