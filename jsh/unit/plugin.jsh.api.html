@@ -15,10 +15,9 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
-		<title>__TITLE__</title>
-		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-		<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
-		<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+		<title>jsh.unit</title>
+		<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../loader/api/api.js"></script>
 	</head>
 	<body>
 		<div>__DESCRIPTION__</div>
@@ -29,8 +28,131 @@ END LICENSE
 		</div>
 		<div>
 			<h1>Exports</h1>
-			<ul>
-			</ul>
+			<div>
+				<h2><code><a href="../../loader/api/unit.api.html#exports.Scenario">jsh.unit.Scenario</a></code></h2>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Events</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="constructor">
+						<div class="name">Stream</div>
+						<span>Creates a scenario which executes by reading events from a stream.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>The name to use for the remote scenario.</span>
+										</li>
+										<li class="value">
+											<div class="name">stream</div>
+											<span class="type"><a href="../../rhino/io/api.html#types.binput">byte input stream</a></span>
+											<span>A stream broadcasting events using the <code>jsh.unit.view.Events</code> protocol.</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<!--	TODO	scenario type not properly defined yet	-->
+							<span class="type">scenario</span>
+							<!--
+							<span>__DESCRIPTION__</span>
+							-->
+						</div>
+					</li>
+				</ul>
+			<div>
+				<h2><code>jsh.unit.view</code></h2>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Console</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">writer</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="constructor">
+						<div class="name">Events</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">writer</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="constructor">
+						<div class="name">WebView</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
 			<script type="application/x.jsapi#tests">
 				var remote = $jsapi.loader.file("remote.js", {
 					api: {

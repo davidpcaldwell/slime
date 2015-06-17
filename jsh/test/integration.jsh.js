@@ -73,6 +73,34 @@ if (!jsh.shell.jsh.home) {
 	jsh.shell.exit(status);
 }
 
+var scenario = new jsh.unit.Scenario({
+	composite: true,
+	name: "jsh Integration Tests",
+	view: (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
+});
+
+if (true) scenario.add(new function() {
+	var buffer = new jsh.io.Buffer();
+	var write = buffer.writeBinary();
+
+	this.scenario = jsh.shell.jsh({
+		fork: true,
+		script: jsh.script.file.getRelativePath("JSH_SHELL_CLASSPATH.jsh.js").file,
+		arguments: ["-test"],
+		stdio: {
+			output: write
+		},
+		evaluate: function(result) {
+			write.java.adapt().flush();
+			buffer.close();
+			return new jsh.unit.Scenario.Stream({
+				name: jsh.script.file.getRelativePath("JSH_SHELL_CLASSPATH.jsh.js").toString(),
+				stream: buffer.readBinary()
+			});
+		}
+	});
+});
+
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
 //	TODO	remove the below dependency
@@ -319,12 +347,6 @@ var jshPackage = function(p) {
 	return to;
 };
 
-var scenario = new jsh.unit.Scenario({
-	composite: true,
-	name: "jsh Integration Tests",
-	view: (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
-});
-
 var legacy = function() {
 
 (function() {
@@ -475,45 +497,6 @@ console("Running unpackaged packaged-path.jsh.js");
 testCommandOutput("packaged-path.jsh.js", function(options) {
 	checkOutput(options,["Success: packaged-path.jsh.js",""]);
 });
-
-var packaged_JSH_SHELL_CLASSPATH = jshPackage({
-	script: "JSH_SHELL_CLASSPATH.jsh.js"
-});
-
-console("Running JSH_SHELL_CLASSPATH package ... ")
-testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
-	var outputUri = options.output.split(String(Packages.java.lang.System.getProperty("line.separator")))[0];
-	var _outputFile = new Packages.java.io.File(new Packages.java.net.URI(outputUri));
-	if (String(_outputFile.getCanonicalPath()) == String(packaged_JSH_SHELL_CLASSPATH.getCanonicalPath())) {
-		Packages.java.lang.System.err.println("Same URI: " + outputUri + " and " + packaged_JSH_SHELL_CLASSPATH.toURI());
-	} else {
-		Packages.java.lang.System.err.println("Output wrong; dumping stderr:");
-		Packages.java.lang.System.err.println(options.err);
-		Packages.java.lang.System.err.println("Output file: " + _outputFile + " canonical: " + _outputFile.getCanonicalPath());
-		Packages.java.lang.System.err.println("Correct file: " + packaged_JSH_SHELL_CLASSPATH);
-		throw new Error("Output wrong; different URI: it is [" + options.output + "] when expected was [" + packaged_JSH_SHELL_CLASSPATH.toURI() + "]");
-	}
-//	checkOutput(options,[
-//		String(packaged_JSH_SHELL_CLASSPATH.toURI()),
-//		""
-//	]);
-});
-
-//	Test was disabled as failing, attempting to re-enable to fix issue 79
-if (true) {
-	var environment = {
-		JSH_SHELL_CLASSPATH: String(new File(JSH_HOME,"lib/jsh.jar").getCanonicalPath())
-	};
-	console("Running JSH_SHELL_CLASSPATH package with " + environment.toSource() + " ...");
-	testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
-		checkOutput(options,[
-			String(new File(JSH_HOME,"lib/jsh.jar").getCanonicalFile().toURI()),
-			""
-		]);
-	}, {
-		env: environment
-	});
-}
 
 var packaged_helper = jshPackage({
 	script: "cygwin/helper.jsh.js"

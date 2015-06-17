@@ -140,25 +140,6 @@ var Searchpath = function(p) {
 }
 
 var Command = function() {
-	var tokens = [];
-
-	this.add = function(o) {
-		if (typeof(o) == "string") {
-			tokens.push(o);
-		} else if (o == null || (typeof(o) == "undefined")) {
-			//	ignore
-		} else if (typeof(o) == "object" && o.constructor == File) {
-			tokens.push(o.path);
-		} else if (typeof(o) == "object" && o.constructor == Array) {
-			o.forEach( function(item) {
-				tokens.push(item);
-			});
-		}
-	}
-
-	this.line = function() {
-		return tokens.join(" ");
-	}
 
 	//	TODO	replace with version from $api
 	var runCommand = function() {
@@ -233,9 +214,146 @@ var Command = function() {
 		).getExitStatus();
 	}
 
-	this.run = function(mode) {
-		var array = (mode) ? [mode] : [];
-		return runCommand.apply(this,tokens.concat(array));
+	var jvmProperty = function(name,value,set) {
+		if (typeof(value) != "undefined") {
+			if (typeof(value) == "object" && value != null) {
+				if (value.constructor == File || value.constructor == Directory) {
+					return arguments.callee.call(this,name,value.path,set);
+				} else if (value.constructor == Searchpath) {
+					return arguments.callee.call(this,name,value.toPath(),set);
+				} else {
+					throw new Error("Trying to set " + name + " to illegal object value: "  + value);
+				}
+			} else if (typeof(value) == "boolean") {
+				return arguments.callee.call(this,name,String(value),set);
+			} else {
+				set(name,value);
+			}
+		}
+	}
+
+	this.configure = function(launcher) {
+		if (launcher == "jvm") {
+			var tokens = [];
+
+			var add = function(o) {
+				if (typeof(o) == "string") {
+					tokens.push(o);
+				} else if (o == null || (typeof(o) == "undefined")) {
+					//	ignore
+				} else if (typeof(o) == "object" && o.constructor == File) {
+					tokens.push(o.path);
+				} else if (typeof(o) == "object" && o.constructor == Array) {
+					o.forEach( function(item) {
+						tokens.push(item);
+					});
+				}
+			}
+
+			this.jvmProperty = function(name,value) {
+				jvmProperty(name,value,(function(name,value) {
+					add("-D" + name + "=" + value);
+				}).bind(this));
+			}
+			this.executable = function(_file) {
+				add(_file);
+			}
+			this.classpath = function(path) {
+				add("-classpath");
+				add(path.toPath());
+			};
+			this.mainClassName = function(name) {
+				add(name);
+			}
+			this.script = function(file) {
+				add(file);
+			}
+			this.argument = function(string) {
+				add(string);
+			}
+			this.line = function() {
+				return tokens.join(" ");
+			}
+			this.run = function(mode) {
+				var array = (mode) ? [mode] : [];
+				return runCommand.apply(this,tokens.concat(array));
+			}
+		} else if (launcher == "classloader") {
+			this.toString = function() {
+				return "Loader command: jsh=" + mainClassName + " classpath=" + classpath + " script=" + script + " arguments=" + args
+			}
+
+			this.jvmProperty = function(name,value) {
+				jvmProperty(name,value,function(name,value) {
+					Packages.java.lang.System.setProperty(name,value);
+				});
+			};
+
+			this.executable = function(_file) {
+				//	do nothing; this was always parent Java process, perhaps with exception of JSH_JAVA_HOME
+				//	TODO	remove JSH_JAVA_HOME from documentation and/or have it pertain only to native launcher
+			};
+
+			var classpath;
+
+			this.classpath = function(path) {
+				classpath = path;
+			};
+
+			var mainClassName;
+
+			this.mainClassName = function(name) {
+				mainClassName = name;
+			};
+
+			var script;
+
+			this.script = function(file) {
+				script = file;
+			};
+
+			var args = [];
+
+			this.argument = function(string) {
+				args.push(string);
+			}
+
+			this.line = function() {
+				return "(internal)";
+			}
+
+			this.run = function(mode) {
+				var _classloader = new classpath.ClassLoader();
+				var _main = _classloader.loadClass("inonit.script.jsh.Main");
+				var _class = _classloader.loadClass(mainClassName);
+				var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
+				var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
+
+				var loaderArguments = [];
+				if (script && typeof(script.path) != "undefined") {
+					loaderArguments.push(script.path);
+				} else if (script && typeof(script) == "string") {
+					loaderArguments.push(script);
+				}
+				loaderArguments.push.apply(loaderArguments,args);
+
+				var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
+				for (var i=0; i<loaderArguments.length; i++) {
+					_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
+				}
+
+				var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 2 });
+				var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 2 });
+				_invokeArguments[0] = _engine;
+				_argumentTypes[0] = _classloader.loadClass("inonit.script.jsh.Main$Engine");
+				_invokeArguments[1] = _arguments;
+				_argumentTypes[1] = _arguments.getClass();
+				var _method = _main.getMethod("run",_argumentTypes);
+				return _method.invoke(null,_invokeArguments);
+			}
+		} else {
+			throw new Error("launcher = " + launcher);
+		}
 	}
 }
 
@@ -268,7 +386,18 @@ debug("Launcher system properties = " + Packages.java.lang.System.getProperties(
 
 var JAVA_HOME = new Directory( (env.JSH_JAVA_HOME) ? os(env.JSH_JAVA_HOME) : getProperty("java.home") );
 
-var settings = {};
+var settings = {
+	use: [],
+	get: function(id) {
+		var rv;
+		for (var i=0; i<this.use.length; i++) {
+			if (typeof(this.use[i][id]) != "undefined") {
+				rv = this.use[i][id];
+			}
+		}
+		return rv;
+	}
+};
 
 settings.defaults = new function() {
 	if (platform.cygwin) {
@@ -291,6 +420,8 @@ settings.defaults = new function() {
 
 	this.JSH_PLUGINS = new Directory(getProperty("user.home")).getDirectory(".jsh/plugins").path;
 };
+settings.use.push(settings.defaults);
+
 debug("jsh.launcher.packaged = " + getProperty("jsh.launcher.packaged"));
 if (getProperty("jsh.launcher.packaged") != null) {
 	settings.packaged = new function() {
@@ -386,9 +517,69 @@ if (getProperty("jsh.launcher.home")) {
 
 		this.profiler = JSH_HOME.getFile("tools/profiler.jar");
 	}
+} else if ($api.slime.setting("jsh.slime.src")) {
+	settings.unbuilt = new function() {
+		var SLIME_SRC = new Directory( $api.slime.setting("jsh.slime.src") );
+
+		var getShellClasspath = function() {
+			debugger;
+			if (!arguments.callee.cached) {
+				if ($api.slime.setting("jsh.slime.src")) {
+					//	TODO	this may work, because of the existing slime variable, but it may not, or may by coincidence, because
+					//			it is not well-thought-out.
+					var LOADER_CLASSES = $api.io.tmpdir();
+					var RHINO_JAR = settings.get("rhinoClasspath");
+					var _cl = new RHINO_JAR.ClassLoader();
+					try {
+						_cl.loadClass("org.mozilla.javascript.Context");
+					} catch (e) {
+						RHINO_JAR = null;
+					}
+					var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
+					if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
+					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
+					if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+					var rhinoClasspath = (RHINO_JAR) ? ["-classpath", RHINO_JAR] : [];
+					$api.jdk.compile([
+						"-d", LOADER_CLASSES
+					].concat(rhinoClasspath).concat(toCompile));
+					arguments.callee.cached = new Searchpath(String(LOADER_CLASSES.getCanonicalPath()));
+				}
+			}
+			return arguments.callee.cached;
+		}
+		var shellClasspath = getShellClasspath();
+	//	var shellClasspath = (function() {
+	//		if (!env.JSH_SHELL_CLASSPATH) return UNDEFINED;
+	//		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
+	//		if (!settings.packaged) return specified;
+	//		//	if we are running in a packaged application, we set the loader shell classpath to the specified value plus the package
+	//		//	file location. If the user-specified JSH_SHELL_CLASSPATH contains other classes contained in the package file,
+	//		//	those classes will preferentially be used to those in the package.
+	//		//	TODO	More thinking required about this. The analogous problem exists for unpackaged applications as well.
+	//		return specified.append(settings.packaged.shellClasspath);
+	//	})();
+		if (shellClasspath) {
+			this.shellClasspath = shellClasspath;
+		}
+		this.scriptClasspath = [];
+		this.JSH_LIBRARY_SCRIPTS_LOADER = SLIME_SRC.getDirectory("loader");
+		this.JSH_LIBRARY_SCRIPTS_JSH = SLIME_SRC.getDirectory("jsh/loader");
+		this.JSH_LIBRARY_MODULES = SLIME_SRC;
+		if (platform.cygwin) {
+			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
+		}
+
+//		this.JSH_PLUGINS = new Searchpath([
+//			JSH_HOME.getDirectory("plugins"),
+//			new Directory(getProperty("user.home")).getDirectory(".jsh/plugins")
+//		]);
+
+//		this.profiler = JSH_HOME.getFile("tools/profiler.jar");
+	}
 }
 
-settings.use = [settings.defaults];
 if (settings.packaged) {
 	debug("Using packaged jsh.");
 	settings.use.push(settings.packaged);
@@ -396,66 +587,16 @@ if (settings.packaged) {
 	debug("Not using packaged jsh.");
 	if (settings.built) {
 		settings.use.push(settings.built);
+	} else if (settings.unbuilt) {
+		settings.use.push(settings.unbuilt);
 	}
 }
-settings.get = function(id) {
-	var rv;
-	for (var i=0; i<this.use.length; i++) {
-		if (typeof(this.use[i][id]) != "undefined") {
-			rv = this.use[i][id];
-		}
-	}
-	return rv;
-};
 
 settings.explicit = new function() {
-	var getShellClasspath = function() {
-		debugger;
-		if (!arguments.callee.cached) {
-			if (env.JSH_SHELL_CLASSPATH) {
-				var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
-				arguments.callee.cached = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
-			} else if ($api.slime.setting("jsh.slime.src")) {
-				//	TODO	this may work, because of the existing slime variable, but it may not, or may by coincidence, because
-				//			it is not well-thought-out.
-				var LOADER_CLASSES = $api.io.tmpdir();
-				var RHINO_JAR = settings.get("rhinoClasspath");
-				var _cl = new RHINO_JAR.ClassLoader();
-				try {
-					_cl.loadClass("org.mozilla.javascript.Context");
-				} catch (e) {
-					RHINO_JAR = null;
-				}
-				var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-				if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
-				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
-				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-				if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
-				var rhinoClasspath = (RHINO_JAR) ? ["-classpath", RHINO_JAR] : [];
-				$api.jdk.compile([
-					"-d", LOADER_CLASSES
-				].concat(rhinoClasspath).concat(toCompile));
-				arguments.callee.cached = new Searchpath(String(LOADER_CLASSES.getCanonicalPath()));
-			}
-		}
-		return arguments.callee.cached;
-	}
-	var shellClasspath = getShellClasspath();
-//	var shellClasspath = (function() {
-//		if (!env.JSH_SHELL_CLASSPATH) return UNDEFINED;
-//		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
-//		if (!settings.packaged) return specified;
-//		//	if we are running in a packaged application, we set the loader shell classpath to the specified value plus the package
-//		//	file location. If the user-specified JSH_SHELL_CLASSPATH contains other classes contained in the package file,
-//		//	those classes will preferentially be used to those in the package.
-//		//	TODO	More thinking required about this. The analogous problem exists for unpackaged applications as well.
-//		return specified.append(settings.packaged.shellClasspath);
-//	})();
-	if (shellClasspath) {
-		this.shellClasspath = shellClasspath;
-	}
-
-	this.scriptClasspath = (env.JSH_SCRIPT_CLASSPATH) ? new Searchpath(os(env.JSH_SCRIPT_CLASSPATH,true)).elements : UNDEFINED;
+	if (env.JSH_SHELL_CLASSPATH) {
+		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
+		this.shellClasspath = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
+	};
 
 	var self = this;
 	[
@@ -619,117 +760,10 @@ try {
 	//	fi
 	var JSH_SHELL_CONTAINER = (env.JSH_SHELL_CONTAINER) ? env.JSH_SHELL_CONTAINER : "classloader";
 	var command = new Command();
-	var jvmProperty = function(name,value,set) {
-		if (typeof(value) != "undefined") {
-			if (typeof(value) == "object" && value != null) {
-				if (value.constructor == File || value.constructor == Directory) {
-					return arguments.callee.call(this,name,value.path,set);
-				} else if (value.constructor == Searchpath) {
-					return arguments.callee.call(this,name,value.toPath(),set);
-				} else {
-					throw new Error("Trying to set " + name + " to illegal object value: "  + value);
-				}
-			} else if (typeof(value) == "boolean") {
-				return arguments.callee.call(this,name,String(value),set);
-			} else {
-				set(name,value);
-			}
-		}
-	}
-	command.jvmProperty = function(name,value) {
-		jvmProperty(name,value,(function(name,value) {
-			this.add("-D" + name + "=" + value);
-		}).bind(this));
-	}
-	command.executable = function(_file) {
-		this.add(_file);
-	}
-	command.classpath = function(path) {
-		this.add("-classpath");
-		this.add(path.toPath());
-	};
-	command.mainClassName = function(name) {
-		this.add(name);
-	}
-	command.script = function(file) {
-		this.add(file);
-	}
-	command.argument = function(string) {
-		this.add(string);
-	}
-	if (JSH_SHELL_CONTAINER == "classloader" && !settings.packaged && (true || !env.JSH_SHELL_CLASSPATH)) command = new function() {
-		this.toString = function() {
-			return "Loader command: jsh=" + mainClassName + " classpath=" + classpath + " script=" + script + " arguments=" + args
-		}
-
-		this.jvmProperty = function(name,value) {
-			jvmProperty(name,value,function(name,value) {
-				Packages.java.lang.System.setProperty(name,value);
-			});
-		};
-
-		this.executable = function(_file) {
-			//	do nothing; this was always parent Java process, perhaps with exception of JSH_JAVA_HOME
-			//	TODO	remove JSH_JAVA_HOME from documentation and/or have it pertain only to native launcher
-		};
-
-		var classpath;
-
-		this.classpath = function(path) {
-			classpath = path;
-		};
-
-		var mainClassName;
-
-		this.mainClassName = function(name) {
-			mainClassName = name;
-		};
-
-		var script;
-
-		this.script = function(file) {
-			script = file;
-		};
-
-		var args = [];
-
-		this.argument = function(string) {
-			args.push(string);
-		}
-
-		this.line = function() {
-			return "(internal)";
-		}
-
-		this.run = function(mode) {
-			var _classloader = new classpath.ClassLoader();
-			var _main = _classloader.loadClass("inonit.script.jsh.Main");
-			var _class = _classloader.loadClass(mainClassName);
-			var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
-			var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
-
-			var loaderArguments = [];
-			if (script && typeof(script.path) != "undefined") {
-				loaderArguments.push(script.path);
-			} else if (script && typeof(script) == "string") {
-				loaderArguments.push(script);
-			}
-			loaderArguments.push.apply(loaderArguments,args);
-
-			var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
-			for (var i=0; i<loaderArguments.length; i++) {
-				_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
-			}
-
-			var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 2 });
-			var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 2 });
-			_invokeArguments[0] = _engine;
-			_argumentTypes[0] = _classloader.loadClass("inonit.script.jsh.Main$Engine");
-			_invokeArguments[1] = _arguments;
-			_argumentTypes[1] = _arguments.getClass();
-			var _method = _main.getMethod("run",_argumentTypes);
-			return _method.invoke(null,_invokeArguments);
-		}
+	if (JSH_SHELL_CONTAINER == "classloader" && !settings.packaged && (true || !env.JSH_SHELL_CLASSPATH)) {
+		command.configure("classloader");
+	} else {
+		command.configure("jvm");
 	}
 	debugger;
 	var jvmOptions = settings.combine("jvmOptions");
@@ -780,6 +814,7 @@ try {
 	}
 
 	var shellClasspath = settings.get("shellClasspath");
+	debugger;
 	if (!shellClasspath) {
 		$api.console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
 		Packages.java.lang.System.exit(1);

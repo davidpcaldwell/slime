@@ -25,6 +25,13 @@ public class Main {
 	private Main() {
 	}
 
+	private static String getSetting(String name) {
+		if (System.getProperty(name) != null) return System.getProperty(name);
+		String environment = name.replace("\\.", "_").toUpperCase();
+		if (System.getenv(environment) != null) return System.getenv(environment);
+		return null;
+	}
+
 	static class Invocation {
 		//	TODO	this logic is duplicated in Servlet
 		private static Engine getSpecified(Shell shell, String JSH_ENGINE) {
@@ -420,19 +427,19 @@ public class Main {
 		Main main = new Main();
 		Configuration configuration = new Configuration() {
 			boolean debug() {
-				return System.getenv("JSH_LAUNCHER_DEBUG") != null;
+				return getSetting("jsh.launcher.debug") != null;
 			}
 
 			String engine() {
-				return System.getProperty("jsh.engine");
+				return getSetting("jsh.engine");
 			}
 
 			String src() {
-				return System.getProperty("jsh.slime.src");
+				return getSetting("jsh.slime.src");
 			}
 
 			String rhino() {
-				return System.getProperty("jsh.rhino.classpath");
+				return getSetting("jsh.rhino.classpath");
 			}
 		};
 		if (args.length == 1 && args[0].equals("-engines")) {

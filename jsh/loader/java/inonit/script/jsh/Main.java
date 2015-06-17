@@ -146,6 +146,7 @@ public class Main {
 	private static Shell.Installation packagedInstallation() {
 		final Code[] plugins = plugins(System.getProperty("jsh.plugins"));
 		final Code.Source[] libraries = libraries(System.getProperty("jsh.plugins"));
+		//	TODO	better hierarchy would probably be $jsh/slime and $jsh/loader
 		final Code.Source platform = Code.Source.system("$jsh/loader/");
 		final Code.Source jsh = Code.Source.system("$jsh/");
 		return Shell.Installation.create(platform, jsh, plugins, libraries);

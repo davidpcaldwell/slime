@@ -449,6 +449,7 @@ $exports.java = function(p) {
 $exports.jrunscript = function(p) {
 	var launch = (function() {
 		if ($exports.properties.get("jsh.launcher.rhino")) {
+			//	TODO	explicit jsh dependency
 			return {
 				command: $exports.java.launcher,
 				arguments: [

@@ -52,6 +52,7 @@ var settings = new function() {
 	map("jsh.rhino.classpath", INHERIT);
 	map("jsh.slime.src", INHERIT);
 	map("jsh.engine", INHERIT);
+	map("jsh.rhino.optimization", INHERIT);
 	map("jsh.script.debugger", LOCAL);
 
 	this.get = function(name) {
@@ -169,7 +170,7 @@ Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 			settings.environment(this);
 
 			//	Below here is legacy stuff we need to think through and delete
-			var passthrough = ["JSH_PLUGINS","JSH_RHINO_OPTIMIZATION","JSH_HASJAVAC"];
+			var passthrough = ["JSH_PLUGINS"];
 			passthrough.forEach(function(name) {
 				if (env[name]) {
 					this[name] = env[name];

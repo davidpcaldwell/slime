@@ -279,18 +279,18 @@ var suites = {
 			"slime.manifest": "WEB-INF/servlet/test/manifest.servlet.js"
 		});
 		jsh.shell.echo("Test hello servlet inside Tomcat ...");
-		helloServlet.test("http://127.0.0.1:8080/slime.hello/");
-		fileServlet.test("http://127.0.0.1:8080/slime.file/");
-		apiServlet.test("http://127.0.0.1:8080/slime.api/");
+		helloServlet.test("http://127.0.0.1:" + server.port + "/slime.hello/");
+		fileServlet.test("http://127.0.0.1:" + server.port + "/slime.file/");
+		apiServlet.test("http://127.0.0.1:" + server.port + "/slime.api/");
 		jsh.shell.echo("Test manifest servlet inside Tomcat ...");
-		manifestServlet.test("http://127.0.0.1:8080/slime.manifest/");
+		manifestServlet.test("http://127.0.0.1:" + server.port + "/slime.manifest/");
 		server.stop();
 	},
 	manifest: function() {
 		server.start({
 			"slime.manifest": "WEB-INF/servlet/test/manifest.servlet.js"
 		});
-		manifestServlet.test("http://127.0.0.1:8080/slime.manifest/");
+		manifestServlet.test("http://127.0.0.1:" + server.port + "/slime.manifest/");
 		server.stop();
 	},
 	coffee: function() {
@@ -300,7 +300,7 @@ var suites = {
 				"slime.coffee": "WEB-INF/servlet/test/coffee.servlet.coffee"
 			});
 			jsh.shell.echo("Test coffee servlet inside Tomcat ...");
-			coffeeServlet.test("http://127.0.0.1:8080/slime.coffee/");
+			coffeeServlet.test("http://127.0.0.1:" + server.port + "/slime.coffee/");
 			server.stop();
 		}
 	},
