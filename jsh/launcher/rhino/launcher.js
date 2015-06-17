@@ -428,9 +428,6 @@ if (getProperty("jsh.launcher.packaged") != null) {
 
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
-//		this.JSH_LIBRARY_SCRIPTS_LOADER = JSH_HOME.getDirectory("script/loader");
-//		this.JSH_LIBRARY_SCRIPTS_JSH = JSH_HOME.getDirectory("script/jsh");
-//		this.JSH_LIBRARY_MODULES = JSH_HOME.getDirectory("modules");
 
 		if (platform.cygwin) {
 			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
@@ -476,23 +473,10 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			return arguments.callee.cached;
 		}
 		var shellClasspath = getShellClasspath();
-	//	var shellClasspath = (function() {
-	//		if (!env.JSH_SHELL_CLASSPATH) return UNDEFINED;
-	//		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
-	//		if (!settings.packaged) return specified;
-	//		//	if we are running in a packaged application, we set the loader shell classpath to the specified value plus the package
-	//		//	file location. If the user-specified JSH_SHELL_CLASSPATH contains other classes contained in the package file,
-	//		//	those classes will preferentially be used to those in the package.
-	//		//	TODO	More thinking required about this. The analogous problem exists for unpackaged applications as well.
-	//		return specified.append(settings.packaged.shellClasspath);
-	//	})();
 		if (shellClasspath) {
 			this.shellClasspath = shellClasspath;
 		}
 		this.scriptClasspath = [];
-//		this.JSH_LIBRARY_SCRIPTS_LOADER = SLIME_SRC.getDirectory("loader");
-//		this.JSH_LIBRARY_SCRIPTS_JSH = SLIME_SRC.getDirectory("jsh/loader");
-//		this.JSH_LIBRARY_MODULES = SLIME_SRC;
 		if (platform.cygwin) {
 			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
 		}
