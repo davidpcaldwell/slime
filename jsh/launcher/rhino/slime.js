@@ -42,44 +42,44 @@ $api.slime = (function(was) {
 		rv.src = new function() {
 			var script = $api.script;
 
-			this.toString = function() {
-				return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
-			};
+			if (script.file) {
+				this.toString = function() {
+					return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
+				};
 
-//			$api.debug("rv.src = " + this);
+				this.File = function(path) {
+					$api.debug("File: " + path);
+					return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
+				}
+
+				this.getFile = function(path) {
+					return script.resolve("../../../" + path).file;
+				}
+
+				this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
+					$api.debug("Under: " + dir);
+					if (typeof(rv) == "undefined") {
+						rv = [];
+					}
+					var files = dir.listFiles();
+					if (!files) return [];
+					for (var i=0; i<files.length; i++) {
+						if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
+							getSourceFilesUnder(files[i],rv);
+						} else {
+							if (files[i].getName().endsWith(".java")) {
+								rv.push(files[i]);
+							}
+						}
+					}
+					return rv;
+				};
+			}
 
 			this.getPath = function(path) {
 				$api.debug("getPath: " + path);
 				return script.resolve("../../../" + path).toString();
 			}
-
-			this.getFile = function(path) {
-				return script.resolve("../../../" + path).file;
-			}
-
-			this.File = function(path) {
-				$api.debug("File: " + path);
-				return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
-			}
-
-			this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
-				$api.debug("Under: " + dir);
-				if (typeof(rv) == "undefined") {
-					rv = [];
-				}
-				var files = dir.listFiles();
-				if (!files) return [];
-				for (var i=0; i<files.length; i++) {
-					if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
-						getSourceFilesUnder(files[i],rv);
-					} else {
-						if (files[i].getName().endsWith(".java")) {
-							rv.push(files[i]);
-						}
-					}
-				}
-				return rv;
-			};
 		};
 
 		rv.launcher = new function() {

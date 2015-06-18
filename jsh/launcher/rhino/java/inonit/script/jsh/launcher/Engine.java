@@ -14,6 +14,7 @@
 package inonit.script.jsh.launcher;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
@@ -58,13 +59,13 @@ public abstract class Engine {
 
 	abstract boolean isInstalled(Main.Shell shell);
 	abstract void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) throws IOException;
-	abstract void addScript(String pathname);
+	abstract void addScript(URL url);
 	abstract Integer run(String[] args) throws IOException, ScriptException;
 
 	private static class Nashorn extends Engine {
 		private ScriptEngineManager factory;
 		private ScriptEngine engine;
-		private ArrayList<String> scripts = new ArrayList<String>();
+		private ArrayList<URL> scripts = new ArrayList<URL>();
 
 		private ScriptEngine getEngine() {
 			if (engine == null) {
@@ -85,7 +86,7 @@ public abstract class Engine {
 			System.setProperty("jsh.launcher.nashorn", "true");
 		}
 
-		void addScript(String pathname) {
+		void addScript(URL pathname) {
 			scripts.add(pathname);
 		}
 
@@ -96,15 +97,11 @@ public abstract class Engine {
 			this.factory.getBindings().put("foo", "bar");
 //			this.engine.getBindings(ScriptContext.GLOBAL_SCOPE).put("arguments", args);
 			Logging.get().log(Nashorn.class, Level.FINE, "run(): scripts.length = " + scripts.size());
-			for (String script : scripts) {
+			for (URL script : scripts) {
 				Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
 				ScriptContext c = getEngine().getContext();
 				c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);
-//				File file = new File(script);
-				if (new java.io.File(script).exists()) {
-					script = new java.io.File(script).toURI().toURL().toExternalForm();
-				}
-				java.net.URLConnection connection = new java.net.URL(script).openConnection();
+				java.net.URLConnection connection = script.openConnection();
 				getEngine().eval(new InputStreamReader(connection.getInputStream()), c);
 				Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
 			}
@@ -115,7 +112,7 @@ public abstract class Engine {
 	public static class Rhino extends Engine {
 		public static final int NULL_EXIT_STATUS = -42;
 
-		private ArrayList<String> scripts = new ArrayList<String>();
+		private ArrayList<URL> scripts = new ArrayList<URL>();
 
 		boolean isInstalled(Main.Shell shell) {
 			try {
@@ -149,7 +146,7 @@ public abstract class Engine {
 			}
 		}
 
-		void addScript(String pathname) {
+		void addScript(URL pathname) {
 			scripts.add(pathname);
 		}
 
@@ -161,7 +158,7 @@ public abstract class Engine {
 				if (i != scripts.size()-1) {
 					strings.add("-f");
 				}
-				strings.add(scripts.get(i));
+				strings.add(scripts.get(i).toExternalForm());
 			}
 			strings.addAll(Arrays.asList(args));
 			return strings.toArray(new String[0]);
