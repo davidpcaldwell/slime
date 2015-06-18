@@ -464,7 +464,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
 					if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
 					var rhinoClasspath = (RHINO_JAR) ? ["-classpath", RHINO_JAR] : [];
-					$api.jdk.compile([
+					$api.java.install.compile([
 						"-d", LOADER_CLASSES
 					].concat(rhinoClasspath).concat(toCompile));
 					arguments.callee.cached = new Searchpath(String(LOADER_CLASSES.getCanonicalPath()));

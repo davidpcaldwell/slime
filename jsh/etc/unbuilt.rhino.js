@@ -51,7 +51,7 @@ if ($api.arguments[0] == "build") {
 	$api.arguments.push("-install","coffeescript","-install","tomcat")
 	$api.script.resolve("../../jsh/etc/build.rhino.js").load();
 	var command = [];
-	command.push(String($api.java.launcher),"-jar",String(new File(JSH_HOME,"jsh.jar")));
+	command.push(String($api.java.install.launcher),"-jar",String(new File(JSH_HOME,"jsh.jar")));
 	command.push(String($api.slime.src.getFile("jsh/test/verify.jsh.js")),"-slime",$api.slime.src.toString());
 	command = command.concat(verifyArgs);
 	if (Packages.java.lang.System.getProperty("jsh.build.tomcat.home")) {

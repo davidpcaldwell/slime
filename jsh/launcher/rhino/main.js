@@ -146,7 +146,7 @@ settings.set("jsh.slime.src", $api.slime.src);
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
 //			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
 Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
-	$api.java.launcher
+	$api.java.install.launcher
 ].concat(
 	args.vm
 ).concat(
@@ -176,11 +176,6 @@ Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
 					this[name] = env[name];
 				}
 			},this);
-			if ($api.slime.src) {
-				this.JSH_LIBRARY_SCRIPTS_LOADER = $api.slime.src.getPath("loader");
-				this.JSH_LIBRARY_SCRIPTS_JSH = $api.slime.src.getPath("jsh/loader");
-				this.JSH_LIBRARY_MODULES = $api.slime.src.getPath(".");
-			}
 		})()
 		//	Cannot be enabled at this time; see issue 152
 		,input: Packages.java.lang.System["in"]

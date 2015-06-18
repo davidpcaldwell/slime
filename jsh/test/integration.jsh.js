@@ -86,7 +86,7 @@ if (true) scenario.add(new function() {
 	this.scenario = jsh.shell.jsh({
 		fork: true,
 		script: jsh.script.file.getRelativePath("JSH_SHELL_CLASSPATH.jsh.js").file,
-		arguments: ["-test"],
+		arguments: ["-scenario"],
 		stdio: {
 			output: write
 		},

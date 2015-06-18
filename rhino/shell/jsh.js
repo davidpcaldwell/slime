@@ -280,8 +280,16 @@ $exports.jsh = function(p) {
 		}
 
 		if (!p.shell) {
+			var properties = {};
+			if (Packages.java.lang.System.getProperty("jsh.slime.src")) {
+				properties["jsh.slime.src"] = String(Packages.java.lang.System.getProperty("jsh.slime.src"));
+			}
+			if (Packages.java.lang.System.getProperty("jsh.rhino.classpath")) {
+				properties["jsh.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.rhino.classpath"));
+			}
 			var shell = $context.api.js.Object.set({}, p, {
 				//	Set default classpath from this shell
+				properties: properties,
 				classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
 				main: "inonit.script.jsh.launcher.Main",
 				arguments: addCommandTo([]),

@@ -12,12 +12,14 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		test: false,
+		scenario: false,
 		view: "child"
 	}
 });
 
-if (parameters.options.test) {
+//	TODO	currently this program can only be run in a built shell, because the packaging tool only works in a built shell
+
+if (parameters.options.scenario) {
 	jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("loader/api"));
 	jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/unit"));
 	var views = {

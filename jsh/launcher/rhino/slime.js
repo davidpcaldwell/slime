@@ -27,36 +27,6 @@ $api.console = function(message) {
 	Packages.java.lang.System.err.println(message);
 }
 
-$api.jdk = new function() {
-	var tried = false;
-	var compiler;
-
-	this.compile = (function(array) {
-		if (!tried) {
-			compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-			tried = true;
-		}
-		if (compiler) {
-			return function(args) {
-				$api.debug("Compiling with: " + args);
-				var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
-				for (var i=0; i<jarray.length; i++) {
-					jarray[i] = new Packages.java.lang.String(args[i]);
-				}
-				var status = compiler.run(
-					Packages.java.lang.System["in"],
-					Packages.java.lang.System.out,
-					Packages.java.lang.System.err,
-					jarray
-				);
-				if (status) {
-					throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
-				}
-			}
-		}
-	})();
-};
-
 $api.slime = (function(was) {
 	var rv;
 	if (was && was.built) {
@@ -115,7 +85,7 @@ $api.slime = (function(was) {
 		rv.launcher = new function() {
 			this.compile = function(p) {
 				var to = (p && p.to) ? p.to : $api.io.tmpdir();
-				$api.jdk.compile([
+				$api.java.install.compile([
 					"-Xlint:deprecation",
 					"-Xlint:unchecked",
 					"-d", to,
