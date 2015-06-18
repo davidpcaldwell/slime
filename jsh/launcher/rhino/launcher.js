@@ -14,7 +14,7 @@
 
 if (!this.$api.slime) {
 	$api.script.resolve("slime.js").load();
-	$api.debug("Loaded slime.js");
+	$api.log("Loaded slime.js: src=" + $api.slime.src);
 }
 
 var env = $api.shell.environment;

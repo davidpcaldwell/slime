@@ -27,6 +27,10 @@ $api.console = function(message) {
 	Packages.java.lang.System.err.println(message);
 }
 
+$api.log = function(message) {
+	Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
+}
+
 $api.slime = (function(was) {
 	var rv;
 	if (was && was.built) {
@@ -39,48 +43,54 @@ $api.slime = (function(was) {
 	} else {
 		rv = {};
 
-		rv.src = new function() {
-			var script = $api.script;
+		var script = $api.script;
+		if (script.file && String(script.file.getParentFile().getName()) == "rhino") {
+			rv.src = new function() {
+				if (script.file) {
+					this.toString = function() {
+						return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
+					};
 
-			if (script.file) {
-				this.toString = function() {
-					return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
-				};
-
-				this.File = function(path) {
-					$api.debug("File: " + path);
-					return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
-				}
-
-				this.getFile = function(path) {
-					return script.resolve("../../../" + path).file;
-				}
-
-				this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
-					$api.debug("Under: " + dir);
-					if (typeof(rv) == "undefined") {
-						rv = [];
+					this.File = function(path) {
+						$api.log("File: " + path);
+						return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
 					}
-					var files = dir.listFiles();
-					if (!files) return [];
-					for (var i=0; i<files.length; i++) {
-						if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
-							getSourceFilesUnder(files[i],rv);
-						} else {
-							if (files[i].getName().endsWith(".java")) {
-								rv.push(files[i]);
+
+					this.getFile = function(path) {
+						return script.resolve("../../../" + path).file;
+					}
+
+					this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
+						$api.log("Under: " + dir);
+						if (typeof(rv) == "undefined") {
+							rv = [];
+						}
+						var files = dir.listFiles();
+						$api.log("files: " + files.length);
+						if (!files) return [];
+						for (var i=0; i<files.length; i++) {
+							if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
+								getSourceFilesUnder(files[i],rv);
+							} else {
+								if (files[i].getName().endsWith(".java")) {
+									rv.push(files[i]);
+								}
 							}
 						}
+						return rv;
+					};
+				} else {
+					this.toString = function() {
+						return script.url.toExternalForm();
 					}
-					return rv;
-				};
-			}
+				}
 
-			this.getPath = function(path) {
-				$api.debug("getPath: " + path);
-				return script.resolve("../../../" + path).toString();
-			}
-		};
+				this.getPath = function(path) {
+					$api.debug("getPath: " + path);
+					return script.resolve("../../../" + path).toString();
+				}
+			};
+		}
 
 		rv.launcher = new function() {
 			this.compile = function(p) {

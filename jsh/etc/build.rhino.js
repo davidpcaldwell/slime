@@ -492,6 +492,7 @@ JSH_SRC.mkdir();
 });
 
 if (!destination.installer) {
+	console("Running post-installer ...");
 	var command = LAUNCHER_COMMAND.slice();
 	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command = command.concat(destination.arguments);
@@ -505,7 +506,6 @@ if (!destination.installer) {
 		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
 	}
 //	subenv.JSH_SLIME_SRC = slime.src.toString();
-	debug("subenv = " + JSON.stringify(subenv));
 	command.push({ env: subenv });
 	var status = runCommand.apply(this,command);
 	if (status != 0) {

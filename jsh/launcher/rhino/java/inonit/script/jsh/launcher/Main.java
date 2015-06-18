@@ -146,6 +146,7 @@ public class Main {
 
 		final void initializeSystemProperties() throws IOException {
 			debug("Initializing system properties; engine = " + engine + " ...");
+			System.setProperty("inonit.jrunscript.api.main", shell.getLauncherScript().toExternalForm());
 			engine.initializeSystemProperties(this, shell);
 			shell.initializeSystemProperties();
 		}
@@ -154,15 +155,11 @@ public class Main {
 			return shell.getRhinoClassLoader();
 		}
 
-		final void addLauncherScriptsTo(Engine engine) throws IOException {
-			shell.addLauncherScriptsTo(engine);
-		}
-
-		final Integer run(String[] args) throws IOException, ScriptException {
+		final Integer run(String[] arguments) throws IOException, ScriptException {
 			if (!inonit.system.Logging.get().isSpecified()) {
 				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
 			}
-			Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(args));
+			Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(arguments));
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 			Logging.get().log(Main.class, Level.FINEST, "System.in = %s", System.in);
 			InputStream stdin = new Logging.InputStream(System.in);
@@ -171,12 +168,10 @@ public class Main {
 			System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
 			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-			System.setProperty("inonit.jrunscript.api.passive", "true");
 			this.initializeSystemProperties();
 			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
-			Engine engine = this.engine;
-			engine.initialize(this);
-			return engine.run(args);
+			this.engine.initialize(this);
+			return this.engine.run(shell.getJrunscriptApi(), arguments);
 		}
 
 		private ClassLoader mainClassLoader;
@@ -194,20 +189,7 @@ public class Main {
 		abstract ClassLoader getRhinoClassLoader() throws IOException;
 		abstract void initializeSystemProperties() throws IOException;
 
-		final void addLauncherScriptsTo(Engine engine) throws IOException {
-			engine.addScript(getJrunscriptApi());
-			engine.addScript(getLauncherApi());
-			engine.addScript(getLauncherScript());
-		}
-
 		abstract URL getJrunscriptApi() throws IOException;
-		final URL getLauncherApi() throws IOException {
-			try {
-				return new URL(getLauncherScript(), "slime.js");
-			} catch (MalformedURLException e) {
-				throw new RuntimeException(e);
-			}
-		}
 		abstract URL getLauncherScript() throws IOException;
 	}
 
