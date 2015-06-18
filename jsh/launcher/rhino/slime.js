@@ -122,5 +122,92 @@ $api.slime = (function(was) {
 		return null;
 	};
 
+	rv.settings = new function() {
+		var all = {};
+		var CONTAINER = {
+		};
+		var LAUNCHER = {
+		};
+		var LOADER = {
+		};
+		var BOTH = {
+		};
+
+		var map = function(name,type) {
+			all[name] = {
+				type: type,
+				value: rv.setting(name)
+			};
+		};
+
+		map("jsh.debug.jdwp", {
+			container: function(value) {
+				return ["-agentlib:jdwp=" + value];
+			}
+		});
+		map("jsh.java.logging.properties", {
+			container: function(value) {
+				return ["-Djava.util.logging.config.file=" + value];
+			}
+		});
+		map("jsh.jvm.options", {
+			container: function(value) {
+				return value.split(" ");
+			}
+		});
+
+		map("jsh.launcher.debug", LAUNCHER);
+		map("jsh.shell.container", LAUNCHER);
+
+		map("jsh.script.debugger", LOADER);
+
+		map("jsh.engine", BOTH);
+		map("jsh.rhino.classpath", BOTH);
+		map("jsh.slime.src", BOTH);
+		map("jsh.rhino.optimization", BOTH);
+
+		this.get = function(name) {
+			return all[name].value;
+		}
+
+		this.set = function(name,value) {
+			all[name].value = value;
+		}
+
+		this.getContainerArguments = function() {
+			var rv = [];
+			for (var x in all) {
+				var value = this.get(x);
+				if (value) {
+					if (all[x].container) {
+						rv = rv.concat(all[x].container(value));
+					} else {
+						rv.push("-D" + x + "=" + value);
+					}
+				}
+			}
+			return rv;
+		};
+
+		this.properties = function() {
+			var rv = [];
+			for (var x in all) {
+				var value = this.get(x);
+				if (value) {
+					rv.push("-D" + x + "=" + value);
+				}
+			}
+			return rv;
+		};
+
+		this.environment = function(rv) {
+			for (var x in all) {
+				if (all[x].type.environment && all[x].value) {
+					rv[x] = String(all[x].value);
+				}
+			}
+		}
+	};
+
 	return rv;
 })($api.slime);

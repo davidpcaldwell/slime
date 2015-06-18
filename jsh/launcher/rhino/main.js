@@ -16,123 +16,51 @@
 var env = $api.shell.environment;
 
 if (!$api.slime) {
+	//	TODO	hard-codes assumption of built shell and hard-codes assumption unbuilt shell will arrive via launcher script; should
+	//			tighten this implementation
 	$api.slime = {
 		built: $api.script.file.getParentFile()
 	};
 	$api.script.resolve("slime.js").load();
 }
 
-var settings = new function() {
-	var all = {};
-	var NONE = {
-		property: false,
-		environment: false
-	};
-	var LOCAL = {
-		property: true,
-		environment: false
-	};
-	var INHERIT = {
-		property: true,
-		environment: true
-	};
-
-	var map = function(name,type) {
-		all[name] = {
-			type: type,
-			value: $api.slime.setting(name)
-		};
-	};
-
-	map("jsh.launcher.debug", LOCAL);
-	map("jsh.shell.container", LOCAL);
-	map("jsh.debug.jdwp", NONE);
-	map("jsh.java.logging.properties", NONE);
-	map("jsh.jvm.options", NONE);
-	map("jsh.rhino.classpath", INHERIT);
-	map("jsh.slime.src", INHERIT);
-	map("jsh.engine", INHERIT);
-	map("jsh.rhino.optimization", INHERIT);
-	map("jsh.script.debugger", LOCAL);
-
-	this.get = function(name) {
-		return all[name].value;
-	}
-
-	this.set = function(name,value) {
-		all[name].value = value;
-	}
-
-	this.properties = function() {
-		var rv = [];
-		for (var x in all) {
-			if (all[x].type.property && all[x].value) {
-				rv.push("-D" + x + "=" + String(all[x].value));
-			}
-		}
-		return rv;
-	};
-
-	this.environment = function(rv) {
-		for (var x in all) {
-			if (all[x].type.environment && all[x].value) {
-				rv[x] = String(all[x].value);
-			}
-		}
-	}
-};
-
-$api.debug.on = Boolean(settings.get("jsh.launcher.debug"));
-
+$api.debug.on = Boolean($api.slime.settings.get("jsh.launcher.debug"));
 $api.debug("Source: " + $api.slime.src);
-$api.debug("$api.script: " + $api.script);
+$api.debug("Bootstrap script: " + $api.script);
 
-//	TODO	Obviously under Cygwin shell does not include the paths helper
-var args = {
-	vm: [],
-	launcher: []
-};
+//	First, we want to process VM-level arguments. In the current jsh, the script-executing VM might be the launcher VM, if
+//	jsh.shell.container is classloader, or a forked loader VM, if it is jvm. So we process VM-level arguments using an object that
+//	encapsulates the difference and applies the VM-level arguments to the script-executing VM
 
-var container = (function() {
-	var containers = {
-		classloader: function() {
-			return new function() {
-				this.vmargument = function(s) {
-					args.vm.push(s);
-				}
-			}
-		},
-		jvm: function() {
-			return new function() {
-				this.vmargument = function(s) {
-					args.launcher.push(s);
-				}
-			}
+var container = new function() {
+	var id = ($api.slime.settings.get("jsh.shell.container")) ? $api.slime.settings.get("jsh.shell.container") : "classloader";
+
+	var vm = [];
+
+	this.argument = function(string) {
+		vm.push(string);
+	}
+
+	if (id == "classloader") {
+		this.getVmArguments = function() {
+			return vm.concat($api.slime.settings.getContainerArguments());
+		};
+
+		this.getLauncherArguments = function() {
+			return [];
 		}
-	};
+	} else {
+		this.getVmArguments = function() {
+			return vm.concat($api.slime.settings.properties());
+		};
 
-	var id = (settings.get("jsh.shell.container")) ? settings.get("jsh.shell.container") : "classloader";
-	return containers[id]();
-})();
-
-//	TODO	if JSH_SHELL_CONTAINER is jvm, debugger will not be run anywhere
-if (settings.get("jsh.debug.jdwp")) {
-	container.vmargument("-agentlib:jdwp=" + settings.get("jsh.debug.jdwp"));
-}
-if (settings.get("jsh.java.logging.properties")) {
-	container.vmargument("-Djava.util.logging.config.file=" + settings.get("jsh.java.logging.properties"));
-}
-if (settings.get("jsh.jvm.options")) {
-	settings.get("jsh.jvm.options").split(" ").forEach(function(argument) {
-		container.vmargument(argument);
-	});
+		this.getLauncherArguments = function() {
+			return vm;
+		}
+	}
 }
 
-//	Allow sending arguments beginning with dash that will be interpreted as VM switches
-while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
-	args.vm.push($api.arguments.shift());
-}
-
+//	Add implementation of runCommand that echoes what it's doing
 $api.engine.runCommand = (function(was) {
 	return function() {
 		$api.debug("Running: " + Array.prototype.slice.call(arguments).join(" "));
@@ -140,44 +68,55 @@ $api.engine.runCommand = (function(was) {
 	}
 })($api.engine.runCommand);
 
-settings.set("jsh.rhino.classpath", $api.rhino.classpath);
-settings.set("jsh.slime.src", $api.slime.src);
+//	Supply arguments whose default values are provided by the jrunscript API
+if (!$api.slime.settings.get("jsh.rhino.classpath")) $api.slime.settings.set("jsh.rhino.classpath", $api.rhino.classpath);
+if (!$api.slime.settings.get("jsh.slime.src")) $api.slime.settings.set("jsh.slime.src", $api.slime.src);
+
+//	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
+while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
+	container.argument($api.arguments.shift());
+}
 
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
 //			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
-Packages.java.lang.System.exit($api.engine.runCommand.apply(null, [
-	$api.java.install.launcher
-].concat(
-	args.vm
-).concat(
-	settings.properties()
-).concat([
-	"-classpath", $api.slime.launcher.getClasses(),
-	"inonit.script.jsh.launcher.Main"
-]).concat(
-	args.launcher
-).concat(
-	$api.arguments
-).concat([
-	{
-		env: new (function() {
-			for (var x in env) {
-				if (/^JSH_/.test(x)) {
-				} else {
-					this[x] = env[x];
-				}
-			}
-			settings.environment(this);
+Packages.java.lang.System.exit(
+	$api.engine.runCommand.apply(
+		null,
+		[
+			$api.java.install.launcher
+		].concat(
+			container.getVmArguments()
+		).concat(
+			$api.slime.settings.properties()
+		).concat([
+			"-classpath", $api.slime.launcher.getClasses(),
+			"inonit.script.jsh.launcher.Main"
+		]).concat(
+			container.getLauncherArguments()
+		).concat(
+			$api.arguments
+		).concat([
+			{
+				env: new (function() {
+					for (var x in env) {
+						if (/^JSH_/.test(x)) {
+						} else {
+							this[x] = env[x];
+						}
+					}
+					$api.slime.settings.environment(this);
 
-			//	Below here is legacy stuff we need to think through and delete
-			var passthrough = ["JSH_PLUGINS"];
-			passthrough.forEach(function(name) {
-				if (env[name]) {
-					this[name] = env[name];
-				}
-			},this);
-		})()
-		//	Cannot be enabled at this time; see issue 152
-		,input: Packages.java.lang.System["in"]
-	}
-])));
+					//	Below here is legacy stuff we need to think through and delete
+					var passthrough = ["JSH_PLUGINS"];
+					passthrough.forEach(function(name) {
+						if (env[name]) {
+							this[name] = env[name];
+						}
+					},this);
+				})()
+				//	Cannot be enabled at this time; see issue 152
+				,input: Packages.java.lang.System["in"]
+			}
+		])
+	)
+);

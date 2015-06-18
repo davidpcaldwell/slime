@@ -31,20 +31,17 @@ END LICENSE
 		The launcher consists of the following components:
 	</div>
 	<div>
-		<h1>Unbuilt launcher</h1>
+		<h1>Bootstrap launcher</h1>
 		<div>
-			The unbuilt launcher prepares the Java launcher when running in an unbuilt shell.
 			<div>
-				<h2>Inputs</h2>
-				<ul>
-					<li><code>jsh.launcher.debug</code>: whether to emit debugging output to the console.</li>
-					<li><code>jsh.shell.container</code>: affects how VM-level configuration is applied.</li>
-					<li><code>jsh.debug.jdwp</code>: configures the jsh JVM to run with the given value as its <code>-agentlib:jdwp</code> argument.</li>
-					<li><code>jsh.java.logging.properties</code>: configures the jsh JVM to run with the given value as its logging configuration.</li>
-					<li><code>jsh.jvm.options</code>: configures the jsh JVM to run with the given options (delimited by spaces).</li>
-				</ul>
+			The bootstrap launcher prepares the Java launcher for execution. If running in an unbuilt shell, it compiles the launcher
+			classes.
 			</div>
 			<div>
+			The bootstrap launcher will scan the arguments list for arguments with a leading dash, and interpret those as VM
+			arguments to be sent to the container running the script being invoked. If the container is a classloader, these will
+			be sent as VM arguments to the launcher VM; otherwise, they will be sent to the launcher as leading arguments to be
+			passed to the loader VM.
 			</div>
 			<!--	TODO	should download Rhino if needed	-->
 		</div>
