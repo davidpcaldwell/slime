@@ -140,6 +140,7 @@ $api.slime = (function(was) {
 			};
 		};
 
+
 		map("jsh.debug.jdwp", {
 			container: function(value) {
 				return ["-agentlib:jdwp=" + value];
@@ -161,6 +162,7 @@ $api.slime = (function(was) {
 
 		map("jsh.script.debugger", LOADER);
 
+		map("jsh.java.home", BOTH);
 		map("jsh.engine", BOTH);
 		map("jsh.rhino.classpath", BOTH);
 		map("jsh.slime.src", BOTH);

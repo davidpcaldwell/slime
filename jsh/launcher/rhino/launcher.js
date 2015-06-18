@@ -138,6 +138,9 @@ var Searchpath = function(p) {
 		return _classloader;
 	}
 }
+$api.slime.setting.Searchpath = function(name) {
+	return new Searchpath($api.slime.setting(name));
+}
 
 var Command = function() {
 	var runCommand = $api.engine.runCommand;
@@ -303,16 +306,17 @@ var os = function(pathname,path) {
 
 var UNDEFINED = function(){}();
 
-if (env.JSH_LAUNCHER_DEBUG) {
-	debug.on = true;
-	debug("debugging enabled");
+if ($api.slime.setting("jsh.launcher.debug")) {
+	$api.debug.on = true;
+	$api.debug("debugging enabled");
 }
 
-debug("Launcher environment = " + env.toSource());
-debug("Launcher working directory = " + getProperty("user.dir"));
-debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
+$api.debug("Launcher environment = " + JSON.stringify($api.shell.environment, void(0), "    "));
+$api.debug("Launcher working directory = " + getProperty("user.dir"));
+$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
 
-var JAVA_HOME = new Directory( (env.JSH_JAVA_HOME) ? os(env.JSH_JAVA_HOME) : getProperty("java.home") );
+//	TODO	Probably gives JRE, rather than JDK; what do we need this for, anyway?
+var JAVA_HOME = new Directory( getProperty("java.home") );
 
 var settings = {
 	use: [],
@@ -500,15 +504,13 @@ if (settings.packaged) {
 }
 
 settings.explicit = new function() {
-	if (env.JSH_SHELL_CLASSPATH) {
-		var specified = new Searchpath(os(env.JSH_SHELL_CLASSPATH,true));
+	if ($api.slime.setting("jsh.shell.classpath")) {
+		var specified = $api.slime.setting.Searchpath("jsh.shell.classpath");
 		this.shellClasspath = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
 	};
 
 	var self = this;
 	[
-//		"JSH_LIBRARY_SCRIPTS_LOADER","JSH_LIBRARY_SCRIPTS_JSH",
-//		"JSH_LIBRARY_MODULES",
 		"JSH_LIBRARY_NATIVE",
 		"JSH_TMPDIR"
 	].forEach( function(name) {

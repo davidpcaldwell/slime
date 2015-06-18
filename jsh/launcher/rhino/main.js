@@ -77,13 +77,20 @@ while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
 	container.argument($api.arguments.shift());
 }
 
+var install = (function() {
+	if ($api.slime.settings.get("jsh.java.home")) {
+		return new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home")));
+	}
+	return $api.java.install;
+})();
+
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
 //			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
 Packages.java.lang.System.exit(
 	$api.engine.runCommand.apply(
 		null,
 		[
-			$api.java.install.launcher
+			install.launcher
 		].concat(
 			container.getVmArguments()
 		).concat(
