@@ -634,14 +634,6 @@ try {
 		for (var i=0; i<classpath.elements.length; i++) {
 			command.classpath(classpath.elements[i]);
 		}
-//		command.classpath(shellClasspath.append(scriptClasspath));
-//		if (JJS) {
-//			command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("nashorn-host.js").path);
-//			command.add(settings.get("JSH_LIBRARY_SCRIPTS_JSH").getFile("jsh.js").path);
-//			command.add("--");
-//		} else {
-//			command.mainClassName("inonit.script.jsh.Nashorn");
-//		}
 		command.main("inonit.script.jsh.Nashorn");
 	} else {
 		//	Rhino
@@ -676,25 +668,13 @@ try {
 //			}
 //		}
 		environmentAndProperties();
-//		command.add("-classpath");
-//		command.classpath(
-//			settings.get("rhinoClasspath")
-//			.append(shellClasspath)
-//			.append(scriptClasspath)
-//		);
 		command.classpath(settings.get("rhinoClasspath"));
 		for (var i=0; i<shellClasspath.elements.length; i++) {
 			command.classpath(shellClasspath.elements[i]);
 		}
-//		command.classpath(shellClasspath);
 		command.classpath(scriptClasspath);
-		debug("rhinoClasspath = " + settings.get("rhinoClasspath"));
-		debug("shellClasspath = " + shellClasspath);
-		debug("scriptClasspath = " + scriptClasspath);
-//		command.mainClassName("inonit.script.jsh.Rhino");
 		command.main("inonit.script.jsh.Rhino");
 	}
-//	command.script(settings.get("script"));
 	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
 	if (settings.get("script")) {
 		command.argument(settings.get("script"));
@@ -707,14 +687,6 @@ try {
 	for (var i=index; i<$api.jsh.arguments.length; i++) {
 		command.argument($api.jsh.arguments[i]);
 	}
-//	debug("Command:");
-//	debug(command.line());
-	debugger;
-//	var mode = {
-//		input: Packages.java.lang.System["in"],
-//		output: Packages.java.lang.System["out"],
-//		err: Packages.java.lang.System["err"]
-//	};
 	var mode = null;
 	debug("Running command " + command + " ...");
 	var status = command.run(mode);
@@ -723,7 +695,6 @@ try {
 } catch (e) {
 	debug("Error:");
 	debug(e);
-	//	Below works around Rhino debugger bug that does not allow e to be inspected
 	debug(e.fileName + ":" + e.lineNumber);
 	if (e.rhinoException) {
 		e.rhinoException.printStackTrace();
@@ -734,6 +705,7 @@ try {
 	} else if (e instanceof Error) {
 		Packages.java.lang.System.err.println("[jsh] Launch failed: " + e.message);
 	}
+	//	Below works around Rhino debugger bug that does not allow e to be inspected
 	var error = e;
 	debugger;
 	$api.jsh.setExitStatus(1);
