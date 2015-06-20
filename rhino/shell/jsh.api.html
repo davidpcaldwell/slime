@@ -483,20 +483,22 @@ END LICENSE
 					test(issue82 == "worked");
 				]]></script>
 				<script type="application/x.jsapi#tests">
-					debugger;
-					var buffer = new jsh.io.Buffer();
-					module.jsh({
+					var output = module.jsh({
 						script: $module.getResourcePathname("test/plugins.jsh.js"),
 						fork: true,
 						environment: jsh.js.Object.set({}, jsh.shell.environment, {
 							JSH_PLUGINS: $module.getResourcePathname("test").toString()
 						}),
-						stdout: buffer.writeBinary()
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return result.stdio.output;
+						}
 					});
-					buffer.close();
-					var output = buffer.readText().asString();
 					var expected = $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator");
-					test(output == expected);
+					verify(output,output).is(expected);
+//					test(output == expected);
 				</script>
 			</li>
 		</ul>

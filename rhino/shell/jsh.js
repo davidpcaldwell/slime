@@ -479,15 +479,21 @@ if (String($exports.properties.object.jsh.plugins)) {
 	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
 }
 
-var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
-//	TODO	this is fragile. The above property is, in a built shell:
-//			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath
-//			*	supplied by the script launcher to the underlying process as is
-//			In the case in which the *launcher* is being profiled, apparently the -javaagent: is *appended* to its java.class.path,
-//			so jsh.jar is still first. An earlier implementation made sure the launcher classpath length was 1 also, but that is no
-//			longer true in the profiling case.
-if (launcherClasspath.pathnames[0] && launcherClasspath.pathnames[0].basename == "jsh.jar") {
-	//	TODO	find better way to get this value; if using global, should use jsh.home system property, but should actually find
-	//			a way to pass it through the shell instantiation process
-	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
+if ($exports.properties.object.jsh.home) {
+	$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.home).directory
 }
+if ($exports.properties.object.jsh.slime && $exports.properties.object.jsh.slime.src) {
+	$exports.jsh.src = $context.api.file.Pathname($exports.properties.object.jsh.slime.src).directory
+}
+//var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
+////	TODO	this is fragile. The above property is, in a built shell:
+////			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath
+////			*	supplied by the script launcher to the underlying process as is
+////			In the case in which the *launcher* is being profiled, apparently the -javaagent: is *appended* to its java.class.path,
+////			so jsh.jar is still first. An earlier implementation made sure the launcher classpath length was 1 also, but that is no
+////			longer true in the profiling case.
+//if (launcherClasspath.pathnames[0] && launcherClasspath.pathnames[0].basename == "jsh.jar") {
+//	//	TODO	find better way to get this value; if using global, should use jsh.home system property, but should actually find
+//	//			a way to pass it through the shell instantiation process
+//	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
+//}

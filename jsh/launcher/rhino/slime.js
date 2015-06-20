@@ -31,6 +31,11 @@ $api.log = function(message) {
 	Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
 }
 
+if (Packages.java.lang.System.getProperty("jsh.rhino.classpath")) {
+	//	TODO	hard-coded assumption that this is file
+	$api.rhino.classpath = new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.rhino.classpath"));
+}
+
 $api.slime = (function(was) {
 	var rv;
 	if (was && was.built) {
@@ -124,6 +129,10 @@ $api.slime = (function(was) {
 
 	rv.settings = new function() {
 		var all = {};
+		var PASS = function(value) {
+			return value;
+		};
+
 		var CONTAINER = {
 		};
 		var LAUNCHER = {
@@ -131,6 +140,8 @@ $api.slime = (function(was) {
 		var LOADER = {
 		};
 		var BOTH = {
+			launcher: PASS,
+			loader: PASS
 		};
 
 		var map = function(name,type) {
@@ -161,12 +172,23 @@ $api.slime = (function(was) {
 		map("jsh.shell.container", LAUNCHER);
 
 		map("jsh.script.debugger", LOADER);
+		map("jsh.plugins", LOADER);
 
+		//	TODO	not sure jsh.java.home is correct here
 		map("jsh.java.home", BOTH);
+
 		map("jsh.engine", BOTH);
 		map("jsh.rhino.classpath", BOTH);
 		map("jsh.slime.src", BOTH);
 		map("jsh.rhino.optimization", BOTH);
+		map("jsh.tmpdir", {
+			launcher: function(value) {
+				return ["-Djava.io.tmpdir=" + value];
+			},
+			container: function(value) {
+				return ["-Djava.io.tmpdir=" + value];
+			}
+		});
 
 		this.get = function(name) {
 			return all[name].value;
@@ -181,8 +203,8 @@ $api.slime = (function(was) {
 			for (var x in all) {
 				var value = this.get(x);
 				if (value) {
-					if (all[x].container) {
-						rv = rv.concat(all[x].container(value));
+					if (all[x].type.container) {
+						rv = rv.concat(all[x].type.container(value));
 					} else {
 						rv.push("-D" + x + "=" + value);
 					}
@@ -191,7 +213,7 @@ $api.slime = (function(was) {
 			return rv;
 		};
 
-		this.properties = function() {
+		this.getPropertyArguments = function() {
 			var rv = [];
 			for (var x in all) {
 				var value = this.get(x);
@@ -201,6 +223,15 @@ $api.slime = (function(was) {
 			}
 			return rv;
 		};
+
+		this.sendPropertiesTo = function(f) {
+			for (var x in all) {
+				var value = this.get(x);
+				if (value) {
+					f(x,value);
+				}
+			}
+		}
 
 		this.environment = function(rv) {
 			for (var x in all) {

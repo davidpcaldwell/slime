@@ -79,14 +79,15 @@ var scenario = new jsh.unit.Scenario({
 	view: (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
 });
 
+//	TODO	Convert to jsh/test plugin API designed for this purpose
 if (true) scenario.add(new function() {
 	var buffer = new jsh.io.Buffer();
 	var write = buffer.writeBinary();
 
 	this.scenario = jsh.shell.jsh({
 		fork: true,
-		script: jsh.script.file.getRelativePath("JSH_SHELL_CLASSPATH.jsh.js").file,
-		arguments: ["-scenario"],
+		script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
+		arguments: ["-scenario", "-view", "child"],
 		stdio: {
 			output: write
 		},
@@ -94,7 +95,7 @@ if (true) scenario.add(new function() {
 			write.java.adapt().flush();
 			buffer.close();
 			return new jsh.unit.Scenario.Stream({
-				name: jsh.script.file.getRelativePath("JSH_SHELL_CLASSPATH.jsh.js").toString(),
+				name: jsh.script.file.getRelativePath("launcher/suite.jsh.js").toString(),
 				stream: buffer.readBinary()
 			});
 		}
@@ -141,21 +142,6 @@ if (!LAUNCHER_COMMAND) {
 	].concat(vmargs).concat([
 		"-jar",String(new Packages.java.io.File(JSH_HOME,"jsh.jar").getCanonicalPath())
 	]);
-}
-
-var PACKAGED_LAUNCHER = (function() {
-	var command = [];
-	command.push(getPath(JAVA_HOME,"bin/java"));
-	command.push("-jar");
-	return command;
-})();
-
-var runPackaged = function() {
-	var command = PACKAGED_LAUNCHER.slice(0);
-	for (var i=0; i<arguments.length; i++) {
-		command.push(arguments[i]);
-	}
-	run(command);
 }
 
 var compileOptions;
@@ -222,13 +208,39 @@ var runCommand = function() {
 
 var run = function(command,mymode) {
 	if (!mymode) mymode = mode;
+	var options = mymode;
 	console(command.join(" "));
 	var status = runCommand.apply(this,command.concat(mymode));
+	Packages.java.lang.System.err.println("env: " + JSON.stringify(env, void(0), "    "));
+	Packages.java.lang.System.err.println("input: " + options.input);
+	Packages.java.lang.System.err.println("Output: " + options.output);
+	Packages.java.lang.System.err.println("Error: " + options.err);
 	if (status != 0) {
 		throw new Error("Failed with status: " + status + ": " + command.join(" "));
 	} else {
 		console("Passed: " + command.join(" "));
 	}
+}
+
+var PACKAGED_LAUNCHER = (function() {
+	var command = [];
+	command.push(getPath(JAVA_HOME,"bin/java"));
+	command.push("-jar");
+	return command;
+})();
+
+var runPackaged = function() {
+	var command = PACKAGED_LAUNCHER.slice(0);
+	for (var i=0; i<arguments.length-1; i++) {
+		command.push(arguments[i]);
+	}
+	var mode;
+	if (typeof(arguments[arguments.length-1]) == "string") {
+		command.push(arguments[arguments.length-1]);
+	} else {
+		mode = arguments[arguments.length-1];
+	}
+	run(command,mode);
 }
 
 var testCommandOutput = function(path,tester,p) {
@@ -279,6 +291,10 @@ var testCommandOutput = function(path,tester,p) {
 	console(launcher.concat(command).join(" "));
 	var status = runCommand.apply(this,launcher.concat(command).concat([options]));
 	if (status != 0) {
+		Packages.java.lang.System.err.println("env: " + JSON.stringify(env, void(0), "    "));
+		Packages.java.lang.System.err.println("input: " + options.input);
+		Packages.java.lang.System.err.println("Output: " + options.output);
+		Packages.java.lang.System.err.println("Error: " + options.err);
 		throw new Error("Failed with exit status " + status + ": " + launcher.concat(command).join(" ") + " with options: " + options);
 	}
 	tester(options);
@@ -446,22 +462,24 @@ console("Packaging addClasses/addClasses.jsh.js");
 var packagedAddClasses = jshPackage({
 	script: "addClasses/addClasses.jsh.js"
 });
-console("Running " + packagedAddClasses + " ...");
-runPackaged(
-	packagedAddClasses.getCanonicalPath(),
-	"-classes",getJshPathname(classes),
-	(function() {
-		var rv = {};
-		for (var x in mode) {
-			rv[x] = mode[x];
-		}
-		for (var x in mode.env) {
-			rv.env[x] = mode.env[x];
-		}
-		delete rv.env.JSH_PLUGINS;
-		return rv;
-	})()
-);
+if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
+	console("Running " + packagedAddClasses + " ...");
+	runPackaged(
+		packagedAddClasses.getCanonicalPath(),
+		"-classes",getJshPathname(classes),
+		(function() {
+			var rv = {};
+			for (var x in mode) {
+				rv[x] = mode[x];
+			}
+			for (var x in mode.env) {
+				rv.env[x] = mode.env[x];
+			}
+			delete rv.env.JSH_PLUGINS;
+			return rv;
+		})()
+	);
+}
 
 console("Packaging packaged.jsh.js");
 var packagedPackaged = jshPackage({
@@ -470,12 +488,14 @@ var packagedPackaged = jshPackage({
 	files: ["packaged.file.js"]
 });
 console("Running " + packagedPackaged + " ...");
-runPackaged(
-	packagedPackaged.getCanonicalPath(),
-	//	TODO	remove, I believe
-	"-classes",getJshPathname(classes),
-	mode
-);
+if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
+	runPackaged(
+		packagedPackaged.getCanonicalPath(),
+		//	TODO	remove, I believe
+		"-classes",getJshPathname(classes),
+		mode
+	);
+}
 
 console("Running unpackaged packaged.jsh.js");
 testCommandOutput("packaged.jsh.js", function(options) {
@@ -491,7 +511,7 @@ var packagedPackaged2 = jshPackage({
 console("Running " + packagedPackaged2 + " ...");
 testCommandOutput(packagedPackaged2, function(options) {
 	checkOutput(options,["Success: packaged-path.jsh.js.jar",""]);
-});
+}, { env: { JSH_PLUGINS: null } });
 
 console("Running unpackaged packaged-path.jsh.js");
 testCommandOutput("packaged-path.jsh.js", function(options) {
@@ -507,7 +527,7 @@ testCommandOutput(packaged_helper, function(options) {
 		,getJshPathname(packaged_helper)
 		,""
 	])
-});
+}, { env: { JSH_PLUGINS: null } });
 
 testCommandOutput("$api-deprecate-properties.jsh.js", function(options) {
 	checkOutput(options,[
@@ -595,7 +615,7 @@ testCommandOutput("jsh.shell/stdio.2.jsh.js", function(options) {
 }, {
 	stdin: input_abcdefghij(),
 	env: {
-		JSH_PLUGINS: ""
+		JSH_PLUGINS: null
 	}
 });
 
@@ -606,7 +626,7 @@ testCommandOutput("jsh.shell/stdio.3.jsh.js", function(options) {
 }, {
 	stdin: input_abcdefghij(),
 	env: {
-		JSH_PLUGINS: ""
+		JSH_PLUGINS: null
 	}
 });
 
@@ -721,7 +741,7 @@ if (CATALINA_HOME) {
 	});
 }
 
-if (COFFEESCRIPT) {
+if (COFFEESCRIPT && !jsh.shell.environment.SKIP_COFFEESCRIPT) {
 	jsh.shell.echo("Testing CoffeeScript ...");
 	jsh.shell.run({
 		command: LAUNCHER_COMMAND[0],

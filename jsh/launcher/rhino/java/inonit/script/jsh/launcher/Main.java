@@ -173,15 +173,6 @@ public class Main {
 			this.engine.initialize(this);
 			return this.engine.run(shell.getJrunscriptApi(), arguments);
 		}
-
-		private ClassLoader mainClassLoader;
-
-		final ClassLoader getMainClassLoader() throws IOException {
-			if (mainClassLoader == null) {
-				mainClassLoader = shell.getRhinoClassLoader();
-			}
-			return mainClassLoader;
-		}
 	}
 
 	static abstract class Shell {

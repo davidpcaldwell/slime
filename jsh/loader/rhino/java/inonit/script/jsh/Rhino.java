@@ -379,6 +379,11 @@ public class Rhino {
 	}
 
 	public static void main(String[] args) throws Throwable {
+		Logging.get().log(Rhino.class, Level.INFO, "Invoked main(String[] args) with " + args.length + " arguments.");
+		for (int i=0; i<args.length; i++) {
+			Logging.get().log(Rhino.class, Level.INFO, "Argument " + i + " is: " + args[i]);
+		}
+		Logging.get().log(Rhino.class, Level.INFO, "loader jsh.plugins=" + System.getProperty("jsh.plugins"));
 		engine().cli(args);
 	}
 }

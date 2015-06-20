@@ -13,15 +13,15 @@
 var parameters = jsh.script.getopts({
 	options: {
 		scenario: false,
-		view: "child"
+		view: "console"
 	}
 });
 
 //	TODO	currently this program can only be run in a built shell, because the packaging tool only works in a built shell
 
 if (parameters.options.scenario) {
-	jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("loader/api"));
-	jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/unit"));
+	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api"));
+	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/unit"));
 	var views = {
 		child: function() {
 			return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output })
@@ -38,7 +38,7 @@ if (parameters.options.scenario) {
 		name: jsh.script.file.pathname.basename,
 		view: views[parameters.options.view]()
 	});
-	var packaged_JSH_SHELL_CLASSPATH = jsh.shell.TMPDIR.createTemporary().getRelativePath(jsh.script.file.pathname.basename + ".jar");
+	var packaged_JSH_SHELL_CLASSPATH = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath(jsh.script.file.pathname.basename + ".jar");
 	var engine = (jsh.shell.rhino) ? [] : ["-norhino"];
 	jsh.shell.jsh({
 		fork: true,
@@ -90,13 +90,19 @@ if (parameters.options.scenario) {
 			this.name = "with JSH_SHELL_CLASSPATH";
 
 			this.execute = function(scope) {
+				var properties = {};
+				if (jsh.shell.rhino && jsh.shell.rhino.classpath) {
+					properties["jsh.rhino.classpath"] = String(jsh.shell.rhino.classpath);
+				}
 				var output = jsh.shell.java({
+					properties: properties,
 					jar: packaged_JSH_SHELL_CLASSPATH.file,
 					stdio: {
 						output: String
 					},
 					environment: jsh.js.Object.set({}, jsh.shell.environment, {
 						JSH_SHELL_CLASSPATH: jsh.shell.jsh.home.getRelativePath("lib/jsh.jar").toString()
+//						,JSH_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath)
 						,JSH_LAUNCHER_DEBUG: "true"
 					}),
 					evaluate: function(result) {

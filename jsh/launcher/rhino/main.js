@@ -16,11 +16,15 @@
 var env = $api.shell.environment;
 
 if (!$api.slime) {
-	//	TODO	hard-codes assumption of built shell and hard-codes assumption unbuilt shell will arrive via launcher script; should
-	//			tighten this implementation
-	$api.slime = {
-		built: $api.script.file.getParentFile()
-	};
+	if ($api.script.file.getParentFile().getName().equals("rhino")) {
+		//	Load as-is
+	} else {
+		//	TODO	hard-codes assumption of built shell and hard-codes assumption unbuilt shell will arrive via launcher script; should
+		//			tighten this implementation
+		$api.slime = {
+			built: $api.script.file.getParentFile()
+		};
+	}
 	$api.script.resolve("slime.js").load();
 }
 
@@ -33,6 +37,8 @@ $api.debug("Bootstrap script: " + $api.script);
 //	encapsulates the difference and applies the VM-level arguments to the script-executing VM
 
 var container = new function() {
+	//	TODO	jsh.tmpdir is not correctly passed to launcher in the forking scenario
+
 	var id = ($api.slime.settings.get("jsh.shell.container")) ? $api.slime.settings.get("jsh.shell.container") : "classloader";
 
 	var vm = [];
@@ -51,7 +57,7 @@ var container = new function() {
 		}
 	} else {
 		this.getVmArguments = function() {
-			return vm.concat($api.slime.settings.properties());
+			return vm.concat($api.slime.settings.getPropertyArguments());
 		};
 
 		this.getLauncherArguments = function() {
@@ -94,7 +100,7 @@ Packages.java.lang.System.exit(
 		].concat(
 			container.getVmArguments()
 		).concat(
-			$api.slime.settings.properties()
+			$api.slime.settings.getPropertyArguments()
 		).concat([
 			"-classpath", $api.slime.launcher.getClasses(),
 			"inonit.script.jsh.launcher.Main"

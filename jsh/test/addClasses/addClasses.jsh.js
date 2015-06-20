@@ -10,11 +10,62 @@
 //	Contributor(s):
 //	END LICENSE
 
+Packages.java.lang.System.err.println("Starting addClasses");
 var parameters = jsh.script.getopts({
 	options: {
+		scenario: false,
 		classes: jsh.file.Pathname
 	}
 });
+
+if (parameters.options.scenario) {
+	jsh.loader.plugins(jsh.script.file.getRelativePath("../../../rhino/tools"));
+	var destination = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	jsh.java.tools.javac({
+		destination: destination.pathname,
+		arguments: [
+			jsh.script.file.getRelativePath("java/test/AddClasses.java")
+		]
+	});
+	jsh.shell.echo("Compiled to " + destination);
+	jsh.shell.jsh({
+		script: jsh.script.file,
+		arguments: ["-classes", destination],
+		evaluate: function(result) {
+			jsh.shell.echo("Status: " + result.status);
+			if (result.status != 0) {
+				throw new Error("Status from addClasses.jsh.js: " + result.status);
+			}
+		}
+	});
+	if (jsh.shell.jsh.home) {
+		var tmpfile = jsh.shell.TMPDIR.createTemporary({ prefix: "addClasses.", suffix: ".jar" });
+		jsh.shell.echo("Packaging ...");
+		jsh.shell.jsh({
+			fork: true,
+			script: jsh.shell.jsh.home.getRelativePath("tools/package.jsh.js"),
+			arguments: [
+				"-script", jsh.script.file,
+				"-to", tmpfile
+			]
+		});
+		jsh.shell.echo("Packaged at " + tmpfile);
+		jsh.shell.java({
+			jar: tmpfile,
+			arguments: ["-classes", destination],
+			environment: {
+				JSH_LAUNCHER_DEBUG: "true"
+			},
+			evaluate: function(result) {
+				if (result.status != 0) {
+					throw new Error("Status from packaged addClasses.jsh.js: " + result.status);
+				}
+			}
+		});
+	}
+	jsh.shell.echo("Scenario succeeded.");
+	jsh.shell.exit(0);
+}
 
 if (!parameters.options.classes) {
 	jsh.shell.echo("No -classes argument.");

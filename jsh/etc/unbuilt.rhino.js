@@ -52,7 +52,7 @@ if ($api.arguments[0] == "build") {
 	$api.script.resolve("../../jsh/etc/build.rhino.js").load();
 	var command = [];
 	command.push(String($api.java.install.launcher),"-jar",String(new File(JSH_HOME,"jsh.jar")));
-	command.push(String($api.slime.src.getFile("jsh/test/verify.jsh.js")),"-slime",$api.slime.src.toString());
+	command.push(String($api.slime.src.getFile("jsh/test/verify.jsh.js").getCanonicalFile()),"-slime",String(new Packages.java.io.File($api.slime.src.toString()).getCanonicalFile()));
 	command = command.concat(verifyArgs);
 	if (Packages.java.lang.System.getProperty("jsh.build.tomcat.home")) {
 		command.push("-tomcat",String(new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.build.tomcat.home"))));
