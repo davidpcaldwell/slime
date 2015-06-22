@@ -12,18 +12,24 @@
 
 //	TODO	rename this file to jsh.launcher.js
 
+$api.arguments = $api.engine.resolve({
+	rhino: function() {
+		return $api.arguments;
+	},
+	nashorn: function() {
+		return $arguments;
+	}
+})();
+
 if (!this.$api.slime) {
 	$api.script.resolve("slime.js").load();
 	$api.log("Loaded slime.js: src=" + $api.slime.src);
 }
 
-var env = $api.shell.environment;
-var debug = $api.debug;
-var platform = new function() {
-};
-var colon = String(Packages.java.io.File.pathSeparator);
-
 $api.jsh = {};
+$api.jsh.colon = String(Packages.java.io.File.pathSeparator);
+$api.jsh.platform = new function() {
+};
 $api.jsh.setExitStatus = $api.engine.resolve({
 	rhino: function(status) {
 		var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
@@ -40,16 +46,16 @@ $api.jsh.setExitStatus = $api.engine.resolve({
 		}
 	}
 });
-$api.jsh.arguments = $api.engine.resolve({
-	rhino: function(a) {
-		return a;
-	},
-	nashorn: function() {
-		return $arguments;
+$api.jsh.vmArguments = (function() {
+	if (Packages.java.lang.System.getProperty("jsh.launcher.packaged")) return [];
+	var rv = [];
+	while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
+		rv.push($api.arguments.shift());
 	}
-})(arguments);
+	return rv;
+})();
 
-if ($api.jsh.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
+if ($api.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
 	//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
 	//			java.lang.Error so that it is not caught
@@ -82,7 +88,7 @@ var Directory = function(path) {
 		}
 
 		//	TODO	should use more complex logic than this but it works for the java and jjs cases
-		if (env.PATHEXT) {
+		if ($api.shell.environment.PATHEXT) {
 			if (getWithSuffix(relative,".exe")) {
 				return getWithSuffix(relative,".exe");
 			}
@@ -108,7 +114,7 @@ var Searchpath = function(p) {
 	}
 
 	if (typeof(p) == "string") {
-		elements = p.split(colon);
+		elements = p.split($api.jsh.colon);
 	} else if (typeof(p) == "undefined") {
 		//	empty path
 	} else if (typeof(p) == "object" && p instanceof Array) {
@@ -125,14 +131,14 @@ var Searchpath = function(p) {
 	}
 
 	this.toPath = function() {
-		return elements.join(colon);
+		return elements.join($api.jsh.colon);
 	}
 
 	this.ClassLoader = function() {
 		var _urls = new $api.java.Array({ type: Packages.java.net.URL, length: elements.length });
 		for (var i=0; i<elements.length; i++) {
 			_urls[i] = new Packages.java.io.File(elements[i]).toURI().toURL();
-			debug("classpath: " + elements[i]);
+			$api.debug("classpath: " + elements[i]);
 		}
 		var _classloader = new Packages.java.net.URLClassLoader(_urls);
 		return _classloader;
@@ -149,11 +155,11 @@ var getProperty = function(name) {
 }
 
 var os = function(pathname,path) {
-	if (platform.cygwin) {
+	if ($api.jsh.platform.cygwin) {
 		var mode = {
 			path: path
 		}
-		return platform.cygwin.cygpath.windows(pathname,mode)
+		return $api.jsh.platform.cygwin.cygpath.windows(pathname,mode)
 	}
 	return pathname;
 }
@@ -186,18 +192,18 @@ var settings = {
 };
 
 settings.defaults = new function() {
-	if (platform.cygwin) {
+	if ($api.jsh.platform.cygwin) {
 		this.JSH_TMPDIR = new Directory(os("/tmp"));
 	}
-	if (platform.unix) {
+	if ($api.jsh.platform.unix) {
 		//	TODO	allow this to be overridden by environment variable
 		this.JSH_OS_ENV_UNIX = os("/usr/bin/env");
 	}
 
 	//	The jsh.launcher.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
 	//	create the classloader inside which we are executing
-	debug("jsh.launcher.rhino = " + getProperty("jsh.launcher.rhino"));
-	debug("jsh.launcher.rhino.classpath = " + getProperty("jsh.launcher.rhino.classpath"));
+	$api.debug("jsh.launcher.rhino = " + getProperty("jsh.launcher.rhino"));
+	$api.debug("jsh.launcher.rhino.classpath = " + getProperty("jsh.launcher.rhino.classpath"));
 	this.rhinoClasspath =
 		(getProperty("jsh.launcher.rhino.classpath"))
 		? new Searchpath(getProperty("jsh.launcher.rhino.classpath"))
@@ -208,7 +214,7 @@ settings.defaults = new function() {
 };
 settings.use.push(settings.defaults);
 
-debug("jsh.launcher.packaged = " + getProperty("jsh.launcher.packaged"));
+$api.debug("jsh.launcher.packaged = " + getProperty("jsh.launcher.packaged"));
 if (getProperty("jsh.launcher.packaged") != null) {
 	settings.packaged = new function() {
 		this.packaged = true;
@@ -223,7 +229,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 
 		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
 		if (rhino) {
-			debug("Copying rhino ...");
+			$api.debug("Copying rhino ...");
 			var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
 			var writeTo = rhinoCopiedTo.writeTo();
 			$api.io.copy(rhino,writeTo);
@@ -234,7 +240,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		var index = 0;
 		var plugin;
 		var plugins = [];
-		debug("Copying plugins ...");
+		$api.debug("Copying plugins ...");
 
 		var getPlugin = function(index) {
 			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
@@ -260,7 +266,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			writeTo.close();
 			plugins.push(copyTo);
 			index++;
-			debug("Copied plugin " + index + " from " + plugin.name);
+			$api.debug("Copied plugin " + index + " from " + plugin.name);
 		}
 
 		this.rhinoClasspath = (rhinoCopiedTo) ? new Searchpath([ rhinoCopiedTo ]) : new Searchpath([]);
@@ -269,25 +275,25 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		this.JSH_PLUGINS = new Searchpath(plugins);
 
 		var cygwin = ClassLoader.getSystemResourceAsStream("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe");
-		if (cygwin != null && platform.cygwin) {
-			debug("Copying Cygwin paths helper ...");
+		if (cygwin != null && $api.jsh.platform.cygwin) {
+			$api.debug("Copying Cygwin paths helper ...");
 			var cygwinTo = tmpdir.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").writeTo();
 			$api.io.copy(cygwin,cygwinTo);
 			cygwin.close();
 			cygwinTo.close();
-			debug("Copied Cygwin paths helper to " + tmpdir);
+			$api.debug("Copied Cygwin paths helper to " + tmpdir);
 			this.JSH_LIBRARY_NATIVE = tmpdir;
 		}
 	}
 } else if (getProperty("jsh.home")) {
 	settings.built = new function() {
 		var JSH_HOME = new Directory( getProperty("jsh.home") );
-		debug("JSH_HOME = " + JSH_HOME.path);
+		$api.debug("JSH_HOME = " + JSH_HOME.path);
 
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
 
-		if (platform.cygwin) {
+		if ($api.jsh.platform.cygwin) {
 			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
 		}
 
@@ -335,7 +341,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			this.shellClasspath = shellClasspath;
 		}
 		this.scriptClasspath = [];
-		if (platform.cygwin) {
+		if ($api.jsh.platform.cygwin) {
 			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
 		}
 
@@ -349,7 +355,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 }
 
 if (settings.packaged) {
-	debug("Using packaged jsh.");
+	$api.debug("Using packaged jsh.");
 	settings.use.push(settings.packaged);
 } else if (settings.built) {
 	settings.use.push(settings.built);
@@ -368,13 +374,13 @@ settings.explicit = new function() {
 		"JSH_LIBRARY_NATIVE",
 		"JSH_TMPDIR"
 	].forEach( function(name) {
-		self[name] = (env[name]) ? new Directory(os(env[name])) : UNDEFINED;
+		self[name] = ($api.shell.environment[name]) ? new Directory(os($api.shell.environment[name])) : UNDEFINED;
 	});
 
 	[
 		"JSH_PLUGINS"
 	].forEach( function(name) {
-		self[name] = (typeof(env[name]) != "undefined") ? new Searchpath(os(env[name],true)).toPath() : UNDEFINED;
+		self[name] = (typeof($api.shell.environment[name]) != "undefined") ? new Searchpath(os($api.shell.environment[name],true)).toPath() : UNDEFINED;
 	});
 
 	if ($api.slime.setting("jsh.plugins")) {
@@ -382,20 +388,20 @@ settings.explicit = new function() {
 	}
 
 	["JSH_RHINO_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
-		this[name] = env[name];
+		this[name] = $api.shell.environment[name];
 	}, this);
 
 	["JSH_JAVA_LOGGING_PROPERTIES"].forEach(function(name) {
-		this[name] = (typeof(env[name]) != "undefined") ? new File(os(env[name])) : UNDEFINED;
+		this[name] = (typeof($api.shell.environment[name]) != "undefined") ? new File(os($api.shell.environment[name])) : UNDEFINED;
 	}, this);
 
 	if (!settings.packaged) {
 		var httpUrlPattern = /^http(?:s?)\:\/\/(.*)/;
-		if (httpUrlPattern.test($api.jsh.arguments[0])) {
+		if (httpUrlPattern.test($api.arguments[0])) {
 			debugger;
-			this.script = $api.jsh.arguments[0];
+			this.script = $api.arguments[0];
 
-			this.source = $api.engine.readUrl($api.jsh.arguments[0]);
+			this.source = $api.engine.readUrl($api.arguments[0]);
 		} else {
 			this.script = (function(path) {
 //				TODO	move this documentation somewhere more relevant
@@ -416,16 +422,16 @@ settings.explicit = new function() {
 //					that usage is unsupported.  See comment below.
 
 				//	Find the file to be executed
-				if (platform.cygwin) {
-					path = platform.cygwin.cygpath.windows(path);
+				if ($api.jsh.platform.cygwin) {
+					path = $api.jsh.platform.cygwin.cygpath.windows(path);
 				}
 				if (new Packages.java.io.File(path).exists()) {
 					return new File( String(new Packages.java.io.File(path).getCanonicalPath()) );
 				}
 				var slash = Packages.java.io.File.separator;
 				if (path.indexOf(slash) == -1) {
-					debug("PATH = " + env.PATH);
-					var search = env.PATH.split(colon);
+					$api.debug("PATH = " + $api.shell.environment.PATH);
+					var search = $api.shell.environment.PATH.split($api.jsh.colon);
 					for (var i=0; i<search.length; i++) {
 						if (new Packages.java.io.File(search[i] + slash + arguments[0]).exists()) {
 							return new File(String(new Packages.java.io.File(search[i] + slash + path).getCanonicalPath()));
@@ -434,11 +440,11 @@ settings.explicit = new function() {
 					$api.console("Not found in PATH: " + path);
 					Packages.java.lang.System.exit(1);
 				} else {
-					debug("Working directory: PWD=" + env.PWD);
+					$api.debug("Working directory: PWD=" + $api.shell.environment.PWD);
 					$api.console("Script not found: " + path)
 					Packages.java.lang.System.exit(1);
 				}
-			})($api.jsh.arguments[0]);
+			})($api.arguments[0]);
 
 			this.source = $api.engine.readFile(this.script.path);
 		}
@@ -446,8 +452,8 @@ settings.explicit = new function() {
 
 	this.jvmOptions = [];
 
-	if (env.JSH_JVM_OPTIONS) {
-		env.JSH_JVM_OPTIONS.split(" ").forEach( function(option) {
+	if ($api.shell.environment.JSH_JVM_OPTIONS) {
+		$api.shell.environment.JSH_JVM_OPTIONS.split(" ").forEach( function(option) {
 			self.jvmOptions.push(option);
 		});
 	}
@@ -470,7 +476,7 @@ settings.directives = function(source) {
 	directives.jvmOptions = [];
 	directives.classpath = [];
 	directives.jdkLibraries = [];
-	debug("DIRECTIVES:\n" + directives.join("\n"));
+	$api.debug("DIRECTIVES:\n" + directives.join("\n"));
 	directives.forEach( function(item) {
 		var match;
 
@@ -480,8 +486,8 @@ settings.directives = function(source) {
 			directives.jvmOptions.push(match[1]);
 		} else if (match = /^CLASSPATH\s+(.*)/.exec(item)) {
 			var pathElement = match[1];
-			if (platform.cygwin) {
-				pathElement = platform.cygwin.cygpath.windows(match[1]);
+			if ($api.jsh.platform.cygwin) {
+				pathElement = $api.jsh.platform.cygwin.cygpath.windows(match[1]);
 			}
 			if (!settings.packaged) {
 				directives.classpath.push(new File(pathElement));
@@ -524,24 +530,23 @@ try {
 	//			JSH_RHINO_CLASSPATH=$JSH_RHINO_CLASSPATH:$JSH_HOME/lib/xbean.jar:$JSH_HOME/lib/jsr173_1.0_api.jar
 	//		fi
 	//	fi
-	debug("Creating command ...");
+	$api.debug("Creating command ...");
 	var command = new $api.java.Command();
 //	var JSH_SHELL_CONTAINER = (env.JSH_SHELL_CONTAINER) ? env.JSH_SHELL_CONTAINER : "classloader";
 //	var command = new Command();
 	var container = ($api.slime.settings.get("jsh.shell.container")) ? $api.slime.settings.get("jsh.shell.container") : "classloader";
-	if (container == "classloader" && !settings.packaged && (true || !env.JSH_SHELL_CLASSPATH)) {
+	if (container == "classloader" && !settings.packaged && (true || !$api.shell.environment.JSH_SHELL_CLASSPATH)) {
 //		command.configure("classloader");
 	} else {
 		command.fork();
 //		command.configure("jvm");
 	}
 	debugger;
-	if (settings.get("script")) {
-		while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
-			command.vm($api.arguments.shift());
-		}
-	}
 //	var jvmOptions = settings.combine("jvmOptions");
+
+	for (var i=0; i<$api.jsh.vmArguments.length; i++) {
+		command.vm($api.jsh.vmArguments[i]);
+	}
 
 	var environmentAndProperties = function() {
 		$api.slime.settings.sendPropertiesTo(function(name,value) {
@@ -682,20 +687,20 @@ try {
 		command.systemProperty("jsh.launcher.packaged", getProperty("jsh.launcher.packaged"));
 	}
 	var index = (settings.get("script")) ? 1 : 0;
-	debug("Skipping: " + index + " arguments");
+	$api.debug("Skipping: " + index + " arguments");
 	//	TODO	below obviously broken for internal launcher
-	for (var i=index; i<$api.jsh.arguments.length; i++) {
-		command.argument($api.jsh.arguments[i]);
+	for (var i=index; i<$api.arguments.length; i++) {
+		command.argument($api.arguments[i]);
 	}
 	var mode = null;
-	debug("Running command " + command + " ...");
+	$api.debug("Running command " + command + " ...");
 	var status = command.run(mode);
 	$api.jsh.setExitStatus(status);
-	debug("Command returned.");
+	$api.debug("Command returned.");
 } catch (e) {
-	debug("Error:");
-	debug(e);
-	debug(e.fileName + ":" + e.lineNumber);
+	$api.debug("Error:");
+	$api.debug(e);
+	$api.debug(e.fileName + ":" + e.lineNumber);
 	if (e.rhinoException) {
 		e.rhinoException.printStackTrace();
 	} else if (e.printStackTrace) {

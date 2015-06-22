@@ -18,40 +18,21 @@ if (!jsh.unit) {
 	jsh.loader.plugins(src.getRelativePath("jsh/test"));
 }
 jsh.unit.integration({
-	scenario: function(scenario) {
+	scenario: function() {
 		var home = (function() {
 			if (jsh.shell.jsh.home)  {
 				return jsh.shell.jsh.home;
 			}
 			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-			var BUILD_WITHOUT_RHINO = false;
-			if (BUILD_WITHOUT_RHINO) {
-				jsh.shell.run({
-					command: jsh.shell.java.jrunscript,
-					arguments: [
-						jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-						jsh.shell.jsh.src.getRelativePath("jsh/etc/unbuilt.rhino.js"),
-						"build",
-						tmpdir
-					]
-				});
-			} else {
-				jsh.shell.run({
-					command: jsh.shell.java.launcher,
-					arguments: [
-						"-jar", jsh.shell.rhino.classpath, "-opt", "-1",
-						src.getRelativePath("rhino/jrunscript/api.js"),
-						src.getRelativePath("jsh/etc/unbuilt.rhino.js"),
-						"build",
-						tmpdir
-					],
-					environment: {
-						PATH: jsh.shell.environment.PATH,
-						JSH_BUILD_NOTEST: "true",
-						JSH_BUILD_NODOC: "true"
-					}
-				});
-			}
+			jsh.shell.run({
+				command: jsh.shell.java.jrunscript,
+				arguments: [
+					jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+					jsh.shell.jsh.src.getRelativePath("jsh/etc/unbuilt.rhino.js"),
+					"build",
+					tmpdir
+				]
+			});
 			return tmpdir;
 		})();
 		var shell = function(p) {
@@ -117,8 +98,8 @@ jsh.unit.integration({
 			})
 		};
 
-		var addScenario = function(o) {
-			scenario.add({ scenario: new function() {
+		var addScenario = (function(o) {
+			this.add({ scenario: new function() {
 				this.name = o.name;
 
 				this.execute = function(scope) {
@@ -126,15 +107,15 @@ jsh.unit.integration({
 					o.execute(verify);
 				};
 			}})
-		};
+		}).bind(this);
 
-		scenario.add({
+		this.add({
 			scenario: new jsh.unit.Scenario.Integration({
 				script: jsh.script.file.getRelativePath("packaged.jsh.js").file
 			})
 		});
 
-		scenario.add(new function() {
+		this.add(new function() {
 			this.scenario = new function() {
 				this.name = "Unbuilt, Rhino";
 				this.execute = function(scope) {

@@ -89,7 +89,7 @@ plugin({
 					name: jsh.script.file.pathname.basename,
 					view: views[parameters.options.view]()
 				});
-				o.scenario(scenario);
+				o.scenario.apply(scenario,parameters.arguments);
 				scenario.run();
 			} else {
 				var getopts = (o.getopts) ? jsh.script.getopts(o.getopts, parameters.arguments) : { options: {} };
