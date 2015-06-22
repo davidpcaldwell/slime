@@ -16,7 +16,7 @@ $exports.gui = function(p) {
 	var BorderLayout = Packages.java.awt.BorderLayout;
 	var _frame = new Packages.javax.swing.JFrame();
 	var _label = new Packages.javax.swing.JLabel(p.prompt);
-	var _field = new Packages.javax.swing.JPasswordField();
+	var _field = (p.nomask) ? new Packages.javax.swing.JTextField() : new Packages.javax.swing.JPasswordField();
 	var done = false;
 	var doneWaiter = new _lock.Waiter({
 		until: function() {
