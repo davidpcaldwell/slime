@@ -31,10 +31,16 @@ jsh.unit.integration({
 					jsh.shell.jsh.src.getRelativePath("jsh/etc/unbuilt.rhino.js"),
 					"build",
 					tmpdir
-				]
+				],
+				environment: jsh.js.Object.set({
+					JSH_BUILD_NOTEST: "true",
+					JSH_BUILD_NODOC: "true",
+					PATH: jsh.shell.environment.PATH.toString()
+				})
 			});
 			return tmpdir;
 		})();
+
 		var shell = function(p) {
 			var vm = [];
 			if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
@@ -124,12 +130,14 @@ jsh.unit.integration({
 					if (jsh.shell.rhino && jsh.shell.rhino.classpath) {
 						properties["jsh.rhino.classpath"] = jsh.shell.rhino.classpath;
 					}
+					properties["jsh.java.logging.properties"] = "/foo/bar";
 					var result = unbuilt({
 						properties: properties,
 						arguments: []
 					});
 					verify(result).evaluate.property("src").is.not(null);
 					verify(result).evaluate.property("home").is(null);
+					verify(result).evaluate.property("logging").is("/foo/bar");
 				}
 			}
 		});
@@ -137,16 +145,24 @@ jsh.unit.integration({
 		addScenario({
 			name: "Built, Rhino",
 			execute: function(verify) {
+				var properties = {};
+				properties["jsh.java.logging.properties"] = "/foo/bar";
 				var result = built({
+					properties: properties
 				});
 				verify(result).evaluate.property("src").is(null);
 				verify(result).evaluate.property("home").is.not(null);
+				verify(result).evaluate.property("logging").is("/foo/bar");
 			}
 		});
 	},
 	run: function(parameters) {
 		var home = (jsh.shell.jsh.home) ? jsh.shell.jsh.home.toString() : null;
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src.toString() : null;
-		jsh.shell.echo(JSON.stringify({ src: src, home: home }));
+		var logging = (Packages.java.lang.System.getProperty("java.util.logging.config.file"))
+			? String(Packages.java.lang.System.getProperty("java.util.logging.config.file"))
+			: null
+		;
+		jsh.shell.echo(JSON.stringify({ src: src, home: home, logging: logging }));
 	}
 });
