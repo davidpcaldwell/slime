@@ -157,14 +157,14 @@ $api.slime = (function(was) {
 				return ["-agentlib:jdwp=" + value];
 			}
 		});
-		map("jsh.java.logging.properties", {
-			container: function(value) {
-				return ["-Djava.util.logging.config.file=" + value];
-			}
-		});
 		map("jsh.jvm.options", {
 			container: function(value) {
 				return value.split(" ");
+			}
+		});
+		map("jsh.java.logging.properties", {
+			container: function(value) {
+				return ["-Djava.util.logging.config.file=" + value];
 			}
 		});
 

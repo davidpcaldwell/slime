@@ -54,6 +54,7 @@ jsh.unit.integration({
 				stdio: (p.stdio) ? p.stdio : {
 					output: String
 				},
+				environment: p.environment,
 				evaluate: (p.evaluate) ? p.evaluate : function(result) {
 					if (result.status !== 0) throw new Error("Status is " + result.status);
 					return JSON.parse(result.stdio.output);
@@ -132,12 +133,18 @@ jsh.unit.integration({
 					}
 					properties["jsh.java.logging.properties"] = "/foo/bar";
 					var result = unbuilt({
+						environment: {
+							PATH: jsh.shell.environment.PATH,
+							JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz"
+						},
 						properties: properties,
 						arguments: []
 					});
 					verify(result).evaluate.property("src").is.not(null);
 					verify(result).evaluate.property("home").is(null);
 					verify(result).evaluate.property("logging").is("/foo/bar");
+					verify(result).evaluate.property("foo1").is("bar");
+					verify(result).evaluate.property("foo2").is("baz");
 				}
 			}
 		});
@@ -148,21 +155,30 @@ jsh.unit.integration({
 				var properties = {};
 				properties["jsh.java.logging.properties"] = "/foo/bar";
 				var result = built({
+					environment: {
+						PATH: jsh.shell.environment.PATH,
+						JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz"
+					},
 					properties: properties
 				});
 				verify(result).evaluate.property("src").is(null);
 				verify(result).evaluate.property("home").is.not(null);
 				verify(result).evaluate.property("logging").is("/foo/bar");
+				verify(result).evaluate.property("foo1").is("bar");
+				verify(result).evaluate.property("foo2").is("baz");
 			}
 		});
 	},
 	run: function(parameters) {
+		var getProperty = function(name) {
+			var rv = Packages.java.lang.System.getProperty(name);
+			if (rv) return String(rv);
+			return null;
+		};
+
 		var home = (jsh.shell.jsh.home) ? jsh.shell.jsh.home.toString() : null;
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src.toString() : null;
-		var logging = (Packages.java.lang.System.getProperty("java.util.logging.config.file"))
-			? String(Packages.java.lang.System.getProperty("java.util.logging.config.file"))
-			: null
-		;
-		jsh.shell.echo(JSON.stringify({ src: src, home: home, logging: logging }));
+		var logging = getProperty("java.util.logging.config.file");
+		jsh.shell.echo(JSON.stringify({ src: src, home: home, logging: logging, foo1: getProperty("foo.1"), foo2: getProperty("foo.2") }));
 	}
 });
