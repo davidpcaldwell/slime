@@ -157,6 +157,8 @@ $api.slime = (function(was) {
 				return ["-agentlib:jdwp=" + value];
 			}
 		});
+		map("jsh.debug.script", LOADER);
+
 		map("jsh.jvm.options", {
 			container: function(value) {
 				return value.split(" ");
@@ -168,18 +170,21 @@ $api.slime = (function(was) {
 			}
 		});
 
+		map("jsh.engine", BOTH);
+		map("jsh.engine.rhino.classpath", BOTH);
+
+		//	Undocumented so far
+
+		//	May not survive refactoring
 		map("jsh.launcher.debug", LAUNCHER);
 		map("jsh.shell.container", LAUNCHER);
 
-		map("jsh.debug.script", LOADER);
 		map("jsh.plugins", LOADER);
 
 		//	TODO	not sure jsh.java.home is correct here
 		map("jsh.java.home", BOTH);
 
-		map("jsh.engine", BOTH);
-		map("jsh.engine.rhino.classpath", BOTH);
-		map("jsh.slime.src", BOTH);
+		map("jsh.shell.src", BOTH);
 		map("jsh.rhino.optimization", BOTH);
 		map("jsh.tmpdir", {
 			launcher: function(value) {

@@ -281,8 +281,8 @@ $exports.jsh = function(p) {
 
 		if (!p.shell) {
 			var properties = {};
-			if (Packages.java.lang.System.getProperty("jsh.slime.src")) {
-				properties["jsh.slime.src"] = String(Packages.java.lang.System.getProperty("jsh.slime.src"));
+			if (Packages.java.lang.System.getProperty("jsh.shell.src")) {
+				properties["jsh.shell.src"] = String(Packages.java.lang.System.getProperty("jsh.shell.src"));
 			}
 			if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 				properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
@@ -482,8 +482,8 @@ if (String($exports.properties.object.jsh.plugins)) {
 if ($exports.properties.object.jsh.home) {
 	$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.home).directory
 }
-if ($exports.properties.object.jsh.slime && $exports.properties.object.jsh.slime.src) {
-	$exports.jsh.src = $context.api.file.Pathname($exports.properties.object.jsh.slime.src).directory
+if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
+	$exports.jsh.src = $context.api.file.Pathname($exports.properties.object.jsh.shell.src).directory
 }
 //var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
 ////	TODO	this is fragile. The above property is, in a built shell:

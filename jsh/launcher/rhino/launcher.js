@@ -305,14 +305,14 @@ if (getProperty("jsh.launcher.packaged") != null) {
 
 		this.profiler = JSH_HOME.getFile("tools/profiler.jar");
 	}
-} else if ($api.slime.setting("jsh.slime.src")) {
+} else if ($api.slime.setting("jsh.shell.src")) {
 	settings.unbuilt = new function() {
-		var SLIME_SRC = new Directory( $api.slime.setting("jsh.slime.src") );
+		var SLIME_SRC = new Directory( $api.slime.setting("jsh.shell.src") );
 
 		var getShellClasspath = function() {
 			debugger;
 			if (!arguments.callee.cached) {
-				if ($api.slime.setting("jsh.slime.src")) {
+				if ($api.slime.setting("jsh.shell.src")) {
 					//	TODO	this may work, because of the existing slime variable, but it may not, or may by coincidence, because
 					//			it is not well-thought-out.
 					var LOADER_CLASSES = $api.io.tmpdir();

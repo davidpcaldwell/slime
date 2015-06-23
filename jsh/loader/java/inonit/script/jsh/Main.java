@@ -140,7 +140,7 @@ public class Main {
 		private File src;
 
 		Unbuilt() {
-			this.src = new File(System.getProperty("jsh.slime.src"));
+			this.src = new File(System.getProperty("jsh.shell.src"));
 		}
 
 		String getModules() {
@@ -182,13 +182,13 @@ public class Main {
 
 	private static Unpackaged getUnpackaged() {
 		if (System.getProperty("jsh.home") != null) return new Built();
-		if (System.getProperty("jsh.slime.src") != null) return new Unbuilt();
+		if (System.getProperty("jsh.shell.src") != null) return new Unbuilt();
 		return null;
 	}
 
 	private static Shell.Installation unpackagedInstallation() {
 		Logging.get().log(Main.class, Level.CONFIG, "jsh.home=" + System.getProperty("jsh.home"));
-		Logging.get().log(Main.class, Level.CONFIG, "jsh.slime.src=" + System.getProperty("jsh.slime.src"));
+		Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
 		Unpackaged unpackaged = getUnpackaged();
 		final Code[] plugins = plugins(unpackaged.getModules(), System.getProperty("jsh.plugins"));
 		final Code.Source[] libraries = libraries(unpackaged.getModules(), System.getProperty("jsh.plugins"));

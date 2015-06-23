@@ -34,10 +34,25 @@ END LICENSE
 			</thead>
 			<tbody>
 				<tr>
+					<!--
+						Tested manually
+						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/rhino/main.js jsh/test/jsh.shell/properties.jsh.js
+					-->
 					<td>jsh.debug.jdwp</td>
 					<td>
 						Sets up a Java debugger to debug the shell. The value of this setting is interpreted as an argument to
 						the <code>-agentlib-jdwp:</code> Java launcher argument.
+					</td>
+				</tr>
+				<tr>
+					<!--
+						Tested manually
+						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/rhino/main.js jsh/test/jsh.shell/properties.jsh.js
+					-->
+					<td>jsh.debug.script</td>
+					<td>
+						Sets up a debugger to debug scripts. If the value is <code>rhino</code>, and the shell is using Rhino as
+						its JavaScript engine, the Rhino debugger will be launched to debug the script.
 					</td>
 				</tr>
 				<tr>

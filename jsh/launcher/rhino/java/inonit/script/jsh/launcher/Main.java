@@ -403,7 +403,7 @@ public class Main {
 			}
 
 			String src() {
-				return getSetting("jsh.slime.src");
+				return getSetting("jsh.shell.src");
 			}
 
 			String rhino() {
