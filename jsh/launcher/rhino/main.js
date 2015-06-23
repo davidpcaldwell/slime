@@ -75,7 +75,7 @@ $api.engine.runCommand = (function(was) {
 })($api.engine.runCommand);
 
 //	Supply arguments whose default values are provided by the jrunscript API
-if (!$api.slime.settings.get("jsh.rhino.classpath")) $api.slime.settings.set("jsh.rhino.classpath", $api.rhino.classpath);
+if (!$api.slime.settings.get("jsh.engine.rhino.classpath")) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.rhino.classpath);
 if (!$api.slime.settings.get("jsh.slime.src")) $api.slime.settings.set("jsh.slime.src", $api.slime.src);
 
 //	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches

@@ -99,7 +99,7 @@ jsh.unit.integration({
 			var write = buffer.writeBinary();
 			var properties = {};
 			if (jsh.shell.rhino && jsh.shell.rhino.classpath) {
-				properties["jsh.rhino.classpath"] = jsh.shell.rhino.classpath;
+				properties["jsh.engine.rhino.classpath"] = jsh.shell.rhino.classpath;
 			}
 			return built({
 				properties: properties,
@@ -136,33 +136,6 @@ jsh.unit.integration({
 			})
 		});
 
-//		this.add(new function() {
-//			this.scenario = new function() {
-//				this.name = "Unbuilt, Rhino";
-//				this.execute = function(scope) {
-//					var verify = new jsh.unit.Verify(scope);
-//					var properties = {};
-//					if (jsh.shell.rhino && jsh.shell.rhino.classpath) {
-//						properties["jsh.rhino.classpath"] = jsh.shell.rhino.classpath;
-//					}
-//					properties["jsh.java.logging.properties"] = "/foo/bar";
-//					var result = unbuilt({
-//						environment: {
-//							PATH: jsh.shell.environment.PATH,
-//							JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz"
-//						},
-//						properties: properties,
-//						arguments: []
-//					});
-//					verify(result).evaluate.property("src").is.not(null);
-//					verify(result).evaluate.property("home").is(null);
-//					verify(result).evaluate.property("logging").is("/foo/bar");
-//					verify(result).evaluate.property("foo1").is("bar");
-//					verify(result).evaluate.property("foo2").is("baz");
-//				}
-//			}
-//		});
-
 		var engines = [];
 		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 			engines.push("nashorn");
@@ -184,7 +157,7 @@ jsh.unit.integration({
 							environment: {
 								PATH: jsh.shell.environment.PATH,
 								JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
-								JSH_RHINO_CLASSPATH: String(parameters.options.rhino),
+								JSH_ENGINE_RHINO_CLASSPATH: String(parameters.options.rhino),
 								JSH_ENGINE: engine
 								//,JSH_LAUNCHER_DEBUG: "true"
 								//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null

@@ -92,7 +92,7 @@ if (parameters.options.scenario) {
 			this.execute = function(scope) {
 				var properties = {};
 				if (jsh.shell.rhino && jsh.shell.rhino.classpath) {
-					properties["jsh.rhino.classpath"] = String(jsh.shell.rhino.classpath);
+					properties["jsh.engine.rhino.classpath"] = String(jsh.shell.rhino.classpath);
 				}
 				var output = jsh.shell.java({
 					properties: properties,

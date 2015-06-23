@@ -31,9 +31,9 @@ $api.log = function(message) {
 	Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
 }
 
-if (Packages.java.lang.System.getProperty("jsh.rhino.classpath")) {
+if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 	//	TODO	hard-coded assumption that this is file
-	$api.rhino.classpath = new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.rhino.classpath"));
+	$api.rhino.classpath = new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
 }
 
 $api.slime = (function(was) {
@@ -178,7 +178,7 @@ $api.slime = (function(was) {
 		map("jsh.java.home", BOTH);
 
 		map("jsh.engine", BOTH);
-		map("jsh.rhino.classpath", BOTH);
+		map("jsh.engine.rhino.classpath", BOTH);
 		map("jsh.slime.src", BOTH);
 		map("jsh.rhino.optimization", BOTH);
 		map("jsh.tmpdir", {

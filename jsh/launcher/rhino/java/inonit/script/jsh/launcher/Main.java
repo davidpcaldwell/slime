@@ -407,7 +407,7 @@ public class Main {
 			}
 
 			String rhino() {
-				return getSetting("jsh.rhino.classpath");
+				return getSetting("jsh.engine.rhino.classpath");
 			}
 		};
 		if (args.length == 1 && args[0].equals("-engines")) {
