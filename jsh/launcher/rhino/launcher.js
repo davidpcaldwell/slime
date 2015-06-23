@@ -290,6 +290,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		var JSH_HOME = new Directory( getProperty("jsh.home") );
 		$api.debug("JSH_HOME = " + JSH_HOME.path);
 
+		this.rhinoClasspath = new Searchpath([JSH_HOME.getFile("lib/js.jar").path]);
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
 

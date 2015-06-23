@@ -573,10 +573,20 @@ END LICENSE
 					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
 						var client = new module.Client();
 						servlet.set(function(request,response) {
-							verify(request,"initial servlet request").getCookies().is(null);
+							jsh.shell.echo("Received request; verify = " + verify);
+							jsh.shell.echo("request.getCookies() = " + request.getCookies());
+							//	TODO	for some reason with Nashorn, the verify() version of this statement does not work
+							test(request.getCookies() === null);
+							//verify(request,"initial servlet request").getCookies().is(null);
+							jsh.shell.echo("Cookie = " + Cookie);
+							jsh.shell.echo("response.addCookie = " + response.addCookie);
 							response.addCookie(new Cookie("cname", "cvalue"));
+							jsh.shell.echo("addCookie returned");
 							response.setContentType("text/plain");
+							jsh.shell.echo("setContentType returned");
 							response.getWriter().print("Hello, World!");
+							jsh.shell.echo("getWriter().print returned");
+							jsh.shell.echo("Reached end of set()");
 						});
 						var response = client.request({
 							method: "GET"
@@ -586,6 +596,9 @@ END LICENSE
 						verify(type).is.not(null);
 						verify(type.split(";"))[0].is.not(null);
 						verify(response,"initial response").body.evaluate(function() { return this.type.toString().split(";")[0] }).is("text/plain");
+						if (response.body.type.substring(0,"text/html".length) == "text/html") {
+							jsh.shell.echo("HTML response: " + response.body.stream.character().asString());
+						}
 						servlet.set(function(request,response) {
 							var cookies = getServerRequestCookies(request);
 //							verify(request,"second servlet request").getCookies().length.is(1);

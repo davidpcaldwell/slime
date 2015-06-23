@@ -682,6 +682,12 @@ END LICENSE
 				</ul>
 				<script type="application/x.jsapi#tests">
 					if (module.Thread) {
+						var sleeper = function(length) {
+							return function() {
+								Packages.java.lang.Thread.sleep(length);
+							}
+						}
+
 						var f = function() {
 							Packages.java.lang.Thread.sleep(100);
 							return 1;
@@ -704,6 +710,10 @@ END LICENSE
 
 							this.evaluate = function() {
 								return result;
+							};
+
+							this.getResult = function() {
+								return result;
 							}
 						};
 
@@ -715,14 +725,18 @@ END LICENSE
 						});
 						t1.join();
 						test(c1.evaluate() == 1);
+
+						//	This test is highly suspect; it essentially hopes that the CPU scheduling happens as expected. Its
+						//	chances of passage could be improved by using thread priorities for timeouts, which is probably a good
+						//	idea anyway. But perhaps it needs to be re-designed.
 						var c2 = new Callbacks();
 						var t2 = module.Thread.start({
-							call: f,
+							call: sleeper(250),
 							timeout: 50,
 							on: c2
 						});
 						t2.join();
-						test(c2.evaluate() == "Timed out.");
+						verify(c2).getResult().is("Timed out.");
 
 						var r3 = module.Thread.run({
 							call: f,
