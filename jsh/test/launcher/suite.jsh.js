@@ -179,7 +179,7 @@ jsh.unit.integration({
 
 					this.execute = function(verify) {
 						var properties = {};
-						properties["jsh.java.logging.properties"] = "/foo/bar";
+						properties["jsh.log.java.properties"] = "/foo/bar";
 						var result = shell({
 							environment: {
 								PATH: jsh.shell.environment.PATH,

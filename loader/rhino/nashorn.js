@@ -15,6 +15,8 @@ load("nashorn:mozilla_compat.js");
 (function() {
 	var hasNashornErrorHack = (function() {
 		if (Packages.java.lang.System.getenv("DISABLE_NASHORN_ERROR_HACK")) return false;
+		//	TODO	this flaw has apparently been fixed in post-8u40 versions of Nashorn
+		return false;
 		this.Error = function(message) {
 			this.name = "Error";
 			this.message = message;
@@ -159,9 +161,7 @@ load("nashorn:mozilla_compat.js");
 		};
 		var fixedScope = toScope(notNull(scope));
 		var fixedTarget = notNull(target);
-		var mode = Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_NASHORN_SCRIPT");
-		if (!mode) mode = "compile";
-		var implementation = loaders[mode];
+		var implementation = loaders.compile;
 		if (!implementation) throw new Error("Unknown mode: " + mode);
 		return implementation(name,code,fixedScope,fixedTarget);
 	};

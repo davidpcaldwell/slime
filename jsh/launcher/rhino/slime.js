@@ -162,7 +162,7 @@ $api.slime = (function(was) {
 				return value.split(" ");
 			}
 		});
-		map("jsh.java.logging.properties", {
+		map("jsh.log.java.properties", {
 			container: function(value) {
 				return ["-Djava.util.logging.config.file=" + value];
 			}
@@ -171,7 +171,7 @@ $api.slime = (function(was) {
 		map("jsh.launcher.debug", LAUNCHER);
 		map("jsh.shell.container", LAUNCHER);
 
-		map("jsh.script.debugger", LOADER);
+		map("jsh.debug.script", LOADER);
 		map("jsh.plugins", LOADER);
 
 		//	TODO	not sure jsh.java.home is correct here

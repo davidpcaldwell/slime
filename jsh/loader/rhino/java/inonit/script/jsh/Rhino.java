@@ -108,7 +108,7 @@ public class Rhino {
 				}
 
 				public Engine.Debugger getDebugger() {
-					String id = System.getProperty("jsh.script.debugger");
+					String id = System.getProperty("jsh.debug.script");
 					if (id == null) return null;
 					if (id.equals("rhino")) {
 						Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {

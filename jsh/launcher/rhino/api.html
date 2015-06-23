@@ -16,9 +16,50 @@ END LICENSE
 <head>
 	<title>Running jsh</title>
 	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css"></link>
+	<style>
+		table { border-collapse: collapse }
+		td { padding: 1em; border: 1px solid black; }
+	</style>
 	<script type="text/javascript" src="../../../loader/api/api.js"></script>
 </head>
 <body>
+	<div>
+		<h1>Settings</h1>
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>jsh.debug.jdwp</td>
+					<td>
+						Sets up a Java debugger to debug the shell. The value of this setting is interpreted as an argument to
+						the <code>-agentlib-jdwp:</code> Java launcher argument.
+					</td>
+				</tr>
+				<tr>
+					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.jvm.options</td>
+					<td>
+						A set of literal options to be passed to the Java launcher when starting the Java virtual machine running
+						the shell.
+					</td>
+				</tr>
+				<tr>
+					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.log.java.properties</td>
+					<td>
+						Specifies the location of a <code>java.util.logging</code> properties file to use in configuring logging
+						for the Java virtual machine running the shell.
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<!--
 	<div>
 		<h1>Java launcher</h1>
 		<div>
@@ -27,6 +68,7 @@ END LICENSE
 			<blockquote><code>java -jar jsh.jar <i>script</i> <i>[arguments]</i></code></blockquote>
 		</div>
 	</div>
+	-->
 	<!--
 		TODO	document native launcher
 		<div>
@@ -37,6 +79,7 @@ END LICENSE
 			</div>
 		</div>
 	-->
+	<!--
 	<div>
 		<h1>Environment variables</h1>
 		Several environment variables affect a jsh shell.
@@ -62,5 +105,6 @@ END LICENSE
 			</li>
 		</ul>
 	</div>
+	-->
 </body>
 </html>
