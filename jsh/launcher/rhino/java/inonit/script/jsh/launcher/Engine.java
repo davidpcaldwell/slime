@@ -80,10 +80,6 @@ public abstract class Engine {
 			return "nashorn";
 		}
 
-		boolean isInstalled(Main.Shell shell) {
-			return getEngine() != null;
-		}
-
 		void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) {
 		}
 
@@ -103,9 +99,11 @@ public abstract class Engine {
 
 	public static class Rhino extends Engine {
 		private ClassLoader loader;
+		private boolean debug;
 
-		public Rhino(ClassLoader loader) {
+		public Rhino(ClassLoader loader, boolean debug) {
 			this.loader = loader;
+			this.debug = debug;
 		}
 
 		public static final int NULL_EXIT_STATUS = -42;
@@ -114,17 +112,8 @@ public abstract class Engine {
 			return "rhino";
 		}
 
-		boolean isInstalled(Main.Shell shell) {
-			try {
-				loader.loadClass("org.mozilla.javascript.Context");
-				return true;
-			} catch (ClassNotFoundException e) {
-				return false;
-			}
-		}
-
 		private boolean debug() {
-			return false;
+			return debug;
 		}
 
 		private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {

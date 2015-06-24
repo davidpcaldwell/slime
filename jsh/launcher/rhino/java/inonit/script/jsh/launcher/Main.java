@@ -74,19 +74,6 @@ public class Main {
 			} else {
 				throw new RuntimeException("Unreachable: code source = " + codeLocation);
 			}
-//			String codeUrlString = codeLocation.toExternalForm();
-//			codeUrlString = new java.net.URLDecoder().decode(codeUrlString);
-//			String launcherLocation = null;
-//			if (codeUrlString.startsWith("file:")) {
-//				if (codeUrlString.charAt(7) == ':') {
-//					//	Windows
-//					launcherLocation = codeUrlString.substring("file:/".length());
-//				} else {
-//					//	UNIX
-//					launcherLocation = codeUrlString.substring("file:".length());
-//				}
-//			} else {
-//			}
 			Shell shell = null;
 			if (ClassLoader.getSystemResource("main.jsh.js") != null) {
 				shell = new PackagedShell(launcherFile);
@@ -106,9 +93,7 @@ public class Main {
 			Set<Map.Entry<String,Engine>> entries = configuration.engines(shell).entrySet();
 			ArrayList<String> rv = new ArrayList<String>();
 			for (Map.Entry<String,Engine> entry : entries) {
-//				if (entry.getValue().isInstalled(shell(configuration))) {
-					rv.add(entry.getKey());
-//				}
+				rv.add(entry.getKey());
 			}
 			return rv;
 		}
@@ -152,10 +137,6 @@ public class Main {
 			System.setProperty("jsh.shell.engine", engine.id());
 			engine.initializeSystemProperties(this, shell);
 			shell.initializeSystemProperties();
-		}
-
-		final ClassLoader getRhinoClassLoader() throws IOException {
-			return shell.getRhinoClassLoader();
 		}
 
 		final Integer run(String[] arguments) throws IOException, ScriptException {
@@ -399,7 +380,7 @@ public class Main {
 			}
 			try {
 				shell.getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
-				INSTANCES.put("rhino", new Engine.Rhino(shell.getRhinoClassLoader()));
+				INSTANCES.put("rhino", new Engine.Rhino(shell.getRhinoClassLoader(), this.debug()));
 			} catch (ClassNotFoundException e) {
 			}
 			return INSTANCES;
