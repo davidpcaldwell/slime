@@ -44,6 +44,8 @@
 //		path as cygwin.paths property. Otherwise, check to see if the Cygwin file system implementation emits a warning without the
 //		cygwin.paths property; if it does not, possibly add one here.
 
+Packages.java.lang.System.getProperties().get("jsh.launcher.shell").initializeSystemProperties();
+
 $api.arguments = $api.engine.resolve({
 	rhino: function() {
 		return $api.arguments;
@@ -59,6 +61,8 @@ if (!this.$api.slime) {
 }
 
 $api.jsh = {};
+$api.jsh.shell = new (function(peer) {
+})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
 $api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.setExitStatus = $api.engine.resolve({
 	rhino: function(status) {

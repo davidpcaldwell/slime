@@ -92,46 +92,27 @@ public class Main {
 		static Invocation create(Configuration configuration) throws IOException {
 			Shell shell = shell(configuration);
 			Engine engine = getEngine(configuration, shell, configuration.engine());
-			return new Invocation(shell, engine, configuration.debug());
+			return new Invocation(shell, engine);
 		}
 
 		private Shell shell;
 		private Engine engine;
-		private boolean debug;
 
-		Invocation(Shell shell, Engine engine, boolean debug) {
-			this.debug = debug;
-			this.debug("Invoking: " + shell + " with engine named " + engine.id());
+		Invocation(Shell shell, Engine engine) {
+			Logging.get().log(Main.class, Level.CONFIG, "Invoking: " + shell + " with engine named " + engine.id());
 			this.shell = shell;
 			this.engine = engine;
-			this.debug("Using engine: " + this.engine);
+			Logging.get().log(Main.class, Level.FINE, "Using engine: " + this.engine);
 		}
 
-		final boolean debug() {
-			return debug;
-		}
-
-		final void debug(String message) {
-			if (debug) {
-				System.err.println(message);
-			}
-		}
-
-		final Properties getJavaLoggingProperties() throws IOException {
+		private Properties getDefaultJavaLoggingProperties() throws IOException {
 			Properties rv = new Properties();
 			return rv;
 		}
 
-		final void initializeSystemProperties() throws IOException {
-			debug("Initializing system properties; engine = " + engine + " ...");
-			System.setProperty("inonit.jrunscript.api.main", shell.getLauncherScript().toExternalForm());
-			System.setProperty("jsh.shell.engine", engine.id());
-			shell.initializeSystemProperties();
-		}
-
 		final Integer run(String[] arguments) throws IOException, ScriptException {
 			if (!inonit.system.Logging.get().isSpecified()) {
-				inonit.system.Logging.get().initialize(this.getJavaLoggingProperties());
+				inonit.system.Logging.get().initialize(this.getDefaultJavaLoggingProperties());
 			}
 			Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(arguments));
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
@@ -142,16 +123,19 @@ public class Main {
 			System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
 			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-			this.initializeSystemProperties();
+			Logging.get().log(Main.class, Level.FINER, "Initializing system properties; engine = " + engine + " ...");
 			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
+			System.setProperty("inonit.jrunscript.api.main", shell.getLauncherScript().toExternalForm());
+			System.setProperty("jsh.shell.engine", engine.id());
+			//	TODO	transitional; get rid of this
+			System.getProperties().put("jsh.launcher.shell", shell);
 			return this.engine.run(shell.getJrunscriptApi(), arguments);
 		}
 	}
 
-	static abstract class Shell {
-		abstract String getRhinoClasspath() throws IOException;
+	public static abstract class Shell {
 		abstract ClassLoader getRhinoClassLoader() throws IOException;
-		abstract void initializeSystemProperties() throws IOException;
+		public abstract void initializeSystemProperties() throws IOException;
 
 		abstract URL getJrunscriptApi() throws IOException;
 		abstract URL getLauncherScript() throws IOException;
@@ -193,7 +177,7 @@ public class Main {
 			return ClassLoader.getSystemResource("$jsh/launcher/launcher.js");
 		}
 
-		void initializeSystemProperties() {
+		public void initializeSystemProperties() {
 			try {
 				System.setProperty("jsh.launcher.packaged", file.getCanonicalPath());
 			} catch (IOException e) {
@@ -205,6 +189,8 @@ public class Main {
 	private static abstract class UnpackagedShell extends Shell {
 		private String colon = java.io.File.pathSeparator;
 		private ClassLoader rhinoClassLoader;
+
+		abstract String getRhinoClasspath() throws IOException;
 
 		final ClassLoader getRhinoClassLoader() throws IOException {
 			if (rhinoClassLoader == null) {
@@ -228,14 +214,13 @@ public class Main {
 		}
 
 		//	TODO	push Rhino-specific properties back into Rhino engine
-		final void initializeSystemProperties() throws java.io.IOException {
+		public final void initializeSystemProperties() throws java.io.IOException {
 			if (getJshHome() != null) {
 				System.setProperty("jsh.home", getJshHome().getCanonicalPath());
 			}
 			System.setProperty("jsh.launcher.classpath", System.getProperty("java.class.path"));
 		}
 
-		abstract String getRhinoClasspath() throws IOException;
 		abstract File getJshHome();
 	}
 
