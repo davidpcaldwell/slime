@@ -12,6 +12,28 @@
 
 //	TODO	rename this file to jsh.launcher.js
 
+//	NOTES ABOUT UNSUPPORTED PLATFORMS
+//
+//	OLDER JAVA
+//	To backport to 1.4 or lower, some mechanism would be needed to enumerate the environment variables. At one time this was done
+//	with usr/bin/env on UNIX and was not done at all on Windows (except Cygwin; see below).
+
+//	CYGWIN NOTES
+//
+//	Cygwin was once a supported platform, but it is unsupported for now. These comments pertain to the previous Cygwin
+//	implementation to assist if it is resurrected.
+//
+//	*	Obviously many settings that are file paths need to be converted from, or to, Cygwin format, or to Cygwin format, and a
+//		design would need to be developed for that purpose
+//	*	Packaged applications for Cygwin may have the Cygwin paths helper at $jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe,
+//		and may need to create a Cygwin library directory, copy the executable to that directory, and specify that directory to
+//		the shell as some kind of property (at one time known as JSH_LIBRARY_NATIVE).
+//	*	Non-packaged applications probably need to specify the equivalent of JSH_LIBRARY_NATIVE as well, to get the Cygwin paths
+//		helper.
+//	*	Cygwin shells probably should use Cygwin /tmp as the default temporary directory (if jsh.shell.tmpdir is not specified)
+//	*	Cygwin shells probably should accept the script argument in Cygwin format
+//	*	If directives continue to be supported, CLASSPATH directives should probably be accepted in Cygwin format
+
 $api.arguments = $api.engine.resolve({
 	rhino: function() {
 		return $api.arguments;
@@ -28,8 +50,6 @@ if (!this.$api.slime) {
 
 $api.jsh = {};
 $api.jsh.colon = String(Packages.java.io.File.pathSeparator);
-$api.jsh.platform = new function() {
-};
 $api.jsh.setExitStatus = $api.engine.resolve({
 	rhino: function(status) {
 		var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
@@ -155,12 +175,6 @@ var getProperty = function(name) {
 }
 
 var os = function(pathname,path) {
-	if ($api.jsh.platform.cygwin) {
-		var mode = {
-			path: path
-		}
-		return $api.jsh.platform.cygwin.cygpath.windows(pathname,mode)
-	}
 	return pathname;
 }
 
@@ -192,14 +206,6 @@ var settings = {
 };
 
 settings.defaults = new function() {
-	if ($api.jsh.platform.cygwin) {
-		this.JSH_TMPDIR = new Directory(os("/tmp"));
-	}
-	if ($api.jsh.platform.unix) {
-		//	TODO	allow this to be overridden by environment variable
-		this.JSH_OS_ENV_UNIX = os("/usr/bin/env");
-	}
-
 	//	The jsh.launcher.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
 	//	create the classloader inside which we are executing
 	$api.debug("jsh.launcher.rhino = " + getProperty("jsh.launcher.rhino"));
@@ -273,17 +279,6 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
 		this.scriptClasspath = [];
 		this.JSH_PLUGINS = new Searchpath(plugins);
-
-		var cygwin = ClassLoader.getSystemResourceAsStream("$jsh/bin/inonit.script.runtime.io.cygwin.cygpath.exe");
-		if (cygwin != null && $api.jsh.platform.cygwin) {
-			$api.debug("Copying Cygwin paths helper ...");
-			var cygwinTo = tmpdir.getFile("inonit.script.runtime.io.cygwin.cygpath.exe").writeTo();
-			$api.io.copy(cygwin,cygwinTo);
-			cygwin.close();
-			cygwinTo.close();
-			$api.debug("Copied Cygwin paths helper to " + tmpdir);
-			this.JSH_LIBRARY_NATIVE = tmpdir;
-		}
 	}
 } else if (getProperty("jsh.home")) {
 	settings.built = new function() {
@@ -293,10 +288,6 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		this.rhinoClasspath = new Searchpath([JSH_HOME.getFile("lib/js.jar").path]);
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
-
-		if ($api.jsh.platform.cygwin) {
-			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
-		}
 
 		this.JSH_PLUGINS = new Searchpath([
 			JSH_HOME.getDirectory("plugins"),
@@ -342,9 +333,6 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			this.shellClasspath = shellClasspath;
 		}
 		this.scriptClasspath = [];
-		if ($api.jsh.platform.cygwin) {
-			this.JSH_LIBRARY_NATIVE = JSH_HOME.getDirectory("bin");
-		}
 
 //		this.JSH_PLUGINS = new Searchpath([
 //			JSH_HOME.getDirectory("plugins"),
@@ -374,13 +362,13 @@ settings.explicit = new function() {
 	[
 		"JSH_LIBRARY_NATIVE"
 	].forEach( function(name) {
-		self[name] = ($api.shell.environment[name]) ? new Directory(os($api.shell.environment[name])) : UNDEFINED;
+		self[name] = ($api.shell.environment[name]) ? new Directory($api.shell.environment[name]) : UNDEFINED;
 	});
 
 	[
 		"JSH_PLUGINS"
 	].forEach( function(name) {
-		self[name] = (typeof($api.shell.environment[name]) != "undefined") ? new Searchpath(os($api.shell.environment[name],true)).toPath() : UNDEFINED;
+		self[name] = (typeof($api.shell.environment[name]) != "undefined") ? new Searchpath($api.shell.environment[name]).toPath() : UNDEFINED;
 	});
 
 	if ($api.slime.setting("jsh.plugins")) {
@@ -418,9 +406,6 @@ settings.explicit = new function() {
 //					that usage is unsupported.  See comment below.
 
 				//	Find the file to be executed
-				if ($api.jsh.platform.cygwin) {
-					path = $api.jsh.platform.cygwin.cygpath.windows(path);
-				}
 				if (new Packages.java.io.File(path).exists()) {
 					return new File( String(new Packages.java.io.File(path).getCanonicalPath()) );
 				}
@@ -482,9 +467,6 @@ settings.directives = function(source) {
 			directives.jvmOptions.push(match[1]);
 		} else if (match = /^CLASSPATH\s+(.*)/.exec(item)) {
 			var pathElement = match[1];
-			if ($api.jsh.platform.cygwin) {
-				pathElement = $api.jsh.platform.cygwin.cygpath.windows(match[1]);
-			}
 			if (!settings.packaged) {
 				directives.classpath.push(new File(pathElement));
 			} else {
