@@ -174,6 +174,15 @@ $api.slime = (function(was) {
 		map("jsh.engine.rhino.classpath", BOTH);
 		map("jsh.engine.rhino.optimization", BOTH);
 
+		map("jsh.shell.tmpdir", {
+			launcher: function(value) {
+				return ["-Djava.io.tmpdir=" + value];
+			},
+			container: function(value) {
+				return ["-Djava.io.tmpdir=" + value];
+			}
+		});
+
 		//	Set by laumcher; not treated as a user setting
 		map("jsh.shell.src", BOTH);
 
@@ -185,18 +194,9 @@ $api.slime = (function(was) {
 
 		map("jsh.plugins", LOADER);
 
-		//	TODO	not sure jsh.java.home is correct here
+		//	TODO	should be treated as JVM-level variable
 		map("jsh.java.home", BOTH);
 
-
-		map("jsh.tmpdir", {
-			launcher: function(value) {
-				return ["-Djava.io.tmpdir=" + value];
-			},
-			container: function(value) {
-				return ["-Djava.io.tmpdir=" + value];
-			}
-		});
 
 		this.get = function(name) {
 			return all[name].value;

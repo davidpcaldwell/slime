@@ -75,7 +75,9 @@ jsh.unit.integration({
 					return JSON.parse(result.stdio.output);
 				}
 			})
-		}
+		};
+
+		var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 		var unbuilt = function(p) {
 			return shell(jsh.js.Object.set({}, p, {
@@ -159,7 +161,8 @@ jsh.unit.integration({
 								PATH: jsh.shell.environment.PATH,
 								JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
 								JSH_ENGINE_RHINO_CLASSPATH: String(parameters.options.rhino),
-								JSH_ENGINE: engine
+								JSH_ENGINE: engine,
+								JSH_SHELL_TMPDIR: tmp.toString()
 								//,JSH_LAUNCHER_DEBUG: "true"
 								//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
 							},
@@ -176,6 +179,7 @@ jsh.unit.integration({
 						verify(result).evaluate.property("foo1").is("bar");
 						verify(result).evaluate.property("foo2").is("baz");
 						verify(result).rhino.running.is( (engine == "rhino") );
+						verify(result).tmp.is(tmp.toString());
 
 						if (engine == "rhino") {
 							var result = shell({
@@ -220,6 +224,7 @@ jsh.unit.integration({
 				logging: logging,
 				foo1: getProperty("foo.1"),
 				foo2: getProperty("foo.2"),
+				tmp: String(jsh.shell.TMPDIR),
 				rhino: rhino
 			})
 		);
