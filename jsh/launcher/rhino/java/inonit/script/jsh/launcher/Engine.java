@@ -23,54 +23,11 @@ import javax.script.*;
 import inonit.system.*;
 
 public abstract class Engine {
-//	private static final Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
-//
-//	static {
-//		INSTANCES.put("rhino", new Rhino());
-//		INSTANCES.put("nashorn", new Nashorn());
-//	}
-//
-//	static Engine get(String name) {
-//		return INSTANCES.get(name);
-//	}
-//
-//	static Set<Map.Entry<String,Engine>> entries() {
-//		return INSTANCES.entrySet();
-//	}
-
-//	private Main.Invocation invocation;
-
-//	final void initialize(Main.Invocation invocation) throws IOException {
-//		this.invocation = invocation;
-//	}
-
-//	final boolean debug() {
-//		return invocation.debug();
-//	}
-
-//	final void debug(String message) {
-//		invocation.debug(message);
-//	}
-
-//	ClassLoader getRhinoClassLoader() throws IOException {
-//		return invocation.getRhinoClassLoader();
-//	}
-
 	abstract String id();
-//	abstract boolean isInstalled(Main.Shell shell);
-	abstract void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) throws IOException;
 	abstract Integer run(URL script, String[] args) throws IOException, ScriptException;
 
 	static class Nashorn extends Engine {
 		private ScriptEngineManager factory;
-		private ScriptEngine engine;
-
-		private ScriptEngine getEngine() {
-			if (engine == null) {
-				engine = factory.getEngineByName("nashorn");
-			}
-			return engine;
-		}
 
 		Nashorn(ScriptEngineManager factory) {
 			this.factory = factory;
@@ -80,18 +37,16 @@ public abstract class Engine {
 			return "nashorn";
 		}
 
-		void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) {
-		}
-
 		Integer run(URL script, String[] args) throws IOException, ScriptException {
+			ScriptEngine engine = factory.getEngineByName("nashorn");
 			Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
 			//	TODO	the next two lines are probably not both necessary
 			this.factory.getBindings().put("$arguments", args);
 			Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
-			ScriptContext c = getEngine().getContext();
+			ScriptContext c = engine.getContext();
 			c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);
 			java.net.URLConnection connection = script.openConnection();
-			getEngine().eval(new InputStreamReader(connection.getInputStream()), c);
+			engine.eval(new InputStreamReader(connection.getInputStream()), c);
 			Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
 			return null;
 		}
@@ -124,17 +79,6 @@ public abstract class Engine {
 			return main;
 		}
 
-		void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) throws IOException {
-//			//	TODO	probably can go away
-//			if (shell.getRhinoClasspath() != null) {
-//				System.setProperty("jsh.launcher.rhino.classpath", shell.getRhinoClasspath());
-//			} else {
-////				throw new RuntimeException("No Rhino classpath in " + this
-////					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
-////				;
-//			}
-		}
-
 		private String[] getArguments(URL script, String[] args) {
 			ArrayList<String> strings = new ArrayList<String>();
 			strings.add("-opt");
@@ -155,7 +99,6 @@ public abstract class Engine {
 
 		@Override Integer run(URL script, String[] args) throws IOException {
 			Integer status = null;
-			Logging.get().log(Main.class, Level.FINE, "jsh.launcher.rhino.classpath = %s", System.getProperty("jsh.launcher.rhino.classpath"));
 			try {
 				java.lang.reflect.Method main = this.getMainMethod();
 				Logging.get().log(Main.class, Level.FINER, "Rhino shell main = %s", main);

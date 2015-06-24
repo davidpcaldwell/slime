@@ -34,15 +34,6 @@ public class Main {
 	}
 
 	static class Invocation {
-//		//	TODO	this logic is duplicated in Servlet
-//		private static Engine getSpecified(Shell shell, String JSH_ENGINE) {
-//			Engine specified = Engine.get(JSH_ENGINE);
-//			if (specified != null && specified.isInstalled(shell)) {
-//				return specified;
-//			}
-//			return null;
-//		}
-//
 		private static Engine getEngine(Configuration configuration, Shell shell, String JSH_ENGINE) throws IOException {
 			Map<String,Engine> engines = configuration.engines(shell);
 			if (JSH_ENGINE != null) {
@@ -135,7 +126,6 @@ public class Main {
 			debug("Initializing system properties; engine = " + engine + " ...");
 			System.setProperty("inonit.jrunscript.api.main", shell.getLauncherScript().toExternalForm());
 			System.setProperty("jsh.shell.engine", engine.id());
-			engine.initializeSystemProperties(this, shell);
 			shell.initializeSystemProperties();
 		}
 
@@ -154,7 +144,6 @@ public class Main {
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 			this.initializeSystemProperties();
 			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
-//			this.engine.initialize(this);
 			return this.engine.run(shell.getJrunscriptApi(), arguments);
 		}
 	}
