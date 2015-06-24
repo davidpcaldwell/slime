@@ -34,28 +34,26 @@ public class Main {
 	}
 
 	static class Invocation {
-		//	TODO	this logic is duplicated in Servlet
-		private static Engine getSpecified(Shell shell, String JSH_ENGINE) {
-			Engine specified = Engine.get(JSH_ENGINE);
-			if (specified != null && specified.isInstalled(shell)) {
-				return specified;
-			}
-			return null;
-		}
-
-		private static Engine getEngine(Shell shell, String JSH_ENGINE) {
+//		//	TODO	this logic is duplicated in Servlet
+//		private static Engine getSpecified(Shell shell, String JSH_ENGINE) {
+//			Engine specified = Engine.get(JSH_ENGINE);
+//			if (specified != null && specified.isInstalled(shell)) {
+//				return specified;
+//			}
+//			return null;
+//		}
+//
+		private static Engine getEngine(Configuration configuration, Shell shell, String JSH_ENGINE) throws IOException {
+			Map<String,Engine> engines = configuration.engines(shell);
 			if (JSH_ENGINE != null) {
-				Engine specified = getSpecified(shell, JSH_ENGINE);
+				Engine specified = engines.get(JSH_ENGINE);
 				if (specified != null) {
 					return specified;
 				}
 			}
-			Engine[] preferenceOrder = new Engine[] { Engine.get("rhino"), Engine.get("nashorn") };
-			for (Engine e : preferenceOrder) {
-				if (e == null) {
-					throw new RuntimeException("preferenceOrder[0] = " + preferenceOrder[0] + " preferenceOrder[1] = " + preferenceOrder[1]);
-				}
-				if (e.isInstalled(shell)) return e;
+			String[] preferenceOrder = new String[] { "rhino", "nashorn" };
+			for (String e : preferenceOrder) {
+				if (engines.get(e) != null) return engines.get(e);
 			}
 			throw new RuntimeException("No JavaScript execution engine found.");
 		}
@@ -104,28 +102,32 @@ public class Main {
 		}
 
 		static ArrayList<String> engines(Configuration configuration) throws IOException {
+			Shell shell = shell(configuration);
+			Set<Map.Entry<String,Engine>> entries = configuration.engines(shell).entrySet();
 			ArrayList<String> rv = new ArrayList<String>();
-			for (Map.Entry<String,Engine> entry : Engine.entries()) {
-				if (entry.getValue().isInstalled(shell(configuration))) {
+			for (Map.Entry<String,Engine> entry : entries) {
+//				if (entry.getValue().isInstalled(shell(configuration))) {
 					rv.add(entry.getKey());
-				}
+//				}
 			}
 			return rv;
 		}
 
 		static Invocation create(Configuration configuration) throws IOException {
-			return new Invocation(shell(configuration), configuration.engine(), configuration.debug());
+			Shell shell = shell(configuration);
+			Engine engine = getEngine(configuration, shell, configuration.engine());
+			return new Invocation(shell, engine, configuration.debug());
 		}
 
 		private Shell shell;
 		private Engine engine;
 		private boolean debug;
 
-		Invocation(Shell shell, String engine, boolean debug) {
+		Invocation(Shell shell, Engine engine, boolean debug) {
 			this.debug = debug;
-			this.debug("Invoking: " + shell + " with engine named " + engine);
+			this.debug("Invoking: " + shell + " with engine named " + engine.id());
 			this.shell = shell;
-			this.engine = getEngine(shell, engine);
+			this.engine = engine;
 			this.debug("Using engine: " + this.engine);
 		}
 
@@ -171,7 +173,7 @@ public class Main {
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
 			this.initializeSystemProperties();
 			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
-			this.engine.initialize(this);
+//			this.engine.initialize(this);
 			return this.engine.run(shell.getJrunscriptApi(), arguments);
 		}
 	}
@@ -388,6 +390,20 @@ public class Main {
 		abstract String engine();
 		abstract String src();
 		abstract String rhino();
+
+		final Map<String,Engine> engines(Shell shell) throws IOException {
+			Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
+			ScriptEngineManager factory = new ScriptEngineManager();
+			if (factory.getEngineByName("nashorn") != null) {
+				INSTANCES.put("nashorn", new Engine.Nashorn(factory));
+			}
+			try {
+				shell.getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
+				INSTANCES.put("rhino", new Engine.Rhino(shell.getRhinoClassLoader()));
+			} catch (ClassNotFoundException e) {
+			}
+			return INSTANCES;
+		}
 	}
 
 	public static void main(String[] args) throws java.io.IOException {

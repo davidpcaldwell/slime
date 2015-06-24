@@ -23,45 +23,45 @@ import javax.script.*;
 import inonit.system.*;
 
 public abstract class Engine {
-	private static final Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
+//	private static final Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
+//
+//	static {
+//		INSTANCES.put("rhino", new Rhino());
+//		INSTANCES.put("nashorn", new Nashorn());
+//	}
+//
+//	static Engine get(String name) {
+//		return INSTANCES.get(name);
+//	}
+//
+//	static Set<Map.Entry<String,Engine>> entries() {
+//		return INSTANCES.entrySet();
+//	}
 
-	static {
-		INSTANCES.put("rhino", new Rhino());
-		INSTANCES.put("nashorn", new Nashorn());
-	}
+//	private Main.Invocation invocation;
 
-	static Engine get(String name) {
-		return INSTANCES.get(name);
-	}
+//	final void initialize(Main.Invocation invocation) throws IOException {
+//		this.invocation = invocation;
+//	}
 
-	static Set<Map.Entry<String,Engine>> entries() {
-		return INSTANCES.entrySet();
-	}
+//	final boolean debug() {
+//		return invocation.debug();
+//	}
 
-	private Main.Invocation invocation;
+//	final void debug(String message) {
+//		invocation.debug(message);
+//	}
 
-	final void initialize(Main.Invocation invocation) throws IOException {
-		this.invocation = invocation;
-	}
-
-	final boolean debug() {
-		return invocation.debug();
-	}
-
-	final void debug(String message) {
-		invocation.debug(message);
-	}
-
-	ClassLoader getRhinoClassLoader() throws IOException {
-		return invocation.getRhinoClassLoader();
-	}
+//	ClassLoader getRhinoClassLoader() throws IOException {
+//		return invocation.getRhinoClassLoader();
+//	}
 
 	abstract String id();
-	abstract boolean isInstalled(Main.Shell shell);
+//	abstract boolean isInstalled(Main.Shell shell);
 	abstract void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) throws IOException;
 	abstract Integer run(URL script, String[] args) throws IOException, ScriptException;
 
-	private static class Nashorn extends Engine {
+	static class Nashorn extends Engine {
 		private ScriptEngineManager factory;
 		private ScriptEngine engine;
 
@@ -72,8 +72,8 @@ public abstract class Engine {
 			return engine;
 		}
 
-		Nashorn() {
-			this.factory = new ScriptEngineManager();
+		Nashorn(ScriptEngineManager factory) {
+			this.factory = factory;
 		}
 
 		@Override String id() {
@@ -102,6 +102,12 @@ public abstract class Engine {
 	}
 
 	public static class Rhino extends Engine {
+		private ClassLoader loader;
+
+		public Rhino(ClassLoader loader) {
+			this.loader = loader;
+		}
+
 		public static final int NULL_EXIT_STATUS = -42;
 
 		@Override String id() {
@@ -110,17 +116,18 @@ public abstract class Engine {
 
 		boolean isInstalled(Main.Shell shell) {
 			try {
-				shell.getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
+				loader.loadClass("org.mozilla.javascript.Context");
 				return true;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
 			} catch (ClassNotFoundException e) {
 				return false;
 			}
 		}
 
+		private boolean debug() {
+			return false;
+		}
+
 		private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
-			ClassLoader loader = getRhinoClassLoader();
 			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
 			Class shell = loader.loadClass(mainClassName);
 			String mainMethodName = (debug()) ? "main" : "exec";
@@ -149,7 +156,7 @@ public abstract class Engine {
 		}
 
 		private Integer getExitStatus() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-			Class c = getRhinoClassLoader().loadClass("org.mozilla.javascript.tools.shell.Main");
+			Class c = loader.loadClass("org.mozilla.javascript.tools.shell.Main");
 			java.lang.reflect.Field field = c.getDeclaredField("exitCode");
 			field.setAccessible(true);
 			int rv = field.getInt(null);
