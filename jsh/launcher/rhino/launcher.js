@@ -15,10 +15,16 @@
 //	NOTES ABOUT UNSUPPORTED PLATFORMS
 //
 //	OLDER JAVA
+//
 //	To backport to 1.4 or lower, some mechanism would be needed to enumerate the environment variables. At one time this was done
 //	with usr/bin/env on UNIX and was not done at all on Windows (except Cygwin; see below).
-
-//	CYGWIN NOTES
+//
+//	OLDER RHINO
+//
+//	Old versions of Rhino used Apache XMLBeans to implement E4X. If $JSH_HOME/lib/xbean.jar is present, could add it and
+//	$JSH_HOME/lib/jsr173_1.0_api.jar to the "Rhino classpath" along with Rhino proper.
+//
+//	CYGWIN
 //
 //	Cygwin was once a supported platform, but it is unsupported for now. These comments pertain to the previous Cygwin
 //	implementation to assist if it is resurrected.
@@ -33,6 +39,10 @@
 //	*	Cygwin shells probably should use Cygwin /tmp as the default temporary directory (if jsh.shell.tmpdir is not specified)
 //	*	Cygwin shells probably should accept the script argument in Cygwin format
 //	*	If directives continue to be supported, CLASSPATH directives should probably be accepted in Cygwin format
+//	*	If Cygwin is present, should send its root directory as cygwin.root system property
+//	*	If Cygwin is present and native library directory is present, send the inonit.script.runtime.io.cygwin.cygpath.exe full
+//		path as cygwin.paths property. Otherwise, check to see if the Cygwin file system implementation emits a warning without the
+//		cygwin.paths property; if it does not, possibly add one here.
 
 $api.arguments = $api.engine.resolve({
 	rhino: function() {
@@ -498,29 +508,18 @@ settings.combine = function(id) {
 }
 
 try {
-
-	//	TODO	Could contemplate including XMLBeans in rhinoClasspath if found:
-	//
-	//	if [ -z $JSH_RHINO_CLASSPATH ]; then
-	//		JSH_RHINO_CLASSPATH=$JSH_HOME/lib/js.jar
-	//		if [ -f $JSH_HOME/lib/xbean.jar ]; then
-	//			#	Include XMLBeans
-	//			JSH_RHINO_CLASSPATH=$JSH_RHINO_CLASSPATH:$JSH_HOME/lib/xbean.jar:$JSH_HOME/lib/jsr173_1.0_api.jar
-	//		fi
-	//	fi
 	$api.debug("Creating command ...");
 	var command = new $api.java.Command();
-//	var JSH_SHELL_CONTAINER = (env.JSH_SHELL_CONTAINER) ? env.JSH_SHELL_CONTAINER : "classloader";
-//	var command = new Command();
-	var container = ($api.slime.settings.get("jsh.shell.container")) ? $api.slime.settings.get("jsh.shell.container") : "classloader";
-	if (container == "classloader" && !settings.packaged && (true || !$api.shell.environment.JSH_SHELL_CLASSPATH)) {
-//		command.configure("classloader");
-	} else {
+
+	var container = (function() {
+		//	TODO	test whether next line necessary
+		if (settings.packaged) return "jvm";
+		if ($api.slime.settings.get("jsh.shell.container")) return $api.slime.settings.get("jsh.shell.container");
+		return "classloader";
+	})();
+	if (container == "jvm") {
 		command.fork();
-//		command.configure("jvm");
 	}
-	debugger;
-//	var jvmOptions = settings.combine("jvmOptions");
 
 	for (var i=0; i<$api.jsh.vmArguments.length; i++) {
 		command.vm($api.jsh.vmArguments[i]);
@@ -530,43 +529,6 @@ try {
 		$api.slime.settings.sendPropertiesTo(function(name,value) {
 			command.systemProperty(name,value);
 		});
-//		[
-//			"JSH_RHINO_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"
-////			,"JSH_LIBRARY_SCRIPTS_LOADER", "JSH_LIBRARY_SCRIPTS_JSH"
-////			,"JSH_LIBRARY_MODULES"
-//			,"JSH_PLUGINS"
-//			,"JSH_OS_ENV_UNIX"
-//		].forEach(function(name) {
-//			var property = name.toLowerCase().split("_").join(".");
-//			command.jvmProperty(property,settings.get(name));
-//		});
-
-//		if (settings.get("JSH_TMPDIR")) {
-//			command.jvmProperty("java.io.tmpdir",settings.get("JSH_TMPDIR").path);
-//		}
-//
-//		if (settings.get("JSH_JAVA_LOGGING_PROPERTIES")) {
-//			command.jvmProperty("java.util.logging.config.file",settings.get("JSH_JAVA_LOGGING_PROPERTIES").path);
-//		}
-
-//		if (platform.cygwin) {
-//			command.jvmProperty("cygwin.root",platform.cygwin.cygpath.windows("/"));
-//			//	TODO	check for existence of the executable?
-//			if (!settings.get("JSH_LIBRARY_NATIVE")) {
-//				$api.console("WARNING: could not locate Cygwin paths helper; could not find Cygwin native library path.");
-//				$api.console("Use JSH_LIBRARY_NATIVE to specify location of Cygwin native libraries.");
-//			} else {
-//				command.jvmProperty("cygwin.paths",settings.get("JSH_LIBRARY_NATIVE").getFile("inonit.script.runtime.io.cygwin.cygpath.exe").path);
-//			}
-//		}
-
-//		[
-//			"jsh.home", "jsh.slime.src"
-//		].forEach(function(property) {
-//			if ($api.slime.setting(property)) {
-//				command.jvmProperty(property, $api.slime.setting(property));
-//			}
-//		});
 
 //		[
 //			"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"

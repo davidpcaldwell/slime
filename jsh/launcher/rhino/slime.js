@@ -197,6 +197,12 @@ $api.slime = (function(was) {
 		//	TODO	should be treated as JVM-level variable
 		map("jsh.java.home", BOTH);
 
+		//	TODO	Seem to be used in loader:
+		//	Main.java:
+		//	jsh.launcher.packaged
+		//
+		//	rhino/shell/jsh.js:
+		//	jsh.launcher.classpath
 
 		this.get = function(name) {
 			return all[name].value;

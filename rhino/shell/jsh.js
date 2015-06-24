@@ -165,13 +165,11 @@ $exports.shell = function(p) {
 
 //	TODO	is rhino/file.filesystem.$jsh.os(...) still necessary? Was used here.
 
-//	TODO	if not running on Rhino, this property should not appear
-//	TODO	no test coverage for $exports.rhino
-if ($exports.properties.get("jsh.launcher.rhino")) {
+//	TODO	make sure documentation correctly reflects presence of this property: this property being present does not mean Rhino
+//			is executing this script, just that it is present
+if ($exports.properties.get("jsh.engine.rhino.classpath")) {
 	$exports.rhino = new function() {
-		if ($exports.properties.get("jsh.launcher.rhino.classpath")) {
-			this.classpath = $exports.properties.searchpath("jsh.launcher.rhino.classpath");
-		}
+		this.classpath = $exports.properties.searchpath("jsh.engine.rhino.classpath");
 	};
 };
 

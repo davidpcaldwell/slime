@@ -160,7 +160,7 @@ jsh.unit.integration({
 							environment: {
 								PATH: jsh.shell.environment.PATH,
 								JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
-								JSH_ENGINE_RHINO_CLASSPATH: String(parameters.options.rhino),
+								JSH_ENGINE_RHINO_CLASSPATH: (parameters.options.rhino) ? String(parameters.options.rhino) : null,
 								JSH_ENGINE: engine,
 								JSH_SHELL_TMPDIR: tmp.toString()
 								//,JSH_LAUNCHER_DEBUG: "true"
@@ -179,6 +179,11 @@ jsh.unit.integration({
 						verify(result).evaluate.property("foo1").is("bar");
 						verify(result).evaluate.property("foo2").is("baz");
 						verify(result).rhino.running.is( (engine == "rhino") );
+						if (parameters.options.rhino) {
+							verify(result).rhino.classpath.is.not(null);
+						} else {
+							verify(result).rhino.classpath.is(null);
+						}
 						verify(result).tmp.is(tmp.toString());
 
 						if (engine == "rhino") {
@@ -191,6 +196,16 @@ jsh.unit.integration({
 								}
 							});
 							verify(result).rhino.optimization.is(0);
+						}
+						if (engine == "nashorn" && parameters.options.rhino) {
+							var result = shell({
+								environment: {
+									PATH: jsh.shell.environment.PATH,
+									JSH_ENGINE_RHINO_CLASSPATH: null,
+									JSH_ENGINE: engine
+								}
+							});
+							verify(result,"shell_without_rhino").rhino.classpath.is(null);
 						}
 					}
 				});
@@ -215,6 +230,7 @@ jsh.unit.integration({
 				})()
 			};
 			rv.optimization = (rv.running) ? Number(Packages.org.mozilla.javascript.Context.getCurrentContext().getOptimizationLevel()) : null;
+			rv.classpath = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? String(jsh.shell.rhino.classpath) : null;
 			return rv;
 		})();
 		jsh.shell.echo(
