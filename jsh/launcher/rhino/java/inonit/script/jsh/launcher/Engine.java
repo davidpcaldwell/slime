@@ -125,14 +125,14 @@ public abstract class Engine {
 		}
 
 		void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) throws IOException {
-			//	TODO	probably can go away
-			if (shell.getRhinoClasspath() != null) {
-				System.setProperty("jsh.launcher.rhino.classpath", shell.getRhinoClasspath());
-			} else {
-//				throw new RuntimeException("No Rhino classpath in " + this
-//					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
-//				;
-			}
+//			//	TODO	probably can go away
+//			if (shell.getRhinoClasspath() != null) {
+//				System.setProperty("jsh.launcher.rhino.classpath", shell.getRhinoClasspath());
+//			} else {
+////				throw new RuntimeException("No Rhino classpath in " + this
+////					+ ": JSH_RHINO_CLASSPATH is " + System.getenv("JSH_RHINO_CLASSPATH"))
+////				;
+//			}
 		}
 
 		private String[] getArguments(URL script, String[] args) {

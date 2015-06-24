@@ -221,8 +221,8 @@ settings.defaults = new function() {
 	$api.debug("jsh.launcher.rhino = " + getProperty("jsh.launcher.rhino"));
 	$api.debug("jsh.launcher.rhino.classpath = " + getProperty("jsh.launcher.rhino.classpath"));
 	this.rhinoClasspath =
-		(getProperty("jsh.launcher.rhino.classpath"))
-		? new Searchpath(getProperty("jsh.launcher.rhino.classpath"))
+		(getProperty("jsh.engine.rhino.classpath"))
+		? new Searchpath(getProperty("jsh.engine.rhino.classpath"))
 		: new Searchpath(getProperty("java.class.path"))
 	;
 
