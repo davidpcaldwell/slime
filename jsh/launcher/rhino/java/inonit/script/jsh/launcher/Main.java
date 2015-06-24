@@ -126,7 +126,7 @@ public class Main {
 			Logging.get().log(Main.class, Level.FINER, "Initializing system properties; engine = " + engine + " ...");
 			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
 			System.setProperty("inonit.jrunscript.api.main", shell.getLauncherScript().toExternalForm());
-			System.setProperty("jsh.shell.engine", engine.id());
+			System.setProperty("jsh.launcher.engine", engine.id());
 			//	TODO	transitional; get rid of this
 			System.getProperties().put("jsh.launcher.shell", shell);
 			return this.engine.run(shell.getJrunscriptApi(), arguments);

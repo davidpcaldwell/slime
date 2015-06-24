@@ -88,6 +88,20 @@ $api.jsh.vmArguments = (function() {
 	}
 	return rv;
 })();
+$api.jsh.engine = {
+	rhino: {
+		main: "inonit.script.jsh.Rhino",
+		resolve: function(o) {
+			return o.rhino;
+		}
+	},
+	nashorn: {
+		main: "inonit.script.jsh.Nashorn",
+		resolve: function(o) {
+			return o.nashorn;
+		}
+	}
+}[String(Packages.java.lang.System.getProperty("jsh.launcher.engine"))];
 
 if ($api.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
@@ -562,16 +576,17 @@ try {
 
 	environmentAndProperties();
 	var engine = String(Packages.java.lang.System.getProperty("jsh.shell.engine"));
-	if (engine == "rhino") {
-		command.addClasspath(settings.get("rhinoClasspath"));
-	}
+	$api.jsh.engine.resolve({
+		rhino: function() {
+			command.addClasspath(settings.get("rhinoClasspath"));
+		},
+		nashorn: function() {
+
+		}
+	})();
 	command.addClasspath(settings.get("shellClasspath"));
 	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
-	if (engine == "rhino") {
-		command.main("inonit.script.jsh.Rhino");
-	} else {
-		command.main("inonit.script.jsh.Nashorn");
-	}
+	command.main($api.jsh.engine.main);
 	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
 	if (settings.get("script")) {
 		command.argument(settings.get("script"));
