@@ -508,8 +508,33 @@ settings.combine = function(id) {
 }
 
 try {
+	//	TODO	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
+	//	TODO	At one point, was investigating using jjs as Nashorn launcher; is this still a good idea? If so, would using the
+	//			Rhino shell as main make sense for the Rhino case?
+		//	Rhino
+		//	TODO	implement profiler; see below ... probably needs to move to main script
+//		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
+//			//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
+//			//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
+//			if (settings.get("profiler") && JSH_SHELL_CONTAINER == "jvm") {
+//				var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
+//				if (withParameters) {
+//					command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
+//				} else {
+//					command.add("-javaagent:" + settings.get("profiler").path);
+//				}
+//			} else {
+//				//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
+//				//	emit warning message?
+//			}
+//		}
 	$api.debug("Creating command ...");
 	var command = new $api.java.Command();
+	command.addClasspath = function(classpath) {
+		for (var i=0; i<classpath.elements.length; i++) {
+			this.classpath(classpath.elements[i]);
+		}
+	}
 
 	var container = (function() {
 		//	TODO	test whether next line necessary
@@ -529,96 +554,19 @@ try {
 		$api.slime.settings.sendPropertiesTo(function(name,value) {
 			command.systemProperty(name,value);
 		});
-
-//		[
-//			"jsh.launcher.packaged", "jsh.launcher.classpath", "jsh.launcher.rhino", "jsh.launcher.rhino.classpath", "jsh.launcher.rhino.script"
-//		].forEach( function(property) {
-//			if (getProperty(property)) {
-//				command.jvmProperty(property, getProperty(property));
-//			}
-//		} );
-//		for (var x in env) {
-//			if (x.substring(0,4) == "JSH_" || x == "PATH") {
-//				command.jvmProperty("jsh.launcher.environment." + x, env[x]);
-//			}
-//		}
 	}
 
-	var shellClasspath = settings.get("shellClasspath");
-	debugger;
-	if (!shellClasspath) {
-		$api.console("Could not find jsh shell classpath: JSH_SHELL_CLASSPATH not defined.");
-		Packages.java.lang.System.exit(1);
+	environmentAndProperties();
+	var engine = String(Packages.java.lang.System.getProperty("jsh.shell.engine"));
+	if (engine == "rhino") {
+		command.addClasspath(settings.get("rhinoClasspath"));
 	}
-
-	var scriptClasspath = new Searchpath(settings.combine("scriptClasspath"));
-
-	//	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
-	if (Packages.java.lang.System.getProperty("jsh.launcher.nashorn")) {
-		//	Nashorn
-//		var JJS = false;
-//		if (JJS) {
-//			command.executable(JAVA_HOME.getDirectory("bin").getCommand("jjs"));
-//		} else {
-//			command.executable(JAVA_HOME.getDirectory("bin").getCommand("java"));
-//		}
-		//	TODO	handle JSH_JAVA_DEBUGGER, probably by detecting open port and using that port for dt_socket and server=y
-		//	TODO	handle JSH_SCRIPT_DEBUGGER == "profiler"
-		//	TODO	decide about client-vs.-server VM, probably not needed
-//		if (jvmOptions.length) {
-//			command.add(jvmOptions.map(function(option) {
-//				if (JJS) {
-//					return "-J" + option;
-//				} else {
-//					return option;
-//				}
-//			}));
-//		}
-		environmentAndProperties();
-		var classpath = shellClasspath.append(scriptClasspath);
-		for (var i=0; i<classpath.elements.length; i++) {
-			command.classpath(classpath.elements[i]);
-		}
-		command.main("inonit.script.jsh.Nashorn");
-	} else {
-		//	Rhino
-//		command.executable(JAVA_HOME.getDirectory("bin").getCommand("java"));
-//		if (env.JSH_JAVA_DEBUGGER) {
-//			//	TODO	this option seems to have changed as of Java 5 or Java 6 to agentlib or agentpath
-//			//			see http://docs.oracle.com/javase/6/docs/technotes/guides/jpda/conninv.html
-//			command.add("-Xrunjdwp:transport=dt_shmem,server=y");
-//		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
-//			//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
-//			//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
-//			if (settings.get("profiler") && JSH_SHELL_CONTAINER == "jvm") {
-//				var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
-//				if (withParameters) {
-//					command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
-//				} else {
-//					command.add("-javaagent:" + settings.get("profiler").path);
-//				}
-//			} else {
-//				//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
-//				//	emit warning message?
-//			}
-//		}
-//		if (JSH_SHELL_CONTAINER == "jvm") {
-//			if (jvmOptions.indexOf("-server") == -1 && jvmOptions.indexOf("-client") == "-1") {
-//				jvmOptions.unshift("-client");
-//			}
-//			command.add(jvmOptions);
-//		} else {
-//			if (jvmOptions.length) {
-//				throw new Error("JVM options specified when using internal launcher: " + jvmOptions.join(" "));
-//			}
-//		}
-		environmentAndProperties();
-		command.classpath(settings.get("rhinoClasspath"));
-		for (var i=0; i<shellClasspath.elements.length; i++) {
-			command.classpath(shellClasspath.elements[i]);
-		}
-		command.classpath(scriptClasspath);
+	command.addClasspath(settings.get("shellClasspath"));
+	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
+	if (engine == "rhino") {
 		command.main("inonit.script.jsh.Rhino");
+	} else {
+		command.main("inonit.script.jsh.Nashorn");
 	}
 	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
 	if (settings.get("script")) {

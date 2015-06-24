@@ -56,6 +56,7 @@ public abstract class Engine {
 		return invocation.getRhinoClassLoader();
 	}
 
+	abstract String id();
 	abstract boolean isInstalled(Main.Shell shell);
 	abstract void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) throws IOException;
 	abstract Integer run(URL script, String[] args) throws IOException, ScriptException;
@@ -75,12 +76,15 @@ public abstract class Engine {
 			this.factory = new ScriptEngineManager();
 		}
 
+		@Override String id() {
+			return "nashorn";
+		}
+
 		boolean isInstalled(Main.Shell shell) {
 			return getEngine() != null;
 		}
 
 		void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) {
-			System.setProperty("jsh.launcher.nashorn", "true");
 		}
 
 		Integer run(URL script, String[] args) throws IOException, ScriptException {
@@ -99,6 +103,10 @@ public abstract class Engine {
 
 	public static class Rhino extends Engine {
 		public static final int NULL_EXIT_STATUS = -42;
+
+		@Override String id() {
+			return "rhino";
+		}
 
 		boolean isInstalled(Main.Shell shell) {
 			try {
@@ -121,8 +129,7 @@ public abstract class Engine {
 		}
 
 		void initializeSystemProperties(Main.Invocation invocation, Main.Shell shell) throws IOException {
-			invocation.debug("Setting Rhino system properties...");
-			System.setProperty("jsh.launcher.rhino", "true");
+			//	TODO	probably can go away
 			if (shell.getRhinoClasspath() != null) {
 				System.setProperty("jsh.launcher.rhino.classpath", shell.getRhinoClasspath());
 			} else {

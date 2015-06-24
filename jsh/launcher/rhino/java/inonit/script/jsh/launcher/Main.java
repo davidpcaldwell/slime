@@ -147,6 +147,7 @@ public class Main {
 		final void initializeSystemProperties() throws IOException {
 			debug("Initializing system properties; engine = " + engine + " ...");
 			System.setProperty("inonit.jrunscript.api.main", shell.getLauncherScript().toExternalForm());
+			System.setProperty("jsh.shell.engine", engine.id());
 			engine.initializeSystemProperties(this, shell);
 			shell.initializeSystemProperties();
 		}
@@ -256,8 +257,6 @@ public class Main {
 
 		//	TODO	push Rhino-specific properties back into Rhino engine
 		final void initializeSystemProperties() throws java.io.IOException {
-			//	TODO	is the below property used?
-			System.setProperty("jsh.launcher.rhino.script", getLauncherScript().toExternalForm());
 			if (getJshHome() != null) {
 				System.setProperty("jsh.home", getJshHome().getCanonicalPath());
 			}

@@ -745,7 +745,7 @@ END LICENSE
 						test(r3 == 1);
 						try {
 							var r4 = module.Thread.run({
-								call: f,
+								call: sleeper(250),
 								timeout: 50
 							});
 							test(false);
