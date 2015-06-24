@@ -71,6 +71,7 @@ jsh.unit.integration({
 				environment: p.environment,
 				evaluate: (p.evaluate) ? p.evaluate : function(result) {
 					if (result.status !== 0) throw new Error("Status is " + result.status);
+					jsh.shell.echo("Output: " + result.stdio.output);
 					return JSON.parse(result.stdio.output);
 				}
 			})
@@ -174,7 +175,19 @@ jsh.unit.integration({
 						verify(result).evaluate.property("logging").is("/foo/bar");
 						verify(result).evaluate.property("foo1").is("bar");
 						verify(result).evaluate.property("foo2").is("baz");
-						verify(result).evaluate.property("rhino").is(engine == "rhino");
+						verify(result).rhino.running.is( (engine == "rhino") );
+
+						if (engine == "rhino") {
+							var result = shell({
+								environment: {
+									PATH: jsh.shell.environment.PATH,
+									JSH_ENGINE_RHINO_CLASSPATH: String(parameters.options.rhino),
+									JSH_ENGINE: "rhino",
+									JSH_ENGINE_RHINO_OPTIMIZATION: 0
+								}
+							});
+							verify(result).rhino.optimization.is(0);
+						}
 					}
 				});
 			});
@@ -190,6 +203,16 @@ jsh.unit.integration({
 		var home = (jsh.shell.jsh.home) ? jsh.shell.jsh.home.toString() : null;
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src.toString() : null;
 		var logging = getProperty("java.util.logging.config.file");
+		var rhino = (function() {
+			var rv = {
+				running: (function() {
+					if (typeof(Packages.org.mozilla.javascript.Context) != "function") return false;
+					return Boolean(Packages.org.mozilla.javascript.Context.getCurrentContext());
+				})()
+			};
+			rv.optimization = (rv.running) ? Number(Packages.org.mozilla.javascript.Context.getCurrentContext().getOptimizationLevel()) : null;
+			return rv;
+		})();
 		jsh.shell.echo(
 			JSON.stringify({
 				src: src,
@@ -197,10 +220,7 @@ jsh.unit.integration({
 				logging: logging,
 				foo1: getProperty("foo.1"),
 				foo2: getProperty("foo.2"),
-				rhino: (function() {
-					if (typeof(Packages.org.mozilla.javascript.Context) != "function") return false;
-					return Boolean(Packages.org.mozilla.javascript.Context.getCurrentContext());
-				})()
+				rhino: rhino
 			})
 		);
 	}

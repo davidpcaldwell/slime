@@ -172,6 +172,10 @@ $api.slime = (function(was) {
 
 		map("jsh.engine", BOTH);
 		map("jsh.engine.rhino.classpath", BOTH);
+		map("jsh.engine.rhino.optimization", BOTH);
+
+		//	Set by laumcher; not treated as a user setting
+		map("jsh.shell.src", BOTH);
 
 		//	Undocumented so far
 
@@ -184,8 +188,7 @@ $api.slime = (function(was) {
 		//	TODO	not sure jsh.java.home is correct here
 		map("jsh.java.home", BOTH);
 
-		map("jsh.shell.src", BOTH);
-		map("jsh.rhino.optimization", BOTH);
+
 		map("jsh.tmpdir", {
 			launcher: function(value) {
 				return ["-Djava.io.tmpdir=" + value];
