@@ -372,8 +372,7 @@ settings.explicit = new function() {
 
 	var self = this;
 	[
-		"JSH_LIBRARY_NATIVE",
-		"JSH_TMPDIR"
+		"JSH_LIBRARY_NATIVE"
 	].forEach( function(name) {
 		self[name] = ($api.shell.environment[name]) ? new Directory(os($api.shell.environment[name])) : UNDEFINED;
 	});
@@ -388,12 +387,8 @@ settings.explicit = new function() {
 		self.JSH_PLUGINS = new Searchpath($api.slime.setting("jsh.plugins"));
 	}
 
-	["JSH_RHINO_OPTIMIZATION", "JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
+	["JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
 		this[name] = $api.shell.environment[name];
-	}, this);
-
-	["JSH_JAVA_LOGGING_PROPERTIES"].forEach(function(name) {
-		this[name] = (typeof($api.shell.environment[name]) != "undefined") ? new File(os($api.shell.environment[name])) : UNDEFINED;
 	}, this);
 
 	if (!settings.packaged) {
