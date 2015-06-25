@@ -404,7 +404,11 @@ $exports.jsh = function(p) {
 					while(keys.hasNext()) {
 						var key = keys.next();
 						if (String(key) != "jsh.launcher.packaged") {
-							rv.setProperty(key, $context._getSystemProperties().getProperty(key));
+							if ($context._getSystemProperties().getProperty(key) == null) {
+								//	TODO	seems to be the case for jsh.launcher.shell, through an unknown set of mechanisms
+							} else {
+								rv.setProperty(key, $context._getSystemProperties().getProperty(key));
+							}
 						}
 					}
 					if (p.workingDirectory) {

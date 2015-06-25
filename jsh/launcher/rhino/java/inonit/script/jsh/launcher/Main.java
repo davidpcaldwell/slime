@@ -154,7 +154,12 @@ public class Main {
 			//	TODO	should we return something more useful?
 			try {
 				Class.forName("org.mozilla.javascript.Context");
-				return ((URLClassLoader)ClassLoader.getSystemClassLoader()).getURLs();
+				//	we leave classpath blank because this is supposed to be a Rhino-specific classpath; it is supplied to loader
+				//	as the first element of its classpath and if we use the system class loader, nothing can override the other
+				//	classpath parts (like the shell classpath)
+				//	TODO	revisit this; is this important?
+				return new java.net.URL[0];
+//				return ((URLClassLoader)ClassLoader.getSystemClassLoader()).getURLs();
 			} catch (ClassNotFoundException e) {
 				if (ClassLoader.getSystemResource("$jsh/rhino.jar") != null) {
 					return new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") };

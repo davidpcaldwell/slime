@@ -75,6 +75,7 @@ $api.jsh.engine = {
 		}
 	}
 }[String(Packages.java.lang.System.getProperty("jsh.launcher.engine"))];
+$api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.shell = new (function(peer) {
 	var Classpath = function(_urls) {
 		this._urls = _urls;
@@ -101,7 +102,21 @@ $api.jsh.shell = new (function(peer) {
 			}
 			return rv;
 		}
-	}
+	};
+
+	$api.jsh.engine.resolve({
+		rhino: function() {
+			(function(_urls) {
+				if (_urls) {
+					Packages.java.lang.System.setProperty("jsh.engine.rhino.classpath", new Classpath(_urls).local().join($api.jsh.colon));
+				}
+			})(peer.getRhinoClasspath());
+		},
+		nashorn: function() {
+		}
+	})();
+
+
 
 	var _add = function(rv,_array) {
 		for (var i=0; i<_array.length; i++) {
@@ -132,7 +147,6 @@ $api.jsh.shell = new (function(peer) {
 		}
 	}
 })(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
-$api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.setExitStatus = $api.engine.resolve({
 	rhino: function(status) {
 		var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
@@ -313,15 +327,15 @@ if (getProperty("jsh.launcher.packaged") != null) {
 
 		var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
 
-		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
-		if (rhino) {
-			$api.debug("Copying rhino ...");
-			var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
-			var writeTo = rhinoCopiedTo.writeTo();
-			$api.io.copy(rhino,writeTo);
-			rhino.close();
-			writeTo.close();
-		}
+//		var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
+//		if (rhino) {
+//			$api.debug("Copying rhino ...");
+//			var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
+//			var writeTo = rhinoCopiedTo.writeTo();
+//			$api.io.copy(rhino,writeTo);
+//			rhino.close();
+//			writeTo.close();
+//		}
 
 		var index = 0;
 		var plugin;
@@ -355,7 +369,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			$api.debug("Copied plugin " + index + " from " + plugin.name);
 		}
 
-		this.rhinoClasspath = (rhinoCopiedTo) ? new Searchpath([ rhinoCopiedTo ]) : new Searchpath([]);
+//		this.rhinoClasspath = (rhinoCopiedTo) ? new Searchpath([ rhinoCopiedTo ]) : new Searchpath([]);
 		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
 		this.scriptClasspath = [];
 		this.JSH_PLUGINS = new Searchpath(plugins);
@@ -365,7 +379,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		var JSH_HOME = new Directory( getProperty("jsh.home") );
 		$api.debug("JSH_HOME = " + JSH_HOME.path);
 
-		this.rhinoClasspath = new Searchpath([JSH_HOME.getFile("lib/js.jar").path]);
+//		this.rhinoClasspath = new Searchpath([JSH_HOME.getFile("lib/js.jar").path]);
 		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
 

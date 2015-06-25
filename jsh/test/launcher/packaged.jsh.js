@@ -106,11 +106,12 @@ if (parameters.options.scenario) {
 						,JSH_LAUNCHER_DEBUG: "true"
 					}),
 					evaluate: function(result) {
-						return result.stdio.output.split(separator)[0];
+						return result.stdio.output.split(separator);
 					}
 				});
 				var verify = new jsh.unit.Verify(scope);
-				verify(output).is(String(jsh.shell.jsh.home.getRelativePath("lib/jsh.jar").java.adapt().toURI().toString()));
+				verify(output)[0].is(String(jsh.shell.jsh.home.getRelativePath("lib/jsh.jar").java.adapt().toURI().toString()));
+				jsh.shell.echo("Line 1: " + output[1]);
 			}
 		}
 	});
@@ -121,4 +122,5 @@ if (parameters.options.scenario) {
 			Packages.java.lang.Class.forName("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString()
 		)
 	);
+	jsh.shell.echo("Rhino context class: " + Packages.org.mozilla.javascript.Context);
 }

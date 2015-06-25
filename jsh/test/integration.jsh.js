@@ -211,10 +211,10 @@ var run = function(command,mymode) {
 	var options = mymode;
 	console(command.join(" "));
 	var status = runCommand.apply(this,command.concat(mymode));
-	Packages.java.lang.System.err.println("env: " + JSON.stringify(env, void(0), "    "));
-	Packages.java.lang.System.err.println("input: " + options.input);
-	Packages.java.lang.System.err.println("Output: " + options.output);
-	Packages.java.lang.System.err.println("Error: " + options.err);
+//	Packages.java.lang.System.err.println("env: " + JSON.stringify(env, void(0), "    "));
+//	Packages.java.lang.System.err.println("input: " + options.input);
+//	Packages.java.lang.System.err.println("Output: " + options.output);
+//	Packages.java.lang.System.err.println("Error: " + options.err);
 	if (status != 0) {
 		throw new Error("Failed with status: " + status + ": " + command.join(" "));
 	} else {
@@ -707,7 +707,7 @@ if (RHINO_LIBRARIES) {
 				output: String
 			},
 			environment: jsh.js.Object.set({}, jsh.shell.environment, {
-				JSH_RHINO_OPTIMIZATION: String(level)
+				JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
 			}),
 			evaluate: function(result) {
 				var optimization = Number(result.stdio.output);
@@ -715,7 +715,7 @@ if (RHINO_LIBRARIES) {
 					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
 					jsh.shell.echo();
 				} else {
-					throw new Error("Status: " + result.status);
+					throw new Error("Status: " + result.status + " optimization " + optimization);
 				}
 			}
 		});

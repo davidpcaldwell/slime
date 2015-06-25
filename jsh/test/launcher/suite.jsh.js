@@ -101,10 +101,11 @@ jsh.unit.integration({
 			var buffer = new jsh.io.Buffer();
 			var write = buffer.writeBinary();
 			var properties = {};
-			if (jsh.shell.rhino && jsh.shell.rhino.classpath) {
-				properties["jsh.engine.rhino.classpath"] = jsh.shell.rhino.classpath;
+			if (parameters.options.rhino) {
+				properties["jsh.engine.rhino.classpath"] = parameters.options.rhino;
 			}
 			return built({
+				environment: p.environment,
 				properties: properties,
 				script: p.script,
 				arguments: ["-scenario", "-view", "child"],
@@ -133,11 +134,12 @@ jsh.unit.integration({
 			}})
 		}).bind(this);
 
-		this.add({
-			scenario: new jsh.unit.Scenario.Integration({
-				script: jsh.script.file.getRelativePath("packaged.jsh.js").file
-			})
-		});
+//		//	TODO	does not appear to test packaging with Rhino when run from Nashorn
+//		this.add({
+//			scenario: new jsh.unit.Scenario.Integration({
+//				script: jsh.script.file.getRelativePath("packaged.jsh.js").file
+//			})
+//		});
 
 		var engines = [];
 		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
@@ -148,6 +150,13 @@ jsh.unit.integration({
 		}
 
 		engines.forEach(function(engine) {
+			this.add({ scenario: new jsh.unit.Scenario.Integration({
+				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
+				environment: {
+					PATH: jsh.shell.environment.PATH,
+					JSH_ENGINE: engine
+				}
+			}) });
 			[unbuilt,built].forEach(function(shell) {
 				addScenario(new function() {
 					var type = (shell == unbuilt) ? "unbuilt" : "built";
@@ -211,7 +220,7 @@ jsh.unit.integration({
 					}
 				});
 			});
-		});
+		},this);
 	},
 	run: function(parameters) {
 		var getProperty = function(name) {
