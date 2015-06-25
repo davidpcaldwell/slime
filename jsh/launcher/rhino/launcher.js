@@ -44,6 +44,7 @@
 //		path as cygwin.paths property. Otherwise, check to see if the Cygwin file system implementation emits a warning without the
 //		cygwin.paths property; if it does not, possibly add one here.
 
+Packages.java.lang.System.setProperty("jsh.launcher.classpath", Packages.java.lang.System.getProperty("java.class.path"));
 Packages.java.lang.System.getProperties().get("jsh.launcher.shell").initializeSystemProperties();
 
 $api.arguments = $api.engine.resolve({

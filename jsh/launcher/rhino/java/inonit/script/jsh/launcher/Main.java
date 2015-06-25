@@ -150,25 +150,6 @@ public class Main {
 			this.file = file;
 		}
 
-		public URL[] getRhinoClasspath() {
-			//	TODO	should we return something more useful?
-			try {
-				Class.forName("org.mozilla.javascript.Context");
-				//	we leave classpath blank because this is supposed to be a Rhino-specific classpath; it is supplied to loader
-				//	as the first element of its classpath and if we use the system class loader, nothing can override the other
-				//	classpath parts (like the shell classpath)
-				//	TODO	revisit this; is this important?
-				return new java.net.URL[0];
-//				return ((URLClassLoader)ClassLoader.getSystemClassLoader()).getURLs();
-			} catch (ClassNotFoundException e) {
-				if (ClassLoader.getSystemResource("$jsh/rhino.jar") != null) {
-					return new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") };
-				} else {
-					return null;
-				}
-			}
-		}
-
 		ClassLoader getRhinoClassLoader() {
 			//	In earlier versions of the launcher and packager, Rhino was packaged at the following location inside the packaged
 			//	JAR file. However, for some reason, loading Rhino using the below ClassLoader did not work. As a workaround, the
@@ -200,6 +181,25 @@ public class Main {
 				throw new RuntimeException(e);
 			}
 		}
+
+		public URL[] getRhinoClasspath() {
+			//	TODO	should we return something more useful?
+			try {
+				Class.forName("org.mozilla.javascript.Context");
+				//	we leave classpath blank because this is supposed to be a Rhino-specific classpath; it is supplied to loader
+				//	as the first element of its classpath and if we use the system class loader, nothing can override the other
+				//	classpath parts (like the shell classpath)
+				//	TODO	revisit this; is this important?
+				return new java.net.URL[0];
+//				return ((URLClassLoader)ClassLoader.getSystemClassLoader()).getURLs();
+			} catch (ClassNotFoundException e) {
+				if (ClassLoader.getSystemResource("$jsh/rhino.jar") != null) {
+					return new java.net.URL[] { ClassLoader.getSystemResource("$jsh/rhino.jar") };
+				} else {
+					return null;
+				}
+			}
+		}
 	}
 
 	private static abstract class UnpackagedShell extends Shell {
@@ -225,7 +225,6 @@ public class Main {
 			if (getJshHome() != null) {
 				System.setProperty("jsh.home", getJshHome().getCanonicalPath());
 			}
-			System.setProperty("jsh.launcher.classpath", System.getProperty("java.class.path"));
 		}
 
 		abstract File getJshHome();
