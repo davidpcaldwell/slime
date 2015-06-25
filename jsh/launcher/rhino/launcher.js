@@ -568,13 +568,9 @@ try {
 		command.vm($api.jsh.vmArguments[i]);
 	}
 
-	var environmentAndProperties = function() {
-		$api.slime.settings.sendPropertiesTo(function(name,value) {
-			command.systemProperty(name,value);
-		});
-	}
-
-	environmentAndProperties();
+	$api.slime.settings.sendPropertiesTo(function(name,value) {
+		command.systemProperty(name,value);
+	});
 	var engine = String(Packages.java.lang.System.getProperty("jsh.shell.engine"));
 	$api.jsh.engine.resolve({
 		rhino: function() {
