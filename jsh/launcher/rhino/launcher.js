@@ -45,7 +45,6 @@
 //		cygwin.paths property; if it does not, possibly add one here.
 
 Packages.java.lang.System.setProperty("jsh.launcher.classpath", Packages.java.lang.System.getProperty("java.class.path"));
-Packages.java.lang.System.getProperties().get("jsh.launcher.shell").initializeSystemProperties();
 
 $api.arguments = $api.engine.resolve({
 	rhino: function() {
@@ -78,6 +77,12 @@ $api.jsh.engine = {
 }[String(Packages.java.lang.System.getProperty("jsh.launcher.engine"))];
 $api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.shell = new (function(peer) {
+	if (peer.getPackaged()) {
+		Packages.java.lang.System.setProperty("jsh.launcher.packaged", peer.getPackaged().getCanonicalPath());
+	}
+	if (peer.getHome()) {
+		Packages.java.lang.System.setProperty("jsh.home", peer.getHome().getCanonicalPath());
+	}
 	var Classpath = function(_urls) {
 		this._urls = _urls;
 
