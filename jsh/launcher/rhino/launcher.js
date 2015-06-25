@@ -61,7 +61,76 @@ if (!this.$api.slime) {
 }
 
 $api.jsh = {};
+$api.jsh.engine = {
+	rhino: {
+		main: "inonit.script.jsh.Rhino",
+		resolve: function(o) {
+			return o.rhino;
+		}
+	},
+	nashorn: {
+		main: "inonit.script.jsh.Nashorn",
+		resolve: function(o) {
+			return o.nashorn;
+		}
+	}
+}[String(Packages.java.lang.System.getProperty("jsh.launcher.engine"))];
 $api.jsh.shell = new (function(peer) {
+	var Classpath = function(_urls) {
+		this._urls = _urls;
+
+		this.local = function() {
+			var rv = [];
+			for (var i=0; i<_urls.length; i++) {
+				var pathname;
+				if (String(_urls[i].getProtocol()) != "file") {
+		//			var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
+		//
+		//			var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
+		//			if (rhino) {
+		//				$api.debug("Copying rhino ...");
+		//				var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
+		//				var writeTo = rhinoCopiedTo.writeTo();
+		//				$api.io.copy(rhino,writeTo);
+		//			}
+					throw new Error("Not a file: " + _urls[i]);
+				} else {
+					pathname = new Packages.java.io.File(_urls[i].toURI()).getCanonicalPath();
+				}
+				rv.push(pathname);
+			}
+			return rv;
+		}
+	}
+
+	var _add = function(rv,_array) {
+		for (var i=0; i<_array.length; i++) {
+			rv.push(_array[i]);
+		}
+	};
+
+	this.classpath = function() {
+		var rv = [];
+
+		$api.jsh.engine.resolve({
+			rhino: function() {
+				_add(rv,peer.getRhinoClasspath());
+			},
+			nashorn: function() {
+			}
+		})();
+
+		return new Classpath(rv);
+	};
+
+	this.getRhinoClasspath = function() {
+		var classpath = peer.getRhinoClasspath();
+		if (classpath) {
+			return new Classpath(classpath);
+		} else {
+			return null;
+		}
+	}
 })(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
 $api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.setExitStatus = $api.engine.resolve({
@@ -88,20 +157,6 @@ $api.jsh.vmArguments = (function() {
 	}
 	return rv;
 })();
-$api.jsh.engine = {
-	rhino: {
-		main: "inonit.script.jsh.Rhino",
-		resolve: function(o) {
-			return o.rhino;
-		}
-	},
-	nashorn: {
-		main: "inonit.script.jsh.Nashorn",
-		resolve: function(o) {
-			return o.nashorn;
-		}
-	}
-}[String(Packages.java.lang.System.getProperty("jsh.launcher.engine"))];
 
 if ($api.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
 	$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
@@ -217,9 +272,6 @@ $api.debug("Launcher environment = " + JSON.stringify($api.shell.environment, vo
 $api.debug("Launcher working directory = " + getProperty("user.dir"));
 $api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
 
-//	TODO	Probably gives JRE, rather than JDK; what do we need this for, anyway?
-var JAVA_HOME = new Directory( getProperty("java.home") );
-
 var settings = {
 	use: [],
 	get: function(id) {
@@ -234,15 +286,15 @@ var settings = {
 };
 
 settings.defaults = new function() {
-	//	The jsh.launcher.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
-	//	create the classloader inside which we are executing
-	$api.debug("jsh.launcher.rhino = " + getProperty("jsh.launcher.rhino"));
-	$api.debug("jsh.launcher.rhino.classpath = " + getProperty("jsh.launcher.rhino.classpath"));
-	this.rhinoClasspath =
-		(getProperty("jsh.engine.rhino.classpath"))
-		? new Searchpath(getProperty("jsh.engine.rhino.classpath"))
-		: new Searchpath(getProperty("java.class.path"))
-	;
+//	//	The jsh.launcher.rhino.classpath property was already processed by the launcher to be in OS-format, because it was used to
+//	//	create the classloader inside which we are executing
+//	$api.debug("jsh.launcher.rhino = " + getProperty("jsh.launcher.rhino"));
+//	$api.debug("jsh.launcher.rhino.classpath = " + getProperty("jsh.launcher.rhino.classpath"));
+//	this.rhinoClasspath =
+//		(getProperty("jsh.engine.rhino.classpath"))
+//		? new Searchpath(getProperty("jsh.engine.rhino.classpath"))
+//		: new Searchpath(getProperty("java.class.path"))
+//	;
 
 	this.JSH_PLUGINS = new Searchpath(new Directory(getProperty("user.home")).getDirectory(".jsh/plugins").path);
 };
@@ -335,19 +387,20 @@ if (getProperty("jsh.launcher.packaged") != null) {
 					//	TODO	this may work, because of the existing slime variable, but it may not, or may by coincidence, because
 					//			it is not well-thought-out.
 					var LOADER_CLASSES = $api.io.tmpdir();
-					var RHINO_JAR = settings.get("rhinoClasspath");
-					var _cl = new RHINO_JAR.ClassLoader();
-					try {
-						_cl.loadClass("org.mozilla.javascript.Context");
-					} catch (e) {
-						RHINO_JAR = null;
-					}
+//					var _cl = $api.jsh.shell.getRhinoClassLoader();
+//					try {
+//						_cl.loadClass("org.mozilla.javascript.Context");
+//					} catch (e) {
+//						_cl = null;
+//					}
+					var classpath = $api.jsh.shell.getRhinoClasspath();
 					var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-					if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+					if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
 					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
 					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-					if (RHINO_JAR) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
-					var rhinoClasspath = (RHINO_JAR) ? ["-classpath", RHINO_JAR] : [];
+					if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+					//	TODO	push colon below back into classpath object, probably
+					var rhinoClasspath = (classpath) ? ["-classpath", classpath.local().join($api.jsh.colon)] : [];
 					$api.java.install.compile([
 						"-d", LOADER_CLASSES
 					].concat(rhinoClasspath).concat(toCompile));
@@ -470,6 +523,9 @@ settings.explicit = new function() {
 
 //	TODO	allow directive to declare plugin?
 settings.directives = function(source) {
+	//	TODO	Probably gives JRE, rather than JDK
+	var JAVA_HOME = new Directory( getProperty("java.home") );
+
 	var directivePattern = /^(?:\/\/)?\#(.*)$/;
 	var directives = source.split("\n").map( function(line) {
 		if (line.substring(0,line.length-1) == "\r") {
@@ -553,6 +609,12 @@ try {
 			this.classpath(classpath.elements[i]);
 		}
 	}
+	command.addClasspathUrls = function(classpath) {
+		var local = classpath.local();
+		for (var i=0; i<local.length; i++) {
+			this.classpath(local[i]);
+		}
+	}
 
 	var container = (function() {
 		//	TODO	test whether next line necessary
@@ -571,15 +633,10 @@ try {
 	$api.slime.settings.sendPropertiesTo(function(name,value) {
 		command.systemProperty(name,value);
 	});
-	var engine = String(Packages.java.lang.System.getProperty("jsh.shell.engine"));
-	$api.jsh.engine.resolve({
-		rhino: function() {
-			command.addClasspath(settings.get("rhinoClasspath"));
-		},
-		nashorn: function() {
-
-		}
-	})();
+	var _urls = $api.jsh.shell.classpath();
+//	Packages.java.lang.System.err.println("engine=" + engine + " _urls=" + _urls);
+	command.addClasspathUrls(_urls);
+//	Packages.java.lang.System.err.println("command = " + command);
 	command.addClasspath(settings.get("shellClasspath"));
 	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
 	command.main($api.jsh.engine.main);
