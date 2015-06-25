@@ -79,6 +79,7 @@ $api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.shell = new (function(peer) {
 	if (peer.getPackaged()) {
 		Packages.java.lang.System.setProperty("jsh.launcher.packaged", peer.getPackaged().getCanonicalPath());
+		this.packaged = true;
 	}
 	if (peer.getHome()) {
 		Packages.java.lang.System.setProperty("jsh.home", peer.getHome().getCanonicalPath());
@@ -110,6 +111,15 @@ $api.jsh.shell = new (function(peer) {
 		}
 	};
 
+	var getRhinoClasspath = function() {
+		var classpath = peer.getRhinoClasspath();
+		if (classpath) {
+			return new Classpath(classpath);
+		} else {
+			return null;
+		}
+	};
+
 	$api.jsh.engine.resolve({
 		rhino: function() {
 			(function(_urls) {
@@ -130,6 +140,53 @@ $api.jsh.shell = new (function(peer) {
 		}
 	};
 
+	var Unbuilt = function(src) {
+		this.shellClasspath = function() {
+			var LOADER_CLASSES = $api.io.tmpdir();
+//					var _cl = $api.jsh.shell.getRhinoClassLoader();
+//					try {
+//						_cl.loadClass("org.mozilla.javascript.Context");
+//					} catch (e) {
+//						_cl = null;
+//					}
+			var classpath = getRhinoClasspath();
+			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
+			if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
+			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
+			if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+			//	TODO	push colon below back into classpath object, probably
+			var rhinoClasspath = (classpath) ? ["-classpath", classpath.local().join($api.jsh.colon)] : [];
+			$api.java.install.compile([
+				"-d", LOADER_CLASSES
+			].concat(rhinoClasspath).concat(toCompile));
+			return [LOADER_CLASSES.toURI().toURL()];
+//			arguments.callee.cached = new Searchpath(String(LOADER_CLASSES.getCanonicalPath()));
+		}
+	};
+
+	var Built = function(home) {
+		this.shellClasspath = function() {
+			return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
+		}
+	};
+
+	var Packaged = function(file) {
+		this.shellClasspath = function() {
+			return [file.toURI().toURL()];
+		}
+	};
+
+	var shell = (function() {
+		if (peer.getPackaged()) {
+			return new Packaged(peer.getPackaged());
+		} else if (peer.getHome()) {
+			return new Built(peer.getHome());
+		} else {
+			return new Unbuilt(new Packages.java.io.File($api.slime.setting("jsh.shell.src")));
+		}
+	})();
+
 	this.classpath = function() {
 		var rv = [];
 
@@ -140,6 +197,20 @@ $api.jsh.shell = new (function(peer) {
 			nashorn: function() {
 			}
 		})();
+
+		var shellClasspath = shell.shellClasspath();
+		if ($api.slime.setting("jsh.shell.classpath")) {
+			//var specified = $api.slime.setting.Searchpath("jsh.shell.classpath");
+			var specified = new Packages.java.io.File($api.slime.setting("jsh.shell.classpath")).toURI().toURL();
+			if (peer.getPackaged()) {
+				shellClasspath.unshift(specified);
+			} else {
+				shellClasspath = [specified];
+			}
+//			this.shellClasspath = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
+		};
+		_add(rv,shellClasspath);
+//		_add(rv,shell.scriptClasspath);
 
 		return new Classpath(rv);
 	};
@@ -170,7 +241,7 @@ $api.jsh.setExitStatus = $api.engine.resolve({
 	}
 });
 $api.jsh.vmArguments = (function() {
-	if (Packages.java.lang.System.getProperty("jsh.launcher.packaged")) return [];
+	if ($api.jsh.shell.packaged) return [];
 	var rv = [];
 	while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
 		rv.push($api.arguments.shift());
@@ -178,7 +249,7 @@ $api.jsh.vmArguments = (function() {
 	return rv;
 })();
 
-if ($api.arguments.length == 0 && !Packages.java.lang.System.getProperty("jsh.launcher.packaged")) {
+if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
 	$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
 	//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
 	//			java.lang.Error so that it is not caught
@@ -376,7 +447,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		}
 
 //		this.rhinoClasspath = (rhinoCopiedTo) ? new Searchpath([ rhinoCopiedTo ]) : new Searchpath([]);
-		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
+//		this.shellClasspath = new Searchpath(getProperty("java.class.path"));
 		this.scriptClasspath = [];
 		this.JSH_PLUGINS = new Searchpath(plugins);
 	}
@@ -386,7 +457,7 @@ if (getProperty("jsh.launcher.packaged") != null) {
 		$api.debug("JSH_HOME = " + JSH_HOME.path);
 
 //		this.rhinoClasspath = new Searchpath([JSH_HOME.getFile("lib/js.jar").path]);
-		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
+//		this.shellClasspath = new Searchpath([JSH_HOME.getFile("lib/jsh.jar").path]);
 		this.scriptClasspath = [];
 
 		this.JSH_PLUGINS = new Searchpath([
@@ -400,39 +471,39 @@ if (getProperty("jsh.launcher.packaged") != null) {
 	settings.unbuilt = new function() {
 		var SLIME_SRC = new Directory( $api.slime.setting("jsh.shell.src") );
 
-		var getShellClasspath = function() {
-			debugger;
-			if (!arguments.callee.cached) {
-				if ($api.slime.setting("jsh.shell.src")) {
-					//	TODO	this may work, because of the existing slime variable, but it may not, or may by coincidence, because
-					//			it is not well-thought-out.
-					var LOADER_CLASSES = $api.io.tmpdir();
-//					var _cl = $api.jsh.shell.getRhinoClassLoader();
-//					try {
-//						_cl.loadClass("org.mozilla.javascript.Context");
-//					} catch (e) {
-//						_cl = null;
-//					}
-					var classpath = $api.jsh.shell.getRhinoClasspath();
-					var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-					if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
-					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
-					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-					if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
-					//	TODO	push colon below back into classpath object, probably
-					var rhinoClasspath = (classpath) ? ["-classpath", classpath.local().join($api.jsh.colon)] : [];
-					$api.java.install.compile([
-						"-d", LOADER_CLASSES
-					].concat(rhinoClasspath).concat(toCompile));
-					arguments.callee.cached = new Searchpath(String(LOADER_CLASSES.getCanonicalPath()));
-				}
-			}
-			return arguments.callee.cached;
-		}
-		var shellClasspath = getShellClasspath();
-		if (shellClasspath) {
-			this.shellClasspath = shellClasspath;
-		}
+//		var getShellClasspath = function() {
+//			debugger;
+//			if (!arguments.callee.cached) {
+//				if ($api.slime.setting("jsh.shell.src")) {
+//					//	TODO	this may work, because of the existing slime variable, but it may not, or may by coincidence, because
+//					//			it is not well-thought-out.
+//					var LOADER_CLASSES = $api.io.tmpdir();
+////					var _cl = $api.jsh.shell.getRhinoClassLoader();
+////					try {
+////						_cl.loadClass("org.mozilla.javascript.Context");
+////					} catch (e) {
+////						_cl = null;
+////					}
+//					var classpath = $api.jsh.shell.getRhinoClasspath();
+//					var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
+//					if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+//					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
+//					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
+//					if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+//					//	TODO	push colon below back into classpath object, probably
+//					var rhinoClasspath = (classpath) ? ["-classpath", classpath.local().join($api.jsh.colon)] : [];
+//					$api.java.install.compile([
+//						"-d", LOADER_CLASSES
+//					].concat(rhinoClasspath).concat(toCompile));
+//					arguments.callee.cached = new Searchpath(String(LOADER_CLASSES.getCanonicalPath()));
+//				}
+//			}
+//			return arguments.callee.cached;
+//		}
+//		var shellClasspath = getShellClasspath();
+//		if (shellClasspath) {
+//			this.shellClasspath = shellClasspath;
+//		}
 		this.scriptClasspath = [];
 
 //		this.JSH_PLUGINS = new Searchpath([
@@ -454,10 +525,10 @@ if (settings.packaged) {
 }
 
 settings.explicit = new function() {
-	if ($api.slime.setting("jsh.shell.classpath")) {
-		var specified = $api.slime.setting.Searchpath("jsh.shell.classpath");
-		this.shellClasspath = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
-	};
+//	if ($api.slime.setting("jsh.shell.classpath")) {
+//		var specified = $api.slime.setting.Searchpath("jsh.shell.classpath");
+//		this.shellClasspath = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
+//	};
 
 	var self = this;
 	[
@@ -657,7 +728,7 @@ try {
 //	Packages.java.lang.System.err.println("engine=" + engine + " _urls=" + _urls);
 	command.addClasspathUrls(_urls);
 //	Packages.java.lang.System.err.println("command = " + command);
-	command.addClasspath(settings.get("shellClasspath"));
+//	command.addClasspath(settings.get("shellClasspath"));
 	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
 	command.main($api.jsh.engine.main);
 	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
