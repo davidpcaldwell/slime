@@ -139,8 +139,8 @@ public class Main {
 	private static class Unbuilt extends Unpackaged {
 		private File src;
 
-		Unbuilt() {
-			this.src = new File(System.getProperty("jsh.shell.src"));
+		Unbuilt(File src) {
+			this.src = src;
 		}
 
 		String getModules() {
@@ -159,8 +159,8 @@ public class Main {
 	private static class Built extends Unpackaged {
 		private File home;
 
-		Built() {
-			this.home = new File(System.getProperty("jsh.home"));
+		Built(File home) {
+			this.home = home;
 		}
 
 		String getModules() {
@@ -181,13 +181,13 @@ public class Main {
 	}
 
 	private static Unpackaged getUnpackaged() {
-		if (System.getProperty("jsh.home") != null) return new Built();
-		if (System.getProperty("jsh.shell.src") != null) return new Unbuilt();
+		if (System.getProperty("jsh.shell.home") != null) return new Built(new File(System.getProperty("jsh.shell.home")));
+		if (System.getProperty("jsh.shell.src") != null) return new Unbuilt(new File(System.getProperty("jsh.shell.src")));
 		return null;
 	}
 
 	private static Shell.Installation unpackagedInstallation() {
-		Logging.get().log(Main.class, Level.CONFIG, "jsh.home=" + System.getProperty("jsh.home"));
+		Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.home=" + System.getProperty("jsh.shell.home"));
 		Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
 		Unpackaged unpackaged = getUnpackaged();
 		final Code[] plugins = plugins(unpackaged.getModules(), System.getProperty("jsh.plugins"));
@@ -219,8 +219,8 @@ public class Main {
 		//	device and bytes will never need to be immediately available
 		OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
 		final Shell.Environment.Stdio stdio = Shell.Environment.Stdio.create(stdin, stdout, stderr);
-		final Shell.Environment.Packaged packaged = (System.getProperty("jsh.launcher.packaged") != null)
-			? Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), new java.io.File(System.getProperty("jsh.launcher.packaged")))
+		final Shell.Environment.Packaged packaged = (System.getProperty("jsh.shell.packaged") != null)
+			? Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), new java.io.File(System.getProperty("jsh.shell.packaged")))
 			: null
 		;
 		return Shell.Environment.create(Shell.Environment.class.getClassLoader(), System.getProperties(), OperatingSystem.Environment.SYSTEM, stdio, packaged);
@@ -302,7 +302,7 @@ public class Main {
 
 	private static Shell.Configuration configuration(final String[] arguments) throws Shell.Invocation.CheckedException {
 		Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
-		if (System.getProperty("jsh.launcher.packaged") != null) {
+		if (System.getProperty("jsh.shell.packaged") != null) {
 			return Shell.Configuration.create(packagedInstallation(), environment(), packaged(arguments));
 		} else {
 			if (arguments.length == 0) {

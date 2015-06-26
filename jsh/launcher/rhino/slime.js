@@ -185,8 +185,9 @@ $api.slime = (function(was) {
 
 		//	Sent from launcher to loader
 		map("jsh.shell.src", BOTH);
+		map("jsh.shell.home", BOTH);
 		//	Used in loader Main.java
-		map("jsh.launcher.packaged", BOTH);
+		map("jsh.shell.packaged", BOTH);
 
 
 		//	Undocumented so far
@@ -202,7 +203,7 @@ $api.slime = (function(was) {
 
 		//	TODO	Seem to be used in loader:
 		//	Main.java:
-		//	jsh.launcher.packaged
+		//	jsh.shell.packaged
 		//
 		//	rhino/shell/jsh.js:
 		//	jsh.launcher.classpath

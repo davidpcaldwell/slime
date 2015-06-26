@@ -108,12 +108,12 @@ $api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.shell = new (function(peer) {
 	if (peer.getPackaged()) {
 		//	TODO	get rid of setProperty and just use settings
-		$api.slime.settings.set("jsh.launcher.packaged", String(peer.getPackaged().getCanonicalPath()));
-		Packages.java.lang.System.setProperty("jsh.launcher.packaged", peer.getPackaged().getCanonicalPath());
+		$api.slime.settings.set("jsh.shell.packaged", String(peer.getPackaged().getCanonicalPath()));
+		Packages.java.lang.System.setProperty("jsh.shell.packaged", peer.getPackaged().getCanonicalPath());
 		this.packaged = true;
 	}
 	if (peer.getHome()) {
-		Packages.java.lang.System.setProperty("jsh.home", peer.getHome().getCanonicalPath());
+		Packages.java.lang.System.setProperty("jsh.shell.home", peer.getHome().getCanonicalPath());
 	}
 	var Classpath = function(_urls) {
 		this._urls = _urls;
@@ -174,12 +174,6 @@ $api.jsh.shell = new (function(peer) {
 	var Unbuilt = function(src) {
 		this.shellClasspath = function() {
 			var LOADER_CLASSES = $api.io.tmpdir();
-//					var _cl = $api.jsh.shell.getRhinoClassLoader();
-//					try {
-//						_cl.loadClass("org.mozilla.javascript.Context");
-//					} catch (e) {
-//						_cl = null;
-//					}
 			var classpath = getRhinoClasspath();
 			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
 			if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
@@ -192,7 +186,6 @@ $api.jsh.shell = new (function(peer) {
 				"-d", LOADER_CLASSES
 			].concat(rhinoClasspath).concat(toCompile));
 			return [LOADER_CLASSES.toURI().toURL()];
-//			arguments.callee.cached = new Searchpath(String(LOADER_CLASSES.getCanonicalPath()));
 		}
 	};
 
@@ -237,7 +230,6 @@ $api.jsh.shell = new (function(peer) {
 			} else {
 				shellClasspath = [specified];
 			}
-//			this.shellClasspath = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
 		};
 		_add(rv,shellClasspath);
 
@@ -270,6 +262,8 @@ $api.jsh.setExitStatus = $api.engine.resolve({
 	}
 });
 $api.jsh.vmArguments = (function() {
+	//	TODO	what about jsh.jvm.options? If it is set, the options may already have been applied by launcher and we may not need
+	//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
 	if ($api.jsh.shell.packaged) return [];
 	var rv = [];
 	while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
@@ -407,16 +401,12 @@ settings.defaults = new function() {
 };
 settings.use.push(settings.defaults);
 
-$api.debug("jsh.launcher.packaged = " + getProperty("jsh.launcher.packaged"));
-if (getProperty("jsh.launcher.packaged") != null) {
+$api.debug("jsh.shell.packaged = " + getProperty("jsh.shell.packaged"));
+if (getProperty("jsh.shell.packaged") != null) {
 	settings.packaged = new function() {
 		this.packaged = true;
 
 		var ClassLoader = Packages.java.lang.ClassLoader;
-
-//		this.__defineGetter__("source", function() {
-//			return $api.engine.readUrl( ClassLoader.getSystemResource("main.jsh.js") );
-//		});
 
 		var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
 
@@ -454,17 +444,15 @@ if (getProperty("jsh.launcher.packaged") != null) {
 
 		this.JSH_PLUGINS = new Searchpath(plugins);
 	}
-} else if (getProperty("jsh.home")) {
+} else if (getProperty("jsh.shell.home")) {
 	settings.built = new function() {
-		var JSH_HOME = new Directory( getProperty("jsh.home") );
+		var JSH_HOME = new Directory( getProperty("jsh.shell.home") );
 		$api.debug("JSH_HOME = " + JSH_HOME.path);
 
 		this.JSH_PLUGINS = new Searchpath([
 			JSH_HOME.getDirectory("plugins"),
 			new Directory(getProperty("user.home")).getDirectory(".jsh/plugins")
 		]);
-
-		this.profiler = JSH_HOME.getFile("tools/profiler.jar");
 	}
 } else if ($api.slime.setting("jsh.shell.src")) {
 	settings.unbuilt = new function() {
@@ -472,8 +460,6 @@ if (getProperty("jsh.launcher.packaged") != null) {
 //			JSH_HOME.getDirectory("plugins"),
 //			new Directory(getProperty("user.home")).getDirectory(".jsh/plugins")
 //		]);
-
-//		this.profiler = JSH_HOME.getFile("tools/profiler.jar");
 	}
 }
 
@@ -507,66 +493,6 @@ settings.explicit = new function() {
 	["JSH_SCRIPT_DEBUGGER"].forEach(function(name) {
 		this[name] = $api.shell.environment[name];
 	}, this);
-
-//	if (!settings.packaged) {
-//		var httpUrlPattern = /^http(?:s?)\:\/\/(.*)/;
-//		if (httpUrlPattern.test($api.arguments[0])) {
-//			debugger;
-//			this.script = $api.arguments[0];
-//
-//			this.source = $api.engine.readUrl($api.arguments[0]);
-//		} else {
-//			this.script = (function(path) {
-////				TODO	move this documentation somewhere more relevant
-////
-////				We are attempting to support the following usages:
-////				#!/path/to/bash /path/to/jsh/jsh.bash
-////				/path/to/specific/jsh/jsh.bash /path/to/script
-////				/path/to/specific/jsh/jsh.bash /path/to/softlink
-////				#!/path/to/jsh
-////
-////				Need to document this:
-////				Development version of jsh which runs directly out of the source tree
-////
-////				Also:
-////				#!/path/to/jsh.bash - works when executed from Cygwin bash shell, does not work on FreeBSD, apparently does not work on
-////					Fedora
-////				/path/to/specific/jsh.bash command - looks up command in PATH, works on Cygwin and FreeBSD, but emits warning message
-////					that usage is unsupported.  See comment below.
-//
-//				//	Find the file to be executed
-//				if (new Packages.java.io.File(path).exists()) {
-//					return new File( String(new Packages.java.io.File(path).getCanonicalPath()) );
-//				}
-//				var slash = Packages.java.io.File.separator;
-//				if (path.indexOf(slash) == -1) {
-//					$api.debug("PATH = " + $api.shell.environment.PATH);
-//					var search = $api.shell.environment.PATH.split($api.jsh.colon);
-//					for (var i=0; i<search.length; i++) {
-//						if (new Packages.java.io.File(search[i] + slash + arguments[0]).exists()) {
-//							return new File(String(new Packages.java.io.File(search[i] + slash + path).getCanonicalPath()));
-//						}
-//					}
-//					$api.console("Not found in PATH: " + path);
-//					Packages.java.lang.System.exit(1);
-//				} else {
-//					$api.debug("Working directory: PWD=" + $api.shell.environment.PWD);
-//					$api.console("Script not found: " + path)
-//					Packages.java.lang.System.exit(1);
-//				}
-//			})($api.arguments[0]);
-//
-//			this.source = $api.engine.readFile(this.script.path);
-//		}
-//	}
-
-	this.jvmOptions = [];
-
-	if ($api.shell.environment.JSH_JVM_OPTIONS) {
-		$api.shell.environment.JSH_JVM_OPTIONS.split(" ").forEach( function(option) {
-			self.jvmOptions.push(option);
-		});
-	}
 }
 
 //	TODO	probably need more thought into which explicit preferences should really apply to packaged applications
@@ -592,6 +518,8 @@ try {
 //		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
 //			//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
 //			//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
+//			//	from settings:
+//			//	this.profiler = JSH_HOME.getFile("tools/profiler.jar");
 //			if (settings.get("profiler") && JSH_SHELL_CONTAINER == "jvm") {
 //				var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
 //				if (withParameters) {
@@ -636,29 +564,17 @@ try {
 		command.systemProperty(name,value);
 	});
 	var _urls = $api.jsh.shell.classpath();
-//	Packages.java.lang.System.err.println("engine=" + engine + " _urls=" + _urls);
 	command.addClasspathUrls(_urls);
-//	Packages.java.lang.System.err.println("command = " + command);
-//	command.addClasspath(settings.get("shellClasspath"));
 	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
 	command.main($api.jsh.engine.main);
 	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
-//	if (settings.get("script")) {
-//		command.argument(settings.get("script"));
-//	} else {
-//		command.systemProperty("jsh.launcher.packaged", getProperty("jsh.launcher.packaged"));
-//	}
-//	var index = (settings.get("script")) ? 1 : 0;
-//	$api.debug("Skipping: " + index + " arguments");
-	//	TODO	below obviously broken for internal launcher
 	for (var i=0; i<$api.arguments.length; i++) {
 		command.argument($api.arguments[i]);
 	}
-	var mode = null;
 	$api.debug("Running command " + command + " ...");
-	var status = command.run(mode);
+	var status = command.run();
+	$api.debug("Command returned: status = " + status);
 	$api.jsh.setExitStatus(status);
-	$api.debug("Command returned.");
 } catch (e) {
 	$api.debug("Error:");
 	$api.debug(e);
