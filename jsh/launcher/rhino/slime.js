@@ -183,8 +183,11 @@ $api.slime = (function(was) {
 			}
 		});
 
-		//	Set by laumcher; not treated as a user setting
+		//	Sent from launcher to loader
 		map("jsh.shell.src", BOTH);
+		//	Used in loader Main.java
+		map("jsh.launcher.packaged", BOTH);
+
 
 		//	Undocumented so far
 

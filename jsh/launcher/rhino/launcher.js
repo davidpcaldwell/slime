@@ -13,6 +13,7 @@
 //	TODO	rename this file to jsh.launcher.js
 
 //	NOTES ABOUT UNSUPPORTED PLATFORMS
+//	=================================
 //
 //	OLDER JAVA
 //
@@ -43,6 +44,34 @@
 //	*	If Cygwin is present and native library directory is present, send the inonit.script.runtime.io.cygwin.cygpath.exe full
 //		path as cygwin.paths property. Otherwise, check to see if the Cygwin file system implementation emits a warning without the
 //		cygwin.paths property; if it does not, possibly add one here.
+
+//	NOTES ABOUT REMOVED FEATURES
+//	============================
+//
+//	DIRECTIVES
+//
+//	At one time, a script could use "directives," which used lines beginning with '#' or '//#' to specify certain kinds of startup
+//	configuration:
+//		*	//#CLASSPATH </dir1:/dir2> added /dir1 and /dir2 to the script classpath
+//		*	//#JVM_OPTION added an option to be used when starting the Java VM.
+//		*	//#JDK_LIBRARY added a JDK library to the classpath (usually tools.jar).
+//
+//	This feature was removed for several reasons:
+//		*	It was never tested with CoffeeScript and would have complicated the implementation of CoffeeScript or similar
+//			preprocessors
+//		*	There are easier, more robust ways to do each of these things:
+//			*	For CLASSPATH, there is now jsh.loader.java.add()
+//			*	For	JDK_LIBRARY, one can use a combination of jsh.shell.java.home and jsh.loader.java.add
+//				TODO	better way to locate JDK libraries, perhaps with jsh.shell property
+//			*	For JVM_OPTION, or others if they really need to be loaded at startup, one can simply have the script re-launch
+//				itself as a subprocess using the desired configuration via jsh.shell.run, jsh.shell.java, or jsh.shell.jsh.
+//
+//	PATH SEARCHING
+//
+//	If a local, non-absolute path to a script was given, and did not resolve to a specific script relative to the working directory,
+//	the shell used to search the PATH environment variable for scripts at the given relative path to execute. This feature does not
+//	seem to have been useful, and scripts intended to be used as "commands" would typically be wrapped in bash scripts, which do
+//	have the PATH semantics.
 
 Packages.java.lang.System.setProperty("jsh.launcher.classpath", Packages.java.lang.System.getProperty("java.class.path"));
 
@@ -78,6 +107,8 @@ $api.jsh.engine = {
 $api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.shell = new (function(peer) {
 	if (peer.getPackaged()) {
+		//	TODO	get rid of setProperty and just use settings
+		$api.slime.settings.set("jsh.launcher.packaged", String(peer.getPackaged().getCanonicalPath()));
 		Packages.java.lang.System.setProperty("jsh.launcher.packaged", peer.getPackaged().getCanonicalPath());
 		this.packaged = true;
 	}
@@ -209,7 +240,6 @@ $api.jsh.shell = new (function(peer) {
 //			this.shellClasspath = (settings.packaged) ? specified.append(settings.packaged.shellClasspath) : specified;
 		};
 		_add(rv,shellClasspath);
-//		_add(rv,shell.scriptClasspath);
 
 		return new Classpath(rv);
 	};
@@ -384,9 +414,9 @@ if (getProperty("jsh.launcher.packaged") != null) {
 
 		var ClassLoader = Packages.java.lang.ClassLoader;
 
-		this.__defineGetter__("source", function() {
-			return $api.engine.readUrl( ClassLoader.getSystemResource("main.jsh.js") );
-		});
+//		this.__defineGetter__("source", function() {
+//			return $api.engine.readUrl( ClassLoader.getSystemResource("main.jsh.js") );
+//		});
 
 		var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
 
@@ -422,15 +452,12 @@ if (getProperty("jsh.launcher.packaged") != null) {
 			$api.debug("Copied plugin " + index + " from " + plugin.name);
 		}
 
-		this.scriptClasspath = [];
 		this.JSH_PLUGINS = new Searchpath(plugins);
 	}
 } else if (getProperty("jsh.home")) {
 	settings.built = new function() {
 		var JSH_HOME = new Directory( getProperty("jsh.home") );
 		$api.debug("JSH_HOME = " + JSH_HOME.path);
-
-		this.scriptClasspath = [];
 
 		this.JSH_PLUGINS = new Searchpath([
 			JSH_HOME.getDirectory("plugins"),
@@ -441,10 +468,6 @@ if (getProperty("jsh.launcher.packaged") != null) {
 	}
 } else if ($api.slime.setting("jsh.shell.src")) {
 	settings.unbuilt = new function() {
-		var SLIME_SRC = new Directory( $api.slime.setting("jsh.shell.src") );
-
-		this.scriptClasspath = [];
-
 //		this.JSH_PLUGINS = new Searchpath([
 //			JSH_HOME.getDirectory("plugins"),
 //			new Directory(getProperty("user.home")).getDirectory(".jsh/plugins")
@@ -485,57 +508,57 @@ settings.explicit = new function() {
 		this[name] = $api.shell.environment[name];
 	}, this);
 
-	if (!settings.packaged) {
-		var httpUrlPattern = /^http(?:s?)\:\/\/(.*)/;
-		if (httpUrlPattern.test($api.arguments[0])) {
-			debugger;
-			this.script = $api.arguments[0];
-
-			this.source = $api.engine.readUrl($api.arguments[0]);
-		} else {
-			this.script = (function(path) {
-//				TODO	move this documentation somewhere more relevant
+//	if (!settings.packaged) {
+//		var httpUrlPattern = /^http(?:s?)\:\/\/(.*)/;
+//		if (httpUrlPattern.test($api.arguments[0])) {
+//			debugger;
+//			this.script = $api.arguments[0];
 //
-//				We are attempting to support the following usages:
-//				#!/path/to/bash /path/to/jsh/jsh.bash
-//				/path/to/specific/jsh/jsh.bash /path/to/script
-//				/path/to/specific/jsh/jsh.bash /path/to/softlink
-//				#!/path/to/jsh
+//			this.source = $api.engine.readUrl($api.arguments[0]);
+//		} else {
+//			this.script = (function(path) {
+////				TODO	move this documentation somewhere more relevant
+////
+////				We are attempting to support the following usages:
+////				#!/path/to/bash /path/to/jsh/jsh.bash
+////				/path/to/specific/jsh/jsh.bash /path/to/script
+////				/path/to/specific/jsh/jsh.bash /path/to/softlink
+////				#!/path/to/jsh
+////
+////				Need to document this:
+////				Development version of jsh which runs directly out of the source tree
+////
+////				Also:
+////				#!/path/to/jsh.bash - works when executed from Cygwin bash shell, does not work on FreeBSD, apparently does not work on
+////					Fedora
+////				/path/to/specific/jsh.bash command - looks up command in PATH, works on Cygwin and FreeBSD, but emits warning message
+////					that usage is unsupported.  See comment below.
 //
-//				Need to document this:
-//				Development version of jsh which runs directly out of the source tree
+//				//	Find the file to be executed
+//				if (new Packages.java.io.File(path).exists()) {
+//					return new File( String(new Packages.java.io.File(path).getCanonicalPath()) );
+//				}
+//				var slash = Packages.java.io.File.separator;
+//				if (path.indexOf(slash) == -1) {
+//					$api.debug("PATH = " + $api.shell.environment.PATH);
+//					var search = $api.shell.environment.PATH.split($api.jsh.colon);
+//					for (var i=0; i<search.length; i++) {
+//						if (new Packages.java.io.File(search[i] + slash + arguments[0]).exists()) {
+//							return new File(String(new Packages.java.io.File(search[i] + slash + path).getCanonicalPath()));
+//						}
+//					}
+//					$api.console("Not found in PATH: " + path);
+//					Packages.java.lang.System.exit(1);
+//				} else {
+//					$api.debug("Working directory: PWD=" + $api.shell.environment.PWD);
+//					$api.console("Script not found: " + path)
+//					Packages.java.lang.System.exit(1);
+//				}
+//			})($api.arguments[0]);
 //
-//				Also:
-//				#!/path/to/jsh.bash - works when executed from Cygwin bash shell, does not work on FreeBSD, apparently does not work on
-//					Fedora
-//				/path/to/specific/jsh.bash command - looks up command in PATH, works on Cygwin and FreeBSD, but emits warning message
-//					that usage is unsupported.  See comment below.
-
-				//	Find the file to be executed
-				if (new Packages.java.io.File(path).exists()) {
-					return new File( String(new Packages.java.io.File(path).getCanonicalPath()) );
-				}
-				var slash = Packages.java.io.File.separator;
-				if (path.indexOf(slash) == -1) {
-					$api.debug("PATH = " + $api.shell.environment.PATH);
-					var search = $api.shell.environment.PATH.split($api.jsh.colon);
-					for (var i=0; i<search.length; i++) {
-						if (new Packages.java.io.File(search[i] + slash + arguments[0]).exists()) {
-							return new File(String(new Packages.java.io.File(search[i] + slash + path).getCanonicalPath()));
-						}
-					}
-					$api.console("Not found in PATH: " + path);
-					Packages.java.lang.System.exit(1);
-				} else {
-					$api.debug("Working directory: PWD=" + $api.shell.environment.PWD);
-					$api.console("Script not found: " + path)
-					Packages.java.lang.System.exit(1);
-				}
-			})($api.arguments[0]);
-
-			this.source = $api.engine.readFile(this.script.path);
-		}
-	}
+//			this.source = $api.engine.readFile(this.script.path);
+//		}
+//	}
 
 	this.jvmOptions = [];
 
@@ -546,56 +569,10 @@ settings.explicit = new function() {
 	}
 }
 
-//	TODO	allow directive to declare plugin?
-settings.directives = function(source) {
-	//	TODO	Probably gives JRE, rather than JDK
-	var JAVA_HOME = new Directory( getProperty("java.home") );
-
-	var directivePattern = /^(?:\/\/)?\#(.*)$/;
-	var directives = source.split("\n").map( function(line) {
-		if (line.substring(0,line.length-1) == "\r") {
-			return line.substring(0,line.length-1);
-		} else {
-			return line;
-		}
-	}).filter( function(line) {
-		return directivePattern.test(line);
-	}).map( function(line) {
-		return directivePattern.exec(line)[1];
-	});
-	directives.jvmOptions = [];
-	directives.classpath = [];
-	directives.jdkLibraries = [];
-	$api.debug("DIRECTIVES:\n" + directives.join("\n"));
-	directives.forEach( function(item) {
-		var match;
-
-		if (item.substring(0,1) == "!") {
-			//	is #! directive; do nothing
-		} else if (match = /^JVM_OPTION\s+(.*)/.exec(item)) {
-			directives.jvmOptions.push(match[1]);
-		} else if (match = /^CLASSPATH\s+(.*)/.exec(item)) {
-			var pathElement = match[1];
-			if (!settings.packaged) {
-				directives.classpath.push(new File(pathElement));
-			} else {
-				$api.console("Warning: ignoring #CLASSPATH directive in packaged script: " + match[1]);
-			}
-		} else if (match = /^JDK_LIBRARY\s+(.*)/.exec(item)) {
-			directives.jdkLibraries.push(JAVA_HOME.getFile(match[1]));
-		} else {
-			//	unrecognized directive
-		}
-	} );
-	this.jvmOptions = directives.jvmOptions;
-	this.scriptClasspath = directives.classpath.concat(directives.jdkLibraries);
-}
-
 //	TODO	probably need more thought into which explicit preferences should really apply to packaged applications
 //			classpaths are a candidate for things that should not apply
 settings.use.push(settings.explicit);
 
-settings.use.push(new settings.directives(settings.get("source")));
 settings.combine = function(id) {
 	var rv = [];
 	for (var i=0; i<this.use.length; i++) {
@@ -666,15 +643,15 @@ try {
 	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
 	command.main($api.jsh.engine.main);
 	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
-	if (settings.get("script")) {
-		command.argument(settings.get("script"));
-	} else {
-		command.systemProperty("jsh.launcher.packaged", getProperty("jsh.launcher.packaged"));
-	}
-	var index = (settings.get("script")) ? 1 : 0;
-	$api.debug("Skipping: " + index + " arguments");
+//	if (settings.get("script")) {
+//		command.argument(settings.get("script"));
+//	} else {
+//		command.systemProperty("jsh.launcher.packaged", getProperty("jsh.launcher.packaged"));
+//	}
+//	var index = (settings.get("script")) ? 1 : 0;
+//	$api.debug("Skipping: " + index + " arguments");
 	//	TODO	below obviously broken for internal launcher
-	for (var i=index; i<$api.arguments.length; i++) {
+	for (var i=0; i<$api.arguments.length; i++) {
 		command.argument($api.arguments[i]);
 	}
 	var mode = null;
