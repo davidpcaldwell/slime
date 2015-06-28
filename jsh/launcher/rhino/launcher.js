@@ -73,8 +73,6 @@
 //	seem to have been useful, and scripts intended to be used as "commands" would typically be wrapped in bash scripts, which do
 //	have the PATH semantics.
 
-Packages.java.lang.System.setProperty("jsh.launcher.classpath", Packages.java.lang.System.getProperty("java.class.path"));
-
 $api.arguments = $api.engine.resolve({
 	rhino: function() {
 		return $api.arguments;
@@ -88,32 +86,48 @@ if (!this.$api.slime) {
 	$api.script.resolve("slime.js").load();
 	$api.log("Loaded slime.js: src=" + $api.slime.src);
 }
+$api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
+if ($api.slime.setting("jsh.launcher.debug")) {
+	$api.debug.on = true;
+	$api.debug("debugging enabled");
+}
 
 $api.jsh = {};
-$api.jsh.engine = {
-	rhino: {
-		main: "inonit.script.jsh.Rhino",
-		resolve: function(o) {
-			return o.rhino;
+$api.jsh.engine = (function() {
+	var engines = {
+		rhino: {
+			main: "inonit.script.jsh.Rhino",
+			resolve: function(o) {
+				return o.rhino;
+			}
+		},
+		nashorn: {
+			main: "inonit.script.jsh.Nashorn",
+			resolve: function(o) {
+				return o.nashorn;
+			}
 		}
-	},
-	nashorn: {
-		main: "inonit.script.jsh.Nashorn",
-		resolve: function(o) {
-			return o.nashorn;
-		}
+	};
+	if ($api.slime.settings.get("jsh.engine")) {
+		return (function(setting) {
+			return engines[setting];
+		})($api.slime.settings.get("jsh.engine"));
 	}
-}[String(Packages.java.lang.System.getProperty("jsh.launcher.engine"))];
+	return $api.engine.resolve(engines);
+})();
 $api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.shell = new (function(peer) {
+	$api.debug("peer = " + peer);
+	$api.debug("peer.getPackaged() = " + peer.getPackaged());
+	$api.debug("peer.getHome() = " + peer.getHome());
 	if (peer.getPackaged()) {
 		//	TODO	get rid of setProperty and just use settings
+		$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
 		$api.slime.settings.set("jsh.shell.packaged", String(peer.getPackaged().getCanonicalPath()));
-		Packages.java.lang.System.setProperty("jsh.shell.packaged", peer.getPackaged().getCanonicalPath());
 		this.packaged = true;
 	}
 	if (peer.getHome()) {
-		Packages.java.lang.System.setProperty("jsh.shell.home", peer.getHome().getCanonicalPath());
+		$api.slime.settings.set("jsh.shell.home", String(peer.getHome().getCanonicalPath()));
 	}
 	var Classpath = function(_urls) {
 		this._urls = _urls;
@@ -155,7 +169,7 @@ $api.jsh.shell = new (function(peer) {
 		rhino: function() {
 			(function(_urls) {
 				if (_urls) {
-					Packages.java.lang.System.setProperty("jsh.engine.rhino.classpath", new Classpath(_urls).local().join($api.jsh.colon));
+					$api.slime.settings.set("jsh.engine.rhino.classpath", String(new Classpath(_urls).local().join($api.jsh.colon)));
 				}
 			})(peer.getRhinoClasspath());
 		},
@@ -170,6 +184,8 @@ $api.jsh.shell = new (function(peer) {
 			rv.push(_array[i]);
 		}
 	};
+
+	var USER_PLUGINS = new Packages.java.io.File(new Packages.java.io.File(Packages.java.lang.System.getProperty("user.home")), ".jsh/plugins");
 
 	var Unbuilt = function(src) {
 		this.shellClasspath = function() {
@@ -199,6 +215,45 @@ $api.jsh.shell = new (function(peer) {
 		this.shellClasspath = function() {
 			return [file.toURI().toURL()];
 		}
+
+		var ClassLoader = Packages.java.lang.ClassLoader;
+
+		var tmpdir = $api.io.tmpdir();
+//.		var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
+
+		var index = 0;
+		var plugin;
+//		var plugins = [];
+		$api.debug("Copying plugins ...");
+
+		var getPlugin = function(index) {
+			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
+				return {
+					name: String(index) + ".jar",
+					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")
+				};
+			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")) {
+				return {
+					name: String(index) + ".slime",
+					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")
+				};
+			} else {
+				return null;
+			}
+		}
+
+		while( plugin = getPlugin(index) ) {
+			var copyTo = new Packages.java.io.File(tmpdir, plugin.name);
+			var writeTo = new Packages.java.io.FileOutputStream(copyTo);
+			$api.io.copy(plugin.stream,writeTo);
+			plugin.stream.close();
+			writeTo.close();
+//			plugins.push(copyTo);
+			index++;
+			$api.debug("Copied plugin " + index + " from " + plugin.name);
+		}
+
+		$api.slime.settings.set("jsh.shell.packaged.plugins", String(tmpdir.getCanonicalPath()));
 	};
 
 	var shell = (function() {
@@ -374,11 +429,6 @@ var os = function(pathname,path) {
 
 var UNDEFINED = function(){}();
 
-if ($api.slime.setting("jsh.launcher.debug")) {
-	$api.debug.on = true;
-	$api.debug("debugging enabled");
-}
-
 $api.debug("Launcher environment = " + JSON.stringify($api.shell.environment, void(0), "    "));
 $api.debug("Launcher working directory = " + getProperty("user.dir"));
 $api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
@@ -406,43 +456,6 @@ if (getProperty("jsh.shell.packaged") != null) {
 	settings.packaged = new function() {
 		this.packaged = true;
 
-		var ClassLoader = Packages.java.lang.ClassLoader;
-
-		var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
-
-		var index = 0;
-		var plugin;
-		var plugins = [];
-		$api.debug("Copying plugins ...");
-
-		var getPlugin = function(index) {
-			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
-				return {
-					name: String(index) + ".jar",
-					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")
-				};
-			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")) {
-				return {
-					name: String(index) + ".slime",
-					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")
-				};
-			} else {
-				return null;
-			}
-		}
-
-		while( plugin = getPlugin(index) ) {
-			var copyTo = tmpdir.getFile(plugin.name);
-			var writeTo = copyTo.writeTo();
-			$api.io.copy(plugin.stream,writeTo);
-			plugin.stream.close();
-			writeTo.close();
-			plugins.push(copyTo);
-			index++;
-			$api.debug("Copied plugin " + index + " from " + plugin.name);
-		}
-
-		this.JSH_PLUGINS = new Searchpath(plugins);
 	}
 } else if (getProperty("jsh.shell.home")) {
 	settings.built = new function() {
@@ -463,7 +476,7 @@ if (getProperty("jsh.shell.packaged") != null) {
 	}
 }
 
-if (settings.packaged) {
+if ($api.jsh.shell.packaged) {
 	$api.debug("Using packaged jsh.");
 	settings.use.push(settings.packaged);
 } else if (settings.built) {
@@ -548,7 +561,7 @@ try {
 
 	var container = (function() {
 		//	TODO	test whether next line necessary
-		if (settings.packaged) return "jvm";
+		if ($api.jsh.shell.packaged) return "jvm";
 		if ($api.slime.settings.get("jsh.shell.container")) return $api.slime.settings.get("jsh.shell.container");
 		return "classloader";
 	})();
@@ -565,9 +578,9 @@ try {
 	});
 	var _urls = $api.jsh.shell.classpath();
 	command.addClasspathUrls(_urls);
-	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
+//	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
 	command.main($api.jsh.engine.main);
-	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
+//	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
 	for (var i=0; i<$api.arguments.length; i++) {
 		command.argument($api.arguments[i]);
 	}

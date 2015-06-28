@@ -10,6 +10,33 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (jsh.shell.jsh.src && !jsh.shell.jsh.home) {
+	var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	jsh.shell.run({
+		command: "jrunscript",
+		arguments: [
+			jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+			jsh.shell.jsh.src.getRelativePath("jsh/etc/unbuilt.rhino.js"),
+			"build",
+			tmpdir
+		],
+		environment: jsh.js.Object.set({}, {
+			JSH_BUILD_NOTEST: "true",
+			JSH_BUILD_NODOC: "true"
+		})
+	});
+	jsh.shell.run({
+		command: "jrunscript",
+		arguments: [
+			tmpdir.getRelativePath("jsh.js"),
+			jsh.script.file
+		].concat(jsh.script.arguments),
+		evaluate: function(result) {
+			jsh.shell.exit(result.status);
+		}
+	});
+}
+
 var parameters = jsh.script.getopts({
 	options: {
 		scenario: false,
@@ -50,7 +77,7 @@ if (parameters.options.scenario) {
 	});
 	var separator = String(Packages.java.lang.System.getProperty("line.separator"));
 	scenario.add({ scenario: new function() {
-		this.name = "unconfigured";
+		this.name = "unconfigured: " + packaged_JSH_SHELL_CLASSPATH;
 
 		this.execute = function(scope) {
 			var unconfigured = jsh.shell.java({
@@ -117,10 +144,8 @@ if (parameters.options.scenario) {
 	});
 	scenario.run();
 } else {
-	jsh.shell.echo(
-		String(
-			Packages.java.lang.Class.forName("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString()
-		)
-	);
+	var url = Packages.java.lang.Class.forName("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString();
+	jsh.shell.echo(url);
+	jsh.shell.echo("url = " + url + " java.class.path = " + Packages.java.lang.System.getProperty("java.class.path"));
 	jsh.shell.echo("Rhino context class: " + Packages.org.mozilla.javascript.Context);
 }

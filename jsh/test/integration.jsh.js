@@ -544,7 +544,7 @@ testCommandOutput("$api-deprecate-properties.jsh.js", function(options) {
 		]);
 	}, {
 		env: {
-			JSH_PLUGINS: String(new File(SLIME_SRC,"jsh/test/plugins/a").getCanonicalPath()),
+//			JSH_PLUGINS: String(new File(SLIME_SRC,"jsh/test/plugins/a").getCanonicalPath()),
 			LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
 		}
 	})

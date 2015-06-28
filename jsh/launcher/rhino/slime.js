@@ -117,11 +117,11 @@ $api.slime = (function(was) {
 	}
 
 	rv.setting = function(name) {
-		if (Packages.java.lang.System.getProperty(name)) {
+		if (Packages.java.lang.System.getProperty(name) !== null) {
 			return String(Packages.java.lang.System.getProperty(name));
 		}
 		var ename = name.replace(/\./g, "_").toUpperCase();
-		if (Packages.java.lang.System.getenv(ename)) {
+		if (Packages.java.lang.System.getenv(ename) !== null) {
 			return String(Packages.java.lang.System.getenv(ename));
 		}
 		return null;
@@ -145,9 +145,10 @@ $api.slime = (function(was) {
 		};
 
 		var map = function(name,type) {
+			var specified = (rv.setting(name) === null) ? void(0) : rv.setting(name);
 			all[name] = {
 				type: type,
-				value: rv.setting(name)
+				specified: specified
 			};
 		};
 
@@ -186,11 +187,15 @@ $api.slime = (function(was) {
 		//	Sent from launcher to loader
 		map("jsh.shell.src", BOTH);
 		map("jsh.shell.home", BOTH);
-		//	Used in loader Main.java
 		map("jsh.shell.packaged", BOTH);
+		map("jsh.shell.packaged.plugins", BOTH);
 
+		//	TODO	not settled on these names for plugins
+		map("jsh.shell.plugins", BOTH);
+//		map("jsh.user.plugins", BOTH);
 
 		//	Undocumented so far
+		map("jsh.launcher.classpath", BOTH);
 
 		//	May not survive refactoring
 		map("jsh.launcher.debug", LAUNCHER);
@@ -209,11 +214,35 @@ $api.slime = (function(was) {
 		//	jsh.launcher.classpath
 
 		this.get = function(name) {
-			return all[name].value;
+			if (!all[name]) {
+				throw new Error("Cannot read: " + name);
+			}
+			if (typeof(all[name].specified) != "undefined") {
+				return all[name].specified;
+			}
+			if (typeof(all[name].value) != "undefined") {
+				return all[name].value;
+			}
+			if (all[name].default) {
+				return all[name].default();
+			}
 		}
 
 		this.set = function(name,value) {
+			if (!all[name]) throw new Error("Not defined: " + name);
 			all[name].value = value;
+		}
+
+		this.default = function(name,value) {
+			if (typeof(value) == "undefined") return;
+			if (typeof(value) != "function") {
+				value = (function(rv) {
+					return function() {
+						return rv;
+					}
+				})(value);
+			}
+			all[name].default = value;
 		}
 
 		this.getContainerArguments = function() {

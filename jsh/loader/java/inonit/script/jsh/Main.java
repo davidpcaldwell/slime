@@ -134,6 +134,7 @@ public class Main {
 		abstract String getModules();
 		abstract File getLoader();
 		abstract File getJsh();
+		abstract File getShellPlugins();
 	}
 
 	private static class Unbuilt extends Unpackaged {
@@ -153,6 +154,14 @@ public class Main {
 
 		File getJsh() {
 			return new File(new File(this.src, "jsh"), "loader");
+		}
+
+		File getShellPlugins() {
+			if (System.getProperty("jsh.shell.plugins") != null) {
+				return new File(System.getProperty("jsh.shell.plugins"));
+			}
+			//	TODO	this is basically a dummy file that contains no plugins, to make the calling code simpler
+			return new File(this.src, "plugins");
 		}
 	}
 
@@ -178,6 +187,10 @@ public class Main {
 		File getJsh() {
 			return new File(getScripts(), "jsh");
 		}
+
+		File getShellPlugins() {
+			return new File(this.home, "plugins");
+		}
 	}
 
 	private static Unpackaged getUnpackaged() {
@@ -190,19 +203,23 @@ public class Main {
 		Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.home=" + System.getProperty("jsh.shell.home"));
 		Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
 		Unpackaged unpackaged = getUnpackaged();
-		final Code[] plugins = plugins(unpackaged.getModules(), System.getProperty("jsh.plugins"));
-		final Code.Source[] libraries = libraries(unpackaged.getModules(), System.getProperty("jsh.plugins"));
-		return Shell.Installation.create(
-			Code.Source.create(unpackaged.getLoader()),
-			Code.Source.create(unpackaged.getJsh()),
-			plugins,
-			libraries
-		);
+		try {
+			final Code[] plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
+			final Code.Source[] libraries = libraries(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath());
+			return Shell.Installation.create(
+				Code.Source.create(unpackaged.getLoader()),
+				Code.Source.create(unpackaged.getJsh()),
+				plugins,
+				libraries
+			);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static Shell.Installation packagedInstallation() {
-		final Code[] plugins = plugins(System.getProperty("jsh.plugins"));
-		final Code.Source[] libraries = libraries(System.getProperty("jsh.plugins"));
+		final Code[] plugins = plugins(System.getProperty("jsh.shell.packaged.plugins"));
+		final Code.Source[] libraries = libraries(System.getProperty("jsh.shell.packaged.plugins"));
 		//	TODO	better hierarchy would probably be $jsh/slime and $jsh/loader
 		final Code.Source platform = Code.Source.system("$jsh/loader/");
 		final Code.Source jsh = Code.Source.system("$jsh/");
