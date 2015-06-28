@@ -177,15 +177,11 @@ $api.jsh.shell = new (function(peer) {
 		}
 	})();
 
-
-
 	var _add = function(rv,_array) {
 		for (var i=0; i<_array.length; i++) {
 			rv.push(_array[i]);
 		}
 	};
-
-	var USER_PLUGINS = new Packages.java.io.File(new Packages.java.io.File(Packages.java.lang.System.getProperty("user.home")), ".jsh/plugins");
 
 	var Unbuilt = function(src) {
 		this.shellClasspath = function() {
@@ -219,11 +215,9 @@ $api.jsh.shell = new (function(peer) {
 		var ClassLoader = Packages.java.lang.ClassLoader;
 
 		var tmpdir = $api.io.tmpdir();
-//.		var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
 
 		var index = 0;
 		var plugin;
-//		var plugins = [];
 		$api.debug("Copying plugins ...");
 
 		var getPlugin = function(index) {
@@ -394,9 +388,7 @@ try {
 	});
 	var _urls = $api.jsh.shell.classpath();
 	command.addClasspathUrls(_urls);
-//	command.addClasspath(new Searchpath(settings.combine("scriptClasspath")));
 	command.main($api.jsh.engine.main);
-//	command.systemProperty("jsh.plugins", settings.get("JSH_PLUGINS").toPath());
 	for (var i=0; i<$api.arguments.length; i++) {
 		command.argument($api.arguments[i]);
 	}
@@ -421,9 +413,4 @@ try {
 	var error = e;
 	debugger;
 	$api.jsh.setExitStatus(1);
-} finally {
-	//	TODO	the below may be dead code; remove it if it is
-//	if (typeof(setExitStatus.value) != "undefined") {
-//		exit(setExitStatus.value);
-//	}
 }
