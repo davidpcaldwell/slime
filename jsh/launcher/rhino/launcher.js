@@ -242,7 +242,6 @@ $api.jsh.shell = new (function(peer) {
 			$api.io.copy(plugin.stream,writeTo);
 			plugin.stream.close();
 			writeTo.close();
-//			plugins.push(copyTo);
 			index++;
 			$api.debug("Copied plugin " + index + " from " + plugin.name);
 		}
