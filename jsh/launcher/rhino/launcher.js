@@ -98,6 +98,11 @@
 //				//	emit warning message?
 //			}
 //		}
+//
+//	SHELL CLASSPATH
+//
+//	At one time, it was possible to configure the "shell classpath" -- to specify the Java classes used to help implement the shell.
+//	However, there are no known use cases for this configurability, so the functionality was removed.
 
 if (!this.$api.slime) {
 	$api.script.resolve("slime.js").load();
@@ -255,28 +260,10 @@ $api.jsh.shell = new (function(peer) {
 			}
 		})();
 
-		var shellClasspath = shell.shellClasspath();
-		if ($api.slime.setting("jsh.shell.classpath")) {
-			var specified = new Packages.java.io.File($api.slime.setting("jsh.shell.classpath")).toURI().toURL();
-			if (peer.getPackaged()) {
-				shellClasspath.unshift(specified);
-			} else {
-				shellClasspath = [specified];
-			}
-		};
-		_add(rv,shellClasspath);
+		_add(rv,shell.shellClasspath());
 
 		return new Classpath(rv);
 	};
-
-	this.getRhinoClasspath = function() {
-		var classpath = peer.getRhinoClasspath();
-		if (classpath) {
-			return new Classpath(classpath);
-		} else {
-			return null;
-		}
-	}
 })(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
 
 $api.jsh.vmArguments = (function() {

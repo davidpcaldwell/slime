@@ -112,36 +112,36 @@ if (parameters.options.scenario) {
 //	});
 
 	//	Test was disabled as failing, attempting to re-enable to fix issue 79
-	scenario.add({
-		scenario: new function() {
-			this.name = "with JSH_SHELL_CLASSPATH";
-
-			this.execute = function(scope) {
-				var properties = {};
-				if (jsh.shell.rhino && jsh.shell.rhino.classpath) {
-					properties["jsh.engine.rhino.classpath"] = String(jsh.shell.rhino.classpath);
-				}
-				var output = jsh.shell.java({
-					properties: properties,
-					jar: packaged_JSH_SHELL_CLASSPATH.file,
-					stdio: {
-						output: String
-					},
-					environment: jsh.js.Object.set({}, jsh.shell.environment, {
-						JSH_SHELL_CLASSPATH: jsh.shell.jsh.home.getRelativePath("lib/jsh.jar").toString()
-//						,JSH_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath)
-						,JSH_LAUNCHER_DEBUG: "true"
-					}),
-					evaluate: function(result) {
-						return result.stdio.output.split(separator);
-					}
-				});
-				var verify = new jsh.unit.Verify(scope);
-				verify(output)[0].is(String(jsh.shell.jsh.home.getRelativePath("lib/jsh.jar").java.adapt().toURI().toString()));
-				jsh.shell.echo("Line 1: " + output[1]);
-			}
-		}
-	});
+//	scenario.add({
+//		scenario: new function() {
+//			this.name = "with JSH_SHELL_CLASSPATH";
+//
+//			this.execute = function(scope) {
+//				var properties = {};
+//				if (jsh.shell.rhino && jsh.shell.rhino.classpath) {
+//					properties["jsh.engine.rhino.classpath"] = String(jsh.shell.rhino.classpath);
+//				}
+//				var output = jsh.shell.java({
+//					properties: properties,
+//					jar: packaged_JSH_SHELL_CLASSPATH.file,
+//					stdio: {
+//						output: String
+//					},
+//					environment: jsh.js.Object.set({}, jsh.shell.environment, {
+//						JSH_SHELL_CLASSPATH: jsh.shell.jsh.home.getRelativePath("lib/jsh.jar").toString()
+////						,JSH_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath)
+//						,JSH_LAUNCHER_DEBUG: "true"
+//					}),
+//					evaluate: function(result) {
+//						return result.stdio.output.split(separator);
+//					}
+//				});
+//				var verify = new jsh.unit.Verify(scope);
+//				verify(output)[0].is(String(jsh.shell.jsh.home.getRelativePath("lib/jsh.jar").java.adapt().toURI().toString()));
+//				jsh.shell.echo("Line 1: " + output[1]);
+//			}
+//		}
+//	});
 	scenario.run();
 } else {
 	var url = Packages.java.lang.Class.forName("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString();
