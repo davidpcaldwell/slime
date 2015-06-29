@@ -33,10 +33,30 @@ END LICENSE
 	<div>
 		<h1>Bootstrap launcher</h1>
 		<div>
-			<div>
-				The bootstrap launcher prepares the Java launcher for execution. If running in an unbuilt shell, it compiles the
-				launcher classes.
-			</div>
+			The bootstrap launcher prepares the Java launcher for execution.
+		</div>
+		<div>
+			<h2>Responsibilities</h2>
+			<ul>
+				<li>If running an unbuilt shell, it compiles the launcher classes.</li>
+				<li>
+					If running on Rhino, sets the <code>jsh.engine.rhino.classpath</code> to the location from which Rhino was
+					loaded.
+				</li>
+				<li>
+					If running an unbuilt shell, sets the <code>jsh.shell.src</code> property to let the Java launcher know
+					where to find the code.
+				</li>
+				<li>
+					Select the appropriate Java implementation to use if the <code>jsh.java.home</code> setting is specified.
+				</li>
+				<li>
+					Set appropriate specified VM arguments on the launcher VM, and pass appropriate specified VM arguments to the
+					launcher as arguments for the loader VM.
+				</li>
+			</ul>
+		</div>
+		<div>
 			<div>
 				The bootstrap launcher will scan the arguments list for arguments with a leading dash, and interpret those as VM
 				arguments to be sent to the container running the script being invoked. If the container is a classloader, these

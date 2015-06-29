@@ -123,15 +123,8 @@ Packages.java.lang.System.exit(
 						}
 					}
 					$api.slime.settings.environment(this);
-
-					//	Below here is legacy stuff we need to think through and delete
-					var passthrough = ["JSH_PLUGINS"];
-					passthrough.forEach(function(name) {
-						if (env[name]) {
-							this[name] = env[name];
-						}
-					},this);
 				})()
+				//	TODO	figure out what the below comment was supposed to mean
 				//	Cannot be enabled at this time; see issue 152
 				,input: Packages.java.lang.System["in"]
 			}
