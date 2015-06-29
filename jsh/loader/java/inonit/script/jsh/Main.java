@@ -217,9 +217,78 @@ public class Main {
 		}
 	}
 
+	private static abstract class PackagedPlugin {
+		abstract String name();
+		abstract InputStream stream();
+
+		static PackagedPlugin create(final String name, final InputStream stream) {
+			return new PackagedPlugin() {
+				String name() { return name; }
+				InputStream stream() { return stream; }
+			};
+		}
+
+		static PackagedPlugin get(int index) {
+			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".jar") != null) {
+				return create("" + index + ".jar", ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".jar"));
+			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".slime") != null) {
+				return create(
+					String.valueOf(index) + ".slime",
+					ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".slime")
+				);
+			} else {
+				return null;
+			}
+		}
+	}
+
+	private static File getPackagedPluginsDirectory() throws IOException {
+		File tmpdir = File.createTempFile("jshplugins", null);
+		tmpdir.delete();
+		tmpdir.mkdir();
+
+		int index = 0;
+//		$api.debug("Copying plugins ...");
+//
+//		var getPlugin = function(index) {
+//			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
+//				return {
+//					name: String(index) + ".jar",
+//					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")
+//				};
+//			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")) {
+//				return {
+//					name: String(index) + ".slime",
+//					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")
+//				};
+//			} else {
+//				return null;
+//			}
+//		}
+
+		PackagedPlugin plugin = null;
+		inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
+		while( (plugin = PackagedPlugin.get(index)) != null ) {
+			File copyTo = new File(tmpdir, plugin.name());
+			FileOutputStream writeTo = new FileOutputStream(copyTo);
+			streams.copy(plugin.stream(),writeTo);
+			plugin.stream().close();
+			writeTo.close();
+			index++;
+			Logging.get().log(Main.class, Level.FINE, "Copied plugin " + index + " from " + plugin.name());
+		}
+		return tmpdir;
+	}
+
 	private static Shell.Installation packagedInstallation() {
-		final Code[] plugins = plugins(System.getProperty("jsh.shell.packaged.plugins"));
-		final Code.Source[] libraries = libraries(System.getProperty("jsh.shell.packaged.plugins"));
+		String packagedPlugins = null;
+		try {
+			packagedPlugins = getPackagedPluginsDirectory().getCanonicalPath();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		final Code[] plugins = plugins(packagedPlugins);
+		final Code.Source[] libraries = libraries(packagedPlugins);
 		//	TODO	better hierarchy would probably be $jsh/slime and $jsh/loader
 		final Code.Source platform = Code.Source.system("$jsh/loader/");
 		final Code.Source jsh = Code.Source.system("$jsh/");

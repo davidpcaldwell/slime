@@ -211,42 +211,42 @@ $api.jsh.shell = new (function(peer) {
 		this.shellClasspath = function() {
 			return [file.toURI().toURL()];
 		}
-
-		var ClassLoader = Packages.java.lang.ClassLoader;
-
-		var tmpdir = $api.io.tmpdir();
-
-		var index = 0;
-		var plugin;
-		$api.debug("Copying plugins ...");
-
-		var getPlugin = function(index) {
-			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
-				return {
-					name: String(index) + ".jar",
-					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")
-				};
-			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")) {
-				return {
-					name: String(index) + ".slime",
-					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")
-				};
-			} else {
-				return null;
-			}
-		}
-
-		while( plugin = getPlugin(index) ) {
-			var copyTo = new Packages.java.io.File(tmpdir, plugin.name);
-			var writeTo = new Packages.java.io.FileOutputStream(copyTo);
-			$api.io.copy(plugin.stream,writeTo);
-			plugin.stream.close();
-			writeTo.close();
-			index++;
-			$api.debug("Copied plugin " + index + " from " + plugin.name);
-		}
-
-		$api.slime.settings.set("jsh.shell.packaged.plugins", String(tmpdir.getCanonicalPath()));
+//
+//		var ClassLoader = Packages.java.lang.ClassLoader;
+//
+//		var tmpdir = $api.io.tmpdir();
+//
+//		var index = 0;
+//		var plugin;
+//		$api.debug("Copying plugins ...");
+//
+//		var getPlugin = function(index) {
+//			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
+//				return {
+//					name: String(index) + ".jar",
+//					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")
+//				};
+//			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")) {
+//				return {
+//					name: String(index) + ".slime",
+//					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")
+//				};
+//			} else {
+//				return null;
+//			}
+//		}
+//
+//		while( plugin = getPlugin(index) ) {
+//			var copyTo = new Packages.java.io.File(tmpdir, plugin.name);
+//			var writeTo = new Packages.java.io.FileOutputStream(copyTo);
+//			$api.io.copy(plugin.stream,writeTo);
+//			plugin.stream.close();
+//			writeTo.close();
+//			index++;
+//			$api.debug("Copied plugin " + index + " from " + plugin.name);
+//		}
+//
+//		$api.slime.settings.set("jsh.shell.packaged.plugins", String(tmpdir.getCanonicalPath()));
 	};
 
 	var shell = (function() {
