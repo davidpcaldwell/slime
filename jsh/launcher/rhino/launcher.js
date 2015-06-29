@@ -356,12 +356,6 @@ try {
 //		}
 	$api.debug("Creating command ...");
 	var command = new $api.java.Command();
-	command.addClasspathUrls = function(classpath) {
-		var local = classpath.local();
-		for (var i=0; i<local.length; i++) {
-			this.classpath(local[i]);
-		}
-	}
 
 	var container = (function() {
 		//	TODO	test whether next line necessary
@@ -380,12 +374,18 @@ try {
 	$api.slime.settings.sendPropertiesTo(function(name,value) {
 		command.systemProperty(name,value);
 	});
-	var _urls = $api.jsh.shell.classpath();
-	command.addClasspathUrls(_urls);
+
+	var classpath = $api.jsh.shell.classpath().local();
+	for (var i=0; i<classpath.length; i++) {
+		command.classpath(classpath[i]);
+	}
+
 	command.main($api.jsh.engine.main);
+
 	for (var i=0; i<$api.arguments.length; i++) {
 		command.argument($api.arguments[i]);
 	}
+
 	$api.debug("Running command " + command + " ...");
 	var status = command.run();
 	$api.debug("Command returned: status = " + status);
