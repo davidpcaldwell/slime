@@ -77,26 +77,18 @@
 //	TODO	convert jsh build script to a jsh script that runs in an unbuilt shell
 //	TODO	create semi-automated verify process that includes non-automatable features (like debugger)
 
-//if (false) $api.arguments = $api.engine.resolve({
-//	rhino: function() {
-//		return $api.arguments;
-//	},
-//	nashorn: function() {
-//		return $arguments;
-//	}
-//})();
-
 if (!this.$api.slime) {
 	$api.script.resolve("slime.js").load();
 	$api.log("Loaded slime.js: src=" + $api.slime.src);
 }
 
-//	Make the launcher classpath available to help with launching subshells
-$api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
 if ($api.slime.setting("jsh.launcher.debug")) {
 	$api.debug.on = true;
 	$api.debug("debugging enabled");
 }
+
+//	Make the launcher classpath available to help with launching subshells
+$api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
 
 $api.jsh = {};
 $api.jsh.engine = (function() {
@@ -121,8 +113,8 @@ $api.jsh.engine = (function() {
 	}
 	return $api.engine.resolve(engines);
 })();
-$api.jsh.colon = String(Packages.java.io.File.pathSeparator);
 $api.jsh.shell = new (function(peer) {
+	var colon = String(Packages.java.io.File.pathSeparator);
 	$api.debug("peer = " + peer);
 	$api.debug("peer.getPackaged() = " + peer.getPackaged());
 	$api.debug("peer.getHome() = " + peer.getHome());
@@ -175,7 +167,7 @@ $api.jsh.shell = new (function(peer) {
 		rhino: function() {
 			(function(_urls) {
 				if (_urls) {
-					$api.slime.settings.set("jsh.engine.rhino.classpath", String(new Classpath(_urls).local().join($api.jsh.colon)));
+					$api.slime.settings.set("jsh.engine.rhino.classpath", String(new Classpath(_urls).local().join(colon)));
 				}
 			})(peer.getRhinoClasspath());
 		},
@@ -199,7 +191,7 @@ $api.jsh.shell = new (function(peer) {
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
 			if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
 			//	TODO	push colon below back into classpath object, probably
-			var rhinoClasspath = (classpath) ? ["-classpath", classpath.local().join($api.jsh.colon)] : [];
+			var rhinoClasspath = (classpath) ? ["-classpath", classpath.local().join(colon)] : [];
 			$api.java.install.compile([
 				"-d", LOADER_CLASSES
 			].concat(rhinoClasspath).concat(toCompile));
@@ -263,6 +255,18 @@ $api.jsh.shell = new (function(peer) {
 		}
 	}
 })(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
+
+$api.jsh.vmArguments = (function() {
+	//	TODO	what about jsh.jvm.options? If it is set, the options may already have been applied by launcher and we may not need
+	//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
+	if ($api.jsh.shell.packaged) return [];
+	var rv = [];
+	while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
+		rv.push($api.arguments.shift());
+	}
+	return rv;
+})();
+
 $api.jsh.setExitStatus = $api.engine.resolve({
 	rhino: function(status) {
 		var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
@@ -279,16 +283,6 @@ $api.jsh.setExitStatus = $api.engine.resolve({
 		}
 	}
 });
-$api.jsh.vmArguments = (function() {
-	//	TODO	what about jsh.jvm.options? If it is set, the options may already have been applied by launcher and we may not need
-	//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
-	if ($api.jsh.shell.packaged) return [];
-	var rv = [];
-	while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
-		rv.push($api.arguments.shift());
-	}
-	return rv;
-})();
 
 if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
 	$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");

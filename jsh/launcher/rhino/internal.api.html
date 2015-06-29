@@ -17,7 +17,6 @@ END LICENSE
 	<title>jsh Launcher</title>
 	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../../loader/api/api.js"></script>
-	<!--	TODO	document directives	-->
 </head>
 <body>
 	<div>
@@ -48,11 +47,11 @@ END LICENSE
 					where to find the code.
 				</li>
 				<li>
-					Select the appropriate Java implementation to use if the <code>jsh.java.home</code> setting is specified.
+					Selects the appropriate Java implementation to use if the <code>jsh.java.home</code> setting is specified.
 				</li>
 				<li>
-					Set appropriate specified VM arguments on the launcher VM, and pass appropriate specified VM arguments to the
-					launcher as arguments for the loader VM.
+					Sets appropriate specified VM arguments on the launcher VM, and passes appropriate specified VM arguments to
+					the launcher as arguments for the loader VM.
 				</li>
 			</ul>
 		</div>
@@ -123,7 +122,7 @@ END LICENSE
 					Configure Java default logging properties.
 				</li>
 				<li>
-					Determine what kind of shell is being run, and put a <code>inonit.script.jsh.launcher</code> instance in
+					Determine what kind of shell is being run, and put a <code>inonit.script.jsh.launcher.Shell</code> instance in
 					the <code>jsh.launcher.shell</code> system property. This instance contains information about the locations of
 					Rhino, the packaged file (if any), and the shell home (if any). The shell is determined by checking for the
 					<code>main.jsh.js</code> resource in the classloader (indicating a packaged shell), and then by checking
