@@ -356,11 +356,6 @@ try {
 //		}
 	$api.debug("Creating command ...");
 	var command = new $api.java.Command();
-	command.addClasspath = function(classpath) {
-		for (var i=0; i<classpath.elements.length; i++) {
-			this.classpath(classpath.elements[i]);
-		}
-	}
 	command.addClasspathUrls = function(classpath) {
 		var local = classpath.local();
 		for (var i=0; i<local.length; i++) {

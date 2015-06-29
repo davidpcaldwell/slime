@@ -14,6 +14,7 @@
 package inonit.script.jsh.launcher;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import javax.script.*;
@@ -49,7 +50,11 @@ abstract class Configuration {
 			if (launcherFile.getName().equals("jsh.jar")) {
 				JSH_HOME = launcherFile.getParentFile();
 			}
-			shell = (JSH_HOME != null) ? Shell.built(JSH_HOME) : Shell.unbuilt(configuration.src(), configuration.rhino());
+			shell = (JSH_HOME != null) ? Shell.built(JSH_HOME) : Shell.unbuilt(configuration.src());
+			if (configuration.rhino() != null) {
+				//	TODO	provide more flexible parsing of rhino argument; multiple elements, allow URL rather than pathname
+				shell.setRhinoClasspath(new URL[] { new File(configuration.rhino()).toURI().toURL() });
+			}
 			//	TODO	This might miss some exotic situations, like loading this class in its own classloader
 		}
 		return shell;
@@ -79,7 +84,8 @@ abstract class Configuration {
 		return INSTANCES;
 	}
 
-	private Engine getEngine(String JSH_ENGINE) throws IOException {
+	private Engine getEngine() throws IOException {
+		String JSH_ENGINE = engine();
 		Configuration configuration = this;
 		Map<String,Engine> engines = configuration.engineMap();
 		if (JSH_ENGINE != null) {
@@ -105,7 +111,17 @@ abstract class Configuration {
 		return rv;
 	}
 
-	final Main.Invocation invocation() throws IOException {
-		return new Main.Invocation(shell(), getEngine(engine()));
+	final Main.Invocation.Configuration invocation() throws IOException {
+		final Shell shell = shell();
+		final Engine engine = getEngine();
+		return new Main.Invocation.Configuration() {
+			@Override Shell shell() {
+				return shell;
+			}
+
+			@Override Engine engine() {
+				return engine;
+			}
+		};
 	}
 }

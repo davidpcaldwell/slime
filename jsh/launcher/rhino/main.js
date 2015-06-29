@@ -94,6 +94,7 @@ var install = (function() {
 	return $api.java.install;
 })();
 
+//	TODO	convert to use $api.java.Command
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
 //			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
 Packages.java.lang.System.exit(

@@ -34,14 +34,17 @@ public class Main {
 	}
 
 	static class Invocation {
-		private Shell shell;
-		private Engine engine;
+		static abstract class Configuration {
+			abstract Shell shell();
+			abstract Engine engine();
+		}
 
-		Invocation(Shell shell, Engine engine) {
-			Logging.get().log(Main.class, Level.CONFIG, "Invoking: " + shell + " with engine named " + engine.id());
-			this.shell = shell;
-			this.engine = engine;
-			Logging.get().log(Main.class, Level.FINE, "Using engine: " + this.engine);
+		private Configuration configuration;
+
+		Invocation(Configuration configuration) {
+			this.configuration = configuration;
+			Logging.get().log(Main.class, Level.CONFIG, "Invoking: " + configuration.shell() + " with engine named " + configuration.engine().id());
+			Logging.get().log(Main.class, Level.FINE, "Using engine: " + configuration.engine());
 		}
 
 		private Properties getDefaultJavaLoggingProperties() throws IOException {
@@ -62,13 +65,13 @@ public class Main {
 			System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
 			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
 			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-			Logging.get().log(Main.class, Level.FINER, "Initializing system properties; engine = " + engine + " ...");
-			Logging.get().log(Main.class, Level.FINER, "Engine: %s", this.engine);
-			System.setProperty("inonit.jrunscript.api.main", shell.getLauncherScript().toExternalForm());
-			System.setProperty("jsh.launcher.engine", engine.id());
-			//	TODO	transitional; get rid of this
-			System.getProperties().put("jsh.launcher.shell", shell);
-			return this.engine.run(shell.getJrunscriptApi(), arguments);
+			Logging.get().log(Main.class, Level.FINER, "Initializing system properties; engine = " + configuration.engine() + " ...");
+			Logging.get().log(Main.class, Level.FINER, "Engine: %s", configuration.engine());
+			//	TODO	get rid of next property, which seems to only be used in the build process
+			System.setProperty("jsh.launcher.engine", configuration.engine().id());
+			System.getProperties().put("jsh.launcher.shell", configuration.shell());
+			System.setProperty("inonit.jrunscript.api.main", configuration.shell().getLauncherScript().toExternalForm());
+			return configuration.engine().run(configuration.shell().getJrunscriptApi(), arguments);
 		}
 	}
 
@@ -91,7 +94,7 @@ public class Main {
 		Thread beforeExitThread = new Thread(beforeExit);
 		beforeExitThread.setName("BeforeExit");
 		Runtime.getRuntime().addShutdownHook(beforeExitThread);
-		Invocation invocation = configuration.invocation();
+		Invocation invocation = new Invocation(configuration.invocation());
 		Integer status = null;
 		try {
 			status = invocation.run(args);

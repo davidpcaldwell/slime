@@ -22,7 +22,19 @@ public abstract class Shell {
 	abstract URL getJrunscriptApi() throws IOException;
 	abstract URL getLauncherScript() throws IOException;
 
-	public abstract URL[] getRhinoClasspath();
+	private URL[] specifiedRhino;
+
+	final void setRhinoClasspath(URL[] urls) {
+		this.specifiedRhino = urls;
+	}
+
+	abstract URL[] getDefaultRhinoClasspath();
+
+	public final URL[] getRhinoClasspath() {
+		if (specifiedRhino != null) return specifiedRhino;
+		return getDefaultRhinoClasspath();
+	}
+
 	public abstract File getHome();
 	public abstract File getPackaged();
 
@@ -34,11 +46,9 @@ public abstract class Shell {
 		return new BuiltShell(home);
 	}
 
-	static Shell unbuilt(String src, String rhino) throws MalformedURLException {
-		//	TODO	provide more flexible parsing of rhino argument; multiple elements, allow URL rather than pathname
+	static Shell unbuilt(String src) {
 		File sourceroot = new File(src);
-		File js = (rhino != null) ? new File(rhino) : null;
-		return new UnbuiltShell(sourceroot,(js != null) ? new URL[] { js.toURI().toURL() } : null);
+		return new UnbuiltShell(sourceroot);
 	}
 
 	private static class PackagedShell extends Shell {
@@ -72,7 +82,7 @@ public abstract class Shell {
 			return ClassLoader.getSystemResource("$jsh/launcher/launcher.js");
 		}
 
-		public URL[] getRhinoClasspath() {
+		URL[] getDefaultRhinoClasspath() {
 			//	TODO	should we return something more useful?
 			try {
 				Class.forName("org.mozilla.javascript.Context");
@@ -116,7 +126,7 @@ public abstract class Shell {
 			return rhinoClassLoader;
 		}
 
-		public abstract URL[] getRhinoClasspath();
+		abstract URL[] getDefaultRhinoClasspath();
 
 		public File getPackaged() {
 			return null;
@@ -125,15 +135,13 @@ public abstract class Shell {
 
 	private static class UnbuiltShell extends UnpackagedShell {
 		private File sourceroot;
-		private URL[] rhinoClasspath;
 
-		UnbuiltShell(File sourceroot, URL[] rhinoClasspath) {
+		UnbuiltShell(File sourceroot) {
 			this.sourceroot = sourceroot;
-			this.rhinoClasspath = rhinoClasspath;
 		}
 
 		public String toString() {
-			return "Unbuilt: sourceroot=" + sourceroot + " rhino=" + rhinoClasspath;
+			return "Unbuilt: sourceroot=" + sourceroot + " rhino=" + getRhinoClasspath();
 		}
 
 		URL getJrunscriptApi() throws IOException {
@@ -146,8 +154,8 @@ public abstract class Shell {
 			return new File(sourceroot, "jsh/launcher/rhino/launcher.js").getCanonicalFile().toURI().toURL();
 		}
 
-		public URL[] getRhinoClasspath() {
-			return rhinoClasspath;
+		URL[] getDefaultRhinoClasspath() {
+			return null;
 		}
 
 		public File getHome() {
@@ -157,13 +165,18 @@ public abstract class Shell {
 
 	private static class BuiltShell extends UnpackagedShell {
 		private java.io.File HOME;
-		private URL rhino;
+		private URL[] rhino;
 		private URL jrunscript;
 		private URL launcher;
 
 		BuiltShell(java.io.File HOME) throws java.io.IOException, MalformedURLException {
 			this.HOME = HOME.getCanonicalFile();
-			this.rhino = new java.io.File(this.HOME, "lib/js.jar").toURI().toURL();
+			File rhino = new java.io.File(this.HOME, "lib/js.jar");
+			if (rhino.exists()) {
+				this.rhino = new URL[] { rhino.toURI().toURL() };
+			} else {
+				this.rhino = new URL[0];
+			}
 			this.jrunscript = new java.io.File(this.HOME, "jsh.js").toURI().toURL();
 			this.launcher = new java.io.File(this.HOME, "launcher.js").toURI().toURL();
 		}
@@ -180,8 +193,8 @@ public abstract class Shell {
 			return launcher;
 		}
 
-		public URL[] getRhinoClasspath() {
-			return new URL[] { rhino };
+		URL[] getDefaultRhinoClasspath() {
+			return rhino;
 		}
 
 		public File getHome() {
