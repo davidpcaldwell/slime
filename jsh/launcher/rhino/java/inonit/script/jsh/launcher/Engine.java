@@ -40,8 +40,7 @@ public abstract class Engine {
 		Integer run(URL script, String[] args) throws IOException, ScriptException {
 			ScriptEngine engine = factory.getEngineByName("nashorn");
 			Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
-			//	TODO	the next two lines are probably not both necessary
-			this.factory.getBindings().put("$arguments", args);
+			this.factory.getBindings().put("javax.script.argv", args);
 			Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
 			ScriptContext c = engine.getContext();
 			c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);

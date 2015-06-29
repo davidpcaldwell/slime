@@ -73,19 +73,25 @@
 //	seem to have been useful, and scripts intended to be used as "commands" would typically be wrapped in bash scripts, which do
 //	have the PATH semantics.
 
-$api.arguments = $api.engine.resolve({
-	rhino: function() {
-		return $api.arguments;
-	},
-	nashorn: function() {
-		return $arguments;
-	}
-})();
+//	TODO	can this be run with Java 6/7 jrunscript?
+//	TODO	convert jsh build script to a jsh script that runs in an unbuilt shell
+//	TODO	create semi-automated verify process that includes non-automatable features (like debugger)
+
+//if (false) $api.arguments = $api.engine.resolve({
+//	rhino: function() {
+//		return $api.arguments;
+//	},
+//	nashorn: function() {
+//		return $arguments;
+//	}
+//})();
 
 if (!this.$api.slime) {
 	$api.script.resolve("slime.js").load();
 	$api.log("Loaded slime.js: src=" + $api.slime.src);
 }
+
+//	Make the launcher classpath available to help with launching subshells
 $api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
 if ($api.slime.setting("jsh.launcher.debug")) {
 	$api.debug.on = true;
@@ -211,42 +217,6 @@ $api.jsh.shell = new (function(peer) {
 		this.shellClasspath = function() {
 			return [file.toURI().toURL()];
 		}
-//
-//		var ClassLoader = Packages.java.lang.ClassLoader;
-//
-//		var tmpdir = $api.io.tmpdir();
-//
-//		var index = 0;
-//		var plugin;
-//		$api.debug("Copying plugins ...");
-//
-//		var getPlugin = function(index) {
-//			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
-//				return {
-//					name: String(index) + ".jar",
-//					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")
-//				};
-//			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")) {
-//				return {
-//					name: String(index) + ".slime",
-//					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")
-//				};
-//			} else {
-//				return null;
-//			}
-//		}
-//
-//		while( plugin = getPlugin(index) ) {
-//			var copyTo = new Packages.java.io.File(tmpdir, plugin.name);
-//			var writeTo = new Packages.java.io.FileOutputStream(copyTo);
-//			$api.io.copy(plugin.stream,writeTo);
-//			plugin.stream.close();
-//			writeTo.close();
-//			index++;
-//			$api.debug("Copied plugin " + index + " from " + plugin.name);
-//		}
-//
-//		$api.slime.settings.set("jsh.shell.packaged.plugins", String(tmpdir.getCanonicalPath()));
 	};
 
 	var shell = (function() {
