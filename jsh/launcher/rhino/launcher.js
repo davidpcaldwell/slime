@@ -76,6 +76,28 @@
 //	TODO	can this be run with Java 6/7 jrunscript?
 //	TODO	convert jsh build script to a jsh script that runs in an unbuilt shell
 //	TODO	create semi-automated verify process that includes non-automatable features (like debugger)
+//	TODO	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
+//	TODO	At one point, was investigating using jjs as Nashorn launcher; is this still a good idea? If so, would using the
+//			Rhino shell as main make sense for the Rhino case?
+//	TODO	Implement Rhino profiler; probably needs to move to main.js
+//
+//		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
+//			//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
+//			//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
+//			//	from settings:
+//			//	this.profiler = JSH_HOME.getFile("tools/profiler.jar");
+//			if (settings.get("profiler") && JSH_SHELL_CONTAINER == "jvm") {
+//				var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
+//				if (withParameters) {
+//					command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
+//				} else {
+//					command.add("-javaagent:" + settings.get("profiler").path);
+//				}
+//			} else {
+//				//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
+//				//	emit warning message?
+//			}
+//		}
 
 if (!this.$api.slime) {
 	$api.script.resolve("slime.js").load();
@@ -91,6 +113,7 @@ if ($api.slime.setting("jsh.launcher.debug")) {
 $api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
 
 $api.jsh = {};
+
 $api.jsh.engine = (function() {
 	var engines = {
 		rhino: {
@@ -113,13 +136,13 @@ $api.jsh.engine = (function() {
 	}
 	return $api.engine.resolve(engines);
 })();
+
 $api.jsh.shell = new (function(peer) {
 	var colon = String(Packages.java.io.File.pathSeparator);
 	$api.debug("peer = " + peer);
 	$api.debug("peer.getPackaged() = " + peer.getPackaged());
 	$api.debug("peer.getHome() = " + peer.getHome());
 	if (peer.getPackaged()) {
-		//	TODO	get rid of setProperty and just use settings
 		$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
 		$api.slime.settings.set("jsh.shell.packaged", String(peer.getPackaged().getCanonicalPath()));
 		this.packaged = true;
@@ -296,28 +319,6 @@ $api.debug("Launcher working directory = " + Packages.java.lang.System.getProper
 $api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
 
 try {
-	//	TODO	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
-	//	TODO	At one point, was investigating using jjs as Nashorn launcher; is this still a good idea? If so, would using the
-	//			Rhino shell as main make sense for the Rhino case?
-		//	Rhino
-		//	TODO	implement profiler; see below ... probably needs to move to main script
-//		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
-//			//	TODO	there will be a profiler: version of this variable that probably allows passing a filter to profile only
-//			//			certain classes and/or scripts; this should be parsed here and the filter option passed through to the agent
-//			//	from settings:
-//			//	this.profiler = JSH_HOME.getFile("tools/profiler.jar");
-//			if (settings.get("profiler") && JSH_SHELL_CONTAINER == "jvm") {
-//				var withParameters = /^profiler\:(.*)/.exec(env.JSH_SCRIPT_DEBUGGER);
-//				if (withParameters) {
-//					command.add("-javaagent:" + settings.get("profiler").path + "=" + withParameters[1]);
-//				} else {
-//					command.add("-javaagent:" + settings.get("profiler").path);
-//				}
-//			} else {
-//				//	TODO	allow explicit setting of profiler agent location when not running in ordinary built shell
-//				//	emit warning message?
-//			}
-//		}
 	$api.debug("Creating command ...");
 	var command = new $api.java.Command();
 
