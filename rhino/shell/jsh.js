@@ -285,17 +285,30 @@ $exports.jsh = function(p) {
 			if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 				properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
 			}
-			var shell = $context.api.js.Object.set({}, p, {
-				//	Set default classpath from this shell
-				properties: properties,
-				classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
-				main: "inonit.script.jsh.launcher.Main",
-				arguments: addCommandTo([]),
-				environment: environment,
-				evaluate: evaluate
-			});
+			if ($exports.environment.JSH_NEW_LAUNCHER) {
+				var shell = $context.api.js.Object.set({}, p, {
+					//	Set default classpath from this shell
+					properties: properties,
+					classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
+					main: $exports.properties.get("jsh.launcher.main"),
+					arguments: addCommandTo([]),
+					environment: environment,
+					evaluate: evaluate
+				});
+				return $exports.java(shell);
+			} else {
+				var shell = $context.api.js.Object.set({}, p, {
+					//	Set default classpath from this shell
+					properties: properties,
+					classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
+					main: "inonit.script.jsh.launcher.Main",
+					arguments: addCommandTo([]),
+					environment: environment,
+					evaluate: evaluate
+				});
 
-			return $exports.java(shell);
+				return $exports.java(shell);
+			}
 		} else {
 			if (p.shell.getFile("jsh.jar")) {
 				//	Built shell

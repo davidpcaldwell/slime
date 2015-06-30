@@ -178,6 +178,7 @@ try {
 			var rv = [];
 			for (var i=0; i<this._urls.length; i++) {
 				var pathname;
+				if (!this._urls[i].getProtocol) throw new Error("Not URL: " + this._urls[i]);
 				if (String(this._urls[i].getProtocol()) != "file") {
 		//			var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
 		//
@@ -202,8 +203,14 @@ try {
 		}
 	};
 
+	//	TODO	Merge below with above
+	$api.jsh.Classpath = Classpath;
+
 	$api.jsh.Unbuilt = function(src,rhino) {
+		this.rhino = rhino;
+
 		this.shellClasspath = function() {
+			if (rhino && rhino.length) rhino = new Classpath(rhino);
 			var LOADER_CLASSES = $api.io.tmpdir();
 			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
 			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
@@ -220,6 +227,10 @@ try {
 
 	$api.jsh.Built = function(home) {
 		this.home = home;
+
+		if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
+			this.rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
+		}
 
 		this.shellClasspath = function() {
 			return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
@@ -296,7 +307,7 @@ try {
 		})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
 	}
 
-	if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
+	if (!$api.shell.environment.JSH_NEW_LAUNCHER || $api.jsh.shell && $api.jsh.shell.packaged) {
 		if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
 			$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
 			//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a

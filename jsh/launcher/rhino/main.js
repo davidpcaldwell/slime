@@ -80,7 +80,7 @@ $api.engine.runCommand = (function(was) {
 $api.slime.settings.default("jsh.engine.rhino.classpath", $api.rhino.classpath);
 
 //	If SLIME source location not specified, and we can determine it, supply it to the shell
-$api.slime.settings.default("jsh.shell.src", $api.slime.src);
+$api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
 
 //	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
 while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
@@ -143,5 +143,42 @@ if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
 		command.vm(vm[i]);
 	}
 	$api.slime.settings.sendPropertiesTo(command);
-	throw new Error("Unimplemented: detect shell and detect classpath.");
+	//	If we have a sibling named jsh.jar, we are a built shell
+	var shell = (function() {
+		if ($api.script.resolve("jsh.jar")) {
+			return new $api.jsh.Built($api.script.file.getParentFile());
+		} else {
+			var rhino;
+			if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
+				rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()]
+			}
+			return new $api.jsh.Unbuilt($api.script.file.getParentFile().getParentFile().getParentFile().getParentFile(),rhino);
+		}
+	})();
+	var _urls = [];
+	if (shell.rhino) {
+		$api.slime.settings.default("jsh.engine", "rhino");
+		for (var i=0; i<shell.rhino.length; i++) {
+			_urls.push(shell.rhino[i]);
+		}
+	} else {
+		$api.slime.settings.default("jsh.engine", "nashorn");
+	}
+	var _shellUrls = shell.shellClasspath();
+	for (var i=0; i<_shellUrls.length; i++) {
+		_urls.push(_shellUrls[i]);
+	}
+	var classpath = new $api.jsh.Classpath(_urls);
+	command.systemProperty("jsh.launcher.classpath", classpath.local());
+	command.systemProperty("jsh.launcher.main", $api.jsh.engine.main);
+	for (var i=0; i<classpath._urls.length; i++) {
+		command.classpath(classpath._urls[i]);
+	}
+	command.main($api.jsh.engine.main);
+	for (var i=0; i<$api.arguments.length; i++) {
+		command.argument($api.arguments[i]);
+	}
+	Packages.java.lang.System.err.println("command = " + command);
+	var status = command.run();
+	$api.jsh.exit(status);
 }

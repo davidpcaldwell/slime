@@ -25,6 +25,7 @@ if (jsh.shell.jsh.src && !jsh.shell.jsh.home) {
 			JSH_BUILD_NODOC: "true"
 		})
 	});
+	jsh.shell.echo("Re-launching in built shell: " + tmpdir);
 	jsh.shell.run({
 		command: "jrunscript",
 		arguments: [
@@ -46,9 +47,12 @@ var parameters = jsh.script.getopts({
 
 //	TODO	currently this program can only be run in a built shell, because the packaging tool only works in a built shell
 
+//jsh.shell.echo("Arguments: " + jsh.script.arguments);
 if (parameters.options.scenario) {
+	jsh.shell.echo("Creating scenario.");
 	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api"));
 	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/unit"));
+	jsh.shell.echo("Loaded plugins.");
 	var views = {
 		child: function() {
 			return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output })
@@ -65,15 +69,24 @@ if (parameters.options.scenario) {
 		name: jsh.script.file.pathname.basename,
 		view: views[parameters.options.view]()
 	});
+	jsh.shell.echo("Created scenario.");
 	var packaged_JSH_SHELL_CLASSPATH = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath(jsh.script.file.pathname.basename + ".jar");
-	var engine = (jsh.shell.rhino) ? [] : ["-norhino"];
+	var engine = (jsh.shell.jsh.home.getFile("lib/js.jar")) ? [] : ["-norhino"];
+	jsh.shell.echo("Packaging to " + packaged_JSH_SHELL_CLASSPATH);
+	jsh.shell.echo("JSH_NEW_LAUNCHER " + jsh.shell.environment.JSH_NEW_LAUNCHER);
 	jsh.shell.jsh({
 		fork: true,
 		script: jsh.shell.jsh.home.getFile("tools/package.jsh.js"),
 		arguments: [
 			"-script", jsh.script.file.pathname,
 			"-to", packaged_JSH_SHELL_CLASSPATH
-		].concat(engine)
+		].concat(engine),
+		evaluate: function(result) {
+			if (result.status) {
+				jsh.shell.echo("Exit status " + result.status + " from package.jsh.js");
+				throw new Error();
+			}
+		}
 	});
 	var separator = String(Packages.java.lang.System.getProperty("line.separator"));
 	scenario.add({ scenario: new function() {

@@ -68,7 +68,7 @@ jsh.unit.integration({
 				stdio: (p.stdio) ? p.stdio : {
 					output: String
 				},
-				environment: p.environment,
+				environment: jsh.js.Object.set({}, p.environment, { JSH_NEW_LAUNCHER: jsh.shell.environment.JSH_NEW_LAUNCHER }),
 				evaluate: (p.evaluate) ? p.evaluate : function(result) {
 					if (result.status !== 0) throw new Error("Status is " + result.status);
 					jsh.shell.echo("Output: " + result.stdio.output);
@@ -157,6 +157,7 @@ jsh.unit.integration({
 					JSH_ENGINE: engine
 				}
 			}) });
+
 			[unbuilt,built].forEach(function(shell) {
 				addScenario(new function() {
 					var type = (shell == unbuilt) ? "unbuilt" : "built";

@@ -502,6 +502,7 @@ $exports.Thread.Monitor = function() {
 		return "Thread.Monitor [id=" + Packages.java.lang.System.identityHashCode(lock) + "]";
 	}
 
+	//	TODO	repetition: this is also in Thread constructor
 	var synchronize = function(f) {
 		if ($exports.getClass("inonit.script.runtime.Threads") && $exports.getClass("org.mozilla.javascript.Context")) {
 			return Packages.inonit.script.runtime.Threads.createSynchronizedFunction(lock, f);

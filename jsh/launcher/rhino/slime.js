@@ -66,12 +66,12 @@ $api.slime = (function(was) {
 					}
 
 					this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
-						$api.log("Under: " + dir);
+						//$api.log("Under: " + dir);
 						if (typeof(rv) == "undefined") {
 							rv = [];
 						}
 						var files = dir.listFiles();
-						$api.log("files: " + files.length);
+						//$api.log("files: " + files.length);
 						if (!files) return [];
 						for (var i=0; i<files.length; i++) {
 							if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
@@ -196,6 +196,7 @@ $api.slime = (function(was) {
 
 		//	Undocumented so far
 		map("jsh.launcher.classpath", BOTH);
+		map("jsh.launcher.main", BOTH);
 
 		//	May not survive refactoring
 		map("jsh.launcher.debug", LAUNCHER);
