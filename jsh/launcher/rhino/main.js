@@ -133,6 +133,7 @@ if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
 		)
 	);
 } else {
+	$api.script.resolve("launcher.js").load();
 	var command = new $api.java.Command();
 	if ($api.slime.settings.get("jsh.java.home")) {
 		command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
@@ -142,5 +143,5 @@ if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
 		command.vm(vm[i]);
 	}
 	$api.slime.settings.sendPropertiesTo(command);
-	throw new Error("Unimplemented: detect classpath.");
+	throw new Error("Unimplemented: detect shell and detect classpath.");
 }

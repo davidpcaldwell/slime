@@ -157,131 +157,144 @@ try {
 		return $api.engine.resolve(engines);
 	})();
 
-	$api.jsh.shell = new (function(peer) {
-		var Classpath = function(_urls) {
-			var colon = String(Packages.java.io.File.pathSeparator);
+	var Classpath = function(_urls) {
+		var colon = String(Packages.java.io.File.pathSeparator);
 
-			this.append = function(classpath) {
-				this._urls.push.apply(this._urls,classpath._urls);
-			}
-
-			this._urls = (function(_urls) {
-				var rv = [];
-				if (_urls) {
-					for (var i=0; i<_urls.length; i++) {
-						rv.push(_urls[i]);
-					}
-				}
-				return rv;
-			})(_urls);
-
-			this.files = function() {
-				var rv = [];
-				for (var i=0; i<this._urls.length; i++) {
-					var pathname;
-					if (String(this._urls[i].getProtocol()) != "file") {
-			//			var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
-			//
-			//			var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
-			//			if (rhino) {
-			//				$api.debug("Copying rhino ...");
-			//				var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
-			//				var writeTo = rhinoCopiedTo.writeTo();
-			//				$api.io.copy(rhino,writeTo);
-			//			}
-						throw new Error("Not a file: " + this._urls[i]);
-					} else {
-						pathname = new Packages.java.io.File(this._urls[i].toURI()).getCanonicalPath();
-					}
-					rv.push(pathname);
-				}
-				return rv;
-			};
-
-			this.local = function() {
-				return this.files().join(colon);
-			}
-		};
-
-		var getRhinoClasspath = function() {
-			var classpath = peer.getRhinoClasspath();
-			if (classpath) {
-				return new Classpath(classpath);
-			} else {
-				return null;
-			}
-		};
-
-		var Unbuilt = function(src) {
-			this.shellClasspath = function() {
-				var LOADER_CLASSES = $api.io.tmpdir();
-				var classpath = getRhinoClasspath();
-				var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-				if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
-				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
-				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-				if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
-				var rhinoClasspath = (classpath) ? ["-classpath", classpath.local()] : [];
-				$api.java.install.compile([
-					"-d", LOADER_CLASSES
-				].concat(rhinoClasspath).concat(toCompile));
-				return [LOADER_CLASSES.toURI().toURL()];
-			};
-		};
-
-		var Built = function(home) {
-			this.home = home;
-
-			this.shellClasspath = function() {
-				return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
-			}
-		};
-
-		var Packaged = function(file) {
-			this.packaged = file;
-
-			this.shellClasspath = function() {
-				return [file.toURI().toURL()];
-			};
-		};
-
-		var shell = (function(peer) {
-			if (peer.getPackaged()) {
-				$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
-				return new Packaged(peer.getPackaged());
-			} else if (peer.getHome()) {
-				$api.debug("Setting built shell: " + String(peer.getHome().getCanonicalPath()));
-				return new Built(peer.getHome());
-			} else {
-				return new Unbuilt(new Packages.java.io.File($api.slime.setting("jsh.shell.src")));
-			}
-		})(peer);
-
-		if (shell.home) {
-			this.home = String(shell.home.getCanonicalPath());
-		}
-		if (shell.packaged) {
-			this.packaged = String(shell.packaged.getCanonicalPath());
+		this.append = function(classpath) {
+			this._urls.push.apply(this._urls,classpath._urls);
 		}
 
-		this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;
-
-		this.classpath = function() {
-			var rv = new Classpath();
-
-			$api.jsh.engine.resolve({
-				rhino: function() {
-					rv.append(getRhinoClasspath());
-				},
-				nashorn: function() {
+		this._urls = (function(_urls) {
+			var rv = [];
+			if (_urls) {
+				for (var i=0; i<_urls.length; i++) {
+					rv.push(_urls[i]);
 				}
-			})();
+			}
+			return rv;
+		})(_urls);
 
-			rv.append(new Classpath(shell.shellClasspath()));
-
+		this.files = function() {
+			var rv = [];
+			for (var i=0; i<this._urls.length; i++) {
+				var pathname;
+				if (String(this._urls[i].getProtocol()) != "file") {
+		//			var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
+		//
+		//			var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
+		//			if (rhino) {
+		//				$api.debug("Copying rhino ...");
+		//				var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
+		//				var writeTo = rhinoCopiedTo.writeTo();
+		//				$api.io.copy(rhino,writeTo);
+		//			}
+					throw new Error("Not a file: " + this._urls[i]);
+				} else {
+					pathname = new Packages.java.io.File(this._urls[i].toURI()).getCanonicalPath();
+				}
+				rv.push(pathname);
+			}
 			return rv;
 		};
-	})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
+
+		this.local = function() {
+			return this.files().join(colon);
+		}
+	};
+
+	$api.jsh.Unbuilt = function(src,rhino) {
+		this.shellClasspath = function() {
+			var LOADER_CLASSES = $api.io.tmpdir();
+			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
+			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
+			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
+			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+			var rhinoClasspath = (rhino) ? ["-classpath", rhino.local()] : [];
+			$api.java.install.compile([
+				"-d", LOADER_CLASSES
+			].concat(rhinoClasspath).concat(toCompile));
+			return [LOADER_CLASSES.toURI().toURL()];
+		};
+	};
+
+	$api.jsh.Built = function(home) {
+		this.home = home;
+
+		this.shellClasspath = function() {
+			return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
+		}
+	};
+
+	$api.jsh.Packaged = function(file) {
+		this.packaged = file;
+
+		this.shellClasspath = function() {
+			return [file.toURI().toURL()];
+		};
+	};
+
+	if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell")) {
+		$api.jsh.shell = new (function(peer) {
+			var getRhinoClasspath = function() {
+				var classpath = peer.getRhinoClasspath();
+				if (classpath) {
+					return new Classpath(classpath);
+				} else {
+					return null;
+				}
+			};
+
+			var Unbuilt = function(src) {
+				return new $api.jsh.Unbuilt(src,getRhinoClasspath());
+			};
+
+			var Built = function(home) {
+				return new $api.jsh.Built(home);
+			};
+
+			var Packaged = function(file) {
+				return new $api.jsh.Packaged(file);
+			};
+
+			var shell = (function(peer) {
+				if (peer.getPackaged()) {
+					$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
+					return new Packaged(peer.getPackaged());
+				} else if (peer.getHome()) {
+					$api.debug("Setting built shell: " + String(peer.getHome().getCanonicalPath()));
+					return new Built(peer.getHome());
+				} else {
+					return new Unbuilt(new Packages.java.io.File($api.slime.setting("jsh.shell.src")));
+				}
+			})(peer);
+
+			if (shell.home) {
+				this.home = String(shell.home.getCanonicalPath());
+			}
+			if (shell.packaged) {
+				this.packaged = String(shell.packaged.getCanonicalPath());
+			}
+
+			this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;
+
+			this.classpath = function() {
+				var rv = new Classpath();
+
+				$api.jsh.engine.resolve({
+					rhino: function() {
+						rv.append(getRhinoClasspath());
+					},
+					nashorn: function() {
+					}
+				})();
+
+				rv.append(new Classpath(shell.shellClasspath()));
+
+				return rv;
+			};
+		})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
+	}
 
 	if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
 		if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
