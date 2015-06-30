@@ -97,37 +97,50 @@ var install = (function() {
 //	TODO	convert to use $api.java.Command
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
 //			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
-Packages.java.lang.System.exit(
-	$api.engine.runCommand.apply(
-		null,
-		[
-			install.launcher
-		].concat(
-			container.getVmArguments()
-		).concat(
-			$api.slime.settings.getPropertyArguments()
-		).concat([
-			"-classpath", $api.slime.launcher.getClasses(),
-			"inonit.script.jsh.launcher.Main"
-		]).concat(
-			container.getLauncherArguments()
-		).concat(
-			$api.arguments
-		).concat([
-			{
-				env: new (function() {
-					for (var x in env) {
-						if (/^JSH_/.test(x)) {
-						} else {
-							this[x] = env[x];
+if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
+	Packages.java.lang.System.exit(
+		$api.engine.runCommand.apply(
+			null,
+			[
+				install.launcher
+			].concat(
+				container.getVmArguments()
+			).concat(
+				$api.slime.settings.getPropertyArguments()
+			).concat([
+				"-classpath", $api.slime.launcher.getClasses(),
+				"inonit.script.jsh.launcher.Main"
+			]).concat(
+				container.getLauncherArguments()
+			).concat(
+				$api.arguments
+			).concat([
+				{
+					env: new (function() {
+						for (var x in env) {
+							if (/^JSH_/.test(x)) {
+							} else {
+								this[x] = env[x];
+							}
 						}
-					}
-					$api.slime.settings.environment(this);
-				})()
-				//	TODO	figure out what the below comment was supposed to mean
-				//	Cannot be enabled at this time; see issue 152
-				,input: Packages.java.lang.System["in"]
-			}
-		])
-	)
-);
+						$api.slime.settings.environment(this);
+					})()
+					//	TODO	figure out what the below comment was supposed to mean
+					//	Cannot be enabled at this time; see issue 152
+					,input: Packages.java.lang.System["in"]
+				}
+			])
+		)
+	);
+} else {
+	var command = new $api.java.Command();
+	if ($api.slime.settings.get("jsh.java.home")) {
+		command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
+	}
+	var vm = container.getVmArguments();
+	for (var i=0; i<vm.length; i++) {
+		command.vm(vm[i]);
+	}
+	$api.slime.settings.sendPropertiesTo(command);
+	throw new Error("Unimplemented: detect classpath.");
+}

@@ -272,6 +272,13 @@ $api.slime = (function(was) {
 		};
 
 		this.sendPropertiesTo = function(f) {
+			if (typeof(f) == "object" && typeof(f.systemProperty) == "function") {
+				f = (function(target) {
+					return function(name,value) {
+						target.systemProperty(name,value);
+					};
+				})(f);
+			}
 			for (var x in all) {
 				var value = this.get(x);
 				if (value) {

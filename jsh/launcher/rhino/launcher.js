@@ -283,69 +283,69 @@ try {
 		};
 	})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
 
-	if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
-		$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
-		//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
-		//			java.lang.Error so that it is not caught
-		$api.jsh.exit(1);
-	}
-
-	$api.debug("Launcher environment = " + JSON.stringify($api.shell.environment, void(0), "    "));
-	$api.debug("Launcher working directory = " + Packages.java.lang.System.getProperty("user.dir"));
-	$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
-
-	$api.debug("Creating command ...");
-	var command = new $api.java.Command();
-
-	var container = (function() {
-		//	TODO	test whether next line necessary
-		if ($api.jsh.shell.packaged) return "jvm";
-		if ($api.slime.settings.get("jsh.shell.container")) return $api.slime.settings.get("jsh.shell.container");
-		return "classloader";
-	})();
-	if (container == "jvm") {
-		command.fork();
-	}
-
-	(function vmArguments() {
-		//	TODO	what about jsh.jvm.options? If it is set, the options may already have been applied by launcher and we may not need
-		//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
-		if ($api.jsh.shell.packaged) return;
-		var rv = [];
-		while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
-			command.vm($api.arguments.shift());
+	if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
+		if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
+			$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
+			//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
+			//			java.lang.Error so that it is not caught
+			$api.jsh.exit(1);
 		}
-		return rv;
-	})();
 
-	//	Make the launcher classpath available to help with launching subshells
-	$api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
+		$api.debug("Launcher environment = " + JSON.stringify($api.shell.environment, void(0), "    "));
+		$api.debug("Launcher working directory = " + Packages.java.lang.System.getProperty("user.dir"));
+		$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
 
-	//	Describe the shell
-//	if ($api.jsh.shell.packaged) $api.slime.settings.set("jsh.shell.packaged", $api.jsh.shell.packaged);
-//	if ($api.jsh.shell.home) $api.slime.settings.set("jsh.shell.home", $api.jsh.shell.home);
-	if ($api.jsh.shell.rhino) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.shell.rhino);
+		$api.debug("Creating command ...");
+		var command = new $api.java.Command();
 
-	$api.slime.settings.sendPropertiesTo(function(name,value) {
-		command.systemProperty(name,value);
-	});
+		var container = (function() {
+			//	TODO	test whether next line necessary
+			if ($api.jsh.shell.packaged) return "jvm";
+			if ($api.slime.settings.get("jsh.shell.container")) return $api.slime.settings.get("jsh.shell.container");
+			return "classloader";
+		})();
+		if (container == "jvm") {
+			command.fork();
+		}
 
-	//	TODO	If the container is classloader, presumably could use URLs or push the files switch back into $api.java.Command
-	var classpath = $api.jsh.shell.classpath().files();
-	for (var i=0; i<classpath.length; i++) {
-		command.classpath(classpath[i]);
+		(function vmArguments() {
+			//	TODO	what about jsh.jvm.options? If it is set, the options may already have been applied by launcher and we may not need
+			//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
+			if ($api.jsh.shell.packaged) return;
+			var rv = [];
+			while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
+				command.vm($api.arguments.shift());
+			}
+			return rv;
+		})();
+
+		//	Make the launcher classpath available to help with launching subshells
+		$api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
+
+		//	Describe the shell
+		if ($api.jsh.shell.rhino) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.shell.rhino);
+
+		$api.slime.settings.sendPropertiesTo(function(name,value) {
+			command.systemProperty(name,value);
+		});
+
+		//	TODO	If the container is classloader, presumably could use URLs or push the files switch back into $api.java.Command
+		var classpath = $api.jsh.shell.classpath().files();
+		for (var i=0; i<classpath.length; i++) {
+			command.classpath(classpath[i]);
+		}
+
+		command.main($api.jsh.engine.main);
+
+		for (var i=0; i<$api.arguments.length; i++) {
+			command.argument($api.arguments[i]);
+		}
+
+		$api.debug("Running command " + command + " ...");
+		var status = command.run();
+		$api.debug("Command returned: status = " + status);
+		$api.jsh.exit(status);
 	}
-
-	command.main($api.jsh.engine.main);
-
-	for (var i=0; i<$api.arguments.length; i++) {
-		command.argument($api.arguments[i]);
-	}
-
-	$api.debug("Running command " + command + " ...");
-	var status = command.run();
-	$api.debug("Command returned: status = " + status);
-	$api.jsh.exit(status);
 } catch (e) {
 	$api.debug("Error:");
 	$api.debug(e);

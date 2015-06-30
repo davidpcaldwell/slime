@@ -208,7 +208,6 @@ jsh.unit.integration({
 							verify(result).rhino.optimization.is(0);
 						}
 						if (engine == "nashorn" && parameters.options.rhino) {
-							//	TODO	for built shell, should it actually find Rhino if it was built in?
 							var result = shell({
 								environment: {
 									PATH: jsh.shell.environment.PATH,
@@ -216,7 +215,7 @@ jsh.unit.integration({
 									JSH_ENGINE: engine
 								}
 							});
-							verify(result,"shell_without_rhino").rhino.classpath.is(null);
+							verify(result,"shell_without_rhino").rhino.running.is(false);
 						}
 					}
 				});
