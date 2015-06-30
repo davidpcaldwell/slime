@@ -191,7 +191,8 @@ jsh.unit.integration({
 						if (parameters.options.rhino) {
 							verify(result).rhino.classpath.is.not(null);
 						} else {
-							verify(result).rhino.classpath.is(null);
+							//	We do not know; we could have been run inside a shell that has Rhino installed
+//							verify(result).rhino.classpath.is(null);
 						}
 						verify(result).tmp.is(tmp.toString());
 

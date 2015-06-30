@@ -143,13 +143,25 @@ $api.jsh.shell = new (function(peer) {
 	var Classpath = function(_urls) {
 		var colon = String(Packages.java.io.File.pathSeparator);
 
-		this._urls = _urls;
+		this.append = function(classpath) {
+			this._urls.push.apply(this._urls,classpath._urls);
+		}
+
+		this._urls = (function(_urls) {
+			var rv = [];
+			if (_urls) {
+				for (var i=0; i<_urls.length; i++) {
+					rv.push(_urls[i]);
+				}
+			}
+			return rv;
+		})(_urls);
 
 		this.files = function() {
 			var rv = [];
-			for (var i=0; i<_urls.length; i++) {
+			for (var i=0; i<this._urls.length; i++) {
 				var pathname;
-				if (String(_urls[i].getProtocol()) != "file") {
+				if (String(this._urls[i].getProtocol()) != "file") {
 		//			var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
 		//
 		//			var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
@@ -159,9 +171,9 @@ $api.jsh.shell = new (function(peer) {
 		//				var writeTo = rhinoCopiedTo.writeTo();
 		//				$api.io.copy(rhino,writeTo);
 		//			}
-					throw new Error("Not a file: " + _urls[i]);
+					throw new Error("Not a file: " + this._urls[i]);
 				} else {
-					pathname = new Packages.java.io.File(_urls[i].toURI()).getCanonicalPath();
+					pathname = new Packages.java.io.File(this._urls[i].toURI()).getCanonicalPath();
 				}
 				rv.push(pathname);
 			}
@@ -200,23 +212,19 @@ $api.jsh.shell = new (function(peer) {
 	};
 
 	var Built = function(home) {
+		this.home = home;
+
 		this.shellClasspath = function() {
 			return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
-		}
-
-		this.exposeTo = function(visible) {
-			visible.home = String(home.getCanonicalPath());
 		}
 	};
 
 	var Packaged = function(file) {
+		this.packaged = file;
+
 		this.shellClasspath = function() {
 			return [file.toURI().toURL()];
 		};
-
-		this.exposeTo = function(visible) {
-			visible.packaged = String(file.getCanonicalPath());
-		}
 	};
 
 	var shell = (function(peer) {
@@ -230,38 +238,30 @@ $api.jsh.shell = new (function(peer) {
 			return new Unbuilt(new Packages.java.io.File($api.slime.setting("jsh.shell.src")));
 		}
 	})(peer);
-	if (shell.exposeTo) shell.exposeTo(this);
 
-	this.rhino = $api.jsh.engine.resolve({
-		rhino: function() {
-			if (getRhinoClasspath()) {
-				return getRhinoClasspath().local();
-			}
-		},
-		nashorn: function() {
-		}
-	})();
+	if (shell.home) {
+		this.home = String(shell.home.getCanonicalPath());
+	}
+	if (shell.packaged) {
+		this.packaged = String(shell.packaged.getCanonicalPath());
+	}
+
+	this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;
 
 	this.classpath = function() {
-		var _add = function(rv,_array) {
-			for (var i=0; i<_array.length; i++) {
-				rv.push(_array[i]);
-			}
-		};
-
-		var rv = [];
+		var rv = new Classpath();
 
 		$api.jsh.engine.resolve({
 			rhino: function() {
-				_add(rv,peer.getRhinoClasspath());
+				rv.append(getRhinoClasspath());
 			},
 			nashorn: function() {
 			}
 		})();
 
-		_add(rv,shell.shellClasspath());
+		rv.append(new Classpath(shell.shellClasspath()));
 
-		return new Classpath(rv);
+		return rv;
 	};
 })(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
 
