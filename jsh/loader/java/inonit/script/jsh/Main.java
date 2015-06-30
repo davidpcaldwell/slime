@@ -130,6 +130,23 @@ public class Main {
 		return libraries(getPluginRoots(searchpaths));
 	}
 
+	private static java.net.URI getMainClassSource() {
+		try {
+			return Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+		} catch (java.net.URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static File getMainFile() {
+		java.net.URI codeLocation = getMainClassSource();
+		if (codeLocation.getScheme().equals("file")) {
+			return new File(codeLocation);
+		} else {
+			throw new RuntimeException("Unreachable: code source = " + codeLocation);
+		}
+	}
+
 	private static abstract class Configuration {
 		abstract Shell.Installation installation() throws IOException;
 
@@ -162,10 +179,6 @@ public class Main {
 			Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
 			return Shell.Configuration.create(installation(this), this.environment(), this.invocation(arguments));
 		}
-	}
-
-	static Shell.Invocation invocation(final File script, final String[] arguments) {
-		return Shell.Invocation.create(Shell.Script.create(script), arguments);
 	}
 
 	private static class Packaged extends Configuration {
@@ -212,23 +225,6 @@ public class Main {
 				} else {
 					return null;
 				}
-			}
-		}
-
-		private static java.net.URI getMainClassSource() {
-			try {
-				return Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-			} catch (java.net.URISyntaxException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		private static File getMainFile() {
-			java.net.URI codeLocation = getMainClassSource();
-			if (codeLocation.getScheme().equals("file")) {
-				return new File(codeLocation);
-			} else {
-				throw new RuntimeException("Unreachable: code source = " + codeLocation);
 			}
 		}
 
@@ -372,7 +368,7 @@ public class Main {
 				return new File(System.getProperty("jsh.shell.plugins"));
 			}
 			//	TODO	this is basically a dummy file that contains no plugins, to make the calling code simpler
-			return new File(this.src, "plugins");
+			return new File(this.src, "xxx");
 		}
 	}
 
@@ -408,9 +404,15 @@ public class Main {
 		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
 			return new Packaged();
 		} else {
-			Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.home=" + System.getProperty("jsh.shell.home"));
 			Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
-			if (System.getProperty("jsh.shell.home") != null) return new Built(new File(System.getProperty("jsh.shell.home")));
+			File main = getMainFile();
+			Logging.get().log(Main.class, Level.CONFIG, "getMainFile=" + main);
+			if (main.getName().equals("jsh.jar") && main.getParentFile().getName().equals("lib")) {
+				//	TODO	eliminate the below system property by using a shell API to specify this
+				File home = main.getParentFile().getParentFile();
+				System.setProperty("jsh.shell.home", home.getAbsolutePath());
+				return new Built(home);
+			}
 			if (System.getProperty("jsh.shell.src") != null) return new Unbuilt(new File(System.getProperty("jsh.shell.src")));
 			return null;
 		}

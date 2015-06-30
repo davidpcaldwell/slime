@@ -186,7 +186,7 @@ $api.slime = (function(was) {
 
 		//	Sent from launcher to loader
 		map("jsh.shell.src", BOTH);
-		map("jsh.shell.home", BOTH);
+//		map("jsh.shell.home", BOTH);
 //		map("jsh.shell.packaged", BOTH);
 //		map("jsh.shell.packaged.plugins", BOTH);
 

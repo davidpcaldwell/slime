@@ -351,7 +351,7 @@ public class Shell {
 		}
 
 		public Invocation invocation(File script, String[] arguments) {
-			return Main.invocation(script, arguments);
+			return Shell.Invocation.create(Shell.Script.create(script), arguments);
 		}
 	}
 

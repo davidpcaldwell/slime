@@ -323,7 +323,7 @@ try {
 
 	//	Describe the shell
 //	if ($api.jsh.shell.packaged) $api.slime.settings.set("jsh.shell.packaged", $api.jsh.shell.packaged);
-	if ($api.jsh.shell.home) $api.slime.settings.set("jsh.shell.home", $api.jsh.shell.home);
+//	if ($api.jsh.shell.home) $api.slime.settings.set("jsh.shell.home", $api.jsh.shell.home);
 	if ($api.jsh.shell.rhino) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.shell.rhino);
 
 	$api.slime.settings.sendPropertiesTo(function(name,value) {
