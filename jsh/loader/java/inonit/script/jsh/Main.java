@@ -130,11 +130,222 @@ public class Main {
 		return libraries(getPluginRoots(searchpaths));
 	}
 
-	private static abstract class Unpackaged {
+	private static abstract class Configuration {
+		abstract Shell.Installation installation() throws IOException;
+
+		abstract Shell.Environment.Packaged getPackaged();
+		final Shell.Environment environment() {
+			InputStream stdin = new Logging.InputStream(System.in);
+			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
+			//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
+			//	ultimately buffering the stdout to the console or other ultimate destination.
+			OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
+			//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
+			//	device and bytes will never need to be immediately available
+			OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
+			final Shell.Environment.Stdio stdio = Shell.Environment.Stdio.create(stdin, stdout, stderr);
+			final Shell.Environment.Packaged packaged = getPackaged();
+			return Shell.Environment.create(Shell.Environment.class.getClassLoader(), System.getProperties(), OperatingSystem.Environment.SYSTEM, stdio, packaged);
+		}
+
+		abstract Shell.Invocation invocation(String[] args) throws Shell.Invocation.CheckedException;
+
+		private Shell.Installation installation(Configuration implementation) {
+			try {
+				return implementation.installation();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		final Shell.Configuration configuration(String[] arguments) throws Shell.Invocation.CheckedException {
+			Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
+			return Shell.Configuration.create(installation(this), this.environment(), this.invocation(arguments));
+		}
+	}
+
+	static Shell.Invocation invocation(final File script, final String[] arguments) {
+		return Shell.Invocation.create(Shell.Script.create(script), arguments);
+	}
+
+	private static class Packaged extends Configuration {
+		private static File getPackagedPluginsDirectory() throws IOException {
+			File tmpdir = File.createTempFile("jshplugins", null);
+			tmpdir.delete();
+			tmpdir.mkdir();
+
+			int index = 0;
+
+			PackagedPlugin plugin = null;
+			inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
+			while( (plugin = PackagedPlugin.get(index)) != null ) {
+				File copyTo = new File(tmpdir, plugin.name());
+				FileOutputStream writeTo = new FileOutputStream(copyTo);
+				streams.copy(plugin.stream(),writeTo);
+				plugin.stream().close();
+				writeTo.close();
+				index++;
+				Logging.get().log(Main.class, Level.FINE, "Copied plugin " + index + " from " + plugin.name());
+			}
+			return tmpdir;
+		}
+
+		private static abstract class PackagedPlugin {
+			abstract String name();
+			abstract InputStream stream();
+
+			static PackagedPlugin create(final String name, final InputStream stream) {
+				return new PackagedPlugin() {
+					String name() { return name; }
+					InputStream stream() { return stream; }
+				};
+			}
+
+			static PackagedPlugin get(int index) {
+				if (ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".jar") != null) {
+					return create("" + index + ".jar", ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".jar"));
+				} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".slime") != null) {
+					return create(
+						String.valueOf(index) + ".slime",
+						ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".slime")
+					);
+				} else {
+					return null;
+				}
+			}
+		}
+
+		private static java.net.URI getMainClassSource() {
+			try {
+				return Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+			} catch (java.net.URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private static File getMainFile() {
+			java.net.URI codeLocation = getMainClassSource();
+			if (codeLocation.getScheme().equals("file")) {
+				return new File(codeLocation);
+			} else {
+				throw new RuntimeException("Unreachable: code source = " + codeLocation);
+			}
+		}
+
+		Shell.Installation installation() {
+			String packagedPlugins = null;
+			try {
+				packagedPlugins = getPackagedPluginsDirectory().getCanonicalPath();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			final Code[] plugins = plugins(packagedPlugins);
+			final Code.Source[] libraries = libraries(packagedPlugins);
+			//	TODO	better hierarchy would probably be $jsh/slime and $jsh/loader
+			final Code.Source platform = Code.Source.system("$jsh/loader/");
+			final Code.Source jsh = Code.Source.system("$jsh/");
+			return Shell.Installation.create(platform, jsh, plugins, libraries);
+		}
+
+		Shell.Invocation invocation(final String[] arguments) {
+			Code.Source.File main = Code.Source.File.create(ClassLoader.getSystemResource("main.jsh.js"));
+			return Shell.Invocation.create(
+				Shell.Script.create(main),
+				arguments
+			);
+		}
+
+		Shell.Environment.Packaged getPackaged() {
+			return Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), getMainFile());
+		}
+	}
+
+	private static abstract class Unpackaged extends Configuration {
 		abstract String getModules();
 		abstract File getLoader();
 		abstract File getJsh();
 		abstract File getShellPlugins();
+
+		final Shell.Installation installation() throws IOException {
+			Unpackaged unpackaged = this;
+			final Code[] plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
+			final Code.Source[] libraries = libraries(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath());
+			return Shell.Installation.create(
+				Code.Source.create(unpackaged.getLoader()),
+				Code.Source.create(unpackaged.getJsh()),
+				plugins,
+				libraries
+			);
+		}
+
+		Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
+			if (arguments.length == 0) {
+				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
+			}
+			if (arguments.length == 0) {
+				throw new IllegalArgumentException("At least one argument, representing the script, is required.");
+			}
+			final List<String> args = new ArrayList<String>();
+			args.addAll(Arrays.asList(arguments));
+			final String scriptPath = args.remove(0);
+			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
+				final java.net.URL url;
+				final java.io.InputStream stream;
+				try {
+					url = new java.net.URL(scriptPath);
+					stream = url.openStream();
+				} catch (java.net.MalformedURLException e) {
+					throw new Shell.Invocation.CheckedException("Malformed URL: " + scriptPath, e);
+				} catch (IOException e) {
+					throw new Shell.Invocation.CheckedException("Could not open: " + scriptPath, e);
+				}
+				return new Shell.Invocation() {
+					public Shell.Script getScript() {
+						return new Shell.Script() {
+							@Override public java.net.URI getUri() {
+								try {
+									return url.toURI();
+								} catch (java.net.URISyntaxException e) {
+									//	TODO	when can this happen? Probably should refactor to do this parsing earlier and use
+									//			CheckedException
+									throw new RuntimeException(e);
+								}
+							}
+
+							@Override public Code.Source.File getSource() {
+								return Code.Source.File.create(Code.Source.URI.create(url), scriptPath, null, null, stream);
+							}
+						};
+					}
+
+					public String[] getArguments() {
+						return args.toArray(new String[args.size()]);
+					}
+				};
+			} else {
+				final File mainScript = new File(scriptPath);
+				if (!mainScript.exists()) {
+					//	TODO	this really should not happen if the launcher is launching this
+					throw new Shell.Invocation.CheckedException("File not found: " + scriptPath);
+				}
+				if (mainScript.isDirectory()) {
+					throw new Shell.Invocation.CheckedException("Filename: " + scriptPath + " is a directory");
+				}
+				return new Shell.Invocation() {
+					public Shell.Script getScript() {
+						return Shell.Script.create(mainScript);
+					}
+
+					public String[] getArguments() {
+						return (String[]) args.toArray(new String[0]);
+					}
+				};
+			}
+		}
+
+		Shell.Environment.Packaged getPackaged() {
+			return null;
+		}
 	}
 
 	private static class Unbuilt extends Unpackaged {
@@ -193,263 +404,21 @@ public class Main {
 		}
 	}
 
-	private static Unpackaged getUnpackaged() {
-		if (System.getProperty("jsh.shell.home") != null) return new Built(new File(System.getProperty("jsh.shell.home")));
-		if (System.getProperty("jsh.shell.src") != null) return new Unbuilt(new File(System.getProperty("jsh.shell.src")));
-		return null;
-	}
-
-	private static Shell.Installation unpackagedInstallation() {
-		Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.home=" + System.getProperty("jsh.shell.home"));
-		Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
-		Unpackaged unpackaged = getUnpackaged();
-		try {
-			final Code[] plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
-			final Code.Source[] libraries = libraries(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath());
-			return Shell.Installation.create(
-				Code.Source.create(unpackaged.getLoader()),
-				Code.Source.create(unpackaged.getJsh()),
-				plugins,
-				libraries
-			);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static abstract class PackagedPlugin {
-		abstract String name();
-		abstract InputStream stream();
-
-		static PackagedPlugin create(final String name, final InputStream stream) {
-			return new PackagedPlugin() {
-				String name() { return name; }
-				InputStream stream() { return stream; }
-			};
-		}
-
-		static PackagedPlugin get(int index) {
-			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".jar") != null) {
-				return create("" + index + ".jar", ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".jar"));
-			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".slime") != null) {
-				return create(
-					String.valueOf(index) + ".slime",
-					ClassLoader.getSystemResourceAsStream("$plugins/" + String.valueOf(index) + ".slime")
-				);
-			} else {
-				return null;
-			}
-		}
-	}
-
-	private static File getPackagedPluginsDirectory() throws IOException {
-		File tmpdir = File.createTempFile("jshplugins", null);
-		tmpdir.delete();
-		tmpdir.mkdir();
-
-		int index = 0;
-//		$api.debug("Copying plugins ...");
-//
-//		var getPlugin = function(index) {
-//			if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")) {
-//				return {
-//					name: String(index) + ".jar",
-//					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".jar")
-//				};
-//			} else if (ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")) {
-//				return {
-//					name: String(index) + ".slime",
-//					stream: ClassLoader.getSystemResourceAsStream("$plugins/" + String(index) + ".slime")
-//				};
-//			} else {
-//				return null;
-//			}
-//		}
-
-		PackagedPlugin plugin = null;
-		inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
-		while( (plugin = PackagedPlugin.get(index)) != null ) {
-			File copyTo = new File(tmpdir, plugin.name());
-			FileOutputStream writeTo = new FileOutputStream(copyTo);
-			streams.copy(plugin.stream(),writeTo);
-			plugin.stream().close();
-			writeTo.close();
-			index++;
-			Logging.get().log(Main.class, Level.FINE, "Copied plugin " + index + " from " + plugin.name());
-		}
-		return tmpdir;
-	}
-
-	private static Shell.Installation packagedInstallation() {
-		String packagedPlugins = null;
-		try {
-			packagedPlugins = getPackagedPluginsDirectory().getCanonicalPath();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		final Code[] plugins = plugins(packagedPlugins);
-		final Code.Source[] libraries = libraries(packagedPlugins);
-		//	TODO	better hierarchy would probably be $jsh/slime and $jsh/loader
-		final Code.Source platform = Code.Source.system("$jsh/loader/");
-		final Code.Source jsh = Code.Source.system("$jsh/");
-		return Shell.Installation.create(platform, jsh, plugins, libraries);
-	}
-
-
-	private static java.net.URI getMainClassSource() {
-		try {
-			return Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-		} catch (java.net.URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-//	private Shell createShell() throws IOException {
-//		Configuration configuration = this;
-//		java.net.URI codeLocation = getMainClassSource();
-//		File launcherFile = null;
-//		if (codeLocation.getScheme().equals("file")) {
-//			launcherFile = new File(codeLocation);
-//		} else {
-//			throw new RuntimeException("Unreachable: code source = " + codeLocation);
-//		}
-//		Shell shell = null;
-//		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-//			shell = Shell.packaged(launcherFile);
-//		} else {
-//			java.io.File JSH_HOME = null;
-//			if (launcherFile.getName().equals("jsh.jar")) {
-//				JSH_HOME = launcherFile.getParentFile();
-//			}
-//			shell = (JSH_HOME != null) ? Shell.built(JSH_HOME) : Shell.unbuilt(configuration.src());
-//			if (configuration.rhino() != null) {
-//				//	TODO	provide more flexible parsing of rhino argument; multiple elements, allow URL rather than pathname
-//				shell.setRhinoClasspath(new URL[] { new File(configuration.rhino()).toURI().toURL() });
-//			}
-//			//	TODO	This might miss some exotic situations, like loading this class in its own classloader
-//		}
-//		return shell;
-//	}
-
-	private static File getMainFile() {
-		java.net.URI codeLocation = getMainClassSource();
-		if (codeLocation.getScheme().equals("file")) {
-			return new File(codeLocation);
-		} else {
-			throw new RuntimeException("Unreachable: code source = " + codeLocation);
-		}
-	}
-
-	private static boolean isPackaged() {
-		return ClassLoader.getSystemResource("main.jsh.js") != null;
-	}
-
-	private static Shell.Environment.Packaged getPackaged() {
+	private static Configuration implementation() {
 		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-			return Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), getMainFile());
+			return new Packaged();
 		} else {
+			Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.home=" + System.getProperty("jsh.shell.home"));
+			Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
+			if (System.getProperty("jsh.shell.home") != null) return new Built(new File(System.getProperty("jsh.shell.home")));
+			if (System.getProperty("jsh.shell.src") != null) return new Unbuilt(new File(System.getProperty("jsh.shell.src")));
 			return null;
-		}
-	}
-
-	private static Shell.Environment environment() {
-		InputStream stdin = new Logging.InputStream(System.in);
-		//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
-		//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
-		//	ultimately buffering the stdout to the console or other ultimate destination.
-		OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
-		//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
-		//	device and bytes will never need to be immediately available
-		OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
-		final Shell.Environment.Stdio stdio = Shell.Environment.Stdio.create(stdin, stdout, stderr);
-		final Shell.Environment.Packaged packaged = getPackaged();
-		return Shell.Environment.create(Shell.Environment.class.getClassLoader(), System.getProperties(), OperatingSystem.Environment.SYSTEM, stdio, packaged);
-	}
-
-	static Shell.Invocation invocation(final File script, final String[] arguments) {
-		return Shell.Invocation.create(Shell.Script.create(script), arguments);
-	}
-
-	static Shell.Invocation packaged(final String[] arguments) {
-		Code.Source.File main = Code.Source.File.create(ClassLoader.getSystemResource("main.jsh.js"));
-		return Shell.Invocation.create(
-			Shell.Script.create(main),
-			arguments
-		);
-	}
-
-	private static Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
-		if (arguments.length == 0) {
-			throw new IllegalArgumentException("At least one argument, representing the script, is required.");
-		}
-		final List<String> args = new ArrayList<String>();
-		args.addAll(Arrays.asList(arguments));
-		final String scriptPath = args.remove(0);
-		if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
-			final java.net.URL url;
-			final java.io.InputStream stream;
-			try {
-				url = new java.net.URL(scriptPath);
-				stream = url.openStream();
-			} catch (java.net.MalformedURLException e) {
-				throw new Shell.Invocation.CheckedException("Malformed URL: " + scriptPath, e);
-			} catch (IOException e) {
-				throw new Shell.Invocation.CheckedException("Could not open: " + scriptPath, e);
-			}
-			return new Shell.Invocation() {
-				public Shell.Script getScript() {
-					return new Shell.Script() {
-						@Override public java.net.URI getUri() {
-							try {
-								return url.toURI();
-							} catch (java.net.URISyntaxException e) {
-								//	TODO	when can this happen? Probably should refactor to do this parsing earlier and use
-								//			CheckedException
-								throw new RuntimeException(e);
-							}
-						}
-
-						@Override public Code.Source.File getSource() {
-							return Code.Source.File.create(Code.Source.URI.create(url), scriptPath, null, null, stream);
-						}
-					};
-				}
-
-				public String[] getArguments() {
-					return args.toArray(new String[args.size()]);
-				}
-			};
-		} else {
-			final File mainScript = new File(scriptPath);
-			if (!mainScript.exists()) {
-				//	TODO	this really should not happen if the launcher is launching this
-				throw new Shell.Invocation.CheckedException("File not found: " + scriptPath);
-			}
-			if (mainScript.isDirectory()) {
-				throw new Shell.Invocation.CheckedException("Filename: " + scriptPath + " is a directory");
-			}
-			return new Shell.Invocation() {
-				public Shell.Script getScript() {
-					return Shell.Script.create(mainScript);
-				}
-
-				public String[] getArguments() {
-					return (String[]) args.toArray(new String[0]);
-				}
-			};
 		}
 	}
 
 	private static Shell.Configuration configuration(final String[] arguments) throws Shell.Invocation.CheckedException {
 		Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
-		if (isPackaged()) {
-			return Shell.Configuration.create(packagedInstallation(), environment(), packaged(arguments));
-		} else {
-			if (arguments.length == 0) {
-				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
-			}
-			return Shell.Configuration.create(unpackagedInstallation(), environment(), invocation(arguments));
-		}
+		return implementation().configuration(arguments);
 	}
 
 	public static abstract class Engine {
