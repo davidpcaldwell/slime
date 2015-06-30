@@ -104,207 +104,196 @@
 //	At one time, it was possible to configure the "shell classpath" -- to specify the Java classes used to help implement the shell.
 //	However, there are no known use cases for this configurability, so the functionality was removed.
 
-if (!this.$api.slime) {
-	$api.script.resolve("slime.js").load();
-	$api.log("Loaded slime.js: src=" + $api.slime.src);
-}
+try {
+	if (!this.$api.slime) {
+		$api.script.resolve("slime.js").load();
+		$api.log("Loaded slime.js: src=" + $api.slime.src);
+	}
 
-if ($api.slime.setting("jsh.launcher.debug")) {
-	$api.debug.on = true;
-	$api.debug("debugging enabled");
-}
+	if ($api.slime.setting("jsh.launcher.debug")) {
+		$api.debug.on = true;
+		$api.debug("debugging enabled");
+	}
 
-$api.jsh = {};
+	$api.jsh = {};
 
-$api.jsh.engine = (function() {
-	var engines = {
-		rhino: {
-			main: "inonit.script.jsh.Rhino",
-			resolve: function(o) {
-				return o.rhino;
+	$api.jsh.exit = $api.engine.resolve({
+		rhino: function(status) {
+			var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
+			_field.setAccessible(true);
+			if (status === null) {
+				_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
+			} else {
+				_field.set(null, new Packages.java.lang.Integer(status));
 			}
 		},
-		nashorn: {
-			main: "inonit.script.jsh.Nashorn",
-			resolve: function(o) {
-				return o.nashorn;
+		nashorn: function(status) {
+			if (status !== null) {
+				Packages.java.lang.System.exit(status);
 			}
 		}
-	};
-	if ($api.slime.settings.get("jsh.engine")) {
-		return (function(setting) {
-			return engines[setting];
-		})($api.slime.settings.get("jsh.engine"));
-	}
-	return $api.engine.resolve(engines);
-})();
+	});
 
-$api.jsh.shell = new (function(peer) {
-	var Classpath = function(_urls) {
-		var colon = String(Packages.java.io.File.pathSeparator);
-
-		this.append = function(classpath) {
-			this._urls.push.apply(this._urls,classpath._urls);
-		}
-
-		this._urls = (function(_urls) {
-			var rv = [];
-			if (_urls) {
-				for (var i=0; i<_urls.length; i++) {
-					rv.push(_urls[i]);
+	$api.jsh.engine = (function() {
+		var engines = {
+			rhino: {
+				main: "inonit.script.jsh.Rhino",
+				resolve: function(o) {
+					return o.rhino;
 				}
-			}
-			return rv;
-		})(_urls);
-
-		this.files = function() {
-			var rv = [];
-			for (var i=0; i<this._urls.length; i++) {
-				var pathname;
-				if (String(this._urls[i].getProtocol()) != "file") {
-		//			var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
-		//
-		//			var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
-		//			if (rhino) {
-		//				$api.debug("Copying rhino ...");
-		//				var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
-		//				var writeTo = rhinoCopiedTo.writeTo();
-		//				$api.io.copy(rhino,writeTo);
-		//			}
-					throw new Error("Not a file: " + this._urls[i]);
-				} else {
-					pathname = new Packages.java.io.File(this._urls[i].toURI()).getCanonicalPath();
-				}
-				rv.push(pathname);
-			}
-			return rv;
-		};
-
-		this.local = function() {
-			return this.files().join(colon);
-		}
-	};
-
-	var getRhinoClasspath = function() {
-		var classpath = peer.getRhinoClasspath();
-		if (classpath) {
-			return new Classpath(classpath);
-		} else {
-			return null;
-		}
-	};
-
-	var Unbuilt = function(src) {
-		this.shellClasspath = function() {
-			var LOADER_CLASSES = $api.io.tmpdir();
-			var classpath = getRhinoClasspath();
-			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-			if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
-			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
-			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-			if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
-			var rhinoClasspath = (classpath) ? ["-classpath", classpath.local()] : [];
-			$api.java.install.compile([
-				"-d", LOADER_CLASSES
-			].concat(rhinoClasspath).concat(toCompile));
-			return [LOADER_CLASSES.toURI().toURL()];
-		};
-	};
-
-	var Built = function(home) {
-		this.home = home;
-
-		this.shellClasspath = function() {
-			return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
-		}
-	};
-
-	var Packaged = function(file) {
-		this.packaged = file;
-
-		this.shellClasspath = function() {
-			return [file.toURI().toURL()];
-		};
-	};
-
-	var shell = (function(peer) {
-		if (peer.getPackaged()) {
-			$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
-			return new Packaged(peer.getPackaged());
-		} else if (peer.getHome()) {
-			$api.debug("Setting built shell: " + String(peer.getHome().getCanonicalPath()));
-			return new Built(peer.getHome());
-		} else {
-			return new Unbuilt(new Packages.java.io.File($api.slime.setting("jsh.shell.src")));
-		}
-	})(peer);
-
-	if (shell.home) {
-		this.home = String(shell.home.getCanonicalPath());
-	}
-	if (shell.packaged) {
-		this.packaged = String(shell.packaged.getCanonicalPath());
-	}
-
-	this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;
-
-	this.classpath = function() {
-		var rv = new Classpath();
-
-		$api.jsh.engine.resolve({
-			rhino: function() {
-				rv.append(getRhinoClasspath());
 			},
-			nashorn: function() {
+			nashorn: {
+				main: "inonit.script.jsh.Nashorn",
+				resolve: function(o) {
+					return o.nashorn;
+				}
 			}
-		})();
-
-		rv.append(new Classpath(shell.shellClasspath()));
-
-		return rv;
-	};
-})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
-
-$api.jsh.vmArguments = (function() {
-	//	TODO	what about jsh.jvm.options? If it is set, the options may already have been applied by launcher and we may not need
-	//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
-	if ($api.jsh.shell.packaged) return [];
-	var rv = [];
-	while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
-		rv.push($api.arguments.shift());
-	}
-	return rv;
-})();
-
-$api.jsh.setExitStatus = $api.engine.resolve({
-	rhino: function(status) {
-		var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
-		_field.setAccessible(true);
-		if (status === null) {
-			_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
-		} else {
-			_field.set(null, new Packages.java.lang.Integer(status));
+		};
+		if ($api.slime.settings.get("jsh.engine")) {
+			return (function(setting) {
+				return engines[setting];
+			})($api.slime.settings.get("jsh.engine"));
 		}
-	},
-	nashorn: function(status) {
-		if (status !== null) {
-			Packages.java.lang.System.exit(status);
+		return $api.engine.resolve(engines);
+	})();
+
+	$api.jsh.shell = new (function(peer) {
+		var Classpath = function(_urls) {
+			var colon = String(Packages.java.io.File.pathSeparator);
+
+			this.append = function(classpath) {
+				this._urls.push.apply(this._urls,classpath._urls);
+			}
+
+			this._urls = (function(_urls) {
+				var rv = [];
+				if (_urls) {
+					for (var i=0; i<_urls.length; i++) {
+						rv.push(_urls[i]);
+					}
+				}
+				return rv;
+			})(_urls);
+
+			this.files = function() {
+				var rv = [];
+				for (var i=0; i<this._urls.length; i++) {
+					var pathname;
+					if (String(this._urls[i].getProtocol()) != "file") {
+			//			var tmpdir = new Directory(String($api.io.tmpdir().getCanonicalPath()));
+			//
+			//			var rhino = ClassLoader.getSystemResourceAsStream("$jsh/rhino.jar");
+			//			if (rhino) {
+			//				$api.debug("Copying rhino ...");
+			//				var rhinoCopiedTo = tmpdir.getFile("rhino.jar");
+			//				var writeTo = rhinoCopiedTo.writeTo();
+			//				$api.io.copy(rhino,writeTo);
+			//			}
+						throw new Error("Not a file: " + this._urls[i]);
+					} else {
+						pathname = new Packages.java.io.File(this._urls[i].toURI()).getCanonicalPath();
+					}
+					rv.push(pathname);
+				}
+				return rv;
+			};
+
+			this.local = function() {
+				return this.files().join(colon);
+			}
+		};
+
+		var getRhinoClasspath = function() {
+			var classpath = peer.getRhinoClasspath();
+			if (classpath) {
+				return new Classpath(classpath);
+			} else {
+				return null;
+			}
+		};
+
+		var Unbuilt = function(src) {
+			this.shellClasspath = function() {
+				var LOADER_CLASSES = $api.io.tmpdir();
+				var classpath = getRhinoClasspath();
+				var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
+				if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
+				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
+				if (classpath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+				var rhinoClasspath = (classpath) ? ["-classpath", classpath.local()] : [];
+				$api.java.install.compile([
+					"-d", LOADER_CLASSES
+				].concat(rhinoClasspath).concat(toCompile));
+				return [LOADER_CLASSES.toURI().toURL()];
+			};
+		};
+
+		var Built = function(home) {
+			this.home = home;
+
+			this.shellClasspath = function() {
+				return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
+			}
+		};
+
+		var Packaged = function(file) {
+			this.packaged = file;
+
+			this.shellClasspath = function() {
+				return [file.toURI().toURL()];
+			};
+		};
+
+		var shell = (function(peer) {
+			if (peer.getPackaged()) {
+				$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
+				return new Packaged(peer.getPackaged());
+			} else if (peer.getHome()) {
+				$api.debug("Setting built shell: " + String(peer.getHome().getCanonicalPath()));
+				return new Built(peer.getHome());
+			} else {
+				return new Unbuilt(new Packages.java.io.File($api.slime.setting("jsh.shell.src")));
+			}
+		})(peer);
+
+		if (shell.home) {
+			this.home = String(shell.home.getCanonicalPath());
 		}
+		if (shell.packaged) {
+			this.packaged = String(shell.packaged.getCanonicalPath());
+		}
+
+		this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;
+
+		this.classpath = function() {
+			var rv = new Classpath();
+
+			$api.jsh.engine.resolve({
+				rhino: function() {
+					rv.append(getRhinoClasspath());
+				},
+				nashorn: function() {
+				}
+			})();
+
+			rv.append(new Classpath(shell.shellClasspath()));
+
+			return rv;
+		};
+	})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
+
+	if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
+		$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
+		//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
+		//			java.lang.Error so that it is not caught
+		$api.jsh.exit(1);
 	}
-});
 
-if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
-	$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
-	//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
-	//			java.lang.Error so that it is not caught
-	Packages.java.lang.System.exit(1);
-}
+	$api.debug("Launcher environment = " + JSON.stringify($api.shell.environment, void(0), "    "));
+	$api.debug("Launcher working directory = " + Packages.java.lang.System.getProperty("user.dir"));
+	$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
 
-$api.debug("Launcher environment = " + JSON.stringify($api.shell.environment, void(0), "    "));
-$api.debug("Launcher working directory = " + Packages.java.lang.System.getProperty("user.dir"));
-$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
-
-try {
 	$api.debug("Creating command ...");
 	var command = new $api.java.Command();
 
@@ -318,15 +307,22 @@ try {
 		command.fork();
 	}
 
-	for (var i=0; i<$api.jsh.vmArguments.length; i++) {
-		command.vm($api.jsh.vmArguments[i]);
-	}
+	(function vmArguments() {
+		//	TODO	what about jsh.jvm.options? If it is set, the options may already have been applied by launcher and we may not need
+		//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
+		if ($api.jsh.shell.packaged) return;
+		var rv = [];
+		while($api.arguments.length && $api.arguments[0].substring(0,1) == "-") {
+			command.vm($api.arguments.shift());
+		}
+		return rv;
+	})();
 
 	//	Make the launcher classpath available to help with launching subshells
 	$api.slime.settings.set("jsh.launcher.classpath", String(Packages.java.lang.System.getProperty("java.class.path")));
 
 	//	Describe the shell
-	if ($api.jsh.shell.packaged) $api.slime.settings.set("jsh.shell.packaged", $api.jsh.shell.packaged);
+//	if ($api.jsh.shell.packaged) $api.slime.settings.set("jsh.shell.packaged", $api.jsh.shell.packaged);
 	if ($api.jsh.shell.home) $api.slime.settings.set("jsh.shell.home", $api.jsh.shell.home);
 	if ($api.jsh.shell.rhino) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.shell.rhino);
 
@@ -349,7 +345,7 @@ try {
 	$api.debug("Running command " + command + " ...");
 	var status = command.run();
 	$api.debug("Command returned: status = " + status);
-	$api.jsh.setExitStatus(status);
+	$api.jsh.exit(status);
 } catch (e) {
 	$api.debug("Error:");
 	$api.debug(e);
@@ -366,5 +362,5 @@ try {
 	//	Below works around Rhino debugger bug that does not allow e to be inspected
 	var error = e;
 	debugger;
-	$api.jsh.setExitStatus(1);
+	$api.jsh.exit(1);
 }

@@ -295,6 +295,63 @@ public class Main {
 		return Shell.Installation.create(platform, jsh, plugins, libraries);
 	}
 
+
+	private static java.net.URI getMainClassSource() {
+		try {
+			return Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+		} catch (java.net.URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+//	private Shell createShell() throws IOException {
+//		Configuration configuration = this;
+//		java.net.URI codeLocation = getMainClassSource();
+//		File launcherFile = null;
+//		if (codeLocation.getScheme().equals("file")) {
+//			launcherFile = new File(codeLocation);
+//		} else {
+//			throw new RuntimeException("Unreachable: code source = " + codeLocation);
+//		}
+//		Shell shell = null;
+//		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
+//			shell = Shell.packaged(launcherFile);
+//		} else {
+//			java.io.File JSH_HOME = null;
+//			if (launcherFile.getName().equals("jsh.jar")) {
+//				JSH_HOME = launcherFile.getParentFile();
+//			}
+//			shell = (JSH_HOME != null) ? Shell.built(JSH_HOME) : Shell.unbuilt(configuration.src());
+//			if (configuration.rhino() != null) {
+//				//	TODO	provide more flexible parsing of rhino argument; multiple elements, allow URL rather than pathname
+//				shell.setRhinoClasspath(new URL[] { new File(configuration.rhino()).toURI().toURL() });
+//			}
+//			//	TODO	This might miss some exotic situations, like loading this class in its own classloader
+//		}
+//		return shell;
+//	}
+
+	private static File getMainFile() {
+		java.net.URI codeLocation = getMainClassSource();
+		if (codeLocation.getScheme().equals("file")) {
+			return new File(codeLocation);
+		} else {
+			throw new RuntimeException("Unreachable: code source = " + codeLocation);
+		}
+	}
+
+	private static boolean isPackaged() {
+		return ClassLoader.getSystemResource("main.jsh.js") != null;
+	}
+
+	private static Shell.Environment.Packaged getPackaged() {
+		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
+			return Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), getMainFile());
+		} else {
+			return null;
+		}
+	}
+
 	private static Shell.Environment environment() {
 		InputStream stdin = new Logging.InputStream(System.in);
 		//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
@@ -305,10 +362,7 @@ public class Main {
 		//	device and bytes will never need to be immediately available
 		OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
 		final Shell.Environment.Stdio stdio = Shell.Environment.Stdio.create(stdin, stdout, stderr);
-		final Shell.Environment.Packaged packaged = (System.getProperty("jsh.shell.packaged") != null)
-			? Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), new java.io.File(System.getProperty("jsh.shell.packaged")))
-			: null
-		;
+		final Shell.Environment.Packaged packaged = getPackaged();
 		return Shell.Environment.create(Shell.Environment.class.getClassLoader(), System.getProperties(), OperatingSystem.Environment.SYSTEM, stdio, packaged);
 	}
 
@@ -388,7 +442,7 @@ public class Main {
 
 	private static Shell.Configuration configuration(final String[] arguments) throws Shell.Invocation.CheckedException {
 		Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
-		if (System.getProperty("jsh.shell.packaged") != null) {
+		if (isPackaged()) {
 			return Shell.Configuration.create(packagedInstallation(), environment(), packaged(arguments));
 		} else {
 			if (arguments.length == 0) {

@@ -403,13 +403,13 @@ $exports.jsh = function(p) {
 					var keys = $context._getSystemProperties().keySet().iterator();
 					while(keys.hasNext()) {
 						var key = keys.next();
-						if (String(key) != "jsh.shell.packaged") {
+//						if (String(key) != "jsh.shell.packaged") {
 							if ($context._getSystemProperties().getProperty(key) == null) {
 								//	TODO	seems to be the case for jsh.launcher.shell, through an unknown set of mechanisms
 							} else {
 								rv.setProperty(key, $context._getSystemProperties().getProperty(key));
 							}
-						}
+//						}
 					}
 					if (p.workingDirectory) {
 						rv.setProperty("user.dir", p.workingDirectory.pathname.java.adapt());
@@ -481,7 +481,7 @@ if (String($exports.properties.object.jsh.plugins)) {
 	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
 }
 
-if ($exports.properties.object.jsh.shell.home) {
+if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.home) {
 	$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.shell.home).directory
 }
 if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
