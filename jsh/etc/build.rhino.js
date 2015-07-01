@@ -52,6 +52,9 @@ var console = $api.console;
 var platform = new function() {
 	this.jdk = $api.jdk;
 };
+if (!$api.slime) {
+	$api.script.resolve("../launcher/rhino/slime.js").load();
+}
 //	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
 //			ability to build modules
 $api.script.resolve("api.rhino.js").load();

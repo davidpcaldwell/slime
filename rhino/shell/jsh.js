@@ -306,7 +306,6 @@ $exports.jsh = function(p) {
 					environment: environment,
 					evaluate: evaluate
 				});
-
 				return $exports.java(shell);
 			}
 		} else {
