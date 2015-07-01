@@ -113,6 +113,9 @@ jsh.unit.integration({
 					output: write
 				},
 				evaluate: function(result) {
+//					jsh.shell.echo("Integration scenario exited.");
+//					jsh.shell.echo("Stack = " + new Error().stack);
+//					jsh.shell.echo("Rhino context = " + Packages.org.mozilla.javascript.Context.getCurrentContext());
 					write.java.adapt().flush();
 					buffer.close();
 					return new jsh.unit.Scenario.Stream({
@@ -154,6 +157,7 @@ jsh.unit.integration({
 				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
 				environment: {
 					PATH: jsh.shell.environment.PATH,
+					JSH_NEW_LAUNCHER: (jsh.shell.environment.JSH_NEW_LAUNCHER) ? jsh.shell.environment.JSH_NEW_LAUNCHER : "",
 					JSH_ENGINE: engine
 				}
 			}) });
