@@ -408,9 +408,9 @@ public class Main {
 			File main = getMainFile();
 			Logging.get().log(Main.class, Level.CONFIG, "getMainFile=" + main);
 			if (main.getName().equals("jsh.jar") && main.getParentFile().getName().equals("lib")) {
-				//	TODO	eliminate the below system property by using a shell API to specify this
 				File home = main.getParentFile().getParentFile();
 				System.setProperty("jsh.shell.home", home.getAbsolutePath());
+				//	TODO	eliminate the below system property by using a shell API to specify this
 				return new Built(home);
 			}
 			if (System.getProperty("jsh.shell.src") != null) return new Unbuilt(new File(System.getProperty("jsh.shell.src")));
@@ -426,10 +426,7 @@ public class Main {
 	public static abstract class Engine {
 		public abstract void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException;
 
-		public final void shell(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
-			if (!inonit.system.Logging.get().isSpecified()) {
-				inonit.system.Logging.get().initialize(new java.util.Properties());
-			}
+		private void shell(Shell.Container context, Shell.Configuration shell) throws Shell.Invocation.CheckedException {
 			Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 				public void uncaughtException(Thread t, Throwable e) {
 					Throwable error = e;
@@ -460,22 +457,24 @@ public class Main {
 			}
 		}
 
-		public final Integer embed(Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
+		private Integer embed(Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
 			Shell.Container.Holder context = new Shell.Container.Holder();
 			return context.getExitCode(new Runner(), configuration);
 		}
 
-		public final void cli(String[] args) throws Shell.Invocation.CheckedException {
+		private void cli(String[] args) throws Shell.Invocation.CheckedException {
 			shell(Shell.Container.VM, Main.configuration(args));
 		}
 	}
 
-	//	Perhaps a future launcher could access this interface directly
-	public static Integer run(Engine engine, Shell.Configuration configuration) throws Shell.Invocation.CheckedException {
-		return engine.embed(configuration);
-	}
-
-	public static Integer run(Engine engine, String[] args) throws Shell.Invocation.CheckedException {
-		return run(engine, configuration(args));
+	public static void cli(Engine engine, String[] args) throws Shell.Invocation.CheckedException {
+		if (!inonit.system.Logging.get().isSpecified()) {
+			inonit.system.Logging.get().initialize(new java.util.Properties());
+		}
+		Logging.get().log(Main.class, Level.INFO, "Invoked cli(String[] args) with " + args.length + " arguments.");
+		for (int i=0; i<args.length; i++) {
+			Logging.get().log(Main.class, Level.INFO, "Argument " + i + " is: " + args[i]);
+		}
+		engine.cli(args);
 	}
 }

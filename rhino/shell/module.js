@@ -448,8 +448,8 @@ $exports.java = function(p) {
 
 $exports.jrunscript = function(p) {
 	var launch = (function() {
-		if ($exports.rhino && $exports.rhino.classpath) {
-			//	TODO	explicit jsh dependency
+		if (false && $exports.rhino && $exports.rhino.classpath) {
+			//	TODO	implicit jsh dependency, because rhino.classpath not set in this file
 			return {
 				command: $exports.java.launcher,
 				arguments: [

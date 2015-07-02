@@ -278,14 +278,7 @@ $exports.jsh = function(p) {
 		}
 
 		if (!p.shell) {
-			var properties = {};
-			if (Packages.java.lang.System.getProperty("jsh.shell.src")) {
-				properties["jsh.shell.src"] = String(Packages.java.lang.System.getProperty("jsh.shell.src"));
-			}
-			if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
-				properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
-			}
-			if ($exports.environment.JSH_NEW_LAUNCHER) {
+			if (false && p.stdio && p.stdio.input) {
 				var shell = $context.api.js.Object.set({}, p, {
 					//	Set default classpath from this shell
 					properties: properties,
@@ -297,28 +290,40 @@ $exports.jsh = function(p) {
 				});
 				return $exports.java(shell);
 			} else {
+				if (p.classpath) {
+					throw new Error("Unimplemented: classpath");
+				}
+				var scripts = [];
+				var properties = {};
+				//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
+				if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+					properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+				}
+				if ($exports.jsh.src) {
+					//	TODO	should probably pass compiled classes so that subshell does not need to recompile
+					scripts.push($exports.jsh.src.getFile("rhino/jrunscript/api.js"));
+					scripts.push($exports.jsh.src.getFile("jsh/launcher/rhino/main.js"));
+				} else if ($exports.jsh.home) {
+					scripts.push($exports.jsh.home.getFile("jsh.js"));
+				}
 				var shell = $context.api.js.Object.set({}, p, {
-					//	Set default classpath from this shell
-					properties: properties,
-					classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
-					main: "inonit.script.jsh.launcher.Main",
-					arguments: addCommandTo([]),
 					environment: environment,
+					properties: properties,
+					arguments: addCommandTo(scripts),
 					evaluate: evaluate
 				});
-				return $exports.java(shell);
+				return $exports.jrunscript(shell);
 			}
 		} else {
-			if (p.shell.getFile("jsh.jar")) {
+			if (p.shell.getFile("jsh.js")) {
 				//	Built shell
-				return $exports.java($context.api.js.Object.set({}, p, {
-					jar: p.shell.getFile("jsh.jar"),
-					arguments: addCommandTo([]),
+				return $exports.jrunscript($context.api.js.Object.set({}, p, {
+					arguments: addCommandTo([p.shell.getFile("jsh.js")]),
 					environment: environment,
 					evaluate: evaluate
 				}));
 			} else if (p.shell.getFile("jsh/etc/unbuilt.rhino.js")) {
-				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch"];
+				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/launcher/rhino/main.js")];
 				//	TODO	will only work if they start with dash, which they must, right?
 				if (p.properties) {
 					for (var x in p.properties) {
@@ -489,9 +494,9 @@ $exports.jsh = function(p) {
 	}
 };
 
-if (String($exports.properties.object.jsh.plugins)) {
-	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
-}
+//if (String($exports.properties.object.jsh.plugins)) {
+//	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
+//}
 
 if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.home) {
 	$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.shell.home).directory

@@ -97,4 +97,62 @@ plugin({
 			}
 		}
 	}
-})
+});
+
+plugin({
+	isReady: function() {
+		return jsh.shell && jsh.script;
+	},
+	load: function() {
+		if (!jsh.test) jsh.test = {};
+		jsh.test.requireBuiltShell = function() {
+			if (!jsh.shell.jsh.home) {
+				jsh.shell.echo("Relaunching in built shell ...");
+				var parameters = jsh.script.getopts({
+					options: {
+						native: false,
+						install: jsh.script.getopts.ARRAY(String),
+						downloads: jsh.file.Pathname,
+						rhino: jsh.file.Pathname
+					},
+					unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
+				});
+				var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				//	TODO	locate jrunscript using Java home
+				//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript
+				var args = [];
+				if (parameters.options.downloads) {
+					args.push("-Djsh.build.downloads=" + parameters.options.downloads);
+				}
+				if (parameters.options.rhino) {
+					args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
+				}
+				args.push("-Djsh.build.notest=true");
+				args.push("-Djsh.build.nodoc=true");
+				var SLIME = jsh.script.file.parent.parent.parent;
+				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
+				args.push(SLIME.getRelativePath("jsh/etc/build.rhino.js"));
+				args.push(JSH_HOME);
+				parameters.options.install.forEach(function(addon) {
+					args.push("-install", addon);
+				});
+				jsh.shell.run({
+					command: "jrunscript",
+					arguments: args
+				});
+				jsh.shell.echo("Launching with classpath " + jsh.shell.properties.get("jsh.launcher.classpath"));
+				jsh.shell.echo("Launching with arguments " + parameters.arguments);
+				jsh.shell.jsh({
+					fork: true,
+					shell: JSH_HOME,
+					script: jsh.script.file,
+					arguments: parameters.arguments,
+					evaluate: function(result) {
+						jsh.shell.exit(result.status);
+					}
+				});
+
+			}
+		}
+	}
+});

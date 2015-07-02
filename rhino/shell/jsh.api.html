@@ -468,9 +468,9 @@ END LICENSE
 						},
 						fork: true
 					});
-					test(forked.status == 2);
+					verify(forked).status.is(2);
 					test(typeof(forked.command) != "undefined" && typeof(forked.command) == "object" && forked.command != null);
-					test(forked.command.toString() == jsh.shell.java.launcher.toString());
+					test(forked.command.toString() == jsh.shell.java.jrunscript.toString());
 					test(typeof(forked.arguments) != "undefined");
 					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
 
@@ -482,24 +482,6 @@ END LICENSE
 					});
 					test(issue82 == "worked");
 				]]></script>
-				<script type="application/x.jsapi#tests">
-					var output = module.jsh({
-						script: $module.getResourcePathname("test/plugins.jsh.js"),
-						fork: true,
-						environment: jsh.js.Object.set({}, jsh.shell.environment, {
-							JSH_PLUGINS: $module.getResourcePathname("test").toString()
-						}),
-						stdio: {
-							output: String
-						},
-						evaluate: function(result) {
-							return result.stdio.output;
-						}
-					});
-					var expected = $module.getResourcePathname("test").java.adapt().getCanonicalPath() + Packages.java.lang.System.getProperty("line.separator");
-					verify(output,output).is(expected);
-//					test(output == expected);
-				</script>
 			</li>
 		</ul>
 	</div>

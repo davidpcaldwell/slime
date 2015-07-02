@@ -10,53 +10,56 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (!jsh.shell.jsh.home) {
-	//	Relaunch in built shell
-	jsh.shell.echo("Relaunching in built shell ...");
-	var parameters = jsh.script.getopts({
-		options: {
-			native: false,
-			install: jsh.script.getopts.ARRAY(String),
-			downloads: jsh.file.Pathname,
-			rhino: jsh.file.Pathname
-		},
-		unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
-	});
-	var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
-	//	TODO	locate jrunscript using Java home
-	//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript
-	var args = [];
-	if (parameters.options.downloads) {
-		args.push("-Djsh.build.downloads=" + parameters.options.downloads);
-	}
-	if (parameters.options.rhino) {
-		args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
-	}
-	args.push("-Djsh.build.notest=true");
-	args.push("-Djsh.build.nodoc=true");
-	var SLIME = jsh.script.file.parent.parent.parent;
-	args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
-	args.push(SLIME.getRelativePath("jsh/etc/build.rhino.js"));
-	args.push(JSH_HOME);
-	parameters.options.install.forEach(function(addon) {
-		args.push("-install", addon);
-	});
-	jsh.shell.run({
-		command: "jrunscript",
-		arguments: args
-	});
-	jsh.shell.echo("Launching with classpath " + jsh.shell.properties.get("jsh.launcher.classpath"));
-	jsh.shell.echo("Launching with arguments " + parameters.arguments);
-	jsh.shell.jsh({
-		fork: true,
-		shell: JSH_HOME,
-		script: jsh.script.file,
-		arguments: parameters.arguments,
-		evaluate: function(result) {
-			jsh.shell.exit(result.status);
-		}
-	});
+if (jsh.test && jsh.test.requireBuiltShell) {
+	jsh.test.requireBuiltShell();
 }
+//if (!jsh.shell.jsh.home) {
+//	//	Relaunch in built shell
+//	jsh.shell.echo("Relaunching in built shell ...");
+//	var parameters = jsh.script.getopts({
+//		options: {
+//			native: false,
+//			install: jsh.script.getopts.ARRAY(String),
+//			downloads: jsh.file.Pathname,
+//			rhino: jsh.file.Pathname
+//		},
+//		unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
+//	});
+//	var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
+//	//	TODO	locate jrunscript using Java home
+//	//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript
+//	var args = [];
+//	if (parameters.options.downloads) {
+//		args.push("-Djsh.build.downloads=" + parameters.options.downloads);
+//	}
+//	if (parameters.options.rhino) {
+//		args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
+//	}
+//	args.push("-Djsh.build.notest=true");
+//	args.push("-Djsh.build.nodoc=true");
+//	var SLIME = jsh.script.file.parent.parent.parent;
+//	args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
+//	args.push(SLIME.getRelativePath("jsh/etc/build.rhino.js"));
+//	args.push(JSH_HOME);
+//	parameters.options.install.forEach(function(addon) {
+//		args.push("-install", addon);
+//	});
+//	jsh.shell.run({
+//		command: "jrunscript",
+//		arguments: args
+//	});
+//	jsh.shell.echo("Launching with classpath " + jsh.shell.properties.get("jsh.launcher.classpath"));
+//	jsh.shell.echo("Launching with arguments " + parameters.arguments);
+//	jsh.shell.jsh({
+//		fork: true,
+//		shell: JSH_HOME,
+//		script: jsh.script.file,
+//		arguments: parameters.arguments,
+//		evaluate: function(result) {
+//			jsh.shell.exit(result.status);
+//		}
+//	});
+//}
 
 var parameters = jsh.script.getopts({
 	options: {
@@ -152,23 +155,40 @@ parameters.options.java.forEach(function(jre) {
 		if (engine && engines.indexOf(engine) == -1) {
 			jsh.shell.echo("Skipping engine " + engine + "; not available under " + launcher);
 		} else {
-			jsh.shell.echo("Running with Java " + launcher + " and engine " + engine + " ...");
+			jsh.shell.echo("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
 
-			subprocess({
-				name: "Java tests: engine [" + engine + "]; launcher " + launcher,
-				run: jsh.shell.run,
-				command: launcher,
-				arguments: [
-					"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-					parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
-					"-stdio"
-				],
-				directory: parameters.options.slime.directory,
-				environment: jsh.js.Object.set({}, jsh.shell.environment
-					, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-					, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
-				)
-			});
+			if (false) {
+				subprocess({
+					name: "Java tests: engine [" + engine + "]; launcher " + launcher,
+					run: jsh.shell.run,
+					command: launcher,
+					arguments: [
+						"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+						parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
+						"-stdio"
+					],
+					directory: parameters.options.slime.directory,
+					environment: jsh.js.Object.set({}, jsh.shell.environment
+						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
+						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
+					)
+				});
+			} else {
+				subprocess({
+					name: "Java tests: engine [" + engine + "]; launcher " + launcher,
+					run: jsh.shell.jrunscript,
+					arguments: [
+						jsh.shell.jsh.home.getRelativePath("jsh.js"),
+						parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
+						"-stdio"
+					],
+					directory: parameters.options.slime.directory,
+					environment: jsh.js.Object.set({}, jsh.shell.environment
+						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
+						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
+					)
+				});
+			}
 		}
 	});
 });

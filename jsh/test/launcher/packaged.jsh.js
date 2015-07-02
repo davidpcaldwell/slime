@@ -73,7 +73,6 @@ if (parameters.options.scenario) {
 	var packaged_JSH_SHELL_CLASSPATH = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath(jsh.script.file.pathname.basename + ".jar");
 	var engine = (jsh.shell.jsh.home.getFile("lib/js.jar")) ? [] : ["-norhino"];
 	jsh.shell.echo("Packaging to " + packaged_JSH_SHELL_CLASSPATH);
-	jsh.shell.echo("JSH_NEW_LAUNCHER " + jsh.shell.environment.JSH_NEW_LAUNCHER);
 	jsh.shell.jsh({
 		fork: true,
 		script: jsh.shell.jsh.home.getFile("tools/package.jsh.js"),

@@ -196,7 +196,8 @@ $api.slime = (function(was) {
 
 		//	Undocumented so far
 		map("jsh.launcher.classpath", BOTH);
-		map("jsh.launcher.main", BOTH);
+		map("jsh.launcher.script.api", BOTH);
+		map("jsh.launcher.script.main", BOTH);
 
 		//	May not survive refactoring
 		map("jsh.launcher.debug", LAUNCHER);

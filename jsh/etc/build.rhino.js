@@ -495,8 +495,12 @@ JSH_SRC.mkdir();
 });
 
 if (!destination.installer) {
-	console("Running post-installer ...");
-	var command = LAUNCHER_COMMAND.slice();
+	console("Running post-installer ... " + destination.arguments.join(" "));
+//	var command = LAUNCHER_COMMAND.slice();
+	var command = [];
+	//	TODO	brittle; should improve when this becomes jsh script
+	command.push(getPath(new File(JAVA_HOME,"../bin/jrunscript")));
+	command.push(new File(JSH_HOME,"jsh.js"));
 	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command = command.concat(destination.arguments);
 	var subenv = {};

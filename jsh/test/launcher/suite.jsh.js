@@ -68,7 +68,7 @@ jsh.unit.integration({
 				stdio: (p.stdio) ? p.stdio : {
 					output: String
 				},
-				environment: jsh.js.Object.set({}, p.environment, { JSH_NEW_LAUNCHER: jsh.shell.environment.JSH_NEW_LAUNCHER }),
+				environment: jsh.js.Object.set({}, p.environment),
 				evaluate: (p.evaluate) ? p.evaluate : function(result) {
 					if (result.status !== 0) throw new Error("Status is " + result.status);
 					jsh.shell.echo("Output: " + result.stdio.output);
@@ -157,7 +157,6 @@ jsh.unit.integration({
 				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
 				environment: {
 					PATH: jsh.shell.environment.PATH,
-					JSH_NEW_LAUNCHER: (jsh.shell.environment.JSH_NEW_LAUNCHER) ? jsh.shell.environment.JSH_NEW_LAUNCHER : "",
 					JSH_ENGINE: engine
 				}
 			}) });

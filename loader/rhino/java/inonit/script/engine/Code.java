@@ -461,11 +461,10 @@ public abstract class Code {
 
 		JavaFileObject forOutput(String className) {
 			//System.err.println("forOutput: " + className);
-			if (classes.get(className) != null) {
+			if (false && classes.get(className) != null) {
 				throw new UnsupportedOperationException("Duplicate!");
-			} else {
-				classes.put(className, new OutputClass(className));
 			}
+			classes.put(className, new OutputClass(className));
 			return classes.get(className);
 		}
 

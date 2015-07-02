@@ -173,6 +173,8 @@ public class Shell {
 	public static abstract class Container {
 		public static final Container VM = new Container() {
 			@Override public void exit(int status) {
+				System.out.flush();
+				System.err.flush();
 				System.exit(status);
 			}
 		};

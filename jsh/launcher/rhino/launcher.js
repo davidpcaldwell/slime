@@ -72,13 +72,23 @@
 //	the shell used to search the PATH environment variable for scripts at the given relative path to execute. This feature does not
 //	seem to have been useful, and scripts intended to be used as "commands" would typically be wrapped in bash scripts, which do
 //	have the PATH semantics.
+//
+//	SHELL CLASSPATH
+//
+//	At one time, it was possible to configure the "shell classpath" -- to specify the Java classes used to help implement the shell.
+//	However, there are no known use cases for this configurability, so the functionality was removed.
 
 //	TODO	can this be run with Java 6/7 jrunscript?
+//
 //	TODO	convert jsh build script to a jsh script that runs in an unbuilt shell
+//
 //	TODO	create semi-automated verify process that includes non-automatable features (like debugger)
+//
 //	TODO	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
+//
 //	TODO	At one point, was investigating using jjs as Nashorn launcher; is this still a good idea? If so, would using the
 //			Rhino shell as main make sense for the Rhino case?
+//
 //	TODO	Implement Rhino profiler; probably needs to move to main.js
 //
 //		} else if (env.JSH_SCRIPT_DEBUGGER == "profiler" || /^profiler\:/.test(env.JSH_SCRIPT_DEBUGGER)) {
@@ -99,10 +109,7 @@
 //			}
 //		}
 //
-//	SHELL CLASSPATH
-//
-//	At one time, it was possible to configure the "shell classpath" -- to specify the Java classes used to help implement the shell.
-//	However, there are no known use cases for this configurability, so the functionality was removed.
+//	TODO	Provide runtime access to plugin path, with jsh.shell.jsh.plugins?
 
 try {
 	if (!this.$api.slime) {
@@ -134,21 +141,23 @@ try {
 		}
 	});
 
-	$api.jsh.engine = (function() {
-		var engines = {
-			rhino: {
-				main: "inonit.script.jsh.Rhino",
-				resolve: function(o) {
-					return o.rhino;
-				}
-			},
-			nashorn: {
-				main: "inonit.script.jsh.Nashorn",
-				resolve: function(o) {
-					return o.nashorn;
-				}
+	$api.jsh.engines = {
+		rhino: {
+			main: "inonit.script.jsh.Rhino",
+			resolve: function(o) {
+				return o.rhino;
 			}
-		};
+		},
+		nashorn: {
+			main: "inonit.script.jsh.Nashorn",
+			resolve: function(o) {
+				return o.nashorn;
+			}
+		}
+	};
+
+	$api.jsh.engine = (function() {
+		var engines = $api.jsh.engines;
 		if ($api.slime.settings.get("jsh.engine")) {
 			return (function(setting) {
 				return engines[setting];
@@ -307,7 +316,7 @@ try {
 		})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
 	}
 
-	if (!$api.shell.environment.JSH_NEW_LAUNCHER || $api.jsh.shell && $api.jsh.shell.packaged) {
+	if ($api.jsh.shell && $api.jsh.shell.packaged) {
 		if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
 			$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
 			//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a

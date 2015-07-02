@@ -97,7 +97,7 @@ var install = (function() {
 //	TODO	convert to use $api.java.Command
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
 //			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
-if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
+if (false) {
 	Packages.java.lang.System.exit(
 		$api.engine.runCommand.apply(
 			null,
@@ -135,6 +135,9 @@ if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
 } else {
 	$api.script.resolve("launcher.js").load();
 	var command = new $api.java.Command();
+	//	TODO	determine whether forking can be removed. Right now, the problem is that in subshells the appropriate classes
+	//			cannot be found, apparently
+	command.fork();
 	if ($api.slime.settings.get("jsh.java.home")) {
 		command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
 	}
@@ -155,14 +158,23 @@ if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
 			return new $api.jsh.Unbuilt($api.script.file.getParentFile().getParentFile().getParentFile().getParentFile(),rhino);
 		}
 	})();
+	if (!shell.rhino) {
+		delete $api.jsh.engines.rhino;
+	}
+	if (!new javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+		delete $api.jsh.engines.nashorn;
+	}
 	var _urls = [];
+	var defaultEngine = (function() {
+		if ($api.jsh.engines.rhino) return "rhino";
+		if ($api.jsh.engines.nashorn) return "nashorn";
+		return null;
+	})();
+	$api.slime.settings.default("jsh.engine", defaultEngine);
 	if (shell.rhino) {
-		$api.slime.settings.default("jsh.engine", "rhino");
 		for (var i=0; i<shell.rhino.length; i++) {
 			_urls.push(shell.rhino[i]);
 		}
-	} else {
-		$api.slime.settings.default("jsh.engine", "nashorn");
 	}
 	var _shellUrls = shell.shellClasspath();
 	for (var i=0; i<_shellUrls.length; i++) {
@@ -170,15 +182,16 @@ if (!$api.shell.environment.JSH_NEW_LAUNCHER) {
 	}
 	var classpath = new $api.jsh.Classpath(_urls);
 	command.systemProperty("jsh.launcher.classpath", classpath.local());
-	command.systemProperty("jsh.launcher.main", $api.jsh.engine.main);
+	var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
+	command.systemProperty("jsh.launcher.main", engine.main);
 	for (var i=0; i<classpath._urls.length; i++) {
 		command.classpath(classpath._urls[i]);
 	}
-	command.main($api.jsh.engine.main);
+	command.main(engine.main);
 	for (var i=0; i<$api.arguments.length; i++) {
 		command.argument($api.arguments[i]);
 	}
 	Packages.java.lang.System.err.println("command = " + command);
-	var status = command.run();
+	var status = command.run({ input: Packages.java.lang.System["in"] });
 	$api.jsh.exit(status);
 }

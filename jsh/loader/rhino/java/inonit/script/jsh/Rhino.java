@@ -374,16 +374,19 @@ public class Rhino {
 		}
 	}
 
-	public static Main.Engine engine() {
-		return new EngineImpl();
+	//	TODO	this is a workaround while we figure out what we want to do with environment-variable settings being passed to
+	//			loader
+	private static void fixSetting(String name) {
+		if (System.getProperty(name) == null) {
+			String env = name.replace(".", "_").toUpperCase();
+			if (System.getenv(env) != null) {
+				System.setProperty(name, System.getenv(env));
+			}
+		}
 	}
 
 	public static void main(String[] args) throws Throwable {
-		Logging.get().log(Rhino.class, Level.INFO, "Invoked main(String[] args) with " + args.length + " arguments.");
-		for (int i=0; i<args.length; i++) {
-			Logging.get().log(Rhino.class, Level.INFO, "Argument " + i + " is: " + args[i]);
-		}
-		Logging.get().log(Rhino.class, Level.INFO, "loader jsh.plugins=" + System.getProperty("jsh.plugins"));
-		engine().cli(args);
+		fixSetting("jsh.engine.rhino.optimization");
+		Main.cli(new EngineImpl(), args);
 	}
 }

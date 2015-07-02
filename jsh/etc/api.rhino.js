@@ -175,7 +175,7 @@ this.runCommand = function() {
 var Class_java_lang_String;
 //	TODO	the below currently does not work when running inside the JSR223 Rhino engine bundled with Java 6 and Java 7; it falsely
 //			detects as Nashorn
-if (typeof(Packages.org.mozilla.javascript.Context) == "object" || String(Packages.java.lang.System.getProperty("jsh.launcher.engine")) == "nashorn") {
+if (typeof(Packages.org.mozilla.javascript.Context) == "object" || Packages.org.mozilla.javascript.Context.getCurrentContext() == null) {
 	load("nashorn:mozilla_compat.js");
 	Class_java_lang_String = Packages.java.lang.String.class;
 } else {
