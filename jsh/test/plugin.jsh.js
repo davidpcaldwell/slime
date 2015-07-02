@@ -133,6 +133,9 @@ plugin({
 				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
 				args.push(SLIME.getRelativePath("jsh/etc/build.rhino.js"));
 				args.push(JSH_HOME);
+				if (parameters.options.native) {
+					args.push("-native");
+				}
 				parameters.options.install.forEach(function(addon) {
 					args.push("-install", addon);
 				});

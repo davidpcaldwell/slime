@@ -326,7 +326,7 @@ if (parameters.options.cygwin) {
 
 //	Build native launcher
 //	TODO	re-enable native launcher for new jrunscript launcher
-if (false && parameters.options.native) {
+if (parameters.options.native) {
 	if (parameters.options.cygwin) {
 		//	TODO	use LoadLibrary call to locate jvm.dll
 		//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
