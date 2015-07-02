@@ -851,8 +851,9 @@ public abstract class Code {
 							public boolean hasLocation(JavaFileManager.Location location) {
 								if (location == StandardLocation.ANNOTATION_PROCESSOR_PATH) return false;
 								if (location == StandardLocation.SOURCE_PATH) return true;
-								if (location == StandardLocation.NATIVE_HEADER_OUTPUT) return false;
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+								//	StandardLocation.NATIVE_HEADER_OUTPUT not defined before Java 8
+								if (location.getName().equals("NATIVE_HEADER_OUTPUT")) return false;
+								throw new UnsupportedOperationException("Not supported yet: " + location.getName());
 							}
 
 							public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {

@@ -98,14 +98,16 @@ this.runCommand = function() {
 		};
 		this.getStandardInput = function() {
 			if (mode && mode.input) return mode.input;
-			return new JavaAdapter(
-				Packages.java.io.InputStream,
-				new function() {
-					this.read = function() {
-						return -1;
-					}
-				}
-			);
+			return new Packages.java.io.ByteArrayInputStream(Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Byte.TYPE,0));
+			//	The below construct is apparently not compatible with pre-Java 8 jrunscript
+//			return new JavaAdapter(
+//				Packages.java.io.InputStream,
+//				new function() {
+//					this.read = function() {
+//						return -1;
+//					}
+//				}
+//			);
 		};
 
 		this.finish = function() {
@@ -175,7 +177,10 @@ this.runCommand = function() {
 var Class_java_lang_String;
 //	TODO	the below currently does not work when running inside the JSR223 Rhino engine bundled with Java 6 and Java 7; it falsely
 //			detects as Nashorn
-if (typeof(Packages.org.mozilla.javascript.Context) == "object" || Packages.org.mozilla.javascript.Context.getCurrentContext() == null) {
+var NASHORN_AVAILABLE = new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn");
+var RHINO_UNAVAILABLE = typeof(Packages.org.mozilla.javascript.Context) == "object";
+var RHINO_NOT_RUNNING = RHINO_UNAVAILABLE || Packages.org.mozilla.javascript.Context.getCurrentContext() == null;
+if (NASHORN_AVAILABLE && RHINO_NOT_RUNNING) {
 	load("nashorn:mozilla_compat.js");
 	Class_java_lang_String = Packages.java.lang.String.class;
 } else {

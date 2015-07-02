@@ -170,6 +170,10 @@ if (false) {
 		if ($api.jsh.engines.nashorn) return "nashorn";
 		return null;
 	})();
+	if (!defaultEngine) {
+		Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
+		Packages.java.lang.System.exit(1);
+	}
 	$api.slime.settings.default("jsh.engine", defaultEngine);
 	if (shell.rhino) {
 		for (var i=0; i<shell.rhino.length; i++) {
@@ -193,5 +197,6 @@ if (false) {
 	}
 	//Packages.java.lang.System.err.println("command = " + command);
 	var status = command.run({ input: Packages.java.lang.System["in"] });
-	$api.jsh.exit(status);
+	//	This basically hard-codes the exit at the VM level, meaning this script cannot be embedded.
+	Packages.java.lang.System.exit(status);
 }

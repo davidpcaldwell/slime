@@ -111,6 +111,7 @@ plugin({
 				var parameters = jsh.script.getopts({
 					options: {
 						native: false,
+						executable: false,
 						install: jsh.script.getopts.ARRAY(String),
 						downloads: jsh.file.Pathname,
 						rhino: jsh.file.Pathname
@@ -135,6 +136,9 @@ plugin({
 				args.push(JSH_HOME);
 				if (parameters.options.native) {
 					args.push("-native");
+				}
+				if (parameters.options.executable) {
+					args.push("-executable");
 				}
 				parameters.options.install.forEach(function(addon) {
 					args.push("-install", addon);

@@ -211,6 +211,12 @@ var RHINO_LIBRARIES = (function() {
 			new File(Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar"))
 		]
 	}
+	if (getSetting("jsh.engine.rhino.classpath")) {
+		//	TODO	assumes only one path component
+		return [
+			new File(getSetting("jsh.engine.rhino.classpath"))
+		]
+	}
 	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
 		//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
 		return (function() {
@@ -355,7 +361,7 @@ platform.io.copyFile($api.slime.src.getFile("jsh/loader"), new File(JSH_HOME,"sc
 
 console("Creating bundled modules ...")
 //	TODO	remove or modify this; appears to redefine the slime global object
-load($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath());
+load(String($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath()));
 var tmpModules = new File(tmp,"modules");
 tmpModules.mkdir();
 var MODULE_CLASSPATH = (function() {
