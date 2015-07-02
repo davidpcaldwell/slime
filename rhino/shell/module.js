@@ -460,8 +460,10 @@ $exports.jrunscript = function(p) {
 			};
 		} else {
 			if (!$exports.java.jrunscript) {
-				Packages.java.lang.System.err.println("No jrunscript in " + $exports.java.home);
-				throw new Error("No jrunscript");
+				var searchpath = $context.api.file.Searchpath([$exports.java.home.getRelativePath("bin"),$exports.java.home.getRelativePath("../bin")]);
+				Packages.java.lang.System.err.println("path = " + searchpath);
+				Packages.java.lang.System.err.println("path = " + searchpath.getCommand("jrunscript"));
+				throw new Error("No jrunscript in " + $exports.java.home);
 			}
 			return {
 				command: $exports.java.jrunscript,

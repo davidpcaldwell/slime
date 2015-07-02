@@ -517,7 +517,7 @@ public abstract class Code {
 		public boolean isNameCompatible(String simpleName, Kind kind) {
 			if (simpleName.equals("package-info")) return false;
 			if (kind == JavaFileObject.Kind.SOURCE) {
-				String basename = delegate.getSourceName().substring(delegate.getSourceName().lastIndexOf("/")+1);
+				String basename = delegate.getSourceName().substring(delegate.getSourceName().lastIndexOf(java.io.File.separator)+1);
 				String className = basename.substring(0,basename.length()-".java".length());
 				return className.equals(simpleName);
 			}

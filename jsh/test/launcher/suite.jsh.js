@@ -49,6 +49,9 @@ jsh.unit.integration({
 				environment: jsh.js.Object.set({
 					JSH_BUILD_NOTEST: "true",
 					JSH_BUILD_NODOC: "true",
+					//	TODO	next two lines duplicate logic in jsh.test plugin
+					TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
 					PATH: jsh.shell.environment.PATH.toString()
 				})
 			});
@@ -157,6 +160,10 @@ jsh.unit.integration({
 				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
 				environment: {
 					PATH: jsh.shell.environment.PATH,
+					//	TODO	below is used for Windows temporary files
+					TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+					//	TODO	below is used for Windows command location
+					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
 					JSH_ENGINE: engine
 				}
 			}) });

@@ -140,7 +140,7 @@ plugin({
 					args.push("-install", addon);
 				});
 				jsh.shell.run({
-					command: "jrunscript",
+					command: jsh.shell.java.jrunscript,
 					arguments: args
 				});
 				jsh.shell.echo("Launching with classpath " + jsh.shell.properties.get("jsh.launcher.classpath"));
