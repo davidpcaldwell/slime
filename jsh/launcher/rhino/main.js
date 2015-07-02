@@ -191,7 +191,7 @@ if (false) {
 	for (var i=0; i<$api.arguments.length; i++) {
 		command.argument($api.arguments[i]);
 	}
-	Packages.java.lang.System.err.println("command = " + command);
+	//Packages.java.lang.System.err.println("command = " + command);
 	var status = command.run({ input: Packages.java.lang.System["in"] });
 	$api.jsh.exit(status);
 }

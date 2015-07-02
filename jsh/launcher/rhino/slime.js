@@ -57,7 +57,7 @@ $api.slime = (function(was) {
 					};
 
 					this.File = function(path) {
-						$api.log("File: " + path);
+						//$api.log("File: " + path);
 						return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
 					}
 

@@ -228,6 +228,7 @@ try {
 			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
 			var rhinoClasspath = (rhino) ? ["-classpath", rhino.local()] : [];
 			$api.java.install.compile([
+				"-Xlint:unchecked",
 				"-d", LOADER_CLASSES
 			].concat(rhinoClasspath).concat(toCompile));
 			return [LOADER_CLASSES.toURI().toURL()];

@@ -28,7 +28,7 @@ public class Command {
 			String[] env = null;
 			Map envMap = getSubprocessEnvironment();
 			if (envMap != null) {
-				ArrayList list = new ArrayList();
+				ArrayList<String> list = new ArrayList<String>();
 				Iterator i = envMap.keySet().iterator();
 				while(i.hasNext()) {
 					Object next = i.next();
@@ -65,7 +65,7 @@ public class Command {
 		public abstract String[] getArguments();
 
 		final String[] cmdarray() {
-			ArrayList args = new ArrayList();
+			ArrayList<String> args = new ArrayList<String>();
 			String program = getCommand();
 			String[] arguments = getArguments();
 			args.add(program);

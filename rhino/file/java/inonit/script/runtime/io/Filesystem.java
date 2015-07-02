@@ -136,7 +136,7 @@ public abstract class Filesystem {
 			private File canonicalize(File file) {
 				String absolute = file.getAbsolutePath();
 				String[] tokens = absolute.split("\\" + File.separator);
-				java.util.ArrayList rv = new java.util.ArrayList();
+				java.util.ArrayList<String> rv = new java.util.ArrayList<String>();
 				for (int i=0; i<tokens.length; i++) {
 					if (tokens[i].equals(".")) {
 						//	do nothing

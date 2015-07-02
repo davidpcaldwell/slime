@@ -888,7 +888,7 @@ public abstract class Code {
 					}
 					javax.tools.JavaFileObject jfo = getFileObject(java);
 					//System.err.println("Compiling: " + jfo.toUri());
-					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, jfm, null, null, null, Arrays.asList(new JavaFileObject[] { jfo }));
+					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, jfm, null, Arrays.asList(new String[] { "-Xlint:unchecked" }), null, Arrays.asList(new JavaFileObject[] { jfo }));
 					boolean success = task.call();
 					if (!success) {
 						throw new RuntimeException("Failure");

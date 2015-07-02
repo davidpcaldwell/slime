@@ -150,7 +150,7 @@ public abstract class Loader {
 			}
 
 			protected Enumeration<URL> findResources(String name) {
-				java.util.Vector rv = new java.util.Vector();
+				java.util.Vector<URL> rv = new java.util.Vector<URL>();
 				synchronized(locations) {
 					for (Code.Source source : locations) {
 						Code.Classes classes = source.getClasses();

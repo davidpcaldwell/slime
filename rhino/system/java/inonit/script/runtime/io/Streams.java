@@ -111,7 +111,7 @@ public class Streams {
 
 	public static class Bytes {
 		public static class Buffer {
-			private LinkedList bytes = new LinkedList();
+			private LinkedList<Byte> bytes = new LinkedList<Byte>();
 			private boolean closed;
 
 			private MyInputStream in = new MyInputStream();
