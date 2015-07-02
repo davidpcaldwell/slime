@@ -197,9 +197,9 @@ if (parameters.options.browser) {
 	subprocess({
 		run: jsh.shell.run,
 		name: "Browser tests",
-		command: jsh.file.Searchpath([parameters.options.java[0].directory.getRelativePath("bin")]).getCommand("java"),
+		command: "jrunscript",
 		arguments: [
-			"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+			jsh.shell.jsh.home.getRelativePath("jsh.js"),
 			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
 			"-stdio"
 		].concat(parameters.arguments),
