@@ -838,8 +838,9 @@ if (COFFEESCRIPT && !jsh.shell.environment.SKIP_COFFEESCRIPT) {
 }
 
 var nativeLauncher = jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh");
-if (nativeLauncher) {
-	jsh.shell.echo("Testing native launcher ...");
+//	Windows sees JavaScript files as potential commands, through the PATHEXT variable
+if (nativeLauncher && !/\.js/.test(nativeLauncher.pathname.basename)) {
+	Packages.java.lang.System.err.println("Testing native launcher: " + nativeLauncher + " ...");
 	jsh.shell.run({
 		command: nativeLauncher,
 		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],

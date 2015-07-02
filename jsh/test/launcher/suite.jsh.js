@@ -179,6 +179,10 @@ jsh.unit.integration({
 						var result = shell({
 							environment: {
 								PATH: jsh.shell.environment.PATH,
+								//	TODO	below is used for Windows temporary files
+								TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+								//	TODO	below is used for Windows command location
+								PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
 								JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
 								JSH_ENGINE_RHINO_CLASSPATH: (parameters.options.rhino) ? String(parameters.options.rhino) : null,
 								JSH_ENGINE: engine,
@@ -211,6 +215,10 @@ jsh.unit.integration({
 							var result = shell({
 								environment: {
 									PATH: jsh.shell.environment.PATH,
+									//	TODO	below is used for Windows temporary files
+									TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+									//	TODO	below is used for Windows command location
+									PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
 									JSH_ENGINE_RHINO_CLASSPATH: String(parameters.options.rhino),
 									JSH_ENGINE: "rhino",
 									JSH_ENGINE_RHINO_OPTIMIZATION: 0
@@ -222,6 +230,10 @@ jsh.unit.integration({
 							var result = shell({
 								environment: {
 									PATH: jsh.shell.environment.PATH,
+									//	TODO	below is used for Windows temporary files
+									TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+									//	TODO	below is used for Windows command location
+									PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
 									JSH_ENGINE_RHINO_CLASSPATH: null,
 									JSH_ENGINE: engine
 								}
