@@ -10,32 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (jsh.shell.jsh.src && !jsh.shell.jsh.home) {
-	var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-	jsh.shell.run({
-		command: "jrunscript",
-		arguments: [
-			jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-			jsh.shell.jsh.src.getRelativePath("jsh/etc/unbuilt.rhino.js"),
-			"build",
-			tmpdir
-		],
-		environment: jsh.js.Object.set({}, {
-			JSH_BUILD_NOTEST: "true",
-			JSH_BUILD_NODOC: "true"
-		})
-	});
-	jsh.shell.echo("Re-launching in built shell: " + tmpdir);
-	jsh.shell.run({
-		command: "jrunscript",
-		arguments: [
-			tmpdir.getRelativePath("jsh.js"),
-			jsh.script.file
-		].concat(jsh.script.arguments),
-		evaluate: function(result) {
-			jsh.shell.exit(result.status);
-		}
-	});
+if (jsh.test && jsh.test.requireBuiltShell) {
+	jsh.test.requireBuiltShell({ src: jsh.script.file.parent.parent.parent.parent });
 }
 
 var parameters = jsh.script.getopts({

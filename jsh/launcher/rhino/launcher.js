@@ -183,7 +183,7 @@ try {
 			return rv;
 		})(_urls);
 
-		this.files = function() {
+		var files = function() {
 			var rv = [];
 			for (var i=0; i<this._urls.length; i++) {
 				var pathname;
@@ -208,7 +208,7 @@ try {
 		};
 
 		this.local = function() {
-			return this.files().join(colon);
+			return files.call(this).join(colon);
 		}
 	};
 
@@ -364,7 +364,7 @@ try {
 		});
 
 		//	TODO	If the container is classloader, presumably could use URLs or push the files switch back into $api.java.Command
-		var classpath = $api.jsh.shell.classpath().files();
+		var classpath = $api.jsh.shell.classpath()._urls;
 		for (var i=0; i<classpath.length; i++) {
 			command.classpath(classpath[i]);
 		}

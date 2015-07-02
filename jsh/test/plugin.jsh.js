@@ -105,7 +105,7 @@ plugin({
 	},
 	load: function() {
 		if (!jsh.test) jsh.test = {};
-		jsh.test.requireBuiltShell = function() {
+		jsh.test.requireBuiltShell = function(p) {
 			if (!jsh.shell.jsh.home) {
 				jsh.shell.echo("Relaunching in built shell ...");
 				var parameters = jsh.script.getopts({
@@ -129,7 +129,7 @@ plugin({
 				}
 				args.push("-Djsh.build.notest=true");
 				args.push("-Djsh.build.nodoc=true");
-				var SLIME = jsh.script.file.parent.parent.parent;
+				var SLIME = (p && p.src) ? p.src : jsh.script.file.parent.parent.parent;
 				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
 				args.push(SLIME.getRelativePath("jsh/etc/build.rhino.js"));
 				args.push(JSH_HOME);
