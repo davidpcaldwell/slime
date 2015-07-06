@@ -269,7 +269,12 @@ $exports.jsh = function(p) {
 			}
 		})();
 
-		var addCommandTo = function(jargs) {
+		var addCommandTo = function(jargs,properties) {
+			if (properties) {
+				for (var x in properties) {
+					jargs.push("-D" + x + "=" + properties[x]);
+				}
+			}
 			jargs.push(p.script);
 			p.arguments.forEach( function(arg) {
 				jargs.push(arg);
@@ -290,12 +295,12 @@ $exports.jsh = function(p) {
 				});
 				return $exports.java(shell);
 			} else {
-				if (p.classpath) {
-					throw new Error("Unimplemented: classpath");
-				}
 				var scripts = [];
 				var properties = {};
 				//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
+				if (p.classpath) {
+					properties["jsh.shell.classpath"] = String(p.classpath);
+				}
 				if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 					properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
 				}
@@ -309,7 +314,7 @@ $exports.jsh = function(p) {
 				var shell = $context.api.js.Object.set({}, p, {
 					environment: environment,
 					properties: properties,
-					arguments: addCommandTo(scripts),
+					arguments: addCommandTo(scripts,p.properties),
 					evaluate: evaluate
 				});
 				return $exports.jrunscript(shell);

@@ -188,6 +188,13 @@ if (false) {
 	for (var i=0; i<_shellUrls.length; i++) {
 		_urls.push(_shellUrls[i]);
 	}
+	//	TODO	document, generalize
+	if ($api.slime.settings.get("jsh.shell.classpath")) {
+		var files = $api.slime.settings.get("jsh.shell.classpath").split(String(Packages.java.io.File.pathSeparator));
+		for (var i=0; i<files.length; i++) {
+			_urls.push(new Packages.java.io.File(files[i]).toURI().toURL());
+		}
+	}
 	var classpath = new $api.jsh.Classpath(_urls);
 	command.systemProperty("jsh.launcher.classpath", classpath.local());
 	var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
