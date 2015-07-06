@@ -16,9 +16,97 @@ END LICENSE
 <head>
 	<title>Running jsh</title>
 	<link rel="stylesheet" type="text/css" href="../../../loader/api/api.css"></link>
+	<style>
+		table { border-collapse: collapse }
+		td { padding: 1em; border: 1px solid black; }
+	</style>
 	<script type="text/javascript" src="../../../loader/api/api.js"></script>
 </head>
 <body>
+	<div>
+		<h1>Settings</h1>
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<!--
+						Tested manually
+						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/rhino/main.js jsh/test/jsh.shell/properties.jsh.js
+					-->
+					<td>jsh.debug.jdwp</td>
+					<td>
+						Sets up a Java debugger to debug the shell. The value of this setting is interpreted as an argument to
+						the <code>-agentlib-jdwp:</code> Java launcher argument.
+					</td>
+				</tr>
+				<tr>
+					<!--
+						Tested manually
+						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/rhino/main.js jsh/test/jsh.shell/properties.jsh.js
+					-->
+					<td>jsh.debug.script</td>
+					<td>
+						Sets up a debugger to debug scripts. If the value is <code>rhino</code>, and the shell is using Rhino as
+						its JavaScript engine, the Rhino debugger will be launched to debug the script.
+					</td>
+				</tr>
+				<tr>
+					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.jvm.options</td>
+					<td>
+						A set of literal options to be passed to the Java launcher when starting the Java virtual machine running
+						the shell.
+					</td>
+				</tr>
+				<tr>
+					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.log.java.properties</td>
+					<td>
+						Specifies the location of a <code>java.util.logging</code> properties file to use in configuring logging
+						for the Java virtual machine running the shell.
+					</td>
+				</tr>
+				<tr>
+					<!--	Used in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.shell.tmpdir</td>
+					<td>
+						Specifies the location the shell should use for creating temporary files. This setting is used to set the
+						<code>java.io.tmpdir</code> Java property.
+					</td>
+				</tr>
+				<tr>
+					<!--	Used in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.engine</td>
+					<td>
+						Specifies the location of a <code>java.util.logging</code> properties file to use in configuring logging
+						for the Java virtual machine running the shell.
+					</td>
+				</tr>
+				<tr>
+					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.engine.rhino.classpath</td>
+					<td>
+						Specifies the location of Rhino when running a runtime shell.
+						<!--	What happens in installed shells if this is specified and Rhino is absent? Present?	-->
+					</td>
+				</tr>
+				<tr>
+					<!--	Tested in jsh/test/launcher/suite.jsh.js	-->
+					<td>jsh.engine.rhino.optimization</td>
+					<td>
+						Sets the Rhino optimization level to be used for running the shell.
+						<!--	What happens in installed shells if this is specified and Rhino is absent? Present?	-->
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<!--
 	<div>
 		<h1>Java launcher</h1>
 		<div>
@@ -27,6 +115,7 @@ END LICENSE
 			<blockquote><code>java -jar jsh.jar <i>script</i> <i>[arguments]</i></code></blockquote>
 		</div>
 	</div>
+	-->
 	<!--
 		TODO	document native launcher
 		<div>
@@ -37,6 +126,7 @@ END LICENSE
 			</div>
 		</div>
 	-->
+	<!--
 	<div>
 		<h1>Environment variables</h1>
 		Several environment variables affect a jsh shell.
@@ -62,5 +152,6 @@ END LICENSE
 			</li>
 		</ul>
 	</div>
+	-->
 </body>
 </html>

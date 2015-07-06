@@ -48,9 +48,9 @@
 		Packages.inonit.system.Logging.get().log(
 			$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
 			Packages.java.util.logging.Level.FINE,
-			"Reading plugins from " + _plugins[i].getCode()
+			"Reading plugins from " + _plugins[i]
 		);
-		var _code = _plugins[i].getCode();
+		var _code = _plugins[i];
 		readPlugin(_code,{
 			script: function(v) {
 				list.push(v);

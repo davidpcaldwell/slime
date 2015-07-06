@@ -10,6 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (jsh.script.file.pathname.basename == "packaged.jsh.js") {
+	jsh.loader.plugins(jsh.script.file.getRelativePath("a"));
+}
 jsh.debug.disableBreakOnExceptionsFor(function(x) {
 });
 var client = new jsh.http.Client();

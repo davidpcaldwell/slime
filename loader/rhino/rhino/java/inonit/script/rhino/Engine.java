@@ -307,8 +307,7 @@ public class Engine {
 		public static abstract class Configuration {
 			public static Configuration create(final Ui.Factory uiFactory) {
 				return new Configuration() {
-					@Override
-					public Ui.Factory getUiFactory() {
+					@Override public Ui.Factory getUiFactory() {
 						return uiFactory;
 					}
 				};
@@ -485,9 +484,13 @@ public class Engine {
 			return Context.getCurrentContext();
 		}
 
-		final Loader.Classes getLoaderClasses() {
-			return factory.getLoaderClasses();
+		final Loader.Classes.Interface getClasspath() {
+			return factory.getClasspath();
 		}
+
+//		final Loader.Classes getLoaderClasses() {
+//			return factory.getLoaderClasses();
+//		}
 
 		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
 			dim.attachTo(factory);
@@ -498,7 +501,7 @@ public class Engine {
 		}
 
 		private class ContextFactoryInner extends ContextFactory {
-			private Classes classes;
+			private Loader.Classes classes;
 //			private ClassLoader classLoader;
 //			private Loader.Classes classes;
 
@@ -509,7 +512,7 @@ public class Engine {
 
 			private synchronized void initializeClassLoaders() {
 				if (!initialized) {
-					this.classes = Classes.create(new Classes.Configuration() {
+					this.classes = Loader.Classes.create(new Loader.Classes.Configuration() {
 						@Override public boolean canCreateClassLoaders() {
 							return Configuration.this.createClassLoader();
 						}
@@ -527,10 +530,15 @@ public class Engine {
 				return this.classes.getApplicationClassLoader();
 			}
 
-			final Loader.Classes getLoaderClasses() {
+			final Loader.Classes.Interface getClasspath() {
 				initializeClassLoaders();
-				return this.classes.getScriptClasses();
+				return this.classes.getInterface();
 			}
+
+//			final Loader.Classes getLoaderClasses() {
+//				initializeClassLoaders();
+//				return this.classes.getScriptClasses();
+//			}
 
 			@Override protected synchronized Context makeContext() {
 				Context rv = super.makeContext();
@@ -1443,8 +1451,7 @@ public class Engine {
 //		return this.contexts.getLoaderClasses();
 //	}
 
-	public Loader.Classpath getClasspath() {
-		if (this.contexts.getLoaderClasses() == null) return null;
-		return this.contexts.getLoaderClasses().toScriptClasspath();
+	public Loader.Classes.Interface getClasspath() {
+		return this.contexts.getClasspath();
 	}
 }

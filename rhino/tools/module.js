@@ -13,20 +13,16 @@
 //	We do not want to pre-load the Java compiler as it is way too slow to do so.
 //	TODO	verify that this setup does not load it
 $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(function() {
-	debugger;
 	var javac = (function() {
 		if (Packages.javax.tools.ToolProvider.getSystemJavaCompiler()) {
 			return new function() {
 				this.command = function(args) {
 					return Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
 						null, null, null,
-						$context.api.java.toJavaArray(
-							args
-							,Packages.java.lang.String
-							,function(s) {
-								return new Packages.java.lang.String(s)
-							}
-						)
+						$context.api.java.Array.create({
+							type: Packages.java.lang.String,
+							array: args.map(function(s) { return new Packages.java.lang.String(s); })
+						})
 					)
 				}
 			};

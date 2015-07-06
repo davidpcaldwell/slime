@@ -13,8 +13,7 @@
 this.jsh = new function() {
 	var $host = $jsh.host();
 	(function() {
-		var installation = $jsh.getInstallation();
-		var configuration = $jsh.getConfiguration();
+		var configuration = $jsh.getEnvironment();
 		var invocation = $jsh.getInvocation();
 
 		$host.getSystemProperties = function() {
@@ -33,22 +32,27 @@ this.jsh = new function() {
 			return invocation;
 		};
 
-		$host.getPackageFile = function() {
-			return configuration.getPackageFile();
+		$host.getPackaged = function() {
+			return configuration.getPackaged();
 		}
 
-		$host.getPackagedCode = function() {
-			return configuration.getPackagedCode();
-		};
+		$host.getInterface = function() {
+			return $jsh.getInterface();
+		}
+
+//		$host.getPackageFile = function() {
+//			var packaged = configuration.getPackaged();
+//			return (packaged) ? packaged.getFile() : null;
+//		}
+//
+//		$host.getPackagedCode = function() {
+//			var packaged = configuration.getPackaged();
+//			return (packaged) ? packaged.getCode() : null;
+//		};
 
 		$host.loader = new function() {
-			//	implementation duplicates original
-			this.getBootstrapModule = function(path) {
-				return installation.getShellModuleCode(path);
-			};
-
 			this.getPlugins = function() {
-				return installation.getPlugins();
+				return $jsh.getPlugins();
 			}
 
 			this.getPackagedCode = function() {
@@ -56,7 +60,7 @@ this.jsh = new function() {
 			};
 
 			var getLoaderCode = function(path) {
-				var _reader = installation.getJshLoader(path).getReader();
+				var _reader = $jsh.getJshLoader().getFile(path).getReader();
 				return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
 			};
 
@@ -86,10 +90,10 @@ this.jsh = new function() {
 		};
 
 		$host.getPlugins = function(_file) {
-			return Packages.inonit.script.jsh.Installation.Plugin.get(_file);
+			return $jsh.getInterface().getPlugins(_file);
 		};
 
-		$host.coffee = $jsh.getInstallation().getLibrary("coffee-script.js");
+		$host.coffee = $jsh.getLibrary("coffee-script.js");
 	})();
 
 	var jsh = this;

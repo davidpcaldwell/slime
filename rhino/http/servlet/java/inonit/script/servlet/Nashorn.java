@@ -25,7 +25,7 @@ class Nashorn extends Servlet.ScriptContainer {
 
 	@Override void initialize(Servlet servlet) {
 		this.servlet = servlet;
-		this.host = Host.create(new Classes.Configuration() {
+		this.host = Host.create(new Loader.Classes.Configuration() {
 			@Override public boolean canCreateClassLoaders() {
 				return true;
 			}
@@ -46,6 +46,10 @@ class Nashorn extends Servlet.ScriptContainer {
 
 	@Override void addScript(final String name, final InputStream stream) {
 		host.add(new Code.Source.File() {
+			@Override public Code.Source.URI getURI() {
+				throw new UnsupportedOperationException();
+			}
+
 			@Override public String getSourceName() {
 				return name;
 			}
@@ -87,7 +91,7 @@ class Nashorn extends Servlet.ScriptContainer {
 			return getLoader().getCoffeeScript();
 		}
 
-		public Loader.Classpath getClasspath() {
+		public Loader.Classes.Interface getClasspath() {
 			return host.getClasspath();
 		}
 	}

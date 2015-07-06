@@ -12,11 +12,11 @@
 
 new (function() {
 	this.getLoaderCode = function(path) {
-		return $jsh.getStreams().readString($jsh.getInstallation().getPlatformLoader(path).getReader());
+		return $jsh.getStreams().readString($jsh.getPlatformLoader().getFile(path).getReader());
 	};
 
 	this.getCoffeeScript = function() {
-		var _library = $jsh.getInstallation().getLibrary("coffee-script.js");
+		var _library = $jsh.getLibrary("coffee-script.js");
 		if (!_library) return null;
 		return $jsh.getStreams().readString(_library.getReader());
 	}

@@ -11,7 +11,7 @@
 //	END LICENSE
 
 if (!this.$engine) {
-	Packages.java.lang.System.err.println("This script must be launched from jrunscript.js.");
+	Packages.java.lang.System.err.println("This script must be launched from jrunscript api.js.");
 	Packages.java.lang.System.exit(1);
 }
 

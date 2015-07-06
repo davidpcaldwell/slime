@@ -18,10 +18,10 @@ import javax.script.*;
 
 import inonit.script.engine.*;
 
-public class Nashorn {
+public class Nashorn extends Main.Engine {
 	public static abstract class Host {
 		public abstract boolean isTop();
-		public abstract Loader.Classpath getClasspath();
+		public abstract Loader.Classes.Interface getClasspath();
 		public abstract void exit(int status);
 	}
 
@@ -38,12 +38,12 @@ public class Nashorn {
 		}
 	}
 
-	public static Integer execute(Shell shell) throws Invocation.CheckedException {
+	public static Integer execute(Shell shell) throws Shell.Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(false);
 		return execution.execute(shell);
 	}
 
-	private static void main(Shell.Configuration.Context context, Shell shell) throws Invocation.CheckedException {
+	public void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException {
 		Shell.Execution execution = new ExecutionImpl(true);
 		Integer rv = execution.execute(shell);
 		if (rv == null) {
@@ -64,7 +64,7 @@ public class Nashorn {
 		private boolean top;
 
 		ExecutionImpl(boolean top) {
-			this.host = inonit.script.nashorn.Host.create(new Classes.Configuration() {
+			this.host = inonit.script.nashorn.Host.create(new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
 				}
@@ -82,7 +82,7 @@ public class Nashorn {
 
 		@Override public void addEngine() {
 			host("$nashorn", new Host() {
-				@Override public Loader.Classpath getClasspath() {
+				@Override public Loader.Classes.Interface getClasspath() {
 					return host.getClasspath();
 				}
 
@@ -94,7 +94,11 @@ public class Nashorn {
 					throw new ExitException(status);
 				}
 			});
-			host.add(this.getShell().getInstallation().getJshLoader("nashorn.js"));
+			try {
+				host.add(this.getShell().getJshLoader().getFile("nashorn.js"));
+			} catch (java.io.IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override public void script(Code.Source.File script) {
@@ -132,29 +136,9 @@ public class Nashorn {
 		}
 	}
 
-	private static void run(Shell.Configuration.Context context, String[] args) throws Invocation.CheckedException {
-		Main.initialize();
-		main(context, Shell.main(args));
-	}
-
-	private static class Runner extends Shell.Configuration.Context.Holder.Run {
-		public void threw(Throwable t) {
-			t.printStackTrace();
-		}
-
-		public void run(Shell.Configuration.Context context, String[] args) throws Throwable {
-			Nashorn.run(context, args);
-		}
-	}
-
-	public static Integer run(String[] args) throws Invocation.CheckedException {
-		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
-		return context.getExitCode(new Runner(), args);
-	}
-
-	public static void main(final String[] args) throws Invocation.CheckedException {
+	public static void main(final String[] args) throws Shell.Invocation.CheckedException {
 		try {
-			run(Shell.Configuration.Context.VM, args);
+			Main.cli(new Nashorn(), args);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			System.exit(255);

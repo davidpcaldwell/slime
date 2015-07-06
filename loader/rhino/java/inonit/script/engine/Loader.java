@@ -24,33 +24,69 @@ public abstract class Loader {
 	public abstract String getCoffeeScript() throws IOException;
 	public abstract String getLoaderCode(String path) throws IOException;
 
-	//	Used in literal.js to support operations on the class loader
-	public static abstract class Classpath {
-		public abstract void append(Code.Source code);
+	public static abstract class Classes {
+		public static abstract class Configuration {
+			public abstract boolean canCreateClassLoaders();
+			public abstract ClassLoader getApplicationClassLoader();
+		}
 
-		/**
-			Should return the class with the given name, or <code>null</code> if there is no such class.
-		*/
-		public abstract Class getClass(String name);
+		public static abstract class Interface {
+			public abstract void append(Code.Source code);
 
-		public final void append(Code code) {
-			append(code.getClasses());
+			/**
+				Should return the class with the given name, or <code>null</code> if there is no such class.
+			*/
+			public abstract Class getClass(String name);
+
+			public final void append(Code code) {
+				append(code.getClasses());
+			}
+		}
+
+		public abstract ClassLoader getApplicationClassLoader();
+		public abstract Interface getInterface();
+
+
+		public static Classes create(Configuration configuration) {
+			if (configuration.canCreateClassLoaders()) {
+				final ClassLoaderImpl loaderClasses = ClassLoaderImpl.create(configuration.getApplicationClassLoader());
+				return new Classes() {
+					@Override public ClassLoader getApplicationClassLoader() {
+						return loaderClasses;
+					}
+
+					@Override public Interface getInterface() {
+						return loaderClasses.toInterface();
+					}
+				};
+			} else {
+				final ClassLoader loader = configuration.getApplicationClassLoader();
+				return new Classes() {
+					@Override public ClassLoader getApplicationClassLoader() {
+						return loader;
+					}
+
+					@Override public Interface getInterface() {
+						return null;
+					}
+				};
+			}
 		}
 	}
 
-	public static abstract class Classes extends ClassLoader {
-		public static Classes create(ClassLoader delegate) {
+	private static abstract class ClassLoaderImpl extends ClassLoader {
+		static ClassLoaderImpl create(ClassLoader delegate) {
 			Logging.get().log(Loader.class, Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
 			return new New(delegate);
 		}
 
-		public abstract Loader.Classpath toScriptClasspath();
+		abstract Classes.Interface toInterface();
 
-		Classes(ClassLoader delegate) {
+		ClassLoaderImpl(ClassLoader delegate) {
 			super(delegate);
 		}
 
-		private static class New extends Classes {
+		private static class New extends ClassLoaderImpl {
 			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
 
@@ -114,7 +150,7 @@ public abstract class Loader {
 			}
 
 			protected Enumeration<URL> findResources(String name) {
-				java.util.Vector rv = new java.util.Vector();
+				java.util.Vector<URL> rv = new java.util.Vector<URL>();
 				synchronized(locations) {
 					for (Code.Source source : locations) {
 						Code.Classes classes = source.getClasses();
@@ -129,10 +165,10 @@ public abstract class Loader {
 				return rv.elements();
 			}
 
-			public Loader.Classpath toScriptClasspath() {
-				return new Loader.Classpath() {
+			Classes.Interface toInterface() {
+				return new Classes.Interface() {
 					@Override public String toString() {
-						return "Loader.Classpath for: " + New.this.toString();
+						return "Loader.Classes.Interface for: " + New.this.toString();
 					}
 
 					@Override public void append(Code.Source code) {

@@ -20,8 +20,97 @@ import inonit.script.runtime.io.*;
 import inonit.system.*;
 import inonit.script.engine.*;
 
-public abstract class Shell {
-	public abstract Installation getInstallation();
+public class Shell {
+	public static abstract class Configuration {
+		public static Shell.Configuration create(final Installation installation, final Environment configuration, final Invocation invocation) {
+			return new Shell.Configuration() {
+				@Override public Installation getInstallation() {
+					return installation;
+				}
+
+				@Override public Environment getEnvironment() {
+					return configuration;
+				}
+
+				@Override public Invocation getInvocation() {
+					return invocation;
+				}
+			};
+		}
+
+		public abstract Installation getInstallation();
+
+		public abstract Environment getEnvironment();
+
+		public abstract Invocation getInvocation();
+
+		final Configuration subshell(final Environment environment, final Invocation invocation) {
+			final Installation installation = getInstallation();
+			return new Configuration() {
+				@Override public Installation getInstallation() {
+					return installation;
+				}
+
+				@Override public Environment getEnvironment() {
+					return environment;
+				}
+
+				@Override public Invocation getInvocation() {
+					return invocation;
+				}
+			};
+		}
+	}
+
+	public static Shell create(Configuration configuration) {
+		Shell rv = new Shell();
+		rv.configuration = configuration;
+		return rv;
+	}
+
+	private Configuration configuration;
+
+	private Shell() {
+	}
+
+	public Code.Source.File getLibrary(String path) {
+		Code.Source[] plugins = configuration.getInstallation().getLibraries();
+		Logging.get().log(Shell.class, Level.FINE, "Searching for library %s ...", path);
+		Code.Source.File rv = null;
+		for (Code.Source root : plugins) {
+			Logging.get().log(Shell.class, Level.FINER, "Searching for library %s in %s ...", path, root);
+			Code.Source.File file = null;
+			try {
+				file = root.getFile(path);
+			} catch (IOException e) {
+				//	TODO	log
+			}
+			if (file != null) {
+				Logging.get().log(Main.class, Level.FINE, "Found library %s in %s ...", path, root);
+				rv = file;
+			}
+		}
+		if (rv == null) {
+			Logging.get().log(Main.class, Level.FINE, "Did not find library %s.", path);
+		}
+		return rv;
+	}
+
+	public Code.Source getPlatformLoader() {
+		return configuration.getInstallation().getPlatformLoader();
+	}
+
+	public final String getLoaderCode() throws IOException {
+		return streams.readString(configuration.getInstallation().getJshLoader().getFile("bootstrap.js").getReader());
+	}
+
+	public Code.Source getJshLoader() {
+		return configuration.getInstallation().getJshLoader();
+	}
+
+	public final Code[] getPlugins() {
+		return configuration.getInstallation().getPlugins();
+	}
 
 	private Streams streams = new Streams();
 
@@ -29,31 +118,16 @@ public abstract class Shell {
 		return streams;
 	}
 
-	public final String getLoaderCode() throws IOException {
-		return streams.readString(getInstallation().getJshLoader("bootstrap.js").getReader());
+	public Shell subshell(Environment configuration, Shell.Invocation invocation) {
+		return create(this.configuration.subshell(configuration, invocation));
 	}
 
-	public Shell subshell(Configuration configuration, Invocation invocation) {
-		return create(this.getInstallation(), configuration, invocation);
+	public final Environment getEnvironment() {
+		return configuration.getEnvironment();
 	}
 
-	public abstract Configuration getConfiguration();
-	public abstract Invocation getInvocation() throws Invocation.CheckedException;
-
-	public static Shell create(final Installation installation, final Configuration configuration, final Invocation invocation) {
-		return new Shell() {
-			@Override public Installation getInstallation() {
-				return installation;
-			}
-
-			@Override public Configuration getConfiguration() {
-				return configuration;
-			}
-
-			@Override public Invocation getInvocation() throws Invocation.CheckedException {
-				return invocation;
-			}
-		};
+	public final Shell.Invocation getInvocation() {
+		return configuration.getInvocation();
 	}
 
 	private Object $host;
@@ -66,155 +140,225 @@ public abstract class Shell {
 		return $host;
 	}
 
-	public static Shell main(final String[] arguments) {
-		final Configuration configuration = Configuration.main();
-		if (System.getProperty("jsh.launcher.packaged") != null) {
-			return new Shell() {
-				@Override public Installation getInstallation() {
-					return Installation.packaged();
+	//	TODO	certainly appears this can be merged with Code.Source.File, now that Code.Source.File has concept of URI
+	public static abstract class Script {
+		private static Script create(final Code.Source.File delegate, final java.net.URI uri) {
+			return new Script() {
+				@Override public String toString() {
+					return Script.class.getName() + " delegate=" + delegate + " uri=" + uri;
 				}
 
-				@Override public Configuration getConfiguration() {
-					return configuration;
+				@Override public java.net.URI getUri() {
+					return uri;
 				}
 
-				@Override public Invocation getInvocation() {
-					return Invocation.packaged(arguments);
-				}
-			};
-		} else {
-			if (arguments.length == 0) {
-				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
-			}
-			return new Shell() {
-				@Override public Installation getInstallation() {
-					return Installation.unpackaged();
-				}
-
-				@Override public Configuration getConfiguration() {
-					return configuration;
-				}
-
-				@Override public Invocation getInvocation() throws Invocation.CheckedException {
-					return Invocation.create(arguments);
+				public Code.Source.File getSource() {
+					return delegate;
 				}
 			};
 		}
+
+		static Script create(File file) {
+			return create(Code.Source.File.create(file), file.toURI());
+		}
+
+		static Script create(Code.Source.File delegate) {
+			return create(delegate, null);
+		}
+
+		public abstract java.net.URI getUri();
+		public abstract Code.Source.File getSource();
 	}
 
-	public static abstract class Configuration {
+	public static abstract class Container {
+		public static final Container VM = new Container() {
+			@Override public void exit(int status) {
+				System.out.flush();
+				System.err.flush();
+				System.exit(status);
+			}
+		};
+
+		public static class Holder extends Container {
+			private Integer status;
+			private Throwable uncaught;
+
+			@Override public void exit(int status) {
+				this.status = new Integer(status);
+			}
+
+			public Integer getExitCode(Run run, Shell.Configuration shell) {
+				try {
+					run.run(this, shell);
+					return status;
+				} catch (Throwable t) {
+					run.threw(t);
+					if (status == null) return new Integer(1);
+					return status;
+				}
+			}
+
+			public static abstract class Run {
+				public abstract void threw(Throwable t);
+				public abstract void run(Container context, Shell.Configuration shell) throws Throwable;
+			}
+		}
+
+		public abstract void exit(int status);
+	}
+
+	public static abstract class Installation {
+		public static Installation create(final Code.Source platform, final Code.Source jsh, final Code[] plugins, final Code.Source[] libraries) {
+			return new Installation() {
+				@Override public Code.Source getPlatformLoader() {
+					return platform;
+				}
+
+				@Override public Code.Source getJshLoader() {
+					return jsh;
+				}
+
+				@Override public Code.Source[] getLibraries() {
+					return libraries;
+				}
+
+				@Override public Code[] getPlugins() {
+					return plugins;
+				}
+			};
+		}
+
+		public abstract Code.Source getPlatformLoader();
+		public abstract Code.Source getJshLoader();
+		public abstract Code.Source[] getLibraries();
+		public abstract Code[] getPlugins();
+	}
+
+	public static abstract class Environment {
+		public static Environment create(final ClassLoader loader, final Properties properties, final OperatingSystem.Environment environment, final Stdio stdio, final Packaged packaged) {
+			return new Environment() {
+				@Override public ClassLoader getClassLoader() {
+					return loader;
+				}
+
+				@Override public Properties getSystemProperties() {
+					return properties;
+				}
+
+				@Override public OperatingSystem.Environment getEnvironment() {
+					return environment;
+				}
+
+				@Override public Stdio getStdio() {
+					return stdio;
+				}
+
+				@Override public Packaged getPackaged() {
+					return packaged;
+				}
+			};
+		}
 		public abstract ClassLoader getClassLoader();
 
 		public abstract Properties getSystemProperties();
 		public abstract OperatingSystem.Environment getEnvironment();
 		public abstract Stdio getStdio();
 
-		public static abstract class Context {
-			public static final Context VM = new Context() {
-				@Override public void exit(int status) {
-					System.exit(status);
-				}
-			};
-
-			public static class Holder extends Context {
-				private Integer status;
-				private Throwable uncaught;
-
-				@Override public void exit(int status) {
-					this.status = new Integer(status);
-				}
-
-				public Integer getExitCode(Run run, String[] arguments) {
-					try {
-						run.run(this, arguments);
-						return status;
-					} catch (Throwable t) {
-						run.threw(t);
-						if (status == null) return new Integer(1);
-						return status;
+		public static abstract class Packaged {
+			public static Packaged create(final Code.Source code, final File file) {
+				return new Packaged() {
+					@Override public Code.Source getCode() {
+						return code;
 					}
-				}
 
-				public static abstract class Run {
-					public abstract void threw(Throwable t);
-					public abstract void run(Context context, String[] arguments) throws Throwable;
-				}
+					@Override public File getFile() {
+						return file;
+					}
+				};
 			}
+			/**
+			 *
+			 *	@return An object capable of loading modules and scripts bundled with a script.
+			 */
+			public abstract Code.Source getCode();
 
-			public abstract void exit(int status);
+			public abstract File getFile();
 		}
 
-		/**
-		 *
-		 *	@return An object capable of loading modules bundled with a script if this is a packaged application, or
-		 *	<code>null</code> if it is not.
-		 */
-		public abstract Code.Source getPackagedCode();
-
-		public abstract File getPackageFile();
+		public abstract Packaged getPackaged();
 
 		public static abstract class Stdio {
+			public static Stdio create(final InputStream in, final OutputStream out, final OutputStream err) {
+				return new Stdio() {
+					@Override public InputStream getStandardInput() {
+						return in;
+					}
+
+					@Override public OutputStream getStandardOutput() {
+						return out;
+					}
+
+					@Override public OutputStream getStandardError() {
+						return err;
+					}
+				};
+			}
+
 			public abstract InputStream getStandardInput();
 			public abstract OutputStream getStandardOutput();
 			public abstract OutputStream getStandardError();
 		}
+	}
 
-		public static Configuration main() {
-			return new Shell.Configuration() {
-				private InputStream stdin = new Logging.InputStream(System.in);
-				//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
-				//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
-				//	ultimately buffering the stdout to the console or other ultimate destination.
-				private OutputStream stdout = new Logging.OutputStream(inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(System.out), "stdout");
-				//	We do not make the same assumption for stderr because we assume it will always be written to a console-like
-				//	device and bytes will never need to be immediately available
-				private OutputStream stderr = new PrintStream(new Logging.OutputStream(System.err, "stderr"));
-
-				public ClassLoader getClassLoader() {
-					return Shell.Configuration.class.getClassLoader();
-				}
-
-				public Properties getSystemProperties() {
-					return System.getProperties();
-				}
-
-				public OperatingSystem.Environment getEnvironment() {
-					return OperatingSystem.Environment.SYSTEM;
-				}
-
-				public Stdio getStdio() {
-					return new Stdio() {
-						public InputStream getStandardInput() {
-							return stdin;
-						}
-
-						public OutputStream getStandardOutput() {
-							return stdout;
-						}
-
-						public OutputStream getStandardError() {
-							return stderr;
-						}
-					};
-				}
-
-				@Override public Code.Source getPackagedCode() {
-					if (System.getProperty("jsh.launcher.packaged") != null) {
-						return Code.Source.system("$packaged/");
-					} else {
-						return null;
+	public static abstract class Invocation {
+		public static Invocation create(final Script script, final String[] arguments) {
+			//	TODO	probably should copy arguments array to make it immutable
+			return new Invocation() {
+				@Override public String toString() {
+					String rv = String.valueOf(script);
+					for (String s : arguments) {
+						rv += " " + s;
 					}
+					return rv;
 				}
 
-				@Override public File getPackageFile() {
-					if (System.getProperty("jsh.launcher.packaged") != null) {
-						return new java.io.File(System.getProperty("jsh.launcher.packaged"));
-					} else {
-						return null;
-					}
+				@Override public Script getScript() {
+					return script;
+				}
+
+				@Override public String[] getArguments() {
+					return arguments;
 				}
 			};
 		}
+
+		public abstract Script getScript();
+		public abstract String[] getArguments();
+
+		static class CheckedException extends Exception {
+			CheckedException(String message) {
+				super(message);
+			}
+
+			CheckedException(String message, Throwable cause) {
+				super(message, cause);
+			}
+		}
+	}
+
+	public static class Interface {
+		//	Called by applications to load plugins
+		public Code[] getPlugins(File file) {
+			return Main.getPlugins(file);
+		}
+
+		public Invocation invocation(File script, String[] arguments) {
+			return Shell.Invocation.create(Shell.Script.create(script), arguments);
+		}
+	}
+
+	public Interface getInterface() {
+		return new Interface();
 	}
 
 	public static abstract class Execution {
@@ -239,7 +383,11 @@ public abstract class Shell {
 			final Execution execution = this;
 			execution.initialize(_this);
 			execution.addEngine();
-			execution.script(_this.getInstallation().getJshLoader("jsh.js"));
+			try {
+				execution.script(_this.configuration.getInstallation().getJshLoader().getFile("jsh.js"));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			return execution.execute();
 		}
 	}

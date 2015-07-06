@@ -165,13 +165,11 @@ $exports.shell = function(p) {
 
 //	TODO	is rhino/file.filesystem.$jsh.os(...) still necessary? Was used here.
 
-//	TODO	if not running on Rhino, this property should not appear
-//	TODO	no test coverage for $exports.rhino
-if ($exports.properties.get("jsh.launcher.rhino")) {
+//	TODO	make sure documentation correctly reflects presence of this property: this property being present does not mean Rhino
+//			is executing this script, just that it is present
+if ($exports.properties.get("jsh.engine.rhino.classpath")) {
 	$exports.rhino = new function() {
-		if ($exports.properties.get("jsh.launcher.rhino.classpath")) {
-			this.classpath = $exports.properties.searchpath("jsh.launcher.rhino.classpath");
-		}
+		this.classpath = $exports.properties.searchpath("jsh.engine.rhino.classpath");
 	};
 };
 
@@ -280,27 +278,52 @@ $exports.jsh = function(p) {
 		}
 
 		if (!p.shell) {
-			var shell = $context.api.js.Object.set({}, p, {
-				//	Set default classpath from this shell
-				classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
-				main: "inonit.script.jsh.launcher.Main",
-				arguments: addCommandTo([]),
-				environment: environment,
-				evaluate: evaluate
-			});
-
-			return $exports.java(shell);
-		} else {
-			if (p.shell.getFile("jsh.jar")) {
-				//	Built shell
-				return $exports.java($context.api.js.Object.set({}, p, {
-					jar: p.shell.getFile("jsh.jar"),
+			if (false && p.stdio && p.stdio.input) {
+				var shell = $context.api.js.Object.set({}, p, {
+					//	Set default classpath from this shell
+					properties: properties,
+					classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
+					main: $exports.properties.get("jsh.launcher.main"),
 					arguments: addCommandTo([]),
+					environment: environment,
+					evaluate: evaluate
+				});
+				return $exports.java(shell);
+			} else {
+				if (p.classpath) {
+					throw new Error("Unimplemented: classpath");
+				}
+				var scripts = [];
+				var properties = {};
+				//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
+				if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+					properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+				}
+				if ($exports.jsh.src) {
+					//	TODO	should probably pass compiled classes so that subshell does not need to recompile
+					scripts.push($exports.jsh.src.getFile("rhino/jrunscript/api.js"));
+					scripts.push($exports.jsh.src.getFile("jsh/launcher/rhino/main.js"));
+				} else if ($exports.jsh.home) {
+					scripts.push($exports.jsh.home.getFile("jsh.js"));
+				}
+				var shell = $context.api.js.Object.set({}, p, {
+					environment: environment,
+					properties: properties,
+					arguments: addCommandTo(scripts),
+					evaluate: evaluate
+				});
+				return $exports.jrunscript(shell);
+			}
+		} else {
+			if (p.shell.getFile("jsh.js")) {
+				//	Built shell
+				return $exports.jrunscript($context.api.js.Object.set({}, p, {
+					arguments: addCommandTo([p.shell.getFile("jsh.js")]),
 					environment: environment,
 					evaluate: evaluate
 				}));
 			} else if (p.shell.getFile("jsh/etc/unbuilt.rhino.js")) {
-				var args = [p.shell.getFile("jsh/etc/unbuilt.rhino.js"), "launch"];
+				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/launcher/rhino/main.js")];
 				//	TODO	will only work if they start with dash, which they must, right?
 				if (p.properties) {
 					for (var x in p.properties) {
@@ -324,7 +347,7 @@ $exports.jsh = function(p) {
 		}
 	} else {
 		var configuration = new JavaAdapter(
-			Packages.inonit.script.jsh.Shell.Configuration,
+			Packages.inonit.script.jsh.Shell.Environment,
 			new function() {
 //				this.getOptimizationLevel = function() {
 //					return -1;
@@ -343,7 +366,7 @@ $exports.jsh = function(p) {
 //				}
 
 				var stdio = new JavaAdapter(
-					Packages.inonit.script.jsh.Shell.Configuration.Stdio,
+					Packages.inonit.script.jsh.Shell.Environment.Stdio,
 					new function() {
 						var Streams = Packages.inonit.script.runtime.io.Streams;
 
@@ -397,9 +420,13 @@ $exports.jsh = function(p) {
 					var keys = $context._getSystemProperties().keySet().iterator();
 					while(keys.hasNext()) {
 						var key = keys.next();
-						if (String(key) != "jsh.launcher.packaged") {
-							rv.setProperty(key, $context._getSystemProperties().getProperty(key));
-						}
+//						if (String(key) != "jsh.shell.packaged") {
+							if ($context._getSystemProperties().getProperty(key) == null) {
+								//	TODO	seems to be the case for jsh.launcher.shell, through an unknown set of mechanisms
+							} else {
+								rv.setProperty(key, $context._getSystemProperties().getProperty(key));
+							}
+//						}
 					}
 					if (p.workingDirectory) {
 						rv.setProperty("user.dir", p.workingDirectory.pathname.java.adapt());
@@ -429,28 +456,19 @@ $exports.jsh = function(p) {
 					return stdio;
 				}
 
-				this.getPackagedCode = function() {
+				this.getPackaged = function() {
 					return null;
 				};
-
-				this.getPackageFile = function() {
-					return null;
-				}
 			}
 		);
 
 		if (!p.script || !p.script.pathname || !p.script.pathname.java || !p.script.pathname.java.adapt) {
 			throw new TypeError("Expected script " + p.script + " to have pathname.java.adapt()");
 		}
-		//	TODO	Does Rhino 1.7R3 obviate the need for the Java array conversion stuff?
 		var status = $context.jsh(
-			configuration
-			,Packages.inonit.script.jsh.Invocation.jsh(
-				p.script.pathname.java.adapt(),
-				$context.api.java.toJavaArray(p.arguments,Packages.java.lang.String,function(s) {
-					return new Packages.java.lang.String(s);
-				})
-			)
+			configuration,
+			p.script,
+			p.arguments
 		);
 		var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 			if (result.status === null) {
@@ -476,17 +494,25 @@ $exports.jsh = function(p) {
 	}
 };
 
-if (String($exports.properties.object.jsh.plugins)) {
-	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
-}
+//if (String($exports.properties.object.jsh.plugins)) {
+//	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
+//}
 
-var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
-//	TODO	this is fragile. The above property is, in a built shell:
-//			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath
-//			*	supplied by the script launcher to the underlying process as is
-//			In the case in which the *launcher* is being profiled, apparently the -javaagent: is *appended* to its java.class.path,
-//			so jsh.jar is still first. An earlier implementation made sure the launcher classpath length was 1 also, but that is no
-//			longer true in the profiling case.
-if (launcherClasspath.pathnames[0] && launcherClasspath.pathnames[0].basename == "jsh.jar") {
-	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
+if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.home) {
+	$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.shell.home).directory
 }
+if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
+	$exports.jsh.src = $context.api.file.Pathname($exports.properties.object.jsh.shell.src).directory
+}
+//var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
+////	TODO	this is fragile. The above property is, in a built shell:
+////			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath
+////			*	supplied by the script launcher to the underlying process as is
+////			In the case in which the *launcher* is being profiled, apparently the -javaagent: is *appended* to its java.class.path,
+////			so jsh.jar is still first. An earlier implementation made sure the launcher classpath length was 1 also, but that is no
+////			longer true in the profiling case.
+//if (launcherClasspath.pathnames[0] && launcherClasspath.pathnames[0].basename == "jsh.jar") {
+//	//	TODO	find better way to get this value; if using global, should use jsh.home system property, but should actually find
+//	//			a way to pass it through the shell instantiation process
+//	$exports.jsh.home = launcherClasspath.pathnames[0].file.parent;
+//}

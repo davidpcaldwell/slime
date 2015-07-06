@@ -43,8 +43,7 @@ public class OperatingSystem {
 				return System.getenv();
 			}
 
-			@Override
-			public String getValue(String name) {
+			@Override public String getValue(String name) {
 				return System.getenv(name);
 			}
 		};

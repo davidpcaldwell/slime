@@ -527,7 +527,7 @@ END LICENSE
 				</li>
 			</ul>
 			<div jsapi:id="tests">
-				<script type="application/x.jsapi#initialize">
+				<script type="application/x.jsapi#initialize"><![CDATA[
 					if (scope.loadTestModule) {
 						var Tests = function(p) {
 							var a = function(scope) {
@@ -565,6 +565,7 @@ END LICENSE
 								var module = scope.verify(p.loadTestModule("rhino/test/data/1/", {
 								}), "rhino/test/data/1");
 								var $java = (function() {
+									if (this.jsh && this.jsh.java && this.jsh.java.getClass) return this.jsh.java.getClass("slime.Data");
 									try {
 										Packages.java.lang.Class.forName("slime.Data");
 										return true;
@@ -604,7 +605,7 @@ END LICENSE
 						};
 						scope.tests = new Tests(scope);
 					}
-				</script>
+				]]></script>
 				<script type="application/x.jsapi#tests">
 					if (scope.tests) {
 						scope.tests.run({

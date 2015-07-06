@@ -37,9 +37,23 @@ $exports.server = (function() {
 		var installation = new tomcat.Tomcat({
 			home: environment.CATALINA_HOME
 		});
+		var configuration = jsh.shell.TMPDIR.createTemporary();
+		environment.CATALINA_HOME.getFile("conf/server.xml").copy(configuration.pathname, { filter: function() { return true; }});
+		var ip = jsh.loader.module(jsh.shell.jsh.home.getRelativePath("src/rhino/ip"));
+		var controlPort = ip.getEphemeralPort();
+		var httpPort = ip.getEphemeralPort();
+		var ajpPort = ip.getEphemeralPort();
+		configuration.pathname.write(
+			configuration.read(String)
+				.replace(new RegExp("8005", "g"), controlPort.number)
+				.replace(new RegExp("8080", "g"), httpPort.number)
+				.replace(new RegExp("8009", "g"), ajpPort.number)
+			,{ append: false }
+		)
+		jsh.shell.echo("server.xml: " + configuration);
 		var server = new installation.Base({
 			base: environment.CATALINA_BASE,
-			configuration: environment.CATALINA_HOME.getFile("conf/server.xml")
+			configuration: configuration
 		});
 
 		var build = function(servlets) {
@@ -73,6 +87,8 @@ $exports.server = (function() {
 			}
 		}
 
+		this.port = httpPort.number;
+
 		this.start = function(servlets) {
 			build(servlets);
 			jsh.shell.echo("Invoking Tomcat start script ...");
@@ -94,4 +110,3 @@ $exports.server = (function() {
 		}
 	};
 })();
-

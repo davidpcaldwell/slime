@@ -84,14 +84,14 @@ int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 	if (JAVA_HOME != NULL) {
 		strip_trailing_slash(JAVA_HOME);
 		/*	Rather than doing this manipulation, would it be better to use execvP with JAVA_HOME/bin as PATH? */
-		int length = strlen(JAVA_HOME) + strlen("/bin/java");
+		int length = strlen(JAVA_HOME) + strlen("/bin/jrunscript");
 		char* path = malloc( sizeof(char) * length );
-		sprintf(path,"%s/bin/java",JAVA_HOME);
-		debug("Java path: %s\n", path);
+		sprintf(path,"%s/bin/jrunscript",JAVA_HOME);
+		debug("jrunscript path: %s\n", path);
 		args[0] = path;
 //		execv()
 	} else {
-		args[0] = "java";
+		args[0] = "jrunscript";
 //		execvp("java",argv);
 	}
 	for (i=0; i<argc+2; i++) {
@@ -180,23 +180,24 @@ int main(int argc, char **argv) {
 	debug("jsh_home = %s\n", jsh_home);
 
 	/*	Append jsh.jar to the path of the parent directory of this launcher. */
-	char* jar = malloc(JSH_PATHNAME_BUFFER_SIZE);
-	char path[9];
-	sprintf(path, "/jsh.jar");
+	char* js = malloc(JSH_PATHNAME_BUFFER_SIZE);
+	char path[8];
+	sprintf(path, "/jsh.js");
 	path[0] = SLASH;
-	sprintf(jar, "%s%s", jsh_home, path);
+	sprintf(js, "%s%s", jsh_home, path);
 
-	char** javaArguments = malloc(sizeof(char*) * (argc+2));
-	javaArguments[0] = "-jar";
-	javaArguments[1] = jar;
+	char** javaArguments = malloc(sizeof(char*) * (argc));
+//	javaArguments[0] = "-jar";
+//	javaArguments[1] = jar;
+	javaArguments[0] = js;
 	int i;
 	for (i=1; i<argc; i++) {
-		javaArguments[i+1] = argv[i];
-		debug("javaArguments[%d] = %s\n", i+1, argv[i]);
+		javaArguments[i] = argv[i];
+		debug("jrunscriptArguments[%d] = %s\n", i+1, argv[i]);
 	}
-	javaArguments[argc+1] = NULL;
+	javaArguments[argc] = NULL;
 
-	debug("jar = %s\n", jar);
+	debug("js = %s\n", js);
 	char *JAVA_HOME = NULL;
 	if (getenv("JSH_JAVA_HOME") != NULL) {
 		JAVA_HOME = getenv("JSH_JAVA_HOME");

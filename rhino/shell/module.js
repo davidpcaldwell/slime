@@ -448,7 +448,8 @@ $exports.java = function(p) {
 
 $exports.jrunscript = function(p) {
 	var launch = (function() {
-		if ($exports.properties.get("jsh.launcher.rhino")) {
+		if (false && $exports.rhino && $exports.rhino.classpath) {
+			//	TODO	implicit jsh dependency, because rhino.classpath not set in this file
 			return {
 				command: $exports.java.launcher,
 				arguments: [
@@ -459,8 +460,10 @@ $exports.jrunscript = function(p) {
 			};
 		} else {
 			if (!$exports.java.jrunscript) {
-				Packages.java.lang.System.err.println("No jrunscript in " + $exports.java.home);
-				throw new Error("No jrunscript");
+				var searchpath = $context.api.file.Searchpath([$exports.java.home.getRelativePath("bin"),$exports.java.home.getRelativePath("../bin")]);
+				Packages.java.lang.System.err.println("path = " + searchpath);
+				Packages.java.lang.System.err.println("path = " + searchpath.getCommand("jrunscript"));
+				throw new Error("No jrunscript in " + $exports.java.home);
 			}
 			return {
 				command: $exports.java.jrunscript,

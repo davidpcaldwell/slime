@@ -10,4 +10,4 @@
 //	Contributor(s):
 //	END LICENSE
 
-jsh.shell.stdout.write(jsh.shell.stdin.character().asString());
+jsh.shell.stdio.output.write(jsh.shell.stdio.input.character().asString());

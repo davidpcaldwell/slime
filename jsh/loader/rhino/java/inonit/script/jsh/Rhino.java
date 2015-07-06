@@ -49,7 +49,11 @@ public class Rhino {
 
 		@Override public void addEngine() {
 			host("$rhino", $rhino);
-			script(this.getShell().getInstallation().getJshLoader("rhino.js"));
+			try {
+				script(this.getShell().getJshLoader().getFile("rhino.js"));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override public void script(Code.Source.File script) {
@@ -71,7 +75,7 @@ public class Rhino {
 
 		private Engine engine;
 
-		final void initialize(final Shell.Configuration shell) {
+		final void initialize(final Shell.Environment shell) {
 			Engine.Configuration contexts = new Engine.Configuration() {
 				@Override public ClassLoader getApplicationClassLoader() {
 					return shell.getClassLoader();
@@ -92,24 +96,23 @@ public class Rhino {
 			return engine;
 		}
 
-		static Configuration main(final Shell.Configuration shell) {
+		static Configuration main(final Shell.Environment shell) {
 			return new Configuration() {
 				public int getOptimizationLevel() {
 					int optimization = -1;
-					if (System.getProperty("jsh.rhino.optimization") != null) {
+					if (System.getProperty("jsh.engine.rhino.optimization") != null) {
 						//	TODO	validate this value
-						optimization = Integer.parseInt(System.getProperty("jsh.rhino.optimization"));
+						optimization = Integer.parseInt(System.getProperty("jsh.engine.rhino.optimization"));
 					}
 					return optimization;
 				}
 
 				public Engine.Debugger getDebugger() {
-					String id = System.getProperty("jsh.script.debugger");
+					String id = System.getProperty("jsh.debug.script");
 					if (id == null) return null;
 					if (id.equals("rhino")) {
 						Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-							@Override
-							public void uncaughtException(Thread t, Throwable e) {
+							@Override public void uncaughtException(Thread t, Throwable e) {
 								if (t.getName().startsWith("AWT")) {
 									//	do nothing
 									Logging.get().log(Rhino.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
@@ -148,17 +151,15 @@ public class Rhino {
 		}
 	}
 
-	private String[] arguments;
+	private Shell shell;
 
 	private Configuration rhino;
 
 	private Rhino() {
 	}
 
-	private Integer run() throws Invocation.CheckedException {
-		Shell shell = Shell.main(arguments);
-
-		this.rhino = Configuration.main(shell.getConfiguration());
+	private Integer run() throws Shell.Invocation.CheckedException {
+		this.rhino = Configuration.main(shell.getEnvironment());
 
 		Integer rv = Rhino.execute(
 			shell,
@@ -170,12 +171,12 @@ public class Rhino {
 
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Invocation.CheckedException {
-		rhino.initialize(shell.getConfiguration());
-		return Rhino.execute(shell, rhino, new Interface(shell.getInstallation(), rhino));
+	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Shell.Invocation.CheckedException {
+		rhino.initialize(shell.getEnvironment());
+		return Rhino.execute(shell, rhino, new Interface(shell, rhino));
 	}
 
-	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Invocation.CheckedException {
+	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Shell.Invocation.CheckedException {
 		try {
 			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $rhino);
 			Integer ignore = execution.execute(shell);
@@ -194,7 +195,7 @@ public class Rhino {
 		}
 	}
 
-//	public static Scriptable load(Installation installation, Shell.Configuration configuration, Rhino.Configuration rhino, Invocation invocation) {
+//	public static Scriptable load(Installation installation, Shell.Environment configuration, Rhino.Configuration rhino, Invocation invocation) {
 //		return Host.create(installation, configuration, rhino, invocation).load();
 //	}
 
@@ -211,19 +212,19 @@ public class Rhino {
 	}
 
 	public static class Interface {
-		private Installation installation;
+		private Shell shell;
 		private Configuration rhino;
 		private Engine.Debugger debugger;
 		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
 
-		Interface(Installation installation, Rhino.Configuration rhino) {
-			this.installation = installation;
+		Interface(Shell shell, Rhino.Configuration rhino) {
+			this.shell = shell;
 			this.rhino = rhino;
 			this.debugger = rhino.getEngine().getDebugger();
 		}
 
-		private Interface(Installation installation, Rhino.Configuration rhino, Engine.Debugger debugger) {
-			this.installation = installation;
+		private Interface(Shell shell, Rhino.Configuration rhino, Engine.Debugger debugger) {
+			this.shell = shell;
 			this.rhino = rhino;
 			this.debugger = debugger;
 		}
@@ -234,7 +235,7 @@ public class Rhino {
 			return rhino.getEngine().script(name, code, scope, target);
 		}
 
-		public Loader.Classpath getClasspath() {
+		public Loader.Classes.Interface getClasspath() {
 			return rhino.getEngine().getClasspath();
 		}
 
@@ -249,12 +250,12 @@ public class Rhino {
 
 		private Interface subinterface() {
 			//	TODO	provide separate classloader for child script
-			return new Interface(installation,rhino,debugger);
+			return new Interface(shell,rhino,debugger);
 		}
 
-		public int jsh(final Shell.Configuration configuration, final Invocation invocation) throws IOException, Invocation.CheckedException {
+		public int jsh(final Shell.Environment configuration, final Shell.Invocation invocation) throws IOException, Shell.Invocation.CheckedException {
 			boolean breakOnExceptions = debugger.isBreakOnExceptions();
-			Shell subshell = Shell.create(installation, configuration, invocation);
+			Shell subshell = shell.subshell(configuration, invocation);
 			Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
 			debugger.setBreakOnExceptions(breakOnExceptions);
 			if (rv == null) return 0;
@@ -282,7 +283,7 @@ public class Rhino {
 //	}
 
 	private class Run implements Runnable {
-		public Integer call() throws Invocation.CheckedException {
+		public Integer call() throws Shell.Invocation.CheckedException {
 			return Rhino.this.run();
 		}
 
@@ -303,79 +304,89 @@ public class Rhino {
 		}
 	}
 
-	private static void run(Shell.Configuration.Context context, String[] args) {
-		Main.initialize();
-		Logging.get().log(Rhino.class, Level.INFO, "Starting script: arguments = %s", Arrays.asList(args));
-		Rhino main = new Rhino();
-		main.arguments = args;
-		try {
-//			Integer status = java.util.concurrent.Executors.newCachedThreadPool().submit(main.new Run()).get();
-			Run run = main.new Run();
-			Thread thread = new Thread(run);
-			thread.setName("Loader");
-			thread.start();
-			thread.join();
-			Integer status = run.result();
-//			Integer status = main.run();
-			Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
-			if (status != null) {
-				context.exit(status.intValue());
-			} else {
-				main.rhino.getEngine().getDebugger().destroy();
-				//	JVM will exit normally when non-daemon threads complete.
-			}
-		} catch (Invocation.CheckedException e) {
-			Logging.get().log(Rhino.class, Level.INFO, "Exiting with checked exception.", e);
-			System.err.println(e.getMessage());
-			context.exit(1);
-		} catch (Throwable t) {
-			Logging.get().log(Rhino.class, Level.SEVERE, "Exiting with throwable.", t);
-			Throwable target = t;
-			System.err.println("Error executing " + Rhino.class.getName());
-			String argsString = "";
-			for (int i=0; i<args.length; i++) {
-				argsString += args[i];
-				if (i+1 != args.length) {
-					argsString += ",";
+	public static class EngineImpl extends Main.Engine {
+		private static void run(Shell.Container context, Shell shell) {
+			Rhino main = new Rhino();
+			main.shell = shell;
+			try {
+	//			Integer status = java.util.concurrent.Executors.newCachedThreadPool().submit(main.new Run()).get();
+				Run run = main.new Run();
+				Thread thread = new Thread(run);
+				thread.setName("Loader");
+				thread.start();
+				thread.join();
+				Integer status = run.result();
+	//			Integer status = main.run();
+				Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
+				if (status != null) {
+					context.exit(status.intValue());
+				} else {
+					main.rhino.getEngine().getDebugger().destroy();
+					//	JVM will exit normally when non-daemon threads complete.
 				}
-			}
-			System.err.println("Arguments " + argsString);
-			System.err.println("System properties " + System.getProperties().toString());
-			System.err.println("Heap size: max = " + Runtime.getRuntime().maxMemory());
-			System.err.println("Heap size: free = " + Runtime.getRuntime().freeMemory());
-			System.err.println("Stack trace of error:");
-			while(target != null) {
-				if (target != t) {
-					System.err.println("Caused by:");
+			} catch (Shell.Invocation.CheckedException e) {
+				Logging.get().log(Rhino.class, Level.INFO, "Exiting with checked exception.", e);
+				System.err.println(e.getMessage());
+				context.exit(1);
+			} catch (Throwable t) {
+				Logging.get().log(Rhino.class, Level.SEVERE, "Exiting with throwable.", t);
+				Throwable target = t;
+				System.err.println("Error executing " + Rhino.class.getName());
+				//	TODO	this error handling can no longer print arguments because they are not passed here, and regardless,
+				//			should be handled at a higher level
+//				String script = shell.getInvocation().getScript().getUri().toString();
+//				String[] args = shell.getInvocation().getArguments();
+//				String argsString = script;
+//				for (int i=0; i<args.length; i++) {
+//					if (i == 0) {
+//						argsString += " ";
+//					}
+//					argsString += args[i];
+//					if (i+1 != args.length) {
+//						argsString += ",";
+//					}
+//				}
+//				System.err.println("Arguments " + argsString);
+				System.err.println("System properties " + System.getProperties().toString());
+				System.err.println("Heap size: max = " + Runtime.getRuntime().maxMemory());
+				System.err.println("Heap size: free = " + Runtime.getRuntime().freeMemory());
+				System.err.println("Stack trace of error:");
+				while(target != null) {
+					if (target != t) {
+						System.err.println("Caused by:");
+					}
+					System.err.println(target.getClass().getName() + ": " + target.getMessage());
+					StackTraceElement[] elements = target.getStackTrace();
+					for (int i=0; i<elements.length; i++) {
+						StackTraceElement e = elements[i];
+						System.err.println("\tat " + e);
+					}
+					target = target.getCause();
 				}
-				System.err.println(target.getClass().getName() + ": " + target.getMessage());
-				StackTraceElement[] elements = target.getStackTrace();
-				for (int i=0; i<elements.length; i++) {
-					StackTraceElement e = elements[i];
-					System.err.println("\tat " + e);
-				}
-				target = target.getCause();
+				context.exit(1);
+			} finally {
+
 			}
-			context.exit(1);
+		}
+
+		public void main(Shell.Container context, Shell shell) {
+			run(context, shell);
 		}
 	}
 
-	private static class Runner extends Shell.Configuration.Context.Holder.Run {
-		public void threw(Throwable t) {
-			t.printStackTrace();
+	//	TODO	this is a workaround while we figure out what we want to do with environment-variable settings being passed to
+	//			loader
+	private static void fixSetting(String name) {
+		if (System.getProperty(name) == null) {
+			String env = name.replace(".", "_").toUpperCase();
+			if (System.getenv(env) != null) {
+				System.setProperty(name, System.getenv(env));
+			}
 		}
-
-		public void run(Shell.Configuration.Context context, String[] args) {
-			Rhino.run(context,args);
-		}
-	}
-
-	public static Integer run(String[] args) throws Invocation.CheckedException {
-		Shell.Configuration.Context.Holder context = new Shell.Configuration.Context.Holder();
-		return context.getExitCode(new Runner(), args);
 	}
 
 	public static void main(String[] args) throws Throwable {
-		run(Shell.Configuration.Context.VM, args);
+		fixSetting("jsh.engine.rhino.optimization");
+		Main.cli(new EngineImpl(), args);
 	}
 }

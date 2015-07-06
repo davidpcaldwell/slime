@@ -43,6 +43,7 @@
 					//	ready
 				} else if (script._source && script.path) {
 					var _file = script._source.getFile(script.path);
+					if (!_file) throw new Error("No file at " + script.path + " in " + script._source);
 					script._in = _file.getInputStream();
 					if (!script._in) throw new Error("Could not find resource at " + script.path + " in " + script._source);
 					script.name = String(_file.getSourceName());

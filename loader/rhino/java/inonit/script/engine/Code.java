@@ -14,27 +14,58 @@ package inonit.script.engine;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
+import javax.lang.model.element.*;
+import javax.tools.*;
 
 public abstract class Code {
 	public static abstract class Classes {
 		public abstract URL getResource(String path);
 	}
 
-//	private static Source createSource(File[] files) {
-//		try {
-//			java.net.URL[] urls = new java.net.URL[files.length];
-//			for (int i = 0; i < urls.length; i++) {
-//				urls[i] = files[i].toURI().toURL();
-//			}
-//			ClassLoader loader = new java.net.URLClassLoader(urls, null);
-//			return Source.create(loader);
-//		} catch (java.io.IOException e) {
-//			throw new RuntimeException("Unreachable", e);
-//		}
-//	}
-
 	public static abstract class Source {
+		public static class URI {
+			private static java.net.URI string(String s) {
+				try {
+					return new java.net.URI("slime://" + s);
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			public static URI create(URL url) {
+				try {
+					return new URI(url.toURI());
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			public static URI script(String scriptName, String path) {
+				return new URI(string("script/" + scriptName.replace("/", "-") + "/" + path));
+			}
+
+			public static URI jvm(Class c, String path) {
+				return new URI(string("java/" + c.getName() + "/" + path));
+			}
+
+			private java.net.URI delegate;
+
+			private URI(java.net.URI delegate) {
+				this.delegate = delegate;
+			}
+
+			java.net.URI adapt() {
+				return delegate;
+			}
+
+			static URI create(java.io.File file) {
+				return new URI(file.toURI());
+			}
+		}
+
 		public static abstract class File {
+			public abstract URI getURI();
 			public abstract String getSourceName();
 			public abstract InputStream getInputStream();
 			public abstract Long getLength();
@@ -48,6 +79,10 @@ public abstract class Code {
 
 			public static File create(final java.io.File file) {
 				return new File() {
+					@Override public URI getURI() {
+						return URI.create(file);
+					}
+
 					@Override public String getSourceName() {
 						try {
 							return file.getCanonicalPath();
@@ -74,9 +109,62 @@ public abstract class Code {
 				};
 			}
 
-			//	TODO	Where is this called, and does it need a length argument?
-			public static File create(final String name, final Long length, final java.util.Date modified, final InputStream in) {
+			public static File create(final URL url) {
 				return new File() {
+					@Override public URI getURI() {
+						return URI.create(url);
+					}
+
+					@Override public String getSourceName() {
+						return url.toExternalForm();
+					}
+
+					private URLConnection connection;
+
+					private URLConnection connect() throws IOException {
+						if (connection == null) {
+							connection = url.openConnection();
+						}
+						return connection;
+					}
+
+					@Override public InputStream getInputStream() {
+						try {
+							return connect().getInputStream();
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+
+					@Override public Long getLength() {
+						try {
+							int i = connect().getContentLength();
+							if (i == -1) return null;
+							return Long.valueOf(i);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+
+					@Override public Date getLastModified() {
+						try {
+							long l = connect().getLastModified();
+							if (l == -1) return null;
+							return new Date(l);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				};
+			}
+
+			//	Used in rhino/io to create Code.Source.File objects in resources implementation
+			public static File create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
+				return new File() {
+					@Override public URI getURI() {
+						return uri;
+					}
+
 					@Override public String getSourceName() {
 						return name;
 					}
@@ -94,58 +182,41 @@ public abstract class Code {
 					}
 				};
 			}
-
-			public static File create(final String name, final InputStream in) {
-				return create(name, null, null, in);
-			}
 		}
 
-		public static Source NULL = new ResourceBased() {
+		public static Source NULL = new Source() {
 			@Override public String toString() { return "Code.Source.NULL"; }
 
 			public File getFile(String path) {
 				return null;
 			}
+
+			public Classes getClasses() {
+				return null;
+			}
 		};
 
-		public static Source system(final String prefix) {
-			return new ResourceBased() {
+		public static Source system() {
+			return new Source() {
 				@Override public String toString() {
-					return "Source: prefix=" + prefix + " loader=" + ClassLoader.getSystemClassLoader();
+					return "Source: system class loader";
 				}
 
 				public File getFile(String path) {
-					InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(prefix+path);
-					if (in == null) return null;
-					return File.create("bootclasspath:" + prefix+path, in);
+					URL url = ClassLoader.getSystemClassLoader().getResource(path);
+					if (url == null) return null;
+					return File.create(url);
+				}
+
+				public Classes getClasses() {
+					return null;
 				}
 			};
 		}
 
-//		public static Source create(final ClassLoader loader) {
-//			return new Source() {
-//				@Override public String toString() {
-//					return "Source: loader=" + loader;
-//				}
-//
-//				public InputStream getResourceAsStream(String path) {
-//					return loader.getResourceAsStream(path);
-//				}
-//			};
-//		}
-//
-//		public static Source create(final ClassLoader loader, final String prefix) {
-//			return new Source() {
-//				@Override public String toString() {
-//					return "Source: prefix=" + prefix + " loader=" + loader;
-//				}
-//
-//				public InputStream getResourceAsStream(String path) {
-//					return loader.getResourceAsStream(prefix + path);
-//				}
-//			};
-//		}
-//
+		public static Source system(final String prefix) {
+			return system().child(prefix);
+		}
 
 		public static Source create(final java.net.URL url) {
 			return new UrlBased(url);
@@ -159,41 +230,17 @@ public abstract class Code {
 			}
 		}
 
-//		public static abstract class Resources {
-//			public abstract Long getLength(String path) throws IOException;
-//			public abstract java.util.Date getLastModified(String path) throws IOException;
-//			public abstract InputStream getResourceAsStream(String path) throws IOException;
-//		}
-//
-//		public static Source create(final Resources resources) {
-//			return new ResourceBased() {
-//				@Override public String toString() {
-//					return Code.Source.class.getName() + " resources=" + resources;
-//				}
-//
-//				public File getFile(String path) throws IOException {
-//					InputStream in = resources.getResourceAsStream(path);
-//					if (in == null) return null;
-//					return File.create(this.toString() + ":" + path, resources.getLength(path), resources.getLastModified(path), in);
-//				}
-//
-//				@Override public Classes getClasses() {
-//					return null;
-//				}
-//			};
-//		}
-
-//		/**
-//		 *	Returns a stream that reads the content of the resource at the given path, or <code>null</code> if no resource can
-//		 *	be found at that path.
-//		 */
-//		public abstract InputStream getResourceAsStream(String path) throws IOException;
 		public abstract File getFile(String path) throws IOException;
 		public abstract Classes getClasses();
 
+		private String getChildPrefix(String prefix) {
+			if (prefix == null || prefix.length() == 0) return "";
+			if (prefix.endsWith("/")) return prefix;
+			return prefix + "/";
+		}
+
 		public final Source child(final String prefix) {
-			//	TODO	should figure out /; maybe should only add it if we don't already end in it
-			final String prepend = (prefix != null && prefix.length() > 0) ? (prefix + "/") : "";
+			final String prepend = getChildPrefix(prefix);
 			return new Code.Source() {
 				@Override public String toString() {
 					return Code.Source.class.getName() + " source=" + Source.this + " prefix=" + prefix;
@@ -236,18 +283,6 @@ public abstract class Code {
 				return Code.Source.class.getName() + " url=" + url;
 			}
 
-//			public InputStream getResourceAsStream(String path) {
-//				URL url = classes.getResource(path);
-//				if (url != null) {
-//					try {
-//						return url.openStream();
-//					} catch (IOException e) {
-//						//	if we cannot open it, returning null seems fine
-//					}
-//				}
-//				return null;
-//			}
-
 			private String getSourceName(URL url, String path) {
 				if (url.getProtocol().equals("file")) {
 					try {
@@ -270,6 +305,7 @@ public abstract class Code {
 					Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
 					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
 					return File.create(
+						new URI(new URL(url,path).toURI()),
 						getSourceName(url,path),
 						length,
 						modified,
@@ -278,17 +314,14 @@ public abstract class Code {
 				} catch (IOException e) {
 					//	TODO	is this the only way to test whether the URL is available?
 					return null;
+				} catch (URISyntaxException e) {
+					//	TODO	is this the only way to test whether the URL is available?
+					throw new RuntimeException(e);
 				}
 			}
 
 			public Classes getClasses() {
 				return classes;
-			}
-		}
-
-		private static abstract class ResourceBased extends Source {
-			public Classes getClasses() {
-				return null;
 			}
 		}
 	}
@@ -357,11 +390,536 @@ public abstract class Code {
 		};
 	}
 
+	private static javax.tools.JavaCompiler javac;
+
+	private static class MemoryJavaClasses {
+		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
+
+		private class OutputClass implements JavaFileObject {
+			private String name;
+			private ByteArrayOutputStream out;
+
+			OutputClass(String name) {
+				this.name = name;
+			}
+
+			public Kind getKind() {
+				return Kind.CLASS;
+			}
+
+			public boolean isNameCompatible(String simpleName, Kind kind) {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public NestingKind getNestingKind() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Modifier getAccessLevel() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public URI toUri() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public String getName() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public InputStream openInputStream() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public OutputStream openOutputStream() throws IOException {
+				out = new ByteArrayOutputStream();
+				return out;
+			}
+
+			public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Writer openWriter() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public long getLastModified() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public boolean delete() {
+				classes.put(name, null);
+				return true;
+			}
+
+		}
+
+		JavaFileObject forOutput(String className) {
+			//System.err.println("forOutput: " + className);
+			if (false && classes.get(className) != null) {
+				throw new UnsupportedOperationException("Duplicate!");
+			}
+			classes.put(className, new OutputClass(className));
+			return classes.get(className);
+		}
+
+		Source.File getCompiledClass(String className) {
+			//System.err.println("getCompiledClass: " + className);
+			if (classes.get(className) != null) {
+				final OutputClass oc = classes.get(className);
+				return new Source.File() {
+					@Override public Source.URI getURI() {
+						return new Source.URI(oc.toUri());
+					}
+
+					@Override public String getSourceName() {
+						return null;
+					}
+
+					@Override public InputStream getInputStream() {
+						return new ByteArrayInputStream(oc.out.toByteArray());
+					}
+
+					@Override public Long getLength() {
+						//	TODO	length of array
+						return null;
+					}
+
+					@Override public Date getLastModified() {
+						//	TODO	might as well store
+						return null;
+					}
+				};
+			} else {
+				return null;
+			}
+		}
+	}
+
+	private static class SourceFileObject implements JavaFileObject {
+		private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
+
+		private Source.File delegate;
+
+		SourceFileObject(Source.File delegate) {
+			this.delegate = delegate;
+		}
+
+		public Kind getKind() {
+			return Kind.SOURCE;
+		}
+
+		public boolean isNameCompatible(String simpleName, Kind kind) {
+			if (simpleName.equals("package-info")) return false;
+			if (kind == JavaFileObject.Kind.SOURCE) {
+				String basename = delegate.getSourceName().substring(delegate.getSourceName().lastIndexOf(java.io.File.separator)+1);
+				String className = basename.substring(0,basename.length()-".java".length());
+				return className.equals(simpleName);
+			}
+			throw new UnsupportedOperationException("simpleName = " + simpleName + " kind=" + kind);
+		}
+
+		public NestingKind getNestingKind() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public Modifier getAccessLevel() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public URI toUri() {
+			return delegate.getURI().adapt();
+		}
+
+		public String getName() {
+			//	Specification does not specify but a relative path would be a good idea
+			return delegate.getSourceName();
+		}
+
+		public InputStream openInputStream() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public OutputStream openOutputStream() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+			return streams.readString(delegate.getInputStream());
+		}
+
+		public Writer openWriter() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public long getLastModified() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public boolean delete() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+	}
+
+	private static abstract class ClassRepository {
+		abstract List<JavaFileObject> list(String packageName);
+
+		private static class JavaClassObject implements JavaFileObject {
+			private String name;
+			private File file;
+			private byte[] data;
+
+			JavaClassObject(String name, byte[] data) {
+				this.name = name;
+				this.data = data;
+			}
+
+			JavaClassObject(String name, File file) {
+				this.name = name;
+				this.file = file;
+			}
+
+			public Kind getKind() {
+				return Kind.CLASS;
+			}
+
+			public boolean isNameCompatible(String simpleName, Kind kind) {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public NestingKind getNestingKind() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Modifier getAccessLevel() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public URI toUri() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public String getName() {
+				return name;
+			}
+
+			public InputStream openInputStream() throws IOException {
+				if (file != null) {
+					return new FileInputStream(file);
+				}
+				if (data != null) {
+					return new ByteArrayInputStream(data);
+				}
+				throw new UnsupportedOperationException("cannot open input stream for " + name); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public OutputStream openOutputStream() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Writer openWriter() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public long getLastModified() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public boolean delete() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+		}
+
+		private static class Jar extends ClassRepository {
+			private HashMap<String,ArrayList<JavaClassObject>> files = new HashMap<String,ArrayList<JavaClassObject>>();
+
+			private ArrayList<JavaClassObject> getList(String key) {
+				if (files.get(key) == null) {
+					files.put(key,new ArrayList<JavaClassObject>());
+				}
+				return files.get(key);
+			}
+
+			Jar(URL url) throws IOException {
+				java.util.jar.JarInputStream in = new java.util.jar.JarInputStream(url.openStream());
+				java.util.jar.JarEntry entry;
+				while( (entry = in.getNextJarEntry()) != null ) {
+					String path = entry.getName();
+					String packagePath = (path.lastIndexOf("/") != -1) ? path.substring(0,path.lastIndexOf("/")+1) : "";
+					ArrayList<JavaClassObject> list = getList(packagePath);
+					String name = path.substring(packagePath.length());
+					//System.err.println("packagePath=" + packagePath + " name=" + name);
+					if (name.length() > 0) {
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						new inonit.script.runtime.io.Streams().copy(in, baos, false);
+						byte[] data = baos.toByteArray();
+						list.add(new JavaClassObject(name,data));
+					}
+				}
+			}
+
+			List<JavaFileObject> list(String packageName) {
+				//System.err.println("list classes in JAR: " + packageName);
+				String location = packageName.replace(".","/");
+				if (location.length() > 0) {
+					location += "/";
+				}
+				List<JavaClassObject> names = getList(location);
+//				ArrayList<JavaFileObject> rv = new ArrayList<JavaFileObject>();
+//				for (JavaClassO name : names) {
+//					rv.add(new JavaClassObject(location + name));
+//				}
+//				return rv;
+				ArrayList<JavaFileObject> rv = new ArrayList<JavaFileObject>();
+				for (JavaClassObject c : names) {
+					rv.add(c);
+				}
+				return rv;
+			}
+		}
+
+		private static class Directory extends ClassRepository {
+			private File directory;
+
+			Directory(URL url) throws URISyntaxException {
+				this.directory = new File(url.toURI());
+			}
+
+			@Override List<JavaFileObject> list(String packageName) {
+				//System.err.println("list classes in directory: " + packageName);
+				String path = packageName.replace(".","/");
+				File root = new File(directory,path);
+				ArrayList<JavaFileObject> rv = new ArrayList<JavaFileObject>();
+				File[] list = (root.exists()) ? root.listFiles() : new File[0];
+				for (File file : list) {
+					if (!file.isDirectory()) {
+						rv.add(new JavaClassObject(path + "/" + file.getName(),file));
+					}
+				}
+				return rv;
+			}
+		}
+
+		static ClassRepository create(URL url) throws IOException, URISyntaxException {
+			if (url.getFile().endsWith(".jar")) {
+				return new Jar(url);
+			} else if (url.getProtocol().equals("file")) {
+				return new Directory(url);
+			} else {
+				throw new RuntimeException("Unrecognized protocol: " + url.getProtocol());
+			}
+		}
+
+		private static class Composite extends ClassRepository {
+			private ArrayList<ClassRepository> delegates = new ArrayList<ClassRepository>();
+
+			Composite(List<URL> urls) throws IOException, URISyntaxException {
+				for (URL url : urls) {
+					delegates.add(create(url));
+				}
+			}
+
+			@Override List<JavaFileObject> list(String packageName) {
+				ArrayList<JavaFileObject> rv = new ArrayList<JavaFileObject>();
+				for (ClassRepository delegate : delegates) {
+					rv.addAll(delegate.list(packageName));
+				}
+				//System.err.println("list(" + packageName + "): " + rv.size());
+				return rv;
+			}
+		}
+
+		static ClassRepository create(List<URL> urls) throws IOException, URISyntaxException {
+			return new Composite(urls);
+		}
+	}
+
+	private static Source getCompiledClasses(final Source source) {
+		return new Source() {
+			private MemoryJavaClasses compiled = new MemoryJavaClasses();
+			private javax.tools.JavaFileManager jfm;
+
+			private ClassLoader classpath = new ClassLoader() {
+				protected Class findClass(String name) throws ClassNotFoundException{
+					throw new ClassNotFoundException(name);
+				}
+			};
+
+			private JavaFileObject getFileObject(final Source.File java) {
+				return new SourceFileObject(java);
+			}
+
+			private List<URL> getURLs() {
+				if (Code.class.getClassLoader() instanceof URLClassLoader) {
+					return Arrays.asList( ((URLClassLoader)Code.class.getClassLoader()).getURLs() );
+				} else {
+					return new ArrayList<URL>();
+				}
+			}
+
+			private boolean hasClass(String name) {
+				try {
+					Class c = Code.class.getClassLoader().loadClass(name);
+					return c != null;
+				} catch (ClassNotFoundException e) {
+					return false;
+				}
+			}
+
+			@Override public Source.File getFile(String path) throws IOException {
+				//System.err.println("getCompiledClasses(" + source + "): " + path);
+				String className = path.substring(0,path.length()-".class".length());
+				String sourceName = className + ".java";
+//				className = className.replace("/", ".");
+				Source.File java = source.getFile("java/" + sourceName);
+				if (java == null && hasClass("org.mozilla.javascript.Context")) {
+					java = source.getFile("rhino/java/" + sourceName);
+				}
+				if (java != null) {
+					if (javac == null) {
+						javac = javax.tools.ToolProvider.getSystemJavaCompiler();
+					}
+					if (jfm == null) {
+						jfm = new javax.tools.JavaFileManager() {
+							private javax.tools.JavaFileManager delegate = javac.getStandardFileManager(null, null, null);
+
+							public ClassLoader getClassLoader(JavaFileManager.Location location) {
+								if (location == StandardLocation.CLASS_PATH) return classpath;
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
+								//System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
+								if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
+								if (location == StandardLocation.CLASS_PATH) {
+//									System.err.println("Searching classpath: " + System.getProperty("java.class.path"));
+//									System.err.println("Current classloader: " + getURLs());
+//									Iterable<JavaFileObject> list = delegate.list(location, packageName, kinds, recurse);
+//									for (JavaFileObject o : list) {
+//										System.err.println("delegate = " + o);
+//									}
+									//	TODO	should only be if kinds contains CLASS or whatever
+									try {
+										return ClassRepository.create(getURLs()).list(packageName);
+									} catch (URISyntaxException e) {
+										throw new RuntimeException(e);
+									}
+								}
+								//System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
+								return Arrays.asList(new JavaFileObject[0]);
+							}
+
+							public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
+								if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
+//								if (location == StandardLocation.CLASS_PATH) return delegate.inferBinaryName(location, file);
+								if (location == StandardLocation.CLASS_PATH) {
+									int lastPeriod = file.getName().lastIndexOf(".");
+									if (lastPeriod == -1) throw new RuntimeException("No period: " + file.getName());
+									String rv = file.getName().substring(0,lastPeriod).replace("/", ".");
+									//System.err.println("inferBinaryName = " + rv);
+									return rv;
+								}
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public boolean isSameFile(FileObject a, FileObject b) {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public boolean handleOption(String current, Iterator<String> remaining) {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public boolean hasLocation(JavaFileManager.Location location) {
+								if (location == StandardLocation.ANNOTATION_PROCESSOR_PATH) return false;
+								if (location == StandardLocation.SOURCE_PATH) return true;
+								//	StandardLocation.NATIVE_HEADER_OUTPUT not defined before Java 8
+								if (location.getName().equals("NATIVE_HEADER_OUTPUT")) return false;
+								throw new UnsupportedOperationException("Not supported yet: " + location.getName());
+							}
+
+							public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
+								if (location == StandardLocation.CLASS_OUTPUT) {
+									return compiled.forOutput(className);
+								}
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public FileObject getFileForInput(JavaFileManager.Location location, String packageName, String relativeName) throws IOException {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public FileObject getFileForOutput(JavaFileManager.Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public void flush() throws IOException {
+							}
+
+							public void close() throws IOException {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							public int isSupportedOption(String option) {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+						};
+					}
+					javax.tools.JavaFileObject jfo = getFileObject(java);
+					//System.err.println("Compiling: " + jfo.toUri());
+					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, jfm, null, Arrays.asList(new String[] { "-Xlint:unchecked" }), null, Arrays.asList(new JavaFileObject[] { jfo }));
+					boolean success = task.call();
+					if (!success) {
+						throw new RuntimeException("Failure");
+					}
+				}
+				return compiled.getCompiledClass(className.replace("/","."));
+			}
+
+			private Classes classes = new Classes() {
+				@Override public URL getResource(String path) {
+					//System.err.println("getResource(" + path + ")");
+					return null;
+				}
+			};
+
+			@Override public Classes getClasses() {
+				//System.err.println("getClasses()");
+				return null;
+			}
+		};
+	}
+
 	public static Code unpacked(final File base) {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(base + " is not a directory.");
 		}
 		return new Code() {
+			private Source source = Source.create(base);
+			private Source classes = getCompiledClasses(source);
+
 			public String toString() {
 				try {
 					String rv = getClass().getName() + ": base=" + base.getCanonicalPath();
@@ -372,11 +930,12 @@ public abstract class Code {
 			}
 
 			public Source getScripts() {
-				return Source.create(base);
+				return source;
 			}
 
 			public Source getClasses() {
-				return Source.NULL;
+				boolean COMPILE_IN_MEMORY = true;
+				return (COMPILE_IN_MEMORY) ? classes : Source.NULL;
 			}
 		};
 	}

@@ -30,6 +30,7 @@ var parameters = jsh.script.getopts({
 		unix: false,
 		cygwin: false,
 		native: false,
+		executable: false,
 		install: jsh.script.getopts.ARRAY(String),
 
 		//	Do not invoke directly; program self-invokes using sudo on Mac OS X to modify JDK to allow building of native launcher
@@ -325,7 +326,8 @@ if (parameters.options.cygwin) {
 }
 
 //	Build native launcher
-if (parameters.options.native) {
+//	TODO	re-enable native launcher for new jrunscript launcher
+if (parameters.options.native || parameters.options.executable) {
 	if (parameters.options.cygwin) {
 		//	TODO	use LoadLibrary call to locate jvm.dll
 		//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
@@ -410,8 +412,10 @@ if (which("chmod")) {
 }
 
 parameters.options.install.forEach(function(name) {
-	jsh.shell.java({
-		jar: install.getFile("jsh.jar"),
-		arguments: [install.getRelativePath("etc/install/" + name + ".jsh.js")]
+	jsh.shell.jsh({
+		fork: true,
+//		jar: install.getFile("jsh.jar"),
+		script: install.getFile("etc/install/" + name + ".jsh.js")
+//		arguments: [install.getRelativePath("etc/install/" + name + ".jsh.js")]
 	});
 });
