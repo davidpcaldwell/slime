@@ -147,7 +147,6 @@ if (false) {
 	for (var i=0; i<vm.length; i++) {
 		command.vm(vm[i]);
 	}
-	$api.slime.settings.sendPropertiesTo(command);
 	//	If we have a sibling named jsh.jar, we are a built shell
 	var shell = (function() {
 		if ($api.script.resolve("jsh.jar")) {
@@ -178,10 +177,13 @@ if (false) {
 	}
 	$api.slime.settings.default("jsh.engine", defaultEngine);
 	if (shell.rhino) {
+		//	TODO	possibly redundant with some code in launcher.js; examine and think through
+		$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
 		for (var i=0; i<shell.rhino.length; i++) {
 			_urls.push(shell.rhino[i]);
 		}
 	}
+	$api.slime.settings.sendPropertiesTo(command);
 	var _shellUrls = shell.shellClasspath();
 	for (var i=0; i<_shellUrls.length; i++) {
 		_urls.push(_shellUrls[i]);
