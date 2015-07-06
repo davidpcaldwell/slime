@@ -16,7 +16,9 @@
 var env = $api.shell.environment;
 
 if (!$api.slime) {
-	if ($api.script.file.getParentFile().getName().equals("rhino")) {
+	if ($api.script.url) {
+		//	Load as-is, I guess?
+	} else if ($api.script.file.getParentFile().getName().equals("rhino")) {
 		//	Load as-is
 	} else {
 		//	TODO	hard-codes assumption of built shell and hard-codes assumption unbuilt shell will arrive via launcher script; should
@@ -155,7 +157,7 @@ if (false) {
 			if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
 				rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()]
 			}
-			return new $api.jsh.Unbuilt($api.script.file.getParentFile().getParentFile().getParentFile().getParentFile(),rhino);
+			return new $api.jsh.Unbuilt(rhino);
 		}
 	})();
 	if (!shell.rhino) {

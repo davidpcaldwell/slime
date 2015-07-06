@@ -46,6 +46,14 @@ var Request = function(_request) {
 	}
 
 	var headers = [];
+	headers.value = function(name) {
+		//	TODO	more robust check for multiple values, etc.
+		for (var i=0; i<this.length; i++) {
+			if (this[i].name.toLowerCase() == name.toLowerCase()) {
+				return this[i].value;
+			}
+		}
+	};
 	var _names = _request.getHeaderNames();
 	while(_names.hasMoreElements()) {
 		var _name = _names.nextElement();

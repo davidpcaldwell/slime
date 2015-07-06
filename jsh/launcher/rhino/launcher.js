@@ -215,10 +215,11 @@ try {
 	//	TODO	Merge below with above
 	$api.jsh.Classpath = Classpath;
 
-	$api.jsh.Unbuilt = function(src,rhino) {
+	$api.jsh.Unbuilt = function(rhino) {
 		this.rhino = rhino;
 
 		this.shellClasspath = function() {
+			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 			if (rhino && rhino.length) rhino = new Classpath(rhino);
 			var LOADER_CLASSES = $api.io.tmpdir();
 			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
