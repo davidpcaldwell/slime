@@ -11,7 +11,7 @@
 //	END LICENSE
 
 $jsh.setHost((function() {
-	var $loader = eval($jsh.getLoaderCode());
+	var $loader = eval($jsh.getBootstrapCode());
 	var scripts = eval($loader.getLoaderCode("rhino/nashorn.js"));
 
 	var rv = scripts.script(

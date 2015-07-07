@@ -73,36 +73,8 @@ public class Shell {
 	private Shell() {
 	}
 
-	public Code.Source.File getLibrary(String path) {
-		Code.Source plugins = configuration.getInstallation().getLibraries();
-		try {
-			return plugins.getFile(path);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-//		Logging.get().log(Shell.class, Level.FINE, "Searching for library %s ...", path);
-//		Code.Source.File rv = null;
-//		for (Code.Source root : plugins) {
-//			Logging.get().log(Shell.class, Level.FINER, "Searching for library %s in %s ...", path, root);
-//			Code.Source.File file = null;
-//			try {
-//				file = root.getFile(path);
-//			} catch (IOException e) {
-//				//	TODO	log
-//			}
-//			if (file != null) {
-//				Logging.get().log(Main.class, Level.FINE, "Found library %s in %s ...", path, root);
-//				rv = file;
-//			}
-//		}
-//		if (rv == null) {
-//			Logging.get().log(Main.class, Level.FINE, "Did not find library %s.", path);
-//		}
-//		return rv;
-	}
-
 	//	Used by engine
-	public final String getLoaderCode() throws IOException {
+	public final String getBootstrapCode() throws IOException {
 		return streams.readString(configuration.getInstallation().getJshLoader().getFile("bootstrap.js").getReader());
 	}
 
@@ -114,8 +86,17 @@ public class Shell {
 		return configuration.getInstallation().getJshLoader();
 	}
 
+	public Code.Source.File getLibrary(String path) {
+		Code.Source plugins = configuration.getInstallation().getExtensions().getLibraries();
+		try {
+			return plugins.getFile(path);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public final Code[] getPlugins() {
-		return configuration.getInstallation().getPlugins();
+		return configuration.getInstallation().getExtensions().getPlugins().toArray(new Code[0]);
 	}
 
 	private Streams streams = new Streams();
@@ -214,7 +195,7 @@ public class Shell {
 	}
 
 	public static abstract class Installation {
-		public static Installation create(final Code.Source platform, final Code.Source jsh, final Code[] plugins, final Code.Source libraries) {
+		public static Installation create(final Code.Source platform, final Code.Source jsh, final Extensions extensions) {
 			return new Installation() {
 				@Override public Code.Source getPlatformLoader() {
 					return platform;
@@ -224,20 +205,20 @@ public class Shell {
 					return jsh;
 				}
 
-				@Override public Code.Source getLibraries() {
-					return libraries;
-				}
-
-				@Override public Code[] getPlugins() {
-					return plugins;
+				@Override public Extensions getExtensions() {
+					return extensions;
 				}
 			};
 		}
 
 		public abstract Code.Source getPlatformLoader();
 		public abstract Code.Source getJshLoader();
-		public abstract Code.Source getLibraries();
-		public abstract Code[] getPlugins();
+		public abstract Extensions getExtensions();
+
+		public static abstract class Extensions {
+			public abstract List<Code> getPlugins();
+			public abstract Code.Source getLibraries();
+		}
 	}
 
 	public static abstract class Environment {

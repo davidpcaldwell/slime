@@ -22,14 +22,14 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Main {
-	static abstract class Plugins {
+	static abstract class Plugins extends Shell.Installation.Extensions {
 		static Plugins create(File file) {
 			return new DirectoryImpl(file);
 		}
 
 		static Plugins create(final Plugins[] array) {
 			return new Plugins() {
-				@Override List<Code> getPlugins() {
+				@Override public List<Code> getPlugins() {
 					List<Code> rv = new ArrayList<Code>();
 					for (Plugins p : array) {
 						rv.addAll(p.getPlugins());
@@ -37,7 +37,7 @@ public class Main {
 					return rv;
 				}
 
-				@Override Code.Source getLibraries() {
+				@Override public Code.Source getLibraries() {
 					ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
 					for (Plugins p : array) {
 						sources.add(p.getLibraries());
@@ -47,8 +47,8 @@ public class Main {
 			};
 		}
 
-		abstract List<Code> getPlugins();
-		abstract Code.Source getLibraries();
+		public abstract List<Code> getPlugins();
+		public abstract Code.Source getLibraries();
 
 		final void addPluginsTo(List<Code> rv) {
 			List<Code> plugins = getPlugins();
@@ -121,11 +121,11 @@ public class Main {
 				addPluginsTo(rv, file, true);
 			}
 
-			Code.Source getLibraries() {
+			public Code.Source getLibraries() {
 				return Code.Source.create(file);
 			}
 
-			List<Code> getPlugins() {
+			public List<Code> getPlugins() {
 				Logging.get().log(Main.class, Level.INFO, "Application: load plugins from " + file);
 				List<Code> rv = new ArrayList<Code>();
 				addPluginsTo(rv, file);
@@ -144,13 +144,13 @@ public class Main {
 //			return rv.toArray(new Code[rv.size()]);
 //		}
 
-		private static Code.Source[] libraries(final Plugins[] roots) {
-			ArrayList<Code.Source> rv = new ArrayList<Code.Source>();
-			for (int i=0; i<roots.length; i++) {
-				rv.add(roots[i].getLibraries());
-			}
-			return rv.toArray(new Code.Source[rv.size()]);
-		}
+//		private static Code.Source[] libraries(final Plugins[] roots) {
+//			ArrayList<Code.Source> rv = new ArrayList<Code.Source>();
+//			for (int i=0; i<roots.length; i++) {
+//				rv.add(roots[i].getLibraries());
+//			}
+//			return rv.toArray(new Code.Source[rv.size()]);
+//		}
 
 		private static Plugins[] getPluginRoots(String... searchpaths) {
 			ArrayList<Plugins> files = new ArrayList<Plugins>();
@@ -173,12 +173,16 @@ public class Main {
 			return files.toArray(new Plugins[files.size()]);
 		}
 
-		final Code[] plugins(String... searchpaths) {
-			return Plugins.create(getPluginRoots(searchpaths)).getPlugins().toArray(new Code[0]);
-		}
+//		final Code[] plugins(String... searchpaths) {
+//			return Plugins.create(getPluginRoots(searchpaths)).getPlugins().toArray(new Code[0]);
+//		}
+//
+//		final Code.Source libraries(String... searchpaths) {
+//			return Plugins.create(getPluginRoots(searchpaths)).getLibraries();
+//		}
 
-		final Code.Source libraries(String... searchpaths) {
-			return Plugins.create(getPluginRoots(searchpaths)).getLibraries();
+		final Plugins plugins(String... searchpaths) {
+			return Plugins.create(getPluginRoots(searchpaths));
 		}
 
 		abstract Shell.Installation installation() throws IOException;
@@ -274,12 +278,12 @@ public class Main {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			final Code[] plugins = plugins(packagedPlugins);
-			final Code.Source libraries = libraries(packagedPlugins);
+//			final Code[] plugins = plugins(packagedPlugins);
+//			final Code.Source libraries = libraries(packagedPlugins);
 			//	TODO	better hierarchy would probably be $jsh/slime and $jsh/loader
 			final Code.Source platform = Code.Source.system("$jsh/loader/");
 			final Code.Source jsh = Code.Source.system("$jsh/");
-			return Shell.Installation.create(platform, jsh, plugins, libraries);
+			return Shell.Installation.create(platform, jsh, plugins(packagedPlugins));
 		}
 
 		Shell.Invocation invocation(final String[] arguments) {
@@ -303,13 +307,12 @@ public class Main {
 
 		final Shell.Installation installation() throws IOException {
 			Unpackaged unpackaged = this;
-			final Code[] plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
-			final Code.Source libraries = libraries(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath());
+			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
+			final Plugins plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
 			return Shell.Installation.create(
 				unpackaged.getLoader(),
 				unpackaged.getJsh(),
-				plugins,
-				libraries
+				plugins
 			);
 		}
 

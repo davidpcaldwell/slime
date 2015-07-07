@@ -12,7 +12,7 @@
 
 $jsh.setHost((function() {
 	//	Try to port inonit.script.rhino.Loader.Bootstrap
-	var $loader = eval(String($jsh.getLoaderCode()));
+	var $loader = eval(String($jsh.getBootstrapCode()));
 
 	var rv = $rhino.script("rhino/rhino.js", $loader.getLoaderCode("rhino/rhino.js"), { $loader: $loader, $rhino: $rhino }, null);
 
