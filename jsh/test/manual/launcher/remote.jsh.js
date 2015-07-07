@@ -1,3 +1,4 @@
+var SRC = jsh.script.file.parent.parent.parent.parent.parent;
 var tomcat = new jsh.httpd.Tomcat({});
 tomcat.map({
 	//	TODO	works with or without leading slash; document this and write a test
@@ -6,11 +7,11 @@ tomcat.map({
 		"/*": {
 			//	TODO	document load method
 			load: function(scope) {
-				var SRC = jsh.script.file.parent.parent.parent.parent.parent;
 				var JRUNSCRIPT = SRC.getSubdirectory("rhino/jrunscript");
 				var loader = new jsh.file.Loader({ directory: SRC });
 				scope.$exports.handle = function(request) {
 					if (request.headers.value("host") == "bitbucket.org") {
+						jsh.shell.echo("Request path: " + request.path);
 						if (request.path == "") {
 							return {
 								status: {
@@ -31,6 +32,7 @@ tomcat.map({
 									if (version == "local") {
 										var path = tokens.join("/");
 										var pathname = root.getRelativePath(path);
+										jsh.shell.echo("Trying to return " + pathname);
 										if (pathname.file) {
 											return {
 												status: {
@@ -108,21 +110,41 @@ if (true) {
 	var client = new jsh.http.Client({
 		proxy: proxy
 	});
-	var string = client.request({
-		proxy: proxy,
-		url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/",
-		evaluate: function(response) {
-			return response.body.stream.character().asString();
-		}
-	});
-	var string = client.request({
-		proxy: proxy,
-		url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/api.js",
-		evaluate: function(response) {
-			return response.body.stream.character().asString();
-		}
-	});
-	jsh.shell.echo(string);
+	if (false) {
+		var string = client.request({
+			proxy: proxy,
+			url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/",
+			evaluate: function(response) {
+				return response.body.stream.character().asString();
+			}
+		});
+		var string = client.request({
+			proxy: proxy,
+			url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/api.js",
+			evaluate: function(response) {
+				return response.body.stream.character().asString();
+			}
+		});
+	}
+	if (false) {
+		var string = client.request({
+			proxy: proxy,
+			url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/loader/rhino/inonit/",
+			evaluate: function(response) {
+				return response.body.stream.character().asString();
+			}		
+		});
+	}
+	if (false) {
+		string = client.request({
+			proxy: proxy,
+			url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/loader/rhino.js",
+			evaluate: function(response) {
+				return response.body.stream.character().asString();				
+			}
+		});
+	}
+	if (string) jsh.shell.echo(string);
 }
 
 jsh.shell.jrunscript({
@@ -132,7 +154,8 @@ jsh.shell.jrunscript({
 	},
 	arguments: [
 //		"-e", "load('http://bitbucket.org/" + "/rhino/jrunscript/api.js?relative=../../jsh/launcher/rhino/main.js')"
-		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/rhino/main.js')"
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/rhino/main.js')",
+		SRC.getRelativePath("jsh/test/jsh.shell/properties.jsh.js")
 	]
 });
 tomcat.stop();

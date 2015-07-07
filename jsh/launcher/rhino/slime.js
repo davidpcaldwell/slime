@@ -12,12 +12,14 @@
 //	END LICENSE
 
 //	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
-$api.io.copy = function(i,o) {
-	if (!arguments.callee.delegate) {
-		arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
-	}
-	arguments.callee.delegate.copy(i,o);
-};
+if (typeof(Packages.inonit.script.runtime.io.Streams) == "function") {
+	$api.io.copy = function(i,o) {
+		if (!arguments.callee.delegate) {
+			arguments.callee.delegate = new Packages.inonit.script.runtime.io.Streams();
+		}
+		arguments.callee.delegate.copy(i,o);
+	};
+}
 
 $api.debug = function(message) {
 	if (arguments.callee.on) Packages.java.lang.System.err.println(message);
@@ -49,16 +51,21 @@ $api.slime = (function(was) {
 		rv = {};
 
 		var script = $api.script;
-		if (script.file && String(script.file.getParentFile().getName()) == "rhino") {
+		var isSourceFile = script.file && String(script.file.getParentFile().getName()) == "rhino";
+		var isHttp = script.url && /^http/.test(String(script.url.getProtocol()));
+		if (isSourceFile || isHttp) {
 			rv.src = new function() {
 				if (script.file) {
 					this.toString = function() {
 						return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
 					};
+					
+					var File = function(path) {
+						return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
+					}
 
 					this.File = function(path) {
-						//$api.log("File: " + path);
-						return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
+						return new File(path);						
 					}
 
 					this.getFile = function(path) {
@@ -69,6 +76,9 @@ $api.slime = (function(was) {
 						//$api.log("Under: " + dir);
 						if (typeof(rv) == "undefined") {
 							rv = [];
+						}
+						if (typeof(dir) == "string") {
+							dir = new File(dir);
 						}
 						var files = dir.listFiles();
 						//$api.log("files: " + files.length);
@@ -85,8 +95,33 @@ $api.slime = (function(was) {
 						return rv;
 					};
 				} else {
+					var base = new Packages.java.net.URL(script.url, "../../../");
+					
 					this.toString = function() {
 						return script.url.toExternalForm();
+					};
+					
+					var getSourceFilesUnder = function(url,rv) {
+						var string = $api.engine.readUrl(url.toExternalForm());
+						var lines = string.split("\n");
+						for (var i=0; i<lines.length; i++) {
+							if (/\/$/.test(lines[i])) {
+								getSourceFilesUnder(new Packages.java.net.URL(url,lines[i]), rv);
+							} else {
+								if (/\.java$/.test(lines[i])) {
+									rv.push(new Packages.java.net.URL(url, lines[i]));
+								}
+							}
+						}
+					}
+					
+					this.getSourceFilesUnder = function(path) {
+						var under = new Packages.java.net.URL(base, path);
+//						Packages.java.lang.System.err.println("getSourceFilesUnder: " + under);
+						var rv = [];
+						getSourceFilesUnder(under,rv);
+//						Packages.java.lang.System.err.println(rv.join("\n"));
+						return rv;
 					}
 				}
 

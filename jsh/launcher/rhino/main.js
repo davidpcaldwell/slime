@@ -206,6 +206,14 @@ if (false) {
 	for (var i=0; i<$api.arguments.length; i++) {
 		command.argument($api.arguments[i]);
 	}
+	//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch
+	//			from Bitbucket
+	var passthrough = ["http.proxyHost","http.proxyPort"];
+	for (var i=0; i<passthrough.length; i++) {
+		if (Packages.java.lang.System.getProperty(passthrough[i])) {
+			command.systemProperty(passthrough[i], Packages.java.lang.System.getProperty(passthrough[i]));
+		}
+	}
 	//Packages.java.lang.System.err.println("command = " + command);
 	var status = command.run({ input: Packages.java.lang.System["in"] });
 	//	This basically hard-codes the exit at the VM level, meaning this script cannot be embedded.

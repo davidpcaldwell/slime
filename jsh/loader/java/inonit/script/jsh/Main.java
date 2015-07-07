@@ -14,6 +14,7 @@
 package inonit.script.jsh;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
@@ -106,6 +107,9 @@ public class Main {
 	private static File[] getPluginRoots(String... searchpaths) {
 		ArrayList<File> files = new ArrayList<File>();
 		for (String searchpath : searchpaths) {
+			if (searchpath.startsWith("http://") || searchpath.startsWith("https://")) {
+				throw new RuntimeException("Unimplemented: searching for plugins over HTTP");
+			}
 			if (searchpath != null) {
 				int next = searchpath.indexOf(File.pathSeparator);
 				while(next != -1) {
@@ -258,8 +262,8 @@ public class Main {
 
 	private static abstract class Unpackaged extends Configuration {
 		abstract String getModules();
-		abstract File getLoader();
-		abstract File getJsh();
+		abstract Code.Source getLoader();
+		abstract Code.Source getJsh();
 		abstract File getShellPlugins();
 
 		final Shell.Installation installation() throws IOException {
@@ -267,8 +271,8 @@ public class Main {
 			final Code[] plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
 			final Code.Source[] libraries = libraries(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath());
 			return Shell.Installation.create(
-				Code.Source.create(unpackaged.getLoader()),
-				Code.Source.create(unpackaged.getJsh()),
+				unpackaged.getLoader(),
+				unpackaged.getJsh(),
 				plugins,
 				libraries
 			);
@@ -355,12 +359,12 @@ public class Main {
 			return this.src.getAbsolutePath();
 		}
 
-		File getLoader() {
-			return new File(this.src, "loader");
+		Code.Source getLoader() {
+			return Code.Source.create(new File(this.src, "loader"));
 		}
 
-		File getJsh() {
-			return new File(new File(this.src, "jsh"), "loader");
+		Code.Source getJsh() {
+			return Code.Source.create(new File(new File(this.src, "jsh"), "loader"));
 		}
 
 		File getShellPlugins() {
@@ -369,6 +373,50 @@ public class Main {
 			}
 			//	TODO	this is basically a dummy file that contains no plugins, to make the calling code simpler
 			return new File(this.src, "xxx");
+		}
+	}
+
+	private static class Hosted extends Unpackaged {
+		private URL src;
+		
+		Hosted(URL src) {
+			this.src = src;
+		}
+		
+		private URL relative(String string) {
+			try {
+				return new URL(this.src, string);
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		String getModules() {
+			return this.src.toExternalForm();
+		}
+
+		Code.Source getLoader() {
+//			if (true) throw new RuntimeException("Unimplemented getLoader()");
+			return Code.Source.create(relative("loader/"));
+//			return new File(this.src, "loader");
+		}
+
+		Code.Source getJsh() {
+//			if (true) throw new RuntimeException("Unimplemented getJsh(): returns bogus rhino.js");
+			return Code.Source.create(relative("jsh/loader/"));
+//			return new File(new File(this.src, "jsh"), "loader");
+		}
+
+		File getShellPlugins() {
+			if (System.getProperty("jsh.shell.plugins") != null) {
+				return new File(System.getProperty("jsh.shell.plugins"));
+			}
+			try {
+				//	TODO	this is basically a dummy file that contains no plugins, to make the calling code simpler
+				return new File(File.createTempFile("jsh", null), "xxx");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
@@ -387,12 +435,12 @@ public class Main {
 			return new File(this.home, "script");
 		}
 
-		File getLoader() {
-			return new File(getScripts(), "loader");
+		Code.Source getLoader() {
+			return Code.Source.create(new File(getScripts(), "loader"));
 		}
 
-		File getJsh() {
-			return new File(getScripts(), "jsh");
+		Code.Source getJsh() {
+			return Code.Source.create(new File(getScripts(), "jsh"));
 		}
 
 		File getShellPlugins() {
@@ -413,8 +461,16 @@ public class Main {
 				//	TODO	eliminate the below system property by using a shell API to specify this
 				return new Built(home);
 			}
-			if (System.getProperty("jsh.shell.src") != null) return new Unbuilt(new File(System.getProperty("jsh.shell.src")));
-			return null;
+			String src = System.getProperty("jsh.shell.src");
+			if (src.startsWith("http:") || src.startsWith("https:")) {
+				try {
+					return new Hosted(new URL(new URL(src), "../../../"));
+				} catch (MalformedURLException e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				return new Unbuilt(new File(src));
+			}
 		}
 	}
 
