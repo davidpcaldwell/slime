@@ -22,136 +22,146 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Main {
-	static class PluginComparator implements Comparator<File> {
-		private int evaluate(File file) {
-			if (!file.isDirectory() && file.getName().endsWith(".jar")) {
-				return -1;
+	static abstract class Plugins {
+		static Plugins create(File file) {
+			return new DirectoryImpl(file);
+		}
+		
+		abstract Code[] getPlugins();
+		abstract Code.Source getLibraries();
+			
+		final void addPluginsTo(List<Code> rv) {
+			Code[] plugins = getPlugins();
+			for (Code code : plugins) {
+				rv.add(code);
 			}
-			return 0;
 		}
 
-		public int compare(File o1, File o2) {
-			return evaluate(o1) - evaluate(o2);
-		}
-	}
-
-	private static void addPluginsTo(List<Code> rv, final File file, boolean warn) {
-		if (file.exists()) {
-			if (file.isDirectory()) {
-				if (new File(file, "plugin.jsh.js").exists()) {
-					//	interpret as unpacked module
-					Logging.get().log(Main.class, Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
-					rv.add(Code.unpacked(file));
-				} else {
-					//	interpret as directory that may contain plugins
-					File[] list = file.listFiles();
-					Arrays.sort(list, new PluginComparator());
-					for (File f : list) {
-						addPluginsTo(rv, f, false);
+		private static class DirectoryImpl extends Plugins {
+			private File file;
+			
+			DirectoryImpl(File file) {
+				this.file = file;
+			}
+			
+			static class PluginComparator implements Comparator<File> {
+				private int evaluate(File file) {
+					if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+						return -1;
 					}
+					return 0;
 				}
-			} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
-				try {
-					Code p = Code.slime(file);
-					if (p.getScripts().getFile("plugin.jsh.js") != null) {
-						Logging.get().log(Main.class, Level.WARNING, "Loading plugin from %s ...", file);
-						rv.add(p);
+
+				public int compare(File o1, File o2) {
+					return evaluate(o1) - evaluate(o2);
+				}
+			}
+
+			private static void addPluginsTo(List<Code> rv, final File file, boolean warn) {
+				if (file.exists()) {
+					if (file.isDirectory()) {
+						if (new File(file, "plugin.jsh.js").exists()) {
+							//	interpret as unpacked module
+							Logging.get().log(Main.class, Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
+							rv.add(Code.unpacked(file));
+						} else {
+							//	interpret as directory that may contain plugins
+							File[] list = file.listFiles();
+							Arrays.sort(list, new PluginComparator());
+							for (File f : list) {
+								addPluginsTo(rv, f, false);
+							}
+						}
+					} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
+						try {
+							Code p = Code.slime(file);
+							if (p.getScripts().getFile("plugin.jsh.js") != null) {
+								Logging.get().log(Main.class, Level.WARNING, "Loading plugin from %s ...", file);
+								rv.add(p);
+							} else {
+								Logging.get().log(Main.class, Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
+							}
+						} catch (IOException e) {
+							//	TODO	probably error message or warning
+						}
+					} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+						Logging.get().log(Main.class, Level.CONFIG, "Loading Java plugin from " + file + " ...");
+						rv.add(Code.jar(file));
 					} else {
-						Logging.get().log(Main.class, Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
+						//	Ignore, exists but not .slime or .jar or directory
+						//	TODO	probably log message of some kind
+						if (warn) Logging.get().log(Main.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
 					}
-				} catch (IOException e) {
-					//	TODO	probably error message or warning
-				}
-			} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
-				Logging.get().log(Main.class, Level.CONFIG, "Loading Java plugin from " + file + " ...");
-				rv.add(Code.jar(file));
-			} else {
-				//	Ignore, exists but not .slime or .jar or directory
-				//	TODO	probably log message of some kind
-				if (warn) Logging.get().log(Main.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
-			}
-		} else {
-			Logging.get().log(Main.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
-		}
-	}
-
-	static void addPluginsTo(List<Code> rv, File file) {
-		addPluginsTo(rv, file, true);
-	}
-
-	//	Called by applications to load plugins
-	static Code[] getPlugins(File file) {
-		Logging.get().log(Main.class, Level.INFO, "Application: load plugins from " + file);
-		List<Code> rv = new ArrayList<Code>();
-		addPluginsTo(rv, file);
-		return rv.toArray(new Code[rv.size()]);
-	}
-
-	private static Code[] plugins(final File[] roots) {
-		ArrayList<Code> rv = new ArrayList<Code>();
-		for (int i=0; i<roots.length; i++) {
-			Logging.get().log(Main.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
-			Main.addPluginsTo(rv, roots[i]);
-		}
-		return rv.toArray(new Code[rv.size()]);
-	}
-
-	private static Code.Source[] libraries(final File[] roots) {
-		ArrayList<Code.Source> rv = new ArrayList<Code.Source>();
-		for (int i=0; i<roots.length; i++) {
-			rv.add(Code.Source.create(roots[i]));
-		}
-		return rv.toArray(new Code.Source[rv.size()]);
-	}
-
-	private static File[] getPluginRoots(String... searchpaths) {
-		ArrayList<File> files = new ArrayList<File>();
-		for (String searchpath : searchpaths) {
-			if (searchpath.startsWith("http://") || searchpath.startsWith("https://")) {
-				throw new RuntimeException("Unimplemented: searching for plugins over HTTP");
-			}
-			if (searchpath != null) {
-				int next = searchpath.indexOf(File.pathSeparator);
-				while(next != -1) {
-					files.add(new File(searchpath.substring(0,next)));
-					searchpath = searchpath.substring(next+File.pathSeparator.length());
-					next = searchpath.indexOf(File.pathSeparator);
-				}
-				if (searchpath.length() > 0) {
-					files.add(new File(searchpath));
+				} else {
+					Logging.get().log(Main.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
 				}
 			}
-		}
-		return files.toArray(new File[files.size()]);
-	}
 
-	private static Code[] plugins(String... searchpaths) {
-		File[] roots = getPluginRoots(searchpaths);
-		return plugins(roots);
-	}
+			static void addPluginsTo(List<Code> rv, File file) {
+				addPluginsTo(rv, file, true);
+			}
+			
+			Code.Source getLibraries() {
+				return Code.Source.create(file);
+			}
 
-	private static Code.Source[] libraries(String... searchpaths) {
-		return libraries(getPluginRoots(searchpaths));
-	}
-
-	private static java.net.URI getMainClassSource() {
-		try {
-			return Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-		} catch (java.net.URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static File getMainFile() {
-		java.net.URI codeLocation = getMainClassSource();
-		if (codeLocation.getScheme().equals("file")) {
-			return new File(codeLocation);
-		} else {
-			throw new RuntimeException("Unreachable: code source = " + codeLocation);
+			Code[] getPlugins() {
+				Logging.get().log(Main.class, Level.INFO, "Application: load plugins from " + file);
+				List<Code> rv = new ArrayList<Code>();
+				addPluginsTo(rv, file);
+				return rv.toArray(new Code[rv.size()]);				
+			}
 		}
 	}
 
 	private static abstract class Configuration {
+		private static Code[] plugins(final Plugins[] roots) {
+			ArrayList<Code> rv = new ArrayList<Code>();
+			for (int i=0; i<roots.length; i++) {
+				Logging.get().log(Main.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
+				roots[i].addPluginsTo(rv);
+			}
+			return rv.toArray(new Code[rv.size()]);
+		}
+
+		private static Code.Source[] libraries(final Plugins[] roots) {
+			ArrayList<Code.Source> rv = new ArrayList<Code.Source>();
+			for (int i=0; i<roots.length; i++) {
+				rv.add(roots[i].getLibraries());
+			}
+			return rv.toArray(new Code.Source[rv.size()]);
+		}
+
+		private static Plugins[] getPluginRoots(String... searchpaths) {
+			ArrayList<Plugins> files = new ArrayList<Plugins>();
+			for (String searchpath : searchpaths) {
+				if (searchpath.startsWith("http://") || searchpath.startsWith("https://")) {
+					throw new RuntimeException("Unimplemented: searching for plugins over HTTP");
+				}
+				if (searchpath != null) {
+					int next = searchpath.indexOf(File.pathSeparator);
+					while(next != -1) {
+						files.add(Plugins.create(new File(searchpath.substring(0,next))));
+						searchpath = searchpath.substring(next+File.pathSeparator.length());
+						next = searchpath.indexOf(File.pathSeparator);
+					}
+					if (searchpath.length() > 0) {
+						files.add(Plugins.create(new File(searchpath)));
+					}
+				}
+			}
+			return files.toArray(new Plugins[files.size()]);
+		}
+
+		final Code[] plugins(String... searchpaths) {
+			Plugins[] roots = getPluginRoots(searchpaths);
+			return plugins(roots);
+		}
+
+		final Code.Source[] libraries(String... searchpaths) {
+			return libraries(getPluginRoots(searchpaths));
+		}
+
 		abstract Shell.Installation installation() throws IOException;
 
 		abstract Shell.Environment.Packaged getPackaged();
@@ -231,6 +241,12 @@ public class Main {
 				}
 			}
 		}
+		
+		private File main;
+		
+		Packaged(File main) {
+			this.main = main;
+		}
 
 		Shell.Installation installation() {
 			String packagedPlugins = null;
@@ -256,7 +272,7 @@ public class Main {
 		}
 
 		Shell.Environment.Packaged getPackaged() {
-			return Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), getMainFile());
+			return Shell.Environment.Packaged.create(Code.Source.system("$packaged/"), main);
 		}
 	}
 
@@ -449,11 +465,21 @@ public class Main {
 	}
 
 	private static Configuration implementation() {
+		File main = null;
+		try {
+			URI codeLocation = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+			if (codeLocation.getScheme().equals("file")) {
+				main = new File(codeLocation);
+			} else {
+				throw new RuntimeException("Unreachable: code source = " + codeLocation);
+			}
+		} catch (java.net.URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
 		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-			return new Packaged();
+			return new Packaged(main);
 		} else {
 			Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
-			File main = getMainFile();
 			Logging.get().log(Main.class, Level.CONFIG, "getMainFile=" + main);
 			if (main.getName().equals("jsh.jar") && main.getParentFile().getName().equals("lib")) {
 				File home = main.getParentFile().getParentFile();

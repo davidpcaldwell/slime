@@ -349,7 +349,7 @@ public class Shell {
 	public static class Interface {
 		//	Called by applications to load plugins
 		public Code[] getPlugins(File file) {
-			return Main.getPlugins(file);
+			return Main.Plugins.create(file).getPlugins();
 		}
 
 		public Invocation invocation(File script, String[] arguments) {
