@@ -29,7 +29,8 @@ public class Rhino {
 		private Interface $rhino;
 		private Streams streams = new Streams();
 
-		ExecutionImpl(Engine engine, Interface $rhino) {
+		ExecutionImpl(Shell shell, Engine engine, Interface $rhino) {
+			super(shell);
 			this.engine = engine;
 			this.$rhino = $rhino;
 		}
@@ -50,7 +51,7 @@ public class Rhino {
 		@Override public void addEngine() {
 			host("$rhino", $rhino);
 			try {
-				script(this.getShell().getJshLoader().getFile("rhino.js"));
+				script(this.getJshLoader().getFile("rhino.js"));
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -60,7 +61,7 @@ public class Rhino {
 			program.add(Engine.Source.create(script));
 		}
 
-		@Override public Integer execute() {
+		@Override public Integer run() {
 			engine.execute(program);
 			return null;
 		}
@@ -178,8 +179,8 @@ public class Rhino {
 
 	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Shell.Invocation.CheckedException {
 		try {
-			ExecutionImpl execution = new ExecutionImpl(rhino.getEngine(), $rhino);
-			Integer ignore = execution.execute(shell);
+			ExecutionImpl execution = new ExecutionImpl(shell, rhino.getEngine(), $rhino);
+			Integer ignore = execution.execute();
 			return null;
 		} catch (ExitError e) {
 			return new Integer(e.getStatus());

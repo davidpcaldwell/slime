@@ -101,12 +101,13 @@ public class Shell {
 //		return rv;
 	}
 
-	public Code.Source getPlatformLoader() {
-		return configuration.getInstallation().getPlatformLoader();
-	}
-
+	//	Used by engine
 	public final String getLoaderCode() throws IOException {
 		return streams.readString(configuration.getInstallation().getJshLoader().getFile("bootstrap.js").getReader());
+	}
+
+	public Code.Source getPlatformLoader() {
+		return configuration.getInstallation().getPlatformLoader();
 	}
 
 	public Code.Source getJshLoader() {
@@ -369,31 +370,30 @@ public class Shell {
 	public static abstract class Execution {
 		private Shell shell;
 
-		final void initialize(Shell shell) {
+		protected Execution(Shell shell) {
 			this.shell = shell;
-			this.host("$jsh", shell);
 		}
 
-		protected final Shell getShell() {
-			return this.shell;
+		protected final Code.Source getJshLoader() {
+			return shell.getJshLoader();
 		}
 
 		protected abstract void host(String name, Object value);
 		protected abstract void addEngine();
 		protected abstract void script(Code.Source.File script);
-		protected abstract Integer execute();
+		protected abstract Integer run();
 
-		public final Integer execute(Shell _this) {
+		public final Integer execute() {
 			Logging.get().log(Shell.class, Level.INFO, "Executing shell with %s", this);
 			final Execution execution = this;
-			execution.initialize(_this);
+			this.host("$jsh", shell);
 			execution.addEngine();
 			try {
-				execution.script(_this.configuration.getInstallation().getJshLoader().getFile("jsh.js"));
+				execution.script(shell.getJshLoader().getFile("jsh.js"));
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			return execution.execute();
+			return execution.run();
 		}
 	}
 }

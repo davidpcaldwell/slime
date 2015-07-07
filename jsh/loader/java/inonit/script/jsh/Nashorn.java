@@ -39,13 +39,13 @@ public class Nashorn extends Main.Engine {
 	}
 
 	public static Integer execute(Shell shell) throws Shell.Invocation.CheckedException {
-		Shell.Execution execution = new ExecutionImpl(false);
-		return execution.execute(shell);
+		Shell.Execution execution = new ExecutionImpl(shell, false);
+		return execution.execute();
 	}
 
 	public void main(Shell.Container context, Shell shell) throws Shell.Invocation.CheckedException {
-		Shell.Execution execution = new ExecutionImpl(true);
-		Integer rv = execution.execute(shell);
+		Shell.Execution execution = new ExecutionImpl(shell, true);
+		Integer rv = execution.execute();
 		if (rv == null) {
 		} else if (rv.intValue() == 0) {
 		} else {
@@ -63,7 +63,8 @@ public class Nashorn extends Main.Engine {
 		private inonit.script.nashorn.Host host;
 		private boolean top;
 
-		ExecutionImpl(boolean top) {
+		ExecutionImpl(Shell shell, boolean top) {
+			super(shell);
 			this.host = inonit.script.nashorn.Host.create(new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
 					return true;
@@ -95,7 +96,7 @@ public class Nashorn extends Main.Engine {
 				}
 			});
 			try {
-				host.add(this.getShell().getJshLoader().getFile("nashorn.js"));
+				host.add(this.getJshLoader().getFile("nashorn.js"));
 			} catch (java.io.IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -116,7 +117,7 @@ public class Nashorn extends Main.Engine {
 			return null;
 		}
 
-		@Override public Integer execute() {
+		@Override public Integer run() {
 			try {
 				Object ignore = host.run();
 				return null;
