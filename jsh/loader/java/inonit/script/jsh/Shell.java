@@ -74,26 +74,31 @@ public class Shell {
 	}
 
 	public Code.Source.File getLibrary(String path) {
-		Code.Source[] plugins = configuration.getInstallation().getLibraries();
-		Logging.get().log(Shell.class, Level.FINE, "Searching for library %s ...", path);
-		Code.Source.File rv = null;
-		for (Code.Source root : plugins) {
-			Logging.get().log(Shell.class, Level.FINER, "Searching for library %s in %s ...", path, root);
-			Code.Source.File file = null;
-			try {
-				file = root.getFile(path);
-			} catch (IOException e) {
-				//	TODO	log
-			}
-			if (file != null) {
-				Logging.get().log(Main.class, Level.FINE, "Found library %s in %s ...", path, root);
-				rv = file;
-			}
+		Code.Source plugins = configuration.getInstallation().getLibraries();
+		try {
+			return plugins.getFile(path);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-		if (rv == null) {
-			Logging.get().log(Main.class, Level.FINE, "Did not find library %s.", path);
-		}
-		return rv;
+//		Logging.get().log(Shell.class, Level.FINE, "Searching for library %s ...", path);
+//		Code.Source.File rv = null;
+//		for (Code.Source root : plugins) {
+//			Logging.get().log(Shell.class, Level.FINER, "Searching for library %s in %s ...", path, root);
+//			Code.Source.File file = null;
+//			try {
+//				file = root.getFile(path);
+//			} catch (IOException e) {
+//				//	TODO	log
+//			}
+//			if (file != null) {
+//				Logging.get().log(Main.class, Level.FINE, "Found library %s in %s ...", path, root);
+//				rv = file;
+//			}
+//		}
+//		if (rv == null) {
+//			Logging.get().log(Main.class, Level.FINE, "Did not find library %s.", path);
+//		}
+//		return rv;
 	}
 
 	public Code.Source getPlatformLoader() {
@@ -208,7 +213,7 @@ public class Shell {
 	}
 
 	public static abstract class Installation {
-		public static Installation create(final Code.Source platform, final Code.Source jsh, final Code[] plugins, final Code.Source[] libraries) {
+		public static Installation create(final Code.Source platform, final Code.Source jsh, final Code[] plugins, final Code.Source libraries) {
 			return new Installation() {
 				@Override public Code.Source getPlatformLoader() {
 					return platform;
@@ -218,7 +223,7 @@ public class Shell {
 					return jsh;
 				}
 
-				@Override public Code.Source[] getLibraries() {
+				@Override public Code.Source getLibraries() {
 					return libraries;
 				}
 
@@ -230,7 +235,7 @@ public class Shell {
 
 		public abstract Code.Source getPlatformLoader();
 		public abstract Code.Source getJshLoader();
-		public abstract Code.Source[] getLibraries();
+		public abstract Code.Source getLibraries();
 		public abstract Code[] getPlugins();
 	}
 
@@ -349,7 +354,7 @@ public class Shell {
 	public static class Interface {
 		//	Called by applications to load plugins
 		public Code[] getPlugins(File file) {
-			return Main.Plugins.create(file).getPlugins();
+			return Main.Plugins.create(file).getPlugins().toArray(new Code[0]);
 		}
 
 		public Invocation invocation(File script, String[] arguments) {

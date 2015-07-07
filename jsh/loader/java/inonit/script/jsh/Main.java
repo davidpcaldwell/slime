@@ -27,11 +27,31 @@ public class Main {
 			return new DirectoryImpl(file);
 		}
 
-		abstract Code[] getPlugins();
+		static Plugins create(final Plugins[] array) {
+			return new Plugins() {
+				@Override List<Code> getPlugins() {
+					List<Code> rv = new ArrayList<Code>();
+					for (Plugins p : array) {
+						rv.addAll(p.getPlugins());
+					}
+					return rv;
+				}
+
+				@Override Code.Source getLibraries() {
+					ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
+					for (Plugins p : array) {
+						sources.add(p.getLibraries());
+					}
+					return Code.Source.create(sources);
+				}
+			};
+		}
+
+		abstract List<Code> getPlugins();
 		abstract Code.Source getLibraries();
 
 		final void addPluginsTo(List<Code> rv) {
-			Code[] plugins = getPlugins();
+			List<Code> plugins = getPlugins();
 			for (Code code : plugins) {
 				rv.add(code);
 			}
@@ -105,24 +125,24 @@ public class Main {
 				return Code.Source.create(file);
 			}
 
-			Code[] getPlugins() {
+			List<Code> getPlugins() {
 				Logging.get().log(Main.class, Level.INFO, "Application: load plugins from " + file);
 				List<Code> rv = new ArrayList<Code>();
 				addPluginsTo(rv, file);
-				return rv.toArray(new Code[rv.size()]);
+				return rv;
 			}
 		}
 	}
 
 	private static abstract class Configuration {
-		private static Code[] plugins(final Plugins[] roots) {
-			ArrayList<Code> rv = new ArrayList<Code>();
-			for (int i=0; i<roots.length; i++) {
-				Logging.get().log(Main.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
-				roots[i].addPluginsTo(rv);
-			}
-			return rv.toArray(new Code[rv.size()]);
-		}
+//		private static Code[] plugins(final Plugins[] roots) {
+//			ArrayList<Code> rv = new ArrayList<Code>();
+//			for (int i=0; i<roots.length; i++) {
+//				Logging.get().log(Main.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
+//				roots[i].addPluginsTo(rv);
+//			}
+//			return rv.toArray(new Code[rv.size()]);
+//		}
 
 		private static Code.Source[] libraries(final Plugins[] roots) {
 			ArrayList<Code.Source> rv = new ArrayList<Code.Source>();
@@ -154,12 +174,11 @@ public class Main {
 		}
 
 		final Code[] plugins(String... searchpaths) {
-			Plugins[] roots = getPluginRoots(searchpaths);
-			return plugins(roots);
+			return Plugins.create(getPluginRoots(searchpaths)).getPlugins().toArray(new Code[0]);
 		}
 
-		final Code.Source[] libraries(String... searchpaths) {
-			return libraries(getPluginRoots(searchpaths));
+		final Code.Source libraries(String... searchpaths) {
+			return Plugins.create(getPluginRoots(searchpaths)).getLibraries();
 		}
 
 		abstract Shell.Installation installation() throws IOException;
@@ -256,7 +275,7 @@ public class Main {
 				throw new RuntimeException(e);
 			}
 			final Code[] plugins = plugins(packagedPlugins);
-			final Code.Source[] libraries = libraries(packagedPlugins);
+			final Code.Source libraries = libraries(packagedPlugins);
 			//	TODO	better hierarchy would probably be $jsh/slime and $jsh/loader
 			final Code.Source platform = Code.Source.system("$jsh/loader/");
 			final Code.Source jsh = Code.Source.system("$jsh/");
@@ -285,7 +304,7 @@ public class Main {
 		final Shell.Installation installation() throws IOException {
 			Unpackaged unpackaged = this;
 			final Code[] plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
-			final Code.Source[] libraries = libraries(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath());
+			final Code.Source libraries = libraries(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath());
 			return Shell.Installation.create(
 				unpackaged.getLoader(),
 				unpackaged.getJsh(),

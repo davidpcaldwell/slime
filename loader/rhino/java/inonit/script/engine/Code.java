@@ -230,6 +230,35 @@ public abstract class Code {
 			}
 		}
 
+		public static Source create(final List<Source> delegates) {
+			final Classes classes = new Classes() {
+				@Override public URL getResource(String path) {
+					for (Source delegate : delegates) {
+						Classes c = delegate.getClasses();
+						if (c != null && c.getResource(path) != null) {
+							return c.getResource(path);
+						}
+					}
+					return null;
+				}
+			};
+
+			return new Source() {
+				@Override public File getFile(String path) throws IOException {
+					for (Source delegate : delegates) {
+						if (delegate.getFile(path) != null) {
+							return delegate.getFile(path);
+						}
+					}
+					return null;
+				}
+
+				@Override public Classes getClasses() {
+					return classes;
+				}
+			};
+		}
+
 		public abstract File getFile(String path) throws IOException;
 		public abstract Classes getClasses();
 
