@@ -26,10 +26,10 @@ public class Main {
 		static Plugins create(File file) {
 			return new DirectoryImpl(file);
 		}
-		
+
 		abstract Code[] getPlugins();
 		abstract Code.Source getLibraries();
-			
+
 		final void addPluginsTo(List<Code> rv) {
 			Code[] plugins = getPlugins();
 			for (Code code : plugins) {
@@ -39,11 +39,11 @@ public class Main {
 
 		private static class DirectoryImpl extends Plugins {
 			private File file;
-			
+
 			DirectoryImpl(File file) {
 				this.file = file;
 			}
-			
+
 			static class PluginComparator implements Comparator<File> {
 				private int evaluate(File file) {
 					if (!file.isDirectory() && file.getName().endsWith(".jar")) {
@@ -100,7 +100,7 @@ public class Main {
 			static void addPluginsTo(List<Code> rv, File file) {
 				addPluginsTo(rv, file, true);
 			}
-			
+
 			Code.Source getLibraries() {
 				return Code.Source.create(file);
 			}
@@ -109,7 +109,7 @@ public class Main {
 				Logging.get().log(Main.class, Level.INFO, "Application: load plugins from " + file);
 				List<Code> rv = new ArrayList<Code>();
 				addPluginsTo(rv, file);
-				return rv.toArray(new Code[rv.size()]);				
+				return rv.toArray(new Code[rv.size()]);
 			}
 		}
 	}
@@ -241,9 +241,9 @@ public class Main {
 				}
 			}
 		}
-		
+
 		private File main;
-		
+
 		Packaged(File main) {
 			this.main = main;
 		}
@@ -394,11 +394,11 @@ public class Main {
 
 	private static class Hosted extends Unpackaged {
 		private URL src;
-		
+
 		Hosted(URL src) {
 			this.src = src;
 		}
-		
+
 		private URL relative(String string) {
 			try {
 				return new URL(this.src, string);

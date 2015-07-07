@@ -214,7 +214,7 @@ try {
 
 	//	TODO	Merge below with above
 	$api.jsh.Classpath = Classpath;
-	
+
 	$api.java.compile = function(p) {
 		var toIterable = function(array) {
 			var _rv = new Packages.java.util.ArrayList();
@@ -229,10 +229,10 @@ try {
 			Packages.javax.tools.JavaFileManager,
 			new function() {
 				var _delegate = javac.getStandardFileManager(null, null, null);
-				
+
 				this.flush = function() {
 				}
-				
+
 				this.hasLocation = function(_location) {
 					var location = String(_location.getName());
 					var rv = ({
@@ -245,7 +245,7 @@ try {
 					}
 					return rv;
 				};
-				
+
 				var DirectoryDestination = function(_file) {
 					var ClassFile = function(_file) {
 						//Packages.java.lang.System.err.println("Writing: " + _file);
@@ -255,18 +255,18 @@ try {
 								this.openOutputStream = function() {
 									return new Packages.java.io.FileOutputStream(_file);
 								}
-								
+
 								this.delete = function() {
 									return _file.delete();
 								};
-								
+
 								this.toUri = function() {
 									throw new Error("Unimplemented: toUri");
 								}
 							}
 						);
 					}
-					
+
 					this.getJavaFileForOutput = function(name,kind,_sibling) {
 						if (kind == "CLASS") {
 							var path = name.replace(/\./g, "/") + ".class";
@@ -279,11 +279,11 @@ try {
 						throw new Error("unimplemented: directory output " + name + " " + kind + " " + _sibling)
 					}
 				};
-				
+
 				var destination = (function() {
 					return new DirectoryDestination(p.destination);
 				})();
-				
+
 				this.getJavaFileForOutput = function(_location,_className,_kind,_sibling) {
 					var location = String(_location.name());
 					var outputs = new function() {
@@ -295,7 +295,7 @@ try {
 					if (!outputter) throw new Error("unimplemented: output " + _location + " " + _className + " " + _kind + " " + _sibling);
 					return outputter(String(_className),String(_kind),_sibling);
 				}
-				
+
 				var classpath = new (function(_urls) {
 					this.getClassLoader = function() {
 						var __urls = new $api.java.Array({ type: Packages.java.net.URL, length: p.classpath.length });
@@ -304,21 +304,21 @@ try {
 						}
 						return new Packages.java.net.URLClassLoader(__urls);
 					};
-					
+
 					var DirectoryElement = function(_url) {
 						this.toString = function() {
 							return "DirectoryElement: " + _url;
 						}
-						
+
 						this.list = function(packageName,kinds,recurse) {
 							throw new Error("Unimplemented in " + this + ": packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
 						}
 					}
-					
+
 					var classFiles = {};
-					
+
 					this.classFiles = classFiles;
-					
+
 					var ClassFile = function(path,_bytes) {
 						return new JavaAdapter(
 							Packages.javax.tools.JavaFileObject,
@@ -326,33 +326,33 @@ try {
 								this.toString = function() {
 									return "ClassFile: " + path;
 								};
-								
+
 								this.getName = function() {
 									return path;
 								}
-								
+
 								classFiles[this.toString()] = {
 									binaryName: (function() {
 										var name = path.substring(0,path.length-".class".length);
 										return name.replace(/\//g, ".");
 									})()
 								}
-								
+
 								this.openInputStream = function() {
 									return new Packages.java.io.ByteArrayInputStream(_bytes);
 								}
-								
+
 								this.getKind = function() {
 									return Packages.javax.tools.JavaFileObject.Kind.CLASS;
 								}
-								
+
 								this.toUri = function() {
 									throw new Error("Unimplemented: toUri");
 								}
 							}
 						);
 					}
-					
+
 					var JarFileElement = function(file) {
 						var JarEntry = function(path,_stream) {
 							var _ostream = new Packages.java.io.ByteArrayOutputStream();
@@ -360,12 +360,12 @@ try {
 							_ostream.close();
 							_stream.close();
 							var _bytes = _ostream.toByteArray();
-							
+
 							this.input = function() {
 								return new ClassFile(path,_bytes);
 							}
 						}
-						
+
 						var _jar = new Packages.java.util.jar.JarFile(file);
 						var _entries = _jar.entries();
 						var entries = {};
@@ -379,11 +379,11 @@ try {
 							}
 						}
 						//Packages.java.lang.System.err.println("Done with entries");
-						
+
 						this.toString = function() {
 							return "JarFileElement: " + file;
 						}
-						
+
 						this.list = function(packageName,kinds,recurse) {
 							//Packages.java.lang.System.err.println("packageName = " + packageName + " kinds = " + kinds);
 							var rv = [];
@@ -403,9 +403,9 @@ try {
 							return rv;
 						}
 					};
-					
+
 					var elements;
-					
+
 					var getElements = function() {
 						var rv = [];
 						for (var i=0; i<_urls.length; i++) {
@@ -431,7 +431,7 @@ try {
 						}
 						return rv;
 					}
-					
+
 					this.list = function(_packageName,_setOfKinds,recurse) {
 						var kinds = {};
 						//Packages.java.lang.System.err.println("package: " + _packageName + " kinds " + _setOfKinds + " recurse " + recurse);
@@ -464,7 +464,7 @@ try {
 						return _rv;
 					};
 				})(p.classpath);
-				
+
 				this.getClassLoader = function(_location) {
 					var location = String(_location.getName());
 					var classLoaders = new function() {
@@ -475,14 +475,14 @@ try {
 					if (!classLoaders[location]) throw new Error("Unknown ClassLoader location: " + location);
 					return classLoaders[location]();
 				};
-				
+
 				this.list = function(_location,_packageName,_setOfKinds,recurse) {
 					//Packages.java.lang.System.err.println("list " + _location + " " + _packageName + " " + _setOfKinds + " " + recurse);
 					var listers = new function() {
 						this.PLATFORM_CLASS_PATH = function() {
 							return _delegate.list(_location,_packageName,_setOfKinds,recurse);
 						}
-						
+
 						this.CLASS_PATH = function() {
 							return classpath.list(_packageName,_setOfKinds,recurse);
 						}
@@ -491,14 +491,14 @@ try {
 					if (!listers[location]) throw new Error("No lister for " + location);
 					return listers[location](_location,_packageName,_setOfKinds,recurse);
 				}
-				
+
 				this.inferBinaryName = function(_location,_jfo) {
 					var location = String(_location.name());
 					var binaryNamers = new function() {
 						this.PLATFORM_CLASS_PATH = function(_location,_jfo) {
 							return _delegate.inferBinaryName(_location,_jfo);
 						};
-						
+
 						this.CLASS_PATH = function(_location,_jfo) {
 							var rv = classpath.classFiles[_jfo.toString()].binaryName;
 							return rv;
@@ -513,7 +513,7 @@ try {
 		var _writer = null;
 		var _listener = null; /* javax.tools.DiagnosticListener */
 		var _annotationProcessorClasses = null;
-		
+
 		var SourceFile = function(_url) {
 			return new JavaAdapter(
 				Packages.javax.tools.JavaFileObject,
@@ -521,20 +521,20 @@ try {
 					this.toString = function() {
 						return _url.toExternalForm();
 					}
-					
+
 					this.getName = function() {
 						return _url.toExternalForm();
 					}
-					
+
 					this.getKind = function() {
 						return Packages.javax.tools.JavaFileObject.Kind.SOURCE;
 					}
-					
+
 					this.getCharContent = function() {
 						return new Packages.java.lang.String($api.engine.readUrl(_url.toExternalForm()));
 //						throw new Error("getCharContent: " + _url);
 					}
-					
+
 					this.isNameCompatible = function(name,kind) {
 						if (String(name) == "package-info") return false;
 						var tokens = String(_url.toExternalForm()).split("/");
@@ -542,20 +542,20 @@ try {
 						if (kind.name().equals("SOURCE")) return basename = name + ".java";
 						throw new Error("isNameCompatible: " + _url + " name " + name + " kind " + kind);
 					}
-								
+
 					this.toUri = function() {
 						return _url.toURI();
 					}
 				}
 			);
 		};
-		
+
 		//	JavaFileObject
 		var _units = p.files.map(function(file) {
 			return new SourceFile(file);
 		});
 		Packages.java.lang.System.err.println(_units.join("\n"));
-		
+
 		var task = javac.getTask(_writer, _jfm, _listener, toIterable(["-Xlint:unchecked"]), _annotationProcessorClasses, toIterable(_units));
 		var success = task.call();
 		if (!success) {

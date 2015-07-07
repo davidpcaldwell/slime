@@ -23,28 +23,22 @@ if (jsh.script.arguments.length == 0) {
 	var runscript = (function() {
 		if (jsh.shell.jsh.home) {
 			return [
-				jsh.shell.java.launcher,
-				"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar")
+				jsh.shell.java.jrunscript,
+				jsh.shell.jsh.home.getRelativePath("jsh.js")
 			]
 		} else if (jsh.shell.rhino) {
 			return [
-				jsh.shell.java.launcher,
-				"-jar", jsh.shell.rhino.classpath,
-				"-opt", "-1",
-				"jsh/etc/unbuilt.rhino.js",
-				"launch"
+				jsh.shell.java.jrunscript,
+				"-Djsh.engine.rhino.classpath=" + jsh.shell.rhino.classpath,
+				"rhino/jrunscript/api.js",
+				"jsh/launcher/rhino/main.js"
 			];
 		} else {
-			var jrunscript = (function() {
-				var rv = jsh.shell.java.home.getRelativePath("bin/jrunscript").file;
-				if (!rv) rv = jsh.shell.java.home.getRelativePath("../bin/jrunscript").file;
-				return rv;
-			})();
 			return [
-				jrunscript.pathname,
-				"jsh/etc/unbuilt.rhino.js",
-				"launch"
-			]
+				jsh.shell.java.jrunscript,
+				"rhino/jrunscript/api.js",
+				"jsh/launcher/rhino/main.js"
+			];
 		}
 	})();
 	settings.set("hooks","precommit.slime",runscript.concat([

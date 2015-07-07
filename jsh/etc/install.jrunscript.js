@@ -19,7 +19,7 @@ if (Packages.java.lang.System.getProperty("jsh.build.rhino")) {
 	var rhino = new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.build.rhino"));
 	if (!rhino.exists()) {
 		$api.rhino.download().renameTo(rhino);
-	}	
+	}
 	Packages.java.lang.System.setProperty("jsh.build.rhino.jar", String(rhino.getCanonicalPath()));
 }
 $api.arguments.unshift("build");

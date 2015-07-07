@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var SRC = jsh.script.file.parent.parent.parent.parent.parent;
 var tomcat = new jsh.httpd.Tomcat({});
 tomcat.map({
@@ -132,7 +145,7 @@ if (true) {
 			url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/loader/rhino/inonit/",
 			evaluate: function(response) {
 				return response.body.stream.character().asString();
-			}		
+			}
 		});
 	}
 	if (false) {
@@ -140,7 +153,7 @@ if (true) {
 			proxy: proxy,
 			url: "http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/loader/rhino.js",
 			evaluate: function(response) {
-				return response.body.stream.character().asString();				
+				return response.body.stream.character().asString();
 			}
 		});
 	}

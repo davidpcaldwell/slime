@@ -59,13 +59,13 @@ $api.slime = (function(was) {
 					this.toString = function() {
 						return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
 					};
-					
+
 					var File = function(path) {
 						return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
 					}
 
 					this.File = function(path) {
-						return new File(path);						
+						return new File(path);
 					}
 
 					this.getFile = function(path) {
@@ -96,11 +96,11 @@ $api.slime = (function(was) {
 					};
 				} else {
 					var base = new Packages.java.net.URL(script.url, "../../../");
-					
+
 					this.toString = function() {
 						return script.url.toExternalForm();
 					};
-					
+
 					var getSourceFilesUnder = function(url,rv) {
 						var string = $api.engine.readUrl(url.toExternalForm());
 						var lines = string.split("\n");
@@ -114,7 +114,7 @@ $api.slime = (function(was) {
 							}
 						}
 					}
-					
+
 					this.getSourceFilesUnder = function(path) {
 						var under = new Packages.java.net.URL(base, path);
 //						Packages.java.lang.System.err.println("getSourceFilesUnder: " + under);
