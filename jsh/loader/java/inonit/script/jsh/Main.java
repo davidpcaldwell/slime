@@ -117,7 +117,7 @@ public class Main {
 				}
 			}
 
-			private static void addPluginsTo(List<Code> rv, final File file, boolean warn) {
+			private static void addPluginsTo(List<Code> rv, final File file, boolean top) {
 				if (file.exists()) {
 					if (file.isDirectory()) {
 						if (new File(file, "plugin.jsh.js").exists()) {
@@ -148,9 +148,10 @@ public class Main {
 						Logging.get().log(Main.class, Level.CONFIG, "Loading Java plugin from " + file + " ...");
 						rv.add(Code.jar(file));
 					} else {
-						//	Ignore, exists but not .slime or .jar or directory
-						//	TODO	probably log message of some kind
-						if (warn) Logging.get().log(Main.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
+						//	If this was a top-level thing to load, and was loaded by application, print a warning
+						//	TODO	refactor to make this work
+						boolean APPLICATION = false;
+						if (top && APPLICATION) Logging.get().log(Main.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
 					}
 				} else {
 					Logging.get().log(Main.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
@@ -175,59 +176,18 @@ public class Main {
 	}
 
 	private static abstract class Configuration {
-//		private static Code[] plugins(final Plugins[] roots) {
-//			ArrayList<Code> rv = new ArrayList<Code>();
-//			for (int i=0; i<roots.length; i++) {
-//				Logging.get().log(Main.class, Level.CONFIG, "Loading plugins from installation root %s ...", roots[i]);
-//				roots[i].addPluginsTo(rv);
-//			}
-//			return rv.toArray(new Code[rv.size()]);
-//		}
-
-//		private static Code.Source[] libraries(final Plugins[] roots) {
-//			ArrayList<Code.Source> rv = new ArrayList<Code.Source>();
-//			for (int i=0; i<roots.length; i++) {
-//				rv.add(roots[i].getLibraries());
-//			}
-//			return rv.toArray(new Code.Source[rv.size()]);
-//		}
-
-		private static Plugins[] getPluginRoots(String... searchpaths) {
-			ArrayList<Plugins> files = new ArrayList<Plugins>();
-			for (String searchpath : searchpaths) {
-				if (searchpath.startsWith("http://") || searchpath.startsWith("https://")) {
-					throw new RuntimeException("Unimplemented: searching for plugins over HTTP");
-				}
-				if (searchpath != null) {
-					int next = searchpath.indexOf(File.pathSeparator);
-					while(next != -1) {
-						files.add(Plugins.create(new File(searchpath.substring(0,next))));
-						searchpath = searchpath.substring(next+File.pathSeparator.length());
-						next = searchpath.indexOf(File.pathSeparator);
-					}
-					if (searchpath.length() > 0) {
-						files.add(Plugins.create(new File(searchpath)));
-					}
-				}
-			}
-			return files.toArray(new Plugins[files.size()]);
-		}
-
-//		final Code[] plugins(String... searchpaths) {
-//			return Plugins.create(getPluginRoots(searchpaths)).getPlugins().toArray(new Code[0]);
-//		}
-//
-//		final Code.Source libraries(String... searchpaths) {
-//			return Plugins.create(getPluginRoots(searchpaths)).getLibraries();
-//		}
-
-		final Shell.Installation.Extensions plugins(String... searchpaths) {
-			return Shell.Installation.Extensions.create(getPluginRoots(searchpaths));
-		}
-
 		abstract Shell.Installation installation() throws IOException;
 
+		private Shell.Installation installation(Configuration implementation) {
+			try {
+				return implementation.installation();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		abstract Shell.Environment.Packaged getPackaged();
+
 		final Shell.Environment environment() {
 			InputStream stdin = new Logging.InputStream(System.in);
 			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
@@ -243,14 +203,6 @@ public class Main {
 		}
 
 		abstract Shell.Invocation invocation(String[] args) throws Shell.Invocation.CheckedException;
-
-		private Shell.Installation installation(Configuration implementation) {
-			try {
-				return implementation.installation();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
 
 		final Shell.Configuration configuration(String[] arguments) throws Shell.Invocation.CheckedException {
 			Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
@@ -338,9 +290,9 @@ public class Main {
 	}
 
 	private static abstract class Unpackaged extends Configuration {
-		abstract Plugins getModules();
 		abstract Code.Source getLoader();
 		abstract Code.Source getJsh();
+		abstract Plugins getModules();
 		abstract Plugins getShellPlugins();
 
 		final Shell.Installation installation() throws IOException {
@@ -435,16 +387,16 @@ public class Main {
 			this.src = src;
 		}
 
-		Plugins getModules() {
-			return this.src.plugins();
-		}
-
 		Code.Source getLoader() {
 			return this.src.resolve("loader").source();
 		}
 
 		Code.Source getJsh() {
 			return this.src.resolve("jsh/loader").source();
+		}
+
+		Plugins getModules() {
+			return this.src.plugins();
 		}
 
 		Plugins getShellPlugins() {
@@ -455,40 +407,12 @@ public class Main {
 			return Plugins.EMPTY;
 		}
 	}
-//
-//	private static class Local extends Unbuilt {
-//		Unbuilt(File src) {
-//			initialize(Location.create(src));
-//		}
-//	}
-//
-//	private static class Hosted extends Unbuilt {
-//		Hosted(URL src) {
-//			this.src = src;
-//		}
-//
-//		private URL relative(String string) {
-//			try {
-//				return new URL(this.src, string);
-//			} catch (MalformedURLException e) {
-//				throw new RuntimeException(e);
-//			}
-//		}
-//
-//		Plugins getShellPlugins() {
-//			return Plugins.EMPTY;
-//		}
-//	}
 
 	private static class Built extends Unpackaged {
 		private File home;
 
 		Built(File home) {
 			this.home = home;
-		}
-
-		Plugins getModules() {
-			return Plugins.create(new File(this.home, "modules"));
 		}
 
 		private File getScripts() {
@@ -501,6 +425,10 @@ public class Main {
 
 		Code.Source getJsh() {
 			return Code.Source.create(new File(getScripts(), "jsh"));
+		}
+
+		Plugins getModules() {
+			return Plugins.create(new File(this.home, "modules"));
 		}
 
 		Plugins getShellPlugins() {
