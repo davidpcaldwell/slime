@@ -22,10 +22,70 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Main {
+	private static abstract class Location {
+		static Location create(String string) {
+			if (string.startsWith("http://") || string.startsWith("https://")) {
+				try {
+					return bitbucket(new URL(string));
+				} catch (MalformedURLException e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				return create(new File(string));
+			}
+		}
+
+		abstract Location resolve(String path);
+		abstract Plugins plugins();
+
+		final Code.Source source() {
+			return plugins().getLibraries();
+		}
+
+		static Location create(final File file) {
+			return new Location() {
+				@Override Location resolve(String path) {
+					return Location.create(new File(file, path));
+				}
+
+				@Override Plugins plugins() {
+					return Plugins.create(file);
+				}
+			};
+		}
+
+		static Location bitbucket(final URL url) {
+			return new Location() {
+				@Override Location resolve(String path) {
+					try {
+						return bitbucket(new URL(url, path));
+					} catch (MalformedURLException e) {
+						//	TODO	possibly emit? where is this coming from?
+						throw new RuntimeException(e);
+					}
+				}
+
+				@Override Plugins plugins() {
+					throw new UnsupportedOperationException("Cannot create plugins from Bitbucket URL: " + url);
+				}
+			};
+		}
+	}
+
 	static abstract class Plugins extends Shell.Installation.Extensions {
 		static Plugins create(File file) {
 			return new DirectoryImpl(file);
 		}
+
+		static final Plugins EMPTY = new Plugins() {
+			@Override public List<Code> getPlugins() {
+				return Arrays.asList(new Code[0]);
+			}
+
+			@Override public Code.Source getLibraries() {
+				return Code.Source.NULL;
+			}
+		};
 
 		public abstract List<Code> getPlugins();
 		public abstract Code.Source getLibraries();
@@ -252,18 +312,16 @@ public class Main {
 		}
 
 		Shell.Installation installation() {
-			String packagedPlugins = null;
+			Plugins plugins = null;
 			try {
-				packagedPlugins = getPackagedPluginsDirectory().getCanonicalPath();
+				plugins = Plugins.create(getPackagedPluginsDirectory());
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-//			final Code[] plugins = plugins(packagedPlugins);
-//			final Code.Source libraries = libraries(packagedPlugins);
-			//	TODO	better hierarchy would probably be $jsh/slime and $jsh/loader
+			//	TODO	better hierarchy would probably be $jsh/loader/slime and $jsh/loader/jsh
 			final Code.Source platform = Code.Source.system("$jsh/loader/");
 			final Code.Source jsh = Code.Source.system("$jsh/");
-			return Shell.Installation.create(platform, jsh, plugins(packagedPlugins));
+			return Shell.Installation.create(platform, jsh, plugins);
 		}
 
 		Shell.Invocation invocation(final String[] arguments) {
@@ -280,15 +338,19 @@ public class Main {
 	}
 
 	private static abstract class Unpackaged extends Configuration {
-		abstract String getModules();
+		abstract Plugins getModules();
 		abstract Code.Source getLoader();
 		abstract Code.Source getJsh();
-		abstract File getShellPlugins();
+		abstract Plugins getShellPlugins();
 
 		final Shell.Installation installation() throws IOException {
 			Unpackaged unpackaged = this;
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
-			final Shell.Installation.Extensions plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
+			final Shell.Installation.Extensions plugins = Shell.Installation.Extensions.create(new Shell.Installation.Extensions[] {
+				unpackaged.getModules(),
+				unpackaged.getShellPlugins(),
+				Plugins.create(new File(new File(System.getProperty("user.home")), ".jsh/plugins"))
+			});
 			return Shell.Installation.create(
 				unpackaged.getLoader(),
 				unpackaged.getJsh(),
@@ -367,76 +429,56 @@ public class Main {
 	}
 
 	private static class Unbuilt extends Unpackaged {
-		private File src;
+		private Location src;
 
-		Unbuilt(File src) {
+		Unbuilt(Location src) {
 			this.src = src;
 		}
 
-		String getModules() {
-			return this.src.getAbsolutePath();
+		Plugins getModules() {
+			return this.src.plugins();
 		}
 
 		Code.Source getLoader() {
-			return Code.Source.create(new File(this.src, "loader"));
+			return this.src.resolve("loader").source();
 		}
 
 		Code.Source getJsh() {
-			return Code.Source.create(new File(new File(this.src, "jsh"), "loader"));
+			return this.src.resolve("jsh/loader").source();
 		}
 
-		File getShellPlugins() {
+		Plugins getShellPlugins() {
 			if (System.getProperty("jsh.shell.plugins") != null) {
-				return new File(System.getProperty("jsh.shell.plugins"));
+				return Location.create(System.getProperty("jsh.shell.plugins")).plugins();
 			}
 			//	TODO	this is basically a dummy file that contains no plugins, to make the calling code simpler
-			return new File(this.src, "xxx");
+			return Plugins.EMPTY;
 		}
 	}
-
-	private static class Hosted extends Unpackaged {
-		private URL src;
-
-		Hosted(URL src) {
-			this.src = src;
-		}
-
-		private URL relative(String string) {
-			try {
-				return new URL(this.src, string);
-			} catch (MalformedURLException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		String getModules() {
-			return this.src.toExternalForm();
-		}
-
-		Code.Source getLoader() {
-//			if (true) throw new RuntimeException("Unimplemented getLoader()");
-			return Code.Source.create(relative("loader/"));
-//			return new File(this.src, "loader");
-		}
-
-		Code.Source getJsh() {
-//			if (true) throw new RuntimeException("Unimplemented getJsh(): returns bogus rhino.js");
-			return Code.Source.create(relative("jsh/loader/"));
-//			return new File(new File(this.src, "jsh"), "loader");
-		}
-
-		File getShellPlugins() {
-			if (System.getProperty("jsh.shell.plugins") != null) {
-				return new File(System.getProperty("jsh.shell.plugins"));
-			}
-			try {
-				//	TODO	this is basically a dummy file that contains no plugins, to make the calling code simpler
-				return new File(File.createTempFile("jsh", null), "xxx");
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
+//
+//	private static class Local extends Unbuilt {
+//		Unbuilt(File src) {
+//			initialize(Location.create(src));
+//		}
+//	}
+//
+//	private static class Hosted extends Unbuilt {
+//		Hosted(URL src) {
+//			this.src = src;
+//		}
+//
+//		private URL relative(String string) {
+//			try {
+//				return new URL(this.src, string);
+//			} catch (MalformedURLException e) {
+//				throw new RuntimeException(e);
+//			}
+//		}
+//
+//		Plugins getShellPlugins() {
+//			return Plugins.EMPTY;
+//		}
+//	}
 
 	private static class Built extends Unpackaged {
 		private File home;
@@ -445,8 +487,8 @@ public class Main {
 			this.home = home;
 		}
 
-		String getModules() {
-			return new File(this.home, "modules").getAbsolutePath();
+		Plugins getModules() {
+			return Plugins.create(new File(this.home, "modules"));
 		}
 
 		private File getScripts() {
@@ -461,8 +503,8 @@ public class Main {
 			return Code.Source.create(new File(getScripts(), "jsh"));
 		}
 
-		File getShellPlugins() {
-			return new File(this.home, "plugins");
+		Plugins getShellPlugins() {
+			return Plugins.create(new File(this.home, "plugins"));
 		}
 	}
 
@@ -489,16 +531,7 @@ public class Main {
 				//	TODO	eliminate the below system property by using a shell API to specify this
 				return new Built(home);
 			}
-			String src = System.getProperty("jsh.shell.src");
-			if (src.startsWith("http:") || src.startsWith("https:")) {
-				try {
-					return new Hosted(new URL(new URL(src), "../../../"));
-				} catch (MalformedURLException e) {
-					throw new RuntimeException(e);
-				}
-			} else {
-				return new Unbuilt(new File(src));
-			}
+			return new Unbuilt(Location.create(System.getProperty("jsh.shell.src")));
 		}
 	}
 

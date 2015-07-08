@@ -98,7 +98,7 @@ $api.slime = (function(was) {
 					var base = new Packages.java.net.URL(script.url, "../../../");
 
 					this.toString = function() {
-						return script.url.toExternalForm();
+						return base.toExternalForm();
 					};
 
 					var getSourceFilesUnder = function(url,rv) {
