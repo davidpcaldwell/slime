@@ -96,6 +96,10 @@ $set(function(p) {
 				if (!_popup) _popup = this._popup;
 				jsh.shell.echo("Creating popup " + _popup + " ...");
 				var browser = new Packages.javafx.scene.web.WebView();
+				//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
+				//			object and calling back into the application layer with it already configured with things like the
+				//			zoom level by default
+				browser.setZoom(this._browser.getZoom());
 				new jsh.ui.javafx.Frame({
 					Scene: jsh.ui.javafx.WebView({
 						browser: browser,

@@ -254,7 +254,7 @@ $set(function(p) {
 				Packages.javafx.util.Callback,
 				new function() {
 					this.call = function(_popup) {
-						var rv = p.popup.call({ _popup: _popup });
+						var rv = p.popup.call({ _popup: _popup, _browser: browser });
 						configureEngine(rv);
 						return rv;
 					}
