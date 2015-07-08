@@ -216,6 +216,26 @@ public class Shell {
 		public abstract Extensions getExtensions();
 
 		public static abstract class Extensions {
+			static Extensions create(final Extensions[] array) {
+				return new Extensions() {
+					@Override public List<Code> getPlugins() {
+						List<Code> rv = new ArrayList<Code>();
+						for (Extensions p : array) {
+							rv.addAll(p.getPlugins());
+						}
+						return rv;
+					}
+
+					@Override public Code.Source getLibraries() {
+						ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
+						for (Extensions p : array) {
+							sources.add(p.getLibraries());
+						}
+						return Code.Source.create(sources);
+					}
+				};
+			}
+
 			public abstract List<Code> getPlugins();
 			public abstract Code.Source getLibraries();
 		}

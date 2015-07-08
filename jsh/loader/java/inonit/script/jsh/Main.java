@@ -27,26 +27,6 @@ public class Main {
 			return new DirectoryImpl(file);
 		}
 
-		static Plugins create(final Plugins[] array) {
-			return new Plugins() {
-				@Override public List<Code> getPlugins() {
-					List<Code> rv = new ArrayList<Code>();
-					for (Plugins p : array) {
-						rv.addAll(p.getPlugins());
-					}
-					return rv;
-				}
-
-				@Override public Code.Source getLibraries() {
-					ArrayList<Code.Source> sources = new ArrayList<Code.Source>();
-					for (Plugins p : array) {
-						sources.add(p.getLibraries());
-					}
-					return Code.Source.create(sources);
-				}
-			};
-		}
-
 		public abstract List<Code> getPlugins();
 		public abstract Code.Source getLibraries();
 
@@ -181,8 +161,8 @@ public class Main {
 //			return Plugins.create(getPluginRoots(searchpaths)).getLibraries();
 //		}
 
-		final Plugins plugins(String... searchpaths) {
-			return Plugins.create(getPluginRoots(searchpaths));
+		final Shell.Installation.Extensions plugins(String... searchpaths) {
+			return Shell.Installation.Extensions.create(getPluginRoots(searchpaths));
 		}
 
 		abstract Shell.Installation installation() throws IOException;
@@ -308,7 +288,7 @@ public class Main {
 		final Shell.Installation installation() throws IOException {
 			Unpackaged unpackaged = this;
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
-			final Plugins plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
+			final Shell.Installation.Extensions plugins = plugins(unpackaged.getModules(), unpackaged.getShellPlugins().getCanonicalPath(), new File(new File(System.getProperty("user.home")), ".jsh/plugins").getCanonicalPath());
 			return Shell.Installation.create(
 				unpackaged.getLoader(),
 				unpackaged.getJsh(),
