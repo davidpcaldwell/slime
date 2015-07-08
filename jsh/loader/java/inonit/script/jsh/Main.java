@@ -66,7 +66,7 @@ public class Main {
 				}
 
 				@Override Plugins plugins() {
-					throw new UnsupportedOperationException("Cannot create plugins from Bitbucket URL: " + url);
+					return Plugins.bitbucket(url);
 				}
 			};
 		}
@@ -75,6 +75,10 @@ public class Main {
 	static abstract class Plugins extends Shell.Installation.Extensions {
 		static Plugins create(File file) {
 			return new DirectoryImpl(file);
+		}
+
+		static Plugins bitbucket(URL url) {
+			return new Bitbucket(url);
 		}
 
 		static final Plugins EMPTY = new Plugins() {
@@ -171,6 +175,22 @@ public class Main {
 				List<Code> rv = new ArrayList<Code>();
 				addPluginsTo(rv, file);
 				return rv;
+			}
+		}
+
+		private static class Bitbucket extends Plugins {
+			private URL url;
+
+			Bitbucket(URL url) {
+				this.url = url;
+			}
+
+			@Override public List<Code> getPlugins() {
+				throw new UnsupportedOperationException("Cannot create plugin list from Bitbucket URL: " + url);
+			}
+
+			@Override public Code.Source getLibraries() {
+				return Code.Source.create(url);
 			}
 		}
 	}
@@ -388,11 +408,11 @@ public class Main {
 		}
 
 		Code.Source getLoader() {
-			return this.src.resolve("loader").source();
+			return this.src.resolve("loader/").source();
 		}
 
 		Code.Source getJsh() {
-			return this.src.resolve("jsh/loader").source();
+			return this.src.resolve("jsh/loader/").source();
 		}
 
 		Plugins getModules() {
