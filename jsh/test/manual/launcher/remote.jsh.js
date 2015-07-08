@@ -63,6 +63,8 @@ tomcat.map({
 													string: (function() {
 														return pathname.directory.list({ type: pathname.directory.list.ENTRY }).map(function(entry) {
 															return entry.path;
+														}).filter(function(path) {
+															return path != ".hg/";
 														}).join("\n");
 													})()
 												}

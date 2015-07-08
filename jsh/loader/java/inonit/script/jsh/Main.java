@@ -185,8 +185,43 @@ public class Main {
 				this.url = url;
 			}
 
+			private boolean hasPlugin(URL url) {
+				try {
+					URL target = new URL(url, "plugin.jsh.js");
+					HttpURLConnection connection = (HttpURLConnection)target.openConnection();
+					int status = connection.getResponseCode();
+					if (status == 200) return true;
+					return false;
+				} catch (MalformedURLException e) {
+					throw new RuntimeException(e);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			private void addPlugins(List<Code> plugins, URL url) {
+				if (hasPlugin(url)) {
+					plugins.add(Code.unpacked(url));
+				} else {
+					try {
+						BufferedReader lines = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
+						String line = null;
+						ArrayList<URL> rv = new ArrayList<URL>();
+						while( (line = lines.readLine()) != null) {
+							if (line.endsWith("/")) {
+								addPlugins(plugins, new URL(url, line));
+							}
+						}
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+
 			@Override public List<Code> getPlugins() {
-				throw new UnsupportedOperationException("Cannot create plugin list from Bitbucket URL: " + url);
+				ArrayList<Code> rv = new ArrayList<Code>();
+				addPlugins(rv, url);
+				return rv;
 			}
 
 			@Override public Code.Source getLibraries() {

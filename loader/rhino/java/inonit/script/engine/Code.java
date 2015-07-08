@@ -941,6 +941,31 @@ public abstract class Code {
 		};
 	}
 
+	private static class Unpacked extends Code {
+		private URL url;
+		private Source source;
+		private Source classes;
+
+		Unpacked(URL url) {
+			this.url = url;
+			this.source = Source.create(url);
+			this.classes = getCompiledClasses(source);
+		}
+
+		public String toString() {
+			return getClass().getName() + " url=" + url.toExternalForm();
+		}
+
+		public Source getScripts() {
+			return source;
+		}
+
+		public Source getClasses() {
+			boolean COMPILE_IN_MEMORY = true;
+			return (COMPILE_IN_MEMORY) ? classes : Source.NULL;
+		}
+	}
+
 	public static Code unpacked(final File base) {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(base + " is not a directory.");
@@ -967,6 +992,10 @@ public abstract class Code {
 				return (COMPILE_IN_MEMORY) ? classes : Source.NULL;
 			}
 		};
+	}
+
+	public static Code unpacked(final URL base) {
+		return new Unpacked(base);
 	}
 
 	public static Code jar(final File jar) {
