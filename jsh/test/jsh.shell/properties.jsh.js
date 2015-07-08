@@ -59,6 +59,9 @@ if (typeof(jsh.shell.environment.PATH) == "undefined") {
 	}
 }
 log("");
+log("jsh.script.file = " + jsh.script.file);
+log("jsh.script.url = " + jsh.script.url);
+log("jsh.script.loader = " + jsh.script.loader);
 log("Arguments:");
 for (var i=0; i<jsh.script.arguments.length; i++) {
 	log("jsh.script.arguments[" + i + "] = [" + jsh.script.arguments[i] + "]");

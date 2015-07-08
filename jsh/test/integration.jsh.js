@@ -33,49 +33,13 @@ var parameters = jsh.script.getopts({
 jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("loader/api"));
 jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/unit"));
 
-var src = parameters.options.src.directory;
+var CATALINA_HOME = (function() {
+	if (jsh.shell.environment.JSH_BUILD_TOMCAT_HOME) return jsh.file.Pathname(jsh.shell.environment.JSH_BUILD_TOMCAT_HOME).directory;
+	if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+	if (jsh.shell.jsh.home.getSubdirectory("lib/tomcat")) return jsh.shell.jsh.home.getSubdirectory("lib/tomcat");
+})();
 
-//if (!jsh.shell.jsh.home) {
-//	//	unbuilt shell; build and relaunch
-//	var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-//	var bin = jsh.shell.java.launcher.parent.pathname;
-//	var jdkbin = bin.parent.parent.directory.getRelativePath("bin")
-//	var command = jsh.file.Searchpath([bin,jdkbin]).getCommand("jrunscript");
-//	var unbuilt = src.getRelativePath("jsh/etc/unbuilt.rhino.js");
-//	var properties = [];
-//	if (parameters.options.rhino) {
-//		properties.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
-//	}
-//	//	TODO	use jsh.shell.jrunscript?
-//	jsh.shell.run({
-//		command: command,
-//		arguments: properties.concat([
-//			src.getRelativePath("rhino/jrunscript/api.js"),
-//			unbuilt,
-//			"build", TMP
-//		]),
-//		environment: jsh.js.Object.set({}, jsh.shell.environment, {
-//			JSH_BUILD_NOTEST: "true",
-//			JSH_BUILD_NODOC: "true"
-//		})
-//	});
-//	jsh.shell.echo("Relaunching in built shell ...");
-//	var environment = jsh.js.Object.set({}, jsh.shell.environment);
-//	for (var x in environment) {
-//		if (/^JSH_/.test(x)) {
-//			delete environment[x];
-//		}
-//	}
-//	var status = jsh.shell.java({
-//		jar: TMP.getRelativePath("jsh.jar"),
-//		arguments: [jsh.script.file.pathname.toString()],
-//		environment: environment,
-//		evaluate: function(result) {
-//			return result.status;
-//		}
-//	});
-//	jsh.shell.exit(status);
-//}
+var src = parameters.options.src.directory;
 
 var scenario = new jsh.unit.Scenario({
 	composite: true,
@@ -277,6 +241,16 @@ scenario.add(new ScriptVerifier({
 		verify(json)[0].is("jsh");
 	}
 }));
+
+if (CATALINA_HOME) {
+	scenario.add(new ScriptVerifier({
+		path: "launcher/remote.jsh.js",
+		execute: function(verify) {
+			verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("true");
+			verify(this.stdio.output.split(LINE_SEPARATOR))[1].is("true");
+		}
+	}));
+}
 
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
@@ -586,11 +560,6 @@ testCommandOutput("loader/child.jsh.js", function(options) {
 var classes = platform.io.createTemporaryDirectory();
 classes.mkdirs();
 
-var CATALINA_HOME = (function() {
-	if (env.JSH_BUILD_TOMCAT_HOME) return env.JSH_BUILD_TOMCAT_HOME;
-	if (env.CATALINA_HOME) return env.CATALINA_HOME;
-	if (jsh.shell.jsh.home.getSubdirectory("lib/tomcat")) return jsh.shell.jsh.home.getSubdirectory("lib/tomcat").pathname.toString()
-})();
 if (CATALINA_HOME) {
 	console("Running httpd integration tests with CATALINA_HOME = " + CATALINA_HOME);
 	var mymode = {};
@@ -604,7 +573,7 @@ if (CATALINA_HOME) {
 			mymode[x] = mode[x];
 		}
 	}
-	mymode.env.CATALINA_HOME = CATALINA_HOME;
+	mymode.env.CATALINA_HOME = CATALINA_HOME.pathname.toString();
 	run(LAUNCHER_COMMAND.concat(
 		[
 			String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath())

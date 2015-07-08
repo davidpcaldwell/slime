@@ -13,54 +13,6 @@
 if (jsh.test && jsh.test.requireBuiltShell) {
 	jsh.test.requireBuiltShell();
 }
-//if (!jsh.shell.jsh.home) {
-//	//	Relaunch in built shell
-//	jsh.shell.echo("Relaunching in built shell ...");
-//	var parameters = jsh.script.getopts({
-//		options: {
-//			native: false,
-//			install: jsh.script.getopts.ARRAY(String),
-//			downloads: jsh.file.Pathname,
-//			rhino: jsh.file.Pathname
-//		},
-//		unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
-//	});
-//	var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
-//	//	TODO	locate jrunscript using Java home
-//	//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript
-//	var args = [];
-//	if (parameters.options.downloads) {
-//		args.push("-Djsh.build.downloads=" + parameters.options.downloads);
-//	}
-//	if (parameters.options.rhino) {
-//		args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
-//	}
-//	args.push("-Djsh.build.notest=true");
-//	args.push("-Djsh.build.nodoc=true");
-//	var SLIME = jsh.script.file.parent.parent.parent;
-//	args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
-//	args.push(SLIME.getRelativePath("jsh/etc/build.rhino.js"));
-//	args.push(JSH_HOME);
-//	parameters.options.install.forEach(function(addon) {
-//		args.push("-install", addon);
-//	});
-//	jsh.shell.run({
-//		command: "jrunscript",
-//		arguments: args
-//	});
-//	jsh.shell.echo("Launching with classpath " + jsh.shell.properties.get("jsh.launcher.classpath"));
-//	jsh.shell.echo("Launching with arguments " + parameters.arguments);
-//	jsh.shell.jsh({
-//		fork: true,
-//		shell: JSH_HOME,
-//		script: jsh.script.file,
-//		arguments: parameters.arguments,
-//		evaluate: function(result) {
-//			jsh.shell.exit(result.status);
-//		}
-//	});
-//}
-
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
@@ -117,27 +69,43 @@ var command = function(p) {
 }
 
 var subprocess = function(p) {
-//	var buffer = new jsh.io.Buffer();
-//	var stream = jsh.shell.run(jsh.js.Object.set({}, p, {
-//		stdio: {
-//			output: buffer.writeBinary()
-//		},
-//		evaluate: function(result) {
-//			buffer.close();
-//			return buffer.readBinary();
-//		}
-//	}));
 	top.add({
 		scenario: new jsh.unit.Scenario.Fork(p)
 	});
 }
 
 parameters.options.java.forEach(function(jre) {
+	//	TODO	Convert to jsh/test plugin API designed for this purpose
+	jsh.shell.echo("Adding launcher suite");
+	top.add(new function() {
+		var buffer = new jsh.io.Buffer();
+		var write = buffer.writeBinary();
+
+		this.scenario = jsh.shell.jsh({
+			fork: true,
+			script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
+			arguments: ["-scenario", "-view", "child"],
+			stdio: {
+				output: write
+			},
+			evaluate: function(result) {
+				jsh.shell.echo("Completed: launcher suite");
+				write.java.adapt().flush();
+				buffer.close();
+				var rv = new jsh.unit.Scenario.Stream({
+					name: jsh.script.file.getRelativePath("launcher/suite.jsh.js").toString(),
+					stream: buffer.readBinary()
+				});
+				jsh.shell.echo("Returning launcher suite scenario");
+				return rv;
+			}
+		});
+	});
+
 	parameters.options.engine.forEach(function(engine) {
 		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin")]);
 
 		var launcher = searchpath.getCommand("java");
-
 		var engines = jsh.shell.run({
 			command: launcher,
 			arguments: [

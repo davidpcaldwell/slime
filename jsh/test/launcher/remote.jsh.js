@@ -11,7 +11,25 @@
 //	Contributor(s):
 //	END LICENSE
 
-var SRC = jsh.script.file.parent.parent.parent.parent.parent;
+var parameters = jsh.script.getopts({
+	options: {
+		test: String
+	}
+});
+
+var tests = (parameters.options.test)
+? {
+	file: (parameters.options.test == "file"),
+	url: (parameters.options.test == "url"),
+	urlproperties: (parameters.options.test == "urlproperties"),
+}
+: {
+	file: true,
+	url: true,
+	urlproperties: false
+};
+
+var SRC = jsh.script.file.parent.parent.parent.parent;
 var tomcat = new jsh.httpd.Tomcat({});
 tomcat.map({
 	//	TODO	works with or without leading slash; document this and write a test
@@ -24,7 +42,7 @@ tomcat.map({
 				var loader = new jsh.file.Loader({ directory: SRC });
 				scope.$exports.handle = function(request) {
 					if (request.headers.value("host") == "bitbucket.org") {
-						jsh.shell.echo("Request path: " + request.path);
+						Packages.java.lang.System.err.println("Request path: " + request.path);
 						if (request.path == "") {
 							return {
 								status: {
@@ -45,7 +63,7 @@ tomcat.map({
 									if (version == "local") {
 										var path = tokens.join("/");
 										var pathname = root.getRelativePath(path);
-										jsh.shell.echo("Trying to return " + pathname);
+										Packages.java.lang.System.err.println("Trying to return " + pathname);
 										if (pathname.file) {
 											return {
 												status: {
@@ -162,7 +180,7 @@ if (true) {
 	if (string) jsh.shell.echo(string);
 }
 
-jsh.shell.jrunscript({
+if (tests.file) jsh.shell.jrunscript({
 	properties: {
 		"http.proxyHost": "127.0.0.1",
 		"http.proxyPort": String(tomcat.port)
@@ -170,7 +188,29 @@ jsh.shell.jrunscript({
 	arguments: [
 //		"-e", "load('http://bitbucket.org/" + "/rhino/jrunscript/api.js?relative=../../jsh/launcher/rhino/main.js')"
 		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/rhino/main.js')",
-		SRC.getRelativePath("jsh/test/jsh.shell/properties.jsh.js")
+		SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js")
+	]
+});
+if (tests.url) jsh.shell.jrunscript({
+	properties: {
+		"http.proxyHost": "127.0.0.1",
+		"http.proxyPort": String(tomcat.port)
+	},
+	arguments: [
+//		"-e", "load('http://bitbucket.org/" + "/rhino/jrunscript/api.js?relative=../../jsh/launcher/rhino/main.js')"
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/rhino/main.js')",
+		"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/echo.jsh.js"
+	]
+});
+if (tests.urlproperties) jsh.shell.jrunscript({
+	properties: {
+		"http.proxyHost": "127.0.0.1",
+		"http.proxyPort": String(tomcat.port)
+	},
+	arguments: [
+//		"-e", "load('http://bitbucket.org/" + "/rhino/jrunscript/api.js?relative=../../jsh/launcher/rhino/main.js')"
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/rhino/main.js')",
+		"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js"
 	]
 });
 tomcat.stop();
