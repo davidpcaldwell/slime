@@ -198,6 +198,11 @@ if (false) {
 	var classpath = new $api.jsh.Classpath(_urls);
 	command.systemProperty("jsh.launcher.classpath", classpath.local());
 	var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
+	if (!engine) throw new Error("Specified engine not found: " + $api.slime.settings.get("jsh.engine")
+		+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE
+		+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")
+		+ " shell=" + shell
+	);
 	command.systemProperty("jsh.launcher.main", engine.main);
 	for (var i=0; i<classpath._urls.length; i++) {
 		command.classpath(classpath._urls[i]);

@@ -564,6 +564,10 @@ try {
 	}
 
 	$api.jsh.Unbuilt = function(rhino) {
+		this.toString = function() {
+			return "Unbuilt: src=" + $api.slime.src + " rhino=" + rhino;
+		}
+
 		this.rhino = rhino;
 
 		this.shellClasspath = function() {
@@ -598,6 +602,10 @@ try {
 	};
 
 	$api.jsh.Built = function(home) {
+		this.toString = function() {
+			return "Built: " + home + " rhino=" + rhino;
+		}
+
 		this.home = home;
 
 		if (new Packages.java.io.File(home, "lib/js.jar").exists()) {

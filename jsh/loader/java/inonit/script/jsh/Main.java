@@ -208,8 +208,9 @@ public class Main {
 						String line = null;
 						ArrayList<URL> rv = new ArrayList<URL>();
 						while( (line = lines.readLine()) != null) {
-							if (line.endsWith("/")) {
-								addPlugins(plugins, new URL(url, line));
+							//	TODO	see issue #186
+							if (line.endsWith(File.separator)) {
+								addPlugins(plugins, new URL(url, line.replace(File.separator, "/")));
 							}
 						}
 					} catch (IOException e) {

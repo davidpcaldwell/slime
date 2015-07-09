@@ -80,11 +80,12 @@ parameters.options.java.forEach(function(jre) {
 	top.add(new function() {
 		var buffer = new jsh.io.Buffer();
 		var write = buffer.writeBinary();
-
+		var environment = jsh.js.Object.set({}, jsh.shell.environment);
+		var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
 		this.scenario = jsh.shell.jsh({
 			fork: true,
 			script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
-			arguments: ["-scenario", "-view", "child"],
+			arguments: ["-scenario", "-view", "child"].concat(rhinoArgs),
 			stdio: {
 				output: write
 			},
@@ -154,6 +155,7 @@ parameters.options.java.forEach(function(jre) {
 					environment: jsh.js.Object.set({}, jsh.shell.environment
 						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
+						, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
 					)
 				});
 			}

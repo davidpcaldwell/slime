@@ -161,6 +161,10 @@ public abstract class Code {
 			//	Used in rhino/io to create Code.Source.File objects in resources implementation
 			public static File create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new File() {
+					@Override public String toString() {
+						return "Code.Source.File uri=" + uri.adapt() + " name=" + name + " length=" + length + " modified=" + modified;
+					}
+
 					@Override public URI getURI() {
 						return uri;
 					}
@@ -326,6 +330,9 @@ public abstract class Code {
 
 			public File getFile(String path) throws IOException {
 				URL url = classes.getResource(path);
+//				if (url != null && path.indexOf("Throwables") != -1) {
+//					System.err.println("this.url=" + this.url + " url=" + url + " path=" + path + " sourceName=" + getSourceName(url,path));
+//				}
 				if (url == null) return null;
 				try {
 					URLConnection connection = url.openConnection();
@@ -334,7 +341,7 @@ public abstract class Code {
 					Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
 					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
 					return File.create(
-						new URI(new URL(url,path).toURI()),
+						new URI(new URL(this.url,path).toURI()),
 						getSourceName(url,path),
 						length,
 						modified,
@@ -539,14 +546,20 @@ public abstract class Code {
 			this.delegate = delegate;
 		}
 
+		@Override public String toString() {
+			return "SourceFileObject:" + " uri=" + toUri() + " name=" + getName();
+		}
+
 		public Kind getKind() {
 			return Kind.SOURCE;
 		}
 
 		public boolean isNameCompatible(String simpleName, Kind kind) {
+			//	TODO	line below is suspicious, should try removing it
 			if (simpleName.equals("package-info")) return false;
 			if (kind == JavaFileObject.Kind.SOURCE) {
-				String basename = delegate.getSourceName().substring(delegate.getSourceName().lastIndexOf(java.io.File.separator)+1);
+				String slashed = delegate.getSourceName().replace("\\", "/");
+				String basename = slashed.substring(slashed.lastIndexOf("/")+1);
 				String className = basename.substring(0,basename.length()-".java".length());
 				return className.equals(simpleName);
 			}
@@ -792,10 +805,6 @@ public abstract class Code {
 				}
 			};
 
-			private JavaFileObject getFileObject(final Source.File java) {
-				return new SourceFileObject(java);
-			}
-
 			private List<URL> getURLs() {
 				if (Code.class.getClassLoader() instanceof URLClassLoader) {
 					return Arrays.asList( ((URLClassLoader)Code.class.getClassLoader()).getURLs() );
@@ -815,14 +824,17 @@ public abstract class Code {
 
 			@Override public Source.File getFile(String path) throws IOException {
 				//System.err.println("getCompiledClasses(" + source + "): " + path);
+//				System.err.println("Source: " + source + " path=" + path);
 				String className = path.substring(0,path.length()-".class".length());
 				String sourceName = className + ".java";
 //				className = className.replace("/", ".");
-				Source.File java = source.getFile("java/" + sourceName);
-				if (java == null && hasClass("org.mozilla.javascript.Context")) {
-					java = source.getFile("rhino/java/" + sourceName);
+//				System.err.println("sourceName: " + sourceName);
+				Source.File sourceFile = source.getFile("java/" + sourceName);
+//				System.err.println("java: " + sourceFile);
+				if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
+					sourceFile = source.getFile("rhino/java/" + sourceName);
 				}
-				if (java != null) {
+				if (sourceFile != null) {
 					if (javac == null) {
 						javac = javax.tools.ToolProvider.getSystemJavaCompiler();
 					}
@@ -916,9 +928,9 @@ public abstract class Code {
 							}
 						};
 					}
-					javax.tools.JavaFileObject jfo = getFileObject(java);
-					//System.err.println("Compiling: " + jfo.toUri());
-					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, jfm, null, Arrays.asList(new String[] { "-Xlint:unchecked" }), null, Arrays.asList(new JavaFileObject[] { jfo }));
+					javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
+					//System.err.println("Compiling: " + jfo);
+					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, jfm, null, Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }), null, Arrays.asList(new JavaFileObject[] { jfo }));
 					boolean success = task.call();
 					if (!success) {
 						throw new RuntimeException("Failure");

@@ -47,52 +47,6 @@ var scenario = new jsh.unit.Scenario({
 	view: (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
 });
 
-//	TODO	Convert to jsh/test plugin API designed for this purpose
-scenario.add(new function() {
-	var buffer = new jsh.io.Buffer();
-	var write = buffer.writeBinary();
-
-	this.scenario = jsh.shell.jsh({
-		fork: true,
-		script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
-		arguments: ["-scenario", "-view", "child"],
-		stdio: {
-			output: write
-		},
-		evaluate: function(result) {
-			write.java.adapt().flush();
-			buffer.close();
-			return new jsh.unit.Scenario.Stream({
-				name: jsh.script.file.getRelativePath("launcher/suite.jsh.js").toString(),
-				stream: buffer.readBinary()
-			});
-		}
-	});
-});
-
-scenario.add(new function() {
-	var script = jsh.script.file.getRelativePath("packaged.jsh.js").file;
-	this.scenario = new function() {
-		this.name = script.toString();
-
-		this.execute = function(scope) {
-			//	TODO	this next line should go elsewhere
-			var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
-			jsh.shell.jsh({
-				fork: true,
-				script: script,
-				stdio: {
-					output: String
-				},
-				evaluate: function(result) {
-					var verify = new jsh.unit.Verify(scope);
-					verify(result.stdio.output.split(LINE_SEPARATOR))[0].is("Loaded both.");
-				}
-			});
-		}
-	}
-});
-
 //	TODO	this next line should go elsewhere
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
 
@@ -119,6 +73,40 @@ var ScriptVerifier = function(o) {
 		}
 	}
 };
+
+if (CATALINA_HOME) {
+	scenario.add(new ScriptVerifier({
+		path: "launcher/remote.jsh.js",
+		execute: function(verify) {
+			verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("true");
+			verify(this.stdio.output.split(LINE_SEPARATOR))[1].is("true");
+		}
+	}));
+}
+
+//	TODO	Convert to jsh/test plugin API designed for this purpose
+scenario.add(new function() {
+	var script = jsh.script.file.getRelativePath("packaged.jsh.js").file;
+	this.scenario = new function() {
+		this.name = script.toString();
+
+		this.execute = function(scope) {
+			//	TODO	this next line should go elsewhere
+			var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
+			jsh.shell.jsh({
+				fork: true,
+				script: script,
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					var verify = new jsh.unit.Verify(scope);
+					verify(result.stdio.output.split(LINE_SEPARATOR))[0].is("Loaded both.");
+				}
+			});
+		}
+	}
+});
 
 scenario.add(new ScriptVerifier({
 	path: "packaged-path.jsh.js",
@@ -241,16 +229,6 @@ scenario.add(new ScriptVerifier({
 		verify(json)[0].is("jsh");
 	}
 }));
-
-if (CATALINA_HOME) {
-	scenario.add(new ScriptVerifier({
-		path: "launcher/remote.jsh.js",
-		execute: function(verify) {
-			verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("true");
-			verify(this.stdio.output.split(LINE_SEPARATOR))[1].is("true");
-		}
-	}));
-}
 
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 

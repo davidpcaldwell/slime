@@ -42,7 +42,7 @@ tomcat.map({
 				var loader = new jsh.file.Loader({ directory: SRC });
 				scope.$exports.handle = function(request) {
 					if (request.headers.value("host") == "bitbucket.org") {
-						Packages.java.lang.System.err.println("Request path: " + request.path);
+						//Packages.java.lang.System.err.println("Request path: " + request.path);
 						if (request.path == "") {
 							return {
 								status: {
@@ -63,8 +63,8 @@ tomcat.map({
 									if (version == "local") {
 										var path = tokens.join("/");
 										var pathname = root.getRelativePath(path);
-										Packages.java.lang.System.err.println("Trying to return " + pathname);
 										if (pathname.file) {
+											//Packages.java.lang.System.err.println("File: " + pathname);
 											return {
 												status: {
 													code: 200
@@ -72,6 +72,7 @@ tomcat.map({
 												body: loader.resource(path)
 											}
 										} else if (pathname.directory) {
+											//Packages.java.lang.System.err.println("Directory: " + pathname);
 											return {
 												status: {
 													code: 200
@@ -80,13 +81,17 @@ tomcat.map({
 													type: "text/plain",
 													string: (function() {
 														return pathname.directory.list({ type: pathname.directory.list.ENTRY }).map(function(entry) {
+															//Packages.java.lang.System.err.println("Path: " + entry.path);
 															return entry.path;
 														}).filter(function(path) {
-															return path != ".hg/";
+															//	TODO	see issue #186
+															return path != ".hg" + String(Packages.java.io.File.separator);
 														}).join("\n");
 													})()
 												}
 											}
+										} else {
+											//Packages.java.lang.System.err.println("Not found: " + pathname);
 										}
 									}
 								}

@@ -46,7 +46,6 @@ if (parameters.options.scenario) {
 		view: views[parameters.options.view]()
 	});
 	jsh.shell.echo("Created scenario.");
-	Packages.java.lang.System.err.println("TMPDIR = " + jsh.shell.TMPDIR);
 	var packaged_JSH_SHELL_CLASSPATH = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath(jsh.script.file.pathname.basename + ".jar");
 	var engine = (jsh.shell.jsh.home.getFile("lib/js.jar")) ? [] : ["-norhino"];
 	jsh.shell.echo("Packaging to " + packaged_JSH_SHELL_CLASSPATH);
