@@ -39,7 +39,6 @@ tomcat.map({
 		"/*": {
 			//	TODO	document load method
 			load: function(scope) {
-				var JRUNSCRIPT = SRC.getSubdirectory("rhino/jrunscript");
 				var loader = new jsh.file.Loader({ directory: SRC });
 				scope.$exports.handle = function(request) {
 					if (request.headers.value("host") == "bitbucket.org") {
@@ -108,14 +107,8 @@ tomcat.map({
 								tokenized.shift();
 								tokenized.shift();
 								if (user == "davidpcaldwell") {
-									if (repository == "jrunscript") {
-										return new Sourceroot(JRUNSCRIPT).get(tokenized);
-									} else {
-										var response =  new Sourceroot(SRC).get(tokenized);
-//										jsh.shell.echo("response = " + response);
-//										jsh.shell.echo("response.body.type = " + response.body.type);
-//										jsh.shell.echo("response.body.string = " + response.body.string);
-										return response;
+									if (repository == "slime") {
+										return new Sourceroot(SRC).get(tokenized);
 									}
 								}
 							}
@@ -191,7 +184,7 @@ if (tests.file) jsh.shell.jrunscript({
 		"http.proxyPort": String(tomcat.port)
 	},
 	arguments: [
-		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/main.js')",
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
 		SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js")
 	]
 });
@@ -201,7 +194,7 @@ if (tests.url) jsh.shell.jrunscript({
 		"http.proxyPort": String(tomcat.port)
 	},
 	arguments: [
-		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/main.js')",
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
 		"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/echo.jsh.js"
 	]
 });
@@ -211,7 +204,7 @@ if (tests.urlproperties) jsh.shell.jrunscript({
 		"http.proxyPort": String(tomcat.port)
 	},
 	arguments: [
-		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/main.js')",
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
 		"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js"
 	]
 });
@@ -221,7 +214,7 @@ if (tests.filename) jsh.shell.jrunscript({
 		"http.proxyPort": String(tomcat.port)
 	},
 	arguments: [
-		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?test=filename')",
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?test=filename')",
 	]
 });
 tomcat.stop();

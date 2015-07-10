@@ -852,6 +852,9 @@
 		if ($api.script.file && $api.arguments[0] && $api.arguments[0].substring(0,1) == "?") {
 			return $api.arguments.shift().substring(1);
 		}
+		if ($api.script.file && $api.arguments[0] && $api.arguments[0] == "jsh") {
+			return $api.arguments.shift();
+		}
 	})();
 
 	if ($query) {
@@ -866,7 +869,9 @@
 			}
 			return rv;
 		})();
-		if (parameters.relative) {
+		if ($query == "jsh") {
+			$api.script.resolve("../../jsh/launcher/main.js").load();
+		} else if (parameters.relative) {
 			$api.script.resolve(parameters.relative).load();
 		} else if (parameters.bitbucket) {
 			var parser = /(?:(\w+)\/)?(\w+)(?:\@(\w+))?\:(.*)/;
