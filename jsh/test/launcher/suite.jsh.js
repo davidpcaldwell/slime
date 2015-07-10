@@ -86,7 +86,7 @@ jsh.unit.integration({
 			return shell(jsh.js.Object.set({}, p, {
 				shell: [
 					src.getRelativePath("rhino/jrunscript/api.js"),
-					src.getRelativePath("jsh/launcher/rhino/main.js")
+					src.getRelativePath("jsh/launcher/main.js")
 				]
 			}));
 		};

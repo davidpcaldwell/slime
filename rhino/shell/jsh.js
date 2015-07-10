@@ -307,7 +307,7 @@ $exports.jsh = function(p) {
 				if ($exports.jsh.src) {
 					//	TODO	should probably pass compiled classes so that subshell does not need to recompile
 					scripts.push($exports.jsh.src.getFile("rhino/jrunscript/api.js"));
-					scripts.push($exports.jsh.src.getFile("jsh/launcher/rhino/main.js"));
+					scripts.push($exports.jsh.src.getFile("jsh/launcher/main.js"));
 				} else if ($exports.jsh.home) {
 					scripts.push($exports.jsh.home.getFile("jsh.js"));
 				}
@@ -328,7 +328,7 @@ $exports.jsh = function(p) {
 					evaluate: evaluate
 				}));
 			} else if (p.shell.getFile("jsh/etc/unbuilt.rhino.js")) {
-				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/launcher/rhino/main.js")];
+				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/launcher/main.js")];
 				//	TODO	will only work if they start with dash, which they must, right?
 				if (p.properties) {
 					for (var x in p.properties) {

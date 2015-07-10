@@ -31,13 +31,13 @@ if (jsh.script.arguments.length == 0) {
 				jsh.shell.java.jrunscript,
 				"-Djsh.engine.rhino.classpath=" + jsh.shell.rhino.classpath,
 				"rhino/jrunscript/api.js",
-				"jsh/launcher/rhino/main.js"
+				"jsh/launcher/main.js"
 			];
 		} else {
 			return [
 				jsh.shell.java.jrunscript,
 				"rhino/jrunscript/api.js",
-				"jsh/launcher/rhino/main.js"
+				"jsh/launcher/main.js"
 			];
 		}
 	})();

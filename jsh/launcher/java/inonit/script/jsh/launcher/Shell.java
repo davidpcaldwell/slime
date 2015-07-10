@@ -151,7 +151,7 @@ public abstract class Shell {
 
 		URL getLauncherScript() throws IOException {
 			if (sourceroot == null) return null;
-			return new File(sourceroot, "jsh/launcher/rhino/launcher.js").getCanonicalFile().toURI().toURL();
+			return new File(sourceroot, "jsh/launcher/launcher.js").getCanonicalFile().toURI().toURL();
 		}
 
 		URL[] getDefaultRhinoClasspath() {

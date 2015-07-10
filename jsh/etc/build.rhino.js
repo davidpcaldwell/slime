@@ -53,7 +53,7 @@ var platform = new function() {
 	this.jdk = $api.jdk;
 };
 if (!$api.slime) {
-	$api.script.resolve("../launcher/rhino/slime.js").load();
+	$api.script.resolve("../launcher/slime.js").load();
 }
 //	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
 //			ability to build modules
@@ -248,14 +248,9 @@ console("Creating directories ...");
 
 console("Copying launcher scripts ...");
 platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"jsh.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/slime.js"), new File(JSH_HOME,"slime.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/main.js"), new File(JSH_HOME,"main.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/launcher.js"), new File(JSH_HOME,"launcher.js"));
-//	TODO	should be able to modify Java launcher to use above locations and remove next three lines
-//platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"script/launcher/api.jrunscript.js"));
-//platform.io.copyFile($api.slime.src.getFile("jsh/etc/api.jrunscript.js"), new File(JSH_HOME,"script/launcher/slime.api.jrunscript.js"));
-////platform.io.copyFile(slime.src.getFile("jsh/etc/api.rhino.js"), new File(JSH_HOME,"script/launcher/api.rhino.js"));
-//platform.io.copyFile($api.slime.src.getFile("jsh/launcher/rhino/jsh.rhino.js"), new File(JSH_HOME,"script/launcher/jsh.rhino.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/launcher/slime.js"), new File(JSH_HOME,"slime.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/launcher/main.js"), new File(JSH_HOME,"main.js"));
+platform.io.copyFile($api.slime.src.getFile("jsh/launcher/launcher.js"), new File(JSH_HOME,"launcher.js"));
 
 if (RHINO_LIBRARIES) {
 	console("Copying Rhino libraries ...");
@@ -304,19 +299,11 @@ console("Building launcher ...");
 var tmpLauncher = new File(tmp,"launcher");
 tmpLauncher.mkdir();
 $api.slime.launcher.compile({ to: tmpLauncher.getCanonicalPath() });
-//platform.jdk.compile(compileOptions.concat([
-//	"-d", tmpLauncher.getCanonicalPath(),
-//	"-sourcepath", [
-//		String(new File(SLIME_SRC,"rhino/system/java").getCanonicalPath())
-//	].join(colon),
-//	String(new File(SLIME_SRC,"jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java").getCanonicalPath())
-//]));
 var metainf = new File(tmpLauncher,"META-INF");
 metainf.mkdir();
 platform.io.write(new File(metainf, "MANIFEST.MF"), function(writer) {
 	writer.println("Main-Class: inonit.script.jsh.launcher.Main");
 });
-//copyFile(new File(SLIME_SRC,"jsh/launcher/rhino/java/MANIFEST.MF"), new File(metainf, "MANIFEST.MF"));
 debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
 zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
 

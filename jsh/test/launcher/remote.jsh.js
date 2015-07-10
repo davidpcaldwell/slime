@@ -191,8 +191,7 @@ if (tests.file) jsh.shell.jrunscript({
 		"http.proxyPort": String(tomcat.port)
 	},
 	arguments: [
-//		"-e", "load('http://bitbucket.org/" + "/rhino/jrunscript/api.js?relative=../../jsh/launcher/rhino/main.js')"
-		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/rhino/main.js')",
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/main.js')",
 		SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js")
 	]
 });
@@ -202,8 +201,7 @@ if (tests.url) jsh.shell.jrunscript({
 		"http.proxyPort": String(tomcat.port)
 	},
 	arguments: [
-//		"-e", "load('http://bitbucket.org/" + "/rhino/jrunscript/api.js?relative=../../jsh/launcher/rhino/main.js')"
-		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/rhino/main.js')",
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/main.js')",
 		"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/echo.jsh.js"
 	]
 });
@@ -213,8 +211,7 @@ if (tests.urlproperties) jsh.shell.jrunscript({
 		"http.proxyPort": String(tomcat.port)
 	},
 	arguments: [
-//		"-e", "load('http://bitbucket.org/" + "/rhino/jrunscript/api.js?relative=../../jsh/launcher/rhino/main.js')"
-		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/rhino/main.js')",
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/main.js')",
 		"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js"
 	]
 });

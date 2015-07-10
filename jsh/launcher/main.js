@@ -18,7 +18,7 @@ var env = $api.shell.environment;
 if (!$api.slime) {
 	if ($api.script.url) {
 		//	Load as-is, I guess?
-	} else if ($api.script.file.getParentFile().getName().equals("rhino")) {
+	} else if ($api.script.file.getParentFile().getName().equals("launcher")) {
 		//	Load as-is
 	} else {
 		//	TODO	hard-codes assumption of built shell and hard-codes assumption unbuilt shell will arrive via launcher script; should

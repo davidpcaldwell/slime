@@ -288,7 +288,7 @@ var src = (parameters.options.src) ? parameters.options.src.directory : install.
 if (parameters.options.unix) {
 	var bash = which("bash");
 	if (bash) {
-		var code = src.getFile("jsh/launcher/rhino/jsh.bash").read(String);
+		var code = src.getFile("jsh/launcher/jsh.bash").read(String);
 		var lines = code.split("\n");
 		var path = bash.parent.getRelativePath("bash").toString();
 		var rewritten = ["#!" + path].concat(lines).join("\n");
@@ -344,7 +344,7 @@ if (parameters.options.native || parameters.options.executable) {
 			jsh.shell.shell(
 				bash,
 				[
-					src.getRelativePath("jsh/launcher/rhino/native/win32/cygwin.bash")
+					src.getRelativePath("jsh/launcher/native/win32/cygwin.bash")
 				],
 				{
 					environment: env
@@ -360,7 +360,7 @@ if (parameters.options.native || parameters.options.executable) {
 		}
 		if (gcc) {
 			var args = ["-o", "jsh"];
-			args.push(src.getRelativePath("jsh/launcher/rhino/native/jsh.c"));
+			args.push(src.getRelativePath("jsh/launcher/native/jsh.c"));
 			jsh.shell.echo("Invoking gcc " + args.join(" ") + " ...");
 			jsh.shell.shell(
 				gcc,

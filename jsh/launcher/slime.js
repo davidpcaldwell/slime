@@ -51,17 +51,17 @@ $api.slime = (function(was) {
 		rv = {};
 
 		var script = $api.script;
-		var isSourceFile = script.file && String(script.file.getParentFile().getName()) == "rhino";
+		var isSourceFile = script.file && String(script.file.getParentFile().getName()) == "launcher";
 		var isHttp = script.url && /^http/.test(String(script.url.getProtocol()));
 		if (isSourceFile || isHttp) {
 			rv.src = new function() {
 				if (script.file) {
 					this.toString = function() {
-						return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
+						return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().toString();
 					};
 
 					var File = function(path) {
-						return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
+						return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
 					}
 
 					this.File = function(path) {
@@ -69,7 +69,7 @@ $api.slime = (function(was) {
 					}
 
 					this.getFile = function(path) {
-						return script.resolve("../../../" + path).file;
+						return script.resolve("../../" + path).file;
 					}
 
 					this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
@@ -95,7 +95,7 @@ $api.slime = (function(was) {
 						return rv;
 					};
 				} else {
-					var base = new Packages.java.net.URL(script.url, "../../../");
+					var base = new Packages.java.net.URL(script.url, "../../");
 
 					this.toString = function() {
 						return base.toExternalForm();
@@ -129,7 +129,7 @@ $api.slime = (function(was) {
 
 				this.getPath = function(path) {
 					$api.debug("getPath: " + path);
-					return script.resolve("../../../" + path).toString();
+					return script.resolve("../../" + path).toString();
 				}
 			};
 		}
@@ -141,8 +141,8 @@ $api.slime = (function(was) {
 					"-Xlint:deprecation",
 					"-Xlint:unchecked",
 					"-d", to,
-					"-sourcepath", rv.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + rv.src.getPath("jsh/launcher/rhino/java"),
-					rv.src.getPath("jsh/launcher/rhino/java/inonit/script/jsh/launcher/Main.java")
+					"-sourcepath", rv.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + rv.src.getPath("jsh/launcher/java"),
+					rv.src.getPath("jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
 				]);
 				if (!p || !p.to) return to;
 			};

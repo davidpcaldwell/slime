@@ -36,7 +36,7 @@ END LICENSE
 				<tr>
 					<!--
 						Tested manually
-						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/rhino/main.js jsh/test/jsh.shell/properties.jsh.js
+						env JSH_DEBUG_JDWP=transport=dt_socket,address=8000,server=y,suspend=y jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh.shell/properties.jsh.js
 					-->
 					<td>jsh.debug.jdwp</td>
 					<td>
@@ -47,7 +47,7 @@ END LICENSE
 				<tr>
 					<!--
 						Tested manually
-						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/rhino/main.js jsh/test/jsh.shell/properties.jsh.js
+						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/main.js jsh/test/jsh.shell/properties.jsh.js
 						jrunscript -Djsh.build.rhino.jar=$HOME/Downloads/rhino-1.7R3.jar rhino/jrunscript/api.js jsh/etc/unbuilt.rhino.js build $HOME/tmp/jsh/profile -install profiler && jrunscript -Djsh.debug.script=profiler:output=$HOME/tmp/echo.html,exclude=inonit.script.jsh,exclude=inonit.script.rhino $HOME/tmp/jsh/profile/jsh.js jsh/test/jsh.shell/echo.jsh.js
 					-->
 					<td>jsh.debug.script</td>
@@ -71,9 +71,9 @@ END LICENSE
 							be used to configure it:
 							-->
 							<!--	<h2>Profiler parameters</h2>	-->
-							<div jsapi:reference="getApi('../../../jsh/loader/profiler.api.html').getElement('parameters')">
+							<div jsapi:reference="getApi('../../jsh/loader/profiler.api.html').getElement('parameters')">
 								Profiler parameters are defined in the
-								<a href="../../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
+								<a href="../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
 							</div>
 						</div>
 					</td>
@@ -163,10 +163,10 @@ END LICENSE
 				the profiler will emit profiling information to stderr when the program completes. The following parameters may
 				be used to configure it:
 				<h2>Profiler parameters</h2>
-				<div jsapi:reference="getApi('../../../jsh/loader/profiler.api.html').getElement('parameters')">
+				<div jsapi:reference="getApi('../../jsh/loader/profiler.api.html').getElement('parameters')">
 					The semantics of
 					profiler parameters are defined in the
-					<a href="../../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
+					<a href="../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
 				</div>
 			</li>
 			<li>
