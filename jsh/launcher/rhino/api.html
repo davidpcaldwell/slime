@@ -48,11 +48,35 @@ END LICENSE
 					<!--
 						Tested manually
 						env JSH_DEBUG_SCRIPT=rhino JSH_ENGINE_RHINO_CLASSPATH=$HOME/Downloads/rhino-1.7R3.jar jrunscript rhino/jrunscript/api.js jsh/launcher/rhino/main.js jsh/test/jsh.shell/properties.jsh.js
+						jrunscript -Djsh.build.rhino.jar=$HOME/Downloads/rhino-1.7R3.jar rhino/jrunscript/api.js jsh/etc/unbuilt.rhino.js build $HOME/tmp/jsh/profile -install profiler && jrunscript -Djsh.debug.script=profiler:output=$HOME/tmp/echo.html,exclude=inonit.script.jsh,exclude=inonit.script.rhino $HOME/tmp/jsh/profile/jsh.js jsh/test/jsh.shell/echo.jsh.js
 					-->
 					<td>jsh.debug.script</td>
 					<td>
-						Sets up a debugger to debug scripts. If the value is <code>rhino</code>, and the shell is using Rhino as
-						its JavaScript engine, the Rhino debugger will be launched to debug the script.
+						<div>
+							Sets up a debugger to debug scripts.
+						</div>
+						<div>
+							If the value is <code>rhino</code>, and the shell is using Rhino as
+							its JavaScript engine, the Rhino debugger will be launched to debug the script.
+						</div>
+						<div>
+							If set to <code>profiler</code> or a value starting with <code>profiler:</code>,
+							and a built shell including a profiler is being run under the Rhino engine, the loader process will be
+							run under a profiler.
+							The profiler may be configured with an
+							argument like: <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>. With no parameters,
+							the profiler will emit profiling information to stderr when the program completes.
+							<!--
+							The following parameters may
+							be used to configure it:
+							-->
+							<!--	<h2>Profiler parameters</h2>	-->
+							<div jsapi:reference="getApi('../../../jsh/loader/profiler.api.html').getElement('parameters')">
+								The semantics of
+								profiler parameters are defined in the
+								<a href="../../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
+							</div>
+						</div>
 					</td>
 				</tr>
 				<tr>

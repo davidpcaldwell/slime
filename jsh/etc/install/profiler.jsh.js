@@ -13,22 +13,17 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		javassist: "https://github.com/jboss-javassist/javassist/releases/download/rel_3_18_2_ga_build/javassist.jar",
+		javassist: String,
 		src: jsh.shell.jsh.home.getRelativePath("src")
 	}
-});
-
-var api = jsh.script.loader.file("api.js");
-
-var javassist = api.download({
-	url: parameters.options.javassist,
-	name: "javassist-3.18.2.GA.jar"
 });
 
 var src = parameters.options.src.directory;
 
 var args = [];
-args.push("-javassist", javassist);
+if (parameters.options.javassist) {
+	args.push("-javassist", parameters.options.javassist);
+}
 args.push("-to", jsh.shell.jsh.home.getRelativePath("tools/profiler.jar"));
 
 jsh.shell.jsh({
@@ -37,11 +32,3 @@ jsh.shell.jsh({
 });
 src.getSubdirectory("rhino/tools/profiler/viewer").copy(jsh.shell.jsh.home.getRelativePath("tools/profiler/viewer"), { recursive: true });
 jsh.shell.echo("Installed profiler to " + jsh.shell.jsh.home.getRelativePath("tools/profiler.jar") + " and " + jsh.shell.jsh.home.getRelativePath("tools/profiler"));
-//jsh.shell.jsh.home.getRelativePath("tools/profiler/viewer").createDirectory({
-//	ifExists: function(dir) {
-//		return false;
-//	},
-//	recursive: true
-//});
-//new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
-//copyFile(new File(SLIME_SRC,"rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));

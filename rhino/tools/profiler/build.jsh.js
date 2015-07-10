@@ -12,29 +12,33 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		to: jsh.file.Pathname,
-		javassist: jsh.file.Pathname
+		javassist: jsh.file.Pathname,
+		to: jsh.file.Pathname
 	}
 });
 
-if (!parameters.options.to) {
-	parameters.options.to = jsh.shell.TMPDIR.createTemporary({ prefix: "profiler-", suffix: ".jar" });
+if (!parameters.options.javassist) {
+	jsh.shell.echo("Downloading Javassist ...");
+	parameters.options.javassist = jsh.shell.TMPDIR.createTemporary({ prefix: "javassist", suffix: ".jar" }).pathname;
+	parameters.options.javassist.write(
+		new jsh.http.Client().request({
+			url: "https://github.com/jboss-javassist/javassist/releases/download/rel_3_20_0_ga/javassist.jar"
+		}).body.stream,
+		{ append: false }
+	);
 }
 
-var javassist;
-
-if (!parameters.options.javassist) {
-	jsh.shell.echo("Required: -javassist");
+if (!parameters.options.to) {
+	jsh.shell.echo("Required: -to");
 	jsh.shell.exit(1);
-} else {
-	javassist = parameters.options.javassist;
 }
 
 var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
+jsh.shell.echo("Compiling profiler ...");
 jsh.java.tools.javac({
 	destination: tmp.getRelativePath("classes"),
-	classpath: jsh.file.Searchpath([javassist]),
+	classpath: jsh.file.Searchpath([parameters.options.javassist]),
 	sourcepath: jsh.file.Searchpath([
 		jsh.script.file.getRelativePath("java")
 	]),
@@ -42,6 +46,10 @@ jsh.java.tools.javac({
 		jsh.script.file.getRelativePath("java/inonit/tools/Profiler.java")
 	]
 });
+
+//	TODO	replace need for jar tool
+
+//	TODO	replace jsh.shell.shell
 
 var bins = [];
 if (jsh.shell.java.home.parent.getSubdirectory("bin")) bins.push(jsh.shell.java.home.parent.getRelativePath("bin"));
@@ -53,7 +61,7 @@ var jar = searchpath.getCommand("jar");
 jsh.shell.shell(
 	jar,
 	[
-		"xf", javassist
+		"xf", parameters.options.javassist
 	],
 	{
 		workingDirectory: tmp.getSubdirectory("classes")

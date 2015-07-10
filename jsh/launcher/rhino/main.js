@@ -183,6 +183,26 @@ if (false) {
 			_urls.push(shell.rhino[i]);
 		}
 	}
+	var scriptDebugger = $api.slime.settings.get("jsh.debug.script");
+	var profilerMatcher =  /^profiler(?:\:(.*))?$/;
+	if ( profilerMatcher.test(scriptDebugger)) {
+		var profilerMatch = profilerMatcher.exec(scriptDebugger);
+		if (shell.profiler) {
+			if ($api.slime.settings.get("jsh.engine") == "rhino") {
+				if (profilerMatch[1]) {
+					command.vm("-javaagent:" + shell.profiler + "=" + profilerMatch[1]);
+				} else {
+					command.vm("-javaagent:" + shell.profiler);
+				}
+			} else {
+				Packages.java.lang.System.err.println("Profiler does not run under Nashorn.");
+				Packages.java.lang.System.exit(1);
+			}
+		} else {
+			Packages.java.lang.System.err.println("Could not find profiler.");
+			Packages.java.lang.System.exit(1);
+		}
+	}
 	$api.slime.settings.sendPropertiesTo(command);
 	var _shellUrls = shell.shellClasspath();
 	for (var i=0; i<_shellUrls.length; i++) {

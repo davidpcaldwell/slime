@@ -570,6 +570,12 @@ try {
 
 		this.rhino = rhino;
 
+		if (false) this.profiler = (function() {
+			if ($api.slime.settings.get("jsh.shell.profiler")) {
+				return new Packages.java.io.File($api.slime.settings.get("jsh.shell.profiler"));
+			}
+		})();
+
 		this.shellClasspath = function() {
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 			if (rhino && rhino.length) rhino = new Classpath(rhino);
@@ -612,6 +618,10 @@ try {
 			this.rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
 		}
 
+		if (new Packages.java.io.File(home, "tools/profiler.jar").exists()) {
+			this.profiler = new Packages.java.io.File(home, "tools/profiler.jar");
+		}
+
 		this.shellClasspath = function() {
 			return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
 		}
@@ -619,6 +629,13 @@ try {
 
 	$api.jsh.Packaged = function(file) {
 		this.packaged = file;
+
+		//	TODO	test and enable (and document) if this works
+		if (false) this.profiler = (function() {
+			if ($api.slime.settings.get("jsh.shell.profiler")) {
+				return new Packages.java.io.File($api.slime.settings.get("jsh.shell.profiler"));
+			}
+		})();
 
 		this.shellClasspath = function() {
 			return [file.toURI().toURL()];
