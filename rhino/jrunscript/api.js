@@ -85,7 +85,7 @@
 				return null;
 			},
 			jdkrhino: function() {
-				return global["javax.script.filename"];
+				return global[String(Packages.javax.script.ScriptEngine.FILENAME)];
 			}
 		})();
 		rv.newArray = function(type,length) {
@@ -885,6 +885,12 @@
 				//	We pass protocol because mock Bitbucket uses http while Bitbucket uses https
 				get.protocol = String($api.script.url.getProtocol());
 				$api.bitbucket.script(get);
+			}
+		} else if (parameters.test) {
+			if (parameters.test == "filename") {
+				Packages.java.lang.System.out.println("stack = " + new Packages.java.lang.Throwable().getStackTrace()[0].getFileName());
+				var global = (function() { return this; })();
+				Packages.java.lang.System.out.println("javax.script.filename = " + global[String(Packages.javax.script.ScriptEngine.FILENAME)]);
 			}
 		} else {
 			Packages.java.lang.System.err.println("Usage: api.js <script> [arguments]");

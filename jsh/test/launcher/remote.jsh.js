@@ -22,6 +22,7 @@ var tests = (parameters.options.test)
 	file: (parameters.options.test == "file"),
 	url: (parameters.options.test == "url"),
 	urlproperties: (parameters.options.test == "urlproperties"),
+	filename: (parameters.options.test == "filename")
 }
 : {
 	file: true,
@@ -213,6 +214,15 @@ if (tests.urlproperties) jsh.shell.jrunscript({
 	arguments: [
 		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?bitbucket=slime@local:jsh/launcher/main.js')",
 		"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js"
+	]
+});
+if (tests.filename) jsh.shell.jrunscript({
+	properties: {
+		"http.proxyHost": "127.0.0.1",
+		"http.proxyPort": String(tomcat.port)
+	},
+	arguments: [
+		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/jrunscript/raw/local/api.js?test=filename')",
 	]
 });
 tomcat.stop();
