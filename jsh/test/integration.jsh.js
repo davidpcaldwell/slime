@@ -10,14 +10,6 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	Required in scope:
-//	jsh/launcher/rhino/api.rhino.js must be run in global scope
-//
-//	(optional, can use environment variable) JSH_HOME: Packages.java.io.File representing home of built shell
-//	(optional, can use environment variable) SLIME_SRC: Packages.java.io.File representing source directory
-//	(optional) LAUNCHER_COMMAND: the command to use when launching a shell
-//	(optional) compileOptions: array of string to use when compiling Java code
-
 if (jsh.test && jsh.test.requireBuiltShell) {
 	jsh.test.requireBuiltShell();
 }

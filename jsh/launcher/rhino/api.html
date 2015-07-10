@@ -72,8 +72,7 @@ END LICENSE
 							-->
 							<!--	<h2>Profiler parameters</h2>	-->
 							<div jsapi:reference="getApi('../../../jsh/loader/profiler.api.html').getElement('parameters')">
-								The semantics of
-								profiler parameters are defined in the
+								Profiler parameters are defined in the
 								<a href="../../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
 							</div>
 						</div>
@@ -107,8 +106,9 @@ END LICENSE
 					<!--	Used in jsh/test/launcher/suite.jsh.js	-->
 					<td>jsh.engine</td>
 					<td>
-						Specifies the location of a <code>java.util.logging</code> properties file to use in configuring logging
-						for the Java virtual machine running the shell.
+						If set to <code>rhino</code>, the shell will be run using Rhino as the JavaScript engine. If set to
+						<code>nashorn</code>, Nashorn will be used. If the selected engine is not present, the shell will not
+						be run.
 					</td>
 				</tr>
 				<tr>
