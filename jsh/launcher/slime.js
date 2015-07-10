@@ -105,10 +105,8 @@ $api.slime = (function(was) {
 						var string = $api.engine.readUrl(url.toExternalForm());
 						var lines = string.split("\n");
 						for (var i=0; i<lines.length; i++) {
-							if (/[\/\\]$/.test(lines[i])) {
-								//	Replace Windows \ with /
-								//	TODO	see issue #186
-								getSourceFilesUnder(new Packages.java.net.URL(url,lines[i].replace(/\\/g,"/")), rv);
+							if (/\/$/.test(lines[i])) {
+								getSourceFilesUnder(new Packages.java.net.URL(url,lines[i]), rv);
 							} else {
 								if (/\.java$/.test(lines[i])) {
 									rv.push(new Packages.java.net.URL(url, lines[i]));

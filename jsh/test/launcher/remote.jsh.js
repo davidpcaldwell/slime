@@ -82,10 +82,9 @@ tomcat.map({
 													string: (function() {
 														return pathname.directory.list({ type: pathname.directory.list.ENTRY }).map(function(entry) {
 															//Packages.java.lang.System.err.println("Path: " + entry.path);
-															return entry.path;
+															return entry.path.replace(String(Packages.java.io.File.separator),"/");
 														}).filter(function(path) {
-															//	TODO	see issue #186
-															return path != ".hg" + String(Packages.java.io.File.separator);
+															return path != ".hg/";
 														}).join("\n");
 													})()
 												}
