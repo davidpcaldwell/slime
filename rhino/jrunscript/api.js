@@ -692,30 +692,42 @@
 		nashorn: null,
 		rhino: $engine.classpath
 	});
-	$api.rhino.download = function(url) {
-		if (!url) url = "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip";
-		var _url = new Packages.java.net.URL(url);
-		println("Downloading Rhino from " + _url);
-		var _connection = _url.openConnection();
-		var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
-		var _entry;
-		var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
-		tmpdir["delete"]();
-		tmpdir.mkdirs();
-		if (!tmpdir.exists()) {
-			throw new Error("Failed to create temporary file.");
-		}
-		var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
-		while(_entry = _zipstream.getNextEntry()) {
-			var name = String(_entry.getName());
-			var path = name.split("/");
-			if (path[1] == "js.jar") {
-				var out = new Packages.java.io.FileOutputStream(tmprhino);
-				$api.io.copy(_zipstream,out);
+	$api.rhino.download = function(version) {
+		if (!version) version = "mozilla/1.7R3";
+		var sources = {
+			"mozilla/1.7R3": {
+				url: "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip",
+				format: "dist"
 			}
+		};
+		var source = sources[version];
+		if (!source) throw new Error("No known way to retrieve Rhino version " + version);
+		if (source.format == "dist") {
+			var _url = new Packages.java.net.URL(source.url);
+			println("Downloading Rhino from " + _url);
+			var _connection = _url.openConnection();
+			var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
+			var _entry;
+			var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
+			tmpdir["delete"]();
+			tmpdir.mkdirs();
+			if (!tmpdir.exists()) {
+				throw new Error("Failed to create temporary file.");
+			}
+			var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
+			while(_entry = _zipstream.getNextEntry()) {
+				var name = String(_entry.getName());
+				var path = name.split("/");
+				if (path[1] == "js.jar") {
+					var out = new Packages.java.io.FileOutputStream(tmprhino);
+					$api.io.copy(_zipstream,out);
+				}
+			}
+			println("Downloaded Rhino to " + tmprhino);
+			return tmprhino;
+		} else {
+			throw new Error("Unsupported Rhino format: version=" + version + " format=" + source.format);
 		}
-		println("Downloaded Rhino to " + tmprhino);
-		return tmprhino;
 	}
 
 	$api.shell = {};

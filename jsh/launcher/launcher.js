@@ -578,7 +578,7 @@ try {
 
 		this.shellClasspath = function() {
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
-			if (rhino && rhino.length) rhino = new Classpath(rhino);
+			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			var LOADER_CLASSES = $api.io.tmpdir();
 			if ($api.slime.src.File) {
 				var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));

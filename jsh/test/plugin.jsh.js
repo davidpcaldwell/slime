@@ -127,6 +127,8 @@ plugin({
 				}
 				if (parameters.options.rhino) {
 					args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
+				} else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+					args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
 				}
 				args.push("-Djsh.build.notest=true");
 				args.push("-Djsh.build.nodoc=true");

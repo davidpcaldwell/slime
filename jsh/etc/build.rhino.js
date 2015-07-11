@@ -505,6 +505,11 @@ if (!destination.installer) {
 	if (getSetting("jsh.build.downloads")) {
 		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
 	}
+	if (getSetting("jsh.build.rhino.jar")) {
+		subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.build.rhino.jar");
+	} else if (getSetting("jsh.engine.rhino.classpath")) {
+		subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.engine.rhino.classpath");
+	}
 //	subenv.JSH_SLIME_SRC = slime.src.toString();
 	command.push({ env: subenv });
 	var status = runCommand.apply(this,command);

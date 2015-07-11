@@ -159,17 +159,18 @@ if (false) {
 			return new $api.jsh.Unbuilt(rhino);
 		}
 	})();
-	if (!shell.rhino) {
-		delete $api.jsh.engines.rhino;
-	}
 	if (!new javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 		delete $api.jsh.engines.nashorn;
 	}
 	var _urls = [];
 	var defaultEngine = (function() {
-		if ($api.jsh.engines.rhino) return "rhino";
+		if (shell.rhino) return "rhino";
 		if ($api.jsh.engines.nashorn) return "nashorn";
-		return null;
+		//	Download Rhino
+		var _file = $api.rhino.download();
+		shell.rhino = [_file.toURI().toURL()];
+		$api.slime.settings.set("jsh.engine.rhino.classpath", String(_file.getCanonicalPath()));
+		return "rhino";
 	})();
 	if (!defaultEngine) {
 		Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
