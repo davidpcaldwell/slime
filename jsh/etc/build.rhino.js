@@ -45,19 +45,36 @@
 //	jsh.build.javassist.jar (JSH_BUILD_JAVASSIST_JAR): if set, profiler is built using Javassist.
 
 //	Policy decision to support 1.6 and up
-var JAVA_VERSION = "1.6";
-
-var debug = $api.debug;
-var console = $api.console;
-var platform = new function() {
-	this.jdk = $api.jdk;
-};
-if (!$api.slime) {
-	$api.script.resolve("../launcher/slime.js").load();
+jsh.script.loader = new jsh.script.Loader("../../");
+var THIS = {};
+jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
+THIS.$api.arguments = jsh.script.arguments;
+//jsh.shell.echo("THIS.$api = " + THIS.$api);
+//jsh.shell.echo("THIS.$api = " + Object.keys(THIS.$api));
+if (!THIS.$api.slime) {
+//	jsh.shell.echo("io = " + THIS.$api.io);
+	THIS.$api.script = new THIS.$api.Script({ file: jsh.script.file.getRelativePath("../../jsh/launcher/slime.js").java.adapt() });
+	jsh.script.loader.run("jsh/launcher/slime.js", { $api: THIS.$api }, THIS);
+//	jsh.shell.echo("slime = " + THIS.$api.slime);
+//	jsh.shell.echo("slime = " + Object.keys(THIS.$api.slime));
 }
 //	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
 //			ability to build modules
-$api.script.resolve("api.rhino.js").load();
+jsh.script.loader.run("jsh/etc/api.rhino.js", { $api: THIS.$api, platform: platform, File: Packages.java.io.File }, THIS);
+var platform = THIS.platform;
+//jsh.shell.echo("Platform keys = " + Object.keys(platform));
+//$api.script.resolve("api.rhino.js").load();
+
+var JAVA_VERSION = "1.6";
+
+var debug = THIS.$api.debug;
+var console = THIS.$api.console;
+var colon = String(Packages.java.io.File.pathSeparator);
+var env = jsh.shell.environment;
+
+(function($api,JAVA_HOME) {
+//jsh.shell.echo("$api = " + $api);
+//jsh.shell.echo("$api = " + Object.keys($api));
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
 
@@ -348,7 +365,8 @@ platform.io.copyFile($api.slime.src.getFile("jsh/loader"), new File(JSH_HOME,"sc
 
 console("Creating bundled modules ...")
 //	TODO	remove or modify this; appears to redefine the slime global object
-load(String($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath()));
+var slime = jsh.script.loader.file("jsh/tools/slime.js").slime;
+//load(String($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath()));
 var tmpModules = new File(tmp,"modules");
 tmpModules.mkdir();
 var MODULE_CLASSPATH = (function() {
@@ -382,7 +400,7 @@ var module = function(path,compile) {
 	console("Created module file: " + to.getCanonicalPath());
 };
 
-var modules = eval(readFile($api.slime.src.getFile("jsh/etc/api.js"))).environment("jsh");
+var modules = eval($api.engine.readFile($api.slime.src.getFile("jsh/etc/api.js"))).environment("jsh");
 
 modules.forEach(function(item) {
 	if (item.module) {
@@ -416,8 +434,10 @@ JSH_PLUGINS.mkdir();
 //	copyFile(new File(SLIME_SRC, "jsh/loader/plugin.api.html"))
 
 var LAUNCHER_COMMAND = [
-	String(new File(JAVA_HOME,"bin/java").getCanonicalPath()),
-	"-jar",String(new File(JSH_HOME,"jsh.jar").getCanonicalPath())
+	String(jsh.shell.java.jrunscript),
+	String(new File(JSH_HOME,"jsh.js").getCanonicalPath())
+//	String(new File(JAVA_HOME,"bin/java").getCanonicalPath()),
+//	"-jar",String(new File(JSH_HOME,"jsh.jar").getCanonicalPath())
 ];
 
 console("Creating tools ...");
@@ -512,7 +532,7 @@ if (!destination.installer) {
 	}
 //	subenv.JSH_SLIME_SRC = slime.src.toString();
 	command.push({ env: subenv });
-	var status = runCommand.apply(this,command);
+	var status = $api.engine.runCommand.apply(this,command);
 	if (status != 0) {
 		throw new Error("Exit status " + status + " from " + command.slice(0,-1).join(" "));
 	}
@@ -593,7 +613,7 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		}).join(" "));
 		console("JSAPI environment:");
 		console(JSON.stringify(subenv));
-		var status = runCommand.apply(this,command);
+		var status = $api.engine.runCommand.apply(this,command);
 		if (status) {
 			throw new Error("Failed: " + command.join(" "));
 		}
@@ -609,7 +629,7 @@ if (!getSetting("jsh.build.notest")) {
 		console("Running integration tests at " + script.getCanonicalPath() + " ...");
 		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
 		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
-		var status = runCommand.apply(this,command);
+		var status = $api.engine.runCommand.apply(this,command);
 		if (status != 0) {
 			throw new Error("Integration tests failed: " + command.join(" "));
 		}
@@ -635,5 +655,6 @@ if (destination.installer) {
 	if (!RHINO_LIBRARIES) {
 		command.push("-norhino");
 	}
-	runCommand.apply(this,command);
+	$api.engine.runCommand.apply(this,command);
 }
+}).call(this,THIS.$api,THIS.JAVA_HOME);

@@ -42,8 +42,8 @@ jsh.unit.integration({
 				command: jsh.shell.java.jrunscript,
 				arguments: propertyArguments.concat([
 					jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-					jsh.shell.jsh.src.getRelativePath("jsh/etc/unbuilt.rhino.js"),
-					"build",
+					"jsh",
+					jsh.shell.jsh.src.getRelativePath("jsh/etc/build.rhino.js"),
 					tmpdir
 				]),
 				environment: jsh.js.Object.set({

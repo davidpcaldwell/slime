@@ -134,6 +134,7 @@ plugin({
 				args.push("-Djsh.build.nodoc=true");
 				var SLIME = (p && p.src) ? p.src : jsh.script.file.parent.parent.parent;
 				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
+				args.push("jsh");
 				args.push(SLIME.getRelativePath("jsh/etc/build.rhino.js"));
 				args.push(JSH_HOME);
 				if (parameters.options.native) {

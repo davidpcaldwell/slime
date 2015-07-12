@@ -12,6 +12,9 @@
 //	END LICENSE
 
 //	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
+var $api = this.$api;
+//Packages.java.lang.System.out.println("$api.io = " + $api.io);
+//Packages.java.lang.System.out.println("$api = " + Object.keys($api));
 if (typeof(Packages.inonit.script.runtime.io.Streams) == "function") {
 	$api.io.copy = function(i,o) {
 		if (!arguments.callee.delegate) {
@@ -135,13 +138,25 @@ $api.slime = (function(was) {
 		rv.launcher = new function() {
 			this.compile = function(p) {
 				var to = (p && p.to) ? p.to : $api.io.tmpdir();
-				$api.java.install.compile([
+//				Packages.java.lang.System.err.println("to = " + to);
+//				Packages.java.lang.System.err.println("rhino/system/java = " + rv.src.getPath("rhino/system/java"));
+				var args = [
 					"-Xlint:deprecation",
 					"-Xlint:unchecked",
 					"-d", to,
 					"-sourcepath", rv.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + rv.src.getPath("jsh/launcher/java"),
 					rv.src.getPath("jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
-				]);
+				];
+				args.push.apply(args,rv.src.getSourceFilesUnder(rv.src.getFile("rhino/system/java")))
+//				Packages.java.lang.System.err.println("args = " + args.join(" "));
+				$api.java.install.compile(args);
+//				$api.java.install.compile([
+//					"-Xlint:deprecation",
+//					"-Xlint:unchecked",
+//					"-d", to,
+//					"-sourcepath", rv.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + rv.src.getPath("jsh/launcher/java"),
+//					rv.src.getPath("jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
+//				]);
 				if (!p || !p.to) return to;
 			};
 

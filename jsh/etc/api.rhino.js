@@ -220,9 +220,10 @@ var getSystemProperty = function(name) {
 	}
 }
 
-var JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
+this.JAVA_HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"));
+var JAVA_HOME = this.JAVA_HOME;
 
-var platform = new function() {
+this.platform = new function() {
 	var uname = function() {
 		try {
 			var mode = { output: "" };
@@ -278,6 +279,7 @@ var platform = new function() {
 		}
 	}
 };
+var platform = this.platform;
 platform.io = {};
 platform.io.write = function(to,writerFunction) {
 	var writer = new Packages.java.io.PrintWriter(new Packages.java.io.FileWriter(to));

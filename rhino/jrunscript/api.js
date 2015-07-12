@@ -173,6 +173,7 @@
 	//			scenario when an InputStream is provided: even when underlying process terminates, command does not return
 	//	TODO	this has the potential to run really slowly when written in JavaScript
 	$api.engine.runCommand = function() {
+//		Packages.java.lang.System.err.println("Running a command ...");
 		var Buffer = function(initial) {
 			var _bytes = new Packages.java.io.ByteArrayOutputStream();
 
@@ -291,6 +292,7 @@
 			return t;
 		};
 		var spoolName = Array.prototype.join.call(arguments, ",");
+//		Packages.java.lang.System.err.println("Forking a command ... " + Array.prototype.slice.call(arguments).join(" "));
 		var delegate = _builder.start();
 		var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, "stdout: " + spoolName);
 		var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
@@ -851,9 +853,10 @@
 	};
 
 	this.$api = $api;
-})();
+}).call(this);
 
 (function() {
+	var $api = this.$api;
 	if (Packages.java.lang.System.getProperty("inonit.jrunscript.api.passive")) {
 		return;
 	}
@@ -922,4 +925,4 @@
 	} else {
 		//	if there are no arguments, we will settle for putting $api in the scope
 	}
-})();
+}).call(this);
