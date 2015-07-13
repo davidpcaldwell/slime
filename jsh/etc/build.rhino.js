@@ -203,22 +203,17 @@ if (!platform.jdk.compile) {
 	System.exit(1);
 }
 
+destination.shell.createDirectory({
+	ifExists: function(dir) {
+		dir.remove();
+		return true;
+	},
+	recursive: true
+});
+
 var JSH_HOME = destination.shell.java.adapt();
 debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 console("Building to: " + JSH_HOME.getCanonicalPath());
-
-var remove = function(file) {
-	if (!file.exists()) return;
-	if (file.isDirectory()) {
-		var files = file.listFiles();
-		for (var i=0; i<files.length; i++) {
-			remove(files[i]);
-		}
-	}
-	file["delete"]();
-}
-remove(JSH_HOME);
-JSH_HOME.mkdirs();
 
 var RHINO_LIBRARIES = (function() {
 	if (Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar")) {
@@ -611,7 +606,6 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 		}).join(" "));
 		console("JSAPI environment:");
 		console(JSON.stringify(command[command.length-1].env));
-		console("Start:");
 		var status = $api.engine.runCommand.apply(this,command);
 		if (status) {
 			throw new Error("Failed: " + command.join(" "));
