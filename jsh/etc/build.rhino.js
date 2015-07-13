@@ -85,6 +85,42 @@ var getSetting = function(systemPropertyName) {
 
 if (getSetting("jsh.build.debug")) debug.on = true;
 
+var destination = (function(args) {
+	//	TODO	should normalize Cygwin paths if Cygwin support is added
+	var rv;
+
+	var Installer = function(to) {
+		this.installer = new Packages.java.io.File(to);
+		this.shell = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+		this.arguments = [];
+	};
+
+	var Destination = function(to) {
+		this.shell = jsh.file.Pathname(to);
+		this.arguments = [];
+	};
+
+	for (var i=0; i<args.length; i++) {
+		if (!rv && args[i] == "-installer") {
+			rv = new Installer(args[++i]);
+		} else if (!rv) {
+			rv = new Destination(args[i]);
+		} else {
+			rv.arguments.push(args[i]);
+		}
+	}
+
+	if (!rv) {
+		console("Usage:");
+		console("build.rhino.js <build-destination>");
+		console("-or-");
+		console("build.rhino.js -installer <installer-jar-location>");
+		jsh.shell.exit(1);
+	} else {
+		return rv;
+	}
+})(jrunscript.$api.arguments);
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -167,49 +203,7 @@ if (!platform.jdk.compile) {
 	System.exit(1);
 }
 
-var destination = (function() {
-	var toNativePath = function(path) {
-		if (platform.cygwin) {
-			path = platform.cygwin.cygpath.windows(path);
-		}
-		return path;
-	}
-
-	var rv;
-
-	var Installer = function(to) {
-		this.installer = new File(toNativePath(to));
-		this.shell = platform.io.createTemporaryDirectory();
-		this.arguments = [];
-	};
-
-	var Destination = function(to) {
-		this.shell = new File(toNativePath(to));
-		this.arguments = [];
-	};
-
-	for (var i=0; i<arguments.length; i++) {
-		if (!rv && arguments[i] == "-installer") {
-			rv = new Installer(arguments[++i]);
-		} else if (!rv) {
-			rv = new Destination(arguments[i]);
-		} else {
-			rv.arguments.push(arguments[i]);
-		}
-	}
-
-	if (!rv) {
-		console("Usage:");
-		console("build.rhino.js <build-destination>");
-		console("-or-");
-		console("build.rhino.js -installer <installer-jar-location>");
-		System.exit(1);
-	} else {
-		return rv;
-	}
-}).apply(this,$api.arguments);
-
-var JSH_HOME = destination.shell;
+var JSH_HOME = destination.shell.java.adapt();
 debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 console("Building to: " + JSH_HOME.getCanonicalPath());
 
