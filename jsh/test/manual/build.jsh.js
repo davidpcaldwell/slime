@@ -23,6 +23,8 @@ var parameters = jsh.script.getopts({
 });
 
 var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+var INSTALLER = jsh.shell.TMPDIR.createTemporary({ prefix: "jsh-install", suffix: ".jar" });
+var INSTALLED = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 jsh.shell.jsh({
 	fork: true,
@@ -33,6 +35,22 @@ jsh.shell.jsh({
 	},
 	script: SLIME.getFile("jsh/etc/build.rhino.js"),
 	arguments: [TMP]
+});
+
+jsh.shell.jsh({
+	fork: true,
+	properties: {
+		"jsh.engine.rhino.classpath": parameters.options.rhino,
+		"jsh.build.notest": "true",
+		"jsh.build.nodoc": "true"
+	},
+	script: SLIME.getFile("jsh/etc/build.rhino.js"),
+	arguments: ["-installer", INSTALLER]
+});
+
+jsh.shell.java({
+	jar: INSTALLER,
+	arguments: ["-to", INSTALLED, "-replace"]
 });
 
 var echo = jsh.shell.jsh({
@@ -54,6 +72,23 @@ top.add({
 	scenario: new jsh.unit.Scenario({
 		execute: function(scope) {
 			var verify = new jsh.unit.Verify(scope);
+			var output = echo.stdio.output.split(String(Packages.java.lang.System.getProperty("line.separator")));
+			verify(output)[0].is("true");
+		}
+	})
+});
+
+top.add({
+	scenario: new jsh.unit.Scenario({
+		execute: function(scope) {
+			var verify = new jsh.unit.Verify(scope);
+			var echo = jsh.shell.jsh({
+				shell: INSTALLED,
+				script: SLIME.getFile("jsh/test/jsh.shell/echo.jsh.js"),
+				stdio: {
+					output: String
+				},
+			});
 			var output = echo.stdio.output.split(String(Packages.java.lang.System.getProperty("line.separator")));
 			verify(output)[0].is("true");
 		}
