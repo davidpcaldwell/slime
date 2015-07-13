@@ -61,8 +61,7 @@ if (!jrunscript.$api.slime) {
 }
 //	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
 //			ability to build modules
-jsh.script.loader.run("jsh/etc/api.rhino.js", { $api: jrunscript.$api, platform: platform, File: Packages.java.io.File }, jrunscript);
-var platform = jrunscript.platform;
+jsh.script.loader.run("jsh/etc/api.rhino.js", { $api: jrunscript.$api, File: Packages.java.io.File }, jrunscript);
 //jsh.shell.echo("Platform keys = " + Object.keys(platform));
 //$api.script.resolve("api.rhino.js").load();
 
@@ -86,7 +85,11 @@ var getSetting = function(systemPropertyName) {
 
 if (getSetting("jsh.build.debug")) debug.on = true;
 
-(function($api,JAVA_HOME) {
+(function() {
+	var $api = jrunscript.$api;
+	var JAVA_HOME = jrunscript.JAVA_HOME;
+	var platform = jrunscript.platform;
+
 	jrunscript.$api.jsh = new function() {
 		this.zip = function(from,to,filters) {
 			if (!filters) filters = [];
@@ -153,7 +156,6 @@ if (getSetting("jsh.build.debug")) debug.on = true;
 		};
 	}
 var colon = String(Packages.java.io.File.pathSeparator);
-var env = jsh.shell.environment;
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
 
@@ -237,7 +239,7 @@ var RHINO_LIBRARIES = (function() {
 		]
 	}
 	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-		//	TODO	Used to allow XMLBeans here if env.XMLBEANS_HOME defined
+		//	TODO	Used to allow XMLBeans here if jsh.shell.environment.XMLBEANS_HOME defined
 		return (function() {
 			//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
 			//	like an un-jarred version
@@ -463,8 +465,8 @@ if (getSetting("jsh.build.javassist.jar")) {
 		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
 		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
 		var subenv = {};
-		for (var x in env) {
-			subenv[x] = env[x];
+		for (var x in jsh.shell.environment) {
+			subenv[x] = jsh.shell.environment[x];
 		}
 		subenv.JSH_PLUGINS = "";
 		command.push({
@@ -519,9 +521,9 @@ if (!destination.installer) {
 	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command = command.concat(destination.arguments);
 	var subenv = {};
-	for (var x in env) {
+	for (var x in jsh.shell.environment) {
 		if (!/^JSH_/.test(x)) {
-			subenv[x] = env[x];
+			subenv[x] = jsh.shell.environment[x];
 		}
 	}
 	if (getSetting("jsh.build.downloads")) {
@@ -542,9 +544,9 @@ if (!destination.installer) {
 
 var setTestEnvironment = function(command) {
 	var subenv = {};
-	for (var x in env) {
+	for (var x in jsh.shell.environment) {
 		if (!/^JSH_/.test(x)) {
-			subenv[x] = env[x];
+			subenv[x] = jsh.shell.environment[x];
 		}
 	}
 	if (getSetting("jsh.build.tomcat.home")) {
@@ -555,12 +557,12 @@ var setTestEnvironment = function(command) {
 		console("Tomcat not found (use environment variable JSH_BUILD_TOMCAT_HOME or system property jsh.build.tomcat.home)");
 		console("Tests for HTTP client and server will not be run.");
 	}
-	if (env.JSH_BUILD_DEBUG) {
+	if (jsh.shell.environment.JSH_BUILD_DEBUG) {
 		subenv.JSH_LAUNCHER_DEBUG = "true";
 		subenv.JSH_SCRIPT_DEBUGGER = "rhino";
 	}
-	if (env.JSH_ENGINE) {
-		subenv.JSH_ENGINE = env.JSH_ENGINE;
+	if (jsh.shell.environment.JSH_ENGINE) {
+		subenv.JSH_ENGINE = jsh.shell.environment.JSH_ENGINE;
 	}
 	subenv.JSH_PLUGINS = "";
 	command.push({
@@ -659,4 +661,4 @@ if (destination.installer) {
 	}
 	$api.engine.runCommand.apply(this,command);
 }
-}).call(this,jrunscript.$api,jrunscript.JAVA_HOME);
+}).call(this);
