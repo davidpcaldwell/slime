@@ -130,6 +130,26 @@ var destination = (function(args) {
 
 var SLIME = jsh.script.file.parent.parent.parent;
 
+var RHINO_LIBRARIES = (function() {
+	//	TODO	figure out test coverage here
+	if (getSetting("jsh.build.rhino.jar")) {
+		return jsh.file.Searchpath([ jsh.file.Pathname(getSetting("jsh.build.rhino.jar")) ]);
+	}
+	if (getSetting("jsh.engine.rhino.classpath")) {
+		//	TODO	assumes only one path component
+		return jsh.file.Searchpath([ jsh.file.Pathname(getSetting("jsh.engine.rhino.classpath")) ]);
+	}
+	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
+		//	TODO	Used to allow XMLBeans here if jsh.shell.environment.XMLBEANS_HOME defined
+		return (function() {
+			//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
+			//	like an un-jarred version
+			var _uri = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toURI();
+			return jsh.file.Searchpath([ String(new Packages.java.io.File(_uri).getCanonicalPath()) ]);
+		})();
+	}
+})();
+
 console("Creating directories ...");
 ["lib","script","script/launcher","modules","src"].forEach(function(path) {
 	destination.shell.getRelativePath(path).createDirectory();
@@ -140,6 +160,17 @@ SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath(
 ["slime.js","launcher.js","main.js"].forEach(function(name) {
 	SLIME.getFile("jsh/launcher/" + name).copy(destination.shell);
 });
+
+if (RHINO_LIBRARIES) {
+	console("Copying Rhino libraries ...");
+	//	TODO	if multiple Rhino libraries and none named js.jar, built shell will not use Rhino
+	RHINO_LIBRARIES.pathnames.forEach( function(pathname,index,array) {
+		var name = (array.length == 1) ? "js.jar" : pathname.basename;
+		pathname.file.copy(destination.shell.getSubdirectory("lib").getRelativePath(name));
+	});
+} else {
+	console("Rhino libraries not present; building for Nashorn only.");
+}
 
 (function() {
 	var $api = jrunscript.$api;
@@ -227,46 +258,12 @@ var JSH_HOME = destination.shell.pathname.java.adapt();
 debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 console("Building to: " + JSH_HOME.getCanonicalPath());
 
-var RHINO_LIBRARIES = (function() {
-	//	TODO	figure out test coverage here
-	if (Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar")) {
-		return [
-			new File(Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar"))
-		]
-	}
-	if (getSetting("jsh.engine.rhino.classpath")) {
-		//	TODO	assumes only one path component
-		return [
-			new File(getSetting("jsh.engine.rhino.classpath"))
-		]
-	}
-	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-		//	TODO	Used to allow XMLBeans here if jsh.shell.environment.XMLBEANS_HOME defined
-		return (function() {
-			//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
-			//	like an un-jarred version
-			var _uri = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toURI();
-			return [ new File(_uri) ];
-		})();
-	}
-})();
-
 //	TODO	Consider adding XMLBeans back in
 /*
 #if [ -z "$XMLBEANS_HOME" ]; then
 #	echo "No XMLBEANS_HOME specified; not bundling XMLBeans."
 #fi
 */
-
-if (RHINO_LIBRARIES) {
-	console("Copying Rhino libraries ...");
-	RHINO_LIBRARIES.forEach( function(file,index,array) {
-		var name = (array.length == 1) ? "js.jar" : file.getName();
-		platform.io.copyFile(file,new File(JSH_HOME,"lib/" + name));
-	});
-} else {
-	console("Rhino libraries not present; building for Nashorn only.");
-}
 
 var tmp = platform.io.createTemporaryDirectory();
 
@@ -286,13 +283,8 @@ if (RHINO_LIBRARIES) {
 }
 //	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
 var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
-var JSH_CLASSPATH = (function() {
-	if (RHINO_LIBRARIES) {
-		return RHINO_LIBRARIES.map(function(file) { return String(file.getCanonicalPath()); }).join(colon);
-	} else {
-		return "";
-	}
-})();
+//	TODO	test coverage for Nashorn
+var JSH_CLASSPATH = (RHINO_LIBRARIES) ? RHINO_LIBRARIES.toString() : "";
 var javacArguments = compileOptions.concat([
 	"-d", tmpClasses.getCanonicalPath(),
 	"-classpath", JSH_CLASSPATH
@@ -361,7 +353,7 @@ tmpModules.mkdir();
 var MODULE_CLASSPATH = (function() {
 	var files = [];
 	if (RHINO_LIBRARIES) {
-		files = files.concat(RHINO_LIBRARIES);
+		files = files.concat(RHINO_LIBRARIES.pathnames.map(function(pathname) { return pathname.java.adapt(); }));
 	}
 	files.push(new File(JSH_HOME,"lib/jsh.jar"));
 	return files.map(function(_file) {
