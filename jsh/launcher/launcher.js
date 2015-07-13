@@ -112,6 +112,7 @@
 //	TODO	Provide runtime access to plugin path, with jsh.shell.jsh.plugins?
 
 try {
+	var $api = this.$api;
 	if (!this.$api.slime) {
 		$api.script.resolve("slime.js").load();
 		$api.log("Loaded slime.js: src=" + $api.slime.src);

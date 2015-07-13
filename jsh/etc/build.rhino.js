@@ -52,12 +52,20 @@ var jrunscript = (function() {
 	THIS.$api.arguments = jsh.script.arguments;
 	return THIS;
 })();
+
+var loadLauncherScript = function(name) {
+	jrunscript.$api.script = new jrunscript.$api.Script({ file: jsh.script.file.getRelativePath("../../jsh/launcher/" + name).java.adapt() });
+	jsh.script.loader.run("jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
+}
 if (!jrunscript.$api.slime) {
-//	jsh.shell.echo("io = " + THIS.$api.io);
-	jrunscript.$api.script = new jrunscript.$api.Script({ file: jsh.script.file.getRelativePath("../../jsh/launcher/slime.js").java.adapt() });
-	jsh.script.loader.run("jsh/launcher/slime.js", { $api: jrunscript.$api }, jrunscript);
-//	jsh.shell.echo("slime = " + THIS.$api.slime);
-//	jsh.shell.echo("slime = " + Object.keys(THIS.$api.slime));
+	loadLauncherScript("slime.js");
+}
+var debug = jrunscript.$api.debug;
+loadLauncherScript("launcher.js");
+jrunscript.launcher = {};
+jrunscript.launcher.buildLoader = function(rhino) {
+	throw new Error("Unimplemented; rhino needs to be some special type in the launcher script, like a classpath");
+	var unbuilt = new jrunscript.$api.jsh.Unbuilt(rhino);
 }
 //	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
 //			ability to build modules
@@ -68,7 +76,6 @@ jsh.script.loader.run("jsh/etc/api.rhino.js", { $api: jrunscript.$api, File: Pac
 //	Policy decision to support 1.6 and up
 var JAVA_VERSION = "1.6";
 
-var debug = jrunscript.$api.debug;
 var console = jrunscript.$api.console;
 
 var getSetting = function(systemPropertyName) {
