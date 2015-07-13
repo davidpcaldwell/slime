@@ -90,7 +90,7 @@ var destination = (function(args) {
 	var rv;
 
 	var Installer = function(to) {
-		this.installer = new Packages.java.io.File(to);
+		this.installer = jsh.file.Pathname(to);
 		this.shell = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 		this.arguments = [];
 	};
@@ -610,7 +610,8 @@ if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSet
 			return token;
 		}).join(" "));
 		console("JSAPI environment:");
-		console(JSON.stringify(subenv));
+		console(JSON.stringify(command[command.length-1].env));
+		console("Start:");
 		var status = $api.engine.runCommand.apply(this,command);
 		if (status) {
 			throw new Error("Failed: " + command.join(" "));
@@ -640,7 +641,7 @@ if (destination.installer) {
 	//	TODO	allow getting named resource as stream from within jsh
 	//	TODO	allow jsh.file.unzip to take a stream as its source
 	console("Build installer to " + destination.installer);
-	var zipdir = platform.io.createTemporaryDirectory();
+	var zipdir = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.java.adapt();
 	var build = new File(zipdir,"build.zip");
 	console("Build build.zip to " + build.getCanonicalPath());
 	jrunscript.$api.jsh.zip(JSH_HOME,build);
@@ -649,7 +650,7 @@ if (destination.installer) {
 	command.push(getPath(new File(JSH_HOME,"tools/package.jsh.js")));
 	command.push("-script",getPath(new File(JSH_HOME,"etc/install.jsh.js")));
 	command.push("-file","build.zip=" + getPath(build));
-	command.push("-to",getPath(destination.installer));
+	command.push("-to",String(destination.installer));
 	if (!RHINO_LIBRARIES) {
 		command.push("-norhino");
 	}
