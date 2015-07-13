@@ -46,29 +46,30 @@
 
 //	Policy decision to support 1.6 and up
 jsh.script.loader = new jsh.script.Loader("../../");
-var THIS = {};
-jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
-THIS.$api.arguments = jsh.script.arguments;
-//jsh.shell.echo("THIS.$api = " + THIS.$api);
-//jsh.shell.echo("THIS.$api = " + Object.keys(THIS.$api));
-if (!THIS.$api.slime) {
+var jrunscript = (function() {
+	var THIS = {};
+	jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
+	THIS.$api.arguments = jsh.script.arguments;
+	return THIS;
+})();
+if (!jrunscript.$api.slime) {
 //	jsh.shell.echo("io = " + THIS.$api.io);
-	THIS.$api.script = new THIS.$api.Script({ file: jsh.script.file.getRelativePath("../../jsh/launcher/slime.js").java.adapt() });
-	jsh.script.loader.run("jsh/launcher/slime.js", { $api: THIS.$api }, THIS);
+	jrunscript.$api.script = new jrunscript.$api.Script({ file: jsh.script.file.getRelativePath("../../jsh/launcher/slime.js").java.adapt() });
+	jsh.script.loader.run("jsh/launcher/slime.js", { $api: jrunscript.$api }, jrunscript);
 //	jsh.shell.echo("slime = " + THIS.$api.slime);
 //	jsh.shell.echo("slime = " + Object.keys(THIS.$api.slime));
 }
 //	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
 //			ability to build modules
-jsh.script.loader.run("jsh/etc/api.rhino.js", { $api: THIS.$api, platform: platform, File: Packages.java.io.File }, THIS);
-var platform = THIS.platform;
+jsh.script.loader.run("jsh/etc/api.rhino.js", { $api: jrunscript.$api, platform: platform, File: Packages.java.io.File }, jrunscript);
+var platform = jrunscript.platform;
 //jsh.shell.echo("Platform keys = " + Object.keys(platform));
 //$api.script.resolve("api.rhino.js").load();
 
 var JAVA_VERSION = "1.6";
 
-var debug = THIS.$api.debug;
-var console = THIS.$api.console;
+var debug = jrunscript.$api.debug;
+var console = jrunscript.$api.console;
 var colon = String(Packages.java.io.File.pathSeparator);
 var env = jsh.shell.environment;
 
@@ -657,4 +658,4 @@ if (destination.installer) {
 	}
 	$api.engine.runCommand.apply(this,command);
 }
-}).call(this,THIS.$api,THIS.JAVA_HOME);
+}).call(this,jrunscript.$api,jrunscript.JAVA_HOME);
