@@ -96,10 +96,7 @@ top.add({
 });
 
 top.run();
-//	TODO	add run of shell to verify it is working
-
 //	TODO	add test case for Nashorn
-//	TODO	add test case for installer
 //	TODO	add test case for building shell over HTTP
 //	TODO	add test case for building installer over HTTP
 
