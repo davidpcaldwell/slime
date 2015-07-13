@@ -91,14 +91,21 @@ var destination = (function(args) {
 
 	var Installer = function(to) {
 		this.installer = jsh.file.Pathname(to);
-		this.shell = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+		this.shell = jsh.shell.TMPDIR.createTemporary({ directory: true });
 		this.arguments = [];
 	};
 
 	var Destination = function(to) {
-		this.shell = jsh.file.Pathname(to);
+		//	TODO	what should happen if destination directory exists?
+		this.shell = jsh.file.Pathname(to).createDirectory({
+			ifExists: function(dir) {
+				dir.remove();
+				return true;
+			}
+		});
 		this.arguments = [];
 	};
+
 
 	for (var i=0; i<args.length; i++) {
 		if (!rv && args[i] == "-installer") {
@@ -120,6 +127,8 @@ var destination = (function(args) {
 		return rv;
 	}
 })(jrunscript.$api.arguments);
+
+var SLIME = jsh.script.file.parent.parent.parent;
 
 (function() {
 	var $api = jrunscript.$api;
@@ -203,19 +212,12 @@ if (!platform.jdk.compile) {
 	System.exit(1);
 }
 
-destination.shell.createDirectory({
-	ifExists: function(dir) {
-		dir.remove();
-		return true;
-	},
-	recursive: true
-});
-
-var JSH_HOME = destination.shell.java.adapt();
+var JSH_HOME = destination.shell.pathname.java.adapt();
 debug("JSH_HOME = " + JSH_HOME.getCanonicalPath());
 console("Building to: " + JSH_HOME.getCanonicalPath());
 
 var RHINO_LIBRARIES = (function() {
+	//	TODO	figure out test coverage here
 	if (Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar")) {
 		return [
 			new File(Packages.java.lang.System.getProperties().get("jsh.build.rhino.jar"))
@@ -232,14 +234,8 @@ var RHINO_LIBRARIES = (function() {
 		return (function() {
 			//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
 			//	like an un-jarred version
-			var url = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toString();
-			var matcher = /^file\:(.*)/;
-			if (matcher.exec(url)[1].substring(2,3) == ":") {
-				//	this is a windows path of the form /C:/ ...
-				return [ new File(matcher.exec(url)[1].replace(/\%20/g, " ").substring(1)) ];
-			} else {
-				return [ new File(matcher.exec(url)[1].replace(/\%20/g, " ")) ];
-			}
+			var _uri = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toURI();
+			return [ new File(_uri) ];
 		})();
 	}
 })();
@@ -253,14 +249,18 @@ var RHINO_LIBRARIES = (function() {
 
 console("Creating directories ...");
 ["lib","script","script/launcher","modules","src"].forEach(function(path) {
-	new File(JSH_HOME,path).mkdir();
+	destination.shell.getRelativePath(path).createDirectory();
 });
 
 console("Copying launcher scripts ...");
-platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"jsh.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/launcher/slime.js"), new File(JSH_HOME,"slime.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/launcher/main.js"), new File(JSH_HOME,"main.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/launcher/launcher.js"), new File(JSH_HOME,"launcher.js"));
+SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
+["slime.js","launcher.js","main.js"].forEach(function(name) {
+	SLIME.getFile("jsh/launcher/" + name).copy(destination.shell);
+});
+//platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"jsh.js"));
+//platform.io.copyFile($api.slime.src.getFile("jsh/launcher/slime.js"), new File(JSH_HOME,"slime.js"));
+//platform.io.copyFile($api.slime.src.getFile("jsh/launcher/main.js"), new File(JSH_HOME,"main.js"));
+//platform.io.copyFile($api.slime.src.getFile("jsh/launcher/launcher.js"), new File(JSH_HOME,"launcher.js"));
 
 if (RHINO_LIBRARIES) {
 	console("Copying Rhino libraries ...");
