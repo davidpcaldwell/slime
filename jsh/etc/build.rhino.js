@@ -44,8 +44,8 @@
 //
 //	jsh.build.javassist.jar (JSH_BUILD_JAVASSIST_JAR): if set, profiler is built using Javassist.
 
-//	Policy decision to support 1.6 and up
 jsh.script.loader = new jsh.script.Loader("../../");
+
 var jrunscript = (function() {
 	var THIS = {};
 	jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
@@ -66,95 +66,96 @@ var platform = jrunscript.platform;
 //jsh.shell.echo("Platform keys = " + Object.keys(platform));
 //$api.script.resolve("api.rhino.js").load();
 
+//	Policy decision to support 1.6 and up
 var JAVA_VERSION = "1.6";
 
 var debug = jrunscript.$api.debug;
 var console = jrunscript.$api.console;
-var colon = String(Packages.java.io.File.pathSeparator);
-var env = jsh.shell.environment;
-
-(function($api,JAVA_HOME) {
-//jsh.shell.echo("$api = " + $api);
-//jsh.shell.echo("$api = " + Object.keys($api));
-var File = Packages.java.io.File;
-var System = Packages.java.lang.System;
-
-var zip = function(from,to,filters) {
-	if (!filters) filters = [];
-	var zstream = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(to));
-
-	var directories = {};
-
-	var createDirectoryEntry = function(partial) {
-		if (!directories[partial]) {
-			var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
-			zstream.putNextEntry(entry);
-			zstream.closeEntry();
-			directories[partial] = true;
-		}
-	}
-
-	var createDirectory = function(path) {
-		if (path.length == 0) return;
-		var tokens = path.split("/");
-		for (var i=1; i<tokens.length; i++) {
-			var partial = tokens.slice(0,i).join("/");
-			createDirectoryEntry(partial);
-		}
-	}
-
-	var process = function(file,prefix,filters) {
-		for (var i=0; i<filters.length; i++) {
-			if (filters[i].accept(file)) {
-				filters[i].process(file,prefix);
-				return;
-			}
-		}
-
-		var nextPrefix = function() {
-			if (prefix == "") return "";
-			return prefix + "/";
-		}
-
-		if (file.isDirectory()) {
-			createDirectory(prefix);
-			if (!directories[nextPrefix()+file.getName()]) {
-				createDirectoryEntry(nextPrefix()+file.getName())
-			}
-			var files = file.listFiles();
-			for (var i=0; i<files.length; i++) {
-				process(files[i],nextPrefix()+file.getName(),filters);
-			}
-		} else {
-			createDirectory(prefix);
-			var entry = new Packages.java.util.zip.ZipEntry(nextPrefix()+file.getName());
-			zstream.putNextEntry(entry);
-			var i = new Packages.java.io.FileInputStream(file);
-			platform.io.copyStream(i,zstream);
-			i.close();
-			zstream.closeEntry();
-		}
-	}
-
-	var top = from.listFiles();
-	for (var i=0; i<top.length; i++) {
-		process(top[i],"",filters);
-	}
-	zstream.close();
-}
 
 var getSetting = function(systemPropertyName) {
+	//	TODO	switch to superior jsh APIs for this
 	var environmentVariableName = systemPropertyName.replace(/\./g, "_").toUpperCase();
-	if (System.getProperty(systemPropertyName)) {
-		return String(System.getProperty(systemPropertyName));
-	} else if (System.getenv(environmentVariableName)) {
-		return String(System.getenv(environmentVariableName));
+	if (Packages.java.lang.System.getProperty(systemPropertyName)) {
+		return String(Packages.java.lang.System.getProperty(systemPropertyName));
+	} else if (Packages.java.lang.System.getenv(environmentVariableName)) {
+		return String(Packages.java.lang.System.getenv(environmentVariableName));
 	} else {
 		return null;
 	}
 }
 
 if (getSetting("jsh.build.debug")) debug.on = true;
+
+(function($api,JAVA_HOME) {
+	jrunscript.$api.jsh = new function() {
+		this.zip = function(from,to,filters) {
+			if (!filters) filters = [];
+			var zstream = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(to));
+
+			var directories = {};
+
+			var createDirectoryEntry = function(partial) {
+				if (!directories[partial]) {
+					var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
+					zstream.putNextEntry(entry);
+					zstream.closeEntry();
+					directories[partial] = true;
+				}
+			}
+
+			var createDirectory = function(path) {
+				if (path.length == 0) return;
+				var tokens = path.split("/");
+				for (var i=1; i<tokens.length; i++) {
+					var partial = tokens.slice(0,i).join("/");
+					createDirectoryEntry(partial);
+				}
+			}
+
+			var process = function(file,prefix,filters) {
+				for (var i=0; i<filters.length; i++) {
+					if (filters[i].accept(file)) {
+						filters[i].process(file,prefix);
+						return;
+					}
+				}
+
+				var nextPrefix = function() {
+					if (prefix == "") return "";
+					return prefix + "/";
+				}
+
+				if (file.isDirectory()) {
+					createDirectory(prefix);
+					if (!directories[nextPrefix()+file.getName()]) {
+						createDirectoryEntry(nextPrefix()+file.getName())
+					}
+					var files = file.listFiles();
+					for (var i=0; i<files.length; i++) {
+						process(files[i],nextPrefix()+file.getName(),filters);
+					}
+				} else {
+					createDirectory(prefix);
+					var entry = new Packages.java.util.zip.ZipEntry(nextPrefix()+file.getName());
+					zstream.putNextEntry(entry);
+					var i = new Packages.java.io.FileInputStream(file);
+					platform.io.copyStream(i,zstream);
+					i.close();
+					zstream.closeEntry();
+				}
+			}
+
+			var top = from.listFiles();
+			for (var i=0; i<top.length; i++) {
+				process(top[i],"",filters);
+			}
+			zstream.close();
+		};
+	}
+var colon = String(Packages.java.io.File.pathSeparator);
+var env = jsh.shell.environment;
+var File = Packages.java.io.File;
+var System = Packages.java.lang.System;
 
 debug("java.io.tmpdir = " + System.getProperty("java.io.tmpdir"));
 
@@ -311,7 +312,7 @@ var javacArguments = compileOptions.concat([
 ]).concat(javaSources);
 debug("Compiling: " + javacArguments.join(" "));
 platform.jdk.compile(javacArguments);
-zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
+jrunscript.$api.jsh.zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
 
 console("Building launcher ...");
 var tmpLauncher = new File(tmp,"launcher");
@@ -323,7 +324,7 @@ platform.io.write(new File(metainf, "MANIFEST.MF"), function(writer) {
 	writer.println("Main-Class: inonit.script.jsh.launcher.Main");
 });
 debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
-zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
+jrunscript.$api.jsh.zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
 
 console("Copying script implementations ...")
 platform.io.copyFile($api.slime.src.getFile("loader"), new File(JSH_HOME,"script/loader"), [
@@ -397,7 +398,7 @@ var module = function(path,compile) {
 	if (topath.substring(topath.length-1) == ".") topath = topath.substring(0,topath.length-1);
 	var to = new File(JSH_HOME,"modules/"+topath+".slime");
 	to.getParentFile().mkdirs();
-	zip(tmp,to,[]);
+	jrunscript.$api.jsh.zip(tmp,to,[]);
 	console("Created module file: " + to.getCanonicalPath());
 };
 
@@ -646,7 +647,7 @@ if (destination.installer) {
 	var zipdir = platform.io.createTemporaryDirectory();
 	var build = new File(zipdir,"build.zip");
 	console("Build build.zip to " + build.getCanonicalPath());
-	zip(JSH_HOME,build);
+	jrunscript.$api.jsh.zip(JSH_HOME,build);
 
 	var command = LAUNCHER_COMMAND.slice(0);
 	command.push(getPath(new File(JSH_HOME,"tools/package.jsh.js")));
