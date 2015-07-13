@@ -130,6 +130,17 @@ var destination = (function(args) {
 
 var SLIME = jsh.script.file.parent.parent.parent;
 
+console("Creating directories ...");
+["lib","script","script/launcher","modules","src"].forEach(function(path) {
+	destination.shell.getRelativePath(path).createDirectory();
+});
+
+console("Copying launcher scripts ...");
+SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
+["slime.js","launcher.js","main.js"].forEach(function(name) {
+	SLIME.getFile("jsh/launcher/" + name).copy(destination.shell);
+});
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -246,21 +257,6 @@ var RHINO_LIBRARIES = (function() {
 #	echo "No XMLBEANS_HOME specified; not bundling XMLBeans."
 #fi
 */
-
-console("Creating directories ...");
-["lib","script","script/launcher","modules","src"].forEach(function(path) {
-	destination.shell.getRelativePath(path).createDirectory();
-});
-
-console("Copying launcher scripts ...");
-SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
-["slime.js","launcher.js","main.js"].forEach(function(name) {
-	SLIME.getFile("jsh/launcher/" + name).copy(destination.shell);
-});
-//platform.io.copyFile($api.slime.src.getFile("rhino/jrunscript/api.js"), new File(JSH_HOME,"jsh.js"));
-//platform.io.copyFile($api.slime.src.getFile("jsh/launcher/slime.js"), new File(JSH_HOME,"slime.js"));
-//platform.io.copyFile($api.slime.src.getFile("jsh/launcher/main.js"), new File(JSH_HOME,"main.js"));
-//platform.io.copyFile($api.slime.src.getFile("jsh/launcher/launcher.js"), new File(JSH_HOME,"launcher.js"));
 
 if (RHINO_LIBRARIES) {
 	console("Copying Rhino libraries ...");
