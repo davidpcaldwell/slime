@@ -225,6 +225,75 @@ console("Building launcher ...");
 	SLIME.getSubdirectory("jsh/loader").copy(destination.shell.getRelativePath("script/jsh"));
 })();
 
+var modules = (function createModules() {
+	console("Creating bundled modules ...")
+	//	TODO	remove or modify this; appears to redefine the slime global object
+	var slime = jsh.script.loader.file("jsh/tools/slime.js").slime;
+	//load(String($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath()));
+	var MODULE_CLASSPATH = (function() {
+		var files = [];
+		if (RHINO_LIBRARIES) {
+			files.push.apply(files,RHINO_LIBRARIES.pathnames);
+		}
+		files.push(destination.shell.getRelativePath("lib/jsh.jar"));
+		return new jsh.file.Searchpath(files);
+	})();
+	var module = function(path,compile) {
+		var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		slime.build.jsh(
+			SLIME.getSubdirectory(path),
+			tmp,
+			{ rhino: RHINO_LIBRARIES },
+			{ source: JAVA_VERSION, target: JAVA_VERSION, classpath: MODULE_CLASSPATH.toString(), nowarn: true }
+		);
+//		slime.build.rhino($api.slime.src.getFile(path), tmp, {
+//			copyFile: platform.io.copyFile,
+//			compile: compile
+//		}, {
+//			source: JAVA_VERSION,
+//			target: JAVA_VERSION,
+//			classpath: MODULE_CLASSPATH.toString(),
+//			nowarn: true,
+//			rhino: RHINO_LIBRARIES
+//		});
+		var topath = path.replace(/\//g, ".");
+		if (topath.substring(topath.length-1) == ".") topath = topath.substring(0,topath.length-1);
+		var to = destination.shell.getRelativePath("modules/" + path.replace(/\//g, ".") + "slime");
+		jsh.file.zip({
+			from: tmp,
+			to: to
+		});
+		console("Created module file: " + to);
+	};
+
+	//	TODO	clean up below here
+	var modules = eval(jrunscript.$api.engine.readFile(jrunscript.$api.slime.src.getFile("jsh/etc/api.js"))).environment("jsh");
+
+	modules.forEach(function(item) {
+		if (item.module) {
+			module(item.path, (item.module.javac) ? jrunscript.platform.jdk.compile : function(args) {});
+		}
+	});
+
+	//[
+	//	"js/object","js/mime","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client"
+	//	,"rhino/tools"/*,"rhino/mail"*/
+	//].forEach( function(item) {
+	//	module(item,platform.jdk.compile);
+	//});
+	//
+	//[
+	//	"rhino/http/servlet"
+	//].forEach( function(item) {
+	//	module(item,function(args) {
+	//		//	do not compile servlet; servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with
+	//		//	servlet API is supplied by invoker
+	//	});
+	//});
+
+	return modules;
+})();
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -317,67 +386,6 @@ console("Building to: " + JSH_HOME.getCanonicalPath());
 */
 
 var tmp = platform.io.createTemporaryDirectory();
-
-console("Creating bundled modules ...")
-//	TODO	remove or modify this; appears to redefine the slime global object
-var slime = jsh.script.loader.file("jsh/tools/slime.js").slime;
-//load(String($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath()));
-var tmpModules = new File(tmp,"modules");
-tmpModules.mkdir();
-var MODULE_CLASSPATH = (function() {
-	var files = [];
-	if (RHINO_LIBRARIES) {
-		files = files.concat(RHINO_LIBRARIES.pathnames.map(function(pathname) { return pathname.java.adapt(); }));
-	}
-	files.push(new File(JSH_HOME,"lib/jsh.jar"));
-	return files.map(function(_file) {
-		return _file.getCanonicalPath();
-	}).join(colon);
-})();
-var module = function(path,compile) {
-	var tmp = new File(tmpModules,path);
-	tmp.mkdirs();
-	slime.build.rhino($api.slime.src.getFile(path), tmp, {
-		copyFile: platform.io.copyFile,
-		compile: compile
-	}, {
-		source: JAVA_VERSION,
-		target: JAVA_VERSION,
-		classpath: MODULE_CLASSPATH,
-		nowarn: true,
-		rhino: RHINO_LIBRARIES
-	});
-	var topath = path.replace(/\//g, ".");
-	if (topath.substring(topath.length-1) == ".") topath = topath.substring(0,topath.length-1);
-	var to = new File(JSH_HOME,"modules/"+topath+".slime");
-	to.getParentFile().mkdirs();
-	jrunscript.$api.jsh.zip(tmp,to,[]);
-	console("Created module file: " + to.getCanonicalPath());
-};
-
-var modules = eval($api.engine.readFile($api.slime.src.getFile("jsh/etc/api.js"))).environment("jsh");
-
-modules.forEach(function(item) {
-	if (item.module) {
-		module(item.path, (item.module.javac) ? platform.jdk.compile : function(args) {});
-	}
-});
-
-//[
-//	"js/object","js/mime","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client"
-//	,"rhino/tools"/*,"rhino/mail"*/
-//].forEach( function(item) {
-//	module(item,platform.jdk.compile);
-//});
-//
-//[
-//	"rhino/http/servlet"
-//].forEach( function(item) {
-//	module(item,function(args) {
-//		//	do not compile servlet; servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with
-//		//	servlet API is supplied by invoker
-//	});
-//});
 
 console("Creating plugins directory ...");
 var JSH_PLUGINS = new File(JSH_HOME,"plugins");

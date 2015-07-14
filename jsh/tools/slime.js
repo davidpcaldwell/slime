@@ -84,65 +84,84 @@ slime.build.rhino = function(from,build,api,javac) {
 
 //	Build using jsh shell; used by slime.jsh.js
 slime.build.jsh = function(from,build,api,javac) {
-	var toCopy = from
-		.list({ recursive: true, type: from.list.RESOURCE })
-		.filter(function(item) {
-			//	TODO	This explicitly depends on UNIX-style paths; should use file separator but OK for now because jsh depends on bash
-			return item.path.substring(0,"java/".length) != "java/";
-		}
-	);
+	var toCopy = from.list({
+		filter: function(node) {
+			return !node.directory;
+		},
+		descendants: function(node) {
+			if (node.directory && node.pathname.basename == "java") return false;
+			return true;
+		},
+		type: from.list.ENTRY
+	});
+	toCopy.forEach(function(item) {
+		item.node.copy(build.getRelativePath(item.path), { recursive: true });
+	});
+//	var toCopy = from
+//		.list({ recursive: true, type: from.list.RESOURCE })
+//		.filter(function(item) {
+//			//	TODO	This explicitly depends on UNIX-style paths; should use file separator but OK for now because jsh depends on bash
+//			return item.path.substring(0,"java/".length) != "java/";
+//		}
+//	);
 
-	toCopy.forEach( function(item) {
-		var topath = build.getRelativePath(item.path);
-		if (item.directory) {
-			topath.createDirectory();
-		} else {
-			topath.write(item.resource.read(jsh.io.Streams.binary), { recursive: true });
-		}
-	} );
+//	toCopy.forEach( function(item) {
+//		var topath = build.getRelativePath(item.path);
+//		if (item.directory) {
+//			topath.createDirectory();
+//		} else {
+//			topath.write(item.resource.read(jsh.io.Streams.binary), { recursive: true });
+//		}
+//	} );
 
 	//	TODO	Add rhino/java directory from above
-	if (from.getSubdirectory("java")) {
-		var toCompile = from.getSubdirectory("java").list({ recursive: true, type: from.list.ENTRY }).filter( function(item) {
-			if (!/\.java$/.test(item.path)) return false;
-			return true;
-		} ).map( function(item) {
-			var rv = item.node.pathname;
-			if (jsh.file.filesystems.cygwin) {
-				rv = jsh.file.filesystems.cygwin.toWindows(rv);
-			}
-			return rv;
-		} );
+	var destination;
+	["java", "rhino/java"].forEach(function(path) {
+		if (path == "rhino/java" && !api.rhino) return;
+		var directory = from.getSubdirectory(path);
+		if (directory) {
+			if (!destination) destination = build.getRelativePath("$jvm/classes").createDirectory({ recursive: true });
+			var toCompile = directory.list({ recursive: true, type: from.list.ENTRY }).filter( function(item) {
+				if (!/\.java$/.test(item.path)) return false;
+				return true;
+			} ).map( function(item) {
+				var rv = item.node.pathname;
+				if (jsh.file.filesystems.cygwin) {
+					rv = jsh.file.filesystems.cygwin.toWindows(rv);
+				}
+				return rv;
+			} );
 
-		var destination = build.getRelativePath("$jvm/classes").createDirectory({ recursive: true });
-		//	TODO	it would be nice to remove the below explicit Cygwin reference
-		var d = destination.pathname;
-		if (jsh.file.filesystems.cygwin) {
-			d = jsh.file.filesystems.cygwin.toWindows(d);
+			//	TODO	below can probably be replaced by rhino/tools APIs
+			//	TODO	it would be nice to remove the below explicit Cygwin reference
+			var d = destination.pathname;
+			if (jsh.file.filesystems.cygwin) {
+				d = jsh.file.filesystems.cygwin.toWindows(d);
+			}
+			jsh.shell.echo("Compiling to " + d.toString());
+			var args = [ "-d", d.toString() ];
+			//	TODO	repeated above
+			if (javac && javac.classpath) {
+				args = args.concat(["-classpath", javac.classpath]);
+			}
+			if (javac && javac.nowarn) {
+				args = args.concat(["-nowarn"]);
+			}
+			if (javac && javac.source) {
+				args = args.concat(["-source",javac.source]);
+			}
+			if (javac && javac.target) {
+				args = args.concat(["-target",javac.target]);
+			}
+			var args = args.concat( toCompile.map( function(item) { return item.toString() } ) );
+			Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
+				Packages.java.lang.System["in"],
+				Packages.java.lang.System.out,
+				Packages.java.lang.System.err,
+				jsh.java.toJavaArray( args, Packages.java.lang.String, function(x) { return new Packages.java.lang.String(x) } )
+			);
 		}
-		jsh.shell.echo("Compiling to " + d.toString());
-		var args = [ "-d", d.toString() ];
-		//	TODO	repeated above
-		if (javac && javac.classpath) {
-			args = args.concat(["-classpath", javac.classpath]);
-		}
-		if (javac && javac.nowarn) {
-			args = args.concat(["-nowarn"]);
-		}
-		if (javac && javac.source) {
-			args = args.concat(["-source",javac.source]);
-		}
-		if (javac && javac.target) {
-			args = args.concat(["-target",javac.target]);
-		}
-		var args = args.concat( toCompile.map( function(item) { return item.toString() } ) );
-		Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
-			Packages.java.lang.System["in"],
-			Packages.java.lang.System.out,
-			Packages.java.lang.System.err,
-			jsh.java.toJavaArray( args, Packages.java.lang.String, function(x) { return new Packages.java.lang.String(x) } )
-		);
-	}
+	});
 }
 //	Need to export the slime symbol when loading from slime.jsh.js, but there will be no "$exports" variable when loading from the
 //	rhino shell during the build process
