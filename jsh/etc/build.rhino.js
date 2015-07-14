@@ -186,6 +186,21 @@ if (RHINO_LIBRARIES) {
 	console("Rhino libraries not present; building for Nashorn only.");
 }
 
+(function buildLoader() {
+	console("Building jsh application ...");
+	//	TODO	Do we want to cross-compile against JAVA_VERSION boot classes?
+	//	TODO	test coverage for Nashorn
+	//	TODO	target/source ignored; -g possibly not present
+	//	TODO	May want to emit compiler information when running from build script
+	var tmpClasses = jrunscript.launcher.buildLoader(RHINO_LIBRARIES);
+	jsh.file.zip({
+		//	TODO	still need jsh.file java.adapt()
+		from: jsh.file.Pathname( String(tmpClasses.getCanonicalPath()) ).directory,
+		to: destination.shell.getRelativePath("lib/jsh.jar")
+	});
+//	jrunscript.$api.jsh.zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
+})();
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -282,29 +297,6 @@ var tmp = platform.io.createTemporaryDirectory();
 //var tmpClasses = new File(tmp,"classes");
 //tmpClasses.mkdir();
 //var javaSources = [];
-
-console("Building jsh application ...");
-var tmpClasses = jrunscript.launcher.buildLoader(RHINO_LIBRARIES);
-//$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/java"),javaSources);
-//if (RHINO_LIBRARIES) {
-//	$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/rhino/java"),javaSources);
-//}
-//$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("rhino/system/java"),javaSources);
-//$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/java"),javaSources);
-//if (RHINO_LIBRARIES) {
-//	$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/rhino/java"),javaSources);
-//}
-////	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
-//var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
-////	TODO	test coverage for Nashorn
-//var JSH_CLASSPATH = (RHINO_LIBRARIES) ? RHINO_LIBRARIES.toString() : "";
-//var javacArguments = compileOptions.concat([
-//	"-d", tmpClasses.getCanonicalPath(),
-//	"-classpath", JSH_CLASSPATH
-//]).concat(javaSources);
-//debug("Compiling: " + javacArguments.join(" "));
-//platform.jdk.compile(javacArguments);
-jrunscript.$api.jsh.zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
 
 console("Building launcher ...");
 var tmpLauncher = new File(tmp,"launcher");
