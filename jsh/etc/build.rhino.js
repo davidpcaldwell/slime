@@ -243,19 +243,8 @@ var modules = (function createModules() {
 		slime.build.jsh(
 			SLIME.getSubdirectory(path),
 			tmp,
-			{ rhino: RHINO_LIBRARIES },
-			{ source: JAVA_VERSION, target: JAVA_VERSION, classpath: MODULE_CLASSPATH.toString(), nowarn: true }
+			(compile) ? { source: JAVA_VERSION, target: JAVA_VERSION, classpath: MODULE_CLASSPATH.toString(), nowarn: true, rhino: RHINO_LIBRARIES } : null
 		);
-//		slime.build.rhino($api.slime.src.getFile(path), tmp, {
-//			copyFile: platform.io.copyFile,
-//			compile: compile
-//		}, {
-//			source: JAVA_VERSION,
-//			target: JAVA_VERSION,
-//			classpath: MODULE_CLASSPATH.toString(),
-//			nowarn: true,
-//			rhino: RHINO_LIBRARIES
-//		});
 		var topath = path.replace(/\//g, ".");
 		if (topath.substring(topath.length-1) == ".") topath = topath.substring(0,topath.length-1);
 		var to = destination.shell.getRelativePath("modules/" + path.replace(/\//g, ".") + "slime");
@@ -267,29 +256,13 @@ var modules = (function createModules() {
 	};
 
 	//	TODO	clean up below here
-	var modules = eval(jrunscript.$api.engine.readFile(jrunscript.$api.slime.src.getFile("jsh/etc/api.js"))).environment("jsh");
+	var modules = eval(SLIME.getFile("jsh/etc/api.js").read(String)).environment("jsh");
 
 	modules.forEach(function(item) {
 		if (item.module) {
-			module(item.path, (item.module.javac) ? jrunscript.platform.jdk.compile : function(args) {});
+			module(item.path, item.module.javac);
 		}
 	});
-
-	//[
-	//	"js/object","js/mime","js/debug","rhino/host","rhino/io","js/document","rhino/document","rhino/file","rhino/shell",/*"jsh/shell",*/"jsh/script","rhino/http/client"
-	//	,"rhino/tools"/*,"rhino/mail"*/
-	//].forEach( function(item) {
-	//	module(item,platform.jdk.compile);
-	//});
-	//
-	//[
-	//	"rhino/http/servlet"
-	//].forEach( function(item) {
-	//	module(item,function(args) {
-	//		//	do not compile servlet; servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with
-	//		//	servlet API is supplied by invoker
-	//	});
-	//});
 
 	return modules;
 })();
