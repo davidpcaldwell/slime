@@ -278,6 +278,10 @@ destination.shell.getRelativePath("plugins").createDirectory();
 console("Creating tools ...");
 SLIME.getSubdirectory("jsh/tools").copy(destination.shell.getRelativePath("tools"));
 
+var ETC = destination.shell.getRelativePath("etc").createDirectory();
+SLIME.getFile("jsh/etc/install.jsh.js").copy(ETC);
+SLIME.getSubdirectory("jsh/etc/install").copy(ETC);
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;

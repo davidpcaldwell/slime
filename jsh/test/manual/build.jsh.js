@@ -98,6 +98,10 @@ top.add({
 });
 
 top.run();
+
+jsh.shell.echo("To examine shell, visit:");
+jsh.shell.echo(TMP);
+
 //	TODO	add test case for Nashorn
 //	TODO	add test case for building shell over HTTP
 //	TODO	add test case for building installer over HTTP
