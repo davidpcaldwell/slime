@@ -64,8 +64,15 @@ var debug = jrunscript.$api.debug;
 loadLauncherScript("launcher.js");
 jrunscript.launcher = {};
 jrunscript.launcher.buildLoader = function(rhino) {
-	throw new Error("Unimplemented; rhino needs to be some special type in the launcher script, like a classpath");
-	var unbuilt = new jrunscript.$api.jsh.Unbuilt(rhino);
+	//	Converts jsh searchpath to launcher classpath
+	var _rhino = (rhino) ? (function() {
+		var _urls = rhino.pathnames.map(function(pathname) {
+			return pathname.java.adapt().toURI().toURL();
+		});
+		return _urls;
+	})() : null;
+	var unbuilt = new jrunscript.$api.jsh.Unbuilt(_rhino);
+	return unbuilt.compileLoader();
 }
 //	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
 //			ability to build modules
@@ -184,71 +191,69 @@ if (RHINO_LIBRARIES) {
 	var JAVA_HOME = jrunscript.JAVA_HOME;
 	var platform = jrunscript.platform;
 
-	jrunscript.$api.jsh = new function() {
-		this.zip = function(from,to,filters) {
-			if (!filters) filters = [];
-			var zstream = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(to));
+	jrunscript.$api.jsh.zip = function(from,to,filters) {
+		if (!filters) filters = [];
+		var zstream = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(to));
 
-			var directories = {};
+		var directories = {};
 
-			var createDirectoryEntry = function(partial) {
-				if (!directories[partial]) {
-					var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
-					zstream.putNextEntry(entry);
-					zstream.closeEntry();
-					directories[partial] = true;
+		var createDirectoryEntry = function(partial) {
+			if (!directories[partial]) {
+				var entry = new Packages.java.util.zip.ZipEntry(partial+"/");
+				zstream.putNextEntry(entry);
+				zstream.closeEntry();
+				directories[partial] = true;
+			}
+		}
+
+		var createDirectory = function(path) {
+			if (path.length == 0) return;
+			var tokens = path.split("/");
+			for (var i=1; i<tokens.length; i++) {
+				var partial = tokens.slice(0,i).join("/");
+				createDirectoryEntry(partial);
+			}
+		}
+
+		var process = function(file,prefix,filters) {
+			for (var i=0; i<filters.length; i++) {
+				if (filters[i].accept(file)) {
+					filters[i].process(file,prefix);
+					return;
 				}
 			}
 
-			var createDirectory = function(path) {
-				if (path.length == 0) return;
-				var tokens = path.split("/");
-				for (var i=1; i<tokens.length; i++) {
-					var partial = tokens.slice(0,i).join("/");
-					createDirectoryEntry(partial);
-				}
+			var nextPrefix = function() {
+				if (prefix == "") return "";
+				return prefix + "/";
 			}
 
-			var process = function(file,prefix,filters) {
-				for (var i=0; i<filters.length; i++) {
-					if (filters[i].accept(file)) {
-						filters[i].process(file,prefix);
-						return;
-					}
+			if (file.isDirectory()) {
+				createDirectory(prefix);
+				if (!directories[nextPrefix()+file.getName()]) {
+					createDirectoryEntry(nextPrefix()+file.getName())
 				}
-
-				var nextPrefix = function() {
-					if (prefix == "") return "";
-					return prefix + "/";
+				var files = file.listFiles();
+				for (var i=0; i<files.length; i++) {
+					process(files[i],nextPrefix()+file.getName(),filters);
 				}
-
-				if (file.isDirectory()) {
-					createDirectory(prefix);
-					if (!directories[nextPrefix()+file.getName()]) {
-						createDirectoryEntry(nextPrefix()+file.getName())
-					}
-					var files = file.listFiles();
-					for (var i=0; i<files.length; i++) {
-						process(files[i],nextPrefix()+file.getName(),filters);
-					}
-				} else {
-					createDirectory(prefix);
-					var entry = new Packages.java.util.zip.ZipEntry(nextPrefix()+file.getName());
-					zstream.putNextEntry(entry);
-					var i = new Packages.java.io.FileInputStream(file);
-					platform.io.copyStream(i,zstream);
-					i.close();
-					zstream.closeEntry();
-				}
+			} else {
+				createDirectory(prefix);
+				var entry = new Packages.java.util.zip.ZipEntry(nextPrefix()+file.getName());
+				zstream.putNextEntry(entry);
+				var i = new Packages.java.io.FileInputStream(file);
+				platform.io.copyStream(i,zstream);
+				i.close();
+				zstream.closeEntry();
 			}
+		}
 
-			var top = from.listFiles();
-			for (var i=0; i<top.length; i++) {
-				process(top[i],"",filters);
-			}
-			zstream.close();
-		};
-	}
+		var top = from.listFiles();
+		for (var i=0; i<top.length; i++) {
+			process(top[i],"",filters);
+		}
+		zstream.close();
+	};
 var colon = String(Packages.java.io.File.pathSeparator);
 var File = Packages.java.io.File;
 var System = Packages.java.lang.System;
@@ -274,30 +279,31 @@ console("Building to: " + JSH_HOME.getCanonicalPath());
 
 var tmp = platform.io.createTemporaryDirectory();
 
-var tmpClasses = new File(tmp,"classes");
-tmpClasses.mkdir();
-var javaSources = [];
+//var tmpClasses = new File(tmp,"classes");
+//tmpClasses.mkdir();
+//var javaSources = [];
 
 console("Building jsh application ...");
-$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/java"),javaSources);
-if (RHINO_LIBRARIES) {
-	$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/rhino/java"),javaSources);
-}
-$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("rhino/system/java"),javaSources);
-$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/java"),javaSources);
-if (RHINO_LIBRARIES) {
-	$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/rhino/java"),javaSources);
-}
-//	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
-var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
-//	TODO	test coverage for Nashorn
-var JSH_CLASSPATH = (RHINO_LIBRARIES) ? RHINO_LIBRARIES.toString() : "";
-var javacArguments = compileOptions.concat([
-	"-d", tmpClasses.getCanonicalPath(),
-	"-classpath", JSH_CLASSPATH
-]).concat(javaSources);
-debug("Compiling: " + javacArguments.join(" "));
-platform.jdk.compile(javacArguments);
+var tmpClasses = jrunscript.launcher.buildLoader(RHINO_LIBRARIES);
+//$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/java"),javaSources);
+//if (RHINO_LIBRARIES) {
+//	$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("loader/rhino/rhino/java"),javaSources);
+//}
+//$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("rhino/system/java"),javaSources);
+//$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/java"),javaSources);
+//if (RHINO_LIBRARIES) {
+//	$api.slime.src.getSourceFilesUnder($api.slime.src.getFile("jsh/loader/rhino/java"),javaSources);
+//}
+////	TODO	do we want to cross-compile against JAVA_VERSION boot classes?
+//var compileOptions = ["-g", "-nowarn", "-target", JAVA_VERSION, "-source", JAVA_VERSION];
+////	TODO	test coverage for Nashorn
+//var JSH_CLASSPATH = (RHINO_LIBRARIES) ? RHINO_LIBRARIES.toString() : "";
+//var javacArguments = compileOptions.concat([
+//	"-d", tmpClasses.getCanonicalPath(),
+//	"-classpath", JSH_CLASSPATH
+//]).concat(javaSources);
+//debug("Compiling: " + javacArguments.join(" "));
+//platform.jdk.compile(javacArguments);
 jrunscript.$api.jsh.zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
 
 console("Building launcher ...");

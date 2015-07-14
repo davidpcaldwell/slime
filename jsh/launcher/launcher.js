@@ -112,6 +112,7 @@
 //	TODO	Provide runtime access to plugin path, with jsh.shell.jsh.plugins?
 
 try {
+	debugger;
 	var $api = this.$api;
 	if (!this.$api.slime) {
 		$api.script.resolve("slime.js").load();
@@ -571,35 +572,59 @@ try {
 
 		this.rhino = rhino;
 
+		var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
+
 		if (false) this.profiler = (function() {
 			if ($api.slime.settings.get("jsh.shell.profiler")) {
 				return new Packages.java.io.File($api.slime.settings.get("jsh.shell.profiler"));
 			}
 		})();
 
+		this.compileLoader = function(p) {
+			if (!p) p = {};
+			if (!p.to) p.to = $api.io.tmpdir();
+			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
+			if (rhinoClasspath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
+			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
+			if (rhinoClasspath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+			var rhinoJavacArguments = (rhino) ? ["-classpath", rhinoClasspath.local()] : [];
+			$api.java.install.compile([
+				"-Xlint:unchecked",
+				"-d", p.to
+			].concat(rhinoJavacArguments).concat(toCompile));
+			return p.to;
+		}
+
 		this.shellClasspath = function() {
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			var LOADER_CLASSES = $api.io.tmpdir();
 			if ($api.slime.src.File) {
-				var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-				if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
-				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
-				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-				if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
-				var rhinoClasspath = (rhino) ? ["-classpath", rhino.local()] : [];
-				$api.java.install.compile([
-					"-Xlint:unchecked",
-					"-d", LOADER_CLASSES
-				].concat(rhinoClasspath).concat(toCompile));
+				if (false) {
+					var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
+					if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
+					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
+					if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+					var rhinoJavacArguments = (rhino) ? ["-classpath", rhino.local()] : [];
+					$api.java.install.compile([
+						"-Xlint:unchecked",
+						"-d", LOADER_CLASSES
+					].concat(rhinoJavacArguments).concat(toCompile));
+				} else {
+					this.compileLoader({
+						to: LOADER_CLASSES
+					});
+				}
 			} else {
 				var toCompile = $api.slime.src.getSourceFilesUnder("loader/rhino/java/");
-				if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder("loader/rhino/rhino/"));
+				if (rhinoClasspath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder("loader/rhino/rhino/"));
 				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder("rhino/system/java/"));
 				toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder("jsh/loader/java/"));
-				if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder("jsh/loader/rhino/"));
+				if (rhinoClasspath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder("jsh/loader/rhino/"));
 				$api.java.compile({
-					classpath: (rhino) ? rhino._urls : [],
+					classpath: (rhinoClasspath) ? rhinoClasspath._urls : [],
 					destination: LOADER_CLASSES,
 					files: toCompile
 				});

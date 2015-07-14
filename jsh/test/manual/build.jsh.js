@@ -18,7 +18,8 @@ jsh.loader.plugins(SLIME.getRelativePath("jsh/test"));
 
 var parameters = jsh.script.getopts({
 	options: {
-		rhino: jsh.file.Pathname
+		rhino: jsh.file.Pathname,
+		"debug:script": String
 	}
 });
 
@@ -31,7 +32,8 @@ jsh.shell.jsh({
 	properties: {
 		"jsh.engine.rhino.classpath": parameters.options.rhino,
 		"jsh.build.notest": "true",
-		"jsh.build.nodoc": "true"
+		"jsh.build.nodoc": "true",
+		"jsh.debug.script": (parameters.options["debug:script"]) ? parameters.options["debug:script"] : null
 	},
 	script: SLIME.getFile("jsh/etc/build.rhino.js"),
 	arguments: [TMP]
