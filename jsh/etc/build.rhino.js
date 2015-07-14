@@ -201,6 +201,21 @@ if (RHINO_LIBRARIES) {
 //	jrunscript.$api.jsh.zip(tmpClasses,new File(JSH_HOME,"lib/jsh.jar"));
 })();
 
+console("Building launcher ...");
+(function buildLauncher() {
+	var _tmp = jrunscript.$api.slime.launcher.compile();
+	var tmp = jsh.file.Pathname(String(_tmp.getCanonicalPath())).directory;
+	//	TODO	assume manifest uses \n always, does it?
+	tmp.getRelativePath("META-INF/MANIFEST.MF").write([
+		"Main-Class: inonit.script.jsh.launcher.Main",
+		""
+	].join("\n"), { append: false, recursive: true });
+	jsh.file.zip({
+		from: tmp,
+		to: destination.shell.getRelativePath("jsh.jar")
+	})
+})();
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -298,17 +313,15 @@ var tmp = platform.io.createTemporaryDirectory();
 //tmpClasses.mkdir();
 //var javaSources = [];
 
-console("Building launcher ...");
-var tmpLauncher = new File(tmp,"launcher");
-tmpLauncher.mkdir();
-$api.slime.launcher.compile({ to: tmpLauncher.getCanonicalPath() });
-var metainf = new File(tmpLauncher,"META-INF");
-metainf.mkdir();
-platform.io.write(new File(metainf, "MANIFEST.MF"), function(writer) {
-	writer.println("Main-Class: inonit.script.jsh.launcher.Main");
-});
-debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
-jrunscript.$api.jsh.zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
+//var tmpLauncher =
+//
+//var metainf = new File(tmpLauncher,"META-INF");
+//metainf.mkdir();
+//platform.io.write(new File(metainf, "MANIFEST.MF"), function(writer) {
+//	writer.println("Main-Class: inonit.script.jsh.launcher.Main");
+//});
+//debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
+//jrunscript.$api.jsh.zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
 
 console("Copying script implementations ...")
 platform.io.copyFile($api.slime.src.getFile("loader"), new File(JSH_HOME,"script/loader"), [

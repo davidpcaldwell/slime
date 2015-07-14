@@ -31,8 +31,8 @@ jsh.shell.jsh({
 	fork: true,
 	properties: {
 		"jsh.engine.rhino.classpath": parameters.options.rhino,
-		"jsh.build.notest": "true",
-		"jsh.build.nodoc": "true",
+//		"jsh.build.notest": "true",
+//		"jsh.build.nodoc": "true",
 		"jsh.debug.script": (parameters.options["debug:script"]) ? parameters.options["debug:script"] : null
 	},
 	script: SLIME.getFile("jsh/etc/build.rhino.js"),
