@@ -278,6 +278,7 @@ destination.shell.getRelativePath("plugins").createDirectory();
 console("Creating tools ...");
 SLIME.getSubdirectory("jsh/tools").copy(destination.shell.getRelativePath("tools"));
 
+console("Creating install scripts ...");
 var ETC = destination.shell.getRelativePath("etc").createDirectory();
 SLIME.getFile("jsh/etc/install.jsh.js").copy(ETC);
 SLIME.getSubdirectory("jsh/etc/install").copy(ETC);
@@ -424,10 +425,10 @@ var getPath = function(file) {
 //	debug("CoffeeScript location not specified; not including CoffeeScript.");
 //}
 
-console("Creating install scripts ...");
-new File(JSH_HOME,"etc").mkdir();
-platform.io.copyFile($api.slime.src.getFile("jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
-platform.io.copyFile($api.slime.src.getFile("jsh/etc/install"), new File(JSH_HOME, "etc/install"));
+//console("Creating install scripts ...");
+//new File(JSH_HOME,"etc").mkdir();
+//platform.io.copyFile($api.slime.src.getFile("jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
+//platform.io.copyFile($api.slime.src.getFile("jsh/etc/install"), new File(JSH_HOME, "etc/install"));
 
 var JSH_SRC = new File(JSH_HOME,"src");
 console("Bundling source code ...");
