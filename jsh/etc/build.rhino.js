@@ -267,6 +267,17 @@ var modules = (function createModules() {
 	return modules;
 })();
 
+jsh.shell.echo("Creating plugins directory ...");
+destination.shell.getRelativePath("plugins").createDirectory();
+//	TODO	it might be useful in the future to copy jsh/loader/plugin.api.html into this directory, to make it easy to find.
+//			this would also make it so that an installer would automatically create the plugins directory when unzipping the
+//			distribution; right now this is also done in install.jsh.js. But currently, this would mess up the CSS, etc., so it
+//			might be better to leave the plugin documentation only in docs/api/
+//	copyFile(new File(SLIME_SRC, "jsh/loader/plugin.api.html"))
+
+console("Creating tools ...");
+SLIME.getSubdirectory("jsh/tools").copy(destination.shell.getRelativePath("tools"));
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -360,14 +371,6 @@ console("Building to: " + JSH_HOME.getCanonicalPath());
 
 var tmp = platform.io.createTemporaryDirectory();
 
-console("Creating plugins directory ...");
-var JSH_PLUGINS = new File(JSH_HOME,"plugins");
-JSH_PLUGINS.mkdir();
-//	TODO	it might be useful in the future to copy jsh/loader/plugin.api.html into this directory, to make it easy to find.
-//			this would also make it so that an installer would automatically create the plugins directory when unzipping the
-//			distribution; right now this is also done in install.jsh.js. But currently, this would mess up the CSS, etc., so it
-//			might be better to leave the plugin documentation only in docs/api/
-//	copyFile(new File(SLIME_SRC, "jsh/loader/plugin.api.html"))
 
 var LAUNCHER_COMMAND = [
 	String(jsh.shell.java.jrunscript),
@@ -375,11 +378,6 @@ var LAUNCHER_COMMAND = [
 //	String(new File(JAVA_HOME,"bin/java").getCanonicalPath()),
 //	"-jar",String(new File(JSH_HOME,"jsh.jar").getCanonicalPath())
 ];
-
-console("Creating tools ...");
-var JSH_TOOLS = new File(JSH_HOME,"tools");
-JSH_TOOLS.mkdir();
-platform.io.copyFile($api.slime.src.getFile("jsh/tools"),JSH_TOOLS);
 
 var getPath = function(file) {
 	var path = String(file.getCanonicalPath());
@@ -389,38 +387,38 @@ var getPath = function(file) {
 	return path;
 };
 
-if (getSetting("jsh.build.javassist.jar")) {
-	(function() {
-		console("Building profiler to " + getPath(new File(JSH_HOME,"tools/profiler.jar")) + " ...");
-		var command = LAUNCHER_COMMAND.slice(0);
-		command.push(getPath($api.slime.src.getFile("rhino/tools/profiler/build.jsh.js")));
-		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
-		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
-		var subenv = {};
-		for (var x in jsh.shell.environment) {
-			subenv[x] = jsh.shell.environment[x];
-		}
-		subenv.JSH_PLUGINS = "";
-		command.push({
-			env: subenv
-		});
-		var status = runCommand.apply(this,command);
-		if (status != 0) {
-			throw new Error("Exit status when building profile: " + status);
-		}
-		new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
-		platform.io.copyFile(slime.src.getFile("rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
-	}).call(this);
-} else {
-	debug("Javassist location not specified; not building profiler.");
-}
-
-if (getSetting("jsh.build.coffeescript.path")) {
-	console("Copying CoffeeScript from " + getSetting("jsh.build.coffeescript.path") + " ...");
-	platform.io.copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
-} else {
-	debug("CoffeeScript location not specified; not including CoffeeScript.");
-}
+//if (getSetting("jsh.build.javassist.jar")) {
+//	(function() {
+//		console("Building profiler to " + getPath(new File(JSH_HOME,"tools/profiler.jar")) + " ...");
+//		var command = LAUNCHER_COMMAND.slice(0);
+//		command.push(getPath($api.slime.src.getFile("rhino/tools/profiler/build.jsh.js")));
+//		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
+//		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
+//		var subenv = {};
+//		for (var x in jsh.shell.environment) {
+//			subenv[x] = jsh.shell.environment[x];
+//		}
+//		subenv.JSH_PLUGINS = "";
+//		command.push({
+//			env: subenv
+//		});
+//		var status = runCommand.apply(this,command);
+//		if (status != 0) {
+//			throw new Error("Exit status when building profile: " + status);
+//		}
+//		new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
+//		platform.io.copyFile(slime.src.getFile("rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
+//	}).call(this);
+//} else {
+//	debug("Javassist location not specified; not building profiler.");
+//}
+//
+//if (getSetting("jsh.build.coffeescript.path")) {
+//	console("Copying CoffeeScript from " + getSetting("jsh.build.coffeescript.path") + " ...");
+//	platform.io.copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
+//} else {
+//	debug("CoffeeScript location not specified; not including CoffeeScript.");
+//}
 
 console("Creating install scripts ...");
 new File(JSH_HOME,"etc").mkdir();
