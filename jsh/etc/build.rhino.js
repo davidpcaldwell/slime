@@ -216,6 +216,12 @@ console("Building launcher ...");
 	})
 })();
 
+(function copyScripts() {
+	console("Copying script implementations ...");
+	SLIME.getSubdirectory("loader").copy(destination.shell.getRelativePath("script/loader"));
+	SLIME.getSubdirectory("jsh/loader").copy(destination.shell.getRelativePath("script/jsh"));
+})();
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -308,59 +314,6 @@ console("Building to: " + JSH_HOME.getCanonicalPath());
 */
 
 var tmp = platform.io.createTemporaryDirectory();
-
-//var tmpClasses = new File(tmp,"classes");
-//tmpClasses.mkdir();
-//var javaSources = [];
-
-//var tmpLauncher =
-//
-//var metainf = new File(tmpLauncher,"META-INF");
-//metainf.mkdir();
-//platform.io.write(new File(metainf, "MANIFEST.MF"), function(writer) {
-//	writer.println("Main-Class: inonit.script.jsh.launcher.Main");
-//});
-//debug("Launcher compiled to: " + tmpLauncher.getCanonicalPath());
-//jrunscript.$api.jsh.zip(tmpLauncher,new File(JSH_HOME,"jsh.jar"),[]);
-
-console("Copying script implementations ...")
-platform.io.copyFile($api.slime.src.getFile("loader"), new File(JSH_HOME,"script/loader"), [
-	{
-		accept: function(f) {
-			return (f.isDirectory() && f.getName() == ".hg")
-				|| (f.isDirectory() && f.getName() == "test")
-				|| (f.isDirectory() && f.getName() == "browser")
-				|| (f.isDirectory() && f.getName() == "rhino")
-				|| (f.isDirectory() && f.getName() == "api")
-				|| (f.getName() == "api.html")
-			;
-		},
-		process: function(f,t) {
-		}
-	}
-]);
-platform.io.copyFile($api.slime.src.getFile("loader/rhino"), new File(JSH_HOME,"script/loader/rhino"), [
-	{
-		accept: function(f) {
-			return f.isDirectory() && f.getName() == "test"
-				|| f.isDirectory() && f.getName() == "java"
-			;
-		},
-		process: function(f,t) {
-		}
-	}
-]);
-platform.io.copyFile($api.slime.src.getFile("jsh/loader"), new File(JSH_HOME,"script/jsh"), [
-	{
-		accept: function(f) {
-			return f.getName() == "api.html"
-				|| f.getName() == "java"
-			;
-		},
-		process: function(f,t) {
-		}
-	}
-]);
 
 console("Creating bundled modules ...")
 //	TODO	remove or modify this; appears to redefine the slime global object
