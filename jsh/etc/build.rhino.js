@@ -44,6 +44,9 @@
 //
 //	jsh.build.javassist.jar (JSH_BUILD_JAVASSIST_JAR): if set, profiler is built using Javassist.
 
+//	TODO	Eliminate launcher JAR file; seems to be used only for packaging applications now
+//	TODO	build script should build all plugins
+
 jsh.script.loader = new jsh.script.Loader("../../");
 
 var jrunscript = (function() {
