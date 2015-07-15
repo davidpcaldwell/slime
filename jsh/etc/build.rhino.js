@@ -283,6 +283,23 @@ var ETC = destination.shell.getRelativePath("etc").createDirectory();
 SLIME.getFile("jsh/etc/install.jsh.js").copy(ETC);
 SLIME.getSubdirectory("jsh/etc/install").copy(ETC);
 
+(function copySource() {
+	console("Bundling source code ...");
+	SLIME.list({
+		filter: function(node) {
+			return !node.directory;
+		},
+		descendants: function(directory) {
+			if (directory.pathname.basename == ".hg") return false;
+			return true;
+		},
+		type: SLIME.list.ENTRY
+	}).forEach(function(entry) {
+		//	TODO	need for 'recursive' was not clear from documentation
+		entry.node.copy(destination.shell.getRelativePath("src/" + entry.path), { recursive: true });
+	});
+})();
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -429,22 +446,6 @@ var getPath = function(file) {
 //new File(JSH_HOME,"etc").mkdir();
 //platform.io.copyFile($api.slime.src.getFile("jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
 //platform.io.copyFile($api.slime.src.getFile("jsh/etc/install"), new File(JSH_HOME, "etc/install"));
-
-var JSH_SRC = new File(JSH_HOME,"src");
-console("Bundling source code ...");
-JSH_SRC.mkdir();
-
-["js","loader","rhino","jsh"].forEach( function(base) {
-	platform.io.copyFile($api.slime.src.getFile(base), new File(JSH_SRC,base), [
-		{
-			accept: function(f) {
-				return f.isDirectory() && f.getName() == ".hg";
-			},
-			process: function(f,t) {
-			}
-		}
-	]);
-});
 
 if (!destination.installer) {
 	console("Running post-installer ... " + destination.arguments.join(" "));
