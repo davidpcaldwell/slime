@@ -300,6 +300,32 @@ SLIME.getSubdirectory("jsh/etc/install").copy(ETC);
 	});
 })();
 
+if (!destination.installer) {
+	(function postInstaller() {
+		console("Running post-installer with arguments ... " + destination.arguments.join(" "));
+		//	TODO	the below kind of manipulation is an excellent category for improved $api
+		var subenv = jsh.js.Object.set({}, jsh.shell.environment);
+		for (var x in subenv) {
+			if (/^JSH_/.test(x)) {
+				delete subenv[x];
+			}
+		}
+		if (getSetting("jsh.build.downloads")) {
+			subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
+		}
+		if (getSetting("jsh.build.rhino.jar")) {
+			subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.build.rhino.jar");
+		} else if (getSetting("jsh.engine.rhino.classpath")) {
+			subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.engine.rhino.classpath");
+		}
+		jsh.shell.jsh({
+			shell: destination.shell,
+			script: destination.shell.getFile("etc/install.jsh.js"),
+			arguments: destination.arguments
+		});
+	})();
+}
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -409,74 +435,36 @@ var getPath = function(file) {
 	return path;
 };
 
-//if (getSetting("jsh.build.javassist.jar")) {
-//	(function() {
-//		console("Building profiler to " + getPath(new File(JSH_HOME,"tools/profiler.jar")) + " ...");
-//		var command = LAUNCHER_COMMAND.slice(0);
-//		command.push(getPath($api.slime.src.getFile("rhino/tools/profiler/build.jsh.js")));
-//		command.push("-javassist", getPath(new File(getSetting("jsh.build.javassist.jar"))));
-//		command.push("-to", getPath(new File(JSH_HOME,"tools/profiler.jar")));
-//		var subenv = {};
-//		for (var x in jsh.shell.environment) {
+//if (!destination.installer) {
+//	console("Running post-installer ... " + destination.arguments.join(" "));
+////	var command = LAUNCHER_COMMAND.slice();
+//	var command = [];
+//	//	TODO	brittle; should improve when this becomes jsh script
+//	command.push(getPath(new File(JAVA_HOME,"../bin/jrunscript")));
+//	command.push(new File(JSH_HOME,"jsh.js"));
+//	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
+//	command = command.concat(destination.arguments);
+//	var subenv = {};
+//	for (var x in jsh.shell.environment) {
+//		if (!/^JSH_/.test(x)) {
 //			subenv[x] = jsh.shell.environment[x];
 //		}
-//		subenv.JSH_PLUGINS = "";
-//		command.push({
-//			env: subenv
-//		});
-//		var status = runCommand.apply(this,command);
-//		if (status != 0) {
-//			throw new Error("Exit status when building profile: " + status);
-//		}
-//		new File(JSH_HOME,"tools/profiler/viewer").mkdirs();
-//		platform.io.copyFile(slime.src.getFile("rhino/tools/profiler/viewer"), new File(JSH_HOME,"tools/profiler/viewer"));
-//	}).call(this);
-//} else {
-//	debug("Javassist location not specified; not building profiler.");
+//	}
+//	if (getSetting("jsh.build.downloads")) {
+//		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
+//	}
+//	if (getSetting("jsh.build.rhino.jar")) {
+//		subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.build.rhino.jar");
+//	} else if (getSetting("jsh.engine.rhino.classpath")) {
+//		subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.engine.rhino.classpath");
+//	}
+////	subenv.JSH_SLIME_SRC = slime.src.toString();
+//	command.push({ env: subenv });
+//	var status = $api.engine.runCommand.apply(this,command);
+//	if (status != 0) {
+//		throw new Error("Exit status " + status + " from " + command.slice(0,-1).join(" "));
+//	}
 //}
-//
-//if (getSetting("jsh.build.coffeescript.path")) {
-//	console("Copying CoffeeScript from " + getSetting("jsh.build.coffeescript.path") + " ...");
-//	platform.io.copyFile(new File(getSetting("jsh.build.coffeescript.path")), new File(JSH_HOME,"plugins/coffee-script.js"));
-//} else {
-//	debug("CoffeeScript location not specified; not including CoffeeScript.");
-//}
-
-//console("Creating install scripts ...");
-//new File(JSH_HOME,"etc").mkdir();
-//platform.io.copyFile($api.slime.src.getFile("jsh/etc/install.jsh.js"), new File(JSH_HOME, "etc/install.jsh.js"));
-//platform.io.copyFile($api.slime.src.getFile("jsh/etc/install"), new File(JSH_HOME, "etc/install"));
-
-if (!destination.installer) {
-	console("Running post-installer ... " + destination.arguments.join(" "));
-//	var command = LAUNCHER_COMMAND.slice();
-	var command = [];
-	//	TODO	brittle; should improve when this becomes jsh script
-	command.push(getPath(new File(JAVA_HOME,"../bin/jrunscript")));
-	command.push(new File(JSH_HOME,"jsh.js"));
-	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
-	command = command.concat(destination.arguments);
-	var subenv = {};
-	for (var x in jsh.shell.environment) {
-		if (!/^JSH_/.test(x)) {
-			subenv[x] = jsh.shell.environment[x];
-		}
-	}
-	if (getSetting("jsh.build.downloads")) {
-		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
-	}
-	if (getSetting("jsh.build.rhino.jar")) {
-		subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.build.rhino.jar");
-	} else if (getSetting("jsh.engine.rhino.classpath")) {
-		subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.engine.rhino.classpath");
-	}
-//	subenv.JSH_SLIME_SRC = slime.src.toString();
-	command.push({ env: subenv });
-	var status = $api.engine.runCommand.apply(this,command);
-	if (status != 0) {
-		throw new Error("Exit status " + status + " from " + command.slice(0,-1).join(" "));
-	}
-}
 
 var setTestEnvironment = function(command) {
 	var subenv = {};
