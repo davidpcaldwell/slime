@@ -20,9 +20,8 @@ var parameters = jsh.script.getopts({
 
 if (!parameters.options.child) {
 	var SUDO_ASKPASS_INVOCATION = [
-		jsh.shell.java.launcher,
-		"-jar",
-		jsh.shell.jsh.home.getRelativePath("jsh.jar"),
+		jsh.shell.java.jrunscript,
+		jsh.shell.jsh.home.getRelativePath("jsh.js"),
 		jsh.script.file.pathname,
 		"-prompt","\"" + parameters.options.prompt + "\"",
 		"-child"
