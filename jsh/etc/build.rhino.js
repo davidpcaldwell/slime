@@ -326,6 +326,65 @@ if (!destination.installer) {
 	})();
 }
 
+var getTestEnvironment = jsh.js.constant(function() {
+	var subenv = {};
+	for (var x in jsh.shell.environment) {
+		if (!/^JSH_/.test(x)) {
+			subenv[x] = jsh.shell.environment[x];
+		}
+	}
+	//	TODO	this should not be necessary; built shell should detect Tomcat
+	if (getSetting("jsh.build.tomcat.home")) {
+		//	TODO	is this the best way to do it? Or would simply adding CATALINA_HOME to the environment cause the jsh.httpd
+		//			plugin to do this for us?
+		subenv.CATALINA_HOME = getSetting("jsh.build.tomcat.home");
+	} else {
+		console("Tomcat not found (use environment variable JSH_BUILD_TOMCAT_HOME or system property jsh.build.tomcat.home)");
+		console("Tests for HTTP client and server will not be run.");
+	}
+	if (jsh.shell.environment.JSH_BUILD_DEBUG) {
+		subenv.JSH_LAUNCHER_DEBUG = "true";
+		subenv.JSH_SCRIPT_DEBUGGER = "rhino";
+	}
+	if (jsh.shell.environment.JSH_ENGINE) {
+		subenv.JSH_ENGINE = jsh.shell.environment.JSH_ENGINE;
+	}
+	subenv.JSH_PLUGINS = "";
+	return subenv;
+});
+
+(function() {
+	var nounit = getSetting("jsh.build.nounit") || getSetting("jsh.build.notest");
+	var notest = getSetting("jsh.build.notest");
+	var nodoc = getSetting("jsh.build.nodoc");
+	var args = [];
+	if (nounit) args.push("-notest");
+	modules.forEach(function(module) {
+		if (module.api) args.push("-api",SLIME.getRelativePath(module.path));
+		if (module.test) args.push("-test",SLIME.getRelativePath(module.path));
+	});
+	if (!nodoc) {
+		args.push("-doc",destination.shell.getRelativePath("doc/api"));
+		args.push("-index",SLIME.getFile("jsh/etc/index.html"));
+	}
+	console("Running jsapi.jsh.js ...");
+	jsh.shell.jsh({
+		shell: destination.shell,
+		script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
+		arguments: args,
+		environment: getTestEnvironment()
+	});
+	if (!notest) {
+		console("Running integration tests ...");
+		jsh.shell.jsh({
+			shell: destination.shell,
+			script: SLIME.getFile("jsh/test/integration.jsh.js"),
+			arguments: [],
+			environment: getTestEnvironment()
+		});
+	}
+})();
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -435,136 +494,27 @@ var getPath = function(file) {
 	return path;
 };
 
-//if (!destination.installer) {
-//	console("Running post-installer ... " + destination.arguments.join(" "));
-////	var command = LAUNCHER_COMMAND.slice();
-//	var command = [];
-//	//	TODO	brittle; should improve when this becomes jsh script
-//	command.push(getPath(new File(JAVA_HOME,"../bin/jrunscript")));
-//	command.push(new File(JSH_HOME,"jsh.js"));
-//	command.push(getPath(new File(JSH_HOME,"etc/install.jsh.js")));
-//	command = command.concat(destination.arguments);
-//	var subenv = {};
-//	for (var x in jsh.shell.environment) {
-//		if (!/^JSH_/.test(x)) {
-//			subenv[x] = jsh.shell.environment[x];
+//var setTestEnvironment = function(command) {
+//	command.push({ env: getTestEnvironment() });
+//};
+
+//if (!getSetting("jsh.build.notest")) {
+//	var integrationTests = function() {
+//		var command = LAUNCHER_COMMAND.slice();
+//		var script = $api.slime.src.getFile("jsh/test/integration.jsh.js");
+//		command.push(getPath(script));
+//		setTestEnvironment(command);
+//		console("Running integration tests at " + script.getCanonicalPath() + " ...");
+//		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
+//		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
+//		var status = $api.engine.runCommand.apply(this,command);
+//		if (status != 0) {
+//			throw new Error("Integration tests failed: " + command.join(" "));
 //		}
 //	}
-//	if (getSetting("jsh.build.downloads")) {
-//		subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
-//	}
-//	if (getSetting("jsh.build.rhino.jar")) {
-//		subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.build.rhino.jar");
-//	} else if (getSetting("jsh.engine.rhino.classpath")) {
-//		subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.engine.rhino.classpath");
-//	}
-////	subenv.JSH_SLIME_SRC = slime.src.toString();
-//	command.push({ env: subenv });
-//	var status = $api.engine.runCommand.apply(this,command);
-//	if (status != 0) {
-//		throw new Error("Exit status " + status + " from " + command.slice(0,-1).join(" "));
-//	}
+//
+//	integrationTests();
 //}
-
-var setTestEnvironment = function(command) {
-	var subenv = {};
-	for (var x in jsh.shell.environment) {
-		if (!/^JSH_/.test(x)) {
-			subenv[x] = jsh.shell.environment[x];
-		}
-	}
-	if (getSetting("jsh.build.tomcat.home")) {
-		//	TODO	is this the best way to do it? Or would simply adding CATALINA_HOME to the environment cause the jsh.httpd
-		//			plugin to do this for us?
-		subenv.CATALINA_HOME = getSetting("jsh.build.tomcat.home");
-	} else {
-		console("Tomcat not found (use environment variable JSH_BUILD_TOMCAT_HOME or system property jsh.build.tomcat.home)");
-		console("Tests for HTTP client and server will not be run.");
-	}
-	if (jsh.shell.environment.JSH_BUILD_DEBUG) {
-		subenv.JSH_LAUNCHER_DEBUG = "true";
-		subenv.JSH_SCRIPT_DEBUGGER = "rhino";
-	}
-	if (jsh.shell.environment.JSH_ENGINE) {
-		subenv.JSH_ENGINE = jsh.shell.environment.JSH_ENGINE;
-	}
-	subenv.JSH_PLUGINS = "";
-	command.push({
-		env: subenv
-	});
-}
-if ((getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) && getSetting("jsh.build.nodoc")) {
-} else {
-	console("Running JSAPI ...");
-	var jsapi_jsh = (function() {
-		var command = LAUNCHER_COMMAND.slice(0,LAUNCHER_COMMAND.length);
-		debug("Launcher command: " + command);
-		command.add = function() {
-			for (var i=0; i<arguments.length; i++) {
-				this.push(arguments[i]);
-			}
-		}
-		command.add($api.slime.src.getFile("jsh/unit/jsapi.jsh.js").getCanonicalPath());
-		var JSH_JSAPI_BASE = $api.slime.src.toString();
-		if (platform.cygwin) {
-			JSH_JSAPI_BASE = platform.cygwin.cygpath.unix(JSH_JSAPI_BASE);
-		}
-		if (getSetting("jsh.build.nounit") || getSetting("jsh.build.notest")) {
-			command.add("-notest");
-		}
-		command.add("-jsapi",JSH_JSAPI_BASE+"/"+"loader/api");
-		command.add("-base", JSH_JSAPI_BASE);
-
-		modules.forEach( function(module) {
-			if (module.api) command.add("-api",String($api.slime.src.getFile(module.path).getCanonicalPath()));
-			if (module.test) command.add("-test",String($api.slime.src.getFile(module.path).getCanonicalPath()));
-		});
-
-		var JSAPI_DOC = String(new File(JSH_HOME,"doc/api").getCanonicalPath());
-		if (platform.cygwin) {
-			JSAPI_DOC = platform.cygwin.cygpath.unix(JSAPI_DOC);
-		}
-		if (getSetting("jsh.build.nodoc")) {
-		} else {
-			command.add("-doc",JSAPI_DOC);
-			command.add("-index", String($api.slime.src.getFile("jsh/etc/index.html").getCanonicalPath()));
-		}
-
-		setTestEnvironment(command);
-
-		console("JSAPI command:");
-		console(command.map(function(item) {
-			if (item.env) return "";
-			var token = String(item);
-			if (token.indexOf("(") != -1) return "\"" + token + "\"";
-			return token;
-		}).join(" "));
-		console("JSAPI environment:");
-		console(JSON.stringify(command[command.length-1].env));
-		var status = $api.engine.runCommand.apply(this,command);
-		if (status) {
-			throw new Error("Failed: " + command.join(" "));
-		}
-	})();
-}
-
-if (!getSetting("jsh.build.notest")) {
-	var integrationTests = function() {
-		var command = LAUNCHER_COMMAND.slice();
-		var script = $api.slime.src.getFile("jsh/test/integration.jsh.js");
-		command.push(getPath(script));
-		setTestEnvironment(command);
-		console("Running integration tests at " + script.getCanonicalPath() + " ...");
-		//	Cannot use load(script.getCanonicalPath()) because errors will not propagate back to this file, so would need to roll
-		//	our own inter-file communication (maybe a global variable). For now, we'll just eval the file.
-		var status = $api.engine.runCommand.apply(this,command);
-		if (status != 0) {
-			throw new Error("Integration tests failed: " + command.join(" "));
-		}
-	}
-
-	integrationTests();
-}
 
 if (destination.installer) {
 	//	TODO	allow getting named resource as stream from within jsh
