@@ -77,11 +77,6 @@ jrunscript.launcher.buildLoader = function(rhino) {
 	var unbuilt = new jrunscript.$api.jsh.Unbuilt(_rhino);
 	return unbuilt.compileLoader();
 }
-//	TODO	remove this load(); currently this seems to augment the platform object, and may augment the slime object with the
-//			ability to build modules
-jsh.script.loader.run("jsh/etc/api.rhino.js", { $api: jrunscript.$api, File: Packages.java.io.File }, jrunscript);
-//jsh.shell.echo("Platform keys = " + Object.keys(platform));
-//$api.script.resolve("api.rhino.js").load();
 
 //	Policy decision to support 1.6 and up
 var JAVA_VERSION = "1.6";
