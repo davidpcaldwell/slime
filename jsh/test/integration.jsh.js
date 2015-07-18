@@ -225,7 +225,7 @@ scenario.add(new ScriptVerifier({
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
 //	TODO	remove the below dependency
-eval(src.getFile("jsh/etc/api.rhino.js").read(String));
+eval(src.getFile("jsh/test/integration.api.rhino.js").read(String));
 
 var File = Packages.java.io.File;
 

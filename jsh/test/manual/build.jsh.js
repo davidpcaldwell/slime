@@ -35,7 +35,7 @@ jsh.shell.jsh({
 //		"jsh.build.nodoc": "true",
 		"jsh.debug.script": (parameters.options["debug:script"]) ? parameters.options["debug:script"] : null
 	},
-	script: SLIME.getFile("jsh/etc/build.rhino.js"),
+	script: SLIME.getFile("jsh/etc/build.jsh.js"),
 	arguments: [TMP]
 });
 
@@ -46,7 +46,7 @@ jsh.shell.jsh({
 		"jsh.build.notest": "true",
 		"jsh.build.nodoc": "true"
 	},
-	script: SLIME.getFile("jsh/etc/build.rhino.js"),
+	script: SLIME.getFile("jsh/etc/build.jsh.js"),
 	arguments: ["-installer", INSTALLER]
 });
 

@@ -19,13 +19,13 @@
 //	It can also be executed directly using the Rhino shell, but it then needs assistance finding the source code, as Rhino scripts
 //	do not know their own location. This can be done by changing the working directory to the source root:
 //
-//	cd /path/to/source; java -jar js.jar jsh/etc/build.rhino.js <arguments>
+//	cd /path/to/source; java -jar js.jar jsh/etc/build.jsh.js <arguments>
 //
 //	The script can be invoked in two ways. The first builds a shell to the given directory:
-//	build.rhino.js <build-destination>
+//	build.jsh.js <build-destination>
 //
 //	The second builds an executable JAR capable of installing the shell:
-//	build.rhino.js -installer <installer-destination>
+//	build.jsh.js -installer <installer-destination>
 //
 //	System properties that affect the build (equivalent environment variable name in parentheses):
 //
@@ -131,9 +131,9 @@ var destination = (function(args) {
 
 	if (!rv) {
 		console("Usage:");
-		console("build.rhino.js <build-destination>");
+		console(jsh.script.file.pathname.basename + " <build-destination>");
 		console("-or-");
-		console("build.rhino.js -installer <installer-jar-location>");
+		console(jsh.script.file.pathname.basename + " -installer <installer-jar-location>");
 		jsh.shell.exit(1);
 	} else {
 		return rv;
