@@ -385,6 +385,29 @@ var getTestEnvironment = jsh.js.constant(function() {
 	}
 })();
 
+if (destination.installer) {
+	//	TODO	allow getting named resource as stream from within jsh
+	//	TODO	allow jsh.file.unzip to take a stream as its source
+	console("Build installer to " + destination.installer);
+	var zipdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	var build = zipdir.getRelativePath("build.zip");
+	console("Build build.zip to " + build);
+	jsh.file.zip({
+		from: destination.shell,
+		to: build
+	});
+	jsh.shell.jsh({
+		shell: destination.shell,
+		script: destination.shell.getFile("tools/package.jsh.js"),
+		arguments: [
+			"-script", destination.shell.getRelativePath("etc/install.jsh.js"),
+			"-file", "build.zip=" + build,
+			"-to", destination.installer
+		].concat( (RHINO_LIBRARIES) ? [] : ["-norhino"] )
+	});
+}
+
+
 (function() {
 	var $api = jrunscript.$api;
 	var JAVA_HOME = jrunscript.JAVA_HOME;
@@ -515,24 +538,4 @@ var getPath = function(file) {
 //
 //	integrationTests();
 //}
-
-if (destination.installer) {
-	//	TODO	allow getting named resource as stream from within jsh
-	//	TODO	allow jsh.file.unzip to take a stream as its source
-	console("Build installer to " + destination.installer);
-	var zipdir = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.java.adapt();
-	var build = new File(zipdir,"build.zip");
-	console("Build build.zip to " + build.getCanonicalPath());
-	jrunscript.$api.jsh.zip(JSH_HOME,build);
-
-	var command = LAUNCHER_COMMAND.slice(0);
-	command.push(getPath(new File(JSH_HOME,"tools/package.jsh.js")));
-	command.push("-script",getPath(new File(JSH_HOME,"etc/install.jsh.js")));
-	command.push("-file","build.zip=" + getPath(build));
-	command.push("-to",String(destination.installer));
-	if (!RHINO_LIBRARIES) {
-		command.push("-norhino");
-	}
-	$api.engine.runCommand.apply(this,command);
-}
 }).call(this);

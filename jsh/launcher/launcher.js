@@ -592,7 +592,7 @@ try {
 			var args = [
 				"-Xlint:unchecked",
 				"-d", p.to
-			];
+			].concat(rhinoJavacArguments);
 			//	TODO	we used to use .concat(toCompile) but that does not work under Nashorn 8u45, which is presumably a Nashorn
 			//			bug
 			for (var i=0; i<toCompile.length; i++) {
