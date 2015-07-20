@@ -258,16 +258,46 @@
 		}
 		var _builder = new Packages.java.lang.ProcessBuilder(list);
 		context.environment(_builder.environment());
-		var Spooler = function(_in,_out,closeOnEnd) {
-			var flush = closeOnEnd || true;
+		//	TODO	this terminator/buffer stuff seems like it might be really slow; should try to figure out a way to profile it
+		//			and speed it up if necessary
+		var terminator = (function() {
+			var output = new Packages.java.io.ByteArrayOutputStream();
+			var writer = new Packages.java.io.OutputStreamWriter(output);
+			writer.write(Packages.java.lang.System.getProperty("line.separator"));
+			writer.flush();
+			var bytes = output.toByteArray();
+			var rv = [];
+			for (var i=0; i<bytes.length; i++) {
+				rv[i] = bytes[i];
+			}
+			return rv;
+		})();
+		var Spooler = function(_in,_out,closeOnEnd,flush) {
+			var buffer = [];
+
+			var bufferIsTerminator = function() {
+				for (var i=0; i<terminator.length; i++) {
+					if (terminator[i] != buffer[i]) return false;
+				}
+				return true;
+			}
+
 			this.run = function() {
 				var i;
 				try {
 					while( (i = _in.read()) != -1 ) {
+						if (flush) {
+							if (buffer.length < terminator.length) {
+								buffer.push(i);
+							} else {
+								buffer.shift();
+								buffer[buffer.length-1] = i;
+							}
+						}
 						_out.write(i);
 						//	TODO	This flush, which essentially turns off buffering, is necessary for at least some classes of
 						//			applications that are waiting on input in order to decide how to proceed.
-						if (flush) {
+						if (flush || bufferIsTerminator()) {
 							_out.flush();
 						}
 					}
@@ -279,8 +309,8 @@
 				}
 			}
 		};
-		Spooler.start = function(_in,_out,closeOnEnd,name) {
-			var s = new Spooler(_in, _out, closeOnEnd);
+		Spooler.start = function(_in,_out,closeOnEnd,flush,name) {
+			var s = new Spooler(_in, _out, closeOnEnd,flush);
 			var t = new Packages.java.lang.Thread(
 				new JavaAdapter(
 					Packages.java.lang.Runnable,
@@ -294,10 +324,11 @@
 		var spoolName = Array.prototype.join.call(arguments, ",");
 //		Packages.java.lang.System.err.println("Forking a command ... " + Array.prototype.slice.call(arguments).join(" "));
 		var delegate = _builder.start();
-		var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, "stdout: " + spoolName);
-		var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
+		var hasConsole = Packages.java.lang.System.console();
+		var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, !hasConsole, "stdout: " + spoolName);
+		var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, !hasConsole, "stderr: " + spoolName);
 		var _stdin = context.getStandardInput();
-		var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, "stdin from " + _stdin + ": " + spoolName);
+		var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, true, "stdin from " + _stdin + ": " + spoolName);
 		var rv = delegate.waitFor();
 		_in.join();
 		_err.join();

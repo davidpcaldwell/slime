@@ -17,7 +17,6 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-jsh.shell.echo("STARTING");
 var _random = new Packages.java.util.Random();
 
 var emitStringSlowly = function(string,to) {
