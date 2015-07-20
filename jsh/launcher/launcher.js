@@ -556,7 +556,7 @@ try {
 		var _units = p.files.map(function(file) {
 			return new SourceFile(file);
 		});
-		Packages.java.lang.System.err.println(_units.join("\n"));
+		//	Packages.java.lang.System.err.println(_units.join("\n"));
 
 		var task = javac.getTask(_writer, _jfm, _listener, toIterable(["-Xlint:unchecked"]), _annotationProcessorClasses, toIterable(_units));
 		var success = task.call();
