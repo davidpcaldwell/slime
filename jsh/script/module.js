@@ -37,13 +37,28 @@ if ($context.packaged) {
 } else if ($context.file) {
 	$exports.loader = new $context.api.file.Loader($context.file.parent);
 } else if ($context.uri) {
-	$exports.__defineGetter__("loader", $context.api.js.constant(function() {
-		var http = $context.api.http();
-		var client = new http.Client();
-		var base = $context.uri.split("/").slice(0,-1).join("/") + "/";
-		if (!client) throw new Error("client is null");
-		return new client.Loader(base);
-	}));
+	Object.defineProperty($exports, "loader", new function() {
+		var value;
+
+		var get = function() {
+			var http = $context.api.http();
+			var client = new http.Client();
+			var base = $context.uri.split("/").slice(0,-1).join("/") + "/";
+			return new client.Loader(base);
+		};
+
+		this.get = function() {
+			if (!value) {
+				value = get();
+			}
+			return value;
+		};
+
+		this.set = function(v) {
+			//	TODO	validate argument
+			value = v;
+		};
+	});
 }
 
 if ($context.file) {
@@ -72,4 +87,3 @@ $exports.Application = $loader.file("Application.js", {
 	js: $context.api.js,
 	getopts: $exports.getopts
 }).Application;
-
