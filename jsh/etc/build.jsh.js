@@ -26,26 +26,22 @@
 //
 //	The second builds an executable JAR capable of installing the shell:
 //	build.jsh.js -installer <installer-destination>
-//
-//	System properties that affect the build (equivalent environment variable name in parentheses):
-//
-//	jsh.build.base (JSH_BUILD_BASE): if not executed via the unbuilt.rhino.js helper script, this setting specifies the directory
-//	where the SLIME source distribution can be found; otherwise the current working directory is assumed to be the location of the
-//	source distribution
-//
-//	jsh.build.debug (JSH_BUILD_DEBUG): if set, additional debugging information is emitted to System.err, and the subshell that
-//	generates and runs unit tests is run in the debugger
-//
-//	jsh.build.nounit (JSH_BUILD_NOUNIT): if set, unit tests are not run as part of the build process
-//	jsh.build.tomcat.home (JSH_BUILD_TOMCAT_HOME): if set, allows HTTP client and server tests to be run
-//	jsh.build.notest (JSH_BUILD_NOTEST): if set, unit and integration tests are not run as part of the build process
-//
-//	jsh.build.nodoc (JSH_BUILD_NODOC): if set, no documentation is emitted as part of the build process
-//
-//	jsh.build.javassist.jar (JSH_BUILD_JAVASSIST_JAR): if set, profiler is built using Javassist.
+
 
 //	TODO	Eliminate launcher JAR file; seems to be used only for packaging applications now
 //	TODO	build script should build all plugins
+
+var parameters = jsh.script.getopts({
+	options: {
+		verbose: false,
+		nounit: false,
+		notest: false,
+		nodoc: false,
+		installer: jsh.file.Pathname
+	},
+	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
+});
+if (parameters.options.notest) parameters.options.nounit = true;
 
 jsh.script.loader = new jsh.script.Loader("../../");
 
@@ -56,7 +52,7 @@ var jrunscript = (function() {
 		arguments: []
 	};
 	jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
-	THIS.$api.arguments = jsh.script.arguments;
+	THIS.$api.arguments = [];
 	return THIS;
 })();
 
@@ -82,8 +78,8 @@ if (jsh.script.url) {
 		});
 	} else {
 		jsh.shell.echo("No match: " + jsh.script.url);
+		jsh.shell.exit(1);
 	}
-	jsh.shell.exit(1);
 }
 
 var loadLauncherScript = function(name) {
@@ -98,11 +94,10 @@ var loadLauncherScript = function(name) {
 	jrunscript.$api.script = new jrunscript.$api.Script(argument);
 	jsh.script.loader.run("jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
 }
-if (!jrunscript.$api.slime) {
-	loadLauncherScript("slime.js");
-}
-var debug = jrunscript.$api.debug;
+
+loadLauncherScript("slime.js");
 loadLauncherScript("launcher.js");
+
 jrunscript.launcher = {};
 jrunscript.launcher.buildLoader = function(rhino) {
 	//	Converts jsh searchpath to launcher classpath
@@ -118,31 +113,18 @@ jrunscript.launcher.buildLoader = function(rhino) {
 
 //	Policy decision to support 1.6 and up
 var JAVA_VERSION = "1.6";
-
 var console = jrunscript.$api.console;
+var debug = jrunscript.$api.debug;
 
-var getSetting = function(systemPropertyName) {
-	//	TODO	switch to superior jsh APIs for this
-	var environmentVariableName = systemPropertyName.replace(/\./g, "_").toUpperCase();
-	if (Packages.java.lang.System.getProperty(systemPropertyName)) {
-		return String(Packages.java.lang.System.getProperty(systemPropertyName));
-	} else if (Packages.java.lang.System.getenv(environmentVariableName)) {
-		return String(Packages.java.lang.System.getenv(environmentVariableName));
-	} else {
-		return null;
-	}
-}
+if (parameters.options.verbose) debug.on = true;
 
-if (getSetting("jsh.build.debug")) debug.on = true;
-
-var destination = (function(args) {
+var destination = (function(parameters) {
 	//	TODO	should normalize Cygwin paths if Cygwin support is added
 	var rv;
 
 	var Installer = function(to) {
 		this.installer = jsh.file.Pathname(to);
 		this.shell = jsh.shell.TMPDIR.createTemporary({ directory: true });
-		this.arguments = [];
 	};
 
 	var Destination = function(to) {
@@ -153,18 +135,12 @@ var destination = (function(args) {
 				return true;
 			}
 		});
-		this.arguments = [];
 	};
 
-
-	for (var i=0; i<args.length; i++) {
-		if (!rv && args[i] == "-installer") {
-			rv = new Installer(args[++i]);
-		} else if (!rv) {
-			rv = new Destination(args[i]);
-		} else {
-			rv.arguments.push(args[i]);
-		}
+	if (parameters.options.installer) {
+		rv = new Installer(parameters.options.installer);
+	} else if (parameters.arguments[0]) {
+		rv = new Destination(parameters.arguments.shift());
 	}
 
 	if (!rv) {
@@ -174,29 +150,17 @@ var destination = (function(args) {
 		console(jsh.script.file.pathname.basename + " -installer <installer-jar-location>");
 		jsh.shell.exit(1);
 	} else {
+		rv.arguments = parameters.arguments;
 		return rv;
 	}
-})(jrunscript.$api.arguments);
+})(parameters);
 
 var SLIME = jsh.script.file.parent.parent.parent;
 
 var RHINO_LIBRARIES = (function() {
 	//	TODO	figure out test coverage here
-	if (getSetting("jsh.build.rhino.jar")) {
-		return jsh.file.Searchpath([ jsh.file.Pathname(getSetting("jsh.build.rhino.jar")) ]);
-	}
-	if (getSetting("jsh.engine.rhino.classpath")) {
-		//	TODO	assumes only one path component
-		return jsh.file.Searchpath([ jsh.file.Pathname(getSetting("jsh.engine.rhino.classpath")) ]);
-	}
-	if (typeof(Packages.org.mozilla.javascript.Context) == "function") {
-		//	TODO	Used to allow XMLBeans here if jsh.shell.environment.XMLBEANS_HOME defined
-		return (function() {
-			//	This strategy for locating Rhino will cause problems if someone were to somehow run against something other than js.jar,
-			//	like an un-jarred version
-			var _uri = Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toURI();
-			return jsh.file.Searchpath([ String(new Packages.java.io.File(_uri).getCanonicalPath()) ]);
-		})();
+	if (jsh.shell.rhino) {
+		return jsh.shell.rhino.classpath;
 	}
 })();
 
@@ -253,7 +217,7 @@ console("Building launcher ...");
 })();
 
 (function copyScripts() {
-	console("Copying script implementations ...");
+	console("Copying bootstrap scripts ...");
 	SLIME.getSubdirectory("loader").copy(destination.shell.getRelativePath("script/loader"));
 	SLIME.getSubdirectory("jsh/loader").copy(destination.shell.getRelativePath("script/jsh"));
 })();
@@ -335,22 +299,7 @@ SLIME.getSubdirectory("jsh/etc/install").copy(ETC);
 
 if (!destination.installer) {
 	(function postInstaller() {
-		console("Running post-installer with arguments ... " + destination.arguments.join(" "));
-		//	TODO	the below kind of manipulation is an excellent category for improved $api
-		var subenv = jsh.js.Object.set({}, jsh.shell.environment);
-		for (var x in subenv) {
-			if (/^JSH_/.test(x)) {
-				delete subenv[x];
-			}
-		}
-		if (getSetting("jsh.build.downloads")) {
-			subenv.JSH_BUILD_DOWNLOADS = getSetting("jsh.build.downloads");
-		}
-		if (getSetting("jsh.build.rhino.jar")) {
-			subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.build.rhino.jar");
-		} else if (getSetting("jsh.engine.rhino.classpath")) {
-			subenv.JSH_ENGINE_RHINO_CLASSPATH = getSetting("jsh.engine.rhino.classpath");
-		}
+		console("Running post-installer with arguments [" + destination.arguments.join(" ") + "] ... ");
 		jsh.shell.jsh({
 			shell: destination.shell,
 			script: destination.shell.getFile("etc/install.jsh.js"),
@@ -366,48 +315,34 @@ var getTestEnvironment = jsh.js.constant(function() {
 			subenv[x] = jsh.shell.environment[x];
 		}
 	}
-	//	TODO	this should not be necessary; built shell should detect Tomcat
-	if (getSetting("jsh.build.tomcat.home")) {
-		//	TODO	is this the best way to do it? Or would simply adding CATALINA_HOME to the environment cause the jsh.httpd
-		//			plugin to do this for us?
-		subenv.CATALINA_HOME = getSetting("jsh.build.tomcat.home");
-	} else {
-		console("Tomcat not found (use environment variable JSH_BUILD_TOMCAT_HOME or system property jsh.build.tomcat.home)");
-		console("Tests for HTTP client and server will not be run.");
-	}
-	if (jsh.shell.environment.JSH_BUILD_DEBUG) {
-		subenv.JSH_LAUNCHER_DEBUG = "true";
-		subenv.JSH_SCRIPT_DEBUGGER = "rhino";
-	}
-	if (jsh.shell.environment.JSH_ENGINE) {
-		subenv.JSH_ENGINE = jsh.shell.environment.JSH_ENGINE;
-	}
+	//	TODO	test whether Tomcat tests work in shells where -install tomcat is indicated
+	//	TODO	ensure that user plugins are disabled; the below probably does not work. See inonit.jsh.script.Main, which
+	//			automatically uses user plugins
 	subenv.JSH_PLUGINS = "";
 	return subenv;
 });
 
 (function() {
-	var nounit = getSetting("jsh.build.nounit") || getSetting("jsh.build.notest");
-	var notest = getSetting("jsh.build.notest");
-	var nodoc = getSetting("jsh.build.nodoc");
-	var args = [];
-	if (nounit) args.push("-notest");
-	modules.forEach(function(module) {
-		if (module.api) args.push("-api",SLIME.getRelativePath(module.path));
-		if (module.test) args.push("-test",SLIME.getRelativePath(module.path));
-	});
-	if (!nodoc) {
-		args.push("-doc",destination.shell.getRelativePath("doc/api"));
-		args.push("-index",SLIME.getFile("jsh/etc/index.html"));
+	if (!parameters.options.nounit || !parameters.options.nodoc) {
+		var args = [];
+		if (parameters.options.nounit) args.push("-notest");
+		modules.forEach(function(module) {
+			if (module.api) args.push("-api",SLIME.getRelativePath(module.path));
+			if (module.test) args.push("-test",SLIME.getRelativePath(module.path));
+		});
+		if (!parameters.options.nodoc) {
+			args.push("-doc",destination.shell.getRelativePath("doc/api"));
+			args.push("-index",SLIME.getFile("jsh/etc/index.html"));
+		}
+		console("Running jsapi.jsh.js ...");
+		jsh.shell.jsh({
+			shell: destination.shell,
+			script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
+			arguments: args,
+			environment: getTestEnvironment()
+		});
 	}
-	console("Running jsapi.jsh.js ...");
-	jsh.shell.jsh({
-		shell: destination.shell,
-		script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
-		arguments: args,
-		environment: getTestEnvironment()
-	});
-	if (!notest) {
+	if (!parameters.options.notest) {
 		console("Running integration tests ...");
 		jsh.shell.jsh({
 			shell: destination.shell,

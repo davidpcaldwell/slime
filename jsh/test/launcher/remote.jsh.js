@@ -11,6 +11,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	Use HTTPS to host the mock server; then protocol conditionals can be removed from rhino/jrunscript/api.js
+//			See http://stackoverflow.com/questions/1511674/how-do-a-send-an-https-request-through-a-proxy-in-java
+
 var parameters = jsh.script.getopts({
 	options: {
 		test: String

@@ -72,7 +72,7 @@ public abstract class Engine {
 
 		private java.lang.reflect.Method getMainMethod() throws IOException, ClassNotFoundException, NoSuchMethodException {
 			String mainClassName = (debug()) ? "org.mozilla.javascript.tools.debugger.Main" : "org.mozilla.javascript.tools.shell.Main";
-			Class shell = loader.loadClass(mainClassName);
+			Class<?> shell = loader.loadClass(mainClassName);
 			String mainMethodName = (debug()) ? "main" : "exec";
 			java.lang.reflect.Method main = shell.getMethod(mainMethodName, new Class[] { String[].class });
 			return main;

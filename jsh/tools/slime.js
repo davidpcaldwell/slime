@@ -122,7 +122,7 @@ slime.build.jsh = function(from,build,javac) {
 				if (jsh.file.filesystems.cygwin) {
 					d = jsh.file.filesystems.cygwin.toWindows(d);
 				}
-				jsh.shell.echo("Compiling to " + d.toString());
+				jsh.shell.echo("Compiling from " + directory + " to " + d.toString());
 				var args = [ "-d", d.toString() ];
 				//	TODO	repeated above
 				if (javac && javac.classpath) {

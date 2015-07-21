@@ -285,9 +285,11 @@ if (uname) {
 
 var src = (parameters.options.src) ? parameters.options.src.directory : install.getSubdirectory("src");
 
+var ISSUE_200_FIXED = false;
+
 if (parameters.options.unix) {
 	var bash = which("bash");
-	if (bash) {
+	if (ISSUE_200_FIXED && bash) {
 		var code = src.getFile("jsh/launcher/jsh.bash").read(String);
 		var lines = code.split("\n");
 		var path = bash.parent.getRelativePath("bash").toString();
@@ -301,6 +303,8 @@ if (parameters.options.unix) {
 			]
 		);
 		jsh.shell.echo("Created bash launcher at " + install.getRelativePath("jsh.bash") + " using bash at " + bash);
+	} else if (!ISSUE_200_FIXED) {
+		jsh.shell.echo("bash launcher disabled; see https://bitbucket.org/davidpcaldwell/slime/issues/200");
 	} else {
 		jsh.shell.echo("bash not found in " + jsh.shell.PATH);
 	}
@@ -325,9 +329,11 @@ if (parameters.options.cygwin) {
 	}
 }
 
+var ISSUE_201_FIXED = false;
+
 //	Build native launcher
 //	TODO	re-enable native launcher for new jrunscript launcher
-if (parameters.options.native || parameters.options.executable) {
+if (ISSUE_201_FIXED && (parameters.options.native || parameters.options.executable)) {
 	if (parameters.options.cygwin) {
 		//	TODO	use LoadLibrary call to locate jvm.dll
 		//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
@@ -379,7 +385,11 @@ if (parameters.options.native || parameters.options.executable) {
 		}
 	} else {
 		jsh.shell.echo("Did not detect UNIX-like operating system (detected " + jsh.shell.os.name + "); not building native launcher.");
+		jsh.shell.exit(1);
 	}
+} else if (parameters.options.native || parameters.options.executable) {
+	jsh.shell.echo("bash launcher disabled; see https://bitbucket.org/davidpcaldwell/slime/issues/201");
+	jsh.shell.exit(1);
 }
 
 //	TODO	run test cases given in jsh.c

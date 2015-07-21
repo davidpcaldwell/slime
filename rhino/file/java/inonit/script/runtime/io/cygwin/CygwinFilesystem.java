@@ -48,7 +48,7 @@ public class CygwinFilesystem extends Filesystem {
 	private CygwinFilesystem() {
 	}
 
-	public String toString() {
+	@Override public String toString() {
 		return getClass().getName() + " paths={" + paths + "}";
 	}
 
@@ -213,7 +213,7 @@ public class CygwinFilesystem extends Filesystem {
 
 		String[] list(NodeImpl node) throws CygpathException, Command.Result.Failure {
 			String output = commands().getCommandOutput("/bin/ls", new String[] { "-A", "--file-type", node.getCygwinScriptPath() });
-			ArrayList names = new ArrayList();
+			ArrayList<String> names = new ArrayList<String>();
 			String name = "";
 			for (int i=0; i<output.length(); i++) {
 				if (output.charAt(i) == '\n') {
@@ -223,7 +223,7 @@ public class CygwinFilesystem extends Filesystem {
 					name += output.charAt(i);
 				}
 			}
-			return (String[])names.toArray(new String[0]);
+			return names.toArray(new String[0]);
 		}
 
 		void destroy() {
@@ -236,19 +236,10 @@ public class CygwinFilesystem extends Filesystem {
 
 		private Subprocess subprocess;
 
-		private Map getenv() {
-			try {
-				Method systemGetenv = System.class.getMethod("getenv", new Class[0]);
-				return (Map)systemGetenv.invoke(null, new Object[0]);
-			} catch (NoSuchMethodException e) {
-				return null;
-			} catch (SecurityException e) {
-				return null;
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			} catch (InvocationTargetException e) {
-				throw new RuntimeException(e.getTargetException());
-			}
+		//	Formerly this method existed to wrap a reflection-based implementation that supported pre-1.5 VMs by returning null
+		//	if System.getenv() was not present
+		private Map<String,String> getenv() {
+			return System.getenv();
 		}
 
 		public String toString() {
@@ -277,15 +268,15 @@ public class CygwinFilesystem extends Filesystem {
 				}
 
 				public Map getSubprocessEnvironment() {
-					Map toUse = new HashMap();
+					Map<String,String> toUse = new HashMap<String,String>();
 
 					//	TODO	do we really have to copy the environment? The PATH below should be sufficient, maybe ...
-					Map existing = getenv();
+					Map<String,String> existing = getenv();
 					if (existing != null) {
-						Iterator keys = existing.keySet().iterator();
+						Iterator<String> keys = existing.keySet().iterator();
 						while(keys.hasNext()) {
-							Object key = keys.next();
-							Object value = existing.get(key);
+							String key = keys.next();
+							String value = existing.get(key);
 							toUse.put(key, value);
 						}
 					}
@@ -389,7 +380,7 @@ public class CygwinFilesystem extends Filesystem {
 
 	Filesystem.Node[] list(NodeImpl node, FilenameFilter pattern) throws CygpathException, Command.Result.Failure {
 		String[] names = paths.list(node);
-		ArrayList unfiltered = new ArrayList();
+		ArrayList<Filesystem.Node> unfiltered = new ArrayList<Filesystem.Node>();
 		for (int i=0; i<names.length; i++) {
 			String filename = (String)names[i];
 			if (filename.endsWith("/")) {
@@ -417,7 +408,7 @@ public class CygwinFilesystem extends Filesystem {
 				}
 			};
 		}
-		ArrayList rv = new ArrayList();
+		ArrayList<Filesystem.Node> rv = new ArrayList<Filesystem.Node>();
 		for (int i=0; i<unfiltered.size(); i++) {
 			NodeImpl n = (NodeImpl)unfiltered.get(i);
 			if (pattern.accept(n.getCygwinHostFile().getParentFile(), n.getCygwinHostFile().getName())) {
