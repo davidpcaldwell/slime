@@ -21,6 +21,8 @@
 //	TODO	this script can only be run with JDK Rhino and Nashorn; allow Mozilla Rhino
 
 (function() {
+	var $script = (this.$api && this.$api.script) ? this.$api.script : null;
+	var $arguments = (this.$api && this.$api.arguments) ? this.$api.arguments : null;
 	var $api = {};
 
 	var $engine = (function(global) {
@@ -429,26 +431,36 @@
 			new $api.Script(p).load();
 		}
 
-		$api.script = new $api.Script({
-			string: $engine.script
-		});
+		if ($script && $script.url) {
+			$api.script = new $api.Script({
+				url: new Packages.java.net.URL($script.url)
+			});
+		} else {
+			$api.script = new $api.Script({
+				string: $engine.script
+			});
+		}
 
-		$api.arguments = (function() {
-			if (this["javax.script.argv"]) {
-				//	Nashorn, JSR223 Rhino
-				return (function(property) {
-					var rv = [];
-					for (var i=0; i<property.length; i++) {
-						rv[i] = String(property[i]);
-					}
-					return rv;
-				})(this["javax.script.argv"]);
-			}
-			//	Rhino
-			if (this.arguments) return Array.prototype.slice.call(this.arguments);
-			//	Rhino embedding
-			if (!this["javax.script.argv"]) return [];
-		})();
+		if ($arguments) {
+			$api.arguments = $arguments;
+		} else {
+			$api.arguments = (function() {
+				if (this["javax.script.argv"]) {
+					//	Nashorn, JSR223 Rhino
+					return (function(property) {
+						var rv = [];
+						for (var i=0; i<property.length; i++) {
+							rv[i] = String(property[i]);
+						}
+						return rv;
+					})(this["javax.script.argv"]);
+				}
+				//	Rhino
+				if (this.arguments) return Array.prototype.slice.call(this.arguments);
+				//	Rhino embedding
+				if (!this["javax.script.argv"]) return [];
+			})();
+		}
 	})();
 
 	$api.java = {};
@@ -677,22 +689,31 @@
 					var out = new Packages.java.io.FileOutputStream(to);
 					$api.io.copy(data,out);
 				}
+
+				this.directory = function(path) {
+					new Packages.java.io.File(p.to._directory, path).mkdirs();
+				}
 			}
 		})();
 		var _zipstream = new Packages.java.util.zip.ZipInputStream(_stream);
-		var _entry = _zipstream.getNextEntry();
+		var _entry;
 		while(_entry = _zipstream.getNextEntry()) {
-			var name = String(_entry.getName());
-			destination.write(name,_zipstream);
+			if (_entry.getName().endsWith(new Packages.java.lang.String("/"))) {
+				destination.directory(String(_entry.getName()));
+			} else {
+				var name = String(_entry.getName());
+				destination.write(name,_zipstream);
+			}
 		}
 		_stream.close();
 	};
 	$api.bitbucket = {};
 	$api.bitbucket.get = function(p) {
 		var owner = (p.owner) ? p.owner : "davidpcaldwell";
-		var repository = p.repository;
+		var repository = (p.repository) ? p.repository : "slime";
 		var revision = (p.revision) ? p.revision : "tip";
-		var URL = "https://bitbucket.org/" + owner + "/" + repository + "/" + "get" + "/" + revision + ".zip";
+		var protocol = (p.protocol) ? p.protocol : "https";
+		var URL = protocol + "://bitbucket.org/" + owner + "/" + repository + "/" + "get" + "/" + revision + ".zip";
 		var tmp = $api.io.tmpdir();
 		tmp["delete"]();
 		$api.io.unzip({

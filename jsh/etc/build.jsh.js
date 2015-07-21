@@ -51,13 +51,51 @@ jsh.script.loader = new jsh.script.Loader("../../");
 
 var jrunscript = (function() {
 	var THIS = {};
+	THIS.$api = {
+		script: (jsh.script.url) ? { url: jsh.script.url } : null,
+		arguments: []
+	};
 	jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
 	THIS.$api.arguments = jsh.script.arguments;
 	return THIS;
 })();
 
+if (jsh.script.url) {
+	//	download source code and relaunch
+	//	http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/build.jsh.js
+	var matcher = /^http(s)?\:\/\/bitbucket\.org\/api\/1.0\/repositories\/davidpcaldwell\/slime\/raw\/(.*)\/jsh\/etc\/build.jsh.js$/;
+	var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	if (matcher.exec(jsh.script.url)) {
+		var match = matcher.exec(jsh.script.url);
+		jrunscript.$api.bitbucket.get({
+			protocol: "http" + ((match[1]) ? match[1] : ""),
+			revision: match[2],
+			destination: tmp.pathname.java.adapt()
+		});
+		jsh.shell.jsh({
+			shell: tmp,
+			script: tmp.getFile("jsh/etc/build.jsh.js"),
+			arguments: jsh.script.arguments,
+			evaluate: function(result) {
+				jsh.shell.exit(result.status);
+			}
+		});
+	} else {
+		jsh.shell.echo("No match: " + jsh.script.url);
+	}
+	jsh.shell.exit(1);
+}
+
 var loadLauncherScript = function(name) {
-	jrunscript.$api.script = new jrunscript.$api.Script({ file: jsh.script.file.getRelativePath("../../jsh/launcher/" + name).java.adapt() });
+	var argument = (function() {
+		if (jsh.script.file) return { file: jsh.script.file.getRelativePath("../../jsh/launcher/" + name).java.adapt() };
+		if (jsh.script.url) {
+			var _url = new Packages.java.net.URL(jsh.script.url);
+			var _resolved = new Packages.java.net.URL(_url, "../../jsh/launcher/" + name);
+			return { url: _resolved };
+		}
+	})();
+	jrunscript.$api.script = new jrunscript.$api.Script(argument);
 	jsh.script.loader.run("jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
 }
 if (!jrunscript.$api.slime) {

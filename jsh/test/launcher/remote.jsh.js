@@ -22,15 +22,22 @@ var tests = (parameters.options.test)
 	file: (parameters.options.test == "file"),
 	url: (parameters.options.test == "url"),
 	urlproperties: (parameters.options.test == "urlproperties"),
-	filename: (parameters.options.test == "filename")
+	filename: (parameters.options.test == "filename"),
+	build: (parameters.options.test == "build")
 }
 : {
 	file: true,
 	url: true,
-	urlproperties: false
+	urlproperties: false,
+	filename: false,
+	build: false
 };
 
 var SRC = jsh.script.file.parent.parent.parent.parent;
+if (!jsh.httpd.Tomcat) {
+	//	TODO	should we pre-install a version of the Tomcat constructor that throws this exception?
+	throw new Error("Tomcat not installed.");
+}
 var tomcat = new jsh.httpd.Tomcat({});
 tomcat.map({
 	//	TODO	works with or without leading slash; document this and write a test
@@ -110,6 +117,56 @@ tomcat.map({
 									if (repository == "slime") {
 										return new Sourceroot(SRC).get(tokenized);
 									}
+								}
+							}
+						} else if (tokenized[0] == "davidpcaldwell" && tokenized[1] == "slime" && tokenized[2] == "get") {
+							if (tokenized[3] == "local.zip") {
+								try {
+									var buffer = new jsh.io.Buffer();
+									var to = buffer.writeBinary();
+									var list = SRC.list({
+										filter: function(node) {
+											if (node.pathname.basename == ".hg") return false;
+											return true;
+										},
+										descendants: function(dir) {
+											if (dir.pathname.basename == ".hg") return false;
+											return true;
+										},
+										type: SRC.list.ENTRY
+									});
+									jsh.file.zip({
+										from: list.map(function(entry) {
+											if (entry.node.directory) {
+												var path = (entry.path) ? entry.path.substring(0,entry.path.length-1).replace(/\\/g, "/") : "";
+												return {
+													directory: "slimelocal/" + path
+												}
+											}
+											var rv = {
+												path: "slimelocal/" + entry.path.replace(/\\/g, "/")
+											};
+											Object.defineProperty(rv, "stream", {
+												get: function() {
+													return entry.node.read(jsh.io.Streams.binary);
+												}
+											});
+											return rv;
+										}),
+										to: to
+									});
+									buffer.close();
+									return {
+										status: { code: 200 },
+										body: {
+											type: "application/zip",
+											stream: buffer.readBinary()
+										}
+									};
+								} catch (e) {
+									jsh.shell.echo("Error: " + e);
+									jsh.shell.echo("Stack: " + e.stack);
+									throw e;
 								}
 							}
 						}
@@ -217,4 +274,21 @@ if (tests.filename) jsh.shell.jrunscript({
 		"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?test=filename')",
 	]
 });
+if (tests.build) {
+	(function() {
+		//	TODO	this is a pretty common idiom; should be a shorter call
+		var destination = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		jsh.shell.jrunscript({
+			properties: {
+				"http.proxyHost": "127.0.0.1",
+				"http.proxyPort": String(tomcat.port)
+			},
+			arguments: [
+				"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
+				"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/etc/build.jsh.js",
+				String(destination)
+			]
+		});
+	})();
+}
 tomcat.stop();
