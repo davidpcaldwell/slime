@@ -31,6 +31,7 @@
 //	TODO	Eliminate launcher JAR file; seems to be used only for packaging applications now
 //	TODO	build script should build all plugins
 
+jsh.shell.echo("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]", { stream: jsh.shell.stdio.error });
 var parameters = jsh.script.getopts({
 	options: {
 		verbose: false,
@@ -102,8 +103,6 @@ var build = (function() {
 	if (jsh.script.url) {
 		otherwise(rv,"unit",false);
 		otherwise(rv,"test",false);
-		jsh.shell.echo("rv.unit = " + rv.unit);
-		jsh.shell.echo("rv.test = " + rv.test);
 		otherwise(rv,"doc",true);
 		if (typeof(rv.rhino) == "undefined") {
 			rv.rhino = downloadRhino();
@@ -125,8 +124,6 @@ var build = (function() {
 	}
 	return rv;
 })();
-jsh.shell.echo("build.unit = " + build.unit);
-jsh.shell.echo("build.test = " + build.test);
 
 if (jsh.script.url) {
 	//	download source code and relaunch

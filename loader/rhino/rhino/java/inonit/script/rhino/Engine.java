@@ -597,8 +597,6 @@ public class Engine {
 	private Debugger debugger;
 	private Configuration contexts;
 
-	private HashMap globals = new HashMap();
-
 	private Engine() {
 	}
 
@@ -633,7 +631,7 @@ public class Engine {
 			}
 		}
 
-		private ArrayList errors = new ArrayList();
+		private ArrayList<ScriptError> errors = new ArrayList<ScriptError>();
 		private ErrorReporterImpl reporter = new ErrorReporterImpl();
 
 		class ErrorReporterImpl implements ErrorReporter {
@@ -691,16 +689,16 @@ public class Engine {
 			err.println(prefix + "Script halted because of " + errors.size() + " errors.");
 			err.println();
 			for (int i=0; i<errors.size(); i++) {
-				emitErrorMessage(err, prefix, (ScriptError)errors.get(i));
+				emitErrorMessage(err, prefix, errors.get(i));
 			}
 		}
 
 		public void reset() {
-			this.errors = new ArrayList();
+			this.errors = new ArrayList<ScriptError>();
 		}
 
 		public ScriptError[] getErrors() {
-			return (ScriptError[])this.errors.toArray(new ScriptError[0]);
+			return this.errors.toArray(new ScriptError[0]);
 		}
 
 		private void addRhino(RhinoException e) {
@@ -836,12 +834,12 @@ public class Engine {
 		return outcome.getResult();
 	}
 
-	public Object evaluate(Program program, String name, Class type) {
+	public Object evaluate(Program program, String name, Class<?> type) {
 		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
 		return outcome.castScopeTo(name, type);
 	}
 
-	public Object evaluate(Program program, Class type) {
+	public Object evaluate(Program program, Class<?> type) {
 		Program.Outcome outcome = (Program.Outcome)contexts.call(new ProgramAction(this, program, debugger));
 		return outcome.castScopeTo(null, type);
 	}
@@ -912,7 +910,7 @@ public class Engine {
 			this.debug = debug;
 		}
 
-		private ArrayList breakpoints = new ArrayList();
+		private ArrayList<Integer> breakpoints = new ArrayList<Integer>();
 
 		final void addBreakpoint(int line) {
 			breakpoints.add( new Integer(line) );
@@ -921,7 +919,7 @@ public class Engine {
 		final void setBreakpoints(Debugger dim) {
 			if (dim != null) {
 				for (int j=0; j<breakpoints.size(); j++) {
-					int line = ((Integer)breakpoints.get(j)).intValue();
+					int line = breakpoints.get(j).intValue();
 					try {
 						dim.setBreakpoint( this, line );
 					} catch (IllegalArgumentException e) {
@@ -1167,8 +1165,8 @@ public class Engine {
 	}
 
 	public static class Program {
-		private ArrayList variables = new ArrayList();
-		private ArrayList units = new ArrayList();
+		private ArrayList<Variable> variables = new ArrayList<Variable>();
+		private ArrayList<Unit> units = new ArrayList<Unit>();
 
 		public void set(Variable variable) {
 			variables.add( variable );
@@ -1220,7 +1218,7 @@ public class Engine {
 				return result;
 			}
 
-			Object castScopeTo(String name, Class type) {
+			Object castScopeTo(String name, Class<?> type) {
 				if (name == null) return Context.jsToJava( global, type );
 				return Context.jsToJava( ScriptableObject.getProperty(global, name), type);
 			}
@@ -1228,7 +1226,7 @@ public class Engine {
 
 		void setVariablesInGlobalScope(Context context, Scriptable global) {
 			for (int i=0; i<variables.size(); i++) {
-				Variable v = (Variable)variables.get(i);
+				Variable v = variables.get(i);
 				Object value = v.value.get(context, global);
 
 				//	Deal with dumb Rhino restriction that we use object arrays only
@@ -1256,7 +1254,7 @@ public class Engine {
 					errors.reset();
 				}
 				try {
-					ignore = ((Unit)units.get(i)).execute(dim, context, global);
+					ignore = units.get(i).execute(dim, context, global);
 				} catch (WrappedException e) {
 					//	TODO	Note that when this is merged into jsh, we will need to change jsh error reporting to dump the
 					//			stack trace from the contained Throwable inside the errors object.
