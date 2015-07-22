@@ -758,7 +758,7 @@
 		if (!source) throw new Error("No known way to retrieve Rhino version " + version);
 		if (source.format == "dist") {
 			var _url = new Packages.java.net.URL(source.url);
-			println("Downloading Rhino from " + _url);
+			Packages.java.lang.System.err.println("Downloading Rhino from " + _url);
 			var _connection = _url.openConnection();
 			var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
 			var _entry;
@@ -777,7 +777,7 @@
 					$api.io.copy(_zipstream,out);
 				}
 			}
-			println("Downloaded Rhino to " + tmprhino);
+			Packages.java.lang.System.err.println("Downloaded Rhino to " + tmprhino);
 			return tmprhino;
 		} else {
 			throw new Error("Unsupported Rhino format: version=" + version + " format=" + source.format);

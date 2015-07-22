@@ -36,12 +36,15 @@ var parameters = jsh.script.getopts({
 		verbose: false,
 		nounit: false,
 		notest: false,
+		unit: false,
+		test: false,
 		nodoc: false,
+		rhino: jsh.file.Pathname,
+		norhino: false,
 		installer: jsh.file.Pathname
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
-if (parameters.options.notest) parameters.options.nounit = true;
 
 jsh.script.loader = new jsh.script.Loader("../../");
 
@@ -56,6 +59,75 @@ var jrunscript = (function() {
 	return THIS;
 })();
 
+var build = (function() {
+	var bothError = function(name) {
+		throw new Error("Specified both -" + name + " and -no" + name + "; specify one or the other.");
+	}
+
+	var setBoolean = function(rv,name) {
+		if (parameters.options[name] && parameters.options["no" + name]) {
+			bothError(name);
+		}
+		if (parameters.options[name]) rv[name] = true;
+		if (parameters.options["no" + name]) rv[name] = false;
+	};
+
+	var otherwise = function(o,property,value) {
+		if (typeof(o[property]) == "undefined") {
+			o[property] = value;
+		}
+	};
+
+	var rv = {};
+	setBoolean(rv,"test");
+	setBoolean(rv,"unit");
+	if (rv.test === false && typeof(rv.unit) == "undefined") rv.unit = false;
+	setBoolean(rv,"doc");
+	if (parameters.options.rhino && parameters.options.norhino) {
+		bothError("rhino");
+	}
+	if (parameters.options.rhino) rv.rhino = jsh.file.Searchpath([parameters.options.rhino]);
+	if (parameters.options.norhino) rv.rhino = null;
+
+	//	Include Rhino if we are running under it and it is not explicitly excluded
+	if (typeof(rv.rhino) == "undefined" && jsh.shell.rhino && jsh.shell.rhino.classpath) {
+		rv.rhino = jsh.shell.rhino.classpath;
+	}
+
+	var downloadRhino = function() {
+		var _file = jrunscript.$api.rhino.download();
+		return jsh.file.Searchpath([jsh.file.Pathname(String(_file.getCanonicalPath()))]);
+	};
+
+	if (jsh.script.url) {
+		otherwise(rv,"unit",false);
+		otherwise(rv,"test",false);
+		jsh.shell.echo("rv.unit = " + rv.unit);
+		jsh.shell.echo("rv.test = " + rv.test);
+		otherwise(rv,"doc",true);
+		if (typeof(rv.rhino) == "undefined") {
+			rv.rhino = downloadRhino();
+		}
+	} else if (jsh.script.file) {
+		otherwise(rv,"unit",true);
+		otherwise(rv,"test",true);
+		//	Should the default for doc be false?
+		otherwise(rv,"doc",true);
+		if (typeof(rv.rhino) == "undefined") {
+			if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+				//	do nothing; use Nashorn only
+			} else {
+				rv.rhino = downloadRhino();
+			}
+		}
+	} else {
+		throw new Error();
+	}
+	return rv;
+})();
+jsh.shell.echo("build.unit = " + build.unit);
+jsh.shell.echo("build.test = " + build.test);
+
 if (jsh.script.url) {
 	//	download source code and relaunch
 	//	http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/build.jsh.js
@@ -68,16 +140,23 @@ if (jsh.script.url) {
 			revision: match[2],
 			destination: tmp.pathname.java.adapt()
 		});
+		var args = Array.prototype.slice.call(parameters.arguments);
+		args.push( (build.unit) ? "-unit" : "-nounit" );
+		args.push( (build.test) ? "-test" : "-notest" );
+		if (!build.doc) args.push("-nodoc");
+		if (build.rhino) args.push("-rhino", build.rhino.toString());
+		jsh.shell.echo("Arguments: " + args.join(" "));
 		jsh.shell.jsh({
 			shell: tmp,
 			script: tmp.getFile("jsh/etc/build.jsh.js"),
-			arguments: jsh.script.arguments,
+			arguments: args,
 			evaluate: function(result) {
 				jsh.shell.exit(result.status);
 			}
 		});
 	} else {
-		jsh.shell.echo("No match: " + jsh.script.url);
+		//	TODO	more helpful error message
+		jsh.shell.echo("Executing from unknown URL: " + jsh.script.url + " ... cannot locate source distribution for version.");
 		jsh.shell.exit(1);
 	}
 }
@@ -157,13 +236,6 @@ var destination = (function(parameters) {
 
 var SLIME = jsh.script.file.parent.parent.parent;
 
-var RHINO_LIBRARIES = (function() {
-	//	TODO	figure out test coverage here
-	if (jsh.shell.rhino) {
-		return jsh.shell.rhino.classpath;
-	}
-})();
-
 console("Creating directories ...");
 ["lib","script","script/launcher","modules","src"].forEach(function(path) {
 	destination.shell.getRelativePath(path).createDirectory();
@@ -175,10 +247,10 @@ SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath(
 	SLIME.getFile("jsh/launcher/" + name).copy(destination.shell);
 });
 
-if (RHINO_LIBRARIES) {
+if (build.rhino) {
 	console("Copying Rhino libraries ...");
 	//	TODO	if multiple Rhino libraries and none named js.jar, built shell will not use Rhino
-	RHINO_LIBRARIES.pathnames.forEach( function(pathname,index,array) {
+	build.rhino.pathnames.forEach( function(pathname,index,array) {
 		var name = (array.length == 1) ? "js.jar" : pathname.basename;
 		pathname.file.copy(destination.shell.getSubdirectory("lib").getRelativePath(name));
 	});
@@ -192,7 +264,7 @@ if (RHINO_LIBRARIES) {
 	//	TODO	test coverage for Nashorn
 	//	TODO	target/source ignored; -g possibly not present
 	//	TODO	May want to emit compiler information when running from build script
-	var tmpClasses = jrunscript.launcher.buildLoader(RHINO_LIBRARIES);
+	var tmpClasses = jrunscript.launcher.buildLoader(build.rhino);
 	jsh.file.zip({
 		//	TODO	still need jsh.file java.adapt()
 		from: jsh.file.Pathname( String(tmpClasses.getCanonicalPath()) ).directory,
@@ -229,8 +301,8 @@ var modules = (function createModules() {
 	//load(String($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath()));
 	var MODULE_CLASSPATH = (function() {
 		var files = [];
-		if (RHINO_LIBRARIES) {
-			files.push.apply(files,RHINO_LIBRARIES.pathnames);
+		if (build.rhino) {
+			files.push.apply(files,build.rhino.pathnames);
 		}
 		files.push(destination.shell.getRelativePath("lib/jsh.jar"));
 		return new jsh.file.Searchpath(files);
@@ -240,7 +312,7 @@ var modules = (function createModules() {
 		slime.build.jsh(
 			SLIME.getSubdirectory(path),
 			tmp,
-			(compile) ? { source: JAVA_VERSION, target: JAVA_VERSION, classpath: MODULE_CLASSPATH.toString(), nowarn: true, rhino: RHINO_LIBRARIES } : null
+			(compile) ? { source: JAVA_VERSION, target: JAVA_VERSION, classpath: MODULE_CLASSPATH.toString(), nowarn: true, rhino: build.rhino } : null
 		);
 		var topath = path.replace(/\//g, ".");
 		if (topath.substring(topath.length-1) == ".") topath = topath.substring(0,topath.length-1);
@@ -323,9 +395,9 @@ var getTestEnvironment = jsh.js.constant(function() {
 });
 
 (function() {
-	if (!parameters.options.nounit || !parameters.options.nodoc) {
+	if (build.unit || build.doc) {
 		var args = [];
-		if (parameters.options.nounit) args.push("-notest");
+		if (!build.unit) args.push("-notest");
 		modules.forEach(function(module) {
 			if (module.api) args.push("-api",SLIME.getRelativePath(module.path));
 			if (module.test) args.push("-test",SLIME.getRelativePath(module.path));
@@ -342,7 +414,7 @@ var getTestEnvironment = jsh.js.constant(function() {
 			environment: getTestEnvironment()
 		});
 	}
-	if (!parameters.options.notest) {
+	if (build.test) {
 		console("Running integration tests ...");
 		jsh.shell.jsh({
 			shell: destination.shell,
@@ -371,6 +443,6 @@ if (destination.installer) {
 			"-script", destination.shell.getRelativePath("etc/install.jsh.js"),
 			"-file", "build.zip=" + build,
 			"-to", destination.installer
-		].concat( (RHINO_LIBRARIES) ? [] : ["-norhino"] )
+		].concat( (build.rhino) ? [] : ["-norhino"] )
 	});
 }

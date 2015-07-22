@@ -17,7 +17,8 @@
 var parameters = jsh.script.getopts({
 	options: {
 		test: String
-	}
+	},
+	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
 var tests = (parameters.options.test)
@@ -173,6 +174,15 @@ tomcat.map({
 								}
 							}
 						}
+					} else if (request.headers.value("host") == "ftp.mozilla.org") {
+						//	TODO	make it possible to reconstruct this from server information
+						var url = "http://" + request.headers.value("host") + "/" + request.path;
+						return new jsh.http.Client().request({
+							url: url
+						});
+						return {
+							status: { code: 500 }
+						};
 					} else {
 						var resource = loader.resource(request.path);
 						if (resource) {
@@ -281,6 +291,10 @@ if (tests.build) {
 	(function() {
 		//	TODO	this is a pretty common idiom; should be a shorter call
 		var destination = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		var args = parameters.arguments.map(function(s) {
+			if (s == "-build:test") return "-test";
+			return s;
+		});
 		jsh.shell.jrunscript({
 			properties: {
 				"http.proxyHost": "127.0.0.1",
@@ -290,7 +304,7 @@ if (tests.build) {
 				"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
 				"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/etc/build.jsh.js",
 				String(destination)
-			]
+			].concat(args)
 		});
 	})();
 }
