@@ -589,10 +589,12 @@ try {
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
 			if (rhinoClasspath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
 			var rhinoJavacArguments = (rhino) ? ["-classpath", rhinoClasspath.local()] : [];
+			var targetArguments = (p && p.target) ? ["-target", p.target] : [];
+			var sourceArguments = (p && p.source) ? ["-source", p.source] : [];
 			var args = [
 				"-Xlint:unchecked",
 				"-d", p.to
-			].concat(rhinoJavacArguments);
+			].concat(rhinoJavacArguments).concat(sourceArguments).concat(targetArguments);
 			//	TODO	we used to use .concat(toCompile) but that does not work under Nashorn 8u45, which is presumably a Nashorn
 			//			bug
 			for (var i=0; i<toCompile.length; i++) {

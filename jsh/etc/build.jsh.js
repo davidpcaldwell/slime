@@ -31,6 +31,9 @@
 //	TODO	Eliminate launcher JAR file; seems to be used only for packaging applications now
 //	TODO	build script should build all plugins
 
+//	Policy decision to support 1.6 and up
+var JAVA_VERSION = "1.6";
+
 jsh.shell.echo("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]", { stream: jsh.shell.stdio.error });
 var parameters = jsh.script.getopts({
 	options: {
@@ -184,11 +187,9 @@ jrunscript.launcher.buildLoader = function(rhino) {
 		return _urls;
 	})() : null;
 	var unbuilt = new jrunscript.$api.jsh.Unbuilt(_rhino);
-	return unbuilt.compileLoader();
+	return unbuilt.compileLoader({ source: JAVA_VERSION, target: JAVA_VERSION });
 }
 
-//	Policy decision to support 1.6 and up
-var JAVA_VERSION = "1.6";
 var console = jrunscript.$api.console;
 var debug = jrunscript.$api.debug;
 
