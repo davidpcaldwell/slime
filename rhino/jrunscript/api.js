@@ -938,6 +938,10 @@
 		})();
 		if ($query == "jsh") {
 			$api.script.resolve("../../jsh/launcher/main.js").load();
+		} else if ($query == "jsh/install") {
+			Packages.java.lang.System.err.println("Installing jsh from SLIME source code at " + $api.script.resolve("../../").toString());
+			$api.arguments.unshift($api.script.resolve("../../jsh/etc/build.jsh.js").toString());
+			$api.script.resolve("../../jsh/launcher/main.js").load();
 		} else if (parameters.relative) {
 			$api.script.resolve(parameters.relative).load();
 		} else if (parameters.bitbucket) {

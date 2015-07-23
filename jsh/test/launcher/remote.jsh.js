@@ -301,8 +301,8 @@ if (tests.build) {
 				"http.proxyPort": String(tomcat.port)
 			},
 			arguments: [
-				"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
-				"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/etc/build.jsh.js",
+				"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh/install')",
+//				"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/etc/build.jsh.js",
 				String(destination)
 			].concat(args)
 		});
