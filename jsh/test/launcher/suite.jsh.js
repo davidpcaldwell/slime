@@ -18,37 +18,32 @@ if (!jsh.unit) {
 	jsh.loader.plugins(src.getRelativePath("jsh/test"));
 }
 jsh.unit.integration({
-	scenario: function() {
-		var parameters = jsh.script.getopts({
-			options: {
-				rhino: jsh.file.Pathname
-			}
-		},arguments);
-
+	getopts: {
+		options: {
+			rhino: jsh.file.Pathname
+		}
+	},
+	scenario: function(parameters) {
 		var home = (function() {
 			if (jsh.shell.jsh.home)  {
 				return jsh.shell.jsh.home;
 			}
 			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-			var properties = {};
+			var buildArguments = [];
 			if (parameters.options.rhino) {
-				properties["jsh.build.rhino.jar"] = parameters.options.rhino;
-			}
-			var propertyArguments = [];
-			for (var x in properties) {
-				propertyArguments.push("-D" + x + "=" + properties[x]);
+				buildArguments.push("-rhino", parameters.options.rhino);
 			}
 			jsh.shell.run({
 				command: jsh.shell.java.jrunscript,
-				arguments: propertyArguments.concat([
+				arguments: [
 					jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
 					"jsh",
 					jsh.shell.jsh.src.getRelativePath("jsh/etc/build.jsh.js"),
-					tmpdir
-				]),
+					tmpdir,
+					"-notest",
+					"-nodoc"
+				].concat(buildArguments),
 				environment: jsh.js.Object.set({
-					JSH_BUILD_NOTEST: "true",
-					JSH_BUILD_NODOC: "true",
 					//	TODO	next two lines duplicate logic in jsh.test plugin
 					TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
 					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",

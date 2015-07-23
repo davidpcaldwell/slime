@@ -64,6 +64,11 @@ plugin({
 				}
 			})
 		}
+
+		//	if -scenario is on command line, invokes scenario, otherwise run()
+		//	scenario: receives a composite scenario as this, receives command-line arguments as function arguments, view argument
+		//		[console/webview/child] determines format of scenario reporting
+		//	run: receives processed results of getopts as argument
 		jsh.unit.integration = function(o) {
 			var parameters = jsh.script.getopts({
 				options: {
@@ -72,6 +77,7 @@ plugin({
 				},
 				unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 			});
+			var getopts = (o.getopts) ? jsh.script.getopts(o.getopts, parameters.arguments) : { options: {}, arguments: parameters.arguments };
 			if (parameters.options.scenario) {
 				var views = {
 					child: function() {
@@ -89,10 +95,9 @@ plugin({
 					name: jsh.script.file.pathname.basename,
 					view: views[parameters.options.view]()
 				});
-				o.scenario.apply(scenario,parameters.arguments);
+				o.scenario.call(scenario,getopts);
 				scenario.run();
 			} else {
-				var getopts = (o.getopts) ? jsh.script.getopts(o.getopts, parameters.arguments) : { options: {} };
 				o.run(getopts);
 			}
 		}
