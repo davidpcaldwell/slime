@@ -107,7 +107,7 @@ plugin({
 		if (!jsh.test) jsh.test = {};
 		jsh.test.requireBuiltShell = function(p) {
 			if (!jsh.shell.jsh.home) {
-				jsh.shell.echo("Relaunching in built shell ...");
+				jsh.shell.echo("Building shell in which to relaunch ...");
 				var parameters = jsh.script.getopts({
 					options: {
 						native: false,
@@ -125,18 +125,21 @@ plugin({
 				if (parameters.options.downloads) {
 					args.push("-Djsh.build.downloads=" + parameters.options.downloads);
 				}
-				if (parameters.options.rhino) {
-					args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
-				} else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
-					args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
-				}
-				args.push("-Djsh.build.notest=true");
-				args.push("-Djsh.build.nodoc=true");
+//				if (parameters.options.rhino) {
+//					args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
+//				} else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+//					args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+//				}
 				var SLIME = (p && p.src) ? p.src : jsh.script.file.parent.parent.parent;
 				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
 				args.push("jsh");
 				args.push(SLIME.getRelativePath("jsh/etc/build.jsh.js"));
 				args.push(JSH_HOME);
+				args.push("-notest");
+				args.push("-nodoc");
+				if (parameters.options.rhino) {
+					args.push("-rhino", parameters.options.rhino);
+				}
 				if (parameters.options.native) {
 					args.push("-native");
 				}
@@ -150,8 +153,8 @@ plugin({
 					command: jsh.shell.java.jrunscript,
 					arguments: args
 				});
-				jsh.shell.echo("Launching with classpath " + jsh.shell.properties.get("jsh.launcher.classpath"));
-				jsh.shell.echo("Launching with arguments " + parameters.arguments);
+				jsh.shell.echo("Relaunching with classpath " + jsh.shell.properties.get("jsh.launcher.classpath"));
+				jsh.shell.echo("Relaunching with arguments " + parameters.arguments);
 				jsh.shell.jsh({
 					fork: true,
 					shell: JSH_HOME,
