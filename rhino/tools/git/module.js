@@ -105,6 +105,9 @@ var LocalRepository = function(o) {
 	this.merge = function(p) {
 		var args = [];
 		args.push(p.name);
+		if (p.ff_only) {
+			args.push("--ff-only");
+		}
 		execute(jsh.js.Object.set({
 			command: "merge",
 			arguments: args
@@ -252,8 +255,9 @@ var LocalRepository = function(o) {
 							//	TODO	better parsing
 							//	See http://stackoverflow.com/questions/12613793/why-is-there-a-remotes-origin-head-origin-master-entry-in-my-git-branch-l
 							rv.line = line;
-						} else {
+						} else if (line) {
 							rv.name = line.substring(2);
+							rv.current = (line.substring(0,1) == "*");
 						}
 						return rv;
 					});
