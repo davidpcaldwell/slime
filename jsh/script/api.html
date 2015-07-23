@@ -639,7 +639,8 @@ END LICENSE
 						var absolute = pathsOptions.options.absolute.toString();
 						verify(absolute.substring(absolute.length-anAbsolute.length)).is(anAbsolute);
 					} else {
-						test( pathsOptions.options.absolute.toString() == anAbsolute );
+						var absoluteOs = String(new Packages.java.io.File(anAbsolute).getCanonicalPath());
+						verify(pathsOptions.options.absolute).toString().is(absoluteOs);
 					}
 					test( pathsOptions.options.relative.toString() == context.FILE.workingDirectory.toString() + "hello" );
 
