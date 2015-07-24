@@ -572,6 +572,11 @@ try {
 			return new JavaAdapter(
 				Packages.javax.tools.JavaFileObject,
 				new function() {
+					//	JDK	1.6 Rhino requires that Object methods that are invoked be defined in these implementations
+					this.equals = function(other) { return other != null && String(_url.toExternalForm().toString()) == String(other.toString()); };
+					this.hashCode = function() { return 1; };
+
+					//	JDK 1.7 Rhino requires that all interface methods be defined even if they are not used
 					["delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
 					"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"].forEach(function(name) {
 						this[name] = function(){};
