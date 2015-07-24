@@ -27,7 +27,7 @@ class NodeImpl extends Filesystem.Node {
 
 	private static void check(String scriptPath) {
 		if (scriptPath.startsWith("C:")) {
-			throw new RuntimeException("Script path appears to be native; scriptPath = " + scriptPath);
+			throw new RuntimeException("Script path appears to be OS; scriptPath = " + scriptPath);
 		}
 	}
 

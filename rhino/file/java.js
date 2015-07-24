@@ -194,7 +194,7 @@ $exports.FilesystemProvider = function(_peer) {
 
 	this.java = new (function(self) {
 		this.adapt = function(_jfile) {
-			//	TODO	if no arguments, may want to someday consider returning the native peer of this object
+			//	TODO	if no arguments, may want to someday consider returning the peer of this object
 			//	TODO	document this and write unit tests for it
 			return new $context.Pathname({ filesystem: self, peer: _peer.getNode(_jfile) });
 		}

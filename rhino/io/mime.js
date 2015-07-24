@@ -13,7 +13,7 @@
 //	Mime objects have the following properties:
 //	type: the MIME type of the content
 //	ONE OF:
-//		$stream: a native java.io.InputStream or java.io.Reader
+//		$stream: a java.io.InputStream or java.io.Reader
 //		stream: a rhino/file InputStream or Reader
 //		string: a JavaScript string containing data
 //		$write: a method that can be used to write the data to an arbitrary java.io.OutputStream

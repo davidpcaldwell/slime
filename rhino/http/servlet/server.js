@@ -119,7 +119,7 @@ $exports.Servlet = function(delegate) {
 					_response.setContentLength(String(response.body.length));
 				}
 				if (response.body && response.body.string) {
-					//	Wrap in java.lang.String because Nashorn native string type does not unambiguously match .write() signature
+					//	Wrap in java.lang.String because Nashorn string type does not unambiguously match .write() signature
 					_response.getWriter().write(new Packages.java.lang.String(response.body.string));
 //				} else if (response.body && response.body.read && response.body.read.text) {
 //					var _stream = response.body.read.text().java.adapt();

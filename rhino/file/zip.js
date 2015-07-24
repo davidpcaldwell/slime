@@ -59,7 +59,7 @@ $exports.zip = function(p) {
 		throw "Unimplemented: to " + p.to;
 	}
 
-	//	TODO	Much of this logic is reproduced in a native Rhino shell script used in the jsh build process
+	//	TODO	(Possibly obsolete comment) Much of this logic is reproduced in the jsh build process
 	var zipOutputStream = new function() {
 		var peer = new Packages.java.util.zip.ZipOutputStream($to);
 

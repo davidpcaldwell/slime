@@ -11,6 +11,11 @@
 //	Contributor(s):
 //	END LICENSE
 
+var SLIME = jsh.script.file.parent.parent.parent.parent.parent;
+var SRC = SLIME;
+var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+var SHELL = TMP.getRelativePath("jsh");
+
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.file.Pathname,
@@ -20,42 +25,12 @@ var parameters = jsh.script.getopts({
 
 var JSH_JAVA_HOME = (parameters.options.java) ? parameters.options.java.toString() : null;
 
-var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-var SRC = jsh.script.file.getRelativePath("../../../..").directory;
-var SHELL = TMP.getRelativePath("jsh");
+var rhino = (parameters.options.rhino) ? ["-rhino", parameters.options.rhino] : [];
 
-var rhino = (parameters.options.rhino) ? "-Djsh.build.rhino.jar=" + parameters.options.rhino : "-Djsh.build.rhino=false";
-
-var jrunscript = (function() {
-	if (jsh.shell.jsh.home.getFile("lib/js.jar")) {
-		rhino = "-Djsh.build.rhino.jar=" + jsh.shell.jsh.home.getFile("lib/js.jar");
-		return {
-			command: "java",
-			arguments: [
-				"-jar", jsh.shell.jsh.home.getFile("lib/js.jar"),
-				"-opt", "-1"
-			]
-		};
-	} else {
-		return {
-			command: "jrunscript",
-			arguments: []
-		}
-	}
-})();
-
-jsh.shell.run({
-	command: jrunscript.command,
-	arguments: [rhino].concat(jrunscript.arguments).concat([
-		SRC.getRelativePath("jsh/etc/unbuilt.rhino.js"),
-		"build",
-		SHELL,
-		"-native"
-	]),
-	environment: jsh.js.Object.set({}, jsh.shell.environment, {
-		JSH_BUILD_NOTEST: "true",
-		JSH_BUILD_NODOC: "true"
-	})
+jsh.shell.jsh({
+	shell: SLIME,
+	script: SLIME.getFile("jsh/etc/build.jsh.js"),
+	arguments: [SHELL].concat(rhino).concat(["-executable","-notest","-nodoc"])
 });
 
 jsh.shell.run({

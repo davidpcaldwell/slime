@@ -58,7 +58,7 @@ var Filesystem = function(system,o) {
 		//	Currently used by jsh.shell.getopts for Pathname
 		this.PATHNAME_SEPARATOR = system.separators.pathname;
 
-		//	Interprets a native OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
+		//	Interprets an OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
 		//	TODO	could/should this be replaced with something that uses a java.io.File?
 		if (!o || !o.interpretNativePathname) {
 			this.os = function(pathname) {

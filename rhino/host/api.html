@@ -82,7 +82,7 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span class="type">boolean</span> <code>true</code> if the given argument is a Java object, and <code>false</code> if it is
 					<code>undefined</code>, <code>null</code>, a JavaScript primitive
-					value, or a native JavaScript object.
+					value, or a JavaScript object.
 					<!--	TODO	What if it is JavaPackage? JavaClass?	-->
 				</div>
 				<script type="application/x.jsapi#tests" jsapi:id="isJavaObject">
@@ -801,9 +801,9 @@ END LICENSE
 			<!--
 				//	No unit tests!
 				$doc.members.toJavaArray = new $Doc.Function({
-					summary: <>Converts an ECMAScript array into a native Java array</>,
+					summary: <>Converts an ECMAScript array into a Java array</>,
 					asFunction: {
-						description: <>Converts an ECMAScript array into a native Java array</>,
+						description: <>Converts an ECMAScript array into a Java array</>,
 						arguments: {
 							list: [
 								{ type: <><code>Array</code></>, comment: <>An array to be converted</> },
@@ -815,7 +815,7 @@ END LICENSE
 							]
 						},
 						returns: {
-							type: "A native Java array",
+							type: "A Java array",
 							comment: <>A Java array containing the elements in the ECMAScript array.</>
 						}
 					}

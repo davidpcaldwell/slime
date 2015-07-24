@@ -115,7 +115,6 @@ plugin({
 				jsh.shell.echo("Building shell in which to relaunch ...");
 				var parameters = jsh.script.getopts({
 					options: {
-						native: false,
 						executable: false,
 						install: jsh.script.getopts.ARRAY(String),
 						downloads: jsh.file.Pathname,
@@ -144,9 +143,6 @@ plugin({
 				args.push("-nodoc");
 				if (parameters.options.rhino) {
 					args.push("-rhino", parameters.options.rhino);
-				}
-				if (parameters.options.native) {
-					args.push("-native");
 				}
 				if (parameters.options.executable) {
 					args.push("-executable");

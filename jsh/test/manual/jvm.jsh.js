@@ -52,7 +52,6 @@ if (parameters.options.run) {
 	shells.forEach(function(shell) {
 		var searchpath = jsh.file.Searchpath([shell]);
 		if (searchpath.getCommand("jsh")) {
-			//	native
 			jsh.shell.echo("Using native launcher: " + searchpath.getCommand("jsh"));
 			time(
 				searchpath.getCommand("jsh").pathname,

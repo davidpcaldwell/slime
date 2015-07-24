@@ -10,8 +10,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide native
-//	script objects to wrap Java classes, which may be a better approach
+//	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide JavaScript
+//	objects to wrap Java classes, which may be a better approach
 //$exports.getClass = $api.Function({
 //	before: $api.Function.argument.isString({ index: 0, name: "name" }),
 //	call: function(name) {

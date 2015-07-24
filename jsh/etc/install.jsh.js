@@ -29,173 +29,18 @@ var parameters = jsh.script.getopts({
 		//	TODO	-unix and -cygwin cannot be turned off currently; if unspecified and autodetected, they will be added anyway
 		unix: false,
 		cygwin: false,
-		native: false,
 		executable: false,
-		install: jsh.script.getopts.ARRAY(String),
-
-		//	Do not invoke directly; program self-invokes using sudo on Mac OS X to modify JDK to allow building of native launcher
-		"OSX-add-JNI-to-JVMCapabilities": false
+		install: jsh.script.getopts.ARRAY(String)
 	}
 });
-
-var osx = new function() {
-	var jdk = jsh.shell.java.home.parent;
-	var parse = function() {
-		var file = jdk.parent.getFile("Info.plist");
-		var plist = new jsh.document.Document({ file: file });
-		var capabilitiesArray = (function(plist) {
-			var top = plist.document.getElement();
-			var dict = top.children.filter(function(node) {
-				return node.element && node.element.type.name == "dict";
-			})[0];
-			var isCapabilitiesKey = function(child) {
-				return child.element && child.element.type.name == "key" && child.children[0].getString() == "JVMCapabilities";
-			};
-			var javavm = dict.children.filter(function(node) {
-				return node.element && node.element.type.name == "dict" && node.children.filter(isCapabilitiesKey)[0];
-			})[0];
-			var next;
-			for (var i=0; i<javavm.children.length; i++) {
-				if (isCapabilitiesKey(javavm.children[i])) {
-					next = true;
-				} else if (next && javavm.children[i].element) {
-					return javavm.children[i];
-				}
-			}
-		})(plist);
-		var indentInner = capabilitiesArray.children[0].getString();
-		var capabilities = [];
-		for (var i=0; i<capabilitiesArray.children.length; i++) {
-			if (capabilitiesArray.children[i].element) {
-				capabilities.push(capabilitiesArray.children[i].children[0].getString());
-			}
-		}
-		return {
-			file: file,
-			plist: plist,
-			element: capabilitiesArray,
-			array: capabilities,
-			indent: {
-				inner: indentInner
-			}
-		}
-	}
-
-	this.check = function() {
-		//	Check whether we can build native launcher
-		var parsed = parse();
-		jsh.shell.echo("Capabilities: [" + parsed.array + "]");
-		if (parsed.array.indexOf("JNI") == -1) {
-			var SUDO_ASKPASS = jsh.shell.java({
-				jar: install.getFile("jsh.jar"),
-				arguments: [install.getFile("src/rhino/tools/askpass.jsh.js"), "-prompt", "Enter password to modify JDK installation"],
-				stdio: {
-					output: String
-				},
-				evaluate: function(result) {
-					return result.stdio.output;
-				}
-			});
-//			var SCRIPT = jsh.shell.TMPDIR.createTemporary({ prefix: "askpass.", suffix: ".bash" });
-//			SCRIPT.remove();
-//			SCRIPT.pathname.write("#!/bin/bash"
-//				+ "\n" + jsh.shell.java.launcher + " -jar " + install.getRelativePath("jsh.jar")
-//				+ " " + install.getRelativePath("src/rhino/tools/askpass.jsh.js")
-//				+ " " + "\"Enter password to modify JDK installation\""
-//			);
-//			jsh.shell.run({
-//				command: "chmod",
-//				arguments: ["+x", SCRIPT.toString()]
-//			});
-			jsh.shell.echo("SUDO_ASKPASS: [" + SUDO_ASKPASS + "]");
-			jsh.shell.echo("Cannot build Mac OS X native installer; JDK must be modified to include JNI capability.");
-			jsh.shell.echo("To build native launcher, enter password in the graphical dialog displayed.");
-//			var password = jsh.shell.run({
-//				command: "/bin/bash",
-//				arguments: [ SUDO_ASKPASS ],
-//				stdio: {
-//					output: String
-//				}
-//			});
-			//	TODO	jsh.shell.os.sudo should be adapted for this purpose
-//			jsh.shell.echo("script: " + SCRIPT);
-			var SUDO_ASKPASS_WORKS = true;
-			//	TODO	try to get SUDO_ASKPASS to work by appending newline?
-			if (SUDO_ASKPASS_WORKS) {
-				jsh.shell.run({
-					command: "sudo",
-					arguments: ["-k", "-A", jsh.shell.java.launcher, "-jar", install.getRelativePath("jsh.jar"), install.getRelativePath("etc/install.jsh.js"), "-OSX-add-JNI-to-JVMCapabilities"],
-					environment: jsh.js.Object.set({}, jsh.shell.environment, {
-						SUDO_ASKPASS: SUDO_ASKPASS
-					}),
-					evaluate: function(result) {
-						if (result.status) {
-							jsh.shell.echo("Running env SUDO_ASKPASS=" + SUDO_ASKPASS + " " + result.command + " " + result.arguments.join(" "));
-							throw new Error("Exit status " + result.status);
-						}
-					}
-				});
-			} else {
-				var password = jsh.shell.run({
-					command: "/bin/bash",
-					arguments: [ SUDO_ASKPASS ],
-					stdio: {
-						output: String
-					}
-				});
-				jsh.shell.run({
-					command: "sudo",
-					arguments: ["-k", "-S", jsh.shell.java.launcher, "-jar", install.getRelativePath("jsh.jar"), install.getRelativePath("etc/install.jsh.js"), "-OSX-add-JNI-to-JVMCapabilities"],
-					stdio: {
-						input: password + "\n"
-					},
-					evaluate: function(result) {
-						if (result.status) {
-							jsh.shell.echo("Running env SUDO_ASKPASS=" + SUDO_ASKPASS + " " + result.command + " " + result.arguments.join(" "));
-							throw new Error("Exit status " + result.status);
-						}
-					}
-				});
-			}
-			var success = (parse().array.indexOf("JNI") != -1);
-			if (!success) {
-				jsh.shell.echo("Could not build native launcher: " + parsed.file + " does not contain JNI in JVMCapabilities.");
-				jsh.shell.exit(1);
-			}
-		}
-	};
-
-	this.fix = function() {
-		var parsed = parse();
-		parsed.element.children.splice(parsed.element.children.length-1,0,
-			new jsh.js.document.Text({ text: parsed.indent.inner }),
-			new jsh.js.document.Element({
-				type: {
-					name: "string"
-				},
-				children: [
-					new jsh.js.document.Text({ text: "JNI" })
-				]
-			})
-		);
-		jsh.shell.echo("Would write to " + parsed.file);
-		jsh.shell.echo(parsed.plist);
-		parsed.file.pathname.write(parsed.plist.toString(), { append: false });
-	}
-}
-
-if (parameters.options["OSX-add-JNI-to-JVMCapabilities"]) {
-	osx.fix();
-	jsh.shell.exit(0);
-}
 
 var zip = (jsh.script.loader.resource) ? jsh.script.loader.resource("build.zip") : null;
 
 if (!parameters.options.to && zip) {
-	jsh.shell.echo("Usage: " + jsh.script.file.pathname.basename + " -to <destination> [-replace] [-native]");
+	jsh.shell.echo("Usage: " + jsh.script.file.pathname.basename + " -to <destination> [-replace] [-executable]");
 	jsh.shell.echo("If <destination> does not exist, it will be created, recursively if necessary.");
 	jsh.shell.echo("If <destination> does exist, -replace will overwrite it; otherwise, the installation will abort.");
-	jsh.shell.echo("-native will attempt to create a native launcher linked to the Java executing this script at <destination>/jsh");
+	jsh.shell.echo("-executable will attempt to create a native executable launcher program at <destination>/jsh");
 	//	TODO	what if it exists and is an ordinary file?
 	//	TODO	if it is a symlink to a directory with -replace, the symlink *target* will be removed ... and then what will happen?
 	//	TODO	if it is a symlink to a non-existent directory, what will happen?
@@ -329,11 +174,11 @@ if (parameters.options.cygwin) {
 	}
 }
 
-var ISSUE_201_FIXED = false;
+var ISSUE_201_FIXED = true;
 
 //	Build native launcher
 //	TODO	re-enable native launcher for new jrunscript launcher
-if (ISSUE_201_FIXED && (parameters.options.native || parameters.options.executable)) {
+if (ISSUE_201_FIXED && parameters.options.executable) {
 	if (parameters.options.cygwin) {
 		//	TODO	use LoadLibrary call to locate jvm.dll
 		//			embed path of jvm.dll in C program, possibly, or load from registry, or ...
@@ -387,8 +232,8 @@ if (ISSUE_201_FIXED && (parameters.options.native || parameters.options.executab
 		jsh.shell.echo("Did not detect UNIX-like operating system (detected " + jsh.shell.os.name + "); not building native launcher.");
 		jsh.shell.exit(1);
 	}
-} else if (parameters.options.native || parameters.options.executable) {
-	jsh.shell.echo("bash launcher disabled; see https://bitbucket.org/davidpcaldwell/slime/issues/201");
+} else if (parameters.options.executable) {
+	jsh.shell.echo("Creation of native launcher disabled; see https://bitbucket.org/davidpcaldwell/slime/issues/201");
 	jsh.shell.exit(1);
 }
 
