@@ -227,10 +227,16 @@ try {
 		};
 
 		var javac = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-		var _jfm = new JavaAdapter(
-			Packages.javax.tools.JavaFileManager,
+		var jfm = (
 			new function() {
+				$api.debug("Java file manager constructor invoked ...");
 				var _delegate = javac.getStandardFileManager(null, null, null);
+				$api.debug("_delegate constructed ...");
+
+				["close","flush","getClassLoader","getFileForInput","getFileForOutput","getJavaFileForInput","getJavaFileForOutput",
+				"handleOption","hasLocation","inferBinaryName","isSameFile","list","isSupportedOption"].forEach(function(name) {
+					this[name] = function(){};
+				},this);
 
 				this.flush = function() {
 				}
@@ -254,6 +260,11 @@ try {
 						return new JavaAdapter(
 							Packages.javax.tools.JavaFileObject,
 							new function() {
+								["delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
+								"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"].forEach(function(name) {
+									this[name] = function(){};
+								},this);
+
 								this.openOutputStream = function() {
 									return new Packages.java.io.FileOutputStream(_file);
 								}
@@ -285,6 +296,8 @@ try {
 				var destination = (function() {
 					return new DirectoryDestination(p.destination);
 				})();
+				$api.debug("destination created ...");
+
 
 				this.getJavaFileForOutput = function(_location,_className,_kind,_sibling) {
 					var location = String(_location.name());
@@ -325,6 +338,11 @@ try {
 						return new JavaAdapter(
 							Packages.javax.tools.JavaFileObject,
 							new function() {
+								["delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
+								"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"].forEach(function(name) {
+									this[name] = function(){};
+								},this);
+
 								this.toString = function() {
 									return "ClassFile: " + path;
 								};
@@ -435,6 +453,7 @@ try {
 					}
 
 					this.list = function(_packageName,_setOfKinds,recurse) {
+//						$api.debug("classpath list");
 						var kinds = {};
 						//Packages.java.lang.System.err.println("package: " + _packageName + " kinds " + _setOfKinds + " recurse " + recurse);
 						kinds.toString = function() {
@@ -458,14 +477,20 @@ try {
 						//Packages.java.lang.System.err.println("_urls = " + _urls);
 						for (var i=0; i<elements.length; i++) {
 							var list = elements[i].list(String(_packageName),kinds,recurse);
+//							$api.debug("elements[" + i + "] = " + elements[i] + " package=" + _packageName + " list = " + list);
 							rv.push.apply(rv,list);
 						}
 						//Packages.java.lang.System.err.println("rv: " + rv);
+						for (var i=0; i<rv.length; i++) {
+//							$api.debug("classpath[" + i + "] = " + rv[i] + " keys " + Object.keys(rv[i]));
+						}
 						var _rv = toIterable(rv);
 						//Packages.java.lang.System.err.println("_rv: " + _rv);
+//						$api.debug("classpath list return " + _rv);
 						return _rv;
 					};
 				})(p.classpath);
+				$api.debug("classpath created ...");
 
 				this.getClassLoader = function(_location) {
 					var location = String(_location.getName());
@@ -509,9 +534,36 @@ try {
 					var binarynamer = binaryNamers[location];
 					if (!binarynamer) throw new Error("No inferBinaryName for " + _location);
 					return binarynamer(_location,_jfo);
-				}
+				};
+				$api.debug("constructor finished ...");
 			}
 		);
+		var IS_JDK_RHINO = typeof(Packages.com.sun.script.javascript.RhinoScriptEngine) == "function";
+		if (IS_JDK_RHINO) {
+			JavaAdapter = function(type,object) {
+				return new Packages.com.sun.script.javascript.RhinoScriptEngine().getInterface(object,type);
+			}
+		}
+		if (true) {
+			try {
+				var _jfm = new JavaAdapter(
+					Packages.javax.tools.JavaFileManager,
+					jfm
+				);
+			} catch (e) {
+				$api.debug("e = " + e + " keys=" + Object.keys(e));
+				$api.debug("e.stack = " + e.stack);
+				$api.debug("e.rhinoException = " + e.rhinoException);
+				$api.debug("Packages.javax.tools.JavaFileManager " + Packages.javax.tools.JavaFileManager);
+				$api.debug("jfm = " + jfm);
+				if (e.rhinoException) {
+					e.rhinoException.printStackTrace();
+				}
+				throw e;
+			}
+		} else {
+			var _jvm = direct;
+		}
 		var _writer = null;
 		var _listener = null; /* javax.tools.DiagnosticListener */
 		var _annotationProcessorClasses = null;
@@ -520,6 +572,10 @@ try {
 			return new JavaAdapter(
 				Packages.javax.tools.JavaFileObject,
 				new function() {
+					["delete","getCharContent","getLastModified","getName","openInputStream","openOutputStream","openReader",
+					"openWriter","toUri","getAccessLevel","getKind","getNestingKind","isNameCompatible"].forEach(function(name) {
+						this[name] = function(){};
+					},this);
 					this.toString = function() {
 						return _url.toExternalForm();
 					}
@@ -541,7 +597,7 @@ try {
 						if (String(name) == "package-info") return false;
 						var tokens = String(_url.toExternalForm()).split("/");
 						var basename = tokens[tokens.length-1];
-						if (kind.name().equals("SOURCE")) return basename = name + ".java";
+						if (kind.name().equals("SOURCE")) return basename == (name + ".java");
 						throw new Error("isNameCompatible: " + _url + " name " + name + " kind " + kind);
 					}
 
@@ -556,18 +612,42 @@ try {
 		var _units = p.files.map(function(file) {
 			return new SourceFile(file);
 		});
-		//	Packages.java.lang.System.err.println(_units.join("\n"));
+		$api.debug("_jfm = " + _jfm);
+		$api.debug("_jfm.getClass() = " + _jfm.getClass());
+		$api.debug(_units.map(function(x) {
+			var rv = [];
+			var c = x.getClass();
+			while(c.getSuperclass()) {
+				rv.push(c);
+				if (c.getInterfaces()) {
+					for (var i=0; i<c.getInterfaces().length; i++) {
+						rv.push(c.getInterfaces()[i]);
+					}
+				}
+				c = c.getSuperclass();
+			}
+			return rv.join("|");
+		}).join("\n"));
 
 		var task = javac.getTask(_writer, _jfm, _listener, toIterable(["-Xlint:unchecked"]), _annotationProcessorClasses, toIterable(_units));
-		var success = task.call();
-		if (!success) {
-			throw new Error("Java compilation failed.");
+		$api.debug("task = " + task);
+		try {
+			var success = task.call();
+			$api.debug("Compilation succeeded");
+			if (!success) {
+				throw new Error("Java compilation failed.");
+			}
+		} catch (e) {
+			if (e.rhinoException) {
+				e.rhinoException.printStackTrace();
+			}
+			throw e;
 		}
 	}
 
 	$api.jsh.Unbuilt = function(rhino) {
 		this.toString = function() {
-			return "Unbuilt: src=" + $api.slime.src + " rhino=" + rhino;
+			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
 		}
 
 		this.rhino = rhino;
@@ -581,14 +661,15 @@ try {
 		})();
 
 		this.compileLoader = function(p) {
+			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			if (!p) p = {};
 			if (!p.to) p.to = $api.io.tmpdir();
 			var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-			if (rhinoClasspath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
+			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
 			toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-			if (rhinoClasspath) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
-			var rhinoJavacArguments = (rhino) ? ["-classpath", rhinoClasspath.local()] : [];
+			if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
+			var rhinoJavacArguments = (rhino) ? ["-classpath", rhino.local()] : [];
 			var targetArguments = (p && p.target) ? ["-target", p.target] : [];
 			var sourceArguments = (p && p.source) ? ["-source", p.source] : [];
 			var args = [
@@ -637,12 +718,14 @@ try {
 					files: toCompile
 				});
 			}
+			$api.debug("Returning shellClasspath");
 			return [LOADER_CLASSES.toURI().toURL()];
 		};
 	};
 
 	$api.jsh.Built = function(home) {
 		this.toString = function() {
+			var rhino = (new Packages.java.io.File(home, "lib/js.jar").exists()) ? new Packages.java.io.File(home, "lib/js.jar") : void(0);
 			return "Built: " + home + " rhino=" + rhino;
 		}
 

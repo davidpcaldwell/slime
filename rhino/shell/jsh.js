@@ -323,26 +323,26 @@ $exports.jsh = function(p) {
 			if (p.shell.getFile("jsh.js")) {
 				//	Built shell
 				return $exports.jrunscript($context.api.js.Object.set({}, p, {
-					arguments: addCommandTo([p.shell.getFile("jsh.js")]),
+					arguments: addCommandTo([p.shell.getFile("jsh.js")],p.properties),
 					environment: environment,
 					evaluate: evaluate
 				}));
 			} else if (p.shell.getFile("rhino/jrunscript/api.js")) {
 				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/launcher/main.js")];
 				//	TODO	will only work if they start with dash, which they must, right?
-				if (p.properties) {
-					for (var x in p.properties) {
-						args.push("-D" + x + "=" + p.properties[x]);
-					}
-					delete p.properties;
-				}
+//				if (p.properties) {
+//					for (var x in p.properties) {
+//						args.push("-D" + x + "=" + p.properties[x]);
+//					}
+//					delete p.properties;
+//				}
 				if (p.vmarguments) {
 					for (var i=0; i<p.vmarguments.length; i++) {
 						args.push(p.vmarguments[i]);
 					}
 				}
 				return $exports.jrunscript($context.api.js.Object.set({}, p, {
-					arguments: addCommandTo(args),
+					arguments: addCommandTo(args,p.properties),
 					environment: environment,
 					evaluate: evaluate
 				}));

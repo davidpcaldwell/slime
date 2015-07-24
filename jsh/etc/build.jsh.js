@@ -144,10 +144,14 @@ if (jsh.script.url) {
 		args.push( (build.unit) ? "-unit" : "-nounit" );
 		args.push( (build.test) ? "-test" : "-notest" );
 		if (!build.doc) args.push("-nodoc");
-		if (build.rhino) args.push("-rhino", build.rhino.toString());
-		jsh.shell.echo("Arguments: " + args.join(" "));
+		var properties = {};
+		if (build.rhino) {
+			args.push("-rhino", build.rhino.toString());
+			properties["jsh.engine.rhino.classpath"] = String(build.rhino);
+		}
 		jsh.shell.jsh({
 			shell: tmp,
+			properties: properties,
 			script: tmp.getFile("jsh/etc/build.jsh.js"),
 			arguments: args,
 			evaluate: function(result) {

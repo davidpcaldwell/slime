@@ -298,7 +298,8 @@ if (tests.build) {
 		jsh.shell.jrunscript({
 			properties: {
 				"http.proxyHost": "127.0.0.1",
-				"http.proxyPort": String(tomcat.port)
+				"http.proxyPort": String(tomcat.port),
+				"jsh.engine.rhino.classpath" : (jsh.shell.rhino && jsh.shell.rhino.classpath) ? String(jsh.shell.rhino.classpath) : ""
 			},
 			arguments: [
 				"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh/install')",

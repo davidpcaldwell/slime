@@ -603,12 +603,23 @@
 		var launcher = launchers.ClassLoader;
 
 		this.toString = function() {
+			var p = "{";
+			for (var x in properties) {
+				if (p.length > 1) {
+					p += ", ";
+				}
+				p += x;
+				p += " : ";
+				p += properties[x];
+			}
+			p += "}";
 			return [
-				"JavaCommand",
-				"properties=" + JSON.stringify(properties),
-				"classpath=" + classpath.join(","),
-				"main=" + main,
-				"arguments=" + mainArguments.join(",")
+				"JavaCommand"
+				//	TODO	below used to use JSON.stringify(properties) but did not work on 1.7
+				,"properties=" + p
+				,"classpath=" + classpath.join(",")
+				,"main=" + main
+				,"arguments=" + mainArguments.join(",")
 			].join(" ");
 		}
 
