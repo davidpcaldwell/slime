@@ -15,7 +15,7 @@ if [ -n "$JSH_LAUNCHER_DEBUG" ]; then
 fi
 
 if [ -z "$JSH_JAVA_HOME" ]; then
-	JSH_JAVA_LAUNCHER=$(which java 2>/dev/null)
+	JSH_JAVA_LAUNCHER=$(which jrunscript 2>/dev/null)
 	if [ "0" = "$?" ]; then
 		true
 	else
@@ -23,10 +23,10 @@ if [ -z "$JSH_JAVA_HOME" ]; then
 		exit 1
 	fi
 else
-	JSH_JAVA_LAUNCHER=$JSH_JAVA_HOME/bin/java
+	JSH_JAVA_LAUNCHER=$JSH_JAVA_HOME/bin/jrunscript
 fi
 
-JSH_LAUNCHER=$(dirname $0)/jsh.jar
+JSH_LAUNCHER=$(dirname $0)/jsh.js
 if [ ! -f "$JSH_LAUNCHER" ]; then
 	echo "Missing jsh launcher at $JSH_LAUNCHER"
 	exit 1
@@ -38,5 +38,5 @@ case "`uname`" in
 	;;
 esac
 
-"$JSH_JAVA_LAUNCHER" -jar $JSH_LAUNCHER "$@"
+"$JSH_JAVA_LAUNCHER" $JSH_JVM_OPTIONS $JSH_LAUNCHER "$@"
 exit $?

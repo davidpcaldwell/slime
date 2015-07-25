@@ -56,18 +56,30 @@ jsh.unit.integration({
 		var shell = function(p) {
 			var vm = [];
 			if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
+			if (!p.bash) {
+				if (p.logging) {
+					p.properties["jsh.log.java.properties"] = p.logging;
+				}
+			}
 			for (var x in p.properties) {
 				vm.push("-D" + x + "=" + p.properties[x]);
 			}
+			var shell = (p.bash) ? [home.getFile("jsh.bash")] : vm.concat(p.shell)
 			var script = (p.script) ? p.script : jsh.script.file;
+			var environment = jsh.js.Object.set({}, p.environment, (p.bash && p.logging) ? {
+				JSH_LOG_JAVA_PROPERTIES: p.logging
+			} : {})
 			return jsh.shell.run({
-				command: jsh.shell.java.jrunscript,
-				arguments: vm.concat(p.shell).concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
+				command: (p.bash) ? p.bash : jsh.shell.java.jrunscript,
+				arguments: shell.concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
 				stdio: (p.stdio) ? p.stdio : {
 					output: String
 				},
-				environment: jsh.js.Object.set({}, p.environment),
+				environment: environment,
 				evaluate: (p.evaluate) ? p.evaluate : function(result) {
+					if (p.bash) {
+						jsh.shell.echo("Command: " + result.command + " " + result.arguments.join(" "));
+					}
 					if (result.status !== 0) throw new Error("Status is " + result.status);
 					jsh.shell.echo("Output: " + result.stdio.output);
 					return JSON.parse(result.stdio.output);
@@ -170,41 +182,59 @@ jsh.unit.integration({
 
 					this.execute = function(verify) {
 						var properties = {};
-						properties["jsh.log.java.properties"] = "/foo/bar";
+
+						var environment = {
+							PATH: jsh.shell.environment.PATH,
+							//	TODO	below is used for Windows temporary files
+							TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+							//	TODO	below is used for Windows command location
+							PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+							JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
+							JSH_ENGINE_RHINO_CLASSPATH: (parameters.options.rhino) ? String(parameters.options.rhino) : null,
+							JSH_ENGINE: engine,
+							JSH_SHELL_TMPDIR: tmp.toString()
+							//,JSH_LAUNCHER_DEBUG: "true"
+							//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
+						};
+
 						var result = shell({
-							environment: {
-								PATH: jsh.shell.environment.PATH,
-								//	TODO	below is used for Windows temporary files
-								TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-								//	TODO	below is used for Windows command location
-								PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-								JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
-								JSH_ENGINE_RHINO_CLASSPATH: (parameters.options.rhino) ? String(parameters.options.rhino) : null,
-								JSH_ENGINE: engine,
-								JSH_SHELL_TMPDIR: tmp.toString()
-								//,JSH_LAUNCHER_DEBUG: "true"
-								//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
-							},
+							logging: "/foo/bar",
+							environment: environment,
 							properties: properties
 						});
-						if (shell == unbuilt) {
-							verify(result).evaluate.property("src").is.not(null);
-							verify(result).evaluate.property("home").is(null);
-						} else {
-							verify(result).evaluate.property("src").is(null);
-							verify(result).evaluate.property("home").is.not(null);
+
+						var checkOutput = function(result) {
+							if (shell == unbuilt) {
+								verify(result).evaluate.property("src").is.not(null);
+								verify(result).evaluate.property("home").is(null);
+							} else {
+								verify(result).evaluate.property("src").is(null);
+								verify(result).evaluate.property("home").is.not(null);
+							}
+							verify(result).evaluate.property("logging").is("/foo/bar");
+							verify(result).evaluate.property("foo1").is("bar");
+							verify(result).evaluate.property("foo2").is("baz");
+							verify(result).rhino.running.is( (engine == "rhino") );
+							if (parameters.options.rhino) {
+								verify(result).rhino.classpath.is.not(null);
+							} else {
+								//	We do not know; we could have been run inside a shell that has Rhino installed
+	//							verify(result).rhino.classpath.is(null);
+							}
+							verify(result).tmp.is(tmp.toString());
+						};
+
+						checkOutput(result);
+
+						if (shell == built && jsh.shell.PATH.getCommand("bash")) {
+							result = shell({
+								bash: jsh.shell.PATH.getCommand("bash"),
+								logging: "/foo/bar",
+								environment: environment,
+								properties: properties
+							});
+							checkOutput(result);
 						}
-						verify(result).evaluate.property("logging").is("/foo/bar");
-						verify(result).evaluate.property("foo1").is("bar");
-						verify(result).evaluate.property("foo2").is("baz");
-						verify(result).rhino.running.is( (engine == "rhino") );
-						if (parameters.options.rhino) {
-							verify(result).rhino.classpath.is.not(null);
-						} else {
-							//	We do not know; we could have been run inside a shell that has Rhino installed
-//							verify(result).rhino.classpath.is(null);
-						}
-						verify(result).tmp.is(tmp.toString());
 
 						if (engine == "rhino") {
 							var result = shell({

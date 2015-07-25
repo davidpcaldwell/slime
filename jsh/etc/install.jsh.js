@@ -130,7 +130,7 @@ if (uname) {
 
 var src = (parameters.options.src) ? parameters.options.src.directory : install.getSubdirectory("src");
 
-var ISSUE_200_FIXED = false;
+var ISSUE_200_FIXED = true;
 
 if (parameters.options.unix) {
 	var bash = which("bash");
