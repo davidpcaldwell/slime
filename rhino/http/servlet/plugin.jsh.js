@@ -42,5 +42,47 @@ plugin({
 			jsh: jsh,
 			CATALINA_HOME: CATALINA_HOME
 		});
+
+		if (jsh.httpd.Tomcat) {
+			jsh.httpd.Tomcat.serve = function(p) {
+				var loader = new jsh.file.Loader({ directory: p.directory });
+				var getMimeType = function(path) {
+					return jsh.httpd.nugget.getMimeType(p.directory.getFile(path));
+				}
+				var tomcat = new jsh.httpd.Tomcat(p);
+				tomcat.map({
+					path: "",
+					servlets: {
+						"/*": {
+							load: function(scope) {
+								scope.$exports.handle = function(request) {
+									var resource = loader.resource(request.path);
+									if (resource) {
+										return {
+											status: {
+												code: 200
+											},
+											headers: [],
+											body: {
+												type: getMimeType(request.path),
+												stream: resource.read(jsh.io.Streams.binary)
+											}
+										};
+									} else {
+										return {
+											status: {
+												code: 404
+											}
+										}
+									}
+								};
+							}
+						}
+					}
+				});
+				tomcat.start();
+				return tomcat;
+			};
+		}
 	}
 });

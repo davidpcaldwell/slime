@@ -26,11 +26,12 @@ END LICENSE
 		containers other than <code>jsh</code>.
 	</div>
 	<div>
-		The jsh Servlet Plugin does not itself implement a servlet container. It relies on Apache Tomcat to be installed and
-		its location specified via the <code>CATALINA_HOME</code> environment variable.
+		The jsh Servlet Plugin does not itself implement a servlet container. It relies on Apache Tomcat to be installed as part of
+		the shell, or for its location to be specified via the <code>CATALINA_HOME</code> environment variable.
 	</div>
 	<div>
-		<strong>If <code>CATALINA_HOME</code> is not specified, the jsh Servlet Plugin will not be available.</strong>
+		<strong>If the shell does not have Tomcat installed and <code>CATALINA_HOME</code> is not specified, the jsh Servlet Plugin
+			will not be available.</strong>
 	</div>
 	<!--
 		TODO	create a WAR
@@ -96,6 +97,90 @@ END LICENSE
 				}) }));
 			</script>
 		</div>
+		<div class="type">
+			<a class="type" name="types.Tomcat">Tomcat</a>
+			<span>A Tomcat server.</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">base</div>
+					<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+					<span>The base directory being used by this instance of Tomcat.</span>
+				</li>
+				<li class="value">
+					<div class="name">port</div>
+					<span class="type">number</span>
+					<span>The port on which this instance of Tomcat is running.</span>
+				</li>
+				<li class="function">
+					<div class="name">map</div>
+					<span>
+						Configures the server to route requests for a particular request path to a particular webapp.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>An object mapping a server path to a webapp.</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">path</div>
+										<span class="type">string</span>
+										<!--	TODO	it appears the empty string works for the below as well	-->
+										<span>The path at which to deploy the webapp specified by the given argument, including the leading <code>/</code>.</span>
+									</li>
+									<li class="value">
+										<div class="name">servlets</div>
+										<span class="type">object</span> with property values of type <span class="type"><a href="#types.servlet">servlet</a></span>
+										<!--	TODO	add reference to URL patterns from servlet specification	-->
+										<span>An object whose property names are interpreted as URL patterns and property values are interpreted as servlet declarations.</span>
+									</li>
+									<li class="value">
+										<div class="name">resources</div>
+										<span class="type"><a href="#types.resources">resources</a></span>
+										<span>The resources to provide to the servlets.</span>
+									</li>
+									<!--
+									TODO	disabled because it does not work
+									<li class="value">
+										<div class="name">webapp</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									-->
+								</ul>
+							</li>
+						</ol>
+					</div>
+				</li>
+				<!--
+					See jsh/test/manual/httpd.lifecycle.jsh.js for tests of the below.
+				-->
+				<li class="function">
+					<div class="name">start</div>
+					<span>
+						Starts the server. When this method completes, the server is ready to serve requests. This method
+						does not block the script from exiting; if the end of the script is reached, the server will be
+						terminated.
+					</span>
+				</li>
+				<li class="function">
+					<div class="name">run</div>
+					<span>
+						Starts the server, and then blocks until the server terminates
+						(for example, because <code>stop</code> is called). Note that if the server is started
+						in the shell's main thread, and there are no other threads in use, the shell will never terminate.
+					</span>
+				</li>
+				<li class="function">
+					<div class="name">stop</div>
+					<span>Stops the server.</span>
+					<!--	TODO	 when this method returns, has the server stopped?	-->
+				</li>
+			</ul>
+		</div>
+
 		<ul>
 			<li class="constructor">
 				<div class="name">Resources</div>
@@ -159,88 +244,58 @@ END LICENSE
 				</div>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<a id="Tomcat"></a>
-					<span>The created object implements the following interface:</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">base</div>
-							<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
-							<span>The base directory being used by this instance of Tomcat.</span>
-						</li>
-						<li class="value">
-							<div class="name">port</div>
-							<span class="type">number</span>
-							<span>The port on which this instance of Tomcat is running.</span>
-						</li>
-						<li class="function">
-							<div class="name">map</div>
-							<span>
-								Configures the server to route requests for a particular request path to a particular webapp.
-							</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="object">
-										<span>An object mapping a server path to a webapp.</span>
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="value">
-												<div class="name">path</div>
-												<span class="type">string</span>
-												<!--	TODO	it appears the empty string works for the below as well	-->
-												<span>The path at which to deploy the webapp specified by the given argument, including the leading <code>/</code>.</span>
-											</li>
-											<li class="value">
-												<div class="name">servlets</div>
-												<span class="type">object</span> with property values of type <span class="type"><a href="#types.servlet">servlet</a></span>
-												<!--	TODO	add reference to URL patterns from servlet specification	-->
-												<span>An object whose property names are interpreted as URL patterns and property values are interpreted as servlet declarations.</span>
-											</li>
-											<li class="value">
-												<div class="name">resources</div>
-												<span class="type"><a href="#types.resources">resources</a></span>
-												<span>The resources to provide to the servlets.</span>
-											</li>
-											<!--
-											TODO	disabled because it does not work
-											<li class="value">
-												<div class="name">webapp</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
-											</li>
-											-->
-										</ul>
-									</li>
-								</ol>
-							</div>
-						</li>
-						<!--
-							See jsh/test/manual/httpd.lifecycle.jsh.js for tests of the below.
-						-->
-						<li class="function">
-							<div class="name">start</div>
-							<span>
-								Starts the server. When this method completes, the server is ready to serve requests. This method
-								does not block the script from exiting; if the end of the script is reached, the server will be
-								terminated.
-							</span>
-						</li>
-						<li class="function">
-							<div class="name">run</div>
-							<span>
-								Starts the server, and then blocks until the server terminates
-								(for example, because <code>stop</code> is called). Note that if the server is started
-								in the shell's main thread, and there are no other threads in use, the shell will never terminate.
-							</span>
-						</li>
-						<li class="function">
-							<div class="name">stop</div>
-							<span>Stops the server.</span>
-							<!--	TODO	 when this method returns, has the server stopped?	-->
-						</li>
-					</ul>
+					<span class="type"><a href="#types.Tomcat">Tomcat</a></span>
 				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">serve</div>
+						<span>Starts a server that serves files from a particular directory.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>An object that provides properties to the Tomcat constructor, as well as:</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+											<span>The directory whose files should be served.</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type"><a href="#types.Tomcat">Tomcat</a></span>
+							<span>The Tomcat object that was started.</span>
+						</div>
+						<!--	TODO	manual test currently: jsh/test/manual/jsh.httpd/serve.jsh.js	-->
+						<script type="application/x.jsapi#tests">
+							if (jsh.httpd.Tomcat) {
+								var directory = $jsapi.newTemporaryDirectory();
+								directory.getRelativePath("a").write("a", { append: false });
+								var tomcat = jsh.httpd.Tomcat.serve({
+									directory: directory
+								});
+								var client = new jsh.http.Client();
+								var response = client.request({
+									url: "http://127.0.0.1:" + tomcat.port + "/" + "a"
+								});
+								var content = response.body.stream.character().asString();
+								verify(response).status.code.is(200);
+								verify(content).is("a");
+								var response = client.request({
+									url: "http://127.0.0.1:" + tomcat.port + "/" + "b"
+								});
+								verify(response).status.code.is(404);
+							} else {
+								verify("Skipped Tomcat tests.").is("Skipped Tomcat tests.");
+							}
+						</script>
+					</li>
+				</ul>
 			</li>
 		</ul>
 	</div>
