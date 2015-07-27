@@ -10,4 +10,60 @@
 //	Contributor(s):
 //	END LICENSE
 
-jsh.shell.exit(2);
+if (!jsh.unit || !jsh.unit.integration) {
+	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api"));
+	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/unit"));
+	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/test"));
+}
+jsh.unit.integration({
+	scenario: function() {
+		this.add({
+			scenario: {
+				name: "jsh.shell.jsh (script URL)",
+				execute: function(scope) {
+					var verify = new jsh.unit.Verify(scope);
+					var server = jsh.httpd.Tomcat.serve({ directory: jsh.script.file.parent });
+					var client = new jsh.http.Client();
+					var unforked = jsh.shell.jsh({
+						script: jsh.js.web.Url.parse(
+							"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
+						),
+						stdio: {
+							output: String,
+							error: String
+						},
+						evaluate: function(result) {
+							if (result.status != 2) {
+								jsh.shell.echo(result.stdio.output);
+								jsh.shell.echo(result.stdio.error);
+							}
+							return result;
+						}
+					});
+					verify(unforked,"HTTP unforked").status.is(2);
+					var forked = jsh.shell.jsh({
+						fork: true,
+						script: jsh.js.web.Url.parse(
+							"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
+						),
+						stdio: {
+							output: String,
+							error: String
+						},
+						evaluate: function(result) {
+							if (result.status != 2) {
+								jsh.shell.echo(result.stdio.output);
+								jsh.shell.echo(result.stdio.error);
+							}
+							return result;
+						}
+					});
+					verify(forked,"HTTP forked").status.is(2);
+				}
+			}
+		})
+	},
+	run: function() {
+		jsh.shell.exit(2);
+	}
+});

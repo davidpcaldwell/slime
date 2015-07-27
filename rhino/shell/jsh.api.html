@@ -484,27 +484,22 @@ END LICENSE
 				]]></script>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					if (jsh.httpd.Tomcat) {
-						var server = jsh.httpd.Tomcat.serve({ directory: $module.getResourcePathname("test").directory });
-						var client = new jsh.http.Client();
-						var unforked = module.jsh({
-							script: jsh.js.web.Url.parse(
-								"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
-							),
-							evaluate: function(result) {
-								return result;
-							}
-						});
-						verify(unforked,"HTTP unforked").status.is(2);
-						var forked = module.jsh({
+						jsh.shell.jsh({
 							fork: true,
-							script: jsh.js.web.Url.parse(
-								"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
-							),
+							script: $module.getResourcePathname("test/jsh.jsh.js").file,
+							arguments: ["-scenario"],
+							stdio: {
+								output: String,
+								error: String
+							},
 							evaluate: function(result) {
-								return result;
+								if (result.status) {
+									jsh.shell.echo(result.stdio.output);
+									jsh.shell.echo(result.stdio.error);
+								}
+								verify(result).status.is(0);
 							}
 						});
-						verify(forked,"HTTP forked").status.is(2);
 					} else {
 						var message = "Skipped URL tests; no Tomcat present";
 						verify(message).is(message);
