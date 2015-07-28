@@ -578,6 +578,7 @@ var Scenario = function(o) {
 			var parts = [];
 
 			this.add = function(part) {
+				if (!part.scenario) throw new Error("Part is not scenario");
 				parts.push(part);
 			};
 
