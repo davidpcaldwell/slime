@@ -50,3 +50,7 @@ jsh.shell.jrunscript({
 	arguments: [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),"jsh"].concat(parameters.arguments)
 });
 
+if (parameters.options["profiler:output"] && jsh.shell.browser.chrome) {
+	jsh.shell.browser.chrome.user.open( { uri: String(parameters.options["profiler:output"].java.adapt().toURL().toExternalForm()) } );
+}
+

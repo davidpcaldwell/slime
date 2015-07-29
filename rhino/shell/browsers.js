@@ -112,8 +112,12 @@ var Chrome = function(b) {
 		}
 
 		var data = new Data({ base: u.directory });
-		if (data.profiles) this.profiles = data.profiles.map(function(profile) {
-			return new Profile(profile);
+		Object.defineProperty(this, "profiles", {
+			get: $context.api.js.constant(function() {
+				return data.profiles.map(function(profile) {
+					return new Profile(profile);
+				});
+			})
 		});
 
 		this.directory = u.directory;
