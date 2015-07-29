@@ -1,0 +1,48 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
+var parameters = jsh.script.getopts({
+	options: {
+		"profiler:javassist": jsh.file.Pathname,
+		"profiler:output": jsh.file.Pathname
+	},
+	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
+});
+
+var profiler = jsh.shell.TMPDIR.createTemporary({ prefix: "profiler.", suffix: ".jar" });
+jsh.shell.jsh({
+	fork: true,
+	script: jsh.shell.jsh.src.getFile("rhino/tools/profiler/build.jsh.js"),
+	arguments: [
+		"-javassist", parameters.options["profiler:javassist"],
+		"-to", profiler
+	]
+});
+
+var configuration = [];
+if (parameters.options["profiler:output"]) {
+	configuration.push("output=" + parameters.options["profiler:output"]);
+}
+var properties = {
+	"jsh.debug.script": (configuration.length) ? "profiler:" + configuration.join(",") : "profiler",
+	"jsh.shell.profiler": profiler.toString()
+};
+if (jsh.shell.rhino) {
+	properties["jsh.engine.rhino.classpath"] = String(jsh.shell.rhino.classpath);
+}
+
+jsh.shell.jrunscript({
+	properties: properties,
+	arguments: [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),"jsh"].concat(parameters.arguments)
+});
+

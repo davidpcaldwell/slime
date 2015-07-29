@@ -123,12 +123,13 @@ if (options.listener || options.output) {
 						jsh: jsh,
 						profiles: profiles
 					});
-				} else if (options.output && /\.html$/.test(options.output) && jsh.shell.jsh.home) {
+				} else if (options.output && /\.html$/.test(options.output) && (jsh.shell.jsh.home || jsh.shell.jsh.src)) {
 					var pathname = (function() {
 						//	The JSH_PROFILER_MODULE hack is to support the profiler suite.jsh.js program, but there is probably a
 						//	better long-term design
 						if (jsh.shell.environment.JSH_PROFILER_MODULE) return jsh.file.Pathname(jsh.shell.environment.JSH_PROFILER_MODULE);
 						if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getRelativePath("tools/profiler/viewer/module.js");
+						if (jsh.shell.jsh.src) return jsh.shell.jsh.src.getRelativePath("rhino/tools/profiler/viewer/module.js");
 					})();
 					//	TODO	the below would not work because when jsh.loader.module loads the module, it does not
 					//			provide the module with a $loader which has been decorated with the jsh.io stuff
@@ -142,7 +143,7 @@ if (options.listener || options.output) {
 							to: jsh.file.filesystems.os.Pathname(String(new Packages.java.io.File(options.output).getCanonicalPath()))
 						});
 					} else {
-						jsh.shell.echo("Emitting profiling data to " + options.output + " ...", { stream: jsh.shell.stderr });
+						jsh.shell.echo("Emitting profiling data to " + options.output + " ...", { stream: jsh.shell.stdio.error });
 						jsh.loader.run(pathname, {
 							$loader: new jsh.io.Loader({ _source: Packages.inonit.script.engine.Code.Source.create(pathname.parent.java.adapt()) }),
 //							jsh: jsh,

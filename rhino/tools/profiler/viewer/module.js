@@ -18,7 +18,8 @@ var scriptElement = function(s) {
 }
 //	TODO	this is pretty brittle; perhaps there is a better solution, especially as we mature jsh.document
 html = html.replace('<link rel="stylesheet" type="text/css" href="viewer.css" />', '<style type="text/css">' + $loader.resource("viewer.css").read(String) + "</style>");
-html = html.replace('<script type="text/javascript" src="profiles.js"></script>', scriptElement("var profiles = " + jsh.js.toLiteral(profiles)));
+var json = (false) ? jsh.js.toLiteral(profiles) : JSON.stringify(profiles);
+html = html.replace('<script type="text/javascript" src="profiles.js"></script>', scriptElement("var profiles = " + json));
 html = html.replace('<script type="text/javascript" src="viewer.js"></script>', scriptElement($loader.resource("viewer.js").read(String)));
 
 output.write(html, { append: false });

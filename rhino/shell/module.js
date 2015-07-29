@@ -479,7 +479,7 @@ $exports.jrunscript = function(p) {
 
 	if (p.vmarguments) {
 		for (var i=0; i<p.vmarguments.length; i++) {
-			vmargs.push(launch.prefix + p.vmarguments[i]);
+			vmargs.push(launch.vmArgumentPrefix + p.vmarguments[i]);
 		}
 	}
 

@@ -659,7 +659,7 @@ try {
 
 		var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
 
-		if (false) this.profiler = (function() {
+		this.profiler = (function() {
 			if ($api.slime.settings.get("jsh.shell.profiler")) {
 				return new Packages.java.io.File($api.slime.settings.get("jsh.shell.profiler"));
 			}
