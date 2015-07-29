@@ -794,24 +794,123 @@ public abstract class Code {
 		}
 	}
 
+	private static List<URL> getClassLoaderUrls() {
+		if (Code.class.getClassLoader() instanceof URLClassLoader) {
+			return Arrays.asList( ((URLClassLoader)Code.class.getClassLoader()).getURLs() );
+		} else {
+			return new ArrayList<URL>();
+		}
+	}
+
+	private static JavaFileManager createJavaFileManager(final MemoryJavaClasses compiled) {
+		final boolean USE_STANDARD_FILE_MANAGER_TO_LIST_CLASSPATH = true;
+
+		final List<URL> urls = getClassLoaderUrls();
+
+		final ClassLoader classpath = new ClassLoader() {
+			protected Class findClass(String name) throws ClassNotFoundException{
+				throw new ClassNotFoundException(name);
+			}
+		};
+
+		return new javax.tools.JavaFileManager() {
+			private javax.tools.JavaFileManager delegate = javac.getStandardFileManager(null, null, null);
+
+			public ClassLoader getClassLoader(JavaFileManager.Location location) {
+				if (location == StandardLocation.CLASS_PATH) return classpath;
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
+				//System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
+				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
+				if (location == StandardLocation.CLASS_PATH) {
+//									System.err.println("Searching classpath: " + System.getProperty("java.class.path"));
+//									System.err.println("Current classloader: " + getURLs());
+//									Iterable<JavaFileObject> list = delegate.list(location, packageName, kinds, recurse);
+//									for (JavaFileObject o : list) {
+//										System.err.println("delegate = " + o);
+//									}
+					//	TODO	should only be if kinds contains CLASS or whatever
+					if (USE_STANDARD_FILE_MANAGER_TO_LIST_CLASSPATH) {
+						return delegate.list(location, packageName, kinds, recurse);
+					} else {
+						try {
+							return ClassRepository.create(urls).list(packageName);
+						} catch (URISyntaxException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}
+				//System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
+				return Arrays.asList(new JavaFileObject[0]);
+			}
+
+			public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
+				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
+//								if (location == StandardLocation.CLASS_PATH) return delegate.inferBinaryName(location, file);
+				if (location == StandardLocation.CLASS_PATH) {
+					int lastPeriod = file.getName().lastIndexOf(".");
+					if (lastPeriod == -1) throw new RuntimeException("No period: " + file.getName());
+					String rv = file.getName().substring(0,lastPeriod).replace("/", ".");
+					//System.err.println("inferBinaryName = " + rv);
+					return rv;
+				}
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public boolean isSameFile(FileObject a, FileObject b) {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public boolean handleOption(String current, Iterator<String> remaining) {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public boolean hasLocation(JavaFileManager.Location location) {
+				if (location == StandardLocation.ANNOTATION_PROCESSOR_PATH) return false;
+				if (location == StandardLocation.SOURCE_PATH) return true;
+				//	StandardLocation.NATIVE_HEADER_OUTPUT not defined before Java 8
+				if (location.getName().equals("NATIVE_HEADER_OUTPUT")) return false;
+				throw new UnsupportedOperationException("Not supported yet: " + location.getName());
+			}
+
+			public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
+				if (location == StandardLocation.CLASS_OUTPUT) {
+					return compiled.forOutput(className);
+				}
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public FileObject getFileForInput(JavaFileManager.Location location, String packageName, String relativeName) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public FileObject getFileForOutput(JavaFileManager.Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public void flush() throws IOException {
+			}
+
+			public void close() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public int isSupportedOption(String option) {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+		};
+	}
+
 	private static Source getCompiledClasses(final Source source) {
 		return new Source() {
 			private MemoryJavaClasses compiled = new MemoryJavaClasses();
 			private javax.tools.JavaFileManager jfm;
-
-			private ClassLoader classpath = new ClassLoader() {
-				protected Class findClass(String name) throws ClassNotFoundException{
-					throw new ClassNotFoundException(name);
-				}
-			};
-
-			private List<URL> getURLs() {
-				if (Code.class.getClassLoader() instanceof URLClassLoader) {
-					return Arrays.asList( ((URLClassLoader)Code.class.getClassLoader()).getURLs() );
-				} else {
-					return new ArrayList<URL>();
-				}
-			}
 
 			private boolean hasClass(String name) {
 				try {
@@ -839,98 +938,18 @@ public abstract class Code {
 						javac = javax.tools.ToolProvider.getSystemJavaCompiler();
 					}
 					if (jfm == null) {
-						jfm = new javax.tools.JavaFileManager() {
-							private javax.tools.JavaFileManager delegate = javac.getStandardFileManager(null, null, null);
-
-							public ClassLoader getClassLoader(JavaFileManager.Location location) {
-								if (location == StandardLocation.CLASS_PATH) return classpath;
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
-								//System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
-								if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
-								if (location == StandardLocation.CLASS_PATH) {
-//									System.err.println("Searching classpath: " + System.getProperty("java.class.path"));
-//									System.err.println("Current classloader: " + getURLs());
-//									Iterable<JavaFileObject> list = delegate.list(location, packageName, kinds, recurse);
-//									for (JavaFileObject o : list) {
-//										System.err.println("delegate = " + o);
-//									}
-									//	TODO	should only be if kinds contains CLASS or whatever
-									try {
-										return ClassRepository.create(getURLs()).list(packageName);
-									} catch (URISyntaxException e) {
-										throw new RuntimeException(e);
-									}
-								}
-								//System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
-								return Arrays.asList(new JavaFileObject[0]);
-							}
-
-							public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
-								if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
-//								if (location == StandardLocation.CLASS_PATH) return delegate.inferBinaryName(location, file);
-								if (location == StandardLocation.CLASS_PATH) {
-									int lastPeriod = file.getName().lastIndexOf(".");
-									if (lastPeriod == -1) throw new RuntimeException("No period: " + file.getName());
-									String rv = file.getName().substring(0,lastPeriod).replace("/", ".");
-									//System.err.println("inferBinaryName = " + rv);
-									return rv;
-								}
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public boolean isSameFile(FileObject a, FileObject b) {
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public boolean handleOption(String current, Iterator<String> remaining) {
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public boolean hasLocation(JavaFileManager.Location location) {
-								if (location == StandardLocation.ANNOTATION_PROCESSOR_PATH) return false;
-								if (location == StandardLocation.SOURCE_PATH) return true;
-								//	StandardLocation.NATIVE_HEADER_OUTPUT not defined before Java 8
-								if (location.getName().equals("NATIVE_HEADER_OUTPUT")) return false;
-								throw new UnsupportedOperationException("Not supported yet: " + location.getName());
-							}
-
-							public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
-								if (location == StandardLocation.CLASS_OUTPUT) {
-									return compiled.forOutput(className);
-								}
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public FileObject getFileForInput(JavaFileManager.Location location, String packageName, String relativeName) throws IOException {
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public FileObject getFileForOutput(JavaFileManager.Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public void flush() throws IOException {
-							}
-
-							public void close() throws IOException {
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-
-							public int isSupportedOption(String option) {
-								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-							}
-						};
+						jfm = Code.createJavaFileManager(compiled);
 					}
 					javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
 					//System.err.println("Compiling: " + jfo);
-					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(null, jfm, null, Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }), null, Arrays.asList(new JavaFileObject[] { jfo }));
+					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(
+						null,
+						jfm,
+						null,
+						Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
+						null,
+						Arrays.asList(new JavaFileObject[] { jfo })
+					);
 					boolean success = task.call();
 					if (!success) {
 						throw new RuntimeException("Failure");
