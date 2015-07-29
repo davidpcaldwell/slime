@@ -12,7 +12,8 @@
 //	END LICENSE
 
 var jsh = $context.jsh;
-if (!jsh.java.getClass("org.apache.catalina.startup.Tomcat") && $context.CATALINA_HOME) {
+var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
+if (!TOMCAT_CLASS && $context.CATALINA_HOME) {
 	[
 		"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
 		"lib/catalina.jar"
@@ -20,10 +21,11 @@ if (!jsh.java.getClass("org.apache.catalina.startup.Tomcat") && $context.CATALIN
 	].forEach(function(path) {
 		jsh.loader.java.add($context.CATALINA_HOME.getRelativePath(path));
 	});
+	TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 }
-$context.jsh.java.log.named("jsh.httpd").INFO("Trying to load Tomcat: class = %s CATALINA_HOME = %s", jsh.java.getClass("org.apache.catalina.startup.Tomcat"), $context.CATALINA_HOME);
+$context.jsh.java.log.named("jsh.httpd").INFO("Trying to load Tomcat: class = %s CATALINA_HOME = %s", TOMCAT_CLASS, $context.CATALINA_HOME);
 
-if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) {
+if (TOMCAT_CLASS) {
 	jsh.httpd.Tomcat = function(p) {
 		var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 

@@ -14,7 +14,8 @@
 var parameters = jsh.script.getopts({
 	options: {
 		"profiler:javassist": jsh.file.Pathname,
-		"profiler:output": jsh.file.Pathname
+		"profiler:output": jsh.file.Pathname,
+		"profiler:exclude": jsh.script.getopts.ARRAY(String)
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -33,6 +34,9 @@ var configuration = [];
 if (parameters.options["profiler:output"]) {
 	configuration.push("output=" + parameters.options["profiler:output"]);
 }
+parameters.options["profiler:exclude"].forEach(function(pattern) {
+	configuration.push("exclude=" + pattern);
+});
 var properties = {
 	"jsh.debug.script": (configuration.length) ? "profiler:" + configuration.join(",") : "profiler",
 	"jsh.shell.profiler": profiler.toString()

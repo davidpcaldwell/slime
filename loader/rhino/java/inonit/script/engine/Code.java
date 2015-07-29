@@ -428,6 +428,13 @@ public abstract class Code {
 
 	private static javax.tools.JavaCompiler javac;
 
+	private static javax.tools.JavaCompiler resolveJavac() {
+		if (javac == null) {
+			javac = javax.tools.ToolProvider.getSystemJavaCompiler();
+		}
+		return javac;
+	}
+
 	private static class MemoryJavaClasses {
 		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
 
@@ -822,38 +829,19 @@ public abstract class Code {
 			}
 
 			public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
-				//System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
-				if (location == StandardLocation.CLASS_PATH) {
-//									System.err.println("Searching classpath: " + System.getProperty("java.class.path"));
-//									System.err.println("Current classloader: " + getURLs());
-//									Iterable<JavaFileObject> list = delegate.list(location, packageName, kinds, recurse);
-//									for (JavaFileObject o : list) {
-//										System.err.println("delegate = " + o);
-//									}
-					//	TODO	should only be if kinds contains CLASS or whatever
-					if (USE_STANDARD_FILE_MANAGER_TO_LIST_CLASSPATH) {
-						return delegate.list(location, packageName, kinds, recurse);
-					} else {
-						try {
-							return ClassRepository.create(urls).list(packageName);
-						} catch (URISyntaxException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-				//System.err.println("list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse);
+				if (location == StandardLocation.CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
+				if (location == StandardLocation.SOURCE_PATH) return Arrays.asList(new JavaFileObject[0]);
+				if (true) throw new RuntimeException("No list() implementation for " + location);
 				return Arrays.asList(new JavaFileObject[0]);
 			}
 
 			public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
-//								if (location == StandardLocation.CLASS_PATH) return delegate.inferBinaryName(location, file);
 				if (location == StandardLocation.CLASS_PATH) {
 					int lastPeriod = file.getName().lastIndexOf(".");
 					if (lastPeriod == -1) throw new RuntimeException("No period: " + file.getName());
 					String rv = file.getName().substring(0,lastPeriod).replace("/", ".");
-					//System.err.println("inferBinaryName = " + rv);
 					return rv;
 				}
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -912,6 +900,8 @@ public abstract class Code {
 			private MemoryJavaClasses compiled = new MemoryJavaClasses();
 			private javax.tools.JavaFileManager jfm;
 
+			private HashMap<String,Source.File> cache = new HashMap<String,Source.File>();
+
 			private boolean hasClass(String name) {
 				try {
 					Class c = Code.class.getClassLoader().loadClass(name);
@@ -921,52 +911,50 @@ public abstract class Code {
 				}
 			}
 
+			private JavaFileManager resolveJavaFileManager() {
+				if (jfm == null) {
+					jfm = Code.createJavaFileManager(compiled);
+				}
+				return jfm;
+			}
+
 			@Override public Source.File getFile(String path) throws IOException {
-				//System.err.println("getCompiledClasses(" + source + "): " + path);
-//				System.err.println("Source: " + source + " path=" + path);
-				String className = path.substring(0,path.length()-".class".length());
-				String sourceName = className + ".java";
-//				className = className.replace("/", ".");
-//				System.err.println("sourceName: " + sourceName);
-				Source.File sourceFile = source.getFile("java/" + sourceName);
-//				System.err.println("java: " + sourceFile);
-				if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
-					sourceFile = source.getFile("rhino/java/" + sourceName);
+				if (cache.get(path) == null) {
+					//	System.err.println("Looking up class " + path + " for " + source);
+					String className = path.substring(0,path.length()-".class".length());
+					String sourceName = className + ".java";
+					Source.File sourceFile = source.getFile("java/" + sourceName);
+					if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
+						sourceFile = source.getFile("rhino/java/" + sourceName);
+					}
+					if (sourceFile != null) {
+						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
+						//System.err.println("Compiling: " + jfo);
+						javax.tools.JavaCompiler.CompilationTask task = resolveJavac().getTask(
+							null,
+							resolveJavaFileManager(),
+							null,
+							Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
+							null,
+							Arrays.asList(new JavaFileObject[] { jfo })
+						);
+						boolean success = task.call();
+						if (!success) {
+							throw new RuntimeException("Failure");
+						}
+					}
+					cache.put(path, compiled.getCompiledClass(className.replace("/",".")));
 				}
-				if (sourceFile != null) {
-					if (javac == null) {
-						javac = javax.tools.ToolProvider.getSystemJavaCompiler();
-					}
-					if (jfm == null) {
-						jfm = Code.createJavaFileManager(compiled);
-					}
-					javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
-					//System.err.println("Compiling: " + jfo);
-					javax.tools.JavaCompiler.CompilationTask task = javac.getTask(
-						null,
-						jfm,
-						null,
-						Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
-						null,
-						Arrays.asList(new JavaFileObject[] { jfo })
-					);
-					boolean success = task.call();
-					if (!success) {
-						throw new RuntimeException("Failure");
-					}
-				}
-				return compiled.getCompiledClass(className.replace("/","."));
+				return cache.get(path);
 			}
 
 			private Classes classes = new Classes() {
 				@Override public URL getResource(String path) {
-					//System.err.println("getResource(" + path + ")");
 					return null;
 				}
 			};
 
 			@Override public Classes getClasses() {
-				//System.err.println("getClasses()");
 				return null;
 			}
 		};
