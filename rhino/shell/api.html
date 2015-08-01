@@ -166,6 +166,19 @@ END LICENSE
 									<div class="name">command</div>
 									<span class="type"><a href="#types.token">token</a></span>
 									<span>The command to pass to the underlying operating system.</span>
+									<script type="application/x.jsapi#tests">
+										verify(module).evaluate(function() {
+											this.run({
+												command: null
+											})
+										}).threw.message.is("property 'command' must not be null; full invocation = (null)");
+										verify(module).evaluate(function() {
+											this.run({
+												command: "java",
+												arguments: [null]
+											})
+										}).threw.message.is("property 'arguments[0]' must not be null; full invocation = java (null)");
+									</script>
 								</li>
 								<li class="value">
 									<div class="name">arguments</div>

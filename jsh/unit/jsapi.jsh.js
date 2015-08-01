@@ -128,7 +128,7 @@ if (!parameters.options.notest) {
 		if (tokens.length == 1) {
 			tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(test).location, environment: ENVIRONMENT }) });
 		} else {
-			tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(tokens[0]).locaation, unit: tokens.slice(1).join("."), environment: ENVIRONMENT }) });
+			tests.add({ scenario: new jsh.unit.Scenario.Html({ pathname: getModule(tokens[0]).location, unit: tokens.slice(1).join("."), environment: ENVIRONMENT }) });
 		}
 	});
 	var UNIT_TESTS_COMPLETED = function(success) {
