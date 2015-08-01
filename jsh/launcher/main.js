@@ -117,8 +117,11 @@ var shell = (function() {
 		return new $api.jsh.Built($api.script.file.getParentFile());
 	} else {
 		var rhino;
+		var HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.home"));
 		if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
-			rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()]
+			rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
+		} else if (new Packages.java.io.File(HOME, ".inonit/jsh/lib/js.jar").exists()) {
+			rhino = [new Packages.java.io.File(HOME, ".inonit/jsh/lib/js.jar")];
 		} else {
 			$api.debug("No setting for jsh.engine.rhino.classpath");
 		}

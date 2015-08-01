@@ -271,87 +271,127 @@ $exports.jsh = function(p) {
 			}
 		})();
 
-		var addCommandTo = function(jargs,properties) {
+		var addCommandTo = function(jargs,script) {
+			if (p.vmarguments) {
+				p.vmarguments.forEach(function(argument) {
+					jargs.push(argument);
+				});
+			}
 			if (properties) {
 				for (var x in properties) {
 					jargs.push("-D" + x + "=" + properties[x]);
 				}
 			}
-			jargs.push(p.script);
+			jargs.push(script);
 			p.arguments.forEach( function(arg) {
 				jargs.push(arg);
 			});
 			return jargs;
 		}
 
-		if (!p.shell) {
-			if (false && p.stdio && p.stdio.input) {
-				var shell = $context.api.js.Object.set({}, p, {
-					//	Set default classpath from this shell
-					properties: properties,
-					classpath: (p.classpath) ? p.classpath : $exports.properties.get("jsh.launcher.classpath"),
-					main: $exports.properties.get("jsh.launcher.main"),
-					arguments: addCommandTo([]),
-					environment: environment,
-					evaluate: evaluate
-				});
-				return $exports.java(shell);
-			} else {
-				var scripts = [];
-				var properties = {};
-				//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
-				if (p.classpath) {
-					properties["jsh.shell.classpath"] = String(p.classpath);
+		var scripts = (function(shell) {
+			var unbuilt = function(src) {
+				return [
+					src.getFile("rhino/jrunscript/api.js"),
+					"jsh"
+				];
+			};
+
+			var built = function(home) {
+				return [
+					home.getFile("jsh.js")
+				]
+			};
+
+			if (shell) {
+				//	TODO	should contemplate possibility of URL, I suppose
+				if (shell.getFile("jsh.js")) {
+					return built(shell);
 				}
-				if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
-					properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+				if (shell.getFile("rhino/jrunscript/api.js")) {
+					return unbuilt(shell);
 				}
-				if ($exports.jsh.src) {
-					//	TODO	should probably pass compiled classes so that subshell does not need to recompile
-					scripts.push($exports.jsh.src.getFile("rhino/jrunscript/api.js"));
-					scripts.push($exports.jsh.src.getFile("jsh/launcher/main.js"));
-				} else if ($exports.jsh.home) {
-					scripts.push($exports.jsh.home.getFile("jsh.js"));
-				}
-				var shell = $context.api.js.Object.set({}, p, {
-					environment: environment,
-					properties: properties,
-					arguments: addCommandTo(scripts,p.properties),
-					evaluate: evaluate
-				});
-				return $exports.jrunscript(shell);
+				throw new Error("Shell not found: " + shell);
 			}
-		} else {
-			if (p.shell.getFile("jsh.js")) {
-				//	Built shell
-				return $exports.jrunscript($context.api.js.Object.set({}, p, {
-					arguments: addCommandTo([p.shell.getFile("jsh.js")],p.properties),
-					environment: environment,
-					evaluate: evaluate
-				}));
-			} else if (p.shell.getFile("rhino/jrunscript/api.js")) {
-				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/launcher/main.js")];
-				//	TODO	will only work if they start with dash, which they must, right?
-//				if (p.properties) {
-//					for (var x in p.properties) {
-//						args.push("-D" + x + "=" + p.properties[x]);
-//					}
-//					delete p.properties;
+			if ($exports.jsh.home) return built($exports.jsh.home);
+			if ($exports.jsh.src) return unbuilt($exports.jsh.src);
+			//	TODO	would unbuilt remote shells have a src property, and would it work?
+			throw new Error("Running shell lacks home and src properties; jsh bug? url=" + $exports.jsh.url);
+		})(p.shell);
+//		var shell = (p.shell)
+//			? (function() {
+//				if (p.shell.getFile("jsh.js")) {
+//					return { home: p.shell }
+//				} else if (p.shell.getFile("rhino/jrunscript/api.js")) {
+//					return { src: p.shell }
+//				} else {
+//					throw new Error("Shell not found: " + p.shell);
 //				}
-				if (p.vmarguments) {
-					for (var i=0; i<p.vmarguments.length; i++) {
-						args.push(p.vmarguments[i]);
-					}
-				}
-				return $exports.jrunscript($context.api.js.Object.set({}, p, {
-					arguments: addCommandTo(args,p.properties),
-					environment: environment,
-					evaluate: evaluate
-				}));
-			} else {
-				throw new Error("Shell not found: " + p.shell);
-			}
+//			})()
+//			: {
+//				src: $exports.jsh.src,
+//				home: $exports.jsh.home,
+//				url: $exports.jsh.
+//			}
+//		;
+
+//		var scripts = [];
+		var properties = {};
+		if (p.classpath) {
+			properties["jsh.shell.classpath"] = String(p.classpath);
 		}
+		//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
+		if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+			properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+		}
+//		if (shell.src) {
+//			//	TODO	should probably pass compiled classes so that subshell does not need to recompile
+//			scripts.push(shell.src.getFile("rhino/jrunscript/api.js"));
+//			scripts.push("jsh");
+//		} else if (shell.home) {
+//			scripts.push(shell.home.getFile("jsh.js"));
+//		} else {
+//			throw new Error("Shell not found: " + p.shell);
+//		}
+		var argument = $context.api.js.Object.set({}, p, {
+			environment: environment,
+			vmarguments: [],
+			properties: properties,
+			arguments: addCommandTo(scripts,p.script),
+			evaluate: evaluate
+		});
+		return $exports.jrunscript(argument);
+//		} else {
+//			if (p.shell.getFile("jsh.js")) {
+//				//	Built shell
+//				return $exports.jrunscript($context.api.js.Object.set({}, p, {
+//					arguments: addCommandTo([p.shell.getFile("jsh.js")],p.properties),
+//					environment: environment,
+//					evaluate: evaluate
+//				}));
+//			} else if (p.shell.getFile("rhino/jrunscript/api.js")) {
+//				var args = [p.shell.getFile("rhino/jrunscript/api.js"), p.shell.getFile("jsh/launcher/main.js")];
+//				//	TODO	will only work if they start with dash, which they must, right?
+////				if (p.properties) {
+////					for (var x in p.properties) {
+////						args.push("-D" + x + "=" + p.properties[x]);
+////					}
+////					delete p.properties;
+////				}
+//				if (p.vmarguments) {
+//					for (var i=0; i<p.vmarguments.length; i++) {
+//						args.push(p.vmarguments[i]);
+//					}
+//				}
+//				return $exports.jrunscript($context.api.js.Object.set({}, p, {
+//					arguments: addCommandTo(args,p.properties),
+//					environment: environment,
+//					evaluate: evaluate
+//				}));
+//			} else {
+//				throw new Error("Shell not found: " + p.shell);
+//			}
+//		}
 	} else {
 		var configuration = new JavaAdapter(
 			Packages.inonit.script.jsh.Shell.Environment,
@@ -509,7 +549,14 @@ if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell
 	$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.shell.home).directory
 }
 if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
-	$exports.jsh.src = $context.api.file.Pathname($exports.properties.object.jsh.shell.src).directory
+	(function() {
+		var src = String($exports.properties.object.jsh.shell.src);
+		if ($context.api.file.Pathname(src).directory) {
+			$exports.jsh.src = $context.api.file.Pathname(src).directory;
+		} else {
+			$exports.jsh.url = $context.api.js.web.Url.parse(src);
+		}
+	})();
 }
 //var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
 ////	TODO	this is fragile. The above property is, in a built shell:

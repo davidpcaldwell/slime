@@ -27,14 +27,16 @@ var tests = (parameters.options.test)
 	url: (parameters.options.test == "url"),
 	urlproperties: (parameters.options.test == "urlproperties"),
 	filename: (parameters.options.test == "filename"),
-	build: (parameters.options.test == "build")
+	build: (parameters.options.test == "build"),
+	subshell: (parameters.options.test == "subshell")
 }
 : {
 	file: true,
 	url: true,
 	urlproperties: false,
 	filename: false,
-	build: false
+	build: false,
+	subshell: false
 };
 
 var SRC = jsh.script.file.parent.parent.parent.parent;
@@ -308,5 +310,17 @@ if (tests.build) {
 			].concat(args)
 		});
 	})();
+}
+if (tests.subshell) {
+	jsh.shell.jrunscript({
+		properties: {
+			"http.proxyHost": "127.0.0.1",
+			"http.proxyPort": String(tomcat.port)
+		},
+		arguments: [
+			"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
+			"http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/manual/remote-jsh.shell.jsh.jsh.js"
+		]
+	});
 }
 tomcat.stop();

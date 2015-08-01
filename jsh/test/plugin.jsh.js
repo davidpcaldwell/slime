@@ -49,6 +49,7 @@ plugin({
 			var write = buffer.writeBinary();
 			return jsh.shell.jsh({
 				fork: true,
+				shell: p.shell,
 				script: p.script,
 				arguments: ["-scenario", "-view", "child"],
 				stdio: {

@@ -28,6 +28,7 @@ jsh.unit.integration({
 			if (jsh.shell.jsh.home)  {
 				return jsh.shell.jsh.home;
 			}
+			jsh.shell.echo("Building shell in which to run launcher tests ...");
 			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 			var buildArguments = [];
 			if (parameters.options.rhino) {
@@ -107,35 +108,6 @@ jsh.unit.integration({
 			}));
 		}
 
-		jsh.unit.Scenario.Integration = function(p) {
-			var buffer = new jsh.io.Buffer();
-			var write = buffer.writeBinary();
-			var properties = {};
-			if (parameters.options.rhino) {
-				properties["jsh.engine.rhino.classpath"] = parameters.options.rhino;
-			}
-			return built({
-				environment: p.environment,
-				properties: properties,
-				script: p.script,
-				arguments: ["-scenario", "-view", "child"],
-				stdio: {
-					output: write
-				},
-				evaluate: function(result) {
-//					jsh.shell.echo("Integration scenario exited.");
-//					jsh.shell.echo("Stack = " + new Error().stack);
-//					jsh.shell.echo("Rhino context = " + Packages.org.mozilla.javascript.Context.getCurrentContext());
-					write.java.adapt().flush();
-					buffer.close();
-					return new jsh.unit.Scenario.Stream({
-						name: p.script.toString(),
-						stream: buffer.readBinary()
-					});
-				}
-			})
-		};
-
 		var addScenario = (function(o) {
 			this.add({ scenario: new function() {
 				this.name = o.name;
@@ -162,8 +134,19 @@ jsh.unit.integration({
 			engines.push("rhino");
 		}
 
+		[unbuilt,built].forEach(function(implementation) {
+			var shell = (unbuilt) ? home : src;
+			this.add({
+				scenario: new jsh.unit.Scenario.Integration({
+					shell: shell,
+					script: jsh.script.file.parent.getFile("options.jsh.js")
+				})
+			});
+		},this);
+
 		engines.forEach(function(engine) {
 			this.add({ scenario: new jsh.unit.Scenario.Integration({
+				shell: home,
 				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
 				environment: {
 					PATH: jsh.shell.environment.PATH,

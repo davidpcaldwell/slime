@@ -49,6 +49,9 @@ if (jsh.shell.rhino) {
 } else {
 	log("jsh.shell.rhino = null");
 }
+log("jsh.shell.jsh.home = " + jsh.shell.jsh.home);
+log("jsh.shell.jsh.src = " + jsh.shell.jsh.src);
+log("jsh.shell.jsh.url = " + jsh.shell.jsh.url);
 
 if (typeof(jsh.shell.PATH) == "undefined") {
 	throw new Error("PATH should be defined.");
