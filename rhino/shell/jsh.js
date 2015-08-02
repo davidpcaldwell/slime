@@ -290,6 +290,13 @@ $exports.jsh = function(p) {
 		}
 
 		var scripts = (function(shell) {
+			var remote = function(url) {
+				return [
+					"-e",
+					"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
+				];
+			}
+
 			var unbuilt = function(src) {
 				return [
 					src.getFile("rhino/jrunscript/api.js"),
@@ -315,44 +322,27 @@ $exports.jsh = function(p) {
 			}
 			if ($exports.jsh.home) return built($exports.jsh.home);
 			if ($exports.jsh.src) return unbuilt($exports.jsh.src);
+			if ($exports.jsh.url) return remote($exports.jsh.url);
 			//	TODO	would unbuilt remote shells have a src property, and would it work?
-			throw new Error("Running shell lacks home and src properties; jsh bug? url=" + $exports.jsh.url);
+			throw new Error("Running shell lacks home, src, and url properties; jsh bug.");
 		})(p.shell);
-//		var shell = (p.shell)
-//			? (function() {
-//				if (p.shell.getFile("jsh.js")) {
-//					return { home: p.shell }
-//				} else if (p.shell.getFile("rhino/jrunscript/api.js")) {
-//					return { src: p.shell }
-//				} else {
-//					throw new Error("Shell not found: " + p.shell);
-//				}
-//			})()
-//			: {
-//				src: $exports.jsh.src,
-//				home: $exports.jsh.home,
-//				url: $exports.jsh.
-//			}
-//		;
 
-//		var scripts = [];
 		var properties = {};
 		if (p.classpath) {
 			properties["jsh.shell.classpath"] = String(p.classpath);
 		}
-		//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
-		if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
-			properties["jsh.engine.rhino.classpath"] = String(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+		var copyPropertyIfPresent = function(name) {
+			//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
+			if (Packages.java.lang.System.getProperty(name)) {
+				properties[name] = String(Packages.java.lang.System.getProperty(name));
+			}
 		}
-//		if (shell.src) {
-//			//	TODO	should probably pass compiled classes so that subshell does not need to recompile
-//			scripts.push(shell.src.getFile("rhino/jrunscript/api.js"));
-//			scripts.push("jsh");
-//		} else if (shell.home) {
-//			scripts.push(shell.home.getFile("jsh.js"));
-//		} else {
-//			throw new Error("Shell not found: " + p.shell);
-//		}
+		copyPropertyIfPresent("jsh.engine.rhino.classpath");
+		if (scripts[0] == "-e") {
+			//	remote shell
+			copyPropertyIfPresent("http.proxyHost");
+			copyPropertyIfPresent("http.proxyPort");
+		}
 		var argument = $context.api.js.Object.set({}, p, {
 			environment: environment,
 			vmarguments: [],
