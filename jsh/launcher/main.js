@@ -85,32 +85,17 @@ $api.slime.settings.default("jsh.engine.rhino.classpath", $api.rhino.classpath);
 //	If SLIME source location not specified, and we can determine it, supply it to the shell
 $api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
 
+if ($api.slime.settings.get("jsh.java.home")) {
+	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
+}
+
 //	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
 while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
 	command.vm($api.arguments.shift());
 }
 
-//var install = (function() {
-//	if ($api.slime.settings.get("jsh.java.home")) {
-//		return new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home")));
-//	}
-//	return $api.java.install;
-//})();
-
-//	TODO	convert to use $api.java.Command
-//	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
-//			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
 $api.script.resolve("launcher.js").load();
-////	TODO	determine whether forking can be removed. Right now, the problem is that in subshells the appropriate classes
-////			cannot be found, apparently
-//command.fork();
-if ($api.slime.settings.get("jsh.java.home")) {
-	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
-}
-//var vm = container.getVmArguments();
-//for (var i=0; i<vm.length; i++) {
-//	command.vm(vm[i]);
-//}
+
 //	If we have a sibling named jsh.jar, we are a built shell
 var shell = (function() {
 	if ($api.script.resolve("jsh.jar")) {
@@ -128,27 +113,33 @@ var shell = (function() {
 		return new $api.jsh.Unbuilt(rhino);
 	}
 })();
-$api.debug("shell = " + shell);
+$api.debug("shell detected = " + shell);
+
 if (!new javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 	delete $api.jsh.engines.nashorn;
 }
-var _urls = [];
+
 var defaultEngine = (function() {
 	if (shell.rhino) return "rhino";
 	if ($api.jsh.engines.nashorn) return "nashorn";
 	//	Download Rhino
+	//	TODO	documentation appears to be wrong; it warns that if the appropriate engine is not present the shell will not be
+	//			run
 	$api.console("No default engine; downloading Rhino ...");
 	var _file = $api.rhino.download();
 	shell.rhino = [_file.toURI().toURL()];
 	$api.slime.settings.set("jsh.engine.rhino.classpath", String(_file.getCanonicalPath()));
 	return "rhino";
 })();
-$api.debug("shell = " + shell);
+$api.debug("shell after engine selection = " + shell);
 if (!defaultEngine) {
 	Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
 	Packages.java.lang.System.exit(1);
 }
 $api.slime.settings.default("jsh.engine", defaultEngine);
+
+var _urls = [];
+
 if (shell.rhino) {
 	//	TODO	possibly redundant with some code in launcher.js; examine and think through
 	$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
@@ -156,6 +147,7 @@ if (shell.rhino) {
 		_urls.push(shell.rhino[i]);
 	}
 }
+
 var scriptDebugger = $api.slime.settings.get("jsh.debug.script");
 var profilerMatcher =  /^profiler(?:\:(.*))?$/;
 if ( profilerMatcher.test(scriptDebugger)) {
@@ -176,21 +168,22 @@ if ( profilerMatcher.test(scriptDebugger)) {
 		Packages.java.lang.System.exit(1);
 	}
 }
+
 (function() {
 	var container = $api.slime.settings.getContainerArguments();
 	for (var i=0; i<container.length; i++) {
 		command.vm(container[i]);
 	}
 })();
-$api.debug("before properties: " + command);
 $api.slime.settings.sendPropertiesTo(command);
-$api.debug("after properties: " + command);
+
 var _shellUrls = shell.shellClasspath();
 $api.debug("_shellUrls = " + _shellUrls);
 for (var i=0; i<_shellUrls.length; i++) {
 	_urls.push(_shellUrls[i]);
 }
 $api.debug("_urls = " + _urls);
+
 //	TODO	document, generalize
 if ($api.slime.settings.get("jsh.shell.classpath")) {
 	var files = $api.slime.settings.get("jsh.shell.classpath").split(String(Packages.java.io.File.pathSeparator));
@@ -199,9 +192,9 @@ if ($api.slime.settings.get("jsh.shell.classpath")) {
 	}
 }
 $api.debug("_urls = " + _urls);
+
 var classpath = new $api.jsh.Classpath(_urls);
 command.systemProperty("jsh.launcher.classpath", classpath.local());
-$api.debug("command = " + command);
 var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
 if (!engine) throw new Error("Specified engine not found: " + $api.slime.settings.get("jsh.engine")
 	+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE
@@ -209,17 +202,17 @@ if (!engine) throw new Error("Specified engine not found: " + $api.slime.setting
 	+ " shell=" + shell
 );
 command.systemProperty("jsh.launcher.main", engine.main);
-$api.debug("command = " + command);
+
 for (var i=0; i<classpath._urls.length; i++) {
 	command.classpath(classpath._urls[i]);
 }
-$api.debug("command = " + command);
+
 command.main(engine.main);
-$api.debug("command = " + command);
+
 for (var i=0; i<$api.arguments.length; i++) {
 	command.argument($api.arguments[i]);
 }
-$api.debug("command args = " + command);
+
 //	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch
 //			from Bitbucket
 var passthrough = ["http.proxyHost","http.proxyPort"];
@@ -234,7 +227,8 @@ for (var i=0; i<passthrough.length; i++) {
 		$api.debug("passthrough[" + i + "] not");
 	}
 }
-$api.debug("command pass = " + command);
+$api.debug("command = " + command);
+
 var status = command.run({ input: Packages.java.lang.System["in"] });
 //	This basically hard-codes the exit at the VM level, meaning this script cannot be embedded.
 Packages.java.lang.System.exit(status);
