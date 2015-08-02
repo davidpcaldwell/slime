@@ -548,6 +548,9 @@ if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell
 		}
 	})();
 }
+if ($exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.lib) {
+	$exports.jsh.lib = $context.api.file.Pathname($exports.properties.object.jsh.shell.lib).directory;
+}
 //var launcherClasspath = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.launcher.classpath));
 ////	TODO	this is fragile. The above property is, in a built shell:
 ////			*	supplied by the Java launcher class using the launcher java.class.path property as jsh.launcher.classpath

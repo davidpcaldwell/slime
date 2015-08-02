@@ -101,16 +101,9 @@ var shell = (function() {
 	if ($api.script.resolve("jsh.jar")) {
 		return new $api.jsh.Built($api.script.file.getParentFile());
 	} else {
-		var rhino;
 		var HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.home"));
-		if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
-			rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
-		} else if (new Packages.java.io.File(HOME, ".inonit/jsh/lib/js.jar").exists()) {
-			rhino = [new Packages.java.io.File(HOME, ".inonit/jsh/lib/js.jar")];
-		} else {
-			$api.debug("No setting for jsh.engine.rhino.classpath");
-		}
-		return new $api.jsh.Unbuilt(rhino);
+		$api.slime.settings.default("jsh.shell.lib", String(new Packages.java.io.File(HOME, ".inonit/jsh/lib")));
+		return new $api.jsh.Unbuilt();
 	}
 })();
 $api.debug("shell detected = " + shell);
@@ -216,19 +209,13 @@ for (var i=0; i<$api.arguments.length; i++) {
 //	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch
 //			from Bitbucket
 var passthrough = ["http.proxyHost","http.proxyPort"];
-$api.debug("passthrough");
 for (var i=0; i<passthrough.length; i++) {
-	$api.debug("passthrough[" + i + "]");
 	if (Packages.java.lang.System.getProperty(passthrough[i])) {
-		$api.debug("passthrough[" + i + "] got");
 		command.systemProperty(passthrough[i], Packages.java.lang.System.getProperty(passthrough[i]));
-		$api.debug("passthrough[" + i + "] gotten");
-	} else {
-		$api.debug("passthrough[" + i + "] not");
 	}
 }
-$api.debug("command = " + command);
 
+$api.debug("command = " + command);
 var status = command.run({ input: Packages.java.lang.System["in"] });
 //	This basically hard-codes the exit at the VM level, meaning this script cannot be embedded.
 Packages.java.lang.System.exit(status);

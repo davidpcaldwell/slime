@@ -655,6 +655,21 @@ try {
 			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
 		}
 
+		var lib = new Packages.java.io.File($api.slime.settings.get("jsh.shell.lib"));
+		if (!lib.exists()) {
+			lib.mkdirs();
+		}
+
+		if (!rhino) {
+			if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
+				rhino = [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
+			} else if ($api.slime.settings.get("jsh.shell.lib")) {
+				if (new Packages.java.io.File(lib, "js.jar").exists()) {
+					rhino = [new Packages.java.io.File(lib, "js.jar").toURI().toURL()];
+				}
+			}
+		}
+
 		this.rhino = rhino;
 
 		var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
@@ -776,6 +791,7 @@ try {
 			};
 
 			var Unbuilt = function(src) {
+				//	TODO	the below is now wrong; is this not exercised now except for packaged applications?
 				return new $api.jsh.Unbuilt(src,getRhinoClasspath());
 			};
 
@@ -868,9 +884,7 @@ try {
 		//	Describe the shell
 		if ($api.jsh.shell.rhino) $api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.shell.rhino);
 
-		$api.slime.settings.sendPropertiesTo(function(name,value) {
-			command.systemProperty(name,value);
-		});
+		$api.slime.settings.sendPropertiesTo(command);
 
 		//	TODO	If the container is classloader, presumably could use URLs or push the files switch back into $api.java.Command
 		var classpath = $api.jsh.shell.classpath()._urls;
