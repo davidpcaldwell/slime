@@ -34,41 +34,42 @@ $api.debug.on = Boolean($api.slime.settings.get("jsh.launcher.debug"));
 $api.debug("Source: " + $api.slime.src);
 $api.debug("Bootstrap script: " + $api.script);
 
-//	First, we want to process VM-level arguments. In the current jsh, the script-executing VM might be the launcher VM, if
-//	jsh.shell.container is classloader, or a forked loader VM, if it is jvm. So we process VM-level arguments using an object that
-//	encapsulates the difference and applies the VM-level arguments to the script-executing VM
 
-var container = new function() {
-	//	TODO	jsh.tmpdir is not correctly passed to launcher in the forking scenario
+var command = new $api.java.Command();
+//	TODO	for now, we always launch a separate VM to execute the shell, but we should work toward the possibility of using a
+//			classloader when it is possible
+command.fork();
+//var container = new function() {
+//	//	TODO	jsh.tmpdir is not correctly passed to launcher in the forking scenario
+//
+//	var id = ($api.slime.settings.get("jsh.shell.container")) ? $api.slime.settings.get("jsh.shell.container") : "classloader";
+//
+//	var vm = [];
+//
+//	this.argument = function(string) {
+//		vm.push(string);
+//	}
+//
+//	if (id == "classloader") {
+//		this.getVmArguments = function() {
+//			return vm.concat($api.slime.settings.getContainerArguments());
+//		};
+//
+//		this.getLauncherArguments = function() {
+//			return [];
+//		}
+//	} else {
+//		this.getVmArguments = function() {
+//			return vm.concat($api.slime.settings.getPropertyArguments());
+//		};
+//
+//		this.getLauncherArguments = function() {
+//			return vm;
+//		}
+//	}
+//}
 
-	var id = ($api.slime.settings.get("jsh.shell.container")) ? $api.slime.settings.get("jsh.shell.container") : "classloader";
-
-	var vm = [];
-
-	this.argument = function(string) {
-		vm.push(string);
-	}
-
-	if (id == "classloader") {
-		this.getVmArguments = function() {
-			return vm.concat($api.slime.settings.getContainerArguments());
-		};
-
-		this.getLauncherArguments = function() {
-			return [];
-		}
-	} else {
-		this.getVmArguments = function() {
-			return vm.concat($api.slime.settings.getPropertyArguments());
-		};
-
-		this.getLauncherArguments = function() {
-			return vm;
-		}
-	}
-}
-
-//	Add implementation of runCommand that echoes what it's doing
+//	Add implementation of runCommand that echoes what it's doing to debug log
 $api.engine.runCommand = (function(was) {
 	return function() {
 		$api.debug("main.js Running: " + Array.prototype.slice.call(arguments).join(" "));
@@ -86,31 +87,30 @@ $api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slim
 
 //	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
 while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
-	container.argument($api.arguments.shift());
+	command.vm($api.arguments.shift());
 }
 
-var install = (function() {
-	if ($api.slime.settings.get("jsh.java.home")) {
-		return new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home")));
-	}
-	return $api.java.install;
-})();
+//var install = (function() {
+//	if ($api.slime.settings.get("jsh.java.home")) {
+//		return new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home")));
+//	}
+//	return $api.java.install;
+//})();
 
 //	TODO	convert to use $api.java.Command
 //	TODO	under various circumstances, we could execute this without forking a VM; basically, if args.vm.length == 0 we could
 //			instead create a classloader using $api.slime.launcher.getClasses() and call main() on inonit.script.jsh.launcher.Main
 $api.script.resolve("launcher.js").load();
-var command = new $api.java.Command();
-//	TODO	determine whether forking can be removed. Right now, the problem is that in subshells the appropriate classes
-//			cannot be found, apparently
-command.fork();
+////	TODO	determine whether forking can be removed. Right now, the problem is that in subshells the appropriate classes
+////			cannot be found, apparently
+//command.fork();
 if ($api.slime.settings.get("jsh.java.home")) {
 	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
 }
-var vm = container.getVmArguments();
-for (var i=0; i<vm.length; i++) {
-	command.vm(vm[i]);
-}
+//var vm = container.getVmArguments();
+//for (var i=0; i<vm.length; i++) {
+//	command.vm(vm[i]);
+//}
 //	If we have a sibling named jsh.jar, we are a built shell
 var shell = (function() {
 	if ($api.script.resolve("jsh.jar")) {
@@ -176,7 +176,15 @@ if ( profilerMatcher.test(scriptDebugger)) {
 		Packages.java.lang.System.exit(1);
 	}
 }
+(function() {
+	var container = $api.slime.settings.getContainerArguments();
+	for (var i=0; i<container.length; i++) {
+		command.vm(container[i]);
+	}
+})();
+$api.debug("before properties: " + command);
 $api.slime.settings.sendPropertiesTo(command);
+$api.debug("after properties: " + command);
 var _shellUrls = shell.shellClasspath();
 $api.debug("_shellUrls = " + _shellUrls);
 for (var i=0; i<_shellUrls.length; i++) {
