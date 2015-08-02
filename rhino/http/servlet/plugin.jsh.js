@@ -33,7 +33,7 @@ plugin({
 
 		var CATALINA_HOME = (function() {
 			if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
-			if (jsh.shell.jsh.home && jsh.shell.jsh.home.getSubdirectory("lib/tomcat")) return jsh.shell.jsh.home.getSubdirectory("lib/tomcat");
+			if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
 		})();
 
 		//	TODO	allow system property in addition to environment variable?
