@@ -58,13 +58,14 @@ var Chrome = function(b) {
 			}).length > 0;
 		}
 
+		//	TODO	Presumably only works on OS X
 		var open = function(m) {
 			var args = [];
 			args.push("-b","com.google.Chrome");
 			args.push(m.uri);
 			args.push("--args");
 			addProfileArguments(args,m);
-			Packages.java.lang.System.err.println("using open: args = " + JSON.stringify(args));
+			//Packages.java.lang.System.err.println("using open: args = " + JSON.stringify(args));
 			$context.run({
 				command: "/usr/bin/open",
 				arguments: args
@@ -74,8 +75,12 @@ var Chrome = function(b) {
 		var launch = function(m) {
 			var args = [];
 			addProfileArguments(args,m);
-			args.push(m.uri);
-			Packages.java.lang.System.err.println("using program: args = " + JSON.stringify(args));
+			if (m.app) {
+				args.push("--app=" + m.app);
+			} else {
+				args.push(m.uri);
+			}
+			//Packages.java.lang.System.err.println("using program: args = " + JSON.stringify(args));
 			$context.run({
 				command: b.program,
 				arguments: args,
