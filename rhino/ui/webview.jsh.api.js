@@ -73,56 +73,77 @@ $set(function(p) {
 
 	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopTomcat));
 
-	var addTitleListener = function() {
-		this.listeners.add("title", function(e) {
-			this._frame.setTitle(e.detail.after);
+	var url = "http://127.0.0.1:" + server.port + "/" + ((p.path) ? p.path : "");
+	if (!p.browser) {
+		//	TODO	add deprecation warning for this
+		p.browser = {
+			zoom: p.zoom,
+			console: p.console
+		}
+	}
+	if (typeof(p.browser) == "object") {
+		var addTitleListener = function() {
+			this.listeners.add("title", function(e) {
+				this._frame.setTitle(e.detail.after);
+			});
+		};
+
+		jsh.ui.javafx.launch({
+			title: "WebView",	//	TODO	default
+			Scene: jsh.ui.javafx.WebView({
+				page: { url: url },
+				//	TODO	configurable
+				alert: function(s) {
+					jsh.shell.echo("ALERT: " + s);
+				},
+				//	TODO	configurable
+				console: (p.console) ? p.console : new function() {
+					this.log = function() {
+						jsh.shell.echo("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
+					}
+				},
+				popup: function(_popup) {
+					if (!_popup) _popup = this._popup;
+					jsh.shell.echo("Creating popup " + _popup + " ...");
+					var browser = new Packages.javafx.scene.web.WebView();
+					//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
+					//			object and calling back into the application layer with it already configured with things like the
+					//			zoom level by default
+					browser.setZoom(this._browser.getZoom());
+					new jsh.ui.javafx.Frame({
+						Scene: jsh.ui.javafx.WebView({
+							browser: browser,
+							initialize: function() {
+								addTitleListener.call(this);
+							}
+						}),
+						on: {
+							close: function() {
+								this.close();
+							}
+						}
+					});
+					return browser.getEngine();
+				},
+				//	TODO	configurable
+				initialize: function() {
+					addTitleListener.call(this);
+				},
+				zoom: p.zoom
+			}),
+			on: p.on
+		});
+	} else {
+		var on = (p.on) ? p.on : {
+			close: function() {
+				Packages.java.lang.System.exit(0);
+			}
+		};
+		jsh.java.Thread.start(function() {
+			p.browser({ url: url });
+			on.close();
 		});
 	}
-	jsh.ui.javafx.launch({
-		title: "WebView",	//	TODO	default
-		Scene: jsh.ui.javafx.WebView({
-			page: { url: "http://127.0.0.1:" + server.port + "/" + ((p.path) ? p.path : "") },
-			//	TODO	configurable
-			alert: function(s) {
-				jsh.shell.echo("ALERT: " + s);
-			},
-			//	TODO	configurable
-			console: (p.console) ? p.console : new function() {
-				this.log = function() {
-					jsh.shell.echo("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
-				}
-			},
-			popup: function(_popup) {
-				if (!_popup) _popup = this._popup;
-				jsh.shell.echo("Creating popup " + _popup + " ...");
-				var browser = new Packages.javafx.scene.web.WebView();
-				//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
-				//			object and calling back into the application layer with it already configured with things like the
-				//			zoom level by default
-				browser.setZoom(this._browser.getZoom());
-				new jsh.ui.javafx.Frame({
-					Scene: jsh.ui.javafx.WebView({
-						browser: browser,
-						initialize: function() {
-							addTitleListener.call(this);
-						}
-					}),
-					on: {
-						close: function() {
-							this.close();
-						}
-					}
-				});
-				return browser.getEngine();
-			},
-			//	TODO	configurable
-			initialize: function() {
-				addTitleListener.call(this);
-			},
-			zoom: p.zoom
-		}),
-		on: p.on
-	});
 
 	return {
 		port: server.port

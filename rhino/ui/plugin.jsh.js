@@ -64,13 +64,14 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat;
+		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java;
 	},
 	load: function() {
 		$loader.run("webview.jsh.api.js", {
 			$loader: $loader,
 			$set: function(v) {
-				jsh.ui.javafx.WebView.application = v;
+				jsh.ui.browser = v;
+				jsh.ui.javafx.WebView.application = $api.deprecate(v);
 			}
 		});
 	}
