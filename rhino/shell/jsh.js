@@ -277,9 +277,9 @@ $exports.jsh = function(p) {
 					jargs.push(argument);
 				});
 			}
-			if (properties) {
-				for (var x in properties) {
-					jargs.push("-D" + x + "=" + properties[x]);
+			if (p.properties) {
+				for (var x in p.properties) {
+					jargs.push("-D" + x + "=" + p.properties[x]);
 				}
 			}
 			jargs.push(script);
@@ -327,14 +327,15 @@ $exports.jsh = function(p) {
 			throw new Error("Running shell lacks home, src, and url properties; jsh bug.");
 		})(p.shell);
 
-		var properties = {};
+		//	Properties to be sent to main.js launcher; other properties will be sent as arguments using addCommandTo
+		var outerProperties = {};
 		if (p.classpath) {
-			properties["jsh.shell.classpath"] = String(p.classpath);
+			outerProperties["jsh.shell.classpath"] = String(p.classpath);
 		}
 		var copyPropertyIfPresent = function(name) {
 			//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
 			if (Packages.java.lang.System.getProperty(name)) {
-				properties[name] = String(Packages.java.lang.System.getProperty(name));
+				outerProperties[name] = String(Packages.java.lang.System.getProperty(name));
 			}
 		}
 		copyPropertyIfPresent("jsh.engine.rhino.classpath");
@@ -346,7 +347,7 @@ $exports.jsh = function(p) {
 		var argument = $context.api.js.Object.set({}, p, {
 			environment: environment,
 			vmarguments: [],
-			properties: properties,
+			properties: outerProperties,
 			arguments: addCommandTo(scripts,p.script),
 			evaluate: evaluate
 		});
