@@ -27,7 +27,7 @@ $set(function(p) {
 		}
 	})();
 	server.map({
-		path: "/",
+		path: "",
 		servlets: {
 			"/*": {
 //				file: p.servlet,
