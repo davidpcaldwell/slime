@@ -209,7 +209,7 @@
 		}
 
 		this.value = function(path,scope,target) {
-			return loader.module.apply(loader,arguments);
+			return loader.value.apply(loader,arguments);
 		}
 
 		this.Loader = function(p) {
