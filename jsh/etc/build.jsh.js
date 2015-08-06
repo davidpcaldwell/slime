@@ -374,8 +374,13 @@ SLIME.getSubdirectory("jsh/etc/install").copy(ETC);
 if (!destination.installer) {
 	(function postInstaller() {
 		console("Running post-installer with arguments [" + destination.arguments.join(" ") + "] ... ");
+		var properties = {};
+		if (Packages.java.lang.System.getProperty("jsh.build.downloads")) {
+			properties["jsh.build.downloads"] = String(Packages.java.lang.System.getProperty("jsh.build.downloads"));
+		}
 		jsh.shell.jsh({
 			shell: destination.shell,
+			properties: properties,
 			script: destination.shell.getFile("etc/install.jsh.js"),
 			arguments: destination.arguments
 		});

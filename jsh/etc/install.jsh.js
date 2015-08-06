@@ -267,9 +267,14 @@ if (which("chmod")) {
 }
 
 parameters.options.install.forEach(function(name) {
+	var properties = {};
+	if (Packages.java.lang.System.getProperty("jsh.build.downloads")) {
+		properties["jsh.build.downloads"] = String(Packages.java.lang.System.getProperty("jsh.build.downloads"));
+	}
 	jsh.shell.jsh({
 		fork: true,
 //		jar: install.getFile("jsh.jar"),
+		properties: properties,
 		script: install.getFile("etc/install/" + name + ".jsh.js")
 //		arguments: [install.getRelativePath("etc/install/" + name + ".jsh.js")]
 	});

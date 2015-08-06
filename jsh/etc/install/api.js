@@ -13,6 +13,7 @@
 
 var downloads = (function() {
 	if ($context.downloads) return $context.downloads;
+	if (Packages.java.lang.System.getProperty("jsh.build.downloads")) return jsh.file.Pathname(String(Packages.java.lang.System.getProperty("jsh.build.downloads"))).directory;
 	return (jsh.shell.environment.JSH_BUILD_DOWNLOADS) ? jsh.file.Pathname(jsh.shell.environment.JSH_BUILD_DOWNLOADS).directory : null;
 })();
 var client = new jsh.http.Client();
