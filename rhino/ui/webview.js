@@ -112,7 +112,16 @@ $set(function(p) {
 	}
 
 	var getLocation = function(page) {
-		if (page.file) {
+		if (page.getCode) {
+			return {
+				getCode: function(path) {
+					if (path == "webview.initialize.js") {
+						return $loader.resource("webview.initialize.js").read(String);
+					}
+					return page.getCode(path);
+				}
+			};
+		} else if (page.file) {
 			return {
 				getCode: function(path) {
 					return page.file.getRelativePath(path).file.read(String);
