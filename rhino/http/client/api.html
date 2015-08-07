@@ -199,6 +199,53 @@ END LICENSE
 			<span>A header value for the <code>Authorization</code> header suitable for authorizing a request.</span>
 		</div>
 		<div class="type">
+			<a class="type" name="types.proxy">proxy</a>
+			<span>An object that specifies a server through which to proxy a request.</span>
+			<span>
+				This object should
+				contain an <code>http</code> property or a <code>socks</code> property
+				specifying information about the proxy to use.
+				<!--	What if both are absent? What if both are present?	-->
+			</span>
+			<div class="type">
+				<a class="type" name="types.proxy.server">server</a>
+				<span>Information specifying a proxy server.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">host</div>
+						<span class="type">String</span>
+						<span>A host name.</span>
+					</li>
+					<li class="value">
+						<div class="name">port</div>
+						<span class="type">number</span>
+						<span>A port number.</span>
+					</li>
+				</ul>
+			</div>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">http</div>
+					<span class="type"><a href="#types.proxy.server">server</a></span>
+					<span>
+						(optional)
+						Specifies an HTTP proxy to use for this request.
+					</span>
+				</li>
+				- OR -
+				<li class="value">
+					<div class="name">socks</div>
+					<span class="type"><a href="#types.proxy.server">server</a></span>
+					<span>
+						(optional)
+						Specifies a SOCKS proxy to use for this request.
+					</span>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
 			<a class="type" name="types.response">response</a>
 			<span>
 				Represents an HTTP response.
@@ -378,50 +425,10 @@ END LICENSE
 													<code>string</code> property is present, its content will be used.
 												</span>
 											</li>
-											<li class="object">
+											<li class="value">
 												<div class="name">proxy</div>
-												<span>
-													Information used to specify a proxy server for this request. This object should
-													contain an <code>http</code> property or a <code>socks</code> property
-													specifying information about the proxy to use.
-													<!--	What if both are absent? What if both are present?	-->
-												</span>
-												<div class="type">
-													<a class="type" name="types.proxy.server">proxy.server</a>
-													<span>Information specifying a proxy server.</span>
-													<div class="label">has properties:</div>
-													<ul>
-														<li class="value">
-															<div class="name">host</div>
-															<span class="type">String</span>
-															<span>A host name.</span>
-														</li>
-														<li class="value">
-															<div class="name">port</div>
-															<span class="type">number</span>
-															<span>A port number.</span>
-														</li>
-													</ul>
-												</div>
-												<div class="label">has properties:</div>
-												<ul>
-													<li class="value">
-														<div class="name">http</div>
-														<span class="type"><a href="#types.proxy.server">proxy.server</a></span>
-														<span>
-															(optional)
-															Specifies an HTTP proxy to use for this request.
-														</span>
-													</li>
-													<li class="value">
-														<div class="name">socks</div>
-														<span class="type"><a href="#types.proxy.server">proxy.server</a></span>
-														<span>
-															(optional)
-															Specifies a SOCKS proxy to use for this request.
-														</span>
-													</li>
-												</ul>
+												<span class="type"><a href="#types.proxy">proxy</a></span>
+												<span>The proxy server to use for this request.</span>
 											</li>
 											<li class="object">
 												<div class="name">timeout</div>
