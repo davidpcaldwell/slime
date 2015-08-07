@@ -230,6 +230,18 @@ public class Command {
 			this.out = Spooler.start(this.stdin, inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(delegate.getOutputStream()), true, "stdin from " + this.stdin + ": " + spoolName);
 		}
 
+		Integer getPid() {
+			try {
+				java.lang.reflect.Field field = delegate.getClass().getDeclaredField("pid");
+				field.setAccessible(true);
+				return (Integer)field.get(delegate);
+			} catch (NoSuchFieldException e) {
+				return null;
+			} catch (IllegalAccessException e) {
+				return null;
+			}
+		}
+
 		int waitFor() throws InterruptedException {
 			int rv = delegate.waitFor();
 			//	If we were passing our own System.in to a subprocess directly, it does not make sense to close it just because the

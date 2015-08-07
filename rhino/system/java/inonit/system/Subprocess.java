@@ -33,6 +33,10 @@ public class Subprocess {
 		}
 	}
 
+	public Integer getPid() {
+		return p.getPid();
+	}
+
 	public void terminate() {
 		p.destroy();
 	}
