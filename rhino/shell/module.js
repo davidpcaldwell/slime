@@ -163,6 +163,13 @@ $exports.run = function(p) {
 		//	TODO	could throw exception on launch; should deal with it
 		var _subprocess = Packages.inonit.system.OperatingSystem.get().start(context, configuration);
 		p.on.start.call({}, new function() {
+			Object.defineProperty(this, "pid", {
+				get: function() {
+					return _subprocess.getPid();
+				},
+				enumerable: true
+			});
+
 			this.kill = function() {
 				_subprocess.terminate();
 			}

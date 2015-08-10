@@ -86,6 +86,38 @@ var Chrome = function(b) {
 				arguments: args,
 				on: {
 					start: function(p) {
+						if ($context.os.name == "Mac OS X") {
+							$context.api.java.Thread.start(function() {
+								var state;
+								var running = true;
+								while(running) {
+									var ps = $context.os.process.list();
+									var processes = ps.filter(function(item) {
+										return item.parent.id == p.pid;
+									});
+									var renderers = processes.filter(function(item) {
+										return item.command.indexOf("--type=renderer") != -1;
+									});
+									if (renderers.length) {
+										state = true;
+									}
+									try {
+										if (state && renderers.length == 0) {
+											//	TODO	check to see whether it is still running
+											try {
+												p.kill();
+											} catch (e) {
+												//	probably was no longer running
+											}
+											running = false;
+										} else {
+											Packages.java.lang.Thread.currentThread().sleep((state) ? 1000 : 100);
+										}
+									} catch (e) {
+									}
+								}
+							});
+						}
 						if (m.on && m.on.start) {
 							m.on.start.call(m,p);
 						}
