@@ -12,32 +12,38 @@
 //	END LICENSE
 
 var suite = new jsh.unit.Suite({
-	initialize: function(scope) {
-		scope.topname = "topvalue";
+	create: function() {
+		this.initialize = function(scope) {
+			scope.topname = "topvalue";
+		}
 	}
 });
 
-suite.scenario("a", new function() {
-	this.initialize = function(scope) {
-		scope.name = "value";
-	};
+suite.scenario("a", {
+	create: function() {
+		this.initialize = function(scope) {
+			scope.name = "value";
+		};
 
-	this.execute = function(scope,verify) {
-		verify(scope.name).is("value");
-	};
+		this.execute = function(scope,verify) {
+			verify(scope.name).is("value");
+		};
+	}
 });
 
 var child = new jsh.unit.Suite({
 	create: function() {
-		this.scenario("grandchild", new function() {
-			this.initialize = function(scope) {
-				scope.newname = "newvalue";
-			};
+		this.scenario("grandchild", {
+			create: function() {
+				this.initialize = function(scope) {
+					scope.newname = "newvalue";
+				};
 
-			this.execute = function(scope,verify) {
-				verify(scope.newname).is("newvalue");
-				verify(scope.topname).is("topvalue");
-			};
+				this.execute = function(scope,verify) {
+					verify(scope.newname).is("newvalue");
+					verify(scope.topname).is("topvalue");
+				};
+			}
 		});
 	}
 });

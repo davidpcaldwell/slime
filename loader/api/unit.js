@@ -679,25 +679,26 @@ $exports.Scenario = Scenario;
 		return rv;
 	}
 
-	var construct = function(Constructor,argument) {
-		return new Constructor(argument);
-	}
-
 	var Scenario = function(o,context) {
-		var name = (o.name) ? o.name : context.id;
+		if (o && o.create) {
+			o.create.call(this);
+		}
+
+		var name = (this.name) ? this.name : context.id;
 
 		this.run = function(scope) {
 			var EVENT = { id: context.id, name: name }
 			context.events.fire("scenario", { start: EVENT });
 			var local = copy(scope);
-			if (o.initialize) o.initialize.call(this,local);
+			if (this.initialize) this.initialize.call(this,local);
 			var vscope = new Scope({ events: context.events });
-			o.execute.call(this,local,new Verify(vscope));
+			this.execute.call(this,local,new Verify(vscope));
 			context.events.fire("scenario", { end: EVENT });
 		}
 	}
 
-	var Suite = function Suite(o,context) {
+	var Suite = function Suite(c,context) {
+		//	TODO	what if caller does not use 'new'?
 		var events = $api.Events({
 			source: this,
 			parent: (context && context.events) ? context.events : null
@@ -747,29 +748,29 @@ $exports.Scenario = Scenario;
 			}
 		}
 
-		if (o.create) {
-			o.create.call(this);
+		if (c && c.create) {
+			c.create.call(this);
 		}
 
 		this.run = function(scope) {
 			if (!scope) scope = {};
 			var THIS = {};
 			THIS.name = (function() {
-				if (o && o.name) return o.name;
+				if (this.name) return this.name;
 				if (context && context.id) return context.id;
 				if (!context) return "(top)";
 			})();
 			events.fire("scenario", {
 				start: THIS
 			});
-			if (o && o.initialize) {
-				o.initialize.call(this,scope);
+			if (this.initialize) {
+				this.initialize(scope);
 			}
 			for (var x in parts) {
 				parts[x].value.run(copy(scope));
 			}
-			if (o && o.destroy) {
-				o.destroy.call(this,scope);
+			if (this.destroy) {
+				this.destroy.call(this,scope);
 			}
 			events.fire("scenario", {
 				end: THIS
