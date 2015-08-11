@@ -11,6 +11,15 @@
 //	Contributor(s):
 //	END LICENSE
 
+var parameters = jsh.script.getopts({
+	view: "console"
+});
+
+var views = {
+	console: new jsh.unit.view.Console({ writer: jsh.shell.stdio.error }),
+	webview: new jsh.unit.view.WebView()
+}
+
 var suite = new jsh.unit.Suite({
 	create: function() {
 		this.initialize = function(scope) {
@@ -65,6 +74,6 @@ var scan = function(suite) {
 
 jsh.shell.echo("Scan: " + JSON.stringify(scan(suite), void(0), "    "), { stream: jsh.shell.stdio.error });
 
-var view = new jsh.unit.view.Console({ writer: jsh.shell.stdio.error });
+var view = views[parameters.options.view];
 view.listen(suite);
 suite.run();

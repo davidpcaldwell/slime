@@ -472,11 +472,11 @@ var decorate = function(p) {
 					_in.close();
 				}
 				var type;
-				if (p.type) {
+				if (p && p.type) {
 					type = p.type.call(this,path);
 				}
 				var length;
-				if (p.length) {
+				if (p && p.length) {
 					length = p.length.call(this,path);
 				}
 				return new $exports.Resource({
@@ -567,6 +567,12 @@ $context.$rhino.Loader.spi(function(underlying) {
 //	return new $context.$rhino.Loader(p);
 //};
 $exports.Loader = $context.$rhino.Loader;
+
+//	Exported (temporarily?) to allow plugins to create jsh.io-compatible loaders from the plugin loader they are given; may be a
+//	better way to do this
+$exports.decorate = function(loader) {
+	decorate.call(loader);
+}
 
 $exports.mime = $loader.file("mime.js", {
 	_streams: _java,

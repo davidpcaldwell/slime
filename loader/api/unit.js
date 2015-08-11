@@ -693,7 +693,8 @@ $exports.Scenario = Scenario;
 			if (this.initialize) this.initialize.call(this,local);
 			var vscope = new Scope({ events: context.events });
 			this.execute.call(this,local,new Verify(vscope));
-			context.events.fire("scenario", { end: EVENT });
+			context.events.fire("scenario", { end: EVENT, success: vscope.success });
+			return vscope.success;
 		}
 	}
 
@@ -766,15 +767,20 @@ $exports.Scenario = Scenario;
 			if (this.initialize) {
 				this.initialize(scope);
 			}
+			var success = true;
 			for (var x in parts) {
-				parts[x].value.run(copy(scope));
+				var result = parts[x].value.run(copy(scope));
+				if (!result) {
+					success = false;
+				}
 			}
 			if (this.destroy) {
 				this.destroy.call(this,scope);
 			}
 			events.fire("scenario", {
-				end: THIS
+				end: THIS, success: success
 			});
+			return success;
 		}
 	};
 

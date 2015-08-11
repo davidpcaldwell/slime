@@ -94,10 +94,13 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.unit && jsh.unit.view && jsh.document && jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView);
+		//	Need jsh.io for $loader.resource
+		return Boolean(jsh.unit && jsh.unit.view && jsh.document && jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.io);
 	},
 	load: function() {
 		jsh.unit.view.WebView = function() {
+			jsh.io.decorate($loader);
+			jsh.shell.echo("$loader = " + $loader + " keys " + Object.keys($loader));
 			var html = new jsh.document.Document({ string: $loader.resource("webview.html").read(String) });
 			var rv = new function() {
 				var buffer = [];
