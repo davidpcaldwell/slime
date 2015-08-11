@@ -670,6 +670,88 @@ var Scenario = function(o) {
 
 $exports.Scenario = Scenario;
 
+var Suite = function Suite(o) {
+	var copy = function(o) {
+		var rv = {};
+		for (var x in o) {
+			rv[x] = o[x];
+		}
+		return rv;
+	}
+
+	var Scenario = function(o) {
+		this.run = function(scope) {
+			var EVENT = { id: o.id, name: o.name }
+			o.events.fire("scenario", { start: EVENT });
+			var local = copy(scope);
+			if (o.initialize) o.initialize.call(this,local);
+			var vscope = new Scope({ events: events });
+			o.execute.call(this,local,new Verify(vscope));
+			o.events.fire("scenario", { end: EVENT });
+		}
+	}
+
+	var events = $api.Events({
+		source: this,
+		parent: (o && o.parent) ? o.parent : null
+	});
+
+	if (o && o.view) {
+		o.view.listen(this);
+	}
+
+	var parts = {};
+
+	this.getParts = function() {
+		return copy(parts);
+	};
+
+	this.scenario = function(id,p) {
+		var o = copy(p);
+		o.id = id;
+		if (!p.name) o.name = o.id;
+		o.events = events;
+		parts[id] = new Scenario(o);
+	};
+
+	this.suite = function(id,p) {
+		var o = copy(p);
+		o.id = id;
+		o.parent = events;
+		parts[id] = new Suite(o);
+		if (typeof(p) == "function") {
+			p.call(parts[id]);
+		}
+	}
+
+	this.run = function(scope) {
+		if (!scope) scope = {};
+		var THIS = {};
+		THIS.name = (function() {
+			if (o && o.name) return o.name;
+			if (o && o.id) return o.id;
+			if (!o) return "(top)";
+		})();
+		events.fire("scenario", {
+			start: THIS
+		});
+		if (o && o.initialize) {
+			o.initialize.call(this,scope);
+		}
+		for (var x in parts) {
+			parts[x].run(copy(scope));
+		}
+		if (o && o.destroy) {
+			o.destroy.call(this,scope);
+		}
+		events.fire("scenario", {
+			end: THIS
+		});
+	}
+};
+
+$exports.Suite = Suite;
+
 $exports.View = function(o) {
 	var addConsoleListener = function(scenario,implementation) {
 		if (typeof(implementation) == "function") {
