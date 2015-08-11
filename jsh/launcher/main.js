@@ -89,11 +89,6 @@ if ($api.slime.settings.get("jsh.java.home")) {
 	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
 }
 
-//	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
-while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
-	command.vm($api.arguments.shift());
-}
-
 $api.script.resolve("launcher.js").load();
 
 //	If we have a sibling named jsh.jar, we are a built shell
@@ -130,6 +125,19 @@ if (!defaultEngine) {
 	Packages.java.lang.System.exit(1);
 }
 $api.slime.settings.default("jsh.engine", defaultEngine);
+
+if ($api.arguments[0] == "-engines") {
+	var engines = [];
+	if (shell.rhino) engines.push("rhino");
+	if ($api.jsh.engines.nashorn) engines.push("nashorn");
+	Packages.java.lang.System.out.print(JSON.stringify(engines));
+	Packages.java.lang.System.exit(0);
+}
+
+//	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
+while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
+	command.vm($api.arguments.shift());
+}
 
 var _urls = [];
 

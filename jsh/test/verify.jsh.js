@@ -10,9 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (jsh.test && jsh.test.requireBuiltShell) {
-	jsh.test.requireBuiltShell();
-}
+//if (jsh.test && jsh.test.requireBuiltShell) {
+//	jsh.test.requireBuiltShell();
+//}
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
@@ -104,15 +104,13 @@ parameters.options.java.forEach(function(jre) {
 	});
 
 	parameters.options.engine.forEach(function(engine) {
-		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin")]);
+		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
 
-		var launcher = searchpath.getCommand("java");
+		var launcher = searchpath.getCommand("jrunscript");
+		var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js")] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"), "jsh"];
 		var engines = jsh.shell.run({
 			command: launcher,
-			arguments: [
-				"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-				"-engines"
-			],
+			arguments: launch.concat(["-engines"]),
 			stdio: {
 				output: String
 			},
@@ -145,12 +143,12 @@ parameters.options.java.forEach(function(jre) {
 			} else {
 				subprocess({
 					name: "Java tests: engine [" + engine + "]; launcher " + launcher,
-					run: jsh.shell.jrunscript,
-					arguments: [
-						jsh.shell.jsh.home.getRelativePath("jsh.js"),
+					run: jsh.shell.run,
+					command: launcher,
+					arguments: launch.concat([
 						parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
 						"-stdio"
-					],
+					]),
 					directory: parameters.options.slime.directory,
 					environment: jsh.js.Object.set({}, jsh.shell.environment
 						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
@@ -164,20 +162,29 @@ parameters.options.java.forEach(function(jre) {
 });
 
 if (parameters.options.browser) {
-	subprocess({
-		run: jsh.shell.run,
-		name: "Browser tests",
-		command: jsh.shell.java.jrunscript,
-		arguments: [
-			jsh.shell.jsh.home.getRelativePath("jsh.js"),
-			parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
-			"-stdio"
-		].concat(parameters.arguments),
-		directory: parameters.options.slime.directory,
-		environment: jsh.js.Object.set({}, jsh.shell.environment
-			, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-		)
-	});
+	var tomcat = (function() {
+		if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getRelativePath("tomcat");
+		if (parameters.options.tomcat) return parameters.options.tomcat;
+	})();
+	if (!tomcat) {
+		jsh.shell.echo("Skipping browser tests: Tomcat not found.");
+	} else {
+		subprocess({
+			run: jsh.shell.jsh,
+			name: "Browser tests",
+	//		command: jsh.shell.java.jrunscript,
+			script: parameters.options.slime.directory.getFile("jsh/test/browser.jsh.js"),
+			arguments: [
+	//			jsh.shell.jsh.home.getRelativePath("jsh.js"),
+//				parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
+				"-stdio"
+			].concat(parameters.arguments),
+			directory: parameters.options.slime.directory,
+			environment: jsh.js.Object.set({}, jsh.shell.environment
+				,{ CATALINA_HOME: tomcat }
+			)
+		});
+	}
 }
 
 top.run();

@@ -31,11 +31,8 @@ if (!parameters.options.jsh) {
 	parameters.options.jsh = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 	jsh.shell.jrunscript({
 		fork: true,
-		arguments: [parameters.options.src.directory.getRelativePath("rhino/jrunscript/api.js"),parameters.options.src.directory.getRelativePath("jsh/etc/unbuilt.rhino.js"), "build", parameters.options.jsh],
-		environment: jsh.js.Object.set({}, jsh.shell.environment, {
-			JSH_BUILD_NOTEST: "true",
-			JSH_BUILD_NODOC: "true"
-		})
+		arguments: [parameters.options.src.directory.getRelativePath("rhino/jrunscript/api.js"),"jsh",parameters.options.src.directory.getRelativePath("jsh/etc/build.jsh.js"), parameters.options.jsh,
+		"-notest", "-nodoc"]
 	});
 }
 
