@@ -670,7 +670,7 @@ var Scenario = function(o) {
 
 $exports.Scenario = Scenario;
 
-var Suite = function Suite(o) {
+(function() {
 	var copy = function(o) {
 		var rv = {};
 		for (var x in o) {
@@ -679,78 +679,107 @@ var Suite = function Suite(o) {
 		return rv;
 	}
 
-	var Scenario = function(o) {
+	var construct = function(Constructor,argument) {
+		return new Constructor(argument);
+	}
+
+	var Scenario = function(o,context) {
+		var name = (o.name) ? o.name : context.id;
+
 		this.run = function(scope) {
-			var EVENT = { id: o.id, name: o.name }
-			o.events.fire("scenario", { start: EVENT });
+			var EVENT = { id: context.id, name: name }
+			context.events.fire("scenario", { start: EVENT });
 			var local = copy(scope);
 			if (o.initialize) o.initialize.call(this,local);
-			var vscope = new Scope({ events: events });
+			var vscope = new Scope({ events: context.events });
 			o.execute.call(this,local,new Verify(vscope));
-			o.events.fire("scenario", { end: EVENT });
+			context.events.fire("scenario", { end: EVENT });
 		}
 	}
 
-	var events = $api.Events({
-		source: this,
-		parent: (o && o.parent) ? o.parent : null
-	});
+	var Suite = function Suite(o,context) {
+		var events = $api.Events({
+			source: this,
+			parent: (context && context.events) ? context.events : null
+		});
 
-	if (o && o.view) {
-		o.view.listen(this);
-	}
+		var parts = {};
 
-	var parts = {};
+		var addPart = function(id,type,configuration,context) {
+			parts[id] = { type: type, configuration: configuration, value: new type(configuration,context) };
+		}
 
-	this.getParts = function() {
-		return copy(parts);
+		this.getParts = function() {
+			var rv = {};
+			for (var x in parts) {
+				rv[x] = new (function(x,part) {
+					this.copy = function(suite) {
+						if (part.type == Scenario) {
+							suite.scenario(x,part.configuration);
+						} else if (part.type == Suite) {
+							suite.suite(x,part.configuration);
+						} else {
+							throw new Error();
+						}
+					};
+
+					if (part.type == Suite) {
+						this.getParts = function() {
+							return part.value.getParts();
+						}
+					}
+				})(x,parts[x]);
+			}
+			return rv;
+		};
+
+		this.scenario = function(id,p) {
+			addPart(id,Scenario,p,{ id: id, events: events });
+		};
+
+		this.suite = function(id,p) {
+			addPart(id,Suite,p,{ id: id, events: events });
+			if (p.getParts) {
+				var imports = p.getParts();
+				for (var x in imports) {
+					imports[x].copy(parts[id].value);
+				}
+			}
+		}
+
+		if (o.create) {
+			o.create.call(this);
+		}
+
+		this.run = function(scope) {
+			if (!scope) scope = {};
+			var THIS = {};
+			THIS.name = (function() {
+				if (o && o.name) return o.name;
+				if (context && context.id) return context.id;
+				if (!context) return "(top)";
+			})();
+			events.fire("scenario", {
+				start: THIS
+			});
+			if (o && o.initialize) {
+				o.initialize.call(this,scope);
+			}
+			for (var x in parts) {
+				parts[x].value.run(copy(scope));
+			}
+			if (o && o.destroy) {
+				o.destroy.call(this,scope);
+			}
+			events.fire("scenario", {
+				end: THIS
+			});
+		}
 	};
 
-	this.scenario = function(id,p) {
-		var o = copy(p);
-		o.id = id;
-		if (!p.name) o.name = o.id;
-		o.events = events;
-		parts[id] = new Scenario(o);
-	};
+	$exports.Suite = Suite;
+})();
 
-	this.suite = function(id,p) {
-		var o = copy(p);
-		o.id = id;
-		o.parent = events;
-		parts[id] = new Suite(o);
-		if (typeof(p) == "function") {
-			p.call(parts[id]);
-		}
-	}
-
-	this.run = function(scope) {
-		if (!scope) scope = {};
-		var THIS = {};
-		THIS.name = (function() {
-			if (o && o.name) return o.name;
-			if (o && o.id) return o.id;
-			if (!o) return "(top)";
-		})();
-		events.fire("scenario", {
-			start: THIS
-		});
-		if (o && o.initialize) {
-			o.initialize.call(this,scope);
-		}
-		for (var x in parts) {
-			parts[x].run(copy(scope));
-		}
-		if (o && o.destroy) {
-			o.destroy.call(this,scope);
-		}
-		events.fire("scenario", {
-			end: THIS
-		});
-	}
-};
-
-$exports.Suite = Suite;
 
 $exports.View = function(o) {
 	var addConsoleListener = function(scenario,implementation) {
