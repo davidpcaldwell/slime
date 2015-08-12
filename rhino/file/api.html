@@ -1308,6 +1308,10 @@ END LICENSE
 		</script>
 		<div jsapi:id="softlink">
 			<script type="application/x.jsapi#initialize">
+				var filesystem = scope.filesystem;
+				var createFile = scope.createFile;
+				var createDirectory = scope.createDirectory;
+
 				if (jsh.shell.PATH.getCommand("ln")) {
 					var tmpdir = scope.$jsapi.java.io.newTemporaryDirectory();
 					var hostdir = new Packages.java.io.File(tmpdir, "hostdir");

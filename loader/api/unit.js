@@ -691,7 +691,7 @@ $exports.Scenario = Scenario;
 			context.events.fire("scenario", { start: EVENT });
 			var local = copy(scope);
 			if (this.initialize) this.initialize.call(this,local);
-			var vscope = new Scope({ events: context.events });
+			var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
 			var verify = new Verify(vscope);
 			verify.test = function() {
 				return vscope.test.apply(this,arguments);

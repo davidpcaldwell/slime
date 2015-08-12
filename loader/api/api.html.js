@@ -53,6 +53,11 @@ var run = function() {
 			}
 		}
 	} catch (e) {
+		var cause = {};
+		for (var x in e) {
+			cause[x] = e[x];
+		}
+		e.cause = cause;
 		e.code = arguments[0];
 		throw e;
 	}
@@ -541,6 +546,7 @@ $exports.ApiHtmlTests = function(html,name) {
 						hscope.test = verify.test;
 						hscope.scenario = verify.scenario;
 						hscope.verify = verify;
+						hscope.scope = hscope;
 						run(element.getContentString(),hscope);
 					}
 				}

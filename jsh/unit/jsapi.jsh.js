@@ -158,7 +158,19 @@ if (!parameters.options.notest) {
 			jsh.shell.echo("Tests passed.");
 		}
 	}
-	UNIT_TESTS_COMPLETED(tests.run());
+	try {
+		UNIT_TESTS_COMPLETED(tests.run());
+	} catch (e) {
+		jsh.shell.echo("Error thrown.");
+		if (e.code) {
+			jsh.shell.echo("Code: " + e.code);
+		}
+		if (e.cause) {
+			jsh.shell.echo("Cause: " + e.cause.message);
+			jsh.shell.echo(e.stack);
+		}
+		throw e;
+	}
 }
 
 if (parameters.options.doc) {

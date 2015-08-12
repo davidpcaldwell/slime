@@ -38,12 +38,12 @@ plugin({
 						})()
 					}
 				}
-				try {
+//				try {
 					jsh.loader.run(source,scope);
-				} catch (e) {
-					Packages.java.lang.System.out.println("Error executing " + code);
-					throw e;
-				}
+//				} catch (e) {
+//					Packages.java.lang.System.err.println("Error executing " + code);
+//					throw e;
+//				}
 			}
 
 			if (jsh.$jsapi && jsh.$jsapi.$rhino && jsh.$jsapi.$rhino.jsapi && jsh.$jsapi.$rhino.jsapi.script) {

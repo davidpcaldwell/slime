@@ -341,6 +341,8 @@ var Scenario = function(suite,environment,update) {
 	for (var i=0; i<contexts.length; i++) {
 		try {
 			if (update && suite.getSuite) {
+				scope.module = suite.loadWith(contexts[i]);
+				scope.context = contexts[i];
 				var specification = suite.getSuite(scope);
 				rv.suite("contexts[" + i + "]", specification);
 //				rv.scenario("contexts[" + i + "]", {
