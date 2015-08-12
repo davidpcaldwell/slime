@@ -24,8 +24,7 @@ var parameters = jsh.script.getopts({
 
 		doc: jsh.file.Pathname,
 		index: jsh.file.Pathname,
-		view: "console",
-		suite: false
+		view: "console"
 	}
 });
 
@@ -106,25 +105,17 @@ if (!parameters.options.notest) {
 		return rv;
 	})();
 
-	if (!parameters.options.suite) {
-		var tests = new jsh.unit.Scenario({
-			composite: true,
-			name: "jsapi.jsh.js unit tests",
-			view: console
-		});
-	} else {
-		jsh.unit.Scenario.Html = (function(was) {
-			return function(p) {
-				return was.call(this,jsh.js.Object.set({}, p, { suite: true }));
-			}
-		})(jsh.unit.Scenario.Html);
-		var tests = new jsh.unit.Suite();
-		console.listen(tests);
-		tests.add = function(p) {
-			if (typeof(arguments.callee.id) == "undefined") arguments.callee.id = 0;
-			arguments.callee.id++;
-			this.suite(String(arguments.callee.id),p.scenario);
+	jsh.unit.Scenario.Html = (function(was) {
+		return function(p) {
+			return was.call(this,jsh.js.Object.set({}, p, { suite: true }));
 		}
+	})(jsh.unit.Scenario.Html);
+	var tests = new jsh.unit.Suite();
+	console.listen(tests);
+	tests.add = function(p) {
+		if (typeof(arguments.callee.id) == "undefined") arguments.callee.id = 0;
+		arguments.callee.id++;
+		this.suite(String(arguments.callee.id),p.scenario);
 	}
 
 	//tests.environment(ENVIRONMENT);

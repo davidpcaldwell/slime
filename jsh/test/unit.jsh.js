@@ -20,8 +20,7 @@ var parameters = jsh.script.getopts({
 		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
 		src: jsh.script.file.getRelativePath("../.."),
 		debug: false,
-		logging: jsh.file.Pathname,
-		suite: false
+		logging: jsh.file.Pathname
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -46,9 +45,6 @@ var apiArguments = modules.fold(function(array) {
 	if (this.test) array.push("-test",this.path);
 	return array;
 },parameters.arguments);
-if (parameters.options.suite) {
-	apiArguments.push("-suite");
-}
 
 var subenv = {};
 for (var x in jsh.shell.environment) {
