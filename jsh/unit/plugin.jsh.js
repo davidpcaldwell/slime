@@ -154,7 +154,6 @@ plugin({
 	load: function() {
 		jsh.unit.view.WebView = function() {
 			jsh.io.decorate($loader);
-			jsh.shell.echo("$loader = " + $loader + " keys " + Object.keys($loader));
 			var html = new jsh.document.Document({ string: $loader.resource("webview.html").read(String) });
 			var rv = new function() {
 				var buffer = [];

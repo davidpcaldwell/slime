@@ -140,7 +140,7 @@ public class Main {
 						try {
 							Code p = Code.slime(file);
 							if (p.getScripts().getFile("plugin.jsh.js") != null) {
-								Logging.get().log(Main.class, Level.WARNING, "Loading plugin from %s ...", file);
+								Logging.get().log(Main.class, Level.CONFIG, "Loading plugin from %s ...", file);
 								rv.add(p);
 							} else {
 								Logging.get().log(Main.class, Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
