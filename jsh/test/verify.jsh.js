@@ -101,39 +101,21 @@ parameters.options.java.forEach(function(jre) {
 		} else {
 			jsh.shell.echo("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
 
-			if (false) {
-				subprocess({
-					name: "Java tests: engine [" + engine + "]; launcher " + launcher,
-					run: jsh.shell.run,
-					command: launcher,
-					arguments: [
-						"-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar"),
-						parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
-						"-stdio"
-					],
-					directory: parameters.options.slime.directory,
-					environment: jsh.js.Object.set({}, jsh.shell.environment
-						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
-					)
-				});
-			} else {
-				subprocess({
-					name: "Java tests: engine [" + engine + "]; launcher " + launcher,
-					run: jsh.shell.run,
-					command: launcher,
-					arguments: launch.concat([
-						parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
-						"-stdio"
-					]),
-					directory: parameters.options.slime.directory,
-					environment: jsh.js.Object.set({}, jsh.shell.environment
-						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
-						, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
-					)
-				});
-			}
+			subprocess({
+				name: "Java tests: engine [" + engine + "]; launcher " + launcher,
+				run: jsh.shell.run,
+				command: launcher,
+				arguments: launch.concat([
+					parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
+					"-stdio"
+				]),
+				directory: parameters.options.slime.directory,
+				environment: jsh.js.Object.set({}, jsh.shell.environment
+					, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
+					, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
+					, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
+				)
+			});
 		}
 	});
 });
