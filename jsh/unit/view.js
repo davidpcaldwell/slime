@@ -147,7 +147,8 @@ $exports.Console = function(o) {
 			dots = false;
 		}
 		var item = stack.pop();
-		if (item.scenario != scenario) {
+		//	Adding JSON.stringify comparison to deal with scenarios that come from remote events
+		if (item.scenario != scenario && JSON.stringify(item.scenario) != JSON.stringify(scenario)) {
 			throw new Error("Scenario stack is corrupted.");
 		}
 		var prefix = (item.success) ? "PASSED:  " : "FAILED:  ";

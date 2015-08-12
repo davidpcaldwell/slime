@@ -554,6 +554,15 @@ var Scope = function(o) {
 			o.events.fire("scenario", { end: o.scenario, success: this.success });
 		}
 	}
+
+	this.fire = function(type,detail) {
+		o.events.fire(type,detail);
+		if (typeof(detail.success) != "undefined") {
+			if (detail.success === false) {
+				success = false;
+			}
+		}
+	}
 }
 
 var Scenario = function(o) {
@@ -712,6 +721,9 @@ $exports.Scenario = Scenario;
 					if (o.initialize) o.initialize();
 					o.execute(vscope);
 					if (o.destroy) o.destroy();
+				};
+				verify.fire = function(type,detail) {
+					vscope.fire(type,detail);
 				}
 				this.execute.call(this,local,verify);
 				context.events.fire("scenario", { end: EVENT, success: vscope.success });

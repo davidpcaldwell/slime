@@ -90,6 +90,11 @@ plugin({
 			});
 			return new jsh.unit.Scenario.Stream({ name: p.name, stream: buffer.readBinary() });
 		};
+
+		jsh.unit.Suite.decode = function(p) {
+			var decoder = new remote.Decoder(p);
+			decoder.run();
+		}
 	}
 });
 

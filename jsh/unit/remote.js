@@ -108,6 +108,21 @@ $exports.Events = function(o) {
 	};
 };
 
+$exports.Decoder = function(o) {
+	var decoder = new $context.api.unit.JSON.Decoder();
+
+	decoder.listeners.add("scenario", o.received);
+	decoder.listeners.add("test", o.received);
+
+	this.run = function() {
+		o.stream.character().readLines(function(line) {
+			if (line.substring(0,1) == "{") {
+				decoder.decode(line);
+			}
+		});
+	}
+}
+
 $exports.Stream = function(o) {
 	var decoder = new $context.api.unit.JSON.Decoder();
 	var scenario = new $exports.Events({

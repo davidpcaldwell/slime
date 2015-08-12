@@ -60,19 +60,55 @@ var top = (function() {
 	}
 })();
 
+jsh.unit.Suite.Fork = function(p) {
+	return {
+		create: function() {
+			this.name = p.name;
+
+			this.execute = function(scope,verify) {
+				var buffer = new jsh.io.Buffer();
+				var arg = jsh.js.Object.set({}, p, {
+					stdio: {
+						output: buffer.writeBinary()
+					}
+				});
+				jsh.java.Thread.start(function() {
+					p.run(arg);
+					buffer.close();
+				});
+				jsh.unit.Suite.decode({
+					stream: buffer.readBinary(),
+					received: function(e) {
+						verify.fire(e.type,e.detail);
+					}
+				});
+			}
+		}
+	};
+}
+
 //	Provide way to set CATALINA_HOME?
 //	Provide way to set JSH_LAUNCHER_DEBUG?
 //	Provide way to set JSH_SCRIPT_DEBUGGER?
 //	Provide way to set JSH_ENGINE?
 jsh.shell.echo("Running unit tests ...");
-top.add({ scenario: new jsh.unit.Scenario.Fork({
-	name: "Unit tests",
-	run: jsh.shell.jsh,
-	shell: parameters.options.jsh.directory,
-	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
-	arguments: ["-view","stdio"]
-}) });
-
+if (!parameters.options.suite) {
+	top.add({ scenario: new jsh.unit.Scenario.Fork({
+		name: "Unit tests",
+		run: jsh.shell.jsh,
+		shell: parameters.options.jsh.directory,
+		script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
+		arguments: ["-view","stdio"]
+	}) });
+} else {
+	top.scenario("unit", jsh.unit.Suite.Fork({
+		name: "Unit tests",
+		run: jsh.shell.jsh,
+		shell: parameters.options.jsh.directory,
+		script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
+		arguments: ["-view","stdio"]
+	}));
+}
 jsh.shell.echo("Running system tests ...");
 top.add({
 	scenario: new jsh.unit.Scenario.Fork({
