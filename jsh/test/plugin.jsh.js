@@ -45,25 +45,29 @@ plugin({
 			}));
 		};
 		jsh.unit.Scenario.Integration = function(p) {
-			var buffer = new jsh.io.Buffer();
-			var write = buffer.writeBinary();
-			return jsh.shell.jsh({
-				fork: true,
-				shell: p.shell,
-				script: p.script,
-				arguments: ["-scenario", "-view", "child"],
-				stdio: {
-					output: write
-				},
-				evaluate: function(result) {
-					write.java.adapt().flush();
-					buffer.close();
-					return new jsh.unit.Scenario.Stream({
-						name: p.script.toString(),
-						stream: buffer.readBinary()
-					});
-				}
-			})
+			return new jsh.unit.Scenario.Fork(jsh.js.Object.set({}, p, {
+				run: jsh.shell.jsh,
+				arguments: ["-scenario", "-view", "child"]
+			}));
+//			var buffer = new jsh.io.Buffer();
+//			var write = buffer.writeBinary();
+//			return jsh.shell.jsh({
+//				fork: true,
+//				shell: p.shell,
+//				script: p.script,
+//				arguments: ["-scenario", "-view", "child"],
+//				stdio: {
+//					output: write
+//				},
+//				evaluate: function(result) {
+//					write.java.adapt().flush();
+//					buffer.close();
+//					return new jsh.unit.Scenario.Stream({
+//						name: p.script.toString(),
+//						stream: buffer.readBinary()
+//					});
+//				}
+//			})
 		}
 
 		//	if -scenario is on command line, invokes scenario, otherwise run()
