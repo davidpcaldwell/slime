@@ -21,8 +21,7 @@ var parameters = jsh.script.getopts({
 		tomcat: jsh.file.Pathname,
 		browser: false,
 		debug: false,
-		view: "console",
-		suite: false
+		view: "console"
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -55,20 +54,12 @@ var top = (function() {
 		if (id == "console") return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
 		if (id == "webview") return new jsh.unit.view.WebView();
 	})(parameters.options.view)
-	if (!parameters.options.suite) {
-		return new jsh.unit.Scenario({
-			composite: true,
-			name: "SLIME verify",
-			view: view
-		});
-	} else {
-		var rv = new jsh.unit.Suite({
-			name: "SLIME verification suite",
-			old: true
-		});
-		view.listen(rv);
-		return rv;
-	}
+	var rv = new jsh.unit.Suite({
+		name: "SLIME verification suite",
+		old: true
+	});
+	view.listen(rv);
+	return rv;
 })();
 //var top = new jsh.unit.Scenario({
 //	composite: true,
@@ -99,50 +90,13 @@ parameters.options.java.forEach(function(jre) {
 	//	TODO	Convert to jsh/test plugin API designed for this purpose
 //	jsh.shell.echo("Adding launcher suite");
 	var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
-	if (top.suite) {
-		top.scenario("launcher", jsh.unit.Suite.Fork({
-			name: "Launcher remote suite",
-			run: jsh.shell.jsh,
-			fork: true,
-			script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
-			arguments: ["-scenario", "-view", "child"].concat(rhinoArgs)
-		}))
-	} else {
-		top.add({
-			scenario: new jsh.unit.Scenario.Fork({
-				name: "Launcher suite",
-				run: jsh.shell.jsh,
-				fork: true,
-				script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
-				arguments: ["-scenario", "-view", "child"].concat(rhinoArgs),
-			})
-		});
-	}
-//	top.add(new function() {
-//		var buffer = new jsh.io.Buffer();
-//		var write = buffer.writeBinary();
-//		var environment = jsh.js.Object.set({}, jsh.shell.environment);
-//		var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
-//		this.scenario = jsh.shell.jsh({
-//			fork: true,
-//			script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
-//			arguments: ["-scenario", "-view", "child"].concat(rhinoArgs),
-//			stdio: {
-//				output: write
-//			},
-//			evaluate: function(result) {
-//				jsh.shell.echo("Completed: launcher suite");
-//				write.java.adapt().flush();
-//				buffer.close();
-//				var rv = new jsh.unit.Scenario.Stream({
-//					name: jsh.script.file.getRelativePath("launcher/suite.jsh.js").toString(),
-//					stream: buffer.readBinary()
-//				});
-//				jsh.shell.echo("Returning launcher suite scenario");
-//				return rv;
-//			}
-//		});
-//	});
+	top.scenario("launcher", jsh.unit.Suite.Fork({
+		name: "Launcher remote suite",
+		run: jsh.shell.jsh,
+		fork: true,
+		script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
+		arguments: ["-scenario", "-view", "child"].concat(rhinoArgs)
+	}));
 
 	parameters.options.engine.forEach(function(engine) {
 		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
