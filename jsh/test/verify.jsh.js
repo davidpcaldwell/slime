@@ -76,32 +76,42 @@ var subprocess = function(p) {
 
 parameters.options.java.forEach(function(jre) {
 	//	TODO	Convert to jsh/test plugin API designed for this purpose
-	jsh.shell.echo("Adding launcher suite");
-	top.add(new function() {
-		var buffer = new jsh.io.Buffer();
-		var write = buffer.writeBinary();
-		var environment = jsh.js.Object.set({}, jsh.shell.environment);
-		var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
-		this.scenario = jsh.shell.jsh({
+//	jsh.shell.echo("Adding launcher suite");
+	var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
+	top.add({
+		scenario: new jsh.unit.Scenario.Fork({
+			name: "Launcher suite",
+			run: jsh.shell.jsh,
 			fork: true,
 			script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
 			arguments: ["-scenario", "-view", "child"].concat(rhinoArgs),
-			stdio: {
-				output: write
-			},
-			evaluate: function(result) {
-				jsh.shell.echo("Completed: launcher suite");
-				write.java.adapt().flush();
-				buffer.close();
-				var rv = new jsh.unit.Scenario.Stream({
-					name: jsh.script.file.getRelativePath("launcher/suite.jsh.js").toString(),
-					stream: buffer.readBinary()
-				});
-				jsh.shell.echo("Returning launcher suite scenario");
-				return rv;
-			}
-		});
+		})
 	});
+//	top.add(new function() {
+//		var buffer = new jsh.io.Buffer();
+//		var write = buffer.writeBinary();
+//		var environment = jsh.js.Object.set({}, jsh.shell.environment);
+//		var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
+//		this.scenario = jsh.shell.jsh({
+//			fork: true,
+//			script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
+//			arguments: ["-scenario", "-view", "child"].concat(rhinoArgs),
+//			stdio: {
+//				output: write
+//			},
+//			evaluate: function(result) {
+//				jsh.shell.echo("Completed: launcher suite");
+//				write.java.adapt().flush();
+//				buffer.close();
+//				var rv = new jsh.unit.Scenario.Stream({
+//					name: jsh.script.file.getRelativePath("launcher/suite.jsh.js").toString(),
+//					stream: buffer.readBinary()
+//				});
+//				jsh.shell.echo("Returning launcher suite scenario");
+//				return rv;
+//			}
+//		});
+//	});
 
 	parameters.options.engine.forEach(function(engine) {
 		var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
