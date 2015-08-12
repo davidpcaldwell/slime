@@ -61,24 +61,6 @@ var top = (function() {
 	view.listen(rv);
 	return rv;
 })();
-//var top = new jsh.unit.Scenario({
-//	composite: true,
-//	name: "SLIME verify",
-//	view: (function(id) {
-//		if (id == "console") return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
-//		if (id == "webview") return new jsh.unit.view.WebView();
-//	})(parameters.options.view)
-//});
-
-var CommandScenario = function(p) {
-	return new jsh.unit.CommandScenario(jsh.js.Object.set({}, p, {
-		name: p.arguments[2] + " " + p.command + " " + p.environment.JSH_ENGINE
-	}));
-};
-
-var command = function(p) {
-	top.add({ scenario: new CommandScenario(p) });
-}
 
 var subprocess = function(p) {
 	if (!arguments.callee.index) arguments.callee.index = 0;

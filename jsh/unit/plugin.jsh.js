@@ -118,6 +118,31 @@ plugin({
 				}
 			};
 		};
+
+		jsh.unit.Suite.Command = function(p) {
+			return {
+				create: function() {
+					this.name = (function() {
+						if (p.name) return p.name;
+						if (p.command) return [p.command].concat( (p.arguments) ? p.arguments : [] );
+						return "Suite.Command (unnamed)"
+					})();
+
+					this.execute = function(scope,verify) {
+						var o = {};
+						for (var x in p) {
+							if (x != "name" && x != "run") {
+								o[x] = p[x];
+							}
+						}
+						o.evaluate = function(result) {
+							verify(result).status().is(0);
+						};
+						p.run(o);
+					}
+				}
+			};
+		}
 	}
 });
 
