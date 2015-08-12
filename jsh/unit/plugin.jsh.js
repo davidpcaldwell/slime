@@ -60,6 +60,7 @@ plugin({
 
 		var html = $loader.file("html.js", {
 			Scenario: jsh.unit.Scenario,
+			Suite: jsh.unit.Suite,
 			html: jsh.unit.html,
 			io: jsh.io
 		});

@@ -288,7 +288,87 @@ $exports.ApiHtmlTests = function(html,name) {
 		return contexts;
 	}
 
+	var getShared = function(scope) {
+		if (!scope) throw new Error("No scope");
+		return new function() {
+			var createTestScope = function() {
+				var rv = {
+					$platform: $platform,
+					scope: scope
+				};
+				for (var i=0; i<arguments.length; i++) {
+					for (var x in arguments[i]) {
+						rv[x] = arguments[i][x];
+					}
+				}
+				return rv;
+			};
+
+			var relativeScope = function(element) {
+				var rv = scope.$relative(element.getRelativePath);
+	//			debugger;
+				if (scope.module) {
+					rv.module = scope.module;
+				}
+				for (var x in scope) {
+					if (scope[x] && !rv[x]) {
+						rv[x] = scope[x];
+					}
+				}
+				return rv;
+			};
+
+			var runInitializer = function(initializer) {
+				try {
+					run(initializer.getContentString(), createTestScope(relativeScope(initializer)));
+				} catch (e) {
+					var error = new Error("Error executing scenario initialization.");
+					error.code = initializer.getContentString();
+					error.cause = e;
+					throw error;
+				}
+			};
+
+			this.createTestScope = createTestScope;
+			this.relativeScope = relativeScope;
+			this.runInitializer = runInitializer;
+		}
+	}
+
+	var someAreTests = function(element) {
+		var areTests = function(script) {
+			return script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "initialize")
+				|| script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")
+				|| script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "destroy")
+			;
+		}
+
+		var descendants = getDescendantScripts(element);
+		for (var j=0; j<descendants.length; j++) {
+			var script = descendants[j];
+			if (areTests(script)) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	var getElementName = function(element,name) {
+		if (element.parent == null) {
+			return name;
+		} else if (element.getJsapiAttribute("id")) {
+			return element.getJsapiAttribute("id");
+		} else {
+			if (select(element.getChildren(), isNameDiv)) {
+				return select(element.getChildren(), isNameDiv).getContentString();
+			} else {
+				return "<" + element.localName + ">";
+			}
+		}
+	}
+
 	var getScenario = function(scope,element,container) {
+		var shared = getShared(scope);
 		var createTestScope = function() {
 			var rv = {
 				$platform: $platform,
@@ -300,20 +380,11 @@ $exports.ApiHtmlTests = function(html,name) {
 				}
 			}
 			return rv;
-		}
+		};
+		var createTestScope = shared.createTestScope;
 
 		var p = {};
-		if (element.parent == null) {
-			p.name = name;
-		} else if (element.getJsapiAttribute("id")) {
-			p.name = element.getJsapiAttribute("id");
-		} else {
-			if (select(element.getChildren(), isNameDiv)) {
-				p.name = select(element.getChildren(), isNameDiv).getContentString();
-			} else {
-				p.name = "<" + element.localName + ">";
-			}
-		}
+		p.name = getElementName(element,name);
 
 		var relativeScope = function(element) {
 			var rv = scope.$relative(element.getRelativePath);
@@ -328,6 +399,7 @@ $exports.ApiHtmlTests = function(html,name) {
 			}
 			return rv;
 		}
+		var relativeScope = shared.relativeScope;
 
 		var runInitializer = function(initializer) {
 			try {
@@ -339,6 +411,7 @@ $exports.ApiHtmlTests = function(html,name) {
 				throw error;
 			}
 		}
+		var runInitializer = shared.runInitializer;
 
 		p.initialize = function() {
 			if (container) {
@@ -366,25 +439,9 @@ $exports.ApiHtmlTests = function(html,name) {
 				} else if (children[i].localName == "script") {
 					//	do nothing
 				} else {
-					var areTests = function(script) {
-						return script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "initialize")
-							|| script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")
-							|| script.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "destroy")
-						;
-					}
+					var descend = someAreTests(children[i]);
 
-					var someAreTests = (function() {
-						var descendants = getDescendantScripts(children[i]);
-						for (var j=0; j<descendants.length; j++) {
-							var script = descendants[j];
-							if (areTests(script)) {
-								return true;
-							}
-						}
-						return false;
-					})();
-
-					if (someAreTests) {
+					if (descend) {
 						unit.scenario(getScenario(scope,children[i]));
 					}
 				}
@@ -406,38 +463,140 @@ $exports.ApiHtmlTests = function(html,name) {
 		return p;
 	}
 
-	this.getScenario = function(scope,unit) {
-		var element = (function() {
-			if (unit) {
-				var getJsapiChild = function(target,id) {
-					var elements = target.getChildren();
-					for (var i=0; i<elements.length; i++) {
-						if (elements[i].getJsapiAttribute("id") == id) {
-							return elements[i];
-						} else if (elements[i].getJsapiAttribute("id") == null) {
-							var childSearch = getJsapiChild(elements[i],id);
-							if (childSearch != null) return childSearch;
-						}
-					}
-					return null;
-				}
-
-				var tokens = unit.split("/");
-				var target = html.top;
-				for (var i=0; i<tokens.length; i++) {
-					target = getJsapiChild(target,tokens[i]);
-					if (target == null) {
-						throw new Error("Element not found: " + tokens.slice(0,i+1).join("/"));
+	var getTestElement = function(unit) {
+		if (unit) {
+			var getJsapiChild = function(target,id) {
+				var elements = target.getChildren();
+				for (var i=0; i<elements.length; i++) {
+					if (elements[i].getJsapiAttribute("id") == id) {
+						return elements[i];
+					} else if (elements[i].getJsapiAttribute("id") == null) {
+						var childSearch = getJsapiChild(elements[i],id);
+						if (childSearch != null) return childSearch;
 					}
 				}
-				return target;
-			} else {
-				return html.top;
+				return null;
 			}
-		})();
+
+			var tokens = unit.split("/");
+			var target = html.top;
+			for (var i=0; i<tokens.length; i++) {
+				target = getJsapiChild(target,tokens[i]);
+				if (target == null) {
+					throw new Error("Element not found: " + tokens.slice(0,i+1).join("/"));
+				}
+			}
+			return target;
+		} else {
+			return html.top;
+		}
+	}
+
+	this.getScenario = function(scope,unit) {
+		var element = getTestElement(unit);
 		//	TODO	is the blank object really expected if !unit?
 		var container = (unit) ? getContainer(element) : { initializes: [], destroys: [] };
 		return getScenario(scope,element,container);
+	};
+
+	var isScenario = function(element) {
+		return element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests");
+	}
+
+	var getSuite = function(scope,element) {
+		if (!scope) throw new Error("No scope in getSuite");
+		var shared = getShared(scope);
+		var isScript = element.localName == "script";
+
+		var initialize = function(s) {
+			var relative = shared.relativeScope(element);
+			var initializes = getScripts(element,"initialize");
+			for (var x in relative) {
+				s[x] = relative[x];
+			}
+			relative.scope = s;
+			for (var i=0; i<initializes.length; i++) {
+				run(initializes[i].getContentString(), relative);
+			}
+		}
+		if (isScenario(element)) {
+			return {
+				scenario: function() {
+					this.name = getElementName(element,name);
+
+					this.initialize = initialize;
+
+					this.destroy = function() {
+						var destroys = getScripts(element,"destroy");
+						for (var i=0; i<destroys.length; i++) {
+							run(destroys[i].getContentString(),shared.createTestScope(scope));
+						}
+					};
+
+					this.execute = function(tscope,verify) {
+						var hscope = {};
+						for (var x in tscope) {
+							hscope[x] = tscope[x];
+						}
+						hscope.test = verify.test;
+						hscope.scenario = verify.scenario;
+						hscope.verify = verify;
+						run(element.getContentString(),hscope);
+					}
+				}
+			};
+		} else if (isScript) {
+			//	do nothing
+		} else {
+			return {
+				create: function() {
+					this.name = getElementName(element,name);
+
+					this.initialize = initialize;
+
+					this.destroy = function() {
+						var destroys = getScripts(element,"destroy");
+						for (var i=0; i<destroys.length; i++) {
+							run(destroys[i].getContentString(),createTestScope(scope));
+						}
+					};
+
+					var SUITE = this;
+
+					var children = element.getChildren();
+					for (var i=0; i<children.length; i++) {
+						(function(element) {
+							var descend = isScenario(element) || someAreTests(element);
+							//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
+							if (descend) {
+								var child = getSuite(scope,element);
+								if (!child) throw new Error("No child for element " + element);
+								if (child.scenario) {
+									SUITE.scenario(String(i), {
+										create: child.scenario
+									});
+								} else {
+									SUITE.suite(String(i),child);
+								}
+							}
+						})(children[i]);
+					}
+//
+//					this.scenario("only", {
+//						create: function() {
+//							this.execute = function(scope,verify) {
+//								verify("api.html.js getSuite").is("Unimplemented");
+//							}
+//						}
+//					});
+				}
+			}
+		}
+	}
+
+	this.getSuite = function(scope,unit) {
+		var element = getTestElement(unit);
+		return getSuite(scope,element);
 	}
 };
 

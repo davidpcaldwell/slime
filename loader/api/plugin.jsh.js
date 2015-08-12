@@ -17,6 +17,8 @@ plugin({
 		jsh.unit.html = $loader.module("api.html.js", new function() {
 			var seq = 0;
 
+			this.Verify = jsh.unit.Verify;
+
 			this.run = function(code,scope) {
 				var source = code;
 				if (typeof(source) == "string") {

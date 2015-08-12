@@ -165,6 +165,9 @@ var Suite = function(pathname,unit) {
 			this.getScenario = function(scope) {
 				return this.html.getScenario(scope,unit);
 			}
+			this.getSuite = function(scope) {
+				return this.html.getSuite(scope,unit);
+			}
 		}
 
 		this.toString = function() {
@@ -294,7 +297,7 @@ var Scope = function(suite,environment) {
 	this.$api = jsh.$jsapi.$api;
 }
 
-var Scenario = function(suite,environment) {
+var Scenario = function(suite,environment,update) {
 	var scope = new Scope(suite,(environment) ? environment : {});
 	try {
 		var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
@@ -315,11 +318,39 @@ var Scenario = function(suite,environment) {
 		};
 	}
 
-	var rv = new $context.Scenario({ composite: true, name: suite.name });
+	var rv = (function() {
+		if (update) {
+			var rv = new $context.Suite({ name: suite.name });
+			rv.add = function(p) {
+				if (!arguments.callee.index) arguments.callee.index = 0;
+				arguments.callee.index++;
+				this.scenario(arguments.callee.index, {
+					create: function() {
+						["name","initialize","execute",'destroy'].forEach(function(property) {
+							this[property] = p.scenario[property];
+						},this);
+					}
+				});
+			}
+			return rv;
+		} else {
+			return new $context.Scenario({ composite: true, name: suite.name });
+		}
+	})();
 
 	for (var i=0; i<contexts.length; i++) {
 		try {
-			if (suite.getScenario) {
+			if (update && suite.getSuite) {
+				var specification = suite.getSuite(scope);
+				rv.suite("contexts[" + i + "]", specification);
+//				rv.scenario("contexts[" + i + "]", {
+//					create: function() {
+//						this.execute = function(scope,verify) {
+//							verify("getSuite").is("Unimplemented");
+//						}
+//					}
+//				})
+			} else if (suite.getScenario) {
 				scope.module = suite.loadWith(contexts[i]);
 				scope.context = contexts[i];
 				var scenario = suite.getScenario(scope);
@@ -342,13 +373,16 @@ var Scenario = function(suite,environment) {
 			}
 		} catch (e) {
 			//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
-			rv.add({ scenario: new function() {
+			if (!update) rv.add({ scenario: new function() {
 				this.name = suite.name;
 
 				this.execute = function(scope) {
 					throw e;
 				}
 			}});
+			Packages.java.lang.System.err.println(e);
+			Packages.java.lang.System.err.println(e.stack);
+			throw e;
 		}
 	}
 
@@ -356,7 +390,7 @@ var Scenario = function(suite,environment) {
 };
 
 $exports.Scenario = function(p) {
-	return new Scenario(new Suite(p.pathname,p.unit), p.environment);
+	return new Scenario(new Suite(p.pathname,p.unit), p.environment, p.suite);
 };
 
 (function() {

@@ -692,7 +692,16 @@ $exports.Scenario = Scenario;
 			var local = copy(scope);
 			if (this.initialize) this.initialize.call(this,local);
 			var vscope = new Scope({ events: context.events });
-			this.execute.call(this,local,new Verify(vscope));
+			var verify = new Verify(vscope);
+			verify.test = function() {
+				return vscope.test.apply(this,arguments);
+			};
+			verify.scenario = function(o) {
+				if (o.initialize) o.initialize();
+				o.execute(vscope);
+				if (o.destroy) o.destroy();
+			}
+			this.execute.call(this,local,verify);
 			context.events.fire("scenario", { end: EVENT, success: vscope.success });
 			return vscope.success;
 		}
@@ -760,7 +769,7 @@ $exports.Scenario = Scenario;
 				if (this.name) return this.name;
 				if (context && context.id) return context.id;
 				if (!context) return "(top)";
-			})();
+			}).call(this);
 			events.fire("scenario", {
 				start: THIS
 			});
