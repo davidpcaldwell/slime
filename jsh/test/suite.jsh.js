@@ -21,8 +21,8 @@ var parameters = jsh.script.getopts({
 		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
 		src: jsh.script.file.getRelativePath("../.."),
 		debug: false,
-		stdio: false,
-		suite: false
+		//	TODO	switch to the 'view' argument used by other scripts
+		stdio: false
 	}
 });
 
@@ -39,25 +39,11 @@ if (!parameters.options.jsh) {
 
 var top = (function() {
 	var view = (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
-	if (parameters.options.suite) {
-		var rv = new jsh.unit.Suite({
-			name: "SLIME suite"
-		});
-		var count = 0;
-		rv.add = function(p) {
-			this.scenario(String(++count), {
-				old: p.scenario
-			});
-		}
-		view.listen(rv);
-		return rv;
-	} else {
-		return new jsh.unit.Scenario({
-			composite: true,
-			name: "SLIME suite",
-			view: view
-		});
-	}
+	var rv = new jsh.unit.Suite({
+		name: "SLIME suite"
+	});
+	view.listen(rv);
+	return rv;
 })();
 
 jsh.unit.Suite.Fork = function(p) {
@@ -91,36 +77,52 @@ jsh.unit.Suite.Fork = function(p) {
 //	Provide way to set JSH_LAUNCHER_DEBUG?
 //	Provide way to set JSH_SCRIPT_DEBUGGER?
 //	Provide way to set JSH_ENGINE?
-jsh.shell.echo("Running unit tests ...");
-if (!parameters.options.suite) {
-	top.add({ scenario: new jsh.unit.Scenario.Fork({
-		name: "Unit tests",
-		run: jsh.shell.jsh,
-		shell: parameters.options.jsh.directory,
-		script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
-		arguments: ["-view","stdio"]
-	}) });
-} else {
-	top.scenario("unit", jsh.unit.Suite.Fork({
-		name: "Unit tests",
-		run: jsh.shell.jsh,
-		shell: parameters.options.jsh.directory,
-		script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
-		arguments: ["-view","stdio"]
-	}));
-}
-jsh.shell.echo("Running system tests ...");
-top.add({
-	scenario: new jsh.unit.Scenario.Fork({
-		name: "Integration tests",
-		run: jsh.shell.jsh,
-		shell: parameters.options.jsh.directory,
-		script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
-		arguments: ["-stdio"],
-		environment: jsh.js.Object.set({}, jsh.shell.environment, {
-			JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
-		})
+top.scenario("unit", jsh.unit.Suite.Fork({
+	name: "Unit tests",
+	run: jsh.shell.jsh,
+	shell: parameters.options.jsh.directory,
+	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
+	arguments: ["-view","stdio"]
+}));
+top.scenario("integration", jsh.unit.Suite.Fork({
+	name: "Integration tests",
+	run: jsh.shell.jsh,
+	shell: parameters.options.jsh.directory,
+	script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
+	arguments: ["-stdio"],
+	environment: jsh.js.Object.set({}, jsh.shell.environment, {
+		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
 	})
-});
+}));
+//if (!parameters.options.suite) {
+//	top.add({ scenario: new jsh.unit.Scenario.Fork({
+//		name: "Unit tests",
+//		run: jsh.shell.jsh,
+//		shell: parameters.options.jsh.directory,
+//		script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
+//		arguments: ["-view","stdio"]
+//	}) });
+//} else {
+//	top.scenario("unit", jsh.unit.Suite.Fork({
+//		name: "Unit tests",
+//		run: jsh.shell.jsh,
+//		shell: parameters.options.jsh.directory,
+//		script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
+//		arguments: ["-view","stdio"]
+//	}));
+//}
+//jsh.shell.echo("Running system tests ...");
+//top.add({
+//	scenario: new jsh.unit.Scenario.Fork({
+//		name: "Integration tests",
+//		run: jsh.shell.jsh,
+//		shell: parameters.options.jsh.directory,
+//		script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
+//		arguments: ["-stdio"],
+//		environment: jsh.js.Object.set({}, jsh.shell.environment, {
+//			JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
+//		})
+//	})
+//});
 var success = top.run();
 jsh.shell.exit( (success) ? 0 : 1 );
