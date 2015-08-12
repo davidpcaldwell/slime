@@ -81,9 +81,9 @@ var command = function(p) {
 }
 
 var subprocess = function(p) {
-	top.add({
-		scenario: new jsh.unit.Scenario.Fork(p)
-	});
+	if (!arguments.callee.index) arguments.callee.index = 0;
+	arguments.callee.index++;
+	top.scenario("subprocess-" + arguments.callee.index, jsh.unit.Suite.Fork(p));
 }
 
 parameters.options.java.forEach(function(jre) {
