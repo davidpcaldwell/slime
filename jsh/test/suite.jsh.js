@@ -21,7 +21,8 @@ var parameters = jsh.script.getopts({
 		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
 		src: jsh.script.file.getRelativePath("../.."),
 		debug: false,
-		stdio: false
+		stdio: false,
+		suite: false
 	}
 });
 
@@ -36,11 +37,28 @@ if (!parameters.options.jsh) {
 	});
 }
 
-var top = new jsh.unit.Scenario({
-	composite: true,
-	name: "SLIME suite",
-	view: (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
-});
+var top = (function() {
+	var view = (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
+	if (parameters.options.suite) {
+		var rv = new jsh.unit.Suite({
+			name: "SLIME suite"
+		});
+		var count = 0;
+		rv.add = function(p) {
+			this.scenario(String(++count), {
+				old: p.scenario
+			});
+		}
+		view.listen(rv);
+		return rv;
+	} else {
+		return new jsh.unit.Scenario({
+			composite: true,
+			name: "SLIME suite",
+			view: view
+		});
+	}
+})();
 
 //	Provide way to set CATALINA_HOME?
 //	Provide way to set JSH_LAUNCHER_DEBUG?

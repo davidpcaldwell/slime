@@ -686,24 +686,37 @@ $exports.Scenario = Scenario;
 
 		var name = (this.name) ? this.name : context.id;
 
-		this.run = function(scope) {
-			var EVENT = { id: context.id, name: name }
-			context.events.fire("scenario", { start: EVENT });
-			var local = copy(scope);
-			if (this.initialize) this.initialize.call(this,local);
-			var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
-			var verify = new Verify(vscope);
-			verify.test = function() {
-				return vscope.test.apply(this,arguments);
-			};
-			verify.scenario = function(o) {
-				if (o.initialize) o.initialize();
-				o.execute(vscope);
-				if (o.destroy) o.destroy();
+		if (o.old) {
+			this.run = function(scope) {
+				var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
+				var ctor = {};
+				for (var x in o.old) {
+					ctor[x] = o.old[x];
+				}
+				ctor.events = context.events;
+				var old = (o.old.run) ? o.old : new $exports.Scenario(ctor);
+				return old.run(vscope);
 			}
-			this.execute.call(this,local,verify);
-			context.events.fire("scenario", { end: EVENT, success: vscope.success });
-			return vscope.success;
+		} else {
+			this.run = function(scope) {
+				var EVENT = { id: context.id, name: name }
+				context.events.fire("scenario", { start: EVENT });
+				var local = copy(scope);
+				if (this.initialize) this.initialize.call(this,local);
+				var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
+				var verify = new Verify(vscope);
+				verify.test = function() {
+					return vscope.test.apply(this,arguments);
+				};
+				verify.scenario = function(o) {
+					if (o.initialize) o.initialize();
+					o.execute(vscope);
+					if (o.destroy) o.destroy();
+				}
+				this.execute.call(this,local,verify);
+				context.events.fire("scenario", { end: EVENT, success: vscope.success });
+				return vscope.success;
+			}
 		}
 	}
 
