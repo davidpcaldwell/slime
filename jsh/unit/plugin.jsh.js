@@ -91,10 +91,33 @@ plugin({
 			return new jsh.unit.Scenario.Stream({ name: p.name, stream: buffer.readBinary() });
 		};
 
-		jsh.unit.Suite.decode = function(p) {
-			var decoder = new remote.Decoder(p);
-			decoder.run();
-		}
+		jsh.unit.Suite.Fork = function(p) {
+			return {
+				create: function() {
+					this.name = p.name;
+
+					this.execute = function(scope,verify) {
+						var buffer = new jsh.io.Buffer();
+						var arg = jsh.js.Object.set({}, p, {
+							stdio: {
+								output: buffer.writeBinary()
+							}
+						});
+						jsh.java.Thread.start(function() {
+							p.run(arg);
+							buffer.close();
+						});
+						var decoder = new remote.Decoder({
+							stream: buffer.readBinary(),
+							received: function(e) {
+								verify.fire(e.type,e.detail);
+							}
+						});
+						decoder.run();
+					}
+				}
+			};
+		};
 	}
 });
 

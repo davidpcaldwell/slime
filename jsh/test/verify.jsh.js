@@ -99,15 +99,25 @@ parameters.options.java.forEach(function(jre) {
 	//	TODO	Convert to jsh/test plugin API designed for this purpose
 //	jsh.shell.echo("Adding launcher suite");
 	var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
-	top.add({
-		scenario: new jsh.unit.Scenario.Fork({
-			name: "Launcher suite",
+	if (top.suite) {
+		top.scenario("launcher", jsh.unit.Suite.Fork({
+			name: "Launcher remote suite",
 			run: jsh.shell.jsh,
 			fork: true,
 			script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
-			arguments: ["-scenario", "-view", "child"].concat(rhinoArgs),
-		})
-	});
+			arguments: ["-scenario", "-view", "child"].concat(rhinoArgs)
+		}))
+	} else {
+		top.add({
+			scenario: new jsh.unit.Scenario.Fork({
+				name: "Launcher suite",
+				run: jsh.shell.jsh,
+				fork: true,
+				script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
+				arguments: ["-scenario", "-view", "child"].concat(rhinoArgs),
+			})
+		});
+	}
 //	top.add(new function() {
 //		var buffer = new jsh.io.Buffer();
 //		var write = buffer.writeBinary();

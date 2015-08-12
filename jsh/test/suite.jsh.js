@@ -46,33 +46,6 @@ var top = (function() {
 	return rv;
 })();
 
-jsh.unit.Suite.Fork = function(p) {
-	return {
-		create: function() {
-			this.name = p.name;
-
-			this.execute = function(scope,verify) {
-				var buffer = new jsh.io.Buffer();
-				var arg = jsh.js.Object.set({}, p, {
-					stdio: {
-						output: buffer.writeBinary()
-					}
-				});
-				jsh.java.Thread.start(function() {
-					p.run(arg);
-					buffer.close();
-				});
-				jsh.unit.Suite.decode({
-					stream: buffer.readBinary(),
-					received: function(e) {
-						verify.fire(e.type,e.detail);
-					}
-				});
-			}
-		}
-	};
-}
-
 //	Provide way to set CATALINA_HOME?
 //	Provide way to set JSH_LAUNCHER_DEBUG?
 //	Provide way to set JSH_SCRIPT_DEBUGGER?
