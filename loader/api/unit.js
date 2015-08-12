@@ -783,6 +783,16 @@ $exports.Scenario = Scenario;
 			}
 		}
 
+		if (c && c.old) {
+			this.add = function(p) {
+				if (!arguments.callee.count) arguments.callee.count = 0;
+				arguments.callee.count++;
+				if (p.scenario) {
+					this.scenario(String(arguments.callee.count), { old: p.scenario });
+				}
+			}
+		}
+
 		if (c && c.create) {
 			c.create.call(this);
 		}

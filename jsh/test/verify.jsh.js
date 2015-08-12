@@ -21,7 +21,8 @@ var parameters = jsh.script.getopts({
 		tomcat: jsh.file.Pathname,
 		browser: false,
 		debug: false,
-		view: "console"
+		view: "console",
+		suite: false
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -49,14 +50,34 @@ jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
 jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
-var top = new jsh.unit.Scenario({
-	composite: true,
-	name: "SLIME verify",
-	view: (function(id) {
+var top = (function() {
+	var view = (function(id) {
 		if (id == "console") return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
 		if (id == "webview") return new jsh.unit.view.WebView();
 	})(parameters.options.view)
-});
+	if (!parameters.options.suite) {
+		return new jsh.unit.Scenario({
+			composite: true,
+			name: "SLIME verify",
+			view: view
+		});
+	} else {
+		var rv = new jsh.unit.Suite({
+			name: "SLIME verification suite",
+			old: true
+		});
+		view.listen(rv);
+		return rv;
+	}
+})();
+//var top = new jsh.unit.Scenario({
+//	composite: true,
+//	name: "SLIME verify",
+//	view: (function(id) {
+//		if (id == "console") return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
+//		if (id == "webview") return new jsh.unit.view.WebView();
+//	})(parameters.options.view)
+//});
 
 var CommandScenario = function(p) {
 	return new jsh.unit.CommandScenario(jsh.js.Object.set({}, p, {
