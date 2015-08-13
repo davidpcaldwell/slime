@@ -136,16 +136,21 @@ jsh.unit.integration({
 
 		[unbuilt,built].forEach(function(implementation) {
 			var shell = (unbuilt) ? home : src;
-			this.add({
-				scenario: new jsh.unit.Scenario.Integration({
-					shell: shell,
-					script: jsh.script.file.parent.getFile("options.jsh.js")
-				})
-			});
+			var id = ["unbuilt","built"][arguments[1]];
+			this.scenario(id, jsh.unit.Suite.Integration({
+				shell: shell,
+				script: jsh.script.file.parent.getFile("options.jsh.js")
+			}));
+//			this.add({
+//				scenario: new jsh.unit.Scenario.Integration({
+//					shell: shell,
+//					script: jsh.script.file.parent.getFile("options.jsh.js")
+//				})
+//			});
 		},this);
 
 		engines.forEach(function(engine) {
-			this.add({ scenario: new jsh.unit.Scenario.Integration({
+			this.scenario(engine, jsh.unit.Suite.Integration({
 				shell: home,
 				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
 				environment: {
@@ -156,7 +161,19 @@ jsh.unit.integration({
 					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
 					JSH_ENGINE: engine
 				}
-			}) });
+			}));
+//			this.add({ scenario: new jsh.unit.Scenario.Integration({
+//				shell: home,
+//				script: jsh.script.file.getRelativePath("packaged.jsh.js").file,
+//				environment: {
+//					PATH: jsh.shell.environment.PATH,
+//					//	TODO	below is used for Windows temporary files
+//					TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+//					//	TODO	below is used for Windows command location
+//					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+//					JSH_ENGINE: engine
+//				}
+//			}) });
 
 			[unbuilt,built].forEach(function(shell) {
 				addScenario(new function() {

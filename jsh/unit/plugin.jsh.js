@@ -79,17 +79,17 @@ plugin({
 		};
 		jsh.unit.html.documentation = html.documentation;
 
-		jsh.unit.Scenario.Fork = function(p) {
-			var buffer = new jsh.io.Buffer();
-			if (!p.stdio) p.stdio = {};
-			if (p.stdio.output) throw new Error();
-			p.stdio.output = buffer.writeBinary();
-			jsh.java.Thread.start(function() {
-				p.run(p);
-				buffer.close();
-			});
-			return new jsh.unit.Scenario.Stream({ name: p.name, stream: buffer.readBinary() });
-		};
+//		jsh.unit.Scenario.Fork = function(p) {
+//			var buffer = new jsh.io.Buffer();
+//			if (!p.stdio) p.stdio = {};
+//			if (p.stdio.output) throw new Error();
+//			p.stdio.output = buffer.writeBinary();
+//			jsh.java.Thread.start(function() {
+//				p.run(p);
+//				buffer.close();
+//			});
+//			return new jsh.unit.Scenario.Stream({ name: p.name, stream: buffer.readBinary() });
+//		};
 
 		jsh.unit.Suite.Fork = function(p) {
 			return {
