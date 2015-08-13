@@ -70,19 +70,21 @@ jsh.shell.echo("browsers = " + browsers);
 if (MODULES && browsers.length) {
 	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
-		var scenario = new jsh.unit.Scenario({
-			composite: true,
+		var view = (parameters.options.stdio)
+			? new jsh.unit.JSON.Encoder({
+				send: function(s) {
+					jsh.shell.echo(s);
+				}
+			})
+			: new jsh.unit.view.Console({
+				writer: jsh.shell.stdio.output
+			})
+		;
+		var scenario = new jsh.unit.Suite({
 			name: "Browser tests",
-			view: (parameters.options.stdio)
-				? new jsh.unit.JSON.Encoder({
-					send: function(s) {
-						jsh.shell.echo(s);
-					}
-				})
-				: new jsh.unit.view.Console({
-					writer: jsh.shell.stdio.output
-				})
+			old: true
 		});
+		view.listen(scenario);
 		browsers.forEach(function(browser) {
 			scenario.add({
 				scenario: MODULES.test({
