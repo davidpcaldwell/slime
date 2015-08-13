@@ -109,14 +109,16 @@ jsh.unit.integration({
 		}
 
 		var addScenario = (function(o) {
-			this.add({ scenario: new function() {
-				this.name = o.name;
+			if (!arguments.callee.index) arguments.callee.index = 0;
+			this.scenario(String(++arguments.callee.index), {
+				create: function() {
+					this.name = o.name;
 
-				this.execute = function(scope) {
-					var verify = new jsh.unit.Verify(scope);
-					o.execute(verify);
-				};
-			}})
+					this.execute = function(scope,verify) {
+						o.execute(verify);
+					};
+				}
+			});
 		}).bind(this);
 
 //		//	TODO	does not appear to test packaging with Rhino when run from Nashorn
