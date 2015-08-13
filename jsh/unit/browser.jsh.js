@@ -86,14 +86,20 @@ if (MODULES && browsers.length) {
 		});
 		view.listen(scenario);
 		browsers.forEach(function(browser) {
-			scenario.add({
-				scenario: MODULES.test({
-					coffeescript: parameters.options.coffeescript,
-					port: parameters.options.port,
-					browser: browser,
-					interactive: parameters.options.interactive
-				})
-			});
+			scenario.scenario(String(arguments[1]),MODULES.test({
+				coffeescript: parameters.options.coffeescript,
+				port: parameters.options.port,
+				browser: browser,
+				interactive: parameters.options.interactive
+			}));
+//			scenario.add({
+//				scenario: MODULES.test({
+//					coffeescript: parameters.options.coffeescript,
+//					port: parameters.options.port,
+//					browser: browser,
+//					interactive: parameters.options.interactive
+//				})
+//			});
 		});
 		var rv = scenario.run();
 		if (rv) {

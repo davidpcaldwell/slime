@@ -119,14 +119,21 @@ $exports.Modules = function(slime,pathnames) {
 			tomcat.run();
 		} else {
 			var name = (p.browser.name) ? p.browser.name : "Browser";
-			var scenario = new jsh.unit.Scenario.Events({
-				name: name,
-				events: result.console
-			});
-			jsh.java.Thread.start(function() {
-				queuer.fire();
-			});
-			return scenario;
+			if (false) {
+				var scenario = new jsh.unit.Scenario.Events({
+					name: name,
+					events: result.console
+				});
+				jsh.java.Thread.start(function() {
+					queuer.fire();
+				});
+				return scenario;
+			} else {
+				return jsh.unit.Suite.Events({
+					name: name,
+					events: result.console
+				});
+			}
 		}
 	};
 

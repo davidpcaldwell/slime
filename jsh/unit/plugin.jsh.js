@@ -119,6 +119,20 @@ plugin({
 			};
 		};
 
+		jsh.unit.Suite.Events = function(p) {
+			return {
+				create: function() {
+					this.name = p.name;
+
+					this.execute = function(scope,verify) {
+						p.events.forEach(function(event) {
+							verify.fire(event.type,event.detail);
+						});
+					}
+				}
+			};
+		}
+
 		jsh.unit.Suite.Command = function(p) {
 			return {
 				create: function() {
