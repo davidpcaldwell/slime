@@ -45,7 +45,8 @@ var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separato
 
 var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath(o.path).file;
-	return {
+	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
+	scenario.scenario(tokens.join(" "), {
 		create: function() {
 			this.name = script.toString();
 
@@ -65,58 +66,57 @@ var ScriptVerifier = function(o) {
 				});
 			}
 		}
-	}
-	this.scenario = new function() {
-	}
+	});
 };
 
 if (CATALINA_HOME) {
-	scenario.add(new ScriptVerifier({
+	ScriptVerifier({
 		path: "launcher/remote.jsh.js",
 		execute: function(verify) {
 			verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("true");
 			verify(this.stdio.output.split(LINE_SEPARATOR))[1].is("true");
 		}
-	}));
+	});
 }
 
 //	TODO	Convert to jsh/test plugin API designed for this purpose
-scenario.add(new function() {
+scenario.scenario("packaged", (function() {
 	var script = jsh.script.file.getRelativePath("packaged.jsh.js").file;
-	this.scenario = new function() {
-		this.name = script.toString();
+	return {
+		create: function() {
+			this.name = script.toString();
 
-		this.execute = function(scope) {
-			//	TODO	this next line should go elsewhere
-			var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
-			jsh.shell.jsh({
-				fork: true,
-				script: script,
-				stdio: {
-					output: String
-				},
-				evaluate: function(result) {
-					var verify = new jsh.unit.Verify(scope);
-					verify(result.stdio.output.split(LINE_SEPARATOR))[0].is("Loaded both.");
-				}
-			});
+			this.execute = function(scope,verify) {
+				//	TODO	this next line should go elsewhere
+				var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
+				jsh.shell.jsh({
+					fork: true,
+					script: script,
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
+						verify(result.stdio.output.split(LINE_SEPARATOR))[0].is("Loaded both.");
+					}
+				});
+			}
 		}
 	}
-});
+})());
 
-scenario.add(new ScriptVerifier({
+ScriptVerifier({
 	path: "packaged-path.jsh.js",
 	execute: function(verify) {
 		verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("Success: packaged-path.jsh.js");
 	}
-}));
-scenario.add(new ScriptVerifier({
+});
+ScriptVerifier({
 	path: "$api-deprecate-properties.jsh.js",
 	execute: function(verify) {
 		verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("o.f.property = foo");
 	}
-}));
-scenario.add(new ScriptVerifier({
+});
+ScriptVerifier({
 	path: "plugins/packaged.jsh.js",
 	environment: {
 		LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
@@ -126,38 +126,38 @@ scenario.add(new ScriptVerifier({
 		verify(output)[0].is("a: Hello, World!");
 		verify(output)[1].is("[global] a: Hello, World!");
 	}
-}));
-scenario.add(new ScriptVerifier({
+});
+ScriptVerifier({
 	path: "jsh.shell/echo.jsh.js",
 	execute: function(verify) {
 		var output = this.stdio.output.split(LINE_SEPARATOR);
 		verify(output)[0].is("true");
 	}
-}));
-scenario.add(new ScriptVerifier({
+});
+ScriptVerifier({
 	path: "jsh.shell/properties.jsh.js",
 	execute: function(verify) {
 		var output = this.stdio.output.split(LINE_SEPARATOR);
 		verify(output)[0].is("Passed.");
 	}
-}));
+});
 
 (function() {
 	var input_abcdefghij = "ABCDEFGHIJ";
-	scenario.add(new ScriptVerifier({
+	ScriptVerifier({
 		path: "jsh.shell/stdio.2.jsh.js",
 		input: input_abcdefghij,
 		execute: function(verify) {
 			verify(this.stdio.output).is(input_abcdefghij);
 		}
-	}));
-	scenario.add(new ScriptVerifier({
+	});
+	ScriptVerifier({
 		path: "jsh.shell/stdio.3.jsh.js",
 		input: input_abcdefghij,
 		execute: function(verify) {
 			verify(this.stdio.output).is(input_abcdefghij);
 		}
-	}));
+	});
 //	scenario.add({ scenario: {
 //		name: "stdio",
 //		execute: function(scope) {
@@ -197,15 +197,15 @@ scenario.add(new ScriptVerifier({
 //	});
 })();
 
-scenario.add(new ScriptVerifier({
+ScriptVerifier({
 	path: "jsh.shell/jsh.home.jsh.js",
 	execute: function(verify) {
 		var JSH_HOME = jsh.shell.jsh.home.pathname.java.adapt();
 		verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("jsh.home=" + JSH_HOME.getCanonicalPath() + Packages.java.io.File.separator);
 	}
-}));
+});
 
-scenario.add(new ScriptVerifier({
+ScriptVerifier({
 	path: "jsh.script/Application.jsh.js",
 	arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"],
 	execute: function(verify) {
@@ -215,16 +215,16 @@ scenario.add(new ScriptVerifier({
 		verify(json).options.lboolean.is(true);
 		verify(json).options.lstring.is("foo");
 	}
-}));
+});
 
-scenario.add(new ScriptVerifier({
+ScriptVerifier({
 	path: "loader/issue32.jsh.js",
 	execute: function(verify) {
 		var json = JSON.parse(this.stdio.output);
 		verify(json).length.is(1);
 		verify(json)[0].is("jsh");
 	}
-}));
+});
 
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
@@ -873,28 +873,31 @@ if (nativeLauncher && !/\.js/.test(nativeLauncher.pathname.basename)) {
 }
 };
 
-scenario.add({ scenario: new function() {
-	this.name = "Legacy tests";
+scenario.scenario("legacy", {
+	create: function() {
+		this.name = "Legacy tests";
 
-	this.execute = function(scope) {
-		scope.test(function() {
-			caught = false;
-			try {
-				legacy();
-			} catch (e) {
-				caught = e;
-			}
-			if (caught.printStackTrace) {
-				caught.printStackTrace();
-			}
-			return {
-				success: !caught,
-				message: "caught error: " + caught,
-				error: caught
-			}
-		});
+		this.execute = function(scope,verify) {
+
+			verify.test(function() {
+				caught = false;
+				try {
+					legacy();
+				} catch (e) {
+					caught = e;
+				}
+				if (caught.printStackTrace) {
+					caught.printStackTrace();
+				}
+				return {
+					success: !caught,
+					message: "caught error: " + caught,
+					error: caught
+				}
+			});
+		}
 	}
-}});
+})
 
 scenario.run();
 
