@@ -33,36 +33,40 @@ var CATALINA_HOME = (function() {
 
 var src = parameters.options.src.directory;
 
-var scenario = new jsh.unit.Scenario({
-	composite: true,
+var view = (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
+var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests",
-	view: (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
+	old: true
 });
+view.listen(scenario);
 
 //	TODO	this next line should go elsewhere
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
 
 var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath(o.path).file;
-	this.scenario = new function() {
-		this.name = script.toString();
+	return {
+		create: function() {
+			this.name = script.toString();
 
-		this.execute = function(scope) {
-			jsh.shell.jsh({
-				fork: true,
-				script: script,
-				arguments: (o.arguments) ? o.arguments : [],
-				stdio: {
-					output: String,
-					input: (o.input) ? o.input : null
-				},
-				environment: (o.environment) ? o.environment : jsh.shell.environment,
-				evaluate: function(result) {
-					var verify = new jsh.unit.Verify(scope);
-					o.execute.call(result,verify);
-				}
-			});
+			this.execute = function(scope,verify) {
+				jsh.shell.jsh({
+					fork: true,
+					script: script,
+					arguments: (o.arguments) ? o.arguments : [],
+					stdio: {
+						output: String,
+						input: (o.input) ? o.input : null
+					},
+					environment: (o.environment) ? o.environment : jsh.shell.environment,
+					evaluate: function(result) {
+						o.execute.call(result,verify);
+					}
+				});
+			}
 		}
+	}
+	this.scenario = new function() {
 	}
 };
 
