@@ -678,6 +678,11 @@ var Scenario = function(o) {
 };
 
 $exports.Scenario = Scenario;
+if ($context.REMOVE_OLD) {
+	$exports.Scenario = function(p) {
+		throw new Error("Removed obsolete functionality.");
+	}
+}
 
 (function() {
 	var copy = function(o) {
@@ -696,15 +701,21 @@ $exports.Scenario = Scenario;
 		var name = (this.name) ? this.name : context.id;
 
 		if (o.old) {
-			this.run = function(scope) {
-				var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
-				var ctor = {};
-				for (var x in o.old) {
-					ctor[x] = o.old[x];
+			if (!$context.REMOVE_OLD) {
+				this.run = function(scope) {
+					var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
+					var ctor = {};
+					for (var x in o.old) {
+						ctor[x] = o.old[x];
+					}
+					ctor.events = context.events;
+					var old = (o.old.run) ? o.old : new $exports.Scenario(ctor);
+					return old.run(vscope);
 				}
-				ctor.events = context.events;
-				var old = (o.old.run) ? o.old : new $exports.Scenario(ctor);
-				return old.run(vscope);
+			} else {
+				this.run = function(scope) {
+					throw new Error("Removed obsolete functionality.");
+				}
 			}
 		} else {
 			this.run = function(scope) {
@@ -784,11 +795,17 @@ $exports.Scenario = Scenario;
 		}
 
 		if (c && c.old) {
-			this.add = function(p) {
-				if (!arguments.callee.count) arguments.callee.count = 0;
-				arguments.callee.count++;
-				if (p.scenario) {
-					this.scenario(String(arguments.callee.count), { old: p.scenario });
+			if (!$context.REMOVE_OLD) {
+				this.add = function(p) {
+					if (!arguments.callee.count) arguments.callee.count = 0;
+					arguments.callee.count++;
+					if (p.scenario) {
+						this.scenario(String(arguments.callee.count), { old: p.scenario });
+					}
+				}
+			} else {
+				this.add = function(p) {
+					throw new Error("Removed obsolete functionality.");
 				}
 			}
 		}

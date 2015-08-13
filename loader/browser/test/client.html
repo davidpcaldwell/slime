@@ -207,7 +207,8 @@ END LICENSE
 						,test: function(next) {
 							window.setTimeout(next,1);
 						}
-					}
+					},
+					REMOVE_OLD: parameters.REMOVE_OLD
 				});
 				var Console = inonit.loader.file(parameters.jsapi+"console.js").Forwarder;
 				var apiHtmlScript = inonit.loader.file(parameters.jsapi+"api.html.js");
@@ -546,21 +547,26 @@ END LICENSE
 								//	error loading module, which is OK: sometimes tests do not pertain directly to a module
 							}
 							scope.context = contexts[i];
-							var moduleScenario = apiHtml.getScenario(scope,test.path);
+							var moduleScenario = apiHtml.getSuite(scope,test.path);
 							moduleScenario.name = (test.path) ? (module + ":" + test.path) : module;
 							scenarios.push(moduleScenario);
 						}
 					})();
 				}
 
-				var _scenario = {};
-				_scenario.name = "Unit Tests";
-				_scenario.execute = function(scope) {
-					for (var i=0; i<scenarios.length; i++) {
-						scope.scenario(scenarios[i]);
-					}
+				var scenario = new jsapi.Suite({ old: true });
+				for (var i=0; i<scenarios.length; i++) {
+					scenario.suite(String(i+1),scenarios[i]);
+//					scenario.add({ scenario: scenarios[i] });
 				}
-				var scenario = new jsapi.Scenario(_scenario);
+//				var _scenario = {};
+//				_scenario.name = "Unit Tests";
+//				_scenario.execute = function(scope) {
+//					for (var i=0; i<scenarios.length; i++) {
+//						scope.scenario(scenarios[i]);
+//					}
+//				}
+//				var scenario = new jsapi.Scenario(_scenario);
 				var events = [];
 				//	TODO	merge into framework somewhere? Need to generalize more (does it buffer all events; is the array
 				//			mutable to callers, and so forth
@@ -618,6 +624,7 @@ END LICENSE
 						req.send(JSON.stringify(events));
 					}
 				};
+				new jsapi.View(console).listen(scenario);
 				var ASYNCHRONOUS = Boolean(parameters.asynchronous);
 
 				var onResult = (function() {

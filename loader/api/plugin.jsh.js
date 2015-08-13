@@ -13,7 +13,9 @@
 
 plugin({
 	load: function() {
-		jsh.unit = $loader.file("unit.js");
+		jsh.unit = $loader.file("unit.js", {
+			REMOVE_OLD: Packages.java.lang.System.getenv("JSH_UNIT_REMOVE_OLD")
+		});
 		jsh.unit.html = $loader.module("api.html.js", new function() {
 			var seq = 0;
 
