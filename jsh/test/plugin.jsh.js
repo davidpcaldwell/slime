@@ -95,11 +95,12 @@ plugin({
 						return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
 					}
 				};
-				var scenario = new jsh.unit.Scenario({
-					composite: true,
+				var view = views[parameters.options.view]();
+				var scenario = new jsh.unit.Suite({
 					name: jsh.script.file.pathname.basename,
-					view: views[parameters.options.view]()
+					old: true
 				});
+				view.listen(scenario);
 				o.scenario.call(scenario,getopts);
 				scenario.run();
 			} else {
