@@ -15,6 +15,9 @@ jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 var parameters = jsh.script.getopts({
 	options: {
+		//	TODO	I guess ideally when running interactive tests, closing the browser should end the program, but haven't thought
+		//			about how to implement that. In any case, there are some design problems here, as one should be limited to a
+		//			single browser when running interactive tests, and so forth
 		interactive: false,
 		stdio: false,
 		port: Number,

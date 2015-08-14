@@ -170,6 +170,7 @@ $exports.Modules = function(slime,pathnames) {
 		}
 		jsh.shell.echo("fullurl = " + request.build());
 		return browserTest(jsh.js.Object.set({}, {
+			port: p.port,
 			browser: p.browser,
 			resources: (function() {
 				var rv = new jsh.httpd.Resources.Old();

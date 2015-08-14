@@ -204,8 +204,7 @@ END LICENSE
 								return 2;
 							};
 						};
-						var rv = api.deprecate(o);
-						test(typeof(rv) == "undefined");
+						verify(api.deprecate(o)).is(void(0));
 						var p = o.p;
 						verify(p).is(1);
 						var m = o.m();
@@ -229,23 +228,16 @@ END LICENSE
 								return rv.actual == rv.expect;
 							}
 							rv.evaluate = function(message) {
+								var success = this.test();
+								var m;
 								if (!message) {
-									verify.test({
-										success: this.test(),
-										messages: {
-											success: "expectWarn PASS: expect=" + rv.expect + " actual=" + rv.actual,
-											failure: "expectWarn FAIL: expect=" + rv.expect + " actual=" + rv.actual
-										}
-									});
+									m = (success) ? "expectWarn PASS: expect=" + rv.expect + " actual=" + rv.actual : "expectWarn FAIL: expect=" + rv.expect + " actual=" + rv.actual;
 								} else {
-									verify.test({
-										success: this.test(),
-										messages: {
-											success: message + " passed.",
-											failure: message + " FAILED."
-										}
-									})
+									m = (success) ? message + " passed." : message + " FAILED.";
 								}
+								verify.test(function() {
+									return { success: success, message: m };
+								});
 							}
 							api.deprecate.warning = rv;
 							//$unit.context.setWarning(rv);
@@ -289,11 +281,12 @@ END LICENSE
 							var yes = expectWarn(true);
 							x.foo = "baz";
 							yes.evaluate();
-							verify.test({
-								success: x.foo == "baz",
-								messages: {
-									success: "Value correct",
-									failure: "Value " + x.foo
+							verify.test(function() {
+								var success = x.foo == "baz";
+								var message = (success) ? "Value correct" : "Value " + x.foo;
+								return {
+									success: success,
+									message: message
 								}
 							});
 						}
@@ -320,7 +313,7 @@ END LICENSE
 							var yes = expectWarn(true);
 							x2.foo = "BAR";
 							yes.evaluate();
-							test(typeof(x2.foo) == "undefined", "Still undefined");
+							verify(x2.foo, "foo is still").is(void(0));
 
 							var x3 = new function() {
 								this.foo = 0;
