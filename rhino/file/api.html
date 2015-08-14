@@ -1049,14 +1049,85 @@ END LICENSE
 				See <a href="api.Loader.html">detailed documentation</a>.
 			</li>
 		</ul>
-		<script type="application/x.jsapi#tests"><![CDATA[
+		<script type="application/x.jsapi#initialize">
 			var _context = new function() {
 				this.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
-				this.dir = newTemporaryDirectory(this.filesystem);
+				this.dir = scope.newTemporaryDirectory(this.filesystem);
 				this.module = { Streams: context.$Context.api.io.Streams };
 			}
 			if (!_context.dir) throw "Missing context.dir";
 			var filesystem = _context.filesystem;
+
+			var dir = _context.dir.getRelativePath("filetests").createDirectory();
+
+			var createFile = scope.createFile;
+			var createDirectory = scope.createDirectory;
+
+			var filea = createFile(dir,"a");
+			var fileb = createFile(dir,"b");
+			var filec = createDirectory(dir,"c");
+			var filed = createFile(filec,"d");
+			var filee = createDirectory(dir,"e");
+			var filef = createFile(filee,"f");
+
+			scope._context = _context;
+
+			scope.createFile(dir,"target",1112);
+
+			scope.filesystem = filesystem;
+			scope.dir = dir;
+			scope.filea = filea;
+			scope.fileb = fileb;
+			scope.filec = filec;
+			scope.filed = filed;
+			scope.filee = filee;
+			scope.filef = filef;
+		</script>
+		<script type="application/x.jsapi#tests"><![CDATA[
+			var toDelete = createFile(filec,"toDelete");
+			var toDeleteDir = createDirectory(dir,"toDelete.d");
+			var zz = createFile(toDeleteDir, "zz");
+
+			test(filec.list().length == 2);
+			test(filec.getFile("toDelete") != null);
+			var fileToDelete = filec.getFile("toDelete");
+			fileToDelete.remove();
+			test(filec.getFile("toDelete") == null);
+			test(filec.list().length == 1);
+
+			test(dir.getRelativePath("toDelete.d").directory != null);
+			test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
+			dir.getRelativePath("toDelete.d").directory.remove();
+			test(dir.getRelativePath("toDelete.d").directory == null);
+		]]></script>
+		<script type="application/x.jsapi#tests"><![CDATA[
+			var inPlace = $jsapi.disableBreakOnExceptions(function(ifExists) {
+				return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
+			});
+			var created = inPlace();
+			scope.test( created.parent.toString() == dir.toString() );
+			var timestamp = created.modified;
+
+			try {
+				var created = inPlace();
+				scope.test( false );
+			} catch (e) {
+				scope.test( true );
+			}
+
+			var created = inPlace( function() { return false; } );
+			scope.test( created.modified.getTime() == timestamp.getTime() );
+
+			var created = inPlace( function(existing) { existing.remove(); return true; } );
+			scope.test( created.modified != timestamp );
+
+			created.remove();
+		]]></script>
+		<script type="application/x.jsapi#tests"><![CDATA[
+		]]></script>
+		<script type="application/x.jsapi#tests"><![CDATA[
+		]]></script>
+		<script type="application/x.jsapi#tests"><![CDATA[
 			scenario( new function() {
 				this.name = "File tests";
 
@@ -1064,66 +1135,6 @@ END LICENSE
 				}
 
 				this.execute = function(scope) {
-					var dir = _context.dir.getRelativePath("filetests").createDirectory();
-
-					var filea = createFile(dir,"a");
-					var fileb = createFile(dir,"b");
-					var filec = createDirectory(dir,"c");
-					var filed = createFile(filec,"d");
-					var filee = createDirectory(dir,"e");
-					var filef = createFile(filee,"f");
-
-					createFile(dir,"target",1112);
-
-					scope.scenario( new function() {
-						this.name = "Deletion";
-						this.execute = function(scope) {
-							var toDelete = createFile(filec,"toDelete");
-							var toDeleteDir = createDirectory(dir,"toDelete.d");
-							var zz = createFile(toDeleteDir, "zz");
-
-							scope.test(filec.list().length == 2);
-							scope.test(filec.getFile("toDelete") != null);
-							var fileToDelete = filec.getFile("toDelete");
-							fileToDelete.remove();
-							scope.test(filec.getFile("toDelete") == null);
-							scope.test(filec.list().length == 1);
-
-							scope.test(dir.getRelativePath("toDelete.d").directory != null);
-							scope.test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
-							dir.getRelativePath("toDelete.d").directory.remove();
-							scope.test(dir.getRelativePath("toDelete.d").directory == null);
-						}
-					} );
-
-					scope.scenario( new function() {
-						this.name = "createDirectory";
-
-						this.execute = function(scope) {
-							var inPlace = $jsapi.disableBreakOnExceptions(function(ifExists) {
-								return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
-							});
-							var created = inPlace();
-							scope.test( created.parent.toString() == dir.toString() );
-							var timestamp = created.modified;
-
-							try {
-								var created = inPlace();
-								scope.test( false );
-							} catch (e) {
-								scope.test( true );
-							}
-
-							var created = inPlace( function() { return false; } );
-							scope.test( created.modified.getTime() == timestamp.getTime() );
-
-							var created = inPlace( function(existing) { existing.remove(); return true; } );
-							scope.test( created.modified != timestamp );
-
-							created.remove();
-						}
-					} );
-
 					scope.scenario( new function() {
 						this.name = "file.write()";
 
