@@ -112,7 +112,7 @@ int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 
 #define JSH_PATHNAME_BUFFER_SIZE PROC_PIDPATHINFO_MAXSIZE*sizeof(char)
 int programAbsolutePath(char *argsv0, char *rv, int size) {
-    int status = proc_pidpath(getpid(), rv, size);
+	int status = proc_pidpath(getpid(), rv, size);
 	debug("rv = %s\n", rv);
 	debug("status = %d\n", status);
 	return (status < 0) ? status : 0;
@@ -157,7 +157,7 @@ void debug(char* mask, ...) {
 	if (getenv("JSH_LAUNCHER_DEBUG") != NULL || getenv("JSH_LAUNCHER_CONSOLE_DEBUG") != NULL) {
 		vprintf(mask, args);
 	}
-    va_end(args);
+	va_end(args);
 }
 
 int main(int argc, char **argv) {
