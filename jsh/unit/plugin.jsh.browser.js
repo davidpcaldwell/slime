@@ -300,43 +300,43 @@ $exports.Firefox = function(p) {
 };
 
 $exports.Chrome = function(p) {
+	if (!p) p = {};
 	this.name = (p.name) ? p.name : "Google Chrome";
 
 	this.filter = function(module) {
 		return true;
 	}
 
+	var user = (p.user) ? p.user : jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+	if (!user.getFile("First Run")) {
+		user.getRelativePath("First Run").write("", { append: false });
+	}
+	//	ignoring p.program
+	var browser = new jsh.shell.browser.chrome.User({
+		directory: user
+	});
+
 	this.browse = function(uri) {
 		var lock = new jsh.java.Thread.Monitor();
 		var opened;
-		jsh.java.Thread.start({
-			call: function() {
-				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				TMP.getRelativePath("First Run").write("", { append: false });
-				jsh.shell.echo("Running with data directory: " + TMP);
-				jsh.shell.run({
-					command: p.program,
-					arguments: [
-						"--user-data-dir=" + TMP,
-						uri
-					],
-					on: {
-						start: function(p) {
-							new lock.Waiter({
-								until: function() {
-									return true;
-								},
-								then: function() {
-									opened = new function() {
-										this.close = function() {
-											p.kill();
-										}
-									}
+		browser.launch({
+			uri: uri,
+			on: {
+				start: function(p) {
+					new lock.Waiter({
+						until: function() {
+							return true;
+						},
+						then: function() {
+							opened = new function() {
+								this.close = function() {
+									p.kill();
 								}
-							})();
+							}
 						}
-					}
-				});
+					})();
+				}
 			}
 		});
 		var returner = new lock.Waiter({
@@ -366,8 +366,10 @@ add("IE","C:\\Program Files\\Internet Explorer\\iexplore.exe");
 //	Mac OS X
 add("Safari","/Applications/Safari.app/Contents/MacOS/Safari");
 add("Firefox","/Applications/Firefox.app/Contents/MacOS/firefox");
-add("Chrome","/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
 
 //	Linux
-add("Chrome","/opt/google/chrome/chrome");
 add("Firefox", "/usr/bin/firefox");
+
+if (jsh.shell.browser.chrome) {
+	$exports.installed.chrome = new $exports.Chrome();
+}

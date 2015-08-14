@@ -22,6 +22,7 @@ var parameters = jsh.script.getopts({
 		safari: false,
 		firefox: false,
 		chrome: false,
+		"chrome:profile": jsh.file.Pathname,
 		browser: jsh.script.getopts.OBJECT(jsh.file.Pathname),
 		coffeescript: jsh.file.Pathname
 	},
@@ -36,6 +37,10 @@ if (!jsh.httpd || !jsh.httpd.Tomcat) {
 if (!jsh.java.Thread) {
 	jsh.shell.echo("Cannot run browser tests; jsh.java.Thread not implemented; use Rhino, not Nashorn", { stream: jsh.shell.stderr });
 	jsh.shell.exit(1);
+}
+
+if (parameters.options["chrome:profile"]) {
+	parameters.options.chrome = true;
 }
 
 var browsers = (function() {
@@ -53,7 +58,16 @@ var browsers = (function() {
 			if (pathname) {
 				rv.push(new jsh.unit.browser[name]({ program: pathname.file }));
 			} else if (jsh.unit.browser.installed[property]) {
-				rv.push(jsh.unit.browser.installed[property]);
+				if (property == "chrome" && parameters.options["chrome:profile"]) {
+					var directory = parameters.options["chrome:profile"].createDirectory({
+						ifExists: function(dir) {
+							return false;
+						}
+					});
+					rv.push(new jsh.unit.browser.Chrome({ user: directory }))
+				} else {
+					rv.push(jsh.unit.browser.installed[property]);
+				}
 			}
 		}
 	});
