@@ -1105,81 +1105,63 @@ END LICENSE
 				return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
 			});
 			var created = inPlace();
-			scope.test( created.parent.toString() == dir.toString() );
+			test( created.parent.toString() == dir.toString() );
 			var timestamp = created.modified;
 
 			try {
 				var created = inPlace();
-				scope.test( false );
+				test( false );
 			} catch (e) {
-				scope.test( true );
+				test( true );
 			}
 
 			var created = inPlace( function() { return false; } );
-			scope.test( created.modified.getTime() == timestamp.getTime() );
+			test( created.modified.getTime() == timestamp.getTime() );
 
 			var created = inPlace( function(existing) { existing.remove(); return true; } );
-			scope.test( created.modified != timestamp );
+			test( created.modified != timestamp );
 
 			created.remove();
 		]]></script>
 		<script type="application/x.jsapi#tests"><![CDATA[
+			var mydir = createDirectory(dir, "write");
+			test( (mydir != null) );
+
+			var a = mydir.getRelativePath("a");
+			var b = mydir.getRelativePath("b/c");
+
+			var checkError = function(f) {
+				try {
+					f();
+					return true;
+				} catch (e) {
+					return false;
+				}
+			}
+
+			var Streams = _context.module.Streams;
+			test( checkError( function() { a.write(Streams.binary).close(); } ) );
+			test( !checkError( function() { b.write(Streams.binary).close(); } ) );
+			test( checkError( function() { b.write(Streams.binary, { recursive: true}).close(); } ) );
+			test( !checkError( function() { b.write(Streams.binary).close(); } ) );
+			test( checkError( function() { b.write(Streams.binary, {append: false}).close(); } ) );
+
+			var writeAndClose = function(path,string,append) {
+				path.write(string, { append: append });
+			}
+
+			writeAndClose(a,"Hello",true);
+			test( a.file.read(String) == "Hello" );
+			writeAndClose(a,"Hello",false);
+			test( a.file.read(String) == "Hello" );
+			writeAndClose(a," World",true);
+			test( a.file.read(String) == "Hello World" );
 		]]></script>
 		<script type="application/x.jsapi#tests"><![CDATA[
-		]]></script>
-		<script type="application/x.jsapi#tests"><![CDATA[
-			scenario( new function() {
-				this.name = "File tests";
-
-				this.initialize = function() {
-				}
-
-				this.execute = function(scope) {
-					scope.scenario( new function() {
-						this.name = "file.write()";
-
-						this.execute = function(scope) {
-							var mydir = createDirectory(dir, "write");
-							scope.test( (mydir != null) );
-
-							var a = mydir.getRelativePath("a");
-							var b = mydir.getRelativePath("b/c");
-
-							var checkError = function(f) {
-								try {
-									f();
-									return true;
-								} catch (e) {
-									return false;
-								}
-							}
-
-							var Streams = _context.module.Streams;
-							scope.test( checkError( function() { a.write(Streams.binary).close(); } ) );
-							scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
-							scope.test( checkError( function() { b.write(Streams.binary, { recursive: true}).close(); } ) );
-							scope.test( !checkError( function() { b.write(Streams.binary).close(); } ) );
-							scope.test( checkError( function() { b.write(Streams.binary, {append: false}).close(); } ) );
-
-							var writeAndClose = function(path,string,append) {
-								path.write(string, { append: append });
-							}
-
-							writeAndClose(a,"Hello",true);
-							scope.test( a.file.read(String) == "Hello" );
-							writeAndClose(a,"Hello",false);
-							scope.test( a.file.read(String) == "Hello" );
-							writeAndClose(a," World",true);
-							scope.test( a.file.read(String) == "Hello World" );
-						}
-					} );
-
-					var purpleRain = new Date( 1999, 0, 1 );
-					scope.test( purpleRain.getTime() != filea.modified.getTime() );
-					filea.modified = purpleRain;
-					scope.test(purpleRain.getTime() == filea.modified.getTime());
-				}
-			} );
+			var purpleRain = new Date( 1999, 0, 1 );
+			scope.test( purpleRain.getTime() != filea.modified.getTime() );
+			filea.modified = purpleRain;
+			scope.test(purpleRain.getTime() == filea.modified.getTime());
 		]]></script>
 		<script type="application/x.jsapi#tests"><![CDATA[
 			var SCOPE = this;
