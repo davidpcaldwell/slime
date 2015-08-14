@@ -189,9 +189,9 @@ END LICENSE
 								<script type="application/x.jsapi#tests"><![CDATA[
 									var o = {};
 									o.x = 3;
-									test(o.x == 3);
+									verify(o).x.is(3);
 									o.x = 4;
-									test(o.x == 4);
+									verify(o).x.is(4);
 									var setReadOnly = (function() {
 										if ($platform.Object.defineProperty && $platform.Object.defineProperty.setReadOnly) {
 											return $platform.Object.defineProperty.setReadOnly;
@@ -200,10 +200,10 @@ END LICENSE
 									if (setReadOnly) {
 										setReadOnly(o,"x",true);
 										o.x = 5;
-										test(o.x == 4);
+										verify(o).x.is(4);
 										setReadOnly(o,"x",false);
 										o.x = 5;
-										test(o.x == 5);
+										verify(o).x.is(5);
 									}
 								]]></script>
 							</li>

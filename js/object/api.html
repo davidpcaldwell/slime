@@ -197,20 +197,14 @@ END LICENSE
 					If the underlying platform permits the creation of read-only properties, the value cannot be changed.
 				</div>
 				<script type="application/x.jsapi#tests">
-					scenario(new function() {
-						this.name = "undefined";
-
-						this.execute = function(s) {
-							s.test( typeof(module.undefined) == "undefined" );
-							var a = {};
-							s.test( a.a == module.undefined );
-							s.test( a.a === module.undefined );
-							if ($platform.Object.setReadOnly) {
-								module.undefined = true;
-								s.test( typeof(module.undefined) == "undefined" );
-							}
-						}
-					} );
+					test( typeof(module.undefined) == "undefined" );
+					var a = {};
+					test( a.a == module.undefined );
+					test( a.a === module.undefined );
+					if ($platform.Object.setReadOnly) {
+						module.undefined = true;
+						test( typeof(module.undefined) == "undefined" );
+					}
 				</script>
 			</li>
 			<li class="function">
@@ -228,17 +222,11 @@ END LICENSE
 					undefined or there are no arguments.
 				</div>
 				<script type="application/x.jsapi#tests">
-					scenario( new function() {
-						this.name = "defined";
-
-						this.execute = function(s) {
-							var a = { b: "yes", d: "no", e: null };
-							s.test( typeof(module.defined()) == "undefined" );
-							s.test( module.defined(a.c, a.b) == "yes" );
-							s.test( module.defined(a.b, a.e, a.d) == "yes" );
-							s.test( module.defined(a.e, a.d) == null );
-						}
-					});
+					var a = { b: "yes", d: "no", e: null };
+					test( typeof(module.defined()) == "undefined" );
+					test( module.defined(a.c, a.b) == "yes" );
+					test( module.defined(a.b, a.e, a.d) == "yes" );
+					test( module.defined(a.e, a.d) == null );
 				</script>
 			</li>
 			<li class="function">
@@ -261,27 +249,21 @@ END LICENSE
 					The created function.
 				</div>
 				<script type="application/x.jsapi#tests">
-					scenario( new function() {
-						this.name = "constant";
+					var f = new Functions();
 
-						this.execute = function(s) {
-							var f = new Functions();
+					var constantCalculator = module.constant(f.calculator);
+					test( f.calculator.invocations == 0 );
+					test( constantCalculator() == 4 );
+					test( f.calculator.invocations == 1 );
+					test( constantCalculator() == 4 );
+					test( f.calculator.invocations == 1 );
 
-							var constantCalculator = module.constant(f.calculator);
-							s.test( f.calculator.invocations == 0 );
-							s.test( constantCalculator() == 4 );
-							s.test( f.calculator.invocations == 1 );
-							s.test( constantCalculator() == 4 );
-							s.test( f.calculator.invocations == 1 );
-
-							var undefinedConstantCalculator = module.constant(f.undefinedCalculator);
-							s.test( f.undefinedCalculator.invocations == 0 );
-							s.test( typeof(undefinedConstantCalculator()) == "undefined" );
-							s.test( f.undefinedCalculator.invocations == 1 );
-							s.test( typeof(undefinedConstantCalculator()) == "undefined" );
-							s.test( f.undefinedCalculator.invocations == 1 );
-						}
-					} );
+					var undefinedConstantCalculator = module.constant(f.undefinedCalculator);
+					test( f.undefinedCalculator.invocations == 0 );
+					test( typeof(undefinedConstantCalculator()) == "undefined" );
+					test( f.undefinedCalculator.invocations == 1 );
+					test( typeof(undefinedConstantCalculator()) == "undefined" );
+					test( f.undefinedCalculator.invocations == 1 );
 				</script>
 			</li>
 			<li class="function">
@@ -306,28 +288,22 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					if ($platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
-						scenario( new function() {
-							this.name = "lazy";
+						var f = new Functions();
 
-							this.execute = function(s) {
-								var f = new Functions();
+						var math = {};
+						module.lazy(math, "four", f.calculator);
+						test( f.calculator.invocations == 0 );
+						test( math.four == 4 );
+						test( f.calculator.invocations == 1 );
+						test( math.four == 4 );
+						test( f.calculator.invocations == 1 );
 
-								var math = {};
-								module.lazy(math, "four", f.calculator);
-								s.test( f.calculator.invocations == 0 );
-								s.test( math.four == 4 );
-								s.test( f.calculator.invocations == 1 );
-								s.test( math.four == 4 );
-								s.test( f.calculator.invocations == 1 );
-
-								module.lazy(math, "undefined", f.undefinedCalculator);
-								s.test( f.undefinedCalculator.invocations == 0 );
-								s.test( typeof(math.undefined) == "undefined" );
-								s.test( f.undefinedCalculator.invocations == 1 );
-								s.test( typeof(math.undefined) == "undefined" );
-								s.test( f.undefinedCalculator.invocations == 1 );
-							}
-						} );
+						module.lazy(math, "undefined", f.undefinedCalculator);
+						test( f.undefinedCalculator.invocations == 0 );
+						test( typeof(math.undefined) == "undefined" );
+						test( f.undefinedCalculator.invocations == 1 );
+						test( typeof(math.undefined) == "undefined" );
+						test( f.undefinedCalculator.invocations == 1 );
 					}
 				]]></script>
 			</li>
@@ -359,53 +335,47 @@ END LICENSE
 					<div><code>(string)</code> A literal representation of the given value.</div>
 				</div>
 				<script type="application/x.jsapi#tests">
-					scenario(new function() {
-						this.name = "toLiteral";
+					var thaw = function(v) {
+						var s = module.toLiteral(v);
+						var rv;
+						eval("rv = " + s);
+						return rv;
+					}
 
-						var thaw = function(v) {
-							var s = module.toLiteral(v);
-							var rv;
-							eval("rv = " + s);
-							return rv;
-						}
+					var toLiteral = module.toLiteral;
 
-						this.execute = function(s) {
-							var toLiteral = module.toLiteral;
+					test(toLiteral("David") == "\"David\"");
+					test(toLiteral(2) == "2");
+					test(toLiteral(true) == "true");
 
-							s.test(toLiteral("David") == "\"David\"");
-							s.test(toLiteral(2) == "2");
-							s.test(toLiteral(true) == "true");
+					var o = {};
+					var u;
+					o.s = "s";
+					o.u = u;
+					var t = thaw(o);
+					test("s" in t);
+					test(typeof(t.s) != "undefined");
+					test("u" in t);
+					test(typeof(t.u) == "undefined");
 
-							var o = {};
-							var u;
-							o.s = "s";
-							o.u = u;
-							var t = thaw(o);
-							s.test("s" in t);
-							s.test(typeof(t.s) != "undefined");
-							s.test("u" in t);
-							s.test(typeof(t.u) == "undefined");
+					var now = new Date();
+					o = {
+						a: true,
+						b: "David",
+						c: now
+					};
+					t = thaw(o);
+					test(t.a === true);
+					test(t.b == "David");
+					test(t.c.getTime() == now.getTime());
 
-							var now = new Date();
-							o = {
-								a: true,
-								b: "David",
-								c: now
-							};
-							t = thaw(o);
-							s.test(t.a === true);
-							s.test(t.b == "David");
-							s.test(t.c.getTime() == now.getTime());
-
-							o = [1, "David", true, { x: "y" }];
-							t = thaw(o);
-							s.test(t.length == 4);
-							s.test(t[0] == 1);
-							s.test(t[1] == "David");
-							s.test(t[2] === true);
-							s.test(t[3].x == "y");
-						}
-					});
+					o = [1, "David", true, { x: "y" }];
+					t = thaw(o);
+					test(t.length == 4);
+					test(t[0] == 1);
+					test(t[1] == "David");
+					test(t[2] === true);
+					test(t[3].x == "y");
 				</script>
 				<script type="application/x.jsapi#tests">
 					var reference = {};

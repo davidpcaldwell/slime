@@ -103,58 +103,52 @@ END LICENSE
 				var command = jdk.getCommand("java");
 				test(typeof(command) == "object" && command && typeof(command.pathname) == "object");
 			]]></script>
-			<script type="application/x.jsapi#tests">
-				scenario( new function() {
-					var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
-					var dir = filesystem.$unit.temporary(null, { directory: true });
-					var Searchpath = module.Searchpath;
-
-					this.name = "Searchpath";
-
-					this.execute = function(scope) {
-						var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
-						if (typeof(pathelements[0]) == "undefined") throw "No/0";
-						if (typeof(pathelements[1]) == "undefined") throw "No/1";
-						var searchpath = Searchpath(pathelements);
-						scope.test(
-							(
-								searchpath.toString()
-								== (
-									dir.getRelativePath("c").toString()
-									+ String( filesystem.$unit.getSearchpathSeparator() )
-									+ dir.getRelativePath("e").toString()
-								)
+			<div>
+				<script type="application/x.jsapi#initialize">
+					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+					scope.dir = scope.filesystem.$unit.temporary(null, { directory: true });
+					scope.Searchpath = module.Searchpath;
+				</script>
+				<script type="application/x.jsapi#tests">
+					var pathelements = [ dir.getRelativePath("c"), dir.getRelativePath("e") ];
+					if (typeof(pathelements[0]) == "undefined") throw "No/0";
+					if (typeof(pathelements[1]) == "undefined") throw "No/1";
+					var searchpath = Searchpath(pathelements);
+					test(
+						(
+							searchpath.toString()
+							== (
+								dir.getRelativePath("c").toString()
+								+ String( filesystem.$unit.getSearchpathSeparator() )
+								+ dir.getRelativePath("e").toString()
 							)
-							||
-							//	TODO	the below branch is necessary for Mac OS X, which somehow is confusing /var and
-							//			/private/var ... this could be a bug having to do with canonical paths, symlinks, etc.
-							(
-								searchpath.toString()
-								== (
-									String(dir.getRelativePath("c").java.adapt())
-									+ String(filesystem.$unit.getSearchpathSeparator())
-									+ String(dir.getRelativePath("e").java.adapt())
-								)
+						)
+						||
+						//	TODO	the below branch is necessary for Mac OS X, which somehow is confusing /var and
+						//			/private/var ... this could be a bug having to do with canonical paths, symlinks, etc.
+						(
+							searchpath.toString()
+							== (
+								String(dir.getRelativePath("c").java.adapt())
+								+ String(filesystem.$unit.getSearchpathSeparator())
+								+ String(dir.getRelativePath("e").java.adapt())
 							)
-						);
-						if (module.filesystems.cygwin) {
-							scope.scenario( new function() {
-								this.name = "Mixed paths";
-								this.execute = function(scope) {
-									var a = module.filesystems.os.Pathname("C:\\cygwin\\etc");
-									var b = module.filesystems.cygwin.Pathname("/usr/local/bin");
-									var searchpath = module.Searchpath([a,b]);
-									var upath = module.filesystems.cygwin.toUnix(searchpath);
-									var wpath = module.filesystems.cygwin.toWindows(searchpath);
-									scope.test( upath.toString() == "/etc:/usr/local/bin" );
-									scope.test( wpath.toString() == "C:\\cygwin\\etc;C:\\cygwin\\usr\\local\\bin" );
-									scope.test( searchpath.toString() == upath.toString() );
-								}
-							} );
-						}
+						)
+					);
+				</script>
+				<script type="application/x.jsapi#tests">
+					if (module.filesystems.cygwin) {
+						var a = module.filesystems.os.Pathname("C:\\cygwin\\etc");
+						var b = module.filesystems.cygwin.Pathname("/usr/local/bin");
+						var searchpath = module.Searchpath([a,b]);
+						var upath = module.filesystems.cygwin.toUnix(searchpath);
+						var wpath = module.filesystems.cygwin.toWindows(searchpath);
+						test( upath.toString() == "/etc:/usr/local/bin" );
+						test( wpath.toString() == "C:\\cygwin\\etc;C:\\cygwin\\usr\\local\\bin" );
+						test( searchpath.toString() == upath.toString() );
 					}
-				} );
-			</script>
+				</script>
+			</div>
 		</li>
 	</ul>
 </body>
