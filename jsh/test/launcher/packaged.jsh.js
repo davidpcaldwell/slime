@@ -40,11 +40,11 @@ if (parameters.options.scenario) {
 			return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
 		}
 	};
-	var scenario = new jsh.unit.Scenario({
-		composite: true,
-		name: jsh.script.file.pathname.basename,
-		view: views[parameters.options.view]()
+	var view = views[parameters.options.view]();
+	var scenario = new jsh.unit.Suite({
+		name: jsh.script.file.pathname.basename
 	});
+	view.listen(scenario);
 	jsh.shell.echo("Created scenario.");
 	var packaged_JSH_SHELL_CLASSPATH = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath(jsh.script.file.pathname.basename + ".jar");
 	var engine = (jsh.shell.jsh.home.getFile("lib/js.jar")) ? [] : ["-norhino"];
@@ -64,23 +64,24 @@ if (parameters.options.scenario) {
 		}
 	});
 	var separator = String(Packages.java.lang.System.getProperty("line.separator"));
-	scenario.add({ scenario: new function() {
-		this.name = "unconfigured: " + packaged_JSH_SHELL_CLASSPATH;
+	scenario.scenario("unconfigured", {
+		create: function() {
+			this.name = "unconfigured: " + packaged_JSH_SHELL_CLASSPATH;
 
-		this.execute = function(scope) {
-			var unconfigured = jsh.shell.java({
-				jar: packaged_JSH_SHELL_CLASSPATH.file,
-				stdio: {
-					output: String
-				},
-				evaluate: function(result) {
-					return result.stdio.output.split(separator)[0];
-				}
-			});
-			var verify = new jsh.unit.Verify(scope);
-			verify(unconfigured).is(String(packaged_JSH_SHELL_CLASSPATH.java.adapt().toURI().toString()));
-		};
-	}});
+			this.execute = function(scope,verify) {
+				var unconfigured = jsh.shell.java({
+					jar: packaged_JSH_SHELL_CLASSPATH.file,
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
+						return result.stdio.output.split(separator)[0];
+					}
+				});
+				verify(unconfigured).is(String(packaged_JSH_SHELL_CLASSPATH.java.adapt().toURI().toString()));
+			};
+		}
+	});
 //	testCommandOutput(packaged_JSH_SHELL_CLASSPATH, function(options) {
 //		var outputUri = options.output.split(String(Packages.java.lang.System.getProperty("line.separator")))[0];
 //		var _outputFile = new Packages.java.io.File(new Packages.java.net.URI(outputUri));

@@ -152,13 +152,20 @@ if (!parameters.options.notest) {
 	try {
 		UNIT_TESTS_COMPLETED(tests.run());
 	} catch (e) {
-		jsh.shell.echo("Error thrown.");
+		var console = function(s) {
+			jsh.shell.echo(s, { stream: jsh.shell.stdio.error });
+		};
+		console("Error thrown.");
 		if (e.code) {
-			jsh.shell.echo("Code: " + e.code);
+			console("Code: " + e.code);
+		}
+		if (e.stack) {
+			console(e);
+			console(e.stack);
 		}
 		if (e.cause) {
-			jsh.shell.echo("Cause: " + e.cause.message);
-			jsh.shell.echo(e.stack);
+			console("Cause: " + e.cause.message);
+			console(e.stack);
 		}
 		throw e;
 	}

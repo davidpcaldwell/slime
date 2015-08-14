@@ -563,7 +563,7 @@ var Scope = function(o) {
 			}
 		}
 	}
-}
+};
 
 var Scenario = function(o) {
 	if (!o) {
@@ -676,13 +676,16 @@ var Scenario = function(o) {
 		return "Scenario: " + this.name;
 	}
 };
-
-$exports.Scenario = Scenario;
-if ($context.REMOVE_OLD) {
-	$exports.Scenario = function(p) {
-		throw new Error("Removed obsolete functionality.");
-	}
-}
+var old = {
+	Scenario: $api.deprecate(Scenario)
+};
+//$exports.Scenario = Scenario;
+//if ($context.REMOVE_OLD) {
+//	$exports.Scenario = function(p) {
+//		throw new Error("Removed obsolete functionality.");
+//	}
+//}
+$exports.Scenario = {};
 
 (function() {
 	var copy = function(o) {
@@ -700,30 +703,30 @@ if ($context.REMOVE_OLD) {
 
 		var name = (this.name) ? this.name : context.id;
 
-		if (o.old) {
-			if (!$context.REMOVE_OLD) {
-				this.run = function(scope) {
-					var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
-					var ctor = {};
-					for (var x in o.old) {
-						ctor[x] = o.old[x];
-					}
-					ctor.events = context.events;
-					var old = (o.old.run) ? o.old : new $exports.Scenario(ctor);
-					return old.run(vscope);
-				}
-			} else {
-				this.run = function(scope) {
-					throw new Error("Removed obsolete functionality.");
-				}
-			}
-		} else {
+//		if (o.old) {
+//			if (!$context.REMOVE_OLD) {
+//				this.run = function(scope) {
+//					var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
+//					var ctor = {};
+//					for (var x in o.old) {
+//						ctor[x] = o.old[x];
+//					}
+//					ctor.events = context.events;
+//					var old = (o.old.run) ? o.old : new $exports.Scenario(ctor);
+//					return old.run(vscope);
+//				}
+//			} else {
+//				this.run = function(scope) {
+//					throw new Error("Removed obsolete functionality.");
+//				}
+//			}
+//		} else {
 			this.run = function(scope) {
 				var EVENT = { id: context.id, name: name }
 				context.events.fire("scenario", { start: EVENT });
 				var local = copy(scope);
 				if (this.initialize) this.initialize.call(this,local);
-				var vscope = new Scope({ events: context.events, Scenario: $exports.Scenario });
+				var vscope = new Scope({ events: context.events, Scenario: old.Scenario });
 				var verify = new Verify(vscope);
 				verify.test = function() {
 					return vscope.test.apply(this,arguments);
@@ -740,7 +743,7 @@ if ($context.REMOVE_OLD) {
 				context.events.fire("scenario", { end: EVENT, success: vscope.success });
 				return vscope.success;
 			}
-		}
+//		}
 	}
 
 	var Suite = function Suite(c,context) {
@@ -794,21 +797,21 @@ if ($context.REMOVE_OLD) {
 			}
 		}
 
-		if (c && c.old) {
-			if (!$context.REMOVE_OLD) {
-				this.add = function(p) {
-					if (!arguments.callee.count) arguments.callee.count = 0;
-					arguments.callee.count++;
-					if (p.scenario) {
-						this.scenario(String(arguments.callee.count), { old: p.scenario });
-					}
-				}
-			} else {
-				this.add = function(p) {
-					throw new Error("Removed obsolete functionality.");
-				}
-			}
-		}
+//		if (c && c.old) {
+//			if (!$context.REMOVE_OLD) {
+//				this.add = function(p) {
+//					if (!arguments.callee.count) arguments.callee.count = 0;
+//					arguments.callee.count++;
+//					if (p.scenario) {
+//						this.scenario(String(arguments.callee.count), { old: p.scenario });
+//					}
+//				}
+//			} else {
+//				this.add = function(p) {
+//					throw new Error("Removed obsolete functionality.");
+//				}
+//			}
+//		}
 
 		if (c && c.create) {
 			c.create.call(this);

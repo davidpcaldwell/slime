@@ -21,11 +21,9 @@ jsh.unit.integration({
 	scenario: function(parameters) {
 		var max = Packages.java.lang.Runtime.getRuntime().maxMemory();
 		var half = max / 2;
-		this.add({
-			scenario: {
-				execute: function(scope) {
-					//	TODO	add issue: unforked jsh.shell.jsh with stdio.output: String crashes. Would not want that here
-					//			anyway, though
+		this.scenario("-Xmx", {
+			create: function() {
+				this.execute = function(scope,verify) {
 					var forked = jsh.shell.jsh({
 						fork: true,
 						vmarguments: ["-Xmx"+half.toFixed(0)],
@@ -38,14 +36,12 @@ jsh.unit.integration({
 						}
 					});
 					jsh.shell.echo("half = " + half + " forked=" + forked, { stream: jsh.shell.stdio.error });
-					var verify = new jsh.unit.Verify(scope);
 					verify({},"Subprocess").evaluate(function() {
 						return forked < half;
 					}).is(true);
 				}
 			}
-		})
-
+		});
 	},
 	run: function(parameters) {
 		jsh.shell.echo(Packages.java.lang.Runtime.getRuntime().maxMemory());

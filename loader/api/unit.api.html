@@ -186,8 +186,7 @@ END LICENSE
 				v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
 			</script>
 			<script type="application/x.jsapi#tests">
-				var top = new module.Scenario({
-					composite: true,
+				var top = new module.Suite({
 					name: "top"
 				});
 				var starts = [];
@@ -206,19 +205,21 @@ END LICENSE
 					//	jsh.shell.echo("Test: " + e.detail.message);
 					tests.push(e.detail);
 				});
-				var child = new function() {
-					this.name = "child";
-					this.execute = function(scope) {
-						scope.test(function() {
-							return {
-								success: true,
-								message: "Hello, World!"
-							}
-						});
+				top.scenario("child", {
+					create: function() {
+						this.name = "child";
+
+						this.execute = function(scope,verify) {
+							verify.test(function() {
+								return {
+									success: true,
+									message: "Hello, World!"
+								}
+							});
+						}
 					}
-				};
-				top.add({ scenario: child });
-				top.run({});
+				});
+				top.run();
 				verify(starts).length.is(2);
 			</script>
 		</div>
