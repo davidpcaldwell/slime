@@ -417,16 +417,10 @@ END LICENSE
 					UPPERCASE names.
 				</span>
 				<script type="application/x.jsapi#tests">
-					scenario( new function() {
-						this.name = "System environment";
+					var environment = module.environment;
 
-						this.execute = function(scope) {
-							var environment = module.environment;
-
-							scope.test( typeof(environment.PATH) != "undefined" );
-							scope.test( typeof(environment.ZZFF) == "undefined" );
-						}
-					} );
+					test( typeof(environment.PATH) != "undefined" );
+					test( typeof(environment.ZZFF) == "undefined" );
 				</script>
 			</li>
 			<li class="value" jsapi:id="properties">
