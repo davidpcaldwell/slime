@@ -1163,24 +1163,27 @@ END LICENSE
 			filea.modified = purpleRain;
 			scope.test(purpleRain.getTime() == filea.modified.getTime());
 		]]></script>
-		<script type="application/x.jsapi#tests"><![CDATA[
-			var SCOPE = this;
+		<div>
+			<script type="application/x.jsapi#initialize"><![CDATA[
+				var createFile = function(file,length) {
+					var stream = new Packages.java.io.FileOutputStream(file);
+					if (length) {
+						for (var i=0; i<length; i++) {
+							stream.write(0);
+						}
+					}
+					stream.close();
+				}
 
-			var createTests = function(filesystem) {
+				scope.createFile = createFile;
+				scope.UNIX = (scope.filesystem.$unit.getPathnameSeparator() == "/");
+
+				var filesystem = scope.filesystem;
+
 				var _scenario = new function() {
 					var tmpdir;
 					var UNIX;
 					var hostdir;
-
-					var createFile = function(file,length) {
-						var stream = new Packages.java.io.FileOutputStream(file);
-						if (length) {
-							for (var i=0; i<length; i++) {
-								stream.write(0);
-							}
-						}
-						stream.close();
-					}
 
 					this.name = "Filesystem tests; filesystem = " + filesystem;
 
@@ -1191,45 +1194,9 @@ END LICENSE
 						} else {
 							module.filesystem = filesystem;
 						}
-						UNIX = (filesystem.$unit.getPathnameSeparator() == "/");
 					}
 
 					this.execute = function(scope) {
-						scope.scenario( new function() {
-							this.name = "Path tests";
-
-							this.initialize = function() {
-							}
-
-							this.execute = function(scope) {
-								var Pathname = module.Pathname;
-								if (UNIX) {
-									scope.test( Pathname("/foo").parent.toString() == "/" );
-									scope.test( Pathname("/foo/bar").parent.toString() == "/foo" );
-									scope.test( Pathname("/").parent == null );
-									scope.test( Pathname("/").directory.list()[0].pathname.toString().substring(0,2) != "//" );
-									scope.test( Pathname("a").toString().length != 1 );
-								} else {
-									scope.test( Pathname("C:\\cygwin").parent.toString() == "C:\\" );
-									scope.test( Pathname("C:\\cygwin\\tmp").parent.toString() == "C:\\cygwin" );
-									scope.test( Pathname("C:\\").parent == null );
-								}
-
-
-								if (UNIX) {
-									scope.test( Pathname("/home/inonit").basename == "inonit" );
-									scope.test( Pathname("/home").basename == "home" );
-									scope.test( Pathname("/").basename == "/" );
-								} else {
-									scope.test( Pathname("C:\\cygwin\\tmp").basename == "tmp" );
-									scope.test( Pathname("C:\\cygwin").basename == "cygwin" );
-									scope.test( Pathname("C:\\").basename == "C:\\" );
-								}
-							}
-						} );
-
-						var dir;
-
 						scope.scenario( new function() {
 							this.name = "File tests";
 
@@ -1267,15 +1234,50 @@ END LICENSE
 						} );
 					}
 				}
-				scenario(_scenario);
-			}
+			]]></script>
+			<script type="application/x.jsapi#initialize"><![CDATA[
+				scope.filesystemTests = function(fs,verify) {
+					var Pathname = fs.Pathname;
+					var test = function() {
+						verify.test.apply(this,arguments);
+					};
+					if (scope.UNIX) {
+						test( Pathname("/foo").parent.toString() == "/" );
+						test( Pathname("/foo/bar").parent.toString() == "/foo" );
+						test( Pathname("/").parent == null );
+						test( Pathname("/").directory.list()[0].pathname.toString().substring(0,2) != "//" );
+						test( Pathname("a").toString().length != 1 );
+					} else {
+						test( Pathname("C:\\cygwin").parent.toString() == "C:\\" );
+						test( Pathname("C:\\cygwin\\tmp").parent.toString() == "C:\\cygwin" );
+						test( Pathname("C:\\").parent == null );
+					}
 
-			if (module.filesystems.cygwin) {
-				createTests(module.filesystems.cygwin);
-			} else {
-				createTests(module.filesystems.os);
-			}
-		]]></script>
+					if (scope.UNIX) {
+						test( Pathname("/home/inonit").basename == "inonit" );
+						test( Pathname("/home").basename == "home" );
+						test( Pathname("/").basename == "/" );
+					} else {
+						test( Pathname("C:\\cygwin\\tmp").basename == "tmp" );
+						test( Pathname("C:\\cygwin").basename == "cygwin" );
+						test( Pathname("C:\\").basename == "C:\\" );
+					}
+				}
+			]]></script>
+			<script type="application/x.jsapi#tests"><![CDATA[
+	//			var SCOPE = this;
+
+	//			var createTests = function(filesystem) {
+	//				scenario(_scenario);
+	//			}
+
+				if (module.filesystems.cygwin) {
+					filesystemTests(module.filesystems.cygwin,verify);
+				} else {
+					filesystemTests(module.filesystems.os,verify);
+				}
+			]]></script>
+		</div>
 		<script type="application/x.jsapi#initialize">
 			var hostdir = new Packages.java.io.File(scope.$jsapi.java.io.newTemporaryDirectory(), "streamtests");
 			hostdir.mkdirs();
