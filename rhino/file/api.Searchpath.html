@@ -105,6 +105,7 @@ END LICENSE
 			]]></script>
 			<div>
 				<script type="application/x.jsapi#initialize">
+					var module = scope.module;
 					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 					scope.dir = scope.filesystem.$unit.temporary(null, { directory: true });
 					scope.Searchpath = module.Searchpath;

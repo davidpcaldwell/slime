@@ -178,12 +178,18 @@ plugin({
 						type: e.type,
 						detail: e.detail
 					};
+
+					var errordata = function recurse(e) {
+						return {
+							name: e.name,
+							message: e.message,
+							stack: e.stack,
+							code: e.code,
+							cause: (e.cause) ? recurse(e.cause) : null
+						};
+					}
 					if (json.detail.error) {
-						json.detail.error = {
-							name: json.detail.error.name,
-							message: json.detail.error.message,
-							stack: json.detail.error.stack
-						}
+						json.detail.error = errordata(json.detail.error);
 					}
 					if (send) {
 						send(json);

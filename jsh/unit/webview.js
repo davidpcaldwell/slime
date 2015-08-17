@@ -29,8 +29,17 @@
 		var line = function(p) {
 			var rv = document.createElement("div");
 			if (p.text) {
-				var text = document.createTextNode(p.text);
-				rv.appendChild(text);
+				var lines = p.text.split("\n");
+				for (var i=0; i<lines.length; i++) {
+					if (i != 0) {
+						var br = document.createElement("br");
+						rv.appendChild(br);
+					}
+					var line = lines[i].replace(/\t/g, "    ").replace(/ /g, String.fromCharCode(160));
+					rv.appendChild(document.createTextNode(line));
+				}
+//				var text = document.createTextNode(p.text);
+//				rv.appendChild(text);
 			}
 			if (p.className) {
 				rv.className = p.className;
@@ -59,11 +68,20 @@
 			var result = (message.detail.success) ? "Passed" : "Failed";
 			if (message.detail.error) {
 				result = "Error";
+			}
+			var text = result + ": " + message.detail.message;
+			if (message.detail.error) {
 				if (message.detail.error.stack) {
-					message.detail.message += " " + message.detail.error.stack;
+					text += " " + message.detail.error.stack;
+				}
+				if (message.detail.error.code) {
+					text += " " +  message.detail.error.code;
+				}
+				if (message.detail.error.cause && message.detail.error.cause.stack) {
+					text += " " + message.detail.error.cause.stack;
 				}
 			}
-			current.appendChild(line({ text: result + ": " + message.detail.message, success: message.detail.success, className: "test" }));
+			current.appendChild(line({ text: text, success: message.detail.success, className: "test" }));
 		}
 	});
 })();

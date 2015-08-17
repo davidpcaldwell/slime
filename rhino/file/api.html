@@ -19,6 +19,56 @@ END LICENSE
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
+	<script type="application/x.jsapi#initialize"><![CDATA[
+		var $Context = function(p) {
+			this.api = arguments.callee.api;
+			if (jsh.shell.environment.PATHEXT) {
+				this.pathext = jsh.shell.environment.PATHEXT.split(";");
+			}
+			this.$pwd = String(jsh.shell.properties.object.user.dir);
+			this.$rhino = jsh.$jsapi.$rhino;
+			this.addFinalizer = jsh.loader.addFinalizer;
+
+			if (p && p.cygwin) {
+				//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+				var System = Packages.java.lang.System;
+				this.cygwin = {
+					root: String( System.getProperty("cygwin.root") )
+				};
+				if (System.getProperty("cygwin.paths")) {
+					//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+					//	the SDK server
+					//	TODO	check this
+					this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+				}
+			}
+
+			this.$Context = arguments.callee;
+		}
+		$Context.api = new function() {
+			this.js = $jsapi.loader.module("../../js/object/");
+			var java = $jsapi.loader.module("../../rhino/host/", {
+				$rhino: jsh.$jsapi.$rhino
+			});
+			this.java = java;
+			this.io = $jsapi.loader.module("../../rhino/io/", {
+				$java: new Packages.inonit.script.runtime.io.Streams()
+				,$rhino: jsh.$jsapi.$rhino
+				,api: {
+					java: java,
+					mime: $jsapi.loader.module("../../js/mime/", {})
+				}
+			});
+		}
+
+// 		var rv = [ new $Context() ];
+// 		if (Packages.java.lang.System.getProperty("cygwin.root")) {
+// 			rv.push(new $Context({ cygwin: true }));
+// 		}
+// 		return rv;
+		scope.context = new $Context();
+		scope.module = $jsapi.loader.module("module.js", scope.context);
+	]]></script>
 	<div>Provides access to filesystems.</div>
 	<div>
 		<h1>Context</h1>
@@ -1051,9 +1101,10 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#initialize">
 			var _context = new function() {
+				var module = scope.module;
 				this.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				this.dir = scope.newTemporaryDirectory(this.filesystem);
-				this.module = { Streams: context.$Context.api.io.Streams };
+				this.module = { Streams: scope.context.$Context.api.io.Streams };
 			}
 			if (!_context.dir) throw "Missing context.dir";
 			var filesystem = _context.filesystem;
@@ -1305,6 +1356,7 @@ END LICENSE
 		<div jsapi:id="softlink">
 			//	TODO	softlinks could be much more thoroughly tested; many scenarios not covered including move, copy
 			<script type="application/x.jsapi#initialize">
+				var module = scope.module;
 				var filesystem = scope.filesystem;
 				var createFile = scope.createFile;
 				var createDirectory = scope.createDirectory;

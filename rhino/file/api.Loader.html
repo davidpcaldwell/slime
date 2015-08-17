@@ -46,7 +46,7 @@ END LICENSE
 				<span class="type"><a href="../io/api.html#types.Loader">Loader</a></span>
 			</div>
 			<script type="application/x.jsapi#initialize">
-				scope.loader = new module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+				scope.loader = new scope.module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
 			</script>
 			<script type="application/x.jsapi#tests">
 				test(typeof(loader.resource) == "function");
