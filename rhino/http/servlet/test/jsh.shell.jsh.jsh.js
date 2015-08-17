@@ -18,10 +18,9 @@ if (!jsh.unit || !jsh.unit.integration) {
 }
 jsh.unit.integration({
 	scenario: function() {
-		this.add({
-			scenario: new function() {
-				this.execute = function(scope) {
-					var verify = new jsh.unit.Verify(scope);
+		this.scenario("scenario", {
+			create: function() {
+				this.execute = function(scope,verify) {
 					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					directory.getRelativePath("a").write("a", { append: false });
 					var tomcat = jsh.httpd.Tomcat.serve({
@@ -40,6 +39,6 @@ jsh.unit.integration({
 					verify(response).status.code.is(404);
 				}
 			}
-		})
+		});
 	}
 })

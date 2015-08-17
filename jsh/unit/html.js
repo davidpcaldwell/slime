@@ -242,7 +242,7 @@ var Scope = function(suite,environment) {
 				var subscope = new Scope(new Suite(suite.getRelativePath(path)));
 				subscope.module = p.module;
 				//	TODO	we wish we could set context but we may not be able to do that
-				var scenario = tests.getScenario(subscope);
+				var scenario = tests.getSuite(subscope);
 				return scenario;
 //							throw new Error("Unimplemented: $jsapi.test");
 			}

@@ -709,6 +709,15 @@ $exports.Scenario = {};
 					if (o.destroy) o.destroy();
 				};
 			}
+			verify.suite = function(o) {
+				var suite = new $exports.Suite(o);
+				var fire = (function(e) {
+					this.fire(e.type,e.detail);
+				}).bind(this);
+				suite.listeners.add("scenario",fire);
+				suite.listeners.add("test",fire);
+				suite.run();
+			}
 			verify.fire = function(type,detail) {
 				vscope.fire(type,detail);
 			}
