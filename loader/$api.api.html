@@ -330,13 +330,16 @@ END LICENSE
 							var yes = expectWarn(true);
 							var z = x3.foo;
 							yes.evaluate();
-							test(z > 0, "Getter-only value increasing.");
-							test(x3.foo > z, "Getter-only value increasing.");
+							verify(z > 0, "Getter-only value increasing").is(true);
+							verify(x3, "Getter-only value increasing").evaluate(function() { return this.foo > z; }).is(true);
+//							test(z > 0, "Getter-only value increasing.");
+//							test(x3.foo > z, "Getter-only value increasing.");
 
 							var yes = expectWarn(true);
 							x3.foo = 11;
 							yes.evaluate();
-							test(x3.foo != 11, "Cannot re-set once getter defined.");
+							verify(x3).foo.is.not(11);
+//							test(x3.foo != 11, "Cannot re-set once getter defined.");
 
 							x3.__defineGetter__("foo", function() {
 								return 42;
@@ -344,7 +347,8 @@ END LICENSE
 							var yes = expectWarn(false);
 							var z = x3.foo;
 							yes.evaluate();
-							test(x3.foo == 42, "Value is correct when getter redefined.");
+							verify(x3).foo.is(42);
+//							test(x3.foo == 42, "Value is correct when getter redefined.");
 
 							var x4 = new function() {
 								var foo = 21;
@@ -363,13 +367,16 @@ END LICENSE
 							var yes = expectWarn(true);
 							var z = x4.foo;
 							yes.evaluate();
-							test(z == 21);
-							test(x4.foo == 21);
+							verify(z).is(21);
+							verify(x4).foo.is(21);
+//							test(z == 21);
+//							test(x4.foo == 21);
 
 							var yes = expectWarn(true);
 							x4.foo = 14;
 							yes.evaluate();
-							test(x4.foo == 14);
+							verify(x4).foo.is(14);
+//							test(x4.foo == 14);
 						}
 
 						var x5 = new function() {
@@ -437,7 +444,6 @@ END LICENSE
 
 						var BC = api.Constructor.decorated(B,C);
 						var ABC2 = api.Constructor.decorated(A,BC);
-						debugger;
 						var abc2 = new ABC2();
 						verify(abc2.a).is(1);
 						verify(abc2.b).is(2);

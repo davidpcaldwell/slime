@@ -200,13 +200,17 @@ END LICENSE
 					If the underlying platform permits the creation of read-only properties, the value cannot be changed.
 				</div>
 				<script type="application/x.jsapi#tests">
-					test( typeof(module.undefined) == "undefined" );
+					verify(module).undefined.is(void(0));
+//					test( typeof(module.undefined) == "undefined" );
 					var a = {};
-					test( a.a == module.undefined );
-					test( a.a === module.undefined );
+					verify(a).evaluate(function() { return this.a == module.undefined; }).is(true);
+					verify(a).evaluate(function() { return this.a === module.undefined; }).is(true);
+//					test( a.a == module.undefined );
+//					test( a.a === module.undefined );
 					if ($platform.Object.setReadOnly) {
 						module.undefined = true;
-						test( typeof(module.undefined) == "undefined" );
+						verify(module).undefined.is(void(0));
+//						test( typeof(module.undefined) == "undefined" );
 					}
 				</script>
 			</li>
@@ -226,10 +230,14 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#tests">
 					var a = { b: "yes", d: "no", e: null };
-					test( typeof(module.defined()) == "undefined" );
-					test( module.defined(a.c, a.b) == "yes" );
-					test( module.defined(a.b, a.e, a.d) == "yes" );
-					test( module.defined(a.e, a.d) == null );
+					verify(module).defined().is(void(0));
+//					test( typeof(module.defined()) == "undefined" );
+					verify(module).defined(a.c, a.b).is("yes");
+//					test( module.defined(a.c, a.b) == "yes" );
+					verify(module).defined(a.b, a.e, a.d).is("yes");
+//					test( module.defined(a.b, a.e, a.d) == "yes" );
+					verify(module).defined(a.e, a.d).is(null);
+//					test( module.defined(a.e, a.d) == null );
 				</script>
 			</li>
 			<li class="function">
@@ -255,11 +263,16 @@ END LICENSE
 					var f = new Functions();
 
 					var constantCalculator = module.constant(f.calculator);
-					test( f.calculator.invocations == 0 );
-					test( constantCalculator() == 4 );
-					test( f.calculator.invocations == 1 );
-					test( constantCalculator() == 4 );
-					test( f.calculator.invocations == 1 );
+					verify(f.calculator.invocations).is(0);
+//					test( f.calculator.invocations == 0 );
+					verify(constantCalculator()).is(4);
+//					test( constantCalculator() == 4 );
+					verify(f.calculator.invocations).is(1);
+//					test( f.calculator.invocations == 1 );
+					verify(constantCalculator()).is(4);
+//					test( constantCalculator() == 4 );
+					verify(f.calculator.invocations).is(1);
+//					test( f.calculator.invocations == 1 );
 
 					var undefinedConstantCalculator = module.constant(f.undefinedCalculator);
 					test( f.undefinedCalculator.invocations == 0 );
