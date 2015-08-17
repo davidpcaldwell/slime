@@ -18,13 +18,15 @@ END LICENSE
 	<script type="text/javascript" src="../../../../../loader/api/api.js"></script>
 </head>
 <body>
+	<script type="application/x.jsapi#initialize">
+		scope.Context = function(p) {
+			this.integer = p;
+		};
+		scope.context = new scope.Context(1);
+		scope.module = $jsapi.loader.module("module.js", scope.context);
+	</script>
 	<div>
 		<h1>Context</h1>
-		<script type="application/x.jsapi#initialize">
-			scope.Context = function(p) {
-				this.integer = p;
-			}
-		</script>
 		<script type="application/x.jsapi#context">
 			(function() {
 				return new Context(1);

@@ -20,6 +20,9 @@ END LICENSE
 		<script src="api.js"></script>
 	</head>
 	<body jsapi:id="top">
+		<script type="application/x.jsapi#initialize">
+			scope.module = $jsapi.loader.module("unit.js");
+		</script>
 		<div>__DESCRIPTION__</div>
 		<!--	TODO	investigate $context.asynchronous	-->
 		<!--

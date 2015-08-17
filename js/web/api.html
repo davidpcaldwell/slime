@@ -20,6 +20,26 @@ END LICENSE
 	<script src="../../loader/api/api.js"></script>
 </head>
 <body>
+	<script type="application/x.jsapi#initialize">
+		var context = (function() {
+			var global = (function() {
+				return this;
+			})();
+			if (global == global.window) {
+				return {
+					escaper: {
+						encode: window.escape,
+						decode: window.unescape
+					}
+				};
+			}
+			if (global.jsh) {
+				return $jsapi.loader.file("context.java.js");
+			}
+		})();
+
+		scope.module = $jsapi.loader.module("module.js", context);
+	</script>
 	<div>__DESCRIPTION__</div>
 	<div class="type">
 		<a class="type" name="types.pair">pair</a>

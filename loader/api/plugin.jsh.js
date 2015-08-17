@@ -17,6 +17,8 @@ plugin({
 			REMOVE_OLD: Packages.java.lang.System.getenv("TMP_UNIT_REMOVE_OLD")
 		});
 		jsh.unit.html = $loader.module("api.html.js", new function() {
+			this.REMOVE_OLD = Packages.java.lang.System.getenv("TMP_UNIT_REMOVE_OLD");
+
 			var seq = 0;
 
 			this.Verify = jsh.unit.Verify;

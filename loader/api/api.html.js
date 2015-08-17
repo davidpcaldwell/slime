@@ -222,7 +222,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		return element.localName == "div" && element.getAttribute("class") == "name";
 	}
 
-	this.getContexts = function(scope) {
+	if (!$context.REMOVE_OLD) this.getContexts = function(scope) {
 		var contextScripts = getDescendantScripts(html.top,"context");
 
 		var contexts = [];
