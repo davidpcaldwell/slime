@@ -84,7 +84,7 @@ END LICENSE
 					})();
 
 					(function() {
-						var base = $jsapi.newTemporaryDirectory();
+						var base = $jsapi.file.newTemporaryDirectory();
 						tomcat.setPort(port);
 						tomcat.setBaseDir(base);
 						var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());

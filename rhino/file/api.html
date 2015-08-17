@@ -132,7 +132,7 @@ END LICENSE
 					scope.filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 				}
 
-				//	Although this is equivalent to $jsapi.newTemporaryDirectory(), we use a separate copy here because we want the
+				//	Although this is equivalent to $jsapi.file.newTemporaryDirectory(), we use a separate copy here because we want the
 				//	calls to go to the module being tested, not the module executing the test environment
 				this.newTemporaryDirectory = function() {
 					var $dir = scope.$jsapi.java.io.newTemporaryDirectory();
@@ -247,7 +247,7 @@ END LICENSE
 								<span>The searchpath represented by the given string.</span>
 							</div>
 							<script type="application/x.jsapi#tests">
-								var array = [$jsapi.newTemporaryDirectory().pathname, $jsapi.newTemporaryDirectory().pathname];
+								var array = [$jsapi.file.newTemporaryDirectory().pathname, $jsapi.file.newTemporaryDirectory().pathname];
 								var searchpath = new filesystem.Searchpath(array);
 								var searchpathstring = searchpath.toString();
 								var parsed = filesystem.Searchpath.parse(searchpathstring);
@@ -1101,7 +1101,7 @@ END LICENSE
 			test(dir.getRelativePath("toDelete.d").directory == null);
 		]]></script>
 		<script type="application/x.jsapi#tests"><![CDATA[
-			var inPlace = $jsapi.disableBreakOnExceptions(function(ifExists) {
+			var inPlace = $jsapi.debug.disableBreakOnExceptions(function(ifExists) {
 				return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
 			});
 			var created = inPlace();

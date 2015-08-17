@@ -212,6 +212,7 @@ var Scope = function(suite,environment) {
 	};
 
 	this.$jsapi = {
+		environment: environment,
 		loader: {
 			module: function(name,context,target) {
 				return jsh.loader.module(suite.getRelativePath(name),context,target);
@@ -247,13 +248,16 @@ var Scope = function(suite,environment) {
 //							throw new Error("Unimplemented: $jsapi.test");
 			}
 		},
-		newTemporaryDirectory: function() {
-			return jsh.shell.TMPDIR.createTemporary({ directory: true });
+		debug: {
+			disableBreakOnExceptions: function(f) {
+				return jsh.debug.disableBreakOnExceptionsFor(f);
+			}
 		},
-		disableBreakOnExceptions: function(f) {
-			return jsh.debug.disableBreakOnExceptionsFor(f);
+		file: {
+			newTemporaryDirectory: function() {
+				return jsh.shell.TMPDIR.createTemporary({ directory: true });
+			}
 		},
-		environment: environment,
 		java: {
 			loader: jsh.$jsapi.java,
 			io: {

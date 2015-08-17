@@ -128,7 +128,7 @@ END LICENSE
 					}
 				};
 				var createHg = function() {
-					var rv = scope.module.init(scope.$jsapi.newTemporaryDirectory());
+					var rv = scope.module.init(scope.$jsapi.file.newTemporaryDirectory());
 					module.unit.Repository.call(rv);
 					return rv;
 				}
@@ -197,9 +197,9 @@ END LICENSE
 					<script type="application/x.jsapi#tests">
 						//	TODO	add test for pathname scenario
 						if (!$jsapi.environment.hgbug) {
-							var b = a.clone($jsapi.newTemporaryDirectory());
-							var c = a.clone($jsapi.newTemporaryDirectory().pathname);
-							var to = $jsapi.newTemporaryDirectory().pathname;
+							var b = a.clone($jsapi.file.newTemporaryDirectory());
+							var c = a.clone($jsapi.file.newTemporaryDirectory().pathname);
+							var to = $jsapi.file.newTemporaryDirectory().pathname;
 							to.directory.remove();
 							test(!to.directory);
 							var d = a.clone(to);
@@ -238,7 +238,7 @@ END LICENSE
 						local.directory.getRelativePath("a").write("1\n", { append: false });
 						local.commit({ addremove: true, message: "a:1" });
 						var id1 = local.identify();
-						var copy = local.clone($jsapi.newTemporaryDirectory());
+						var copy = local.clone($jsapi.file.newTemporaryDirectory());
 						local.directory.getRelativePath("b").write("1\n", { append: false });
 						local.commit({ addremove: true, message: "b:1" });
 						copy.pull(local);
@@ -281,10 +281,10 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 					<script type="application/x.jsapi#tests">
-						var repository = module.init($jsapi.newTemporaryDirectory());
+						var repository = module.init($jsapi.file.newTemporaryDirectory());
 						repository.directory.getRelativePath("baz").write("baz", { append: false });
 						repository.commit({ addremove: true, message: "baz" });
-						var other = repository.clone($jsapi.newTemporaryDirectory());
+						var other = repository.clone($jsapi.file.newTemporaryDirectory());
 						repository.directory.getRelativePath("foo").write("foo", { append: false });
 						repository.commit({ addremove: true, message: "foo" });
 						other.directory.getRelativePath("bar").write("bar", { append: false });
@@ -305,8 +305,8 @@ END LICENSE
 						<a href="#types.Repository">Repository</a> represented by the path.
 					</span>
 					<script type="application/x.jsapi#tests">
-						var repository = module.init($jsapi.newTemporaryDirectory());
-						var other = repository.clone($jsapi.newTemporaryDirectory());
+						var repository = module.init($jsapi.file.newTemporaryDirectory());
+						var other = repository.clone($jsapi.file.newTemporaryDirectory());
 						test(Boolean(other.paths["default"].directory));
 						test(other.paths["default"].directory.toString() == repository.directory.toString());
 					</script>
@@ -346,8 +346,8 @@ END LICENSE
 					</div>
 					<script type="application/x.jsapi#tests">
 						if (!$jsapi.environment.hgbug) {
-							var first = a.clone($jsapi.newTemporaryDirectory());
-							var second = first.clone($jsapi.newTemporaryDirectory());
+							var first = a.clone($jsapi.file.newTemporaryDirectory());
+							var second = first.clone($jsapi.file.newTemporaryDirectory());
 							test(second.outgoing(first).length == 0);
 							second.directory.getRelativePath("hello.txt").write("Hello");
 							test(second.outgoing(first).length == 0);
@@ -408,7 +408,7 @@ END LICENSE
 						parent.bookmarks({ name: "local" });
 						parent.unit.editFile({ path: "a", content: "2" });
 						parent.commit({ message: "2" });
-						var child = parent.unit.clone($jsapi.newTemporaryDirectory());
+						var child = parent.unit.clone($jsapi.file.newTemporaryDirectory());
 						test(child.unit.readFile("a") == "1");
 						//	TODO	this kind of access of bookmark by name is not documented
 						test(!child.bookmarks()["@"].active);
@@ -419,7 +419,7 @@ END LICENSE
 						parent.unit.createFile({ path: "a", content: "1", add: true });
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
-						var child = parent.unit.clone($jsapi.newTemporaryDirectory());
+						var child = parent.unit.clone($jsapi.file.newTemporaryDirectory());
 						test(Boolean(child.bookmarks()["@"]));
 						test(!child.bookmarks()["@"].active);
 						test(!Boolean(child.bookmarks()["local"]));
@@ -436,7 +436,7 @@ END LICENSE
 						parent.unit.createFile({ path: "a", content: "1", add: true });
 						parent.commit({ message: "1" });
 						parent.bookmarks({ name: "@" });
-						var child = parent.unit.clone($jsapi.newTemporaryDirectory());
+						var child = parent.unit.clone($jsapi.file.newTemporaryDirectory());
 						test(Boolean(child.bookmarks()["@"]));
 						test(!child.bookmarks()["@"].active);
 						test(!Boolean(child.bookmarks()["local"]));
@@ -669,7 +669,7 @@ END LICENSE
 					<span class="type"><a href="#types.Repository">Repository</a></span>
 				</div>
 				<script type="application/x.jsapi#tests">
-					var init = $jsapi.newTemporaryDirectory();
+					var init = $jsapi.file.newTemporaryDirectory();
 					init.getRelativePath("foo").write("foo", { append: false });
 					var repository = module.init(init);
 					repository.commit({ addremove: true, message: "test" });

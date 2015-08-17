@@ -254,7 +254,7 @@ END LICENSE
 					);
 				};
 
-				var dir = $jsapi.newTemporaryDirectory();
+				var dir = $jsapi.file.newTemporaryDirectory();
 
 				var newFile = function(path) {
 					dir.getRelativePath(path).write(path, { append: false });

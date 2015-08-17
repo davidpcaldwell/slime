@@ -503,7 +503,7 @@ END LICENSE
 									}
 								};
 								var value = $api.Value(one,"one");
-								$jsapi.disableBreakOnExceptions(function() {
+								$jsapi.debug.disableBreakOnExceptions(function() {
 									verify(value).evaluate(function() { return this.require(); }).threw.nothing();
 									verify(value).property("foo").evaluate(function() { return this.require() }).threw.type(TypeError);
 									verify(value).property("foo").evaluate(function() { return this.require(); }).threw.message.is("one.foo is required");
