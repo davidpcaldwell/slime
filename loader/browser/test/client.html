@@ -315,8 +315,6 @@ END LICENSE
 							};
 
 							this.$jsapi = new function() {
-								this.environment = {};
-
 								this.loader = new function() {
 									this.module = function(path,context) {
 										//	TODO	probable bug here; probably works when module path ends in /, but for module path
@@ -346,12 +344,6 @@ END LICENSE
 
 									//	TODO	add this.scenario; see jsh/unit/jsapi.js
 								};
-
-								this.debug = new function() {
-									this.disableBreakOnExceptions = function(f) {
-										return f;
-									}
-								}
 							};
 
 							this.$platform = inonit.loader.$sdk.platform;

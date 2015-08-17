@@ -1101,7 +1101,8 @@ END LICENSE
 			test(dir.getRelativePath("toDelete.d").directory == null);
 		]]></script>
 		<script type="application/x.jsapi#tests"><![CDATA[
-			var inPlace = $jsapi.debug.disableBreakOnExceptions(function(ifExists) {
+			var disableBreakOnExceptions = ($jsapi.debug && $jsapi.debug.disableBreakOnExceptions) ? $jsapi.debug.disableBreakOnExceptions : function(f) { return f; };
+			var inPlace = disableBreakOnExceptions(function(ifExists) {
 				return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
 			});
 			var created = inPlace();

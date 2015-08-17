@@ -104,9 +104,9 @@ END LICENSE
 					<div class="label">Instances</div>
 					<span class="type"><a href="#types.type">type</a></span>
 				</div>
-				<script type="application/x.jsapi#tests">
+				<script type="application/x.jsapi#tests"><![CDATA[
 					var throwsError = function(b,f,message) {
-						if ($jsapi.debug.disableBreakOnExceptions) {
+						if ($jsapi.debug && $jsapi.debug.disableBreakOnExceptions) {
 							f = $jsapi.debug.disableBreakOnExceptions(f);
 						}
 						return new function() {
@@ -148,7 +148,7 @@ END LICENSE
 						new module.Type("text", "plain");
 					}, "Arguments valid."));
 					test(new module.Type("text", "plain").toString() == "text/plain");
-				</script>
+				]]></script>
 			</li>
 		</ul>
 	</div>

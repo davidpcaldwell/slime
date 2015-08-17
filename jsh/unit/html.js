@@ -211,43 +211,84 @@ var Scope = function(suite,environment) {
 		return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath }, environment);
 	};
 
+	var Loader = function(implementation) {
+		var parse = function(path) {
+			var index = path.lastIndexOf("/");
+			var directory = path.substring(0,index);
+			var basename = path.substring(index);
+			return {
+				directory: directory,
+				basename: basename
+			};
+		}
+
+		this.module = function(name,context,target) {
+			var parsed = parse(name);
+			return implementation.loader(parsed.directory).module(parsed.basename,context,target);
+		}
+
+		this.file = function(name,context,target) {
+			var parsed = parse(name);
+			return implementation.loader(parsed.directory).file(parsed.basename,context,target);
+		}
+
+		this.eval = function(name,scope) {
+			var parsed = parse(name);
+			var code = implementation.directory(parsed.directory).string(parsed.basename);
+			if (!code) throw new Error("No file at " + code + " path=" + name);
+			var scope = (scope) ? scope : {};
+			with(scope) {
+				return eval(code);
+			}
+		};
+
+		this.string = function(name) {
+			var parsed = parse(name);
+			return implementation.directory(parsed.directory).string(parsed.basename);
+		};
+
+		this.coffee = implementation.coffee;
+
+		this.scenario = function(path,p) {
+			return implementation.scenario(path,p);
+		}
+	}
+
+	var Implementation = function(suite) {
+		this.loader = function(path) {
+			var pathname = suite.getRelativePath(path);
+			return new jsh.file.Loader({ directory: pathname.directory });
+		};
+
+		var Directory = function(directory) {
+			this.string = function(path) {
+				return directory.getFile(path).read(String);
+			}
+		}
+
+		this.directory = function(path) {
+			var pathname = suite.getRelativePath(path);
+			return new Directory(pathname.directory);
+		}
+
+		this.coffee = jsh.$jsapi.coffee;
+
+		this.scenario = function(path,p) {
+			var apifile = getApiHtml(suite.getRelativePath(path));
+			var page = loadApiHtml(apifile);
+			var name = path;
+			var tests = new $context.html.ApiHtmlTests(page,name);
+			var subscope = new Scope(new Suite(suite.getRelativePath(path)));
+			subscope.module = p.module;
+			//	TODO	we wish we could set context but we may not be able to do that
+			var scenario = tests.getSuite(subscope);
+			return scenario;
+		}
+	}
+
 	this.$jsapi = {
 		environment: environment,
-		loader: {
-			module: function(name,context,target) {
-				return jsh.loader.module(suite.getRelativePath(name),context,target);
-			},
-			file: function(name,context,target) {
-				return jsh.loader.file(suite.getRelativePath(name),context,target);
-			},
-			//	TODO	figure out how eval is used and document; why is jsh loader not used? And why is target parameter
-			//			omitted?
-			eval: function(name,scope) {
-				var code = suite.getRelativePath(name);
-				if (!code.file) throw new Error("No file at " + code + " path=" + name);
-				var scope = (scope) ? scope : {};
-				with(scope) {
-					return eval(code.file.read(String));
-				}
-//						return jsh.loader.run(suite.getRelativePath(name),scope);
-			},
-			string: function(name) {
-				return suite.getRelativePath(name).file.read(String);
-			},
-			coffee: jsh.$jsapi.$coffee,
-			scenario: function(path,p) {
-				var apifile = getApiHtml(suite.getRelativePath(path));
-				var page = loadApiHtml(apifile);
-				var name = path;
-				var tests = new $context.html.ApiHtmlTests(page,name);
-				var subscope = new Scope(new Suite(suite.getRelativePath(path)));
-				subscope.module = p.module;
-				//	TODO	we wish we could set context but we may not be able to do that
-				var scenario = tests.getSuite(subscope);
-				return scenario;
-//							throw new Error("Unimplemented: $jsapi.test");
-			}
-		},
+		loader: new Loader(new Implementation(suite)),
 		debug: {
 			disableBreakOnExceptions: function(f) {
 				return jsh.debug.disableBreakOnExceptionsFor(f);
