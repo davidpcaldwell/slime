@@ -543,9 +543,8 @@ $exports.ApiHtmlTests = function(html,name) {
 						for (var x in tscope) {
 							hscope[x] = tscope[x];
 						}
-						hscope.test = verify.test;
-						hscope.scenario = verify.scenario;
 						hscope.verify = verify;
+						hscope.test = verify.test;
 						hscope.scope = hscope;
 						run(element.getContentString(),hscope);
 					}
