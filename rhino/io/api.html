@@ -19,6 +19,26 @@ END LICENSE
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
+	<script type="application/x.jsapi#initialize">
+		var context = new function() {
+			var java = $jsapi.loader.module("../../rhino/host/", {
+				$rhino: jsh.$jsapi.$rhino
+			});
+			if (!java) throw new Error("Not found: rhino/host/");
+
+			this.api = {
+				js:  $jsapi.loader.module("../../js/object/", { globals: true }),
+				java: java,
+				mime: $jsapi.loader.module("../../js/mime/", {})
+			};
+
+			this.$java = new Packages.inonit.script.runtime.io.Streams();
+
+			this.$rhino = jsh.$jsapi.$rhino;
+		};
+		scope.context = context;
+		scope.module = $jsapi.loader.module("module.js", context);
+	</script>
 	<div>
 		<h1>Context</h1>
 		<div class="label">has properties:</div>
@@ -505,7 +525,7 @@ END LICENSE
 											</div>
 											<script type="application/x.jsapi#initialize">
 												var p = new Packages.java.util.Properties();
-												buffer = new module.Buffer();
+												buffer = new scope.module.Buffer();
 												p.put("yes", "i do");
 												p.put("laptop", "inonit");
 												p.put("laptop.manufacturer", "dell");
