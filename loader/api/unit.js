@@ -413,17 +413,6 @@ var adaptAssertion = new function() {
 	}
 }
 
-if (!$context.REMOVE_OLD) {
-	var relationships = [];
-	var getParentEvents = function(scenario) {
-		for (var i=0; i<relationships.length; i++) {
-			if (relationships[i].child == scenario) {
-				return relationships[i].parentEvents;
-			}
-		}
-	};
-}
-
 var Scope = function(o) {
 	var success = true;
 	defineProperty(this,"success",{
@@ -450,10 +439,6 @@ var Scope = function(o) {
 		//	TODO	definite code smell here as we try to hold together the scenario public "wrapper" with the scenario
 		//			implementation; should improve this
 		var child = (function() {
-			if (!$context.REMOVE_OLD && object instanceof o.Scenario) {
-				relationships.push({ parentEvents: o.events, child: object });
-				return object;
-			}
 			var argument = {};
 			for (var x in object) {
 				argument[x] = object[x];
@@ -671,9 +656,6 @@ var Scenario = function(o) {
 		return "Scenario: " + this.name;
 	}
 };
-var old = {
-	Scenario: ($context.REMOVE_OLD) ? null : $api.deprecate(Scenario)
-};
 $exports.Scenario = {};
 
 (function() {
@@ -697,18 +679,11 @@ $exports.Scenario = {};
 			context.events.fire("scenario", { start: EVENT });
 			var local = copy(scope);
 			if (this.initialize) this.initialize.call(this,local);
-			var vscope = new Scope({ events: context.events, Scenario: old.Scenario });
+			var vscope = new Scope({ events: context.events });
 			var verify = new Verify(vscope);
 			verify.test = function() {
 				return vscope.test.apply(this,arguments);
 			};
-			if (!$context.REMOVE_OLD) {
-				verify.scenario = function(o) {
-					if (o.initialize) o.initialize();
-					o.execute(vscope);
-					if (o.destroy) o.destroy();
-				};
-			}
 			verify.suite = function(o) {
 				var suite = new $exports.Suite(o);
 				var fire = (function(e) {
