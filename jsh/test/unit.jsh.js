@@ -11,13 +11,18 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	figure out why built shell is required; some tests do not pass
 if (jsh.test && jsh.test.requireBuiltShell) {
 	jsh.test.requireBuiltShell();
 }
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.shell.java.home.pathname,
-		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
+		jsh: (function() {
+			if (jsh.shell.jsh.home) return jsh.shell.jsh.home.pathname;
+			if (jsh.shell.jsh.src) return jsh.shell.jsh.src.pathname;
+			return jsh.file.Pathname;
+		})(),
 		src: jsh.script.file.getRelativePath("../.."),
 		debug: false,
 		logging: jsh.file.Pathname
