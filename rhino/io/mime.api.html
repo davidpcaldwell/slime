@@ -50,15 +50,15 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			new function() {
 				this.api = {
-					io: $jsapi.module("module.js", {
+					io: $jsapi.loader.module("module.js", {
 						api: {
-							mime: $jsapi.module("../../js/mime/"),
-							java: $jsapi.module("../../rhino/host/", {
+							mime: $jsapi.loader.module("../../js/mime/"),
+							java: $jsapi.loader.module("../../rhino/host/", {
 								$rhino: jsh.$jsapi.$rhino
 							})
 						}
 					}),
-					mime: $jsapi.module("../../js/mime/")
+					mime: $jsapi.loader.module("../../js/mime/")
 				}
 			}
 		</script>

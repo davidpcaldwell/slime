@@ -120,20 +120,20 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context"><![CDATA[
 			(function() {
-				var js = $jsapi.module("../../js/object/");
-				var host = $jsapi.module("../../rhino/host/", {
+				var js = $jsapi.loader.module("../../js/object/");
+				var host = $jsapi.loader.module("../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino
 				});
 				var context = {
 					api: {
 						js: js,
 						java: host,
-						io: $jsapi.module("../../rhino/io/", {
+						io: $jsapi.loader.module("../../rhino/io/", {
 							$java: new Packages.inonit.script.runtime.io.Streams(),
 							$rhino: jsh.$jsapi.$rhino,
 							api: {
 								java: host,
-								mime: $jsapi.module("../../js/mime/", {})
+								mime: $jsapi.loader.module("../../js/mime/", {})
 							}
 						}),
 						loader: jsh.$jsapi.$rhino
@@ -150,7 +150,7 @@ END LICENSE
 						context.cygwin.paths = String(System.getProperty("cygwin.paths"));
 					}
 				};
-				var file = $jsapi.module("../../rhino/file/", context);
+				var file = $jsapi.loader.module("../../rhino/file/", context);
 				var $filesystem = file.filesystem;
 				var FILE = file;
 				return new function() {

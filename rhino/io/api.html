@@ -73,15 +73,15 @@ END LICENSE
 		</ul>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var java = $jsapi.module("../../rhino/host/", {
+				var java = $jsapi.loader.module("../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino
 				});
 				if (!java) throw new Error("Not found: rhino/host/");
 
 				this.api = {
-					js:  $jsapi.module("../../js/object/", { globals: true }),
+					js:  $jsapi.loader.module("../../js/object/", { globals: true }),
 					java: java,
-					mime: $jsapi.module("../../js/mime/", {})
+					mime: $jsapi.loader.module("../../js/mime/", {})
 				};
 
 				this.$java = new Packages.inonit.script.runtime.io.Streams();

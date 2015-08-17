@@ -25,8 +25,8 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			{
 				api: {
-					js: $jsapi.module("../../js/object/"),
-					java: $jsapi.module("../../rhino/host/", {
+					js: $jsapi.loader.module("../../js/object/"),
+					java: $jsapi.loader.module("../../rhino/host/", {
 						$rhino: jsh.$jsapi.$rhino
 					})
 				}

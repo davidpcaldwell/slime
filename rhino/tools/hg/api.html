@@ -30,15 +30,15 @@ END LICENSE
 			(function() {
 				var Context = function() {
 					this.api = new function() {
-						var js = $jsapi.module("../../../js/object/");
-						var java = $jsapi.module("../../../rhino/host/", {
+						var js = $jsapi.loader.module("../../../js/object/");
+						var java = $jsapi.loader.module("../../../rhino/host/", {
 							$rhino: jsh.$jsapi.$rhino,
 							$java: jsh.$jsapi.java
 						});
-						var io = $jsapi.module("../../../rhino/io/", {
+						var io = $jsapi.loader.module("../../../rhino/io/", {
 							api: {
 								java: java,
-								mime: $jsapi.module("../../../js/mime/", {})
+								mime: $jsapi.loader.module("../../../js/mime/", {})
 							}
 							,$rhino: jsh.$jsapi.$rhino
 							,$java: new Packages.inonit.script.runtime.io.Streams()
@@ -51,7 +51,7 @@ END LICENSE
 						this.js = js;
 						this.io = io;
 
-						this.file = $jsapi.module("../../../rhino/file/", {
+						this.file = $jsapi.loader.module("../../../rhino/file/", {
 							api: {
 								js: js,
 								java: java,
@@ -61,13 +61,13 @@ END LICENSE
 							,cygwin: (String(jsh.shell.properties.object.cygwin) == "undefined") ? function(){}() : jsh.shell.properties.object.cygwin
 						});
 
-						this.shell = $jsapi.module("../../../rhino/shell/", {
+						this.shell = $jsapi.loader.module("../../../rhino/shell/", {
 							api: {
 								js: js,
 								java: java,
 								io: io,
 								file: this.file,
-								document: $jsapi.module("../../../js/document/")
+								document: $jsapi.loader.module("../../../js/document/")
 							}
 						});
 					};

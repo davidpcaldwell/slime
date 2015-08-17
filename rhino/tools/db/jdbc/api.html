@@ -90,13 +90,13 @@ END LICENSE
 		</div>
 		<script type="application/x.jsapi#tests">
 			if (module.derby) {
-				scenario($jsapi.test("derby/", { module: module.derby }));
+				verify.suite($jsapi.loader.scenario("derby/", { module: module.derby }));
 			} else {
 				jsh.shell.echo("Skipping Derby; jsh.shell.java.home = " + jsh.shell.java.home);
 			}
 			if (module.mysql) {
 				if ($jsapi.environment.mysql) {
-					scenario($jsapi.test("mysql/", { module: module.mysql }));
+					verify.suite($jsapi.loader.scenario("mysql/", { module: module.mysql }));
 				} else {
 					jsh.shell.echo("Skipping MySQL: no configuration specified.");
 				}

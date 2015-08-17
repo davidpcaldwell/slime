@@ -29,11 +29,11 @@ END LICENSE
 		<script type="application/x.jsapi#context">
 			//	TODO	mercilessly copied from Derby; perhaps should modularize
 			(function() {
-				var js = $jsapi.module("../../../../../js/object/");
-				var java = $jsapi.module("../../../../../rhino/host/", {
+				var js = $jsapi.loader.module("../../../../../js/object/");
+				var java = $jsapi.loader.module("../../../../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino
 				});
-				var io = $jsapi.module("../../../../../rhino/io/", {
+				var io = $jsapi.loader.module("../../../../../rhino/io/", {
 					api: {
 						js: js,
 						java: java,
@@ -48,10 +48,10 @@ END LICENSE
 						js: js,
 						java: java,
 						io: io,
-						core: $jsapi.module("../core.js")
+						core: $jsapi.loader.module("../core.js")
 					};
 				};
-				return $jsapi.module("../drivers.js", parentContext);
+				return $jsapi.loader.module("../drivers.js", parentContext);
 			})()
 		</script>
 	</div>

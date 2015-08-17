@@ -39,8 +39,8 @@ END LICENSE
 	<div>
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			if ($jsapi.environment.mongo && $jsapi.environment.mongo.install) {
-				var port = $jsapi.module("../../slime/rhino/ip/").tcp.getEphemeralPortNumber();
-				var server = $jsapi.module("mongod.js", { install: jsh.file.Pathname($jsapi.environment.mongo.install).directory });
+				var port = $jsapi.loader.module("../../slime/rhino/ip/").tcp.getEphemeralPortNumber();
+				var server = $jsapi.loader.module("mongod.js", { install: jsh.file.Pathname($jsapi.environment.mongo.install).directory });
 				var data = $jsapi.newTemporaryDirectory();
 				jsh.shell.echo("Mongo install at " + $jsapi.environment.mongo.install + " starting on port " + port + " with dbpath " + data);
 				scope.mongod = new server.Server({ port: port, dbpath: data });

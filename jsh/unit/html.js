@@ -247,42 +247,23 @@ var Scope = function(suite,environment) {
 //							throw new Error("Unimplemented: $jsapi.test");
 			}
 		},
-		test: function(path,p) {
-			var apifile = getApiHtml(suite.getRelativePath(path));
-			var page = loadApiHtml(apifile);
-			var name = path;
-			var tests = new $context.html.ApiHtmlTests(page,name);
-			var subscope = new Scope(moduleToItem({
-				location: suite.getRelativePath(path),
-				path: path
-			}));
-			subscope.module = p.module;
-			//	TODO	we wish we could set context but we may not be able to do that
-			var scenario = tests.getScenario(subscope);
-			return scenario;
-//							throw new Error("Unimplemented: $jsapi.test");
-		},
 		newTemporaryDirectory: function() {
-			var $path = $newTemporaryDirectory();
-			var pathstring = String($path.getCanonicalPath());
-			var os = jsh.file.filesystems.os.Pathname(pathstring);
-			return (jsh.file.filesystems.cygwin) ? jsh.file.filesystems.cygwin.toUnix(os).directory : os.directory;
+			return jsh.shell.TMPDIR.createTemporary({ directory: true });
 		},
 		disableBreakOnExceptions: function(f) {
 			return jsh.debug.disableBreakOnExceptionsFor(f);
 		},
 		environment: environment,
-		module: $api.deprecate(function(name,context) {
-			if (typeof(name) == "object" && typeof(context) == "string") {
-				jsh.shell.echo("DEPRECATED: $jsapi.module(" + arguments[1] +") called with context,name");
-				return arguments.callee.call(this,arguments[1],arguments[0]);
-			}
-			return jsh.loader.module(suite.getRelativePath(name),context);
-		}),
 		java: {
 			loader: jsh.$jsapi.java,
 			io: {
-				newTemporaryDirectory: $newTemporaryDirectory
+				newTemporaryDirectory: function() {
+					var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
+					var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
+					var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
+					dir.mkdirs();
+					return dir;
+				}
 			}
 		}
 	};

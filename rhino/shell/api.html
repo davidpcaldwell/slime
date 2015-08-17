@@ -23,22 +23,22 @@ END LICENSE
 		<h1>Context</h1>
 		<script type="application/x.jsapi#context">
 			new function() {
-				var java = $jsapi.module("../../rhino/host/", {
+				var java = $jsapi.loader.module("../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino,
 					$java: jsh.$jsapi.java
 				});
-				var io = $jsapi.module("../../rhino/io/", {
+				var io = $jsapi.loader.module("../../rhino/io/", {
 					api: {
 						java: java,
-						mime: $jsapi.module("../../js/mime/")
+						mime: $jsapi.loader.module("../../js/mime/")
 					},
 					$rhino: jsh.$jsapi.$rhino
 				});
 				this.api = {
-					js: $jsapi.module("../../js/object/"),
+					js: $jsapi.loader.module("../../js/object/"),
 					java: java,
 					io: io,
-					file: $jsapi.module("../../rhino/file/", new function() {
+					file: $jsapi.loader.module("../../rhino/file/", new function() {
 						if (jsh.shell.environment.PATHEXT) {
 							this.pathext = jsh.shell.environment.PATHEXT.split(";");
 						}
@@ -65,7 +65,7 @@ END LICENSE
 							}
 						}
 					}),
-					document: $jsapi.module("../../js/document")
+					document: $jsapi.loader.module("../../js/document")
 				};
 				this._properties = Packages.java.lang.System.getProperties();
 				this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
