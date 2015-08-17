@@ -424,6 +424,14 @@ var Scope = function(o) {
 		debugger;
 		success = false;
 	};
+	this.error = function(e) {
+		o.events.fire("test", {
+			success: false,
+			message: "Uncaught exception: " + e,
+			error: e
+		});
+		fail();
+	}
 	//	IE8-compatible implementation below
 	//		var self = this;
 	//		this.success = true;
@@ -575,8 +583,13 @@ $exports.Scenario = {};
 			var EVENT = { id: context.id, name: name }
 			context.events.fire("scenario", { start: EVENT });
 			var local = copy(scope);
-			if (this.initialize) this.initialize.call(this,local);
 			var vscope = new Scope({ events: context.events });
+			try {
+				if (this.initialize) this.initialize.call(this,local);
+			} catch (e) {
+				vscope.error(e);
+				return;
+			}
 			var verify = new Verify(vscope);
 			verify.test = function() {
 				return vscope.test.apply(this,arguments);
@@ -593,7 +606,11 @@ $exports.Scenario = {};
 			verify.fire = function(type,detail) {
 				vscope.fire(type,detail);
 			}
-			this.execute.call(this,local,verify);
+			try {
+				this.execute.call(this,local,verify);
+			} catch (e) {
+				vscope.error(e);
+			}
 			context.events.fire("scenario", { end: EVENT, success: vscope.success });
 			return vscope.success;
 		}
@@ -666,7 +683,21 @@ $exports.Scenario = {};
 				start: THIS
 			});
 			if (this.initialize) {
-				this.initialize(scope);
+				try {
+					this.initialize(scope);
+				} catch (e) {
+					//	TODO	not handling destroy here
+					events.fire("test", {
+						success: false,
+						message: "Uncaught exception in suite initializer: " + e,
+						error: e
+					});
+					events.fire("scenario", {
+						end: THIS,
+						success: false
+					});
+					return false;
+				}
 			}
 			var success = true;
 			for (var x in parts) {

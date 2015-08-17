@@ -178,6 +178,13 @@ plugin({
 						type: e.type,
 						detail: e.detail
 					};
+					if (json.detail.error) {
+						json.detail.error = {
+							name: json.detail.error.name,
+							message: json.detail.error.message,
+							stack: json.detail.error.stack
+						}
+					}
 					if (send) {
 						send(json);
 					} else {

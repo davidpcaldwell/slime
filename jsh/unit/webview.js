@@ -57,6 +57,12 @@
 			current = current.parentNode;
 		} else if (message.type == "test") {
 			var result = (message.detail.success) ? "Passed" : "Failed";
+			if (message.detail.error) {
+				result = "Error";
+				if (message.detail.error.stack) {
+					message.detail.message += " " + message.detail.error.stack;
+				}
+			}
 			current.appendChild(line({ text: result + ": " + message.detail.message, success: message.detail.success, className: "test" }));
 		}
 	});

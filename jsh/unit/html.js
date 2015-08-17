@@ -324,7 +324,13 @@ var Scope = function(suite,environment) {
 }
 
 var Scenario = function(suite,environment,update) {
+	if (!suite.html) {
+		throw new Error();
+	}
 	var scope = new Scope(suite,(environment) ? environment : {});
+	if (!suite.html.getContexts) {
+		return suite.getSuite(scope);
+	}
 	try {
 		var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
 	} catch (e) {

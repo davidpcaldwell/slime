@@ -19,6 +19,12 @@ END LICENSE
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
+	<script type="application/x.jsapi#initialize">
+		scope.context = {
+			$rhino: jsh.$jsapi.$rhino
+		};
+		scope.module = $jsapi.loader.module("module.js", scope.context);
+	</script>
 	<div>
 		<h1>Context</h1>
 		<ul>
@@ -540,6 +546,7 @@ END LICENSE
 							verify(finished).is(4);
 						</script>
 						<script type="application/x.jsapi#initialize">
+							var module = scope.module;
 							var $$api = $jsapi.loader.eval("../../loader/api.js", {
 								$slime: {
 									getCode: function(path) {
