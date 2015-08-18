@@ -25,6 +25,59 @@ END LICENSE
 </head>
 <body>
 	<script type="application/x.jsapi#initialize">
+		var js = $jsapi.loader.module("../../js/object/");
+		var host = $jsapi.loader.module("../../rhino/host/", {
+			$rhino: jsh.$jsapi.$rhino
+		});
+		var context = {
+			api: {
+				js: js,
+				java: host,
+				io: $jsapi.loader.module("../../rhino/io/", {
+					$java: new Packages.inonit.script.runtime.io.Streams(),
+					$rhino: jsh.$jsapi.$rhino,
+					api: {
+						java: host,
+						mime: $jsapi.loader.module("../../js/mime/", {})
+					}
+				}),
+				loader: jsh.$jsapi.$rhino
+			},
+			$pwd: String(jsh.shell.properties.object.user.dir),
+			$rhino: jsh.$jsapi.$rhino
+		};
+		var System = Packages.java.lang.System;
+		if (System.getProperty("cygwin.root")) {
+			context.cygwin = {
+				root: String(System.getProperty("cygwin.root"))
+			};
+			if (System.getProperty("cygwin.paths")) {
+				context.cygwin.paths = String(System.getProperty("cygwin.paths"));
+			}
+		};
+		var file = $jsapi.loader.module("../../rhino/file/", context);
+		var $filesystem = file.filesystem;
+		var FILE = file;
+		scope.context = new function() {
+			this.api = new function() {
+				this.js = js;
+				this.file = file;
+				this.addClasses = jsh.loader.addClasses;
+			};
+
+			this.directory = jsh.shell.PWD;
+
+			this.file = jsh.script.file;
+			this.arguments = ["a","bb","C"];
+
+			this.Loader = jsh.script.Loader;
+			//	loader
+
+			//	TODO	what are the next two for?
+			this.$filesystem = $filesystem;
+			this.FILE = file;
+		};
+		scope.module = $jsapi.loader.module("module.js", scope.context);
 	</script>
 	<div>
 		<h1>Context</h1>
@@ -269,7 +322,7 @@ END LICENSE
 						<script type="application/x.jsapi#initialize">
 							scope.unexpected = ["-boolean", "-string", "string"];
 							scope.process = function(strategy) {
-								return module.getopts({
+								return scope.module.getopts({
 									options: {},
 									unhandled: strategy
 								},scope.unexpected);

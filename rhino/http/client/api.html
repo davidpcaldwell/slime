@@ -19,6 +19,116 @@ END LICENSE
 	<script type="text/javascript" src="../../../loader/api/api.js"></script>
 </head>
 <body>
+	<script type="application/x.jsapi#initialize"><![CDATA[
+ 		var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
+		var CATALINA_HOME = (function() {
+			if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+			if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
+		})();
+		if (!TOMCAT_CLASS && CATALINA_HOME) {
+			[
+				"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
+				"lib/catalina.jar"
+				,"lib/annotations-api.jar"
+			].forEach(function(path) {
+				jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
+			});
+			TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
+		}
+
+		var tomcatPresent = Boolean(TOMCAT_CLASS);
+		var global = (function() { return this; })();
+		var tomcat;
+		var servlet;
+		var port;
+		if (!scope.tomcat && !$jsapi.environment.windowsSocketsError10106 && tomcatPresent) {
+			tomcat = new Packages.org.apache.catalina.startup.Tomcat();
+			servlet = new function() {
+				var implementation;
+
+				this.set = function(f) {
+					implementation = f;
+				}
+
+				this.service = function(request,response) {
+					implementation.call(this,request,response);
+				}
+			};
+
+			port = (function() {
+				var address = new Packages.java.net.ServerSocket(0);
+				var rv = address.getLocalPort();
+				address.close();
+				return rv;
+			})();
+
+			(function() {
+				var base = $jsapi.file.newTemporaryDirectory();
+				tomcat.setPort(port);
+				tomcat.setBaseDir(base);
+				var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
+				Packages.org.apache.catalina.startup.Tomcat.addServlet(context,"aName",new JavaAdapter(
+					Packages.javax.servlet.http.HttpServlet,
+					servlet
+				));
+				context.addServletMapping("/*","aName");
+				tomcat.start();
+			})();
+			global.tomcat = tomcat;
+			global.servlet = servlet;
+		} else {
+			tomcat = global.tomcat;
+			servlet = global.servlet;
+		}
+
+		var Cookie = Packages.javax.servlet.http.Cookie;
+
+		scope.$Context = function(gae) {
+			var js = $jsapi.loader.module("../../../js/object/");
+			var java = $jsapi.loader.module("../../../rhino/host/", {
+				$rhino: jsh.$jsapi.$rhino
+			});
+			var io = $jsapi.loader.module("../../../rhino/io/", {
+				api: {
+					java: java,
+					mime: $jsapi.loader.module("../../../js/mime/")
+				},
+				$java: new Packages.inonit.script.runtime.io.Streams(),
+				$rhino: jsh.$jsapi.$rhino
+			});
+
+			this.api = {
+				js: js,
+				io: io,
+				web: $jsapi.loader.module("../../../js/web/", {
+					escaper: $jsapi.loader.file("../../../js/web/context.java.js")
+				})
+			};
+			this.io = io;
+			this.port = port;
+			this.gae = gae;
+		};
+
+		if (false) {
+			if (tomcat) {
+				return [ new $Context(false), new $Context(true) ];
+			} else {
+				var context = new $Context(false);
+				context.notomcat = true;
+				return [ context ];
+			}
+		} else {
+			jsh.shell.echo("tomcatPresent = " + tomcatPresent, { stream: jsh.shell.stdio.error });
+			var context = new scope.$Context(false);
+			context.notomcat = !Boolean(tomcat);
+			jsh.shell.echo("servlet = " + servlet, { stream: jsh.shell.stdio.error });
+			scope.servlet = servlet;
+			jsh.shell.echo("tomcat = " + tomcat, { stream: jsh.shell.stdio.error });
+			scope.tomcat = tomcat;
+			scope.context = context;
+			scope.module = $jsapi.loader.module("module.js", context);
+		}
+	]]></script>
 	<!--
 	<script type="application/x.jsapi#context">
 		new $Context(false)
