@@ -366,38 +366,9 @@ window.callbacks.push(function() {
 					if (declaration) return declaration.getAttribute("path");
 					return "";
 				})();
-				if (!parameters.REMOVE_OLD) {
-					try {
-						var contexts = apiHtml.getContexts(scope);
-					} catch (e) {
-						if (e.cause) {
-							e.cause.code = e.code;
-							dumpError(e.cause);
-						} else {
-							dumpError(e);
-						}
-						throw e;
-					}
-					for (var i=0; i<contexts.length; i++) {
-						try {
-							var object = inonit.loader.module(
-								location.path,
-								contexts[i]
-							);
-							scope.module = object;
-						} catch (e) {
-							//	error loading module, which is OK: sometimes tests do not pertain directly to a module
-						}
-						scope.context = contexts[i];
-						var moduleScenario = apiHtml.getSuite(scope,test.path);
-						moduleScenario.name = (test.path) ? (module + ":" + test.path) : module;
-						scenarios.push(moduleScenario);
-					}
-				} else {
-					var moduleScenario = apiHtml.getSuite(scope,test.path);
-					moduleScenario.name = (test.path) ? (module + ":" + test.path) : module;
-					scenarios.push(moduleScenario);
-				}
+				var moduleScenario = apiHtml.getSuite(scope,test.path);
+				moduleScenario.name = (test.path) ? (module + ":" + test.path) : module;
+				scenarios.push(moduleScenario);
 			})();
 		}
 

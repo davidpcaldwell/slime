@@ -118,12 +118,9 @@ END LICENSE
 				return [ context ];
 			}
 		} else {
-			jsh.shell.echo("tomcatPresent = " + tomcatPresent, { stream: jsh.shell.stdio.error });
 			var context = new scope.$Context(false);
 			context.notomcat = !Boolean(tomcat);
-			jsh.shell.echo("servlet = " + servlet, { stream: jsh.shell.stdio.error });
 			scope.servlet = servlet;
-			jsh.shell.echo("tomcat = " + tomcat, { stream: jsh.shell.stdio.error });
 			scope.tomcat = tomcat;
 			scope.context = context;
 			scope.module = $jsapi.loader.module("module.js", context);
