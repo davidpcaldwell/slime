@@ -91,4 +91,6 @@ top.scenario("integration", jsh.unit.Suite.Fork({
 //	})
 //});
 var success = top.run();
-jsh.shell.exit( (success) ? 0 : 1 );
+if (parameters.options.view != "webview") {
+	jsh.shell.exit( (success) ? 0 : 1 );
+}
