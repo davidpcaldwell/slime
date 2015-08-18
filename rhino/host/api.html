@@ -20,10 +20,11 @@ END LICENSE
 </head>
 <body>
 	<script type="application/x.jsapi#initialize">
-		scope.context = {
-			$rhino: jsh.$jsapi.$rhino
-		};
-		scope.module = $jsapi.loader.module("module.js", scope.context);
+		scope.module = $jsapi.environment.module;
+		if (!scope.module) {
+			//	Compatibility with old test structure
+			scope.module = $jsapi.loader.module("module.js", { $rhino: jsh.$jsapi.$rhino });
+		}
 	</script>
 	<div>
 		<h1>Context</h1>
@@ -115,7 +116,7 @@ END LICENSE
 					test(!isJavaObject(x.myUndefinedMember));
 					test(!isJavaObject(null));
 					test(!isJavaObject({}));
-					var javaArray = context.$rhino.java.Array(Packages.java.lang.Object,4);
+					var javaArray = jsh.$jsapi.$rhino.java.Array(Packages.java.lang.Object,4);
 					test(isJavaObject(javaArray));
 				</script>
 			</li>

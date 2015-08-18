@@ -289,15 +289,12 @@ var Scope = function(suite,environment) {
 			return scenario;
 		}
 
-		this.suite = function(path,scope) {
+		this.suite = function(path,environment) {
 			var apifile = getApiHtml(suite.getRelativePath(path));
 			var page = loadApiHtml(apifile);
 			var name = path;
 			var tests = new $context.html.ApiHtmlTests(page,name);
-			var subscope = new Scope(new Suite(suite.getRelativePath(path)));
-			for (var x in scope) {
-				subscope[x] = scope[x];
-			}
+			var subscope = new Scope(new Suite(suite.getRelativePath(path)),environment);
 			var rv = tests.getSuite(subscope);
 			return rv;
 		}
