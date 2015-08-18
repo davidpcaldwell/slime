@@ -411,7 +411,7 @@ var getTestEnvironment = jsh.js.constant(function() {
 		});
 		if (!parameters.options.nodoc) {
 			args.push("-doc",destination.shell.getRelativePath("doc/api"));
-			args.push("-index",SLIME.getFile("jsh/etc/index.html"));
+			args.push("-index",SLIME.getFile("jsh/etc/api.html"));
 		}
 		console("Running jsapi.jsh.js ...");
 		jsh.shell.jsh({
