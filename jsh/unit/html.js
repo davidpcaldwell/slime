@@ -252,6 +252,10 @@ var Scope = function(suite,environment) {
 		this.scenario = function(path,p) {
 			return implementation.scenario(path,p);
 		}
+
+		this.suite = function(path,p) {
+			return implementation.suite(path,p);
+		}
 	}
 
 	var Implementation = function(suite) {
@@ -283,6 +287,19 @@ var Scope = function(suite,environment) {
 			//	TODO	we wish we could set context but we may not be able to do that
 			var scenario = tests.getSuite(subscope);
 			return scenario;
+		}
+
+		this.suite = function(path,scope) {
+			var apifile = getApiHtml(suite.getRelativePath(path));
+			var page = loadApiHtml(apifile);
+			var name = path;
+			var tests = new $context.html.ApiHtmlTests(page,name);
+			var subscope = new Scope(new Suite(suite.getRelativePath(path)));
+			for (var x in scope) {
+				subscope[x] = scope[x];
+			}
+			var rv = tests.getSuite(subscope);
+			return rv;
 		}
 	}
 
@@ -324,103 +341,8 @@ var Scope = function(suite,environment) {
 }
 
 var Scenario = function(suite,environment,update) {
-	if (!suite.html) {
-		throw new Error();
-	}
 	var scope = new Scope(suite,(environment) ? environment : {});
-	if (!suite.html.getContexts) {
 		return suite.getSuite(scope);
-	}
-	try {
-		var contexts = (suite.html) ? suite.html.getContexts(scope) : [{}];
-	} catch (e) {
-		var error = e;
-		return new function() {
-			this.name = suite.name;
-
-			this.execute = function(scope) {
-				scope.test({
-					success: null,
-					error: error,
-					messages: {
-						failure: suite.name + " threw error instantiating context"
-					}
-				});
-			}
-		};
-	}
-
-	var rv = (function() {
-		if (update) {
-			var rv = new $context.Suite({ name: suite.name });
-			rv.add = function(p) {
-				if (!arguments.callee.index) arguments.callee.index = 0;
-				arguments.callee.index++;
-				this.scenario(arguments.callee.index, {
-					create: function() {
-						["name","initialize","execute",'destroy'].forEach(function(property) {
-							this[property] = p.scenario[property];
-						},this);
-					}
-				});
-			}
-			return rv;
-		} else {
-			return new $context.Scenario({ composite: true, name: suite.name });
-		}
-	})();
-
-	for (var i=0; i<contexts.length; i++) {
-		try {
-			if (update && suite.getSuite) {
-				scope.module = suite.loadWith(contexts[i]);
-				scope.context = contexts[i];
-				var specification = suite.getSuite(scope);
-				rv.suite("contexts[" + i + "]", specification);
-//				rv.scenario("contexts[" + i + "]", {
-//					create: function() {
-//						this.execute = function(scope,verify) {
-//							verify("getSuite").is("Unimplemented");
-//						}
-//					}
-//				})
-			} else if (suite.getScenario) {
-				scope.module = suite.loadWith(contexts[i]);
-				scope.context = contexts[i];
-				var scenario = suite.getScenario(scope);
-				scenario.name = suite.name;
-				scenario.name += " " + ((contexts[i].id) ? contexts[i].id : String(i));
-				rv.add( { scenario: scenario } );
-			} else {
-				rv.add({ scenario: new function() {
-					this.name = suite.name + " (NO TESTS)";
-
-					this.execute = function(scope) {
-						scope.test({
-							success: false,
-							messages: {
-								failure: suite.name + " has no api.html file containing tests."
-							}
-						});
-					}
-				}})
-			}
-		} catch (e) {
-			//	Do not let initialize() throw an exception, which it might if it assumes we successfully loaded the module
-			if (!update) rv.add({ scenario: new function() {
-				this.name = suite.name;
-
-				this.execute = function(scope) {
-					throw e;
-				}
-			}});
-			Packages.java.lang.System.err.println(e);
-			Packages.java.lang.System.err.println(e.stack);
-			throw e;
-		}
-	}
-
-	return rv;
 };
 
 $exports.Scenario = function(p) {
