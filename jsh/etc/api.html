@@ -18,37 +18,19 @@ END LICENSE
 </head>
 <body>
 	<h1>The <code>jsh</code> API</h1>
-	<!--
-	//	Servlet module has Java classes but we do not compile them here
-	//	servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with servlet API is supplied by invoker
-	["rhino/shell/","jsh/script/","rhino/http/client/","rhino/http/servlet/"].forEach(function(path) {
-		components.add(path, { jsh: { api: true, module: true }});
-	});
-	components.add("rhino/tools/", { jsh: { api: false, module: true }});
-	components.add("rhino/http/servlet/plugin.jsh.api.html", { jsh: { api: true } });
-	components.add("rhino/ui/", { jsh: { api: false, module: { javac: true } } });
-
-	/*modules.add("rhino/mail/", "jsh.mail");*/
-
-	components.add("jsh/loader/loader.api.html", { jsh: { api: true } });
-	components.add("rhino/shell/jsh.js", { jsh: { api: true } });
-	components.add("jsh/launcher/", { jsh: { api: true } });
-	components.add("jsh/loader/plugin.api.html", { jsh: { api: true } });
-	components.add("jsh/tools/", { jsh: { api: true } });
-	components.add("jsh/unit/", { jsh: { api: true } });
-	-->
-	<script type="application/x.jsapi#tests">
+	<script type="application/x.jsapi#tests" jsapi:id="internal">
+		//	Functionality used internally or accessed through jsh/loader
 		verify.suite($jsapi.loader.suite("../../loader/api.html"));
-		verify.suite($jsapi.loader.suite("../../loader/api/api.html"));
-		verify.suite($jsapi.loader.suite("../../loader/api/unit.api.html"));
-		verify.suite($jsapi.loader.suite("../../js/web/api.html"));
-		verify.suite($jsapi.loader.suite("../../loader/api/test/data/1/api.html"));
-		verify.suite($jsapi.loader.suite("../../js/debug/api.html"));
-		verify.suite($jsapi.loader.suite("../../js/mime/api.html"));
+		//	Test cases of loader implementation
 		verify.suite($jsapi.loader.suite("../../loader/rhino/api.html"));
 		//	TODO	loader/rhino/java has some tests
 		//	TODO	loader/rhino/test/data/2/ has some tests but they require some classes in classpath
-		//	TODO	rhino/io/mime.api.html has some tests
+
+		//	Test cases involving the HTML test runner itself
+		verify.suite($jsapi.loader.suite("../../loader/api/test/data/1/api.html"));
+
+		//	Functionality that ends up contributing to jsh.io.mime
+		verify.suite($jsapi.loader.suite("../../js/mime/api.html"));
 	</script>
 	<table>
 		<thead>
@@ -58,11 +40,25 @@ END LICENSE
 			</tr>
 		</thead>
 		<tbody>
+			<!--
+				TODO	js/debug: undocumented, and with no tests
+				TODO	modules.add("rhino/mail/", "jsh.mail");
+				TODO	rhino/tools builds a module, but it is not API at the moment
+				TODO	rhino/ui is currently undocumented
+			-->
 			<tr><td><a href="../../jsh/launcher/api.html">(launcher)</a></td><td>Running jsh</td><!-- no tests --></tr>
 			<tr><td><a href="../../jsh/loader/plugin.api.html">(plugins)</a></td><td>Interface for plugins</td><!-- no tests --></tr>
 			<tr><td><a href="../../jsh/tools/api.html">(tools)</a></td><td>jsh Tools</td><!-- no tests --></tr>
 			<tr><td><a href="../../loader/api/api.html">(modules)</a></td><td>api.html format</td><!-- no tests --></tr>
-			<tr><td><a href="../../jsh/unit/api.html">(testing)</a></td><td>jsapi</td><!-- no tests --></tr>
+			<tr>
+				<td><a href="../../jsh/unit/api.html">(testing)</a></td>
+				<td>
+					jsapi
+					<script jsapi:id="jsh.unit" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../loader/api/unit.api.html"));
+					</script>
+				</td>
+			</tr>
 			<tr>
 				<td><a href="../../loader/$api.api.html">$api</a></td>
 				<td>
@@ -77,7 +73,7 @@ END LICENSE
 					<script jsapi:id="loader" type="application/x.jsapi#tests">
 						verify.suite($jsapi.loader.suite("../../jsh/loader/loader.api.html"));
 					</script>
-				</td><!-- no tests -->
+				</td>
 			</tr>
 			<tr>
 				<td><a href="../../js/object/api.html">jsh.js</a></td>
@@ -86,6 +82,15 @@ END LICENSE
 					<script jsapi:id="jsh.js" type="application/x.jsapi#tests">
 						verify.suite($jsapi.loader.suite("../../js/object/api.html"));
 						verify.suite($jsapi.loader.suite("../../js/object/Error.api.html"));
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<td><a href="../../js/web/api.html">jsh.js.web</a></td>
+				<td>
+					URLs
+					<script jsapi:id="jsh.js.web" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../js/web/api.html"));
 					</script>
 				</td>
 			</tr>
@@ -101,10 +106,14 @@ END LICENSE
 			<tr>
 				<td><a href="../../rhino/io/api.html">jsh.io</a></td>
 				<td>
-					Input/Output
+					Stream-based input and output
 					<script jsapi:id="jsh.io" type="application/x.jsapi#tests">
 						verify.suite($jsapi.loader.suite("../../rhino/io/api.html"));
 					</script>
+					<!--
+						rhino/io/mime.api.html has some documentation. This documentation links to some type definitions. It
+						contains no tests
+					-->
 				</td>
 			</tr>
 			<tr>
@@ -134,11 +143,54 @@ END LICENSE
 					</script>
 				</td>
 			</tr>
-			<tr><td><a href="../../rhino/http/client/api.html">jsh.http</a></td><td>HTTP client</td></tr>
-			<tr><td><a href="../../rhino/http/servlet/api.html">(servlets)</a></td><td>SLIME servlets</td></tr>
-			<tr><td><a href="../../rhino/http/servlet/plugin.jsh.api.html">jsh.httpd</a></td><td>jsh Servlet Plugin</td></tr>
-			<tr><td><a href="../../rhino/shell/jsh.api.html">jsh.shell</a></td><td>jsh.shell</td></tr>
-			<tr><td><a href="../../jsh/script/api.html">jsh.script</a></td><td>jsh.script</td></tr>
+			<tr>
+				<td><a href="../../rhino/http/client/api.html">jsh.http</a></td>
+				<td>
+					HTTP client
+					<script jsapi:id="jsh.http" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../rhino/http/client/api.html", {}));
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<td><a href="../../rhino/http/servlet/api.html">(servlets)</a></td>
+				<td>
+					SLIME servlets
+					<script jsapi:id="servlet" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../rhino/http/servlet/api.html"));
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="../../rhino/http/servlet/plugin.jsh.api.html">jsh.httpd</a>
+				</td>
+				<td>
+					jsh Servlet Plugin
+					<script jsapi:id="servlet" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../rhino/http/servlet/plugin.jsh.api.html"));
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<td><a href="../../rhino/shell/jsh.api.html">jsh.shell</a></td>
+				<td>
+					jsh.shell
+					<script jsapi:id="jsh.shell" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../rhino/shell/api.html"));
+						verify.suite($jsapi.loader.suite("../../rhino/shell/jsh.api.html"));
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<td><a href="../../jsh/script/api.html">jsh.script</a></td>
+				<td>
+					jsh.script
+					<script jsapi:id="jsh.script" type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../jsh/script/api.html"));
+					</script>
+				</td>
+			</tr>
 		</tbody>
 	</table>
 </body>
