@@ -149,9 +149,17 @@ plugin({
 								o[x] = p[x];
 							}
 						}
-						o.evaluate = function(result) {
-							verify(result).status().is(0);
-						};
+						if (o.evaluate) {
+							o.evaluate = (function(was) {
+								return function(result) {
+									return was.call(null,result,verify);
+								}
+							})(o.evaluate);
+						} else {
+							o.evaluate = function(result) {
+								verify(result).status().is(0);
+							};
+						}
 						p.run(o);
 					}
 				}

@@ -17,51 +17,45 @@ if (!jsh.unit || !jsh.unit.integration) {
 }
 jsh.unit.integration({
 	scenario: function() {
-		this.add({
-			scenario: {
-				name: "jsh.shell.jsh (script URL)",
-				execute: function(scope) {
-					var verify = new jsh.unit.Verify(scope);
-					var server = jsh.httpd.Tomcat.serve({ directory: jsh.script.file.parent });
-					var client = new jsh.http.Client();
-					var unforked = jsh.shell.jsh({
-						script: jsh.js.web.Url.parse(
-							"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
-						),
-						stdio: {
-							output: String,
-							error: String
-						},
-						evaluate: function(result) {
-							if (result.status != 2) {
-								jsh.shell.echo(result.stdio.output);
-								jsh.shell.echo(result.stdio.error);
-							}
-							return result;
-						}
-					});
-					verify(unforked,"HTTP unforked").status.is(2);
-					var forked = jsh.shell.jsh({
-						fork: true,
-						script: jsh.js.web.Url.parse(
-							"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
-						),
-						stdio: {
-							output: String,
-							error: String
-						},
-						evaluate: function(result) {
-							if (result.status != 2) {
-								jsh.shell.echo(result.stdio.output);
-								jsh.shell.echo(result.stdio.error);
-							}
-							return result;
-						}
-					});
-					verify(forked,"HTTP forked").status.is(2);
+		var server = jsh.httpd.Tomcat.serve({ directory: jsh.script.file.parent });
+		this.scenario(jsh.unit.Suite.Fork({
+			name: "HTTP unforked",
+			run: jsh.shell.jsh,
+			script: jsh.js.web.Url.parse(
+				"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
+			),
+			stdio: {
+				output: String,
+				error: String
+			},
+			evaluate: function(result,verify) {
+				if (result.status != 2) {
+					jsh.shell.echo(result.stdio.output);
+					jsh.shell.echo(result.stdio.error);
 				}
+				verify(result).status.is(2);
+				return result;
 			}
-		})
+		}));
+		this.scenario(jsh.unit.Suite.Fork({
+			name: "HTTP forked",
+			fork: true,
+			script: jsh.js.web.Url.parse(
+				"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
+			),
+			stdio: {
+				output: String,
+				error: String
+			},
+			evaluate: function(result,verify) {
+				if (result.status != 2) {
+					jsh.shell.echo(result.stdio.output);
+					jsh.shell.echo(result.stdio.error);
+				}
+				verify(result).status.is(2);
+				return result;
+			}
+		}));
 	},
 	run: function() {
 		jsh.shell.exit(2);

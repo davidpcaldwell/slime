@@ -12,9 +12,9 @@
 //	END LICENSE
 
 //	TODO	figure out why built shell is required; some tests do not pass
-if (jsh.test && jsh.test.requireBuiltShell) {
-	jsh.test.requireBuiltShell();
-}
+//if (jsh.test && jsh.test.requireBuiltShell) {
+//	jsh.test.requireBuiltShell();
+//}
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.shell.java.home.pathname,
