@@ -27,13 +27,45 @@ var suite = new jsh.unit.Suite(new jsh.unit.Scenario.Html({
 	name: "jsh Unit Tests",
 	pathname: jsh.script.file.parent.getRelativePath("api.html")
 }));
-var view = jsh.unit.view.options.select(parameters.options.view);
-if (parameters.options["chrome:profile"]) {
-	var chrome = new jsh.unit.view.Chrome({
-		port: parameters.options.port,
-		profile: parameters.options["chrome:profile"]
-	});
-	chrome.listen(suite);
+if (parameters.options.view == "model") {
+	var Model = function(p) {
+		if (p.part.getParts) {
+			var parts = p.part.getParts();
+			this.parts = {};
+			for (var x in parts) {
+				this.parts[x] = new Model({ part: parts[x] });
+			}
+		}
+
+		if (p.part.name) {
+			this.name = p.part.name;
+		}
+
+		this.structure = function() {
+			var rv = {
+				name: this.name
+			};
+			if (this.parts) {
+				rv.parts = {};
+			}
+			for (var x in this.parts) {
+				rv.parts[x] = this.parts[x].structure();
+			}
+			return rv;
+		};
+	};
+
+	var structure = new Model({ part: suite }).structure();
+	jsh.shell.echo(JSON.stringify(structure,void(0),"    "));
+} else {
+	var view = jsh.unit.view.options.select(parameters.options.view);
+	if (parameters.options["chrome:profile"]) {
+		var chrome = new jsh.unit.view.Chrome({
+			port: parameters.options.port,
+			profile: parameters.options["chrome:profile"]
+		});
+		chrome.listen(suite);
+	}
+	view.listen(suite);
+	suite.run();
 }
-view.listen(suite);
-suite.run();

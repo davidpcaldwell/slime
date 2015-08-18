@@ -632,23 +632,24 @@ $exports.Scenario = {};
 		this.getParts = function() {
 			var rv = {};
 			for (var x in parts) {
-				rv[x] = new (function(x,part) {
-					this.copy = function(suite) {
-						if (part.type == Scenario) {
-							suite.scenario(x,part.configuration);
-						} else if (part.type == Suite) {
-							suite.suite(x,part.configuration);
-						} else {
-							throw new Error();
-						}
-					};
-
-					if (part.type == Suite) {
-						this.getParts = function() {
-							return part.value.getParts();
-						}
-					}
-				})(x,parts[x]);
+				rv[x] = parts[x];
+//				rv[x] = new (function(x,part) {
+//					this.copy = function(suite) {
+//						if (part.type == Scenario) {
+//							suite.scenario(x,part.configuration);
+//						} else if (part.type == Suite) {
+//							suite.suite(x,part.configuration);
+//						} else {
+//							throw new Error();
+//						}
+//					};
+//
+//					if (part.type == Suite) {
+//						this.getParts = function() {
+//							return part.value.getParts();
+//						}
+//					}
+//				})(x,parts[x]);
 			}
 			return rv;
 		};
