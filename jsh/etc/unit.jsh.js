@@ -17,7 +17,9 @@ if (!jsh.unit) {
 }
 var parameters = jsh.script.getopts({
 	options: {
-		view: "console"
+		view: "console",
+		port: Number,
+		"chrome:profile": jsh.file.Pathname
 	}
 });
 
@@ -25,5 +27,13 @@ var suite = new jsh.unit.Suite(new jsh.unit.Scenario.Html({
 	name: "jsh Unit Tests",
 	pathname: jsh.script.file.parent.getRelativePath("api.html")
 }));
-jsh.unit.view.options.select(parameters.options.view).listen(suite);
+var view = jsh.unit.view.options.select(parameters.options.view);
+if (parameters.options["chrome:profile"]) {
+	var chrome = new jsh.unit.view.Chrome({
+		port: parameters.options.port,
+		profile: parameters.options["chrome:profile"]
+	});
+	chrome.listen(suite);
+}
+view.listen(suite);
 suite.run();

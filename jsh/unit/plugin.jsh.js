@@ -186,6 +186,28 @@ plugin({
 	}
 });
 
+var serializeError = function recurse(e) {
+	return {
+		name: e.name,
+		message: e.message,
+		stack: e.stack,
+		code: e.code,
+		cause: (e.cause) ? recurse(e.cause) : null
+	};
+};
+
+var serializeEvent = function(e) {
+	var json = {
+		type: e.type,
+		detail: e.detail
+	};
+
+	if (json.detail.error) {
+		json.detail.error = serializeError(json.detail.error);
+	}
+	return json;
+};
+
 plugin({
 	isReady: function() {
 		//	Need jsh.io for $loader.resource
@@ -200,23 +222,7 @@ plugin({
 				var send;
 
 				var add = function(e) {
-					var json = {
-						type: e.type,
-						detail: e.detail
-					};
-
-					var errordata = function recurse(e) {
-						return {
-							name: e.name,
-							message: e.message,
-							stack: e.stack,
-							code: e.code,
-							cause: (e.cause) ? recurse(e.cause) : null
-						};
-					}
-					if (json.detail.error) {
-						json.detail.error = errordata(json.detail.error);
-					}
+					var json = serializeEvent(e);
 					if (send) {
 						send(json);
 					} else {
@@ -255,8 +261,94 @@ plugin({
 		return jsh.js && jsh.shell && jsh.httpd && jsh.http && jsh.unit && jsh.unit.Scenario.Events && jsh.java && jsh.file;
 	},
 	load: function() {
+		jsh.io.decorate($loader);
 		var $exports = {};
 		$loader.run("plugin.jsh.browser.js", { $exports: $exports, jsh: jsh });
 		jsh.unit.browser = $exports;
+
+		jsh.unit.view.Chrome = function(p) {
+			var location = (p && p.profile) ? p.profile : jsh.shell.TMPDIR.createTemporary({
+				ifExists: function(dir) {
+					return false;
+				}
+			}).pathname;
+			var directory = location.createDirectory({
+				ifExists: function(dir) {
+					return false;
+				}
+			});
+			var fr = directory.getRelativePath("First Run");
+			if (!fr.file) {
+				fr.write("", { append: false });
+			}
+			var browser = new jsh.shell.browser.chrome.User({ directory: directory });
+			var server = new jsh.httpd.Tomcat({
+				port: p.port
+			});
+
+			var lock = new jsh.java.Thread.Monitor();
+			var messages = [];
+
+			var post = new lock.Waiter({
+				until: function() {
+					return true;
+				},
+				then: function(e) {
+					messages.push(e);
+				}
+			});
+
+			var get = new lock.Waiter({
+				until: function() {
+					return true;
+				},
+				then: function() {
+					var rv = messages.map(serializeEvent);
+					messages.splice(0,messages.length);
+					return rv;
+				}
+			});
+
+			server.map({
+				path: "",
+				servlets: {
+					"/*": {
+						load: function(scope) {
+							var $exports = scope.$exports;
+							$exports.handle = function(request) {
+								if (request.path == "webview.html" || request.path == "webview.js") {
+									return {
+										status: { code: 200 },
+										body: $loader.resource(request.path)
+									};
+								}
+								if (request.path == "messages") {
+									return {
+										status: { code: 200 },
+										body: {
+											type: "application/json",
+											string: JSON.stringify(get(), void(0), "    ")
+										}
+									}
+								}
+							}
+						},
+						$loader: $loader,
+						parameters: {}
+					}
+				},
+				resources: {
+					loader: $loader,
+					Loader: jsh.file.Loader
+				}
+			});
+			server.start();
+			browser.launch({
+				app: "http://127.0.0.1:" + server.port + "/" + "webview.html"
+			});
+			return new jsh.unit.View(function(e) {
+				post(e);
+			});
+		}
 	}
 })

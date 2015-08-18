@@ -14,7 +14,7 @@
 (function() {
 	var current;
 
-	window.jsh.message.handler(function(message) {
+	var handler = function(message) {
 		var colorCode = function(rv,success) {
 			rv.className = [rv.className,(success) ? "success" : "failure"].join(" ");
 //			if (typeof(success) != "undefined") {
@@ -83,5 +83,19 @@
 			}
 			current.appendChild(line({ text: text, success: message.detail.success, className: "test" }));
 		}
-	});
+	};
+
+	if (window.jsh) {
+		window.jsh.message.handler(handler);
+	} else {
+		window.setInterval(function() {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", "messages", false);
+			xhr.send(null);
+			var json = JSON.parse(xhr.responseText);
+			json.forEach(function(event) {
+				handler(event);
+			});
+		}, 1000);
+	}
 })();
