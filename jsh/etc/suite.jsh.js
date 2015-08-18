@@ -10,6 +10,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (jsh.test && jsh.test.requireBuiltShell) {
+	jsh.test.requireBuiltShell();
+}
+
 var SLIME = jsh.script.file.parent.parent.parent;
 jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
 jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
@@ -18,31 +22,20 @@ jsh.loader.plugins(jsh.script.file.parent.pathname);
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.shell.java.home.pathname,
-		jsh: (jsh.shell.jsh.home) ? jsh.shell.jsh.home.pathname : jsh.file.Pathname,
+		jsh: jsh.shell.jsh.home.pathname,
 		src: jsh.script.file.getRelativePath("../.."),
 		debug: false,
-		//	TODO	switch to the 'view' argument used by other scripts
-		stdio: false
+		view: "console"
 	}
 });
 
 var java = jsh.file.Searchpath([parameters.options.java.directory.getRelativePath("bin")]).getCommand("java");
 
-if (!parameters.options.jsh) {
-	parameters.options.jsh = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-	jsh.shell.jrunscript({
-		fork: true,
-		arguments: [parameters.options.src.directory.getRelativePath("rhino/jrunscript/api.js"),"jsh",parameters.options.src.directory.getRelativePath("jsh/etc/build.jsh.js"), parameters.options.jsh,
-		"-notest", "-nodoc"]
-	});
-}
-
 var top = (function() {
-	var view = (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
 	var rv = new jsh.unit.Suite({
 		name: "SLIME suite"
 	});
-	view.listen(rv);
+	jsh.unit.view.options.select(parameters.options.view).listen(rv);
 	return rv;
 })();
 
@@ -54,15 +47,15 @@ top.scenario("unit", jsh.unit.Suite.Fork({
 	name: "Unit tests",
 	run: jsh.shell.jsh,
 	shell: parameters.options.jsh.directory,
-	script: parameters.options.src.directory.getRelativePath("jsh/test/unit.jsh.js"),
+	script: parameters.options.src.directory.getRelativePath("jsh/etc/unit.jsh.js"),
 	arguments: ["-view","stdio"]
 }));
 top.scenario("integration", jsh.unit.Suite.Fork({
 	name: "Integration tests",
 	run: jsh.shell.jsh,
 	shell: parameters.options.jsh.directory,
-	script: parameters.options.src.directory.getRelativePath("jsh/test/integration.jsh.js"),
-	arguments: ["-stdio"],
+	script: parameters.options.src.directory.getRelativePath("jsh/etc/integration.jsh.js"),
+	arguments: ["-view","stdio"],
 	environment: jsh.js.Object.set({}, jsh.shell.environment, {
 		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
 	})

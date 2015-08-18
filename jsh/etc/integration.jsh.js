@@ -17,7 +17,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		src: jsh.script.file.getRelativePath("../.."),
 		rhino: jsh.file.Pathname,
-		stdio: false
+		view: "console"
 	}
 });
 
@@ -33,18 +33,16 @@ var CATALINA_HOME = (function() {
 
 var src = parameters.options.src.directory;
 
-var view = (parameters.options.stdio) ? new jsh.unit.view.Events({ writer: jsh.shell.stdio.output }) : new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
 var scenario = new jsh.unit.Suite({
-	name: "jsh Integration Tests",
-	old: true
+	name: "jsh Integration Tests"
 });
-view.listen(scenario);
+jsh.unit.view.options.select(parameters.options.view).listen(scenario);
 
 //	TODO	this next line should go elsewhere
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
 
 var ScriptVerifier = function(o) {
-	var script = jsh.script.file.getRelativePath(o.path).file;
+	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
 	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
 	scenario.scenario(tokens.join(" "), {
 		create: function() {
@@ -81,7 +79,7 @@ if (CATALINA_HOME) {
 
 //	TODO	Convert to jsh/test plugin API designed for this purpose
 scenario.scenario("packaged", (function() {
-	var script = jsh.script.file.getRelativePath("packaged.jsh.js").file;
+	var script = jsh.script.file.getRelativePath("../test/packaged.jsh.js").file;
 	return {
 		create: function() {
 			this.name = script.toString();
@@ -158,43 +156,6 @@ ScriptVerifier({
 			verify(this.stdio.output).is(input_abcdefghij);
 		}
 	});
-//	scenario.add({ scenario: {
-//		name: "stdio",
-//		execute: function(scope) {
-//			var verify = new jsh.unit.Verify(scope);
-//			verify("stdio").is("Unimplemented");
-//		}
-//	}});
-//	return;
-//	var input_abcdefghij = function() {
-//		var b = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Byte.TYPE, 10);
-//		for (var i=0; i<b.length; i++) {
-//			b[i] = i+65;
-//		}
-//		return new Packages.java.io.ByteArrayInputStream(b);
-//	};
-//
-////	testCommandOutput("jsh.shell/stdio.2.jsh.js", function(options) {
-////		checkOutput(options,[
-////			"ABCDEFGHIJ"
-////		]);
-////	}, {
-////		stdin: input_abcdefghij(),
-////		env: {
-////			JSH_PLUGINS: null
-////		}
-////	});
-//
-//	testCommandOutput("jsh.shell/stdio.3.jsh.js", function(options) {
-//		checkOutput(options,[
-//			"ABCDEFGHIJ"
-//		]);
-//	}, {
-//		stdin: input_abcdefghij(),
-//		env: {
-//			JSH_PLUGINS: null
-//		}
-//	});
 })();
 
 ScriptVerifier({
@@ -229,7 +190,7 @@ ScriptVerifier({
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
 //	TODO	remove the below dependency
-eval(src.getFile("jsh/test/integration.api.rhino.js").read(String));
+eval(jsh.script.file.parent.getFile("integration.api.rhino.js").read(String));
 
 var File = Packages.java.io.File;
 
@@ -699,7 +660,7 @@ if (RHINO_LIBRARIES) {
 	(function(level) {
 		jsh.shell.jsh({
 			fork: true,
-			script: jsh.script.file.getRelativePath("rhino-optimization.jsh.js").file,
+			script: jsh.script.file.getRelativePath("../test/rhino-optimization.jsh.js").file,
 			stdio: {
 				output: String
 			},

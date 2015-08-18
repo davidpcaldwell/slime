@@ -57,6 +57,24 @@ plugin({
 		jsh.unit.view.Events = function(p) {
 			return new view.Events(p);
 		};
+		jsh.unit.view.options = function() {
+			var views = {};
+			views.console = function() {
+				return new jsh.unit.view.Console( { writer: jsh.shell.stdio.error } );
+			};
+			views.stdio = function() {
+				return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output });
+			}
+			if (jsh.unit.view.WebView) {
+				views.webview = function() {
+					return new jsh.unit.view.WebView();
+				}
+			}
+			return views;
+		};
+		jsh.unit.view.options.select = function(name) {
+			return jsh.unit.view.options()[name]();
+		}
 
 		var html = $loader.file("html.js", {
 			Scenario: jsh.unit.Scenario,

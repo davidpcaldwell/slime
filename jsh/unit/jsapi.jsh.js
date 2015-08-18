@@ -28,18 +28,6 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var views = {
-	console: function() {
-		return new jsh.unit.view.Console( { writer: jsh.shell.stdio.output } );
-	},
-	stdio: function() {
-		return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output })
-	},
-	webview: function() {
-		return new jsh.unit.view.WebView();
-	}
-}
-
 jsh.loader.plugins(parameters.options.jsapi);
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
@@ -68,15 +56,6 @@ var modules = parameters.options.api.map( function(pathname) {
 	};
 	return rv;
 } );
-
-var console = views[parameters.options.view]();
-
-//var jsapi = jsh.loader.file(jsh.script.file.getRelativePath("html.js"), {
-//	api: parameters.options.jsapi.directory,
-//	html: jsh.unit.html,
-//	Scenario: jsh.unit.Scenario//jsh.loader.file( parameters.options.jsapi.directory.getRelativePath("unit.js") ).Scenario,
-//});
-//var jsapi = jsh.unit.html;
 
 if (!parameters.options.notest) {
 	parameters.options.classpath.forEach( function(pathname) {
@@ -111,7 +90,7 @@ if (!parameters.options.notest) {
 		}
 	})(jsh.unit.Scenario.Html);
 	var tests = new jsh.unit.Suite();
-	console.listen(tests);
+	jsh.unit.view.options.select(parameters.options.view).listen(tests);
 	tests.add = function(p) {
 		if (typeof(arguments.callee.id) == "undefined") arguments.callee.id = 0;
 		arguments.callee.id++;

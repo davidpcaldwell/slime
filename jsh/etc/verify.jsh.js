@@ -50,15 +50,10 @@ jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 var top = (function() {
-	var view = (function(id) {
-		if (id == "console") return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output });
-		if (id == "webview") return new jsh.unit.view.WebView();
-	})(parameters.options.view)
 	var rv = new jsh.unit.Suite({
-		name: "SLIME verification suite",
-		old: true
+		name: "SLIME verification suite"
 	});
-	view.listen(rv);
+	jsh.unit.view.options.select(parameters.options.view).listen(rv);
 	return rv;
 })();
 
@@ -76,7 +71,7 @@ parameters.options.java.forEach(function(jre) {
 		name: "Launcher remote suite",
 		run: jsh.shell.jsh,
 		fork: true,
-		script: jsh.script.file.getRelativePath("launcher/suite.jsh.js").file,
+		script: jsh.script.file.getRelativePath("../test/launcher/suite.jsh.js").file,
 		arguments: ["-scenario", "-view", "child"].concat(rhinoArgs)
 	}));
 
@@ -106,8 +101,8 @@ parameters.options.java.forEach(function(jre) {
 				run: jsh.shell.run,
 				command: launcher,
 				arguments: launch.concat([
-					parameters.options.slime.directory.getRelativePath("jsh/test/suite.jsh.js").toString(),
-					"-stdio"
+					parameters.options.slime.directory.getRelativePath("jsh/etc/suite.jsh.js").toString(),
+					"-view", "stdio"
 				]),
 				directory: parameters.options.slime.directory,
 				environment: jsh.js.Object.set({}, jsh.shell.environment
@@ -132,7 +127,7 @@ if (parameters.options.browser) {
 			run: jsh.shell.jsh,
 			name: "Browser tests",
 	//		command: jsh.shell.java.jrunscript,
-			script: parameters.options.slime.directory.getFile("jsh/test/browser.jsh.js"),
+			script: parameters.options.slime.directory.getFile("jsh/etc/browser.jsh.js"),
 			arguments: [
 	//			jsh.shell.jsh.home.getRelativePath("jsh.js"),
 //				parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
