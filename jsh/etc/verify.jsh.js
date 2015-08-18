@@ -131,7 +131,7 @@ if (parameters.options.browser) {
 			arguments: [
 	//			jsh.shell.jsh.home.getRelativePath("jsh.js"),
 //				parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),
-				"-stdio"
+				"-view", "stdio"
 			].concat(parameters.arguments),
 			directory: parameters.options.slime.directory,
 			environment: jsh.js.Object.set({}, jsh.shell.environment

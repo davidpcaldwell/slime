@@ -19,7 +19,7 @@ var parameters = jsh.script.getopts({
 		//			about how to implement that. In any case, there are some design problems here, as one should be limited to a
 		//			single browser when running interactive tests, and so forth
 		interactive: false,
-		stdio: false,
+		view: "console",
 		port: Number,
 		ie: false,
 		safari: false,
@@ -87,21 +87,10 @@ jsh.shell.echo("browsers = " + browsers);
 if (MODULES && browsers.length) {
 	//	TODO	handle zero modules or zero browsers more intelligently
 	try {
-		var view = (parameters.options.stdio)
-			? new jsh.unit.JSON.Encoder({
-				send: function(s) {
-					jsh.shell.echo(s);
-				}
-			})
-			: new jsh.unit.view.Console({
-				writer: jsh.shell.stdio.output
-			})
-		;
 		var scenario = new jsh.unit.Suite({
-			name: "Browser tests",
-			old: true
+			name: "Browser tests"
 		});
-		view.listen(scenario);
+		jsh.unit.view.options.select(parameters.options.view).listen(scenario);
 		browsers.forEach(function(browser) {
 			scenario.scenario(String(arguments[1]),MODULES.test({
 				coffeescript: parameters.options.coffeescript,
