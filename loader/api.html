@@ -27,9 +27,16 @@ END LICENSE
 		to the application.
 	</div>
 	<div jsapi:id="2">
-		Scripts loaded by the loader also have access to the <code>$platform</code> and <code>$api</code> objects described below,
-		which provide information about the underlying platform and the ability for code to provide information about its own
-		API.
+		<!--
+			Previous text which refers to $platform:
+
+			Scripts loaded by the loader also have access to the <code>$platform</code> and <code>$api</code> objects described below,
+			which provide information about the underlying platform and the ability for code to provide information about its own
+			API.
+		-->
+		Scripts loaded by the loader also have access to the <code>$api</code> object provided by
+		the SLIME loader,
+		which provides basic JavaScript language utilities.
 	</div>
 	<div jsapi:id="3">
 		The loader can execute a single script using the <code>run</code> or <code>file</code> methods, or can execute a module

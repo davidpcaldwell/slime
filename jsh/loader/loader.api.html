@@ -22,9 +22,22 @@ END LICENSE
 	<div jsapi:reference="getApi('../../loader/api.html').getElement('1')"></div>
 	<div jsapi:reference="getApi('../../loader/api.html').getElement('2')"></div>
 	<div jsapi:reference="getApi('../../loader/api.html').getElement('3')"></div>
+	<!--
+		We are not going to bother documenting $platform for now. It contains things that can be inferred other ways:
+			1.	A programmer can use feature detection for Object.defineProperty and related
+			2.	A programmer can use Packages to look for LiveConnect
+			3.	MetaObject is not provided another way, but should implement ECMAScript 6 Proxy and then use that
+
 	<div jsapi:reference="getApi('../../loader/api.html').getElement('$platform')">
 	</div>
-	<div jsapi:reference="getApi('../../loader/$api.api.html').getElement('top')">
+	-->
+	<div>
+		<h1><code>$api</code></h1>
+		<div jsapi:reference="getApi('../../loader/$api.api.html').getElement('top/summary')">
+		</div>
+		<div>
+			See <a href="../../loader/$api.api.html">detailed documentation</a>.
+		</div>
 	</div>
 	<div>
 		<h1>Exports</h1>

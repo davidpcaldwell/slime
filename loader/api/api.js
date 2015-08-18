@@ -63,7 +63,19 @@ window.onload = function() {
 			});
 			matchingScriptElements.forEach(function(element) {
 				console.log(element);
+				if (element.innerHTML.substring(0,"<![CDATA[".length) == "<![CDATA[") {
+					element.innerHTML = element.innerHTML.substring("<![CDATA[".length,element.innerHTML.length-"]]>".length);
+				}
 				var lines = element.innerHTML.split("\n");
+				var isWhitespace = function(line) {
+					return /^\s*$/.test(line);
+				}
+				while(lines.length && isWhitespace(lines[0])) {
+					lines.splice(0,1);
+				}
+				while(lines.length && isWhitespace(lines[lines.length-1])) {
+					lines.splice(lines.length-1,1);
+				}
 				var prefix;
 				var matcher = /^(\s+)(\S+)/;
 				for (var i=0; i<lines.length; i++) {

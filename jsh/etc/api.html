@@ -18,6 +18,9 @@ END LICENSE
 </head>
 <body>
 	<h1>The <code>jsh</code> API</h1>
+	<script type="application/x.jsapi#tests">
+		verify.suite($jsapi.loader.suite("../../loader/api.html"));
+	</script>
 	<table>
 		<thead>
 			<tr>
@@ -31,6 +34,13 @@ END LICENSE
 			<tr><td><a href="../../jsh/tools/api.html">(tools)</a></td><td>jsh Tools</td><!-- no tests --></tr>
 			<tr><td><a href="../../loader/api/api.html">(modules)</a></td><td>api.html format</td><!-- no tests --></tr>
 			<tr><td><a href="../../jsh/unit/api.html">(testing)</a></td><td>jsapi</td><!-- no tests --></tr>
+			<tr>
+				<td><a href="../../loader/$api.api.html">$api</a></td>
+				<td>
+					JavaScript utilities
+					<!--	testing is covered by loader/api.html	-->
+				</td>
+			</tr>
 			<tr>
 				<td><a href="../../jsh/loader/loader.api.html">jsh.loader</a></td>
 				<td>
