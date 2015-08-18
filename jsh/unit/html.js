@@ -340,13 +340,10 @@ var Scope = function(suite,environment) {
 	this.$api = jsh.$jsapi.$api;
 }
 
-var Scenario = function(suite,environment,update) {
-	var scope = new Scope(suite,(environment) ? environment : {});
-		return suite.getSuite(scope);
-};
-
 $exports.Scenario = function(p) {
-	return new Scenario(new Suite(p.pathname,p.unit), p.environment, p.suite);
+	var suite = new Suite(p.pathname,p.unit);
+	var scope = new Scope(suite,(p.environment) ? p.environment : {});
+	return suite.getSuite(scope);
 };
 
 (function() {
