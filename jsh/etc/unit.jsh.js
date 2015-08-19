@@ -29,11 +29,18 @@ var suite = new jsh.unit.Suite(new jsh.unit.Scenario.Html({
 }));
 if (parameters.options.view == "model") {
 	var Model = function(p) {
+		var events = new $api.Events({
+			source: this,
+			parent: p.events
+		});
+		var path = (p.path) ? p.path : [];
+		this.path = path;
+
 		if (p.part.getParts) {
 			var parts = p.part.getParts();
 			this.parts = {};
 			for (var x in parts) {
-				this.parts[x] = new Model({ part: parts[x] });
+				this.parts[x] = new Model({ part: parts[x], path: this.path.slice().concat([x]), events: events });
 			}
 		}
 
@@ -41,9 +48,24 @@ if (parameters.options.view == "model") {
 			this.name = p.part.name;
 		}
 
+		var joined = this.path.join("/");
+
+		p.part.listeners.add("test", function(e) {
+			if (e.source == p.part) {
+				events.fire("model", { path: path, event: e });
+			}
+		});
+
+		p.part.listeners.add("scenario", function(e) {
+			if (e.source == p.part) {
+				events.fire("model", { path: path, event: e });
+			}
+		});
+
 		this.structure = function() {
 			var rv = {
-				name: this.name
+				name: this.name,
+				path: this.path
 			};
 			if (this.parts) {
 				rv.parts = {};
@@ -55,8 +77,38 @@ if (parameters.options.view == "model") {
 		};
 	};
 
-	var structure = new Model({ part: suite }).structure();
-	jsh.shell.echo(JSON.stringify(structure,void(0),"    "));
+	var View = function(p) {
+		var parts = {};
+
+		if (p.model.parts) {
+			for (var x in p.model.parts) {
+				parts[x] = new View({ model: p.model.parts[x] });
+			}
+		}
+
+		this.event = function(e) {
+			var type = (p.model.parts) ? "suite" : "scenario"
+			jsh.shell.echo("Model: " + type + " (" + p.model.name + ") received " + e.type);
+		}
+
+		this.dispatch = function(path,event) {
+			if (path.length == 0) {
+				this.event(event);
+			} else {
+				var start = path[0];
+				var remaining = path.slice(1);
+				parts[start].dispatch(remaining,event);
+			}
+		}
+	}
+
+	var model = new Model({ part: suite });
+	var structure = model.structure();
+	var view = new View({ model: model });
+	model.listeners.add("model", function(e) {
+		view.dispatch(e.detail.path,e.detail.event);
+	});
+	suite.run();
 } else {
 	var view = jsh.unit.view.options.select(parameters.options.view);
 	if (parameters.options["chrome:profile"]) {

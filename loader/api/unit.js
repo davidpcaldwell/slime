@@ -573,6 +573,11 @@ $exports.Scenario = {};
 	}
 
 	var Scenario = function(o,context) {
+		var events = $api.Events({
+			source: this,
+			parent: context.events
+		});
+
 		if (o && o.create) {
 			o.create.call(this);
 		}
@@ -581,9 +586,9 @@ $exports.Scenario = {};
 
 		this.run = function(scope) {
 			var EVENT = { id: context.id, name: name }
-			context.events.fire("scenario", { start: EVENT });
+			events.fire("scenario", { start: EVENT });
 			var local = copy(scope);
-			var vscope = new Scope({ events: context.events });
+			var vscope = new Scope({ events: events });
 			try {
 				if (this.initialize) this.initialize.call(this,local);
 			} catch (e) {
@@ -611,7 +616,7 @@ $exports.Scenario = {};
 			} catch (e) {
 				vscope.error(e);
 			}
-			context.events.fire("scenario", { end: EVENT, success: vscope.success });
+			events.fire("scenario", { end: EVENT, success: vscope.success });
 			return vscope.success;
 		}
 	}
@@ -626,30 +631,15 @@ $exports.Scenario = {};
 		var parts = {};
 
 		var addPart = function(id,type,configuration,context) {
-			parts[id] = { type: type, configuration: configuration, value: new type(configuration,context) };
+			parts[id] = new type(configuration,context);
+//			parts[id] = { type: type, configuration: configuration, value: new type(configuration,context) };
 		}
 
 		this.getParts = function() {
 			var rv = {};
 			for (var x in parts) {
+//				rv[x] = parts[x].value;
 				rv[x] = parts[x];
-//				rv[x] = new (function(x,part) {
-//					this.copy = function(suite) {
-//						if (part.type == Scenario) {
-//							suite.scenario(x,part.configuration);
-//						} else if (part.type == Suite) {
-//							suite.suite(x,part.configuration);
-//						} else {
-//							throw new Error();
-//						}
-//					};
-//
-//					if (part.type == Suite) {
-//						this.getParts = function() {
-//							return part.value.getParts();
-//						}
-//					}
-//				})(x,parts[x]);
 			}
 			return rv;
 		};
@@ -663,7 +653,9 @@ $exports.Scenario = {};
 			if (p.getParts) {
 				var imports = p.getParts();
 				for (var x in imports) {
-					imports[x].copy(parts[id].value);
+//					parts[x] = { value: imports[x] };
+					parts[x] = imports[x];
+//					imports[x].copy(parts[id].value);
 				}
 			}
 		}
@@ -702,7 +694,8 @@ $exports.Scenario = {};
 			}
 			var success = true;
 			for (var x in parts) {
-				var result = parts[x].value.run(copy(scope));
+				var result = parts[x].run(copy(scope));
+//				var result = parts[x].value.run(copy(scope));
 				if (!result) {
 					success = false;
 				}
