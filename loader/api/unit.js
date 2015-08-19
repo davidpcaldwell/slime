@@ -632,13 +632,11 @@ $exports.Scenario = {};
 
 		var addPart = function(id,type,configuration,context) {
 			parts[id] = new type(configuration,context);
-//			parts[id] = { type: type, configuration: configuration, value: new type(configuration,context) };
 		}
 
 		this.getParts = function() {
 			var rv = {};
 			for (var x in parts) {
-//				rv[x] = parts[x].value;
 				rv[x] = parts[x];
 			}
 			return rv;
@@ -650,14 +648,6 @@ $exports.Scenario = {};
 
 		this.suite = function(id,p) {
 			addPart(id,Suite,p,{ id: id, events: events });
-			if (p.getParts) {
-				var imports = p.getParts();
-				for (var x in imports) {
-//					parts[x] = { value: imports[x] };
-					parts[x] = imports[x];
-//					imports[x].copy(parts[id].value);
-				}
-			}
 		}
 
 		if (c && c.create) {
