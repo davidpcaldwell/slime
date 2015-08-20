@@ -90,7 +90,7 @@ var build = (function() {
 	if (parameters.options.rhino && parameters.options.norhino) {
 		bothError("rhino");
 	}
-	if (parameters.options.rhino) rv.rhino = jsh.file.Searchpath([parameters.options.rhino]);
+	if (parameters.options.rhino && parameters.options.rhino.file) rv.rhino = jsh.file.Searchpath([parameters.options.rhino]);
 	if (parameters.options.norhino) rv.rhino = null;
 
 	//	Include Rhino if we are running under it and it is not explicitly excluded
@@ -98,8 +98,12 @@ var build = (function() {
 		rv.rhino = jsh.shell.rhino.classpath;
 	}
 
-	var downloadRhino = function() {
+	var downloadRhino = function(to) {
 		var _file = jrunscript.$api.rhino.download();
+		if (to) {
+			_file.renameTo(to.java.adapt());
+			_file = to.java.adapt();
+		}
 		return jsh.file.Searchpath([jsh.file.Pathname(String(_file.getCanonicalPath()))]);
 	};
 
@@ -117,7 +121,11 @@ var build = (function() {
 		otherwise(rv,"doc",true);
 		if (typeof(rv.rhino) == "undefined") {
 			if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
-				//	do nothing; use Nashorn only
+				if (parameters.options.rhino) {
+					rv.rhino = downloadRhino(parameters.options.rhino);
+				} else {
+					//	do nothing; use Nashorn only
+				}
 			} else {
 				rv.rhino = downloadRhino();
 			}

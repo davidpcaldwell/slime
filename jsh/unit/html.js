@@ -571,6 +571,7 @@ $exports.Scenario = function(p) {
 		return document;
 	};
 
+	//	TODO	this may be close to obsolescence with the new documentation structure using hyperlinks and client-side processing
 	var document = function(p) {
 		var modules = p.modules;
 		var to = p.to;
@@ -621,7 +622,13 @@ $exports.Scenario = function(p) {
 					var target = p.index.getRelativePath(href);
 					var targetFile = target.file;
 					jsh.shell.echo("Copying " + targetFile + " to " + destination.getRelativePath(href) + " ...");
-					targetFile.copy(destination.getRelativePath(href), { recursive: true });
+					targetFile.copy(destination.getRelativePath(href), { 
+						recursive: true,
+						filter: function(o) {
+							if (o.exists) return false;
+							return true;
+						}
+					});
 				}
 			}
 			var children = element.children.filter(elements);
