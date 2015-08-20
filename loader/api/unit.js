@@ -582,6 +582,8 @@ $exports.Scenario = {};
 			o.create.call(this);
 		}
 
+		this.id = context.id;
+
 		var name = (this.name) ? this.name : context.id;
 
 		this.run = function(scope) {
@@ -633,6 +635,8 @@ $exports.Scenario = {};
 		var addPart = function(id,type,configuration,context) {
 			parts[id] = new type(configuration,context);
 		}
+
+		this.id = (context) ? context.id : null;
 
 		this.getParts = function() {
 			var rv = {};

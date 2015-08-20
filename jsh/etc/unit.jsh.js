@@ -28,86 +28,54 @@ var suite = new jsh.unit.Suite(new jsh.unit.Scenario.Html({
 	pathname: jsh.script.file.parent.getRelativePath("api.html")
 }));
 if (parameters.options.view == "model") {
-	var Model = function(p) {
-		var events = new $api.Events({
-			source: this,
-			parent: p.events
-		});
-		var path = (p.path) ? p.path : [];
-		this.path = path;
-
-		if (p.part.getParts) {
-			var parts = p.part.getParts();
-			this.parts = {};
-			for (var x in parts) {
-				this.parts[x] = new Model({ part: parts[x], path: this.path.slice().concat([x]), events: events });
-			}
-		}
-
-		if (p.part.name) {
-			this.name = p.part.name;
-		}
-
-		var joined = this.path.join("/");
-
-		p.part.listeners.add("test", function(e) {
-			if (e.source == p.part) {
-				events.fire("model", { path: path, event: e });
-			}
-		});
-
-		p.part.listeners.add("scenario", function(e) {
-			if (e.source == p.part) {
-				events.fire("model", { path: path, event: e });
-			}
-		});
-
-		this.structure = function() {
-			var rv = {
-				name: this.name,
-				path: this.path
-			};
-			if (this.parts) {
-				rv.parts = {};
-			}
-			for (var x in this.parts) {
-				rv.parts[x] = this.parts[x].structure();
-			}
-			return rv;
-		};
-	};
-
 	var View = function(p) {
 		var parts = {};
 
-		if (p.model.parts) {
-			for (var x in p.model.parts) {
-				parts[x] = new View({ model: p.model.parts[x] });
+		if (p.model.getParts) {
+			var mparts = p.model.getParts();
+			for (var x in mparts) {
+				parts[x] = new View({ model: mparts[x] });
 			}
 		}
 
 		this.event = function(e) {
-			var type = (p.model.parts) ? "suite" : "scenario"
-			jsh.shell.echo("Model: " + type + " (" + p.model.name + ") received " + e.type);
+			var type = (p.model.getParts) ? "suite" : "scenario";
+			if (e.source == p.model) {
+				if (e.type == "scenario") {
+					if (e.detail.start) {
+						jsh.shell.echo(p.model.name + " Start: " + e.detail.start.name)
+					} else if (e.detail.end) {
+						jsh.shell.echo(p.model.name + " End: " + e.detail.end.name + " " + ((e.detail.success) ? "pass" : "fail"));
+					}
+				} else if (e.type == "test") {
+					jsh.shell.echo(e.detail.message);
+				}
+//				jsh.shell.echo("Model: " + type + " (" + p.model.name + ") received " + e.type + " with path " + e.path.map(function(node) { return node.id; }));
+			}
 		}
 
-		this.dispatch = function(path,event) {
+		this.send = function(path,event) {
 			if (path.length == 0) {
 				this.event(event);
 			} else {
 				var start = path[0];
 				var remaining = path.slice(1);
-				parts[start].dispatch(remaining,event);
+				if (start.id) {
+					if (!parts[start.id]) jsh.shell.echo("No part with ID " + start.id);
+					parts[start.id].send(remaining,event);
+				}
 			}
+		}
+
+		this.dispatch = function(event) {
+			this.send(event.path,event);
 		}
 	}
 
-	var model = new Model({ part: suite });
-	var structure = model.structure();
-	var view = new View({ model: model });
-	model.listeners.add("model", function(e) {
-		view.dispatch(e.detail.path,e.detail.event);
-	});
+	var view = new View({ model: suite });
+	new jsh.unit.View(function(e) {
+		view.dispatch(e);
+	}).listen(suite);
 	suite.run();
 } else {
 	var view = jsh.unit.view.options.select(parameters.options.view);

@@ -478,6 +478,7 @@
 				this.type = type;
 				this.source = source;
 				this.detail = detail;
+				this.path = [];
 			};
 
 			source.listeners = new function() {
@@ -507,6 +508,7 @@
 				}
 				var parent = getParent();
 				if (parent) {
+					event.path.unshift(source);
 					parent.bubble(event);
 				}
 			}
