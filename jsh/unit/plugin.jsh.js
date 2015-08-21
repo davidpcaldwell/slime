@@ -255,7 +255,7 @@ plugin({
 				this.view = new jsh.unit.View(add);
 			};
 			var webview = new jsh.ui.javafx.WebView({
-				page: { document: html, loader: $loader },
+				page: { document: html, loader: new $loader.Child("browser/") },
 				initialize: function(p) {
 					rv.initialize((function(message) {
 						this.postMessage(message);
