@@ -664,14 +664,21 @@ $exports.Scenario = {};
 			if (!context) return "(top)";
 		})();
 
-		var THIS = {
-			name: this.name
-		};
+		this.run = function(p) {
+			var THIS = {
+				name: this.name
+			};
 
-		var initialize = function(scope) {
+			if (!p) p = {};
+			if (!p.scope) p.scope = {};
+			if (!p.path) p.path = [];
+			events.fire("scenario", {
+				start: THIS
+			});
+			var success = true;
 			if (this.initialize) {
 				try {
-					this.initialize(scope);
+					this.initialize(p.scope);
 				} catch (e) {
 					//	TODO	not handling destroy here
 					events.fire("test", {
@@ -683,29 +690,9 @@ $exports.Scenario = {};
 						end: THIS,
 						success: false
 					});
+					//	TODO	should we try to destroy?
 					return false;
 				}
-			}
-		};
-
-		var destroy = function(scope) {
-			if (this.destroy) {
-				this.destroy.call(this,scope);
-			}
-		};
-
-		this.run = function(p) {
-			if (!p) p = {};
-			if (!p.scope) p.scope = {};
-			if (!p.path) p.path = [];
-			events.fire("scenario", {
-				start: THIS
-			});
-			var success = true;
-			var initialized = initialize.call(this,p.scope);
-			if (initialized === false) {
-				//	TODO	should we try to destroy?
-				return false;
 			}
 			if (p.path.length == 0) {
 				for (var x in parts) {
@@ -726,7 +713,9 @@ $exports.Scenario = {};
 					path: path
 				});
 			}
-			destroy.call(this,p.scope);
+			if (this.destroy) {
+				this.destroy.call(this,p.scope);
+			}
 			events.fire("scenario", {
 				end: THIS, success: success
 			});
