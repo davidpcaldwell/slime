@@ -658,14 +658,16 @@ $exports.Scenario = {};
 			c.create.call(this);
 		}
 
+		if (!this.name) this.name = (function() {
+			if (context && context.id) return context.id;
+			if (!context) return "(top)";
+		})();
+
 		this.run = function(scope) {
 			if (!scope) scope = {};
-			var THIS = {};
-			THIS.name = (function() {
-				if (this.name) return this.name;
-				if (context && context.id) return context.id;
-				if (!context) return "(top)";
-			}).call(this);
+			var THIS = {
+				name: this.name
+			};
 			events.fire("scenario", {
 				start: THIS
 			});
