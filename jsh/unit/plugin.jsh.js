@@ -202,6 +202,11 @@ var serializeEvent = function(e) {
 		detail: e.detail
 	};
 
+	var paths = e.path.map(function(source) {
+		return source.id;
+	});
+	json.path = paths;
+
 	if (json.detail.error) {
 		json.detail.error = serializeError(json.detail.error);
 	}
@@ -266,7 +271,7 @@ plugin({
 		$loader.run("plugin.jsh.browser.js", { $exports: $exports, jsh: jsh });
 		jsh.unit.browser = $exports;
 
-		jsh.unit.view.Chrome = function(p) {
+		var Chrome = function(p) {
 			var location = (p && p.profile) ? p.profile : jsh.shell.TMPDIR.createTemporary({
 				ifExists: function(dir) {
 					return false;
@@ -316,11 +321,35 @@ plugin({
 						load: function(scope) {
 							var $exports = scope.$exports;
 							$exports.handle = function(request) {
-								if (request.path == "webview.html" || request.path == "webview.js") {
+								if (/\.html$/.test(request.path) || /\.js$/.test(request.path) || /\.css$/.test(request.path)) {
 									return {
 										status: { code: 200 },
 										body: $loader.resource(request.path)
 									};
+								}
+								if (request.path == "structure") {
+									var getStructure = function(part) {
+										var rv = {
+											id: part.id,
+											name: part.name
+										};
+										if (part.getParts) {
+											var parts = part.getParts();
+											rv.parts = {};
+											for (var x in parts) {
+												rv.parts[x] = getStructure(parts[x]);
+											}
+										}
+										return rv;
+									}
+
+									return {
+										status: { code: 200 },
+										body: {
+											type: "application/json",
+											string: JSON.stringify(getStructure(p.suite), void(0), "    ")
+										}
+									}
 								}
 								if (request.path == "messages") {
 									return {
@@ -328,6 +357,18 @@ plugin({
 										body: {
 											type: "application/json",
 											string: JSON.stringify(get(), void(0), "    ")
+										}
+									}
+								}
+								if (request.path == "run") {
+									jsh.java.Thread.start(function() {
+										p.suite.run();
+									});
+									return {
+										status: { code: 200 },
+										body: {
+											type: "application/json",
+											string: JSON.stringify({}, void(0), "    ")
 										}
 									}
 								}
@@ -344,11 +385,24 @@ plugin({
 			});
 			server.start();
 			browser.launch({
-				app: "http://127.0.0.1:" + server.port + "/" + "webview.html"
+				app: "http://127.0.0.1:" + server.port + "/" + p.page
 			});
 			return new jsh.unit.View(function(e) {
 				post(e);
 			});
+		};
+
+		jsh.unit.view.Chrome = function(p) {
+			return new Chrome(jsh.js.Object.set({}, p, {
+				page: "webview.html"
+			}));
+		};
+		jsh.unit.view.Chrome.Ui = function(p) {
+			var rv = new Chrome(jsh.js.Object.set({}, p, {
+				page: "ui.html"
+			}));
+			rv.listen(p.suite);
+			return rv;
 		}
 	}
 })

@@ -72,11 +72,16 @@ if (parameters.options.view == "model") {
 		}
 	}
 
-	var view = new View({ model: suite });
-	new jsh.unit.View(function(e) {
-		view.dispatch(e);
-	}).listen(suite);
-	suite.run();
+	jsh.unit.view.options.select("console").listen(suite);
+	if (parameters.options["chrome:profile"]) {
+		var chrome = new jsh.unit.view.Chrome.Ui({
+			port: parameters.options.port,
+			profile: parameters.options["chrome:profile"],
+			suite: suite
+		});
+	} else {
+		throw new Error("Unimplemented.");
+	}
 } else {
 	var view = jsh.unit.view.options.select(parameters.options.view);
 	if (parameters.options["chrome:profile"]) {
