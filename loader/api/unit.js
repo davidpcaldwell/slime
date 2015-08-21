@@ -586,7 +586,8 @@ $exports.Scenario = {};
 
 		var name = (this.name) ? this.name : context.id;
 
-		this.run = function(scope) {
+		this.run = function(p) {
+			var scope = p.scope;
 			var EVENT = { id: context.id, name: name }
 			events.fire("scenario", { start: EVENT });
 			var local = copy(scope);
@@ -693,37 +694,39 @@ $exports.Scenario = {};
 			}
 		};
 
-		this.part = function(scope) {
-			if (!scope) scope = {};
-			var success = true;
-			var initialized = initialize.call(this,scope);
-			if (initialized === false) {
-				//	TODO	should we try to destroy?
-				return false;
-			}
-			destroy.call(this,scope);
-			return success;
-		}
-
-		this.run = function(scope) {
-			if (!scope) scope = {};
+		this.run = function(p) {
+			if (!p) p = {};
+			if (!p.scope) p.scope = {};
+			if (!p.path) p.path = [];
 			events.fire("scenario", {
 				start: THIS
 			});
 			var success = true;
-			var initialized = initialize.call(this,scope);
+			var initialized = initialize.call(this,p.scope);
 			if (initialized === false) {
 				//	TODO	should we try to destroy?
 				return false;
 			}
-			for (var x in parts) {
-				var result = parts[x].run(copy(scope));
-//				var result = parts[x].value.run(copy(scope));
-				if (!result) {
-					success = false;
+			if (p.path.length == 0) {
+				for (var x in parts) {
+					var result = parts[x].run({
+						scope: copy(p.scope),
+						path: []
+					});
+	//				var result = parts[x].value.run(copy(scope));
+					if (!result) {
+						success = false;
+					}
 				}
+			} else {
+				var child = parts[p.path[0]];
+				var path = p.path.slice(1);
+				child.run({
+					scope: copy(p.scope),
+					path: path
+				});
 			}
-			destroy.call(this,scope);
+			destroy.call(this,p.scope);
 			events.fire("scenario", {
 				end: THIS, success: success
 			});
