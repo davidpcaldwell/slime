@@ -230,7 +230,7 @@ plugin({
 	load: function() {
 		jsh.unit.view.WebView = function() {
 			jsh.io.decorate($loader);
-			var html = new jsh.document.Document({ string: $loader.resource("webview.html").read(String) });
+			var html = new jsh.document.Document({ string: $loader.resource("browser/webview.html").read(String) });
 			var rv = new function() {
 				var buffer = [];
 				var send;
@@ -326,64 +326,11 @@ plugin({
 				servlets: {
 					"/*": {
 						load: function(scope) {
-							var $exports = scope.$exports;
-							$exports.handle = function(request) {
-								var qualifier = /^jsh\/unit\/(.*)/;
-								if (qualifier.exec(request.path)) {
-									request.path = qualifier.exec(request.path)[1];
-								}
-								if (/\.html$/.test(request.path) || /\.js$/.test(request.path) || /\.css$/.test(request.path)) {
-									return {
-										status: { code: 200 },
-										body: $loader.resource(request.path)
-									};
-								}
-								if (request.path == "structure") {
-									var getStructure = function(part) {
-										var rv = {
-											id: part.id,
-											name: part.name
-										};
-										if (part.getParts) {
-											var parts = part.getParts();
-											rv.parts = {};
-											for (var x in parts) {
-												rv.parts[x] = getStructure(parts[x]);
-											}
-										}
-										return rv;
-									}
-
-									return {
-										status: { code: 200 },
-										body: {
-											type: "application/json",
-											string: JSON.stringify(getStructure(p.suite), void(0), "    ")
-										}
-									}
-								}
-								if (request.path == "messages") {
-									return {
-										status: { code: 200 },
-										body: {
-											type: "application/json",
-											string: JSON.stringify(get(), void(0), "    ")
-										}
-									}
-								}
-								if (request.path == "run") {
-									jsh.java.Thread.start(function() {
-										p.suite.run();
-									});
-									return {
-										status: { code: 200 },
-										body: {
-											type: "application/json",
-											string: JSON.stringify({}, void(0), "    ")
-										}
-									}
-								}
-							}
+							var server = $loader.module("browser/server.js", {
+								suite: p.suite,
+								messages: get
+							});
+							scope.$exports.handle = server.handle;
 						},
 						$loader: $loader,
 						parameters: {}
@@ -411,7 +358,7 @@ plugin({
 		jsh.unit.interface.Chrome = function(p) {
 			//	expects suite, port, profile, page properties
 			var rv = new Chrome(jsh.js.Object.set({}, p, {
-				page: "jsh/unit/ui.html"
+				page: "jsh/unit/browser/ui.html"
 			}));
 			rv.listen(p.suite);
 			return rv;
