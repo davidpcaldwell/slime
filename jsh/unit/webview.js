@@ -183,16 +183,15 @@
 									var begin = new View({ name: e.detail.start.name });
 									depth[depth.length-1].tests.appendChild(begin.element);
 									depth.push(begin);
+									begin.result.innerHTML = "Running";
 								}
 							} else if (e.detail.end) {
 								if (depth.length > 0) {
 									var current = depth[depth.length-1];
 									depth.splice(depth.length-1,1);
 									resolve(current,e.detail.success);
-//									current.result.innerHTML = (e.detail.success) ? "Passed" : "Failed";
 								} else {
 									resolve(this,e.detail.success);
-//									this.result.innerHTML = (e.detail.success) ? "Passed" : "Failed";
 								}
 							}
 						} else {

@@ -328,6 +328,10 @@ plugin({
 						load: function(scope) {
 							var $exports = scope.$exports;
 							$exports.handle = function(request) {
+								var qualifier = /^jsh\/unit\/(.*)/;
+								if (qualifier.exec(request.path)) {
+									request.path = qualifier.exec(request.path)[1];
+								}
 								if (/\.html$/.test(request.path) || /\.js$/.test(request.path) || /\.css$/.test(request.path)) {
 									return {
 										status: { code: 200 },
@@ -407,7 +411,7 @@ plugin({
 		jsh.unit.interface.Chrome = function(p) {
 			//	expects suite, port, profile, page properties
 			var rv = new Chrome(jsh.js.Object.set({}, p, {
-				page: "ui.html"
+				page: "jsh/unit/ui.html"
 			}));
 			rv.listen(p.suite);
 			return rv;
