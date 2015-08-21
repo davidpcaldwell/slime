@@ -663,14 +663,11 @@ $exports.Scenario = {};
 			if (!context) return "(top)";
 		})();
 
-		this.run = function(scope) {
-			if (!scope) scope = {};
-			var THIS = {
-				name: this.name
-			};
-			events.fire("scenario", {
-				start: THIS
-			});
+		var THIS = {
+			name: this.name
+		};
+
+		var initialize = function(scope) {
 			if (this.initialize) {
 				try {
 					this.initialize(scope);
@@ -688,7 +685,37 @@ $exports.Scenario = {};
 					return false;
 				}
 			}
+		};
+
+		var destroy = function(scope) {
+			if (this.destroy) {
+				this.destroy.call(this,scope);
+			}
+		};
+
+		this.part = function(scope) {
+			if (!scope) scope = {};
 			var success = true;
+			var initialized = initialize.call(this,scope);
+			if (initialized === false) {
+				//	TODO	should we try to destroy?
+				return false;
+			}
+			destroy.call(this,scope);
+			return success;
+		}
+
+		this.run = function(scope) {
+			if (!scope) scope = {};
+			events.fire("scenario", {
+				start: THIS
+			});
+			var success = true;
+			var initialized = initialize.call(this,scope);
+			if (initialized === false) {
+				//	TODO	should we try to destroy?
+				return false;
+			}
 			for (var x in parts) {
 				var result = parts[x].run(copy(scope));
 //				var result = parts[x].value.run(copy(scope));
@@ -696,9 +723,7 @@ $exports.Scenario = {};
 					success = false;
 				}
 			}
-			if (this.destroy) {
-				this.destroy.call(this,scope);
-			}
+			destroy.call(this,scope);
 			events.fire("scenario", {
 				end: THIS, success: success
 			});
