@@ -160,9 +160,9 @@ var Pathname = function(parameters) {
 		if ($filesystem.exists(peer)) {
 			var getNode = function() {
 				if ($filesystem.isDirectory(peer)) return getDirectory();
-				return getFile();
+				return getFile.call(this);
 			}
-			var proceed = mode.ifExists(getNode());
+			var proceed = mode.ifExists(getNode.call(this));
 			if (!proceed) {
 				//	We return null if a non-directory file exists but ifExists returns false (do not proceed with creating directory).
 				return getDirectory();

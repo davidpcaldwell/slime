@@ -75,6 +75,15 @@ plugin({
 		jsh.unit.view.options.select = function(name) {
 			return jsh.unit.view.options()[name]();
 		}
+		jsh.unit.interface = {};
+		jsh.unit.interface.create = function(suite,o) {
+			//	TODO	argument checking
+			if (o.view) {
+				var view = jsh.unit.view.options.select(o.view);
+				view.listen(suite);
+				suite.run();
+			}
+		}
 
 		var html = $loader.file("html.js", {
 			Scenario: jsh.unit.Scenario,
@@ -273,9 +282,7 @@ plugin({
 
 		var Chrome = function(p) {
 			var location = (p && p.profile) ? p.profile : jsh.shell.TMPDIR.createTemporary({
-				ifExists: function(dir) {
-					return false;
-				}
+				directory: true
 			}).pathname;
 			var directory = location.createDirectory({
 				ifExists: function(dir) {
@@ -397,12 +404,22 @@ plugin({
 				page: "webview.html"
 			}));
 		};
-		jsh.unit.view.Chrome.Ui = function(p) {
+		jsh.unit.interface.Chrome = function(p) {
+			//	expects suite, port, profile, page properties
 			var rv = new Chrome(jsh.js.Object.set({}, p, {
 				page: "ui.html"
 			}));
 			rv.listen(p.suite);
 			return rv;
 		}
+		jsh.unit.interface.create = (function(was) {
+			return function(suite,o) {
+				if (o.chrome) {
+					var p = jsh.js.Object.set({}, { suite: suite }, o.chrome);
+					return new jsh.unit.interface.Chrome(p);
+				}
+				return was.apply(this,arguments);
+			}
+		})(jsh.unit.interface.create);
 	}
 })

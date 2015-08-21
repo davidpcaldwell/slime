@@ -27,70 +27,14 @@ var suite = new jsh.unit.Suite(new jsh.unit.Scenario.Html({
 	name: "jsh Unit Tests",
 	pathname: jsh.script.file.parent.getRelativePath("api.html")
 }));
-if (parameters.options.view == "model") {
-	var View = function(p) {
-		var parts = {};
 
-		if (p.model.getParts) {
-			var mparts = p.model.getParts();
-			for (var x in mparts) {
-				parts[x] = new View({ model: mparts[x] });
-			}
-		}
-
-		this.event = function(e) {
-			var type = (p.model.getParts) ? "suite" : "scenario";
-			if (e.source == p.model) {
-				if (e.type == "scenario") {
-					if (e.detail.start) {
-						jsh.shell.echo(p.model.name + " Start: " + e.detail.start.name)
-					} else if (e.detail.end) {
-						jsh.shell.echo(p.model.name + " End: " + e.detail.end.name + " " + ((e.detail.success) ? "pass" : "fail"));
-					}
-				} else if (e.type == "test") {
-					jsh.shell.echo(e.detail.message);
-				}
-//				jsh.shell.echo("Model: " + type + " (" + p.model.name + ") received " + e.type + " with path " + e.path.map(function(node) { return node.id; }));
-			}
-		}
-
-		this.send = function(path,event) {
-			if (path.length == 0) {
-				this.event(event);
-			} else {
-				var start = path[0];
-				var remaining = path.slice(1);
-				if (start.id) {
-					if (!parts[start.id]) jsh.shell.echo("No part with ID " + start.id);
-					parts[start.id].send(remaining,event);
-				}
-			}
-		}
-
-		this.dispatch = function(event) {
-			this.send(event.path,event);
-		}
-	}
-
-	jsh.unit.view.options.select("console").listen(suite);
-	if (parameters.options["chrome:profile"]) {
-		var chrome = new jsh.unit.view.Chrome.Ui({
-			port: parameters.options.port,
+jsh.unit.interface.create(suite, new function() {
+	if (parameters.options.view == "ui") {
+		this.chrome = {
 			profile: parameters.options["chrome:profile"],
-			suite: suite
-		});
+			port: parameters.options.port
+		};
 	} else {
-		throw new Error("Unimplemented.");
+		this.view = parameters.options.view;
 	}
-} else {
-	var view = jsh.unit.view.options.select(parameters.options.view);
-	if (parameters.options["chrome:profile"]) {
-		var chrome = new jsh.unit.view.Chrome({
-			port: parameters.options.port,
-			profile: parameters.options["chrome:profile"]
-		});
-		chrome.listen(suite);
-	}
-	view.listen(suite);
-	suite.run();
-}
+});
