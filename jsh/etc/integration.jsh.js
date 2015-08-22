@@ -688,7 +688,7 @@ if (CATALINA_HOME) {
 		fork: true,
 //		command: LAUNCHER_COMMAND[0],
 //		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/http.jsh.js")),
-		script: jsh.script.file.getRelativePath("jsh.script/http.jsh.js"),
+		script: jsh.script.file.getRelativePath("../test/jsh.script/http.jsh.js"),
 		stdio: {
 			output: String
 		},
@@ -707,7 +707,7 @@ if (COFFEESCRIPT && !jsh.shell.environment.SKIP_COFFEESCRIPT) {
 	jsh.shell.echo("Testing CoffeeScript ...");
 	jsh.shell.jsh({
 		fork: true,
-		script: jsh.script.file.getRelativePath("coffee/hello.jsh.coffee").file,
+		script: jsh.script.file.getRelativePath("../test/coffee/hello.jsh.coffee").file,
 		stdio: {
 			output: String
 		},
@@ -726,7 +726,7 @@ if (COFFEESCRIPT && !jsh.shell.environment.SKIP_COFFEESCRIPT) {
 	});
 	jsh.shell.jsh({
 		fork: true,
-		script: jsh.script.file.getRelativePath("coffee/loader.jsh.js").file,
+		script: jsh.script.file.getRelativePath("../test/coffee/loader.jsh.js").file,
 		stdio: {
 			output: String
 		},
@@ -747,7 +747,7 @@ if (nativeLauncher && !/\.js/.test(nativeLauncher.pathname.basename)) {
 	Packages.java.lang.System.err.println("Testing native launcher: " + nativeLauncher + " ...");
 	jsh.shell.run({
 		command: nativeLauncher,
-		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],
+		arguments: [jsh.script.file.getRelativePath("../test/jsh.shell/echo.jsh.js")],
 		stdio: {
 			output: String
 		},
@@ -767,7 +767,7 @@ if (nativeLauncher && !/\.js/.test(nativeLauncher.pathname.basename)) {
 
 	jsh.shell.run({
 		command: "./jsh",
-		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],
+		arguments: [jsh.script.file.getRelativePath("../test/jsh.shell/echo.jsh.js")],
 		stdio: {
 			output: String
 		},
@@ -791,7 +791,7 @@ if (nativeLauncher && !/\.js/.test(nativeLauncher.pathname.basename)) {
 	PATH.pathnames.push(jsh.shell.jsh.home.pathname);
 	var jshInPathCommand = {
 		command: "jsh",
-		arguments: [jsh.script.file.getRelativePath("jsh.shell/echo.jsh.js")],
+		arguments: [jsh.script.file.getRelativePath("../test/jsh.shell/echo.jsh.js")],
 		stdio: {
 			output: String
 		},

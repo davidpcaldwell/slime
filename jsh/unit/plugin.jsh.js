@@ -81,7 +81,10 @@ plugin({
 			if (o.view) {
 				var view = jsh.unit.view.options.select(o.view);
 				view.listen(suite);
-				suite.run();
+				var success = suite.run();
+				if (o.view != "webview") {
+					jsh.shell.exit( (success) ? 0 : 1 );
+				}
 			}
 		}
 
@@ -273,7 +276,7 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.shell && jsh.httpd && jsh.http && jsh.unit && jsh.unit.Scenario.Events && jsh.java && jsh.file;
+		return jsh.js && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario.Events && jsh.java && jsh.file;
 	},
 	load: function() {
 		jsh.io.decorate($loader);

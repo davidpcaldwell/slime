@@ -25,32 +25,25 @@ var parameters = jsh.script.getopts({
 		jsh: jsh.shell.jsh.home.pathname,
 		src: jsh.script.file.getRelativePath("../.."),
 		debug: false,
-		view: "console"
+		view: "console",
+		"chrome:profile": jsh.file.Pathname,
+		port: Number
 	}
 });
 
 var java = jsh.file.Searchpath([parameters.options.java.directory.getRelativePath("bin")]).getCommand("java");
 
-var top = (function() {
-	var rv = new jsh.unit.Suite({
-		name: "SLIME suite"
-	});
-	jsh.unit.view.options.select(parameters.options.view).listen(rv);
-	return rv;
-})();
-
-//	Provide way to set CATALINA_HOME?
-//	Provide way to set JSH_LAUNCHER_DEBUG?
-//	Provide way to set JSH_SCRIPT_DEBUGGER?
-//	Provide way to set JSH_ENGINE?
-top.scenario("unit", jsh.unit.Suite.Fork({
+var suite = new jsh.unit.Suite({
+	name: "SLIME suite"
+});
+suite.scenario("unit", jsh.unit.Suite.Fork({
 	name: "Unit tests",
 	run: jsh.shell.jsh,
 	shell: parameters.options.jsh.directory,
 	script: parameters.options.src.directory.getRelativePath("jsh/etc/unit.jsh.js"),
 	arguments: ["-view","stdio"]
 }));
-top.scenario("integration", jsh.unit.Suite.Fork({
+suite.scenario("integration", jsh.unit.Suite.Fork({
 	name: "Integration tests",
 	run: jsh.shell.jsh,
 	shell: parameters.options.jsh.directory,
@@ -60,6 +53,21 @@ top.scenario("integration", jsh.unit.Suite.Fork({
 		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
 	})
 }));
+jsh.unit.interface.create(suite, new function() {
+	if (parameters.options.view == "ui") {
+		this.chrome = {
+			profile: parameters.options["chrome:profile"],
+			port: parameters.options.port
+		};
+	} else {
+		this.view = parameters.options.view;
+	}
+});
+
+//	Provide way to set CATALINA_HOME?
+//	Provide way to set JSH_LAUNCHER_DEBUG?
+//	Provide way to set JSH_SCRIPT_DEBUGGER?
+//	Provide way to set JSH_ENGINE?
 //if (!parameters.options.suite) {
 //	top.add({ scenario: new jsh.unit.Scenario.Fork({
 //		name: "Unit tests",
@@ -90,7 +98,3 @@ top.scenario("integration", jsh.unit.Suite.Fork({
 //		})
 //	})
 //});
-var success = top.run();
-if (parameters.options.view != "webview") {
-	jsh.shell.exit( (success) ? 0 : 1 );
-}
