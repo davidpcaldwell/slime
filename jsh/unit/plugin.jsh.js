@@ -208,6 +208,7 @@ var serializeError = function recurse(e) {
 var serializeEvent = function(e) {
 	var json = {
 		type: e.type,
+		timestamp: e.timestamp,
 		detail: e.detail
 	};
 

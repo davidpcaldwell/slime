@@ -477,8 +477,12 @@
 			var Event = function(type,detail) {
 				this.type = type;
 				this.source = source;
+				this.timestamp = Date.now();
 				this.detail = detail;
 				this.path = [];
+
+				//	TODO	consider greater compatibility:
+				//	http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-interface
 			};
 
 			source.listeners = new function() {

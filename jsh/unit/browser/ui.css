@@ -12,7 +12,7 @@ Portions created by the Initial Developer are Copyright (C) 2015 the Initial Dev
 Contributor(s):
 END LICENSE
 */
-.scenario { padding: 0.2em; font-family: sans-serif; font-size: 6pt; }
+.scenario { padding: 0.2em; font-family: sans-serif; font-size: 11pt; }
 .scenario .scenario {
 	padding: 0.2em 0.2em 0.2em 0.2em;
 	margin: 0.2em 0em 0.2em 1em;
@@ -22,5 +22,9 @@ END LICENSE
 /*.tests { padding: 0em 0em; margin: 0em; 0em; }*/
 .scenario { background-color: #e0e0e0; color: black; }
 .success { background-color: green; color: white; }
-.failure { background-color: red; color: white }
+.failure { background-color: red; color: white; }
+button.node {
+	margin: 0px 0px 0px 3px;
+	padding: 0px 2px 0px 2px;
+}
 /*		div.node { margin: 0em 1em; border: 1px solid black; } */

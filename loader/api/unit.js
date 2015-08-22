@@ -700,7 +700,6 @@ $exports.Scenario = {};
 						scope: copy(p.scope),
 						path: []
 					});
-	//				var result = parts[x].value.run(copy(scope));
 					if (!result) {
 						success = false;
 					}

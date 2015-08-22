@@ -56,8 +56,12 @@ $exports.handle = function(request) {
 		}
 	}
 	if (request.path == "run") {
+		var json = JSON.parse(request.body.stream.character().asString());
 		jsh.java.Thread.start(function() {
-			$context.suite.run();
+			$context.suite.run({
+				scope: {},
+				path: json
+			});
 		});
 		return {
 			status: { code: 200 },

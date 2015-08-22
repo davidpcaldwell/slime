@@ -129,6 +129,12 @@
 		}
 	};
 
+	var run = function(path) {
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", "run", false);
+		xhr.send(JSON.stringify(path));
+	}
+
 	window.addEventListener("load", function() {
 		if (document.body.id == "ui") {
 			document.getElementById("run").disabled = true;
@@ -137,14 +143,64 @@
 			xhr.open("GET", "structure", false);
 			xhr.send(null);
 			var json = JSON.parse(xhr.responseText);
-			console.log("structure", json);
 
 			var View = function View(json) {
+				this.id = json.id;
+
 				this.element = document.createElement("div");
 				this.element.className = "scenario";
-				this.title = document.createElement("div");
-				this.element.appendChild(this.title);
-				this.title.appendChild(document.createTextNode(json.name));
+				this.header = document.createElement("div");
+				this.element.appendChild(this.header);
+
+				if (false) {
+					this.enabled = document.createElement("input");
+					this.enabled.type = "checkbox";
+					this.enabled.checked = true;
+
+					this.setEnabled = function(b) {
+						this.enabled.checked = b;
+						for (var x in parts) {
+							if (parts[x].setEnabled) {
+								parts[x].setEnabled(b);
+							}
+						}
+					};
+					var self = this;
+					this.enabled.addEventListener("change", function(e) {
+						console.log("checked",this.checked);
+						self.setEnabled(this.checked);
+					});
+					//	TODO	toggling from true to false should toggle all
+					//			descendants to false; from false to true should toggle
+					//			all descendants to true
+					this.header.appendChild(this.enabled);
+				}
+
+				var name = document.createElement("span");
+				name.className = "name";
+				name.appendChild(document.createTextNode(json.name));
+				this.header.appendChild(name);
+
+				if (json.id) {
+					this.run = document.createElement("button");
+					this.run.className = "node";
+					this.run.appendChild(document.createTextNode("Run"));
+
+					var self = this;
+					this.run.addEventListener("click", function(e) {
+						self.clear();
+						var path = [json.id];
+						var parent = self.element.parentNode;
+						while(parent.model && parent.model.id) {
+							path.unshift(parent.model.id);
+							parent = parent.parentNode;
+						}
+						console.log("path", path);
+						run(path);
+					});
+					this.header.appendChild(this.run);
+				}
+
 				this.element.model = this;
 
 				var parts = {};
@@ -159,6 +215,17 @@
 					this.element.appendChild(this.tests);
 				}
 
+				this.clear = function() {
+					this.element.className = this.element.className.replace(/success/g, "");
+					this.element.className = this.element.className.replace(/failure/g, "");
+					if (this.tests) {
+						this.tests.innerHTML = "";
+					}
+					for (var x in parts) {
+						parts[x].clear();
+					}
+				}
+
 				var result = document.createElement("div");
 				this.element.appendChild(result);
 				result.appendChild(document.createTextNode("Result: "));
@@ -167,8 +234,15 @@
 
 				var depth = [];
 
-				var resolve = function(view,success) {
-					view.result.innerHTML = (success) ? "Passed" : "Failed";
+				var start = function(view,e) {
+					view.result.innerHTML = "Running ...";
+					view.started = e.timestamp;
+				}
+
+				var resolve = function(view,e) {
+					var success = e.detail.success;
+					var elapsed = ((e.timestamp - view.started) / 1000).toFixed(3);
+					view.result.innerHTML = (success) ? "Passed (" + elapsed + ")" : "Failed";
 					colorCode(view.element,success);
 				}
 
@@ -177,21 +251,21 @@
 						if (e.type == "scenario") {
 							if (e.detail.start) {
 								if (!depth.length) {
-									this.result.innerHTML = "Running";
+									start(this,e);
 									depth.push(this);
 								} else {
 									var begin = new View({ name: e.detail.start.name });
 									depth[depth.length-1].tests.appendChild(begin.element);
 									depth.push(begin);
-									begin.result.innerHTML = "Running";
+									start(begin,e);
 								}
 							} else if (e.detail.end) {
 								if (depth.length > 0) {
 									var current = depth[depth.length-1];
 									depth.splice(depth.length-1,1);
-									resolve(current,e.detail.success);
+									resolve(current,e);
 								} else {
-									resolve(this,e.detail.success);
+									resolve(this,e);
 								}
 							}
 						} else {
@@ -224,10 +298,8 @@
 			}, 1000);
 
 			document.getElementById("run").addEventListener("click", function() {
-				var xhr = new XMLHttpRequest();
-				xhr.open("POST", "run", false);
-				xhr.send(null);
-				var json = JSON.parse(xhr.responseText);
+				view.clear();
+				run([]);
 			});
 		} else {
 			if (!window.jsh) {
