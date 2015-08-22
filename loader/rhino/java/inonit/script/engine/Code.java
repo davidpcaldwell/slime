@@ -841,7 +841,7 @@ public abstract class Code {
 				if (location == StandardLocation.CLASS_PATH) {
 					int lastPeriod = file.getName().lastIndexOf(".");
 					if (lastPeriod == -1) throw new RuntimeException("No period: " + file.getName());
-					String rv = file.getName().substring(0,lastPeriod).replace("/", ".");
+					String rv = file.getName().substring(0,lastPeriod).replace(java.io.File.separator, ".");
 					return rv;
 				}
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

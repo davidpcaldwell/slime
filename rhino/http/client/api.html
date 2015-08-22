@@ -109,22 +109,24 @@ END LICENSE
 			this.gae = gae;
 		};
 
-		if (false) {
-			if (tomcat) {
-				return [ new $Context(false), new $Context(true) ];
-			} else {
-				var context = new $Context(false);
-				context.notomcat = true;
-				return [ context ];
-			}
-		} else {
+//		if (false) {
+//			if (tomcat) {
+////				return [ new $Context(false), new $Context(true) ];
+//				throw new Error();
+//				return null;
+//			} else {
+//				var context = new $Context(false);
+//				context.notomcat = true;
+//				return [ context ];
+//			}
+//		} else {
 			var context = new scope.$Context(false);
 			context.notomcat = !Boolean(tomcat);
 			scope.servlet = servlet;
 			scope.tomcat = tomcat;
 			scope.context = context;
 			scope.module = $jsapi.loader.module("module.js", context);
-		}
+//		}
 	]]></script>
 	<!--
 	<script type="application/x.jsapi#context">

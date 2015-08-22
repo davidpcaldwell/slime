@@ -10,9 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-//if (jsh.test && jsh.test.requireBuiltShell) {
-//	jsh.test.requireBuiltShell();
-//}
+if (jsh.test && jsh.test.requireBuiltShell) {
+	jsh.test.requireBuiltShell();
+}
 var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),

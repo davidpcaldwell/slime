@@ -1401,20 +1401,19 @@ END LICENSE
 					scope._linkdir = linkdir;
 					scope.linkdir = filesystem.java.adapt(scope._linkdir).directory;
 					scope.hostdir = hostdir;
+					var _createFile = function(_dir,path) {
+						var dir = filesystem.java.adapt(_dir).directory;
+						scope.createFile(dir,path);
+					}
+
+					scope._createFile = _createFile;
+
+					var before = scope.linkdir.getRelativePath("to_c").directory.list().length;
+					scope.before = before;
+					scope.filelink = scope.linkdir.getRelativePath("to_target").file;
+					scope.dirlink = scope.linkdir.getRelativePath("to_c").directory;
+					scope.ln = jsh.shell.PATH.getCommand("ln");
 				}
-				scope.ln = jsh.shell.PATH.getCommand("ln");
-
-				var _createFile = function(_dir,path) {
-					var dir = filesystem.java.adapt(_dir).directory;
-					scope.createFile(dir,path);
-				}
-
-				scope._createFile = _createFile;
-
-				var before = scope.linkdir.getRelativePath("to_c").directory.list().length;
-				scope.before = before;
-				scope.filelink = scope.linkdir.getRelativePath("to_target").file;
-				scope.dirlink = scope.linkdir.getRelativePath("to_c").directory;
 			</script>
 			<script type="application/x.jsapi#tests">
 				if (scope.ln) {
@@ -1451,12 +1450,16 @@ END LICENSE
 			-->
 			<div>
 				<script type="application/x.jsapi#initialize">
-					var File = Packages.java.io.File;
-					scope._createFile( scope.hostdir, "c/c1" );
-					scope._createFile( scope.hostdir, "c/c2" );
+					if (scope.ln) {
+						var File = Packages.java.io.File;
+						scope._createFile( scope.hostdir, "c/c1" );
+						scope._createFile( scope.hostdir, "c/c2" );
+					}
 				</script>
 				<script type="application/x.jsapi#tests">
-					scope.test(linkdir.getRelativePath("to_c").directory.list().length == before+2);
+					if (scope.ln) {
+						scope.test(linkdir.getRelativePath("to_c").directory.list().length == before+2);
+					}
 				</script>
 			</div>
 			<div>
@@ -1464,38 +1467,44 @@ END LICENSE
 						var dirlist;
 				-->
 				<script type="application/x.jsapi#initialize">
-					scope.dir = scope.filesystem.java.adapt(scope.hostdir).directory;
-					scope.filelink.remove();
-					scope.dirlist = scope.dir.getSubdirectory("c").list();
+					if (scope.ln) {
+						scope.dir = scope.filesystem.java.adapt(scope.hostdir).directory;
+						scope.filelink.remove();
+						scope.dirlist = scope.dir.getSubdirectory("c").list();
+					}
 				</script>
 				<script type="application/x.jsapi#tests">
-					scope.test( linkdir.getRelativePath("to_target").file == null );
-					scope.test( dir.getRelativePath("target").file != null );
-					scope.test( linkdir.getRelativePath("to_c").directory != null );
-					linkdir.getRelativePath("to_c").directory.remove();
-					scope.test( dir.getSubdirectory("c").list().length == dirlist.length );
-					scope.test( dir.getRelativePath("c").directory != null );
-					scope.test( linkdir.getRelativePath("to_c").directory == null );
-					scope.test( dir.getRelativePath("c").directory != null );
+					if (scope.ln) {
+						scope.test( linkdir.getRelativePath("to_target").file == null );
+						scope.test( dir.getRelativePath("target").file != null );
+						scope.test( linkdir.getRelativePath("to_c").directory != null );
+						linkdir.getRelativePath("to_c").directory.remove();
+						scope.test( dir.getSubdirectory("c").list().length == dirlist.length );
+						scope.test( dir.getRelativePath("c").directory != null );
+						scope.test( linkdir.getRelativePath("to_c").directory == null );
+						scope.test( dir.getRelativePath("c").directory != null );
+					}
 				</script>
 			</div>
 			<div>
 				<script type="application/x.jsapi#initialize">
 				</script>
 				<script type="application/x.jsapi#tests">
-					scope.test( linkdir.getRelativePath("to_nowhere").file == null );
-					scope.test( linkdir.getRelativePath("to_nowhere").directory == null );
-					var list = linkdir.list();
-					var toDelete;
-					list.forEach(function(item) {
-						scope.test(item != null);
-						scope.test(item.parent.pathname.toString() == linkdir.pathname.toString());
-						scope.test(item.pathname.toString().substring(0,linkdir.pathname.toString().length) == linkdir.pathname.toString());
-						scope.test(item.directory === null);
-						toDelete = item;
-					});
-					toDelete.remove();
-					scope.test(linkdir.list().length+1 == list.length);
+					if (scope.ln) {
+						scope.test( linkdir.getRelativePath("to_nowhere").file == null );
+						scope.test( linkdir.getRelativePath("to_nowhere").directory == null );
+						var list = linkdir.list();
+						var toDelete;
+						list.forEach(function(item) {
+							scope.test(item != null);
+							scope.test(item.parent.pathname.toString() == linkdir.pathname.toString());
+							scope.test(item.pathname.toString().substring(0,linkdir.pathname.toString().length) == linkdir.pathname.toString());
+							scope.test(item.directory === null);
+							toDelete = item;
+						});
+						toDelete.remove();
+						scope.test(linkdir.list().length+1 == list.length);
+					}
 				</script>
 			</div>
 		</div>
