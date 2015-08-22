@@ -241,6 +241,9 @@ var LocalRepository = function(o) {
 			args.push("-a");
 		}
 		var output = !Boolean(p.name);
+		if (output) {
+			args.push("-v");
+		}
 		return execute({
 			command: "branch",
 			arguments: args,
@@ -256,8 +259,14 @@ var LocalRepository = function(o) {
 							//	See http://stackoverflow.com/questions/12613793/why-is-there-a-remotes-origin-head-origin-master-entry-in-my-git-branch-l
 							rv.line = line;
 						} else if (line) {
-							rv.name = line.substring(2);
 							rv.current = (line.substring(0,1) == "*");
+							var matcher = /^(\S+)(?:\s+)(\S+)(?:\s+)(?:.*)$/;
+							var match = matcher.exec(line.substring(2));
+							if (!match) throw new Error("Does not match " + matcher + ": " + line.substring(2));
+							rv.name = match[1];
+							rv.commit = {
+								hash: match[2]
+							};
 						}
 						return rv;
 					});
@@ -293,7 +302,12 @@ var LocalRepository = function(o) {
 			},
 			evaluate: function(result) {
 				if (result.status == 0) {
-					return result.stdio.output;
+					var rv = (/^(\S+)/.exec(result.stdio.output))[1];
+					if (!rv) {
+						throw new Error("No match: [" + result.stdio.output + "]");
+					}
+					return rv;
+//					return result.stdio.output;
 				} else {
 					throw new Error("git exited with status " + result.status);
 				}
