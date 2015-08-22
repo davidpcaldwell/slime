@@ -933,6 +933,9 @@
 		if ($api.script.file && $api.arguments[0] && $api.arguments[0] == "jsh") {
 			return $api.arguments.shift();
 		}
+		if ($api.script.file && $api.arguments[0] && $api.arguments[0] == "api") {
+			return $api.arguments.shift();
+		}
 	})();
 
 	if ($query) {
@@ -947,7 +950,8 @@
 			}
 			return rv;
 		})();
-		if ($query == "jsh") {
+		if ($query == "api") {
+		} else if ($query == "jsh") {
 			$api.script.resolve("../../jsh/launcher/main.js").load();
 		} else if ($query == "jsh/install") {
 			Packages.java.lang.System.err.println("Installing jsh from SLIME source code at " + $api.script.resolve("../../").toString());

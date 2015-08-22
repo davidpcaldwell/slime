@@ -11,6 +11,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	is this script still useful? Problem is, adding Rhino to an existing built shell would mean recompiling the jsh.jar
+//			launcher. So for a built shell, we need to add it beforehand. Perhaps this script should fail for a built shell and
+//			be used for unbuilt shells? Or perhaps for built shells, it should overwrite jsh.jar?
 var parameters = jsh.script.getopts({
 	options: {
 		local: jsh.file.Pathname
@@ -20,7 +23,11 @@ var parameters = jsh.script.getopts({
 jsh.shell.echo("Installing Rhino ...");
 var operation = "copy";
 if (!parameters.options.local) {
-	var jrunscript = {};
+	var jrunscript = {
+		$api: {
+			arguments: ["api"]
+		}
+	};
 	var SRC = (function() {
 		if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getRelativePath("jsh.js");
 		if (jsh.shell.jsh.src) return jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js");
