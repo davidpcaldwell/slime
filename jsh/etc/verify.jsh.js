@@ -21,7 +21,9 @@ var parameters = jsh.script.getopts({
 		tomcat: jsh.file.Pathname,
 		browser: false,
 		debug: false,
-		view: "console"
+		view: "console",
+		"chrome:profile": jsh.file.Pathname,
+		port: Number
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -49,13 +51,9 @@ jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
 jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
-var top = (function() {
-	var rv = new jsh.unit.Suite({
-		name: "SLIME verification suite"
-	});
-	jsh.unit.view.options.select(parameters.options.view).listen(rv);
-	return rv;
-})();
+var top = new jsh.unit.Suite({
+	name: "SLIME verification suite"
+});
 
 var subprocess = function(p) {
 	if (!arguments.callee.index) arguments.callee.index = 0;
@@ -68,7 +66,7 @@ parameters.options.java.forEach(function(jre) {
 //	jsh.shell.echo("Adding launcher suite");
 	var rhinoArgs = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? ["-rhino", String(jsh.shell.rhino.classpath)] : [];
 	top.scenario("launcher", jsh.unit.Suite.Fork({
-		name: "Launcher remote suite",
+		name: "Launcher tests",
 		run: jsh.shell.jsh,
 		fork: true,
 		script: jsh.script.file.getRelativePath("../test/launcher/suite.jsh.js").file,
@@ -141,7 +139,13 @@ if (parameters.options.browser) {
 	}
 }
 
-top.run();
-
-jsh.shell.echo();
-jsh.shell.echo("Finished at " + new Date());
+jsh.unit.interface.create(top, new function() {
+	if (parameters.options.view == "ui") {
+		this.chrome = {
+			profile: parameters.options["chrome:profile"],
+			port: parameters.options.port
+		};
+	} else {
+		this.view = parameters.options.view;
+	}
+});
