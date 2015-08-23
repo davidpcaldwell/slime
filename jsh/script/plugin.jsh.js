@@ -57,6 +57,10 @@ plugin({
 					jsh.shell.echo("Command not found: " + e.commandNotFound);
 					jsh.shell.exit(1);
 				} else {
+					jsh.shell.echo("Uncaught exception: " + e);
+					if (e.stack) {
+						jsh.shell.echo(e.stack);
+					}
 					throw e;
 				}
 			}
