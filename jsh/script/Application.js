@@ -38,7 +38,7 @@ $exports.Application = function(o) {
 		}
 	};
 
-	this.getCommands = function() {
+	this.getCommands = $api.experimental(function() {
 		//	TODO	things could go wrong; caller could set up a cyclic reference, for example
 		var get = function(target,rv,prefix) {
 			if (!rv) rv = {};
@@ -52,7 +52,7 @@ $exports.Application = function(o) {
 			return rv;
 		}
 		return get(o.commands);
-	};
+	});
 
 	this.run = function() {
 		var globals = $context.getopts({
