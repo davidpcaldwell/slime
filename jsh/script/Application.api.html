@@ -116,6 +116,33 @@ END LICENSE
 						<div class="label">Instances</div>
 						<div class="label">has properties:</div>
 						<ul>
+							<li class="value">
+								<div class="name">commands</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+								<script type="application/x.jsapi#tests">
+									var one = new module.Application(new function() {
+										this.options = {};
+										this.commands = {};
+										this.commands.a = {
+											getopts: {
+											},
+											run: function() {
+											}
+										};
+										this.commands.a.b = {
+											getopts: {},
+											run: function() {
+											}
+										}
+									});
+
+									var commands = one.getCommands();
+									verify(commands)["a"].is.not(void(0));
+									verify(commands)["a.b"].is.not(void(0));
+									verify(commands).evaluate(function() { return this.b; }).is(void(0));
+								</script>
+							</li>
 							<li class="function">
 								<div class="name">run</div>
 								<span>Executes the application.</span>
