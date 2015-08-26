@@ -187,7 +187,7 @@ plugin({
 							})(o.evaluate);
 						} else {
 							o.evaluate = function(result) {
-								verify(result).status().is(0);
+								verify(result).status.is(0);
 							};
 						}
 						p.run(o);
