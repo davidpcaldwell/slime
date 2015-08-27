@@ -73,6 +73,52 @@ var Chrome = function(b) {
 		};
 
 		var launch = function(m) {
+			if ($context.os.name == "Mac OS X") {
+				(function startDefaultUser() {
+					var isDefaultRunning = function() {
+						return b.user.list().filter(function(node) {
+							return node.pathname.basename == "RunningChromeVersion";						
+						}).length > 0;
+					}
+					if (!isDefaultRunning()) {
+						Packages.java.lang.System.err.println("Starting background Chrome ...");
+						var tmp = $context.TMPDIR.createTemporary({ directory: true });
+						var command = {
+							command: b.program,
+							arguments: ["--user-data-dir=" + b.user, "--no-startup-window"]
+						};
+						tmp.getRelativePath("chrome.bash").write(
+							(
+								[
+									"nohup", 
+									command.command
+								].concat(command.arguments)
+								.concat(["&"])
+							).map(function(token) {
+								return token.toString().replace(/ /g, "\\ ");
+							}).join(" "),
+							{ append: false }
+						);
+						if (false) {
+							$context.run({
+								command: "/usr/bin/open",
+								arguments: ["-b","com.google.Chrome","--args","--no-startup-window"]
+							});
+						} else {
+							Packages.java.lang.System.err.println("script = " + tmp.getRelativePath("chrome.bash"));
+							$context.run({
+								command: "/bin/bash",
+								arguments: [tmp.getRelativePath("chrome.bash")],
+								directory: tmp
+							});
+						}
+						while(!isDefaultRunning()) {
+							Packages.java.lang.Thread.currentThread().sleep(100);
+						}
+						Packages.java.lang.System.err.println("Started background Chrome ...");
+					}
+				})();
+			}
 			var args = [];
 			addProfileArguments(args,m);
 			if (m.app) {

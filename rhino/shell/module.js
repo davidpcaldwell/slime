@@ -364,6 +364,7 @@ $loader.run("browsers.js", {
 	$context: {
 		os: $exports.os,
 		HOME: $exports.HOME,
+		TMPDIR: $exports.TMPDIR,
 		run: $exports.run,
 		api: {
 			js: $context.api.js,
