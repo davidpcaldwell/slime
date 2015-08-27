@@ -560,6 +560,7 @@ var Scope = function(o) {
 		}
 	}
 };
+$exports.Scope = Scope;
 
 $exports.Scenario = {};
 
