@@ -38,6 +38,22 @@ $exports.Application = function(o) {
 		}
 	};
 
+	this.getCommands = $api.experimental(function() {
+		//	TODO	things could go wrong; caller could set up a cyclic reference, for example
+		var get = function(target,rv,prefix) {
+			if (!rv) rv = {};
+			if (!prefix) prefix = "";
+			for (var x in target) {
+				if (target[x] && typeof(target[x]) == "object" && typeof(target[x].run) == "function") {
+					rv[prefix+x] = target[x];
+				}
+				get(target[x],rv,prefix+x+".");
+			}
+			return rv;
+		}
+		return get(o.commands);
+	});
+
 	this.run = function() {
 		var globals = $context.getopts({
 			options: o.options,
