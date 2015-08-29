@@ -46,7 +46,11 @@ END LICENSE
 				<span class="type"><a href="../io/api.html#types.Loader">Loader</a></span>
 			</div>
 			<script type="application/x.jsapi#initialize">
-				scope.loader = new scope.module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+				if (scope.module) {
+					scope.loader = new scope.module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+				} else {
+					scope.loader = new jsh.file.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+				}
 			</script>
 			<script type="application/x.jsapi#tests">
 				test(typeof(loader.resource) == "function");
@@ -68,6 +72,10 @@ END LICENSE
 			<script type="application/x.jsapi#tests">
 				var api = loader.resource("api.html");
 				verify(api).length.is.not.equalTo(null);
+			</script>
+			<script type="application/x.jsapi#tests">
+				var keys = Object.keys(loader.spi);
+				verify(String(keys)).is(String(keys));
 			</script>
 		</li>
 	</ul>

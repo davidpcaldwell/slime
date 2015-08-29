@@ -17,6 +17,12 @@
 //
 
 $exports.addJshPluginTo = function(jsh) {
+	//	loader interface used in mapping:
+	//		resource
+	//		spi.getScript
+	//		Child
+	//		list
+
 	var Mapping = function(p) {
 		if (p.directory) {
 			p.loader = new jsh.io.Loader({ directory: p.directory });
