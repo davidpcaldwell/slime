@@ -62,8 +62,8 @@
 	})
 
 	loader.run.spi.execute(function(underlying) {
-		return function(script) {
-			return $javahost.script(script.name,script.code,script.scope,script.target);
+		return function(script,scope,target) {
+			return $javahost.script(script.name,script.code,scope,target);
 		}
 	});
 

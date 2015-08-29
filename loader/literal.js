@@ -11,6 +11,18 @@
 //	END LICENSE
 
 (function() {
+	var execute = function(/*script,scope,target*/) {
+		return (function() {
+			//	$platform and $api are in scope
+			with( arguments[1] ) {
+				eval(arguments[0].code);
+			}
+		}).call(
+			arguments[2],
+			{ scope: arguments[1], code: arguments[0].code }
+		);
+	};
+
 	return new function() {
 		var $platform = (function() {
 			var $exports = {};
@@ -81,28 +93,12 @@
 
 		var $api = eval($slime.getCode("api.js"));
 
-		var execute = function(/*script*/) {
-			return (function() {
-				//	$platform and $api are in scope
-				with( arguments[0].scope ) {
-					eval(arguments[0].code);
-				}
-			}).call(
-				arguments[0].target,
-				{ scope: arguments[0].scope, code: arguments[0].code }
-			);
-		};
-
 		var $coffee = (function() {
 			var coffeeScript = $slime.getCoffeeScript();
 			if (!coffeeScript) return null;
 			if (coffeeScript.code) {
 				var target = {};
-				execute({
-					code: String(coffeeScript.code),
-					target: target,
-					scope: {}
-				});
+				execute({ code: String(coffeeScript.code) }, {}, target);
 				return target.CoffeeScript;
 			} else if (coffeeScript.object) {
 				return coffeeScript.object;
@@ -121,18 +117,17 @@
 				if (preprocess) {
 					preprocess(script);
 				}
-				script.target = this;
+				var target = this;
 				var global = (function() { return this; })();
 				if (scope === global) {
 					scope = {};
 				}
-				script.scope = scope;
-				script.scope.$platform = $platform;
-				script.scope.$api = $api;
+				scope.$platform = $platform;
+				scope.$api = $api;
 				if ($coffee && /\.coffee$/.test(script.name)) {
 					script.code = $coffee.compile(script.code);
 				}
-				execute(script);
+				execute(script,scope,target);
 			}
 
 			var createFileScope = function($context) {
