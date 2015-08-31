@@ -113,7 +113,7 @@ $exports.Modules = function(slime,pathnames) {
 		};
 
 		var tomcat = startServer(p);
-		jsh.shell.echo("Browsing test page ... " + p.url);
+		jsh.shell.echo("Browsing test page ... " + tomcat.url(p.url));
 		var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
 		if (p.interactive) {
 			tomcat.run();

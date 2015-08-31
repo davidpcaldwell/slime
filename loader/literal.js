@@ -15,11 +15,11 @@
 		return (function() {
 			//	$platform and $api are in scope
 			with( arguments[1] ) {
-				eval(arguments[0].code);
+				eval(arguments[0]);
 			}
 		}).call(
 			arguments[2],
-			{ scope: arguments[1], code: arguments[0].code }
+			arguments[0].code, arguments[1]
 		);
 	};
 
