@@ -77,7 +77,7 @@ var Chrome = function(b) {
 				(function startDefaultUser() {
 					var isDefaultRunning = function() {
 						return b.user.list().filter(function(node) {
-							return node.pathname.basename == "RunningChromeVersion";						
+							return node.pathname.basename == "RunningChromeVersion";
 						}).length > 0;
 					}
 					if (!isDefaultRunning()) {
@@ -90,7 +90,7 @@ var Chrome = function(b) {
 						tmp.getRelativePath("chrome.bash").write(
 							(
 								[
-									"nohup", 
+									"nohup",
 									command.command
 								].concat(command.arguments)
 								.concat(["&"])
