@@ -167,11 +167,19 @@ plugin({
 					command: jsh.shell.java.jrunscript,
 					arguments: args
 				});
-				jsh.shell.echo("Relaunching with classpath " + jsh.shell.properties.get("jsh.launcher.classpath"));
+				var environment = {};
+				for (var x in jsh.shell.environment) {
+					environment[x] = jsh.shell.environment[x];
+				}
+				if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) {
+					jsh.shell.echo("Adding Tomcat to shell ...")
+					environment.CATALINA_HOME = String(jsh.shell.jsh.lib.getSubdirectory("tomcat"));
+				}
 				jsh.shell.echo("Relaunching with arguments " + parameters.arguments);
 				jsh.shell.jsh({
 					fork: true,
 					shell: JSH_HOME,
+					environment: environment,
 					script: jsh.script.file,
 					arguments: parameters.arguments,
 					evaluate: function(result) {

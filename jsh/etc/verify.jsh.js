@@ -117,6 +117,7 @@ if (parameters.options.browser) {
 	var tomcat = (function() {
 		if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getRelativePath("tomcat");
 		if (parameters.options.tomcat) return parameters.options.tomcat;
+		if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME);
 	})();
 	if (!tomcat) {
 		jsh.shell.echo("Skipping browser tests: Tomcat not found.");
