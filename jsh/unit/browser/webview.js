@@ -115,14 +115,18 @@
 			}
 			var text = result + ": " + message.detail.message;
 			if (message.detail.error) {
-				if (message.detail.error.stack) {
-					text += " " + message.detail.error.stack;
-				}
-				if (message.detail.error.code) {
-					text += " " +  message.detail.error.code;
-				}
-				if (message.detail.error.cause && message.detail.error.cause.stack) {
-					text += " " + message.detail.error.cause.stack;
+				var current = message.detail.error;
+				while(current) {
+					text += "\n" + current.type + ": " + current.message;
+					if (current.stack) {
+						text += "\n" + current.stack;
+					}
+					if (current == message.detail.error) {
+						if (current.code) {
+							text += " " +  current.code;
+						}
+					}
+					current = current.cause;
 				}
 			}
 			current.appendChild(line({ text: text, success: message.detail.success, className: "test" }));
