@@ -512,7 +512,7 @@ var identifiers = new function() {
 };
 
 var Loader = function(underlying) {
-	return function(p) {
+	var decorateParameter = function(p) {
 		if (p.resources) {
 			//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 			//			on this package into it
@@ -557,6 +557,10 @@ var Loader = function(underlying) {
 //			p._source = Packages.inonit.script.engine.Code.Source.create(_resources);
 			p._source = _resources;
 		}
+	}
+
+	return function(p) {
+		decorateParameter(p);
 		underlying.apply(this,arguments);
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
 		decorate.call(this,arguments[0]);
