@@ -511,7 +511,7 @@ var identifiers = new function() {
 	}
 };
 
-$context.$rhino.Loader.spi(function(underlying) {
+var Loader = function(underlying) {
 	return function(p) {
 		if (p.resources) {
 			//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
@@ -561,7 +561,9 @@ $context.$rhino.Loader.spi(function(underlying) {
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
 		decorate.call(this,arguments[0]);
 	};
-});
+};
+
+$context.$rhino.Loader.spi(Loader);
 
 //$exports.Loader = function(p) {
 //	return new $context.$rhino.Loader(p);
