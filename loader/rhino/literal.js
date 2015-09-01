@@ -17,6 +17,9 @@
 		var $engine = {
 			Object: {
 				defineProperty: {}
+			},
+			execute: function(script,scope,target) {
+				return $javahost.script(script.name,script.code,scope,target);
 			}
 		};
 		(function() {
@@ -35,12 +38,6 @@
 		}
 		return eval(String($javahost.getLoaderCode("literal.js")));
 	})();
-
-	loader.run.spi.execute(function(underlying) {
-		return function(script,scope,target) {
-			return $javahost.script(script.name,script.code,scope,target);
-		}
-	});
 
 	loader.Loader = (function(was) {
 		return function(p) {

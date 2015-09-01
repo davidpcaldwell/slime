@@ -11,18 +11,6 @@
 //	END LICENSE
 
 (function() {
-	var execute = function(/*script,scope,target*/) {
-		return (function() {
-			//	$platform and $api are in scope
-			with( arguments[1] ) {
-				eval(arguments[0]);
-			}
-		}).call(
-			arguments[2],
-			arguments[0].code, arguments[1]
-		);
-	};
-
 	return new function() {
 		var $platform = (function() {
 			var $exports = {};
@@ -34,6 +22,21 @@
 				if (!$exports.Object.defineProperty) $exports.Object.defineProperty = {};
 				$exports.Object.defineProperty.accessor = true;
 			}
+
+			$exports.execute = (function() {
+				if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
+				return function(/*script,scope,target*/) {
+					return (function() {
+						//	$platform and $api are in scope
+						with( arguments[1] ) {
+							eval(arguments[0]);
+						}
+					}).call(
+						arguments[2],
+						arguments[0].code, arguments[1]
+					);
+				}
+			})();
 
 			(function() {
 				var getJavaClass = function(name) {
@@ -127,7 +130,7 @@
 				if ($coffee && /\.coffee$/.test(script.name)) {
 					script.code = $coffee.compile(script.code);
 				}
-				execute(script,scope,target);
+				$platform.execute(script,scope,target);
 			}
 
 			var createFileScope = function($context) {
@@ -182,21 +185,6 @@
 					}
 				})(this,p);
 
-//				var Child = (function(parent) {
-//					var Default = function(prefix) {
-//						return new Callee({
-//							toString: function() {
-//								return parent.toString() + " prefix=" + prefix;
-//							},
-//							get: function(path) {
-//								return p.get(prefix+path);
-//							}
-//						});
-//					};
-//
-//					return $api.Constructor.decorated(Default,p.Loader);
-//				})(this);
-
 				this.Child = $api.experimental(Child);
 
 				this.spi = p;
@@ -235,17 +223,7 @@
 
 			addTopMethod.call(this,"run");
 
-			//	TODO	document the run spi
-			this.run.spi = {};
-//			this.run.spi.preprocess = function(implementation) {
-//				preprocess = implementation(preprocess);
-//			};
-			this.run.spi.execute = function(implementation) {
-				execute = implementation(execute);
-			};
-
-			//	TODO	For file and module, what should we do about 'this' and why?
-
+			//	TODO	For file, what should we do about 'this' and why?
 			addTopMethod.call(this,"file");
 
 			this.Loader = Loader;
