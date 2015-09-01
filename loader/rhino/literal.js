@@ -78,11 +78,8 @@
 							}
 						});
 					}
-					Object.defineProperty(rv, "code", {
+					Object.defineProperty(rv, "string", {
 						get: function() {
-//							var _file = p._source.getFile(path);
-//							if (!_file) throw new Error("No file at " + path + " in " + p._source);
-//							var _in = _file.getInputStream();
 							var _in = this._stream;
 							if (!_in) throw new Error("No file at " + path + " in source=" + p._source);
 							return String(_streams.readString(_in));

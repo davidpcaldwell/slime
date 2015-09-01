@@ -111,10 +111,26 @@
 		(function() {
 			var methods = {};
 
-			methods.run = function(script,scope) {
-				if (!script) {
-					throw new TypeError("Script must be an object, not " + script);
+			methods.run = function(resource,scope) {
+				var type = (resource.type) ? String(resource.type) : null;
+				if (!type) {
+					if (/\.coffee$/.test(resource.name)) {
+						type = "application/vnd.coffeescript";
+					} else {
+						type = "application/javascript";
+					}
 				}
+				if (type == "application/vnd.coffeescript") {
+					resource.js = {
+						name: resource.name,
+						code: $coffee.compile(resource.string)
+					};
+				} else if (type == "application/javascript") {
+					resource.js = {
+						name: resource.name,
+						code: resource.string
+					}
+				};
 				var target = this;
 				var global = (function() { return this; })();
 				if (scope === global) {
@@ -122,10 +138,7 @@
 				}
 				scope.$platform = $platform;
 				scope.$api = $api;
-				if ($coffee && /\.coffee$/.test(script.name)) {
-					script.code = $coffee.compile(script.code);
-				}
-				$platform.execute(script,scope,target);
+				$platform.execute(resource.js,scope,target);
 			}
 
 			var createFileScope = function($context) {
@@ -152,9 +165,6 @@
 			}
 
 			var Loader = function(p) {
-				if (!p.get) throw new Error("No p.get!");
-				var Callee = arguments.callee;
-
 				this.toString = function() {
 					return p.toString();
 				}

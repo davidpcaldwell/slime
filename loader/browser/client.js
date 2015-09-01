@@ -189,7 +189,7 @@
 					//	Add sourceURL for JavaScript debuggers
 					code = code + "\n//# sourceURL=" + path;
 				}
-				return { name: path, path: path, code: fetcher.getCode(path) };
+				return { name: path, path: path, string: fetcher.getCode(path) };
 			}
 		});
 

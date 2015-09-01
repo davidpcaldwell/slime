@@ -64,7 +64,7 @@
 		if (code.java && code.java.adapt() && $host.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
 			return {
 				name: code.toString(),
-				code: (function() {
+				string: (function() {
 					var _in = new Packages.java.io.FileInputStream(code.java.adapt());
 					var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
 					return rv;

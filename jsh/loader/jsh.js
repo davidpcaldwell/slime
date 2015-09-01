@@ -158,7 +158,7 @@ this.jsh = new function() {
 
 jsh.loader.run({
 		name: $jsh.getInvocation().getScript().getSource().getSourceName(),
-		code: (function() {
+		string: (function() {
 			//	TODO	this code is repeated inside loader.js; should factor out
 			var _reader = $jsh.getInvocation().getScript().getSource().getReader();
 			var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
