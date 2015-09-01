@@ -96,6 +96,7 @@ this.jsh = new function() {
 		$host.coffee = $jsh.getLibrary("coffee-script.js");
 	})();
 
+	//	TODO	used in evals; is there a better way?
 	var jsh = this;
 
 	//	TODO	is there a way to use the custom script executor to do this rather than eval()?
@@ -158,8 +159,13 @@ this.jsh = new function() {
 jsh.loader.run({
 		name: $jsh.getInvocation().getScript().getSource().getSourceName(),
 		code: (function() {
+			//	TODO	this code is repeated inside loader.js; should factor out
 			var _reader = $jsh.getInvocation().getScript().getSource().getReader();
-			return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
+			var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
+			if (rv.substring(0,2) == "#!") {
+				rv = "//" + rv;
+			}
+			return rv;
 		})()
 	},
 	this,

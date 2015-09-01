@@ -173,14 +173,6 @@
 			};
 			return eval(fetcher.getCode(bootstrap.getRelativePath("literal.js")));
 		})();
-		platform.run.spi.preprocess(function(underlying) {
-			return function(script) {
-				if (!/\.coffee$/.test(script.path)) {
-					//	Add sourceURL for JavaScript debuggers
-					script.code = script.code + "\n//# sourceURL=" + script.path;
-				}
-			}
-		});
 		platform.$api.deprecate.warning = function(access) {
 			debugger;
 		}
@@ -192,6 +184,11 @@
 
 		var loader = new platform.Loader({
 			get: function(path) {
+				var code = fetcher.getCode(path);
+				if (!/\.coffee$/.test(path)) {
+					//	Add sourceURL for JavaScript debuggers
+					code = code + "\n//# sourceURL=" + path;
+				}
 				return { name: path, path: path, code: fetcher.getCode(path) };
 			}
 		});

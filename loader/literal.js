@@ -237,9 +237,9 @@
 
 			//	TODO	document the run spi
 			this.run.spi = {};
-			this.run.spi.preprocess = function(implementation) {
-				preprocess = implementation(preprocess);
-			};
+//			this.run.spi.preprocess = function(implementation) {
+//				preprocess = implementation(preprocess);
+//			};
 			this.run.spi.execute = function(implementation) {
 				execute = implementation(execute);
 			};
