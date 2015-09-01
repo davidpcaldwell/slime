@@ -53,44 +53,38 @@
 			}
 			if (p._source) {
 				p.get = function(path) {
-					var rv = {
-						_source: p._source,
-						path: path
-					};
-
-					if (p._source) {
-						var _stream = function() {
-							var _file = p._source.getFile(path);
-							return (_file) ? _file.getInputStream() : null;
-						};
-						Object.defineProperty(rv, "_stream", {
-							get: _stream
-						});
-						Object.defineProperty(rv, "name", {
+					var rv = {};
+					var _file = p._source.getFile(path);
+					if (!_file) return null;
+					rv.name = _file.getSourceName();
+					rv.type = (function() {
+						if (/\.js$/.test(path)) return "application/javascript";
+						if (/\.coffee$/.test(path)) return "application/vnd.coffeescript";
+					})();
+					Object.defineProperty(rv, "_stream", {
+						get: function() {
+							return _file.getInputStream();
+						}
+					});
+					Object.defineProperty(rv, "length", {
+						get: function(path) {
+							var length = _file.getLength();
+							if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
+						}
+					});
+					if (rv.type == "application/javascript" || rv.type == "application/vnd.coffeescript") {
+						Object.defineProperty(rv, "string", {
 							get: function() {
-								return String(p._source.getFile(path).getSourceName());
+								var _in = this._stream;
+								if (!_in) throw new Error("No file at " + path + " in source=" + p._source);
+								return String(_streams.readString(_in));
 							}
 						});
 					}
-					Object.defineProperty(rv, "string", {
-						get: function() {
-							var _in = this._stream;
-							if (!_in) throw new Error("No file at " + path + " in source=" + p._source);
-							return String(_streams.readString(_in));
-						}
-					});
 					Object.defineProperty(rv, "_resource", {
 						get: loader.$api.deprecate(function() {
 							return this._stream;
 						})
-					});
-					Object.defineProperty(rv, "length", {
-						get: function(path) {
-							var _file = p._source.getFile(path);
-							if (!_file) return void(0);
-							var length = _file.getLength();
-							if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
-						}
 					});
 					return rv;
 				};
