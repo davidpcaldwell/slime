@@ -109,16 +109,11 @@
 		})();
 
 		(function() {
-			var preprocess;
-
 			var methods = {};
 
 			methods.run = function(script,scope) {
 				if (!script) {
 					throw new TypeError("Script must be an object, not " + script);
-				}
-				if (preprocess) {
-					preprocess(script);
 				}
 				var target = this;
 				var global = (function() { return this; })();
@@ -174,21 +169,6 @@
 				declare.call(this,"file");
 				declare.call(this,"value");
 
-				var Child = (function(parent,argument) {
-					return function(prefix) {
-						var parameter = {
-							get: function(path) {
-								return argument.get(prefix + path);
-							}
-						};
-						return new parent.constructor(parameter);
-					}
-				})(this,p);
-
-				this.Child = $api.experimental(Child);
-
-				this.spi = p;
-
 				this.module = function(path,scope,target) {
 					var getModuleLocations = function(path) {
 						var tokens = path.split("/");
@@ -212,7 +192,22 @@
 					if (!script) throw new Error("Module not found at " + locations.main);
 					methods.run.call(target,script,inner);
 					return inner.$exports;
-				}
+				};
+
+				var Child = (function(parent,argument) {
+					return function(prefix) {
+						var parameter = {
+							get: function(path) {
+								return argument.get(prefix + path);
+							}
+						};
+						return new parent.constructor(parameter);
+					}
+				})(this,p);
+
+				this.Child = $api.experimental(Child);
+
+				this.source = p;
 			};
 
 			var addTopMethod = function(name) {
