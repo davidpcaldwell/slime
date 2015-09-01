@@ -191,7 +191,7 @@
 		}
 
 		var loader = new platform.Loader({
-			getScript: function(path) {
+			get: function(path) {
 				return { name: path, path: path, code: fetcher.getCode(path) };
 			}
 		});
@@ -215,7 +215,7 @@
 		this.Loader = function(p) {
 			if (typeof(p) == "string") {
 				return new platform.Loader({
-					getScript: function(path) {
+					get: function(path) {
 						return { name: path, path: p+path, code: fetcher.getCode(p+path) };
 					}
 				});

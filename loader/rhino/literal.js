@@ -67,7 +67,58 @@
 		}
 	});
 
-	loader.Loader.spi(function(underlying) {
+//	loader.Loader.spi(function(underlying) {
+//		return function(p) {
+//			var Code = Packages.inonit.script.engine.Code;
+//			if (p._unpacked) {
+//				p._code = Code.unpacked(p._unpacked);
+//			} else if (p._packed) {
+//				p._code = Code.slime(p._packed);
+//			}
+//			if (p._code) {
+//				$javahost.getClasspath().append(p._code);
+//				p._source = p._code.getScripts();
+//			}
+//			if (p._source) {
+//				p.getScript = function(path) {
+//					return {
+//						_source: p._source,
+//						path: path
+//					};
+//				};
+//			}
+//			p.Loader = (function(custom) {
+//				return loader.$api.Constructor.decorated(function(prefix) {
+//					if (p._source) {
+//						return new loader.Loader({ _source: p._source.child(prefix) });
+//					}
+//				}, custom);
+//			})(p.Loader);
+//			underlying.apply(this,arguments);
+//			if (p._source) {
+//				this.toString = function() {
+//					return "Java loader: " + p._source.toString();
+//				}
+//
+//				this._stream = function(path) {
+//					var _file = p._source.getFile(path);
+//					return (_file) ? _file.getInputStream() : null;
+//				};
+//				this._resource = loader.$api.deprecate(this._stream);
+//
+//				p.length = function(path) {
+//					var _file = p._source.getFile(path);
+//					var length = _file.getLength();
+//					if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
+//				};
+//			} else if (p._stream) {
+//				this._stream = function(path) {
+//					return p._stream.call(this,path);
+//				};
+//			}
+//		}
+//	});
+	loader.Loader = (function(was) {
 		return function(p) {
 			var Code = Packages.inonit.script.engine.Code;
 			if (p._unpacked) {
@@ -79,22 +130,80 @@
 				$javahost.getClasspath().append(p._code);
 				p._source = p._code.getScripts();
 			}
-			if (p._source) {
-				p.getScript = function(path) {
-					return {
+			if (p._source || p._stream) {
+				p.get = function(path) {
+					var rv = {
 						_source: p._source,
 						path: path
 					};
-				};
-			}
-			p.Loader = (function(custom) {
-				return loader.$api.Constructor.decorated(function(prefix) {
+
 					if (p._source) {
-						return new loader.Loader({ _source: p._source.child(prefix) });
+						var _stream = function() {
+							var _file = p._source.getFile(path);
+							return (_file) ? _file.getInputStream() : null;
+						};
+						Object.defineProperty(rv, "_stream", {
+							get: _stream
+						});
+						Object.defineProperty(rv, "name", {
+							get: function() {
+								return String(p._source.getFile(path).getSourceName());
+							}
+						});
+					} else if (p._stream) {
+						Object.defineProperty(rv, "_stream", {
+							get: function() {
+								return p._stream(path);
+							}
+						});
 					}
-				}, custom);
-			})(p.Loader);
-			underlying.apply(this,arguments);
+					Object.defineProperty(rv, "code", {
+						get: function() {
+//							var _file = p._source.getFile(path);
+//							if (!_file) throw new Error("No file at " + path + " in " + p._source);
+//							var _in = _file.getInputStream();
+							var _in = this._stream;
+							if (!_in) throw new Error("No file at " + path + " in source=" + p._source);
+							return String(_streams.readString(_in));
+						}
+					});
+					Object.defineProperty(rv, "_resource", {
+						get: loader.$api.deprecate(function() {
+							return this._stream;
+						})
+					});
+					Object.defineProperty(rv, "length", {
+						get: function(path) {
+							var _file = p._source.getFile(path);
+							if (!_file) return void(0);
+							var length = _file.getLength();
+							if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
+						}
+					});
+					return rv;
+				};
+//				this._stream = function(path) {
+//					return p._stream.call(this.path);
+//				}
+			} else if (p._stream) {
+				p.get = function(path) {
+					throw new Error("Unimplemented for _stream");
+				}
+//				this._stream = function(path) {
+//					return p._stream.call(this.path);
+//				}
+			}
+//			p.Loader = (function(custom) {
+//				return loader.$api.Constructor.decorated(function(prefix) {
+//					if (p._source) {
+//						return new loader.Loader({ _source: p._source.child(prefix) });
+//					}
+//				}, custom);
+//			})(p.Loader);
+			if (!p.get) {
+				throw new Error("No p.get! keys=" + Object.keys(p));
+			}
+			was.apply(this,arguments);
 			if (p._source) {
 				this.toString = function() {
 					return "Java loader: " + p._source.toString();
@@ -104,20 +213,21 @@
 					var _file = p._source.getFile(path);
 					return (_file) ? _file.getInputStream() : null;
 				};
-				this._resource = loader.$api.deprecate(this._stream);
+//				this._resource = loader.$api.deprecate(this._stream);
 
-				p.length = function(path) {
-					var _file = p._source.getFile(path);
-					var length = _file.getLength();
-					if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
-				};
-			} else if (p._stream) {
-				this._stream = function(path) {
-					return p._stream.call(this,path);
-				};
+//				p.length = function(path) {
+//					var _file = p._source.getFile(path);
+//					var length = _file.getLength();
+//					if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
+//				};
+//			} else if (p._stream) {
+//				this._stream = function(path) {
+//					return p._stream.call(this,path);
+//				};
 			}
+
 		}
-	});
+	})(loader.Loader);
 
 	loader.classpath = new function() {
 		this.toString = function() {

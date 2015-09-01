@@ -952,12 +952,12 @@ END LICENSE
 					test(loaderModule.grandchildResource("test/Loader/file.js") == null);
 				</script>
 				<script type="application/x.jsapi#tests">
-					var sources = function() {
+					var sources = new function() {
 						var code = {
 
 						};
 
-						this.getScript = function(path) {
+						this.get = function(path) {
 							return null;
 						};
 

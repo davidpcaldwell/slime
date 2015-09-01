@@ -453,7 +453,7 @@ $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
 var decorate = function(p) {
-	if (this._stream) {
+	if (true) {
 		this.resource = function(path) {
 			var target = this;
 			if (p && p.resources) {
@@ -464,8 +464,25 @@ var decorate = function(p) {
 				if (!descriptor) return null;
 				return new Resource(descriptor);
 			} else {
+				if (true) {
+					var gotten = p.get(path);
+					var type = (function() {
+						if (p && p.type) return p.type.call(this,path);
+					}).call(this);
+					var _stream = gotten._stream;
+					if (!_stream) return null;
+					return new $exports.Resource({
+						type: type,
+						length: gotten.length,
+						read: {
+							binary: function() {
+								return new InputStream(gotten._stream);
+							}
+						}
+					})
+				}
 				//	Test for existence so that we can return null if not found
-				var _in = this._stream(path);
+				var _in = p._stream(path);
 				if (!_in) {
 					return null;
 				} else {
@@ -490,6 +507,8 @@ var decorate = function(p) {
 				});
 			}
 		};
+	} else {
+		Packages.java.lang.System.err.println("Not decorating; keys=" + Object.keys(this) + " argument=" + Object.keys(p));
 	}
 };
 
@@ -560,24 +579,27 @@ var Loader = function(underlying) {
 	}
 
 	return function(p) {
+//		Packages.java.lang.System.err.println("p.get=" + p.get);
 		decorateParameter(p);
+//		Packages.java.lang.System.err.println("p.get=" + p.get);
 		underlying.apply(this,arguments);
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
 		decorate.call(this,arguments[0]);
 	};
 };
 
-$context.$rhino.Loader.spi(Loader);
+//$context.$rhino.Loader.spi(Loader);
 
 //$exports.Loader = function(p) {
 //	return new $context.$rhino.Loader(p);
 //};
-$exports.Loader = $context.$rhino.Loader;
+//$exports.Loader = $context.$rhino.Loader;
+$exports.Loader = Loader($context.$rhino.Loader);
 
 //	Exported (temporarily?) to allow plugins to create jsh.io-compatible loaders from the plugin loader they are given; may be a
 //	better way to do this
 $exports.decorate = function(loader) {
-	decorate.call(loader);
+	decorate.call(loader,{});
 }
 
 $exports.mime = $loader.file("mime.js", {

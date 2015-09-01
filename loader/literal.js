@@ -154,6 +154,7 @@
 			}
 
 			var Loader = function(p) {
+				if (!p.get) throw new Error("No p.get!");
 				var Callee = arguments.callee;
 
 				this.toString = function() {
@@ -162,7 +163,7 @@
 
 				var declare = function(name) {
 					this[name] = function(path,scope,target) {
-						return methods[name].call(target,p.getScript(path),scope);
+						return methods[name].call(target,p.get(path),scope);
 					};
 				};
 
@@ -170,20 +171,31 @@
 				declare.call(this,"file");
 				declare.call(this,"value");
 
-				var Child = (function(parent) {
-					var Default = function(prefix) {
-						return new Callee({
-							toString: function() {
-								return parent.toString() + " prefix=" + prefix;
-							},
-							getScript: function(path) {
-								return p.getScript(prefix+path);
+				var Child = (function(parent,argument) {
+					return function(prefix) {
+						var parameter = {
+							get: function(path) {
+								return argument.get(prefix + path);
 							}
-						});
-					};
+						};
+						return new parent.constructor(parameter);
+					}
+				})(this,p);
 
-					return $api.Constructor.decorated(Default,p.Loader);
-				})(this);
+//				var Child = (function(parent) {
+//					var Default = function(prefix) {
+//						return new Callee({
+//							toString: function() {
+//								return parent.toString() + " prefix=" + prefix;
+//							},
+//							get: function(path) {
+//								return p.get(prefix+path);
+//							}
+//						});
+//					};
+//
+//					return $api.Constructor.decorated(Default,p.Loader);
+//				})(this);
 
 				this.Child = $api.experimental(Child);
 
@@ -207,7 +219,7 @@
 
 					var inner = createFileScope(scope);
 					inner.$loader = new Child(locations.prefix);
-					var script = p.getScript(locations.main);
+					var script = p.get(locations.main);
 					//	TODO	generalize error handling strategy; add to file, run, value
 					if (!script) throw new Error("Module not found at " + locations.main);
 					methods.run.call(target,script,inner);

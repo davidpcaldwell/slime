@@ -42,7 +42,7 @@ $exports.addJshPluginTo = function(jsh) {
 		this.getScript = function(path) {
 			if (path.substring(0,p.prefix.length) == p.prefix) {
 				var subpath = path.substring(p.prefix.length);
-				return p.loader.spi.getScript(subpath);
+				return p.loader.spi.get(subpath);
 			}
 			return null;
 		}
@@ -311,17 +311,36 @@ $exports.addJshPluginTo = function(jsh) {
 					return rv;
 				}
 			};
-			var rv = new jsh.io.Loader(new Parameter(""));
+			var parameter = new function() {
+				var get = function(path) {
+					for (var i=0; i<mapping.length; i++) {
+						var gotten = mapping[i].getScript(path);
+						if (gotten) return gotten;
+					}
+				}
+
+				this.get = function(path) {
+					var rv = get(path);
+					return rv;
+				};
+			};
+//			var Parameter = function() {
+//				this.get = function(path) {
+//
+//				}
+//			}
+			jsh.io.Loader.apply(this,[parameter]);
+//			var rv = new jsh.io.Loader(new Parameter(""));
 			//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
-			rv.toString = function() {
+			this.toString = function() {
 				return "NewLoader: [" + mapping.map(function(map) {
 					return String(map);
 				}).join("\n");
 			}
-			rv.list = function() {
+			this.list = function() {
 				return loader.list("");
 			}
-			return rv;
+//			return rv;
 		}
 
 		this.loader = (old) ? new OldLoader("") : new NewLoader();

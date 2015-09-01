@@ -220,14 +220,16 @@ END LICENSE
 //			verify(one).loader().list({ path: "WEB-INF/generic/" })[0]().loader().isNotEqualTo(null);
 			var child = new one.loader.Child("WEB-INF/generic/");
 			verify(child).is.not.equalTo(null);
-			verify(child).list({ path: "" }).is.not.equalTo(null);
-			var generic = new one.loader.Child("WEB-INF/generic/");
-			verify(generic,"generic").list({ path: "" }).is.not.equalTo(null);
-			verify(generic,"generic").list({ path: "" }).length.is(1);
-			var servlet = new one.loader.Child("WEB-INF/generic/inonit/script/servlet/");
-			verify(servlet,"servlet").is.not.equalTo(null);
-			var list = servlet.list();
-			verify(servlet,"servlet").list().is.not.equalTo(null);
+			if (!jsh.shell.environment.SKIP_LOADER_LIST) {
+				verify(child).list({ path: "" }).is.not.equalTo(null);
+				var generic = new one.loader.Child("WEB-INF/generic/");
+				verify(generic,"generic").list({ path: "" }).is.not.equalTo(null);
+				verify(generic,"generic").list({ path: "" }).length.is(1);
+				var servlet = new one.loader.Child("WEB-INF/generic/inonit/script/servlet/");
+				verify(servlet,"servlet").is.not.equalTo(null);
+				var list = servlet.list();
+				verify(servlet,"servlet").list().is.not.equalTo(null);
+			}
 //			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" }).length().is(2);
 //			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[0]().is("Nashorn.java");
 //			verify(one).loader().list({ path: "WEB-INF/generic/inonit/script/servlet/" })[1]().is("Servlet.java");
