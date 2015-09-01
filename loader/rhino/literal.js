@@ -51,7 +51,7 @@
 				$javahost.getClasspath().append(p._code);
 				p._source = p._code.getScripts();
 			}
-			if (p._source || p._stream) {
+			if (p._source) {
 				p.get = function(path) {
 					var rv = {
 						_source: p._source,
@@ -69,12 +69,6 @@
 						Object.defineProperty(rv, "name", {
 							get: function() {
 								return String(p._source.getFile(path).getSourceName());
-							}
-						});
-					} else if (p._stream) {
-						Object.defineProperty(rv, "_stream", {
-							get: function() {
-								return p._stream(path);
 							}
 						});
 					}
@@ -100,26 +94,6 @@
 					});
 					return rv;
 				};
-//				this._stream = function(path) {
-//					return p._stream.call(this.path);
-//				}
-			} else if (p._stream) {
-				p.get = function(path) {
-					throw new Error("Unimplemented for _stream");
-				}
-//				this._stream = function(path) {
-//					return p._stream.call(this.path);
-//				}
-			}
-//			p.Loader = (function(custom) {
-//				return loader.$api.Constructor.decorated(function(prefix) {
-//					if (p._source) {
-//						return new loader.Loader({ _source: p._source.child(prefix) });
-//					}
-//				}, custom);
-//			})(p.Loader);
-			if (!p.get) {
-				throw new Error("No p.get! keys=" + Object.keys(p));
 			}
 			was.apply(this,arguments);
 			if (p._source) {
@@ -131,19 +105,7 @@
 					var _file = p._source.getFile(path);
 					return (_file) ? _file.getInputStream() : null;
 				};
-//				this._resource = loader.$api.deprecate(this._stream);
-
-//				p.length = function(path) {
-//					var _file = p._source.getFile(path);
-//					var length = _file.getLength();
-//					if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
-//				};
-//			} else if (p._stream) {
-//				this._stream = function(path) {
-//					return p._stream.call(this,path);
-//				};
 			}
-
 		}
 	})(loader.Loader);
 
