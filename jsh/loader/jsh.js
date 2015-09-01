@@ -98,6 +98,7 @@ this.jsh = new function() {
 
 	var jsh = this;
 
+	//	TODO	is there a way to use the custom script executor to do this rather than eval()?
 	var loader = eval($host.loader.getLoaderScript("loader.js").code);
 
 	var loadPlugins = eval($host.loader.getLoaderScript("plugins.js").code);
