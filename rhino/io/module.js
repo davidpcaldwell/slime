@@ -453,63 +453,32 @@ $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
 var decorate = function(p) {
-	if (true) {
-		this.resource = function(path) {
-			var target = this;
-			if (p && p.resources) {
-				//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
-				//			child would need to call the parent loader with the prefix, which probably means we'd have to
-				//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
-				var descriptor = p.resources.get(path);
-				if (!descriptor) return null;
-				return new Resource(descriptor);
-			} else {
-				if (true) {
-					var gotten = p.get(path);
-					var type = (function() {
-						if (p && p.type) return p.type.call(this,path);
-					}).call(this);
-					var _stream = gotten._stream;
-					if (!_stream) return null;
-					return new $exports.Resource({
-						type: type,
-						length: gotten.length,
-						read: {
-							binary: function() {
-								return new InputStream(gotten._stream);
-							}
-						}
-					})
-				}
-				//	Test for existence so that we can return null if not found
-				var _in = p._stream(path);
-				if (!_in) {
-					return null;
-				} else {
-					_in.close();
-				}
-				var type;
-				if (p && p.type) {
-					type = p.type.call(this,path);
-				}
-				var length;
-				if (p && p.length) {
-					length = p.length.call(this,path);
-				}
-				return new $exports.Resource({
-					type: type,
-					length: length,
-					read: {
-						binary: function() {
-							return new InputStream(target._stream(path));
-						}
+	this.resource = function(path) {
+		if (p && p.resources) {
+			//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
+			//			child would need to call the parent loader with the prefix, which probably means we'd have to
+			//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
+			var descriptor = p.resources.get(path);
+			if (!descriptor) return null;
+			return new Resource(descriptor);
+		} else {
+			var gotten = p.get(path);
+			var type = (function() {
+				if (p && p.type) return p.type.call(this,path);
+			}).call(this);
+			var _stream = gotten._stream;
+			if (!_stream) return null;
+			return new $exports.Resource({
+				type: type,
+				length: gotten.length,
+				read: {
+					binary: function() {
+						return new InputStream(gotten._stream);
 					}
-				});
-			}
-		};
-	} else {
-		Packages.java.lang.System.err.println("Not decorating; keys=" + Object.keys(this) + " argument=" + Object.keys(p));
-	}
+				}
+			});
+		}
+	};
 };
 
 var identifiers = new function() {
@@ -573,27 +542,18 @@ var Loader = function(underlying) {
 					};
 				}
 			);
-//			p._source = Packages.inonit.script.engine.Code.Source.create(_resources);
 			p._source = _resources;
 		}
 	}
 
 	return function(p) {
-//		Packages.java.lang.System.err.println("p.get=" + p.get);
 		decorateParameter(p);
-//		Packages.java.lang.System.err.println("p.get=" + p.get);
 		underlying.apply(this,arguments);
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
 		decorate.call(this,arguments[0]);
 	};
 };
 
-//$context.$rhino.Loader.spi(Loader);
-
-//$exports.Loader = function(p) {
-//	return new $context.$rhino.Loader(p);
-//};
-//$exports.Loader = $context.$rhino.Loader;
 $exports.Loader = Loader($context.$rhino.Loader);
 
 //	Exported (temporarily?) to allow plugins to create jsh.io-compatible loaders from the plugin loader they are given; may be a

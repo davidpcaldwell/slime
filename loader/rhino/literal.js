@@ -94,11 +94,6 @@
 				this.toString = function() {
 					return "Java loader: " + p._source.toString();
 				}
-
-				this._stream = function(path) {
-					var _file = p._source.getFile(path);
-					return (_file) ? _file.getInputStream() : null;
-				};
 			}
 		}
 	})(loader.Loader);
