@@ -157,7 +157,10 @@ this.jsh = new function() {
 
 jsh.loader.run({
 		name: $jsh.getInvocation().getScript().getSource().getSourceName(),
-		_in: $jsh.getInvocation().getScript().getSource().getReader()
+		code: (function() {
+			var _reader = $jsh.getInvocation().getScript().getSource().getReader();
+			return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
+		})()
 	},
 	this,
 	this
