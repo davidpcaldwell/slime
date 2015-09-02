@@ -81,11 +81,6 @@
 							}
 						});
 					}
-					Object.defineProperty(rv, "_resource", {
-						get: loader.$api.deprecate(function() {
-							return this._stream;
-						})
-					});
 					return rv;
 				};
 			}

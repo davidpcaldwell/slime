@@ -463,11 +463,10 @@ var decorate = function(p) {
 			return new Resource(descriptor);
 		} else {
 			var gotten = p.get(path);
+			if (!gotten) return null;
 			var type = (function() {
 				if (p && p.type) return p.type.call(this,path);
 			}).call(this);
-			var _stream = gotten._stream;
-			if (!_stream) return null;
 			return new $exports.Resource({
 				type: type,
 				length: gotten.length,

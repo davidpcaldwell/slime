@@ -357,9 +357,10 @@ $exports.addJshPluginTo = function(jsh) {
 					}
 				}, scope));
 			} else {
-				var toRun = (mappingFile.name && mappingFile.code) ? mappingFile : {
+				var toRun = (mappingFile.name && mappingFile.string) ? mappingFile : {
 					name: mappingFile.pathname.basename,
-					code: mappingFile.read(String)
+					type: "application/javascript",
+					string: mappingFile.read(String)
 				};
 				jsh.loader.run(toRun, jsh.js.Object.set({}, {
 					$mapping: (mappingFile.pathname) ? mappingFile : void(0),

@@ -32,14 +32,8 @@ plugin({
 					//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
 					source = {
 						name: "<eval>:" + String(++seq),
-						_in: (function() {
-							var out = new Packages.java.io.ByteArrayOutputStream();
-							var writer = new Packages.java.io.OutputStreamWriter(out);
-							writer.write(String(code));
-							writer.flush();
-							writer.close();
-							return new Packages.java.io.ByteArrayInputStream(out.toByteArray());
-						})()
+						type: "application/javascript",
+						string: code
 					}
 				}
 //				try {
