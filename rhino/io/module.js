@@ -501,6 +501,28 @@ var identifiers = new function() {
 var Loader = function(underlying) {
 	var decorateParameter = function(p) {
 		if (p.resources) {
+			p.get = function(path) {
+				var resource = p.resources.get(String(path));
+				if (resource) {
+					var rv = {
+//							name: p.resources.url(String(path)),
+						name: p.resources.toString() + "!" + String(path),
+						length: resource.length,
+						modified: resource.modified
+					};
+					rv.type = $context.$rhino.Loader.getTypeFromPath(path);
+					Object.defineProperty(rv, "_stream", {
+						get: function() {
+							return resource.read.binary().java.adapt();
+						}
+					});
+					$context.$rhino.Loader.addStringProperty(rv);
+					return rv;
+				} else {
+					return null;
+				}
+			};
+			return;
 			//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
 			//			on this package into it
 			var _resources = new JavaAdapter(

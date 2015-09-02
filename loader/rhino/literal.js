@@ -39,6 +39,21 @@
 		return eval(String($javahost.getLoaderCode("literal.js")));
 	})();
 
+	var getTypeFromPath = function(path) {
+		if (/\.js$/.test(path)) return "application/javascript";
+		if (/\.coffee$/.test(path)) return "application/vnd.coffeescript";
+	};
+
+	var addStringProperty = function(rv) {
+		if (rv.type == "application/javascript" || rv.type == "application/vnd.coffeescript") {
+			Object.defineProperty(rv, "string", {
+				get: function() {
+					return String(_streams.readString(this._stream));
+				}
+			});
+		}
+	};
+
 	loader.Loader = (function(was) {
 		return function(p) {
 			var Code = Packages.inonit.script.engine.Code;
@@ -57,10 +72,7 @@
 					var _file = p._source.getFile(path);
 					if (!_file) return null;
 					rv.name = _file.getSourceName();
-					rv.type = (function() {
-						if (/\.js$/.test(path)) return "application/javascript";
-						if (/\.coffee$/.test(path)) return "application/vnd.coffeescript";
-					})();
+					rv.type = getTypeFromPath(path);
 					Object.defineProperty(rv, "_stream", {
 						get: function() {
 							return _file.getInputStream();
@@ -72,26 +84,24 @@
 							if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
 						}
 					});
-					if (rv.type == "application/javascript" || rv.type == "application/vnd.coffeescript") {
-						Object.defineProperty(rv, "string", {
-							get: function() {
-								var _in = this._stream;
-								if (!_in) throw new Error("No file at " + path + " in source=" + p._source);
-								return String(_streams.readString(_in));
-							}
-						});
-					}
+					Object.defineProperty(rv, "modified", {
+						get: function(path) {
+							var _modified = _file.getLastModified();
+							if (_modified) return _modified.getTime();
+						}
+					});
+					addStringProperty(rv);
 					return rv;
+				};
+				p.toString = function() {
+					return "Java loader: " + p._source.toString();
 				};
 			}
 			was.apply(this,arguments);
-			if (p._source) {
-				this.toString = function() {
-					return "Java loader: " + p._source.toString();
-				}
-			}
 		}
 	})(loader.Loader);
+	loader.Loader.getTypeFromPath = getTypeFromPath;
+	loader.Loader.addStringProperty = addStringProperty;
 
 	loader.classpath = new function() {
 		this.toString = function() {

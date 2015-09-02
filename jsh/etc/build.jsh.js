@@ -52,10 +52,11 @@ var parameters = jsh.script.getopts({
 
 jsh.script.loader = new jsh.script.Loader("../../");
 
+jsh.shell.echo("jsh.script.url = " + jsh.script.url);
 var jrunscript = (function() {
 	var THIS = {};
 	THIS.$api = {
-		script: (jsh.script.url) ? { url: jsh.script.url } : null,
+		script: (jsh.script.url) ? { url: jsh.script.url } : { file: jsh.script.file.toString() },
 		arguments: []
 	};
 	jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);

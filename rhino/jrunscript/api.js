@@ -365,11 +365,10 @@
 //					string = string.replace(/\\/g, "/");
 					var url = new Packages.java.net.URL(string);
 				} catch (e) {
-					throw new Error("Could not parse: " + string);
 					if (e.javaException) {
 						e.javaException.printStackTrace();
 					}
-					throw e;
+					throw new Error("Could not parse: " + string);
 				}
 				if (String(url.getProtocol()) == "file") {
 					return {
@@ -434,6 +433,10 @@
 		if ($script && $script.url) {
 			$api.script = new $api.Script({
 				url: new Packages.java.net.URL($script.url)
+			});
+		} else if ($script && $script.file) {
+			$api.script = new $api.Script({
+				file: new Packages.java.io.File($script.file)
 			});
 		} else {
 			$api.script = new $api.Script({
