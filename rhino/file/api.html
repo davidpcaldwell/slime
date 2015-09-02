@@ -56,7 +56,7 @@ END LICENSE
 				,$rhino: jsh.$jsapi.$rhino
 				,api: {
 					java: java,
-					mime: $jsapi.loader.module("../../js/mime/", {})
+					mime: jsh.$jsapi.mime
 				}
 			});
 		}
@@ -158,7 +158,7 @@ END LICENSE
 						,$rhino: jsh.$jsapi.$rhino
 						,api: {
 							java: java,
-							mime: $jsapi.loader.module("../../js/mime/", {})
+							mime: jsh.$jsapi.mime
 						}
 					});
 				}

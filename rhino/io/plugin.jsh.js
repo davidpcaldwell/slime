@@ -13,7 +13,7 @@
 
 plugin({
 	isReady: function() {
-		return plugins.mime && jsh.js && jsh.java;
+		return jsh.js && jsh.java;
 	},
 	load: function() {
 		jsh.io = $loader.module("module.js", {
@@ -27,7 +27,7 @@ plugin({
 			api: {
 				js: jsh.js,
 				java: jsh.java,
-				mime: plugins.mime
+				mime: $jsh.mime
 			}
 		})
 	}

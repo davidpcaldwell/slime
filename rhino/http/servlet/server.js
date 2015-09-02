@@ -111,11 +111,11 @@ $exports.Servlet = function(delegate) {
 					});
 				}
 				if (response.body && response.body.type) {
-					//	Documented to accept js/mime Type and string
+					//	Documented to accept loader/mime.api.html Type and string
 					_response.setContentType(String(response.body.type));
 				}
 				if (response.body && response.body.length) {
-					//	Documented to accept js/mime Type and string
+					//	Documented to accept loader/mime.api.html Type and string
 					_response.setContentLength(String(response.body.length));
 				}
 				if (response.body && response.body.string) {

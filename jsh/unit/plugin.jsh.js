@@ -16,6 +16,7 @@ plugin({
 		jsh.$jsapi = {
 			$platform: $jsh.$platform,
 			$api: $jsh.$api,
+			mime: $jsh.mime,
 			$rhino: $jsh,
 			$coffee: $jsh.coffee,
 			java: $jsh.java

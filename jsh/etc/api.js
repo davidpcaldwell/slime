@@ -52,7 +52,6 @@
 	components.add("loader/api/test/data/1/", { api: true });
 	components.add("loader/browser/", { browser: { api: true }});
 
-	components.add("js/mime/", { browser: { api: true }, jsh: { module: true }});
 	components.add("js/debug/", { jsh: { module: true }});
 
 	components.add("loader/rhino/", { jsh: { api: true }});

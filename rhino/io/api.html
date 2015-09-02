@@ -29,7 +29,7 @@ END LICENSE
 			this.api = {
 				js:  $jsapi.loader.module("../../js/object/", { globals: true }),
 				java: java,
-				mime: $jsapi.loader.module("../../js/mime/", {})
+				mime: jsh.$jsapi.mime
 			};
 
 			this.$java = new Packages.inonit.script.runtime.io.Streams();
@@ -54,7 +54,7 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">mime</div>
-						<span>A js/mime-compatible module.</span>
+						<span>A SLIME MIME API-compatible module.</span>
 					</li>
 				</ul>
 			</li>
@@ -101,7 +101,7 @@ END LICENSE
 				this.api = {
 					js:  $jsapi.loader.module("../../js/object/", { globals: true }),
 					java: java,
-					mime: $jsapi.loader.module("../../js/mime/", {})
+					mime: jsh.$jsapi.mime
 				};
 
 				this.$java = new Packages.inonit.script.runtime.io.Streams();
@@ -868,7 +868,7 @@ END LICENSE
 										</div>
 										<div class="returns">
 											<div class="label">Returns</div>
-											<span class="type">MIME <a href="../../js/mime/api.html#types.type">type</a></span>
+											<span class="type">MIME <a href="../../loader/mime.api.html#types.type">type</a></span>
 											<span>A MIME type to use for the resource given at the given path.</span>
 										</div>
 									</li>

@@ -28,7 +28,7 @@ END LICENSE
 						return $jsapi.loader.string(path);
 					}
 				};
-				scope.api = $jsapi.loader.eval("api.js", { $platform: $platform, $slime: $slime });
+				scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });
 				scope.api.loadedByJsapi = true;
 			</script>
 			<h1>$api</h1>

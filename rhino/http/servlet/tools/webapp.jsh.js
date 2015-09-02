@@ -159,6 +159,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 
 (function() {
 	SLIME.getSubdirectory("loader").list().forEach(function(node) {
+		//	TODO	dangerous as we move more code into the loader
 		if (!node.directory) {
 			node.copy(WEBAPP.getRelativePath("WEB-INF/loader/" + node.pathname.basename), { recursive: true });
 		}

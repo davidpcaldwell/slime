@@ -38,7 +38,7 @@ END LICENSE
 					$rhino: jsh.$jsapi.$rhino,
 					api: {
 						java: host,
-						mime: $jsapi.loader.module("../../js/mime/", {})
+						mime: jsh.$jsapi.mime
 					}
 				}),
 				loader: jsh.$jsapi.$rhino
@@ -177,6 +177,7 @@ END LICENSE
 				var host = $jsapi.loader.module("../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino
 				});
+				debugger;
 				var context = {
 					api: {
 						js: js,
@@ -186,7 +187,7 @@ END LICENSE
 							$rhino: jsh.$jsapi.$rhino,
 							api: {
 								java: host,
-								mime: $jsapi.loader.module("../../js/mime/", {})
+								mime: jsh.$jsapi.mime
 							}
 						}),
 						loader: jsh.$jsapi.$rhino

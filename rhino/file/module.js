@@ -202,10 +202,11 @@ $exports.Loader = function(p) {
 			return new $exports.Loader({ directory: p.directory.getSubdirectory(prefix) });
 		}
 	}
-	var rv = new $context.api.io.Loader(p);
+	debugger;
+	$context.api.io.Loader.apply(this,arguments);
 	if (arguments[0].directory) {
 		var directory = arguments[0].directory;
-		rv.list = function(m) {
+		this.list = function(m) {
 			return directory.list().map(function(node) {
 				if (node.directory) {
 					return { path: node.pathname.basename, loader: new $exports.Loader({ directory: node }) };
@@ -225,7 +226,6 @@ $exports.Loader = function(p) {
 			});
 		};
 	}
-	return rv;
 };
 
 //	Possibly used for initial attempt to produce HTTP filesystem, for example

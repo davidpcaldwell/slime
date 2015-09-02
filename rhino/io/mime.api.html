@@ -42,7 +42,7 @@ END LICENSE
 					</li>
 					<li class="value">
 						<div class="name">mime</div>
-						<span>The js/mime module.</span>
+						<span>The SLIME MIME API.</span>
 					</li>
 				</ul>
 			</li>
@@ -52,13 +52,13 @@ END LICENSE
 				this.api = {
 					io: $jsapi.loader.module("module.js", {
 						api: {
-							mime: $jsapi.loader.module("../../js/mime/"),
+							mime: jsh.$jsapi.mime,
 							java: $jsapi.loader.module("../../rhino/host/", {
 								$rhino: jsh.$jsapi.$rhino
 							})
 						}
 					}),
-					mime: $jsapi.loader.module("../../js/mime/")
+					mime: jsh.$jsapi.mime
 				}
 			}
 		</script>
@@ -72,7 +72,7 @@ END LICENSE
 			<ul>
 				<li class="value">
 					<div class="name">type</div>
-					<span class="type"><a href="../../js/mime/api.html#types.type">type</a></span>
+					<span class="type"><a href="../../loader/mime.api.html#types.type">type</a></span>
 					<span>The MIME type represented by this entity.</span>
 				</li>
 				<li class="value">
@@ -146,7 +146,7 @@ END LICENSE
 			</li>
 			<li class="constructor">
 				<div class="name">Type</div>
-				<span>A constructor that is equivalent to the <a href="../../js/mime/api.html#$exports.Type">portable MIME Type constructor</a>.</span>
+				<span>A constructor that is equivalent to the <a href="../../loader/mime.api.html#$exports.Type">portable MIME Type constructor</a>.</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="function">
@@ -170,7 +170,7 @@ END LICENSE
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type"><a href="../../js/mime/api.html#types.type">type</a></span>
+							<span class="type"><a href="../../loader/mime.api.html#types.type">type</a></span>
 							<span>A MIME type that corresponds to the given object.</span>
 						</div>
 					</li>
