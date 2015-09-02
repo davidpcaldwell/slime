@@ -922,7 +922,7 @@ END LICENSE
 									if (/\.jsh\.js$/.test(path)) {
 										return new module.mime.Type("application", "x.jsh");
 									} else if (/\.js$/.test(path)) {
-										return new module.mime.Type("text", "javascript");
+										return new module.mime.Type("application", "javascript");
 									} else if (/\.html$/.test(path)) {
 										return new module.mime.Type("text", "html");
 									} else {

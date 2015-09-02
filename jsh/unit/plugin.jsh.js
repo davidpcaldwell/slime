@@ -233,8 +233,9 @@ plugin({
 	},
 	load: function() {
 		jsh.unit.view.WebView = function() {
-			jsh.io.decorate($loader);
-			var html = new jsh.document.Document({ string: $loader.resource("browser/webview.html").read(String) });
+//			var $$loader = new jsh.io.Loader($loader.source);
+//			jsh.io.decorate($loader);
+			var html = new jsh.document.Document({ string: $loader.get("browser/webview.html").string });
 			var rv = new function() {
 				var buffer = [];
 				var send;
@@ -279,7 +280,6 @@ plugin({
 		return jsh.js && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario.Events && jsh.java && jsh.file;
 	},
 	load: function() {
-		jsh.io.decorate($loader);
 		var $exports = {};
 		$loader.run("plugin.jsh.browser.js", { $exports: $exports, jsh: jsh });
 		jsh.unit.browser = $exports;

@@ -487,12 +487,14 @@ var Loader = function(underlying) {
 				var resource = p.resources.get(String(path));
 				if (resource) {
 					var rv = {
-//							name: p.resources.url(String(path)),
 						name: p.resources.toString() + "!" + String(path),
 						length: resource.length,
-						modified: resource.modified
+						modified: resource.modified,
+						type: resource.type
 					};
-					rv.type = $context.$rhino.Loader.getTypeFromPath(path);
+					if (!rv.type) {
+						rv.type = $context.$rhino.Loader.getTypeFromPath(path);
+					}
 					Object.defineProperty(rv, "_stream", {
 						get: function() {
 							return resource.read.binary().java.adapt();
@@ -517,11 +519,11 @@ var Loader = function(underlying) {
 
 $exports.Loader = Loader($context.$rhino.Loader);
 
-//	Exported (temporarily?) to allow plugins to create jsh.io-compatible loaders from the plugin loader they are given; may be a
-//	better way to do this
-$exports.decorate = function(loader) {
-	decorate.call(loader,{});
-}
+////	Exported (temporarily?) to allow plugins to create jsh.io-compatible loaders from the plugin loader they are given; may be a
+////	better way to do this
+//$exports.decorate = function(loader) {
+//	decorate.call(loader,{});
+//}
 
 $exports.mime = $loader.file("mime.js", {
 	_streams: _java,

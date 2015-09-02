@@ -90,11 +90,12 @@ END LICENSE
 				</li>
 			</ul>
 			<script type="application/x.jsapi#tests">
-				verify.suite($jsapi.loader.scenario("resources.jsh.file.api.html", { module: $jsapi.loader.file("resources.jsh.file.js", {
-					getMimeType: function(path) {
-						return "text/plain";
-					}
-				}) }));
+				verify.suite(
+					$jsapi.loader.scenario(
+						"resources.jsh.file.api.html",
+						{ module: $jsapi.loader.file("resources.jsh.file.js", { getMimeType: jsh.httpd.nugget.getMimeType }) }
+					)
+				);
 			</script>
 		</div>
 		<div class="type">

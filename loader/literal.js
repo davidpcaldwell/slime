@@ -131,6 +131,9 @@
 						code: resource.string
 					}
 				};
+				if (!resource.js) {
+					throw new TypeError("Resource " + resource.name + " is not JavaScript; type = " + type);
+				}
 				var target = this;
 				var global = (function() { return this; })();
 				if (scope === global) {

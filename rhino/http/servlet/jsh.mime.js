@@ -17,7 +17,7 @@ $exports.getMimeType = function(file) {
 		name: file.pathname.basename
 	});
 	if (!type && /\.js$/.test(file.pathname.basename)) {
-		type = new jsh.io.mime.Type("text", "javascript");
+		type = new jsh.io.mime.Type("application", "javascript");
 	}
 	return type;
 };

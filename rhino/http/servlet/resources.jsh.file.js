@@ -258,7 +258,7 @@ $exports.addJshPluginTo = function(jsh) {
 				}
 			});
 			rv.toString = function() {
-				return "resources.jsh.file.js loader: prefix=" + prefix;
+				return "resources.jsh.file.js loader: prefix=" + prefix + " loader=" + loader;
 			}
 			rv.list = function(p) {
 				return loader.list(prefix+p.path);
