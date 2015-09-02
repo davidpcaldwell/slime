@@ -480,24 +480,6 @@ var decorate = function(p) {
 	};
 };
 
-var identifiers = new function() {
-	var lock = new $context.api.java.Thread.Monitor();
-
-	var id = 0;
-
-	//	TODO	thread safety
-	this.get = function() {
-		return new lock.Waiter({
-			until: function() {
-				return true;
-			},
-			then: function() {
-				return id++;
-			}
-		})();
-	}
-};
-
 var Loader = function(underlying) {
 	var decorateParameter = function(p) {
 		if (p.resources) {
