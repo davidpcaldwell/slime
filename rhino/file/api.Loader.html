@@ -54,7 +54,6 @@ END LICENSE
 			</script>
 			<script type="application/x.jsapi#tests">
 				test(typeof(loader.resource) == "function");
-				debugger;
 				test(loader.resource("api.html") != null);
 				test(loader.resource("foo.html") == null);
 				var list = loader.list();

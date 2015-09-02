@@ -482,30 +482,17 @@ var Loader = function(underlying) {
 		underlying.apply(this,arguments);
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
 		this.resource = function(path) {
-			if (false && p && p.resources) {
-				//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
-				//			child would need to call the parent loader with the prefix, which probably means we'd have to
-				//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
-				var descriptor = p.resources.get(path);
-				if (!descriptor) return null;
-				return new Resource(descriptor);
-			} else {
-				var gotten = p.get(path);
-				if (!gotten) return null;
-				var type = (function() {
-					if (gotten.type) return gotten.type;
-					if (p && p.type) return p.type.call(this,path);
-				}).call(this);
-				return new $exports.Resource({
-					type: type,
-					length: gotten.length,
-					read: {
-						binary: function() {
-							return new InputStream(gotten._stream);
-						}
+			var gotten = p.get(path);
+			if (!gotten) return null;
+			return new $exports.Resource({
+				type: gotten.type,
+				length: gotten.length,
+				read: {
+					binary: function() {
+						return new InputStream(gotten._stream);
 					}
-				});
-			}
+				}
+			});
 		};
 	};
 };
