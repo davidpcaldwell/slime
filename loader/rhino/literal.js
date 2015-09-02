@@ -39,13 +39,14 @@
 		return eval(String($javahost.getLoaderCode("literal.js")));
 	})();
 
+	//	TODO	At least this method can move up the chain to the platform, one would think
 	var getTypeFromPath = function(path) {
-		if (/\.js$/.test(path)) return "application/javascript";
-		if (/\.coffee$/.test(path)) return "application/vnd.coffeescript";
+		if (/\.js$/.test(path)) return loader.mime.Type.parse("application/javascript");
+		if (/\.coffee$/.test(path)) return loader.mime.Type.parse("application/vnd.coffeescript");
 	};
 
 	var addStringProperty = function(rv) {
-		if (rv.type == "application/javascript" || rv.type == "application/vnd.coffeescript") {
+		if (rv.type && ( rv.type.is("application/javascript") || rv.type.is("application/vnd.coffeescript") )) {
 			Object.defineProperty(rv, "string", {
 				get: function() {
 					return String(_streams.readString(this._stream));
@@ -102,6 +103,8 @@
 	})(loader.Loader);
 	loader.Loader.getTypeFromPath = getTypeFromPath;
 	loader.Loader.addStringProperty = addStringProperty;
+
+	loader.io = eval(String($javahost.getLoaderCode("rhino/io.js")));
 
 	loader.classpath = new function() {
 		this.toString = function() {

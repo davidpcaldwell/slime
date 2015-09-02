@@ -71,32 +71,7 @@ var InputStream = function(peer) {
 	};
 };
 
-var OutputStream = function(peer) {
-	this.close = function() {
-		peer.close();
-	}
-
-	this.character = function() {
-		return new Writer(new Packages.java.io.OutputStreamWriter(peer));
-	}
-
-	this.split = function(other) {
-		var otherPeer = other.java.adapt();
-
-		//	Handle Buffer special case, very dubious
-		if (!otherPeer && other.writeBinary) {
-			otherPeer = other.writeBinary.java.adapt();
-		}
-
-		return new OutputStream(_java.split(peer,otherPeer))
-	}
-
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
-	}
-};
+var OutputStream = $context.$rhino.io.OutputStream;
 
 var Reader = function(peer) {
 	this.close = function() {
@@ -152,29 +127,7 @@ var Reader = function(peer) {
 		}
 	}
 }
-var Writer = function(peer) {
-	this.close = function() {
-		peer.close();
-	}
-
-	this.write = function(string) {
-		if (typeof(string) == "xml") {
-			peer.write( string.toXMLString() );
-			peer.flush();
-		} else if (typeof(string) == "string") {
-			peer.write( String(string) );
-			peer.flush();
-		} else {
-			throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);
-		}
-	};
-
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
-	};
-};
+var Writer = $context.$rhino.io.Writer;
 
 var Buffer = function() {
 	var peer = new Packages.inonit.script.runtime.io.Streams.Bytes.Buffer();

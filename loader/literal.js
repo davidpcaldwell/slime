@@ -130,6 +130,10 @@
 					return parameters;
 				}
 
+				this.is = function(string) {
+					return string == media + "/" + subtype;
+				}
+
 				this.toString = function() {
 					var rv = media + "/" + subtype;
 					for (var x in parameters) {
@@ -209,20 +213,25 @@
 			var methods = {};
 
 			methods.run = function(resource,scope) {
-				var type = (resource.type) ? String(resource.type) : null;
+				var type = (function(v) {
+					if (typeof(v) == "string") return mime.Type.parse(v);
+					if (v instanceof mime.Type) return v;
+					if (!v) return null;
+					throw new TypeError("Resource 'type' property must be a MIME type or string.");
+				})(resource.type);
 				if (!type) {
 					if (/\.coffee$/.test(resource.name)) {
-						type = "application/vnd.coffeescript";
+						type = mime.Type.parse("application/vnd.coffeescript");
 					} else {
-						type = "application/javascript";
+						type = mime.Type.parse("application/javascript");
 					}
 				}
-				if (type == "application/vnd.coffeescript") {
+				if (type && type.is("application/vnd.coffeescript")) {
 					resource.js = {
 						name: resource.name,
 						code: $coffee.compile(resource.string)
 					};
-				} else if (type == "application/javascript") {
+				} else if (type && type.is("application/javascript")) {
 					resource.js = {
 						name: resource.name,
 						code: resource.string
