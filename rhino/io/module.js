@@ -522,48 +522,6 @@ var Loader = function(underlying) {
 					return null;
 				}
 			};
-			return;
-			//	TODO	could try to push parts of this dependency on Java classes back into rhino loader, without pushing a dependency
-			//			on this package into it
-			var _resources = new JavaAdapter(
-				Packages.inonit.script.engine.Code.Source,
-				new function() {
-					this.toString = function() {
-						return p.resources.toString();
-					}
-
-					var defined = function(value,otherwise,transform) {
-						if (value === null) return otherwise;
-						if (typeof(value) == "undefined") return otherwise;
-						return (transform) ? transform(value) : value;
-					}
-
-					this.getFile = function(path) {
-						var resource = p.resources.get(String(path));
-						if (resource && resource.read && resource.read.binary) {
-							var id = identifiers.get();
-							return Packages.inonit.script.engine.Code.Source.File.create(
-								Packages.inonit.script.engine.Code.Source.URI.script("rhino/io/" + id, String(path)),
-								defined(resource.name, p.resources.toString() + "!" + String(path)),
-								defined(resource.length, null),
-								defined(resource.modified, null, function(modified) {
-									return new Packages.java.util.Date(modified.getTime())
-								}),
-								resource.read.binary().java.adapt()
-							);
-						}
-						if (resource) {
-							throw new TypeError("Resource not found: " + path);
-						}
-						return null;
-					};
-
-					this.getClasses = function() {
-						return null;
-					};
-				}
-			);
-			p._source = _resources;
 		}
 	}
 
