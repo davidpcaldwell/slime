@@ -169,8 +169,8 @@ $exports.Loader = function(p) {
 		};
 	}
 	if (arguments[0].directory) {
-		if (!arguments[0].type) arguments[0].type = function(file) {
-			return $context.api.io.mime.Type.guess({ name: file.pathname.basename });
+		if (!arguments[0].type) arguments[0].type = function(path) {
+			return $context.api.io.mime.Type.guess({ name: path });
 		}
 		p = arguments[0];
 		p.resources = new function() {

@@ -452,36 +452,8 @@ $exports.Writer = Writer;
 $exports.InputStream = InputStream;
 $exports.OutputStream = OutputStream;
 
-var decorate = function(p) {
-	this.resource = function(path) {
-		if (p && p.resources) {
-			//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
-			//			child would need to call the parent loader with the prefix, which probably means we'd have to
-			//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
-			var descriptor = p.resources.get(path);
-			if (!descriptor) return null;
-			return new Resource(descriptor);
-		} else {
-			var gotten = p.get(path);
-			if (!gotten) return null;
-			var type = (function() {
-				if (p && p.type) return p.type.call(this,path);
-			}).call(this);
-			return new $exports.Resource({
-				type: type,
-				length: gotten.length,
-				read: {
-					binary: function() {
-						return new InputStream(gotten._stream);
-					}
-				}
-			});
-		}
-	};
-};
-
 var Loader = function(underlying) {
-	var decorateParameter = function(p) {
+	return function(p) {
 		if (p.resources) {
 			p.get = function(path) {
 				var resource = p.resources.get(String(path));
@@ -507,23 +479,38 @@ var Loader = function(underlying) {
 				}
 			};
 		}
-	}
-
-	return function(p) {
-		decorateParameter(p);
 		underlying.apply(this,arguments);
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
-		decorate.call(this,arguments[0]);
+		this.resource = function(path) {
+			if (false && p && p.resources) {
+				//	TODO	this works for child loaders but probably would not work for grandchild loaders. I suspect the
+				//			child would need to call the parent loader with the prefix, which probably means we'd have to
+				//			restructure the Rhino Loader structure but might just mean that we have to restructure this file
+				var descriptor = p.resources.get(path);
+				if (!descriptor) return null;
+				return new Resource(descriptor);
+			} else {
+				var gotten = p.get(path);
+				if (!gotten) return null;
+				var type = (function() {
+					if (gotten.type) return gotten.type;
+					if (p && p.type) return p.type.call(this,path);
+				}).call(this);
+				return new $exports.Resource({
+					type: type,
+					length: gotten.length,
+					read: {
+						binary: function() {
+							return new InputStream(gotten._stream);
+						}
+					}
+				});
+			}
+		};
 	};
 };
 
 $exports.Loader = Loader($context.$rhino.Loader);
-
-////	Exported (temporarily?) to allow plugins to create jsh.io-compatible loaders from the plugin loader they are given; may be a
-////	better way to do this
-//$exports.decorate = function(loader) {
-//	decorate.call(loader,{});
-//}
 
 $exports.mime = $loader.file("mime.js", {
 	_streams: _java,
