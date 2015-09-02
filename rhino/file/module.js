@@ -202,7 +202,6 @@ $exports.Loader = function(p) {
 			return new $exports.Loader({ directory: p.directory.getSubdirectory(prefix) });
 		}
 	}
-	debugger;
 	$context.api.io.Loader.apply(this,arguments);
 	if (arguments[0].directory) {
 		var directory = arguments[0].directory;

@@ -265,7 +265,27 @@ scenario.scenario("packaged", {
 			}
 		}
 	}
-})
+});
+
+if (CATALINA_HOME) {
+	ScriptVerifier({
+		path: "jsh.httpd/httpd.jsh.js",
+		execute: function(verify) {
+			verify(this).status.is(0);
+		}
+	});
+	if (COFFEESCRIPT) {
+		ScriptVerifier({
+			path: "jsh.httpd/httpd.jsh.js",
+			arguments: ["-suite", "coffee"],
+			execute: function(verify) {
+				verify(this).status.is(0);
+			}
+		});
+	}
+} else {
+	console("No CATALINA_HOME: not running httpd integration tests.");
+}
 
 //	TODO	remove the below dependency
 //			appears to define 'console'
@@ -746,11 +766,9 @@ if (RHINO_LIBRARIES) {
 }
 
 if (CATALINA_HOME) {
-	jsh.shell.echo("Testing servlet integration tests ...");
+	jsh.shell.echo("Testing launching script by URL ...");
 	jsh.shell.jsh({
 		fork: true,
-//		command: LAUNCHER_COMMAND[0],
-//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/http.jsh.js")),
 		script: jsh.script.file.getRelativePath("../test/jsh.script/http.jsh.js"),
 		stdio: {
 			output: String

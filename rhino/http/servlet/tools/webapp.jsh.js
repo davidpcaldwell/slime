@@ -175,7 +175,7 @@ var SLIME = jsh.script.script.getRelativePath("../../../..").directory;
 	SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 	SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 
-	["js/debug","js/object","js/mime","rhino/host","rhino/io"].forEach(function(path) {
+	["js/debug","js/object","rhino/host","rhino/io"].forEach(function(path) {
 		SLIME.getSubdirectory(path).copy(WEBAPP.getRelativePath("WEB-INF/slime/" + path), { recursive: true });
 	});
 })();

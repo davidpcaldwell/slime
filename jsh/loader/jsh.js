@@ -11,7 +11,6 @@
 //	END LICENSE
 
 this.jsh = new function() {
-	debugger;
 	var $host = $jsh.host();
 	(function() {
 		var configuration = $jsh.getEnvironment();

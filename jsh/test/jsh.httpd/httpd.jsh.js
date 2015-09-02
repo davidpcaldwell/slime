@@ -201,7 +201,7 @@ var plugin = new function() {
 					map: function(string,pathname) {
 						rv.add({
 							prefix: string,
-							loader: new jsh.io.Loader({ directory: pathname.directory })
+							loader: new jsh.file.Loader({ directory: pathname.directory })
 						});
 					}
 				});

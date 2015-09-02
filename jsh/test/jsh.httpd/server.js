@@ -15,13 +15,21 @@ $exports.server = (function() {
 		jsh.shell.echo("No Bourne shell at /bin/sh; cannot run automated inside-Tomcat tests");
 		return;
 	}
-	if (!jsh.shell.environment.CATALINA_HOME) {
-		jsh.shell.echo("No $CATALINA_HOME; cannot run automated inside-Tomcat tests");
+	var CATALINA_HOME = (function() {
+		if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+		if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
+	})();
+	if (!CATALINA_HOME) {
+		jsh.shell.echo("Tomcat not found; cannot run automated inside-Tomcat tests");
 		return;
 	}
+	var ip = (function() {
+		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.shell.jsh.home.getSubdirectory("src");
+		return jsh.loader.module(src.getRelativePath("rhino/ip"));
+	})();
 	return new function() {
 		var environment = {
-			CATALINA_HOME: jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory,
+			CATALINA_HOME: CATALINA_HOME,
 			CATALINA_BASE: (function() {
 				if ($context["tomcat.base"]) {
 					return $context["tomcat.base"].directory;
@@ -39,7 +47,6 @@ $exports.server = (function() {
 		});
 		var configuration = jsh.shell.TMPDIR.createTemporary();
 		environment.CATALINA_HOME.getFile("conf/server.xml").copy(configuration.pathname, { filter: function() { return true; }});
-		var ip = jsh.loader.module(jsh.shell.jsh.home.getRelativePath("src/rhino/ip"));
 		var controlPort = ip.getEphemeralPort();
 		var httpPort = ip.getEphemeralPort();
 		var ajpPort = ip.getEphemeralPort();

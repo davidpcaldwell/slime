@@ -42,7 +42,7 @@ $exports.addJshPluginTo = function(jsh) {
 		this.getScript = function(path) {
 			if (path.substring(0,p.prefix.length) == p.prefix) {
 				var subpath = path.substring(p.prefix.length);
-				return p.loader.spi.get(subpath);
+				return p.loader.source.get(subpath);
 			}
 			return null;
 		}
@@ -436,7 +436,11 @@ $exports.addJshPluginTo = function(jsh) {
 
 		//	TODO	the below method is odd. What does it do?
 		this.Loader = function(p) {
-			return new jsh.io.Loader(p);
+			if (p.directory) {
+				return new jsh.file.Loader(p);
+			} else {
+				return new jsh.io.Loader(p);
+			}
 		}
 	};
 

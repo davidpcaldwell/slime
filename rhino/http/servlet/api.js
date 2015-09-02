@@ -93,7 +93,7 @@ var bootstrap = (function() {
 			$rhino: $rhino,
 			api: {
 				js: rv.js,
-				mime: loader.module("WEB-INF/slime/js/mime/", {}),
+				mime: $rhino.mime,
 				java: rv.java
 			}
 		});
