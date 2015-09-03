@@ -67,7 +67,7 @@
 
 	var rv = $rhino.script("rhino/literal.js", $loader.getLoaderCode("rhino/literal.js"), { $javahost: $javahost }, null);
 
-	rv.java = new function() {
+	(function() {
 		this.isJavaObjectArray = function(object) {
 			//	TODO	would this work with Nashorn?
 			return ( Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Object, 0).getClass().isInstance(object) );
@@ -85,7 +85,7 @@
 			return Packages.java.lang.reflect.Array.newInstance(JavaClass,length);
 		}
 		this.test = {};
-	};
+	}).call(rv.java);
 
 	rv.getDebugger = function() {
 		return $rhino.getDebugger();

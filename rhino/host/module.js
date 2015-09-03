@@ -21,25 +21,21 @@
 //		return null;
 //	}
 //});
-$exports.getClass = function(name) {
-	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
-	if ($context.$rhino.classpath.getClass(name)) {
-		return $context.$rhino.java.getJavaPackagesReference(name);
-	}
-	return null;
-};
+$exports.getClass = $context.$rhino.java.getClass;
 
-var isJavaObject = function(object) {
-	if (typeof(object) == "undefined") return false;
-	if (typeof(object) == "string") return false;
-	if (typeof(object) == "number") return false;
-	if (typeof(object) == "boolean") return false;
-	if (object == null) return false;
-	//	TODO	Is the next line superfluous now?
-	if ($context.$rhino.java.isJavaObjectArray(object)) return true;
-	if ($context.$rhino.java.isJavaInstance(object)) return true;
-	return false;
-}
+//var isJavaObject = function(object) {
+//	if (typeof(object) == "undefined") return false;
+//	if (typeof(object) == "string") return false;
+//	if (typeof(object) == "number") return false;
+//	if (typeof(object) == "boolean") return false;
+//	if (object == null) return false;
+//	//	TODO	Is the next line superfluous now?
+//	if ($context.$rhino.java.isJavaObjectArray(object)) return true;
+//	if ($context.$rhino.java.isJavaInstance(object)) return true;
+//	return false;
+//}
+//$exports.isJavaObject = isJavaObject;
+var isJavaObject = $context.$rhino.java.isJavaObject;
 $exports.isJavaObject = isJavaObject;
 
 if (typeof(Packages.org.mozilla.javascript.Context) == "function" && false) {
