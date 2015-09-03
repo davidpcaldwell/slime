@@ -66,6 +66,25 @@
 			return loader.mime.Type.fromName(path);
 		}
 
+		var Resource = function(_file,path) {
+			var parameter = {
+				type: getTypeFromPath(path),
+				read: {
+					binary: function() {
+						return new loader.io.InputStream(_file.getInputStream());
+					}
+				}
+			};
+			var length = _file.getLength();
+			if (typeof(length) == "object" && length !== null && length.longValue) {
+				parameter.length = Number(length.longValue());
+			}
+			loader.io.Resource.call(this,parameter);
+			this.name = String(_file.getSourceName());
+			var _modified = _file.getLastModified();
+			if (_modified) this.modified = _modified.getTime();
+		}
+
 		return function(p) {
 			var Code = Packages.inonit.script.engine.Code;
 			if (p._unpacked) {
@@ -82,29 +101,7 @@
 					var rv = {};
 					var _file = p._source.getFile(path);
 					if (!_file) return null;
-					rv.name = _file.getSourceName();
-					rv.type = getTypeFromPath(path);
-					rv.java = {};
-					rv.java.InputStream = function() {
-						return _file.getInputStream();
-					}
-					var length = _file.getLength();
-					if (typeof(length) == "object" && length !== null && length.longValue) {
-						rv.length = Number(length.longValue());
-					}
-					var _modified = _file.getLastModified();
-					if (_modified) rv.modified = _modified.getTime();
-					addStringProperty(rv);
-					rv.resource = new loader.io.Resource({
-						type: rv.type,
-						length: rv.length,
-						read: {
-							binary: function() {
-								return new loader.io.InputStream(_file.getInputStream());
-							}
-						}
-					})
-					return rv;
+					return new Resource(_file,path);
 				};
 				p.Child = function(prefix) {
 					return {
@@ -146,8 +143,7 @@
 			was.apply(this,arguments);
 			if (p._source) {
 				this.resource = function(path) {
-					var get = p.get(path);
-					return (get) ? get.resource : null;
+					return p.get(path);
 				}
 			} else if (p.resources) {
 				this.resource = function(path) {
