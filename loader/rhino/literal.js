@@ -119,10 +119,14 @@
 	}
 
 	loader.java = loader.file({ name: "rhino/java.js", string: String($javahost.getLoaderCode("rhino/java.js")) }, {
-		$rhino: loader
+		$rhino: loader,
+		liveconnect: liveconnect
 	});
 	loader.io = loader.file({ name: "rhino/io.js", string: String($javahost.getLoaderCode("rhino/io.js")) }, {
-		_streams: _streams
+		_streams: _streams,
+		api: {
+			java: loader.java
+		}
 	});
 //	loader.io = eval(String($javahost.getLoaderCode("rhino/io.js")));
 

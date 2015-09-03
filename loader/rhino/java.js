@@ -11,6 +11,12 @@
 //	Contributor(s):
 //	END LICENSE
 
+var getNamedJavaClass = $context.liveconnect.getNamedJavaClass;
+
+for (var x in $context.liveconnect) {
+	$exports[x] = $context.liveconnect[x];
+}
+
 $exports.getClass = function(name) {
 	$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
 	if ($context.$rhino.classpath.getClass(name)) {
@@ -31,3 +37,31 @@ var isJavaObject = function(object) {
 	return false;
 }
 $exports.isJavaObject = isJavaObject;
+
+$exports.isJavaType = function(javaclass) {
+	var getJavaClassName = function(javaclass) {
+		var toString = "" + javaclass;
+		if (/\[JavaClass /.test(toString)) {
+			return toString.substring("[JavaClass ".length, toString.length-1);
+		} else {
+			return null;
+		}
+	}
+
+	var $isJavaType = function(javaclass,object) {
+		var className = getJavaClassName(javaclass);
+		if (className == null) throw new TypeError("Not a class: " + javaclass);
+		if (!isJavaObject(object)) return false;
+		var loaded = getNamedJavaClass(className);
+		return loaded.isInstance(object);
+	};
+
+	if (arguments.length == 2) {
+		warning("WARNING: Use of deprecated 2-argument form of isJavaType.");
+		return $isJavaType(javaclass,arguments[1]);
+	}
+	return function(object) {
+		return $isJavaType(javaclass,object);
+	}
+};
+$exports.isJavaType.getNamedJavaClass = getNamedJavaClass;
