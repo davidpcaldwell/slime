@@ -298,17 +298,17 @@ $exports.addJshPluginTo = function(jsh) {
 			mapping.push(new OldMapping({ pathname: pathname, prefix: prefix }));
 		};
 
-		this.Loader = function(p) {
-			var rv = new jsh.file.Loader(p);
-			rv.list = function(m) {
-				var directory = p.directory;
-				var dir = (m.path) ? directory.getSubdirectory(m.path) : directory;
-				return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
-					return entry.path;
-				});
-			}
-			return rv;
-		};
+//		this.Loader = function(p) {
+//			var rv = new jsh.file.Loader(p);
+//			rv.list = function(m) {
+//				var directory = p.directory;
+//				var dir = (m.path) ? directory.getSubdirectory(m.path) : directory;
+//				return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
+//					return entry.path;
+//				});
+//			}
+//			return rv;
+//		};
 	};
 
 	var NewResources = function() {
@@ -335,14 +335,14 @@ $exports.addJshPluginTo = function(jsh) {
 			}
 		};
 
-		//	TODO	the below method is odd. What does it do?
-		this.Loader = function(p) {
-			if (p.directory) {
-				return new jsh.file.Loader(p);
-			} else {
-				return new jsh.io.Loader(p);
-			}
-		}
+//		//	TODO	the below method is odd. What does it do?
+//		this.Loader = function(p) {
+//			if (p.directory) {
+//				return new jsh.file.Loader(p);
+//			} else {
+//				return new jsh.io.Loader(p);
+//			}
+//		}
 	};
 
 	jsh.httpd.Resources = function() {

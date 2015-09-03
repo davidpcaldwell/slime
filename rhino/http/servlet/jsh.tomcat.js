@@ -79,7 +79,6 @@ if (TOMCAT_CLASS) {
 
 										if (m.resources) {
 											if (!m.resources.loader) throw new Error("No m.resources.loader");
-											if (!m.resources.Loader) throw new Error("No m.resources.Loader");
 										}
 
 										var script = (function() {
@@ -87,7 +86,7 @@ if (TOMCAT_CLASS) {
 												if (servletDeclaration.$loader) {
 													return servletDeclaration.$loader;
 												} else if (servletDeclaration.file) {
-													return new m.resources.Loader({
+													return new jsh.file.Loader({
 														directory: servletDeclaration.file.parent,
 														type: $context.getMimeType
 													});
