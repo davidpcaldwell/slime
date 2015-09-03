@@ -243,6 +243,12 @@ var Resource = function(p) {
 
 	var global = (function() { return this; })();
 
+	Object.defineProperty(this, "string", {
+		get: function() {
+			return text().asString();
+		}
+	});
+
 	this.read = function(mode) {
 		var _properties = function(peer) {
 			//	peer can be Packages.java.io.InputStream or Packages.java.io.Reader

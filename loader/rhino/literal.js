@@ -117,27 +117,21 @@
 			} else if (p.resources) {
 				p.get = function(path) {
 					var resource = p.resources.get(String(path));
-					if (resource) {
-						var rv = {
-							name: p.resources.toString() + "!" + String(path),
-							length: resource.length,
-							modified: resource.modified,
-							type: resource.type
-						};
-						if (!rv.type) {
-							rv.type = getTypeFromPath(path);
-						}
-						rv.java = {
-							InputStream: function() {
-								return resource.read.binary().java.adapt()
-							}
-						};
-						addStringProperty(rv);
-						rv.resource = new loader.io.Resource(resource);
-						return rv;
-					} else {
-						return null;
+					if (!resource) return null;
+					var rv = new loader.io.Resource(resource);
+					if (!rv.name) {
+						rv.name = p.resources.toString() + "!" + String(path);
 					}
+					if (!rv.type) {
+						rv.type = getTypeFromPath(path);
+					}
+					rv.java = {
+						InputStream: function() {
+							return resource.read.binary().java.adapt()
+						}
+					};
+					rv.resource = rv;
+					return rv;
 				};
 				p.Child = function(prefix) {
 					return {
