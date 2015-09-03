@@ -14,9 +14,7 @@
 var _java = ($context.$java) ? $context.$java : new Packages.inonit.script.runtime.io.Streams();
 
 var InputStream = function(peer) {
-	this.close = function() {
-		peer.close();
-	}
+	$context.$rhino.io.InputStream.apply(this,arguments);
 
 	this.asProperties = function() {
 		var properties = new Packages.java.util.Properties();
@@ -24,28 +22,6 @@ var InputStream = function(peer) {
 		peer.close();
 		return $context.api.java.Properties.adapt(properties);
 	}
-
-	this.character = function(mode) {
-		if (!mode) mode = {};
-		if (!mode.charset) mode.charset = Packages.java.nio.charset.Charset.defaultCharset().name();
-		var separator = mode.LINE_SEPARATOR;
-		//	TODO	No unit test for this method currently; does it work?
-		return new Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
-	}
-
-	this.characters = this.character;
-	$api.deprecate(this, "characters");
-
-	this.cache = $api.deprecate(function() {
-		var $bytes = _java.readBytes(peer);
-		return new Resource(new function() {
-			this.read = new function() {
-				this.binary = function() {
-					return new InputStream(new Packages.java.io.ByteArrayInputStream($bytes));
-				}
-			}
-		});
-	});
 
 	this.Resource = function(type) {
 		var _bytes = _java.readBytes(peer);
@@ -58,75 +34,24 @@ var InputStream = function(peer) {
 				}
 			}
 		});
-	}
-
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
-
-		this.array = function() {
-			return _java.readBytes(peer);
-		}
 	};
+
+	this.cache = $api.deprecate(function() {
+		var $bytes = _java.readBytes(peer);
+		return new Resource(new function() {
+			this.read = new function() {
+				this.binary = function() {
+					return new InputStream(new Packages.java.io.ByteArrayInputStream($bytes));
+				}
+			}
+		});
+	});
+
 };
 
 var OutputStream = $context.$rhino.io.OutputStream;
 
-var Reader = function(peer) {
-	this.close = function() {
-		peer.close();
-	}
-
-	this.readLines = function(callback,mode) {
-		if (!mode) mode = {};
-		//	TODO	should we retrieve properties from the rhino/host module, or is this sufficient?
-		if (!mode.ending) mode.ending = String(Packages.java.lang.System.getProperty("line.separator"));
-		if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
-		var line;
-		var result;
-		while( (line = _java.readLine(peer,mode.ending)) != null ) {
-			result = callback( String( line ) );
-			if (typeof(result) != "undefined") {
-				break;
-			}
-		}
-		if (typeof(result) == "undefined") {
-			mode.onEnd.call(this);
-		} else {
-			mode.onEnd.call(this,result);
-		}
-		return result;
-	}
-
-	this.readLines.UNIX = "\n";
-	this.readLines.DOS = "\r\n";
-	$api.deprecate(this.readLines, "UNIX");
-	$api.deprecate(this.readLines, "DOS");
-
-	this.asString = function() {
-		var buffer = new Packages.java.io.StringWriter();
-		_java.copy(
-			peer,
-			buffer
-		);
-		return String( buffer.toString() );
-	}
-
-	this.asXml = function() {
-		//	First, read the string into a variable so that we still have it in case of error (stream may not be re-readable).
-		var string = this.asString();
-		string = string.replace(/\<\?xml.*\?\>/, "");
-		string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-		return XMLList( string );
-	}
-
-	this.java = new function() {
-		this.adapt = function() {
-			return peer;
-		}
-	}
-}
+var Reader = $context.$rhino.io.Reader;
 var Writer = $context.$rhino.io.Writer;
 
 var Buffer = function() {
