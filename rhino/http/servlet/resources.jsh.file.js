@@ -17,12 +17,6 @@
 //
 
 $exports.addJshPluginTo = function(jsh) {
-	//	loader interface used in mapping:
-	//		resource
-	//		spi.getScript
-	//		Child
-	//		list
-
 	var Mapping = function(p) {
 		if (p.directory) {
 			p.loader = new jsh.file.Loader({ directory: p.directory });
@@ -34,18 +28,10 @@ $exports.addJshPluginTo = function(jsh) {
 		this.get = function(path) {
 			if (path.substring(0,p.prefix.length) == p.prefix) {
 				var subpath = path.substring(p.prefix.length);
-				return p.loader.resource(subpath);
+				return p.loader.get(subpath);
 			}
 			return null;
 		};
-
-		this.getScript = function(path) {
-			if (path.substring(0,p.prefix.length) == p.prefix) {
-				var subpath = path.substring(p.prefix.length);
-				return p.loader.source.get(subpath);
-			}
-			return null;
-		}
 
 		this.list = function(path) {
 			if (path.substring(0,p.prefix.length) == p.prefix) {
@@ -67,11 +53,6 @@ $exports.addJshPluginTo = function(jsh) {
 		this.build = function(WEBAPP) {
 			var build = function(prefix,loader) {
 				var to = WEBAPP.getRelativePath(prefix);
-//				var node = (function() {
-//					if (pathname.file) return pathname.file;
-//					if (pathname.directory) return pathname.directory;
-//					throw new Error("Not directory or file: " + pathname);
-//				})();
 
 				var copy = function(loader,pathname) {
 					var recurse = arguments.callee;
@@ -82,7 +63,6 @@ $exports.addJshPluginTo = function(jsh) {
 						recursive: true
 					});
 					var items = loader.list();
-//					throw new Error();
 					items.forEach(function(item) {
 						if (item.loader) {
 							recurse(item.loader, directory.getRelativePath(item.path));
@@ -92,27 +72,6 @@ $exports.addJshPluginTo = function(jsh) {
 							});
 						}
 					});
-//					if (node.loader) {
-//						var to = pathname.createDirectory({
-//							ifExists: function(dir) {
-//								return false;
-//							},
-//							recursive: true
-//						});
-//						throw new Error();
-//						var nodes = loader.list();
-//						nodes.forEach(function(item) {
-//							jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
-//							recurse(item,to.getRelativePath(item.pathname.basename));
-//						});
-//					} else {
-//						throw new Error();
-//						node.copy(pathname, {
-//							filter: function(item) {
-//								return true;
-//							}
-//						});
-//					}
 				}
 
 				copy(loader,to);
@@ -258,7 +217,7 @@ $exports.addJshPluginTo = function(jsh) {
 				}
 			});
 			rv.toString = function() {
-				return "resources.jsh.file.js loader: prefix=" + prefix + " loader=" + loader;
+				return "resources.jsh.file.js OldLoader: prefix=" + prefix + " loader=" + loader;
 			}
 			rv.list = function(p) {
 				return loader.list(prefix+p.path);
@@ -270,7 +229,7 @@ $exports.addJshPluginTo = function(jsh) {
 			var parameter = new function() {
 				var get = function(path) {
 					for (var i=0; i<mapping.length; i++) {
-						var gotten = mapping[i].getScript(path);
+						var gotten = mapping[i].get(path);
 						if (gotten) return gotten;
 					}
 				}
@@ -286,7 +245,7 @@ $exports.addJshPluginTo = function(jsh) {
 			};
 			//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
 			this.toString = function() {
-				return "NewLoader: [" + mapping.map(function(map) {
+				return "resources.jsh.file.js NewLoader: [" + mapping.map(function(map) {
 					return String(map);
 				}).join("\n");
 			}
@@ -326,7 +285,6 @@ $exports.addJshPluginTo = function(jsh) {
 		this.build = function(WEBAPP) {
 			mapping.forEach(function(item) {
 				item.build(WEBAPP);
-//				build(item.prefix,item.pathname);
 			});
 		}
 	}
@@ -335,15 +293,6 @@ $exports.addJshPluginTo = function(jsh) {
 		var mapping = [];
 
 		Resources.call(this,mapping,true);
-
-		//	Below implementation plugs into an attempt at variability for OldMapping; probably obsolete
-//		this.map = function(prefix,pathname) {
-//			if (pathname.get && pathname.list) {
-//				mapping.push(new Mapping({ implementation: pathname, prefix: prefix }));
-//			} else {
-//				mapping.push(new Mapping({ pathname: pathname, prefix: prefix }));
-//			}
-//		};
 
 		this.map = function(prefix,pathname) {
 			mapping.push(new OldMapping({ pathname: pathname, prefix: prefix }));
@@ -411,8 +360,6 @@ $exports.addJshPluginTo = function(jsh) {
 
 	jsh.httpd.Resources.script = function(/* mapping files */) {
 		var resources = new NewResources();
-		//	TODO	remove the next line
-//		resources = new OldResources();
 		return script(resources, Array.prototype.slice.call(arguments));
 	};
 

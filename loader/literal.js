@@ -283,12 +283,15 @@
 			}
 
 			var Loader = function(p) {
-				if (!p.get) {
-					debugger;
-				}
 				this.toString = function() {
 					return p.toString();
 				}
+
+				this.source = p;
+
+				this.get = function(path) {
+					return this.source.get(path);
+				};
 
 				var declare = function(name) {
 					this[name] = function(path,scope,target) {
@@ -337,8 +340,6 @@
 				})(this,p);
 
 				this.Child = $api.experimental(Child);
-
-				this.source = p;
 			};
 
 			var addTopMethod = function(name) {
