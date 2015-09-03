@@ -210,8 +210,18 @@
 		})({});
 
 		(function() {
+			mime.Type.fromName = function(path) {
+				if (/\.js$/.test(path)) return mime.Type.parse("application/javascript");
+				if (/\.coffee$/.test(path)) return mime.Type.parse("application/vnd.coffeescript");
+			};
+
 			var methods = {};
 
+			//	resource.type: optional, but if it is not a recognized type, this method will error
+			//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
+			//	resource.string: optional, but used to determine code
+			//	resource.js { name, code }: forcibly set based on other properties
+			//	TODO	re-work resource.js
 			methods.run = function(resource,scope) {
 				var type = (function(v) {
 					if (typeof(v) == "string") return mime.Type.parse(v);
@@ -220,9 +230,8 @@
 					throw new TypeError("Resource 'type' property must be a MIME type or string.");
 				})(resource.type);
 				if (!type) {
-					if (/\.coffee$/.test(resource.name)) {
-						type = mime.Type.parse("application/vnd.coffeescript");
-					} else {
+					type = mime.Type.fromName(resource.name);
+					if (!type) {
 						type = mime.Type.parse("application/javascript");
 					}
 				}

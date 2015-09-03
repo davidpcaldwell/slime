@@ -194,15 +194,7 @@ var Streams = new function() {
 			}
 		}
 
-		this.Buffer = function() {
-			if (this.constructor == arguments.callee) {
-				//	deprecated
-				debugger;
-				return new Buffer();
-			} else {
-				throw new Error("Unimplemented: Buffer called as function.");
-			}
-		}
+		this.Buffer = $api.deprecate(Buffer);
 	}
 
 	this.text = new function() {
