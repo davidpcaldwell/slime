@@ -104,7 +104,8 @@
 	loader.Loader.getTypeFromPath = getTypeFromPath;
 	loader.Loader.addStringProperty = addStringProperty;
 
-	loader.io = eval(String($javahost.getLoaderCode("rhino/io.js")));
+	loader.io = loader.file({ name: "rhino/io.js", string: String($javahost.getLoaderCode("rhino/io.js")) });
+//	loader.io = eval(String($javahost.getLoaderCode("rhino/io.js")));
 
 	loader.classpath = new function() {
 		this.toString = function() {

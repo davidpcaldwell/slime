@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-(function() {
+var exports = (function() {
 	//	TODO	NASHORN	naming this to OutputStream causes an error in Nashorn
 	var xOutputStream = function OutputStream(peer) {
 		this.close = function() {
@@ -68,4 +68,8 @@
 		OutputStream: xOutputStream,
 		Writer: Writer
 	};
-})()
+})();
+
+for (var x in exports) {
+	$exports[x] = exports[x];
+}
