@@ -330,6 +330,10 @@ $exports.addJshPluginTo = function(jsh) {
 //				}
 //			}
 			jsh.io.Loader.apply(this,[parameter]);
+			this.resource = function(path) {
+				var resource = this.source.get(path);
+				return (resource) ? resource.resource : null;
+			};
 //			var rv = new jsh.io.Loader(new Parameter(""));
 			//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
 			this.toString = function() {

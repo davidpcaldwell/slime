@@ -126,12 +126,12 @@ $exports.Resource = Resource;
 var Loader = function(underlying) {
 	return function(p) {
 		underlying.apply(this,arguments);
-		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
-		this.resource = function(path) {
-			var gotten = p.get(path);
-			if (!gotten) return null;
-			return gotten.resource;
-		};
+//		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
+//		this.resource = function(path) {
+//			var gotten = p.get(path);
+//			if (!gotten) return null;
+//			return gotten.resource;
+//		};
 	};
 };
 

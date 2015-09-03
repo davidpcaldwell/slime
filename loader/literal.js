@@ -318,7 +318,7 @@
 
 				var Child = (function(parent,argument) {
 					return function(prefix) {
-						var parameter = {
+						var parameter = (p.Child) ? p.Child(prefix) : {
 							get: function(path) {
 								return argument.get(prefix + path);
 							}

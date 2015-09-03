@@ -108,6 +108,11 @@
 					})
 					return rv;
 				};
+				p.Child = function(prefix) {
+					return {
+						_source: p._source.child(prefix)
+					}
+				};
 				p.toString = function() {
 					return "Java loader: " + p._source.toString();
 				};
@@ -136,8 +141,28 @@
 						return null;
 					}
 				};
+				p.Child = function(prefix) {
+					return {
+						resources: {
+							get: function(path) {
+								return p.resources.get(prefix + path);
+							}
+						}
+					}
+				};
 			}
 			was.apply(this,arguments);
+			if (p._source) {
+				this.resource = function(path) {
+					var get = p.get(path);
+					return (get) ? get.resource : null;
+				}
+			} else if (p.resources) {
+				this.resource = function(path) {
+					var model = p.resources.get(path);
+					return (model) ? new loader.io.Resource(model) : null;
+				}
+			}
 		}
 	})(loader.Loader);
 

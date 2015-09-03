@@ -929,14 +929,14 @@ END LICENSE
 										return new module.mime.Type("application", "octet-stream");
 									}
 								})();
-								return new module.Resource({
+								return {
 									type: type,
 									read: {
 										binary: function() {
 											return file.read(jsh.io.Streams.binary);
 										}
 									}
-								});
+								};
 							}
 						}
 					});
