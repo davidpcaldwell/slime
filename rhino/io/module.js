@@ -138,11 +138,11 @@ var Loader = function(underlying) {
 					if (!rv.type) {
 						rv.type = $context.$rhino.Loader.getTypeFromPath(path);
 					}
-					Object.defineProperty(rv, "_stream", {
-						get: function() {
-							return resource.read.binary().java.adapt();
+					rv.java = {
+						InputStream: function() {
+							return resource.read.binary().java.adapt()
 						}
-					});
+					};
 					$context.$rhino.Loader.addStringProperty(rv);
 					return rv;
 				} else {
@@ -160,7 +160,7 @@ var Loader = function(underlying) {
 				length: gotten.length,
 				read: {
 					binary: function() {
-						return new InputStream(gotten._stream);
+						return new InputStream(gotten.java.InputStream());
 					}
 				}
 			});

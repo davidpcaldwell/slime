@@ -49,11 +49,23 @@
 		if (rv.type && ( rv.type.is("application/javascript") || rv.type.is("application/vnd.coffeescript") )) {
 			Object.defineProperty(rv, "string", {
 				get: function() {
-					return String(_streams.readString(this._stream));
+					return String(_streams.readString(rv.java.InputStream()));
 				}
 			});
 		}
 	};
+
+	loader.java = loader.file({ name: "rhino/java.js", string: String($javahost.getLoaderCode("rhino/java.js")) }, {
+		$rhino: loader,
+		liveconnect: liveconnect
+	});
+	loader.io = loader.file({ name: "rhino/io.js", string: String($javahost.getLoaderCode("rhino/io.js")) }, {
+		_streams: _streams,
+		api: {
+			java: loader.java
+		}
+	});
+//	loader.io = eval(String($javahost.getLoaderCode("rhino/io.js")));
 
 	loader.Loader = (function(was) {
 		return function(p) {
@@ -74,24 +86,26 @@
 					if (!_file) return null;
 					rv.name = _file.getSourceName();
 					rv.type = getTypeFromPath(path);
-					Object.defineProperty(rv, "_stream", {
-						get: function() {
-							return _file.getInputStream();
-						}
-					});
-					Object.defineProperty(rv, "length", {
-						get: function(path) {
-							var length = _file.getLength();
-							if (typeof(length) == "object" && length !== null && length.longValue) return Number(length.longValue());
-						}
-					});
-					Object.defineProperty(rv, "modified", {
-						get: function(path) {
-							var _modified = _file.getLastModified();
-							if (_modified) return _modified.getTime();
-						}
-					});
+					rv.java = {};
+					rv.java.InputStream = function() {
+						return _file.getInputStream();
+					}
+					var length = _file.getLength();
+					if (typeof(length) == "object" && length !== null && length.longValue) {
+						rv.length = Number(length.longValue());
+					}
+					var _modified = _file.getLastModified();
+					if (_modified) rv.modified = _modified.getTime();
 					addStringProperty(rv);
+					rv.resource = new loader.io.Resource({
+						type: rv.type,
+						length: rv.length,
+						read: {
+							binary: function() {
+								return new loader.io.InputStream(_file.getInputStream());
+							}
+						}
+					})
 					return rv;
 				};
 				p.toString = function() {
@@ -117,18 +131,6 @@
 			return $javahost.getClasspath().getClass(name);
 		}
 	}
-
-	loader.java = loader.file({ name: "rhino/java.js", string: String($javahost.getLoaderCode("rhino/java.js")) }, {
-		$rhino: loader,
-		liveconnect: liveconnect
-	});
-	loader.io = loader.file({ name: "rhino/io.js", string: String($javahost.getLoaderCode("rhino/io.js")) }, {
-		_streams: _streams,
-		api: {
-			java: loader.java
-		}
-	});
-//	loader.io = eval(String($javahost.getLoaderCode("rhino/io.js")));
 
 	return loader;
 })()
