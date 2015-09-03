@@ -267,50 +267,6 @@ $exports.addJshPluginTo = function(jsh) {
 		};
 
 		var NewLoader = function() {
-			var Parameter = function(relative) {
-				this.getScript = function(path) {
-					for (var i=0; i<mapping.length; i++) {
-						var mapped = mapping[i].get(relative+path);
-						if (mapped) {
-							return mapping[i].getScript(relative+path);
-						}
-					}
-					return null;
-				};
-
-				var getResource = function(path) {
-					for (var i=0; i<mapping.length; i++) {
-						var mapped = mapping[i].get(relative+path);
-						if (mapped) return mapped;
-					}
-				}
-
-				this._stream = function(path) {
-					var resource = getResource(path);
-					if (!resource) return null;
-					return resource.read.binary().java.adapt();
-				};
-
-				this.length = function(path) {
-					var resource = getResource(path);
-					if (!resource) return null;
-					return resource.length;
-				}
-
-				this.type = function(path) {
-					if (/\.js$/.test(path)) {
-						return "text/javascript";
-					}
-				}
-
-				this.Loader = function(prefix) {
-					var rv = new jsh.io.Loader(new Parameter(relative+prefix));
-					rv.list = function() {
-						return loader.list(relative+prefix);
-					};
-					return rv;
-				}
-			};
 			var parameter = new function() {
 				var get = function(path) {
 					for (var i=0; i<mapping.length; i++) {
@@ -324,17 +280,11 @@ $exports.addJshPluginTo = function(jsh) {
 					return rv;
 				};
 			};
-//			var Parameter = function() {
-//				this.get = function(path) {
-//
-//				}
-//			}
 			jsh.io.Loader.apply(this,[parameter]);
 			this.resource = function(path) {
 				var resource = this.source.get(path);
 				return (resource) ? resource.resource : null;
 			};
-//			var rv = new jsh.io.Loader(new Parameter(""));
 			//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
 			this.toString = function() {
 				return "NewLoader: [" + mapping.map(function(map) {
@@ -344,7 +294,6 @@ $exports.addJshPluginTo = function(jsh) {
 			this.list = function() {
 				return loader.list("");
 			}
-//			return rv;
 		}
 
 		this.loader = (old) ? new OldLoader("") : new NewLoader();
