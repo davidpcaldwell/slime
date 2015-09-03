@@ -13,6 +13,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		"tomcat.base": jsh.file.Pathname,
+		//	Run server in Rhino debugger
 		"debug:server": false,
 		coffeescript: jsh.file.Pathname,
 		suite: "all"
