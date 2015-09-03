@@ -73,11 +73,11 @@ $exports.server = (function() {
 				var coffeeScriptArguments = ($context.coffeescript) ? ["-library", "coffee-script.js=" + $context.coffeescript] : [];
 				jsh.shell.jsh({
 					fork: true,
-					script: jsh.script.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js"),
+					script: jsh.script.file.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js").file,
 					arguments: [
 						"-to", environment.CATALINA_BASE.getSubdirectory("webapps").getRelativePath(urlpath),
 						"-servletapi", environment.CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
-						"-resources", jsh.script.getRelativePath("httpd.resources.js"),
+						"-resources", jsh.script.file.getRelativePath("httpd.resources.js"),
 						"-servlet", servletpath
 					].concat(rhinoArguments).concat(coffeeScriptArguments),
 					evaluate: function(result) {
