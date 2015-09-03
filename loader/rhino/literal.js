@@ -111,12 +111,35 @@
 				p.toString = function() {
 					return "Java loader: " + p._source.toString();
 				};
+			} else if (p.resources) {
+				p.get = function(path) {
+					var resource = p.resources.get(String(path));
+					if (resource) {
+						var rv = {
+							name: p.resources.toString() + "!" + String(path),
+							length: resource.length,
+							modified: resource.modified,
+							type: resource.type
+						};
+						if (!rv.type) {
+							rv.type = getTypeFromPath(path);
+						}
+						rv.java = {
+							InputStream: function() {
+								return resource.read.binary().java.adapt()
+							}
+						};
+						addStringProperty(rv);
+						rv.resource = new loader.io.Resource(resource);
+						return rv;
+					} else {
+						return null;
+					}
+				};
 			}
 			was.apply(this,arguments);
 		}
 	})(loader.Loader);
-	loader.Loader.getTypeFromPath = getTypeFromPath;
-	loader.Loader.addStringProperty = addStringProperty;
 
 	loader.classpath = new function() {
 		this.toString = function() {

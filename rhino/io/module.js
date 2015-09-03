@@ -125,45 +125,12 @@ $exports.Resource = Resource;
 
 var Loader = function(underlying) {
 	return function(p) {
-		if (p.resources) {
-			p.get = function(path) {
-				var resource = p.resources.get(String(path));
-				if (resource) {
-					var rv = {
-						name: p.resources.toString() + "!" + String(path),
-						length: resource.length,
-						modified: resource.modified,
-						type: resource.type
-					};
-					if (!rv.type) {
-						rv.type = $context.$rhino.Loader.getTypeFromPath(path);
-					}
-					rv.java = {
-						InputStream: function() {
-							return resource.read.binary().java.adapt()
-						}
-					};
-					$context.$rhino.Loader.addStringProperty(rv);
-					return rv;
-				} else {
-					return null;
-				}
-			};
-		}
 		underlying.apply(this,arguments);
 		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
 		this.resource = function(path) {
 			var gotten = p.get(path);
 			if (!gotten) return null;
-			return new $exports.Resource({
-				type: gotten.type,
-				length: gotten.length,
-				read: {
-					binary: function() {
-						return new InputStream(gotten.java.InputStream());
-					}
-				}
-			});
+			return gotten.resource;
 		};
 	};
 };
