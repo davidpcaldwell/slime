@@ -122,12 +122,12 @@
 					if (!rv.type) {
 						rv.type = getTypeFromPath(path);
 					}
-					rv.java = {
-						InputStream: function() {
-							return resource.read.binary().java.adapt()
-						}
-					};
-					rv.resource = rv;
+//					rv.java = {
+//						InputStream: function() {
+//							return resource.read.binary().java.adapt()
+//						}
+//					};
+//					rv.resource = rv;
 					return rv;
 				};
 				p.Child = function(prefix) {
