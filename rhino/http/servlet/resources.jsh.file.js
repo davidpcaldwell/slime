@@ -248,21 +248,29 @@ $exports.addJshPluginTo = function(jsh) {
 			return rv;
 		};
 
-		var NewLoader = function() {
-			var parameter = new function() {
-				var get = function(path) {
-					for (var i=0; i<mapping.length; i++) {
-						var gotten = mapping[i].get(path);
-						if (gotten) return gotten;
-					}
+		var NewLoader = function(p) {
+			if (!p) p = {};
+			if (!p.prefix) p.prefix = "";
+			var get = function(path) {
+				for (var i=0; i<mapping.length; i++) {
+					var gotten = mapping[i].get(path);
+					if (gotten) return gotten;
 				}
-
-				this.get = function(path) {
-					var rv = get(path);
-					return rv;
-				};
 			};
-			jsh.io.Loader.apply(this,[parameter]);
+
+			p.get = function(path) {
+				var rv = get(p.prefix+path);
+				return rv;
+			};
+
+			p.list = function() {
+				return loader.list(p.prefix);
+			}
+
+			p.child = function(path) {
+				return { prefix: p.prefix+path };
+			}
+			jsh.io.Loader.apply(this,[p]);
 			this.resource = function(path) {
 				return this.source.get(path);
 			};
@@ -272,9 +280,9 @@ $exports.addJshPluginTo = function(jsh) {
 					return String(map);
 				}).join("\n");
 			}
-			this.list = function() {
-				return loader.list("");
-			}
+//			this.list = function() {
+//				return loader.list("");
+//			}
 		}
 
 		this.loader = (old) ? new OldLoader("") : new NewLoader();

@@ -181,7 +181,10 @@ END LICENSE
 				io: jsh.io,
 				file: jsh.file
 			}
-			module.addJshPluginTo(shell);
+			if (!scope.module) {
+				scope.module = $jsapi.loader.file("resources.jsh.file.js", { getMimeType: jsh.httpd.nugget.getMimeType });
+			}
+			scope.module.addJshPluginTo(shell);
 			scope.code = code;
 		</script>
 		<script type="application/x.jsapi#tests">
@@ -239,6 +242,22 @@ END LICENSE
 //			verify(one).loader().list({ path: "WEB-INF/" })[2]().is("test/");
 //			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
 //			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
+		</script>
+		<script type="application/x.jsapi#tests">
+			var mapping = code.Resources.script($module.getResourcePathname("test/resource/1.hg.js").file);
+			verify(mapping).is.not.equalTo(null);
+			verify(mapping).loader.is.not.equalTo(null);
+			verify(mapping).loader.evaluate.property("list").is.type("function");
+			var slime = new mapping.loader.Child("WEB-INF/slime/");
+			var byPath = function(path) {
+				return function(o) {
+					return o.path == path;
+				};
+			};
+			verify(slime).list().evaluate(function() { return this.filter(byPath(".hg")) }).length.is(0);
+			verify(slime).list().evaluate(function() { return this.filter(byPath("loader")) }).length.is(1);
+			verify(slime).list().evaluate(function() { return this.filter(byPath("jsh")) }).length.is(1);
+			jsh.shell.echo(slime.list().map(function(item) { return item.path; }));
 		</script>
 	</div>
 </body>
