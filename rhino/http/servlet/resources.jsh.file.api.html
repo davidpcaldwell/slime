@@ -258,6 +258,11 @@ END LICENSE
 			verify(slime).list().evaluate(function() { return this.filter(byPath("loader")) }).length.is(1);
 			verify(slime).list().evaluate(function() { return this.filter(byPath("jsh")) }).length.is(1);
 			jsh.shell.echo(slime.list().map(function(item) { return item.path; }));
+
+			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			mapping.build(tmpdir);
+			verify(tmpdir).getSubdirectory("WEB-INF/slime/.hg").is(null);
+			verify(tmpdir).getSubdirectory("WEB-INF/slime/jsh").is.not(null);
 		</script>
 	</div>
 </body>
