@@ -330,7 +330,7 @@
 
 				var Child = (function(parent,argument) {
 					return function(prefix) {
-						var parameter = (p.Child) ? p.Child(prefix) : {
+						var parameter = (p.child) ? p.child(prefix) : {
 							get: function(path) {
 								return argument.get(prefix + path);
 							}

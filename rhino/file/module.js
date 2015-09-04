@@ -201,7 +201,7 @@ $exports.Loader = function(p) {
 				return { path: node.pathname.basename, loader: node.directory, resource: !node.directory };
 			});
 		}
-		p.Child = function(prefix) {
+		p.child = function(prefix) {
 			return { directory: p.directory.getSubdirectory(prefix) };
 		}
 //		p.Loader = function(prefix) {

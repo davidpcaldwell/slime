@@ -103,7 +103,7 @@
 					if (!_file) return null;
 					return new Resource(_file,path);
 				};
-				p.Child = function(prefix) {
+				p.child = function(prefix) {
 					return {
 						_source: p._source.child(prefix)
 					}
@@ -130,7 +130,7 @@
 //					rv.resource = rv;
 					return rv;
 				};
-				if (!p.Child) p.Child = function(prefix) {
+				if (!p.child) p.child = function(prefix) {
 					return {
 						resources: {
 							get: function(path) {

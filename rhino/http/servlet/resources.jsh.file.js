@@ -17,9 +17,29 @@
 //
 
 $exports.addJshPluginTo = function(jsh) {
+	var DirectoryWithoutVcsLoader = function(p) {
+		var delegate = new jsh.file.Loader(p);
+		var source = {
+			get: function(name) {
+				return delegate.source.get(name);
+			},
+			list: function() {
+				return delegate.source.list().filter(function(item) {
+					return item.path != ".hg";
+				});
+			},
+			child: function(prefix) {
+				return {
+					directory: p.directory.getSubdirectory(prefix)
+				};
+			}
+		};
+		jsh.io.Loader.call(this,source);
+	};
+
 	var Mapping = function(p) {
 		if (p.directory) {
-			p.loader = new jsh.file.Loader({ directory: p.directory });
+			p.loader = new DirectoryWithoutVcsLoader({ directory: p.directory });
 		}
 		this.toString = function() {
 			return p.prefix + " -> " + p.loader + " (dir=" + p.directory + ")";
