@@ -29,16 +29,8 @@ plugin({
 	load: function() {
 		$loader.resource = function(path) {
 			//	TODO	assumes resource exists
-			return new jsh.io.Resource({
-				read: {
-					binary: function() {
-						var _stream = $loader._stream(path);
-						if (!_stream) throw new Error("Not found in " + $loader + ": " + path);
-						return jsh.io.java.adapt(_stream);
-					}
-				}
-			});
-		}
+			return $loader.get(path);
+		};
 		$loader.run("webview.js", {
 			$loader: $loader,
 			$context: {
