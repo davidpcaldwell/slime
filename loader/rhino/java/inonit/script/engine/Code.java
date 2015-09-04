@@ -109,6 +109,7 @@ public abstract class Code {
 				};
 			}
 
+			//	TODO	this implementation will not respond correctly to getInputStream() being called multiple times
 			public static File create(final URL url) {
 				return new File() {
 					@Override public URI getURI() {
@@ -159,6 +160,8 @@ public abstract class Code {
 			}
 
 			//	Used in rhino/io to create Code.Source.File objects in resources implementation
+			//	TODO	this is actually wrong, given that it uses a single input stream, making it so that the input stream cannot
+			//			be created more than once
 			public static File create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new File() {
 					@Override public String toString() {

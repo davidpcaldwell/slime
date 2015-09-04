@@ -245,7 +245,11 @@ var Resource = function(p) {
 
 	Object.defineProperty(this, "string", {
 		get: function() {
-			return text().asString();
+			//	TODO	use something from $api
+			if (!arguments.callee.called) {
+				arguments.callee.called = { returns: text().asString() };
+			}
+			return arguments.callee.called.returns;
 		}
 	});
 
