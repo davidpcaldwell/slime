@@ -62,6 +62,9 @@ $exports.addJshPluginTo = function(jsh) {
 						},
 						recursive: true
 					});
+					if (!loader.list) {
+						debugger;
+					}
 					var items = loader.list();
 					items.forEach(function(item) {
 						if (item.loader) {

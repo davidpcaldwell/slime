@@ -130,7 +130,7 @@
 //					rv.resource = rv;
 					return rv;
 				};
-				p.Child = function(prefix) {
+				if (!p.Child) p.Child = function(prefix) {
 					return {
 						resources: {
 							get: function(path) {
@@ -141,15 +141,10 @@
 				};
 			}
 			was.apply(this,arguments);
-			if (p._source) {
-				this.resource = function(path) {
+			if (p._source || p.resources) {
+				this.resource = loader.$api.deprecate(function(path) {
 					return p.get(path);
-				}
-			} else if (p.resources) {
-				this.resource = function(path) {
-					var model = p.resources.get(path);
-					return (model) ? new loader.io.Resource(model) : null;
-				}
+				});
 			}
 		}
 	})(loader.Loader);

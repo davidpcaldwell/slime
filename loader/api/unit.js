@@ -59,6 +59,21 @@ var Verify = function(scope,vars) {
 			});
 		}
 
+		var isType = function(value) {
+			scope.test(function() {
+				var type = (function() {
+					if (v === null) return "null";
+					return typeof(v);
+				})();
+				return new function() {
+					this.success = (type == value);
+					this.message = (this.success)
+						? "is type " + value
+						: "is type " + type + ", not " + value
+				};
+			});
+		}
+
 		var isEqualTo = function(value,not) {
 			var specified = represent(value);
 			scope.test(function() {
@@ -82,6 +97,9 @@ var Verify = function(scope,vars) {
 		this.is.not = function(value) {
 			is(value,true);
 		};
+		this.is.type = function(value) {
+			isType(value);
+		}
 
 		this.is.equalTo = function(value) {
 			return isEqualTo(value,false);

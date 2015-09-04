@@ -53,9 +53,8 @@ END LICENSE
 				}
 			</script>
 			<script type="application/x.jsapi#tests">
-				test(typeof(loader.resource) == "function");
-				test(loader.resource("api.html") != null);
-				test(loader.resource("foo.html") == null);
+				verify(loader).get("api.html").is.not(null);
+				verify(loader).get("foo.html").is(null);
 				var list = loader.list();
 				var map = {};
 				list.forEach(function(item) {
@@ -70,8 +69,9 @@ END LICENSE
 				verify(map["java.js"]).resource.is.not.equalTo(void(0));
 			</script>
 			<script type="application/x.jsapi#tests">
-				var api = loader.resource("api.html");
+				var api = loader.get("api.html");
 				verify(api).length.is.not.equalTo(null);
+				verify(api).length.is.type("number");
 			</script>
 		</li>
 	</ul>

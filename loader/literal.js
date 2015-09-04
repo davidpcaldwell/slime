@@ -340,6 +340,39 @@
 				})(this,p);
 
 				this.Child = $api.experimental(Child);
+
+				var list = function(loader,m,context,callback) {
+					var all = loader.source.list();
+					for (var i=0; i<all.length; i++) {
+						if (m.filter(all[i])) {
+							callback(all[i]);
+						}
+						if (all[i].loader) {
+							if (m.descendants(all[i])) {
+								var path = context.path.slice();
+								path.push(all[i].path);
+								list(new Child(all[i].path),m,{ path: path },callback);
+							}
+						}
+					}
+				}
+
+				if (p.list) {
+					this.list = function(m) {
+						if (!m) m = {};
+						if (!m.filter) m.filter = function() { return true; };
+						if (!m.descendants) m.descendants = function() { return false; };
+						var rv = [];
+						list(this,m,{ path: [] },function(entry) {
+							if (entry.loader) {
+								rv.push({ path: entry.path, loader: new Child(entry.path) });
+							} else if (entry.resource) {
+								rv.push({ path: entry.path, resource: p.get(entry.path) });
+							}
+						});
+						return rv;
+					}
+				}
 			};
 
 			var addTopMethod = function(name) {
