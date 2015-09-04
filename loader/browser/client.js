@@ -211,9 +211,10 @@
 
 		this.Loader = function(p) {
 			if (typeof(p) == "string") {
+				//	TODO	add test coverage for this
 				return new platform.Loader({
 					get: function(path) {
-						return { name: path, path: p+path, code: fetcher.getCode(p+path) };
+						return { name: path, path: p+path, string: fetcher.getCode(p+path) };
 					}
 				});
 			}
