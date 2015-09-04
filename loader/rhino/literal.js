@@ -39,16 +39,6 @@
 		return eval(String($javahost.getLoaderCode("literal.js")));
 	})();
 
-	var addStringProperty = function(rv) {
-		if (rv.type && ( rv.type.is("application/javascript") || rv.type.is("application/vnd.coffeescript") )) {
-			Object.defineProperty(rv, "string", {
-				get: function() {
-					return String(_streams.readString(rv.java.InputStream()));
-				}
-			});
-		}
-	};
-
 	loader.java = loader.file({ name: "rhino/java.js", string: String($javahost.getLoaderCode("rhino/java.js")) }, {
 		$rhino: loader,
 		liveconnect: liveconnect
