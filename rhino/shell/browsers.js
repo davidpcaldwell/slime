@@ -121,6 +121,14 @@ var Chrome = function(b) {
 			}
 			var args = [];
 			addProfileArguments(args,m);
+			var disableGpu = (function() {
+				if (typeof(m.disableGpu) != "undefined") return m.disableGpu;
+				//	TODO	document this
+				return jsh.shell.environment.JSH_SHELL_BROWSERS_CHROME_DISABLE_GPU;
+			})();
+			if (disableGpu) {
+				args.push("--disable-gpu");
+			}
 			if (m.app) {
 				args.push("--app=" + m.app);
 			} else {
