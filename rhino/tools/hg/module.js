@@ -656,7 +656,21 @@ var Installation = function(environment) {
 		};
 	};
 
-	rv.init = function(dir) {
+	rv.init = function(p) {
+		if (p.directory && p.pathname) {
+			//	Used to allow passing directory argument
+			p = $api.deprecate(function(was) {
+				return {
+					pathname: p.pathname
+				};
+			})(p);
+		}
+		var dir = p.pathname.createDirectory({
+			ifExists: function(dir) {
+				return false;
+			},
+			recursive: true
+		});
 		shell({
 			command: "init",
 			directory: dir

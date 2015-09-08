@@ -86,11 +86,23 @@ END LICENSE
 		<script type="application/x.jsapi#initialize">
 			//	Cannot run tests inside httpd, apparently; commands fail with "Invalid signature" so allow httpd to turn off
 			//	tests for this module
-			if (!scope.module) throw new TypeError("scope.module not found.");
+			if (!scope.module) {
+				scope.module = $jsapi.loader.module("module.js", {
+					api: {
+						js: jsh.js,
+						web: jsh.js.web,
+						io: jsh.io,
+						file: jsh.file,
+						shell: jsh.shell,
+						time: jsh.time
+					},
+					install: jsh.shell.PATH.getCommand("hg")					
+				});
+			}
 			if (!scope.$jsapi.environment.hgbug) {
 				//	TODO	get below from context variable?
 				var hg = jsh.shell.PATH.getCommand("hg");
-				module.unit = {
+				scope.module.unit = {
 					Repository: function() {
 						var rv = this;
 						rv.unit = new function() {
@@ -121,7 +133,7 @@ END LICENSE
 
 							this.clone = function(p) {
 								var cloned = rv.clone(p);
-								module.unit.Repository.call(cloned);
+								scope.module.unit.Repository.call(cloned);
 								return cloned;
 							}
 						}
@@ -129,7 +141,7 @@ END LICENSE
 				};
 				var createHg = function() {
 					var rv = scope.module.init(scope.$jsapi.file.newTemporaryDirectory());
-					module.unit.Repository.call(rv);
+					scope.module.unit.Repository.call(rv);
 					return rv;
 				}
 				scope.createHg = createHg;
@@ -654,25 +666,34 @@ END LICENSE
 			</li>
 			<li class="function">
 				<div class="name">init</div>
-				<span>Creates a Mercurial repository for a given directory.</span>
+				<span>Creates a local Mercurial repository.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
-						<li class="value">
-							<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
-							<span>The directory to initialize as a Mercurial repository.</span>
+						<li class="object">
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">pathname</div>
+									<!--	TODO	verify Pathname link	-->
+									<span class="type"><a href="../../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+									<span>The location at which to create the repository.</span>
+								</li>
+							</ul>
 						</li>
 					</ol>
 				</div>
 				<div class="returns">
 					<div class="label">Returns</div>
-					<span class="type"><a href="#types.Repository">Repository</a></span>
+					<span class="type"><a href="#types.LocalRepository">LocalRepository</a></span>
 				</div>
 				<script type="application/x.jsapi#tests">
 					var init = $jsapi.file.newTemporaryDirectory();
 					init.getRelativePath("foo").write("foo", { append: false });
-					var repository = module.init(init);
+					var repository = module.init({ pathname: init.pathname });
 					repository.commit({ addremove: true, message: "test" });
+					verify(repository).directory.pathname.toString().is(init.pathname.toString());
 					//	TODO	add log command and test based on its result
 				</script>
 			</li>

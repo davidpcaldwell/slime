@@ -1,0 +1,63 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>__TITLE__</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../../loader/api/api.js"></script>
+	</head>
+	<body>
+		<script type="application/x.jsapi#initialize">
+			scope.module = $jsapi.loader.module("module.js", {
+				program: jsh.shell.PATH.getCommand("git")
+			});
+		</script>
+		<div>__DESCRIPTION__</div>
+		<div>
+			<h1>Context</h1>
+			<ul>
+			</ul>
+		</div>
+		<div>
+			<h1>Exports</h1>
+			<div class="type">
+				<a class="type" name="types.Installation">Installation</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">init</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+							tmpdir.getRelativePath("a").write("a", { append: false });
+							var repository = module.init({
+								pathname: tmpdir.pathname
+							});
+							verify(repository).directory.pathname.toString().is(tmpdir.pathname.toString());
+							verify(repository).directory.getFile("a").is.type("object");
+						</script>
+					</li>
+				</ul>
+			</div>
+			<ul>
+			</ul>
+		</div>
+	</body>
+</html>

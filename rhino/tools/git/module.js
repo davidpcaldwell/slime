@@ -10,17 +10,33 @@
 //	Contributor(s):
 //	END LICENSE
 
+var Installation = function(environment) {
+	this.git = function(m) {
+		return jsh.shell.run(
+			jsh.js.Object.set({}, m, {
+				command: environment.program,
+				arguments: [m.command].concat( (m.arguments) ? m.arguments : [] )
+			})
+		);
+	};
+	
+	this.init = function(m) {
+		git({
+			command: "init",
+			arguments: [m.pathname]
+		});
+		return new LocalRepository({
+			directory: m.pathname.directory
+		});
+	}
+};
+
+var installation = new Installation({
+	program: $context.program
+});
+
 var git = function(p) {
-	debugger;
-	return jsh.shell.run(
-		jsh.js.Object.set({},
-			p,
-			{
-				command: $context.program,
-				arguments: [p.command].concat( (p.arguments) ? p.arguments : [] )
-			}
-		)
-	);
+	return installation.git(p);
 };
 
 var RemoteRepository = function(o) {
@@ -45,7 +61,15 @@ var RemoteRepository = function(o) {
 };
 
 var LocalRepository = function(o) {
-	this.base = o.local;
+	var directory = (function() {
+		if (o.directory) return o.directory;
+		if (o.local) return $api.deprecate(function() {
+			return o.local;
+		})();
+	})();
+	this.directory = directory;
+	this.base = directory;
+	$api.deprecate(this,"base");
 
 	this.toString = function() {
 		return "git local: " + o.local;
@@ -325,3 +349,7 @@ $exports.Repository = function(p) {
 		throw new TypeError("Required: .local or .remote property.");
 	}
 };
+
+$exports.init = function(p) {
+	return installation.init(p);
+}
