@@ -14,6 +14,13 @@ var parse = function(string) {
 	var matcher = /(?:([^\:\/\?\#]+)\:)?(?:\/\/([^\:\/\?\#]+))?(?:\:(\d+))?([^\?\#]*)(?:\?([^#]*))?(?:\#(.*))?/;
 	var match = matcher.exec(string);
 	var authority = (match[2] || match[3]) ? { host: match[2], port: Number(match[3]) } : (function(){})();
+	if (authority && authority.host) {
+		var tokens = authority.host.split("@");
+		if (tokens.length == 2) {
+			authority.host = tokens[1];
+			authority.userinfo = tokens[0];
+		}
+	}
 	return {
 		scheme: match[1],
 		authority: authority,
@@ -30,7 +37,7 @@ $exports.Url = function(o) {
 		}
 	},this);
 	if (o.authority) {
-		["host","port"].forEach(function(name) {
+		["userinfo","host","port"].forEach(function(name) {
 			if (o.authority[name]) {
 				this[name] = o.authority[name];
 			}

@@ -256,6 +256,18 @@ END LICENSE
 							})();
 
 							(function() {
+								var url = module.Url.parse("scheme://user@server.com/path?q=query#section");
+								//	TODO	test optional port, since it is a number
+								verify(url).scheme.is("scheme");
+								verify(url).userinfo.is("user");
+								verify(url).host.is("server.com");
+								//	TODO	should port be null or undefined
+								test(url.path == "/path");
+								test(url.query == "q=query");
+								test(url.fragment == "section");
+							})();
+							
+							(function() {
 								var url = module.Url.parse("hello.html");
 								test(url.path == "hello.html");
 							})();

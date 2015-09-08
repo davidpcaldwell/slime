@@ -648,6 +648,8 @@ var Installation = function(environment) {
 	var RemoteRepository = function(url) {
 		Repository.call(this);
 		this.reference = url;
+		
+		this.url = $context.api.web.Url.parse(url);
 
 		this.toString = function() {
 			return "hg repository: " + url;

@@ -21,6 +21,7 @@ plugin(new function() {
 		global.hg = $loader.module("module.js", {
 			api: {
 				js: jsh.js,
+				web: jsh.js.web,
 				io: jsh.io,
 				file: jsh.file,
 				shell: jsh.shell,
