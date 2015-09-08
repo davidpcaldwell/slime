@@ -80,10 +80,10 @@ $api.engine.runCommand = (function(was) {
 //	Supply arguments whose default values are provided by the jrunscript API
 
 //	If Rhino location not specified, and we are running this script inside Rhino, we supply its classpath to the shell
-$api.slime.settings.default("jsh.engine.rhino.classpath", $api.rhino.classpath);
+$api.slime.settings["default"]("jsh.engine.rhino.classpath", $api.rhino.classpath);
 
 //	If SLIME source location not specified, and we can determine it, supply it to the shell
-$api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
+$api.slime.settings["default"]("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
 
 if ($api.slime.settings.get("jsh.java.home")) {
 	command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
@@ -97,7 +97,7 @@ var shell = (function() {
 		return new $api.jsh.Built($api.script.file.getParentFile());
 	} else {
 		var HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.home"));
-		$api.slime.settings.default("jsh.shell.lib", String(new Packages.java.io.File(HOME, ".inonit/jsh/lib")));
+		$api.slime.settings["default"]("jsh.shell.lib", String(new Packages.java.io.File(HOME, ".inonit/jsh/lib")));
 		return new $api.jsh.Unbuilt();
 	}
 })();
@@ -124,7 +124,7 @@ if (!defaultEngine) {
 	Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
 	Packages.java.lang.System.exit(1);
 }
-$api.slime.settings.default("jsh.engine", defaultEngine);
+$api.slime.settings["default"]("jsh.engine", defaultEngine);
 
 if ($api.arguments[0] == "-engines") {
 	var engines = [];

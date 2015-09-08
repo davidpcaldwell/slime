@@ -278,8 +278,8 @@ $api.slime = (function(was) {
 			if (typeof(all[name].value) != "undefined") {
 				return all[name].value;
 			}
-			if (all[name].default) {
-				return all[name].default();
+			if (all[name]["default"]) {
+				return all[name]["default"]();
 			}
 		}
 
@@ -288,7 +288,7 @@ $api.slime = (function(was) {
 			all[name].value = value;
 		}
 
-		this.default = function(name,value) {
+		this["default"] = function(name,value) {
 			if (typeof(value) == "undefined") return;
 			if (typeof(value) != "function") {
 				value = (function(rv) {
@@ -297,7 +297,7 @@ $api.slime = (function(was) {
 					}
 				})(value);
 			}
-			all[name].default = value;
+			all[name]["default"] = value;
 		}
 
 		this.getContainerArguments = function() {

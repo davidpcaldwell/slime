@@ -93,7 +93,7 @@
 		rv.newArray = function(type,length) {
 			var argument = this.resolve({
 				nashorn: function() {
-					return type.class;
+					return type["class"];
 				},
 				rhino: function() {
 					return type;
@@ -109,7 +109,7 @@
 			var jclass = eval("Packages." + name);
 			return this.resolve({
 				nashorn: function() {
-					return jclass.class;
+					return jclass["class"];
 				},
 				rhino: function() {
 					return jclass;
@@ -488,32 +488,39 @@
 	(function() {
 		var tried = false;
 		var compiler;
+		
+		var implementation = function(args) {
+			var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
+			for (var i=0; i<jarray.length; i++) {
+				jarray[i] = new Packages.java.lang.String(args[i]);
+			}
+			var status = compiler.run(
+				Packages.java.lang.System["in"],
+				Packages.java.lang.System.out,
+				Packages.java.lang.System.err,
+				jarray
+			);
+			if (status) {
+				throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
+			}
+		};
 
-		Object.defineProperty($api.java.install, "compile", {
-			get: function() {
-				if (!tried) {
-					compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-					tried = true;
-				}
-				if (compiler) {
-					return function(args) {
-						var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
-						for (var i=0; i<jarray.length; i++) {
-							jarray[i] = new Packages.java.lang.String(args[i]);
-						}
-						var status = compiler.run(
-							Packages.java.lang.System["in"],
-							Packages.java.lang.System.out,
-							Packages.java.lang.System.err,
-							jarray
-						);
-						if (status) {
-							throw new Error("Compiler exited with status " + status + " with inputs " + args.join(","));
-						}
+		if (Object.defineProperty) {
+			Object.defineProperty($api.java.install, "compile", {
+				get: function() {
+					if (!tried) {
+						compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+						tried = true;
+					}
+					if (compiler) {
+						return implementation;
 					}
 				}
-			}
-		});
+			});
+		} else {
+			compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+			$api.java.install.compile = implementation;
+		}
 	})();
 	$api.java.getClass = function(name) {
 		return $engine.getClass(name);
@@ -532,10 +539,21 @@
 		launchers.Vm = function(home) {
 			if (!home) home = $api.java.install;
 			return function(mode) {
+				$api.debug("Invoking launcher");
 				var tokens = [home.launcher];
 				tokens.push.apply(tokens,vmArguments);
 				for (var x in properties) {
 					tokens.push("-D" + x + "=" + properties[x]);
+				}
+				if (!classpath.map) {
+					Array.prototype.map = function(f,target) {
+						if (!target) target = {};
+						var rv = [];
+						for (var i=0; i<this.length; i++) {
+							rv[i] = f.call(target,this[i],i,this);
+						}
+						return rv;
+					}
 				}
 				tokens.push(
 					"-classpath",
@@ -550,6 +568,7 @@
 				tokens.push(main);
 				tokens.push.apply(tokens,mainArguments);
 				tokens.push( (mode) ? mode : {} );
+				$api.debug("Invoking runCommand");
 				return $api.engine.runCommand.apply(null,tokens);
 			}
 		};
@@ -657,9 +676,11 @@
 		}
 
 		this.run = function(mode) {
+			$api.debug("Running");
 			if (mode && launcher == launchers.ClassLoader) {
 				launcher = new launchers.Vm();
 			}
+			$api.debug("launcher = " + launcher);
 			return launcher(mode);
 		}
 	}
