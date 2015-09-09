@@ -112,7 +112,6 @@
 //	TODO	Provide runtime access to plugin path, with jsh.shell.jsh.plugins?
 
 try {
-	debugger;
 	var $api = this.$api;
 	if (!this.$api.slime) {
 		$api.script.resolve("slime.js").load();
@@ -269,8 +268,8 @@ try {
 									return new Packages.java.io.FileOutputStream(_file);
 								}
 
-								this.delete = function() {
-									return _file.delete();
+								this["delete"] = function() {
+									return _file["delete"]();
 								};
 
 								this.toUri = function() {
@@ -918,6 +917,5 @@ try {
 	}
 	//	Below works around Rhino debugger bug that does not allow e to be inspected
 	var error = e;
-	debugger;
 	$api.jsh.exit(1);
 }
