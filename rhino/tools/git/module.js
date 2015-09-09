@@ -82,11 +82,10 @@ var LocalRepository = function(o) {
 	},this);
 
 	var execute = function(p) {
-		var environment = (o && o.environment) ? o.environment : {};
 		return jsh.shell.run(jsh.js.Object.set({}, p, {
 			command: $context.program,
 			arguments: [p.command].concat( (p.arguments) ? p.arguments : [] ),
-			environment: jsh.js.Object.set({}, jsh.shell.environment, environment),
+			environment: jsh.js.Object.set({}, jsh.shell.environment, (o && o.environment) ? o.environment : {}, (p.environment) ? p.environment : {}),
 			directory: o.local
 		}));
 	}
@@ -308,7 +307,8 @@ var LocalRepository = function(o) {
 		if (true) {
 			execute({
 				command: "push",
-				arguments: args
+				arguments: args,
+				environment: p.environment
 			});
 		} else {
 			jsh.shell.echo("git push " + args.join(" "));
