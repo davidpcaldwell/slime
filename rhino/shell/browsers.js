@@ -50,6 +50,7 @@ var Chrome = function(b) {
 		var addProfileArguments = function(args,m) {
 			if (u.directory) args.push("--user-data-dir=" + u.directory);
 			if (m.profile) args.push("--profile-directory=" + m.profile);
+			if (m.incognito) args.push("--incognito");
 		};
 
 		var isRunning = function() {
