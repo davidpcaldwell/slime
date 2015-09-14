@@ -6,6 +6,13 @@
 		<script src="../../../loader/api/api.js"></script>
 	</head>
 	<body>
+		<!--
+			Non-automated tests:
+
+			Run askpass.bash with a prompt argument
+			Run askpass.jsh.js -script [location] to generate an askpass.bash
+			Run *that* askpass.bash with a prompt argument
+		-->
 		<script type="application/x.jsapi#initialize">
 			scope.module = $jsapi.loader.module("module.js", {
 				program: jsh.shell.PATH.getCommand("git")
