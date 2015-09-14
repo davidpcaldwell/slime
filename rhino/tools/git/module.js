@@ -216,7 +216,6 @@ var LocalRepository = function(o) {
 			evaluate: function(result) {
 				var parser = /(\S+)(?:\s+)(\S+)/;
 				var rv = {};
-				jsh.shell.echo("output = [" + result.stdio.output + "]")
 				result.stdio.output.split("\n").forEach(function(line) {
 					if (parser.exec(line)) {
 						var match = parser.exec(line);
