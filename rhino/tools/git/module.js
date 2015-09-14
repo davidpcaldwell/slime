@@ -86,7 +86,7 @@ var LocalRepository = function(o) {
 			command: $context.program,
 			arguments: [p.command].concat( (p.arguments) ? p.arguments : [] ),
 			environment: jsh.js.Object.set({}, jsh.shell.environment, (o && o.environment) ? o.environment : {}, (p.environment) ? p.environment : {}),
-			directory: o.local
+			directory: directory
 		}));
 	}
 
@@ -214,8 +214,9 @@ var LocalRepository = function(o) {
 				output: String
 			},
 			evaluate: function(result) {
-				var parser = /(\S+) (\S+)/;
+				var parser = /(\S+)(?:\s+)(\S+)/;
 				var rv = {};
+				jsh.shell.echo("output = [" + result.stdio.output + "]")
 				result.stdio.output.split("\n").forEach(function(line) {
 					if (parser.exec(line)) {
 						var match = parser.exec(line);
@@ -319,6 +320,29 @@ var LocalRepository = function(o) {
 			jsh.shell.echo("git push " + args.join(" "));
 		}
 	};
+	
+	this.stash = function(p) {
+		if (!p) p = {};
+		execute({
+			command: "stash"
+		});
+	};
+	this.stash.list = (function(p) {
+		if (!p) p = {};
+		return execute({
+			command: "stash",
+			arguments: ["list"],
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				//	TODO	would this work on Windows?
+				return result.stdio.output.split("\n").slice(0,-1).map(function(line) {
+					return { line: line }
+				});
+			}
+		});
+	}).bind(this);
 
 	this.mergeBase = function(p) {
 		var args = [];

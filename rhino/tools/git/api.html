@@ -63,6 +63,50 @@
 					</li>
 				</ul>
 			</div>
+			<div class="type">
+				<a class="type" name="types.Repository">Repository</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.LocalRepository">LocalRepository</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					var repository = module.init({
+						pathname: tmpdir.pathname
+					});
+					repository.directory.getRelativePath("a").write("a", { append: false });
+					repository.add({ path: "a" });
+					repository.commit({ message: "a" });
+					repository.directory.getRelativePath("b").write("b", { append: false });
+					repository.add({ path: "b" });
+					verify(repository.stash.list()).length.is(0);
+					repository.stash();
+					repository.directory.getRelativePath("c").write("c", { append: false });
+					repository.add({ path: "c" });
+					repository.stash();
+					verify(repository.stash.list()).length.is(2);
+				</script>
+				<script type="application/x.jsapi#tests">
+					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					var repository = module.init({
+						pathname: tmpdir.pathname
+					});
+					repository.directory.getRelativePath("a").write("a", { append: false });
+					verify(repository.status()).a.is("??");
+					repository.add({ path: "a" });
+					jsh.shell.echo(JSON.stringify(repository.status()));
+					verify(repository.status()).a.is("A");
+					repository.commit({ message: "a" });
+					verify(repository.status()).evaluate.property("a").is(void(0));
+				</script>
+			</div>
 			<ul>
 			</ul>
 		</div>
