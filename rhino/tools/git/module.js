@@ -252,15 +252,16 @@ var LocalRepository = function(o) {
 
 	this.branch = function(p) {
 		var args = [];
-		if (p && p.force) {
+		if (!p) p = {};
+		if (p.force) {
 			args.push("-f");
 		}
-		if (p && p.delete) {
+		if (p.delete) {
 			args.push("-d");
 		}
-		if (p && p.name) args.push(p.name);
-		if (p && p.start) args.push(p.start);
-		if (p && p.all) {
+		if (p.name) args.push(p.name);
+		if (p.start) args.push(p.start);
+		if (p.all) {
 			args.push("-a");
 		}
 		var output = !Boolean(p.name);
@@ -275,7 +276,7 @@ var LocalRepository = function(o) {
 			},
 			evaluate: function(result) {
 				if (output) {
-					return result.stdio.output.split("\n").map(function(line) {
+					var rv = result.stdio.output.split("\n").map(function(line) {
 						var rv = {};
 						if (line.indexOf("->") != -1) {
 							//	TODO	better parsing
@@ -293,6 +294,10 @@ var LocalRepository = function(o) {
 						}
 						return rv;
 					});
+					if (!p.all) {
+						rv = rv[0];
+					}
+					return rv;
 				} else {
 					return (function(){})();
 				}
