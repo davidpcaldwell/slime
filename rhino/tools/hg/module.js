@@ -355,7 +355,10 @@ var Installation = function(environment) {
 								if (pathname.directory && pathname.directory.getSubdirectory(".hg")) {
 									return new LocalRepository(pathname.directory);
 								} else {
-									throw new TypeError("Does not appear to be a local repository location: " + pathname);
+									//	TODO	should 
+									var error = new TypeError("Does not appear to be a local repository location: " + pathname);
+									error.location = pathname.toString();
+									throw error;
 								}
 							};
 
@@ -390,18 +393,20 @@ var Installation = function(environment) {
 
 		var inout = (function(target) {
 			return function(verb,m) {
+				var self = this;
+				var MyErrorType = $context.api.js.Error.Type("HgError");
 				var MyError = function(p) {
-					var rv = new Error();
+					var rv = new MyErrorType();
 					jsh.js.Object.set(rv,p);
 					return rv;
 				}
 
 				var parse = function(result) {
 					if (result.err == "abort: repository is unrelated\n") {
-						throw new MyError({ unrelated: true });
+						throw new MyError({ message: "Unrelated: " + targetargs + " (to " + target + ")", unrelated: true });
 					} else if (result.status != 0) {
 						if (/^abort\: repository (.*) not found\!\n$/.test(result.err)) {
-							throw new MyError({ notFound: true });
+							throw new MyError({ message: "Not found", notFound: true });
 						}
 					}
 					return {
