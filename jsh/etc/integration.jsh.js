@@ -36,7 +36,6 @@ var src = parameters.options.src.directory;
 var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
-jsh.unit.view.options.select(parameters.options.view).listen(scenario);
 
 //	TODO	this next line should go elsewhere
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
@@ -941,6 +940,13 @@ scenario.scenario("legacy", {
 	}
 })
 
-scenario.run();
-
-jsh.shell.echo("Integration tests complete.");
+jsh.unit.interface.create(scenario, new function() {
+	if (parameters.options.view == "chrome") {
+		this.chrome = {
+			profile: parameters.options["chrome:profile"],
+			port: parameters.options.port
+		};
+	} else {
+		this.view = parameters.options.view;
+	}
+});

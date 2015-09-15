@@ -141,7 +141,7 @@ if (parameters.options.browser) {
 }
 
 jsh.unit.interface.create(top, new function() {
-	if (parameters.options.view == "ui") {
+	if (parameters.options.view == "chrome") {
 		this.chrome = {
 			profile: parameters.options["chrome:profile"],
 			port: parameters.options.port
