@@ -19,7 +19,7 @@ var Installation = function(environment) {
 			})
 		);
 	};
-	
+
 	this.init = function(m) {
 		git({
 			command: "init",
@@ -319,7 +319,7 @@ var LocalRepository = function(o) {
 			jsh.shell.echo("git push " + args.join(" "));
 		}
 	};
-	
+
 	this.stash = function(p) {
 		if (!p) p = {};
 		execute({

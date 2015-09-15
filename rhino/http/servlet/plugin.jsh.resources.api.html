@@ -182,9 +182,15 @@ END LICENSE
 				file: jsh.file
 			}
 			if (!scope.module) {
-				scope.module = $jsapi.loader.file("resources.jsh.file.js", { getMimeType: jsh.httpd.nugget.getMimeType });
+				$jsapi.loader.run("plugin.jsh.resources.js", {
+					$context: {
+						getMimeType: jsh.httpd.nugget.getMimeType
+					},
+					jsh: shell
+				});
+				scope.module = shell.httpd;
 			}
-			scope.module.addJshPluginTo(shell);
+			jsh.shell.echo("Keys for code: " + Object.keys(code));
 			scope.code = code;
 		</script>
 		<script type="application/x.jsapi#tests">

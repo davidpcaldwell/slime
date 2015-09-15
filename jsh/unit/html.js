@@ -220,17 +220,14 @@ var Scope = function(suite,environment) {
 				directory: directory,
 				basename: basename
 			};
-		}
+		};
 
-		this.module = function(name,context,target) {
-			var parsed = parse(name);
-			return implementation.loader(parsed.directory).module(parsed.basename,context,target);
-		}
-
-		this.file = function(name,context,target) {
-			var parsed = parse(name);
-			return implementation.loader(parsed.directory).file(parsed.basename,context,target);
-		}
+		["module","file","run"].forEach(function(operation) {
+			this[operation] = function(name,context,target) {
+				var parsed = parse(name);
+				return implementation.loader(parsed.directory)[operation](parsed.basename,context,target);
+			};
+		},this);
 
 		this.eval = function(name,scope) {
 			var parsed = parse(name);

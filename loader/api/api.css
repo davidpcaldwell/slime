@@ -78,6 +78,9 @@ div.label, span.label { font-weight: bold; font-size: 90%; }
 /* div.arguments, div.returns, div.instances { border-style: solid; border-width: 1px; padding: 0.2em 0.2em } */
 .error { background: #ffff00; }
 
+.deprecated { background-color: #c0c0c0; font-style: italic; }
+.experimental { background-color: #ffffc0; font-style: italic; }
+
 script[type="application/x.jsapi#tests"] {
 	display: block; font-family: monospace; white-space: pre;
 	margin: 10px 0px;

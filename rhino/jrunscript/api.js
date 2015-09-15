@@ -491,7 +491,7 @@
 	(function() {
 		var tried = false;
 		var compiler;
-		
+
 		var implementation = function(args) {
 			var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
 			for (var i=0; i<jarray.length; i++) {

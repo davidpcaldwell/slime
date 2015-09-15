@@ -355,7 +355,7 @@ var Installation = function(environment) {
 								if (pathname.directory && pathname.directory.getSubdirectory(".hg")) {
 									return new LocalRepository(pathname.directory);
 								} else {
-									//	TODO	should 
+									//	TODO	should
 									var error = new TypeError("Does not appear to be a local repository location: " + pathname);
 									error.location = pathname.toString();
 									throw error;
@@ -653,7 +653,7 @@ var Installation = function(environment) {
 	var RemoteRepository = function(url) {
 		Repository.call(this);
 		this.reference = url;
-		
+
 		this.url = $context.api.web.Url.parse(url);
 
 		this.toString = function() {

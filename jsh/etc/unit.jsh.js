@@ -29,7 +29,7 @@ var suite = new jsh.unit.Suite(new jsh.unit.Scenario.Html({
 }));
 
 jsh.unit.interface.create(suite, new function() {
-	if (parameters.options.view == "ui") {
+	if (parameters.options.view == "chrome") {
 		this.chrome = {
 			profile: parameters.options["chrome:profile"],
 			port: parameters.options.port

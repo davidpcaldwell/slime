@@ -33,9 +33,12 @@ plugin({
 		jsh.httpd.nugget = {};
 		jsh.httpd.nugget.getMimeType = getMimeType;
 
-		$loader.file("resources.jsh.file.js", {
-			getMimeType: getMimeType
-		}).addJshPluginTo(jsh);
+		$loader.run("plugin.jsh.resources.js", {
+			jsh: jsh,
+			$context: {
+				getMimeType: getMimeType
+			}
+		});
 
 		var CATALINA_HOME = (function() {
 			if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
@@ -57,9 +60,9 @@ plugin({
 			}
 			return TOMCAT_CLASS;
 		})();
-		
+
 		jsh.java.log.named("jsh.httpd").CONFIG("When trying to load Tomcat: class = %s CATALINA_HOME = %s", TOMCAT_CLASS, CATALINA_HOME);
-		
+
 		if (TOMCAT_CLASS) {
 			jsh.httpd.Tomcat = function(p) {
 				var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
@@ -209,7 +212,7 @@ plugin({
 					started = false;
 				}
 			};
-			
+
 			jsh.httpd.Tomcat.serve = function(p) {
 				var loader = new jsh.file.Loader({ directory: p.directory });
 				var getMimeType = function(path) {

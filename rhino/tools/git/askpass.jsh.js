@@ -1,13 +1,26 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME JDK interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	TODO	come up with a test suite and documentation for this
 var parameters = jsh.script.getopts({
 	options: {
 		//	Determines which of the two modes of operation will be used for this script (see below)
 		child: false,
-		
+
 		//	Without the -child argument, the -script argument is used to specify the location of an executable script which will be
 		//	produced and will be suitable for use as the value of GIT_ASKPASS
 		script: jsh.file.Pathname,
-		
+
 		//	With the -child argument, the -prompt argument is expected, which provides a prompt that will be shown to the user
 		prompt: String
 	},
