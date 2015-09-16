@@ -366,6 +366,8 @@ jsh.httpd.Resources = function() {
 };
 jsh.httpd.Resources.Old = $api.deprecate(OldResources);
 
+jsh.httpd.Resources.NoVcsDirectory = DirectoryWithoutVcsLoader;
+
 var script = function(rv,args) {
 	for (var i=0; i<args.length; i++) {
 		var mappingFile = args[i];

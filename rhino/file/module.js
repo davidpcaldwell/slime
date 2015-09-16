@@ -168,7 +168,7 @@ $exports.Loader = function(p) {
 			directory: p
 		};
 	}
-	if (arguments[0].directory) {
+	if (arguments[0].directory || arguments[0].directory === null) {
 		if (!arguments[0].type) arguments[0].type = function(path) {
 			return $context.api.io.mime.Type.guess({ name: path });
 		}
@@ -179,6 +179,7 @@ $exports.Loader = function(p) {
 			};
 
 			this.get = function(path) {
+				if (!p.directory) return null;
 				var file = p.directory.getFile(path);
 				//	TODO	could we modify this so that file supported Resource?
 				if (file) {
@@ -197,11 +198,13 @@ $exports.Loader = function(p) {
 			}
 		};
 		p.list = function() {
+			if (!p.directory) return [];
 			return p.directory.list().map(function(node) {
 				return { path: node.pathname.basename, loader: node.directory, resource: !node.directory };
 			});
 		}
 		p.child = function(prefix) {
+			if (!p.directory) return { directory: null };
 			return { directory: p.directory.getSubdirectory(prefix) };
 		}
 //		p.Loader = function(prefix) {
