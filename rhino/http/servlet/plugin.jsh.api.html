@@ -91,44 +91,6 @@ END LICENSE
 			</ul>
 		</div>
 		<div class="type">
-			<a class="type" name="types.resources">resources</a>
-			<span>An object that specifies a mapping between logical paths and resources.</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="function">
-					<div class="name"><a name="resources.map">map</a></div>
-					Has semantics equivalent to the <code>map()</code> method in a resource mapping script. See
-					<a href="api.html#types.resource-mapping-script">resource mapping script</a> for details.
-				</li>
-				<li class="value">
-					<div class="name">loader</div>
-					<span class="type"><a href="../../../rhino/io/api.html#types.Loader">Loader</a></span>
-					<span>A loader that uses this mapping to find code.</span>
-				</li>
-				<li class="function">
-					<div class="name">build</div>
-					<span>Copies the resources mapped by this mapping into a directory.</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
-								<span>A directory (presumably a webapp directory).</span>
-							</li>
-						</ol>
-					</div>
-				</li>
-			</ul>
-			<script type="application/x.jsapi#tests">
-				verify.suite(
-					$jsapi.loader.scenario(
-						"plugin.jsh.resources.api.html",
-						{ }
-					)
-				);
-			</script>
-		</div>
-		<div class="type">
 			<a class="type" name="types.Tomcat">Tomcat</a>
 			<span>A Tomcat server.</span>
 			<div class="label">has properties:</div>
@@ -169,7 +131,7 @@ END LICENSE
 									</li>
 									<li class="value">
 										<div class="name">resources</div>
-										<span class="type"><a href="#types.resources">resources</a></span>
+										<span class="type"><a href="plugin.jsh.resources.api.html#types.Resources">Resources</a></span>
 										<span>The resources to provide to the servlets.</span>
 									</li>
 									<!--
@@ -215,29 +177,15 @@ END LICENSE
 		<ul>
 			<li class="constructor">
 				<div class="name">Resources</div>
-				<span>Creates an empty <a href="#types.resources">resources</a>.</span>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type"><a href="#types.resources">resources</a></span>
-				</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">script</div>
-						<div>
-							Creates a <a href="#types.resources">resources</a> from one or more <a href="api.html#types.resource-mapping-script">resource mapping script</a>s.
-						</div>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-
-							Zero or more <span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>s that are resource mapping scripts.
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type"><a href="#types.resources">resources</a></span>
-						</div>
-					</li>
-				</ul>
+				See <a href="plugin.jsh.resources.api.html">detailed documentation</a>.
+				<script type="application/x.jsapi#tests">
+					verify.suite(
+						$jsapi.loader.scenario(
+							"plugin.jsh.resources.api.html",
+							{}
+						)
+					);
+				</script>
 			</li>
 			<li class="constructor">
 				<div class="name"><a id="$exports.Tomcat">Tomcat</a></div>
