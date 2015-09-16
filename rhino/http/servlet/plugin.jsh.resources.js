@@ -290,25 +290,21 @@ var Resources = function(mapping,old) {
 		if (!mappingFile) throw new TypeError("mappingFile must be defined.");
 		if (!scope) scope = {};
 		var rv = this;
+		var api = jsh.js.Object.set({}, {
+			$mapping: (mappingFile.pathname) ? mappingFile : void(0),
+			map: function(prefix,pathname) {
+				rv.map(prefix,pathname);
+			}
+		}, (rv.add) ? { add: function(m) { rv.add(m); } } : {}, scope);
 		if (mappingFile.loader) {
-			mappingFile.loader.run(mappingFile.path, jsh.js.Object.set({}, {
-				$mapping: (mappingFile.pathname) ? mappingFile : void(0),
-				map: function(prefix,pathname) {
-					rv.map(prefix,pathname);
-				}
-			}, scope));
+			mappingFile.loader.run(mappingFile.path, api);
 		} else {
 			var toRun = (mappingFile.name && mappingFile.string) ? mappingFile : {
 				name: mappingFile.pathname.basename,
 				type: "application/javascript",
 				string: mappingFile.read(String)
 			};
-			jsh.loader.run(toRun, jsh.js.Object.set({}, {
-				$mapping: (mappingFile.pathname) ? mappingFile : void(0),
-				map: function(prefix,pathname) {
-					rv.map(prefix,pathname);
-				}
-			}, scope));
+			jsh.loader.run(toRun, api);
 		}
 	}
 
