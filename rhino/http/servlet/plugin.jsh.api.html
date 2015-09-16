@@ -44,11 +44,6 @@ END LICENSE
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="value">
-					<div class="name">file</div>
-					<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
-					<span>The file providing the implementation of the servlet.</span>
-				</li>
-				<li class="value">
 					<div class="name">parameters</div>
 					<span class="type">object</span>
 					<span>
@@ -57,6 +52,41 @@ END LICENSE
 						container, the <code>$parameters</code> variable will contain the names and values of the servlet
 						parameters, and hence may only have string values.
 					</span>
+				</li>
+				<li class="value">
+					<div class="name">$loader</div>
+					<span class="type"><a href="../../loader/api.html">Loader</a></span>
+					<span>
+						(optional; only affects servlets running inside <code>jsh</code>)
+						A <code>Loader</code> which will be provided to the servlet as <code>$loader</code>.</span>
+				</li>
+				<li class="value">
+					<div class="name">file</div>
+					<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
+					<span>
+						<span>(optional; either <code>file</code> or <code>load</code> is required)</span>
+						The file providing the implementation of the servlet.
+					</span>
+				</li>
+				<li class="function">
+					<div class="name">load</div>
+					<span>
+						<span>(optional; either <code>file</code> or <code>load</code> is required)</span>
+						A function providing the implementation of the servlet.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">object</span>
+								<span>
+									An object with properties representing the scope variables of the servlet, including the scope
+									variables specified by <a href="api.html">SLIME servlets</a> as well as the
+									<code>$exports</code> object to which the servlet provides its implementation.
+								</span>
+							</li>
+						</ol>
+					</div>
 				</li>
 			</ul>
 		</div>
@@ -210,7 +240,7 @@ END LICENSE
 				</ul>
 			</li>
 			<li class="constructor">
-				<div class="name">Tomcat</div>
+				<div class="name"><a id="$exports.Tomcat">Tomcat</a></div>
 				<span>
 					Creates an embedded Tomcat server that can run script-based web applications. The server must have at least one
 					application added via <code>map</code> before it will function.
@@ -256,7 +286,10 @@ END LICENSE
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="object">
-									<span>An object that provides properties to the Tomcat constructor, as well as:</span>
+									<span>
+										An object that provides properties to the <a href="#$exports.Tomcat">Tomcat constructor</a>,
+										as well as:
+									</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
@@ -272,23 +305,23 @@ END LICENSE
 							<span class="type"><a href="#types.Tomcat">Tomcat</a></span>
 							<span>The Tomcat object that was started.</span>
 						</div>
-						<!--	TODO	manual test currently: jsh/test/manual/jsh.httpd/serve.jsh.js	-->
-						<script type="application/x.jsapi#tests">
-							if (jsh.httpd.Tomcat) {
-								jsh.shell.jsh({
-									fork: true,
-									script: $module.getResourcePathname("test/jsh.shell.jsh.jsh.js").file,
-									arguments: ["-scenario"],
-									evaluate: function(result) {
-										verify(result.status,"jsh.shell.jsh.jsh.js status").is(0)
-									}
-								});
-							} else {
-								verify("Skipped Tomcat tests.").is("Skipped Tomcat tests.");
-							}
-						</script>
 					</li>
 				</ul>
+				<!--	TODO	manual test currently: jsh/test/manual/jsh.httpd/serve.jsh.js	-->
+				<script type="application/x.jsapi#tests">
+					if (jsh.httpd.Tomcat) {
+						jsh.shell.jsh({
+							fork: true,
+							script: $module.getResourcePathname("test/jsh.shell.jsh.jsh.js").file,
+							arguments: ["-scenario"],
+							evaluate: function(result) {
+								verify(result.status,"jsh.shell.jsh.jsh.js status").is(0)
+							}
+						});
+					} else {
+						verify("Skipped Tomcat tests.").is("Skipped Tomcat tests.");
+					}
+				</script>
 			</li>
 		</ul>
 	</div>

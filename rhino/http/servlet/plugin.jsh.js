@@ -113,14 +113,12 @@ plugin({
 									this.init = function() {
 										var apiScope = {
 											$host: new function() {
+												if (m.resources && !m.resources.loader) throw new Error("No m.resources.loader");
+
 												this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
 
-												if (m.resources) {
-													if (!m.resources.loader) throw new Error("No m.resources.loader");
-												}
-
-												var script = (function() {
-													if (m.resources) {
+												this.loaders = {
+													script: (function() {
 														if (servletDeclaration.$loader) {
 															return servletDeclaration.$loader;
 														} else if (servletDeclaration.file) {
@@ -128,17 +126,8 @@ plugin({
 																directory: servletDeclaration.file.parent,
 																type: getMimeType
 															});
-														} else {
-															throw new Error("Unimplemented: servletDeclaration without file property");
 														}
-													}
-													if (servletDeclaration.file) {
-														return new jsh.file.Loader({ directory: servletDeclaration.file.parent });
-													}
-												})();
-
-												this.loaders = {
-													script: script,
+													})(),
 													container: (m.resources) ? m.resources.loader : null
 												};
 

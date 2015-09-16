@@ -56,7 +56,7 @@ END LICENSE
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="object">
-								<span>__DESCRIPTION__</span>
+								<span>An object describing the mapping.</span>
 								<div class="label">has properties:</div>
 								<ul>
 									<li class="value">
@@ -97,14 +97,25 @@ END LICENSE
 				<!--	TODO	map: is it public?	-->
 				<!--	TODO	file: is it public?	-->
 				<!--	TODO	Loader is undocumented; not sure exactly what it is for, probably to bridge compatibility	-->
-				<li class="value">
-					<div class="name">loader</div>
-					<span class="type"><a href="../../../loader/api.html#types.Loader">Loader</a></span>
-					<span>A loader that loads resources as specified by this <code>Resources</code>.</span>
-				</li>
+				<!--
+					Applications need not know about this property
+					<li class="value">
+						<div class="name">loader</div>
+						<span class="type"><a href="../../../loader/api.html#types.Loader">Loader</a></span>
+						<span>A loader that loads resources as specified by this <code>Resources</code>.</span>
+					</li>
+				-->
 				<li class="function">
 					<div class="name">build</div>
-					<span>Copies the resources specified by this <code>Resources</code> to a directory.</span>
+					<span>
+						<!--
+							TODO	link to Loader type
+							TODO	define enumerability more formally, perhaps as part of Loader
+						-->
+						Copies the resources specified by this <code>Resources</code> to a directory. This method requires that
+						all <a href="../../loader/api.html">Loader</a> objects added to the mapping be enumerable (support the
+						ability to list their contents).
+					</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
@@ -117,35 +128,62 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
+		<div class="type">
+			<a class="type" name="types.resource-mapping-script">resource mapping script</a>
+			<span>A <a href="../../../rhino/file/api.html#types.file">file</a> which specifies a mapping between resource paths and the locations at which those resources can be found.</span>
+			<div>
+				A <i>resource mapping script</i> is executed with the following two properties in its scope:
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">$mapping</div>
+						<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+						<span>The mapping script itself.</span>
+					</li>
+					<li class="function">
+						<div class="name">map</div>
+						<span>Maps a given prefix to a location on the file system.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A prefix, which does <em>not</em> include a leading <code>/</code>.</span>
+								</li>
+								<li class="value">
+									<span class="type"><a href="../../file/api.html#types.Pathname">Pathname</a></span>
+									<span>A pathname.</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
 
 		<ul>
 			<li class="constructor">
 				<div class="name">Resources</div>
-				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-					</ol>
-				</div>
+				<span>Creates an empty <a href="#types.Resources">Resources</a>.</span>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<span class="type">Resources</span>
-					<span>__DESCRIPTION__</span>
+					<span class="type"><a href="#types.Resources">Resources</a></span>
 				</div>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="function">
 						<div class="name">script</div>
-						<span>__DESCRIPTION__</span>
+						<span>
+							A method that uses <a href="#types.resource-mapping-script">resource mapping script</a>s to create
+							a <a href="#types.Resources">Resources</a>.
+						</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
-							<ol>
-							</ol>
+							Each argument is interpreted as a <a href="#types.resource-mapping-script">resource mapping script</a>.
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type"><a href="#types.Resources">Resources</a></span>
 						</div>
 						<div class="label">has properties:</div>
 						<ul>

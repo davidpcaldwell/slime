@@ -347,7 +347,6 @@ var NewResources = function() {
 	Resources.call(this,mapping);
 
 	this.add = function(m) {
-		//	prefix, loader properties
 		mapping.push(new Mapping(m));
 	}
 
@@ -364,15 +363,6 @@ var NewResources = function() {
 			}));
 		}
 	};
-
-//		//	TODO	the below method is odd. What does it do?
-//		this.Loader = function(p) {
-//			if (p.directory) {
-//				return new jsh.file.Loader(p);
-//			} else {
-//				return new jsh.io.Loader(p);
-//			}
-//		}
 };
 
 jsh.httpd.Resources = function() {

@@ -173,6 +173,7 @@ END LICENSE
 					<div class="name">loader</div>
 					<span class="type"><a href="../../../rhino/io/api.html#types.Loader">Loader</a></span>
 					<span>
+						<span>(conditional: not present if no resources specified when mapping the servlet)</span>
 						Loads code (and potentially other resources) from the servlet resource loader. Note that unlike Java
 						servlet resource loaders, SLIME loaders do not use a leading slash as part of the resource path.
 					</span>
@@ -262,6 +263,7 @@ END LICENSE
 		<div>
 			The servlet interacts with its container by assigning properties to its <code>$exports</code> object, provided in the
 			scope. Each servlet must, at a minimum, assign a function to <code>$exports.handle</code>:
+			<!--	TODO	indentation below is lost	-->
 			<blockquote><code>
 				$exports.handle = function(request) {
 					return httpd.http.Response.text("Hello, World!");
@@ -272,6 +274,7 @@ END LICENSE
 			SLIME servlets do not have a separate initialization procedure as Java servlets do; they may perform any initialization
 			in their script.
 		</div>
+		<h2>$exports</h2>
 		<div class="label">has properties:</div>
 		<ul>
 			<li class="function">
@@ -305,38 +308,6 @@ END LICENSE
 	<div>
 		<h1><a id="deployment">Deployment</a></h1>
 		<div>
-			<div class="type">
-				<a class="type" name="types.resource-mapping-script">resource mapping script</a>
-				<span>A <a href="../../../rhino/file/api.html#types.file">file</a> which specifies a mapping between resource paths and the locations at which those resources can be found.</span>
-				<div>
-					A <i>resource mapping script</i> is executed with the following two properties in its scope:
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">$mapping</div>
-							<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
-							<span>The mapping script itself.</span>
-						</li>
-						<li class="function">
-							<div class="name">map</div>
-							<span>Maps a given prefix to a location on the file system.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>A prefix, which does <em>not</em> include a leading <code>/</code>.</span>
-									</li>
-									<li class="value">
-										<span class="type"><a href="../../file/api.html#types.Pathname">Pathname</a></span>
-										<span>A pathname.</span>
-									</li>
-								</ol>
-							</div>
-						</li>
-					</ul>
-				</div>
-			</div>
 			SLIME servlets may be built into ordinary Java web applications using the <code>webapp.jsh.js</code> tool included with
 			SLIME in the <code>rhino/http/servlet/tools</code> directory.
 			The <code>webapp.jsh.js</code> script is a <code>jsh</code> script, and takes the following command-line arguments:
@@ -367,7 +338,7 @@ END LICENSE
 				</li>
 				<li>
 					<strong><code>-resources <i>pathname</i></code></strong> (can be specified multiple times):
-					The pathname of a <a href="#types.resource-mapping-script">resource mapping script</a> that specifies resources
+					The pathname of a <a href="plugin.jsh.resources.api.html#types.resource-mapping-script">resource mapping script</a> that specifies resources
 					to be included in the webapp.
 				</li>
 				<!--

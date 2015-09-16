@@ -198,7 +198,9 @@ scope.httpd.$java = (function() {
 	return $host.$java;
 })();
 
-scope.httpd.loader = loaders.container;
+if (loaders.container) {
+	scope.httpd.loader = loaders.container;
+}
 
 scope.httpd.js = api.js;
 scope.httpd.java = api.java;
@@ -223,11 +225,11 @@ scope.httpd.http.Response.text = function(string) {
 	};
 }
 
-scope.$loader = (function() {
+if (loaders.script) {
 	//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the
 	//			global loader; in the jsh embedding, it should resolve them relative to the current directory of the script
-	return loaders.script;
-})();
+	scope.$loader = loaders.script;
+}
 
 scope.$parameters = $parameters;
 
