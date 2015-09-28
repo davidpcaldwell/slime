@@ -325,6 +325,15 @@ public class Rhino {
 				if (status != null) {
 					context.exit(status.intValue());
 				} else {
+					Thread[] threads = new Thread[Thread.activeCount()*2]; 
+					int count = Thread.enumerate(threads);
+					for (Thread t : threads) {
+						if (t != null && t != Thread.currentThread() && !t.isDaemon()) {
+							Logging.get().log(Rhino.class, Level.FINER, "Active thread: " + t + " daemon = " + t.isDaemon());
+							t.join();
+						}
+					}
+					Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
 					main.rhino.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}

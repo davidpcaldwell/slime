@@ -243,7 +243,9 @@ public class Command {
 		}
 
 		int waitFor() throws InterruptedException {
+			Logging.get().log(Process.class, Level.FINE, "Waiting for %s", delegate);
 			int rv = delegate.waitFor();
+			Logging.get().log(Process.class, Level.FINE, "Exit status for %s is %d", delegate, rv);
 			//	If we were passing our own System.in to a subprocess directly, it does not make sense to close it just because the
 			//	subprocess ended. On the other hand, if we are sending another input stream, we should close it, both to save
 			//	resources and because there may be a non-daemon thread reading it.
@@ -293,6 +295,7 @@ public class Command {
 				throw new NullPointerException("Command argument " + i + " must not be null.");
 			}
 		}
+		Logging.get().log(Command.class, Level.CONFIG, "Launching subprocess: %s env=%s pwd=%s", Arrays.asList(command), Arrays.asList(context.envp()), context.getWorkingDirectory());
 		return new Process(
 			Runtime.getRuntime().exec( command, context.envp(), context.getWorkingDirectory() )
 			,context
