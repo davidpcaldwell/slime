@@ -276,7 +276,7 @@ var LocalRepository = function(o) {
 			},
 			evaluate: function(result) {
 				if (output) {
-					var rv = result.stdio.output.split("\n").map(function(line) {
+					var rv = result.stdio.output.split("\n").filter(function(line) { return line; }).map(function(line) {
 						var rv = {};
 						if (line.indexOf("->") != -1) {
 							//	TODO	better parsing
@@ -295,7 +295,9 @@ var LocalRepository = function(o) {
 						return rv;
 					});
 					if (!p.all) {
-						rv = rv[0];
+						rv = rv.filter(function(branch) {
+							return branch.current;
+						})[0];
 					}
 					return rv;
 				} else {
