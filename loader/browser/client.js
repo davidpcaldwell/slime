@@ -195,16 +195,7 @@
 			})
 		}
 
-		var loader = new platform.Loader({
-			get: function(path) {
-				var code = fetcher.getCode(path);
-				if (!/\.coffee$/.test(path)) {
-					//	Add sourceURL for JavaScript debuggers
-					code = code + "\n//# sourceURL=" + path;
-				}
-				return { name: path, string: fetcher.getCode(path) };
-			}
-		});
+		var loader = new Loader("");
 
 		this.run = function(path,scope,target) {
 			return loader.run.apply(loader,arguments);
