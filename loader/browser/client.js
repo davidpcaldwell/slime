@@ -181,6 +181,19 @@
 			//	Can set breakpoint here to pop into debugger on experimental accesses
 			var breakpoint = null;
 		}
+		
+		var Loader = function(prefix) {
+			return new platform.Loader(new function() {
+				this.get = function(path) {
+					var code = fetcher.getCode(prefix+path);
+					if (!/\.coffee$/.test(path)) {
+						//	Add sourceURL for JavaScript debuggers
+						code = code + "\n//# sourceURL=" + prefix+path;
+					}
+					return { name: path, path: prefix+path, string: code };
+				}				
+			})
+		}
 
 		var loader = new platform.Loader({
 			get: function(path) {
@@ -209,14 +222,12 @@
 			return loader.value.apply(loader,arguments);
 		}
 
+		this.loader = loader;
+
 		this.Loader = function(p) {
 			if (typeof(p) == "string") {
 				//	TODO	add test coverage for this
-				return new platform.Loader({
-					get: function(path) {
-						return { name: path, path: p+path, string: fetcher.getCode(p+path) };
-					}
-				});
+				return new Loader(p);
 			}
 			return new platform.Loader(p);
 		};
