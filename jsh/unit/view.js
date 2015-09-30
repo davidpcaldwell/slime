@@ -60,6 +60,22 @@ $exports.Console = function(o) {
 				console.println(e.stack);
 			}
 		}
+		if (e.javaException) {
+			var current = e.javaException;
+			while(current) {
+				var _stack = current.getStackTrace();
+				if (current == e.javaException) {
+					console.println("Java stack trace:");
+				} else {
+					console.println("Caused by:");
+				}
+				console.println(current);
+				for (var i=0; i<_stack.length; i++) {
+					console.println("\t" + _stack[i]);
+				}
+				current = current.getCause();
+			}
+		}
 		if (e.cause) {
 			console.println("Executing code: " + e.code);
 			if (e.cause == e) {

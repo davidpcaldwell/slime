@@ -287,6 +287,11 @@ public class Command {
 
 	private Command() {
 	}
+	
+	private static <S extends Object> List<S> asList(S[] array) {
+		if (array == null) return null;
+		return Arrays.asList(array);
+	}
 
 	private static Process launch(Context context, Configuration configuration) throws IOException {
 		String[] command = configuration.cmdarray();
@@ -295,7 +300,7 @@ public class Command {
 				throw new NullPointerException("Command argument " + i + " must not be null.");
 			}
 		}
-		Logging.get().log(Command.class, Level.CONFIG, "Launching subprocess: %s env=%s pwd=%s", Arrays.asList(command), Arrays.asList(context.envp()), context.getWorkingDirectory());
+		Logging.get().log(Command.class, Level.CONFIG, "Launching subprocess: %s env=%s pwd=%s", asList(command), asList(context.envp()), context.getWorkingDirectory());
 		return new Process(
 			Runtime.getRuntime().exec( command, context.envp(), context.getWorkingDirectory() )
 			,context
