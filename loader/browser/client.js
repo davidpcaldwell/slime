@@ -182,17 +182,22 @@
 			var breakpoint = null;
 		}
 		
-		var Loader = function(prefix) {
-			return new platform.Loader(new function() {
-				this.get = function(path) {
-					var code = fetcher.getCode(prefix+path);
-					if (!/\.coffee$/.test(path)) {
-						//	Add sourceURL for JavaScript debuggers
-						code = code + "\n//# sourceURL=" + prefix+path;
+		var Loader = function(p) {
+			if (typeof(p) == "string") {
+				p = (function(prefix) {
+					return {
+						get: function(path) {
+							var code = fetcher.getCode(prefix+path);
+							if (!/\.coffee$/.test(path)) {
+								//	Add sourceURL for JavaScript debuggers
+								code = code + "\n//# sourceURL=" + prefix+path;
+							}
+							return { name: path, path: prefix+path, string: code };						
+						}
 					}
-					return { name: path, path: prefix+path, string: code };
-				}				
-			})
+				})(p);
+			}
+			platform.Loader.apply(this,arguments);
 		}
 
 		var loader = new Loader("");
@@ -215,13 +220,7 @@
 
 		this.loader = loader;
 
-		this.Loader = function(p) {
-			if (typeof(p) == "string") {
-				//	TODO	add test coverage for this
-				return new Loader(p);
-			}
-			return new platform.Loader(p);
-		};
+		this.Loader = Loader;
 
 		this.Loader.getCode = fetcher.getCode;
 		this.Loader.fetch = fetcher.fetch;
