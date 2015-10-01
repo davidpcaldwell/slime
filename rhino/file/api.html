@@ -1479,7 +1479,7 @@ END LICENSE
 						scope.test( dir.getRelativePath("target").file != null );
 						scope.test( linkdir.getRelativePath("to_c").directory != null );
 						linkdir.getRelativePath("to_c").directory.remove();
-						scope.test( dir.getSubdirectory("c").list().length == dirlist.length );
+						verify(dir).getSubdirectory("c").list().length.is(dirlist.length);
 						scope.test( dir.getRelativePath("c").directory != null );
 						scope.test( linkdir.getRelativePath("to_c").directory == null );
 						scope.test( dir.getRelativePath("c").directory != null );

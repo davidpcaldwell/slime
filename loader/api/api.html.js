@@ -437,20 +437,25 @@ $exports.ApiHtmlTests = function(html,name) {
 		return element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests");
 	}
 
-	var getSuite = function(scope,element) {
+	var getSuite = function(scope,element,container) {
 		if (!scope) throw new Error("No scope in getSuite");
 		var shared = getShared(scope);
 		var isScript = element.localName == "script";
 
 		var initialize = function(s) {
 			var relative = shared.relativeScope(element);
-			var initializes = getScripts(element,"initialize");
 			for (var x in relative) {
 				s[x] = relative[x];
 			}
-			relative.scope = s;
+			s.scope = s;
+			if (container) {
+				for (var i=0; i<container.initializes.length; i++) {
+					run(container.initializes[i].getContentString(), s);
+				}
+			}
+			var initializes = getScripts(element,"initialize");
 			for (var i=0; i<initializes.length; i++) {
-				run(initializes[i].getContentString(), relative);
+				run(initializes[i].getContentString(), s);
 			}
 		}
 		if (isScenario(element)) {
@@ -464,6 +469,11 @@ $exports.ApiHtmlTests = function(html,name) {
 						var destroys = getScripts(element,"destroy");
 						for (var i=0; i<destroys.length; i++) {
 							run(destroys[i].getContentString(),shared.createTestScope(scope));
+						}
+						if (container) {
+							for (var i=0; i<container.destroys.length; i++) {
+								run(container.destroys[i].getContentString(),createTestScope(scope));
+							}
 						}
 					};
 
@@ -530,7 +540,8 @@ $exports.ApiHtmlTests = function(html,name) {
 
 	this.getSuite = function(scope,unit) {
 		var element = getTestElement(unit);
-		return getSuite(scope,element);
+		var container = (unit) ? getContainer(element) : { initializes: [], destroys: [] };
+		return getSuite(scope,element,container);
 	}
 };
 
