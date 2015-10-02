@@ -300,6 +300,7 @@ var Scope = function(suite,environment) {
 	this.$jsapi = {
 		environment: environment,
 		loader: new Loader(new Implementation(suite)),
+		page: suite,
 		debug: {
 			disableBreakOnExceptions: function(f) {
 				return jsh.debug.disableBreakOnExceptionsFor(f);
