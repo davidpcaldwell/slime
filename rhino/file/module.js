@@ -212,6 +212,8 @@ $exports.Loader = function(p) {
 //			//	loader structure
 //			return new $exports.Loader({ directory: p.directory.getSubdirectory(prefix) });
 //		}
+	} else if (typeof(arguments[0]) == "object" && arguments[0].hasOwnProperty("directory") && typeof(arguments[0].directory) == "undefined") {
+		throw new Error("'directory' property must not be undefined.");
 	}
 	$context.api.io.Loader.apply(this,arguments);
 //	if (arguments[0].directory) {
