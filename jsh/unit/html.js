@@ -300,6 +300,9 @@ var Scope = function(suite,environment) {
 	this.$jsapi = {
 		environment: environment,
 		loader: new Loader(new Implementation(suite)),
+		//	TODO	not sure the below should be provided; is used to facilitate loading of jsh plugins into the jsh executing the
+		//			tests, but probably need a more granular way to load the plugins so that they do not affect global execution
+		//			environment
 		page: suite,
 		debug: {
 			disableBreakOnExceptions: function(f) {
