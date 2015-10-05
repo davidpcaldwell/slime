@@ -485,7 +485,7 @@ var Installation = function(environment) {
 			var list = hgsub.get();
 			var rv = [];
 			for (var x in list) {
-				if (/^subpaths\./.test(list)) {
+				if (/^subpaths\./.test(x)) {
 				} else {
 					rv.push(new Recurse(dir.getSubdirectory(x)));
 				}
