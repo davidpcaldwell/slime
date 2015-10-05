@@ -279,35 +279,6 @@ END LICENSE
 					<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
 					<span>The root directory of this <code>Repository</code>.</span>
 				</li>
-				<li class="function">
-					<div class="name">heads</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">Array of <a href="#types.changeset">changeset</a></span>
-						<span>__DESCRIPTION__</span>
-					</div>
-					<script type="application/x.jsapi#tests">
-						var repository = module.init($jsapi.file.newTemporaryDirectory());
-						repository.directory.getRelativePath("baz").write("baz", { append: false });
-						repository.commit({ addremove: true, message: "baz" });
-						var other = repository.clone($jsapi.file.newTemporaryDirectory());
-						repository.directory.getRelativePath("foo").write("foo", { append: false });
-						repository.commit({ addremove: true, message: "foo" });
-						other.directory.getRelativePath("bar").write("bar", { append: false });
-						other.commit({ addremove: true, message: "bar" });
-						other.pull({
-							source: repository
-						});
-						test(other.heads().length == 2);
-						debugger;
-					</script>
-				</li>
 				<li class="value">
 					<div class="name">paths</div>
 					<span class="type">object</span>
@@ -369,6 +340,119 @@ END LICENSE
 					</script>
 				</li>
 				<li class="function">
+					<div class="name">incoming</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">push</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">pull</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">log</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">heads</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">Array of <a href="#types.changeset">changeset</a></span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var repository = module.init($jsapi.file.newTemporaryDirectory());
+						repository.directory.getRelativePath("baz").write("baz", { append: false });
+						repository.commit({ addremove: true, message: "baz" });
+						var other = repository.clone($jsapi.file.newTemporaryDirectory());
+						repository.directory.getRelativePath("foo").write("foo", { append: false });
+						repository.commit({ addremove: true, message: "foo" });
+						other.directory.getRelativePath("bar").write("bar", { append: false });
+						other.commit({ addremove: true, message: "bar" });
+						other.pull({
+							source: repository
+						});
+						test(other.heads().length == 2);
+						debugger;
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">tip</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">parents</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
 					<div class="name">archive</div>
 					<span>__DESCRIPTION__</span>
 					<div class="arguments">
@@ -381,6 +465,138 @@ END LICENSE
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
+				</li>
+				<li class="function" jsapi:id="subrepositories">
+					<div class="name">subrepositories</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var pathname = $jsapi.file.newTemporaryDirectory().pathname;
+						var parent = module.init({ pathname: pathname });
+						var child = module.init({ pathname: pathname.directory.getRelativePath("child") });
+						pathname.directory.getRelativePath(".hgsub").write("child = child\n", { append: false });
+						var subrepositories = parent.subrepositories();
+						verify(subrepositories).length.is(1);
+						verify(subrepositories)[0].directory.toString().is(pathname.directory.getSubdirectory("child").toString());
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">status</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						An object with properties representing each file that has a status. The names of these properties
+						are the relative paths of the files from the root, and the values are the values of the status.
+					</div>
+					<script type="application/x.jsapi#tests">
+						if (!$jsapi.environment.hgbug) {
+							a.directory.getRelativePath("1.txt").write("Hello");
+							a.directory.getRelativePath("2/2.txt").write("Hello", {recursive: true});
+							var rv = a.status();
+							test(rv["1.txt"] == "?");
+							test(rv["2/2.txt"] == "?");
+							test(rv["3.txt"] != "?");
+						}
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">add</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">update</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">merge</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="function">
+					<div class="name">commit</div>
+					<span>Commit changes from the working directory to the repository.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">addremove</div>
+										<span class="type">boolean</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">message</div>
+										<span class="type">string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">files</div>
+										<span class="type">Array of string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var repository = createHg();
+						repository.directory.getRelativePath("1").write("1\n", { append: false });
+						try {
+							repository.commit({ message: "1" });
+							test(false);
+						} catch (e) {
+							//	TODO	ensure that the failure is the correct one
+							var error = e;
+							debugger;
+							test(true);
+						}
+						repository.commit({ addremove: true, message: "1" });
+					</script>
 				</li>
 				<li class="function" jsapi:id="bookmarks">
 					<div class="name">bookmarks</div>
@@ -461,129 +677,6 @@ END LICENSE
 						test(!Boolean(child.bookmarks()["local"]));
 						debugger;
 					</script>
-				</li>
-				<li class="function">
-					<div class="name">parents</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-				<li class="function">
-					<div class="name">status</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						An object with properties representing each file that has a status. The names of these properties
-						are the relative paths of the files from the root, and the values are the values of the status.
-					</div>
-					<script type="application/x.jsapi#tests">
-						if (!$jsapi.environment.hgbug) {
-							a.directory.getRelativePath("1.txt").write("Hello");
-							a.directory.getRelativePath("2/2.txt").write("Hello", {recursive: true});
-							var rv = a.status();
-							test(rv["1.txt"] == "?");
-							test(rv["2/2.txt"] == "?");
-							test(rv["3.txt"] != "?");
-						}
-					</script>
-				</li>
-				<li class="function">
-					<div class="name">commit</div>
-					<span>Commit changes from the working directory to the repository.</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="object">
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">addremove</div>
-										<span class="type">boolean</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="value">
-										<div class="name">message</div>
-										<span class="type">string</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="value">
-										<div class="name">files</div>
-										<span class="type">Array of string</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-								</ul>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-					<script type="application/x.jsapi#tests">
-						var repository = createHg();
-						repository.directory.getRelativePath("1").write("1\n", { append: false });
-						try {
-							repository.commit({ message: "1" });
-							test(false);
-						} catch (e) {
-							//	TODO	ensure that the failure is the correct one
-							var error = e;
-							debugger;
-							test(true);
-						}
-						repository.commit({ addremove: true, message: "1" });
-					</script>
-				</li>
-				<li class="function">
-					<div class="name">update</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-				<li class="function">
-					<div class="name">merge</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-				<li class="function">
-					<div class="name">tip</div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
 				</li>
 			</ul>
 		</div>
