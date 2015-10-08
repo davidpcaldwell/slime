@@ -173,6 +173,9 @@ $exports.Loader = function(p) {
 			return $context.api.io.mime.Type.guess({ name: path });
 		}
 		p = arguments[0];
+		p.toString = function() {
+			return "rhino/file Loader: directory=" + p.directory;
+		};
 		p.resources = new function() {
 			this.toString = function() {
 				return "rhino/file Loader: directory=" + p.directory;
