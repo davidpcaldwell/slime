@@ -19,133 +19,9 @@ END LICENSE
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
-	<script type="application/x.jsapi#initialize">
-		var context = new function() {
-			var host = $jsapi.loader.module("../../rhino/host/", {
-				$rhino: jsh.$jsapi.$rhino,
-				$java: jsh.$jsapi.java
-			});
-			var file = $jsapi.loader.module("../../rhino/file/", new function() {
-				if (jsh.shell.environment.PATHEXT) {
-					this.pathext = jsh.shell.environment.PATHEXT.split(";");
-				}
-				this.$rhino = jsh.$jsapi.$rhino;
-				this.api = {
-					io: jsh.io,
-					js: jsh.js,
-					java: jsh.java
-				};
-				this.$pwd = String(jsh.shell.properties.object.user.dir);
-				this.addFinalizer = jsh.loader.addFinalizer;
-				//	TODO	below copy-pasted from rhino/file/api.html
-				//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
-				var System = Packages.java.lang.System;
-				if (System.getProperty("cygwin.root")) {
-					this.cygwin = {
-						root: String( System.getProperty("cygwin.root") )
-					};
-					if (System.getProperty("cygwin.paths")) {
-						//	Using the paths helper currently does not seem to work in the embedded situation when running inside
-						//	the SDK server
-						//	TODO	check this
-						this.cygwin.paths = String( System.getProperty("cygwin.paths") );
-					}
-				}
-			});
-			var shell = $jsapi.loader.module("../../rhino/shell/", {
-				api: {
-					js: $jsapi.loader.module("../../js/object/"),
-					java: host,
-					io: jsh.io,
-					file: file,
-					document: $jsapi.loader.module("../../js/document/")
-				},
-				_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
-				_properties: Packages.java.lang.System.getProperties()
-			});
-			this.api = {
-				js: $jsapi.loader.module("../../js/object/"),
-				java: host,
-				shell: shell,
-				file: file
-			};
-
-			this.getSystemProperty = function(name) {
-				return String(Packages.java.lang.System.getProperty(name));
-			}
-
-			this._getSystemProperties = function() {
-				return Packages.java.lang.System.getProperties();
-			}
-
-			this.stdio = new function() {
-				this.input = (jsh.shell.stdio) ? jsh.shell.stdio.input : jsh.shell.stdin;
-				this.output = (jsh.shell.stdio) ? jsh.shell.stdio.output : jsh.shell.stdout;
-				this.error = (jsh.shell.stdio) ? jsh.shell.stdio.error : jsh.shell.stderr;
-			}
-
-			this.exit = function() {
-			}
-
-			this.jsh = function(configuration,script,args) {
-				var $jsh = jsh.$jsapi.$rhino;
-				var _invocation = $jsh.getInterface().invocation(
-					script.pathname.java.adapt(),
-					jsh.java.toJavaArray(args,Packages.java.lang.String,function(s) {
-						return new Packages.java.lang.String(s);
-					})
-				);
-				return jsh.$jsapi.$rhino.jsh(configuration,_invocation);
-			}
-		};
-		scope.module = $jsapi.loader.module("jsh.js", context);
-	</script>
 	<div>
-		<h1>Context</h1>
-		<ul>
-			<li class="object">
-				<div class="name">api</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">java</div>
-						<span>The rhino/host module.</span>
-					</li>
-					<li class="value">
-						<div class="name">shell</div>
-						<span>The rhino/shell module.</span>
-					</li>
-					<li class="value">
-						<div class="name">file</div>
-						<span>The rhino/file module.</span>
-					</li>
-				</ul>
-			</li>
-			<li class="function">
-				<div class="name">getSystemProperty</div>
-				<span>Provides the value of a given system property.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">string</span>
-							<span>The name of a system property.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">string</span>
-					<span>The value of that system property, or <code>null</code>.</span>
-				</div>
-			</li>
-			<li class="value">
-				<div class="name">exit</div>
-				<span>An implementation of <a href="#$exports.exit"><code>$exports.exit</code></a>.</span>
-			</li>
-		</ul>
-		<script type="application/x.jsapi#context">
-			new function() {
+		<script type="application/x.jsapi#initialize">
+			var context = new function() {
 				var host = $jsapi.loader.module("../../rhino/host/", {
 					$rhino: jsh.$jsapi.$rhino,
 					$java: jsh.$jsapi.java
@@ -222,10 +98,9 @@ END LICENSE
 					);
 					return jsh.$jsapi.$rhino.jsh(configuration,_invocation);
 				}
-			}
+			};
+			scope.module = $jsapi.loader.module("jsh.js", context);
 		</script>
-	</div>
-	<div>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize" jsapi:reference="getApi('api.html').getElement('script.initialize')">
 			//	see code in api.html

@@ -16,8 +16,6 @@ import java.io.*;
 import java.util.*;
 
 public class Streams {
-	private Characters characters = new Characters();
-
 	public void copy(InputStream in, OutputStream out, boolean closeInputStream) throws IOException {
 		in = new BufferedInputStream(in);
 		out = new BufferedOutputStream(out);
@@ -72,8 +70,18 @@ public class Streams {
 		writer.flush();
 	}
 
-	public String readLine(java.io.Reader reader, String lineTerminator) throws java.io.IOException {
-		return characters.readLine(reader, lineTerminator);
+	public String readLine(java.io.Reader reader, String lineTerminator) throws IOException {
+		String rv = "";
+		while(true) {
+			int i = reader.read();
+			if (i != -1) {
+				char c = (char)i;
+				rv += c;
+			}
+			if (i == -1 || rv.endsWith(lineTerminator)) {
+				return rv;
+			}
+		}
 	}
 
 	public static class Null {
@@ -291,27 +299,6 @@ public class Streams {
 						Flusher.this.wrote(out, bytes);
 					}
  				};
-			}
-		}
-	}
-
-	public static class Characters {
-		public String readLine(Reader reader, String lineTerminator) throws IOException {
-			String rv = "";
-			while(true) {
-				int i = reader.read();
-				if (i == -1) {
-					if (rv.length() == 0) {
-						return null;
-					} else {
-						return rv;
-					}
-				}
-				char c = (char)i;
-				rv += c;
-				if (rv.endsWith(lineTerminator)) {
-					return rv.substring(0, rv.length() - lineTerminator.length());
-				}
 			}
 		}
 	}

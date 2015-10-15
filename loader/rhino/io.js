@@ -101,10 +101,21 @@ var Reader = function(peer) {
 		//	TODO	should we retrieve properties from the rhino/host module, or is this sufficient?
 		if (!mode.ending) mode.ending = String(Packages.java.lang.System.getProperty("line.separator"));
 		if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
-		var line;
+		var read;
 		var result;
-		while( (line = _java.readLine(peer,mode.ending)) != null ) {
-			result = callback( String( line ) );
+		var more = true;
+		while( more ) {
+			read = String(_java.readLine(peer,mode.ending));
+			var hasEnding = read.substring(read.length - mode.ending.length) == mode.ending;
+			var line;
+			if (!hasEnding) {
+				//	eof was reached
+				more = false;
+				line = read;
+			} else {
+				line = read.substring(0,read.length-mode.ending.length);
+			}
+			result = callback( line );
 			if (typeof(result) != "undefined") {
 				break;
 			}
