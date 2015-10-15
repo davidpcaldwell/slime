@@ -76,8 +76,13 @@ $exports.Console = function(o) {
 				current = current.getCause();
 			}
 		}
-		if (e.cause) {
+		if (e.text) {
+			console.println(e.text);
+		}
+		if (e.code) {
 			console.println("Executing code: " + e.code);
+		}
+		if (e.cause) {
 			if (e.cause == e) {
 				throw new Error("Bug in setting cause");
 			}
