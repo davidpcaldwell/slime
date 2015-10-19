@@ -16,10 +16,23 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		test: String
+		test: String,
+		script: jsh.file.Pathname
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
+
+if (parameters.options.script) {
+	jsh.loader.plugins(jsh.script.file.parent.pathname);
+	var mock = new jsh.test.launcher.MockRemote();
+	mock.jsh({
+		script: parameters.options.script,
+		arguments: parameters.arguments,
+		evaluate: function(result) {
+			jsh.shell.exit(result.status);
+		}
+	});
+}
 
 var tests = (parameters.options.test)
 ? {
