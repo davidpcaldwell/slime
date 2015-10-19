@@ -114,7 +114,9 @@
 try {
 	var $api = this.$api;
 	if (!this.$api.slime) {
-		$api.script.resolve("slime.js").load();
+		var slime = $api.script.resolve("slime.js");
+//		Packages.java.lang.System.err.println("slime.js = " + slime);
+		slime.load();
 		$api.log("Loaded slime.js: src=" + $api.slime.src);
 	}
 
@@ -903,13 +905,17 @@ try {
 		$api.jsh.exit(status);
 	}
 } catch (e) {
-	$api.debug("Error:");
-	$api.debug(e);
-	$api.debug(e.fileName + ":" + e.lineNumber);
+	if ($api.debug) {
+		$api.debug("Error:");
+		$api.debug(e);
+		$api.debug(e.fileName + ":" + e.lineNumber);
+	}
 	if (e.rhinoException) {
 		e.rhinoException.printStackTrace();
 	} else if (e.printStackTrace) {
 		e.printStackTrace();
+	} else if (e.stack) {
+		Packages.java.lang.System.err.println("Stack trace: " + "\n" + e.stack);
 	} else if (typeof(e) == "string") {
 		Packages.java.lang.System.err.println("[jsh] Launch failed: " + e);
 	} else if (e instanceof Error) {
