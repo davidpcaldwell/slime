@@ -185,36 +185,45 @@ public class Main {
 				this.url = url;
 			}
 
-			private boolean hasPlugin(URL url) {
+//			private boolean hasPlugin(URL url) {
+//				try {
+//					URL target = new URL(url, "plugin.jsh.js");
+//					HttpURLConnection connection = (HttpURLConnection)target.openConnection();
+//					int status = connection.getResponseCode();
+//					if (status == 200) return true;
+//					return false;
+//				} catch (MalformedURLException e) {
+//					throw new RuntimeException(e);
+//				} catch (IOException e) {
+//					throw new RuntimeException(e);
+//				}
+//			}
+
+			private void addPlugins(List<Code> plugins, URL url) {
+				ArrayList<URL> children = new ArrayList<URL>();
 				try {
-					URL target = new URL(url, "plugin.jsh.js");
-					HttpURLConnection connection = (HttpURLConnection)target.openConnection();
-					int status = connection.getResponseCode();
-					if (status == 200) return true;
-					return false;
-				} catch (MalformedURLException e) {
-					throw new RuntimeException(e);
+					BufferedReader lines = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
+					String line = null;
+					ArrayList<URL> rv = new ArrayList<URL>();
+					while( (line = lines.readLine()) != null) {
+						if (line.endsWith("/")) {
+							if (children != null) {
+								children.add(new URL(url, line));
+							}
+						} else if (line.equals("plugin.jsh.js")) {
+							children = null;
+//							plugins.add(Code.unpacked(url));
+						}
+					}
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
-			}
-
-			private void addPlugins(List<Code> plugins, URL url) {
-				if (hasPlugin(url)) {
-					plugins.add(Code.unpacked(url));
-				} else {
-					try {
-						BufferedReader lines = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
-						String line = null;
-						ArrayList<URL> rv = new ArrayList<URL>();
-						while( (line = lines.readLine()) != null) {
-							if (line.endsWith("/")) {
-								addPlugins(plugins, new URL(url, line));
-							}
-						}
-					} catch (IOException e) {
-						throw new RuntimeException(e);
+				if (children != null) {
+					for (URL child : children) {
+						addPlugins(plugins, child);
 					}
+				} else {
+					plugins.add(Code.unpacked(url));
 				}
 			}
 

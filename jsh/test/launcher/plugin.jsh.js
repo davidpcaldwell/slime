@@ -7,6 +7,7 @@ plugin({
 		if (!jsh.test.launcher) jsh.test.launcher = {};
 		var SRC = jsh.shell.jsh.src;
 		jsh.test.launcher.MockRemote = function(o) {
+			if (!o) o = {};
 			var tomcat = new jsh.httpd.Tomcat({});
 			tomcat.map({
 				//	TODO	works with or without leading slash; document this and write a test
@@ -18,7 +19,9 @@ plugin({
 							var loader = new jsh.file.Loader({ directory: SRC });
 							scope.$exports.handle = function(request) {
 								if (request.headers.value("host") == "bitbucket.org") {
-									Packages.java.lang.System.err.println("Request path: " + request.path);
+									if (o.trace) {
+										Packages.java.lang.System.err.println("Request: " + request.method + " " + request.path);
+									}
 									if (request.path == "") {
 										return {
 											status: {
@@ -32,7 +35,8 @@ plugin({
 									}
 									var Sourceroot = function(root) {
 										var loader = new jsh.file.Loader({ directory: root });
-										this.get = function(tokens) {
+										var HEAD = null;
+										this.get = function(body,tokens) {
 											var type = tokens.shift();
 											if (type == "raw") {
 												var version = tokens.shift();
@@ -45,7 +49,7 @@ plugin({
 															status: {
 																code: 200
 															},
-															body: loader.resource(path)
+															body: (body) ? loader.resource(path) : HEAD
 														}
 													} else if (pathname.directory) {
 														//Packages.java.lang.System.err.println("Directory: " + pathname);
@@ -53,7 +57,7 @@ plugin({
 															status: {
 																code: 200
 															},
-															body: {
+															body: (body) ? {
 																type: "text/plain",
 																string: (function() {
 																	return pathname.directory.list({ type: pathname.directory.list.ENTRY }).map(function(entry) {
@@ -63,9 +67,14 @@ plugin({
 																		return path != ".hg/";
 																	}).join("\n");
 																})()
-															}
+															} : HEAD
 														}
 													} else {
+														return {
+															status: {
+																code: 404
+															}
+														}
 														//Packages.java.lang.System.err.println("Not found: " + pathname);
 													}
 												}
@@ -84,7 +93,8 @@ plugin({
 											tokenized.shift();
 											if (user == "davidpcaldwell") {
 												if (repository == "slime") {
-													return new Sourceroot(SRC).get(tokenized);
+													var body = (request.method == "GET");
+													return new Sourceroot(SRC).get(body, tokenized);
 												}
 											}
 										}

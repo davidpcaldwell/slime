@@ -18,7 +18,9 @@ var parameters = jsh.script.getopts({
 	options: {
 		test: String,
 		script: jsh.file.Pathname,
-		jrunscript: jsh.script.getopts.ARRAY(jsh.file.Pathname)
+		jrunscript: jsh.script.getopts.ARRAY(jsh.file.Pathname),
+		log: false,
+		"trace:server": false
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -47,8 +49,17 @@ if (parameters.options.jrunscript.length) {
 } else {
 	if (parameters.options.script) {
 		jsh.loader.plugins(jsh.script.file.parent.pathname);
-		var mock = new jsh.test.launcher.MockRemote();
+		var mock = new jsh.test.launcher.MockRemote({
+			trace: parameters.options["trace:server"]
+		});
+		var environment = jsh.js.Object.set(
+			{}, 
+			jsh.shell.environment, 
+			(parameters.options.log) ? { JSH_LOG_JAVA_PROPERTIES: jsh.script.file.parent.parent.getRelativePath("http.logging.properties").toString() } : {}
+		);
 		mock.jsh({
+			vmarguments: (parameters.options.log) ? ["-Djava.util.logging.config.file=" + jsh.script.file.parent.parent.getRelativePath("http.logging.properties")] : [],
+			environment: environment,
 			script: parameters.options.script,
 			arguments: parameters.arguments,
 			evaluate: function(result) {

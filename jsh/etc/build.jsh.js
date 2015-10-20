@@ -54,12 +54,24 @@ jsh.script.loader = new jsh.script.Loader("../../");
 
 jsh.shell.echo("jsh.script.url = " + jsh.script.url);
 var jrunscript = (function() {
-	var THIS = {};
-	THIS.$api = {
-		script: (jsh.script.url) ? { url: jsh.script.url } : { file: jsh.script.file.toString() },
-		arguments: []
+	var THIS = {
 	};
-	jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
+	THIS.$api = {
+		toString: function() { return "it"; },
+		script: (jsh.script.url) ? { url: jsh.script.url } : { file: jsh.script.file.toString() },
+		arguments: [],
+		engine: {
+			script: (jsh.script.file) ? jsh.script.file.parent.parent.getRelativePath("rhino/jrunscript/api.js").toString() : null
+		}
+	};
+	jsh.script.loader.run("rhino/jrunscript/api.js", {
+		load: function(url) {
+			jsh.shell.echo("Loading " + url);
+			if (jsh.file.Pathname(url).file) {
+				jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
+			}
+		}
+	}, THIS);
 	THIS.$api.arguments = [];
 	return THIS;
 })();
@@ -254,7 +266,7 @@ console("Creating directories ...");
 
 console("Copying launcher scripts ...");
 SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
-["slime.js","launcher.js","main.js"].forEach(function(name) {
+["slime.js","javac.js","launcher.js","main.js"].forEach(function(name) {
 	SLIME.getFile("jsh/launcher/" + name).copy(destination.shell);
 });
 

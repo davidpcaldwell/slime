@@ -136,6 +136,10 @@
 		})();
 		return rv;
 	})(this);
+	
+	if (this.$api && this.$api.engine && this.$api.engine.script) {
+		$engine.script = this.$api.engine.script;
+	}
 
 	$api.engine = new function() {
 		this.toString = function() {
@@ -382,6 +386,8 @@
 			}
 		};
 
+		if (!load) throw new Error();
+			
 		$api.Script = function(p) {
 			var Callee = arguments.callee;
 			if (p.string) {
