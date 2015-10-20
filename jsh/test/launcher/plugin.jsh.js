@@ -204,6 +204,22 @@ plugin({
 						].concat( (o.arguments) ? o.arguments : [] )
 					}));
 				}
+				
+				this.jrunscript = function(o) {
+					var properties = {
+						"http.proxyHost": "127.0.0.1",
+						"http.proxyPort": String(tomcat.port)
+					};
+					jsh.js.Object.set(properties, (o.properties) ? o.properties : {});
+					jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
+						properties: properties,
+						arguments: (o.arguments) ? o.arguments : []
+					}));
+				}
+				
+				this.stop = function() {
+					tomcat.stop();
+				}
 			}
 		}
 	}
