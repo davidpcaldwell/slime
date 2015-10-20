@@ -405,6 +405,10 @@
 					var url = new Packages.java.net.URL(p.url, path);
 					var connection;
 					try {
+						var protocol = String(p.url.getProtocol());
+						if (protocol == "http" || protocol == "https") {
+							Packages.java.lang.System.err.println("Connecting to " + url + " ...");
+						}
 						var connection = url.openConnection();
 //						Packages.java.lang.System.err.println("url: " + url + " connection = " + connection);
 						if (connection.getResponseCode) {
@@ -436,13 +440,21 @@
 						p.connection.getInputStream().close();
 						load(this.toString());
 					} else {
+						var protocol = String(p.url.getProtocol());
+						if (protocol == "http" || protocol == "https") {
+							Packages.java.lang.System.err.println("Reading from " + p.url + " ...");
+						}
 						var reader = new Packages.java.io.InputStreamReader(p.connection.getInputStream());
 						var buffer = new Packages.java.lang.StringBuilder();
 						var c;
 						while( (c = reader.read()) != -1 ) {
 							buffer["append(char)"](c);
 						}
+						p.connection.getInputStream().close();
 						var code = String(buffer.toString());
+						if (protocol == "http" || protocol == "https") {
+							Packages.java.lang.System.err.println("Loaded [" + p.url + "].");
+						}
 //						Packages.java.lang.System.err.println("Loading: " + this);
 						var name = this.toString();
 //						Packages.java.lang.System.err.println("Loading: " + name + " code.length=" + code.length);
