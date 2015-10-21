@@ -27,8 +27,9 @@ var parameters = jsh.script.getopts({
 
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
+var SRC = jsh.script.file.parent.parent.parent.parent;
+
 if (parameters.options.jrunscript.length) {
-	var SLIME = jsh.script.file.parent.parent.parent.parent;
 	var args = parameters.arguments;
 	if (parameters.options.test) {
 		args.push("-test", parameters.options.test);
@@ -41,7 +42,7 @@ if (parameters.options.jrunscript.length) {
 		jsh.shell.run({
 			command: version,
 			arguments: [
-				SLIME.getRelativePath("rhino/jrunscript/api.js"),
+				SRC.getRelativePath("rhino/jrunscript/api.js"),
 				"jsh",
 				jsh.script.file.pathname
 			].concat(args)
@@ -49,10 +50,11 @@ if (parameters.options.jrunscript.length) {
 	});
 	jsh.shell.exit(0);
 } else {
+	var mock = new jsh.test.launcher.MockRemote({
+		src: SRC,
+		trace: parameters.options["trace:server"]
+	});
 	if (parameters.options.script) {
-		var mock = new jsh.test.launcher.MockRemote({
-			trace: parameters.options["trace:server"]
-		});
 		var environment = jsh.js.Object.set(
 			{}, 
 			jsh.shell.environment, 
@@ -76,7 +78,7 @@ if (parameters.options.jrunscript.length) {
 		url: (parameters.options.test == "url" || all),
 		urlproperties: (parameters.options.test == "urlproperties" || all),
 		filename: (parameters.options.test == "filename" || all),
-		build: (parameters.options.test == "build"),
+		build: (parameters.options.test == "build" || all),
 		subshell: (parameters.options.test == "subshell" || all)
 	}
 	: {
@@ -88,7 +90,6 @@ if (parameters.options.jrunscript.length) {
 		subshell: false
 	};
 	
-	var mock = new jsh.test.launcher.MockRemote();
 	var client = mock.client;
 
 	if (true) {
@@ -129,15 +130,15 @@ if (parameters.options.jrunscript.length) {
 		if (string) jsh.shell.echo(string);
 	}
 	
-	var SRC = jsh.script.file.parent.parent.parent.parent;
-	
 	if (tests.file) {
+		jsh.shell.echo("Exceuting file test ...", { stream: jsh.shell.stdio.error });
 		mock.jsh({
 			script: SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js")
 		});
 	}
 	
 	if (tests.url) {
+		jsh.shell.echo("Exceuting url test ...", { stream: jsh.shell.stdio.error });
 		mock.jsh({
 			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/echo.jsh.js"
 		});

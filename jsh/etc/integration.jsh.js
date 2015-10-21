@@ -44,7 +44,7 @@ var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separato
 var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
 	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
-	scenario.scenario(tokens.join(" "), {
+	scenario.scenario((o.name) ? o.name : tokens.join(" "), {
 		create: function() {
 			this.name = script.toString();
 
@@ -69,7 +69,12 @@ var ScriptVerifier = function(o) {
 
 if (CATALINA_HOME) {
 	ScriptVerifier({
+		name: "remote",
 		path: "launcher/remote.jsh.js",
+		arguments: ["-trace:server"],
+		environment: jsh.js.Object.set({}, jsh.shell.environment, (false) ? {
+			JSH_DEBUG_SCRIPT: "rhino"
+		} : {}),
 		execute: function(verify) {
 			verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("true");
 			verify(this.stdio.output.split(LINE_SEPARATOR))[1].is("true");

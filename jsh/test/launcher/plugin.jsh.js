@@ -5,10 +5,10 @@ plugin({
 	load: function() {
 		if (!jsh.test) jsh.test = {};
 		if (!jsh.test.launcher) jsh.test.launcher = {};
-		var SRC = jsh.shell.jsh.src;
 		jsh.test.launcher.MockRemote = function(o) {
 			if (!o) o = {};
 			var tomcat = new jsh.httpd.Tomcat({});
+			var SRC = o.src;
 			tomcat.map({
 				//	TODO	works with or without leading slash; document this and write a test
 				path: "",
@@ -18,6 +18,9 @@ plugin({
 						load: function(scope) {
 							var loader = new jsh.file.Loader({ directory: SRC });
 							scope.$exports.handle = function(request) {
+								if (o.trace) {
+									Packages.java.lang.System.err.println("Request: " + request.method + " " + request.path);
+								}
 								if (request.headers.value("host") == "bitbucket.org") {
 									if (o.trace) {
 										Packages.java.lang.System.err.println("Request: " + request.method + " " + request.path);

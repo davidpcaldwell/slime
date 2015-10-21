@@ -73,7 +73,7 @@
 	/*modules.add("rhino/mail/", "jsh.mail");*/
 
 	components.add("jsh/loader/loader.api.html", { jsh: { api: true } });
-	components.add("rhino/shell/jsh.js", { jsh: { api: true } });
+	components.add("rhino/shell/plugin.jsh.api.html", { jsh: { api: true } });
 	components.add("jsh/launcher/", { jsh: { api: true } });
 	components.add("jsh/loader/plugin.api.html", { jsh: { api: true } });
 	components.add("jsh/tools/", { jsh: { api: true } });
