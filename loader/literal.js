@@ -283,6 +283,9 @@
 			}
 
 			var Loader = function(p) {
+				if (!p.get) {
+					throw new Error("Loader argument must have a 'get' property.");
+				}
 				this.toString = function() {
 					return p.toString();
 				}

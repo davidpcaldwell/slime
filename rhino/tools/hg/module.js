@@ -208,7 +208,18 @@ var Installation = function(environment) {
 		};
 	};
 
-	var LocalRepository = function(dir) {
+	var RemoteRepository = function(url) {
+		Repository.call(this);
+		this.reference = url;
+
+		this.url = $context.api.web.Url.parse(url);
+
+		this.toString = function() {
+			return "hg repository: " + url;
+		};
+	};
+
+	var LocalRepository = function Recurse(dir) {
 		if (dir == null) throw new RangeError("Attempt to create Repository with null dir");
 		if (!dir.getSubdirectory) throw new TypeError("dir " + dir + " must be a directory");
 		if (!dir.getSubdirectory(".hg")) throw new RangeError("No repository located at: " + dir);
@@ -224,120 +235,6 @@ var Installation = function(environment) {
 		this.__defineGetter__("directory", function() {
 			return dir;
 		});
-
-		this.heads = function() {
-			return shell({
-				repository: this,
-				command: "heads",
-				evaluate: function(result) {
-					return parseLog(result.stdio.output.split("\n"));
-				}
-			});
-		};
-
-		this.parents = function() {
-			return shell({
-				repository: this,
-				command: "parents",
-				evaluate: function(result) {
-					return parseLog(result.stdio.output.split("\n"));
-				}
-			});
-		}
-
-		this.status = function(p) {
-			var subrepositories = (function(dir,p) {
-				if (p && p.subrepos === true) return true;
-				if (p && p.subrepos === false) return false;
-				return Boolean(dir.getFile(".hgsub"));
-			})(dir,p);
-			var args = [];
-			if (subrepositories) {
-				args.push("-S");
-			}
-			return shell({
-				repository: this,
-				command: "status",
-				arguments: args,
-				evaluate: function(result) {
-					var lines = result.out.split("\n").slice(0,-1);
-					var rv = {};
-					lines.forEach( function(line) {
-						rv[line.substring(2).replace(/\\/g, "/")] = line.substring(0,1);
-					});
-					return rv;
-				}
-			});
-		};
-
-		this.add = function(p) {
-			var args = [];
-			if (p.files) {
-				args.push.apply(args,p.files);
-			}
-			return shell({
-				repository: this,
-				command: "add",
-				arguments: args
-			});
-		}
-
-		this.commit = function(p) {
-			if (typeof(p) == "undefined") throw new TypeError("Required: argument to commit.");
-			if (p === null) throw new TypeError("Required: non-null argument to commit.");
-			if (typeof(p) != "object") throw new TypeError("Required: object argument to commit.");
-			if (!p.message) throw new TypeError("Required: message property representing commit message.");
-			var args = [];
-			for (var x in p) {
-				if (x == "addremove") {
-					args.push("--addremove");
-				} else if (x == "message") {
-					args.push("--message",p[x]);
-				}
-			};
-			if (p.files) {
-				args.push.apply(args,p.files);
-			}
-			return shell({
-				repository: this,
-				command: "commit",
-				arguments: args
-			});
-		};
-
-		this.update = function(p) {
-			var args = [];
-			if (p && p.revision) {
-				args.push(p.revision);
-			}
-			return shell({
-				repository: this,
-				command: "update",
-				arguments: args
-			});
-		};
-
-		this.merge = function(p) {
-			var args = [];
-			if (p && p.revision) {
-				args.push("-r", p.revision);
-			}
-			return shell({
-				repository: this,
-				arguments: args,
-				command: "merge"
-			});
-		}
-
-		this.tip = function() {
-			return shell({
-				repository: this,
-				command: "tip",
-				evaluate: function(result) {
-					return parseLog(result.stdio.output.split("\n"))[0];
-				}
-			});
-		};
 
 		$context.api.js.lazy(this,"paths",function() {
 			return shell({
@@ -480,6 +377,53 @@ var Installation = function(environment) {
 			return inout("incoming",m);
 		}
 
+		this.push = function(p) {
+			var destination = (p && p.destination) ? p.destination : null;
+			//	TODO	should fall back to default and/or default-push to call on.access
+			if (destination && destination.on.access) {
+				destination.on.access.call(destination);
+			}
+			var args = [];
+			if (p && p.force) {
+				args.push("-f");
+			}
+			if (p && p.revision) {
+				args.push("-r", p.revision);
+			}
+			if (p && p.destination) {
+				args.push(p.destination.reference);
+			}
+			return shell({
+				repository: this,
+				config: (p && p.config) ? p.config : {},
+				stdio: (p && p.stdio) ? p.stdio : void(0),
+				command: "push",
+				arguments: args
+			});
+		};
+
+		this.pull = function(p) {
+			var source = (p && p.source) ? p.source : null;
+			//	TODO	should fall back to default and/or default-push to call on.access
+			if (source && source.on.access) {
+				source.on.access.call(source);
+			}
+			var args = [];
+			if (p && p.source) {
+				args.push(p.source.reference);
+			}
+			if (p && p.force) {
+				args.push("-f");
+			}
+			return shell({
+				repository: this,
+				config: (p && p.config) ? p.config : {},
+				stdio: (p && p.stdio) ? p.stdio : void(0),
+				command: "pull",
+				arguments: args
+			});
+		}
+
 		this.log = function(p) {
 			var args = [];
 			if (p && p.revision) {
@@ -492,6 +436,155 @@ var Installation = function(environment) {
 				evaluate: function(result) {
 					return parseLog(result.stdio.output.split("\n"));
 				}
+			});
+		};
+
+		this.heads = function() {
+			return shell({
+				repository: this,
+				command: "heads",
+				evaluate: function(result) {
+					return parseLog(result.stdio.output.split("\n"));
+				}
+			});
+		};
+
+		this.tip = function() {
+			return shell({
+				repository: this,
+				command: "tip",
+				evaluate: function(result) {
+					return parseLog(result.stdio.output.split("\n"))[0];
+				}
+			});
+		};
+
+		this.parents = function() {
+			return shell({
+				repository: this,
+				command: "parents",
+				evaluate: function(result) {
+					return parseLog(result.stdio.output.split("\n"));
+				}
+			});
+		}
+
+		this.archive = function(p) {
+			var args = [];
+			if (p.exclude) {
+				if (p.exclude.forEach) {
+					p.exclude.forEach(function(exclude) {
+						args.push("--exclude",exclude);
+					})
+				} else {
+					//	TODO	verify this is a string
+					args.push("--exclude",p.exclude);
+				}
+			}
+			args.push(String(p.destination));
+			return shell({
+				repository: this,
+				command: "archive",
+				arguments: args
+			});
+		};
+		
+		this.subrepositories = function() {
+			var file = dir.getFile(".hgsub");
+			if (!file) return null;
+			var hgsub = new $exports.Hgrc({ file: file });
+			var list = hgsub.get();
+			var rv = [];
+			for (var x in list) {
+				if (/^subpaths\./.test(x)) {
+				} else {
+					rv.push(new Recurse(dir.getSubdirectory(x)));
+				}
+			}
+			return rv;
+		}
+
+		this.status = function(p) {
+			var subrepositories = (function(dir,p) {
+				if (p && p.subrepos === true) return true;
+				if (p && p.subrepos === false) return false;
+				return Boolean(dir.getFile(".hgsub"));
+			})(dir,p);
+			var args = [];
+			if (subrepositories) {
+				args.push("-S");
+			}
+			return shell({
+				repository: this,
+				command: "status",
+				arguments: args,
+				evaluate: function(result) {
+					var lines = result.out.split("\n").slice(0,-1);
+					var rv = {};
+					lines.forEach( function(line) {
+						rv[line.substring(2).replace(/\\/g, "/")] = line.substring(0,1);
+					});
+					return rv;
+				}
+			});
+		};
+
+		this.add = function(p) {
+			var args = [];
+			if (p.files) {
+				args.push.apply(args,p.files);
+			}
+			return shell({
+				repository: this,
+				command: "add",
+				arguments: args
+			});
+		}
+
+		this.update = function(p) {
+			var args = [];
+			if (p && p.revision) {
+				args.push(p.revision);
+			}
+			return shell({
+				repository: this,
+				command: "update",
+				arguments: args
+			});
+		};
+		
+		this.merge = function(p) {
+			var args = [];
+			if (p && p.revision) {
+				args.push("-r", p.revision);
+			}
+			return shell({
+				repository: this,
+				arguments: args,
+				command: "merge"
+			});
+		}
+
+		this.commit = function(p) {
+			if (typeof(p) == "undefined") throw new TypeError("Required: argument to commit.");
+			if (p === null) throw new TypeError("Required: non-null argument to commit.");
+			if (typeof(p) != "object") throw new TypeError("Required: object argument to commit.");
+			if (!p.message) throw new TypeError("Required: message property representing commit message.");
+			var args = [];
+			for (var x in p) {
+				if (x == "addremove") {
+					args.push("--addremove");
+				} else if (x == "message") {
+					args.push("--message",p[x]);
+				}
+			};
+			if (p.files) {
+				args.push.apply(args,p.files);
+			}
+			return shell({
+				repository: this,
+				command: "commit",
+				arguments: args
 			});
 		};
 
@@ -559,73 +652,6 @@ var Installation = function(environment) {
 			});
 		}
 
-		this.pull = function(p) {
-			var source = (p && p.source) ? p.source : null;
-			//	TODO	should fall back to default and/or default-push to call on.access
-			if (source && source.on.access) {
-				source.on.access.call(source);
-			}
-			var args = [];
-			if (p && p.source) {
-				args.push(p.source.reference);
-			}
-			if (p && p.force) {
-				args.push("-f");
-			}
-			return shell({
-				repository: this,
-				config: (p && p.config) ? p.config : {},
-				stdio: (p && p.stdio) ? p.stdio : void(0),
-				command: "pull",
-				arguments: args
-			});
-		}
-
-		this.push = function(p) {
-			var destination = (p && p.destination) ? p.destination : null;
-			//	TODO	should fall back to default and/or default-push to call on.access
-			if (destination && destination.on.access) {
-				destination.on.access.call(destination);
-			}
-			var args = [];
-			if (p && p.force) {
-				args.push("-f");
-			}
-			if (p && p.revision) {
-				args.push("-r", p.revision);
-			}
-			if (p && p.destination) {
-				args.push(p.destination.reference);
-			}
-			return shell({
-				repository: this,
-				config: (p && p.config) ? p.config : {},
-				stdio: (p && p.stdio) ? p.stdio : void(0),
-				command: "push",
-				arguments: args
-			});
-		};
-
-		this.archive = function(p) {
-			var args = [];
-			if (p.exclude) {
-				if (p.exclude.forEach) {
-					p.exclude.forEach(function(exclude) {
-						args.push("--exclude",exclude);
-					})
-				} else {
-					//	TODO	verify this is a string
-					args.push("--exclude",p.exclude);
-				}
-			}
-			args.push(String(p.destination));
-			return shell({
-				repository: this,
-				command: "archive",
-				arguments: args
-			});
-		}
-
 		this.shell = function(p) {
 			return shell($context.api.js.Object.set({}, { repository: this }, p));
 		}
@@ -648,17 +674,6 @@ var Installation = function(environment) {
 			}
 			return rv;
 		}
-	};
-
-	var RemoteRepository = function(url) {
-		Repository.call(this);
-		this.reference = url;
-
-		this.url = $context.api.web.Url.parse(url);
-
-		this.toString = function() {
-			return "hg repository: " + url;
-		};
 	};
 
 	rv.init = function(p) {
@@ -943,6 +958,12 @@ $exports.Hgrc = function(p) {
 			} else if (valueMatch.test(line)) {
 				var match = valueMatch.exec(line);
 				//	TODO	what if section is undefined?
+				if (!section) {
+					section = {
+						name: "",
+						lines: []
+					};
+				}
 				section.lines.push(current);
 				current.section = section.name;
 				current.name = match[1];

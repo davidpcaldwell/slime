@@ -98,11 +98,13 @@
 		return rv;
 	}
 
+	var getCurrentBase = function() {
+		return window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
+	}
+
 	var getCurrentScript = function() {
-		var base = window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
-
+		var base = getCurrentBase();
 		var current = getCurrent(base);
-
 		return new Bootstrap(current);
 	}
 
@@ -182,17 +184,22 @@
 			var breakpoint = null;
 		}
 		
-		var Loader = function(prefix) {
-			return new platform.Loader(new function() {
-				this.get = function(path) {
-					var code = fetcher.getCode(prefix+path);
-					if (!/\.coffee$/.test(path)) {
-						//	Add sourceURL for JavaScript debuggers
-						code = code + "\n//# sourceURL=" + prefix+path;
+		var Loader = function(p) {
+			if (typeof(p) == "string") {
+				p = (function(prefix) {
+					return {
+						get: function(path) {
+							var code = fetcher.getCode(prefix+path);
+							if (!/\.coffee$/.test(path)) {
+								//	Add sourceURL for JavaScript debuggers
+								code = code + "\n//# sourceURL=" + prefix+path;
+							}
+							return { name: path, path: prefix+path, string: code };						
+						}
 					}
-					return { name: path, path: prefix+path, string: code };
-				}				
-			})
+				})(p);
+			}
+			platform.Loader.apply(this,arguments);
 		}
 
 		var loader = new Loader("");
@@ -211,17 +218,17 @@
 
 		this.value = function(path,scope,target) {
 			return loader.value.apply(loader,arguments);
-		}
-
-		this.loader = loader;
-
-		this.Loader = function(p) {
-			if (typeof(p) == "string") {
-				//	TODO	add test coverage for this
-				return new Loader(p);
-			}
-			return new platform.Loader(p);
 		};
+
+		var getPageBase = function() {
+			return getCurrentBase().split("/").slice(0,-1).join("/") + "/";
+		};
+
+		(function() {
+			this.loader = new Loader(getPageBase());
+		}).call(this);
+
+		this.Loader = Loader;
 
 		this.Loader.getCode = fetcher.getCode;
 		this.Loader.fetch = fetcher.fetch;
@@ -238,6 +245,10 @@
 
 			//	DRY:	Other scripts may want to use this (already have examples)
 			this.getCurrentScript = getCurrentScript;
+
+			this.page = {
+				base: getPageBase()
+			};
 		};
 
 		//	TODO	Experimental API currently used by httpd, perhaps should be kept (and possibly made more robust)

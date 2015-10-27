@@ -231,17 +231,37 @@ $exports.run.stdio = (function(p) {
 		return {};
 	})();
 	if (rv) {
-		rv.buffers = {};
+		var buffers = {};
 		rv.close = function() {
-			for (var x in this.buffers) {
-				this.buffers[x].close();
-				this[x] = this.buffers[x].readText().asString();
+			for (var x in buffers) {
+				buffers[x].close();
+				if (buffers[x].readText) {
+					this[x] = buffers[x].readText().asString();
+				}
 			}
 		};
 		["output","error"].forEach(function(stream) {
 			if (rv[stream] == String) {
-				rv.buffers[stream] = new $context.api.io.Buffer();
-				rv[stream] = rv.buffers[stream].writeBinary();
+				buffers[stream] = new $context.api.io.Buffer();
+				rv[stream] = buffers[stream].writeBinary();
+			} else if (rv[stream] && typeof(rv[stream]) == "object" && rv[stream].line) {
+				buffers[stream] = new (function(callback) {
+					var buffer = new $context.api.io.Buffer();
+					
+					var thread = $context.api.java.Thread.start({
+						call: function() {
+							buffer.readText().readLines(callback);
+						}
+					});
+					
+					this.buffer = buffer;
+					
+					this.close = function() {
+						buffer.close();
+						thread.join();
+					}
+				})(rv[stream].line);
+				rv[stream] = buffers[stream].buffer.writeBinary();
 			}
 		});
 		if (typeof(rv.input) == "string") {

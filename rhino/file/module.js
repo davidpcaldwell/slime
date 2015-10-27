@@ -173,6 +173,9 @@ $exports.Loader = function(p) {
 			return $context.api.io.mime.Type.guess({ name: path });
 		}
 		p = arguments[0];
+		p.toString = function() {
+			return "rhino/file Loader: directory=" + p.directory;
+		};
 		p.resources = new function() {
 			this.toString = function() {
 				return "rhino/file Loader: directory=" + p.directory;
@@ -212,6 +215,8 @@ $exports.Loader = function(p) {
 //			//	loader structure
 //			return new $exports.Loader({ directory: p.directory.getSubdirectory(prefix) });
 //		}
+	} else if (typeof(arguments[0]) == "object" && arguments[0].hasOwnProperty("directory") && typeof(arguments[0].directory) == "undefined") {
+		throw new Error("'directory' property must not be undefined.");
 	}
 	$context.api.io.Loader.apply(this,arguments);
 //	if (arguments[0].directory) {

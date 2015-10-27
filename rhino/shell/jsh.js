@@ -204,7 +204,7 @@ $exports.jsh = function(p) {
 		if (p.classpath) return true;
 		if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
 		if (p.environment && p.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
-		if (p.environment && p.environment.JSH_SCRIPT_DEBUGGER != $exports.environment.JSH_SCRIPT_DEBUGGER) return true;
+		if (p.environment && p.environment.JSH_DEBUG_SCRIPT != $exports.environment.JSH_DEBUG_SCRIPT) return true;
 		if (p.shell) return true;
 		//	TODO	allow unforked URL-based scripts
 		if (typeof(p.script.resolve) == "function") return true;

@@ -81,7 +81,7 @@ div.label, span.label { font-weight: bold; font-size: 90%; }
 .deprecated { background-color: #c0c0c0; font-style: italic; }
 .experimental { background-color: #ffffc0; font-style: italic; }
 
-script[type="application/x.jsapi#tests"] {
+script[type="application/x.jsapi#tests"], body script {
 	display: block; font-family: monospace; white-space: pre;
 	margin: 10px 0px;
 	padding: 5px;

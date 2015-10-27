@@ -498,10 +498,10 @@ $exports.ApiHtmlTests = function(html,name) {
 
 					this.initialize = initialize;
 
-					this.destroy = function() {
+					this.destroy = function(s) {
 						var destroys = getScripts(element,"destroy");
 						for (var i=0; i<destroys.length; i++) {
-							run(destroys[i].getContentString(),createTestScope(scope));
+							run(destroys[i].getContentString(),s);
 						}
 					};
 
