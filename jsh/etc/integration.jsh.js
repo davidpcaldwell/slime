@@ -17,6 +17,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		src: jsh.script.file.getRelativePath("../.."),
 		rhino: jsh.file.Pathname,
+		part: String,
 		view: "console"
 	}
 });
@@ -43,7 +44,7 @@ var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separato
 var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
 	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
-	scenario.scenario(tokens.join(" "), {
+	scenario.scenario((o.name) ? o.name : tokens.join(" "), {
 		create: function() {
 			this.name = script.toString();
 
@@ -68,7 +69,12 @@ var ScriptVerifier = function(o) {
 
 if (CATALINA_HOME) {
 	ScriptVerifier({
+		name: "remote",
 		path: "launcher/remote.jsh.js",
+		arguments: ["-trace:server"],
+		environment: jsh.js.Object.set({}, jsh.shell.environment, (false) ? {
+			JSH_DEBUG_SCRIPT: "rhino"
+		} : {}),
 		execute: function(verify) {
 			verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("true");
 			verify(this.stdio.output.split(LINE_SEPARATOR))[1].is("true");
@@ -77,7 +83,7 @@ if (CATALINA_HOME) {
 }
 
 //	TODO	Convert to jsh/test plugin API designed for this purpose
-scenario.scenario("packaged", (function() {
+scenario.scenario("packaged-lite", (function() {
 	var script = jsh.script.file.getRelativePath("../test/packaged.jsh.js").file;
 	return {
 		create: function() {
@@ -939,6 +945,16 @@ scenario.scenario("legacy", {
 		}
 	}
 })
+
+if (parameters.options.part) {
+	scenario = (function recurse(scenario,path) {
+		if (path.length) {
+			var child = path.shift();
+			return recurse(scenario.getParts()[child], path);
+		}
+		return scenario;
+	})(scenario,parameters.options.part.split("/"));
+}
 
 jsh.unit.interface.create(scenario, new function() {
 	if (parameters.options.view == "chrome") {

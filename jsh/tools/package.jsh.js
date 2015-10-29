@@ -67,7 +67,7 @@ if (!parameters.options.norhino) {
 }
 
 jsh.file.unzip({ zip: JSH.getFile("jsh.jar"), to: to });
-["jsh.js","slime.js","launcher.js"].forEach(function(name) {
+["jsh.js","slime.js","launcher.js","javac.js"].forEach(function(name) {
 	to.getRelativePath("$jsh/launcher/" + name).write(JSH.getFile(name).read(String), { recursive: true });
 });
 

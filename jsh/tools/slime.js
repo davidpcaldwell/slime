@@ -105,7 +105,11 @@ slime.build.jsh = function(from,build,javac) {
 			var directory = from.getSubdirectory(path);
 			if (directory) {
 				if (!destination) destination = build.getRelativePath("$jvm/classes").createDirectory({ recursive: true });
-				var toCompile = directory.list({ recursive: true, type: from.list.ENTRY }).filter( function(item) {
+				var toCompile = directory.list({
+					filter: function(node) { return true; },
+					descendants: function(dir) { return true; }, 
+					type: from.list.ENTRY 
+				}).filter( function(item) {
 					if (!/\.java$/.test(item.path)) return false;
 					return true;
 				} ).map( function(item) {
@@ -142,7 +146,7 @@ slime.build.jsh = function(from,build,javac) {
 					Packages.java.lang.System["in"],
 					Packages.java.lang.System.out,
 					Packages.java.lang.System.err,
-					jsh.java.toJavaArray( args, Packages.java.lang.String, function(x) { return new Packages.java.lang.String(x) } )
+					jsh.java.Array.create({ type: Packages.java.lang.String, array: args.map(function(s) { return new Packages.java.lang.String(s); }) })
 				);
 			}
 		});

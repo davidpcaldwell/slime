@@ -922,28 +922,39 @@ public abstract class Code {
 			}
 
 			@Override public Source.File getFile(String path) throws IOException {
+				if (path.startsWith("org/apache/")) return null;
+				if (path.startsWith("javax/")) return null;
+//				String[] tokens = path.split("\\/");
+//				String basename = tokens[tokens.length-1];
+//				if (basename.indexOf("$") != -1) {
+//					return null;
+//				}
 				if (cache.get(path) == null) {
 					//	System.err.println("Looking up class " + path + " for " + source);
 					String className = path.substring(0,path.length()-".class".length());
 					String sourceName = className + ".java";
-					Source.File sourceFile = source.getFile("java/" + sourceName);
-					if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
-						sourceFile = source.getFile("rhino/java/" + sourceName);
-					}
-					if (sourceFile != null) {
-						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
-						//System.err.println("Compiling: " + jfo);
-						javax.tools.JavaCompiler.CompilationTask task = resolveJavac().getTask(
-							null,
-							resolveJavaFileManager(),
-							null,
-							Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
-							null,
-							Arrays.asList(new JavaFileObject[] { jfo })
-						);
-						boolean success = task.call();
-						if (!success) {
-							throw new RuntimeException("Failure");
+					if (sourceName.indexOf("$") != -1) {
+						//	do nothing
+					} else {
+						Source.File sourceFile = source.getFile("java/" + sourceName);
+						if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
+							sourceFile = source.getFile("rhino/java/" + sourceName);
+						}
+						if (sourceFile != null) {
+							javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
+							//System.err.println("Compiling: " + jfo);
+							javax.tools.JavaCompiler.CompilationTask task = resolveJavac().getTask(
+								null,
+								resolveJavaFileManager(),
+								null,
+								Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
+								null,
+								Arrays.asList(new JavaFileObject[] { jfo })
+							);
+							boolean success = task.call();
+							if (!success) {
+								throw new RuntimeException("Failure");
+							}
 						}
 					}
 					cache.put(path, compiled.getCompiledClass(className.replace("/",".")));
