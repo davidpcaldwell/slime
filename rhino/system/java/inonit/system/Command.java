@@ -287,7 +287,7 @@ public class Command {
 
 	private Command() {
 	}
-	
+
 	private static <S extends Object> List<S> asList(S[] array) {
 		if (array == null) return null;
 		return Arrays.asList(array);

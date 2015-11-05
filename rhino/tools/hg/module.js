@@ -488,7 +488,7 @@ var Installation = function(environment) {
 				arguments: args
 			});
 		};
-		
+
 		this.subrepositories = function() {
 			var file = dir.getFile(".hgsub");
 			if (!file) return null;
@@ -552,7 +552,7 @@ var Installation = function(environment) {
 				arguments: args
 			});
 		};
-		
+
 		this.merge = function(p) {
 			var args = [];
 			if (p && p.revision) {

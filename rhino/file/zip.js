@@ -17,7 +17,7 @@ $exports.zip = function(p) {
 		return directory.list({
 			filter: function(node) { return true; },
 			descendants: function(dir) { return true; },
-			type: directory.list.ENTRY 
+			type: directory.list.ENTRY
 		}).map( function(item) {
 			if (item.node.directory) return { directory: item.path.substring(0,item.path.length-1).replace(/\\/g, "/") };
 			var rv = {

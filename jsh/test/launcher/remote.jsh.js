@@ -56,8 +56,8 @@ if (parameters.options.jrunscript.length) {
 	});
 	if (parameters.options.script) {
 		var environment = jsh.js.Object.set(
-			{}, 
-			jsh.shell.environment, 
+			{},
+			jsh.shell.environment,
 			(parameters.options.log) ? { JSH_LOG_JAVA_PROPERTIES: jsh.script.file.parent.parent.getRelativePath("http.logging.properties").toString() } : {}
 		);
 		mock.jsh({
@@ -89,7 +89,7 @@ if (parameters.options.jrunscript.length) {
 		build: false,
 		subshell: false
 	};
-	
+
 	var client = mock.client;
 
 	if (true) {
@@ -129,21 +129,21 @@ if (parameters.options.jrunscript.length) {
 		}
 		if (string) jsh.shell.echo(string);
 	}
-	
+
 	if (tests.file) {
 		jsh.shell.echo("Exceuting file test ...", { stream: jsh.shell.stdio.error });
 		mock.jsh({
 			script: SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js")
 		});
 	}
-	
+
 	if (tests.url) {
 		jsh.shell.echo("Exceuting url test ...", { stream: jsh.shell.stdio.error });
 		mock.jsh({
 			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/echo.jsh.js"
 		});
 	}
-	
+
 	if (tests.urlproperties) {
 		mock.jsh({
 			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js"

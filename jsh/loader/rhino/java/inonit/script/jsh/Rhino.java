@@ -326,7 +326,7 @@ public class Rhino {
 				if (status != null) {
 					context.exit(status.intValue());
 				} else {
-					Thread[] threads = new Thread[Thread.activeCount()*2]; 
+					Thread[] threads = new Thread[Thread.activeCount()*2];
 					int count = Thread.enumerate(threads);
 					for (Thread t : threads) {
 						if (t != null && t != Thread.currentThread() && !t.isDaemon()) {

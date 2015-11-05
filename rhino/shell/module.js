@@ -247,15 +247,15 @@ $exports.run.stdio = (function(p) {
 			} else if (rv[stream] && typeof(rv[stream]) == "object" && rv[stream].line) {
 				buffers[stream] = new (function(callback) {
 					var buffer = new $context.api.io.Buffer();
-					
+
 					var thread = $context.api.java.Thread.start({
 						call: function() {
 							buffer.readText().readLines(callback);
 						}
 					});
-					
+
 					this.buffer = buffer;
-					
+
 					this.close = function() {
 						buffer.close();
 						thread.join();

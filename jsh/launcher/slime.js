@@ -359,7 +359,7 @@ $api.slime = (function(was) {
 			}
 		}
 	};
-	
+
 //	Packages.java.lang.System.err.println("Returning ...");
 
 	return rv;

@@ -219,7 +219,7 @@ try {
 	$api.jsh.Classpath = Classpath;
 
 	$api.script.resolve("javac.js").load();
-	
+
 	$api.jsh.Unbuilt = function(rhino) {
 		this.toString = function() {
 			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
@@ -302,7 +302,7 @@ try {
 			$api.java.install.compile(args);
 			return p.to;
 		};
-		
+
 		this.shellClasspath = function() {
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
