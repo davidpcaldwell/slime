@@ -251,7 +251,7 @@ END LICENSE
 											}
 										});
 										verify(result).stdio.output.is("Hello, World!");
-										
+
 										var runLines = function(input) {
 											var buffered = [];
 											return module.java({
@@ -270,7 +270,7 @@ END LICENSE
 													result.stdio.output = buffered;
 													return result;
 												}
-											});	
+											});
 										};
 										result = runLines("Hello, World!\nLine 2");
 										verify(result).stdio.output.length.is(2);

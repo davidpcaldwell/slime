@@ -183,7 +183,7 @@
 			//	Can set breakpoint here to pop into debugger on experimental accesses
 			var breakpoint = null;
 		}
-		
+
 		var Loader = function(p) {
 			if (typeof(p) == "string") {
 				p = (function(prefix) {
@@ -194,7 +194,7 @@
 								//	Add sourceURL for JavaScript debuggers
 								code = code + "\n//# sourceURL=" + prefix+path;
 							}
-							return { name: path, path: prefix+path, string: code };						
+							return { name: path, path: prefix+path, string: code };
 						}
 					}
 				})(p);

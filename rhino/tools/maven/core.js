@@ -24,6 +24,7 @@ $exports.mvn = function(m) {
 		if ($context.java && $context.java.home) return $context.java.home;
 		return jsh.shell.java.home;
 	})();
+	if (JAVA_HOME.pathname.basename == "jre") JAVA_HOME = JAVA_HOME.parent;
 	return jsh.shell.run(jsh.js.Object.set({}
 		,{
 			command: mvn.pathname,

@@ -606,6 +606,10 @@ $exports.Scenario = {};
 		var name = (this.name) ? this.name : context.id;
 
 		this.run = function(p) {
+			//	The next two lines allow scenarios to be executed directly if a reference is obtained to them. Not sure whether
+			//	this is the best idea or not
+			if (!p) p = {};
+			if (!p.scope) p.scope = {};
 			var scope = p.scope;
 			var EVENT = { id: context.id, name: name }
 			events.fire("scenario", { start: EVENT });

@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2015 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 plugin({
 	isReady: function() {
 		return jsh.httpd.Tomcat && jsh.http;
@@ -5,9 +18,10 @@ plugin({
 	load: function() {
 		if (!jsh.test) jsh.test = {};
 		if (!jsh.test.launcher) jsh.test.launcher = {};
-		var SRC = jsh.shell.jsh.src;
 		jsh.test.launcher.MockRemote = function(o) {
+			if (!o) o = {};
 			var tomcat = new jsh.httpd.Tomcat({});
+			var SRC = o.src;
 			tomcat.map({
 				//	TODO	works with or without leading slash; document this and write a test
 				path: "",
@@ -17,8 +31,13 @@ plugin({
 						load: function(scope) {
 							var loader = new jsh.file.Loader({ directory: SRC });
 							scope.$exports.handle = function(request) {
+								if (o.trace) {
+									Packages.java.lang.System.err.println("Request: " + request.method + " " + request.path);
+								}
 								if (request.headers.value("host") == "bitbucket.org") {
-									Packages.java.lang.System.err.println("Request path: " + request.path);
+									if (o.trace) {
+										Packages.java.lang.System.err.println("Request: " + request.method + " " + request.path);
+									}
 									if (request.path == "") {
 										return {
 											status: {
@@ -32,7 +51,8 @@ plugin({
 									}
 									var Sourceroot = function(root) {
 										var loader = new jsh.file.Loader({ directory: root });
-										this.get = function(tokens) {
+										var HEAD = null;
+										this.get = function(body,tokens) {
 											var type = tokens.shift();
 											if (type == "raw") {
 												var version = tokens.shift();
@@ -45,7 +65,7 @@ plugin({
 															status: {
 																code: 200
 															},
-															body: loader.resource(path)
+															body: (body) ? loader.resource(path) : HEAD
 														}
 													} else if (pathname.directory) {
 														//Packages.java.lang.System.err.println("Directory: " + pathname);
@@ -53,7 +73,7 @@ plugin({
 															status: {
 																code: 200
 															},
-															body: {
+															body: (body) ? {
 																type: "text/plain",
 																string: (function() {
 																	return pathname.directory.list({ type: pathname.directory.list.ENTRY }).map(function(entry) {
@@ -63,9 +83,14 @@ plugin({
 																		return path != ".hg/";
 																	}).join("\n");
 																})()
-															}
+															} : HEAD
 														}
 													} else {
+														return {
+															status: {
+																code: 404
+															}
+														}
 														//Packages.java.lang.System.err.println("Not found: " + pathname);
 													}
 												}
@@ -84,7 +109,8 @@ plugin({
 											tokenized.shift();
 											if (user == "davidpcaldwell") {
 												if (repository == "slime") {
-													return new Sourceroot(SRC).get(tokenized);
+													var body = (request.method == "GET");
+													return new Sourceroot(SRC).get(body, tokenized);
 												}
 											}
 										}
@@ -181,7 +207,7 @@ plugin({
 			});
 			return new function() {
 				this.client = client;
-				
+
 				this.jsh = function(o) {
 					jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
 						properties: {
@@ -193,6 +219,22 @@ plugin({
 							o.script
 						].concat( (o.arguments) ? o.arguments : [] )
 					}));
+				}
+
+				this.jrunscript = function(o) {
+					var properties = {
+						"http.proxyHost": "127.0.0.1",
+						"http.proxyPort": String(tomcat.port)
+					};
+					jsh.js.Object.set(properties, (o.properties) ? o.properties : {});
+					jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
+						properties: properties,
+						arguments: (o.arguments) ? o.arguments : []
+					}));
+				}
+
+				this.stop = function() {
+					tomcat.stop();
 				}
 			}
 		}

@@ -164,6 +164,7 @@ if (parameters.options.doc) {
 		modules: modules,
 		to: parameters.options.doc,
 		getPath: function(pathname) {
+			if (pathname === null) throw new Error("null pathname!");
 			return getRelativePath(pathname);
 		}
 	});

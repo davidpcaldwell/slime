@@ -51,10 +51,11 @@ public class Rhino {
 		@Override public void addEngine() {
 			host("$rhino", $rhino);
 			try {
-				if (this.getJshLoader().getFile("rhino.js") == null) {
+				Code.Source.File file = this.getJshLoader().getFile("rhino.js");
+				if (file == null) {
 					throw new NullPointerException("Expected file rhino.js in " + this.getJshLoader());
 				}
-				script(this.getJshLoader().getFile("rhino.js"));
+				script(file);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -325,7 +326,7 @@ public class Rhino {
 				if (status != null) {
 					context.exit(status.intValue());
 				} else {
-					Thread[] threads = new Thread[Thread.activeCount()*2]; 
+					Thread[] threads = new Thread[Thread.activeCount()*2];
 					int count = Thread.enumerate(threads);
 					for (Thread t : threads) {
 						if (t != null && t != Thread.currentThread() && !t.isDaemon()) {

@@ -12,9 +12,11 @@
 //	END LICENSE
 
 //	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
+//Packages.java.lang.System.err.println("slime.js: start");
 var $api = this.$api;
 //Packages.java.lang.System.out.println("$api.io = " + $api.io);
 //Packages.java.lang.System.out.println("$api = " + Object.keys($api));
+//Packages.java.lang.System.err.println("slime.js: $api = " + this.$api);
 if (typeof(Packages.inonit.script.runtime.io.Streams) == "function") {
 	$api.io.copy = function(i,o) {
 		if (!arguments.callee.delegate) {
@@ -43,19 +45,24 @@ if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 
 $api.slime = (function(was) {
 	var rv;
+//	Packages.java.lang.System.err.println("Assigning $api.slime");
 	if (was && was.built) {
 		rv = was;
+//		Packages.java.lang.System.err.println("Assigning $api.slime built");
 		rv.launcher = new function() {
 			this.getClasses = function() {
 				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
 			};
 		}
+//		Packages.java.lang.System.err.println("Assigned rv.launcher");
 	} else {
+//		Packages.java.lang.System.err.println("Assigning $api.slime not built");
 		rv = {};
 
 		var script = $api.script;
 		var isSourceFile = script.file && String(script.file.getParentFile().getName()) == "launcher";
 		var isHttp = script.url && /^http/.test(String(script.url.getProtocol()));
+//		Packages.java.lang.System.err.println("script = " + script + " isSourceFile= " + isSourceFile + " isHttp=" + isHttp);
 		if (isSourceFile || isHttp) {
 			rv.src = new function() {
 				if (script.file) {
@@ -166,6 +173,7 @@ $api.slime = (function(was) {
 		}
 	}
 
+//	Packages.java.lang.System.err.println("Assigning .setting");
 	rv.setting = function(name) {
 		if (Packages.java.lang.System.getProperty(name) !== null) {
 			return String(Packages.java.lang.System.getProperty(name));
@@ -177,6 +185,7 @@ $api.slime = (function(was) {
 		return null;
 	};
 
+//	Packages.java.lang.System.err.println("Assigning .settings");
 	rv.settings = new function() {
 		var all = {};
 		var PASS = function(value) {
@@ -350,6 +359,8 @@ $api.slime = (function(was) {
 			}
 		}
 	};
+
+//	Packages.java.lang.System.err.println("Returning ...");
 
 	return rv;
 })($api.slime);
