@@ -251,7 +251,11 @@
 				}
 				var target = this;
 				var global = (function() { return this; })();
+				//	TODO	why is this present?
 				if (scope === global) {
+					scope = {};
+				}
+				if (scope === void(0)) {
 					scope = {};
 				}
 				scope.$platform = $platform;
