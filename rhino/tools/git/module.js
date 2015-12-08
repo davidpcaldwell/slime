@@ -57,6 +57,7 @@ var RemoteRepository = function(o) {
 			arguments: [o.remote,p.to.toString()],
 			environment: jsh.js.Object.set({}, jsh.shell.environment, environment)
 		});
+		return new LocalRepository({ local: p.to.directory });
 	}
 };
 
