@@ -113,13 +113,27 @@ var Loader = (function() {
 			pp._source = p._source.child(prefix);
 			pp.type = function(path) {
 				var _type = $servlet.getMimeType(path);
+				if (/\.css$/.test(path)) {
+					_type = new Packages.java.lang.String("text/css");
+				}
 				if (_type) return bootstrap.io.mime.Type.parse(String(_type));
 				return null;
 			};
 			pp.Loader = function(sub) {
 				return new Loader(p,prefix+sub);
 			}
-			var rv = new bootstrap.io.Loader(pp);
+			var source = {
+				get: function(path) {
+					var delegate = new bootstrap.io.Loader(pp);
+					var dResource = delegate.source.get(path);
+					if (!dResource.type) {
+						dResource.type = pp.type(path);
+					}
+					return dResource;
+				}
+			}
+//			var rv = new bootstrap.io.Loader(pp);
+			var rv = new bootstrap.io.Loader(source);
 			rv.list = function(m) {
 				var path = prefix + m.path;
 				var rv = bootstrap.loader.paths(path);
