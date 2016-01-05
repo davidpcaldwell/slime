@@ -107,8 +107,8 @@ slime.build.jsh = function(from,build,javac) {
 				if (!destination) destination = build.getRelativePath("$jvm/classes").createDirectory({ recursive: true });
 				var toCompile = directory.list({
 					filter: function(node) { return true; },
-					descendants: function(dir) { return true; }, 
-					type: from.list.ENTRY 
+					descendants: function(dir) { return true; },
+					type: from.list.ENTRY
 				}).filter( function(item) {
 					if (!/\.java$/.test(item.path)) return false;
 					return true;

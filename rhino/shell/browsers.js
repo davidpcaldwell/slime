@@ -59,20 +59,6 @@ var Chrome = function(b) {
 			}).length > 0;
 		}
 
-		//	TODO	Presumably only works on OS X
-		var open = function(m) {
-			var args = [];
-			args.push("-b","com.google.Chrome");
-			args.push(m.uri);
-			args.push("--args");
-			addProfileArguments(args,m);
-			//Packages.java.lang.System.err.println("using open: args = " + JSON.stringify(args));
-			$context.run({
-				command: "/usr/bin/open",
-				arguments: args
-			});
-		};
-
 		var launch = function(m) {
 			if ($context.os.name == "Mac OS X") {
 				(function startDefaultUser() {
@@ -133,7 +119,14 @@ var Chrome = function(b) {
 			if (m.app) {
 				args.push("--app=" + m.app);
 			} else {
-				args.push(m.uri);
+				if (m.newWindow) {
+					args.push("--new-window");
+				}
+				if (m.uri) {
+					args.push(m.uri);
+				} else if (m.uris) {
+					args.push.apply(args,m.uris);
+				}
 			}
 			//Packages.java.lang.System.err.println("using program: args = " + JSON.stringify(args));
 			$context.run({
@@ -181,6 +174,29 @@ var Chrome = function(b) {
 			});
 		}
 
+		//	TODO	Presumably only works on OS X
+		var open = function(m) {
+			if ($context.os.name == "Mac OS X") {
+				var args = [];
+				args.push("-b","com.google.Chrome");
+				args.push(m.uri);
+				args.push("--args");
+				addProfileArguments(args,m);
+				//Packages.java.lang.System.err.println("using open: args = " + JSON.stringify(args));
+				$context.run({
+					command: "/usr/bin/open",
+					arguments: args
+				});
+			} else {
+				//	TODO	Could consider having this API block until process was started and then return it
+				$context.api.java.Thread.start({
+					call: function() {
+						launch(m);
+					}
+				});				
+			}
+		};
+
 		var Profile = function(data) {
 			this.directory = data.directory;
 			this.id = data.name;
@@ -224,7 +240,7 @@ var Chrome = function(b) {
 			};
 
 			this.launch = function(m) {
-				//	TODO	Could consider having this API block until process was started and then return it
+				//	TODO	duplicated above, in open()
 				$context.api.java.Thread.start({
 					call: function() {
 						launch(m);

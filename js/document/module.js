@@ -421,11 +421,22 @@ var Doctype = function(p) {
 	}, this);
 
 	this.serialize = function(m) {
-		var type = (this.doctype.publicId) ? "PUBLIC" : "SYSTEM";
+		var type = (function(public,system) {
+			if (public) return { type: "PUBLIC", string: public };
+			if (system) return { type: "SYSTEM", string: system };
+			return null;
+		})(this.doctype.publicId,this.doctype.systemId);
+		
 		var quote = function(s) {
 			return "\"" + s + "\"";
 		};
-		return "<!DOCTYPE " + this.doctype.name + " " + type + ((this.doctype.publicId) ? " " + quote(this.doctype.publicId) : "") + " " + quote(this.doctype.systemId) + ">\n";
+
+		var tokens = [this.doctype.name];
+		if (type) {
+			tokens.push(type.type, quote(type.string));
+		}
+		
+		return "<!DOCTYPE " + tokens.join(" ") + ">\n";
 	};
 };
 
@@ -444,6 +455,11 @@ var emptySerializers = new function() {
 			return { selfclose: { xhtml: true } };
 		}
 	};
+	
+	this.html5 = function(element) {
+		var empty = html4empty.indexOf(element.element.type.name) != -1 && html5void.indexOf(element.element.type.name) != -1;
+		return (empty) ? { selfclose: { xhtml: true } } : { selfclose: false };
+	}
 };
 
 var Document = function(p) {
@@ -477,6 +493,9 @@ var Document = function(p) {
 			if (this.document.getElement().element.type.namespace == "http://www.w3.org/1999/xhtml") {
 				parameters.empty = emptySerializers.xhtml;
 				parameters.doNotEscapeScript = true;
+			} else if (this.document.getType() && this.document.getType().doctype.name == "html") {
+				parameters.empty = emptySerializers.html5;
+				parameters.doNotEscapeScript = true;				
 			}
 		}
 		return this.children.map(function(child) { return child.serialize(parameters); }).join("");

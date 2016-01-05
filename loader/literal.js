@@ -143,6 +143,7 @@
 				}
 			};
 			$exports.Type.parse = function(string) {
+				if (string === null) return null;
 				//	First parse RFC 822 header; see RFC 822 section 3.2 http://tools.ietf.org/html/rfc822#section-3.2
 				var collapser = /^(.*)(?:\r\n| |\t){2,}(.*)/;
 				while(collapser.test(string)) {
@@ -251,7 +252,11 @@
 				}
 				var target = this;
 				var global = (function() { return this; })();
+				//	TODO	why is this present?
 				if (scope === global) {
+					scope = {};
+				}
+				if (scope === void(0)) {
 					scope = {};
 				}
 				scope.$platform = $platform;

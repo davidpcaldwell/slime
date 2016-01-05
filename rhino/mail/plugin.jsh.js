@@ -12,14 +12,25 @@
 
 plugin({
 	isReady: function() {
-		return jsh.java && jsh.io && jsh.io.mime && jsh.java.getClass("javax.mail.Session");
+		return jsh.loader.java && jsh.java && jsh.io && jsh.io.mime && jsh.shell;
 	},
 	load: function() {
-		jsh.mail = $loader.module("module.js", {
-			api: {
-				java: jsh.java,
-				mime: jsh.io.mime
+		var JAVAMAIL_CLASS = (function() {
+			var NAME = "javax.mail.Session";
+ 			var rv = jsh.java.getClass(NAME);
+			if (!rv && jsh.shell.jsh.lib.getFile("javax.mail.jar")) {
+				jsh.loader.java.add(jsh.shell.jsh.lib.getRelativePath("javax.mail.jar"));
+				rv = jsh.java.getClass(NAME);
 			}
-		});
+			return rv;
+		})();
+		if (JAVAMAIL_CLASS) {
+			jsh.mail = $loader.module("module.js", {
+				api: {
+					java: jsh.java,
+					mime: jsh.io.mime
+				}
+			});
+		}
 	}
 })

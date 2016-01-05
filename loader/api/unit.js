@@ -643,6 +643,13 @@ $exports.Scenario = {};
 				vscope.error(e);
 			}
 			events.fire("scenario", { end: EVENT, success: vscope.success });
+			try {
+				if (this.destroy) this.destroy.call(this,local);
+			} catch (e) {
+				//	TODO	what to do on destroy error?
+//				vscope.error(e);
+				return;
+			}
 			return vscope.success;
 		}
 	}
