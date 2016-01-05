@@ -11,7 +11,7 @@ Portions created by the Initial Developer are Copyright (C) 2010-2013 the Initia
 Contributor(s):
 END LICENSE
 -->
-<html xmlns:jsapi="http://www.inonit.com/jsapi">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
 	<title>jsh API</title>
 	<link href="api.css" rel="stylesheet" type="test/css"/>
@@ -188,6 +188,15 @@ END LICENSE
 					jsh.script
 					<script jsapi:id="jsh.script" type="application/x.jsapi#tests">
 						verify.suite($jsapi.loader.suite("../../jsh/script/api.html"));
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<td><a href="../../js/time/api.html">jsh.time</a></td>
+				<td jsapi:id="jsh.time">
+					jsh.time
+					<script type="application/x.jsapi#tests">
+						verify.suite($jsapi.loader.suite("../../js/time/api.html"));
 					</script>
 				</td>
 			</tr>
