@@ -175,6 +175,9 @@ var Verify = function(scope,vars) {
 		if (o instanceof Array) {
 			wrapProperty.call(this,"length");
 		}
+		if (o instanceof Date) {
+			this.getTime = wrap("getTime");
+		}
 		if (o instanceof Error && !this.message) {
 			wrapProperty.call(this,"message");
 		}
