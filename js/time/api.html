@@ -1,0 +1,461 @@
+<html>
+<head>
+	<title>js/time Documentation</title>
+	<link rel="stylesheet" type="text/css" href="../slime/loader/api/api.css" />
+	<script type="text/javascript" src="../slime/loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		<h1>Context</h1>
+		<script type="application/x.jsapi#context">
+			new function() {
+				//	TODO	Does not work; probably bug in jsapi
+				//	module.install();
+			}
+		</script>
+	</div>
+	<script type="application/x.jsapi#initialize">
+		scope.module = $jsapi.loader.module("module.js", $jsapi.loader.file("context.java.js"));
+		scope.module.install();
+	</script>
+	<div>
+		<h1>Exports</h1>
+		<div class="type">
+			<a class="type" name="types.Time">Time</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">local</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">__TYPE__</span>
+								<span>(optional) A timezone</span>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div class="type">
+			<a class="type" name="types.Time.Zone">Time.Zone</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+			</ul>
+		</div>
+		<ul>
+			<li class="constructor">
+				<div class="name">Day</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">year</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">month</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">day</div>
+							<span class="type">number</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="function">
+							<div class="name">add</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">addMonths</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">addYears</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">at</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.Time">Time</a></span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">format</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">isBefore</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">isAfter</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">is</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">boolean</span>
+								<span>
+									<code>true</code> if the given <code>Day</code> is the same day as this <code>Day</code>;
+									<code>false</code> otherwise.
+								</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.Day = module.Day;
+					
+					scope.leapday = new scope.Day(2008,2,29);
+
+					scope.leap09 = scope.leapday.addYears(1);
+				</script>
+				<script type="application/x.jsapi#tests">
+					module.install();
+					var Day = module.Day;
+					var Year = module.Year;
+
+					var day = new Day(2009,1,1);
+					var jan2 = day.add(1);
+					test(jan2.year.value == 2009);
+					test(jan2.month == Year.Month.JANUARY);
+					test(jan2.day == 2);
+					var jan8 = day.add(7);
+					test(jan8.year.value == 2009);
+					test(jan8.month == Year.Month.JANUARY);
+					test(jan8.day == 8);
+					var feb1 = day.add(31);
+					test(feb1.year.value == 2009);
+					test(feb1.month == Year.Month.FEBRUARY);
+					test(feb1.day == 1);
+					var dec31 = day.add(-1);
+					test(dec31.year.value == 2008);
+					test(dec31.month == Year.Month.DECEMBER);
+					test(dec31.day == 31);
+
+					var jan31 = day.add(30);
+					var feb31 = jan31.addMonths(1);
+					test(feb31.year.value == 2009);
+					test(feb31.month == Year.Month.FEBRUARY);
+					test(feb31.day == 28);
+
+					var feb3110 = jan31.addMonths(13);
+					test(feb3110.year.value == 2010);
+					test(feb3110.month == Year.Month.FEBRUARY);
+					test(feb3110.day == 28);
+
+					//	TODO	Promote into jsunit framework?
+					var ExpectError = function(f) {
+						var success;
+						var messages = {};
+						try {
+							f();
+							success = false;
+							messages = { failure: "No error" };
+						} catch (e) {
+							success = true;
+							messages = { success: "Correct: got error: " + e };
+						}
+						this.success = success;
+						this.messages = messages;
+					}
+
+					test( new ExpectError(function() { return new Day(2009,2,29) } ) );
+
+					var leapday = new Day(2008,2,29);
+
+					var leap09 = leapday.addYears(1);
+					test(leap09.year.value == 2009);
+					test(leap09.month == Year.Month.FEBRUARY);
+					test(leap09.day == 28);
+
+					var converted = new Date(leap09);
+					test(converted.getFullYear() == 2009);
+					test(converted.getMonth() == 1);
+					test(converted.getDate() == 28);
+				</script>
+				<div>
+					<!--	formatting	-->
+					<script type="application/x.jsapi#tests">
+						var mar1 = leap09.add(1);
+						test(mar1.format("yyyy mm dd") == "2009 03 01");
+						test(mar1.format("yyyy/?m/?d") == "2009/3/1");
+						test(mar1.format("Mmmm ?d, yyyy") == "March 1, 2009");
+						test(mar1.format("Www Mmmm ?d, yyyy") == "Sun March 1, 2009");
+						test(mar1.format("WWWWWW Mmmm ?d, yyyy") == "SUNDAY March 1, 2009");
+						test(mar1.format("Wwwww Mmmm ?d, yyyy") == "Sun March 1, 2009");
+						test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
+
+						var noon = new Day.Time(12,0);
+						var mar1_noon = mar1.at(noon);
+						var mar1_1pm = mar1.at(new Day.Time(13,0));
+						var mar1_9am = mar1.at(new Day.Time(9,0));
+						var mar1_901314am = mar1.at(new Day.Time(9,1,3.14));
+						test(mar1_noon.format("yyyy mm dd hr:mi") == "2009 03 01 12:00");
+						test(mar1_noon.format("yyyy mm dd hr:mipm") == "2009 03 01 12:00pm");
+						test(mar1_1pm.format("yyyy mm dd hr:mipm") == "2009 03 01 01:00pm");
+						test(mar1_1pm.format("yyyy mm dd hr:mipm") == "2009 03 01 01:00pm");
+						test(mar1_9am.format("yyyy mm dd h:mipm") == "2009 03 01 9:00am");
+						test(mar1_901314am.format("yyyy mm dd h:mi:sc.## pm") == "2009 03 01 9:01:03.14 am");
+
+						var jul2 = new Day(2009,7,2);
+						test(jul2.at(new Day.Time(13,0)).format("Www Mmmm ?d, yyyy") == "Thu July 2, 2009");
+					</script>					
+				</div>
+				<div>
+					<!--	codec.js	-->
+					<script type="application/x.jsapi#tests">
+						var leap09js = Day.codec.js.encode(leap09);
+						test(leap09js.year == 2009);
+						test(leap09js.month == 2);
+						test(leap09js.day == 28);
+						var leap09decode = Day.codec.js.decode(leap09js);
+						test(leap09.is(leap09decode));
+
+						var when = leap09.at(new Day.Time(12,30)).local();
+						var copied = module.When.codec.js.decode(module.When.codec.js.encode(when));
+						test(when.unix == copied.unix);
+					</script>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Time</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">hours</div>
+									<span class="type">number</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">minutes</div>
+									<span class="type">number</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">seconds</div>
+									<span class="type">number</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ul>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="constructor">
+				<div class="name">Time</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">format</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#tests">
+					if (false) {
+						//	Assumes Eastern time
+						var fourAm = new module.Time({ day:new module.Day(2010,4,7), time: new module.Day.Time(4,0,0) });
+						var localized = fourAm.local();
+						var localUnix = 1270627200000;
+						test(localized.unix == localUnix);
+						test(fourAm.local(module.Time.Zone.UTC).unix == localUnix-4*60*60*1000);
+					}
+				</script>
+			</li>
+			<li class="constructor">
+				<div class="name">When</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">unix</div>
+							<span class="type">number</span>
+							<span>The number of milliseconds since epoch represented by this object.</span>
+						</li>
+						<li class="function">
+							<div class="name">local</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type"><a href="#types.Time.Zone">Time.Zone</a></span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">now</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					var string = "2011-01-01T00:00:00Z";
+					var when = module.When.codec.rfc3339.decode(string);
+					debugger;
+					var translated = when.local(module.Time.Zone.UTC).format("yyyy-mm-dd HR:mi:sc");
+					debugger;
+					test(translated == "2011-01-01 00:00:00");
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

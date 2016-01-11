@@ -43,13 +43,23 @@ plugin({
 					p.libraries[x].copy(lib.getRelativePath(x), { recursive: true });
 				}
 			}
+			var SLIME = jsh.shell.jsh.src;
+			if (!SLIME) {
+				SLIME = jsh.shell.jsh.home.getSubdirectory("src");
+			}
 			(function() {
-				var SLIME = jsh.shell.jsh.src;
 				var SERVLET = SLIME.getSubdirectory("rhino/http/servlet");
 				//	Compile the servlet to WEB-INF/classes
 				var classpath = jsh.file.Searchpath([]);
 				classpath.pathnames.push(WEBAPP.getRelativePath("WEB-INF/lib/js.jar"));
-				classpath.pathnames.push(jsh.shell.jsh.lib.getRelativePath("tomcat/lib/servlet-api.jar"));
+				var CATALINA_HOME;
+				if (jsh.shell.environment.CATALINA_HOME) CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+				if (!CATALINA_HOME) CATALINA_HOME = jsh.shell.jsh.lib.getSubdirectory("tomcat");
+				if (!CATALINA_HOME) {
+					throw new Error("Could not find Tomcat directory to locate servlet API");
+				}
+				jsh.shell.echo("CATALINA_HOME = " + CATALINA_HOME);
+				classpath.pathnames.push(CATALINA_HOME.getRelativePath("lib/servlet-api.jar"));
 				var sourcepath = jsh.file.Searchpath([]);
 				sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 				sourcepath.pathnames.push(SLIME.getRelativePath("loader/rhino/java"));
@@ -90,7 +100,6 @@ plugin({
 			})();
 
 			(function() {
-				var SLIME = jsh.shell.jsh.src;
 				SLIME.getSubdirectory("loader").list().forEach(function(node) {
 					//	TODO	dangerous as we move more code into the loader
 					if (!node.directory) {
@@ -114,7 +123,6 @@ plugin({
 			})();
 			
 			(function() {
-				var SLIME = jsh.shell.jsh.src;
 				//	Obviously using an XML parser would be beneficial here if this begins to get more complex
 
 				var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);

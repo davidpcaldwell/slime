@@ -88,7 +88,7 @@ $exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(fu
 						arguments: args
 					})
 				}
-				throw new Error();
+				throw new Error("Exit status: " + status);
 			} else {
 				return {
 					status: status,
