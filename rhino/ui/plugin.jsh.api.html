@@ -131,72 +131,137 @@ END LICENSE
 						</div>
 						<div class="label">has properties:</div>
 						<ul>
-							<li class="function">
-								<div class="name"><a id="exports.javafx.WebView.application">application</a></div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="object">
-											<span>__DESCRIPTION__</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<!--	TODO	other forms of servlet	-->
-												<li class="value">
-													<div class="name">servlet</div>
-													<span class="type"><a href="../file/api.html#types.file">file</a></span>
-													<span>A <a href="../http/servlet/api.html#servlet">servlet</a> <!-- TODO check link --> to run.</span>
-												</li>
-												<li class="value">
-													<div class="name">parameters</div>
-													<span class="type">object</span>
-													<span>
-														An object to supply to the servlet as its <code>$parameters</code> object.
-													</span>
-												</li>
-												<li class="value">
-													<div class="name">resources</div>
-													<span class="type"><a href="../http/servlet/plugin.jsh.resources.api.html">Resources</a></span>
-													<span>The resources available to the server resource loader.<!--	TODO	hyperlink?	--></span>
-												</li>
-												<li class="value">
-													<div class="name">path</div>
-													<span class="type">string</span>
-													<span>The relative path of the page to open.</span>
-												</li>
-												<li class="value">
-													<div class="name">on</div>
-													<span class="type">object</span>
-													<span>
-														(optional)
-														Event handlers passed through to the underlying
-														<!--	TODO	better hyperlink	-->
-														<a href="api.html">Frame</a>.
-													</span>
-												</li>
-											</ul>
-										</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">object</span>
-									<span>
-										An object describing the application.
-									</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">port</div>
-											<span class="type">number</span>
-											<span>The port number on which the application is running.</span>
-										</li>
-									</ul>
-								</div>
+							<li class="deprecated function">
+								<div class="name">application</div>
+								<div>See <a href="#exports.browser">browser</a>.</div>
 							</li>
 						</ul>
 					</li>
 				</ul>
+			</li>
+			<li class="function">
+				<div class="name"><a id="exports.javafx.Webview.application"><!-- TODO remove when deprecated function removed; search for usages --></a><a id="#exports.browser">browser</a></div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<!--	TODO	other forms of servlet	-->
+								<li class="value">
+									<div class="name">port</div>
+									See <a href="../../rhino/http/servlet/plugin.jsh.api.html#$exports.Tomcat">Tomcat</a>.
+								</li>
+								<li class="value">
+									<div class="name">servlet</div>
+									<span class="type"><a href="../file/api.html#types.file">file</a></span>
+									<span>A <a href="../http/servlet/api.html#servlet">servlet</a> <!-- TODO check link --> to run.</span>
+								</li>
+								<li class="value">
+									<div class="name">parameters</div>
+									<span class="type">object</span>
+									<span>
+										An object to supply to the servlet as its <code>$parameters</code> object.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">resources</div>
+									<span class="type"><a href="../http/servlet/plugin.jsh.resources.api.html">Resources</a></span>
+									<span>The resources available to the server resource loader.<!--	TODO	hyperlink?	--></span>
+								</li>
+								<li class="value">
+									<div class="name">path</div>
+									<span class="type">string</span>
+									<span>The relative path of the page to open.</span>
+								</li>
+								<li class="value">
+									<div class="name">on</div>
+									<span class="type">object</span>
+									<span>
+										(optional)
+										Event handlers passed through to the underlying
+										<!--	TODO	better hyperlink	-->
+										<a href="api.html">Frame</a>.
+									</span>
+								</li>
+								<li class="value">
+									<div class="name">browser</div>
+									<div>
+										<span class="type">object</span>
+										<span>A JavaFX Webview component; see 
+											<!--	TODO	make sure WebView properly documented and hyperlink this	-->
+											<code>jsh.ui.javafx.WebView</code>.
+										</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">console</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">zoom</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">on</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</div>
+									- OR -
+									<div>
+										<span class="type">function</span>
+										<span>
+											A function that opens a web browser window to a given URL and blocks until the
+											browser is closed.
+										</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="object">
+													<span>__DESCRIPTION__</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="value">
+															<div class="name">url</div>
+															<span class="type">string</span>
+															<span>__DESCRIPTION__</span>
+														</li>
+													</ul>
+												</li>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">object</span>
+					<span>
+						An object describing the application.
+					</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">port</div>
+							<span class="type">number</span>
+							<span>The port number on which the application is running.</span>
+						</li>
+					</ul>
+				</div>
 			</li>
 		</ul>
 	</div>
