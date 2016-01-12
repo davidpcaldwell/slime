@@ -693,6 +693,7 @@ $exports.Scenario = {};
 		}
 
 		if (!this.name) this.name = (function() {
+			if (c.name) return c.name;
 			if (context && context.id) return context.id;
 			if (!context) return "(top)";
 		})();
