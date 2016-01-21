@@ -30,24 +30,22 @@
 				}
 			};
 		} else {
-			return new (function(el) {
+			return new (function(o) {
 				//	TODO	allows future refactoring to provide alternative ID regime
 				this.getElement = function(id) {
 					return document.getElementById(id);
 				}
-			})(this.ui);
+
+				this.initialize = function(initialize,handler) {
+					o.initialize(initialize,handler);
+				}
+			})(this.section);
 		}
 	}).call(this);
 	
 	var suite = (function() {
 		if (window == this) {
 			return new function() {
-				this.run = function(path) {
-					var xhr = new XMLHttpRequest();
-					xhr.open("POST", "run", false);
-					xhr.send(JSON.stringify(path));
-				};
-
 				this.getStructure = function() {
 					var xhr = new XMLHttpRequest();
 					xhr.open("GET", "structure", false);
@@ -72,10 +70,15 @@
 						});
 					}, 1000);					
 				};
+
+				this.run = function(path) {
+					var xhr = new XMLHttpRequest();
+					xhr.open("POST", "run", false);
+					xhr.send(JSON.stringify(path));
+				};
 			}
 		} else {
-			return new (function(o) {
-			}).call(this.suite);
+			return this.suite;
 		}
 	}).call(this);
 
@@ -134,7 +137,9 @@
 		return rv;
 	}
 
-	var handler = function(message) {
+	var WEBVIEW_HTML_OBSOLETE = true;
+
+	var handler = (WEBVIEW_HTML_OBSOLETE) ? void(0) : function(message) {
 		var line = function(p) {
 			var rv = document.createElement("div");
 			if (p.text) {
@@ -201,8 +206,6 @@
 	var run = function(path) {
 		suite.run(path);
 	};
-	
-	var WEBVIEW_HTML_OBSOLETE = true;
 	
 	var View = function View(json) {
 		this.id = json.id;
