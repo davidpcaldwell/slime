@@ -21,6 +21,13 @@
 					return document.getElementById(id);
 				};
 
+				this.initialize = function(initialize,handler) {
+					window.addEventListener("load", initialize);
+
+					if (window.jsh) {
+						window.jsh.message.handler(handler);
+					}					
+				}
 			};
 		} else {
 			return new (function(el) {
@@ -49,13 +56,22 @@
 					return json;
 				};
 
-				this.getMessages = function() {
+				var getMessages = function() {
 					var xhr = new XMLHttpRequest();
 					xhr.open("GET", "messages", false);
 					xhr.send(null);
 					var json = JSON.parse(xhr.responseText);
 					return json;
-				}
+				};
+				
+				this.listen = function(view) {
+					window.setInterval(function() {
+						var json = getMessages();
+						json.forEach(function(event) {
+							view.dispatch(event.path,event);
+						});
+					}, 1000);					
+				};
 			}
 		} else {
 			return new (function(o) {
@@ -337,12 +353,7 @@
 
 			document.getElementById("run").disabled = false;
 
-			window.setInterval(function() {
-				var json = suite.getMessages();
-				json.forEach(function(event) {
-					view.dispatch(event.path,event);
-				});
-			}, 1000);
+			suite.listen(view);
 
 			document.getElementById("run").addEventListener("click", function() {
 				view.clear();
@@ -363,9 +374,5 @@
 		}
 	};
 
-	window.addEventListener("load", initialize);
-
-	if (window.jsh) {
-		window.jsh.message.handler(handler);
-	}
+	section.initialize(initialize,handler);
 }).call(this);
