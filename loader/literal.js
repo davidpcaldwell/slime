@@ -224,6 +224,7 @@
 			//	resource.js { name, code }: forcibly set based on other properties
 			//	TODO	re-work resource.js
 			methods.run = function(resource,scope) {
+				if (!resource || typeof(resource) != "object") throw new TypeError("'resource' must be an object, not " + resource);
 				var type = (function(v) {
 					if (typeof(v) == "string") return mime.Type.parse(v);
 					if (v instanceof mime.Type) return v;

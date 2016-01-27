@@ -101,23 +101,21 @@ plugin({
 
 			(function() {
 				SLIME.getSubdirectory("loader").list().forEach(function(node) {
-					//	TODO	dangerous as we move more code into the loader
+					//	TODO	dangerous as we move more code into the loader; was just literal.js and api.js
 					if (!node.directory) {
 						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/" + node.pathname.basename), { recursive: true });
 					}
 				});
-			//	SLIME.getFile("loader/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/literal.js"));
-			//	SLIME.getFile("loader/api.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/api.js"));
 				SLIME.getSubdirectory("loader/rhino").list().forEach(function(node) {
+					//	Was just literal.js
 					if (/\.js$/.test(node.pathname.basename)) {
 						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/" + node.pathname.basename), { recursive: true });
 					}
 				});
-			//	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/literal.js"), { recursive: true });
 				SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 				SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 
-				["js/debug","js/object","rhino/host","rhino/io"].forEach(function(path) {
+				["js/debug","js/object","rhino/host","rhino/io","rhino/http/servlet/server"].forEach(function(path) {
 					SLIME.getSubdirectory(path).copy(WEBAPP.getRelativePath("WEB-INF/slime/" + path), { recursive: true });
 				});
 			})();
