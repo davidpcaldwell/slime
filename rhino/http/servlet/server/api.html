@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>httpd API</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+	</head>
+	<body>
+		<div>__DESCRIPTION__</div>
+		<script type="application/x.jsapi#initialize">
+			scope.module = $jsapi.loader.module("loader.js");
+		</script>
+		<div>
+			<h1><code>httpd properties</code></h1>
+			<ul>
+				<li class="constructor">
+					<div class="name">Child</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">filter</div>
+										<span class="type">RegExp</span>
+										<span>
+											An expression describing the set of requests serviced by this handler. If the path
+											matches the expression, the (first) value captured by the expression will be used as
+											the <code>path</code> property of the request to be passed to the handler.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">handle</div>
+										<span class="type">handler</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+								<script type="application/x.jsapi#tests">
+									verify(module).is(module);
+									var handler = new module.Handler.Child({
+										filter: /^test\/(.*)/,
+										handle: function(request) {
+											return {
+												status: {
+													code: 200
+												},
+												body: {
+													type: "text/plain",
+													string: request.path
+												}
+											}
+										}
+									});
+									verify(handler({ path: "test/1" })).body.string.is("1");
+									verify(handler({ path: "x/1" })).is(void(0));
+								</script>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">function</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>
