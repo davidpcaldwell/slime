@@ -14,7 +14,7 @@
 $exports.Handler = function(p) {
 	throw new Error("Reserved for future use.");
 };
-$exports.Handler.chain = function() {
+$exports.Handler.series = function() {
 	var delegates = arguments;
 	return function(request) {
 		for (var i=0; i<delegates.length; i++) {
