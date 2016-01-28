@@ -193,7 +193,7 @@ var Chrome = function(b) {
 					call: function() {
 						launch(m);
 					}
-				});				
+				});
 			}
 		};
 

@@ -66,7 +66,7 @@ jsh.httpd.tools.build({
 	Resources: function() {
 		parameters.options.resources.forEach(function(resources) {
 			this.file(resources.file);
-		},this);		
+		},this);
 	},
 	compile: (function() {
 		var args = [];

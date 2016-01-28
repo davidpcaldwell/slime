@@ -1,3 +1,17 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the js/time SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
 <html>
 <head>
 	<title>js/time Documentation</title>
@@ -201,7 +215,7 @@
 				</div>
 				<script type="application/x.jsapi#initialize">
 					scope.Day = module.Day;
-					
+
 					scope.leapday = new scope.Day(2008,2,29);
 
 					scope.leap09 = scope.leapday.addYears(1);
@@ -296,7 +310,7 @@
 
 						var jul2 = new Day(2009,7,2);
 						test(jul2.at(new Day.Time(13,0)).format("Www Mmmm ?d, yyyy") == "Thu July 2, 2009");
-					</script>					
+					</script>
 				</div>
 				<div>
 					<!--	codec.js	-->

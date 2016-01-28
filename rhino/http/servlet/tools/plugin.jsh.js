@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME servlet interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 plugin({
 	isReady: function() {
 		return true;
@@ -11,7 +24,7 @@ plugin({
 			if (!p.destination.directory) {
 				p.destination.directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
 			}
-			var WEBAPP = p.destination.directory;			
+			var WEBAPP = p.destination.directory;
 			WEBAPP.getRelativePath("WEB-INF").createDirectory();
 			if (p.rhino) {
 				(function() {
@@ -119,7 +132,7 @@ plugin({
 					SLIME.getSubdirectory(path).copy(WEBAPP.getRelativePath("WEB-INF/slime/" + path), { recursive: true });
 				});
 			})();
-			
+
 			(function() {
 				//	Obviously using an XML parser would be beneficial here if this begins to get more complex
 
@@ -142,7 +155,7 @@ plugin({
 						"\t\t\t<param-name>" + x + "</param-name>",
 						"\t\t\t<param-value>" + p.parameters[x] + "</param-value>",
 						"\t\t</init-param>"
-					]);					
+					]);
 				}
 				var spliceArgs = [nextInitParamIndex,0].concat(initParamLines);
 				lines.splice.apply(lines,spliceArgs);
@@ -150,7 +163,7 @@ plugin({
 
 				WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 			})();
-			
+
 //			if (p.buildResources) {
 //				p.buildResources();
 //			} else if (p.Resources) {
@@ -164,7 +177,7 @@ plugin({
 					from: p.destination.directory.pathname,
 					to: p.destination.war
 				});
-			}		
+			}
 		};
 		jsh.httpd.tools.build.getJavaSourceFiles = function(pathname) {
 			if (pathname.directory) {
@@ -179,7 +192,7 @@ plugin({
 				return nodes;
 			} else {
 				return [pathname.file];
-			}			
+			}
 		}
 	}
 })

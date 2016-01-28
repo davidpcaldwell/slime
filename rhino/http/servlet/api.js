@@ -231,8 +231,8 @@ if (!loaders.api.get("loader.js")) {
 }
 
 loaders.api.run(
-	"loader.js", 
-	{ 
+	"loader.js",
+	{
 		$exports: scope.httpd,
 		$loader: loaders.api
 	}
