@@ -230,7 +230,13 @@ if (!loaders.api.get("loader.js")) {
 	throw new Error("loader.js not found in " + loaders.api);
 }
 
-loaders.api.run("loader.js", { httpd: scope.httpd });
+loaders.api.run(
+	"loader.js", 
+	{ 
+		$exports: scope.httpd,
+		$loader: loaders.api
+	}
+);
 
 scope.httpd.http.Response = function() {
 	throw new Error("Reserved for future use.");
