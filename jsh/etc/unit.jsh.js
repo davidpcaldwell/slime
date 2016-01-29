@@ -19,13 +19,15 @@ var parameters = jsh.script.getopts({
 	options: {
 		view: "console",
 		port: Number,
-		"chrome:profile": jsh.file.Pathname
+		"chrome:profile": jsh.file.Pathname,
+		unit: String
 	}
 });
 
 var suite = new jsh.unit.Suite(new jsh.unit.Scenario.Html({
 	name: "jsh Unit Tests",
-	pathname: jsh.script.file.parent.getRelativePath("api.html")
+	pathname: jsh.script.file.parent.getRelativePath("api.html"),
+	unit: parameters.options.unit
 }));
 
 jsh.unit.interface.create(suite, new function() {

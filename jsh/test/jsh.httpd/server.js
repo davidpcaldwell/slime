@@ -76,7 +76,7 @@ $exports.server = (function() {
 					script: jsh.script.file.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js").file,
 					arguments: [
 						"-to", environment.CATALINA_BASE.getSubdirectory("webapps").getRelativePath(urlpath),
-						"-servletapi", environment.CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
+						"-servletapi", CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
 						"-resources", jsh.script.file.getRelativePath("httpd.resources.js"),
 						"-servlet", servletpath
 					].concat(rhinoArguments).concat(coffeeScriptArguments),

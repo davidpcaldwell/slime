@@ -12,7 +12,7 @@
 
 $exports.handle = function(request) {
 	debugger;
-	var resource = httpd.loader.resource(request.path);
+	var resource = httpd.loader.get(request.path);
 	if (resource) {
 		return {
 			status: {

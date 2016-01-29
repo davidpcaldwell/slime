@@ -646,6 +646,13 @@ $exports.Scenario = {};
 				vscope.error(e);
 			}
 			events.fire("scenario", { end: EVENT, success: vscope.success });
+			try {
+				if (this.destroy) this.destroy.call(this,local);
+			} catch (e) {
+				//	TODO	what to do on destroy error?
+//				vscope.error(e);
+				return;
+			}
 			return vscope.success;
 		}
 	}
@@ -686,6 +693,7 @@ $exports.Scenario = {};
 		}
 
 		if (!this.name) this.name = (function() {
+			if (c && c.name) return c.name;
 			if (context && context.id) return context.id;
 			if (!context) return "(top)";
 		})();
