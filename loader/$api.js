@@ -151,6 +151,29 @@
 
 	$exports.deprecate = deprecate;
 	$exports.experimental = experimental;
+	
+	$exports.debug = {
+		disableBreakOnExceptionsFor: function(f) {
+			if ($exports.debugger) {
+				return function() {
+					var enabled = $exports.debugger.breakOnExceptions;
+					if (enabled) {
+						$exports.debugger.breakOnExceptions = false;
+					}
+					try {
+						return f.apply(this,arguments);
+					} finally {
+						if (enabled) {
+							$exports.debugger.breakOnExceptions = true;
+						}
+					}
+				}
+			} else {
+				debugger;
+				return f;
+			}
+		}
+	};
 
 	$exports.Function = function() {
 		var UNDEFINED = {};
