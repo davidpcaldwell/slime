@@ -155,23 +155,26 @@ var Verify = function(scope,vars) {
 			});
 		};
 
-		for (var x in o) {
-			try {
-				var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
-				if (noSelection && x == "selectionDirection") continue;
-				if (noSelection && x == "selectionEnd") continue;
-				if (noSelection && x == "selectionStart") continue;
-				var value = o[x];
-				if (typeof(value) == "function") {
-					this[x] = wrap(x);
-				} else {
-					if (x != "is" && x != "evaluate") {
-						wrapProperty.call(this,x);
+		$api.debug.disableBreakOnExceptionsFor(function(o) {
+			for (var x in o) {
+				try {
+					var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
+					if (noSelection && x == "selectionDirection") continue;
+					if (noSelection && x == "selectionEnd") continue;
+					if (noSelection && x == "selectionStart") continue;
+					var value = o[x];
+					if (typeof(value) == "function") {
+						this[x] = wrap(x);
+					} else {
+						if (x != "is" && x != "evaluate") {
+							wrapProperty.call(this,x);
+						}
 					}
+				} catch (e) {
 				}
-			} catch (e) {
 			}
-		}
+		}).call(this,o);
+
 		if (o instanceof Array) {
 			wrapProperty.call(this,"length");
 		}
