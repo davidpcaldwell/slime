@@ -15,7 +15,17 @@ var Installation = function(environment) {
 		return jsh.shell.run(
 			jsh.js.Object.set({}, m, {
 				command: environment.program,
-				arguments: [m.command].concat( (m.arguments) ? m.arguments : [] )
+				arguments: (function() {
+					var rv = [];
+					if (m.config) {
+						for (var x in m.config) {
+							rv.push("-c", x + "=" + m.config[x]);
+						}
+					}
+					rv.push(m.command);
+					rv.push.apply(rv, (m.arguments) ? m.arguments : []);
+					return rv;
+				})()
 			})
 		);
 	};
@@ -53,6 +63,7 @@ var RemoteRepository = function(o) {
 			throw new Error("Required: 'to' property indicating destination.");
 		}
 		git({
+			config: p.config,
 			command: "clone",
 			arguments: [o.remote,p.to.toString()],
 			environment: jsh.js.Object.set({}, jsh.shell.environment, environment)
