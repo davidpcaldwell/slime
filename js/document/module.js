@@ -426,7 +426,7 @@ var Doctype = function(p) {
 			if (system) return { type: "SYSTEM", string: system };
 			return null;
 		})(this.doctype.publicId,this.doctype.systemId);
-		
+
 		var quote = function(s) {
 			return "\"" + s + "\"";
 		};
@@ -435,7 +435,7 @@ var Doctype = function(p) {
 		if (type) {
 			tokens.push(type.type, quote(type.string));
 		}
-		
+
 		return "<!DOCTYPE " + tokens.join(" ") + ">\n";
 	};
 };
@@ -455,7 +455,7 @@ var emptySerializers = new function() {
 			return { selfclose: { xhtml: true } };
 		}
 	};
-	
+
 	this.html5 = function(element) {
 		var empty = html4empty.indexOf(element.element.type.name) != -1 && html5void.indexOf(element.element.type.name) != -1;
 		return (empty) ? { selfclose: { xhtml: true } } : { selfclose: false };
@@ -495,7 +495,7 @@ var Document = function(p) {
 				parameters.doNotEscapeScript = true;
 			} else if (this.document.getType() && this.document.getType().doctype.name == "html") {
 				parameters.empty = emptySerializers.html5;
-				parameters.doNotEscapeScript = true;				
+				parameters.doNotEscapeScript = true;
 			}
 		}
 		return this.children.map(function(child) { return child.serialize(parameters); }).join("");

@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the js/time SLIME module.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var zones = {};
 if (typeof($context.zones) != "undefined") {
 	for (var x in $context.zones) {
@@ -78,7 +91,7 @@ var MonthId = function(name,index) {
 	arguments.callee[index] = this;
 	Year.Month[name] = this;
 }
-MonthId.get = function(index) { 
+MonthId.get = function(index) {
 	return this[index];
 }
 MonthId.cast = function(object) {
@@ -392,12 +405,12 @@ var Day = function() {
 		var end = new Date(time);
 		return new Date(end.getFullYear(), end.getMonth(), end.getDate());
 	}
-	
+
 	//	TODO	Use getters on platforms supporting them
 	this.year = year;
 	this.month = month;
 	this.day = day;
-	
+
 	this.weekday = WeekDayId.get(toDate().getDay());
 	$api.experimental(this,"weekday");
 
@@ -553,7 +566,7 @@ Day.codec.json = new function() {
 			day: o.day
 		};
 	}
-	
+
 	this.decode = function(o) {
 		return new Day(o.year.value,o.month.index,o.day);
 	}
@@ -753,16 +766,16 @@ When.codec.rfc3339 = new function() {
 		var rv = utc - offset * 60 * 1000;
 		return new When({ unix: rv });
 	}
-	
+
 	this.encode = function(when) {
-		return when.local(zones.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");		
+		return when.local(zones.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
 	}
 }
 When.codec.Date = new function() {
 	this.encode = function(o) {
 		return new Date(o.unix);
 	}
-	
+
 	this.decode = function(o) {
 		return new When(o.getTime());
 	}
@@ -776,7 +789,7 @@ var ToDate = function() {
 		//	consistently on Google Chrome within an application, so adding this workaround for now, pending future investigation.
 		return p && (p.constructor == Day || p.constructor.toString() == Day.toString());
 	};
-	
+
 	if (arguments.length == 1 && typeof(arguments[0]) == "object" && isDay(arguments[0])) {
 		return new Date(arguments[0].year.value, arguments[0].month.index-1, arguments[0].day);
 	} else if (arguments.length == 1 && typeof(arguments[0]) == "object" && arguments[0].constructor == When) {
@@ -844,7 +857,7 @@ $exports.install = function() {
 		members.forEach( function(x) {
 			Date[x] = oldDate[x];
 		});
-		Date.now = oldDate.now;		
+		Date.now = oldDate.now;
 		arguments.callee.called = true;
 	}
 }

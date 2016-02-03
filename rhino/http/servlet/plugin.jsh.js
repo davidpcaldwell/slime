@@ -118,6 +118,7 @@ plugin({
 												this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
 
 												this.loaders = {
+													api: new $loader.Child("server/"),
 													script: (function() {
 														if (servletDeclaration.$loader) {
 															return servletDeclaration.$loader;

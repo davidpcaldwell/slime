@@ -110,7 +110,7 @@ var Loader = (function() {
 	if (bootstrap) {
 		var Loader = function(p,prefix) {
 			var pp = {};
-			pp._source = p._source.child(prefix);
+			pp._source = (prefix) ? p._source.child(prefix) : p._source;
 			pp.type = function(path) {
 				var _type = $servlet.getMimeType(path);
 				if (/\.css$/.test(path)) {
@@ -126,7 +126,7 @@ var Loader = (function() {
 				get: function(path) {
 					var delegate = new bootstrap.io.Loader(pp);
 					var dResource = delegate.source.get(path);
-					if (!dResource.type) {
+					if (dResource && !dResource.type) {
 						dResource.type = pp.type(path);
 					}
 					return dResource;
@@ -163,13 +163,17 @@ var loaders = (function() {
 		var tokens = path.split("/");
 		var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
 		Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
+		var loader = Loader({
+			_source: $servlet.resources
+		});
 		return {
 			script: Loader({
 				_source: $servlet.resources
 			},prefix),
 			container: Loader({
 				_source: $servlet.resources
-			},"")
+			},""),
+			api: new loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
 		};
 	} else if ($host.loaders) {
 		return $host.loaders;
@@ -221,6 +225,18 @@ scope.httpd.java = api.java;
 scope.httpd.io = api.io;
 
 scope.httpd.http = {};
+
+if (!loaders.api.get("loader.js")) {
+	throw new Error("loader.js not found in " + loaders.api);
+}
+
+loaders.api.run(
+	"loader.js",
+	{
+		$exports: scope.httpd,
+		$loader: loaders.api
+	}
+);
 
 scope.httpd.http.Response = function() {
 	throw new Error("Reserved for future use.");

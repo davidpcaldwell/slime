@@ -89,26 +89,19 @@ plugin({
 			}
 		})(jsh.debug.profile.cpu.dump);
 
-		jsh.debug.disableBreakOnExceptionsFor = function(f) {
-			if ($jsh.getDebugger) {
-				return function() {
-					var enabled = $jsh.getDebugger().isBreakOnExceptions();
-					if (enabled) {
-						$jsh.getDebugger().setBreakOnExceptions(false);
-					}
-					try {
-						return f.apply(this,arguments);
-					} finally {
-						if (enabled) {
-							$jsh.getDebugger().setBreakOnExceptions(true);
-						}
-					}
+		if ($jsh.getDebugger) {
+			$api.debugger = {};
+			Object.defineProperty($api.debugger, "breakOnExceptions", {
+				get: function() {
+					return $jsh.getDebugger().isBreakOnExceptions();
+				},
+				set: function(v) {
+					$jsh.getDebugger().setBreakOnExceptions(v);
 				}
-			} else {
-				debugger;
-				return f;
-			}
+			});
 		}
+
+		jsh.debug.disableBreakOnExceptionsFor = $api.deprecate($api.debug.disableBreakOnExceptionsFor);
 
 		jsh.js.Error.Type = jsh.debug.disableBreakOnExceptionsFor(jsh.js.Error.Type);
 	}

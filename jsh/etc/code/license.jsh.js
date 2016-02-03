@@ -140,6 +140,8 @@ for (var i=0; i<files.length; i++) {
 			original = "the js/object SLIME module";
 		} else if (startsWith("js/debug/")(relative)) {
 			original = "the js/debug SLIME module";
+		} else if (startsWith("js/time/")(relative)) {
+			original = "the js/time SLIME module";
 		} else if (startsWith("js/web/")(relative)) {
 			original = "the js/web SLIME module";
 		} else if (startsWith("loader/rhino/")(relative)) {

@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME servlet interface.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 plugin({
 	isReady: function() {
 		return true;
@@ -11,7 +24,7 @@ plugin({
 			if (!p.destination.directory) {
 				p.destination.directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
 			}
-			var WEBAPP = p.destination.directory;			
+			var WEBAPP = p.destination.directory;
 			WEBAPP.getRelativePath("WEB-INF").createDirectory();
 			if (p.rhino) {
 				(function() {
@@ -101,27 +114,25 @@ plugin({
 
 			(function() {
 				SLIME.getSubdirectory("loader").list().forEach(function(node) {
-					//	TODO	dangerous as we move more code into the loader
+					//	TODO	dangerous as we move more code into the loader; was just literal.js and api.js
 					if (!node.directory) {
 						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/" + node.pathname.basename), { recursive: true });
 					}
 				});
-			//	SLIME.getFile("loader/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/literal.js"));
-			//	SLIME.getFile("loader/api.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/api.js"));
 				SLIME.getSubdirectory("loader/rhino").list().forEach(function(node) {
+					//	Was just literal.js
 					if (/\.js$/.test(node.pathname.basename)) {
 						node.copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/" + node.pathname.basename), { recursive: true });
 					}
 				});
-			//	SLIME.getFile("loader/rhino/literal.js").copy(WEBAPP.getRelativePath("WEB-INF/loader/rhino/literal.js"), { recursive: true });
 				SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
 				SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
 
-				["js/debug","js/object","rhino/host","rhino/io"].forEach(function(path) {
+				["js/debug","js/object","rhino/host","rhino/io","rhino/http/servlet/server"].forEach(function(path) {
 					SLIME.getSubdirectory(path).copy(WEBAPP.getRelativePath("WEB-INF/slime/" + path), { recursive: true });
 				});
 			})();
-			
+
 			(function() {
 				//	Obviously using an XML parser would be beneficial here if this begins to get more complex
 
@@ -144,7 +155,7 @@ plugin({
 						"\t\t\t<param-name>" + x + "</param-name>",
 						"\t\t\t<param-value>" + p.parameters[x] + "</param-value>",
 						"\t\t</init-param>"
-					]);					
+					]);
 				}
 				var spliceArgs = [nextInitParamIndex,0].concat(initParamLines);
 				lines.splice.apply(lines,spliceArgs);
@@ -152,7 +163,7 @@ plugin({
 
 				WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 			})();
-			
+
 //			if (p.buildResources) {
 //				p.buildResources();
 //			} else if (p.Resources) {
@@ -166,7 +177,7 @@ plugin({
 					from: p.destination.directory.pathname,
 					to: p.destination.war
 				});
-			}		
+			}
 		};
 		jsh.httpd.tools.build.getJavaSourceFiles = function(pathname) {
 			if (pathname.directory) {
@@ -181,7 +192,7 @@ plugin({
 				return nodes;
 			} else {
 				return [pathname.file];
-			}			
+			}
 		}
 	}
 })

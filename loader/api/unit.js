@@ -155,25 +155,31 @@ var Verify = function(scope,vars) {
 			});
 		};
 
-		for (var x in o) {
-			try {
-				var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
-				if (noSelection && x == "selectionDirection") continue;
-				if (noSelection && x == "selectionEnd") continue;
-				if (noSelection && x == "selectionStart") continue;
-				var value = o[x];
-				if (typeof(value) == "function") {
-					this[x] = wrap(x);
-				} else {
-					if (x != "is" && x != "evaluate") {
-						wrapProperty.call(this,x);
+		$api.debug.disableBreakOnExceptionsFor(function(o) {
+			for (var x in o) {
+				try {
+					var noSelection = (o.tagName == "INPUT" && (o.type == "button" || o.type == "checkbox"));
+					if (noSelection && x == "selectionDirection") continue;
+					if (noSelection && x == "selectionEnd") continue;
+					if (noSelection && x == "selectionStart") continue;
+					var value = o[x];
+					if (typeof(value) == "function") {
+						this[x] = wrap(x);
+					} else {
+						if (x != "is" && x != "evaluate") {
+							wrapProperty.call(this,x);
+						}
 					}
+				} catch (e) {
 				}
-			} catch (e) {
 			}
-		}
+		}).call(this,o);
+
 		if (o instanceof Array) {
 			wrapProperty.call(this,"length");
+		}
+		if (o instanceof Date) {
+			this.getTime = wrap("getTime");
 		}
 		if (o instanceof Error && !this.message) {
 			wrapProperty.call(this,"message");
@@ -690,6 +696,7 @@ $exports.Scenario = {};
 		}
 
 		if (!this.name) this.name = (function() {
+			if (c && c.name) return c.name;
 			if (context && context.id) return context.id;
 			if (!context) return "(top)";
 		})();
