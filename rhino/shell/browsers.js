@@ -134,7 +134,7 @@ var Chrome = function(b) {
 				arguments: args,
 				on: {
 					start: function(p) {
-						if ($context.os.name == "Mac OS X") {
+						if ($context.os.name == "Mac OS X" && !m.nokill) {
 							$context.api.java.Thread.start(function() {
 								var state;
 								var running = true;
@@ -179,7 +179,11 @@ var Chrome = function(b) {
 			if ($context.os.name == "Mac OS X") {
 				var args = [];
 				args.push("-b","com.google.Chrome");
-				args.push(m.uri);
+				if (m.uri) {
+					args.push(m.uri);
+				} else if (m.uris) {
+					args.push.apply(args,m.uris);
+				}
 				args.push("--args");
 				addProfileArguments(args,m);
 				//Packages.java.lang.System.err.println("using open: args = " + JSON.stringify(args));
@@ -207,8 +211,13 @@ var Chrome = function(b) {
 			if (u.install) {
 				this.open = function(m) {
 					if (isRunning()) {
+						//	On OS X, if we do not use "launch," the tabs open in the profile last used, regardless of the arguments
+						//	sent to the program
 						launch($context.api.js.Object.set({}, m, {
-							profile: data.name
+							profile: data.name,
+							//	nokill causes a thread that monitors the process list and waits for the browser window to be closed
+							//	not to be launched
+							nokill: true
 						}));
 					} else {
 						open($context.api.js.Object.set({}, m, {
