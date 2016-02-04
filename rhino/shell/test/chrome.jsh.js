@@ -24,10 +24,21 @@ jsh.script.Application.run(new function() {
 			getopts: {
 				options: {
 					name: String,
-					uri: "http://www.google.com/"
+					uri: jsh.shell.getopts.ARRAY(String)
 				}
 			},
 			run: function(parameters) {
+				//	Results:
+				//	OS X, Chrome not open, last used different profile
+				//	Works
+				//
+				//	OS X, Chrome different profile open
+				//	Works: Opens window with appropriate profile and adds tabs
+				//
+				//	OS X, Chrome same profile open
+				//	Works: Adds tabs to existing window
+				//
+				//	TODO	test on Linux
 				jsh.shell.echo("Starting ...");
 				var chrome = jsh.shell.browser.chrome;
 				if (!chrome) throw new Error("Could not locate Chrome browser.");
@@ -37,8 +48,11 @@ jsh.script.Application.run(new function() {
 				var profile = chrome.user.profiles.filter(function(profile) {
 					return profile.name == parameters.options.name;
 				})[0];
-				jsh.shell.echo("Found profile: " + profile + "; opening: " + parameters.options.uri);
-				profile.open({ uri: parameters.options.uri });
+				if (parameters.options.uri.length == 0) {
+					parameters.options.uri.push("http://www.google.com/");
+				}
+				jsh.shell.echo("Found profile: " + profile.id + "; opening: " + parameters.options.uri);
+				profile.open({ uris: parameters.options.uri });
 				jsh.shell.echo("Opened.");
 			}
 		},
