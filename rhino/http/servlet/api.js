@@ -269,7 +269,7 @@ var server = (function() {
 	if ($host.server) {
 		return $host.server;
 	} else if ($servlet) {
-		return loaders.container.file("WEB-INF/server.js", {
+		return loaders.container.module("WEB-INF/server.js", {
 			api: api
 		});
 	}

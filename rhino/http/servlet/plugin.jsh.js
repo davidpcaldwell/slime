@@ -88,7 +88,7 @@ plugin({
 					java: jsh.java,
 					io: jsh.io
 				}
-				var server = $loader.file("server.js", {
+				var server = $loader.module("server.js", {
 					api: api
 				});
 
