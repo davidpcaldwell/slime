@@ -190,6 +190,7 @@ $exports.Loader = function(p) {
 						name: p.directory.toString() + path,
 						type: p.type(file),
 						length: file.resource.length,
+						modified: file.modified,
 						read: {
 							binary: function() {
 								return file.read($context.api.io.Streams.binary);

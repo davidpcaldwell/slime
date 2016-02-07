@@ -336,6 +336,10 @@ var Resource = function(p) {
 			}
 		});		
 	}
+	
+	if (typeof(p.modified) == "object") {
+		this.modified = p.modified;
+	}
 
 	if (p.write) {
 		var writeBinary = (function() {
