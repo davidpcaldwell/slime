@@ -380,6 +380,30 @@ var LocalRepository = function(o) {
 			}
 		})
 	};
+	
+	this.submodule = function(p) {
+		if (p.command == "update") {
+			execute({
+				command: "submodule",
+				arguments: (function() {
+					var rv = [];
+					rv.push(p.command);
+					if (p.init) {
+						rv.push("--init");
+					}
+					if (p.recursive) {
+						rv.push("--recursive");
+					}
+					return rv;
+				})()
+			})
+		} else if (p.command == "sync") {
+			execute({
+				command: "submodule",
+				arguments: ["sync"]
+			});
+		}
+	}
 }
 
 $exports.Repository = function(p) {

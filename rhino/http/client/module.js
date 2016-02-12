@@ -299,8 +299,12 @@ var Client = function(configuration) {
 			return rv;
 		})();
 		var headers = (p.headers) ? new Parameters(p.headers) : [];
-		if (p.authorization) {
-			headers.push({ name: "Authorization", value: p.authorization });
+		var authorization = (function() {
+			if (configuration && configuration.authorization) return configuration.authorization;
+			if (p.authorization) return p.authorization;
+		})();
+		if (authorization) {
+			headers.push({ name: "Authorization", value: authorization });
 		}
 		cookies.get(url,headers);
 
