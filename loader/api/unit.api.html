@@ -35,6 +35,76 @@ END LICENSE
 		<div>
 			<h1>Exports</h1>
 			<div class="type">
+				<a class="type" name="types.definition">definition</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">scenario</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>An identifier that uniquely identifies the scenario within the definition.</span>
+								</li>
+								<li class="value">
+									<span class="type">scenario</span>
+									<span>A scenario to add to this definition.</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="function">
+						<div class="name">suite</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<div class="type">
+				<a class="type" name="types.Suite">Suite</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<!--	id: used internally when adding parts, at least	-->
+					<!--	getParts: used in determining internal structure	-->
+					<li class="function">
+						<div class="name">create</div>
+						<span>
+							A method that will be called with a <a href="#types.definition">definition</a> as <code>this</code>,
+							and can add "parts" (suites and scenarios) to this suite.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div class="type">
 				<a class="type" name="types.Scenario">Scenario</a>
 				<span>__DESCRIPTION__</span>
 				<div class="type">
