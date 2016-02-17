@@ -77,30 +77,48 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
-
 			<div class="type">
 				<a class="type" name="types.Suite">Suite</a>
 				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.Suite.configuration">Suite.configuration</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<!--	id: used internally when adding parts, at least	-->
+						<!--	getParts: used in determining internal structure	-->
+						<li class="value">
+							<div class="name">name</div>
+							<span class="type">string</span>
+							<span>If specified, will specify the <code>name</code> property of this suite.</span>
+						</li>
+						<li class="function">
+							<div class="name">create</div>
+							<span>
+								A method that will be called with a <a href="#types.definition">definition</a> as <code>this</code>,
+								and can add "parts" (suites and scenarios) to this suite.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<!--	id: used internally when adding parts, at least	-->
-					<!--	getParts: used in determining internal structure	-->
-					<li class="function">
-						<div class="name">create</div>
+					<li class="value">
+						<div class="name">id</div>
+						<span class="type">string</span>
 						<span>
-							A method that will be called with a <a href="#types.definition">definition</a> as <code>this</code>,
-							and can add "parts" (suites and scenarios) to this suite.
+							The part ID of this suite within its parent.
 						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
 					</li>
 				</ul>
 			</div>
@@ -241,6 +259,24 @@ END LICENSE
 					<div class="instances">
 						<div class="label">Instances</div>
 						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="constructor">
+					<div class="name">Suite</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="#types.Suite.configuration">Suite.configuration</a></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type"><a href="#types.Suite">Suite</a></span>
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
