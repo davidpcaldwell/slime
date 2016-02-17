@@ -14,7 +14,11 @@ var log = $context.api.java.log.named("rhino.http.servlet.server");
 
 var debug = function(message) {
 	log.INFO(message);
-}
+};
+
+var createMultipartParser = $loader.value("upload.js", { $context: $context });
+
+var multipartParser;
 
 var Request = function(_request) {
 	log.INFO("Creating request peer for %s", _request);
@@ -75,8 +79,16 @@ var Request = function(_request) {
 			log.SEVERE("Error creating request type.");
 			throw e;
 		}
-		log.FINE("Created request type.");
-		this.stream = $context.api.io.java.adapt(_request.getInputStream());
+		log.FINE("Created request type: " + this.type);
+		
+		if (this.type && this.type.is("multipart/form-data")) {
+			if (!multipartParser) {
+				multipartParser = createMultipartParser(_request);
+			}
+			this.parts = multipartParser(_request,this);
+		} else {
+			this.stream = $context.api.io.java.adapt(_request.getInputStream());
+		}
 	}
 	log.FINE("Created request body.");
 }

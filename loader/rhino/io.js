@@ -325,6 +325,20 @@ var Resource = function(p) {
 
 	if (typeof(p.length) == "number") {
 		this.length = p.length;
+	} else if (binary) {
+		Object.defineProperty(this, "length", {
+			get: function() {
+				//	TODO	use something from $api
+				if (!arguments.callee.called) {
+					arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
+				}
+				return arguments.callee.called.returns;
+			}
+		});		
+	}
+	
+	if (typeof(p.modified) == "object") {
+		this.modified = p.modified;
 	}
 
 	if (p.write) {

@@ -222,7 +222,7 @@ var Scope = function(suite,environment) {
 			};
 		};
 
-		["module","file","run"].forEach(function(operation) {
+		["module","file","run","get"].forEach(function(operation) {
 			this[operation] = function(name,context,target) {
 				var parsed = parse(name);
 				return implementation.loader(parsed.directory)[operation](parsed.basename,context,target);
