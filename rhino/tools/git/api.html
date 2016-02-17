@@ -14,7 +14,7 @@ END LICENSE
 -->
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
-		<title>__TITLE__</title>
+		<title>jsh: git</title>
 		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
 		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
 		<script src="../../../loader/api/api.js"></script>
@@ -85,6 +85,13 @@ END LICENSE
 				</ul>
 			</div>
 			<div class="type">
+				<a class="type" name="types.RemoteRepository">__NAME__</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</div>
+			<div class="type">
 				<a class="type" name="types.LocalRepository">LocalRepository</a>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
@@ -122,6 +129,37 @@ END LICENSE
 				</script>
 			</div>
 			<ul>
+				<li class="constructor">
+					<div class="name">Repository</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<div class="name">__NAME__</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">remote</div>
+										<span class="type">string</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">local</div>
+										<span class="type">directory</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
 			</ul>
 		</div>
 	</body>

@@ -11,28 +11,35 @@
 //	Contributor(s):
 //	END LICENSE
 
-jsh.shell.echo("Just a skeleton, does not do anything useful currently.", { stream: jsh.shell.stdio.error });
-jsh.shell.exit(1);
 var operation = jsh.script.arguments[0];
 
 var input = {};
 jsh.shell.stdio.input.character().readLines(function(line) {
 	var tokens = line.split("=");
-	input[tokens[0]] = tokens.slice(1).join("=");
+	if (tokens.length >= 2) {
+		input[tokens[0]] = tokens.slice(1).join("=");
+		if (jsh.shell.environment.GIT_DEBUG) {
+			jsh.shell.echo(tokens[0] + "=" + input[tokens[0]], { stream: jsh.shell.stdio.error });
+		}
+	}
 });
 
 if (operation == "get") {
 	if (!input.user) {
-//		input.user = jsh.java.tools.askpass.gui({
-//			nomask: true,
-//			prompt: "Enter username for " + input.host
-//		});
+		input.username = jsh.java.tools.askpass.gui({
+			nomask: true,
+			prompt: "Enter username for " + input.host
+		});
 	}
-//	input.password = jsh.java.tools.askpass.gui({
-//		prompt: "Enter password for " + input.user + "@" + input.host
-//	});
+	input.password = jsh.java.tools.askpass.gui({
+		prompt: "Enter password for " + input.username + "@" + input.host
+	});
 	for (var x in input) {
+		if (jsh.shell.environment.GIT_DEBUG) {
+			jsh.shell.echo(x + "=" + input[x], { stream: jsh.shell.stdio.error });
+		}
 		jsh.shell.echo(x + "=" + input[x]);
 	}
 	jsh.shell.echo();
 }
+//	For other operations, we ignore them, as we have no storage for this helper
