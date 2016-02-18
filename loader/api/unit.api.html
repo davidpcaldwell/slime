@@ -58,72 +58,6 @@ END LICENSE
 			<div class="type">
 				<a class="type" name="types.Scenario">Scenario</a>
 				<span>__DESCRIPTION__</span>
-				<div class="type">
-					<a class="type" name="types.Scenario.definition">definition</a>
-					<span>An object specifying a <a href="#types.Scenario">Scenario</a>.</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">name</div>
-							<span class="type">string</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="function">
-							<div class="name">initialize</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">object</span>
-										<span>scope</span>
-									</li>
-								</ol>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">execute</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">object</span>
-										<span>scope</span>
-									</li>
-									<li class="value">
-										<span class="type">verify</span>
-										<span>verify</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">destroy</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">object</span>
-										<span>scope</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-					</ul>
-				</div>
-				<div class="label">has properties:</div>
 				<script type="application/x.jsapi#initialize">
 					scope.a = new module.Suite({
 						name: "a",
@@ -148,6 +82,178 @@ END LICENSE
 						}
 					});
 				</script>
+				<div class="type">
+					<a class="type" name="types.Scenario.definition">definition</a>
+					<span>An object specifying a <a href="#types.Scenario">Scenario</a>.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">name</div>
+							<span class="type">string</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="function">
+							<div class="name">initialize</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>
+											A scope object that is shared across the methods of this scenario.
+										</span>
+									</li>
+								</ol>
+							</div>
+							<!--	TODO	add test for error being thrown	-->
+							<script type="application/x.jsapi#tests">
+								var a = {};
+								var suite = new module.Suite({
+									parts: {
+										a: {
+											initialize: function(scope) {
+												scope.a = a;
+											},
+											execute: function(scope,verify) {
+												verify(scope.a).is(a);
+											}
+										}
+									}
+								});
+								var rv = suite.run();
+								verify(rv,"success").is(true);
+							</script>
+						</li>
+						<li class="function">
+							<div class="name">execute</div>
+							<span>
+								The implementation of a scenario. It can execute code, using the provided scope as necessary, and
+								use its verifier to test that the code works correctly.
+							</span>
+							<div class="type">
+								<a class="type" name="types.Scenario.event">identifier</a>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">id</div>
+										<span class="type">string</span>
+										<span>The part <code>id</code> of the scenario.</span>
+									</li>
+									<li class="value">
+										<div class="name">name</div>
+										<span class="type">string</span>
+										<span>The <code>name</code> of the scenario.</span>
+									</li>
+								</ul>
+							</div>
+							<div>
+								Prior to executing, the scenario will fire an event with the following detail:
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">start</div>
+										<span class="type"><a href="#types.Scenario.event">identifier</a></span>
+									</li>
+								</ul>
+							</div>
+							<div>
+								During execution, the verification object may fire events.
+							</div>
+							<div>
+								After executing, the scenario will fire an event with the following detail:
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">end</div>
+										<span class="type"><a href="#types.Scenario.event">identifier</a></span>
+									</li>
+									<li class="value">
+										<div class="name">success</div>
+										<span class="type">boolean</span>
+										<span>Whether the execution succeeded.</span>
+									</li>
+								</ul>								
+							</div>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>
+											A scope object that is shared across the methods of this scenario.
+										</span>
+									</li>
+									<li class="value">
+										<span class="type"><a href="#types.Verify">Verify</a></span>
+										<span>An object that can be used to test conditions.</span>
+									</li>
+								</ol>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var suite = new module.Suite({
+									parts: {
+										a: {
+											name: "foo",
+											execute: function(scope,verify) {
+												verify(true).is(true);
+											}
+										}
+									}
+								});
+								var starts = [];
+								var ends = [];
+								suite.listeners.add("scenario", function(e) {
+									if (e.detail.start) {
+										starts.push(e);
+									} else if (e.detail.end) {
+										ends.push(e);
+									}
+								});
+								var rv = suite.run();
+								verify(rv,"success").is(true);
+								verify(starts)[1].detail.start.name.is("foo");
+								verify(ends)[0].detail.end.name.is("foo");
+								verify(ends)[0].detail.success.is(true);
+							</script>
+						</li>
+						<li class="function">
+							<div class="name">destroy</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>
+											A scope object that is shared across the methods of this scenario.
+										</span>
+									</li>
+								</ol>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var destroyed = false;
+								var suite = new module.Suite({
+									parts: {
+										a: {
+											name: "foo",
+											execute: function(scope,verify) {
+												verify(true).is(true);
+											},
+											destroy: function(scope) {
+												destroyed = true;
+											}
+										}
+									}
+								});
+								suite.run();
+								verify(destroyed).is(true);
+							</script>
+						</li>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
 						<div class="name">id</div>

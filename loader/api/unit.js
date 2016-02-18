@@ -710,20 +710,22 @@ $exports.Scenario = {};
 			return rv;
 		};
 
-		this.scenario = function(id,p) {
+		this.scenario = $api.deprecate(function(id,p) {
 			addPart(id,Scenario,p,{ id: id, events: events });
-		};
+		});
 
-		this.suite = function(id,p) {
+		this.suite = $api.deprecate(function(id,p) {
 			addPart(id,Suite,p,{ id: id, events: events });
-		}
+		});
 
 		if (c && c.parts) {
 			for (var x in c.parts) {
 				if (c.parts[x].parts) {
-					this.suite(x,c.parts[x]);
+					addPart(x,Suite,c.parts[x],{ id: x, events: events });
+//					this.suite(x,c.parts[x]);
 				} else {
-					this.scenario(x,c.parts[x]);
+					addPart(x,Scenario,c.parts[x],{ id: x, events: events });
+//					this.scenario(x,c.parts[x]);
 				}
 			}
 		}
