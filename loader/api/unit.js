@@ -603,10 +603,6 @@ $exports.Scenario = {};
 			parent: context.events
 		});
 
-		//	TODO	ideally we would then, below, use the properties of o directly rather than copying them to
-		//			"this," but this would break a bunch of existing compatibility, presumably, so for now we will copy them
-		//			to "this" so that we can use them the old way
-
 		this.id = context.id;
 
 		if (o && o.create) {
@@ -626,19 +622,36 @@ $exports.Scenario = {};
 			return context.id;
 		}).call(this);
 		
-		if (o && o.initialize) {
-			this.initialize = o.initialize;
-		}
+		//	TODO	ideally we would then, below, use the properties of o directly rather than copying them to
+		//			"this," but this would break a bunch of existing compatibility, presumably, so for now we will copy them
+		//			to "this" so that we can use them the old way
 
-		if (o && o.execute) {
-			this.execute = o.execute;
-		}
-
-		if (o && o.destroy) {
-			this.destroy = o.destroy;
-		}
+//		if (o && o.initialize) {
+//			this.initialize = o.initialize;
+//		}
+//
+//		if (o && o.execute) {
+//			this.execute = o.execute;
+//		}
+//
+//		if (o && o.destroy) {
+//			this.destroy = o.destroy;
+//		}
+		
+		var find = (function(property) {
+			if (o && o[property]) return o[property];
+			if (this[property]) {
+				return $api.deprecate(function() {
+					return this[property];
+				}).call(this);
+			}
+		}).bind(this);
 		
 		this.run = function(p) {
+			var initialize = find("initialize");
+			var destroy = find("destroy");
+			var execute = find("execute");
+			//	TODO	execute is apparently mandatory
 			//	The next two lines allow scenarios to be executed directly if a reference is obtained to them. Not sure whether
 			//	this is the best idea or not
 			if (!p) p = {};
@@ -649,7 +662,7 @@ $exports.Scenario = {};
 			var local = copy(scope);
 			var vscope = new Scope({ events: events });
 			try {
-				if (this.initialize) this.initialize.call(this,local);
+				if (initialize) initialize.call(this,local);
 			} catch (e) {
 				vscope.error(e);
 				return;
@@ -671,13 +684,13 @@ $exports.Scenario = {};
 				vscope.fire(type,detail);
 			}
 			try {
-				this.execute.call(this,local,verify);
+				execute.call(this,local,verify);
 			} catch (e) {
 				vscope.error(e);
 			}
 			events.fire("scenario", { end: EVENT, success: vscope.success });
 			try {
-				if (this.destroy) this.destroy.call(this,local);
+				if (destroy) destroy.call(this,local);
 			} catch (e) {
 				//	TODO	what to do on destroy error?
 //				vscope.error(e);
