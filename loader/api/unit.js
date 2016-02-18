@@ -603,6 +603,26 @@ $exports.Scenario = {};
 			parent: context.events
 		});
 
+		//	TODO	ideally we would then, below, use the properties of o directly rather than copying them to
+		//			"this," but this would break a bunch of existing compatibility, presumably, so for now we will copy them
+		//			to "this" so that we can use them the old way
+
+		if (o && o.name) {
+			this.name = o.name;
+		}
+
+		if (o && o.initialize) {
+			this.initialize = o.initialize;
+		}
+
+		if (o && o.execute) {
+			this.execute = o.execute;
+		}
+
+		if (o && o.destroy) {
+			this.destroy = o.destroy;
+		}
+		
 		if (o && o.create) {
 			o.create.call(this);
 		}
@@ -691,6 +711,16 @@ $exports.Scenario = {};
 			addPart(id,Suite,p,{ id: id, events: events });
 		}
 
+		if (c && c.parts) {
+			for (var x in c.parts) {
+				if (c.parts[x].parts) {
+					this.suite(x,c.parts[x]);
+				} else {
+					this.scenario(x,c.parts[x]);
+				}
+			}
+		}
+		
 		if (c && c.create) {
 			c.create.call(this);
 		}

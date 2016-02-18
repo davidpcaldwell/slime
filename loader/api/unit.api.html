@@ -35,51 +35,154 @@ END LICENSE
 		<div>
 			<h1>Exports</h1>
 			<div class="type">
-				<a class="type" name="types.definition">definition</a>
+				<a class="type" name="types.Verify">Verify</a>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="function">
-						<div class="name">scenario</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>An identifier that uniquely identifies the scenario within the definition.</span>
-								</li>
-								<li class="value">
-									<span class="type">scenario</span>
-									<span>A scenario to add to this definition.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					var s = {
+						test: function() {
+							test.apply(scope,arguments);
+						}
+					};
+					var v = new module.Verify(s);
+					v(1).is(1);
+					v("x").length.is(1);
+					var withHidden = { is: "hey", evaluate: "dude" };
+					v(withHidden,"withHidden").evaluate.property("is").is("hey");
+					v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
+				</script>
+			</div>
+
+			<div class="type">
+				<div class="type">
+					<a class="type" name="types.Scenario.definition">definition</a>
+					<span>An object to which methods and properties defining this scenario may be attached.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">name</div>
+							<span class="type">string</span>
 							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">suite</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
+						</li>
+						<li class="function">
+							<div class="name">initialize</div>
 							<span>__DESCRIPTION__</span>
-						</div>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>scope</span>
+									</li>
+								</ol>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">execute</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>scope</span>
+									</li>
+									<li class="value">
+										<span class="type">verify</span>
+										<span>verify</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">destroy</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>scope</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+
+				<a class="type" name="types.Scenario">Scenario</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>
+							The name specified in this suite's definition, or the part <code>id</code> of this scenario within its
+							parent, if there is one.
+						</span>
 					</li>
 				</ul>
 			</div>
+
 			<div class="type">
 				<a class="type" name="types.Suite">Suite</a>
 				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.Suite.definition">definition</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">scenario</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>An identifier that uniquely identifies the scenario within the definition.</span>
+									</li>
+									<li class="value">
+										<span class="type">scenario</span>
+										<span>A scenario to add to this definition.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">suite</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
 				<div class="type">
 					<a class="type" name="types.Suite.configuration">Suite.configuration</a>
 					<span>__DESCRIPTION__</span>
@@ -95,7 +198,7 @@ END LICENSE
 						<li class="function">
 							<div class="name">create</div>
 							<span>
-								A method that will be called with a <a href="#types.definition">definition</a> as <code>this</code>,
+								A method that will be called with a <a href="#types.Suite.definition">definition</a> as <code>this</code>,
 								and can add "parts" (suites and scenarios) to this suite.
 							</span>
 							<div class="arguments">
@@ -119,6 +222,59 @@ END LICENSE
 						<span>
 							The part ID of this suite within its parent.
 						</span>
+					</li>
+					<!--	getParts	-->
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>
+							The <code>name</code> of this suite. The name may be specified by the <code>create</code>
+							implementation used to create the suite. If it is not specified, and the suite is not a top-level suite,
+							the <code>id</code> property of the suite will be used.
+							<!--	
+								TODO	otherwise, the string (top) is currently returned, but this logic should be moved up
+										in the stack to the presentation layer
+							-->
+						</span>
+					</li>
+					<li class="function">
+						<div class="name">run</div>
+						<span>Executes this suite.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">scope</div>
+											<span class="type">object</span>
+											<span>
+												(optional; default is an empty object)
+												A set of properties that will be passed to the parts of this test.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">Array of string</span>
+											<span>
+												(optional; default is an empty array)
+												A list of part names that will be interpreted as a "path" to the part(s) to execute.
+												For example, the array <code>["foo","bar"]</code> will lead to the <code>bar</code>
+												part of the <code>foo</code> part of this suite being executed.
+											</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
 					</li>
 				</ul>
 			</div>
@@ -182,7 +338,6 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
-
 			<ul>
 				<li class="constructor">
 					<div class="name"><a id="exports.Scenario">Scenario</a></div>
@@ -280,57 +435,80 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
-			</ul>
-			<script type="application/x.jsapi#tests">
-				var s = {
-					test: function() {
-						test.apply(scope,arguments);
-					}
-				};
-				var v = new module.Verify(s);
-				v(1).is(1);
-				v("x").length.is(1);
-				var withHidden = { is: "hey", evaluate: "dude" };
-				v(withHidden,"withHidden").evaluate.property("is").is("hey");
-				v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
-			</script>
-			<script type="application/x.jsapi#tests">
-				var top = new module.Suite({
-					name: "top"
-				});
-				var starts = [];
-				var ends = [];
-				var tests = [];
-				top.listeners.add("scenario", function(e) {
-					if (e.detail.start) {
-						starts.push(e.detail);
-						//	jsh.shell.echo("Start: " + e.detail.start.name);
-					} else if (e.detail.end) {
-						//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
-						ends.push(e.detail);
-					}
-				});
-				top.listeners.add("test", function(e) {
-					//	jsh.shell.echo("Test: " + e.detail.message);
-					tests.push(e.detail);
-				});
-				top.scenario("child", {
-					create: function() {
-						this.name = "child";
-
-						this.execute = function(scope,verify) {
-							verify.test(function() {
-								return {
-									success: true,
-									message: "Hello, World!"
+				<script type="application/x.jsapi#tests">
+					var top = new module.Suite({
+						name: "top",
+						parts: {
+							child: {
+								name: "child",
+								execute: function(scope,verify) {
+									verify.test(function() {
+										return {
+											success: true,
+											message: "Hello, World!"
+										}
+									});
 								}
-							});
+							}
 						}
-					}
-				});
-				top.run();
-				verify(starts).length.is(2);
-			</script>
+					});
+					var starts = [];
+					var ends = [];
+					var tests = [];
+					top.listeners.add("scenario", function(e) {
+						if (e.detail.start) {
+							starts.push(e.detail);
+							//	jsh.shell.echo("Start: " + e.detail.start.name);
+						} else if (e.detail.end) {
+							//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+							ends.push(e.detail);
+						}
+					});
+					top.listeners.add("test", function(e) {
+						//	jsh.shell.echo("Test: " + e.detail.message);
+						tests.push(e.detail);
+					});
+					top.run();
+					verify(starts).length.is(2);
+				</script>
+				<script type="application/x.jsapi#tests">
+					var top = new module.Suite({
+						name: "top"
+					});
+					var starts = [];
+					var ends = [];
+					var tests = [];
+					top.listeners.add("scenario", function(e) {
+						if (e.detail.start) {
+							starts.push(e.detail);
+							//	jsh.shell.echo("Start: " + e.detail.start.name);
+						} else if (e.detail.end) {
+							//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+							ends.push(e.detail);
+						}
+					});
+					top.listeners.add("test", function(e) {
+						//	jsh.shell.echo("Test: " + e.detail.message);
+						tests.push(e.detail);
+					});
+					top.scenario("child", {
+						create: function() {
+							this.name = "child";
+
+							this.execute = function(scope,verify) {
+								verify.test(function() {
+									return {
+										success: true,
+										message: "Hello, World!"
+									}
+								});
+							}
+						}
+					});
+					top.run();
+					verify(starts).length.is(2);
+				</script>
+			</ul>
 		</div>
 	</body>
 </html>
