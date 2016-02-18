@@ -56,9 +56,11 @@ END LICENSE
 			</div>
 
 			<div class="type">
+				<a class="type" name="types.Scenario">Scenario</a>
+				<span>__DESCRIPTION__</span>
 				<div class="type">
 					<a class="type" name="types.Scenario.definition">definition</a>
-					<span>An object to which methods and properties defining this scenario may be attached.</span>
+					<span>An object specifying a <a href="#types.Scenario">Scenario</a>.</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="value">
@@ -121,18 +123,52 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-
-				<a class="type" name="types.Scenario">Scenario</a>
-				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
+				<script type="application/x.jsapi#initialize">
+					scope.a = new module.Suite({
+						name: "a",
+						parts: {
+							a: {
+								name: "aname",
+								execute: function(scope,verify) {
+									verify(1).is(1);
+								}
+							}
+						}
+					});
+
+					scope.b = new module.Suite({
+						name: "b",
+						parts: {
+							a: {
+								execute: function(scope,verify) {
+									verify(1).is(1);
+								}
+							}
+						}
+					});
+				</script>
 				<ul>
+					<li class="value">
+						<div class="name">id</div>
+						<span class="type">string</span>
+						<span>The part <code>id</code> of this scenario within its parent.</span>
+						<script type="application/x.jsapi#tests">
+							verify(a).getParts().a.id.is("a");
+							verify(b).getParts().a.id.is("a");
+						</script>
+					</li>
 					<li class="value">
 						<div class="name">name</div>
 						<span class="type">string</span>
 						<span>
-							The name specified in this suite's definition, or the part <code>id</code> of this scenario within its
-							parent, if there is one.
+							The name specified in the definition, if specified. Otherwise, the part <code>id</code> of this
+							scenario within its parent.
 						</span>
+						<script type="application/x.jsapi#tests">
+							verify(a).getParts().a.name.is("aname");
+							verify(b).getParts().a.name.is("a");
+						</script>
 					</li>
 				</ul>
 			</div>

@@ -607,10 +607,25 @@ $exports.Scenario = {};
 		//			"this," but this would break a bunch of existing compatibility, presumably, so for now we will copy them
 		//			to "this" so that we can use them the old way
 
-		if (o && o.name) {
-			this.name = o.name;
+		this.id = context.id;
+
+		if (o && o.create) {
+			$api.deprecate(function() {
+				o.create.call(this);				
+			}).call(this);
 		}
 
+		this.name = (function() {
+			if (o && o.name) return o.name;
+			//	TODO	next line deprecated; must mean it was set by deprecated o.create
+			if (this.name) {
+				return $api.deprecate(function() {
+					return this.name;
+				}).call(this);
+			}
+			return context.id;
+		}).call(this);
+		
 		if (o && o.initialize) {
 			this.initialize = o.initialize;
 		}
@@ -623,21 +638,13 @@ $exports.Scenario = {};
 			this.destroy = o.destroy;
 		}
 		
-		if (o && o.create) {
-			o.create.call(this);
-		}
-
-		this.id = context.id;
-
-		var name = (this.name) ? this.name : context.id;
-
 		this.run = function(p) {
 			//	The next two lines allow scenarios to be executed directly if a reference is obtained to them. Not sure whether
 			//	this is the best idea or not
 			if (!p) p = {};
 			if (!p.scope) p.scope = {};
 			var scope = p.scope;
-			var EVENT = { id: context.id, name: name }
+			var EVENT = { id: context.id, name: this.name }
 			events.fire("scenario", { start: EVENT });
 			var local = copy(scope);
 			var vscope = new Scope({ events: events });
