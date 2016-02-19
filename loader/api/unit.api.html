@@ -226,7 +226,7 @@ END LICENSE
 							</ul>
 						</div>
 						<div>
-							Prior to executing, the scenario will fire an event with the following detail:
+							Prior to executing, the scenario will fire a <code>scenario</code> event with the following detail:
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
@@ -239,7 +239,7 @@ END LICENSE
 							During execution, the verification object may fire events.
 						</div>
 						<div>
-							After executing, the scenario will fire an event with the following detail:
+							After executing, the scenario will fire a <code>scenario</code> event with the following detail:
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
@@ -338,72 +338,10 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="function">
-							<div class="name">scenario</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>An identifier that uniquely identifies the scenario within the definition.</span>
-									</li>
-									<li class="value">
-										<span class="type">scenario</span>
-										<span>A scenario to add to this definition.</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">suite</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-					</ul>
-				</div>
-				<div class="type">
-					<a class="type" name="types.Suite.configuration">Suite.configuration</a>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<!--	id: used internally when adding parts, at least	-->
-						<!--	getParts: used in determining internal structure	-->
 						<li class="value">
 							<div class="name">name</div>
 							<span class="type">string</span>
-							<span>If specified, will specify the <code>name</code> property of this suite.</span>
-						</li>
-						<li class="function">
-							<div class="name">create</div>
-							<span>
-								A method that will be called with a <a href="#types.Suite.definition">definition</a> as <code>this</code>,
-								and can add "parts" (suites and scenarios) to this suite.
-							</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
+							<span>A name for this suite.</span>
 						</li>
 					</ul>
 				</div>
@@ -413,10 +351,29 @@ END LICENSE
 						<div class="name">id</div>
 						<span class="type">string</span>
 						<span>
-							The part ID of this suite within its parent.
+							The part <code>id</code> of this suite within its parent, or <code>null</code> if it is a
+							top-level suite.
 						</span>
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite();
+							verify(suite).id.is(null);
+							
+							var s2 = new module.Suite({
+								parts: {
+									a: {
+										parts: {
+											b: {
+												execute: function(scope,verify) {
+												}
+											}
+										}
+									}
+								}
+							});
+							verify(s2).id.is(null);
+							verify(s2).getParts().a.id.is("a");
+						</script>
 					</li>
-					<!--	getParts	-->
 					<li class="value">
 						<div class="name">name</div>
 						<span class="type">string</span>
@@ -429,7 +386,26 @@ END LICENSE
 										in the stack to the presentation layer
 							-->
 						</span>
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										parts: {
+											b: {
+												name: "bname",
+												execute: function(scope,verify) {
+												}
+											}
+										}
+									}
+								}
+							});
+							verify(suite).name.is(null);
+							verify(suite).getParts().a.name.is("a");
+							verify(suite).getParts().a.getParts().b.name.is("bname")
+						</script>
 					</li>
+					<!--	getParts	-->
 					<li class="function">
 						<div class="name">run</div>
 						<span>Executes this suite.</span>

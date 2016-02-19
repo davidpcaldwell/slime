@@ -714,6 +714,24 @@ $exports.Scenario = {};
 
 		this.id = (context) ? context.id : null;
 
+		this.name = (function() {
+			if (c && c.name) return c.name;
+			if (context && context.id) return context.id;
+			if (!context) return null;
+		})();
+
+		if (c && c.parts) {
+			for (var x in c.parts) {
+				if (c.parts[x].parts) {
+					addPart(x,Suite,c.parts[x],{ id: x, events: events });
+//					this.suite(x,c.parts[x]);
+				} else {
+					addPart(x,Scenario,c.parts[x],{ id: x, events: events });
+//					this.scenario(x,c.parts[x]);
+				}
+			}
+		}
+		
 		this.getParts = function() {
 			var rv = {};
 			for (var x in parts) {
@@ -730,27 +748,9 @@ $exports.Scenario = {};
 			addPart(id,Suite,p,{ id: id, events: events });
 		});
 
-		if (c && c.parts) {
-			for (var x in c.parts) {
-				if (c.parts[x].parts) {
-					addPart(x,Suite,c.parts[x],{ id: x, events: events });
-//					this.suite(x,c.parts[x]);
-				} else {
-					addPart(x,Scenario,c.parts[x],{ id: x, events: events });
-//					this.scenario(x,c.parts[x]);
-				}
-			}
-		}
-		
 		if (c && c.create) {
 			c.create.call(this);
 		}
-
-		if (!this.name) this.name = (function() {
-			if (c && c.name) return c.name;
-			if (context && context.id) return context.id;
-			if (!context) return "(top)";
-		})();
 
 		this.run = function(p) {
 			var THIS = {
