@@ -596,14 +596,45 @@ $exports.Scenario = {};
 		}
 		return rv;
 	}
-
-	var Scenario = function(o,context) {
+	
+	var Part = function(definition,context) {
+		//	TODO	what if caller does not use 'new'?
 		var events = $api.Events({
 			source: this,
-			parent: context.events
+			parent: (context && context.events) ? context.events : null
 		});
+		
+		this.id = (context) ? context.id : null;
 
-		this.id = context.id;
+		this.name = (function() {
+			if (definition && definition.name) return definition.name;
+			if (context && context.id) return context.id;
+			if (!context) return null;
+		})();
+
+//		this.id = context.id;
+//
+//		this.name = (function() {
+//			if (o && o.name) return o.name;
+//			//	TODO	next line deprecated; must mean it was set by deprecated o.create
+//			if (this.name) {
+//				return $api.deprecate(function() {
+//					return this.name;
+//				}).call(this);
+//			}
+//			return context.id;
+//		}).call(this);
+		
+		return { events: events };
+	}
+
+	var Scenario = function(o,context) {
+		var part = Part.apply(this,arguments);
+		var events = part.events;
+//		var events = $api.Events({
+//			source: this,
+//			parent: context.events
+//		});
 
 		if (o && o.create) {
 			$api.deprecate(function() {
@@ -611,17 +642,6 @@ $exports.Scenario = {};
 			}).call(this);
 		}
 
-		this.name = (function() {
-			if (o && o.name) return o.name;
-			//	TODO	next line deprecated; must mean it was set by deprecated o.create
-			if (this.name) {
-				return $api.deprecate(function() {
-					return this.name;
-				}).call(this);
-			}
-			return context.id;
-		}).call(this);
-		
 		//	TODO	ideally we would then, below, use the properties of o directly rather than copying them to
 		//			"this," but this would break a bunch of existing compatibility, presumably, so for now we will copy them
 		//			to "this" so that we can use them the old way
@@ -700,25 +720,15 @@ $exports.Scenario = {};
 	}
 
 	var Suite = function Suite(c,context) {
-		//	TODO	what if caller does not use 'new'?
-		var events = $api.Events({
-			source: this,
-			parent: (context && context.events) ? context.events : null
-		});
+		var part = Part.apply(this,arguments);
+		
+		var events = part.events;
 
 		var parts = {};
 
 		var addPart = function(id,type,configuration,context) {
 			parts[id] = new type(configuration,context);
 		}
-
-		this.id = (context) ? context.id : null;
-
-		this.name = (function() {
-			if (c && c.name) return c.name;
-			if (context && context.id) return context.id;
-			if (!context) return null;
-		})();
 
 		if (c && c.parts) {
 			for (var x in c.parts) {
