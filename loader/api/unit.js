@@ -663,10 +663,7 @@ $exports.Scenario = {};
 				//	TODO	if initialize error, should we try to destroy? Some portion of initialize may have executed ...
 				destroy(scope);
 				return success;
-			}).bind(this),
-			Scope: function() {
-				return new Scope({ events: events })
-			}
+			}).bind(this)
 		};
 	}
 
