@@ -634,6 +634,10 @@ $exports.Scenario = {};
 			}				
 		}).bind(this);
 		
+		var EVENT = (function() {
+			return { id: (context && context.id ) ? context.id : null, name: this.name };
+		}).bind(this);
+		
 		return { 
 			events: events,
 			create: (function() {
@@ -644,8 +648,13 @@ $exports.Scenario = {};
 				}				
 			}).bind(this),
 			find: find,
-			EVENT: (function() {
-				return { id: (context && context.id ) ? context.id : null, name: this.name };
+			EVENT: EVENT,
+			before: (function(p) {
+				if (!p) p = {};
+				if (!p.scope) p.scope = {};
+				events.fire("scenario", { start: EVENT() });
+				var local = copy(p.scope);
+				return { scope: local };
 			}).bind(this),
 			initialize: (function(scope) {
 				var initialize = find("initialize");
@@ -662,6 +671,16 @@ $exports.Scenario = {};
 						return true;
 					}
 				}				
+			}).bind(this),
+			destroy: (function(scope) {
+				try {
+					var destroy = find("destroy");
+					if (destroy) destroy.call(this,scope);
+				} catch (e) {
+					//	TODO	what to do on destroy error?
+	//				vscope.error(e);
+	//				return;
+				}				
 			}).bind(this)
 		};
 	}
@@ -671,29 +690,16 @@ $exports.Scenario = {};
 		var events = part.events;
 
 		this.run = function(p) {
-			var initialize = part.find("initialize");
-			var destroy = part.find("destroy");
-			var execute = part.find("execute");
-			//	TODO	execute is apparently mandatory
-			//	The next two lines allow scenarios to be executed directly if a reference is obtained to them. Not sure whether
-			//	this is the best idea or not
-			if (!p) p = {};
-			if (!p.scope) p.scope = {};
-			events.fire("scenario", { start: part.EVENT() });
-			var local = copy(p.scope);
-			var vscope = new Scope({ events: events });
+			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
+			var vscope = new Scope({ events: events });
+			
 			var error = part.initialize(local);
+			
 			if (error) {
 				vscope.fail();
 			}
-//			try {
-//				if (initialize) initialize.call(this,local);
-//			} catch (e) {
-//				vscope.error(e);
-//				return;
-//			}
 
 			if (!error) {
 				var verify = new Verify(vscope);
@@ -713,20 +719,25 @@ $exports.Scenario = {};
 					vscope.fire(type,detail);
 				}
 				try {
+					//	TODO	execute is apparently mandatory
+					var execute = part.find("execute");
 					execute.call(this,local,verify);
 				} catch (e) {
 					vscope.error(e);
 				}
 			}
+
 			events.fire("scenario", { end: part.EVENT(), success: vscope.success });
 			//	TODO	if initialize error, should we try to destroy? Some portion of initialize may have executed ...
-			try {
-				if (destroy) destroy.call(this,local);
-			} catch (e) {
-				//	TODO	what to do on destroy error?
-//				vscope.error(e);
-				return;
-			}
+			part.destroy(local);
+//			try {
+//				var destroy = part.find("destroy");
+//				if (destroy) destroy.call(this,local);
+//			} catch (e) {
+//				//	TODO	what to do on destroy error?
+////				vscope.error(e);
+////				return;
+//			}
 			return vscope.success;
 		}
 		
