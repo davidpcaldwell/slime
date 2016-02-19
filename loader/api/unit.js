@@ -612,19 +612,6 @@ $exports.Scenario = {};
 			if (!context) return null;
 		})();
 
-//		this.id = context.id;
-//
-//		this.name = (function() {
-//			if (o && o.name) return o.name;
-//			//	TODO	next line deprecated; must mean it was set by deprecated o.create
-//			if (this.name) {
-//				return $api.deprecate(function() {
-//					return this.name;
-//				}).call(this);
-//			}
-//			return context.id;
-//		}).call(this);
-
 		var find = (function(property) {
 			if (definition && definition[property]) return definition[property];
 			if (this[property]) {
@@ -636,6 +623,16 @@ $exports.Scenario = {};
 		
 		var EVENT = (function() {
 			return { id: (context && context.id ) ? context.id : null, name: this.name };
+		}).bind(this);
+		
+		var destroy = (function(scope) {
+			try {
+				var destroy = find("destroy");
+				if (destroy) destroy.call(this,scope);
+			} catch (e) {
+				//	TODO	what to do on destroy error?
+//				vscope.error(e);
+			}				
 		}).bind(this);
 		
 		return { 
@@ -672,6 +669,12 @@ $exports.Scenario = {};
 					}
 				}				
 			}).bind(this),
+			after: (function(success,scope) {
+				events.fire("scenario", { end: EVENT(), success: success });
+				//	TODO	if initialize error, should we try to destroy? Some portion of initialize may have executed ...
+				destroy(scope);
+				return success;
+			}).bind(this),
 			destroy: (function(scope) {
 				try {
 					var destroy = find("destroy");
@@ -679,7 +682,6 @@ $exports.Scenario = {};
 				} catch (e) {
 					//	TODO	what to do on destroy error?
 	//				vscope.error(e);
-	//				return;
 				}				
 			}).bind(this)
 		};
@@ -699,9 +701,7 @@ $exports.Scenario = {};
 			
 			if (error) {
 				vscope.fail();
-			}
-
-			if (!error) {
+			} else {
 				var verify = new Verify(vscope);
 				verify.test = function() {
 					return vscope.test.apply(this,arguments);
@@ -727,18 +727,7 @@ $exports.Scenario = {};
 				}
 			}
 
-			events.fire("scenario", { end: part.EVENT(), success: vscope.success });
-			//	TODO	if initialize error, should we try to destroy? Some portion of initialize may have executed ...
-			part.destroy(local);
-//			try {
-//				var destroy = part.find("destroy");
-//				if (destroy) destroy.call(this,local);
-//			} catch (e) {
-//				//	TODO	what to do on destroy error?
-////				vscope.error(e);
-////				return;
-//			}
-			return vscope.success;
+			return part.after(vscope.success,local);
 		}
 		
 		part.create();
@@ -776,56 +765,67 @@ $exports.Scenario = {};
 		};
 
 		this.run = function(p) {
-			if (!p) p = {};
-			if (!p.scope) p.scope = {};
-			if (!p.path) p.path = [];
-			events.fire("scenario", {
-				start: part.EVENT()
-			});
+			var scope = part.before(p).scope;
+//			if (!p) p = {};
+//			if (!p.scope) p.scope = {};
+			var path = (p && p.path) ? p.path : [];
+//			if (!p.path) p.path = [];
+//			events.fire("scenario", {
+//				start: part.EVENT()
+//			});
 			var success = true;
-			if (this.initialize) {
-				try {
-					this.initialize(p.scope);
-				} catch (e) {
-					//	TODO	not handling destroy here
-					events.fire("test", {
-						success: false,
-						message: "Uncaught exception in suite initializer: " + e,
-						error: e
-					});
-					events.fire("scenario", {
-						end: THIS,
-						success: false
-					});
-					//	TODO	should we try to destroy?
-					return false;
-				}
-			}
-			if (p.path.length == 0) {
-				for (var x in parts) {
-					var result = parts[x].run({
-						scope: copy(p.scope),
-						path: []
+			var error = part.initialize(scope);
+			if (error) {
+				success = false;
+			} else {
+				if (path.length == 0) {
+					for (var x in parts) {
+						var result = parts[x].run({
+							scope: copy(scope),
+							path: []
+						});
+						if (!result) {
+							success = false;
+						}
+					}
+				} else {
+					var child = parts[path[0]];
+//					var path = p.path.slice(1);
+					var result = child.run({
+						scope: copy(scope),
+						path: path.slice(1)
 					});
 					if (!result) {
 						success = false;
 					}
 				}
-			} else {
-				var child = parts[p.path[0]];
-				var path = p.path.slice(1);
-				child.run({
-					scope: copy(p.scope),
-					path: path
-				});
 			}
-			if (this.destroy) {
-				this.destroy.call(this,p.scope);
-			}
-			events.fire("scenario", {
-				end: part.EVENT(), success: success
-			});
-			return success;
+//			if (this.initialize) {
+//				try {
+//					this.initialize(p.scope);
+//				} catch (e) {
+//					//	TODO	not handling destroy here
+//					events.fire("test", {
+//						success: false,
+//						message: "Uncaught exception in suite initializer: " + e,
+//						error: e
+//					});
+//					events.fire("scenario", {
+//						end: THIS,
+//						success: false
+//					});
+//					//	TODO	should we try to destroy?
+//					return false;
+//				}
+//			}
+			return part.after(success,scope);
+//			if (this.destroy) {
+//				this.destroy.call(this,p.scope);
+//			}
+//			events.fire("scenario", {
+//				end: part.EVENT(), success: success
+//			});
+//			return success;
 		}
 		
 		this.scenario = $api.deprecate(function(id,p) {
