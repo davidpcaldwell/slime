@@ -14,8 +14,7 @@ END LICENSE
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
-		<title>__TITLE__</title>
-		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<title>SLIME unit testing</title>
 		<link href="api.css" rel="stylesheet" type="text/css" />
 		<script src="api.js"></script>
 	</head>
@@ -424,13 +423,35 @@ END LICENSE
 						<li class="value">
 							<div class="name">parts</div>
 							<span class="type">object</span>
-							<span>__DESCRIPTION__</span>
+							<div>
+								An object whose keys are part <code>id</code>s. The values are interpreted as follows:
+								<ul>
+									<li>
+										If the value has a <code>parts</code> property, it is interpreted as a
+										<a href="#types.Suite.definition">Suite definition</a> and will create a Suite
+										with the part <code>id</code> of its key.
+									</li>
+									<li>
+										Otherwise, it is interpreted as a
+										<a href="#types.Scenario.definition">Scenario definition</a> and will create a 
+										<a href="#types.Scenario">Scenario</a>
+										with the the part <code>id</code> of its key.
+									</li>
+								</ul>
+							</div>
 						</li>
 					</ul>
 				</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<!--	getParts	-->
+					<li class="value">
+						<div class="name">parts</div>
+						<span class="type">object</span>
+						<span>
+							An object whose keys are part <code>id</code>s and whose values are 
+							<a href="#types.part">part</a>s.
+						</span>
+					</li>
 					<li class="function">
 						<div class="name">run</div>
 						<span>Executes this suite.</span>
@@ -472,145 +493,7 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
-			<div class="type">
-				<a class="type" name="types.Scenario">Scenario</a>
-				<span>__DESCRIPTION__</span>
-				<div class="type">
-					<a class="type" name="types.Scenario.console">console</a>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-					</ul>
-				</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-					<li class="function">
-						<div class="name">add</div>
-						<span>
-							(conditional: not present if not a composite scenario)
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">run</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">console</div>
-											<span class="type"><a href="#types.console">console</a></span>
-											<span>__DESCRIPTION__</span>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-				</ul>
-			</div>
 			<ul>
-				<li class="constructor">
-					<div class="name"><a id="exports.Scenario">Scenario</a></div>
-					<span>__DESCRIPTION__</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="object">
-								<div class="name">__NAME__</div>
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">composite</div>
-										<span class="type">boolean</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="value">
-										<div class="name">view</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="value">
-										<div class="name">name</div>
-										<span class="type">string</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="function">
-										<div class="name">initialize</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-									<li class="function">
-										<div class="name">test</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-									<li class="function">
-										<div class="name">destroy</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-								</ul>
-							</li>
-						</ol>
-					</div>
-					<div class="instances">
-						<div class="label">Instances</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
 				<li class="constructor">
 					<div class="name">Suite</div>
 					<span>__DESCRIPTION__</span>
@@ -618,7 +501,7 @@ END LICENSE
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="value">
-								<span class="type"><a href="#types.Suite.configuration">Suite.configuration</a></span>
+								<span class="type"><a href="#types.Suite.definition">Suite.definition</a></span>
 								<span>__DESCRIPTION__</span>
 							</li>
 						</ol>
@@ -629,67 +512,14 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
-				<script type="application/x.jsapi#tests">
-					var top = new module.Suite({
-						name: "top",
-						parts: {
-							child: {
-								name: "child",
-								execute: function(scope,verify) {
-									verify.test(function() {
-										return {
-											success: true,
-											message: "Hello, World!"
-										}
-									});
-								}
-							}
-						}
-					});
-					var starts = [];
-					var ends = [];
-					var tests = [];
-					top.listeners.add("scenario", function(e) {
-						if (e.detail.start) {
-							starts.push(e.detail);
-							//	jsh.shell.echo("Start: " + e.detail.start.name);
-						} else if (e.detail.end) {
-							//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
-							ends.push(e.detail);
-						}
-					});
-					top.listeners.add("test", function(e) {
-						//	jsh.shell.echo("Test: " + e.detail.message);
-						tests.push(e.detail);
-					});
-					top.run();
-					verify(starts).length.is(2);
-				</script>
-				<script type="application/x.jsapi#tests">
-					var top = new module.Suite({
-						name: "top"
-					});
-					var starts = [];
-					var ends = [];
-					var tests = [];
-					top.listeners.add("scenario", function(e) {
-						if (e.detail.start) {
-							starts.push(e.detail);
-							//	jsh.shell.echo("Start: " + e.detail.start.name);
-						} else if (e.detail.end) {
-							//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
-							ends.push(e.detail);
-						}
-					});
-					top.listeners.add("test", function(e) {
-						//	jsh.shell.echo("Test: " + e.detail.message);
-						tests.push(e.detail);
-					});
-					top.scenario("child", {
-						create: function() {
-							this.name = "child";
-
-							this.execute = function(scope,verify) {
+			</ul>
+			<script type="application/x.jsapi#tests">
+				var top = new module.Suite({
+					name: "top",
+					parts: {
+						child: {
+							name: "child",
+							execute: function(scope,verify) {
 								verify.test(function() {
 									return {
 										success: true,
@@ -698,11 +528,64 @@ END LICENSE
 								});
 							}
 						}
-					});
-					top.run();
-					verify(starts).length.is(2);
-				</script>
-			</ul>
+					}
+				});
+				var starts = [];
+				var ends = [];
+				var tests = [];
+				top.listeners.add("scenario", function(e) {
+					if (e.detail.start) {
+						starts.push(e.detail);
+						//	jsh.shell.echo("Start: " + e.detail.start.name);
+					} else if (e.detail.end) {
+						//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+						ends.push(e.detail);
+					}
+				});
+				top.listeners.add("test", function(e) {
+					//	jsh.shell.echo("Test: " + e.detail.message);
+					tests.push(e.detail);
+				});
+				top.run();
+				verify(starts).length.is(2);
+			</script>
+			<script type="application/x.jsapi#tests">
+				var top = new module.Suite({
+					name: "top"
+				});
+				var starts = [];
+				var ends = [];
+				var tests = [];
+				top.listeners.add("scenario", function(e) {
+					if (e.detail.start) {
+						starts.push(e.detail);
+						//	jsh.shell.echo("Start: " + e.detail.start.name);
+					} else if (e.detail.end) {
+						//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+						ends.push(e.detail);
+					}
+				});
+				top.listeners.add("test", function(e) {
+					//	jsh.shell.echo("Test: " + e.detail.message);
+					tests.push(e.detail);
+				});
+				top.scenario("child", {
+					create: function() {
+						this.name = "child";
+
+						this.execute = function(scope,verify) {
+							verify.test(function() {
+								return {
+									success: true,
+									message: "Hello, World!"
+								}
+							});
+						}
+					}
+				});
+				top.run();
+				verify(starts).length.is(2);
+			</script>
 		</div>
 	</body>
 </html>
