@@ -633,7 +633,16 @@ $exports.Scenario = {};
 						definition.create.call(this);				
 					}).call(this);
 				}				
-			}).bind(this)
+			}).bind(this),
+			find: (function(property) {
+				if (definition && definition[property]) return definition[property];
+				if (this[property]) {
+					return $api.deprecate(function() {
+						return this[property];
+					}).call(this);
+				}				
+			}).bind(this),
+			EVENT: { id: (context && context.id ) ? context.id : null, name: this.name }
 		};
 	}
 
@@ -641,26 +650,16 @@ $exports.Scenario = {};
 		var part = Part.apply(this,arguments);
 		var events = part.events;
 
-		var find = (function(property) {
-			if (o && o[property]) return o[property];
-			if (this[property]) {
-				return $api.deprecate(function() {
-					return this[property];
-				}).call(this);
-			}
-		}).bind(this);
-		
 		this.run = function(p) {
-			var initialize = find("initialize");
-			var destroy = find("destroy");
-			var execute = find("execute");
+			var initialize = part.find("initialize");
+			var destroy = part.find("destroy");
+			var execute = part.find("execute");
 			//	TODO	execute is apparently mandatory
 			//	The next two lines allow scenarios to be executed directly if a reference is obtained to them. Not sure whether
 			//	this is the best idea or not
 			if (!p) p = {};
 			if (!p.scope) p.scope = {};
-			var EVENT = { id: context.id, name: this.name }
-			events.fire("scenario", { start: EVENT });
+			events.fire("scenario", { start: part.EVENT });
 			var local = copy(p.scope);
 			var vscope = new Scope({ events: events });
 			try {
@@ -690,7 +689,7 @@ $exports.Scenario = {};
 			} catch (e) {
 				vscope.error(e);
 			}
-			events.fire("scenario", { end: EVENT, success: vscope.success });
+			events.fire("scenario", { end: part.EVENT, success: vscope.success });
 			try {
 				if (destroy) destroy.call(this,local);
 			} catch (e) {
