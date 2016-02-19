@@ -624,6 +624,15 @@ $exports.Scenario = {};
 //			}
 //			return context.id;
 //		}).call(this);
+
+		var find = (function(property) {
+			if (definition && definition[property]) return definition[property];
+			if (this[property]) {
+				return $api.deprecate(function() {
+					return this[property];
+				}).call(this);
+			}				
+		}).bind(this);
 		
 		return { 
 			events: events,
@@ -634,15 +643,26 @@ $exports.Scenario = {};
 					}).call(this);
 				}				
 			}).bind(this),
-			find: (function(property) {
-				if (definition && definition[property]) return definition[property];
-				if (this[property]) {
-					return $api.deprecate(function() {
-						return this[property];
-					}).call(this);
-				}				
+			find: find,
+			EVENT: (function() {
+				return { id: (context && context.id ) ? context.id : null, name: this.name };
 			}).bind(this),
-			EVENT: { id: (context && context.id ) ? context.id : null, name: this.name }
+			initialize: (function(scope) {
+				var initialize = find("initialize");
+				if (initialize) {
+					try {
+						initialize(scope);
+					} catch (e) {
+						//	TODO	not handling destroy here
+						events.fire("test", {
+							success: false,
+							message: "Uncaught exception in initializer: " + e,
+							error: e
+						});
+						return true;
+					}
+				}				
+			}).bind(this)
 		};
 	}
 
@@ -659,37 +679,47 @@ $exports.Scenario = {};
 			//	this is the best idea or not
 			if (!p) p = {};
 			if (!p.scope) p.scope = {};
-			events.fire("scenario", { start: part.EVENT });
+			events.fire("scenario", { start: part.EVENT() });
 			var local = copy(p.scope);
 			var vscope = new Scope({ events: events });
-			try {
-				if (initialize) initialize.call(this,local);
-			} catch (e) {
-				vscope.error(e);
-				return;
+
+			//	TODO	compare below initialize with one used in part
+			var error = part.initialize(local);
+			if (error) {
+				vscope.fail();
 			}
-			var verify = new Verify(vscope);
-			verify.test = function() {
-				return vscope.test.apply(this,arguments);
-			};
-			verify.suite = function(o) {
-				var suite = new $exports.Suite(o);
-				var fire = (function(e) {
-					this.fire(e.type,e.detail);
-				}).bind(this);
-				suite.listeners.add("scenario",fire);
-				suite.listeners.add("test",fire);
-				suite.run();
+//			try {
+//				if (initialize) initialize.call(this,local);
+//			} catch (e) {
+//				vscope.error(e);
+//				return;
+//			}
+
+			if (!error) {
+				var verify = new Verify(vscope);
+				verify.test = function() {
+					return vscope.test.apply(this,arguments);
+				};
+				verify.suite = function(o) {
+					var suite = new $exports.Suite(o);
+					var fire = (function(e) {
+						this.fire(e.type,e.detail);
+					}).bind(this);
+					suite.listeners.add("scenario",fire);
+					suite.listeners.add("test",fire);
+					suite.run();
+				}
+				verify.fire = function(type,detail) {
+					vscope.fire(type,detail);
+				}
+				try {
+					execute.call(this,local,verify);
+				} catch (e) {
+					vscope.error(e);
+				}
 			}
-			verify.fire = function(type,detail) {
-				vscope.fire(type,detail);
-			}
-			try {
-				execute.call(this,local,verify);
-			} catch (e) {
-				vscope.error(e);
-			}
-			events.fire("scenario", { end: part.EVENT, success: vscope.success });
+			events.fire("scenario", { end: part.EVENT(), success: vscope.success });
+			//	TODO	if initialize error, should we try to destroy? Some portion of initialize may have executed ...
 			try {
 				if (destroy) destroy.call(this,local);
 			} catch (e) {
@@ -735,15 +765,11 @@ $exports.Scenario = {};
 		};
 
 		this.run = function(p) {
-			var THIS = {
-				name: this.name
-			};
-
 			if (!p) p = {};
 			if (!p.scope) p.scope = {};
 			if (!p.path) p.path = [];
 			events.fire("scenario", {
-				start: THIS
+				start: part.EVENT()
 			});
 			var success = true;
 			if (this.initialize) {
@@ -786,7 +812,7 @@ $exports.Scenario = {};
 				this.destroy.call(this,p.scope);
 			}
 			events.fire("scenario", {
-				end: THIS, success: success
+				end: part.EVENT(), success: success
 			});
 			return success;
 		}
