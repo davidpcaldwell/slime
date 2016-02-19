@@ -656,10 +656,9 @@ $exports.Scenario = {};
 			//	this is the best idea or not
 			if (!p) p = {};
 			if (!p.scope) p.scope = {};
-			var scope = p.scope;
 			var EVENT = { id: context.id, name: this.name }
 			events.fire("scenario", { start: EVENT });
-			var local = copy(scope);
+			var local = copy(p.scope);
 			var vscope = new Scope({ events: events });
 			try {
 				if (initialize) initialize.call(this,local);

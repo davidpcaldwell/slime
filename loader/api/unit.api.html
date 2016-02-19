@@ -131,51 +131,6 @@ END LICENSE
 								The implementation of a scenario. It can execute code, using the provided scope as necessary, and
 								use its verifier to test that the code works correctly.
 							</span>
-							<div class="type">
-								<a class="type" name="types.Scenario.event">identifier</a>
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">id</div>
-										<span class="type">string</span>
-										<span>The part <code>id</code> of the scenario.</span>
-									</li>
-									<li class="value">
-										<div class="name">name</div>
-										<span class="type">string</span>
-										<span>The <code>name</code> of the scenario.</span>
-									</li>
-								</ul>
-							</div>
-							<div>
-								Prior to executing, the scenario will fire an event with the following detail:
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">start</div>
-										<span class="type"><a href="#types.Scenario.event">identifier</a></span>
-									</li>
-								</ul>
-							</div>
-							<div>
-								During execution, the verification object may fire events.
-							</div>
-							<div>
-								After executing, the scenario will fire an event with the following detail:
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">end</div>
-										<span class="type"><a href="#types.Scenario.event">identifier</a></span>
-									</li>
-									<li class="value">
-										<div class="name">success</div>
-										<span class="type">boolean</span>
-										<span>Whether the execution succeeded.</span>
-									</li>
-								</ul>								
-							</div>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
@@ -191,32 +146,6 @@ END LICENSE
 									</li>
 								</ol>
 							</div>
-							<script type="application/x.jsapi#tests">
-								var suite = new module.Suite({
-									parts: {
-										a: {
-											name: "foo",
-											execute: function(scope,verify) {
-												verify(true).is(true);
-											}
-										}
-									}
-								});
-								var starts = [];
-								var ends = [];
-								suite.listeners.add("scenario", function(e) {
-									if (e.detail.start) {
-										starts.push(e);
-									} else if (e.detail.end) {
-										ends.push(e);
-									}
-								});
-								var rv = suite.run();
-								verify(rv,"success").is(true);
-								verify(starts)[1].detail.start.name.is("foo");
-								verify(ends)[0].detail.end.name.is("foo");
-								verify(ends)[0].detail.success.is(true);
-							</script>
 						</li>
 						<li class="function">
 							<div class="name">destroy</div>
@@ -274,6 +203,128 @@ END LICENSE
 						<script type="application/x.jsapi#tests">
 							verify(a).getParts().a.name.is("aname");
 							verify(b).getParts().a.name.is("a");
+						</script>
+					</li>
+					<li class="function">
+						<div class="name">run</div>
+						<span>Executes the scenario.</span>
+						<div class="type">
+							<a class="type" name="types.Scenario.event">identifier</a>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">id</div>
+									<span class="type">string</span>
+									<span>The part <code>id</code> of the scenario.</span>
+								</li>
+								<li class="value">
+									<div class="name">name</div>
+									<span class="type">string</span>
+									<span>The <code>name</code> of the scenario.</span>
+								</li>
+							</ul>
+						</div>
+						<div>
+							Prior to executing, the scenario will fire an event with the following detail:
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">start</div>
+									<span class="type"><a href="#types.Scenario.event">identifier</a></span>
+								</li>
+							</ul>
+						</div>
+						<div>
+							During execution, the verification object may fire events.
+						</div>
+						<div>
+							After executing, the scenario will fire an event with the following detail:
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">end</div>
+									<span class="type"><a href="#types.Scenario.event">identifier</a></span>
+								</li>
+								<li class="value">
+									<div class="name">success</div>
+									<span class="type">boolean</span>
+									<span>Whether the execution succeeded.</span>
+								</li>
+							</ul>								
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">scope</div>
+											<span class="type">object</span>
+											<span>
+												The scope to use when invoking the methods of the scenario definition.
+											</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">boolean</span>
+							<span>Whether the scenario succeeded.</span>
+							<script type="application/x.jsapi#tests">
+								var first = new module.Suite({
+									parts: {
+										a: {
+											execute: function(scope,verify) {
+												verify(true).is(true);
+											}
+										}
+									}
+								});
+								var success = first.run();
+								verify(success,"success").is(true);
+								
+								var second = new module.Suite({
+									parts: {
+										a: {
+											execute: function(scope,verify) {
+												verify(true).is(false);
+											}
+										}
+									}
+								});
+								var result = second.run();
+								verify(result,"success").is(false);
+							</script>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										name: "foo",
+										execute: function(scope,verify) {
+											verify(true).is(true);
+										}
+									}
+								}
+							});
+							var starts = [];
+							var ends = [];
+							suite.listeners.add("scenario", function(e) {
+								if (e.detail.start) {
+									starts.push(e);
+								} else if (e.detail.end) {
+									ends.push(e);
+								}
+							});
+							var rv = suite.run();
+							verify(rv,"success").is(true);
+							verify(starts)[1].detail.start.name.is("foo");
+							verify(ends)[0].detail.end.name.is("foo");
+							verify(ends)[0].detail.success.is(true);
 						</script>
 					</li>
 				</ul>
