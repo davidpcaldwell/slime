@@ -10,6 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	We have an object called Object in this file, so this 
 var defineProperty = Object.defineProperty;
 
 var Verify = function(scope,vars) {
@@ -289,21 +290,7 @@ var Verify = function(scope,vars) {
 		}
 		return new Value(value,name);
 	};
-//		var $document = rv(inonit.slim.getDocument(),"inonit.slim.getDocument()");
-//		for (var x in $document) {
-//			rv[x] = $document[x];
-//		}
-//		rv.getComponent = (function() {
-//			return function(path,decorator) {
-//				var component = inonit.slim.getDocument().getComponent(path);
-//				if (decorator) decorator.call(component);
-//				return rv(component,"getComponent(\"" + path + "\")");
-//			}
-//		})();
-//		rv.map = function(object,f) {
-//			return object.evaluate(f);
-//		};
-	//	TODO	remove Slim cross-dependency, if it is in fact used
+	
 	for (var x in vars) {
 		if (typeof(vars[x]) == "function") {
 			rv[x] = (function(delegate,name) {
@@ -448,6 +435,15 @@ var Scope = function(o) {
 		debugger;
 		success = false;
 	};
+
+	//	IE8-compatible implementation below
+	//		var self = this;
+	//		this.success = true;
+	//		var fail = function() {
+	//			debugger;
+	//			self.success = false;
+	//		}
+
 	this.error = function(e) {
 		o.events.fire("test", {
 			success: false,
@@ -456,13 +452,7 @@ var Scope = function(o) {
 		});
 		fail();
 	}
-	//	IE8-compatible implementation below
-	//		var self = this;
-	//		this.success = true;
-	//		var fail = function() {
-	//			debugger;
-	//			self.success = false;
-	//		}
+	
 
 	var units = [];
 
@@ -645,7 +635,6 @@ $exports.Scenario = {};
 				}				
 			}).bind(this),
 			find: find,
-			EVENT: EVENT,
 			before: (function(p) {
 				if (!p) p = {};
 				if (!p.scope) p.scope = {};
@@ -675,27 +664,20 @@ $exports.Scenario = {};
 				destroy(scope);
 				return success;
 			}).bind(this),
-			destroy: (function(scope) {
-				try {
-					var destroy = find("destroy");
-					if (destroy) destroy.call(this,scope);
-				} catch (e) {
-					//	TODO	what to do on destroy error?
-	//				vscope.error(e);
-				}				
-			}).bind(this)
+			Scope: function() {
+				return new Scope({ events: events })
+			}
 		};
 	}
 
 	var Scenario = function(o,context) {
 		var part = Part.apply(this,arguments);
-		var events = part.events;
 
 		this.run = function(p) {
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
-			var vscope = new Scope({ events: events });
+			var vscope = new Scope({ events: part.events });
 			
 			var error = part.initialize(local);
 			
@@ -703,10 +685,10 @@ $exports.Scenario = {};
 				vscope.fail();
 			} else {
 				var verify = new Verify(vscope);
-				verify.test = function() {
+				verify.test = $api.deprecate(function() {
 					return vscope.test.apply(this,arguments);
-				};
-				verify.suite = function(o) {
+				});
+				verify.suite = $api.deprecate(function(o) {
 					var suite = new $exports.Suite(o);
 					var fire = (function(e) {
 						this.fire(e.type,e.detail);
@@ -714,10 +696,10 @@ $exports.Scenario = {};
 					suite.listeners.add("scenario",fire);
 					suite.listeners.add("test",fire);
 					suite.run();
-				}
-				verify.fire = function(type,detail) {
+				});
+				verify.fire = $api.deprecate(function(type,detail) {
 					vscope.fire(type,detail);
-				}
+				});
 				try {
 					//	TODO	execute is apparently mandatory
 					var execute = part.find("execute");
@@ -748,31 +730,29 @@ $exports.Scenario = {};
 			for (var x in c.parts) {
 				if (c.parts[x].parts) {
 					addPart(x,Suite,c.parts[x],{ id: x, events: events });
-//					this.suite(x,c.parts[x]);
 				} else {
 					addPart(x,Scenario,c.parts[x],{ id: x, events: events });
-//					this.scenario(x,c.parts[x]);
 				}
 			}
 		}
 		
-		this.getParts = function() {
+		var getParts = function() {
 			var rv = {};
 			for (var x in parts) {
 				rv[x] = parts[x];
 			}
 			return rv;
-		};
+		}
+		
+		defineProperty(this, "parts", {
+			get: getParts
+		});
+		
+		this.getParts = $api.deprecate(getParts);
 
 		this.run = function(p) {
 			var scope = part.before(p).scope;
-//			if (!p) p = {};
-//			if (!p.scope) p.scope = {};
 			var path = (p && p.path) ? p.path : [];
-//			if (!p.path) p.path = [];
-//			events.fire("scenario", {
-//				start: part.EVENT()
-//			});
 			var success = true;
 			var error = part.initialize(scope);
 			if (error) {
@@ -790,7 +770,6 @@ $exports.Scenario = {};
 					}
 				} else {
 					var child = parts[path[0]];
-//					var path = p.path.slice(1);
 					var result = child.run({
 						scope: copy(scope),
 						path: path.slice(1)
@@ -800,32 +779,7 @@ $exports.Scenario = {};
 					}
 				}
 			}
-//			if (this.initialize) {
-//				try {
-//					this.initialize(p.scope);
-//				} catch (e) {
-//					//	TODO	not handling destroy here
-//					events.fire("test", {
-//						success: false,
-//						message: "Uncaught exception in suite initializer: " + e,
-//						error: e
-//					});
-//					events.fire("scenario", {
-//						end: THIS,
-//						success: false
-//					});
-//					//	TODO	should we try to destroy?
-//					return false;
-//				}
-//			}
 			return part.after(success,scope);
-//			if (this.destroy) {
-//				this.destroy.call(this,p.scope);
-//			}
-//			events.fire("scenario", {
-//				end: part.EVENT(), success: success
-//			});
-//			return success;
 		}
 		
 		this.scenario = $api.deprecate(function(id,p) {
