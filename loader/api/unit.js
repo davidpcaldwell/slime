@@ -625,39 +625,22 @@ $exports.Scenario = {};
 //			return context.id;
 //		}).call(this);
 		
-		return { events: events };
+		return { 
+			events: events,
+			create: (function() {
+				if (definition && definition.create) {
+					$api.deprecate(function() {
+						definition.create.call(this);				
+					}).call(this);
+				}				
+			}).bind(this)
+		};
 	}
 
 	var Scenario = function(o,context) {
 		var part = Part.apply(this,arguments);
 		var events = part.events;
-//		var events = $api.Events({
-//			source: this,
-//			parent: context.events
-//		});
 
-		if (o && o.create) {
-			$api.deprecate(function() {
-				o.create.call(this);				
-			}).call(this);
-		}
-
-		//	TODO	ideally we would then, below, use the properties of o directly rather than copying them to
-		//			"this," but this would break a bunch of existing compatibility, presumably, so for now we will copy them
-		//			to "this" so that we can use them the old way
-
-//		if (o && o.initialize) {
-//			this.initialize = o.initialize;
-//		}
-//
-//		if (o && o.execute) {
-//			this.execute = o.execute;
-//		}
-//
-//		if (o && o.destroy) {
-//			this.destroy = o.destroy;
-//		}
-		
 		var find = (function(property) {
 			if (o && o[property]) return o[property];
 			if (this[property]) {
@@ -717,6 +700,8 @@ $exports.Scenario = {};
 			}
 			return vscope.success;
 		}
+		
+		part.create();
 	}
 
 	var Suite = function Suite(c,context) {
@@ -749,18 +734,6 @@ $exports.Scenario = {};
 			}
 			return rv;
 		};
-
-		this.scenario = $api.deprecate(function(id,p) {
-			addPart(id,Scenario,p,{ id: id, events: events });
-		});
-
-		this.suite = $api.deprecate(function(id,p) {
-			addPart(id,Suite,p,{ id: id, events: events });
-		});
-
-		if (c && c.create) {
-			c.create.call(this);
-		}
 
 		this.run = function(p) {
 			var THIS = {
@@ -818,6 +791,16 @@ $exports.Scenario = {};
 			});
 			return success;
 		}
+		
+		this.scenario = $api.deprecate(function(id,p) {
+			addPart(id,Scenario,p,{ id: id, events: events });
+		});
+
+		this.suite = $api.deprecate(function(id,p) {
+			addPart(id,Suite,p,{ id: id, events: events });
+		});
+		
+		part.create();
 	};
 
 	$exports.Suite = Suite;
