@@ -33,6 +33,30 @@ END LICENSE
 		</div>
 		-->
 		<div>
+			<script type="application/x.jsapi#initialize">
+				scope.a = new module.Suite({
+					name: "a",
+					parts: {
+						a: {
+							name: "aname",
+							execute: function(scope,verify) {
+								verify(1).is(1);
+							}
+						}
+					}
+				});
+
+				scope.b = new module.Suite({
+					name: "b",
+					parts: {
+						a: {
+							execute: function(scope,verify) {
+								verify(1).is(1);
+							}
+						}
+					}
+				});
+			</script>
 			<h1>Exports</h1>
 			<div class="type">
 				<a class="type" name="types.Verify">Verify</a>
@@ -54,77 +78,164 @@ END LICENSE
 					v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
 				</script>
 			</div>
-
 			<div class="type">
-				<a class="type" name="types.Scenario">Scenario</a>
+				<a class="type" name="types.definition">definition</a>
 				<span>__DESCRIPTION__</span>
-				<script type="application/x.jsapi#initialize">
-					scope.a = new module.Suite({
-						name: "a",
-						parts: {
-							a: {
-								name: "aname",
-								execute: function(scope,verify) {
-									verify(1).is(1);
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>A name for that will be used for this <a href="#types.part">part</a>.</span>
+					</li>
+					<li class="function">
+						<div class="name">initialize</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">object</span>
+									<span>
+										A scope object that is shared across the methods of this part.
+									</span>
+								</li>
+							</ol>
+						</div>
+						<!--	TODO	add test for error being thrown	-->
+						<script type="application/x.jsapi#tests">
+							var a = {};
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										initialize: function(scope) {
+											scope.a = a;
+										},
+										execute: function(scope,verify) {
+											verify(scope.a).is(a);
+										}
+									}
 								}
-							}
-						}
-					});
-
-					scope.b = new module.Suite({
-						name: "b",
-						parts: {
-							a: {
-								execute: function(scope,verify) {
-									verify(1).is(1);
+							});
+							var rv = suite.run();
+							verify(rv,"success").is(true);
+						</script>
+						<!--	TODO	add tests for suite	-->
+					</li>
+					<li class="function">
+						<div class="name">destroy</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">object</span>
+									<span>
+										A scope object that is shared across the methods of this part.
+									</span>
+								</li>
+							</ol>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var destroyed = false;
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										name: "foo",
+										execute: function(scope,verify) {
+											verify(true).is(true);
+										},
+										destroy: function(scope) {
+											destroyed = true;
+										}
+									}
 								}
-							}
-						}
-					});
-				</script>
-				<div class="type">
-					<a class="type" name="types.Scenario.definition">definition</a>
-					<span>An object specifying a <a href="#types.Scenario">Scenario</a>.</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">name</div>
-							<span class="type">string</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="function">
-							<div class="name">initialize</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">object</span>
-										<span>
-											A scope object that is shared across the methods of this scenario.
-										</span>
-									</li>
-								</ol>
-							</div>
-							<!--	TODO	add test for error being thrown	-->
-							<script type="application/x.jsapi#tests">
-								var a = {};
-								var suite = new module.Suite({
-									parts: {
-										a: {
-											initialize: function(scope) {
-												scope.a = a;
-											},
-											execute: function(scope,verify) {
-												verify(scope.a).is(a);
+							});
+							suite.run();
+							verify(destroyed).is(true);
+						</script>
+						<!--	TODO	tests for suite	-->
+					</li>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.part">part</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">id</div>
+						<span class="type">string</span>
+						<span>
+							The part <code>id</code> of this part within its parent, or <code>null</code> if it is a top-level
+							suite.
+						</span>
+						<script type="application/x.jsapi#tests">
+							verify(a).getParts().a.id.is("a");
+							verify(b).getParts().a.id.is("a");
+						</script>
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite();
+							verify(suite).id.is(null);
+							
+							var s2 = new module.Suite({
+								parts: {
+									a: {
+										parts: {
+											b: {
+												execute: function(scope,verify) {
+												}
 											}
 										}
 									}
-								});
-								var rv = suite.run();
-								verify(rv,"success").is(true);
-							</script>
-						</li>
+								}
+							});
+							verify(s2).id.is(null);
+							verify(s2).getParts().a.id.is("a");
+						</script>
+					</li>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>
+							The name specified in the definition, if specified. Otherwise, the part <code>id</code> of this
+							scenario within its parent.
+						</span>
+						<script type="application/x.jsapi#tests">
+							verify(a).getParts().a.name.is("aname");
+							verify(b).getParts().a.name.is("a");
+						</script>
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										parts: {
+											b: {
+												name: "bname",
+												execute: function(scope,verify) {
+												}
+											}
+										}
+									}
+								}
+							});
+							verify(suite).name.is(null);
+							verify(suite).getParts().a.name.is("a");
+							verify(suite).getParts().a.getParts().b.name.is("bname")
+						</script>
+					</li>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.Scenario">Scenario</a>
+				<span class="type">supports <a href="#types.part">part</a></span>
+				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.Scenario.definition">definition</a>
+					<span class="type">supports <a href="#types.part.definition">part definition</a></span>
+					<span>An object specifying a <a href="#types.Scenario">Scenario</a>.</span>
+					<div class="label">has properties:</div>
+					<ul>
 						<li class="function">
 							<div class="name">execute</div>
 							<span>
@@ -147,64 +258,10 @@ END LICENSE
 								</ol>
 							</div>
 						</li>
-						<li class="function">
-							<div class="name">destroy</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">object</span>
-										<span>
-											A scope object that is shared across the methods of this scenario.
-										</span>
-									</li>
-								</ol>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var destroyed = false;
-								var suite = new module.Suite({
-									parts: {
-										a: {
-											name: "foo",
-											execute: function(scope,verify) {
-												verify(true).is(true);
-											},
-											destroy: function(scope) {
-												destroyed = true;
-											}
-										}
-									}
-								});
-								suite.run();
-								verify(destroyed).is(true);
-							</script>
-						</li>
 					</ul>
 				</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="value">
-						<div class="name">id</div>
-						<span class="type">string</span>
-						<span>The part <code>id</code> of this scenario within its parent.</span>
-						<script type="application/x.jsapi#tests">
-							verify(a).getParts().a.id.is("a");
-							verify(b).getParts().a.id.is("a");
-						</script>
-					</li>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>
-							The name specified in the definition, if specified. Otherwise, the part <code>id</code> of this
-							scenario within its parent.
-						</span>
-						<script type="application/x.jsapi#tests">
-							verify(a).getParts().a.name.is("aname");
-							verify(b).getParts().a.name.is("a");
-						</script>
-					</li>
 					<li class="function">
 						<div class="name">run</div>
 						<span>Executes the scenario.</span>
@@ -332,79 +389,18 @@ END LICENSE
 
 			<div class="type">
 				<a class="type" name="types.Suite">Suite</a>
+				<span class="type">supports <a href="#types.part">part</a></span>
 				<span>__DESCRIPTION__</span>
 				<div class="type">
 					<a class="type" name="types.Suite.definition">definition</a>
+					<span class="type">supports <a href="#types.part.definition">part definition</a></span>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="value">
-							<div class="name">name</div>
-							<span class="type">string</span>
-							<span>A name for this suite.</span>
-						</li>
 					</ul>
 				</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="value">
-						<div class="name">id</div>
-						<span class="type">string</span>
-						<span>
-							The part <code>id</code> of this suite within its parent, or <code>null</code> if it is a
-							top-level suite.
-						</span>
-						<script type="application/x.jsapi#tests">
-							var suite = new module.Suite();
-							verify(suite).id.is(null);
-							
-							var s2 = new module.Suite({
-								parts: {
-									a: {
-										parts: {
-											b: {
-												execute: function(scope,verify) {
-												}
-											}
-										}
-									}
-								}
-							});
-							verify(s2).id.is(null);
-							verify(s2).getParts().a.id.is("a");
-						</script>
-					</li>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>
-							The <code>name</code> of this suite. The name may be specified by the <code>create</code>
-							implementation used to create the suite. If it is not specified, and the suite is not a top-level suite,
-							the <code>id</code> property of the suite will be used.
-							<!--	
-								TODO	otherwise, the string (top) is currently returned, but this logic should be moved up
-										in the stack to the presentation layer
-							-->
-						</span>
-						<script type="application/x.jsapi#tests">
-							var suite = new module.Suite({
-								parts: {
-									a: {
-										parts: {
-											b: {
-												name: "bname",
-												execute: function(scope,verify) {
-												}
-											}
-										}
-									}
-								}
-							});
-							verify(suite).name.is(null);
-							verify(suite).getParts().a.name.is("a");
-							verify(suite).getParts().a.getParts().b.name.is("bname")
-						</script>
-					</li>
 					<!--	getParts	-->
 					<li class="function">
 						<div class="name">run</div>
