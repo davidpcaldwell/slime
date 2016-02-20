@@ -301,101 +301,101 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 	}
 
-	var getScenario = function(scope,element,container) {
-		var shared = getShared(scope);
-		var createTestScope = function() {
-			var rv = {
-				$platform: $platform,
-				scope: scope
-			};
-			for (var i=0; i<arguments.length; i++) {
-				for (var x in arguments[i]) {
-					rv[x] = arguments[i][x];
-				}
-			}
-			return rv;
-		};
-		var createTestScope = shared.createTestScope;
-
-		var p = {};
-		p.name = getElementName(element,name);
-
-		var relativeScope = function(element) {
-			var rv = scope.$relative(element.getRelativePath);
-//			debugger;
-			if (scope.module) {
-				rv.module = scope.module;
-			}
-			for (var x in scope) {
-				if (scope[x] && !rv[x]) {
-					rv[x] = scope[x];
-				}
-			}
-			return rv;
-		}
-		var relativeScope = shared.relativeScope;
-
-		var runInitializer = function(initializer) {
-			try {
-				run(initializer.getContentString(), createTestScope(relativeScope(initializer)));
-			} catch (e) {
-				var error = new Error("Error executing scenario initialization.");
-				error.code = initializer.getContentString();
-				error.cause = e;
-				throw error;
-			}
-		}
-		var runInitializer = shared.runInitializer;
-
-		p.initialize = function() {
-			if (container) {
-				for (var i=0; i<container.initializes.length; i++) {
-					runInitializer(container.initializes[i]);
-				}
-			}
-			var initializes = getScripts(element,"initialize");
-			for (var i=0; i<initializes.length; i++) {
-				runInitializer(initializes[i]);
-			}
-		};
-
-		p.execute = function(unit) {
-			var children = (function() {
-				if (element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
-					return [ element ];
-				} else {
-					return element.getChildren();
-				}
-			})();
-			for (var i=0; i<children.length; i++) {
-				if (children[i].localName == "script" && children[i].getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
-					run(children[i].getContentString(),createTestScope(scope,relativeScope(children[i]).scope,unit));
-				} else if (children[i].localName == "script") {
-					//	do nothing
-				} else {
-					var descend = someAreTests(children[i]);
-
-					if (descend) {
-						unit.scenario(getScenario(scope,children[i]));
-					}
-				}
-			}
-		};
-
-		p.destroy = function() {
-			var destroys = getScripts(element,"destroy");
-			for (var i=0; i<destroys.length; i++) {
-				run(destroys[i].getContentString(),createTestScope(scope));
-			}
-			if (container) {
-				for (var i=0; i<container.destroys.length; i++) {
-					run(container.destroys[i].getContentString(),createTestScope(scope));
-				}
-			}
-		};
-
-		return p;
-	}
+//	var getScenario = function(scope,element,container) {
+//		var shared = getShared(scope);
+//		var createTestScope = function() {
+//			var rv = {
+//				$platform: $platform,
+//				scope: scope
+//			};
+//			for (var i=0; i<arguments.length; i++) {
+//				for (var x in arguments[i]) {
+//					rv[x] = arguments[i][x];
+//				}
+//			}
+//			return rv;
+//		};
+//		var createTestScope = shared.createTestScope;
+//
+//		var p = {};
+//		p.name = getElementName(element,name);
+//
+//		var relativeScope = function(element) {
+//			var rv = scope.$relative(element.getRelativePath);
+////			debugger;
+//			if (scope.module) {
+//				rv.module = scope.module;
+//			}
+//			for (var x in scope) {
+//				if (scope[x] && !rv[x]) {
+//					rv[x] = scope[x];
+//				}
+//			}
+//			return rv;
+//		}
+//		var relativeScope = shared.relativeScope;
+//
+//		var runInitializer = function(initializer) {
+//			try {
+//				run(initializer.getContentString(), createTestScope(relativeScope(initializer)));
+//			} catch (e) {
+//				var error = new Error("Error executing scenario initialization.");
+//				error.code = initializer.getContentString();
+//				error.cause = e;
+//				throw error;
+//			}
+//		}
+//		var runInitializer = shared.runInitializer;
+//
+//		p.initialize = function() {
+//			if (container) {
+//				for (var i=0; i<container.initializes.length; i++) {
+//					runInitializer(container.initializes[i]);
+//				}
+//			}
+//			var initializes = getScripts(element,"initialize");
+//			for (var i=0; i<initializes.length; i++) {
+//				runInitializer(initializes[i]);
+//			}
+//		};
+//
+//		p.execute = function(unit) {
+//			var children = (function() {
+//				if (element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
+//					return [ element ];
+//				} else {
+//					return element.getChildren();
+//				}
+//			})();
+//			for (var i=0; i<children.length; i++) {
+//				if (children[i].localName == "script" && children[i].getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
+//					run(children[i].getContentString(),createTestScope(scope,relativeScope(children[i]).scope,unit));
+//				} else if (children[i].localName == "script") {
+//					//	do nothing
+//				} else {
+//					var descend = someAreTests(children[i]);
+//
+//					if (descend) {
+//						unit.scenario(getScenario(scope,children[i]));
+//					}
+//				}
+//			}
+//		};
+//
+//		p.destroy = function() {
+//			var destroys = getScripts(element,"destroy");
+//			for (var i=0; i<destroys.length; i++) {
+//				run(destroys[i].getContentString(),createTestScope(scope));
+//			}
+//			if (container) {
+//				for (var i=0; i<container.destroys.length; i++) {
+//					run(container.destroys[i].getContentString(),createTestScope(scope));
+//				}
+//			}
+//		};
+//
+//		return p;
+//	}
 
 	var getTestElement = function(unit) {
 		if (unit) {
@@ -426,12 +426,12 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 	}
 
-	this.getScenario = function(scope,unit) {
-		var element = getTestElement(unit);
-		//	TODO	is the blank object really expected if !unit?
-		var container = (unit) ? getContainer(element) : { initializes: [], destroys: [] };
-		return getScenario(scope,element,container);
-	};
+//	this.getScenario = function(scope,unit) {
+//		var element = getTestElement(unit);
+//		//	TODO	is the blank object really expected if !unit?
+//		var container = (unit) ? getContainer(element) : { initializes: [], destroys: [] };
+//		return getScenario(scope,element,container);
+//	};
 
 	var isScenario = function(element) {
 		return element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests");
