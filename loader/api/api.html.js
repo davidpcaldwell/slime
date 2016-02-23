@@ -356,25 +356,55 @@ $exports.ApiHtmlTests = function(html,name) {
 			}
 		}
 		if (isScenario(element)) {
-			return {
-				scenario: function() {
-					this.name = getElementName(element,name);
+			if (false) {
+				return {
+					scenario: function() {
+						this.name = getElementName(element,name);
 
-					this.initialize = initialize;
+						this.initialize = initialize;
 
-					this.destroy = function() {
+						this.destroy = function() {
+							var destroys = getScripts(element,"destroy");
+							for (var i=0; i<destroys.length; i++) {
+								run(destroys[i].getContentString(),shared.createTestScope(scope));
+							}
+							if (container) {
+								for (var i=0; i<container.destroys.length; i++) {
+									run(container.destroys[i].getContentString(),createTestScope(scope));
+								}
+							}
+						};
+
+						this.execute = function(tscope,verify) {
+							var hscope = {};
+							for (var x in tscope) {
+								hscope[x] = tscope[x];
+							}
+							hscope.verify = verify;
+							hscope.test = verify.test;
+							hscope.scope = hscope;
+							run(element.getContentString(),hscope);
+						}
+					}
+				};
+			} else {
+				return {
+					name: getElementName(element,name),
+					initialize: initialize,
+					destroy: function() {
 						var destroys = getScripts(element,"destroy");
 						for (var i=0; i<destroys.length; i++) {
 							run(destroys[i].getContentString(),shared.createTestScope(scope));
 						}
+						//	TODO	probably do not need to traverse up the chain and run destroy, but probably should create
+						//			a test case before removing this code
 						if (container) {
 							for (var i=0; i<container.destroys.length; i++) {
 								run(container.destroys[i].getContentString(),createTestScope(scope));
 							}
 						}
-					};
-
-					this.execute = function(tscope,verify) {
+					},
+					execute: function(tscope,verify) {
 						var hscope = {};
 						for (var x in tscope) {
 							hscope[x] = tscope[x];
@@ -385,82 +415,44 @@ $exports.ApiHtmlTests = function(html,name) {
 						run(element.getContentString(),hscope);
 					}
 				}
-			};
+			}
 		} else if (isScript) {
 			//	do nothing
 		} else {
-			if (false) {
-				return {
-					create: function() {
-						this.name = getElementName(element,name);
-
-						this.initialize = initialize;
-
-						this.destroy = function(s) {
-							var destroys = getScripts(element,"destroy");
-							for (var i=0; i<destroys.length; i++) {
-								run(destroys[i].getContentString(),s);
-							}
-						};
-
-						var SUITE = this;
-
-						var children = element.getChildren();
-						for (var i=0; i<children.length; i++) {
-							(function(element) {
-								var descend = isScenario(element) || someAreTests(element);
-								//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
-								if (descend) {
-									var child = getSuite(scope,element);
-									if (!child) throw new Error("No child for element " + element);
-									if (child.scenario) {
-										SUITE.scenario(String(i), {
-											create: child.scenario
-										});
-									} else {
-										SUITE.suite(String(i),child);
-									}
-								}
-							})(children[i]);
-						}
+			var rv = {
+				name: getElementName(element,name),
+				initialize: initialize,
+				destroy: function(s) {
+					var destroys = getScripts(element,"destroy");
+					for (var i=0; i<destroys.length; i++) {
+						run(destroys[i].getContentString(),s);
 					}
-				}
-			} else {
-				var rv = {
-					name: getElementName(element,name),
-					initialize: initialize,
-					destroy: function(s) {
-						var destroys = getScripts(element,"destroy");
-						for (var i=0; i<destroys.length; i++) {
-							run(destroys[i].getContentString(),s);
-						}
-					},
-					parts: {}
-				}
-				var children = element.getChildren();
-				for (var i=0; i<children.length; i++) {
-					(function(element) {
-						var descend = isScenario(element) || someAreTests(element);
-						//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
-						if (descend) {
-							var child = getSuite(scope,element);
-							if (!child) throw new Error("No child for element " + element);
-							if (child.scenario) {
-								rv.parts[String(i)] = {
-									create: child.scenario
-								};
+				},
+				parts: {}
+			}
+			var children = element.getChildren();
+			for (var i=0; i<children.length; i++) {
+				(function(element) {
+					var descend = isScenario(element) || someAreTests(element);
+					//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
+					if (descend) {
+						var child = getSuite(scope,element);
+						if (!child) throw new Error("No child for element " + element);
+						if (child.scenario) {
+							rv.parts[String(i)] = {
+								create: child.scenario
+							};
 //								SUITE.scenario(String(i), {
 //									create: child.scenario
 //								});
-							} else {
-								rv.parts[String(i)] = child;
+						} else {
+							rv.parts[String(i)] = child;
 //								SUITE.suite(String(i),child);
-							}
 						}
-					})(children[i]);
-				}
-				return rv;
+					}
+				})(children[i]);
 			}
+			return rv;
 		}
 	}
 
