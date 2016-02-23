@@ -301,102 +301,6 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 	}
 
-//	var getScenario = function(scope,element,container) {
-//		var shared = getShared(scope);
-//		var createTestScope = function() {
-//			var rv = {
-//				$platform: $platform,
-//				scope: scope
-//			};
-//			for (var i=0; i<arguments.length; i++) {
-//				for (var x in arguments[i]) {
-//					rv[x] = arguments[i][x];
-//				}
-//			}
-//			return rv;
-//		};
-//		var createTestScope = shared.createTestScope;
-//
-//		var p = {};
-//		p.name = getElementName(element,name);
-//
-//		var relativeScope = function(element) {
-//			var rv = scope.$relative(element.getRelativePath);
-////			debugger;
-//			if (scope.module) {
-//				rv.module = scope.module;
-//			}
-//			for (var x in scope) {
-//				if (scope[x] && !rv[x]) {
-//					rv[x] = scope[x];
-//				}
-//			}
-//			return rv;
-//		}
-//		var relativeScope = shared.relativeScope;
-//
-//		var runInitializer = function(initializer) {
-//			try {
-//				run(initializer.getContentString(), createTestScope(relativeScope(initializer)));
-//			} catch (e) {
-//				var error = new Error("Error executing scenario initialization.");
-//				error.code = initializer.getContentString();
-//				error.cause = e;
-//				throw error;
-//			}
-//		}
-//		var runInitializer = shared.runInitializer;
-//
-//		p.initialize = function() {
-//			if (container) {
-//				for (var i=0; i<container.initializes.length; i++) {
-//					runInitializer(container.initializes[i]);
-//				}
-//			}
-//			var initializes = getScripts(element,"initialize");
-//			for (var i=0; i<initializes.length; i++) {
-//				runInitializer(initializes[i]);
-//			}
-//		};
-//
-//		p.execute = function(unit) {
-//			var children = (function() {
-//				if (element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
-//					return [ element ];
-//				} else {
-//					return element.getChildren();
-//				}
-//			})();
-//			for (var i=0; i<children.length; i++) {
-//				if (children[i].localName == "script" && children[i].getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests")) {
-//					run(children[i].getContentString(),createTestScope(scope,relativeScope(children[i]).scope,unit));
-//				} else if (children[i].localName == "script") {
-//					//	do nothing
-//				} else {
-//					var descend = someAreTests(children[i]);
-//
-//					if (descend) {
-//						unit.scenario(getScenario(scope,children[i]));
-//					}
-//				}
-//			}
-//		};
-//
-//		p.destroy = function() {
-//			var destroys = getScripts(element,"destroy");
-//			for (var i=0; i<destroys.length; i++) {
-//				run(destroys[i].getContentString(),createTestScope(scope));
-//			}
-//			if (container) {
-//				for (var i=0; i<container.destroys.length; i++) {
-//					run(container.destroys[i].getContentString(),createTestScope(scope));
-//				}
-//			}
-//		};
-//
-//		return p;
-//	}
-
 	var getTestElement = function(unit) {
 		if (unit) {
 			var getJsapiChild = function(target,id) {
@@ -425,13 +329,6 @@ $exports.ApiHtmlTests = function(html,name) {
 			return html.top;
 		}
 	}
-
-//	this.getScenario = function(scope,unit) {
-//		var element = getTestElement(unit);
-//		//	TODO	is the blank object really expected if !unit?
-//		var container = (unit) ? getContainer(element) : { initializes: [], destroys: [] };
-//		return getScenario(scope,element,container);
-//	};
 
 	var isScenario = function(element) {
 		return element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests");
@@ -492,48 +389,77 @@ $exports.ApiHtmlTests = function(html,name) {
 		} else if (isScript) {
 			//	do nothing
 		} else {
-			return {
-				create: function() {
-					this.name = getElementName(element,name);
+			if (false) {
+				return {
+					create: function() {
+						this.name = getElementName(element,name);
 
-					this.initialize = initialize;
+						this.initialize = initialize;
 
-					this.destroy = function(s) {
+						this.destroy = function(s) {
+							var destroys = getScripts(element,"destroy");
+							for (var i=0; i<destroys.length; i++) {
+								run(destroys[i].getContentString(),s);
+							}
+						};
+
+						var SUITE = this;
+
+						var children = element.getChildren();
+						for (var i=0; i<children.length; i++) {
+							(function(element) {
+								var descend = isScenario(element) || someAreTests(element);
+								//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
+								if (descend) {
+									var child = getSuite(scope,element);
+									if (!child) throw new Error("No child for element " + element);
+									if (child.scenario) {
+										SUITE.scenario(String(i), {
+											create: child.scenario
+										});
+									} else {
+										SUITE.suite(String(i),child);
+									}
+								}
+							})(children[i]);
+						}
+					}
+				}
+			} else {
+				var rv = {
+					name: getElementName(element,name),
+					initialize: initialize,
+					destroy: function(s) {
 						var destroys = getScripts(element,"destroy");
 						for (var i=0; i<destroys.length; i++) {
 							run(destroys[i].getContentString(),s);
 						}
-					};
-
-					var SUITE = this;
-
-					var children = element.getChildren();
-					for (var i=0; i<children.length; i++) {
-						(function(element) {
-							var descend = isScenario(element) || someAreTests(element);
-							//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
-							if (descend) {
-								var child = getSuite(scope,element);
-								if (!child) throw new Error("No child for element " + element);
-								if (child.scenario) {
-									SUITE.scenario(String(i), {
-										create: child.scenario
-									});
-								} else {
-									SUITE.suite(String(i),child);
-								}
-							}
-						})(children[i]);
-					}
-//
-//					this.scenario("only", {
-//						create: function() {
-//							this.execute = function(scope,verify) {
-//								verify("api.html.js getSuite").is("Unimplemented");
-//							}
-//						}
-//					});
+					},
+					parts: {}
 				}
+				var children = element.getChildren();
+				for (var i=0; i<children.length; i++) {
+					(function(element) {
+						var descend = isScenario(element) || someAreTests(element);
+						//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
+						if (descend) {
+							var child = getSuite(scope,element);
+							if (!child) throw new Error("No child for element " + element);
+							if (child.scenario) {
+								rv.parts[String(i)] = {
+									create: child.scenario
+								};
+//								SUITE.scenario(String(i), {
+//									create: child.scenario
+//								});
+							} else {
+								rv.parts[String(i)] = child;
+//								SUITE.suite(String(i),child);
+							}
+						}
+					})(children[i]);
+				}
+				return rv;
 			}
 		}
 	}
