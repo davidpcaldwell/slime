@@ -146,8 +146,7 @@ var loadApiHtml = function(file) {
 	return arguments.callee.cache[file.pathname.toString()];
 }
 
-var Suite = function(pathname,unit) {
-	if (unit) throw new Error("Suite constructor does not take unit");
+var Suite = function(pathname) {
 	return new function() {
 		this.name = pathname.toString();
 
@@ -159,15 +158,12 @@ var Suite = function(pathname,unit) {
 			var page = loadApiHtml(apiHtmlFile);
 
 			var name = pathname.toString();
-			if (unit) {
-				name += "#" + unit;
-			}
 			this.html = new $context.html.ApiHtmlTests(page,name);
-			this.getScenario = function(scope) {
-				return this.html.getScenario(scope,unit);
-			}
+//			this.getScenario = function(scope) {
+//				return this.html.getScenario(scope);
+//			}
 			this.getSuite = function(scope) {
-				return this.html.getSuite(scope,unit);
+				return this.html.getSuite(scope);
 			}
 		}
 
@@ -339,12 +335,13 @@ var Scope = function(suite,environment) {
 	this.$api = jsh.$jsapi.$api;
 }
 
-$exports.Scenario = function(p) {
-	if (p.unit) throw new Error("Gone: ability to specify unit");
-	var suite = new Suite(p.pathname,p.unit);
+$exports.PartDescriptor = function(p) {
+	var suite = new Suite(p.pathname);
 	var scope = new Scope(suite,(p.environment) ? p.environment : {});
 	return suite.getSuite(scope);
 };
+
+//$exports.Scenario = $api.deprecate($exports.PartDescriptor);
 
 (function() {
 	//	TODO	$context.jsdom appears to be unprovided so is presumably unused

@@ -96,10 +96,10 @@ plugin({
 			html: jsh.unit.html
 		});
 		jsh.unit.part.Html = function(p) {
-			return new html.Scenario(p);
+			return new html.PartDescriptor(p);
 		};
 		jsh.unit.Scenario.Html = $api.deprecate(function(p) {
-			return new html.Scenario(p);
+			return new html.PartDescriptor(p);
 		});
 		jsh.unit.html.documentation = html.documentation;
 
