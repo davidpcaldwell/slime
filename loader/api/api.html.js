@@ -173,15 +173,6 @@ $exports.ApiHtmlTests = function(html,name) {
 		references[i].removeJsapiAttribute("reference");
 	}
 
-//	for each (var e in xhtml..*.(@jsapi::reference.length() > 0)) {
-//		var resolved = declaration.resolve(e);
-//		if (resolved) {
-//			e.setChildren(resolved.children());
-//		} else {
-//			throw new Error("Could not resolve: " + e.@jsapi::reference.toXMLString());
-//		}
-//	}
-
 	var SCRIPT_TYPE_PREFIX = $exports.MEDIA_TYPE + "#";
 
 	var getScriptFilter = function(type) {
@@ -199,20 +190,6 @@ $exports.ApiHtmlTests = function(html,name) {
 	var getScripts = function(element,type) {
 		return filter(element.getChildren(),getScriptFilter(type));
 	};
-
-//	var getContainer = function(element) {
-//		var container = {
-//			initializes: [],
-//			destroys: []
-//		}
-//		var ancestor = element;
-//		while(ancestor.parent) {
-//			container.initializes.unshift.apply(container.initializes,getScripts(ancestor.parent,"initialize"));
-//			container.destroys.push.apply(container.destroys,getScripts(ancestor.parent,"destroy"));
-//			ancestor = ancestor.parent;
-//		}
-//		return container;
-//	};
 
 	var getDescendantScripts = function(element,type) {
 		return filter(getDescendants(element),getScriptFilter(type));
@@ -301,40 +278,15 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 	}
 
-	var getTestElement = function(unit) {
-		if (unit) {
-			var getJsapiChild = function(target,id) {
-				var elements = target.getChildren();
-				for (var i=0; i<elements.length; i++) {
-					if (elements[i].getJsapiAttribute("id") == id) {
-						return elements[i];
-					} else if (elements[i].getJsapiAttribute("id") == null) {
-						var childSearch = getJsapiChild(elements[i],id);
-						if (childSearch != null) return childSearch;
-					}
-				}
-				return null;
-			}
-
-			var tokens = unit.split("/");
-			var target = html.top;
-			for (var i=0; i<tokens.length; i++) {
-				target = getJsapiChild(target,tokens[i]);
-				if (target == null) {
-					throw new Error("Element not found: " + tokens.slice(0,i+1).join("/"));
-				}
-			}
-			return target;
-		} else {
-			return html.top;
-		}
+	var getTestElement = function() {
+		return html.top;
 	}
 
 	var isScenario = function(element) {
 		return element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests");
 	}
 
-	var getSuite = function(scope,element/*,container*/) {
+	var getSuite = function(scope,element) {
 		if (!scope) throw new Error("No scope in getSuite");
 		var shared = getShared(scope);
 		var isScript = element.localName == "script";
@@ -345,11 +297,6 @@ $exports.ApiHtmlTests = function(html,name) {
 				s[x] = relative[x];
 			}
 			s.scope = s;
-//			if (s) {
-//				for (var i=0; i<container.initializes.length; i++) {
-//					run(container.initializes[i].getContentString(), s);
-//				}
-//			}
 			var initializes = getScripts(element,"initialize");
 			for (var i=0; i<initializes.length; i++) {
 				run(initializes[i].getContentString(), s);
@@ -364,13 +311,6 @@ $exports.ApiHtmlTests = function(html,name) {
 					for (var i=0; i<destroys.length; i++) {
 						run(destroys[i].getContentString(),shared.createTestScope(scope));
 					}
-//					//	TODO	probably do not need to traverse up the chain and run destroy, but probably should create
-//					//			a test case before removing this code
-//					if (container) {
-//						for (var i=0; i<container.destroys.length; i++) {
-//							run(container.destroys[i].getContentString(),createTestScope(scope));
-//						}
-//					}
 				},
 				execute: function(tscope,verify) {
 					var hscope = {};
@@ -423,10 +363,9 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 	}
 
-	this.getSuite = function(scope,unit) {
-		var element = getTestElement(unit);
-		var container = (unit) ? getContainer(element) : { initializes: [], destroys: [] };
-		return getSuite(scope,element,container);
+	this.getSuite = function(scope) {
+		var element = getTestElement();
+		return getSuite(scope,element);
 	}
 };
 
