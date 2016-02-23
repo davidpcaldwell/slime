@@ -147,6 +147,7 @@ var loadApiHtml = function(file) {
 }
 
 var Suite = function(pathname,unit) {
+	if (unit) throw new Error("Suite constructor does not take unit");
 	return new function() {
 		this.name = pathname.toString();
 
@@ -339,6 +340,7 @@ var Scope = function(suite,environment) {
 }
 
 $exports.Scenario = function(p) {
+	if (p.unit) throw new Error("Gone: ability to specify unit");
 	var suite = new Suite(p.pathname,p.unit);
 	var scope = new Scope(suite,(p.environment) ? p.environment : {});
 	return suite.getSuite(scope);

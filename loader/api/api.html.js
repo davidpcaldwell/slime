@@ -286,7 +286,7 @@ $exports.ApiHtmlTests = function(html,name) {
 		return element.localName == "script" && element.getAttribute("type") == (SCRIPT_TYPE_PREFIX + "tests");
 	}
 
-	var getSuite = function(scope,element) {
+	var getPartDescriptor = function recurse(scope,element) {
 		if (!scope) throw new Error("No scope in getSuite");
 		var shared = getShared(scope);
 		var isScript = element.localName == "script";
@@ -343,19 +343,20 @@ $exports.ApiHtmlTests = function(html,name) {
 					var descend = isScenario(element) || someAreTests(element);
 					//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
 					if (descend) {
-						var child = getSuite(scope,element);
-						if (!child) throw new Error("No child for element " + element);
-						if (child.scenario) {
-							rv.parts[String(i)] = {
-								create: child.scenario
-							};
-//								SUITE.scenario(String(i), {
-//									create: child.scenario
-//								});
-						} else {
-							rv.parts[String(i)] = child;
-//								SUITE.suite(String(i),child);
-						}
+						rv.parts[String(i)] = recurse(scope,element);
+//						var child = (scope,element);
+//						if (!child) throw new Error("No child for element " + element);
+//						if (child.scenario) {
+//							rv.parts[String(i)] = {
+//								create: child.scenario
+//							};
+////								SUITE.scenario(String(i), {
+////									create: child.scenario
+////								});
+//						} else {
+//							rv.parts[String(i)] = child;
+////								SUITE.suite(String(i),child);
+//						}
 					}
 				})(children[i]);
 			}
@@ -363,10 +364,11 @@ $exports.ApiHtmlTests = function(html,name) {
 		}
 	}
 
-	this.getSuite = function(scope) {
-		var element = getTestElement();
-		return getSuite(scope,element);
-	}
+	this.getSuiteDescriptor = function(scope) {
+		return getPartDescriptor(scope,html.top);
+	};
+	
+	this.getSuite = $api.deprecate(this.getSuiteDescriptor);
 };
 
 $exports.getCode = function(path) {
