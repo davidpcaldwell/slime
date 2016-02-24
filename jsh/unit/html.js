@@ -132,7 +132,7 @@ var loadApiHtml = function(file) {
 	if (!arguments.callee.cache) {
 		arguments.callee.cache = {};
 	}
-	if (!arguments.callee.cache[file.pathname.toString()]) {
+	if (true || !arguments.callee.cache[file.pathname.toString()]) {
 		arguments.callee.cache[file.pathname.toString()] = (function() {
 			jsh.shell.echo("Loading API file: " + file.pathname);
 			var doc = new jsh.document.Document({
@@ -141,7 +141,7 @@ var loadApiHtml = function(file) {
 			return new Jsdom(file.parent,doc);
 		})();
 	} else {
-		//	jsh.shell.echo("Returning cached api.html: " + file.pathname);
+		jsh.shell.echo("Returning cached api.html: " + file.pathname);
 	}
 	return arguments.callee.cache[file.pathname.toString()];
 }
@@ -345,6 +345,9 @@ $exports.Scenario = function(p) {
 	return {
 		execute: function() {
 			var suite = new jsh.unit.Suite(new $exports.PartDescriptor(p));
+			if (!this.fire) {
+				throw new Error("No fire: keys=" + Object.keys(this));
+			}
 			var fire = (function(e) {
 				this.fire(e.type,e.detail);
 			}).bind(this);

@@ -669,6 +669,10 @@ $exports.Scenario = {};
 
 	var Scenario = function(o,context) {
 		var part = Part.apply(this,arguments);
+		
+		this.fire = function() {
+			part.events.fire.apply(part.events,arguments);
+		}
 
 		this.run = function(p) {
 			var local = part.before(p).scope;

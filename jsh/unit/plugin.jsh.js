@@ -99,7 +99,7 @@ plugin({
 			return new html.PartDescriptor(p);
 		};
 		jsh.unit.Scenario.Html = $api.deprecate(function(p) {
-			return new html.PartDescriptor(p);
+			return new html.Scenario(p);
 		});
 		jsh.unit.html.documentation = html.documentation;
 
