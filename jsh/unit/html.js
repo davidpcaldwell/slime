@@ -341,6 +341,20 @@ $exports.PartDescriptor = function(p) {
 	return suite.getSuite(scope);
 };
 
+$exports.Scenario = function(p) {
+	return {
+		execute: function() {
+			var suite = new jsh.unit.Suite(new $exports.PartDescriptor(p));
+			var fire = (function(e) {
+				this.fire(e.type,e.detail);
+			}).bind(this);
+			suite.listeners.add("scenario",fire);
+			suite.listeners.add("test",fire);
+			suite.run();
+		}
+	}
+};
+
 //$exports.Scenario = $api.deprecate($exports.PartDescriptor);
 
 (function() {
