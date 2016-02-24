@@ -700,6 +700,7 @@ $exports.Scenario = {};
 				try {
 					//	TODO	execute is apparently mandatory
 					var execute = part.find("execute");
+					if (!execute) throw new Error("execute not found in " + Object.keys(o));
 					execute.call(this,local,verify);
 				} catch (e) {
 					vscope.error(e);
@@ -719,17 +720,14 @@ $exports.Scenario = {};
 
 		var parts = {};
 
-		var addPart = function(id,type,configuration,context) {
-			parts[id] = new type(configuration,context);
+		var addPart = function(id,definition) {
+			var type = (definition && definition.parts) ? Suite : Scenario;
+			parts[id] = new type(definition,{ id: id, events: events });
 		}
 
 		if (c && c.parts) {
 			for (var x in c.parts) {
-				if (c.parts[x].parts) {
-					addPart(x,Suite,c.parts[x],{ id: x, events: events });
-				} else {
-					addPart(x,Scenario,c.parts[x],{ id: x, events: events });
-				}
+				addPart(x,c.parts[x]);
 			}
 		}
 		
@@ -746,6 +744,10 @@ $exports.Scenario = {};
 		});
 		
 		this.getParts = $api.deprecate(getParts);
+		
+		this.part = function(id,definition) {
+			addPart(id,definition);
+		};
 
 		this.run = function(p) {
 			var scope = part.before(p).scope;
@@ -780,11 +782,13 @@ $exports.Scenario = {};
 		}
 		
 		this.scenario = $api.deprecate(function(id,p) {
-			addPart(id,Scenario,p,{ id: id, events: events });
+			addPart(id,p);
+//			addPart(id,Scenario,p,{ id: id, events: events });
 		});
 
 		this.suite = $api.deprecate(function(id,p) {
-			addPart(id,Suite,p,{ id: id, events: events });
+			addPart(id,p);
+//			addPart(id,Suite,p,{ id: id, events: events });
 		});
 		
 		part.create();

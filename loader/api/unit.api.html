@@ -231,7 +231,7 @@ END LICENSE
 				<span>__DESCRIPTION__</span>
 				<div class="type">
 					<a class="type" name="types.Scenario.definition">definition</a>
-					<span class="type">supports <a href="#types.part.definition">part definition</a></span>
+					<span class="type">supports <a href="#types.definition">part definition</a></span>
 					<span>An object specifying a <a href="#types.Scenario">Scenario</a>.</span>
 					<div class="label">has properties:</div>
 					<ul>
@@ -416,7 +416,7 @@ END LICENSE
 				<span>__DESCRIPTION__</span>
 				<div class="type">
 					<a class="type" name="types.Suite.definition">definition</a>
-					<span class="type">supports <a href="#types.part.definition">part definition</a></span>
+					<span class="type">supports <a href="#types.definition">part definition</a></span>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
@@ -451,6 +451,53 @@ END LICENSE
 							An object whose keys are part <code>id</code>s and whose values are 
 							<a href="#types.part">part</a>s.
 						</span>
+					</li>
+					<li class="function">
+						<div class="name">part</div>
+						<span>Adds (or replaces) a part of this suite.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A part <code>id</code>.</span>
+								</li>
+								<li class="value">
+									<span class="type"><a href="#types.definition">definition</a></span>
+									<span>A part that will have that ID.</span>
+								</li>
+							</ol>
+						</div>
+						<!--
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						-->
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										execute: function(scope,verify) {
+											verify(1).is(1);
+										}
+									}
+								}
+							});
+							
+							var before = suite.run();
+							verify(before).is(true);
+							
+							suite.part("a", {
+								execute: function(scope,verify) {
+									verify(1).is(2);
+								}
+							});
+							
+							var after = suite.run();
+							verify(after).is(false);
+						</script>
 					</li>
 					<li class="function">
 						<div class="name">run</div>
