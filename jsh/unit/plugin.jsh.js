@@ -87,40 +87,21 @@ plugin({
 					jsh.shell.exit( (success) ? 0 : 1 );
 				}
 			}
-		}
+		};
+		
+		//	TODO	probably will move to loader/api
+		jsh.unit.part = {};
 
 		var html = $loader.file("html.js", {
-			Scenario: jsh.unit.Scenario,
-			Suite: jsh.unit.Suite,
-			html: jsh.unit.html,
-			io: jsh.io
+			html: jsh.unit.html
 		});
-		jsh.unit.Scenario.Html = function(p) {
-			return new html.Scenario(p);
-//			var tests = new jshapi.Tests();
-//			if (p.environment) {
-//				tests.environment(p.environment);
-//			} else {
-//				tests.environment({});
-//			}
-//			p.pages.forEach(function(page) {
-//				tests.add({ location: page.pathname });
-//			});
-//			return tests.toScenario();
+		jsh.unit.part.Html = function(p) {
+			return new html.PartDescriptor(p);
 		};
+		jsh.unit.Scenario.Html = $api.deprecate(function(p) {
+			return new html.Scenario(p);
+		});
 		jsh.unit.html.documentation = html.documentation;
-
-//		jsh.unit.Scenario.Fork = function(p) {
-//			var buffer = new jsh.io.Buffer();
-//			if (!p.stdio) p.stdio = {};
-//			if (p.stdio.output) throw new Error();
-//			p.stdio.output = buffer.writeBinary();
-//			jsh.java.Thread.start(function() {
-//				p.run(p);
-//				buffer.close();
-//			});
-//			return new jsh.unit.Scenario.Stream({ name: p.name, stream: buffer.readBinary() });
-//		};
 
 		jsh.unit.Suite.Fork = function(p) {
 			return {

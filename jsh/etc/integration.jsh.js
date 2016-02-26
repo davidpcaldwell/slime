@@ -947,6 +947,7 @@ scenario.scenario("legacy", {
 })
 
 if (parameters.options.part) {
+	//	TODO	this should probably be pushed farther down into the loader/api implementation
 	scenario = (function recurse(scenario,path) {
 		if (path.length) {
 			var child = path.shift();

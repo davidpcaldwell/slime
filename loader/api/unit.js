@@ -10,6 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	We have an object called Object in this file, so this 
 var defineProperty = Object.defineProperty;
 
 var Verify = function(scope,vars) {
@@ -289,21 +290,7 @@ var Verify = function(scope,vars) {
 		}
 		return new Value(value,name);
 	};
-//		var $document = rv(inonit.slim.getDocument(),"inonit.slim.getDocument()");
-//		for (var x in $document) {
-//			rv[x] = $document[x];
-//		}
-//		rv.getComponent = (function() {
-//			return function(path,decorator) {
-//				var component = inonit.slim.getDocument().getComponent(path);
-//				if (decorator) decorator.call(component);
-//				return rv(component,"getComponent(\"" + path + "\")");
-//			}
-//		})();
-//		rv.map = function(object,f) {
-//			return object.evaluate(f);
-//		};
-	//	TODO	remove Slim cross-dependency, if it is in fact used
+	
 	for (var x in vars) {
 		if (typeof(vars[x]) == "function") {
 			rv[x] = (function(delegate,name) {
@@ -448,6 +435,15 @@ var Scope = function(o) {
 		debugger;
 		success = false;
 	};
+
+	//	IE8-compatible implementation below
+	//		var self = this;
+	//		this.success = true;
+	//		var fail = function() {
+	//			debugger;
+	//			self.success = false;
+	//		}
+
 	this.error = function(e) {
 		o.events.fire("test", {
 			success: false,
@@ -456,13 +452,7 @@ var Scope = function(o) {
 		});
 		fail();
 	}
-	//	IE8-compatible implementation below
-	//		var self = this;
-	//		this.success = true;
-	//		var fail = function() {
-	//			debugger;
-	//			self.success = false;
-	//		}
+	
 
 	var units = [];
 
@@ -596,167 +586,216 @@ $exports.Scenario = {};
 		}
 		return rv;
 	}
-
-	var Scenario = function(o,context) {
-		var events = $api.Events({
-			source: this,
-			parent: context.events
-		});
-
-		if (o && o.create) {
-			o.create.call(this);
-		}
-
-		this.id = context.id;
-
-		var name = (this.name) ? this.name : context.id;
-
-		this.run = function(p) {
-			//	The next two lines allow scenarios to be executed directly if a reference is obtained to them. Not sure whether
-			//	this is the best idea or not
-			if (!p) p = {};
-			if (!p.scope) p.scope = {};
-			var scope = p.scope;
-			var EVENT = { id: context.id, name: name }
-			events.fire("scenario", { start: EVENT });
-			var local = copy(scope);
-			var vscope = new Scope({ events: events });
-			try {
-				if (this.initialize) this.initialize.call(this,local);
-			} catch (e) {
-				vscope.error(e);
-				return;
-			}
-			var verify = new Verify(vscope);
-			verify.test = function() {
-				return vscope.test.apply(this,arguments);
-			};
-			verify.suite = function(o) {
-				var suite = new $exports.Suite(o);
-				var fire = (function(e) {
-					this.fire(e.type,e.detail);
-				}).bind(this);
-				suite.listeners.add("scenario",fire);
-				suite.listeners.add("test",fire);
-				suite.run();
-			}
-			verify.fire = function(type,detail) {
-				vscope.fire(type,detail);
-			}
-			try {
-				this.execute.call(this,local,verify);
-			} catch (e) {
-				vscope.error(e);
-			}
-			events.fire("scenario", { end: EVENT, success: vscope.success });
-			try {
-				if (this.destroy) this.destroy.call(this,local);
-			} catch (e) {
-				//	TODO	what to do on destroy error?
-//				vscope.error(e);
-				return;
-			}
-			return vscope.success;
-		}
-	}
-
-	var Suite = function Suite(c,context) {
+	
+	var Part = function(definition,context) {
 		//	TODO	what if caller does not use 'new'?
 		var events = $api.Events({
 			source: this,
 			parent: (context && context.events) ? context.events : null
 		});
+		
+		this.id = (context) ? context.id : null;
+
+		this.name = (function() {
+			if (definition && definition.name) return definition.name;
+			if (context && context.id) return context.id;
+			if (!context) return null;
+		})();
+
+		var find = (function(property) {
+			if (definition && definition[property]) return definition[property];
+			if (this[property]) {
+				return $api.deprecate(function() {
+					return this[property];
+				}).call(this);
+			}				
+		}).bind(this);
+		
+		var EVENT = (function() {
+			return { id: (context && context.id ) ? context.id : null, name: this.name };
+		}).bind(this);
+		
+		var destroy = (function(scope) {
+			try {
+				var destroy = find("destroy");
+				if (destroy) destroy.call(this,scope);
+			} catch (e) {
+				//	TODO	what to do on destroy error?
+//				vscope.error(e);
+			}				
+		}).bind(this);
+		
+		return { 
+			events: events,
+			create: (function() {
+				if (definition && definition.create) {
+					$api.deprecate(function() {
+						definition.create.call(this);				
+					}).call(this);
+				}				
+			}).bind(this),
+			find: find,
+			before: (function(p) {
+				if (!p) p = {};
+				if (!p.scope) p.scope = {};
+				events.fire("scenario", { start: EVENT() });
+				var local = copy(p.scope);
+				return { scope: local };
+			}).bind(this),
+			initialize: (function(scope) {
+				var initialize = find("initialize");
+				if (initialize) {
+					try {
+						initialize(scope);
+					} catch (e) {
+						//	TODO	not handling destroy here
+						events.fire("test", {
+							success: false,
+							message: "Uncaught exception in initializer: " + e,
+							error: e
+						});
+						return true;
+					}
+				}				
+			}).bind(this),
+			after: (function(success,scope) {
+				events.fire("scenario", { end: EVENT(), success: success });
+				//	TODO	if initialize error, should we try to destroy? Some portion of initialize may have executed ...
+				destroy(scope);
+				return success;
+			}).bind(this)
+		};
+	}
+
+	var Scenario = function(o,context) {
+		var part = Part.apply(this,arguments);
+		
+		this.fire = function() {
+			part.events.fire.apply(part.events,arguments);
+		}
+
+		this.run = function(p) {
+			var local = part.before(p).scope;
+
+			//	TODO	compare below initialize with one used in part
+			var vscope = new Scope({ events: part.events });
+			
+			var error = part.initialize(local);
+			
+			if (error) {
+				vscope.fail();
+			} else {
+				var verify = new Verify(vscope);
+				verify.test = $api.deprecate(function() {
+					return vscope.test.apply(this,arguments);
+				});
+				verify.suite = $api.deprecate(function(o) {
+					var suite = new $exports.Suite(o);
+					var fire = (function(e) {
+						this.fire(e.type,e.detail);
+					}).bind(this);
+					suite.listeners.add("scenario",fire);
+					suite.listeners.add("test",fire);
+					suite.run();
+				});
+				verify.fire = $api.deprecate(function(type,detail) {
+					vscope.fire(type,detail);
+				});
+				try {
+					//	TODO	execute is apparently mandatory
+					var execute = part.find("execute");
+					if (!execute) throw new Error("execute not found in " + Object.keys(o));
+					execute.call(this,local,verify);
+				} catch (e) {
+					vscope.error(e);
+				}
+			}
+
+			return part.after(vscope.success,local);
+		}
+		
+		part.create();
+	}
+
+	var Suite = function Suite(c,context) {
+		var part = Part.apply(this,arguments);
+		
+		var events = part.events;
 
 		var parts = {};
 
-		var addPart = function(id,type,configuration,context) {
-			parts[id] = new type(configuration,context);
+		var addPart = function(id,definition) {
+			var type = (definition && definition.parts) ? Suite : Scenario;
+			parts[id] = new type(definition,{ id: id, events: events });
 		}
 
-		this.id = (context) ? context.id : null;
-
-		this.getParts = function() {
+		if (c && c.parts) {
+			for (var x in c.parts) {
+				addPart(x,c.parts[x]);
+			}
+		}
+		
+		var getParts = function() {
 			var rv = {};
 			for (var x in parts) {
 				rv[x] = parts[x];
 			}
 			return rv;
-		};
-
-		this.scenario = function(id,p) {
-			addPart(id,Scenario,p,{ id: id, events: events });
-		};
-
-		this.suite = function(id,p) {
-			addPart(id,Suite,p,{ id: id, events: events });
 		}
-
-		if (c && c.create) {
-			c.create.call(this);
-		}
-
-		if (!this.name) this.name = (function() {
-			if (c && c.name) return c.name;
-			if (context && context.id) return context.id;
-			if (!context) return "(top)";
-		})();
+		
+		defineProperty(this, "parts", {
+			get: getParts
+		});
+		
+		this.getParts = $api.deprecate(getParts);
+		
+		this.part = function(id,definition) {
+			addPart(id,definition);
+		};
 
 		this.run = function(p) {
-			var THIS = {
-				name: this.name
-			};
-
-			if (!p) p = {};
-			if (!p.scope) p.scope = {};
-			if (!p.path) p.path = [];
-			events.fire("scenario", {
-				start: THIS
-			});
+			var scope = part.before(p).scope;
+			var path = (p && p.path) ? p.path : [];
 			var success = true;
-			if (this.initialize) {
-				try {
-					this.initialize(p.scope);
-				} catch (e) {
-					//	TODO	not handling destroy here
-					events.fire("test", {
-						success: false,
-						message: "Uncaught exception in suite initializer: " + e,
-						error: e
-					});
-					events.fire("scenario", {
-						end: THIS,
-						success: false
-					});
-					//	TODO	should we try to destroy?
-					return false;
-				}
-			}
-			if (p.path.length == 0) {
-				for (var x in parts) {
-					var result = parts[x].run({
-						scope: copy(p.scope),
-						path: []
+			var error = part.initialize(scope);
+			if (error) {
+				success = false;
+			} else {
+				if (path.length == 0) {
+					for (var x in parts) {
+						var result = parts[x].run({
+							scope: copy(scope),
+							path: []
+						});
+						if (!result) {
+							success = false;
+						}
+					}
+				} else {
+					var child = parts[path[0]];
+					var result = child.run({
+						scope: copy(scope),
+						path: path.slice(1)
 					});
 					if (!result) {
 						success = false;
 					}
 				}
-			} else {
-				var child = parts[p.path[0]];
-				var path = p.path.slice(1);
-				child.run({
-					scope: copy(p.scope),
-					path: path
-				});
 			}
-			if (this.destroy) {
-				this.destroy.call(this,p.scope);
-			}
-			events.fire("scenario", {
-				end: THIS, success: success
-			});
-			return success;
+			return part.after(success,scope);
 		}
+		
+		this.scenario = $api.deprecate(function(id,p) {
+			addPart(id,p);
+//			addPart(id,Scenario,p,{ id: id, events: events });
+		});
+
+		this.suite = $api.deprecate(function(id,p) {
+			addPart(id,p);
+//			addPart(id,Suite,p,{ id: id, events: events });
+		});
+		
+		part.create();
 	};
 
 	$exports.Suite = Suite;

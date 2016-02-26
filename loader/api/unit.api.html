@@ -14,8 +14,7 @@ END LICENSE
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
-		<title>__TITLE__</title>
-		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<title>SLIME unit testing</title>
 		<link href="api.css" rel="stylesheet" type="text/css" />
 		<script src="api.js"></script>
 	</head>
@@ -33,54 +32,501 @@ END LICENSE
 		</div>
 		-->
 		<div>
+			<script type="application/x.jsapi#initialize">
+				scope.a = new module.Suite({
+					name: "a",
+					parts: {
+						a: {
+							name: "aname",
+							execute: function(scope,verify) {
+								verify(1).is(1);
+							}
+						}
+					}
+				});
+
+				scope.b = new module.Suite({
+					name: "b",
+					parts: {
+						a: {
+							execute: function(scope,verify) {
+								verify(1).is(1);
+							}
+						}
+					}
+				});
+			</script>
 			<h1>Exports</h1>
 			<div class="type">
-				<a class="type" name="types.Scenario">Scenario</a>
+				<a class="type" name="types.Verify">Verify</a>
 				<span>__DESCRIPTION__</span>
-				<div class="type">
-					<a class="type" name="types.Scenario.console">console</a>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-					</ul>
-				</div>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					var s = {
+						test: function() {
+							test.apply(scope,arguments);
+						}
+					};
+					var v = new module.Verify(s);
+					v(1).is(1);
+					v("x").length.is(1);
+					var withHidden = { is: "hey", evaluate: "dude" };
+					v(withHidden,"withHidden").evaluate.property("is").is("hey");
+					v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
+				</script>
+			</div>
+			<div class="type">
+				<a class="type" name="types.definition">definition</a>
+				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
 						<div class="name">name</div>
 						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
+						<span>A name for that will be used for this <a href="#types.part">part</a>.</span>
 					</li>
 					<li class="function">
-						<div class="name">add</div>
-						<span>
-							(conditional: not present if not a composite scenario)
-						</span>
+						<div class="name">initialize</div>
+						<span>__DESCRIPTION__</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="value">
+									<span class="type">object</span>
+									<span>
+										A scope object that is shared across the methods of this part.
+									</span>
+								</li>
 							</ol>
 						</div>
+						<!--	TODO	add test for error being thrown	-->
+						<script type="application/x.jsapi#tests">
+							var a = {};
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										initialize: function(scope) {
+											scope.a = a;
+										},
+										execute: function(scope,verify) {
+											verify(scope.a).is(a);
+										}
+									}
+								}
+							});
+							var rv = suite.run();
+							verify(rv,"success").is(true);
+						</script>
+						<!--	TODO	add tests for suite	-->
+					</li>
+					<li class="function">
+						<div class="name">destroy</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">object</span>
+									<span>
+										A scope object that is shared across the methods of this part.
+									</span>
+								</li>
+							</ol>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var destroyed = false;
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										name: "foo",
+										execute: function(scope,verify) {
+											verify(true).is(true);
+										},
+										destroy: function(scope) {
+											destroyed = true;
+										}
+									}
+								}
+							});
+							suite.run();
+							verify(destroyed).is(true);
+						</script>
+						<!--	TODO	tests for suite	-->
+					</li>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.part">part</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">id</div>
+						<span class="type">string</span>
+						<span>
+							The part <code>id</code> of this part within its parent, or <code>null</code> if it is a top-level
+							suite.
+						</span>
+						<script type="application/x.jsapi#tests">
+							verify(a).getParts().a.id.is("a");
+							verify(b).getParts().a.id.is("a");
+						</script>
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite();
+							verify(suite).id.is(null);
+							
+							var s2 = new module.Suite({
+								parts: {
+									a: {
+										parts: {
+											b: {
+												execute: function(scope,verify) {
+												}
+											}
+										}
+									}
+								}
+							});
+							verify(s2).id.is(null);
+							verify(s2).getParts().a.id.is("a");
+						</script>
+					</li>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>
+							The name specified in the definition, if specified. Otherwise, the part <code>id</code> of this
+							scenario within its parent.
+						</span>
+						<script type="application/x.jsapi#tests">
+							verify(a).getParts().a.name.is("aname");
+							verify(b).getParts().a.name.is("a");
+						</script>
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										parts: {
+											b: {
+												name: "bname",
+												execute: function(scope,verify) {
+												}
+											}
+										}
+									}
+								}
+							});
+							verify(suite).name.is(null);
+							verify(suite).getParts().a.name.is("a");
+							verify(suite).getParts().a.getParts().b.name.is("bname")
+						</script>
+					</li>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.Scenario">Scenario</a>
+				<span class="type">supports <a href="#types.part">part</a></span>
+				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.Scenario.definition">definition</a>
+					<span class="type">supports <a href="#types.definition">part definition</a></span>
+					<span>An object specifying a <a href="#types.Scenario">Scenario</a>.</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">execute</div>
+							<span>
+								The implementation of a scenario. It can execute code, using the provided scope as necessary, and
+								use its verifier to test that the code works correctly.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>
+											A scope object that is shared across the methods of this scenario.
+										</span>
+									</li>
+									<li class="value">
+										<span class="type"><a href="#types.Verify">Verify</a></span>
+										<span>An object that can be used to test conditions.</span>
+									</li>
+								</ol>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">run</div>
+						<span>Executes the scenario.</span>
+						<div class="type">
+							<a class="type" name="types.Scenario.event">identifier</a>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">id</div>
+									<span class="type">string</span>
+									<span>The part <code>id</code> of the scenario.</span>
+								</li>
+								<li class="value">
+									<div class="name">name</div>
+									<span class="type">string</span>
+									<span>The <code>name</code> of the scenario.</span>
+								</li>
+							</ul>
+						</div>
+						<div>
+							Prior to executing, the scenario will fire a <code>scenario</code> event with the following detail:
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">start</div>
+									<span class="type"><a href="#types.Scenario.event">identifier</a></span>
+								</li>
+							</ul>
+						</div>
+						<div>
+							During execution, the verification object may fire additional <code>scenario</code> events if the
+							scenario launches other scenarios.
+						</div>
+						<div>
+							It may also fire <code>test</code> events whose detail:
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">success</div>
+									<span class="type">boolean</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">message</div>
+									<span class="type">string</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="value">
+									<div class="name">error</div>
+									<span class="type">Error</span>
+									<span>
+										(conditional; indicates an uncaught error occurred running the test.)
+									</span>
+								</li>
+							</ul>
+						</div>
+						<div>
+							After executing, the scenario will fire a <code>scenario</code> event with the following detail:
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">end</div>
+									<span class="type"><a href="#types.Scenario.event">identifier</a></span>
+								</li>
+								<li class="value">
+									<div class="name">success</div>
+									<span class="type">boolean</span>
+									<span>Whether the execution succeeded.</span>
+								</li>
+							</ul>								
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">scope</div>
+											<span class="type">object</span>
+											<span>
+												The scope to use when invoking the methods of the scenario definition.
+											</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">boolean</span>
+							<span>Whether the scenario succeeded.</span>
+							<script type="application/x.jsapi#tests">
+								var first = new module.Suite({
+									parts: {
+										a: {
+											execute: function(scope,verify) {
+												verify(true).is(true);
+											}
+										}
+									}
+								});
+								var success = first.run();
+								verify(success,"success").is(true);
+								
+								var second = new module.Suite({
+									parts: {
+										a: {
+											execute: function(scope,verify) {
+												verify(true).is(false);
+											}
+										}
+									}
+								});
+								var result = second.run();
+								verify(result,"success").is(false);
+							</script>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										name: "foo",
+										execute: function(scope,verify) {
+											verify(true).is(true);
+										}
+									}
+								}
+							});
+							var starts = [];
+							var ends = [];
+							suite.listeners.add("scenario", function(e) {
+								if (e.detail.start) {
+									starts.push(e);
+								} else if (e.detail.end) {
+									ends.push(e);
+								}
+							});
+							var rv = suite.run();
+							verify(rv,"success").is(true);
+							verify(starts)[1].detail.start.name.is("foo");
+							verify(ends)[0].detail.end.name.is("foo");
+							verify(ends)[0].detail.success.is(true);
+						</script>
+					</li>
+				</ul>
+			</div>
+
+			<div class="type">
+				<a class="type" name="types.Suite">Suite</a>
+				<span class="type">supports <a href="#types.part">part</a></span>
+				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.Suite.definition">definition</a>
+					<span class="type">supports <a href="#types.definition">part definition</a></span>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">parts</div>
+							<span class="type">object</span>
+							<div>
+								An object whose keys are part <code>id</code>s. The values are interpreted as follows:
+								<ul>
+									<li>
+										If the value has a <code>parts</code> property, it is interpreted as a
+										<a href="#types.Suite.definition">Suite definition</a> and will create a Suite
+										with the part <code>id</code> of its key.
+									</li>
+									<li>
+										Otherwise, it is interpreted as a
+										<a href="#types.Scenario.definition">Scenario definition</a> and will create a 
+										<a href="#types.Scenario">Scenario</a>
+										with the the part <code>id</code> of its key.
+									</li>
+								</ul>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">parts</div>
+						<span class="type">object</span>
+						<span>
+							An object whose keys are part <code>id</code>s and whose values are 
+							<a href="#types.part">part</a>s.
+						</span>
+					</li>
+					<li class="function">
+						<div class="name">part</div>
+						<span>Adds (or replaces) a part of this suite.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A part <code>id</code>.</span>
+								</li>
+								<li class="value">
+									<span class="type"><a href="#types.definition">definition</a></span>
+									<span>A part that will have that ID.</span>
+								</li>
+							</ol>
+						</div>
+						<!--
 						<div class="returns">
 							<div class="label">Returns</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</div>
+						-->
+						<script type="application/x.jsapi#tests">
+							var suite = new module.Suite({
+								parts: {
+									a: {
+										execute: function(scope,verify) {
+											verify(1).is(1);
+										}
+									}
+								}
+							});
+							
+							var before = suite.run();
+							verify(before).is(true);
+							
+							suite.part("a", {
+								execute: function(scope,verify) {
+									verify(1).is(2);
+								}
+							});
+							
+							var after = suite.run();
+							verify(after).is(false);
+						</script>
 					</li>
 					<li class="function">
 						<div class="name">run</div>
-						<span>__DESCRIPTION__</span>
+						<span>Executes this suite.</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="object">
+									<div class="name">__NAME__</div>
 									<span>__DESCRIPTION__</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
-											<div class="name">console</div>
-											<span class="type"><a href="#types.console">console</a></span>
-											<span>__DESCRIPTION__</span>
+											<div class="name">scope</div>
+											<span class="type">object</span>
+											<span>
+												(optional; default is an empty object)
+												A set of properties that will be passed to the parts of this test.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">path</div>
+											<span class="type">Array of string</span>
+											<span>
+												(optional; default is an empty array)
+												A list of part names that will be interpreted as a "path" to the part(s) to execute.
+												For example, the array <code>["foo","bar"]</code> will lead to the <code>bar</code>
+												part of the <code>foo</code> part of this suite being executed.
+											</span>
 										</li>
 									</ul>
 								</li>
@@ -94,99 +540,61 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
-
 			<ul>
 				<li class="constructor">
-					<div class="name"><a id="exports.Scenario">Scenario</a></div>
+					<div class="name">Suite</div>
 					<span>__DESCRIPTION__</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
-							<li class="object">
-								<div class="name">__NAME__</div>
+							<li class="value">
+								<span class="type"><a href="#types.Suite.definition">Suite.definition</a></span>
 								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">composite</div>
-										<span class="type">boolean</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="value">
-										<div class="name">view</div>
-										<span class="type">__TYPE__</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="value">
-										<div class="name">name</div>
-										<span class="type">string</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-									<li class="function">
-										<div class="name">initialize</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-									<li class="function">
-										<div class="name">test</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-									<li class="function">
-										<div class="name">destroy</div>
-										<span>__DESCRIPTION__</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</li>
-								</ul>
 							</li>
 						</ol>
 					</div>
 					<div class="instances">
 						<div class="label">Instances</div>
-						<span class="type">__TYPE__</span>
+						<span class="type"><a href="#types.Suite">Suite</a></span>
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
 			</ul>
 			<script type="application/x.jsapi#tests">
-				var s = {
-					test: function() {
-						test.apply(scope,arguments);
+				var top = new module.Suite({
+					name: "top",
+					parts: {
+						child: {
+							name: "child",
+							execute: function(scope,verify) {
+								verify.test(function() {
+									return {
+										success: true,
+										message: "Hello, World!"
+									}
+								});
+							}
+						}
 					}
-				};
-				var v = new module.Verify(s);
-				v(1).is(1);
-				v("x").length.is(1);
-				var withHidden = { is: "hey", evaluate: "dude" };
-				v(withHidden,"withHidden").evaluate.property("is").is("hey");
-				v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
+				});
+				var starts = [];
+				var ends = [];
+				var tests = [];
+				top.listeners.add("scenario", function(e) {
+					if (e.detail.start) {
+						starts.push(e.detail);
+						//	jsh.shell.echo("Start: " + e.detail.start.name);
+					} else if (e.detail.end) {
+						//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+						ends.push(e.detail);
+					}
+				});
+				top.listeners.add("test", function(e) {
+					//	jsh.shell.echo("Test: " + e.detail.message);
+					tests.push(e.detail);
+				});
+				top.run();
+				verify(starts).length.is(2);
 			</script>
 			<script type="application/x.jsapi#tests">
 				var top = new module.Suite({

@@ -24,7 +24,7 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var suite = new jsh.unit.Suite(new jsh.unit.Scenario.Html({
+var suite = new jsh.unit.Suite(new jsh.unit.part.Html({
 	name: "jsh Unit Tests",
 	pathname: jsh.script.file.parent.getRelativePath("api.html"),
 	unit: parameters.options.unit

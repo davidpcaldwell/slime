@@ -169,7 +169,8 @@
 					}
 				}
 			} else {
-				debugger;
+				//	TODO	unclear what should be done here, but forcing a debugger pause is probably not right
+				//	debugger;
 				return f;
 			}
 		}

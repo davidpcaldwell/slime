@@ -132,7 +132,7 @@ var loadApiHtml = function(file) {
 	if (!arguments.callee.cache) {
 		arguments.callee.cache = {};
 	}
-	if (!arguments.callee.cache[file.pathname.toString()]) {
+	if (true || !arguments.callee.cache[file.pathname.toString()]) {
 		arguments.callee.cache[file.pathname.toString()] = (function() {
 			jsh.shell.echo("Loading API file: " + file.pathname);
 			var doc = new jsh.document.Document({
@@ -141,12 +141,12 @@ var loadApiHtml = function(file) {
 			return new Jsdom(file.parent,doc);
 		})();
 	} else {
-		//	jsh.shell.echo("Returning cached api.html: " + file.pathname);
+		jsh.shell.echo("Returning cached api.html: " + file.pathname);
 	}
 	return arguments.callee.cache[file.pathname.toString()];
 }
 
-var Suite = function(pathname,unit) {
+var Suite = function(pathname) {
 	return new function() {
 		this.name = pathname.toString();
 
@@ -158,15 +158,12 @@ var Suite = function(pathname,unit) {
 			var page = loadApiHtml(apiHtmlFile);
 
 			var name = pathname.toString();
-			if (unit) {
-				name += "#" + unit;
-			}
 			this.html = new $context.html.ApiHtmlTests(page,name);
-			this.getScenario = function(scope) {
-				return this.html.getScenario(scope,unit);
-			}
+//			this.getScenario = function(scope) {
+//				return this.html.getScenario(scope);
+//			}
 			this.getSuite = function(scope) {
-				return this.html.getSuite(scope,unit);
+				return this.html.getSuite(scope);
 			}
 		}
 
@@ -338,11 +335,30 @@ var Scope = function(suite,environment) {
 	this.$api = jsh.$jsapi.$api;
 }
 
-$exports.Scenario = function(p) {
-	var suite = new Suite(p.pathname,p.unit);
+$exports.PartDescriptor = function(p) {
+	var suite = new Suite(p.pathname);
 	var scope = new Scope(suite,(p.environment) ? p.environment : {});
 	return suite.getSuite(scope);
 };
+
+$exports.Scenario = function(p) {
+	return {
+		execute: function() {
+			var suite = new jsh.unit.Suite(new $exports.PartDescriptor(p));
+			if (!this.fire) {
+				throw new Error("No fire: keys=" + Object.keys(this));
+			}
+			var fire = (function(e) {
+				this.fire(e.type,e.detail);
+			}).bind(this);
+			suite.listeners.add("scenario",fire);
+			suite.listeners.add("test",fire);
+			suite.run();
+		}
+	}
+};
+
+//$exports.Scenario = $api.deprecate($exports.PartDescriptor);
 
 (function() {
 	//	TODO	$context.jsdom appears to be unprovided so is presumably unused

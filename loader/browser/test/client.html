@@ -115,6 +115,10 @@ END LICENSE
 	<script type="text/javascript">
 		(function() {
 			inonit.loader.callback = function() {
+				//	TODO	make the below a boolean parameter
+				if (parameters.allowDeprecated) {
+					inonit.loader.$api.deprecate.warning = function(){}();
+				}
 				loaded.client = true;
 				loaded.go();
 			}
