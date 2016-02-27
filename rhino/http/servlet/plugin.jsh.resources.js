@@ -17,7 +17,7 @@
 //
 
 var DirectoryWithoutVcsLoader = function(p) {
-	var delegate = new jsh.file.Loader(p);
+	var delegate = (p.directory) ? new jsh.file.Loader(p) : p.loader;
 	var source = {
 		get: function(name) {
 			return delegate.source.get(name);
@@ -27,10 +27,14 @@ var DirectoryWithoutVcsLoader = function(p) {
 				return item.path != ".hg";
 			});
 		},
-		child: function(prefix) {
+		child: (p.directory) ? function(prefix) {
 			return {
 				directory: p.directory.getSubdirectory(prefix)
 			};
+		} : function(prefix) {
+			return {
+				loader: new p.loader.Child(prefix)
+			}
 		}
 	};
 	jsh.io.Loader.call(this,source);
