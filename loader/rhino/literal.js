@@ -98,6 +98,21 @@
 						_source: p._source.child(prefix)
 					}
 				};
+				if (p._source.getEnumerator()) {
+					p.list = function() {
+						var _paths = p._source.getEnumerator().list(null);
+						var rv = [];
+						for (var i=0; i<_paths.length; i++) {
+							var path = String(_paths[i]);
+							if (/\/$/.test(path)) {
+								rv.push({ path: path.substring(0,path.length-1), loader: true, resource: false });
+							} else {
+								rv.push({ path: path, loader: false, resource: true });
+							}
+						}
+						return rv;
+					}
+				}
 				p.toString = function() {
 					return "Java loader: " + p._source.toString();
 				};

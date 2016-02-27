@@ -201,6 +201,10 @@ public abstract class Code {
 			public Classes getClasses() {
 				return null;
 			}
+			
+			public Enumerator getEnumerator() {
+				return null;
+			}
 		};
 
 		public static Source system() {
@@ -218,20 +222,29 @@ public abstract class Code {
 				public Classes getClasses() {
 					return null;
 				}
+				
+				public Enumerator getEnumerator() {
+					//	TODO	can this actually be implemented?
+					return null;
+				}
 			};
 		}
 
 		public static Source system(final String prefix) {
 			return system().child(prefix);
 		}
+		
+		private static Source create(final java.net.URL url, Enumerator enumerator) {
+			return new UrlBased(url, enumerator);
+		}
 
 		public static Source create(final java.net.URL url) {
-			return new UrlBased(url);
+			return new UrlBased(url, null);
 		}
 
 		public static Source create(java.io.File file) {
 			try {
-				return create(file.toURI().toURL());
+				return create(file.toURI().toURL(), Enumerator.create(file));
 			} catch (java.net.MalformedURLException e) {
 				throw new RuntimeException(e);
 			}
@@ -263,10 +276,43 @@ public abstract class Code {
 				@Override public Classes getClasses() {
 					return classes;
 				}
+				
+				@Override public Enumerator getEnumerator() {
+					//	TODO	implement
+					return null;
+				}
 			};
+		}
+		
+		public static abstract class Enumerator {
+			static Enumerator create(final java.io.File file) {
+				return new Enumerator() {
+					private java.io.File getDirectory(String prefix) {
+						if (prefix == null) return file;
+						java.io.File rv = new java.io.File(file, prefix);
+						if (rv.isDirectory()) {
+							return rv;
+						}
+						throw new RuntimeException("Not found or not directory: " + rv);
+					}
+					
+					@Override public String[] list(String prefix) {
+						java.io.File dir = getDirectory(prefix);
+						java.io.File[] files = dir.listFiles();
+						ArrayList<String> rv = new ArrayList<String>();
+						for (java.io.File file : files) {
+							rv.add( (file.isDirectory()) ? file.getName() + "/" : file.getName() );
+						}
+						return rv.toArray(new String[rv.size()]);
+					}
+				};
+			}
+			
+			public abstract String[] list(String prefix);
 		}
 
 		public abstract File getFile(String path) throws IOException;
+		public abstract Enumerator getEnumerator();
 		public abstract Classes getClasses();
 
 		private String getChildPrefix(String prefix) {
@@ -297,15 +343,31 @@ public abstract class Code {
 						}
 					};
 				}
+				
+				public Enumerator getEnumerator() {
+					final Enumerator parent = Source.this.getEnumerator();
+					if (parent != null) {
+						return new Enumerator() {
+							@Override public String[] list(String subprefix) {
+								String sub = (subprefix == null) ? "" : subprefix;
+								return parent.list(prepend + sub);
+							}
+						};
+					} else {
+						return null;
+					}
+				}
 			};
 		}
 
 		private static class UrlBased extends Source {
 			private java.net.URL url;
+			private Enumerator enumerator;
 			private Classes classes;
 
-			UrlBased(final java.net.URL url) {
+			UrlBased(final java.net.URL url, Enumerator enumerator) {
 				this.url = url;
+				this.enumerator = enumerator;
 				this.classes = new Classes() {
 					private java.net.URLClassLoader delegate = new java.net.URLClassLoader(new java.net.URL[] {url});
 
@@ -357,6 +419,10 @@ public abstract class Code {
 					//	TODO	is this the only way to test whether the URL is available?
 					throw new RuntimeException(e);
 				}
+			}
+			
+			public Enumerator getEnumerator() {
+				return enumerator;
 			}
 
 			public Classes getClasses() {
@@ -960,6 +1026,11 @@ public abstract class Code {
 					cache.put(path, compiled.getCompiledClass(className.replace("/",".")));
 				}
 				return cache.get(path);
+			}
+			
+			public Enumerator getEnumerator() {
+				//	TODO	this probably can be implemented
+				return null;
 			}
 
 			private Classes classes = new Classes() {
