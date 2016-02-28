@@ -351,7 +351,7 @@ plugin({
 		}
 		jsh.unit.interface.create = (function(was) {
 			return function(suite,o) {
-				if (o.chrome) {
+				if (o.chrome || o.view == "chrome") {
 					var p = jsh.js.Object.set({}, { suite: suite }, o.chrome);
 					return new jsh.unit.interface.Chrome(p);
 				}
