@@ -171,6 +171,24 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
+		<div class="type">
+			<a class="type" name="types.Handler">Handler</a>
+			<span>A function that can handle requests.</span>
+			<div class="arguments">
+				<div class="label">Arguments</div>
+				<ol>
+					<li class="value">
+						<span class="type"><a href="#types.request">request</a></span>
+						<span>A request.</span>
+					</li>
+				</ol>
+			</div>
+			<div class="returns">
+				<div class="label">Returns</div>
+				<span class="type"><a href="#types.response">response</a></span>
+				<span>A response.</span>
+			</div>
+		</div>
 	</div>
 	<div>
 		<h1>Scope</h1>
@@ -248,6 +266,12 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
+				<li class="value">
+					<div class="name">Handler</div>
+					<span class="type">object</span>
+					<!--	TODO	should we include by reference so that tests are run?	-->
+					<span>See <a href="server/api.html">detailed documentation</a>.</span>
+				</li>
 			</ul>
 		</div>
 		<div>
@@ -290,16 +314,8 @@ END LICENSE
 		<ul>
 			<li class="function">
 				<div class="name">handle</div>
+				<span class="type"><a href="#types.Handler">Handler</a></span>
 				<span>Implements the behavior of the servlet: receives a call for each request, and returns a response.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type"><a href="#types.request">request</a></span>
-							<span>A request from a client.</span>
-						</li>
-					</ol>
-				</div>
 				<div class="returns">
 					<div class="label">Returns</div>
 					<span class="type"><a href="#types.response">response</a></span>
