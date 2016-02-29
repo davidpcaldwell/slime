@@ -128,6 +128,30 @@ END LICENSE
 							</div>
 						</li>
 					</ul>
+					<script type="application/x.jsapi#tests">
+						var $rhino = jsh.$jsapi.$rhino;
+						verify($rhino,"$rhino").is.type("object");
+						verify($rhino).evaluate.property("Loader").is.type("function");
+						var tmpdir = $jsapi.file.newTemporaryDirectory();
+						tmpdir.getRelativePath("dir").createDirectory();
+						tmpdir.getRelativePath("file").write("contents", { append: false });
+						tmpdir.getRelativePath("dir/under").write("inside", { append: false });
+						
+						var _source = Packages.inonit.script.engine.Code.Source.create(tmpdir.pathname.java.adapt());
+						var loader = new $rhino.Loader({
+							_source: _source
+						});
+						verify(loader).get("file").is.not(null);
+						verify(loader).get("dir/under").is.not(null);
+						verify(loader).get("foo").is(null);
+						verify(loader).evaluate.property("list").is.type("function");
+						
+						var list = loader.list();
+						verify(loader).list().length.is(2);
+						var child = new loader.Child("dir/");
+						verify(child).evaluate.property("list").is.type("function");
+						verify(child).list().length.is(1);
+					</script>
 				</div>
 				<div class="name"><a name="exports.Loader">Loader</a></div>
 				<div>

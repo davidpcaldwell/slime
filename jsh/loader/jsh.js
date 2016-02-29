@@ -11,8 +11,8 @@
 //	END LICENSE
 
 this.jsh = new function() {
-	var $host = $jsh.host();
-	(function() {
+	var $host = (function($jsh) {
+		var $host = $jsh.host();
 		var configuration = $jsh.getEnvironment();
 		var invocation = $jsh.getInvocation();
 
@@ -94,16 +94,20 @@ this.jsh = new function() {
 		};
 
 		$host.coffee = $jsh.getLibrary("coffee-script.js");
-	})();
+		
+		return $host;
+	})($jsh);
 
-	//	TODO	used in evals; is there a better way?
-	var jsh = this;
-
-	//	TODO	is there a way to use the custom script executor to do this rather than eval()?
-	var loader = eval($host.loader.getLoaderScript("loader.js").code);
-
-	var loadPlugins = eval($host.loader.getLoaderScript("plugins.js").code);
-
+	//	TODO	is there a way to use the custom script executor to do these rather than eval()?
+	
+	var loader = (function(jsh) {
+		return eval($host.loader.getLoaderScript("loader.js").code);
+	})(this);
+	
+	var loadPlugins = (function(jsh) {
+		return eval($host.loader.getLoaderScript("plugins.js").code);
+	})(this);
+	
 	this.loader = new function() {
 		this.run = loader.run;
 		this.file = loader.file;
@@ -150,7 +154,7 @@ this.jsh = new function() {
 
 	if ($host.getSystemProperties().get("inonit.tools.Profiler.args")) {
 		$host.run($host.loader.getLoaderScript("profiler.js"), {
-			jsh: jsh,
+			jsh: this,
 			$host: $host
 		});
 	}
