@@ -160,16 +160,53 @@ END LICENSE
 				<ul>
 					<li class="function">
 						<div class="name">Fork</div>
-						<span>Suitable for use with suite <code>.scenario/code></span>
+						<span>
+							Creates a part that runs a program that supports the standard I/O protocol for communicating testing
+							events.
+						</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="object">
+									<span>
+										An object containing properties specifying how to run the program.
+									</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>The part name to use for the program in the test suite.</span>
+										</li>
+										<li class="value">
+											<div class="name">run</div>
+											<span class="type">function</span>
+											<div>
+												The program launching implementation (taking a single argument) to be used when
+												launching the program. The
+												implementation will need to allow the specification of a buffer as the 
+												<code>stdio.output</code> property of the argument. Generally, this will be a value
+												like:
+												<ul>
+													<li><code>jsh.shell.run</code></li>
+													<li><code>jsh.shell.java</code></li>
+													<li><code>jsh.shell.jsh</code></li>
+												</ul>
+												See the <a href="../../rhino/shell/plugin.jsh.api.html">jsh.shell</a> documentation
+												for more details.
+											</div>
+										</li>
+									</ul>
+									<div>
+										The properties argument passed to the <code>Fork</code> function may have other properties,
+										and those properties will be passed to the <code>run</code> function.
+									</div>
+								</li>
 							</ol>
 						</div>
 						<div class="returns">
 							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
+							<span class="type">part</span>
 						</div>
 					</li>
 				</ul>
@@ -257,13 +294,10 @@ END LICENSE
 							<div class="label">Arguments</div>
 							<ol>
 								<li class="value">
-									<div class="name">__NAME__</div>
-									<span class="type">__TYPE__</span>
+									<span class="type">suite</span>
 									<span>__DESCRIPTION__</span>
 								</li>
 								<li class="object">
-									<div class="name">__NAME__</div>
-									<span>__DESCRIPTION__</span>
 									<div class="label">has properties:</div>
 									<ul>
 										<li class="value">
@@ -274,11 +308,6 @@ END LICENSE
 									</ul>
 								</li>
 							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
 						</div>
 					</li>
 				</ul>
