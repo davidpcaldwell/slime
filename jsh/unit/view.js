@@ -94,6 +94,13 @@ $exports.Console = function(o) {
 		if (e.getCause) {
 			if (e.getCause()) printError(e.getCause());
 		}
+		for (var x in e) {
+			if (typeof(e[x]) != "function") {
+				if (x != "code" && x != "cause" && x != "javaException" && x != "stack" && x != "message" && x != "name") {
+					console.println("" + x + " = [" + e[x] + "]");
+				}
+			}
+		}
 	}
 
 	this.caught = function(p) {
