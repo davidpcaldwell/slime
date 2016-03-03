@@ -12,6 +12,44 @@
 //	END LICENSE
 
 (function(_plugins) {
+//	var $plugin = new function() {
+//		this.read = function(loader,scope) {
+//			//var loader = new $host.Loader({ _source: _code.getScripts() });
+//			return loader.run("plugin.jsh.js", scope);
+//		};
+//		this.run = function(_code,path,scope,target) {
+//			$host.run(
+//				{
+//					_source: _code.getScripts(),
+//					path: path
+//				},
+//				scope,
+//				target
+//			);
+//		};
+//		this.file = function(_code,path,context) {
+//			return $host.file(
+//				{
+//					_source: _code.getScripts(),
+//					path: path
+//				},
+//				context
+//			);
+//		};
+//		this.module = function(_code,main,context) {
+//			var loader = new $host.Loader({ _code: _code });
+//			return loader.module(main, context);
+//		};
+//		this._stream = function(_code,path) {
+//			var _codeSourceFile = _code.getScripts().getFile(path);
+//			if (_codeSourceFile) return _codeSourceFile.getInputStream();
+//			return null;
+//		};
+//		this.addClasses = function(_code) {
+//			$host.classpath.add(_code.getClasses());
+//		}
+//	};
+
 	var plugins = {};
 	var readPlugin = function(_code,callbacks) {
 		if (_code.getScripts()) {
@@ -47,7 +85,7 @@
 					return loader.classpath.add(pathname.java.adapt());
 				}
 			};
-			loader.plugin.read(scope.$loader,scope);
+			scope.$loader.run("plugin.jsh.js", scope);
 		} else {
 			callbacks.java({ _code: _code });
 		}
@@ -66,7 +104,8 @@
 				list.push(v);
 			},
 			java: function(v) {
-				loader.plugin.addClasses(v._code);
+				$host.classpath.add(v._code.getClasses())
+//				$plugin.addClasses(v._code);
 			}
 		});
 	}

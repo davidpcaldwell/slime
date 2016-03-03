@@ -76,44 +76,6 @@
 	}
 
 	return new function() {
-		this.plugin = new function() {
-			this.read = function(loader,scope) {
-				//var loader = new $host.Loader({ _source: _code.getScripts() });
-				return loader.run("plugin.jsh.js", scope);
-			};
-			this.run = function(_code,path,scope,target) {
-				$host.run(
-					{
-						_source: _code.getScripts(),
-						path: path
-					},
-					scope,
-					target
-				);
-			};
-			this.file = function(_code,path,context) {
-				return $host.file(
-					{
-						_source: _code.getScripts(),
-						path: path
-					},
-					context
-				);
-			};
-			this.module = function(_code,main,context) {
-				var loader = new $host.Loader({ _code: _code });
-				return loader.module(main, context);
-			};
-			this._stream = function(_code,path) {
-				var _codeSourceFile = _code.getScripts().getFile(path);
-				if (_codeSourceFile) return _codeSourceFile.getInputStream();
-				return null;
-			};
-			this.addClasses = function(_code) {
-				$host.classpath.add(_code.getClasses());
-			}
-		}
-
 		this.run = function(code,scope,target) {
 			return $host.run(getCode(code),scope,target);
 		}
