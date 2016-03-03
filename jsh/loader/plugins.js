@@ -109,11 +109,12 @@ new (function() {
 		if (!list) list = [];
 		if (!plugins) plugins = {};
 		if (loader.get("plugin.jsh.js")) {
-			list.push.apply(load({
+			list.push.apply(list, load({
 				plugins: plugins,
 				toString: function() {
 					return loader.toString();
-				}
+				},
+				$loader: loader
 			}));
 		} else {
 			if (loader.list) {

@@ -143,6 +143,8 @@ this.jsh = new function() {
 		this.plugins = function(from) {
 			if (from && from.java && from.java.adapt && $host.classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
 				plugins._load($host.getPlugins(from.java.adapt()));
+			} else if (from && from.get) {
+				plugins.load(from);
 			}
 		};
 	};
