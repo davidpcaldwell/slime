@@ -45,24 +45,38 @@ new (function() {
 		};
 		scope.$loader.run("plugin.jsh.js", scope);
 		return rv;
+	};
+	
+	var run = function(plugins) {
+		var stop = false;
+		while(plugins.length > 0 && !stop) {
+			var marked = false;
+			var i = 0;
+			while(i < plugins.length && !marked) {
+				if (plugins[i].declaration.isReady()) {
+					plugins[i].declaration.load();
+					plugins.splice(i,1);
+					marked = true;
+				}
+				i++;
+			}
+			if (plugins.length > 0 && !marked) {
+				//	Some plugin was never ready
+				stop = true;
+				//	TODO	think harder about what to do
+				plugins.forEach(function(item) {
+					Packages.inonit.system.Logging.get().log(
+						$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
+						Packages.java.util.logging.Level.WARNING,
+						"Plugin from " + item + " is disabled: " + item.declaration.disabled()
+					);
+				});
+			}
+		}		
 	}
 	
 	this._load = function(_plugins) {
 		var plugins = {};
-//		var readPlugin = function(_code,callbacks) {
-//			if (_code.getScripts()) {
-//				load({
-//					plugins: plugins,
-//					toString: function() {
-//						return String(_code.getScripts()).replace(/\%/g, "%%");						
-//					},
-//					$loader: new $host.Loader({ _code: _code }),
-//					callbacks: callbacks
-//				});
-//			} else {
-//				callbacks.java({ _code: _code });
-//			}
-//		};
 
 		var list = [];
 		for (var i=0; i<_plugins.length; i++) {
@@ -71,15 +85,6 @@ new (function() {
 				Packages.java.util.logging.Level.FINE,
 				"Reading plugins from " + _plugins[i]
 			);
-//			var callbacks = {
-//				script: function(v) {
-//					list.push(v);
-//				},
-//				java: function(v) {
-//					$host.classpath.add(v._code.getClasses())
-//	//				$plugin.addClasses(v._code);
-//				}
-//			};
 			var toString = function(_plugin) {
 				return function() {
 					return String(_plugin.getScripts()).replace(/\%/g, "%%")
@@ -94,34 +99,36 @@ new (function() {
 				list.push.apply(list,array);
 			} else {
 				$host.classpath.add(_plugins[i].getClasses());
-//				callbacks.java({ _code: _plugins[i] });
 			}
 		}
 
-		var stop = false;
-		while(list.length > 0 && !stop) {
-			var marked = false;
-			var i = 0;
-			while(i < list.length && !marked) {
-				if (list[i].declaration.isReady()) {
-					list[i].declaration.load();
-					list.splice(i,1);
-					marked = true;
+		run(list);
+	};
+	
+	var scan = function(loader,list,plugins) {
+		if (!list) list = [];
+		if (!plugins) plugins = {};
+		if (loader.get("plugin.jsh.js")) {
+			list.push.apply(load({
+				plugins: plugins,
+				toString: function() {
+					return loader.toString();
 				}
-				i++;
-			}
-			if (list.length > 0 && !marked) {
-				//	Some plugin was never ready
-				stop = true;
-				//	TODO	think harder about what to do
-				list.forEach(function(item) {
-					Packages.inonit.system.Logging.get().log(
-						$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
-						Packages.java.util.logging.Level.WARNING,
-						"Plugin from " + item + " is disabled: " + item.declaration.disabled()
-					);
-				});
+			}));
+		} else {
+			if (loader.list) {
+				var listed = loader.list();
+				for (var i=0; i<listed.length; i++) {
+					if (listed[i].loader) {
+						scan(listed[i].loader,list,plugins);
+					}
+				}
 			}
 		}
+		return list;
+	}
+	
+	this.load = function(loader) {
+		run(scan(loader));
 	}
 })()
