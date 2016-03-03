@@ -77,8 +77,8 @@
 
 	return new function() {
 		this.plugin = new function() {
-			this.read = function(_code,scope) {
-				var loader = new $host.Loader({ _source: _code.getScripts() });
+			this.read = function(loader,scope) {
+				//var loader = new $host.Loader({ _source: _code.getScripts() });
 				return loader.run("plugin.jsh.js", scope);
 			};
 			this.run = function(_code,path,scope,target) {

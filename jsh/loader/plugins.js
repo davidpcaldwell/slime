@@ -25,7 +25,17 @@
 						return true;
 					};
 				}
-				callbacks.script({ _code: _code, declaration: declaration });
+				if (typeof(declaration.disabled) == "undefined") {
+					declaration.disabled = function() {
+						return "never returned true from isReady(): " + declaration.isReady;
+					}
+				}
+				callbacks.script({ 
+					toString: function() {
+						return String(_code.getScripts()).replace(/\%/g, "%%");
+					}, 
+					declaration: declaration 
+				});
 			}
 			scope.$jsh = $host;
 			scope.global = (function() { return this; })();
@@ -37,7 +47,7 @@
 					return loader.classpath.add(pathname.java.adapt());
 				}
 			};
-			loader.plugin.read(_code,scope);
+			loader.plugin.read(scope.$loader,scope);
 		} else {
 			callbacks.java({ _code: _code });
 		}
@@ -65,7 +75,6 @@
 	while(list.length > 0 && !stop) {
 		var marked = false;
 		var i = 0;
-		//	TODO	should isReady be optional?
 		while(i < list.length && !marked) {
 			if (list[i].declaration.isReady()) {
 				list[i].declaration.load();
@@ -79,11 +88,10 @@
 			stop = true;
 			//	TODO	think harder about what to do
 			list.forEach(function(item) {
-				var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
 				Packages.inonit.system.Logging.get().log(
 					$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
 					Packages.java.util.logging.Level.WARNING,
-					"Plugin from " + String(item._code.getScripts()).replace(/\%/g, "%%") + " is disabled: " + message
+					"Plugin from " + item + " is disabled: " + item.declaration.disabled()
 				);
 			});
 		}
