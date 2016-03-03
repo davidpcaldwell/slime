@@ -104,7 +104,7 @@ this.jsh = new function() {
 		return eval($host.loader.getLoaderScript("loader.js").code);
 	})(this);
 	
-	var loadPlugins = (function(jsh) {
+	var plugins = (function(jsh) {
 		return eval($host.loader.getLoaderScript("plugins.js").code);
 	})(this);
 	
@@ -142,12 +142,12 @@ this.jsh = new function() {
 
 		this.plugins = function(from) {
 			if (from && from.java && from.java.adapt && $host.classpath.getClass("java.io.File").isInstance(from.java.adapt())) {
-				loadPlugins($host.getPlugins(from.java.adapt()));
+				plugins._load($host.getPlugins(from.java.adapt()));
 			}
 		};
 	};
 
-	loadPlugins($host.loader.getPlugins());
+	plugins._load($host.loader.getPlugins());
 
 	//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
 	//			$host
