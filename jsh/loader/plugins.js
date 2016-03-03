@@ -12,47 +12,57 @@
 //	END LICENSE
 
 new (function() {
-	this._load = function(_plugins) {
-		var plugins = {};
-		var readPlugin = function(_code,callbacks) {
-			if (_code.getScripts()) {
-				var scope = {};
-				//	TODO	$host is currently *automatically* in scope for these plugins, but that is probably not as it should be; see
-				//			issue 32. $host *should* be in scope, though; we should just have to put it there manually.
-				scope.plugins = plugins;
-				scope.plugin = function(declaration) {
-					if (typeof(declaration.isReady) == "undefined") {
-						declaration.isReady = function() {
-							return true;
-						};
-					}
-					if (typeof(declaration.disabled) == "undefined") {
-						declaration.disabled = function() {
-							return "never returned true from isReady(): " + declaration.isReady;
-						}
-					}
-					callbacks.script({ 
-						toString: function() {
-							return String(_code.getScripts()).replace(/\%/g, "%%");
-						}, 
-						declaration: declaration 
-					});
-				}
-				scope.$jsh = $host;
-				scope.global = (function() { return this; })();
-				scope.jsh = jsh;
-
-				scope.$loader = new $host.Loader({ _code: _code });
-				scope.$loader.classpath = new function() {
-					this.add = function(pathname) {
-						return loader.classpath.add(pathname.java.adapt());
-					}
+	var load = function(p) {
+		var scope = {};
+		//	TODO	$host is currently *automatically* in scope for these plugins, but that is probably not as it should be; see
+		//			issue 32. $host *should* be in scope, though; we should just have to put it there manually.
+		scope.plugins = p.plugins;
+		var rv = [];
+		scope.plugin = function(declaration) {
+			if (typeof(declaration.isReady) == "undefined") {
+				declaration.isReady = function() {
+					return true;
 				};
-				scope.$loader.run("plugin.jsh.js", scope);
-			} else {
-				callbacks.java({ _code: _code });
+			}
+			if (typeof(declaration.disabled) == "undefined") {
+				declaration.disabled = function() {
+					return "never returned true from isReady(): " + declaration.isReady;
+				}
+			}
+			rv.push({
+				toString: p.toString,
+				declaration: declaration
+			});
+		}
+		scope.$jsh = $host;
+		scope.global = (function() { return this; })();
+		scope.jsh = jsh;
+		scope.$loader = p.$loader;
+		scope.$loader.classpath = new function() {
+			this.add = function(pathname) {
+				return loader.classpath.add(pathname.java.adapt());
 			}
 		};
+		scope.$loader.run("plugin.jsh.js", scope);
+		return rv;
+	}
+	
+	this._load = function(_plugins) {
+		var plugins = {};
+//		var readPlugin = function(_code,callbacks) {
+//			if (_code.getScripts()) {
+//				load({
+//					plugins: plugins,
+//					toString: function() {
+//						return String(_code.getScripts()).replace(/\%/g, "%%");						
+//					},
+//					$loader: new $host.Loader({ _code: _code }),
+//					callbacks: callbacks
+//				});
+//			} else {
+//				callbacks.java({ _code: _code });
+//			}
+//		};
 
 		var list = [];
 		for (var i=0; i<_plugins.length; i++) {
@@ -61,16 +71,31 @@ new (function() {
 				Packages.java.util.logging.Level.FINE,
 				"Reading plugins from " + _plugins[i]
 			);
-			var _code = _plugins[i];
-			readPlugin(_code,{
-				script: function(v) {
-					list.push(v);
-				},
-				java: function(v) {
-					$host.classpath.add(v._code.getClasses())
-	//				$plugin.addClasses(v._code);
-				}
-			});
+//			var callbacks = {
+//				script: function(v) {
+//					list.push(v);
+//				},
+//				java: function(v) {
+//					$host.classpath.add(v._code.getClasses())
+//	//				$plugin.addClasses(v._code);
+//				}
+//			};
+			var toString = function(_plugin) {
+				return function() {
+					return String(_plugin.getScripts()).replace(/\%/g, "%%")
+				};
+			};
+			if (_plugins[i].getScripts()) {
+				var array = load({
+					plugins: plugins,
+					toString: toString(_plugins[i]),
+					$loader: new $host.Loader({ _code: _plugins[i] })
+				});
+				list.push.apply(list,array);
+			} else {
+				$host.classpath.add(_plugins[i].getClasses());
+//				callbacks.java({ _code: _plugins[i] });
+			}
 		}
 
 		var stop = false;
