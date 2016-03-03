@@ -343,6 +343,7 @@ $exports.PartDescriptor = function(p) {
 
 $exports.Scenario = function(p) {
 	return {
+		name: p.name,
 		execute: function() {
 			var suite = new jsh.unit.Suite(new $exports.PartDescriptor(p));
 			if (!this.fire) {
