@@ -82,7 +82,7 @@ plugin({
 			if (o.view) {
 				var view = jsh.unit.view.options.select(o.view);
 				view.listen(suite);
-				var success = suite.run();
+				var success = suite.run({ path: o.path });
 				if (o.view != "webview") {
 					jsh.shell.exit( (success) ? 0 : 1 );
 				}
