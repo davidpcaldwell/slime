@@ -372,12 +372,19 @@ var Client = function(configuration) {
 					return response;
 				};
 			})();
+			var type = (function() {
+				var string = response.headers.get("Content-Type");
+				if (string) {
+					return $context.api.io.mime.Type.parse(string);
+				}
+				return null;
+			})();
 			return parser({
 				request: p,
 				status: response.status,
 				headers: response.headers,
 				body: {
-					type: response.headers.get("Content-Type"),
+					type: type,
 					stream: response.stream
 				}
 			});
