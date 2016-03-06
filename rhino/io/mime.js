@@ -34,6 +34,27 @@ if ($context.gae) {
 $exports.Multipart = function(p) {
 	//	Defer the check for the MimeMultipart class until after this is invoked, which hopefully will be after all plugins load, due to Rhino bug(?) in
 	//	LiveConnect only checking for Java classes once
+	
+	var getDisposition = function(part) {
+		if (!part.disposition && subtype == "form-data") {
+			part.disposition = "form-data";
+		}
+		if (part.disposition) {
+			var attributes = [];
+			if (part.name) {
+				attributes.push({ name: "name", value: part.name });
+			}
+			if (part.filename) {
+				attributes.push({ name: "filename", value: part.filename });
+			}
+			if (attributes.length) {
+				attributes.unshift({});
+			}
+			var attributesString = attributes.map(function(attribute) { if (!attribute.name) return ""; return attribute.name + "=" + attribute.value }).join("; ");
+			return part.disposition + attributesString;
+		}
+	};
+	
 	if ($context.nojavamail || typeof(Packages.javax.mail.internet.MimeMultipart) != "function") {
 		var subtype = p.subtype;
 		var parts = p.parts;
@@ -55,9 +76,28 @@ $exports.Multipart = function(p) {
 				writer.write("Content-Type: " + part.type + CRLF);
 			}
 			//	TODO	test filename present and absent
-			if (part.disposition) {
-				var filename = (part.filename) ? "; filename=" + part.filename : "";
-				writer.write("Content-Disposition: " + part.disposition + filename + CRLF);
+			var disposition = getDisposition(part);
+//			if (!part.disposition && subtype == "form-data") {
+//				part.disposition = "form-data";
+//			}
+//			if (part.disposition) {
+//				var attributes = [];
+//				if (part.name) {
+//					attributes.push({ name: "name", value: part.name });
+//				}
+//				if (part.filename) {
+//					attributes.push({ name: "filename", value: part.filename });
+//				}
+//				if (attributes.length) {
+//					attributes.shift("");
+//				}
+//				var attributesString = attributes.map(function(attribute) { return attribute.name + "=" + attribute.value }).join("; ");
+//				var header = "Content-Disposition: " + part.disposition + attributesString + CRLF;
+//				jsh.shell.echo(header);
+//				writer.write(header);
+//			}
+			if (disposition) {
+				writer.write("Content-Disposition: " + disposition + CRLF);
 			}
 			writer.write(CRLF);
 			if (typeof(part.string) == "string") {
@@ -110,8 +150,9 @@ $exports.Multipart = function(p) {
 				$part.setFileName(part.filename);
 			}
 			$part.setDataHandler(toDataHandler(part));
-			if (part.disposition) {
-				$part.setDisposition(part.disposition);
+			var disposition = getDisposition(part);
+			if (disposition) {
+				$part.setDisposition(disposition);
 			}
 			if (part.type) {
 				$part.setHeader("Content-Type", part.type);
