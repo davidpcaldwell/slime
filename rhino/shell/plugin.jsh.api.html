@@ -407,7 +407,7 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					var unforked = module.jsh({
-						script: $module.getResourcePathname("test/jsh.jsh.js").file,
+						script: $jsapi.loader.getRelativePath("test/jsh.jsh.js").file,
 						arguments: [],
 						evaluate: function(result) {
 							return result;
@@ -419,7 +419,7 @@ END LICENSE
 					test(Boolean(unforked.jsh) && Boolean(unforked.jsh.script));
 
 					var forked = module.jsh({
-						script: $module.getResourcePathname("test/jsh.jsh.js").file,
+						script: $jsapi.loader.getRelativePath("test/jsh.jsh.js").file,
 						arguments: [],
 						evaluate: function(result) {
 							return result;
@@ -433,7 +433,7 @@ END LICENSE
 					test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
 
 					var issue82 = module.jsh({
-						script: $module.getResourcePathname("test/jsh.jsh.js").file,
+						script: $jsapi.loader.getRelativePath("test/jsh.jsh.js").file,
 						evaluate: function(result) {
 							return (result.status == 2) ? "worked" : "did not work";
 						}
@@ -444,7 +444,7 @@ END LICENSE
 					if (jsh.httpd.Tomcat) {
 						jsh.shell.jsh({
 							fork: true,
-							script: $module.getResourcePathname("test/jsh.jsh.js").file,
+							script: $jsapi.loader.getRelativePath("test/jsh.jsh.js").file,
 							arguments: ["-scenario"],
 							stdio: {
 								output: String,

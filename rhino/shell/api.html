@@ -115,7 +115,7 @@ END LICENSE
 				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				jsh.java.tools.javac({
 					destination: to.pathname,
-					arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/" + name + ".java")]
+					arguments: [$jsapi.loader.getRelativePath("test/java/inonit/jsh/test/" + name + ".java")]
 				});
 				return {
 					classpath: jsh.file.Searchpath([to.pathname]),
@@ -240,7 +240,7 @@ END LICENSE
 										var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 										jsh.java.tools.javac({
 											destination: to.pathname,
-											arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/Echo.java")]
+											arguments: [$jsapi.loader.getRelativePath("test/java/inonit/jsh/test/Echo.java")]
 										});
 										var buffer = new jsh.io.Buffer();
 										var result = module.java({
@@ -514,7 +514,7 @@ END LICENSE
 					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					jsh.java.tools.javac({
 						destination: to.pathname,
-						arguments: [$module.getResourcePathname("test/java/inonit/jsh/test/Program.java")]
+						arguments: [$jsapi.loader.getRelativePath("test/java/inonit/jsh/test/Program.java")]
 					});
 					var buffer = new jsh.io.Buffer();
 					var output = module.java({

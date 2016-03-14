@@ -237,7 +237,7 @@ END LICENSE
 		</script>
 		<script type="application/x.jsapi#tests">
 			var one = code.Resources.script.old(
-				$module.getResourcePathname("test/resource/1.old.js").file
+				$jsapi.loader.getRelativePath("test/resource/1.old.js").file
 			);
 			var indexOf = function(value) {
 				return function() {
@@ -261,7 +261,7 @@ END LICENSE
 		<script type="application/x.jsapi#tests">
 			verify(code,"code").Resources().is.not.equalTo(3);
 			var one = new code.Resources();
-			var top = $module.getResourcePathname(".").directory;
+			var top = $jsapi.loader.getRelativePath(".").directory;
 			one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
 			one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
 			one.add({ prefix: "WEB-INF/test/", directory: top.getSubdirectory("test") });
@@ -292,7 +292,7 @@ END LICENSE
 //			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
 		</script>
 		<script type="application/x.jsapi#tests">
-			var mapping = code.Resources.script($module.getResourcePathname("test/resource/1.hg.js").file);
+			var mapping = code.Resources.script($jsapi.loader.getRelativePath("test/resource/1.hg.js").file);
 			verify(mapping).is.not.equalTo(null);
 			verify(mapping).loader.is.not.equalTo(null);
 			verify(mapping).loader.evaluate.property("list").is.type("function");

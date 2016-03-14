@@ -47,9 +47,9 @@ END LICENSE
 			</div>
 			<script type="application/x.jsapi#initialize">
 				if (scope.module) {
-					scope.loader = new scope.module.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+					scope.loader = new scope.module.Loader({ directory: $jsapi.loader.getRelativePath("api.html").parent.directory });
 				} else {
-					scope.loader = new jsh.file.Loader({ directory: $module.getResourcePathname("api.html").parent.directory });
+					scope.loader = new jsh.file.Loader({ directory: $jsapi.loader.getRelativePath("api.html").parent.directory });
 				}
 			</script>
 			<script type="application/x.jsapi#tests">
