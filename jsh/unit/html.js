@@ -228,17 +228,17 @@ var Scope = function(suite,environment) {
 
 			this.coffee = jsh.$jsapi.coffee;
 
-			this.scenario = function(path,p) {
-				var apifile = getApiHtml(suite.getRelativePath(path));
-				var page = loadApiHtml(apifile);
-				var name = path;
-				var tests = new $context.html.ApiHtmlTests(page,name);
-				var subscope = new Scope(new Suite(suite.getRelativePath(path)));
-				subscope.module = p.module;
-				//	TODO	we wish we could set context but we may not be able to do that
-				var scenario = tests.getSuite(subscope);
-				return scenario;
-			}
+//			this.scenario = function(path,p) {
+//				var apifile = getApiHtml(suite.getRelativePath(path));
+//				var page = loadApiHtml(apifile);
+//				var name = path;
+//				var tests = new $context.html.ApiHtmlTests(page,name);
+//				var subscope = new Scope(new Suite(suite.getRelativePath(path)));
+//				subscope.module = p.module;
+//				//	TODO	we wish we could set context but we may not be able to do that
+//				var scenario = tests.getSuite(subscope);
+//				return scenario;
+//			}
 
 			this.suite = function(path,environment) {
 				var apifile = getApiHtml(suite.getRelativePath(path));
@@ -293,7 +293,8 @@ var Scope = function(suite,environment) {
 		this.coffee = implementation.coffee;
 
 		this.scenario = function(path,p) {
-			return implementation.scenario(path,p);
+			throw new Error("scenario unimplemented");
+//			return implementation.scenario(path,p);
 		}
 
 		this.suite = function(path,p) {
