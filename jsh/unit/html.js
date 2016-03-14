@@ -162,8 +162,8 @@ var Suite = function(pathname) {
 //			this.getScenario = function(scope) {
 //				return this.html.getScenario(scope);
 //			}
-			this.getSuite = function(scope) {
-				return this.html.getSuite(scope);
+			this.getSuiteDescriptor = function(scope) {
+				return this.html.getSuiteDescriptor(scope);
 			}
 		}
 
@@ -288,7 +288,12 @@ var Scope = function(suite,environment) {
 			var page = loadApiHtml(apifile);
 			var name = path;
 			var tests = new $context.html.ApiHtmlTests(page,name);
-			var subscope = new Scope(new Suite(suite.getRelativePath(path)),environment);
+			//	TODO	currently we are setting this $jsapi.environment.file variable both here and in jsapi.jsh.js to support
+			//			HTML pages locating themselves in the file system. This is not good; we shouldn't even be treating them as
+			//			files. As of this writing, the only known use is to support the jsh/unit/api.html tests which test HTML
+			//			tests themselves.
+			var pageEnvironment = jsh.js.Object.set({}, environment, { file: apifile });
+			var subscope = new Scope(new Suite(suite.getRelativePath(path)),pageEnvironment);
 			var rv = tests.getSuite(subscope);
 			return rv;
 		}
@@ -333,31 +338,36 @@ var Scope = function(suite,environment) {
 
 	this.$platform = jsh.$jsapi.$platform;
 	this.$api = jsh.$jsapi.$api;
+};
+
+var PartDescriptor = function(p) {
+	var suite = new Suite(p.pathname);
+	var scope = new Scope(suite,(p.environment) ? p.environment : {});
+	return suite.getSuiteDescriptor(scope);	
 }
 
 $exports.PartDescriptor = function(p) {
-	var suite = new Suite(p.pathname);
-	var scope = new Scope(suite,(p.environment) ? p.environment : {});
-	return suite.getSuite(scope);
-};
-
-$exports.Scenario = function(p) {
-	return {
+	if (p.reload) {
+		return {
 		name: p.name,
-		execute: function() {
-			var suite = new jsh.unit.Suite(new $exports.PartDescriptor(p));
-			if (!this.fire) {
-				throw new Error("No fire: keys=" + Object.keys(this));
-			}
-			var fire = (function(e) {
-				this.fire(e.type,e.detail);
-			}).bind(this);
-			suite.listeners.add("scenario",fire);
-			suite.listeners.add("test",fire);
-			suite.run();
+			execute: function() {
+				var suite = new jsh.unit.Suite(new PartDescriptor(p));
+				var fire = (function(e) {
+					this.fire(e.type,e.detail);
+				}).bind(this);
+				suite.listeners.add("scenario",fire);
+				suite.listeners.add("test",fire);
+				suite.run();
+			}			
 		}
+	} else {
+		return new PartDescriptor(p);
 	}
 };
+
+$exports.Scenario = $api.deprecate(function(p) {
+	return new $exports.PartDescriptor(jsh.js.Object.set({}, { reload: true }, p));
+});
 
 //$exports.Scenario = $api.deprecate($exports.PartDescriptor);
 
