@@ -208,7 +208,56 @@ var Scope = function(suite,environment) {
 		return new Scope({ getRelativePath: getRelativePath, getResourcePathname: getRelativePath }, environment);
 	};
 
-	var Loader = function(implementation) {
+	var Loader = function(suite) {
+		var Implementation = function(suite) {
+			this.loader = function(path) {
+				var pathname = suite.getRelativePath(path);
+				return new jsh.file.Loader({ directory: pathname.directory });
+			};
+
+			var Directory = function(directory) {
+				this.string = function(path) {
+					return directory.getFile(path).read(String);
+				}
+			}
+
+			this.directory = function(path) {
+				var pathname = suite.getRelativePath(path);
+				return new Directory(pathname.directory);
+			}
+
+			this.coffee = jsh.$jsapi.coffee;
+
+			this.scenario = function(path,p) {
+				var apifile = getApiHtml(suite.getRelativePath(path));
+				var page = loadApiHtml(apifile);
+				var name = path;
+				var tests = new $context.html.ApiHtmlTests(page,name);
+				var subscope = new Scope(new Suite(suite.getRelativePath(path)));
+				subscope.module = p.module;
+				//	TODO	we wish we could set context but we may not be able to do that
+				var scenario = tests.getSuite(subscope);
+				return scenario;
+			}
+
+			this.suite = function(path,environment) {
+				var apifile = getApiHtml(suite.getRelativePath(path));
+				var page = loadApiHtml(apifile);
+				var name = path;
+				var tests = new $context.html.ApiHtmlTests(page,name);
+				//	TODO	currently we are setting this $jsapi.environment.file variable both here and in jsapi.jsh.js to support
+				//			HTML pages locating themselves in the file system. This is not good; we shouldn't even be treating them as
+				//			files. As of this writing, the only known use is to support the jsh/unit/api.html tests which test HTML
+				//			tests themselves.
+				var pageEnvironment = jsh.js.Object.set({}, environment, { file: apifile });
+				var subscope = new Scope(new Suite(suite.getRelativePath(path)),pageEnvironment);
+				var rv = tests.getSuite(subscope);
+				return rv;
+			}
+		};
+		
+		var implementation = new Implementation(suite);
+
 		var parse = function(path) {
 			var index = path.lastIndexOf("/");
 			var directory = path.substring(0,index);
@@ -252,56 +301,9 @@ var Scope = function(suite,environment) {
 		}
 	}
 
-	var Implementation = function(suite) {
-		this.loader = function(path) {
-			var pathname = suite.getRelativePath(path);
-			return new jsh.file.Loader({ directory: pathname.directory });
-		};
-
-		var Directory = function(directory) {
-			this.string = function(path) {
-				return directory.getFile(path).read(String);
-			}
-		}
-
-		this.directory = function(path) {
-			var pathname = suite.getRelativePath(path);
-			return new Directory(pathname.directory);
-		}
-
-		this.coffee = jsh.$jsapi.coffee;
-
-		this.scenario = function(path,p) {
-			var apifile = getApiHtml(suite.getRelativePath(path));
-			var page = loadApiHtml(apifile);
-			var name = path;
-			var tests = new $context.html.ApiHtmlTests(page,name);
-			var subscope = new Scope(new Suite(suite.getRelativePath(path)));
-			subscope.module = p.module;
-			//	TODO	we wish we could set context but we may not be able to do that
-			var scenario = tests.getSuite(subscope);
-			return scenario;
-		}
-
-		this.suite = function(path,environment) {
-			var apifile = getApiHtml(suite.getRelativePath(path));
-			var page = loadApiHtml(apifile);
-			var name = path;
-			var tests = new $context.html.ApiHtmlTests(page,name);
-			//	TODO	currently we are setting this $jsapi.environment.file variable both here and in jsapi.jsh.js to support
-			//			HTML pages locating themselves in the file system. This is not good; we shouldn't even be treating them as
-			//			files. As of this writing, the only known use is to support the jsh/unit/api.html tests which test HTML
-			//			tests themselves.
-			var pageEnvironment = jsh.js.Object.set({}, environment, { file: apifile });
-			var subscope = new Scope(new Suite(suite.getRelativePath(path)),pageEnvironment);
-			var rv = tests.getSuite(subscope);
-			return rv;
-		}
-	}
-
 	this.$jsapi = {
 		environment: environment,
-		loader: new Loader(new Implementation(suite)),
+		loader: new Loader(suite),
 		//	TODO	not sure the below should be provided; is used to facilitate loading of jsh plugins into the jsh executing the
 		//			tests, but probably need a more granular way to load the plugins so that they do not affect global execution
 		//			environment
