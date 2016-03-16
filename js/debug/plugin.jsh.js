@@ -103,6 +103,6 @@ plugin({
 
 		jsh.debug.disableBreakOnExceptionsFor = $api.deprecate($api.debug.disableBreakOnExceptionsFor);
 
-		jsh.js.Error.Type = jsh.debug.disableBreakOnExceptionsFor(jsh.js.Error.Type);
+		jsh.js.Error.Type = $api.debug.disableBreakOnExceptionsFor(jsh.js.Error.Type);
 	}
 })

@@ -232,7 +232,7 @@ END LICENSE
 				};
 				(function() {
 					if (expect) {
-						jsh.debug.disableBreakOnExceptionsFor(invoke)();
+						$api.debug.disableBreakOnExceptionsFor(invoke)();
 					} else {
 						invoke();
 					}

@@ -305,7 +305,7 @@
 		var resolve = function(view,e) {
 			var success = e.detail.success;
 			var elapsed = ((e.timestamp - view.started) / 1000).toFixed(3);
-			view.result.innerHTML = (success) ? "Passed (" + elapsed + ")" : "Failed";
+			view.result.innerHTML = ( (success) ? "Passed (" + elapsed + ")" : "Failed" ) + " at " + new Date(e.timestamp);
 			colorCode(view.element,success);
 		}
 
