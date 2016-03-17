@@ -239,11 +239,17 @@ $exports.jsh = function(p) {
 //	})();
 	var environment = (function() {
 		if (p.environment) return p.environment;
-		if (p.shell) {
+		if (p.shell || fork) {
 			var rv = {};
 			for (var x in $exports.environment) {
-				if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x)) {
-
+				if (x == "JSH_DEBUG_JDWP") {
+					
+				} else if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x)) {
+					if (p.shell) {
+						
+					} else {
+						rv[x] = $exports.environment[x];						
+					}
 				} else {
 					rv[x] = $exports.environment[x];
 				}

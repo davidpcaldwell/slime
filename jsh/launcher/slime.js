@@ -214,7 +214,11 @@ $api.slime = (function(was) {
 
 		map("jsh.debug.jdwp", {
 			container: function(value) {
-				return ["-agentlib:jdwp=" + value];
+				if (value == "false") {
+					return [];
+				} else {
+					return ["-agentlib:jdwp=" + value];
+				}
 			}
 		});
 		map("jsh.debug.script", LOADER);

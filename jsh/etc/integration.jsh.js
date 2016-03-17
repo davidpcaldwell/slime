@@ -38,6 +38,14 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
+scenario.part("jdwp", jsh.unit.Suite.Fork({
+	name: "jdwp",
+	run: jsh.shell.jsh,
+	fork: true,
+	script: src.getFile("jsh/test/debug/jdwp.jsh.js"),
+	arguments: ["-view", "stdio"]
+}));
+
 //	TODO	this next line should go elsewhere
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
 
