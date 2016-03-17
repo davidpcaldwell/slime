@@ -47,6 +47,10 @@ if (false) {
 		script: src.getFile("rhino/shell/test/jdwp.jsh.js"),
 		arguments: ["-view", "stdio"]
 	}));
+} else {
+	scenario.part("jsh.shell", jsh.unit.part.Html({
+		pathname: src.getRelativePath("rhino/shell/test/plugin.jsh.integration.api.html")
+	}))
 }
 
 //	TODO	this next line should go elsewhere
