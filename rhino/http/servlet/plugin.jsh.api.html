@@ -253,6 +253,27 @@ END LICENSE
 							<span class="type"><a href="#types.Tomcat">Tomcat</a></span>
 							<span>The Tomcat object that was started.</span>
 						</div>
+						<script type="application/x.jsapi#tests">
+							if (jsh.httpd.Tomcat) {
+								var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
+								directory.getRelativePath("a").write("a", { append: false });
+								var tomcat = jsh.httpd.Tomcat.serve({
+									directory: directory
+								});
+								var client = new jsh.http.Client();
+								var response = client.request({
+									url: "http://127.0.0.1:" + tomcat.port + "/" + "a"
+								});
+								var content = response.body.stream.character().asString();
+								verify(response).status.code.is(200);
+								verify(content).is("a");
+								var response = client.request({
+									url: "http://127.0.0.1:" + tomcat.port + "/" + "b"
+								});
+								verify(response).status.code.is(404);
+								tomcat.stop();
+							}
+						</script>
 					</li>
 				</ul>
 			</li>

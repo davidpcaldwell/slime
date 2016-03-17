@@ -42,12 +42,6 @@ scenario.part("jsh.shell", jsh.unit.part.Html({
 	pathname: src.getRelativePath("rhino/shell/test/plugin.jsh.integration.api.html")
 }));
 
-if (CATALINA_HOME) {
-	scenario.part("jsh.httpd", jsh.unit.part.Html({
-		pathname: src.getRelativePath("rhino/http/servlet/test/jsh-integration.api.html")
-	}));
-}
-
 //	TODO	this next line should go elsewhere
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
 
