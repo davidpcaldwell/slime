@@ -255,21 +255,6 @@ END LICENSE
 						</div>
 					</li>
 				</ul>
-				<!--	TODO	manual test currently: jsh/test/manual/jsh.httpd/serve.jsh.js	-->
-				<script type="application/x.jsapi#tests">
-					if (jsh.httpd.Tomcat) {
-						jsh.shell.jsh({
-							fork: true,
-							script: $jsapi.loader.getRelativePath("test/jsh.shell.jsh.jsh.js").file,
-							arguments: ["-scenario"],
-							evaluate: function(result) {
-								verify(result.status,"jsh.shell.jsh.jsh.js status").is(0)
-							}
-						});
-					} else {
-						verify("Skipped Tomcat tests.").is("Skipped Tomcat tests.");
-					}
-				</script>
 			</li>
 		</ul>
 	</div>

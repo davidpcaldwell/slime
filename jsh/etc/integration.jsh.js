@@ -38,19 +38,14 @@ var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
 });
 
-if (false) {
-	//	TODO	currently skipping this test because it is being run by unit tests, but probably will move it here
-	scenario.part("jdwp", jsh.unit.Suite.Fork({
-		name: "jdwp",
-		run: jsh.shell.jsh,
-		fork: true,
-		script: src.getFile("rhino/shell/test/jdwp.jsh.js"),
-		arguments: ["-view", "stdio"]
+scenario.part("jsh.shell", jsh.unit.part.Html({
+	pathname: src.getRelativePath("rhino/shell/test/plugin.jsh.integration.api.html")
+}));
+
+if (CATALINA_HOME) {
+	scenario.part("jsh.httpd", jsh.unit.part.Html({
+		pathname: src.getRelativePath("rhino/http/servlet/test/jsh-integration.api.html")
 	}));
-} else {
-	scenario.part("jsh.shell", jsh.unit.part.Html({
-		pathname: src.getRelativePath("rhino/shell/test/plugin.jsh.integration.api.html")
-	}))
 }
 
 //	TODO	this next line should go elsewhere
