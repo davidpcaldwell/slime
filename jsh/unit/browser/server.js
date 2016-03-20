@@ -19,7 +19,7 @@ $exports.handle = function(request) {
 	if (/\.html$/.test(request.path) || /\.js$/.test(request.path) || /\.css$/.test(request.path)) {
 		return {
 			status: { code: 200 },
-			body: $loader.resource(request.path)
+			body: $loader.get(request.path)
 		};
 	}
 	if (request.path == "structure") {
