@@ -28,8 +28,8 @@ $exports.handle = function(request) {
 				id: part.id,
 				name: part.name
 			};
-			if (part.getParts) {
-				var parts = part.getParts();
+			if (part.parts) {
+				var parts = part.parts;
 				rv.parts = {};
 				for (var x in parts) {
 					rv.parts[x] = getStructure(parts[x]);

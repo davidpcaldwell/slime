@@ -180,7 +180,7 @@ END LICENSE
 				See <a href="plugin.jsh.resources.api.html">detailed documentation</a>.
 				<script type="application/x.jsapi#tests">
 					verify.suite(
-						$jsapi.loader.scenario(
+						$jsapi.loader.suite(
 							"plugin.jsh.resources.api.html",
 							{}
 						)
@@ -260,7 +260,7 @@ END LICENSE
 					if (jsh.httpd.Tomcat) {
 						jsh.shell.jsh({
 							fork: true,
-							script: $module.getResourcePathname("test/jsh.shell.jsh.jsh.js").file,
+							script: $jsapi.loader.getRelativePath("test/jsh.shell.jsh.jsh.js").file,
 							arguments: ["-scenario"],
 							evaluate: function(result) {
 								verify(result.status,"jsh.shell.jsh.jsh.js status").is(0)

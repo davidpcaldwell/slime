@@ -698,6 +698,19 @@ $exports.Scenario = {};
 					suite.listeners.add("test",fire);
 					suite.run();
 				});
+				verify.scenario = function(o) {
+					var suite = new $exports.Suite({
+						parts: {
+							scenario: o
+						}
+					});
+					var fire = (function(e) {
+						this.fire(e.type,e.detail);
+					}).bind(this);
+					suite.listeners.add("scenario",fire);
+					suite.listeners.add("test",fire);
+					suite.run();					
+				}
 				verify.fire = $api.deprecate(function(type,detail) {
 					vscope.fire(type,detail);
 				});

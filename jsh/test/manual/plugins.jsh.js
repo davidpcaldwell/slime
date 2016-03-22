@@ -17,7 +17,7 @@ var exception = function() {
 	}
 };
 
-var e2 = jsh.debug.disableBreakOnExceptionsFor(exception);
+var e2 = $api.debug.disableBreakOnExceptionsFor(exception);
 
 //	should break
 debugger;

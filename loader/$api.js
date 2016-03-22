@@ -536,6 +536,9 @@
 				}
 				var parent = getParent();
 				if (parent) {
+					//	TODO	this appears to be a bug; would the path not consist of the source object several times in a row,
+					//			once for each bubble? Possibly this should be event.path.unshift(this)? Should write test for path
+					//			and see
 					event.path.unshift(source);
 					parent.bubble(event);
 				}

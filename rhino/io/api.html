@@ -916,7 +916,7 @@ END LICENSE
 					var loader = new module.Loader({
 						resources: {
 							get: function(path) {
-								var file = $module.getResourcePathname(path).file;
+								var file = $jsapi.loader.getRelativePath(path).file;
 								if (!file) return null;
 								var type = (function() {
 									if (/\.jsh\.js$/.test(path)) {

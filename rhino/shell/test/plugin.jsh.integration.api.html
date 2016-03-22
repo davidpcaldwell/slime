@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>__TITLE__</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../../loader/api/api.js"></script>
+	</head>
+	<body>
+		<script type="application/x.jsapi#initialize">
+			//	TODO	there is an elaborate setup in plugin.jsh.api.html for this, but perhaps it is better to use the executing
+			//			shell here?
+			scope.module = jsh.shell;
+		</script>
+		<script type="application/x.jsapi#tests"><![CDATA[
+			var unforked = module.jsh({
+				script: $jsapi.loader.getRelativePath("jsh.jsh.js").file,
+				arguments: [],
+				evaluate: function(result) {
+					return result;
+				}
+			});
+			test(unforked.status == 2);
+			test(typeof(unforked.command) == "undefined");
+			test(typeof(unforked.arguments) == "undefined");
+			test(Boolean(unforked.jsh) && Boolean(unforked.jsh.script));
+
+			var forked = module.jsh({
+				script: $jsapi.loader.getRelativePath("jsh.jsh.js").file,
+				arguments: [],
+				evaluate: function(result) {
+					return result;
+				},
+				fork: true
+			});
+			verify(forked).status.is(2);
+			test(typeof(forked.command) != "undefined" && typeof(forked.command) == "object" && forked.command != null);
+			test(forked.command.toString() == jsh.shell.java.jrunscript.toString());
+			test(typeof(forked.arguments) != "undefined");
+			test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
+
+			var issue82 = module.jsh({
+				script: $jsapi.loader.getRelativePath("jsh.jsh.js").file,
+				evaluate: function(result) {
+					return (result.status == 2) ? "worked" : "did not work";
+				}
+			});
+			test(issue82 == "worked");
+		]]></script>
+		<script type="application/x.jsapi#tests">
+			verify.scenario(jsh.unit.Suite.Fork({
+				name: "jdwp",
+				run: jsh.shell.jsh,
+				script: $jsapi.loader.getRelativePath("jdwp.jsh.js").file,
+				arguments: ["-view", "stdio"]
+			}));
+		</script>
+		<script type="application/x.jsapi#tests"><![CDATA[
+			if (jsh.httpd.Tomcat) {
+				jsh.shell.jsh({
+					fork: true,
+					script: $jsapi.loader.getRelativePath("jsh.jsh.js").file,
+					arguments: ["-scenario"],
+					stdio: {
+						output: String,
+						error: String
+					},
+					evaluate: function(result) {
+						if (result.status) {
+							jsh.shell.echo(result.stdio.output);
+							jsh.shell.echo(result.stdio.error);
+						}
+						verify(result).status.is(0);
+					}
+				});
+			} else {
+				var message = "Skipped URL tests; no Tomcat present";
+				verify(message).is(message);
+			}
+		]]></script>
+		<div>__DESCRIPTION__</div>
+		<div>
+			<h1>Context</h1>
+			<ul>
+			</ul>
+		</div>
+		<div>
+			<h1>Exports</h1>
+			<ul>
+			</ul>
+		</div>
+	</body>
+</html>

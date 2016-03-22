@@ -164,6 +164,8 @@ public abstract class Code {
 			//			be created more than once
 			public static File create(final URI uri, final String name, final Long length, final java.util.Date modified, final InputStream in) {
 				return new File() {
+					private byte[] bytes;
+
 					@Override public String toString() {
 						return "Code.Source.File uri=" + uri.adapt() + " name=" + name + " length=" + length + " modified=" + modified;
 					}
@@ -185,7 +187,14 @@ public abstract class Code {
 					}
 
 					@Override public InputStream getInputStream() {
-						return in;
+						if (bytes == null) {
+							try {
+								bytes = new inonit.script.runtime.io.Streams().readBytes(in);
+							} catch (IOException e) {
+								throw new RuntimeException(e);
+							}
+						}
+						return new ByteArrayInputStream(bytes);
 					}
 				};
 			}
