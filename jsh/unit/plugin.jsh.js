@@ -104,29 +104,27 @@ plugin({
 		jsh.unit.html.documentation = html.documentation;
 
 		jsh.unit.Suite.Fork = function(p) {
-			return {
-				create: function() {
-					this.name = p.name;
+			return new function() {
+				this.name = p.name;
 
-					this.execute = function(scope,verify) {
-						var buffer = new jsh.io.Buffer();
-						var arg = jsh.js.Object.set({}, p, {
-							stdio: {
-								output: buffer.writeBinary()
-							}
-						});
-						jsh.java.Thread.start(function() {
-							p.run(arg);
-							buffer.close();
-						});
-						var decoder = new remote.Decoder({
-							stream: buffer.readBinary(),
-							received: function(e) {
-								verify.fire(e.type,e.detail);
-							}
-						});
-						decoder.run();
-					}
+				this.execute = function(scope,verify) {
+					var buffer = new jsh.io.Buffer();
+					var arg = jsh.js.Object.set({}, p, {
+						stdio: {
+							output: buffer.writeBinary()
+						}
+					});
+					jsh.java.Thread.start(function() {
+						p.run(arg);
+						buffer.close();
+					});
+					var decoder = new remote.Decoder({
+						stream: buffer.readBinary(),
+						received: function(e) {
+							verify.fire(e.type,e.detail);
+						}
+					});
+					decoder.run();
 				}
 			};
 		};
@@ -146,34 +144,32 @@ plugin({
 		}
 
 		jsh.unit.Suite.Command = function(p) {
-			return {
-				create: function() {
-					this.name = (function() {
-						if (p.name) return p.name;
-						if (p.command) return [p.command].concat( (p.arguments) ? p.arguments : [] );
-						return "Suite.Command (unnamed)"
-					})();
+			return new function() {
+				this.name = (function() {
+					if (p.name) return p.name;
+					if (p.command) return [p.command].concat( (p.arguments) ? p.arguments : [] );
+					return "Suite.Command (unnamed)"
+				})();
 
-					this.execute = function(scope,verify) {
-						var o = {};
-						for (var x in p) {
-							if (x != "name" && x != "run") {
-								o[x] = p[x];
-							}
+				this.execute = function(scope,verify) {
+					var o = {};
+					for (var x in p) {
+						if (x != "name" && x != "run") {
+							o[x] = p[x];
 						}
-						if (o.evaluate) {
-							o.evaluate = (function(was) {
-								return function(result) {
-									return was.call(null,result,verify);
-								}
-							})(o.evaluate);
-						} else {
-							o.evaluate = function(result) {
-								verify(result).status.is(0);
-							};
-						}
-						p.run(o);
 					}
+					if (o.evaluate) {
+						o.evaluate = (function(was) {
+							return function(result) {
+								return was.call(null,result,verify);
+							}
+						})(o.evaluate);
+					} else {
+						o.evaluate = function(result) {
+							verify(result).status.is(0);
+						};
+					}
+					p.run(o);
 				}
 			};
 		}
