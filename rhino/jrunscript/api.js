@@ -343,6 +343,7 @@
 	};
 
 	(function() {
+		//	Given a string, returns either { file: absolute java.io.File } or { url: java.net.URL }
 		var interpret = function(string) {
 			if (new Packages.java.io.File(string).exists()) {
 				//	TODO	study using getCanonicalFile() instead; key would be what getParentFile() of given file returns
@@ -386,6 +387,8 @@
 			}
 		};
 
+		//	TODO	seems to assume the presence of a global function called 'load' -- should handle this more like other global
+		//			stuff (see readUrl, readFile), I think
 		if (!load) throw new Error();
 
 		$api.Script = function(p) {
@@ -506,6 +509,7 @@
 			$api.arguments = $arguments;
 		} else {
 			$api.arguments = (function() {
+				//	TODO	Use $api.engine.resolve
 				if (this["javax.script.argv"]) {
 					//	Nashorn, JSR223 Rhino
 					return (function(property) {
@@ -566,6 +570,7 @@
 			}
 		};
 
+		//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
 		if (Object.defineProperty) {
 			Object.defineProperty($api.java.install, "compile", {
 				get: function() {
@@ -1002,6 +1007,7 @@
 
 (function() {
 	var $api = this.$api;
+	//	TODO	this appears to be redundant; could just use api in query parameter, or nothing at all
 	if (Packages.java.lang.System.getProperty("inonit.jrunscript.api.passive")) {
 		return;
 	}
