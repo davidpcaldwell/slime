@@ -361,6 +361,9 @@ $exports.Project = function(p) {
 
 	var self = this;
 
+	if (!p.base) {
+		throw new Error("No base specified for project.");
+	}
 	if (!p.base.getFile("pom.xml")) {
 		throw new Error("POM not found at " + p.base.getRelativePath("pom.xml"));
 	}

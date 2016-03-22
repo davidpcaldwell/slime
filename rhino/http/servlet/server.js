@@ -130,7 +130,7 @@ $exports.Servlet = function(delegate) {
 					//	Documented to accept loader/mime.api.html Type and string
 					_response.setContentLength(String(response.body.length));
 				}
-				if (response.body && response.body.string) {
+				if (response.body && response.body.string && !response.body.stream && (!(response.body.read && response.body.read.binary))) {
 					//	Wrap in java.lang.String because Nashorn string type does not unambiguously match .write() signature
 					_response.getWriter().write(new Packages.java.lang.String(response.body.string));
 //				} else if (response.body && response.body.read && response.body.read.text) {
