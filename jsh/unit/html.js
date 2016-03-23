@@ -209,7 +209,7 @@ var Scope = function(suite,environment) {
 		var Directory = function(path) {
 			return new function() {
 				var directory = suite.getRelativePath(path).directory;
-				
+
 				if (!directory) {
 					throw new Error("No directory at " + path + " relative to " + suite);
 				}
@@ -255,7 +255,7 @@ var Scope = function(suite,environment) {
 			var rv = tests.getSuite(subscope);
 			return rv;
 		};
-		
+
 		this.getRelativePath = function(path) {
 			return suite.getRelativePath(path);
 		};
@@ -295,7 +295,7 @@ var Scope = function(suite,environment) {
 var PartDescriptor = function(p) {
 	var suite = new Suite(p.pathname);
 	var scope = new Scope(suite,(p.environment) ? p.environment : {});
-	return suite.getSuiteDescriptor(scope);	
+	return suite.getSuiteDescriptor(scope);
 }
 
 $exports.PartDescriptor = function(p) {
@@ -310,7 +310,7 @@ $exports.PartDescriptor = function(p) {
 				suite.listeners.add("scenario",fire);
 				suite.listeners.add("test",fire);
 				suite.run();
-			}			
+			}
 		}
 	} else {
 		return new PartDescriptor(p);

@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	We have an object called Object in this file, so this 
+//	We have an object called Object in this file, so this
 var defineProperty = Object.defineProperty;
 
 var Verify = function(scope,vars) {
@@ -290,7 +290,7 @@ var Verify = function(scope,vars) {
 		}
 		return new Value(value,name);
 	};
-	
+
 	for (var x in vars) {
 		if (typeof(vars[x]) == "function") {
 			rv[x] = (function(delegate,name) {
@@ -452,7 +452,7 @@ var Scope = function(o) {
 		});
 		fail();
 	}
-	
+
 
 	var units = [];
 
@@ -586,14 +586,14 @@ $exports.Scenario = {};
 		}
 		return rv;
 	}
-	
+
 	var Part = function(definition,context) {
 		//	TODO	what if caller does not use 'new'?
 		var events = $api.Events({
 			source: this,
 			parent: (context && context.events) ? context.events : null
 		});
-		
+
 		this.id = (context) ? context.id : null;
 
 		this.name = (function() {
@@ -608,13 +608,13 @@ $exports.Scenario = {};
 				return $api.deprecate(function() {
 					return this[property];
 				}).call(this);
-			}				
+			}
 		}).bind(this);
-		
+
 		var EVENT = (function() {
 			return { id: (context && context.id ) ? context.id : null, name: this.name };
 		}).bind(this);
-		
+
 		var destroy = (function(scope) {
 			try {
 				var destroy = find("destroy");
@@ -622,17 +622,17 @@ $exports.Scenario = {};
 			} catch (e) {
 				//	TODO	what to do on destroy error?
 //				vscope.error(e);
-			}				
+			}
 		}).bind(this);
-		
-		return { 
+
+		return {
 			events: events,
 			create: (function() {
 				if (definition && definition.create) {
 					$api.deprecate(function() {
-						definition.create.call(this);				
+						definition.create.call(this);
 					}).call(this);
-				}				
+				}
 			}).bind(this),
 			find: find,
 			before: (function(p) {
@@ -656,7 +656,7 @@ $exports.Scenario = {};
 						});
 						return true;
 					}
-				}				
+				}
 			}).bind(this),
 			after: (function(success,scope) {
 				events.fire("scenario", { end: EVENT(), success: success });
@@ -669,7 +669,7 @@ $exports.Scenario = {};
 
 	var Scenario = function(o,context) {
 		var part = Part.apply(this,arguments);
-		
+
 		this.fire = function() {
 			part.events.fire.apply(part.events,arguments);
 		}
@@ -679,9 +679,9 @@ $exports.Scenario = {};
 
 			//	TODO	compare below initialize with one used in part
 			var vscope = new Scope({ events: part.events });
-			
+
 			var error = part.initialize(local);
-			
+
 			if (error) {
 				vscope.fail();
 			} else {
@@ -709,7 +709,7 @@ $exports.Scenario = {};
 					}).bind(this);
 					suite.listeners.add("scenario",fire);
 					suite.listeners.add("test",fire);
-					suite.run();					
+					suite.run();
 				}
 				verify.fire = $api.deprecate(function(type,detail) {
 					vscope.fire(type,detail);
@@ -726,13 +726,13 @@ $exports.Scenario = {};
 
 			return part.after(vscope.success,local);
 		}
-		
+
 		part.create();
 	}
 
 	var Suite = function Suite(c,context) {
 		var part = Part.apply(this,arguments);
-		
+
 		var events = part.events;
 
 		var parts = {};
@@ -747,7 +747,7 @@ $exports.Scenario = {};
 				addPart(x,c.parts[x]);
 			}
 		}
-		
+
 		var getParts = function() {
 			var rv = {};
 			for (var x in parts) {
@@ -755,13 +755,13 @@ $exports.Scenario = {};
 			}
 			return rv;
 		}
-		
+
 		defineProperty(this, "parts", {
 			get: getParts
 		});
-		
+
 		this.getParts = $api.deprecate(getParts);
-		
+
 		this.part = function(id,definition) {
 			addPart(id,definition);
 		};
@@ -797,7 +797,7 @@ $exports.Scenario = {};
 			}
 			return part.after(success,scope);
 		}
-		
+
 		this.scenario = $api.deprecate(function(id,p) {
 			addPart(id,p);
 //			addPart(id,Scenario,p,{ id: id, events: events });
@@ -807,7 +807,7 @@ $exports.Scenario = {};
 			addPart(id,p);
 //			addPart(id,Suite,p,{ id: id, events: events });
 		});
-		
+
 		part.create();
 	};
 

@@ -81,7 +81,7 @@ public class Logging {
 
 	public static class InputStream extends java.io.InputStream {
 		private static final Logger LOG = Logger.getLogger(Logging.class.getName());
-		
+
 		private static void log(Level level, String mask, Object... substitutions) {
 			LOG.log(level, mask, substitutions);
 		}
@@ -175,7 +175,7 @@ public class Logging {
 
 	public static class OutputStream extends java.io.OutputStream {
 		private static final Logger LOG = Logger.getLogger(OutputStream.class.getName());
-		
+
 		private java.io.OutputStream delegate;
 		private String name;
 

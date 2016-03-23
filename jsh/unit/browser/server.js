@@ -37,11 +37,11 @@ $exports.handle = function(request) {
 			}
 			return rv;
 		};
-		
+
 		var getPartStructure = function(part) {
-			
+
 		}
-		
+
 		return {
 			status: { code: 200 },
 			body: {

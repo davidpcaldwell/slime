@@ -176,7 +176,7 @@ END LICENSE
 						<script type="application/x.jsapi#tests">
 							var suite = new module.Suite();
 							verify(suite).id.is(null);
-							
+
 							var s2 = new module.Suite({
 								parts: {
 									a: {
@@ -331,7 +331,7 @@ END LICENSE
 									<span class="type">boolean</span>
 									<span>Whether the execution succeeded.</span>
 								</li>
-							</ul>								
+							</ul>
 						</div>
 						<div class="arguments">
 							<div class="label">Arguments</div>
@@ -366,7 +366,7 @@ END LICENSE
 								});
 								var success = first.run();
 								verify(success,"success").is(true);
-								
+
 								var second = new module.Suite({
 									parts: {
 										a: {
@@ -433,7 +433,7 @@ END LICENSE
 									</li>
 									<li>
 										Otherwise, it is interpreted as a
-										<a href="#types.Scenario.definition">Scenario definition</a> and will create a 
+										<a href="#types.Scenario.definition">Scenario definition</a> and will create a
 										<a href="#types.Scenario">Scenario</a>
 										with the the part <code>id</code> of its key.
 									</li>
@@ -448,7 +448,7 @@ END LICENSE
 						<div class="name">parts</div>
 						<span class="type">object</span>
 						<span>
-							An object whose keys are part <code>id</code>s and whose values are 
+							An object whose keys are part <code>id</code>s and whose values are
 							<a href="#types.part">part</a>s.
 						</span>
 					</li>
@@ -485,16 +485,16 @@ END LICENSE
 									}
 								}
 							});
-							
+
 							var before = suite.run();
 							verify(before).is(true);
-							
+
 							suite.part("a", {
 								execute: function(scope,verify) {
 									verify(1).is(2);
 								}
 							});
-							
+
 							var after = suite.run();
 							verify(after).is(false);
 						</script>

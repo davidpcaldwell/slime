@@ -34,7 +34,7 @@ if ($context.gae) {
 $exports.Multipart = function(p) {
 	//	Defer the check for the MimeMultipart class until after this is invoked, which hopefully will be after all plugins load, due to Rhino bug(?) in
 	//	LiveConnect only checking for Java classes once
-	
+
 	var getDisposition = function(part) {
 		if (!part.disposition && subtype == "form-data") {
 			part.disposition = "form-data";
@@ -54,7 +54,7 @@ $exports.Multipart = function(p) {
 			return part.disposition + attributesString;
 		}
 	};
-	
+
 	if ($context.nojavamail || typeof(Packages.javax.mail.internet.MimeMultipart) != "function") {
 		var subtype = p.subtype;
 		var parts = p.parts;

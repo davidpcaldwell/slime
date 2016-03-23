@@ -380,7 +380,7 @@ var LocalRepository = function(o) {
 			}
 		})
 	};
-	
+
 	this.submodule = function(p) {
 		if (p.command == "update") {
 			execute({

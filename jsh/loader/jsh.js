@@ -94,20 +94,20 @@ this.jsh = new function() {
 		};
 
 		$host.coffee = $jsh.getLibrary("coffee-script.js");
-		
+
 		return $host;
 	})($jsh);
 
 	//	TODO	is there a way to use the custom script executor to do these rather than eval()?
-	
+
 	var loader = (function(jsh) {
 		return eval($host.loader.getLoaderScript("loader.js").code);
 	})(this);
-	
+
 	var plugins = (function(jsh) {
 		return eval($host.loader.getLoaderScript("plugins.js").code);
 	})(this);
-	
+
 	this.loader = new function() {
 		this.run = loader.run;
 		this.file = loader.file;

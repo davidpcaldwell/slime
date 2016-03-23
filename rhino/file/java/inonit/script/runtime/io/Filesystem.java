@@ -19,7 +19,7 @@ import inonit.system.*;
 
 public abstract class Filesystem {
 	private static final Logger LOG = Logger.getLogger(Filesystem.class.getName());
-	
+
 	public static Filesystem create() {
 		return new NativeFilesystem();
 	}

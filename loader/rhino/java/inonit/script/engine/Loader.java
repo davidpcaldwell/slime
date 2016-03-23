@@ -22,7 +22,7 @@ import inonit.script.engine.*;
 
 public abstract class Loader {
 	private static final Logger LOG = Logger.getLogger(Loader.class.getName());
-	
+
 	public abstract String getCoffeeScript() throws IOException;
 	public abstract String getLoaderCode(String path) throws IOException;
 

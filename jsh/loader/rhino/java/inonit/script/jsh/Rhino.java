@@ -25,7 +25,7 @@ import inonit.script.rhino.*;
 
 public class Rhino {
 	private static final Logger LOG = Logger.getLogger(Rhino.class.getName());
-	
+
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
 		private Interface $rhino;

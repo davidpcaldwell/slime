@@ -24,7 +24,7 @@ import inonit.system.cygwin.*;
 
 public class Main {
 	private static final Logger LOG = Logger.getLogger(Main.class.getName());
-	
+
 	private Main() {
 	}
 
@@ -35,7 +35,7 @@ public class Main {
 		return null;
 	}
 
-	static class Invocation {		
+	static class Invocation {
 		static abstract class Configuration {
 			abstract Shell shell();
 			abstract Engine engine();

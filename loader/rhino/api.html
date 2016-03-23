@@ -136,7 +136,7 @@ END LICENSE
 						tmpdir.getRelativePath("dir").createDirectory();
 						tmpdir.getRelativePath("file").write("contents", { append: false });
 						tmpdir.getRelativePath("dir/under").write("inside", { append: false });
-						
+
 						var _source = Packages.inonit.script.engine.Code.Source.create(tmpdir.pathname.java.adapt());
 						var loader = new $rhino.Loader({
 							_source: _source
@@ -145,7 +145,7 @@ END LICENSE
 						verify(loader).get("dir/under").is.not(null);
 						verify(loader).get("foo").is(null);
 						verify(loader).evaluate.property("list").is.type("function");
-						
+
 						var list = loader.list();
 						verify(loader).list().length.is(2);
 						var child = new loader.Child("dir/");

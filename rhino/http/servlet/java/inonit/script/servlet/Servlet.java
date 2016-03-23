@@ -22,7 +22,7 @@ import inonit.script.engine.*;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
 	private static final Logger LOG = Logger.getLogger(Servlet.class.getName());
-	
+
 	static {
 		Class[] dependencies = new Class[] {
 			//	Pull these in as dependencies, since the Java loader depends on them

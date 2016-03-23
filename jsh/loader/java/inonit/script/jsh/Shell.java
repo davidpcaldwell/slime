@@ -22,7 +22,7 @@ import inonit.script.engine.*;
 
 public class Shell {
 	private static final Logger LOG = Logger.getLogger(Shell.class.getName());
-	
+
 	public static abstract class Configuration {
 		public static Shell.Configuration create(final Installation installation, final Environment configuration, final Invocation invocation) {
 			return new Shell.Configuration() {

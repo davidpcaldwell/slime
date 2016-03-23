@@ -210,7 +210,7 @@ public abstract class Code {
 			public Classes getClasses() {
 				return null;
 			}
-			
+
 			public Enumerator getEnumerator() {
 				return null;
 			}
@@ -231,7 +231,7 @@ public abstract class Code {
 				public Classes getClasses() {
 					return null;
 				}
-				
+
 				public Enumerator getEnumerator() {
 					//	TODO	can this actually be implemented?
 					return null;
@@ -242,7 +242,7 @@ public abstract class Code {
 		public static Source system(final String prefix) {
 			return system().child(prefix);
 		}
-		
+
 		private static Source create(final java.net.URL url, Enumerator enumerator) {
 			return new UrlBased(url, enumerator);
 		}
@@ -285,14 +285,14 @@ public abstract class Code {
 				@Override public Classes getClasses() {
 					return classes;
 				}
-				
+
 				@Override public Enumerator getEnumerator() {
 					//	TODO	implement
 					return null;
 				}
 			};
 		}
-		
+
 		public static abstract class Enumerator {
 			static Enumerator create(final java.io.File file) {
 				return new Enumerator() {
@@ -304,7 +304,7 @@ public abstract class Code {
 						}
 						throw new RuntimeException("Not found or not directory: " + rv);
 					}
-					
+
 					@Override public String[] list(String prefix) {
 						java.io.File dir = getDirectory(prefix);
 						java.io.File[] files = dir.listFiles();
@@ -316,7 +316,7 @@ public abstract class Code {
 					}
 				};
 			}
-			
+
 			public abstract String[] list(String prefix);
 		}
 
@@ -352,7 +352,7 @@ public abstract class Code {
 						}
 					};
 				}
-				
+
 				public Enumerator getEnumerator() {
 					final Enumerator parent = Source.this.getEnumerator();
 					if (parent != null) {
@@ -429,7 +429,7 @@ public abstract class Code {
 					throw new RuntimeException(e);
 				}
 			}
-			
+
 			public Enumerator getEnumerator() {
 				return enumerator;
 			}
@@ -1036,7 +1036,7 @@ public abstract class Code {
 				}
 				return cache.get(path);
 			}
-			
+
 			public Enumerator getEnumerator() {
 				//	TODO	this probably can be implemented
 				return null;

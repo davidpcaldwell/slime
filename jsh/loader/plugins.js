@@ -46,13 +46,13 @@ new (function() {
 		scope.$loader.run("plugin.jsh.js", scope);
 		return rv;
 	};
-	
+
 	var log = function(_level,message) {
 		//	TODO	improve with parameters, but then would need to create Java arrays and so forth
 		Packages.java.util.logging.Logger.getLogger("inonit.script.jsh.Shell").log(
 			_level,
 			message
-		);		
+		);
 	};
 	log.Level = Packages.java.util.logging.Level;
 
@@ -77,9 +77,9 @@ new (function() {
 					log(log.Level.WARNING, "Plugin from " + item + " is disabled: " + item.declaration.disabled());
 				});
 			}
-		}		
+		}
 	}
-	
+
 	this._load = function(_plugins) {
 		var plugins = {};
 
@@ -105,7 +105,7 @@ new (function() {
 
 		run(list);
 	};
-	
+
 	var scan = function(loader,list,plugins) {
 		if (!list) list = [];
 		if (!plugins) plugins = {};
@@ -129,7 +129,7 @@ new (function() {
 		}
 		return list;
 	}
-	
+
 	this.load = function(loader) {
 		run(scan(loader));
 	}

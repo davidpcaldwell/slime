@@ -24,12 +24,12 @@ import inonit.system.*;
 
 public abstract class Engine {
 	private static Logger LOG = Logger.getLogger(Engine.class.getName());
-	
+
 	abstract String id();
 	abstract Integer run(URL script, String[] args) throws IOException, ScriptException;
 
 	static class Nashorn extends Engine {
-		
+
 		private ScriptEngineManager factory;
 
 		Nashorn(ScriptEngineManager factory) {

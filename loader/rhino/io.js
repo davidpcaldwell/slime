@@ -334,9 +334,9 @@ var Resource = function(p) {
 				}
 				return arguments.callee.called.returns;
 			}
-		});		
+		});
 	}
-	
+
 	if (typeof(p.modified) == "object") {
 		this.modified = p.modified;
 	}

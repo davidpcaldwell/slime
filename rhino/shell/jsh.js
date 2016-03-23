@@ -243,12 +243,12 @@ $exports.jsh = function(p) {
 			var rv = {};
 			for (var x in $exports.environment) {
 				if (x == "JSH_DEBUG_JDWP") {
-					
+
 				} else if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x)) {
 					if (p.shell) {
-						
+
 					} else {
-						rv[x] = $exports.environment[x];						
+						rv[x] = $exports.environment[x];
 					}
 				} else {
 					rv[x] = $exports.environment[x];

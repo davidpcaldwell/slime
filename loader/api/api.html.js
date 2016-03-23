@@ -367,7 +367,7 @@ $exports.ApiHtmlTests = function(html,name) {
 	this.getSuiteDescriptor = function(scope) {
 		return getPartDescriptor(scope,html.top);
 	};
-	
+
 	this.getSuite = $api.deprecate(this.getSuiteDescriptor);
 };
 

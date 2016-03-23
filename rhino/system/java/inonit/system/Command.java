@@ -18,7 +18,7 @@ import java.util.logging.*;
 
 public class Command {
 	private static final Logger LOG = Logger.getLogger(Command.class.getName());
-	
+
 	public static abstract class Context {
 		public abstract OutputStream getStandardOutput();
 		public abstract OutputStream getStandardError();

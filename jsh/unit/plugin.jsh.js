@@ -88,7 +88,7 @@ plugin({
 				}
 			}
 		};
-		
+
 		//	TODO	probably will move to loader/api
 		jsh.unit.part = {};
 

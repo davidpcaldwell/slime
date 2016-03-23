@@ -57,10 +57,10 @@ $exports.log.initialize = function(o) {
 			new function() {
 				this.close = function() {
 				};
-				
+
 				this.flush = function() {
 				};
-				
+
 				this.publish = function(_record) {
 					var parameters = (_record.getParameters()) ? $context.api.java.Array.adapt(_record.getParameters()) : null;
 					var record = {

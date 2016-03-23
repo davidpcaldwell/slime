@@ -23,7 +23,7 @@ $exports.Server = function(o) {
 			}
 		});
 	};
-	
+
 	var request = function(client,p) {
 		var parameters = jsh.js.Object.set({}, (p.parameters) ? p.parameters : {});
 		if (p.depth) parameters.depth = p.depth;
@@ -36,34 +36,34 @@ $exports.Server = function(o) {
 			evaluate: evaluate
 		});
 	}
-	
+
 	var JobRef = function(client,json) {
 		this.url = json.url;
-		
+
 		this.request = function(p) {
 			return request(client,p);
 		}
-		
+
 		this.json = json;
-		
+
 		this.load = function() {
 			return request(client,{ fullurl: json.url + "api/json", depth: "2" });
 		}
 	}
-	
+
 	this.Session = function(s) {
 		var c = {};
-		
+
 		if (s && s.credentials) {
 			c.authorization = new jsh.http.Authentication.Basic.Authorization(s.credentials);
 		}
-		
+
 		var client = new jsh.http.Client(c);
-		
+
 		this.request = function(p) {
 			return request(client,p);
 		};
-		
+
 		this.api = function() {
 			var rv = request(client,{
 				url: "api/json"

@@ -80,7 +80,7 @@ var Request = function(_request) {
 			throw e;
 		}
 		log.FINE("Created request type: " + this.type);
-		
+
 		if (this.type && this.type.is("multipart/form-data")) {
 			if (!multipartParser) {
 				multipartParser = createMultipartParser(_request);
