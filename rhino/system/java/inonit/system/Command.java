@@ -17,6 +17,8 @@ import java.util.*;
 import java.util.logging.*;
 
 public class Command {
+	private static final Logger LOG = Logger.getLogger(Command.class.getName());
+	
 	public static abstract class Context {
 		public abstract OutputStream getStandardOutput();
 		public abstract OutputStream getStandardError();
@@ -226,7 +228,7 @@ public class Command {
 			this.in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, "stdout: " + spoolName);
 			this.err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, "stderr: " + spoolName);
 			this.stdin = context.getStandardInput();
-			Logging.get().log(Process.class, Level.FINEST, "Stack trace", new Throwable("Starting input spooler"));
+			LOG.log(Level.FINEST, "Stack trace", new Throwable("Starting input spooler"));
 			this.out = Spooler.start(this.stdin, inonit.script.runtime.io.Streams.Bytes.Flusher.ALWAYS.decorate(delegate.getOutputStream()), true, "stdin from " + this.stdin + ": " + spoolName);
 		}
 
@@ -243,27 +245,27 @@ public class Command {
 		}
 
 		int waitFor() throws InterruptedException {
-			Logging.get().log(Process.class, Level.FINE, "Waiting for %s", delegate);
+			LOG.log(Level.FINE, "Waiting for %s", delegate);
 			int rv = delegate.waitFor();
-			Logging.get().log(Process.class, Level.FINE, "Exit status for %s is %d", delegate, rv);
+			LOG.log(Level.FINE, "Exit status for %s is %d", new Object[] { delegate, rv });
 			//	If we were passing our own System.in to a subprocess directly, it does not make sense to close it just because the
 			//	subprocess ended. On the other hand, if we are sending another input stream, we should close it, both to save
 			//	resources and because there may be a non-daemon thread reading it.
 			if (this.stdin != System.in) {
 				try {
-					Logging.get().log(Process.class, Level.FINEST, "Closing input stream being sent to subprocess: %s", this.stdin);
+					LOG.log(Level.FINEST, "Closing input stream being sent to subprocess: %s", this.stdin);
 					this.stdin.close();
-					Logging.get().log(Process.class, Level.FINEST, "Closed input stream being sent to subprocess: %s", this.stdin);
+					LOG.log(Level.FINEST, "Closed input stream being sent to subprocess: %s", this.stdin);
 				} catch (IOException e) {
-					Logging.get().log(Process.class, Level.FINEST, "Error closing input stream being sent to subprocess: %s %s", this.stdin, e);
+					LOG.log(Level.FINEST, "Error closing input stream being sent to subprocess: %s %s", new Object[] { this.stdin, e });
 					throw new RuntimeException(e);
 				}
 			}
-			Logging.get().log(Process.class, Level.FINEST, "Joining output threads ...");
+			LOG.log(Level.FINEST, "Joining output threads ...");
 			this.in.join();
-			Logging.get().log(Process.class, Level.FINEST, "Exhausted output stream");
+			LOG.log(Level.FINEST, "Exhausted output stream");
 			this.err.join();
-			Logging.get().log(Process.class, Level.FINEST, "Exhausted error stream; returning subprocess exit status: %d", rv);
+			LOG.log(Level.FINEST, "Exhausted error stream; returning subprocess exit status: %d", rv);
 			return rv;
 		}
 
@@ -300,7 +302,7 @@ public class Command {
 				throw new NullPointerException("Command argument " + i + " must not be null.");
 			}
 		}
-		Logging.get().log(Command.class, Level.CONFIG, "Launching subprocess: %s env=%s pwd=%s", asList(command), asList(context.envp()), context.getWorkingDirectory());
+		LOG.log(Level.CONFIG, "Launching subprocess: %s env=%s pwd=%s", new Object[] { asList(command), asList(context.envp()), context.getWorkingDirectory() });
 		return new Process(
 			Runtime.getRuntime().exec( command, context.envp(), context.getWorkingDirectory() )
 			,context

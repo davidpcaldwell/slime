@@ -22,6 +22,8 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Main {
+	private static final Logger LOG = Logger.getLogger(Main.class.getName());
+
 	private static abstract class Location {
 		static Location create(String string) {
 			if (string.startsWith("http://") || string.startsWith("https://")) {
@@ -126,7 +128,7 @@ public class Main {
 					if (file.isDirectory()) {
 						if (new File(file, "plugin.jsh.js").exists()) {
 							//	interpret as unpacked module
-							Logging.get().log(Main.class, Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
+							LOG.log(Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
 							rv.add(Code.unpacked(file));
 						} else {
 							//	interpret as directory that may contain plugins
@@ -140,25 +142,25 @@ public class Main {
 						try {
 							Code p = Code.slime(file);
 							if (p.getScripts().getFile("plugin.jsh.js") != null) {
-								Logging.get().log(Main.class, Level.CONFIG, "Loading plugin from %s ...", file);
+								LOG.log(Level.CONFIG, "Loading plugin from %s ...", file);
 								rv.add(p);
 							} else {
-								Logging.get().log(Main.class, Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
+								LOG.log(Level.WARNING, "Found .slime file, but no plugin.jsh.js: %s", file);
 							}
 						} catch (IOException e) {
 							//	TODO	probably error message or warning
 						}
 					} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
-						Logging.get().log(Main.class, Level.CONFIG, "Loading Java plugin from " + file + " ...");
+						LOG.log(Level.CONFIG, "Loading Java plugin from " + file + " ...");
 						rv.add(Code.jar(file));
 					} else {
 						//	If this was a top-level thing to load, and was loaded by application, print a warning
 						//	TODO	refactor to make this work
 						boolean APPLICATION = false;
-						if (top && APPLICATION) Logging.get().log(Main.class, Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
+						if (top && APPLICATION) LOG.log(Level.WARNING, "Cannot load plugin from %s as it does not appear to contain a valid plugin", file);
 					}
 				} else {
-					Logging.get().log(Main.class, Level.CONFIG, "Cannot load plugin from %s; file not found", file);
+					LOG.log(Level.CONFIG, "Cannot load plugin from %s; file not found", file);
 				}
 			}
 
@@ -171,7 +173,7 @@ public class Main {
 			}
 
 			public List<Code> getPlugins() {
-				Logging.get().log(Main.class, Level.INFO, "Application: load plugins from " + file);
+				LOG.log(Level.INFO, "Application: load plugins from " + file);
 				List<Code> rv = new ArrayList<Code>();
 				addPluginsTo(rv, file);
 				return rv;
@@ -253,6 +255,10 @@ public class Main {
 		abstract Shell.Environment.Packaged getPackaged();
 
 		final Shell.Environment environment() {
+			String PREFIX = Main.class.getName() + ".";
+			System.getProperties().put(PREFIX + "stdin", System.in);
+			System.getProperties().put(PREFIX + "stdout", System.out);
+			System.getProperties().put(PREFIX + "stderr", System.err);
 			InputStream stdin = new Logging.InputStream(System.in);
 			//	We assume that as long as we have separate launcher and loader processes, we should immediately flush stdout
 			//	whenever it is written to (by default it only flushes on newlines). This way the launcher process can handle
@@ -269,7 +275,7 @@ public class Main {
 		abstract Shell.Invocation invocation(String[] args) throws Shell.Invocation.CheckedException;
 
 		final Shell.Configuration configuration(String[] arguments) throws Shell.Invocation.CheckedException {
-			Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
+			LOG.log(Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
 			return Shell.Configuration.create(installation(this), this.environment(), this.invocation(arguments));
 		}
 	}
@@ -291,7 +297,7 @@ public class Main {
 				plugin.stream().close();
 				writeTo.close();
 				index++;
-				Logging.get().log(Main.class, Level.FINE, "Copied plugin " + index + " from " + plugin.name());
+				LOG.log(Level.FINE, "Copied plugin " + index + " from " + plugin.name());
 			}
 			return tmpdir;
 		}
@@ -515,8 +521,8 @@ public class Main {
 		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
 			return new Packaged(main);
 		} else {
-			Logging.get().log(Main.class, Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
-			Logging.get().log(Main.class, Level.CONFIG, "getMainFile=" + main);
+			LOG.log(Level.CONFIG, "jsh.shell.src=" + System.getProperty("jsh.shell.src"));
+			LOG.log(Level.CONFIG, "getMainFile=" + main);
 			if (main.getName().equals("jsh.jar") && main.getParentFile().getName().equals("lib")) {
 				File home = main.getParentFile().getParentFile();
 				System.setProperty("jsh.shell.home", home.getAbsolutePath());
@@ -528,7 +534,7 @@ public class Main {
 	}
 
 	private static Shell.Configuration configuration(final String[] arguments) throws Shell.Invocation.CheckedException {
-		Logging.get().log(Main.class, Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
+		LOG.log(Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
 		return implementation().configuration(arguments);
 	}
 
@@ -580,9 +586,9 @@ public class Main {
 		if (!inonit.system.Logging.get().isSpecified()) {
 			inonit.system.Logging.get().initialize(new java.util.Properties());
 		}
-		Logging.get().log(Main.class, Level.INFO, "Invoked cli(String[] args) with " + args.length + " arguments.");
+		LOG.log(Level.INFO, "Invoked cli(String[] args) with " + args.length + " arguments.");
 		for (int i=0; i<args.length; i++) {
-			Logging.get().log(Main.class, Level.INFO, "Argument " + i + " is: " + args[i]);
+			LOG.log(Level.INFO, "Argument " + i + " is: " + args[i]);
 		}
 		engine.cli(args);
 	}

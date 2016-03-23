@@ -41,13 +41,13 @@ public class Logging {
 		}
 	}
 
-	public void log(Class logging, Level level, String mask, Object... substitutions) {
-		Logger logger = Logger.getLogger(logging.getName());
-		if (logger.isLoggable(level)) {
-			String message = String.format(mask, substitutions);
-			logger.log(level, message);
-		}
-	}
+//	public void log(Class logging, Level level, String mask, Object... substitutions) {
+//		Logger logger = Logger.getLogger(logging.getName());
+//		if (logger.isLoggable(level)) {
+//			String message = String.format(mask, substitutions);
+//			logger.log(level, message);
+//		}
+//	}
 
 	public void log(Class logging, Level level, String message, Throwable throwable) {
 		Logger logger = Logger.getLogger(logging.getName());
@@ -80,8 +80,10 @@ public class Logging {
 	}
 
 	public static class InputStream extends java.io.InputStream {
+		private static final Logger LOG = Logger.getLogger(Logging.class.getName());
+		
 		private static void log(Level level, String mask, Object... substitutions) {
-			Logging.get().log(InputStream.class, level, mask, substitutions);
+			LOG.log(level, mask, substitutions);
 		}
 
 		private java.io.InputStream in;
@@ -172,6 +174,8 @@ public class Logging {
 	}
 
 	public static class OutputStream extends java.io.OutputStream {
+		private static final Logger LOG = Logger.getLogger(OutputStream.class.getName());
+		
 		private java.io.OutputStream delegate;
 		private String name;
 
@@ -181,7 +185,7 @@ public class Logging {
 		}
 
 		private void log(Level level, String mask, Object... substitutions) {
-			Logging.get().log(OutputStream.class, level, name + ": " + mask, substitutions);
+			LOG.log(level, name + ": " + mask, substitutions);
 		}
 
 		@Override public void write(int b) throws IOException {

@@ -21,6 +21,8 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
+	private static final Logger LOG = Logger.getLogger(Servlet.class.getName());
+	
 	static {
 		Class[] dependencies = new Class[] {
 			//	Pull these in as dependencies, since the Java loader depends on them
@@ -94,7 +96,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 
 	@Override protected final void service(HttpServletRequest request, HttpServletResponse response) {
-		Logging.get().log(Servlet.class, Level.INFO, "Executing request %s ...", request.getPathInfo());
+		LOG.log(Level.INFO, "Executing request %s ...", request.getPathInfo());
 		script.service(request, response);
 	}
 
@@ -120,7 +122,7 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 		}
 
 		public void register(Script script) {
-			Logging.get().log(Servlet.class, Level.CONFIG, "Initialized servlet with script " + script);
+			LOG.log(Level.CONFIG, "Initialized servlet with script " + script);
 			servlet.script = script;
 		}
 

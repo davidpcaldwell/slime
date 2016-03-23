@@ -47,6 +47,15 @@ new (function() {
 		return rv;
 	};
 	
+	var log = function(_level,message) {
+		//	TODO	improve with parameters, but then would need to create Java arrays and so forth
+		Packages.java.util.logging.Logger.getLogger("inonit.script.jsh.Shell").log(
+			_level,
+			message
+		);		
+	};
+	log.Level = Packages.java.util.logging.Level;
+
 	var run = function(plugins) {
 		var stop = false;
 		while(plugins.length > 0 && !stop) {
@@ -65,11 +74,7 @@ new (function() {
 				stop = true;
 				//	TODO	think harder about what to do
 				plugins.forEach(function(item) {
-					Packages.inonit.system.Logging.get().log(
-						$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
-						Packages.java.util.logging.Level.WARNING,
-						"Plugin from " + item + " is disabled: " + item.declaration.disabled()
-					);
+					log(log.Level.WARNING, "Plugin from " + item + " is disabled: " + item.declaration.disabled());
 				});
 			}
 		}		
@@ -80,11 +85,7 @@ new (function() {
 
 		var list = [];
 		for (var i=0; i<_plugins.length; i++) {
-			Packages.inonit.system.Logging.get().log(
-				$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
-				Packages.java.util.logging.Level.FINE,
-				"Reading plugins from " + _plugins[i]
-			);
+			log(log.Level.FINE, "Reading plugins from " + _plugins[i]);
 			var toString = function(_plugin) {
 				return function() {
 					return String(_plugin.getScripts()).replace(/\%/g, "%%")
