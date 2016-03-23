@@ -94,21 +94,49 @@ parameters.options.java.forEach(function(jre) {
 		} else {
 			jsh.shell.echo("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
 
-			subprocess({
-				name: "Java tests: engine [" + engine + "]; launcher " + launcher,
-				run: jsh.shell.run,
-				command: launcher,
-				arguments: launch.concat([
-					parameters.options.slime.directory.getRelativePath("jsh/etc/suite.jsh.js").toString(),
-					"-view", "stdio"
-				]),
-				directory: parameters.options.slime.directory,
-				environment: jsh.js.Object.set({}, jsh.shell.environment
+			if (true) {
+				var environment = jsh.js.Object.set({}, jsh.shell.environment
 					, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 					, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
 					, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
-				)
-			});
+				);
+				top.part("Java tests: engine [" + engine + "]; launcher " + launcher, {
+					parts: {
+						unit: jsh.unit.Suite.Fork({
+							name: "Unit tests",
+							run: jsh.shell.jsh,
+							shell: SLIME,
+							script: SLIME.getFile("jsh/etc/unit.jsh.js"),
+							arguments: ["-view", "stdio"],
+							environment: environment
+						}),
+						integration: jsh.unit.Suite.Fork({
+							name: "Integration tests",
+							run: jsh.shell.jsh,
+							shell: SLIME,
+							script: SLIME.getFile("jsh/etc/integration.jsh.js"),
+							arguments: ["-view","stdio"],
+							environment: environment
+						})
+					}
+				});
+			} else {
+				subprocess({
+					name: "Java tests: engine [" + engine + "]; launcher " + launcher,
+					run: jsh.shell.run,
+					command: launcher,
+					arguments: launch.concat([
+						parameters.options.slime.directory.getRelativePath("jsh/etc/suite.jsh.js").toString(),
+						"-view", "stdio"
+					]),
+					directory: parameters.options.slime.directory,
+					environment: jsh.js.Object.set({}, jsh.shell.environment
+						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
+						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
+						, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
+					)
+				});
+			}
 		}
 	});
 });
