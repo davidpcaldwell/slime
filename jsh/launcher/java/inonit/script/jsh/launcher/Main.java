@@ -23,6 +23,8 @@ import inonit.system.*;
 import inonit.system.cygwin.*;
 
 public class Main {
+	private static final Logger LOG = Logger.getLogger(Main.class.getName());
+	
 	private Main() {
 	}
 
@@ -33,7 +35,7 @@ public class Main {
 		return null;
 	}
 
-	static class Invocation {
+	static class Invocation {		
 		static abstract class Configuration {
 			abstract Shell shell();
 			abstract Engine engine();
@@ -43,8 +45,8 @@ public class Main {
 
 		Invocation(Configuration configuration) {
 			this.configuration = configuration;
-			Logging.get().log(Main.class, Level.CONFIG, "Invoking: " + configuration.shell() + " with engine named " + configuration.engine().id());
-			Logging.get().log(Main.class, Level.FINE, "Using engine: " + configuration.engine());
+			LOG.log(Level.CONFIG, "Invoking: " + configuration.shell() + " with engine named " + configuration.engine().id());
+			LOG.log(Level.FINE, "Using engine: " + configuration.engine());
 		}
 
 		private Properties getDefaultJavaLoggingProperties() throws IOException {
@@ -56,17 +58,17 @@ public class Main {
 			if (!inonit.system.Logging.get().isSpecified()) {
 				inonit.system.Logging.get().initialize(this.getDefaultJavaLoggingProperties());
 			}
-			Logging.get().log(Main.class, Level.INFO, "Launching script: %s", Arrays.asList(arguments));
-			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-			Logging.get().log(Main.class, Level.FINEST, "System.in = %s", System.in);
+			LOG.log(Level.INFO, "Launching script: %s", Arrays.asList(arguments));
+			LOG.log(Level.INFO, "Console: %s", String.valueOf(System.console()));
+			LOG.log(Level.FINEST, "System.in = %s", System.in);
 			InputStream stdin = new Logging.InputStream(System.in);
 			System.setIn(stdin);
-			Logging.get().log(Main.class, Level.CONFIG, "Set System.in to %s.", stdin);
+			LOG.log(Level.CONFIG, "Set System.in to %s.", stdin);
 			System.setOut(new PrintStream(new Logging.OutputStream(System.out, "stdout")));
 			System.setErr(new PrintStream(new Logging.OutputStream(System.err, "stderr")));
-			Logging.get().log(Main.class, Level.INFO, "Console: %s", String.valueOf(System.console()));
-			Logging.get().log(Main.class, Level.FINER, "Initializing system properties; engine = " + configuration.engine() + " ...");
-			Logging.get().log(Main.class, Level.FINER, "Engine: %s", configuration.engine());
+			LOG.log(Level.INFO, "Console: %s", String.valueOf(System.console()));
+			LOG.log(Level.FINER, "Initializing system properties; engine = " + configuration.engine() + " ...");
+			LOG.log(Level.FINER, "Engine: %s", configuration.engine());
 			//	TODO	get rid of next property, which seems to only be used in the build process
 			System.setProperty("jsh.launcher.engine", configuration.engine().id());
 			System.getProperties().put("jsh.launcher.shell", configuration.shell());
@@ -84,7 +86,7 @@ public class Main {
 
 		public void run() {
 			System.out.flush();
-			Logging.get().log(Main.class, Level.INFO, "Exit status: %s", String.valueOf(status));
+			LOG.log(Level.INFO, "Exit status: %s", String.valueOf(status));
 			System.err.flush();
 		}
 	}
@@ -98,11 +100,11 @@ public class Main {
 		Integer status = null;
 		try {
 			status = invocation.run(args);
-			Logging.get().log(Main.class, Level.FINER, "Completed with status: %d", status);
+			LOG.log(Level.FINER, "Completed with status: %d", status);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			status = new Integer(127);
-			Logging.get().log(Main.class, Level.FINER, "Completed with stack trace.");
+			LOG.log(Level.FINER, "Completed with stack trace.");
 		} finally {
 			beforeExit.setStatus(status);
 			//	Ensure the VM exits even if the Rhino debugger is displayed
@@ -142,7 +144,7 @@ public class Main {
 			}
 			System.out.print("]");
 		} else {
-			Logging.get().log(Main.class, Level.FINEST, "Launcher Main executing ...");
+			LOG.log(Level.FINEST, "Launcher Main executing ...");
 			main.run(
 				configuration,
 				args

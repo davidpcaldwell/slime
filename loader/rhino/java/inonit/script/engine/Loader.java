@@ -21,6 +21,8 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public abstract class Loader {
+	private static final Logger LOG = Logger.getLogger(Loader.class.getName());
+	
 	public abstract String getCoffeeScript() throws IOException;
 	public abstract String getLoaderCode(String path) throws IOException;
 
@@ -76,7 +78,7 @@ public abstract class Loader {
 
 	private static abstract class ClassLoaderImpl extends ClassLoader {
 		static ClassLoaderImpl create(ClassLoader delegate) {
-			Logging.get().log(Loader.class, Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
+			LOG.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
 			return new New(delegate);
 		}
 

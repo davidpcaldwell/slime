@@ -42,14 +42,19 @@
 			callbacks.java({ _code: _code });
 		}
 	};
+	
+	var log = function(_level,message) {
+		//	TODO	improve with parameters, but then would need to create Java arrays and so forth
+		Packages.java.util.logging.Logger.getLogger("inonit.script.jsh.Shell").log(
+			_level,
+			message
+		);		
+	};
+	log.Level = Packages.java.util.logging.Level;
 
 	var list = [];
 	for (var i=0; i<_plugins.length; i++) {
-		Packages.inonit.system.Logging.get().log(
-			$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
-			Packages.java.util.logging.Level.FINE,
-			"Reading plugins from " + _plugins[i]
-		);
+		log(log.Level.FINE, "Reading plugins from " + _plugins[i]);
 		var _code = _plugins[i];
 		readPlugin(_code,{
 			script: function(v) {
@@ -80,11 +85,7 @@
 			//	TODO	think harder about what to do
 			list.forEach(function(item) {
 				var message = (item.declaration.disabled) ? item.declaration.disabled() : "never returned true from isReady(): " + item.declaration.isReady;
-				Packages.inonit.system.Logging.get().log(
-					$host.java.getNamedJavaClass("inonit.script.jsh.Shell"),
-					Packages.java.util.logging.Level.WARNING,
-					"Plugin from " + String(item._code.getScripts()).replace(/\%/g, "%%") + " is disabled: " + message
-				);
+				log(log.Level.WARNING, "Plugin from " + String(item._code.getScripts()).replace(/\%/g, "%%") + " is disabled: " + message);
 			});
 		}
 	}

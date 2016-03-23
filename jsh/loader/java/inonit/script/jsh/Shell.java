@@ -21,6 +21,8 @@ import inonit.system.*;
 import inonit.script.engine.*;
 
 public class Shell {
+	private static final Logger LOG = Logger.getLogger(Shell.class.getName());
+	
 	public static abstract class Configuration {
 		public static Shell.Configuration create(final Installation installation, final Environment configuration, final Invocation invocation) {
 			return new Shell.Configuration() {
@@ -385,7 +387,7 @@ public class Shell {
 		protected abstract Integer run();
 
 		public final Integer execute() {
-			Logging.get().log(Shell.class, Level.INFO, "Executing shell with %s", this);
+			LOG.log(Level.INFO, "Executing shell with %s", this);
 			final Execution execution = this;
 			this.host("$jsh", shell);
 			execution.addEngine();

@@ -23,10 +23,13 @@ import javax.script.*;
 import inonit.system.*;
 
 public abstract class Engine {
+	private static Logger LOG = Logger.getLogger(Engine.class.getName());
+	
 	abstract String id();
 	abstract Integer run(URL script, String[] args) throws IOException, ScriptException;
 
 	static class Nashorn extends Engine {
+		
 		private ScriptEngineManager factory;
 
 		Nashorn(ScriptEngineManager factory) {
@@ -39,14 +42,14 @@ public abstract class Engine {
 
 		Integer run(URL script, String[] args) throws IOException, ScriptException {
 			ScriptEngine engine = factory.getEngineByName("nashorn");
-			Logging.get().log(Nashorn.class, Level.FINE, "arguments.length = %d", args.length);
+			LOG.log(Level.FINE, "arguments.length = %d", args.length);
 			this.factory.getBindings().put("javax.script.argv", args);
-			Logging.get().log(Nashorn.class, Level.FINE, "script: " + script);
+			LOG.log(Level.FINE, "script: " + script);
 			ScriptContext c = engine.getContext();
 			c.setAttribute(ScriptEngine.FILENAME, script, ScriptContext.ENGINE_SCOPE);
 			java.net.URLConnection connection = script.openConnection();
 			engine.eval(new InputStreamReader(connection.getInputStream()), c);
-			Logging.get().log(Nashorn.class, Level.FINE, "completed script: " + script);
+			LOG.log(Level.FINE, "completed script: " + script);
 			return null;
 		}
 	}
@@ -100,16 +103,16 @@ public abstract class Engine {
 			Integer status = null;
 			try {
 				java.lang.reflect.Method main = this.getMainMethod();
-				Logging.get().log(Main.class, Level.FINER, "Rhino shell main = %s", main);
+				LOG.log(Level.FINER, "Rhino shell main = %s", main);
 				String[] arguments = this.getArguments(script, args);
-				Logging.get().log(Main.class, Level.FINER, "Rhino shell arguments:");
+				LOG.log(Level.FINER, "Rhino shell arguments:");
 				for (int i=0; i<arguments.length; i++) {
-					Logging.get().log(Main.class, Level.FINER, "Rhino shell argument %d: %s", i, arguments[i]);
+					LOG.log(Level.FINER, "Rhino shell argument %d: %s", new Object[] { i, arguments[i] });
 				}
-				Logging.get().log(Main.class, Level.INFO, "Entering Rhino shell");
+				LOG.log(Level.INFO, "Entering Rhino shell");
 				main.invoke(null, new Object[] { arguments });
 				status = this.getExitStatus();
-				Logging.get().log(Main.class, Level.INFO, "Exited Rhino shell with status: %s", status);
+				LOG.log(Level.INFO, "Exited Rhino shell with status: %s", status);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 				status = new Integer(127);

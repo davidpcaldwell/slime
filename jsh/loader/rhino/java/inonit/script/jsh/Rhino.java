@@ -24,6 +24,8 @@ import inonit.script.engine.*;
 import inonit.script.rhino.*;
 
 public class Rhino {
+	private static final Logger LOG = Logger.getLogger(Rhino.class.getName());
+	
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
 		private Interface $rhino;
@@ -120,7 +122,7 @@ public class Rhino {
 							@Override public void uncaughtException(Thread t, Throwable e) {
 								if (t.getName().startsWith("AWT")) {
 									//	do nothing
-									Logging.get().log(Rhino.class, Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
+									LOG.log(Level.INFO, "Swallowing AWT exception assumed to be caused by debugger.", e);
 								} else {
 									System.err.print("Exception in thread \"" + t.getName() + "\"");
 									e.printStackTrace();
@@ -147,7 +149,7 @@ public class Rhino {
 						public String toString() { return "Engine.Log: System.err"; }
 
 						public void println(String message) {
-							Logging.get().log(Rhino.class, Level.FINER, "Logging: " + message + " to System.err ...");
+							LOG.log(Level.FINER, "Logging: " + message + " to System.err ...");
 							((PrintStream)shell.getStdio().getStandardError()).println(message);
 						}
 					};
@@ -189,10 +191,10 @@ public class Rhino {
 		} catch (ExitError e) {
 			return new Integer(e.getStatus());
 		} catch (Engine.Errors e) {
-			Logging.get().log(Shell.class, Level.INFO, "Engine.Errors thrown.", e);
+			LOG.log(Level.INFO, "Engine.Errors thrown.", e);
 			Engine.Errors.ScriptError[] errors = e.getErrors();
-			Logging.get().log(Shell.class, Level.FINER, "Engine.Errors length: %d", errors.length);
-			Logging.get().log(Shell.class, Level.FINE, "Logging errors to %s.", rhino.getLog());
+			LOG.log(Level.FINER, "Engine.Errors length: %d", errors.length);
+			LOG.log(Level.FINE, "Logging errors to %s.", rhino.getLog());
 			e.dump(rhino.getLog(), "[jsh] ");
 			return -1;
 		} finally {
@@ -322,7 +324,7 @@ public class Rhino {
 				thread.join();
 				Integer status = run.result();
 	//			Integer status = main.run();
-				Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
+				LOG.log(Level.INFO, "Exiting normally with status %d.", status);
 				if (status != null) {
 					context.exit(status.intValue());
 				} else {
@@ -330,20 +332,20 @@ public class Rhino {
 					int count = Thread.enumerate(threads);
 					for (Thread t : threads) {
 						if (t != null && t != Thread.currentThread() && !t.isDaemon()) {
-							Logging.get().log(Rhino.class, Level.FINER, "Active thread: " + t + " daemon = " + t.isDaemon());
+							LOG.log(Level.FINER, "Active thread: " + t + " daemon = " + t.isDaemon());
 							t.join();
 						}
 					}
-					Logging.get().log(Rhino.class, Level.INFO, "Exiting normally with status %d.", status);
+					LOG.log(Level.INFO, "Exiting normally with status %d.", status);
 					main.rhino.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}
 			} catch (Shell.Invocation.CheckedException e) {
-				Logging.get().log(Rhino.class, Level.INFO, "Exiting with checked exception.", e);
+				LOG.log(Level.INFO, "Exiting with checked exception.", e);
 				System.err.println(e.getMessage());
 				context.exit(1);
 			} catch (Throwable t) {
-				Logging.get().log(Rhino.class, Level.SEVERE, "Exiting with throwable.", t);
+				LOG.log(Level.SEVERE, "Exiting with throwable.", t);
 				Throwable target = t;
 				System.err.println("Error executing " + Rhino.class.getName());
 				//	TODO	this error handling can no longer print arguments because they are not passed here, and regardless,

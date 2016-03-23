@@ -18,6 +18,8 @@ import java.util.logging.*;
 import inonit.system.*;
 
 public abstract class Filesystem {
+	private static final Logger LOG = Logger.getLogger(Filesystem.class.getName());
+	
 	public static Filesystem create() {
 		return new NativeFilesystem();
 	}
@@ -215,18 +217,18 @@ public abstract class Filesystem {
 							for (int i=0; i<contents.length; i++) {
 								boolean success = delete(contents[i]);
 								if (!success) {
-									Logging.get().log(Filesystem.class, Level.WARNING, "Failed to delete " + contents[i]);
+									LOG.log(Level.WARNING, "Failed to delete " + contents[i]);
 									return false;
 								}
 							}
 						}
 					} catch (IOException e) {
-						Logging.get().log(Filesystem.class, Level.WARNING, "Error deleting file " + file, e);
+						LOG.log(Level.WARNING, "Error deleting file " + file, e);
 						return false;
 					}
 				}
 				boolean rv = file.delete();
-				if (!rv) Logging.get().log(Filesystem.class, Level.WARNING, "Failed to delete " + file);
+				if (!rv) LOG.log(Level.WARNING, "Failed to delete " + file);
 				return rv;
 			}
 
