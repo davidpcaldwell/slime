@@ -1007,10 +1007,6 @@
 
 (function() {
 	var $api = this.$api;
-	//	TODO	this appears to be redundant; could just use api in query parameter, or nothing at all
-	if (Packages.java.lang.System.getProperty("inonit.jrunscript.api.passive")) {
-		return;
-	}
 	var $query = (function() {
 		if ($api.script.url && $api.script.url.getQuery()) {
 			return String($api.script.url.getQuery());
@@ -1076,8 +1072,12 @@
 			Packages.java.lang.System.exit(1);
 		}
 	} else if (Packages.java.lang.System.getProperty("inonit.jrunscript.api.main")) {
+		//	TODO	only used by inonit.script.jsh.launcher.Main; can it be refactored out? Or possibly that entire class can be
+		//			factored out?
 		$api.Script.run({ string: String(Packages.java.lang.System.getProperty("inonit.jrunscript.api.main")) });
 	} else if ($api.script.resolve("main.js")) {
+		//	In a built jsh shell, this file is jsh.js, and the jsh launcher is main.js; similarly, a different build process could
+		//	provide an arbitrary file to run
 		$api.script.resolve("main.js").load();
 	} else if ($api.arguments.length) {
 		$api.Script.run({ string: $api.arguments.shift() });
