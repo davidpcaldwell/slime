@@ -469,7 +469,7 @@ $exports.Thread.run.__defineGetter__("TIMED_OUT", function() {
 $exports.Thread.thisSynchronize = function(f) {
 	//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
 	//			synchronize()
-	if ($exports.getClass("org.mozilla.javascript.Synchronizer")) {
+	if ($exports.getClass("org.mozilla.javascript.Synchronizer") && Packages.org.mozilla.javascript.Context.getCurrentContext()) {
 		return new Packages.org.mozilla.javascript.Synchronizer(f);
 	} else {
 		return sync(f);

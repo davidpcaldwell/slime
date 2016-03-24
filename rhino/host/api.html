@@ -42,9 +42,10 @@ END LICENSE
 		</script>
 	</div>
 	<div>
-		<script type="application/x.jsapi#initialize">
-			scope.isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function";
-		</script>
+		<script type="application/x.jsapi#initialize"><![CDATA[
+			scope.isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function"
+				&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null);
+		]]></script>
 		<h1>Exports</h1>
 		<ul>
 			<li class="function" jsapi:id="getClass">
@@ -92,7 +93,7 @@ END LICENSE
 					value, or a JavaScript object.
 					<!--	TODO	What if it is JavaPackage? JavaClass?	-->
 				</div>
-				<script type="application/x.jsapi#tests" jsapi:id="isJavaObject">
+				<script type="application/x.jsapi#tests" jsapi:id="isJavaObject"><![CDATA[
 					var isJavaObject = module.isJavaObject;
 					test(isJavaObject(Packages.java.lang.Runtime.getRuntime()));
 					test(isJavaObject(new Packages.java.lang.Object()));
@@ -103,9 +104,12 @@ END LICENSE
 					} else {
 						//	Nashorn appears to map these to JavaScript types
 						//	TODO	clarify and document this
-						test(!isJavaObject(new Packages.java.lang.String("hello world")));
-						test(!isJavaObject(new Packages.java.lang.Integer(4)));
-						test(!isJavaObject(new Packages.java.lang.Boolean(true)));
+						verify(module).isJavaObject(new Packages.java.lang.String("hello world")).is(false);
+						verify(module).isJavaObject(new Packages.java.lang.Integer(4)).is(false);
+						verify(module).isJavaObject(new Packages.java.lang.Boolean(true)).is(false);
+//						test(!isJavaObject(new Packages.java.lang.String("hello world")));
+//						test(!isJavaObject(new Packages.java.lang.Integer(4)));
+//						test(!isJavaObject(new Packages.java.lang.Boolean(true)));
 					}
 					test(isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK));
 					test(!isJavaObject("hello world"));
@@ -118,7 +122,7 @@ END LICENSE
 					test(!isJavaObject({}));
 					var javaArray = jsh.$jsapi.$rhino.java.Array(Packages.java.lang.Object,4);
 					test(isJavaObject(javaArray));
-				</script>
+				]]></script>
 			</li>
 			<li class="object">
 				<div class="name">Array</div>
