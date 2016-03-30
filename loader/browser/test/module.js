@@ -54,6 +54,7 @@ var Step = function(target,o) {
 	
 	this.check = function(scope) {
 		var verify = new $context.api.unit.Verify(scope);
+		verify.page = verify(target);
 		if (o.check) {
 			o.check.call(target,verify);
 		}
@@ -74,6 +75,11 @@ var Tests = function() {
 	var index = 0;
 	
 	var success = true;
+	
+	//	Possibly this should become a constructor argument rather than a modifier method at some point
+	this.target = function(page) {
+		target = page;
+	}
 
 	this.test = function(test) {
 		if (test.edits || test.event || test.tests) {
@@ -120,6 +126,10 @@ var Tests = function() {
 
 var unit = new function() {
 	var global = new Tests();
+	
+	this.target = function(page) {
+		global.target(page);
+	}
 	
 	this.test = function(test) {
 		global.test(test);
