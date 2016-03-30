@@ -23,11 +23,17 @@ var OldStep = function(o) {
 	};
 	
 	this.cleanup = function() {
+		if (o.cleanup) {
+			o.cleanup();
+		} else if (o.undo) {
+			$api.deprecate(function() {
+				o.undo();
+			})();
+		}
 	};
 };
 
 var Step = function(target,o) {
-	throw new Error();
 	this.setup = function() {
 		if (o.setup) {
 			o.setup.call(target);
@@ -35,10 +41,13 @@ var Step = function(target,o) {
 	};
 	
 	this.run = function() {
+		var fake = {};
+		window.XMLHttpRequest.asynchrony.started(fake);
 		if (o.run) {
 			//	TODO	add fake request
 			o.run.call(target);
 		}
+		window.XMLHttpRequest.asynchrony.finished(fake);
 	};
 	
 	this.async = true;
