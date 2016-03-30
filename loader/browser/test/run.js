@@ -99,11 +99,11 @@ var Tests = function() {
 	}
 
 	//	TODO	want to put this inside run(), but it does not work for some reason
-	window.XMLHttpRequest.asynchrony.set(proceed);
+	$context.asynchrony.set(proceed);
 
 	//	TODO	this is used by the unit test button to run the tests; could encapsulate
 	this.run = function() {
-		if (!window.XMLHttpRequest.asynchrony.get().length()) fire();
+		if (!$context.asynchrony.open()) fire();
 	};
 };
 

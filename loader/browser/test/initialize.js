@@ -5,18 +5,15 @@ document.domain = document.domain;
 		if (array.forEach) {
 			array.forEach(f);
 		} else {
-			//	Array.prototype.forEach not present in IE7
+			//	Array.prototype.forEach not present in IE8
 			for (var i=0; i<array.length; i++) {
 				f(array[i]);
 			}
 		}
 	}
 
-	var before_XMLHttpRequest = window.XMLHttpRequest;
-	
-	var asynchrony;
-	
-	var Asynchrony = function(next) {
+	var Asynchrony = function() {
+		var next = arguments[0];
 		var pending = [];
 		
 		this.toString = function() {
@@ -26,8 +23,24 @@ document.domain = document.domain;
 			}).join("\n");
 		}
 		
-		this.length = function() {
+		this.next = function(then) {
+			next = then;
+		};
+		
+		this.set = $api.deprecate(function(then) {
+			next = then;
+		});
+		
+		this.get = $api.deprecate(function() {
+			return this;
+		});
+
+		this.length = $api.deprecate(function() {
 			return pending.length;
+		});
+		
+		this.open = function() {
+			return pending.length > 0;
 		}
 		
 		this.started = function(process) {
@@ -49,9 +62,11 @@ document.domain = document.domain;
 	var Network = function() {
 	};
 	
-	var network = new Network();
-	
 	window.XMLHttpRequest = (function(before) {
+		var asynchrony;
+
+		var network = new Network();
+	
 		var rv = function() {
 			var Self = arguments.callee;
 			if (typeof(Self.open) == "undefined") {
@@ -196,13 +211,7 @@ document.domain = document.domain;
 			network = null;
 		};
 		//	TODO	use defineProperty below?
-		rv.asynchrony = {};
-		rv.asynchrony.set = function(f) {
-			asynchrony = new Asynchrony(f);			
-		}
-		rv.asynchrony.get = function() {
-			return asynchrony;
-		}
+		rv.asynchrony = new Asynchrony();
 		return rv;
 	})(window.XMLHttpRequest);
 	
