@@ -1,6 +1,16 @@
 document.domain = document.domain;
 
 (function() {
+	//	TODO	this is a bridge to the equivalent API from the loader; is there a better way?
+	var $api = {
+		deprecate: function(f) {
+			return function() {
+				debugger;
+				return f.apply(this,arguments);
+			}
+		}
+	};
+	
 	var forEach = function(array,f) {
 		if (array.forEach) {
 			array.forEach(f);
@@ -53,7 +63,7 @@ document.domain = document.domain;
 			pending.splice(pending.indexOf(process),1);
 			console.log("still pending = " + pending.length);
 			console.log(pending.join("\n"));
-			if (pending.length == 0) {
+			if (pending.length == 0 && next) {
 				next();
 			}
 		}
@@ -63,7 +73,7 @@ document.domain = document.domain;
 	};
 	
 	window.XMLHttpRequest = (function(before) {
-		var asynchrony;
+		var asynchrony = new Asynchrony();
 
 		var network = new Network();
 	
@@ -211,7 +221,7 @@ document.domain = document.domain;
 			network = null;
 		};
 		//	TODO	use defineProperty below?
-		rv.asynchrony = new Asynchrony();
+		rv.asynchrony = asynchrony;
 		return rv;
 	})(window.XMLHttpRequest);
 	

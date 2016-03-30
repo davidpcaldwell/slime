@@ -83,8 +83,17 @@
 							return value;
 						}
 					}
-					object.__defineGetter__(property,values.get);
-					object.__defineSetter__(property,values.set);
+					if (Object.defineProperty) {
+						Object.defineProperty(object,property,{
+							get: values.get,
+							set: values.set,
+							enumerable: false
+							//	configurable?
+						});
+					} else {
+						object.__defineGetter__(property,values.get);
+						object.__defineSetter__(property,values.set);
+					}
 				} else {
 					var wrapSetter = function(f) {
 						return function(value) {
