@@ -1,3 +1,5 @@
+$loader.run("initialize.js");
+
 var OldStep = function(o) {
 	this.setup = function() {
 		if (o.edits) {
@@ -101,9 +103,9 @@ var Tests = function() {
 	//	TODO	this is used by the unit test button to run the tests; could encapsulate
 	this.run = function() {
 		//	TODO	want to put this inside run(), but it does not work for some reason
-		$context.asynchrony.next(proceed);
+		window.XMLHttpRequest.asynchrony.next(proceed);
 
-		if (!$context.asynchrony.open()) fire();
+		if (!window.XMLHttpRequest.asynchrony.open()) fire();
 	};
 };
 
