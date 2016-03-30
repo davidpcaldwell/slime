@@ -54,7 +54,6 @@ var Step = function(target,o) {
 	
 	this.check = function(scope) {
 		var verify = new $context.api.unit.Verify(scope);
-		verify.page = verify(target);
 		if (o.check) {
 			o.check.call(target,verify);
 		}
