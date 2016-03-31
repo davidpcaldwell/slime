@@ -130,32 +130,52 @@ var unit = new function() {
 		global.target(page);
 	}
 	
+	var suite;
+	
+	this.Tests = function() {
+		Tests.call(this);
+	};
+	
+	this.suite = function() {
+		suite = arguments[0];
+	}
+	
 	this.test = function(test) {
 		global.test(test);
 	}
 
 	//	TODO	this is used by the unit test button to run the tests; could encapsulate
 	this.run = function(_callbacks) {
-		if (!_callbacks) throw new Error("Missing callbacks!");
-		global.listeners.add("console", function(e) {
-			window.console.log(e.detail);
-		});
-		global.listeners.add("test", function(e) {
-			if (_callbacks.event) _callbacks.event(e);
-			_callbacks.log(e.detail.success, e.detail.message);
-		});
-		global.listeners.add("end", function(e) {
-			_callbacks.end(e.detail);
-			if (_callbacks.after) {
-				//	TODO	deprecated; should combine after() with end(success)
-				debugger;
-				_callbacks.after();
-			}
-		});
-		global.listeners.add("log", function(e) {
-			_callbacks.log(e.detail.success, e.detail.message);
-		});
-		global.run();
+		if (suite) {
+			suite.listeners.add("scenario", function(e) {
+				_callbacks.fire(e);
+			});
+			suite.listeners.add("test", function(e) {
+				_callbacks.fire(e);
+			});
+			throw new Error("Unimplemented: run suite");
+		} else {
+			if (!_callbacks) throw new Error("Missing callbacks!");
+			global.listeners.add("console", function(e) {
+				window.console.log(e.detail);
+			});
+			global.listeners.add("test", function(e) {
+				if (_callbacks.event) _callbacks.event(e);
+				_callbacks.log(e.detail.success, e.detail.message);
+			});
+			global.listeners.add("end", function(e) {
+				_callbacks.end(e.detail);
+				if (_callbacks.after) {
+					//	TODO	deprecated; should combine after() with end(success)
+					debugger;
+					_callbacks.after();
+				}
+			});
+			global.listeners.add("log", function(e) {
+				_callbacks.log(e.detail.success, e.detail.message);
+			});
+			global.run();
+		}
 	};
 
 	this.nugget = new function() {
