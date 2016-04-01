@@ -208,6 +208,11 @@ var unit = new function() {
 	};
 
 	this.structure = function() {
+		if (!suite) {
+			return {
+				name: "Tests"
+			};
+		}
 		return getStructure(suite);
 	}
 
@@ -224,11 +229,11 @@ var unit = new function() {
 		if (suite) {
 			suite.listeners.add("scenario", function(e) {
 //				_callbacks.fire(e);
-				console.log("scenario", e);
+				console.log("scenario", Object.keys(e.detail).join(","), e);
 				_callbacks.event(e);
 			});
 			suite.listeners.add("test", function(e) {
-				console.log("test", e.detail.message, e);
+				console.log("test", Object.keys(e.detail).join(","), e.detail.message, e);
 //				_callbacks.fire(e);
 				_callbacks.event(e);
 			});

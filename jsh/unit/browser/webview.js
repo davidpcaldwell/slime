@@ -339,13 +339,15 @@
 			} else {
 				var child = path[0];
 				var further = path.slice(1);
-				parts[child].dispatch(further,e);
+				var id = (typeof(child) == "string") ? child : child.id;
+				parts[id].dispatch(further,e);
 			}
 		}
 	};
 
-	var initialize = function() {
+	var initialize = function(p) {
 		if (WEBVIEW_HTML_OBSOLETE || document.body.id == "ui") {
+			if (!p) p = {};
 			document.getElementById("run").disabled = true;
 
 			var json = suite.getStructure();
@@ -358,10 +360,16 @@
 
 			suite.listen(view);
 
-			document.getElementById("run").addEventListener("click", function() {
+			var onclick = function() {
 				view.clear();
 				suite.run([]);
-			});
+			}
+
+			if (!p.onclick) {
+				document.getElementById("run").addEventListener("click", onclick);
+			} else {
+				p.onclick(onclick);
+			}
 		} else {
 			if (!window.jsh) {
 				window.setInterval(function() {
