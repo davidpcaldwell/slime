@@ -674,12 +674,23 @@ $exports.Scenario = {};
 			part.events.fire.apply(part.events,arguments);
 		}
 
-		this.run = function(p) {
+		this.run = function(p,next) {
 			var local = part.before(p).scope;
 
 			//	TODO	compare below initialize with one used in part
 			var vscope = new Scope({ events: part.events });
 
+			if (next) {
+				if (part.find("next")) {
+					part.find("next")(function() {
+						var result = part.after(vscope.success,local);
+						next(result);
+					})
+				}
+				this.listeners.add("scenario", function(e) {
+					console.log("self scenario event", e);
+				})
+			}
 			var error = part.initialize(local);
 
 			if (error) {
@@ -714,6 +725,7 @@ $exports.Scenario = {};
 				verify.fire = $api.deprecate(function(type,detail) {
 					vscope.fire(type,detail);
 				});
+				verify.scope = vscope;
 				try {
 					//	TODO	execute is apparently mandatory
 					var execute = part.find("execute");
@@ -724,7 +736,11 @@ $exports.Scenario = {};
 				}
 			}
 
-			return part.after(vscope.success,local);
+			if (!next) {
+				return part.after(vscope.success,local);
+			} else {
+//				next(part.after(vscope.success,local));
+			}
 		}
 
 		part.create();
@@ -766,7 +782,7 @@ $exports.Scenario = {};
 			addPart(id,definition);
 		};
 
-		this.run = function(p) {
+		this.run = function(p,next) {
 			var scope = part.before(p).scope;
 			var path = (p && p.path) ? p.path : [];
 			var success = true;
@@ -775,13 +791,33 @@ $exports.Scenario = {};
 				success = false;
 			} else {
 				if (path.length == 0) {
-					for (var x in parts) {
-						var result = parts[x].run({
-							scope: copy(scope),
-							path: []
-						});
-						if (!result) {
-							success = false;
+					if (next) {
+						var keys = [];
+						for (var x in parts) {
+							keys.push(x);
+						}
+						var index = 0;
+						var proceed = function recurse(success) {
+							if (index == keys.length) {
+								next(success);
+							} else {
+								var x = keys[index++];
+								parts[x].run({
+									scope: copy(scope),
+									path: []
+								},recurse);
+							}
+						};
+						proceed();
+					} else {
+						for (var x in parts) {
+							var result = parts[x].run({
+								scope: copy(scope),
+								path: []
+							});
+							if (!result) {
+								success = false;
+							}
 						}
 					}
 				} else {
@@ -789,7 +825,7 @@ $exports.Scenario = {};
 					var result = child.run({
 						scope: copy(scope),
 						path: path.slice(1)
-					});
+					},next);
 					if (!result) {
 						success = false;
 					}

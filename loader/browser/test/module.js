@@ -64,17 +64,15 @@ var Step = function(target,o) {
 			o.cleanup.call(target);
 		}
 	}
-}
+};
 
-var Tests = function() {
+var Set = function(p) {
 	var target = {};
-	var events = $api.Events({ source: this });
-	var scope = new $context.api.unit.Scope({ events: events });
 	var steps = [];
 	var index = 0;
-	
 	var success = true;
-	
+	var next;
+
 	//	Possibly this should become a constructor argument rather than a modifier method at some point
 	this.target = function(page) {
 		target = page;
@@ -88,16 +86,20 @@ var Tests = function() {
 		}
 	}
 
+	this.next = function(f) {
+		next = f;
+	}
+
 	var evaluateTests = function(index) {
 		if (index < 0) return;
-		steps[index].check(scope);
-		if (!scope.success) success = false;
+		steps[index].check(p.scope);
+		if (!p.scope.success) success = false;
 		steps[index].cleanup();
 	}
 	
 	var proceed = function() {
 		evaluateTests(index-1);
-		fire();
+		fire(next);
 	}
 
 	var fire = function() {
@@ -110,24 +112,74 @@ var Tests = function() {
 				proceed();
 			}
 		} else {
-			events.fire("end", (index > 0) ? success : true);
+			if (p.events) p.events.fire("end", (index > 0) ? success : true);
+			if (next) next();
 		}
 	}
 
-	//	TODO	this is used by the unit test button to run the tests; could encapsulate
-	this.run = function() {
-		//	TODO	want to put this inside run(), but it does not work for some reason
+	this.run = function(next) {
 		window.XMLHttpRequest.asynchrony.next(proceed);
 
-		if (!window.XMLHttpRequest.asynchrony.open()) fire();
+		if (!window.XMLHttpRequest.asynchrony.open()) fire();		
+	}
+};
+
+var Scenario = function(p) {
+	var target;
+	var tests = [];
+	var next;
+
+	this.next = function(f) {
+		next = f;
+	}
+
+	this.target = function(page) {
+		target = page;
+	};
+
+	this.test = function(t) {
+		tests.push(t);
+	}
+
+	this.execute = function(scope,verify) {
+		var set = new Set({ scope: verify.scope });
+		if (target) set.target(target);
+		if (next) set.next(next);
+		tests.forEach(function(test) {
+			set.test(test);
+		})
+		set.run(next);
+	}
+}
+
+var Tests = function() {
+	var events = $api.Events({ source: this });
+	var scope = new $context.api.unit.Scope({ events: events });
+
+	var set = new Set({ events: events, scope: scope });
+
+	this.target = function(page) {
+		set.target(page);
+	};
+
+	this.test = function(test) {
+		set.test(test);
+	};
+
+	
+	//	TODO	this is used by the unit test button to run the tests; could encapsulate
+	this.run = function(next) {
+		set.run(next);
 	};
 };
 
 var unit = new function() {
+	var target;
 	var global = new Tests();
 	
 	this.target = function(page) {
 		global.target(page);
+		target = page;
 	}
 	
 	var suite;
@@ -135,7 +187,30 @@ var unit = new function() {
 	this.Tests = function() {
 		Tests.call(this);
 	};
-	
+
+	this.Scenario = function() {
+		Scenario.call(this,{ target: target });
+	}
+
+	var getStructure = function(part) {
+		var rv = {
+			id: part.id,
+			name: part.name
+		};
+		if (part.parts) {
+			var parts = part.parts;
+			rv.parts = {};
+			for (var x in parts) {
+				rv.parts[x] = getStructure(parts[x]);
+			}
+		}
+		return rv;
+	};
+
+	this.structure = function() {
+		return getStructure(suite);
+	}
+
 	this.suite = function() {
 		suite = arguments[0];
 	}
@@ -148,12 +223,19 @@ var unit = new function() {
 	this.run = function(_callbacks) {
 		if (suite) {
 			suite.listeners.add("scenario", function(e) {
-				_callbacks.fire(e);
+//				_callbacks.fire(e);
+				console.log("scenario", e);
+				_callbacks.event(e);
 			});
 			suite.listeners.add("test", function(e) {
-				_callbacks.fire(e);
+				console.log("test", e.detail.message, e);
+//				_callbacks.fire(e);
+				_callbacks.event(e);
 			});
-			throw new Error("Unimplemented: run suite");
+			suite.run({},function(success) {
+				console.log("success = " + success);
+				debugger;
+			});
 		} else {
 			if (!_callbacks) throw new Error("Missing callbacks!");
 			global.listeners.add("console", function(e) {
