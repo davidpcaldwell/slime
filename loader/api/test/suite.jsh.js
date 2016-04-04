@@ -12,13 +12,10 @@
 //	END LICENSE
 
 var parameters = jsh.script.getopts({
-	view: "console"
+	options: {
+		view: "console"
+	}
 });
-
-var views = {
-	console: new jsh.unit.view.Console({ writer: jsh.shell.stdio.error }),
-	webview: new jsh.unit.view.WebView()
-}
 
 var suite = new jsh.unit.Suite({
 	create: function() {
@@ -74,6 +71,4 @@ var scan = function(suite) {
 
 jsh.shell.echo("Scan: " + JSON.stringify(scan(suite), void(0), "    "), { stream: jsh.shell.stdio.error });
 
-var view = views[parameters.options.view];
-view.listen(suite);
-suite.run();
+jsh.unit.interface.create(suite, { view: parameters.options.view });
