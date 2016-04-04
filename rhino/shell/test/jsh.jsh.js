@@ -11,9 +11,18 @@
 //	END LICENSE
 
 if (!jsh.unit || !jsh.unit.integration) {
-	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api"));
-	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/unit"));
-	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/test"));
+	//	TODO	can this be implemented for URL-based launches?
+	if (jsh.script.file) {
+		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api"));
+		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/unit"));
+		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/test"));
+	} else {
+		//	URL-based launch, just mock it, essentially
+		jsh.unit = {};
+		jsh.unit.integration = function(o) {
+			o.run();
+		};
+	}
 }
 
 jsh.unit.integration({

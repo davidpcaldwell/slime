@@ -261,10 +261,12 @@ scenario.scenario("packaged", {
 			if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
 				Packages.java.lang.System.err.println("Running " + packagedPackaged + " ...");
 				var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				jsh.shell.java({
+				var result = jsh.shell.java({
 					jar: packagedPackaged,
 					arguments: ["-classes",classes]
 				});
+				//	TODO	should be in evaluate() method
+				verify(result).status.is(0);
 	//			runPackaged(
 	//				packagedPackaged.getCanonicalPath(),
 					//	TODO	remove, I believe

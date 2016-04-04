@@ -91,26 +91,10 @@ plugin({
 			});
 			var getopts = (o.getopts) ? jsh.script.getopts(o.getopts, parameters.arguments) : { options: {}, arguments: parameters.arguments };
 			if (parameters.options.scenario) {
-//				var views = {
-//					child: function() {
-//						return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output })
-//					},
-//					webview: function() {
-//						return new jsh.unit.view.WebView()
-//					},
-//					console: function() {
-//						return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
-//					}
-//				};
-//				var view = views[parameters.options.view]();
-//				var view = jsh.unit.view.options.select(parameters.options.view);
 				var scenario = new jsh.unit.Suite({
-					name: jsh.script.file.pathname.basename//,
-//					old: true
+					name: jsh.script.file.pathname.basename
 				});
 				o.scenario.call(scenario,getopts);
-//				view.listen(scenario);
-//				scenario.run();
 				jsh.unit.interface.create(scenario, { view: parameters.options.view });
 			} else {
 				o.run(getopts);

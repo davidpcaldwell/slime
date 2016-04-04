@@ -81,8 +81,9 @@ END LICENSE
 					},
 					evaluate: function(result) {
 						if (result.status) {
-							jsh.shell.echo(result.stdio.output);
-							jsh.shell.echo(result.stdio.error);
+							jsh.shell.echo("STATUS: " + result.status, { stream: jsh.shell.stdio.error });
+							jsh.shell.echo(result.stdio.output, { stream: jsh.shell.stdio.error });
+							jsh.shell.echo(result.stdio.error, { stream: jsh.shell.stdio.error });
 						}
 						verify(result).status.is(0);
 					}

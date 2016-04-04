@@ -66,11 +66,6 @@ plugin({
 			views.stdio = function() {
 				return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output });
 			}
-			if (jsh.unit.view.WebView) {
-				views.webview = function() {
-					return new jsh.unit.view.WebView();
-				}
-			}
 			return views;
 		};
 		jsh.unit.view.options.select = function(name) {
@@ -206,55 +201,6 @@ var serializeEvent = function(e) {
 
 plugin({
 	isReady: function() {
-		//	Need jsh.io for $loader.resource
-		return Boolean(jsh.unit && jsh.unit.view && jsh.document && jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.io);
-	},
-	load: function() {
-		jsh.unit.view.WebView = function() {
-//			var $$loader = new jsh.io.Loader($loader.source);
-//			jsh.io.decorate($loader);
-			var html = new jsh.document.Document({ string: $loader.get("browser/webview.html").string });
-			var rv = new function() {
-				var buffer = [];
-				var send;
-
-				var add = function(e) {
-					var json = serializeEvent(e);
-					if (send) {
-						send(json);
-					} else {
-						buffer.push(json);
-					}
-				};
-
-				this.initialize = function(postMessage) {
-					send = postMessage;
-					for (var i=0; i<buffer.length; i++) {
-						send(buffer[i]);
-					}
-					buffer = null;
-				}
-
-				this.view = new jsh.unit.View(add);
-			};
-			var webview = new jsh.ui.javafx.WebView({
-				page: { document: html, loader: new $loader.Child("browser/") },
-				initialize: function(p) {
-					rv.initialize((function(message) {
-						this.postMessage(message);
-					}).bind(this));
-				}
-			});
-			jsh.ui.javafx.launch({
-				Scene: webview
-			});
-			return rv.view;
-		}
-	}
-});
-
-plugin({
-	isReady: function() {
 		return jsh.js && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario.Events && jsh.java && jsh.file;
 	},
 	load: function() {
@@ -332,11 +278,6 @@ plugin({
 			});
 		};
 
-		jsh.unit.view.Chrome = function(p) {
-			return new Chrome(jsh.js.Object.set({}, p, {
-				page: "webview.html"
-			}));
-		};
 		jsh.unit.interface.Chrome = function(p) {
 			//	expects suite, port, profile, page properties
 			var rv = new Chrome(jsh.js.Object.set({}, p, {
