@@ -17,44 +17,41 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var suite = new jsh.unit.Suite({
-	create: function() {
-		this.initialize = function(scope) {
-			scope.topname = "topvalue";
+var suite = {
+	initialize: function(scope) {
+		scope.topname = "topvalue";
+	},
+	parts: {}
+}
+
+suite.parts.a = new function() {
+	this.initialize = function(scope) {
+		scope.name = "value";
+	};
+
+	this.execute = function(scope,verify) {
+		verify(scope.name).is("value");
+	};
+};
+
+var child = {
+	parts: {
+		grandchild: new function() {
+			this.initialize = function(scope) {
+				scope.newname = "newvalue";
+			};
+
+			this.execute = function(scope,verify) {
+				verify(scope.newname).is("newvalue");
+				verify(scope.topname).is("topvalue");
+			};
 		}
 	}
-});
+};
 
-suite.scenario("a", {
-	create: function() {
-		this.initialize = function(scope) {
-			scope.name = "value";
-		};
+suite.parts.child = child;
 
-		this.execute = function(scope,verify) {
-			verify(scope.name).is("value");
-		};
-	}
-});
-
-var child = new jsh.unit.Suite({
-	create: function() {
-		this.scenario("grandchild", {
-			create: function() {
-				this.initialize = function(scope) {
-					scope.newname = "newvalue";
-				};
-
-				this.execute = function(scope,verify) {
-					verify(scope.newname).is("newvalue");
-					verify(scope.topname).is("topvalue");
-				};
-			}
-		});
-	}
-});
-
-suite.suite("child", child);
+var object = new jsh.unit.Suite(suite);
 
 var scan = function(suite) {
 	var parts = suite.getParts();
@@ -69,6 +66,6 @@ var scan = function(suite) {
 	return rv;
 }
 
-jsh.shell.echo("Scan: " + JSON.stringify(scan(suite), void(0), "    "), { stream: jsh.shell.stdio.error });
+jsh.shell.echo("Scan: " + JSON.stringify(scan(object), void(0), "    "), { stream: jsh.shell.stdio.error });
 
-jsh.unit.interface.create(suite, { view: parameters.options.view });
+jsh.unit.interface.create(object, { view: parameters.options.view });
