@@ -729,7 +729,7 @@ $exports.Scenario = {};
 				try {
 					//	TODO	execute is apparently mandatory
 					var execute = part.find("execute");
-					if (!execute) throw new Error("execute not found in " + Object.keys(o));
+					if (!execute) throw new Error("execute not found in " + o);
 					execute.call(this,local,verify);
 				} catch (e) {
 					vscope.error(e);
