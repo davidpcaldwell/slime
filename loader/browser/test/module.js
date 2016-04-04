@@ -210,7 +210,8 @@ var unit = new function() {
 	this.structure = function() {
 		if (!suite) {
 			return {
-				name: "Tests"
+				name: "Tests",
+				old: true
 			};
 		}
 		return getStructure(suite);
