@@ -14,26 +14,25 @@
 	var $context = (window.inonit && window.inonit.loader) ? window.inonit.loader : {
 	};
 	if (!$context.debug) $context.debug = function(message) {};
-	if (!$context.XMLHttpRequest) $context.XMLHttpRequest = (function() {
-		if (typeof(window.XMLHttpRequest) == "undefined") {
-			return function() {
-				var req = false;
+	if ($context.XMLHttpRequest) {
+		window.XMLHttpRequest = $context.XMLHttpRequest;
+	}
+	if (!window.XMLHttpRequest) {
+		window.XMLHttpRequest = function() {
+			var req = false;
+			try {
+				req = new ActiveXObject("Msxml2.XMLHTTP");
+			} catch(e) {
 				try {
-					req = new ActiveXObject("Msxml2.XMLHTTP");
+					req = new ActiveXObject("Microsoft.XMLHTTP");
 				} catch(e) {
-					try {
-						req = new ActiveXObject("Microsoft.XMLHTTP");
-					} catch(e) {
-						$context.debug("Error instantiating XMLHttpRequest using ActiveX");
-						throw e;
-					}
+					$context.debug("Error instantiating XMLHttpRequest using ActiveX");
+					throw e;
 				}
-				return req;
 			}
-		} else {
-			return window.XMLHttpRequest;
+			return req;			
 		}
-	})();
+	}
 	//	Undocumented for now; seemingly unused
 	if (!$context.url) $context.url = void(0);
 	if (!$context.callback) $context.callback = function(){};
@@ -240,9 +239,6 @@
 		}
 
 		this.nugget = new function() {
-			//	This is provided so that others do not have to go through the rigamarole of determining how to instantiate this.
-			this.XMLHttpRequest = XMLHttpRequest;
-
 			//	DRY:	Other scripts may want to use this (already have examples)
 			this.getCurrentScript = getCurrentScript;
 

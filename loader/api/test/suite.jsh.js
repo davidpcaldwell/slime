@@ -12,52 +12,46 @@
 //	END LICENSE
 
 var parameters = jsh.script.getopts({
-	view: "console"
+	options: {
+		view: "console"
+	}
 });
 
-var views = {
-	console: new jsh.unit.view.Console({ writer: jsh.shell.stdio.error }),
-	webview: new jsh.unit.view.WebView()
+var suite = {
+	initialize: function(scope) {
+		scope.topname = "topvalue";
+	},
+	parts: {}
 }
 
-var suite = new jsh.unit.Suite({
-	create: function() {
-		this.initialize = function(scope) {
-			scope.topname = "topvalue";
+suite.parts.a = new function() {
+	this.initialize = function(scope) {
+		scope.name = "value";
+	};
+
+	this.execute = function(scope,verify) {
+		verify(scope.name).is("value");
+	};
+};
+
+var child = {
+	parts: {
+		grandchild: new function() {
+			this.initialize = function(scope) {
+				scope.newname = "newvalue";
+			};
+
+			this.execute = function(scope,verify) {
+				verify(scope.newname).is("newvalue");
+				verify(scope.topname).is("topvalue");
+			};
 		}
 	}
-});
+};
 
-suite.scenario("a", {
-	create: function() {
-		this.initialize = function(scope) {
-			scope.name = "value";
-		};
+suite.parts.child = child;
 
-		this.execute = function(scope,verify) {
-			verify(scope.name).is("value");
-		};
-	}
-});
-
-var child = new jsh.unit.Suite({
-	create: function() {
-		this.scenario("grandchild", {
-			create: function() {
-				this.initialize = function(scope) {
-					scope.newname = "newvalue";
-				};
-
-				this.execute = function(scope,verify) {
-					verify(scope.newname).is("newvalue");
-					verify(scope.topname).is("topvalue");
-				};
-			}
-		});
-	}
-});
-
-suite.suite("child", child);
+var object = new jsh.unit.Suite(suite);
 
 var scan = function(suite) {
 	var parts = suite.getParts();
@@ -72,8 +66,6 @@ var scan = function(suite) {
 	return rv;
 }
 
-jsh.shell.echo("Scan: " + JSON.stringify(scan(suite), void(0), "    "), { stream: jsh.shell.stdio.error });
+jsh.shell.echo("Scan: " + JSON.stringify(scan(object), void(0), "    "), { stream: jsh.shell.stdio.error });
 
-var view = views[parameters.options.view];
-view.listen(suite);
-suite.run();
+jsh.unit.interface.create(object, { view: parameters.options.view });

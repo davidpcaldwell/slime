@@ -437,7 +437,7 @@ window.callbacks.push(function() {
 
 			this.send = function() {
 				events.push({ close: true });
-				var req = new inonit.loader.nugget.XMLHttpRequest();
+				var req = new window.XMLHttpRequest();
 				req.open("POST", "console", false);
 				req.send(JSON.stringify(events));
 			}
@@ -461,7 +461,7 @@ window.callbacks.push(function() {
 			} else if (parameters.callback == "server") {
 				return function(success) {
 					console.send();
-					var req = new inonit.loader.nugget.XMLHttpRequest();
+					var req = new window.XMLHttpRequest();
 					req.open("POST", "success", false);
 					req.send(success);
 					//	We do not really care about response code

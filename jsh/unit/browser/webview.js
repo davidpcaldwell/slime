@@ -12,32 +12,26 @@
 //	END LICENSE
 
 (function() {
-	var current;
-
 	var section = (function() {
+		//	TODO	getElement allows future refactoring to provide alternative ID regime
 		if (window == this) {
 			return new function() {
 				this.getElement = function(id) {
 					return document.getElementById(id);
 				};
 
-				this.initialize = function(initialize,handler) {
+				this.initialize = function(initialize) {
 					window.addEventListener("load", initialize);
-
-					if (window.jsh) {
-						window.jsh.message.handler(handler);
-					}
 				}
 			};
 		} else {
 			return new (function(o) {
-				//	TODO	allows future refactoring to provide alternative ID regime
 				this.getElement = function(id) {
 					return document.getElementById(id);
 				}
 
-				this.initialize = function(initialize,handler) {
-					o.initialize(initialize,handler);
+				this.initialize = function(initialize) {
+					o.initialize(initialize);
 				}
 			})(this.section);
 		}
@@ -54,6 +48,7 @@
 					return json;
 				};
 
+				//	TODO	could do this asynchronously
 				var getMessages = function() {
 					var xhr = new XMLHttpRequest();
 					xhr.open("GET", "messages", false);
@@ -84,13 +79,6 @@
 
 	var colorCode = function(rv,success) {
 		rv.className = [rv.className,(success) ? "success" : "failure"].join(" ");
-//			if (typeof(success) != "undefined") {
-//				if (success) {
-//					rv.style.backgroundColor = "#80ff80";
-//				} else {
-//					rv.style.backgroundColor = "#ff0000";
-//				}
-//			};
 	}
 
 	var testMessage = function(message) {
@@ -125,8 +113,6 @@
 				var line = lines[i].replace(/\t/g, "    ").replace(/ /g, String.fromCharCode(160));
 				rv.appendChild(document.createTextNode(line));
 			}
-//				var text = document.createTextNode(p.text);
-//				rv.appendChild(text);
 		}
 		if (p.className) {
 			rv.className = p.className;
@@ -136,76 +122,6 @@
 		}
 		return rv;
 	}
-
-	var WEBVIEW_HTML_OBSOLETE = true;
-
-	var handler = (WEBVIEW_HTML_OBSOLETE) ? void(0) : function(message) {
-		var line = function(p) {
-			var rv = document.createElement("div");
-			if (p.text) {
-				var lines = p.text.split("\n");
-				for (var i=0; i<lines.length; i++) {
-					if (i != 0) {
-						var br = document.createElement("br");
-						rv.appendChild(br);
-					}
-					var line = lines[i].replace(/\t/g, "    ").replace(/ /g, String.fromCharCode(160));
-					rv.appendChild(document.createTextNode(line));
-				}
-//				var text = document.createTextNode(p.text);
-//				rv.appendChild(text);
-			}
-			if (p.className) {
-				rv.className = p.className;
-			}
-			if (typeof(p.success) != "undefined") {
-				colorCode(rv,p.success);
-			}
-			return rv;
-		}
-
-		if (message.type == "scenario" && message.detail.start) {
-			var div = document.createElement("div");
-			div.className = "scenario";
-			div.appendChild(line({ text: "Running: " + message.detail.start.name }));
-			if (!current) {
-				current = section.getElement("scenario");
-			}
-			current.appendChild(div);
-			current = div;
-		} else if (message.type == "scenario" && message.detail.end) {
-			var result = (message.detail.success) ? "Passed" : "Failed";
-			current.appendChild(line({ text: result + ": " + message.detail.end.name }));
-			colorCode(current,message.detail.success);
-			current = current.parentNode;
-		} else if (message.type == "test") {
-			var result = (message.detail.success) ? "Passed" : "Failed";
-			if (message.detail.error) {
-				result = "Error";
-			}
-			var text = result + ": " + message.detail.message;
-			if (message.detail.error) {
-				var current = message.detail.error;
-				while(current) {
-					text += "\n" + current.type + ": " + current.message;
-					if (current.stack) {
-						text += "\n" + current.stack;
-					}
-					if (current == message.detail.error) {
-						if (current.code) {
-							text += " " +  current.code;
-						}
-					}
-					current = current.cause;
-				}
-			}
-			current.appendChild(line({ text: text, success: message.detail.success, className: "test" }));
-		}
-	};
-
-	var run = function(path) {
-		suite.run(path);
-	};
 
 	var View = function View(json) {
 		this.id = json.id;
@@ -339,43 +255,37 @@
 			} else {
 				var child = path[0];
 				var further = path.slice(1);
-				parts[child].dispatch(further,e);
+				var id = (typeof(child) == "string") ? child : child.id;
+				parts[id].dispatch(further,e);
 			}
 		}
 	};
 
-	var initialize = function() {
-		if (WEBVIEW_HTML_OBSOLETE || document.body.id == "ui") {
-			document.getElementById("run").disabled = true;
+	var initialize = function(p) {
+		if (!p) p = {};
+		document.getElementById("run").disabled = true;
 
-			var json = suite.getStructure();
+		var json = suite.getStructure();
 
-			var view = new View(json);
+		var view = new View(json);
 
-			document.getElementById("structure").appendChild(view.element);
+		document.getElementById("structure").appendChild(view.element);
 
-			document.getElementById("run").disabled = false;
+		document.getElementById("run").disabled = false;
 
-			suite.listen(view);
+		suite.listen(view);
 
-			document.getElementById("run").addEventListener("click", function() {
-				view.clear();
-				suite.run([]);
-			});
+		var onclick = function() {
+			view.clear();
+			suite.run([]);
+		}
+
+		if (!p.onclick) {
+			document.getElementById("run").addEventListener("click", onclick);
 		} else {
-			if (!window.jsh) {
-				window.setInterval(function() {
-					var xhr = new XMLHttpRequest();
-					xhr.open("GET", "messages", false);
-					xhr.send(null);
-					var json = JSON.parse(xhr.responseText);
-					json.forEach(function(event) {
-						handler(event);
-					});
-				}, 1000);
-			}
+			p.onclick(onclick);
 		}
 	};
 
-	section.initialize(initialize,handler);
+	section.initialize(initialize);
 }).call(this);

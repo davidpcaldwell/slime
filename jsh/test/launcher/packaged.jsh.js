@@ -29,22 +29,9 @@ if (parameters.options.scenario) {
 	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api"));
 	jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/unit"));
 	jsh.shell.echo("Loaded plugins.");
-	var views = {
-		child: function() {
-			return new jsh.unit.view.Events({ writer: jsh.shell.stdio.output })
-		},
-		ui: function() {
-			return new jsh.unit.view.WebView()
-		},
-		console: function() {
-			return new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
-		}
-	};
-	var view = views[parameters.options.view]();
 	var scenario = new jsh.unit.Suite({
 		name: jsh.script.file.pathname.basename
 	});
-	view.listen(scenario);
 	jsh.shell.echo("Created scenario.");
 	var packaged_JSH_SHELL_CLASSPATH = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath(jsh.script.file.pathname.basename + ".jar");
 	var engine = (jsh.shell.jsh.home.getFile("lib/js.jar")) ? [] : ["-norhino"];
@@ -131,7 +118,7 @@ if (parameters.options.scenario) {
 //			}
 //		}
 //	});
-	scenario.run();
+	jsh.unit.interface.create(scenario, { view: parameters.options.view });
 } else {
 	var url = Packages.java.lang.Class.forName("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString();
 	jsh.shell.echo(url);

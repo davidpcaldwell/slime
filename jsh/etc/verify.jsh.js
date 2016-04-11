@@ -67,7 +67,7 @@ parameters.options.java.forEach(function(jre) {
 		run: jsh.shell.jsh,
 		fork: true,
 		script: jsh.script.file.getRelativePath("../test/launcher/suite.jsh.js").file,
-		arguments: ["-scenario", "-view", "child"].concat(rhinoArgs)
+		arguments: ["-scenario", "-view", "stdio"].concat(rhinoArgs)
 	}));
 
 	parameters.options.engine.forEach(function(engine) {

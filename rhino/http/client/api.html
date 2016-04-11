@@ -576,22 +576,30 @@ END LICENSE
 														<div class="arguments">
 															<div class="label">Arguments</div>
 															<ol>
-																<li class="value">
-																	<div class="name">url</div>
-																	<span class="type">string</span>
-																	<span>
-																		The URL to which the request was redirected, excluding
-																		parameters.
-																	</span>
-																</li>
-																<li class="value">
-																	<div class="name">parameters</div>
-																	<span class="type">Array of <a href="#types.pair">pair</a></span>
-																	<span>
-																		An array of parameters representing the query string of the
-																		URL to which the request was rediected, or a zero-length
-																		array if there were no parameters.
-																	</span>
+																<li class="object">
+																	<span>__DESCRIPTION__</span>
+																	<div class="label">has properties:</div>
+																	<ul>
+																		<li class="value">
+																			<div class="name">request</div>
+																			<span class="type">__TYPE__</span>
+																			<span>__DESCRIPTION__</span>
+																		</li>
+																		<li class="value">
+																			<div class="name">response</div>
+																			<span class="type">__TYPE__</span>
+																			<span>__DESCRIPTION__</span>
+																		</li>
+																		<li class="value">
+																			<div class="name">next</div>
+																			<span class="type">__TYPE__</span>
+																			<span>
+																				This property may be removed from the
+																				object in order to stop the client from following
+																				the redirect.
+																			</span>
+																		</li>
+																	</ul>
 																</li>
 															</ol>
 														</div>
