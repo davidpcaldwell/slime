@@ -45,6 +45,58 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
+			<li class="constructor">
+				<div class="type">
+					<a class="type" name="types.Host">Host</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">isReachable</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								var host = new jsh.ip.Host({ name: "127.0.0.1" });
+								verify(host).isReachable().is(true);
+							</script>
+						</li>
+					</ul>
+				</div>
+
+				<div class="name">Host</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<div class="name">__NAME__</div>
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">name</div>
+									<span class="type">string</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
 		</ul>
 	</div>
 </body>
