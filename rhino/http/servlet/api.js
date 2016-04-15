@@ -225,8 +225,6 @@ scope.httpd.js = api.js;
 scope.httpd.java = api.java;
 scope.httpd.io = api.io;
 
-scope.httpd.http = {};
-
 if (!loaders.api.get("loader.js")) {
 	throw new Error("loader.js not found in " + loaders.api);
 }
@@ -243,37 +241,6 @@ loaders.api.run(
 		$loader: loaders.api
 	}
 );
-
-scope.httpd.http.Response = function() {
-	throw new Error("Reserved for future use.");
-};
-
-scope.httpd.http.Response.text = function(string) {
-	return {
-		status: {
-			code: 200
-		},
-		headers: [],
-		body: {
-			type: "text/plain",
-			string: string
-		}
-	};
-};
-
-scope.httpd.http.Response.javascript = function(p) {
-	if (typeof(p) == "string") {
-		return {
-			status: { code: 200 },
-			body: {
-				type: "text/javascript",
-				string: p
-			}
-		}
-	} else {
-		throw new Error("'p' must be string");
-	}
-}
 
 if (loaders.script) {
 	//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the

@@ -11,6 +11,47 @@
 //	Contributor(s):
 //	END LICENSE
 
+$exports.http = {};
+
+$exports.http.Response = function() {
+	throw new Error("Reserved for future use.");
+};
+
+$exports.http.Response.text = function(string) {
+	return {
+		status: {
+			code: 200
+		},
+		headers: [],
+		body: {
+			type: "text/plain",
+			string: string
+		}
+	};
+};
+
+$exports.http.Response.javascript = function(p) {
+	if (typeof(p) == "string") {
+		return {
+			status: { code: 200 },
+			body: {
+				type: "text/javascript",
+				string: p
+			}
+		}
+	} else {
+		throw new Error("'p' must be string");
+	}
+}
+
+$exports.http.Response.NOT_FOUND = function() {
+	return {
+		status: {
+			code: 404
+		}
+	}
+};
+
 $exports.Handler = function(p) {
 	throw new Error("Reserved for future use.");
 };
