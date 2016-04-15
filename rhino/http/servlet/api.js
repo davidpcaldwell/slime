@@ -78,6 +78,7 @@ var bootstrap = (function() {
 		rv.js = loader.module("WEB-INF/slime/js/object/", {
 			globals: true
 		});
+		rv.js.web = loader.module("WEB-INF/slime/js/web/", loader.file("WEB-INF/slime/js/web/context.java.js"));
 		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
 			globals: true,
 			$rhino: $loader,
@@ -234,6 +235,11 @@ loaders.api.run(
 	"loader.js",
 	{
 		$exports: scope.httpd,
+		$context: {
+			api: {
+				web: scope.httpd.js.web
+			}
+		},
 		$loader: loaders.api
 	}
 );

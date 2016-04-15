@@ -44,4 +44,33 @@ $exports.Handler.Child = function(p) {
 			}
 		};
 	}
+};
+$exports.Handler.HostRedirect = function(p) {
+	var redirect = function(url,parameters) {
+		//	TODO	this is terrible, ignores parameters
+		return {
+			status: { code: 307 },
+			headers: [
+				{ name: "Location", value: url.toString() }
+			]
+		};
+	};
+	
+	return function(request) {
+		if (request.headers.value("host") == p.from) {
+			//	TODO	allow p.to to to have host/path/port?
+			var to = new $context.api.web.Url({
+				scheme: "http",
+				authority: {
+					host: p.to
+					//	port
+					//	userinfo
+				},
+				path: "/" + request.path
+				//	TODO	query
+				//	TODO	fragment: is this even possible?
+			});
+			return redirect(to, request.parameters);			
+		}
+	}
 }
