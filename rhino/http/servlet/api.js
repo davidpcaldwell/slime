@@ -253,6 +253,20 @@ scope.httpd.http.Response.text = function(string) {
 			string: string
 		}
 	};
+};
+
+scope.httpd.http.Response.javascript = function(p) {
+	if (typeof(p) == "string") {
+		return {
+			status: { code: 200 },
+			body: {
+				type: "text/javascript",
+				string: p
+			}
+		}
+	} else {
+		throw new Error("'p' must be string");
+	}
 }
 
 if (loaders.script) {
