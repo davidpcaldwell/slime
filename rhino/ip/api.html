@@ -65,8 +65,11 @@ END LICENSE
 								<span>__DESCRIPTION__</span>
 							</div>
 							<script type="application/x.jsapi#tests">
-								var host = new jsh.ip.Host({ name: "127.0.0.1" });
-								verify(host).isReachable().is(true);
+								//	TODO	obviously we would like this to work on other environments
+								if (jsh.shell.os.name == "Mac OS X") {
+									var host = new jsh.ip.Host({ name: "127.0.0.1" });
+									verify(host).isReachable().is(true);
+								}
 							</script>
 						</li>
 					</ul>
