@@ -22,14 +22,31 @@ END LICENSE
 	</head>
 	<body>
 		<div>__DESCRIPTION__</div>
-		<script type="application/x.jsapi#initialize">
-			scope.module = $jsapi.loader.module("loader.js");
-		</script>
 		<div>
-			<h1><code>httpd properties</code></h1>
+			<h1><code>httpd</code> Properties</h1>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="object">
+				<li class="object" jsapi:id="Handler">
+					<script type="application/x.jsapi#initialize"><![CDATA[
+						scope.module = $jsapi.loader.module("loader.js", {
+							api: {
+								web: jsh.js.web
+							}
+						});
+						scope.Headers = function(host) {
+							var rv = [{ name: "Host", value: host }];
+							//	TODO	rv.value is copied from servlet server.js
+							rv.value = function(name) {
+								//	TODO	more robust check for multiple values, etc.
+								for (var i=0; i<this.length; i++) {
+									if (this[i].name.toLowerCase() == name.toLowerCase()) {
+										return this[i].value;
+									}
+								}
+							};
+							return rv;
+						}
+					]]></script>
 					<div class="name">Handler</div>
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
@@ -86,6 +103,60 @@ END LICENSE
 								<span class="type">function</span>
 								<span>__DESCRIPTION__</span>
 							</div>
+						</li>
+						<li class="constructor">
+							<div class="name">HostRedirect</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<div class="name">__NAME__</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">from</div>
+												<span class="type">string</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+											<li class="value">
+												<div class="name">to</div>
+												<span class="type">string</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="instances">
+								<div class="label">Instances</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+							<script type="application/x.jsapi#tests">
+								//	TODO	how would this work for Slim applications not deployed at root?
+								var a = new module.Handler.HostRedirect({
+									from: "foo.com",
+									to: "www.foo.com"
+								});
+								var response = a({
+									path: "",
+									headers: new Headers("foo.com")
+								});
+								verify(response).status.code.is(307);
+								verify(response).headers[0].name.is("Location");
+								verify(response).headers[0].value.is("http://www.foo.com/");
+								
+								var r2 = a({
+									method: "POST",
+									path: "foo",
+									headers: new Headers("foo.com")
+								});
+								verify(r2).status.code.is(307);
+								verify(r2).headers[0].name.is("Location");
+								verify(r2).headers[0].value.is("http://www.foo.com/foo");
+							</script>
 						</li>
 					</ul>
 				</li>

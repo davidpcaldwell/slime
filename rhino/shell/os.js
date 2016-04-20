@@ -223,4 +223,29 @@ if ($context.os.name == "Mac OS X") {
 			}
 		}
 	};
+
+	$exports.ping = function(p) {
+		//	tested on Mac OS X
+		//	TODO	where should stderr go?
+		return $context.run({
+			command: "ping",
+			arguments: ["-c", "1", p.host],
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				var successline = result.stdio.output.split("\n")[1];
+				var successmatch = /(?:.*)time\=(\d+\.\d+) ms$/;
+				var success;
+				if (successline) {
+					success = Number(successmatch.exec(successline)[1]) / 1000;
+				}
+				return {
+					status: result.status,
+					output: result.stdio.output.split("\n"),
+					success: success
+				}
+			}
+		});
+	}
 }

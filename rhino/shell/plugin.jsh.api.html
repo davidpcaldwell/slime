@@ -159,27 +159,38 @@ END LICENSE
 				<span>The rhino/shell properties.</span>
 			</li>
 			<li class="value">
-				<div class="name">stdin</div>
-				<span class="type"><a href="#types.consolei">console input</a></span>
-				<span>The standard input stream for this shell.</span>
-			</li>
-			<li class="value">
-				<div class="name">stdout</div>
-				<span class="type"><a href="#types.consoleo">console output</a></span>
-				<span>The standard output stream for this shell.</span>
+				<div class="name">stdio</div>
+				<span class="type"><a href="api.html#types.stdio">stdio</a></span>
+				<span>The standard I/O streams for this shell.</span>
 				<script type="application/x.jsapi#tests">
 					test(typeof(module.stdio.output.write) == "function");
 					test(typeof(module.stdio.output.close) == "function");
 				</script>
-			</li>
-			<li class="value">
-				<div class="name">stderr</div>
-				<span class="type"><a href="#types.consoleo">console output</a></span>
-				<span>The standard error stream for this shell.</span>
 				<script type="application/x.jsapi#tests">
 					test(typeof(module.stdio.error.write) == "function");
 					test(typeof(module.stdio.error.close) == "function");
 				</script>
+			</li>
+			<li class="value deprecated">
+				<div class="name">stdin</div>
+				<span class="type"><a href="#types.consolei">console input</a></span>
+				<span><b>See <code>stdio</code> for replacement.</b> The standard input stream for this shell.</span>
+			</li>
+			<li class="value deprecated">
+				<div class="name">stdout</div>
+				<span class="type"><a href="#types.consoleo">console output</a></span>
+				<span><b>See <code>stdio</code> for replacement.</b> The standard output stream for this shell.</span>
+			</li>
+			<li class="value deprecated">
+				<div class="name">stderr</div>
+				<span class="type"><a href="#types.consoleo">console output</a></span>
+				<span><b>See <code>stdio</code> for replacement.</b> The standard error stream for this shell.</span>
+			</li>
+			<li class="value" jsapi:reference="getApi('api.html').getElement('TMPDIR')">
+			</li>
+			<li class="value" jsapi:reference="getApi('api.html').getElement('HOME')">
+			</li>
+			<li class="value" jsapi:reference="getApi('api.html').getElement('PWD')">
 			</li>
 			<li class="function">
 				<div class="name">echo</div>

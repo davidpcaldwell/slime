@@ -63,7 +63,7 @@
 	components.add("rhino/file/", { jsh: { api: true, module: { javac: true }}});
 	//	Servlet module has Java classes but we do not compile them here
 	//	servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with servlet API is supplied by invoker
-	["rhino/io/","rhino/document/","rhino/shell/","jsh/script/","rhino/http/client/","rhino/http/servlet/"].forEach(function(path) {
+	["rhino/io/","rhino/document/","rhino/shell/","jsh/script/","rhino/http/client/","rhino/http/servlet/","rhino/ip/"].forEach(function(path) {
 		components.add(path, { jsh: { api: true, module: true }});
 	});
 	components.add("rhino/tools/", { jsh: { api: false, module: true }});
