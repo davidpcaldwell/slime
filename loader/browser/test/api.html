@@ -31,6 +31,110 @@
 			<h1>Exports</h1>
 			<div class="label">has properties:</div>
 			<ul>
+				<li class="constructor">
+					<div class="name">Scenario</div>
+					<div class="type">
+						<a class="type" name="types.test">test</a>
+						<div>
+							An object specifying a test. Its methods are executed in the following order:
+							<!--	TODO	currently cannot use ol here because styling styles them like arguments	-->
+							<ul>
+								<li><code>setup</code>: Executes before the test; may be used to set up the test scenario.</li>
+								<li><code>run</code>:
+									Executes the test. May contain asynchronous calls; the test will wait for
+									all calls to complete before proceeding.
+								</li>
+								<li><code>check</code>: 
+									Executes after the test; an argument is provided allowing the results of the test to be
+									verified.
+								</li>
+								<li><code>cleanup</code>: Executes after the results are verified; allows the test to restore the
+									pre-test state.
+								</li>
+							</ul>
+							A test may have a <i>target</i>; if it does, all test methods will be invoked with the target as
+							<code>this</code>.
+						</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">setup</div>
+								<span>(optional; default is to do nothing)</span>
+							</li>
+							<li class="function">
+								<div class="name">run</div>
+								<span>(optional; default is to do nothing)</span>
+							</li>
+							<li class="function">
+								<div class="name">check</div>
+								<span>(optional; default is to do nothing)</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type"><a href="../../api/unit.api.html#types.Verify">Verify</a></span>
+											<span>
+												An object that may be used to evaluate the results of the test and communicate
+												them back to the test framework.
+											</span>
+										</li>
+									</ol>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">cleanup</div>
+								<span>(optional; default is to do nothing)</span>
+							</li>
+						</ul>
+					</div>
+
+					<div class="type">
+						<a class="type" name="types.Scenario">Scenario</a>
+						<span class="type">supports <a href="../../api/unit.api.html#types.Scenario">Scenario</a></span>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">target</div>
+								<span>Sets the <i>target</i> - the <code>this</code> value - for the tests in this scenario.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ol>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">test</div>
+								<span>Adds a test to the scenario.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type"><a href="#types.test">test</a></span>
+											<span>A test.</span>
+										</li>
+									</ol>
+								</div>
+							</li>
+						</ul>
+					</div>
+
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
 			</ul>			
 		</div>
 		<p>
@@ -47,7 +151,44 @@
 			</span>
 			<div class="label">has properties:</div>
 			<ul>
+				<li class="object">
+					<div class="name">asynchrony</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">started</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">finished</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</li>
 			</ul>
+		</div>
+		<div>
 			<h1><code>unit</code></h1>
 			<div class="label">has properties:</div>
 			<ul>
