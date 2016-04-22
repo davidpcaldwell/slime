@@ -1,16 +1,6 @@
 document.domain = document.domain;
 
 (function() {
-	//	TODO	this is a bridge to the equivalent API from the loader; is there a better way?
-	var $api = {
-		deprecate: function(f) {
-			return function() {
-				debugger;
-				return f.apply(this,arguments);
-			}
-		}
-	};
-	
 	var forEach = function(array,f) {
 		if (array.forEach) {
 			array.forEach(f);

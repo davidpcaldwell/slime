@@ -1,4 +1,4 @@
-$loader.run("initialize.js");
+$loader.run("initialize.js", { $api: $api });
 
 var OldStep = function(o) {
 	this.setup = function() {
@@ -44,7 +44,6 @@ var Step = function(target,o) {
 		var fake = {};
 		window.XMLHttpRequest.asynchrony.started(fake);
 		if (o.run) {
-			//	TODO	add fake request
 			o.run.call(target);
 		}
 		window.XMLHttpRequest.asynchrony.finished(fake);
@@ -506,5 +505,4 @@ var unit = new function() {
 		loadUnitTests();
 	}
 };
-//	TODO	use $set/value
-$exports.unit = unit;
+$set(unit);
