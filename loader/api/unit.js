@@ -13,6 +13,8 @@
 //	We have an object called Object in this file, so this
 var defineProperty = Object.defineProperty;
 
+//	TODO	it appears that $context and $context.asynchronous are unused
+
 var Verify = function(scope,vars) {
 	var Value = function(v,name) {
 		var prefix = (name) ? (name + " ") : "";

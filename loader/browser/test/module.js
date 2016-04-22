@@ -241,7 +241,6 @@ var unit = new function() {
 			suite.run({},function(success) {
 				console.log("success = " + success);
 				_callbacks.end(success);
-				debugger;
 			});
 		} else {
 			if (!_callbacks) throw new Error("Missing callbacks!");
