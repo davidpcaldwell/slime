@@ -33,7 +33,7 @@ $exports.Port = function(number) {
 		return number;
 	});
 
-	this.isOpen = function() {
+	this.isOpen = $api.debug.disableBreakOnExceptionsFor(function() {
 		var debug = function(message) {
 			//Packages.java.lang.System.err.println(message);
 		}
@@ -65,7 +65,7 @@ $exports.Port = function(number) {
 			if (_server) _server.close();
 			if (_client) _client.close();
 		}
-	}
+	});
 };
 
 $exports.getEphemeralPort = function() {
