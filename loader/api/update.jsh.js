@@ -3,7 +3,8 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		base: jsh.shell.PWD.pathname
+		base: jsh.shell.PWD.pathname,
+		preview: false
 	}
 });
 
@@ -46,7 +47,22 @@ var apis = parameters.options.base.directory.list({
 		return -1;
 	};
 	
-	var readFile = 
+	var readFile = function(path) {
+		var string = jsh.script.file.parent.getFile(path).read(String);
+		//	filter out license
+		var lines = string.split("\n");
+		if (path == "api.js") {
+			var begin = lines.indexOf("//\tLICENSE");
+			var end = lines.indexOf("//\tEND LICENSE");
+			lines.splice(begin,end-begin+1);
+		} else if (path == "api.css") {
+			var begin = lines.indexOf("LICENSE")-1;
+			var end = lines.indexOf("END LICENSE")+1;
+			lines.splice(begin,end-begin+1,"");			
+		}
+		string = lines.join("\n");
+		return string;
+	}
 	
 	var style = indexMatching.call(head.children,isStyle);
 	
@@ -67,7 +83,7 @@ var apis = parameters.options.base.directory.list({
 		],
 		children: [
 			new jsh.document.Text({
-				text: jsh.script.file.parent.getFile("api.css").read(String)
+				text: readFile("api.css")
 			})
 		]
 	});
@@ -89,9 +105,14 @@ var apis = parameters.options.base.directory.list({
 		],
 		children: [
 			new jsh.document.Text({
-				text: jsh.script.file.parent.getFile("api.js").read(String)
+				text: readFile("api.js")
 			})
-		]		
-	})
-	jsh.shell.echo(document);
+		]
+	});
+	
+	if (parameters.options.preview) {
+		jsh.shell.echo(document);
+	} else {
+		api.pathname.write(document.toString(), { append: false });
+	}
 });
