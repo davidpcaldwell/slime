@@ -77,6 +77,20 @@ var Parent = function(p) {
 		return choose(rv);
 	}
 
+	this.remove = $api.experimental(function(search) {
+		search = asSearch(search);
+		for (var i=0; i<this.children.length; i++) {
+			if (search.filter(this.children[i])) {
+				this.children.splice(i,1);
+				i--;
+			} else {
+				if (this.children[i].remove && search.descendants(this.children[i])) {
+					this.children[i].remove(search);
+				}
+			}
+		}		
+	});
+
 	this.get = $api.deprecate(function(p) {
 		var filtering = function(children,p) {
 			var filter = (function() {
@@ -123,24 +137,6 @@ var Parent = function(p) {
 		};
 
 		return filtering(this.children,p);
-	});
-
-	this.remove = $api.deprecate(function(p) {
-		var child;
-		if (p.recursive && p.node) {
-			child = p.node;
-		} else {
-			child = p;
-		}
-		for (var i=0; i<this.children.length; i++) {
-			if (this.children[i] == child) {
-				this.children.splice(i,1);
-				return;
-			}
-			if (p.recursive && this.children[i].remove) {
-				this.children[i].remove(p);
-			}
-		}
 	});
 };
 
