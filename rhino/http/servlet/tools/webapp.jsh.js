@@ -65,6 +65,7 @@ jsh.httpd.tools.build({
 	})(),
 	Resources: function() {
 		parameters.options.resources.forEach(function(resources) {
+			if (!resources.file) throw new Error("No file at " + resources);
 			this.file(resources.file);
 		},this);
 	},
