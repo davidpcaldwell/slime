@@ -317,7 +317,7 @@ var Element = function(p) {
 					scope[attribute.namespace] = "jsdom_" + index;
 				}
 				var ns = (attribute.namespace) ? scope[attribute.namespace] + ":" : "";
-				return ns + attribute.name + "=" + "\"" + attribute.value + "\"";
+				return ns + attribute.name + "=" + "\"" + attribute.value.replace(/\"/g, "&quot;") + "\"";
 			}).join(" ");
 		}).call(this);
 		var isUnescapedScript = this.element.type.name == "script" && m.doNotEscapeScript;
