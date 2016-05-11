@@ -154,15 +154,17 @@ var Pathname = function(parameters) {
 
 	this.createDirectory = function(mode) {
 		if (!mode) mode = {};
-		if (!mode.ifExists) {
-			mode.ifExists = function() { throw new Error("Cannot create directory; already exists: " + toString()); }
-		}
+		var exists = (function(mode) {
+			if (mode.exists) return mode.exists;
+			if (mode.ifExists) return $api.deprecate(mode.ifExists);
+			return function() { throw new Error("Cannot create directory; already exists: " + toString()); };
+		})(mode);
 		if ($filesystem.exists(peer)) {
 			var getNode = function() {
 				if ($filesystem.isDirectory(peer)) return getDirectory();
 				return getFile.call(this);
 			}
-			var proceed = mode.ifExists(getNode.call(this));
+			var proceed = exists(getNode.call(this));
 			if (!proceed) {
 				//	We return null if a non-directory file exists but ifExists returns false (do not proceed with creating directory).
 				return getDirectory();

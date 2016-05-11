@@ -426,6 +426,49 @@ END LICENSE
 					<div class="label">Returns</div>
 					<span class="type"><a href="#types.Pathname">Pathname</a></span> The pathname represented by the argument.
 				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">createDirectory</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="object">
+								<div class="name">exists</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">LEAVE</div>
+										<span class="type"><code>function</code></span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">RECREATE</div>
+										<span class="type"><code>function</code></span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+						</ul>
+						<script type="application/x.jsapi#tests">
+							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+							var at = tmp.getRelativePath("doesNotExist");
+							var existing = newTemporaryDirectory().pathname;
+							createFile(existing.directory,"file",10);
+							var replace = newTemporaryDirectory().pathname;
+							createFile(replace.directory,"file",10);
+							verify(module).is.type("object");
+							verify(at).directory.is.type("null");
+							at.createDirectory();
+							verify(at).directory.is.type("object");
+							existing.createDirectory({ exists: module.Pathname.createDirectory.exists.LEAVE });
+							verify(existing).directory.getFile("file").is.type("object");
+							replace.createDirectory({ exists: module.Pathname.createDirectory.exists.RECREATE });
+							verify(replace).directory.getFile("file").is.type("null");
+						</script>
+					</li>
+				</ul>
 				<script type="application/x.jsapi#tests">
 					var dir = newTemporaryDirectory();
 
@@ -568,17 +611,23 @@ END LICENSE
 												<code>Pathname</code> if necessary.
 											</li>
 											<li class="function">
-												<div class="name">ifExists</div>
+												<div class="name">exists</div>
 												A method that will be invoked if a file or directory at
 												this pathname already exists.
 												<div>
-												The default implementation throws an exception, but callers can override this
-												behavior. For example, to simply ensure that a directory exists, one can call
-												<code>createDirectory()</code> and use an <code>ifExists</code> function that does
-												nothing and returns <code>false</code>.  Then, if the directory exists,
-												<code>createDirectory()</code> will abort early.  To create a "working" directory
-												that is empty (deleting it if it already exists), use an <code>ifExists</code>
-												method that removes the directory and then returns <code>true</code>.</div>
+													The default implementation throws an exception, but callers can override this
+													behavior. For example, to simply ensure that a directory exists, one can call
+													<code>createDirectory()</code> and use an <code>exists</code> function that does
+													nothing and returns <code>false</code> (the 
+													<code>Pathname.createDirectory.LEAVE</code> function is provided as a
+													convenience).
+													Then, if the directory exists,
+													<code>createDirectory()</code> will abort early.  To create a "working" directory
+													that is empty (deleting it if it already exists), use an <code>exists</code>
+													method that removes the directory and then returns <code>true</code>
+													(the <code>Pathname.createDirectory.RECREATE</code> function is provided as a
+													convenience for this).
+												</div>
 												<div class="arguments">
 													<div class="label">Arguments</div>
 													<ol>
@@ -591,7 +640,7 @@ END LICENSE
 												<div class="returns">
 													<div class="label">Returns</div>
 													<span class="type">boolean</span> Whether to continue normal processing after
-													ifExists is invoked.
+													exists is invoked.
 												</div>
 											</li>
 										</ul>
@@ -1089,89 +1138,6 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-			</li>
-			<li class="function">
-				<div class="name">createDirectory</div>
-				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">pathname</div>
-									<span class="type"><a href="#types.Pathname">Pathname</a></span>
-									<span>__DESCRIPTION__</span>
-								</li>
-								<li class="function">
-									<div class="name">exists</div>
-									<span>__DESCRIPTION__</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type"><a href="#types.directory">directory</a></span>
-												<span>__DESCRIPTION__</span>
-											</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">boolean</span>
-										<span>
-											A return value indicating what should happen next; if <code>true</code>, the directory
-											is created as normal; if <code>false</code>, the directory is not created.
-											<!-- TODO	define and test undefined and other types	-->
-										</span>
-									</div>
-								</li>
-							</ul>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="object">
-						<div class="name">exists</div>
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="value">
-								<div class="name">LEAVE</div>
-								<span class="type"><code>function</code></span>
-								<span>__DESCRIPTION__</span>
-							</li>
-							<li class="value">
-								<div class="name">RECREATE</div>
-								<span class="type"><code>function</code></span>
-								<span>__DESCRIPTION__</span>
-							</li>
-						</ul>
-					</li>
-				</ul>
-				<script type="application/x.jsapi#tests">
-					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var at = tmp.getRelativePath("doesNotExist");
-					var existing = newTemporaryDirectory().pathname;
-					createFile(existing.directory,"file",10);
-					var replace = newTemporaryDirectory().pathname;
-					createFile(replace.directory,"file",10);
-					verify(module).is.type("object");
-					verify(at).directory.is.type("null");
-					module.createDirectory({ pathname: at });
-					verify(at).directory.is.type("object");
-					module.createDirectory({ pathname: existing, exists: module.createDirectory.exists.LEAVE });
-					verify(existing).directory.getFile("file").is.type("object");
-					module.createDirectory({ pathname: replace, exists: module.createDirectory.exists.RECREATE });
-					verify(replace).directory.getFile("file").is.type("null");
-				</script>
 			</li>
 			<li class="function" jsapi:id="Searchpath" jsapi:reference="getApi('api.Searchpath.html').getElement('main')">
 				<div class="name">Searchpath</div>

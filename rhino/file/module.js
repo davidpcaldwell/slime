@@ -114,16 +114,16 @@ $exports.Pathname = function(parameters) {
 	}
 };
 
-$exports.createDirectory = function(p) {
+$exports.Pathname.createDirectory = function(p) {
 	return p.pathname.createDirectory({
 		ifExists: p.exists
 	});
 };
-$exports.createDirectory.exists = {};
-$exports.createDirectory.exists.LEAVE = function(dir) {
+$exports.Pathname.createDirectory.exists = {};
+$exports.Pathname.createDirectory.exists.LEAVE = function(dir) {
 	return false;
 };
-$exports.createDirectory.exists.RECREATE = function(dir) {
+$exports.Pathname.createDirectory.exists.RECREATE = function(dir) {
 	dir.remove();
 	return true;
 };
