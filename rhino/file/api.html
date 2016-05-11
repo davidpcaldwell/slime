@@ -1090,6 +1090,89 @@ END LICENSE
 					</ul>
 				</div>
 			</li>
+			<li class="function">
+				<div class="name">createDirectory</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>__DESCRIPTION__</span>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="value">
+									<div class="name">pathname</div>
+									<span class="type"><a href="#types.Pathname">Pathname</a></span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="function">
+									<div class="name">exists</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type"><a href="#types.directory">directory</a></span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">boolean</span>
+										<span>
+											A return value indicating what should happen next; if <code>true</code>, the directory
+											is created as normal; if <code>false</code>, the directory is not created.
+											<!-- TODO	define and test undefined and other types	-->
+										</span>
+									</div>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">exists</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">LEAVE</div>
+								<span class="type"><code>function</code></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">RECREATE</div>
+								<span class="type"><code>function</code></span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<script type="application/x.jsapi#tests">
+					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					var at = tmp.getRelativePath("doesNotExist");
+					var existing = newTemporaryDirectory().pathname;
+					createFile(existing.directory,"file",10);
+					var replace = newTemporaryDirectory().pathname;
+					createFile(replace.directory,"file",10);
+					verify(module).is.type("object");
+					verify(at).directory.is.type("null");
+					module.createDirectory({ pathname: at });
+					verify(at).directory.is.type("object");
+					module.createDirectory({ pathname: existing, exists: module.createDirectory.exists.LEAVE });
+					verify(existing).directory.getFile("file").is.type("object");
+					module.createDirectory({ pathname: replace, exists: module.createDirectory.exists.RECREATE });
+					verify(replace).directory.getFile("file").is.type("null");
+				</script>
+			</li>
 			<li class="function" jsapi:id="Searchpath" jsapi:reference="getApi('api.Searchpath.html').getElement('main')">
 				<div class="name">Searchpath</div>
 				See <a href="api.Searchpath.html">detailed documentation</a>.

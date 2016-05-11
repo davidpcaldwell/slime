@@ -113,6 +113,21 @@ $exports.Pathname = function(parameters) {
 		$context.api.java.fail("Cannot invoke Pathname as constructor.");
 	}
 };
+
+$exports.createDirectory = function(p) {
+	return p.pathname.createDirectory({
+		ifExists: p.exists
+	});
+};
+$exports.createDirectory.exists = {};
+$exports.createDirectory.exists.LEAVE = function(dir) {
+	return false;
+};
+$exports.createDirectory.exists.RECREATE = function(dir) {
+	dir.remove();
+	return true;
+};
+
 //	TODO	Searchpath implementation has multiple layers: in os.js, file.js, here ... consolidate and refactor
 $exports.Searchpath = function(parameters) {
 	if (this.constructor != arguments.callee) {
