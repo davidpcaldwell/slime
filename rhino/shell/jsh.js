@@ -100,6 +100,10 @@ $exports.echo.String = function(message) {
 $exports.echo.String["undefined"] = "(undefined)";
 $exports.echo.String["null"] = "(null)";
 
+$exports.console = function(message) {
+	$exports.echo(message, { stream: $exports.stdio.error });
+}
+
 var stream = function(stdio,x) {
 	if (typeof(stdio[x]) == "undefined") {
 		return $exports.stdio[x];
