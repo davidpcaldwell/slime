@@ -4,6 +4,7 @@
 var parameters = jsh.script.getopts({
 	options: {
 		base: jsh.shell.PWD.pathname,
+		list: false,
 		preview: false
 	}
 });
@@ -18,7 +19,7 @@ var apis = parameters.options.base.directory.list({
 		return true;
 	}
 }).forEach(function(api) {
-	jsh.shell.echo("api = " + api);
+	jsh.shell.console("api = " + api);
 	var document = new jsh.document.Document({
 		string: api.read(String)
 	});
@@ -104,14 +105,18 @@ var apis = parameters.options.base.directory.list({
 			{ name: "type", value: "application/javascript" }
 		],
 		children: [
-			new jsh.document.Text({
-				text: readFile("api.js")
+			new jsh.document.Cdata({
+				cdata: readFile("api.js")
 			})
 		]
 	});
 	
-	if (parameters.options.preview) {
-		jsh.shell.echo(document);
+	if (parameters.options.list) {
+		jsh.shell.console(api.pathname);
+	} else if (parameters.options.preview) {
+		jsh.shell.console(api.pathname);
+		jsh.shell.console(document);
+		jsh.shell.console("");
 	} else {
 		api.pathname.write(document.toString(), { append: false });
 	}
