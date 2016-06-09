@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>jsh Installers</title>
+		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../../loader/api/api.js"></script>
+	</head>
+	<body>
+		<div>__DESCRIPTION__</div>
+		<div>
+			<h1>Context</h1>
+			<ul>
+				<li class="object">
+					<div class="name">api</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">shell</div>
+							<span class="type">object</span>
+							<span>The <a href="../../../rhino/shell/api.html">rhino/shell</a> module.</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h1>Exports</h1>
+			<ul>
+				<li class="function">
+					<div class="name">gzip</div>
+					<span>Installs a <code>gzip</code>ped <code>tar</code> file.</span>
+					<div>
+						This method can process both local and remote files. For remote files, it is assumed that the filename of
+						the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
+						remote file has already been downloaded.
+					</div>
+					<div>
+						The file, when expanded, is assumed to create a single directory containing the installation. This directory
+						is assumed to have the same name as the file (minus the extension). For a given archive, if the desired
+						directory has a different path within, it can be specified with <code>getDestinationPath</code>.
+					</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">url</div>
+										<span class="type">string</span>
+										<span>
+											(optional; not necessary if <code>file</code> is present)
+											The URL from which the file can be downloaded. Currently, only <code>http</code> and
+											<code>https</code> URLs are supported.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">file</div>
+										<span class="type"><a href="platform/slim/slime/rhino/file/api.html#types.file">file</a></span>
+										<span>
+											(optional; not necessary if <code>url</code> is present)
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">to</div>
+										<span class="type"><a href="platform/slim/slime/rhino/file/api.html#types.Pathname">Pathname</a></span>
+										<span>
+											The location to which to install the installation.
+										</span>
+									</li>
+									<li class="function">
+										<div class="name">getDestinationPath</div>
+										<span>
+											(optional; defaults to the name of the archive, excluding the extension)
+											A function specifying the path within the archive of the installation.
+										</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type"><a href="platform/slim/slime/rhino/file/api.html#types.file">file</a></span>
+													<span>The archive file.</span>
+												</li>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">string</span>
+											<span>A path within the archive to treat as the installation.</span>
+										</div>
+									</li>
+									<li class="object">
+										<div class="name">on</div>
+										<span>(optional)</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">console</div>
+												<span>
+													(optional)
+													A callback invoked with messages suitable for display on the console.
+												</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">string</span>
+															<span>A message.</span>
+														</li>
+													</ol>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="platform/slim/slime/rhino/file/api.html#types.directory">directory</a></span>
+						<span>The directory to which the installation was installed.</span>
+					</div>
+					<script type="application/x.jsapi#initialize">
+						scope.api = $jsapi.loader.module("module.js", {
+							api: {
+								shell: jsh.shell,
+								http: jsh.http
+							},
+							downloads: jsh.shell.TMPDIR.createTemporary({ directory: true })
+						});
+
+						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						tmpdir.getRelativePath("directory").createDirectory();
+						tmpdir.getRelativePath("directory/file").write("text", { append: false });
+
+						var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+						jsh.shell.run({
+							command: "tar",
+							arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
+							directory: tmpdir
+						});
+
+						scope.harness = {};
+						scope.harness.tar = tmpdest.getFile("directory.tar.gz");
+						scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+
+						var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
+						scope.server = server;
+					</script>
+					<script type="application/x.jsapi#tests">
+						verify(api).is.type("object");
+						verify(api).evaluate(function() { return this.gzip; }).is.type("function");
+					</script>
+					<script type="application/x.jsapi#tests">
+						var tmpdir = function() {
+							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+							tmp.directory.remove();
+							return tmp;
+						};
+
+						var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						tmp.directory.remove();
+
+						api.gzip({
+							file: harness.tar,
+							to: tmp
+						});
+
+						verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
+
+						(function() {
+							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+							tmp.directory.remove();
+							api.gzip({
+								file: harness.renamed,
+								to: tmp,
+								getDestinationPath: function() { return "directory"; }
+							});
+							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");					
+						})();
+
+						(function() {
+							var tmp = tmpdir();
+							api.gzip({
+								url: "http://127.0.0.1:" + server.port + "/directory.tar.gz",
+								to: tmp
+							});
+							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
+						})();
+					</script>
+					<script type="application/x.jsapi#destroy">
+						scope.server.stop();
+					</script>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>
