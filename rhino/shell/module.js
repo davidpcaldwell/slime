@@ -15,6 +15,10 @@ if (!$context.api.io) {
 }
 
 $exports.run = function(p) {
+	var as;
+	if (p.as) {
+		as = p.as;
+	}
 	var stdio = arguments.callee.stdio(p);
 	var directory = arguments.callee.directory(p);
 	var context = new JavaAdapter(
@@ -118,6 +122,7 @@ $exports.run = function(p) {
 		} else if (typeof(p.command) != "undefined") {
 			rv.result.command = p.command;
 			rv.result.arguments = p.arguments;
+			rv.result.as = p.as;
 			rv.configuration.command = toCommandToken(rv.result)(p.command);
 			rv.configuration.arguments = (p.arguments) ? p.arguments.map(toCommandToken(rv.result)) : [];
 			return rv;
@@ -125,6 +130,13 @@ $exports.run = function(p) {
 			throw new TypeError("Required: command property or tokens property");
 		}
 	})();
+	
+	if (as) {
+		if ($exports.os.name == "Linux") {
+			invocation.configuration.command = "sudo";
+			invocation.configuration.arguments = ["-u", as.user].concat(invocation.configuration.arguments);
+		}
+	}
 
 	var configuration = new JavaAdapter(
 		Packages.inonit.system.Command.Configuration,

@@ -177,6 +177,43 @@ if ($exports.properties.get("jsh.engine.rhino.classpath")) {
 	};
 };
 
+var getJshFork = function(p) {
+	if (p.fork) return true;
+	if (p.classpath) return true;
+	if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
+	if (p.environment && p.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
+	if (p.environment && p.environment.JSH_DEBUG_SCRIPT != $exports.environment.JSH_DEBUG_SCRIPT) return true;
+	if (p.shell) return true;
+	//	TODO	allow unforked URL-based scripts
+	if (typeof(p.script.resolve) == "function") return true;
+	return false;
+}
+
+var getJshEnvironment = function(p,fork) {
+	//	TODO	Probably if p.shell is specified and p.environment is not, we should strip out all variables starting with JSH_,
+	//			which would provide the least counterintuitive behavior. For example, if called from unbuilt shell, we would want
+	//			a launched built shell to have all the unbuilt shell environment variables removed.
+	if (p.environment) return p.environment;
+	if (p.shell || fork) {
+		var rv = {};
+		for (var x in $exports.environment) {
+			if (x == "JSH_DEBUG_JDWP") {
+
+			} else if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x)) {
+				if (p.shell) {
+
+				} else {
+					rv[x] = $exports.environment[x];
+				}
+			} else {
+				rv[x] = $exports.environment[x];
+			}
+		}
+		return rv;
+	}
+	return $exports.environment;
+};
+
 $exports.jsh = function(p) {
 	if (!arguments[0].script && !arguments[0].arguments) {
 		$api.deprecate(function() {
@@ -203,164 +240,109 @@ $exports.jsh = function(p) {
 	}
 	//	TODO	need to detect directives in the given script and fork if they are present
 
-	var fork = (function() {
-		if (p.fork) return true;
-		if (p.classpath) return true;
-		if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
-		if (p.environment && p.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
-		if (p.environment && p.environment.JSH_DEBUG_SCRIPT != $exports.environment.JSH_DEBUG_SCRIPT) return true;
-		if (p.shell) return true;
-		//	TODO	allow unforked URL-based scripts
-		if (typeof(p.script.resolve) == "function") return true;
-		return false;
-	})();
+	var fork = getJshFork(p);
 
-	//	TODO	Probably if p.shell is specified and p.environment is not, we should strip out all variables starting with JSH_,
-	//			which would provide the least counterintuitive behavior. For example, if called from unbuilt shell, we would want
-	//			a launched built shell to have all the unbuilt shell environment variables removed.
-
-//	var environment = (function() {
-//		//	TODO	this code below is counter-intuitive and should be cleaned up and/or documented; order is reverse of what you'd
-//		//			think (and what jsh.js.Object.set(...) for example would do).
-//		var addProperties = function(from) {
-//			for (var x in from) {
-//				if (x != "JSH_LAUNCHER_DEBUG") {
-//					if (typeof(rv[x]) == "undefined") {
-//						//	Conversion to string is necessary for $exports.properties.jsh.launcher.environment, which
-//						//	contains host objects
-//						rv[x] = String(from[x]);
-//					}
-//				}
-//			}
-//		}
-//
-//		var rv = {};
-//		addProperties((p.environment) ? p.environment : {});
-//		addProperties($exports.properties.object.jsh.launcher.environment);
-//		addProperties($exports.environment);
-//
-//		return rv;
-//	})();
-	var environment = (function() {
-		if (p.environment) return p.environment;
-		if (p.shell || fork) {
-			var rv = {};
-			for (var x in $exports.environment) {
-				if (x == "JSH_DEBUG_JDWP") {
-
-				} else if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x)) {
-					if (p.shell) {
-
-					} else {
-						rv[x] = $exports.environment[x];
-					}
-				} else {
-					rv[x] = $exports.environment[x];
-				}
-			}
-			return rv;
-		}
-		return $exports.environment;
-	})();
+	var environment = getJshEnvironment(p,fork);
 
 	if (fork) {
+		var argument = arguments.callee.command(p);
 		//	TODO	can we use $exports.java.home here?
 //		var jdk = $context.api.file.filesystems.os.Pathname($exports.properties.get("java.home")).directory;
 //		var executable = $context.api.file.Searchpath([jdk.getRelativePath("bin")]).getCommand("java");
 //
-		var evaluate = (function() {
-			if (p.evaluate) {
-				return function(result) {
-					result.jsh = {
-						script: p.script,
-						arguments: p.arguments
-					};
-					result.classpath = p.classpath;
-					return p.evaluate(result);
-				}
-			}
-		})();
-
-		var addCommandTo = function(jargs,script) {
-			if (p.vmarguments) {
-				p.vmarguments.forEach(function(argument) {
-					jargs.push(argument);
-				});
-			}
-			if (p.properties) {
-				for (var x in p.properties) {
-					jargs.push("-D" + x + "=" + p.properties[x]);
-				}
-			}
-			jargs.push(script);
-			p.arguments.forEach( function(arg) {
-				jargs.push(arg);
-			});
-			return jargs;
-		}
-
-		var scripts = (function(shell) {
-			var remote = function(url) {
-				return [
-					"-e",
-					"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
-				];
-			}
-
-			var unbuilt = function(src) {
-				return [
-					src.getFile("rhino/jrunscript/api.js"),
-					"jsh"
-				];
-			};
-
-			var built = function(home) {
-				return [
-					home.getFile("jsh.js")
-				]
-			};
-
-			if (shell) {
-				//	TODO	should contemplate possibility of URL, I suppose
-				if (shell.getFile("jsh.js")) {
-					return built(shell);
-				}
-				if (shell.getFile("rhino/jrunscript/api.js")) {
-					return unbuilt(shell);
-				}
-				throw new Error("Shell not found: " + shell);
-			}
-			if ($exports.jsh.home) return built($exports.jsh.home);
-			if ($exports.jsh.src) return unbuilt($exports.jsh.src);
-			if ($exports.jsh.url) return remote($exports.jsh.url);
-			//	TODO	would unbuilt remote shells have a src property, and would it work?
-			throw new Error("Running shell lacks home, src, and url properties; jsh bug.");
-		})(p.shell);
-
-		//	Properties to be sent to main.js launcher; other properties will be sent as arguments using addCommandTo
-		var outerProperties = {};
-		if (p.classpath) {
-			outerProperties["jsh.shell.classpath"] = String(p.classpath);
-		}
-		var copyPropertyIfPresent = function(name) {
-			//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
-			if (Packages.java.lang.System.getProperty(name)) {
-				outerProperties[name] = String(Packages.java.lang.System.getProperty(name));
-			}
-		}
-		copyPropertyIfPresent("jsh.engine.rhino.classpath");
-		if (scripts[0] == "-e") {
-			//	remote shell
-			copyPropertyIfPresent("http.proxyHost");
-			copyPropertyIfPresent("http.proxyPort");
-		}
-		var argument = $context.api.js.Object.set({}, p, {
-			environment: environment,
-			vmarguments: [],
-			properties: outerProperties,
-			arguments: addCommandTo(scripts,p.script),
-			evaluate: evaluate
-		});
+//		var evaluate = (function() {
+//			if (p.evaluate) {
+//				return function(result) {
+//					result.jsh = {
+//						script: p.script,
+//						arguments: p.arguments
+//					};
+//					result.classpath = p.classpath;
+//					return p.evaluate(result);
+//				}
+//			}
+//		})();
+//
+//		var addCommandTo = function(jargs,script) {
+//			if (p.vmarguments) {
+//				p.vmarguments.forEach(function(argument) {
+//					jargs.push(argument);
+//				});
+//			}
+//			if (p.properties) {
+//				for (var x in p.properties) {
+//					jargs.push("-D" + x + "=" + p.properties[x]);
+//				}
+//			}
+//			jargs.push(script);
+//			p.arguments.forEach( function(arg) {
+//				jargs.push(arg);
+//			});
+//			return jargs;
+//		}
+//
+//		var scripts = (function(shell) {
+//			var remote = function(url) {
+//				return [
+//					"-e",
+//					"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
+//				];
+//			}
+//
+//			var unbuilt = function(src) {
+//				return [
+//					src.getFile("rhino/jrunscript/api.js"),
+//					"jsh"
+//				];
+//			};
+//
+//			var built = function(home) {
+//				return [
+//					home.getFile("jsh.js")
+//				]
+//			};
+//
+//			if (shell) {
+//				//	TODO	should contemplate possibility of URL, I suppose
+//				if (shell.getFile("jsh.js")) {
+//					return built(shell);
+//				}
+//				if (shell.getFile("rhino/jrunscript/api.js")) {
+//					return unbuilt(shell);
+//				}
+//				throw new Error("Shell not found: " + shell);
+//			}
+//			if ($exports.jsh.home) return built($exports.jsh.home);
+//			if ($exports.jsh.src) return unbuilt($exports.jsh.src);
+//			if ($exports.jsh.url) return remote($exports.jsh.url);
+//			//	TODO	would unbuilt remote shells have a src property, and would it work?
+//			throw new Error("Running shell lacks home, src, and url properties; jsh bug.");
+//		})(p.shell);
+//
+//		//	Properties to be sent to main.js launcher; other properties will be sent as arguments using addCommandTo
+//		var outerProperties = {};
+//		if (p.classpath) {
+//			outerProperties["jsh.shell.classpath"] = String(p.classpath);
+//		}
+//		var copyPropertyIfPresent = function(name) {
+//			//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
+//			if (Packages.java.lang.System.getProperty(name)) {
+//				outerProperties[name] = String(Packages.java.lang.System.getProperty(name));
+//			}
+//		}
+//		copyPropertyIfPresent("jsh.engine.rhino.classpath");
+//		if (scripts[0] == "-e") {
+//			//	remote shell
+//			copyPropertyIfPresent("http.proxyHost");
+//			copyPropertyIfPresent("http.proxyPort");
+//		}
+//		var argument = $context.api.js.Object.set({}, p, {
+//			environment: environment,
+//			vmarguments: [],
+//			properties: outerProperties,
+//			arguments: addCommandTo(scripts,p.script),
+//			evaluate: evaluate
+//		});
 		return $exports.jrunscript(argument);
 //		} else {
 //			if (p.shell.getFile("jsh.js")) {
@@ -541,6 +523,102 @@ $exports.jsh = function(p) {
 		});
 	}
 };
+$exports.jsh.command = function(p) {
+	var evaluate = (function() {
+		if (p.evaluate) {
+			return function(result) {
+				result.jsh = {
+					script: p.script,
+					arguments: p.arguments
+				};
+				result.classpath = p.classpath;
+				return p.evaluate(result);
+			}
+		}
+	})();
+
+	var addCommandTo = function(jargs,script) {
+		if (p.vmarguments) {
+			p.vmarguments.forEach(function(argument) {
+				jargs.push(argument);
+			});
+		}
+		if (p.properties) {
+			for (var x in p.properties) {
+				jargs.push("-D" + x + "=" + p.properties[x]);
+			}
+		}
+		jargs.push(script);
+		p.arguments.forEach( function(arg) {
+			jargs.push(arg);
+		});
+		return jargs;
+	}
+
+	var scripts = (function(shell) {
+		var remote = function(url) {
+			return [
+				"-e",
+				"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
+			];
+		}
+
+		var unbuilt = function(src) {
+			return [
+				src.getFile("rhino/jrunscript/api.js"),
+				"jsh"
+			];
+		};
+
+		var built = function(home) {
+			return [
+				home.getFile("jsh.js")
+			]
+		};
+
+		if (shell) {
+			//	TODO	should contemplate possibility of URL, I suppose
+			if (shell.getFile("jsh.js")) {
+				return built(shell);
+			}
+			if (shell.getFile("rhino/jrunscript/api.js")) {
+				return unbuilt(shell);
+			}
+			throw new Error("Shell not found: " + shell);
+		}
+		if ($exports.jsh.home) return built($exports.jsh.home);
+		if ($exports.jsh.src) return unbuilt($exports.jsh.src);
+		if ($exports.jsh.url) return remote($exports.jsh.url);
+		//	TODO	would unbuilt remote shells have a src property, and would it work?
+		throw new Error("Running shell lacks home, src, and url properties; jsh bug.");
+	})(p.shell);
+
+	//	Properties to be sent to main.js launcher; other properties will be sent as arguments using addCommandTo
+	var outerProperties = {};
+	if (p.classpath) {
+		outerProperties["jsh.shell.classpath"] = String(p.classpath);
+	}
+	var copyPropertyIfPresent = function(name) {
+		//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
+		if (Packages.java.lang.System.getProperty(name)) {
+			outerProperties[name] = String(Packages.java.lang.System.getProperty(name));
+		}
+	}
+	copyPropertyIfPresent("jsh.engine.rhino.classpath");
+	if (scripts[0] == "-e") {
+		//	remote shell
+		copyPropertyIfPresent("http.proxyHost");
+		copyPropertyIfPresent("http.proxyPort");
+	}
+	var argument = $context.api.js.Object.set({}, p, {
+		environment: getJshEnvironment(p,true),
+		vmarguments: [],
+		properties: outerProperties,
+		arguments: addCommandTo(scripts,p.script),
+		evaluate: evaluate
+	});
+	return argument;
+}
 
 //if (String($exports.properties.object.jsh.plugins)) {
 //	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
