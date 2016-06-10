@@ -123,34 +123,6 @@ var Set = function(p) {
 	}
 };
 
-var Scenario = function(p) {
-	var target;
-	var tests = [];
-	var next;
-
-	this.next = function(f) {
-		next = f;
-	}
-
-	this.target = function(page) {
-		target = page;
-	};
-
-	this.test = function(t) {
-		tests.push(t);
-	}
-
-	this.execute = function(scope,verify) {
-		var set = new Set({ scope: verify.scope });
-		if (target) set.target(target);
-		if (next) set.next(next);
-		tests.forEach(function(test) {
-			set.test(test);
-		})
-		set.run(next);
-	}
-}
-
 var Tests = function() {
 	var events = $api.Events({ source: this });
 	var scope = new $context.api.unit.Scope({ events: events });
@@ -172,51 +144,163 @@ var Tests = function() {
 	};
 };
 
-var target;
-var global = new Tests();
+var global = new function() {
+	var target;
+	
+	var tests = [];
+	
+	this.target = function(page) {
+		target = page;
+	};
+	
+	this.getTarget = function() {
+		return target;
+	};
+	
+	var getStructure = function(part) {
+		var rv = {
+			id: part.id,
+			name: part.name
+		};
+		if (part.parts) {
+			var parts = part.parts;
+			rv.parts = {};
+			for (var x in parts) {
+				rv.parts[x] = getStructure(parts[x]);
+			}
+		}
+		return rv;
+	};
+
+	var Old = function() {
+		var global = new Tests();
+
+		this.structure = function() {
+			return {
+				name: "Tests",
+				old: true
+			};			
+		};
+		
+		this.run = function(_callbacks) {
+			if (!_callbacks) throw new Error("Missing callbacks!");
+			global.listeners.add("console", function(e) {
+				window.console.log(e.detail);
+			});
+			global.listeners.add("test", function(e) {
+				if (_callbacks.event) _callbacks.event(e);
+				_callbacks.log(e.detail.success, e.detail.message);
+			});
+			global.listeners.add("end", function(e) {
+				_callbacks.end(e.detail);
+				if (_callbacks.after) {
+					//	TODO	deprecated; should combine after() with end(success)
+					debugger;
+					_callbacks.after();
+				}
+			});
+			global.listeners.add("log", function(e) {
+				_callbacks.log(e.detail.success, e.detail.message);
+			});
+			global.run();			
+		}
+	};
+
+	var New = function(suite) {
+		this.structure = function() {
+			return getStructure(suite);
+		};
+		
+		this.run = function(_callbacks) {
+			suite.listeners.add("scenario", function(e) {
+	//				_callbacks.fire(e);
+				console.log("scenario", Object.keys(e.detail).join(","), e);
+				_callbacks.event(e);
+			});
+			suite.listeners.add("test", function(e) {
+				console.log("test", Object.keys(e.detail).join(","), e.detail.message, e);
+	//				_callbacks.fire(e);
+				_callbacks.event(e);
+			});
+			suite.run({},function(success) {
+				console.log("success = " + success);
+				_callbacks.end(success);
+			});			
+		};
+	};
+	
+	var delegate = new Old();
+	
+	this.test = function() {
+		tests.push(arguments[0]);
+	}
+	
+	this.suite = function() {
+		delegate = new New(arguments[0]);
+	};
+
+	this.structure = function() {
+		return delegate.structure();
+	};
+
+	this.run = function(_callbacks) {
+		return delegate.run(_callbacks);
+	}	
+};
+
+var Scenario = function(p) {
+	var target;
+	
+	var getTarget = function() {
+		if (target) return target;
+		return global.getTarget();
+	};
+	
+	var tests = [];
+	var next;
+	
+	this.next = function(f) {
+		next = f;
+	}
+
+	this.target = function(page) {
+		target = page;
+	};
+
+	this.test = function(t) {
+		tests.push(t);
+	}
+
+	this.execute = function(scope,verify) {
+		var set = new Set({ scope: verify.scope });
+		set.target(getTarget());
+		if (next) set.next(next);
+		tests.forEach(function(test) {
+			set.test(test);
+		})
+		set.run(next);
+	}
+}
 
 $exports.target = function(page) {
 	global.target(page);
-	target = page;
 };
-	
-var suite;
 
+//	TODO	does this need to be public?
 $exports.Tests = function() {
 	Tests.call(this);
 };
 
 $exports.Scenario = function() {
-	Scenario.call(this,{ target: target });
-}
-
-var getStructure = function(part) {
-	var rv = {
-		id: part.id,
-		name: part.name
-	};
-	if (part.parts) {
-		var parts = part.parts;
-		rv.parts = {};
-		for (var x in parts) {
-			rv.parts[x] = getStructure(parts[x]);
-		}
-	}
-	return rv;
+	Scenario.call(this);
 };
 
 $exports.structure = function() {
-	if (!suite) {
-		return {
-			name: "Tests",
-			old: true
-		};
-	}
-	return getStructure(suite);
+	return global.structure();
 }
 
 $exports.suite = function() {
-	suite = arguments[0];
+	global.suite(arguments[0]);
 }
 
 $exports.test = function(test) {
@@ -225,43 +309,7 @@ $exports.test = function(test) {
 
 //	TODO	this is used by the unit test button to run the tests; could encapsulate
 $exports.run = function(_callbacks) {
-	if (suite) {
-		suite.listeners.add("scenario", function(e) {
-//				_callbacks.fire(e);
-			console.log("scenario", Object.keys(e.detail).join(","), e);
-			_callbacks.event(e);
-		});
-		suite.listeners.add("test", function(e) {
-			console.log("test", Object.keys(e.detail).join(","), e.detail.message, e);
-//				_callbacks.fire(e);
-			_callbacks.event(e);
-		});
-		suite.run({},function(success) {
-			console.log("success = " + success);
-			_callbacks.end(success);
-		});
-	} else {
-		if (!_callbacks) throw new Error("Missing callbacks!");
-		global.listeners.add("console", function(e) {
-			window.console.log(e.detail);
-		});
-		global.listeners.add("test", function(e) {
-			if (_callbacks.event) _callbacks.event(e);
-			_callbacks.log(e.detail.success, e.detail.message);
-		});
-		global.listeners.add("end", function(e) {
-			_callbacks.end(e.detail);
-			if (_callbacks.after) {
-				//	TODO	deprecated; should combine after() with end(success)
-				debugger;
-				_callbacks.after();
-			}
-		});
-		global.listeners.add("log", function(e) {
-			_callbacks.log(e.detail.success, e.detail.message);
-		});
-		global.run();
-	}
+	global.run(_callbacks);
 };
 
 $exports.nugget = new function() {
