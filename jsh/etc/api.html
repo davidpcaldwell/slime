@@ -282,6 +282,15 @@ END LICENSE
 			<tbody>
 				<tr><td><a href="../../jsh/tools/api.html">(tools)</a></td><td>jsh Tools</td><!-- no tests --></tr>
 				<tr><td><a href="../../jsh/loader/plugin.api.html">(plugins)</a></td><td>Interface for creating plugins</td><!-- no tests --></tr>
+				<tr>
+					<td><a href="../../jsh/etc/install/api.html">(installers)</a></td>
+					<td>
+						APIs and programs for installing <code>jsh</code>-related software
+						<script jsapi:id="jsh/etc/install/" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../jsh/etc/install/api.html"));
+						</script>
+					</td>
+				</tr>
 			</tbody>
 		</table>
 	</div>
