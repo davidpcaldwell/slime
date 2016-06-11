@@ -157,21 +157,6 @@ var global = new function() {
 		return target;
 	};
 	
-	var getStructure = function(part) {
-		var rv = {
-			id: part.id,
-			name: part.name
-		};
-		if (part.parts) {
-			var parts = part.parts;
-			rv.parts = {};
-			for (var x in parts) {
-				rv.parts[x] = getStructure(parts[x]);
-			}
-		}
-		return rv;
-	};
-
 	var Old = function() {
 		var global = new Tests();
 
@@ -207,6 +192,21 @@ var global = new function() {
 	};
 
 	var New = function(suite) {
+		var getStructure = function(part) {
+			var rv = {
+				id: part.id,
+				name: part.name
+			};
+			if (part.parts) {
+				var parts = part.parts;
+				rv.parts = {};
+				for (var x in parts) {
+					rv.parts[x] = getStructure(parts[x]);
+				}
+			}
+			return rv;
+		};
+
 		this.structure = function() {
 			return getStructure(suite);
 		};
@@ -286,15 +286,11 @@ $exports.target = function(page) {
 	global.target(page);
 };
 
-//	TODO	does this need to be public?
-$exports.Tests = function() {
-	Tests.call(this);
-};
-
 $exports.Scenario = function() {
 	Scenario.call(this);
 };
 
+//	undocumented; can be used for creating webview for tests
 $exports.structure = function() {
 	return global.structure();
 }
@@ -303,15 +299,18 @@ $exports.suite = function() {
 	global.suite(arguments[0]);
 }
 
-$exports.test = function(test) {
+$exports.test = $api.deprecate(function(test) {
 	global.test(test);
-}
+});
 
 //	TODO	this is used by the unit test button to run the tests; could encapsulate
+//	undocumented as it does not currently need to be directly called; called only by UI
 $exports.run = function(_callbacks) {
 	global.run(_callbacks);
 };
 
+//	currently undocumented
+//	TODO	probably unused
 $exports.nugget = new function() {
 	var addLoadHook;
 	if (window.addEventListener) {
@@ -327,6 +326,7 @@ $exports.nugget = new function() {
 	this.addLoadHook = addLoadHook;		
 };
 
+//	currently undocumented
 $exports.fire = new function() {
 	var Event = function(name,canBubble,cancelable) {
 		this.name = name;

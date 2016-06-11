@@ -31,6 +31,21 @@
 			<h1>Exports</h1>
 			<div class="label">has properties:</div>
 			<ul>
+				<li class="function">
+					<div class="name">target</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<!--
+								<span class="type">__TYPE__</span>
+								-->
+								<span>A value to use as <code>this</code> when invoking tests.</span>
+							</li>
+						</ol>
+					</div>
+				</li>
 				<li class="constructor">
 					<div class="name">Scenario</div>
 					<div class="type">
@@ -135,64 +150,20 @@
 						<span>__DESCRIPTION__</span>
 					</div>
 				</li>
-			</ul>			
-		</div>
-		<p>
-			Upon load, the <code>initialize.js</code> script creates a global object that provides unit testing APIs, and adds a
-			button to the HTML page that loads it that causes unit tests to be run. It also replaces the global 
-			<code>XMLHttpRequest</code> object.
-			<!--	TODO	explain what replacement XMLHttpRequest does.	-->
-		</p>
-		<div>
-			<h1><code>XMLHttpRequest</code></h1>
-			<span>
-				The <code>XMLHttpRequest</code> global function is replaced with one that keeps track of open requests. This
-				function inserts each request into a list when it is created.
-			</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="object">
-					<div class="name">asynchrony</div>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">started</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">finished</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-					</ul>
-				</li>
-			</ul>
-		</div>
-		<div>
-			<h1><code>unit</code></h1>
-			<div class="label">has properties:</div>
-			<ul>
 				<li class="function">
+					<div class="name">suite</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type">__TYPE__</span>
+								<span>A single Suite object representing the tests to be run.</span>
+							</li>
+						</ol>
+					</div>
+				</li>
+				<li class="deprecated function">
 					<div class="name">test</div>
 					<span>Creates a test and adds it to the list of tests that will be run.</span>
 					<div class="arguments">
@@ -258,6 +229,57 @@
 						<span class="type">__TYPE__</span>
 						<span>__DESCRIPTION__</span>
 					</div>
+				</li>
+			</ul>			
+		</div>
+		<p>
+			Upon load, the <code>initialize.js</code> script creates a global object that provides unit testing APIs, and adds a
+			button to the HTML page that loads it that causes unit tests to be run. It also replaces the global 
+			<code>XMLHttpRequest</code> object.
+			<!--	TODO	explain what replacement XMLHttpRequest does.	-->
+		</p>
+		<div>
+			<h1><code>XMLHttpRequest</code></h1>
+			<span>
+				The <code>XMLHttpRequest</code> global function is replaced with one that keeps track of open requests. This
+				function inserts each request into a list when it is created.
+			</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">asynchrony</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">started</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">finished</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
 				</li>
 			</ul>
 		</div>
