@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME loader for web browsers.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 $loader.run("initialize.js", { $api: $api });
 
 var OldStep = function(o) {
@@ -6,22 +19,22 @@ var OldStep = function(o) {
 			o.edits();
 		}
 	};
-	
+
 	this.run = function() {
 		if (o.event) {
 			o.event();
 		}
 	};
-	
+
 	this.async = o.wait || !o.event;
-	
+
 	this.check = function(scope) {
 		if (o.tests) {
 			o.tests(scope);
 		}
 //		scope.fail();
 	};
-	
+
 	this.cleanup = function() {
 		if (o.cleanup) {
 			o.cleanup();
@@ -39,7 +52,7 @@ var Step = function(target,o) {
 			o.setup.call(target);
 		}
 	};
-	
+
 	this.run = function() {
 		var fake = {};
 		window.XMLHttpRequest.asynchrony.started(fake);
@@ -48,16 +61,16 @@ var Step = function(target,o) {
 		}
 		window.XMLHttpRequest.asynchrony.finished(fake);
 	};
-	
+
 	this.async = true;
-	
+
 	this.check = function(scope) {
 		var verify = new $context.api.unit.Verify(scope);
 		if (o.check) {
 			o.check.call(target,verify);
 		}
 	}
-	
+
 	this.cleanup = function() {
 		if (o.cleanup) {
 			o.cleanup.call(target);
@@ -95,7 +108,7 @@ var Set = function(p) {
 		if (!p.scope.success) success = false;
 		steps[index].cleanup();
 	}
-	
+
 	var proceed = function() {
 		evaluateTests(index-1);
 		fire(next);
@@ -119,7 +132,7 @@ var Set = function(p) {
 	this.run = function(next) {
 		window.XMLHttpRequest.asynchrony.next(proceed);
 
-		if (!window.XMLHttpRequest.asynchrony.open()) fire();		
+		if (!window.XMLHttpRequest.asynchrony.open()) fire();
 	}
 };
 
@@ -137,7 +150,7 @@ var Tests = function() {
 		set.test(test);
 	};
 
-	
+
 	//	TODO	this is used by the unit test button to run the tests; could encapsulate
 	this.run = function(next) {
 		set.run(next);
@@ -146,17 +159,17 @@ var Tests = function() {
 
 var global = new function() {
 	var target;
-	
+
 	var tests = [];
-	
+
 	this.target = function(page) {
 		target = page;
 	};
-	
+
 	this.getTarget = function() {
 		return target;
 	};
-	
+
 	var Old = function() {
 		var global = new Tests();
 
@@ -164,9 +177,9 @@ var global = new function() {
 			return {
 				name: "Tests",
 				old: true
-			};			
+			};
 		};
-		
+
 		this.run = function(_callbacks) {
 			if (!_callbacks) throw new Error("Missing callbacks!");
 			global.listeners.add("console", function(e) {
@@ -187,7 +200,7 @@ var global = new function() {
 			global.listeners.add("log", function(e) {
 				_callbacks.log(e.detail.success, e.detail.message);
 			});
-			global.run();			
+			global.run();
 		}
 	};
 
@@ -210,7 +223,7 @@ var global = new function() {
 		this.structure = function() {
 			return getStructure(suite);
 		};
-		
+
 		this.run = function(_callbacks) {
 			suite.listeners.add("scenario", function(e) {
 	//				_callbacks.fire(e);
@@ -225,16 +238,16 @@ var global = new function() {
 			suite.run({},function(success) {
 				console.log("success = " + success);
 				_callbacks.end(success);
-			});			
+			});
 		};
 	};
-	
+
 	var delegate = new Old();
-	
+
 	this.test = function() {
 		tests.push(arguments[0]);
 	}
-	
+
 	this.suite = function() {
 		delegate = new New(arguments[0]);
 	};
@@ -245,20 +258,20 @@ var global = new function() {
 
 	this.run = function(_callbacks) {
 		return delegate.run(_callbacks);
-	}	
+	}
 };
 
 var Scenario = function(p) {
 	var target;
-	
+
 	var getTarget = function() {
 		if (target) return target;
 		return global.getTarget();
 	};
-	
+
 	var tests = [];
 	var next;
-	
+
 	this.next = function(f) {
 		next = f;
 	}
@@ -323,7 +336,7 @@ $exports.nugget = new function() {
 		}
 	}
 
-	this.addLoadHook = addLoadHook;		
+	this.addLoadHook = addLoadHook;
 };
 
 //	currently undocumented
@@ -351,7 +364,7 @@ $exports.fire = new function() {
 	var UIEvent = function(name,canBubble,cancelable) {
 		Event.call(this,name,canBubble,cancelable);
 		this.view = window;
-		this.detail = null;		
+		this.detail = null;
 	}
 
 	var MouseEvent = function(name,canBubble,cancelable) {
@@ -441,7 +454,7 @@ $exports.fire = new function() {
 				element.dispatchEvent(v.create());
 			} else if (element.fireEvent) {
 				element.fireEvent("on" + name, v.create());
-			}			
+			}
 		}
 	};
 

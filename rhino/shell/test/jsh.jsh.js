@@ -46,7 +46,7 @@ jsh.unit.integration({
 						}
 						verify(result).status.is(2);
 						return result;
-					}					
+					}
 				});
 			}
 		});
@@ -69,7 +69,7 @@ jsh.unit.integration({
 						}
 						verify(result).status.is(2);
 						return result;
-					}					
+					}
 				});
 			}
 		});

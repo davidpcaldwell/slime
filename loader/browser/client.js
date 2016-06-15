@@ -30,7 +30,7 @@
 					throw e;
 				}
 			}
-			return req;			
+			return req;
 		}
 	}
 	//	Undocumented for now; seemingly unused

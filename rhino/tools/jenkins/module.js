@@ -40,7 +40,7 @@ $exports.Server = function(o) {
 			evaluate: evaluate
 		});
 	}
-	
+
 	var BuildRef = function(client,job,json) {
 		this.toString = function() {
 			return "BuildRef: job=" + job.url + " json=" + JSON.stringify(json);
@@ -49,9 +49,9 @@ $exports.Server = function(o) {
 		this.job = job;
 		this.number = json.number;
 		this.url = json.url;
-		
+
 		this.load = function() {
-			return request(client,{ fullurl: json.url + "api/json", depth: "3" });			
+			return request(client,{ fullurl: json.url + "api/json", depth: "3" });
 		}
 	}
 
@@ -64,11 +64,11 @@ $exports.Server = function(o) {
 		}
 
 		this.json = json;
-		
+
 		var load = function() {
-			return request(client,{ fullurl: json.url + "api/json", depth: "2" });			
+			return request(client,{ fullurl: json.url + "api/json", depth: "2" });
 		}
-		
+
 		this.builds = function() {
 			return request(client,{ fullurl: json.url + "api/json", tree: "builds[number,timestamp,id,result]" }).builds;
 //			var loaded = load();

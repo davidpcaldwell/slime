@@ -96,7 +96,7 @@ $exports.Handler.HostRedirect = function(p) {
 			]
 		};
 	};
-	
+
 	return function(request) {
 		if (request.headers.value("host") == p.from) {
 			//	TODO	allow p.to to to have host/path/port?
@@ -111,7 +111,7 @@ $exports.Handler.HostRedirect = function(p) {
 				//	TODO	query
 				//	TODO	fragment: is this even possible?
 			});
-			return redirect(to, request.parameters);			
+			return redirect(to, request.parameters);
 		}
 	}
 }

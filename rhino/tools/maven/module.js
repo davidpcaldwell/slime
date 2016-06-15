@@ -63,7 +63,7 @@ var Pom = function(file) {
 	var xml = new jsh.document.Document({
 		stream: file.read(jsh.io.Streams.binary)
 	});
-	
+
 	this.xml = xml;
 
 	var root = xml.document.getElement();
@@ -359,9 +359,9 @@ $exports.Project = function(p) {
 				throw new Error("Unimplemented: add dependency " + p.group + ":" + p.artifact + ":" + p.version);
 			}
 		}
-		
+
 		this.remove = function(p) {
-			
+
 		}
 	};
 

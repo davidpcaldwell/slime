@@ -88,7 +88,7 @@ var Parent = function(p) {
 					this.children[i].remove(search);
 				}
 			}
-		}		
+		}
 	});
 
 	this.get = $api.deprecate(function(p) {
@@ -428,18 +428,18 @@ var Doctype = function(p) {
 		};
 
 		var tokens = [this.doctype.name];
-		
+
 		var type = (function() {
 			if (this.doctype.publicId) return "PUBLIC";
 			if (this.doctype.systemId) return "SYSTEM";
 			return null;
 		}).call(this);
-		
+
 		tokens.push(type);
-		
+
 		if (this.doctype.publicId) tokens.push(quote(this.doctype.publicId));
 		if (this.doctype.systemId) tokens.push(quote(this.doctype.systemId));
-		
+
 		return "<!DOCTYPE " + tokens.join(" ") + ">\n";
 	};
 };

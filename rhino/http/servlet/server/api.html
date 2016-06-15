@@ -147,7 +147,7 @@ END LICENSE
 								verify(response).status.code.is(307);
 								verify(response).headers[0].name.is("Location");
 								verify(response).headers[0].value.is("http://www.foo.com/");
-								
+
 								var r2 = a({
 									method: "POST",
 									path: "foo",

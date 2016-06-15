@@ -130,7 +130,7 @@ $exports.run = function(p) {
 			throw new TypeError("Required: command property or tokens property");
 		}
 	})();
-	
+
 	if (as) {
 		if ($exports.os.name == "Linux") {
 			invocation.configuration.command = "sudo";

@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME loader for web browsers.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 document.domain = document.domain;
 
 (function() {
@@ -15,22 +28,22 @@ document.domain = document.domain;
 	var Asynchrony = function() {
 		var next = arguments[0];
 		var pending = [];
-		
+
 		this.toString = function() {
 			return pending.map(function(o) {
 				if (String(o) == "[object Object]") return "keys = " + Object.keys(o);
 				return String(o);
 			}).join("\n");
 		}
-		
+
 		this.next = function(then) {
 			next = then;
 		};
-		
+
 		this.set = $api.deprecate(function(then) {
 			next = then;
 		});
-		
+
 		this.get = $api.deprecate(function() {
 			return this;
 		});
@@ -38,16 +51,16 @@ document.domain = document.domain;
 		this.length = $api.deprecate(function() {
 			return pending.length;
 		});
-		
+
 		this.open = function() {
 			return pending.length > 0;
 		}
-		
+
 		this.started = function(process) {
 			console.log("Started: " + process + " from " + arguments.caller);
 			pending.push(process);
 		};
-		
+
 		this.finished = function(process) {
 			console.log("Finished: " + process);
 			pending.splice(pending.indexOf(process),1);
@@ -58,15 +71,15 @@ document.domain = document.domain;
 			}
 		}
 	};
-	
+
 	var Network = function() {
 	};
-	
+
 	window.XMLHttpRequest = (function(before) {
 		var asynchrony = new Asynchrony();
 
 		var network = new Network();
-	
+
 		var rv = function() {
 			var Self = arguments.callee;
 			if (typeof(Self.open) == "undefined") {
@@ -149,19 +162,19 @@ document.domain = document.domain;
 			var synchronous = false;
 
 			var string;
-			
+
 			this.toString = function() {
 				if (string) return "XMLHttpRequest: " + string;
 				return "XMLHttpRequest (unopened)";
 			}
-			
+
 			self.open = (function(was) {
 				return function(method,url) {
 					string = method + " " + url;
 					return was.apply(this,arguments);
 				}
 			})(self.open);
-			
+
 			var decorateWithNotice = function(method) {
 				return function() {
 					if (arguments[2]) {
@@ -214,7 +227,7 @@ document.domain = document.domain;
 		rv.asynchrony = asynchrony;
 		return rv;
 	})(window.XMLHttpRequest);
-	
+
 	if (!window.alert.jsh) window.alert = function(string) {
 		if (window.console) window.console.log("Alert: " + string);
 	};
