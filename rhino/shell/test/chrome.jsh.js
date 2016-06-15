@@ -82,14 +82,11 @@ jsh.script.Application.run(new function() {
 				var profile = chrome.user.profiles.filter(function(profile) {
 					return profile.name == parameters.options.name;
 				})[0];
-				var x = parameters.options.x;
-				var y = parameters.options.y;
-				var width = parameters.options.width;
-				var height = parameters.options.height;
-				var url = parameters.options.url;
 				profile.open({
-					app: "data:text/html,<html><body><script>window.moveTo(" + x + "," + y + ");window.resizeTo(" + width + "," + height + ");window.location='" + url + "';</script></body></html>"
-				})
+					app: parameters.options.url,
+					position: { x: parameters.options.x, y: parameters.options.y },
+					size: { width: parameters.options.width, height: parameters.options.height }
+				});
 			}
 		}
 	}

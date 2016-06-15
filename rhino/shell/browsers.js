@@ -117,7 +117,30 @@ var Chrome = function(b) {
 				args.push("--disable-gpu");
 			}
 			if (m.app) {
-				args.push("--app=" + m.app);
+				if (m.position || m.size) {
+					var script = [];
+					if (m.position) {
+						script.push("window.moveTo(" + m.position.x + "," + m.position.y + ");");
+					}
+					if (m.size) {
+						script.push("window.resizeTo(" + m.size.width + "," + m.size.height + ");");
+					}
+					script.push("window.location = '" + m.app + "';");
+					args.push("--app=data:text/html,<html><body><script>" + script.join("") + "</script></body></html>");
+				} else {
+					args.push("--app=" + m.app);
+					//	TODO	no combination of these things seems to work, although it may work for "new" browser profiles;
+					//			see http://stackoverflow.com/questions/13436855/launch-google-chrome-from-the-command-line-with-specific-window-coordinates
+//					if (m.position || m.size) {
+//						args.push("--chrome-frame");
+//					}
+//					if (m.position) {
+//						args.push("--window-position=" + m.position.x + "," + m.position.y);
+//					}
+//					if (m.size) {
+//						args.push("--window-size=" + m.size.width + "," + m.size.height);
+//					}
+				}
 			} else {
 				if (m.newWindow) {
 					args.push("--new-window");
