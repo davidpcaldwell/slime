@@ -67,6 +67,30 @@ jsh.script.Application.run(new function() {
 				user.run({ uri: "about:blank" });
 				jsh.shell.echo("Chrome closed.");
 			}
+		},
+		open: {
+			getopts: {
+				name: String,
+				url: String,
+				width: Number,
+				height: Number,
+				x: Number,
+				y: Number
+			},
+			run: function(parameters) {
+				var chrome = jsh.shell.browser.chrome;
+				var profile = chrome.user.profiles.filter(function(profile) {
+					return profile.name == parameters.options.name;
+				})[0];
+				var x = parameters.options.x;
+				var y = parameters.options.y;
+				var width = parameters.options.width;
+				var height = parameters.options.height;
+				var url = parameters.options.url;
+				profile.open({
+					app: "data:text/html,<html><body><script>window.moveTo(" + x + "," + y + ");window.resizeTo(" + width + "," + height + ");window.location='" + url + "';</script></body></html>"
+				})
+			}
 		}
 	}
 });
