@@ -12,23 +12,14 @@
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.shell.PATH.getCommand("mvn"));
+		return jsh.shell && Boolean(jsh.shell.PATH.getCommand("mvn"));
 	},
 	load: function() {
 		if (!global.maven && !global.mvn) {
-			global.maven = new function() {
-				var mvn = jsh.shell.PATH.getCommand("mvn");
-
-				var core = $loader.module("core.js", {
-					mvn: mvn,
-					HOME: jsh.shell.HOME
-				});
-
-				this.mvn = core.mvn;
-				this.Project = core.Project;
-				this.Pom = core.Pom;
-				this.Repository = core.Repository;
-			};
+			global.maven = $loader.module("module.js", {
+				mvn: jsh.shell.PATH.getCommand("mvn"),
+				HOME: jsh.shell.HOME
+			});
 		}
 	}
 });

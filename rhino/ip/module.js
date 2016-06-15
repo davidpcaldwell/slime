@@ -19,12 +19,21 @@ $exports.tcp = new function() {
 	};
 };
 
+$exports.Host = function(o) {
+	this.isReachable = function(p) {
+		var ping = $context.api.shell.os.ping({
+			host: o.name
+		});
+		return ping.status == 0;
+	}
+}
+
 $exports.Port = function(number) {
 	this.__defineGetter__("number", function() {
 		return number;
 	});
 
-	this.isOpen = function() {
+	this.isOpen = $api.debug.disableBreakOnExceptionsFor(function() {
 		var debug = function(message) {
 			//Packages.java.lang.System.err.println(message);
 		}
@@ -56,7 +65,7 @@ $exports.Port = function(number) {
 			if (_server) _server.close();
 			if (_client) _client.close();
 		}
-	}
+	});
 };
 
 $exports.getEphemeralPort = function() {

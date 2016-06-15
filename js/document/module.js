@@ -77,6 +77,20 @@ var Parent = function(p) {
 		return choose(rv);
 	}
 
+	this.remove = $api.experimental(function(search) {
+		search = asSearch(search);
+		for (var i=0; i<this.children.length; i++) {
+			if (search.filter(this.children[i])) {
+				this.children.splice(i,1);
+				i--;
+			} else {
+				if (this.children[i].remove && search.descendants(this.children[i])) {
+					this.children[i].remove(search);
+				}
+			}
+		}		
+	});
+
 	this.get = $api.deprecate(function(p) {
 		var filtering = function(children,p) {
 			var filter = (function() {
@@ -123,24 +137,6 @@ var Parent = function(p) {
 		};
 
 		return filtering(this.children,p);
-	});
-
-	this.remove = $api.deprecate(function(p) {
-		var child;
-		if (p.recursive && p.node) {
-			child = p.node;
-		} else {
-			child = p;
-		}
-		for (var i=0; i<this.children.length; i++) {
-			if (this.children[i] == child) {
-				this.children.splice(i,1);
-				return;
-			}
-			if (p.recursive && this.children[i].remove) {
-				this.children[i].remove(p);
-			}
-		}
 	});
 };
 
@@ -321,7 +317,7 @@ var Element = function(p) {
 					scope[attribute.namespace] = "jsdom_" + index;
 				}
 				var ns = (attribute.namespace) ? scope[attribute.namespace] + ":" : "";
-				return ns + attribute.name + "=" + "\"" + attribute.value + "\"";
+				return ns + attribute.name + "=" + "\"" + attribute.value.replace(/\"/g, "&quot;") + "\"";
 			}).join(" ");
 		}).call(this);
 		var isUnescapedScript = this.element.type.name == "script" && m.doNotEscapeScript;
@@ -432,10 +428,18 @@ var Doctype = function(p) {
 		};
 
 		var tokens = [this.doctype.name];
-		if (type) {
-			tokens.push(type.type, quote(type.string));
-		}
-
+		
+		var type = (function() {
+			if (this.doctype.publicId) return "PUBLIC";
+			if (this.doctype.systemId) return "SYSTEM";
+			return null;
+		}).call(this);
+		
+		tokens.push(type);
+		
+		if (this.doctype.publicId) tokens.push(quote(this.doctype.publicId));
+		if (this.doctype.systemId) tokens.push(quote(this.doctype.systemId));
+		
 		return "<!DOCTYPE " + tokens.join(" ") + ">\n";
 	};
 };

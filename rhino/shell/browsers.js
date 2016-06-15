@@ -116,6 +116,9 @@ var Chrome = function(b) {
 			if (disableGpu) {
 				args.push("--disable-gpu");
 			}
+			if (m.arguments) {
+				args.push.apply(args,m.arguments);
+			}
 			if (m.app) {
 				if (m.position || m.size) {
 					var script = [];

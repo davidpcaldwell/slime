@@ -350,6 +350,8 @@ $exports.os = new function() {
 $exports.TMPDIR = $exports.properties.directory("java.io.tmpdir");
 $exports.USER = $exports.properties.get("user.name");
 $exports.HOME = $exports.properties.directory("user.home");
+$exports.user = {};
+if ($exports.HOME.getSubdirectory("Downloads")) $exports.user.downloads = $exports.HOME.getSubdirectory("Downloads");
 //	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
 if ($exports.properties.get("user.dir")) {
 	$exports.PWD = $exports.properties.directory("user.dir");

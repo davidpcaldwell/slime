@@ -122,4 +122,6 @@ $exports.Document = function(p) {
 	}
 };
 
-$exports.filter = $context.pure.filter;
+["Doctype","Element","Text","Cdata","Comment","filter"].forEach(function(name) {
+	$exports[name] = $context.pure[name]
+});

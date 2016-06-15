@@ -60,7 +60,7 @@ $exports.zip = function(p) {
 		$to = p.to.java.adapt();
 	} else {
 		debugger;
-		throw "Unimplemented: to " + p.to;
+		throw new Error("Unimplemented: to " + p.to);
 	}
 
 	//	TODO	(Possibly obsolete comment) Much of this logic is reproduced in the jsh build process

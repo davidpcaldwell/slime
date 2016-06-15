@@ -11,6 +11,47 @@
 //	Contributor(s):
 //	END LICENSE
 
+$exports.http = {};
+
+$exports.http.Response = function() {
+	throw new Error("Reserved for future use.");
+};
+
+$exports.http.Response.text = function(string) {
+	return {
+		status: {
+			code: 200
+		},
+		headers: [],
+		body: {
+			type: "text/plain",
+			string: string
+		}
+	};
+};
+
+$exports.http.Response.javascript = function(p) {
+	if (typeof(p) == "string") {
+		return {
+			status: { code: 200 },
+			body: {
+				type: "text/javascript",
+				string: p
+			}
+		}
+	} else {
+		throw new Error("'p' must be string");
+	}
+}
+
+$exports.http.Response.NOT_FOUND = function() {
+	return {
+		status: {
+			code: 404
+		}
+	}
+};
+
 $exports.Handler = function(p) {
 	throw new Error("Reserved for future use.");
 };
@@ -43,5 +84,34 @@ $exports.Handler.Child = function(p) {
 				return p.handle(req);
 			}
 		};
+	}
+};
+$exports.Handler.HostRedirect = function(p) {
+	var redirect = function(url,parameters) {
+		//	TODO	this is terrible, ignores parameters
+		return {
+			status: { code: 307 },
+			headers: [
+				{ name: "Location", value: url.toString() }
+			]
+		};
+	};
+	
+	return function(request) {
+		if (request.headers.value("host") == p.from) {
+			//	TODO	allow p.to to to have host/path/port?
+			var to = new $context.api.web.Url({
+				scheme: "http",
+				authority: {
+					host: p.to
+					//	port
+					//	userinfo
+				},
+				path: "/" + request.path
+				//	TODO	query
+				//	TODO	fragment: is this even possible?
+			});
+			return redirect(to, request.parameters);			
+		}
 	}
 }

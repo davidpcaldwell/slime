@@ -11,7 +11,7 @@
 //	END LICENSE
 
 window.onload = function() {
-	//	TODO	Perhaps verify div class="object" <li>s have div class="name"
+	//	TODO	Perhaps verify div class="object" li elements have div class="name"
 	//	TODO	verify the "has properties" after div class="object"
 
 	var Markup = function Markup(base) {
@@ -63,8 +63,10 @@ window.onload = function() {
 			});
 			matchingScriptElements.forEach(function(element) {
 				console.log(element);
-				if (element.innerHTML.substring(0,"<![CDATA[".length) == "<![CDATA[") {
-					element.innerHTML = element.innerHTML.substring("<![CDATA[".length,element.innerHTML.length-"]]>".length);
+				var CDATA_START = "<" + "!" + "[" + "CDATA" + "[";
+				var CDATA_END = "]" + "]" + "]";
+				if (element.innerHTML.substring(0,CDATA_START.length) == CDATA_START) {
+					element.innerHTML = element.innerHTML.substring(CDATA_START.length,element.innerHTML.length-CDATA_END.length);
 				}
 				var lines = element.innerHTML.split("\n");
 				var isWhitespace = function(line) {

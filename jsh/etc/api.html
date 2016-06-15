@@ -126,38 +126,11 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<td><a href="../../js/document/api.html">jsh.js.document</a></td>
-					<td>
-						js/document
-						<script jsapi:id="jsh.js.document" type="application/x.jsapi#tests">
-							verify.suite($jsapi.loader.suite("../../js/document/api.html"));
-						</script>
-					</td>
-				</tr>
-				<tr>
-					<td><a href="../../rhino/document/api.html">jsh.document</a></td>
-					<td>
-						js/document (Java)
-						<script jsapi:id="jsh.document" type="application/x.jsapi#tests">
-							verify.suite($jsapi.loader.suite("../../rhino/document/api.html"));
-						</script>
-					</td>
-				</tr>
-				<tr>
 					<td><a href="../../rhino/file/api.html">jsh.file</a></td>
 					<td>
 						Filesystem API
 						<script jsapi:id="jsh.file" type="application/x.jsapi#tests">
 							verify.suite($jsapi.loader.suite("../../rhino/file/api.html"));
-						</script>
-					</td>
-				</tr>
-				<tr>
-					<td><a href="../../rhino/http/client/api.html">jsh.http</a></td>
-					<td>
-						HTTP client
-						<script jsapi:id="jsh.http" type="application/x.jsapi#tests">
-							verify.suite($jsapi.loader.suite("../../rhino/http/client/api.html", {}));
 						</script>
 					</td>
 				</tr>
@@ -177,6 +150,42 @@ END LICENSE
 						jsh.script
 						<script jsapi:id="jsh.script" type="application/x.jsapi#tests">
 							verify.suite($jsapi.loader.suite("../../jsh/script/api.html"));
+						</script>
+					</td>
+				</tr>
+				<tr>
+					<td><a href="../../rhino/ip/api.html">jsh.ip</a></td>
+					<td>
+						Internet Protocol (IP)
+						<script jsapi:id="jsh.ip" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../rhino/ip/api.html"));
+						</script>
+					</td>					
+				</tr>
+				<tr>
+					<td><a href="../../rhino/http/client/api.html">jsh.http</a></td>
+					<td>
+						HTTP client
+						<script jsapi:id="jsh.http" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../rhino/http/client/api.html", {}));
+						</script>
+					</td>
+				</tr>
+				<tr>
+					<td><a href="../../js/document/api.html">jsh.js.document</a></td>
+					<td>
+						js/document
+						<script jsapi:id="jsh.js.document" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../js/document/api.html"));
+						</script>
+					</td>
+				</tr>
+				<tr>
+					<td><a href="../../rhino/document/api.html">jsh.document</a></td>
+					<td>
+						js/document (Java)
+						<script jsapi:id="jsh.document" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../rhino/document/api.html"));
 						</script>
 					</td>
 				</tr>
@@ -273,6 +282,15 @@ END LICENSE
 			<tbody>
 				<tr><td><a href="../../jsh/tools/api.html">(tools)</a></td><td>jsh Tools</td><!-- no tests --></tr>
 				<tr><td><a href="../../jsh/loader/plugin.api.html">(plugins)</a></td><td>Interface for creating plugins</td><!-- no tests --></tr>
+				<tr>
+					<td><a href="../../jsh/etc/install/api.html">(installers)</a></td>
+					<td>
+						APIs and programs for installing <code>jsh</code>-related software
+						<script jsapi:id="jsh/etc/install/" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../jsh/etc/install/api.html"));
+						</script>
+					</td>
+				</tr>
 			</tbody>
 		</table>
 	</div>

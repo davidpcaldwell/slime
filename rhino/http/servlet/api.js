@@ -78,6 +78,7 @@ var bootstrap = (function() {
 		rv.js = loader.module("WEB-INF/slime/js/object/", {
 			globals: true
 		});
+		rv.js.web = loader.module("WEB-INF/slime/js/web/", loader.file("WEB-INF/slime/js/web/context.java.js"));
 		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
 			globals: true,
 			$rhino: $loader,
@@ -224,8 +225,6 @@ scope.httpd.js = api.js;
 scope.httpd.java = api.java;
 scope.httpd.io = api.io;
 
-scope.httpd.http = {};
-
 if (!loaders.api.get("loader.js")) {
 	throw new Error("loader.js not found in " + loaders.api);
 }
@@ -234,26 +233,14 @@ loaders.api.run(
 	"loader.js",
 	{
 		$exports: scope.httpd,
+		$context: {
+			api: {
+				web: scope.httpd.js.web
+			}
+		},
 		$loader: loaders.api
 	}
 );
-
-scope.httpd.http.Response = function() {
-	throw new Error("Reserved for future use.");
-};
-
-scope.httpd.http.Response.text = function(string) {
-	return {
-		status: {
-			code: 200
-		},
-		headers: [],
-		body: {
-			type: "text/plain",
-			string: string
-		}
-	};
-}
 
 if (loaders.script) {
 	//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the
