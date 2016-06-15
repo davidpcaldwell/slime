@@ -20,7 +20,10 @@ END LICENSE
 		<script src="../../loader/api/api.js"></script>
 	</head>
 	<body>
-		<div>Implementations of the various SLIME <a href="../../loader/api/unit.api.html">unit testing</a> mechanisms.</div>
+		<div>
+			Implementations of the various SLIME unit testing mechanisms.
+			The SLIME unit testing <a href="../../loader/api/unit.api.html">base</a> is loaded as <code>jsh.unit</code>.
+		</div>
 		<div>(<a href="api.html">Older, semi-obsolete documentation</a>)</div>
 		<div>
 			<h1>Context</h1>
@@ -29,6 +32,53 @@ END LICENSE
 		</div>
 		<div>
 			<h1>Exports</h1>
+			<div>
+				<h2><code>jsh.unit.part</code></h2>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Html</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">pathname</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">environment</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">reload</div>
+											<span class="type">boolean</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
 			<div>
 				<h2><code><a href="../../loader/api/unit.api.html#exports.Scenario">jsh.unit.Scenario</a></code></h2>
 				<div class="label">has properties:</div>
@@ -226,7 +276,11 @@ END LICENSE
 				</ul>
 			</div>
 			<div>
-				<h2><code>jsh.unit.Suite</code></h2>
+				<!--	TODO	link below to correct fragment	-->
+				<h2><code><a href="../../loader/api/unit.api.html">jsh.unit.Suite</a></code></h2>
+				<div>
+					The API for <code>Suite</code> is extended as follows.
+				</div>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="function">

@@ -894,8 +894,10 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
+					var dir = $jsapi.file.newTemporaryDirectory();
+					dir.getRelativePath("1.hgrc").write($jsapi.loader.string("test/1.hgrc"), { append: false });
 					//	Can't find easy way to write enough automated tests here; maybe just laziness?
-					var hgrc = new module.Hgrc({ file: $module.getResourcePathname("test/1.hgrc").file });
+					var hgrc = new module.Hgrc({ file: dir.getFile("1.hgrc") });
 					var LENGTH = 29;
 					verify(hgrc,"1.hgrc").get("ui.username").is("I use it <iuseit@aol.com>");
 					verify(hgrc,"1.hgrc").unit.lines.length.is(LENGTH);
