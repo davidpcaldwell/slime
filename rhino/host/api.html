@@ -691,6 +691,39 @@ END LICENSE
 							}
 						</script>
 					</li>
+					<li class="function">
+						<div class="name">map</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+						<script type="application/x.jsapi#tests">
+							var array = [1,2,3];
+							var doubled = module.Thread.map(array,function(element) {
+								return element * 2;
+							},null,{ 
+								limit: 2,
+								callback: function(result) {
+									if (result.threw) {
+										jsh.shell.console(result.index + "/" + result.threw.type + ": " + result.threw.message);
+										jsh.shell.console(result.stack);
+									} else {
+										jsh.shell.console(result.index + "/" + result.returned);
+									}
+								}
+							});
+							verify(doubled)[0].is(2);
+							verify(doubled)[1].is(4);
+							verify(doubled)[2].is(6);
+						</script>
+					</li>
 				</ul>
 				<script type="application/x.jsapi#tests">
 					if (module.Thread) {
