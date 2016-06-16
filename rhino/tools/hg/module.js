@@ -129,6 +129,10 @@ var Installation = function(environment) {
 
 		invocation.command = environment.install;
 		invocation.arguments = args;
+		
+		if (p.on) {
+			invocation.on = p.on;
+		}
 
 		return $context.api.shell.run(invocation);
 	};
@@ -650,6 +654,55 @@ var Installation = function(environment) {
 					return rv;
 				}
 			});
+		};
+		
+		this.serve = function(p) {
+			var lock = new $context.api.java.Thread.Monitor();
+			var rv;
+			var port = (function() {
+				if (p.port === 0) return $context.api.ip.tcp.getEphemeralPortNumber();
+				if (typeof(p.port) == "number") return p.port;
+				//	TODO	perhaps default should be to check whether 8000 is open, return 8000 if so, return ephemeral if not?
+				return 8000;
+			})();
+			var self = this;
+			$context.api.java.Thread.start(function() {
+				shell($context.api.js.Object.set(
+					{},
+					{
+						repository: self,
+						command: "serve",
+						arguments: (function() {
+							var array = [];
+							array.push("-p", String(port));
+							return array;
+						})(),
+						on: {
+							start: function(process) {
+								lock.Waiter({
+									until: function() {
+										return true;
+									},
+									then: function() {
+										rv = process;
+									}
+								})()
+							}
+						}
+					}
+				));
+			});
+			//	TODO	probably if there is some kind of error this would just hang indefinitely and the error would not be
+			//			reported anywhere
+			return lock.Waiter({
+				until: function() {
+					return rv;
+				},
+				then: function() {
+					rv.port = port;
+					return rv;
+				}
+			})();
 		}
 
 		this.shell = function(p) {

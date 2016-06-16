@@ -91,7 +91,9 @@ END LICENSE
 					api: {
 						js: jsh.js,
 						web: jsh.js.web,
+						java: jsh.java,
 						io: jsh.io,
+						ip: jsh.ip,
 						file: jsh.file,
 						shell: jsh.shell,
 						time: jsh.time
@@ -755,6 +757,30 @@ END LICENSE
 						//	When pushing locally, "new" bookmarks are not pushed
 						test(!Boolean(child.bookmarks()["local"]));
 						debugger;
+					</script>
+				</li>
+				<li class="function">
+					<div class="name">serve</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var parent = createHg();
+						parent.unit.createFile({ path: "a", content: "a", add: true });
+						parent.commit({ message: "a" });
+						var server = parent.serve({ port: 0 });
+						verify(server).is.type("object");
+						verify(server).port.is.type("number");
+						server.kill();
+						verify("killed").is("killed");
 					</script>
 				</li>
 			</ul>
