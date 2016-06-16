@@ -779,6 +779,11 @@ END LICENSE
 						var server = parent.serve({ port: 0 });
 						verify(server).is.type("object");
 						verify(server).port.is.type("number");
+						var tmpclone = $jsapi.file.newTemporaryDirectory();
+						var remote = new module.Repository({ url: "http://127.0.0.1:" + server.port + "/" });
+						var local = remote.clone(tmpclone);
+						var commits = local.log();
+						verify(commits).length.is(1);
 						server.kill();
 						verify("killed").is("killed");
 					</script>
