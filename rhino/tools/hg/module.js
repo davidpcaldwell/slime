@@ -672,6 +672,7 @@ var Installation = function(environment) {
 					{
 						repository: self,
 						command: "serve",
+						config: p.config,
 						arguments: (function() {
 							var array = [];
 							array.push("-p", String(port));
