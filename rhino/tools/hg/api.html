@@ -26,134 +26,66 @@ END LICENSE
 				<span>A file representing the Mercurial executable.</span>
 			</li>
 		</ul>
-		<script type="application/x.jsapi#context">
-			(function() {
-				var Context = function() {
-					this.api = new function() {
-						var js = $jsapi.loader.module("../../../js/object/");
-						var java = $jsapi.loader.module("../../../rhino/host/", {
-							$rhino: jsh.$jsapi.$rhino,
-							$java: jsh.$jsapi.java
-						});
-						var io = $jsapi.loader.module("../../../rhino/io/", {
-							api: {
-								java: java,
-								mime: jsh.$jsapi.mime
-							}
-							,$rhino: jsh.$jsapi.$rhino
-							,$java: new Packages.inonit.script.runtime.io.Streams()
-							,stdio: {
-								$out: Packages.java.lang.System.out,
-								$err: Packages.java.lang.System.err
-							}
-						});
-
-						this.js = js;
-						this.io = io;
-
-						this.file = $jsapi.loader.module("../../../rhino/file/", {
-							api: {
-								js: js,
-								java: java,
-								io: io
-							}
-							,$rhino: jsh.$jsapi.$rhino
-							,cygwin: (String(jsh.shell.properties.object.cygwin) == "undefined") ? function(){}() : jsh.shell.properties.object.cygwin
-						});
-
-						this.shell = $jsapi.loader.module("../../../rhino/shell/", {
-							api: {
-								js: js,
-								java: java,
-								io: io,
-								file: this.file,
-								document: $jsapi.loader.module("../../../js/document/")
-							}
-						});
-					};
-
-					this.install = jsh.shell.PATH.getCommand("hg");
-				};
-
-				return [
-					new Context()
-				];
-			})()
-		</script>
 	</div>
 	<div>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize">
-			//	Cannot run tests inside httpd, apparently; commands fail with "Invalid signature" so allow httpd to turn off
-			//	tests for this module
-			if (!scope.module) {
-				if (false) {
-					//	TODO	does not currently work to load plugins from current directory
-					$jsapi.loader.plugins();
-					scope.module = hg;
-				} else {
-					scope.module = $jsapi.loader.module("module.js", {
-						api: {
-							js: jsh.js,
-							web: jsh.js.web,
-							java: jsh.java,
-							io: jsh.io,
-							ip: jsh.ip,
-							file: jsh.file,
-							shell: jsh.shell,
-							time: jsh.time
-						},
-						install: jsh.shell.PATH.getCommand("hg")
-					});
-				}
-			}
-			if (!scope.$jsapi.environment.hgbug) {
-				//	TODO	get below from context variable?
-				var hg = jsh.shell.PATH.getCommand("hg");
-				scope.module.unit = {
-					Repository: function() {
-						var rv = this;
-						rv.unit = new function() {
-							this.createFile = function(p) {
-								rv.directory.getRelativePath(p.path).write(p.content, { append: false });
-								if (p.add) {
-									rv.add({ files: [rv.directory.getRelativePath(p.path).toString()] });
-								}
-								return rv.directory.getFile(p.path);
-							};
-
-							this.editFile = function(p) {
-								var edited = rv.directory.getFile(p.path).read(String);
-								if (typeof(p.content) == "string") {
-									edited = p.content;
-								} else if (typeof(p.edit) == "function") {
-									edited = p.edit(edited);
-								}
-								rv.directory.getRelativePath(p.path).write(edited, { append: false });
-							};
-
-							this.readFile = function(p) {
-								if (typeof(p) == "string") {
-									p = { path: p };
-								}
-								return rv.directory.getFile(p.path).read(String);
-							};
-
-							this.clone = function(p) {
-								var cloned = rv.clone(p);
-								scope.module.unit.Repository.call(cloned);
-								return cloned;
+			scope.module = $jsapi.loader.module("module.js", {
+				api: {
+					js: jsh.js,
+					web: jsh.js.web,
+					java: jsh.java,
+					io: jsh.io,
+					ip: jsh.ip,
+					file: jsh.file,
+					shell: jsh.shell,
+					time: jsh.time
+				},
+				install: jsh.shell.PATH.getCommand("hg")
+			});
+			scope.module.unit = {
+				Repository: function() {
+					var rv = this;
+					rv.unit = new function() {
+						this.createFile = function(p) {
+							rv.directory.getRelativePath(p.path).write(p.content, { append: false });
+							if (p.add) {
+								rv.add({ files: [rv.directory.getRelativePath(p.path).toString()] });
 							}
+							return rv.directory.getFile(p.path);
+						};
+
+						this.editFile = function(p) {
+							var edited = rv.directory.getFile(p.path).read(String);
+							if (typeof(p.content) == "string") {
+								edited = p.content;
+							} else if (typeof(p.edit) == "function") {
+								edited = p.edit(edited);
+							}
+							rv.directory.getRelativePath(p.path).write(edited, { append: false });
+						};
+
+						this.readFile = function(p) {
+							if (typeof(p) == "string") {
+								p = { path: p };
+							}
+							return rv.directory.getFile(p.path).read(String);
+						};
+
+						this.clone = function(p) {
+							var cloned = rv.clone(p);
+							scope.module.unit.Repository.call(cloned);
+							return cloned;
 						}
 					}
-				};
-				var createHg = function() {
-					var rv = scope.module.init(scope.$jsapi.file.newTemporaryDirectory());
-					scope.module.unit.Repository.call(rv);
-					return rv;
 				}
-				scope.createHg = createHg;
+			};
+			var createHg = function() {
+				var rv = scope.module.init(scope.$jsapi.file.newTemporaryDirectory());
+				scope.module.unit.Repository.call(rv);
+				return rv;
 			}
+			scope.createHg = createHg;
 		</script>
 		<script type="application/x.jsapi#initialize">
 			scope.a = scope.createHg();
@@ -216,16 +148,14 @@ END LICENSE
 					</div>
 					<script type="application/x.jsapi#tests">
 						//	TODO	add test for pathname scenario
-						if (!$jsapi.environment.hgbug) {
-							var b = a.clone($jsapi.file.newTemporaryDirectory());
-							var c = a.clone($jsapi.file.newTemporaryDirectory().pathname);
-							var to = $jsapi.file.newTemporaryDirectory().pathname;
-							to.directory.remove();
-							test(!to.directory);
-							var d = a.clone(to);
-							test(Boolean(to.directory));
-							test(1 == 1, "Clone succeeded");
-						}
+						var b = a.clone($jsapi.file.newTemporaryDirectory());
+						var c = a.clone($jsapi.file.newTemporaryDirectory().pathname);
+						var to = $jsapi.file.newTemporaryDirectory().pathname;
+						to.directory.remove();
+						test(!to.directory);
+						var d = a.clone(to);
+						test(Boolean(to.directory));
+						test(1 == 1, "Clone succeeded");
 					</script>
 				</li>
 				<li class="function">
@@ -350,15 +280,13 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 					</div>
 					<script type="application/x.jsapi#tests">
-						if (!$jsapi.environment.hgbug) {
-							var first = a.clone($jsapi.file.newTemporaryDirectory());
-							var second = first.clone($jsapi.file.newTemporaryDirectory());
-							test(second.outgoing(first).length == 0);
-							second.directory.getRelativePath("hello.txt").write("Hello");
-							test(second.outgoing(first).length == 0);
-							second.commit({ addremove: true, message: "commit message" });
-							test(second.outgoing(first).length == 1);
-						}
+						var first = a.clone($jsapi.file.newTemporaryDirectory());
+						var second = first.clone($jsapi.file.newTemporaryDirectory());
+						test(second.outgoing(first).length == 0);
+						second.directory.getRelativePath("hello.txt").write("Hello");
+						test(second.outgoing(first).length == 0);
+						second.commit({ addremove: true, message: "commit message" });
+						test(second.outgoing(first).length == 1);
 					</script>
 				</li>
 				<li class="function">
@@ -562,14 +490,12 @@ END LICENSE
 						are the relative paths of the files from the root, and the values are the values of the status.
 					</div>
 					<script type="application/x.jsapi#tests">
-						if (!$jsapi.environment.hgbug) {
-							a.directory.getRelativePath("1.txt").write("Hello");
-							a.directory.getRelativePath("2/2.txt").write("Hello", {recursive: true});
-							var rv = a.status();
-							test(rv["1.txt"] == "?");
-							test(rv["2/2.txt"] == "?");
-							test(rv["3.txt"] != "?");
-						}
+						a.directory.getRelativePath("1.txt").write("Hello");
+						a.directory.getRelativePath("2/2.txt").write("Hello", {recursive: true});
+						var rv = a.status();
+						test(rv["1.txt"] == "?");
+						test(rv["2/2.txt"] == "?");
+						test(rv["3.txt"] != "?");
 					</script>
 				</li>
 				<li class="function">
