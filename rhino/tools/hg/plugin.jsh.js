@@ -22,7 +22,9 @@ plugin(new function() {
 			api: {
 				js: jsh.js,
 				web: jsh.js.web,
+				java: jsh.java,
 				io: jsh.io,
+				ip: jsh.ip,
 				file: jsh.file,
 				shell: jsh.shell,
 				time: jsh.time
