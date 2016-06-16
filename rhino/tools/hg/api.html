@@ -87,19 +87,25 @@ END LICENSE
 			//	Cannot run tests inside httpd, apparently; commands fail with "Invalid signature" so allow httpd to turn off
 			//	tests for this module
 			if (!scope.module) {
-				scope.module = $jsapi.loader.module("module.js", {
-					api: {
-						js: jsh.js,
-						web: jsh.js.web,
-						java: jsh.java,
-						io: jsh.io,
-						ip: jsh.ip,
-						file: jsh.file,
-						shell: jsh.shell,
-						time: jsh.time
-					},
-					install: jsh.shell.PATH.getCommand("hg")
-				});
+				if (false) {
+					//	TODO	does not currently work to load plugins from current directory
+					$jsapi.loader.plugins();
+					scope.module = hg;
+				} else {
+					scope.module = $jsapi.loader.module("module.js", {
+						api: {
+							js: jsh.js,
+							web: jsh.js.web,
+							java: jsh.java,
+							io: jsh.io,
+							ip: jsh.ip,
+							file: jsh.file,
+							shell: jsh.shell,
+							time: jsh.time
+						},
+						install: jsh.shell.PATH.getCommand("hg")
+					});
+				}
 			}
 			if (!scope.$jsapi.environment.hgbug) {
 				//	TODO	get below from context variable?
