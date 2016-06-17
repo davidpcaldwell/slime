@@ -129,7 +129,7 @@ var Set = function(p) {
 		}
 	}
 
-	this.run = function(next) {
+	this.run = function() {
 		window.XMLHttpRequest.asynchrony.next(proceed);
 
 		if (!window.XMLHttpRequest.asynchrony.open()) fire();
@@ -238,6 +238,8 @@ var global = new function() {
 			suite.run({},function(success) {
 				console.log("success = " + success);
 				_callbacks.end(success);
+				//	Stop asynchronous events from being delivered
+				window.XMLHttpRequest.asynchrony.next(null);
 			});
 		};
 	};
@@ -291,7 +293,7 @@ var Scenario = function(p) {
 		tests.forEach(function(test) {
 			set.test(test);
 		})
-		set.run(next);
+		set.run();
 	}
 }
 
