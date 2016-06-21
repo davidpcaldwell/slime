@@ -434,6 +434,105 @@ END LICENSE
 					</span>
 				</div>
 			</li>
+			<li class="object" jsapi:id="os">
+				<div class="name">os</div>
+				<span>An object representing the current operating system.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">arch</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">version</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="function">
+						<div class="name">resolve</div>
+						<span>
+							A function allowing operating system-specific code to be easily specified. Can be invoked with code 
+							like:
+							<pre>
+os.resolve(function() {
+	if (this.name == "Linux") {
+		return /* Linux-specific value */;
+	} else {
+		//	...
+	}
+});
+							</pre>
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="function">
+									<span>
+										A function that resolves OS-specific code. It is invoked with the <code>os</code> object
+										representing the current operating system as <code>this</code> and can return a value
+										accordingly.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">object</span>
+												<span>The <code>os</code> property</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">(any)</span>
+										<span>A value for the current operating system.</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										var withColon = module.os.resolve(function() {
+											return {
+												name: ":" + this.name,
+												arch: ":" + this.arch,
+												version: ":" + this.version
+											}
+										});
+										verify(withColon).name.is(":" + module.os.name);
+										verify(withColon).arch.is(":" + module.os.arch);
+										verify(withColon).version.is(":" + module.os.version);
+									</script>
+								</li>
+							</ol>
+							- OR -
+							<ol>
+								<li class="value">
+									<span class="type">object</span>
+									<span>
+										An object with values representing the names of operating systems. The value of the 
+										named property of the object corresponding to the current operating system will be
+										returned.
+									</span>
+									<script type="application/x.jsapi#tests">
+										var name = module.os.resolve({
+											"Mac OS X": "-Mac OS X",
+											"Linux": "-Linux"
+										});
+										verify(name).is("-" + module.os.name);
+									</script>						
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
 			<li class="value" jsapi:id="environment">
 				<div class="name">environment</div>
 				<span class="type">object</span>

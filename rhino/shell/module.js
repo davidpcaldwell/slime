@@ -357,6 +357,14 @@ $exports.os = new function() {
 	this.name = $exports.properties.get("os.name");
 	this.arch = $exports.properties.get("os.arch");
 	this.version = $exports.properties.get("os.version");
+	
+	this.resolve = function(p) {
+		if (typeof(p) == "function") {
+			return p.call(this);
+		} else if (typeof(p) == "object") {
+			return p[this.name];
+		}
+	}
 };
 
 $exports.TMPDIR = $exports.properties.directory("java.io.tmpdir");
