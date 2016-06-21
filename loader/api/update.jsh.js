@@ -118,8 +118,9 @@ var apis = parameters.options.base.directory.list({
 			{ name: "type", value: "application/javascript" }
 		],
 		children: [
+			new jsh.document.Text({ text: "//" }),
 			new jsh.document.Cdata({
-				cdata: readFile("api.js")
+				cdata: readFile("api.js") + "//"
 			})
 		]
 	});
