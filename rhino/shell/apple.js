@@ -23,53 +23,91 @@ var isArray = function(object) {
 }
 
 $exports.Plist = function(v) {
-	//	https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/PropertyLists/AboutPropertyLists/AboutPropertyLists.html
-	var Value = function(v) {
-		if (typeof(v) == "object") {
-			if (isArray(v)) {
-				throw new TypeError("Unimplemented.");
-			} else {
-				var rv = new $context.api.document.Element({
-					type: {
-						name: "dict"
-					}
-				});
-				for (var x in v) {
-					if (typeof(v[x]) == "undefined") {
-						//	TODO	what happens? Looks like the property should be omitted.
-					} else if (v[x] === null) {
-						//	TODO	what happens? Looks like the property should be omitted.
-					} else if (typeof(v[x]) == "string") {
-						var key = new $context.api.document.Element({ type: { name: "key" } });
-						//	TODO	document use of new Text() in slime/js/document/api.html
-						key.children.push(new $context.api.document.Text({ text: x }));
-						rv.children.push(key);
-						rv.children.push(new Value(v[x]));
-					}
-				}
-				return rv;
-			}
-		} else if (typeof(v) == "string") {
-			var rv = new $context.api.document.Element({ type: { name: "string" } });
-			rv.children.push(new $context.api.document.Text({ text: v }));
-			return rv;
-		} else {
-			throw new TypeError("v = " + v + " typeof(v) = " + typeof(v));
-		}
-	};
-
-	var document = new $context.api.document.Document();
-	var root = new $context.api.document.Element({
-		type: {
-			name: "plist"
-		}
-	});
-	document.children.push(root);
-	root.element.attributes.set("version", "1.0");
-	root.children.push(new Value(v));
-
 	this.serialize = function() {
 		return document.serialize.apply(document,arguments);
+	}
+};
+
+$exports.plist = new function() {
+	//	https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/PropertyLists/AboutPropertyLists/AboutPropertyLists.html
+	this.xml = new function() {
+		this.encode = function(v) {
+			var Value = function(v) {
+				if (typeof(v) == "object") {
+					if (isArray(v)) {
+						throw new TypeError("Unimplemented.");
+					} else {
+						var rv = new $context.api.document.Element({
+							type: {
+								name: "dict"
+							}
+						});
+						for (var x in v) {
+							var key = new $context.api.document.Element({ type: { name: "key" } });
+							//	TODO	document use of new Text() in slime/js/document/api.html
+							key.children.push(new $context.api.document.Text({ text: x }));
+							if (typeof(v[x]) == "undefined") {
+								//	TODO	what happens? Looks like the property should be omitted.
+							} else if (v[x] === null) {
+								//	TODO	what happens? Looks like the property should be omitted.
+							} else if (typeof(v[x]) == "string" || typeof(v[x]) == "object") {
+								rv.children.push(key, new Value(v[x]));
+							}
+						}
+						return rv;
+					}
+				} else if (typeof(v) == "string") {
+					var rv = new $context.api.document.Element({ type: { name: "string" } });
+					rv.children.push(new $context.api.document.Text({ text: v }));
+					return rv;
+				} else {
+					throw new TypeError("v = " + v + " typeof(v) = " + typeof(v));
+				}
+			};
+
+			var document = new $context.api.document.Document();
+			var root = new $context.api.document.Element({
+				type: {
+					name: "plist"
+				}
+			});
+			document.children.push(root);
+			root.element.attributes.set("version", "1.0");
+			root.children.push(new Value(v));
+			return document;
+		};
+		
+		this.decode = function(document) {
+			var decode = function recurse(value) {
+				if (value.element.type.name == "dict") {
+					var rv = {};
+					var elements = value.children.filter(function(node) {
+						return node.element;
+					});
+					var index = 0;
+					while(index < elements.length) {
+						var keyElement = elements[index++];
+						if (keyElement.element.type.name != "key") throw new Error();
+						var key = keyElement.children[0].getString();
+						var value = recurse(elements[index++]);
+						rv[key] = value;
+					}
+					return rv;
+				} else if (value.element.type.name == "string") {
+					return value.children[0].getString();
+				} else {
+					throw new Error("Unimplemented");
+				}				
+			}
+			
+			var root = document.document.getElement();
+			if (root.element.type.name != "plist") throw new Error();
+			//	TODO	check version attribute value?
+			var value = root.children.filter(function(node) {
+				return node.element;
+			})[0];
+			return decode(value);
+		}
 	}
 }
 

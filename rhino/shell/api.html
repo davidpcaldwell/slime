@@ -576,6 +576,204 @@ os.resolve(function() {
 				<!--	TODO	can this be changed while the shell is running?	-->
 				<span>The current working directory.</span>
 			</li>
+			<li class="value" jsapi:id="PATH">
+				<div class="name">PATH</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.searchpath">searchpath</a></span>
+				<span>__DESCRIPTION__</span>
+			</li>
+			<li class="object">
+				<div class="name">user</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">downloads</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+						<span>__DESCRIPTION__</span>
+					</li>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">browser</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</li>
+			<li class="object">
+				<div class="name">system</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="experimental object">
+						<div class="name">apple</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="object">
+								<div class="name">plist</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="object">
+										<div class="name">xml</div>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">encode</div>
+												<span>__DESCRIPTION__</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">__TYPE__</span>
+															<span>A value to encode.</span>
+														</li>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type">document</span>
+												</div>
+											</li>
+											<li class="function">
+												<div class="name">decode</div>
+												<span>__DESCRIPTION__</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">document</span>
+															<span>An XML document representing a property list</span>
+														</li>
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type">__TYPE__</span>
+													<span>The value represented by the property list.</span>
+												</div>
+											</li>
+										</ul>
+										<script type="application/x.jsapi#tests">
+											var object = {
+												a: "1",
+												b: {
+													c: "2"
+												}
+											};
+											var xml = module.system.apple.plist.xml.encode(object);
+											jsh.shell.console(xml.toString());
+											var decoded = module.system.apple.plist.xml.decode(xml);
+											verify(decoded).a.is("1");
+											verify(decoded).b.is.type("object");
+											verify(decoded).b.c.is("2");
+										</script>
+									</li>
+								</ul>
+							</li>
+							<li class="object">
+								<div class="name">osx</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="constructor">
+										<div class="name">ApplicationBundle</div>
+										<span>
+											Implements the creation of OS X 
+											<a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/Introduction/Introduction.html">Application Bundles</a>.
+										</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="object">
+													<div class="name">__NAME__</div>
+													<span>__DESCRIPTION__</span>
+													<div class="label">has properties:</div>
+													<ul>
+														<li class="object">
+															<div class="name">info</div>
+															<span>
+																An object specifying properties to be added to the
+																<code>Info.plist</code>. Properties with string values will be
+																treated as name-value pairs. Some properties allow non-string
+																values, as specified below. The following properties are required,
+																per Apple's documentation (although SLIME provides a default value
+																for one):
+															</span>
+															<div class="label">has properties:</div>
+															<ul>
+																<li class="value">
+																	<div class="name">CFBundleName</div>
+																	<span class="type">string</span>
+																	<span>
+																		See <a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html">Apple documentation</a>.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">CFBundleDisplayName</div>
+																	<span class="type">string</span>
+																	<span>
+																		Apple says this value is required, but it does not appear
+																		to be required.
+																		See <a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html">Apple documentation</a>.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">CFBundleIdentifier</div>
+																	<span class="type">string</span>
+																	<span>
+																		See <a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html">Apple documentation</a>.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">CFBundleVersion</div>
+																	<span class="type">string</span>
+																	<span>
+																		See <a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html">Apple documentation</a>.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">CFBundlePackageType</div>
+																	<span class="type">string</span>
+																	<span>
+																		See <a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html">Apple documentation</a>.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">CFBundleSignature</div>
+																	<span class="type">string</span>
+																	<span>
+																		(optional; defaults to <code>????</code>; see <a href="http://stackoverflow.com/questions/1875912/naming-convention-for-cfbundlesignature-and-cfbundleidentifier">Stack Overflow</a>.)
+																		See <a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html">Apple documentation</a>.
+																	</span>
+																</li>
+																<li class="value">
+																	<div class="name">CFBundleExecutable</div>
+																	<span class="type">string</span>
+																	<span>
+																		See <a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html">Apple documentation</a>.
+																	</span>
+																</li>
+															</ul>
+														</li>
+													</ul>
+												</li>
+											</ol>
+										</div>
+										<div class="instances">
+											<div class="label">Instances</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
 			<li class="function" jsapi:id="java">
 				<div class="name">java</div>
 				<span>Launches a Java program.</span>
