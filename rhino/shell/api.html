@@ -688,17 +688,24 @@ os.resolve(function() {
 											<div class="label">Arguments</div>
 											<ol>
 												<li class="object">
-													<div class="name">__NAME__</div>
 													<span>__DESCRIPTION__</span>
 													<div class="label">has properties:</div>
 													<ul>
+														<li class="value">
+															<div class="name">pathname</div>
+															<span class="type">Pathname</span>
+															<span>The location at which to create the bundle.</span>
+														</li>
 														<li class="object">
 															<div class="name">info</div>
 															<span>
 																An object specifying properties to be added to the
 																<code>Info.plist</code>. Properties with string values will be
 																treated as name-value pairs. Some properties allow non-string
-																values, as specified below. The following properties are required,
+																values, as specified below. The 
+																<code>CFBundlePackageType</code> property is hard-coded to
+																<code>APPL</code>, per Apple's specification.
+																The following properties are also required to be supplied,
 																per Apple's documentation (although SLIME provides a default value
 																for one):
 															</span>
@@ -735,13 +742,6 @@ os.resolve(function() {
 																	</span>
 																</li>
 																<li class="value">
-																	<div class="name">CFBundlePackageType</div>
-																	<span class="type">string</span>
-																	<span>
-																		See <a href="https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html">Apple documentation</a>.
-																	</span>
-																</li>
-																<li class="value">
 																	<div class="name">CFBundleSignature</div>
 																	<span class="type">string</span>
 																	<span>
@@ -750,6 +750,7 @@ os.resolve(function() {
 																	</span>
 																</li>
 																<li class="value">
+																	<!--	TODO	document allowed object type with command	-->
 																	<div class="name">CFBundleExecutable</div>
 																	<span class="type">string</span>
 																	<span>
