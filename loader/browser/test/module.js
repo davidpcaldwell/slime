@@ -263,7 +263,7 @@ var global = new function() {
 	}
 };
 
-var Scenario = function(p) {
+var Scenario = function() {
 	var target;
 
 	var getTarget = function() {

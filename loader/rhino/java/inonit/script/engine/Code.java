@@ -390,7 +390,7 @@ public abstract class Code {
 				return Code.Source.class.getName() + " url=" + url;
 			}
 
-			private String getSourceName(URL url, String path) {
+			private String getSourceName(URL url) {
 				if (url.getProtocol().equals("file")) {
 					try {
 						java.io.File file = new java.io.File(url.toURI());
@@ -400,6 +400,19 @@ public abstract class Code {
 					}
 				}
 				return url.toExternalForm();
+			}
+			
+			private java.net.URI toURI(URL url) {
+				//	.toURI does not work correctly for files with certain characters, like spaces.
+				//	See http://stackoverflow.com/questions/4494063/how-to-avoid-java-net-urisyntaxexception-in-url-touri
+				if (url.getProtocol().equals("file")) {
+					return new java.io.File(url.getFile()).toURI();
+				}
+				try {
+					return url.toURI();
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
 			}
 
 			public File getFile(String path) throws IOException {
@@ -415,8 +428,8 @@ public abstract class Code {
 					Long length = (connection.getContentLength() == -1) ? null : new Long(connection.getContentLength());
 					java.util.Date modified = (connection.getLastModified() == 0) ? null : new java.util.Date(connection.getLastModified());
 					return File.create(
-						new URI(new URL(this.url,path).toURI()),
-						getSourceName(url,path),
+						new URI(toURI(new URL(this.url,path))),
+						getSourceName(url),
 						length,
 						modified,
 						connection.getInputStream()
@@ -424,9 +437,6 @@ public abstract class Code {
 				} catch (IOException e) {
 					//	TODO	is this the only way to test whether the URL is available?
 					return null;
-				} catch (URISyntaxException e) {
-					//	TODO	is this the only way to test whether the URL is available?
-					throw new RuntimeException(e);
 				}
 			}
 
