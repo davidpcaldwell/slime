@@ -14,6 +14,7 @@ var parameters = jsh.script.getopts({
 	options: {
 		java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 		engine: jsh.script.getopts.ARRAY(String),
+		//	TODO	this parameter conflicts with the SLIME variable and both are used, so should resolve that
 		slime: jsh.script.file.parent.parent.parent.pathname,
 		tomcat: jsh.file.Pathname,
 		browser: false,
@@ -49,7 +50,7 @@ jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 var top = new jsh.unit.Suite({
-	name: "SLIME verification suite"
+	name: "SLIME verification suite: " + SLIME
 });
 
 var subprocess = function(p) {
