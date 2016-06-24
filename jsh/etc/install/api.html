@@ -36,8 +36,42 @@ END LICENSE
 						</li>
 					</ul>
 				</li>
+				<li class="value">
+					<div class="name">downloads</div>
+					<span class="type">directory</span>
+					<span>The directory in which to store downloaded files.</span>
+				</li>
 			</ul>
 		</div>
+		<script type="application/x.jsapi#initialize">
+			scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			scope.api = $jsapi.loader.module("module.js", {
+				api: {
+					shell: jsh.shell,
+					http: jsh.http
+				},
+				downloads: scope.downloads
+			});
+
+			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			tmpdir.getRelativePath("directory").createDirectory();
+			tmpdir.getRelativePath("directory/file").write("text", { append: false });
+
+			var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+			jsh.shell.run({
+				command: "tar",
+				arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
+				directory: tmpdir
+			});
+
+			scope.harness = {};
+			scope.harness.tar = tmpdest.getFile("directory.tar.gz");
+			scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+
+			var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
+			scope.server = server;
+		</script>
 		<div>
 			<h1>Exports</h1>
 			<ul>
@@ -137,35 +171,7 @@ END LICENSE
 						<span class="type"><a href="platform/slim/slime/rhino/file/api.html#types.directory">directory</a></span>
 						<span>The directory to which the installation was installed.</span>
 					</div>
-					<script type="application/x.jsapi#initialize">
-						scope.api = $jsapi.loader.module("module.js", {
-							api: {
-								shell: jsh.shell,
-								http: jsh.http
-							},
-							downloads: jsh.shell.TMPDIR.createTemporary({ directory: true })
-						});
-
-						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						tmpdir.getRelativePath("directory").createDirectory();
-						tmpdir.getRelativePath("directory/file").write("text", { append: false });
-
-						var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-						jsh.shell.run({
-							command: "tar",
-							arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
-							directory: tmpdir
-						});
-
-						scope.harness = {};
-						scope.harness.tar = tmpdest.getFile("directory.tar.gz");
-						scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
-
-						var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
-						scope.server = server;
-					</script>
-					<script type="application/x.jsapi#tests">
+					<script type="application/x.jsapi#tests" jsapi:id="present">
 						verify(api).is.type("object");
 						verify(api).evaluate(function() { return this.gzip; }).is.type("function");
 					</script>
@@ -199,10 +205,12 @@ END LICENSE
 
 						(function() {
 							var tmp = tmpdir();
+							verify(downloads).getFile("directory.tar.gz").is(null);
 							api.gzip({
 								url: "http://127.0.0.1:" + server.port + "/directory.tar.gz",
 								to: tmp
 							});
+							verify(downloads).getFile("directory.tar.gz").is.not(null);
 							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
 						})();
 					</script>
