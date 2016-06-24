@@ -401,7 +401,7 @@ public abstract class Code {
 				}
 				return url.toExternalForm();
 			}
-			
+
 			private java.net.URI toURI(URL url) {
 				//	.toURI does not work correctly for files with certain characters, like spaces.
 				//	See http://stackoverflow.com/questions/4494063/how-to-avoid-java-net-urisyntaxexception-in-url-touri

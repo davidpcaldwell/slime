@@ -70,9 +70,10 @@ var Verify = function(scope,vars) {
 				})();
 				return new function() {
 					this.success = (type == value);
-					this.message = (this.success)
+					this.message = prefix + ((this.success)
 						? "is type " + value
 						: "is type " + type + ", not " + value
+					);
 				};
 			});
 		}

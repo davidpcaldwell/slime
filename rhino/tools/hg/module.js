@@ -129,7 +129,7 @@ var Installation = function(environment) {
 
 		invocation.command = environment.install;
 		invocation.arguments = args;
-		
+
 		if (p.on) {
 			invocation.on = p.on;
 		}
@@ -655,7 +655,7 @@ var Installation = function(environment) {
 				}
 			});
 		};
-		
+
 		this.serve = function(p) {
 			var lock = new $context.api.java.Thread.Monitor();
 			var rv;

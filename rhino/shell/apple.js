@@ -71,7 +71,7 @@ $exports.plist = new function() {
 			root.children.push(new Value(v));
 			return document;
 		};
-		
+
 		this.decode = function(document) {
 			var decode = function recurse(value) {
 				if (value.element.type.name == "dict") {
@@ -92,9 +92,9 @@ $exports.plist = new function() {
 					return value.children[0].getString();
 				} else {
 					throw new Error("Unimplemented");
-				}				
+				}
 			}
-			
+
 			var root = document.document.getElement();
 			if (root.element.type.name != "plist") throw new Error();
 			//	TODO	check version attribute value?
@@ -115,14 +115,14 @@ $exports.osx.ApplicationBundle = function(p) {
 //		}
 		recursive: true
 	});
-	
+
 	base.getRelativePath("Contents/MacOS").createDirectory({
 		ifExists: function(dir) {
 			return false;
 		},
 		recursive: true
 	});
-	
+
 	var info = $context.api.js.Object.set({}, p.info);
 	if (!info.CFBundleSignature) info.CFBundleSignature = "????";
 	info.CFBundlePackageType = "APPL"
@@ -141,7 +141,7 @@ $exports.osx.ApplicationBundle = function(p) {
 			info.CFBundleExecutable = name;
 		}
 	}
-	
+
 	if (typeof(info.CFBundleIconFile) == "object") {
 		if (info.CFBundleIconFile.file) {
 			var resources = base.getRelativePath("Resources").createDirectory({
@@ -157,10 +157,10 @@ $exports.osx.ApplicationBundle = function(p) {
 			info.CFBundleIconFile = info.CFBundleIconFile.file.pathname.basename;
 		}
 	}
-	
+
 	var plist = $exports.plist.xml.encode(info);
 	base.getRelativePath("Contents/Info.plist").write(plist.toString(), { append: false });
-	
+
 	this.directory = base;
 }
 

@@ -205,16 +205,16 @@ var Scope = function(suite,environment) {
 				return new Loader(parsed.directory)[operation](parsed.basename,context,target);
 			};
 		},this);
-		
+
 		this.plugins = function(path) {
 			if (path) {
 				jsh.loader.plugins(new Loader(path));
 			} else {
 //				jsh.loader.plugins(new jsh.file.Loader({ directory: suite.html.parent }));
 				jsh.loader.plugins(new Loader("."));
-			}		
+			}
 		};
-		
+
 		var Directory = function(path) {
 			return new function() {
 				var directory = suite.getRelativePath(path).directory;
