@@ -20,19 +20,26 @@ END LICENSE
 		<script src="../../../loader/api/api.js"></script>
 	</head>
 	<body>
-		<div>__DESCRIPTION__</div>
+		<div>
+			Provides support for downloading and installing software; currently, only the <code>gzip</code> format is supported.
+		</div>
 		<div>
 			<h1>Context</h1>
 			<ul>
 				<li class="object">
 					<div class="name">api</div>
-					<span>__DESCRIPTION__</span>
+					<span>Other APIs used by this implementation.</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="value">
 							<div class="name">shell</div>
 							<span class="type">object</span>
 							<span>The <a href="../../../rhino/shell/api.html">rhino/shell</a> module.</span>
+						</li>
+						<li class="value">
+							<div class="name">http</div>
+							<span class="type">object</span>
+							<span>The <a href="../../../rhino/http/api.html">rhino/http</a> module.</span>
 						</li>
 					</ul>
 				</li>
@@ -81,7 +88,8 @@ END LICENSE
 					<div>
 						This method can process both local and remote files. For remote files, it is assumed that the filename of
 						the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
-						remote file has already been downloaded.
+						remote file has already been downloaded. This restriction may be removed in a future release, perhaps by
+						adding additional configuration arguments.
 					</div>
 					<div>
 						The file, when expanded, is assumed to create a single directory containing the installation. This directory
@@ -92,9 +100,10 @@ END LICENSE
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="object">
-								<span>__DESCRIPTION__</span>
+								<span></span>
 								<div class="label">has properties:</div>
 								<ul>
+									<!--	TODO	not really specified what happens if both url and file are present	-->
 									<li class="value">
 										<div class="name">url</div>
 										<span class="type">string</span>
@@ -192,6 +201,7 @@ END LICENSE
 
 						verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
 
+						//	Test a file with different download name can also be expanded, using getDestinationPath()
 						(function() {
 							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 							tmp.directory.remove();
@@ -203,6 +213,7 @@ END LICENSE
 							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
 						})();
 
+						//	Test a downloaded file
 						(function() {
 							var tmp = tmpdir();
 							verify(downloads).getFile("directory.tar.gz").is(null);
@@ -213,6 +224,8 @@ END LICENSE
 							verify(downloads).getFile("directory.tar.gz").is.not(null);
 							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
 						})();
+						
+						//	TODO	ensure when a copy has already been downloaded, the cached version is used
 					</script>
 					<script type="application/x.jsapi#destroy">
 						scope.server.stop();
