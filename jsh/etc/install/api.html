@@ -20,13 +20,15 @@ END LICENSE
 		<script src="../../../loader/api/api.js"></script>
 	</head>
 	<body>
-		<div>__DESCRIPTION__</div>
+		<div>
+			Provides support for downloading and installing software; currently, only the <code>gzip</code> format is supported.
+		</div>
 		<div>
 			<h1>Context</h1>
 			<ul>
 				<li class="object">
 					<div class="name">api</div>
-					<span>__DESCRIPTION__</span>
+					<span>Other APIs used by this implementation.</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="value">
@@ -34,10 +36,49 @@ END LICENSE
 							<span class="type">object</span>
 							<span>The <a href="../../../rhino/shell/api.html">rhino/shell</a> module.</span>
 						</li>
+						<li class="value">
+							<div class="name">http</div>
+							<span class="type">object</span>
+							<span>The <a href="../../../rhino/http/api.html">rhino/http</a> module.</span>
+						</li>
 					</ul>
+				</li>
+				<li class="value">
+					<div class="name">downloads</div>
+					<span class="type">directory</span>
+					<span>The directory in which to store downloaded files.</span>
 				</li>
 			</ul>
 		</div>
+		<script type="application/x.jsapi#initialize">
+			scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			scope.api = $jsapi.loader.module("module.js", {
+				api: {
+					shell: jsh.shell,
+					http: jsh.http
+				},
+				downloads: scope.downloads
+			});
+
+			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			tmpdir.getRelativePath("directory").createDirectory();
+			tmpdir.getRelativePath("directory/file").write("text", { append: false });
+
+			var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+			jsh.shell.run({
+				command: "tar",
+				arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
+				directory: tmpdir
+			});
+
+			scope.harness = {};
+			scope.harness.tar = tmpdest.getFile("directory.tar.gz");
+			scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+
+			var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
+			scope.server = server;
+		</script>
 		<div>
 			<h1>Exports</h1>
 			<ul>
@@ -47,7 +88,8 @@ END LICENSE
 					<div>
 						This method can process both local and remote files. For remote files, it is assumed that the filename of
 						the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
-						remote file has already been downloaded.
+						remote file has already been downloaded. This restriction may be removed in a future release, perhaps by
+						adding additional configuration arguments.
 					</div>
 					<div>
 						The file, when expanded, is assumed to create a single directory containing the installation. This directory
@@ -58,9 +100,10 @@ END LICENSE
 						<div class="label">Arguments</div>
 						<ol>
 							<li class="object">
-								<span>__DESCRIPTION__</span>
+								<span></span>
 								<div class="label">has properties:</div>
 								<ul>
+									<!--	TODO	not really specified what happens if both url and file are present	-->
 									<li class="value">
 										<div class="name">url</div>
 										<span class="type">string</span>
@@ -137,35 +180,7 @@ END LICENSE
 						<span class="type"><a href="platform/slim/slime/rhino/file/api.html#types.directory">directory</a></span>
 						<span>The directory to which the installation was installed.</span>
 					</div>
-					<script type="application/x.jsapi#initialize">
-						scope.api = $jsapi.loader.module("module.js", {
-							api: {
-								shell: jsh.shell,
-								http: jsh.http
-							},
-							downloads: jsh.shell.TMPDIR.createTemporary({ directory: true })
-						});
-
-						var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						tmpdir.getRelativePath("directory").createDirectory();
-						tmpdir.getRelativePath("directory/file").write("text", { append: false });
-
-						var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-						jsh.shell.run({
-							command: "tar",
-							arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
-							directory: tmpdir
-						});
-
-						scope.harness = {};
-						scope.harness.tar = tmpdest.getFile("directory.tar.gz");
-						scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
-
-						var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
-						scope.server = server;
-					</script>
-					<script type="application/x.jsapi#tests">
+					<script type="application/x.jsapi#tests" jsapi:id="present">
 						verify(api).is.type("object");
 						verify(api).evaluate(function() { return this.gzip; }).is.type("function");
 					</script>
@@ -186,6 +201,7 @@ END LICENSE
 
 						verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
 
+						//	Test a file with different download name can also be expanded, using getDestinationPath()
 						(function() {
 							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 							tmp.directory.remove();
@@ -197,14 +213,19 @@ END LICENSE
 							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
 						})();
 
+						//	Test a downloaded file
 						(function() {
 							var tmp = tmpdir();
+							verify(downloads).getFile("directory.tar.gz").is(null);
 							api.gzip({
 								url: "http://127.0.0.1:" + server.port + "/directory.tar.gz",
 								to: tmp
 							});
+							verify(downloads).getFile("directory.tar.gz").is.not(null);
 							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
 						})();
+						
+						//	TODO	ensure when a copy has already been downloaded, the cached version is used
 					</script>
 					<script type="application/x.jsapi#destroy">
 						scope.server.stop();

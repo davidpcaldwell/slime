@@ -525,6 +525,76 @@ $exports.Thread.Task = function(p) {
 			return p.call();
 		}
 	};
+};
+$exports.Thread.map = function(array,mapper,target,p) {
+	if (!target) target = {};
+	if (!p) p = {};
+	if (!p.callback) p.callback = function() {};
+	var rv = [];
+	var lock = new jsh.java.Thread.Monitor();
+	var running = 0;
+	var completed = 0;
+	var computations = [];
+	var threads = [];
+	var fail = false;
+	var computation = function(index) {
+		return function() {
+			new lock.Waiter({
+				until: function() {
+					if (!p.limit) return true;
+					return running < p.limit;
+				},
+				then: function() {
+					running++;
+				}
+			})();
+			var toThrow;
+			try {
+				rv[index] = mapper.call(target,array[index]);
+			} catch (e) {
+				toThrow = e;
+				fail = true;
+			}
+			new lock.Waiter({
+				until: function() {
+					return true;
+				},
+				then: function() {
+					running--;
+					completed++;
+				}
+			})();
+			if (toThrow) {
+				throw toThrow;
+			}
+		}		
+	};
+	for (var i=0; i<array.length; i++) {
+		threads.push(jsh.java.Thread.start({ 
+			call: computation(i),
+			on: {
+				//	TODO	can the below callback structure be combined with the Tell construct?
+				error: (function(index) {
+					return function(e) {
+						fail = true;
+						p.callback({ completed: completed, running: running, index: index, threw: e });
+					}
+				})(i),
+				result: (function(index) {
+					return function(rv) {
+						p.callback({ completed: completed, running: running, index: index, returned: rv });
+					}					
+				})(i)
+			}
+		}));
+	}
+	for (var i=0; i<threads.length; i++) {
+		threads[i].join();
+	}
+	if (fail) {
+		throw new Error("Failed.");
+	}
+	return rv;
 }
 
 $exports.Environment = function(_environment) {

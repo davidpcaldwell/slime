@@ -80,6 +80,22 @@ $exports.Server = function(o) {
 
 		this.load = function() {
 			return load();
+		};
+		
+		this.configuration = new function() {
+			this.get = function() {
+				return request(
+					client,
+					{ 
+						fullurl: json.url + "config.xml",
+						evaluate: function(response) {
+							return new jsh.document.Document({
+								string: response.body.stream.character().asString()
+							});
+						}
+					}
+				)
+			};
 		}
 	}
 
