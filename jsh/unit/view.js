@@ -65,7 +65,17 @@ $exports.Console = function(o) {
 			while(current) {
 				var _stack = current.getStackTrace();
 				if (current == e.javaException) {
-					console.println("Java stack trace:");
+					console.println("Java stack trace for: " + String(current.getClass().getName()));
+					if (String(current.getClass().getName()) == "inonit.script.rhino.Engine$Errors") {
+						current.dump(new JavaAdapter(
+							Packages.inonit.script.rhino.Engine.Log,
+							new function() {
+								this.println = function(s) {
+									console.println(s);
+								}
+							}
+						), "[dpc] ");
+					}
 				} else {
 					console.println("Caused by:");
 				}
