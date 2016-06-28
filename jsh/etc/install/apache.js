@@ -14,23 +14,13 @@
 var client = new jsh.http.Client();
 
 var getMirror = function() {
-	var mirror = (function() {
-		var rv = client.request({
-			url: "http://www.apache.org/dyn/closer.cgi?asjson=1",
-			evaluate: function(response) {
-				var json = eval("(" + response.body.stream.character().asString() + ")");
-				return json.preferred;
-			}
-		});
-		if (rv.body) {
-			//	jsh 0.0.4.7 compatibility
-			rv = eval("(" + rv.body.stream.character().asString() + ")");
-			rv = rv.preferred;
+	return client.request({
+		url: "http://www.apache.org/dyn/closer.cgi?asjson=1",
+		evaluate: function(response) {
+			var json = eval("(" + response.body.stream.character().asString() + ")");
+			return json.preferred;
 		}
-		return rv;
-	})();
-
-	return mirror;
+	});
 }
 
 $exports.get = function(path) {

@@ -298,6 +298,7 @@ END LICENSE
 		<div>
 			The servlet interacts with its container by assigning properties to its <code>$exports</code> object, provided in the
 			scope. Each servlet must, at a minimum, assign a function to <code>$exports.handle</code>:
+			<!--	TODO	if it doesn't assign a handle function, then what?	-->
 			<!--	TODO	indentation below is lost	-->
 			<blockquote><code>
 				$exports.handle = function(request) {

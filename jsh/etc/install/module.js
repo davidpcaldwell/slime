@@ -70,3 +70,13 @@ $exports.gzip = function(p) {
 	}
 	return installLocalGzip(p);
 };
+
+var api = $loader.file("api.js", {
+	downloads: $context.downloads
+});
+
+var apache = $loader.file("apache.js", {
+	api: api
+});
+
+$exports.apache = apache;

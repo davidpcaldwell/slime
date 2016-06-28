@@ -47,6 +47,7 @@ END LICENSE
 					<div class="name">parameters</div>
 					<span class="type">object</span>
 					<span>
+						<span>(optional; default is an object with no properties)</span>
 						A set of servlet parameters to make available to the servlet via its <code>$parameters</code> variable.
 						This object can contain properties of any type, but if the servlet is deployed and run in an ordinary
 						container, the <code>$parameters</code> variable will contain the names and values of the servlet
@@ -57,7 +58,9 @@ END LICENSE
 					<div class="name">$loader</div>
 					<span class="type"><a href="../../loader/api.html">Loader</a></span>
 					<span>
-						(optional; only affects servlets running inside <code>jsh</code>)
+						(optional)
+						<!--	TODO	specify default. Seems to be derived from file property if that is present. What if it
+										is not?	-->
 						A <code>Loader</code> which will be provided to the servlet as <code>$loader</code>.</span>
 				</li>
 				<li class="value">
@@ -197,24 +200,27 @@ END LICENSE
 					<div class="label">Arguments</div>
 					<ol>
 						<li class="object">
-							<span>An object specifying the configuration of the embedded server.</span>
+							<span>
+								(optional; default is an object with no properties)
+								An object specifying the configuration of the embedded server.
+							</span>
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="value">
 									<div class="name">base</div>
 									<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
 									<span>
-										(optional)
+										(optional; default creates and uses a temporary directory)
 										The directory to use as Tomcat's <i>base</i> directory. Analogous to environment variable
-										CATALINA_BASE. If omitted, a temporary directory will be created and used.
+										<code>CATALINA_BASE</code>.
 									</span>
 								</li>
 								<li class="value">
 									<div class="name">port</div>
 									<span class="type">number</span>
 									<span>
-										(optional) The port number on which to run the HTTP server. If omitted, an ephemeral port
-										will be used.
+										(optional; default is to choose an open ephemeral port) The port number on which to run the
+										HTTP server.
 									</span>
 								</li>
 							</ul>

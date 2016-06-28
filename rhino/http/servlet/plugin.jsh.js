@@ -65,6 +65,7 @@ plugin({
 
 		if (TOMCAT_CLASS) {
 			jsh.httpd.Tomcat = function(p) {
+				if (!p) p = {};
 				var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 
 				var base = (p.base) ? p.base : jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" });
@@ -104,7 +105,7 @@ plugin({
 		//						throw new Error("Incorrect launch.");
 		//					}
 							var servletName = "slime" + String(id++);
-							var servlet = Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
+							Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
 								Packages.javax.servlet.http.HttpServlet,
 								new function() {
 									//	TODO	could use jsh.io here

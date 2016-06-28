@@ -231,6 +231,52 @@ END LICENSE
 						scope.server.stop();
 					</script>
 				</li>
+				<li class="object">
+					<script type="application/x.jsapi#initialize">
+						var mock = new jsh.httpd.Tomcat();
+						mock.map({
+							path: "/",
+							servlets: {
+								"/*": {
+									load: function(scope) {
+										scope.$exports.handle = function(request) {
+											var host = request.headers.value("host");
+											if (request.host == "www.apache.org") {
+												if (request.path == "dyn/closer.cgi") {
+													return {
+														status: { code: 200 },
+														body: {
+															type: "application/json",
+															string: JSON.stringify({
+																preferred: "http://apache.inonit.com/"
+															})															
+														}
+													};
+												}
+											}
+											if (request.host == "apache.inonit.com") {
+												return {
+													status: { code: 200 },
+													body: $jsapi.loader.get(request.path)
+												};
+											}
+										};
+									}
+								}
+							},
+							resources: null
+						});
+					</script>
+					<div class="name">apache</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+					<script type="application/x.jsapi#tests">
+						verify(api).apache.is.type("object");
+						verify(api).apache.evaluate.property("download").is.type("function");
+					</script>
+				</li>
 			</ul>
 		</div>
 	</body>
