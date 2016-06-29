@@ -418,6 +418,44 @@ END LICENSE
 		<div class="type" jsapi:id="Loader">
 			<a class="type" name="types.Loader">Loader</a>
 			<span jsapi:id="topdescription">A <i>Loader</i> loads and executes JavaScript code from a specific source.</span>
+			<div class="type">
+				<a class="type" name="types.Loader.resource">resource</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">type</div>
+						<span class="type">string</span>
+						- OR -
+						<span class="type"><a href="#types.mime.Type">mime.Type</a></span>
+						<span>
+							(optional)
+							The MIME type of the resource.
+						</span>
+					</li>
+					<li class="value">
+						<!--	
+								TODO	should we provide default implementation of this property that sets it to the basename
+										as determined by path? Or to the full path?
+						-->
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>
+							(optional)
+							Used when evaluating the resource as code, to pass a name to the underlying JavaScript engine.
+						</span>
+					</li>
+					<li class="value">
+						<div class="name">string</div>
+						<span class="type">string</span>
+						<span>
+							(optional)
+							The content of the resource as a string.
+						</span>
+					</li>
+				</ul>
+			</div>
+
 			<div class="label">has properties:</div>
 			<ul>
 				<li class="function" jsapi:id="run">
@@ -649,6 +687,25 @@ END LICENSE
 						});
 					}
 				</script>
+				<script type="application/x.jsapi#initialize">
+					var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
+						$slime: {
+							getCode: function(path) {
+								return $jsapi.loader.string(path);
+							},
+							getCoffeeScript: function() {
+								return null;
+							}
+						},
+						$engine: void(0)
+					}) : null;
+					scope.api = $exports;
+				</script>
+				<script type="application/x.jsapi#tests">
+					if (api) {
+						verify(api).$api.is.type("object");
+					}
+				</script>
 			</div>
 		</div>
 
@@ -715,6 +772,87 @@ END LICENSE
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="function">
+									<div class="name">toString</div>
+									<span>
+										(optional)
+										Provides the <code>toString</code> for the created Loader by default.
+									</span>
+								</li>
+								<li class="function">
+									<div class="name">get</div>
+									<span>Retrieves a resource.</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">string</span>
+												<span>The path from which to load a resource.</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type"><a href="#types.Loader.resource">resource</a></span>
+										<span>The resource at the given path, or <code>null</code> if there is none.</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">child</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">list</div>
+									<span>__DESCRIPTION__</span>
+									<div class="type">
+										<a class="type" name="types.Loader.list">entry</a>
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">path</div>
+												<span class="type">string</span>
+												<span>The name of this entry.</span>
+											</li>
+											<li class="value">
+												<div class="name">loader</div>
+												<span class="type">boolean</span>
+												<span>
+													Whether this entry represents a child loader (for example, a directory or 
+													folder)
+												</span>
+											</li>
+											<li class="value">
+												<div class="name">resource</div>
+												<span class="type">boolean</span>
+												<span>Whether this entry represents a resource.</span>
+											</li>
+										</ul>
+									</div>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+									</script>
+								</li>
+								<!--
+								<li class="function">
 									<div class="name">getScript</div>
 									<span>Locates JavaScript code to execute given a path.</span>
 									<div class="arguments">
@@ -754,6 +892,7 @@ END LICENSE
 										<span class="type"><a href="#types.Loader">Loader</a></span>
 									</div>
 								</li>
+								-->
 							</ul>
 						</li>
 					</ol>
@@ -835,6 +974,34 @@ END LICENSE
 			<li class="object">
 				<div class="name">$api</div>
 				<span jsapi:id="$api" jsapi:reference="getApi('$api.api.html').getElement('top')">See <a href="$api.api.html">detailed documentation</a>.</span>
+			</li>
+			<li class="object">
+				<div class="name">mime</div>
+				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.mime.Type">mime.Type</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+					</ul>
+				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Type</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
 			</li>
 		</ul>
 	</div>

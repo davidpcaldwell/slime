@@ -42,4 +42,8 @@ $exports.download = function(p) {
 			url: getMirror() + p.path
 		});
 	}
+};
+
+$exports.find = function(p) {
+	
 }

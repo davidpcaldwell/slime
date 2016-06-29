@@ -239,9 +239,12 @@ END LICENSE
 							servlets: {
 								"/*": {
 									load: function(scope) {
+										Packages.java.lang.System.err.println("custom servlet loading ...");
 										scope.$exports.handle = function(request) {
+											Packages.java.lang.System.err.println("Got request ...");
 											var host = request.headers.value("host");
-											if (request.host == "www.apache.org") {
+											Packages.java.lang.System.err.println("host = " + host);
+											if (host == "www.apache.org") {
 												if (request.path == "dyn/closer.cgi") {
 													return {
 														status: { code: 200 },
@@ -254,18 +257,24 @@ END LICENSE
 													};
 												}
 											}
-											if (request.host == "apache.inonit.com") {
+											if (host == "apache.inonit.com") {
 												return {
 													status: { code: 200 },
 													body: $jsapi.loader.get(request.path)
 												};
 											}
 										};
+										Packages.java.lang.System.err.println("custom servlet loaded.");										
 									}
 								}
 							},
 							resources: null
 						});
+						mock.start();
+						scope.mock = mock;
+					</script>
+					<script type="application/x.jsapi#destroy">
+						scope.mock.stop();
 					</script>
 					<div class="name">apache</div>
 					<span>__DESCRIPTION__</span>
@@ -275,6 +284,24 @@ END LICENSE
 					<script type="application/x.jsapi#tests">
 						verify(api).apache.is.type("object");
 						verify(api).apache.evaluate.property("download").is.type("function");
+						verify(mock).is.type("object");
+						var client = new jsh.http.Client();
+						var PROXY = {
+							http: {
+								host: "127.0.0.1",
+								port: mock.port
+							}
+						};
+						var closer = client.request({
+							proxy: PROXY,
+							url: "http://www.apache.org/dyn/closer.cgi"
+						});
+						jsh.shell.console(closer.body.stream.character().asString());
+						var page = client.request({
+							proxy: PROXY,
+							url: "http://apache.inonit.com/api.html"							
+						});
+						jsh.shell.console(page.body.stream.character().asString());
 					</script>
 				</li>
 			</ul>

@@ -125,13 +125,7 @@ $exports.Resource = Resource;
 
 var Loader = function(underlying) {
 	return function(p) {
-		underlying.apply(this,arguments);
-//		//	TODO	NASHORN	decorate.call(this,p) did not work as p was somehow null
-//		this.resource = function(path) {
-//			var gotten = p.get(path);
-//			if (!gotten) return null;
-//			return gotten.resource;
-//		};
+		return underlying.apply(this,arguments);
 	};
 };
 
@@ -140,9 +134,11 @@ $exports.Loader = Loader($context.$rhino.Loader);
 $exports.mime = $loader.file("mime.js", {
 	_streams: _java,
 	nojavamail: $context.nojavamail,
+	$rhino: {
+		mime: $context.$rhino.mime
+	},
 	api: {
 		java: $context.api.java,
-		mime: $context.api.mime,
 		io: $exports
 	}
 });

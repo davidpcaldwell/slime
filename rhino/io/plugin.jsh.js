@@ -26,8 +26,7 @@ plugin({
 			},
 			api: {
 				js: jsh.js,
-				java: jsh.java,
-				mime: $jsh.mime
+				java: jsh.java
 			}
 		})
 	}
