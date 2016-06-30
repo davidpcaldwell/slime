@@ -468,6 +468,132 @@ END LICENSE
 										for details.
 									</span>
 								</li>
+								<li class="value">
+									<div class="name">authorization</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</li>
+								<li class="function">
+									<div class="name">spi</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+									<script type="application/x.jsapi#tests" jsapi:id="spi"><![CDATA[
+										if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+											var client = new module.Client({
+												spi: function(original) {
+													return function(p) {
+														var buffer = new context.io.Buffer();
+														//	TODO	below was buffer.writeText("Hello, Dude!"), which counterintuitively, silently
+														//			failed; consider alternatives for rhino/io
+														buffer.writeText().write("Hello, Dude!");
+														buffer.close();
+														return {
+															status: {
+																code: 200,
+																reason: "OK"
+															},
+															headers: [
+																{ name: "Content-Type", value: "text/plain" }
+															],
+															stream: buffer.readBinary()
+														}
+													}
+												}
+											});
+											var redirected = false;
+											servlet.set(function(request,response) {
+												response.setContentType("text/plain");
+												response.getWriter().print("Hello, World!");
+											});
+											var response = client.request({
+												method: "GET",
+												url: "http://127.0.0.1:" + context.port + "/"
+												,evaluate: function(response) {
+													return response;
+												}
+											});
+											//	TODO	add rhino/io Resource capability
+											verify(response.body.stream.character().asString()).is("Hello, Dude!");
+										} else {
+											test(skip("No Tomcat"));
+										}
+									]]></script>
+								</li>
+								<li class="function">
+									<div class="name">proxy</div>
+									<span>
+										(optional)
+										Specifies logic for determining a proxy server for a given request.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<div>The arguments passed to <code>request</code>.</div>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type"><a href="#types.proxy">proxy</a></span>
+										<span>The proxy server to use for the given request.</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										servlet.set(function(_request,_response) {
+											_response.getWriter().print(_request.getHeader("host"));
+										});
+										var lastArgument;
+										var client = new module.Client({
+											proxy: function(request) {
+												lastArgument = request;
+												return {
+													http: {
+														host: "127.0.0.1",
+														port: context.port
+													}
+												}
+											}
+										});
+										var host = client.request({
+											url: "http://foo.bar/baz",
+											evaluate: function(response) {
+												return response.body.stream.character().asString();
+											}
+										});
+										verify(lastArgument).url.is("http://foo.bar/baz");
+										verify(host).is("foo.bar");
+									</script>
+								</li>
+								<li class="value">
+									<div class="name">proxy</div>
+									<span class="type"><a href="#types.proxy">proxy</a></span>
+									<span>
+										(optional) 
+										A proxy server to use for all requests.
+									</span>
+									<script type="application/x.jsapi#tests">										
+										var all = new module.Client({
+											proxy: {
+												http: {
+													host: "127.0.0.1",
+													port: context.port
+												}
+											}
+										});
+										var host2 = all.request({
+											url: "http://foo.bar.baz/",
+											evaluate: function(response) {
+												return response.body.stream.character().asString();
+											}											
+										});
+										verify(host2).is("foo.bar.baz");
+									</script>
+								</li>
 							</ul>
 						</li>
 					</ol>
@@ -633,6 +759,25 @@ END LICENSE
 									provided; in that case, the result of that function is returned.
 								</span>
 							</div>
+							<script type="application/x.jsapi#tests" jsapi:id="Hello World"><![CDATA[
+								if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+									var client = new module.Client();
+									servlet.set(function(request,response) {
+										verify(request).getMethod().toUpperCase().evaluate(function() { return String(this) }).is("GET");
+										response.getWriter().print("Hello, World!");
+									});
+									var response = client.request({
+										method: "GET"
+										,url: "http://127.0.0.1:" + context.port + "/"
+										,evaluate: function(response) {
+											return response.body.stream.character().asString();
+										}
+									});
+									verify(response).is("Hello, World!");
+								} else {
+									test(skip("No Tomcat"));
+								}
+							]]></script>
 						</li>
 					</ul>
 				</div>
@@ -659,25 +804,6 @@ END LICENSE
 					};
 					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
 				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="Hello World"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
-						var client = new module.Client();
-						servlet.set(function(request,response) {
-							test(request.getMethod().toUpperCase() == "GET");
-							response.getWriter().print("Hello, World!");
-						});
-						var response = client.request({
-							method: "GET"
-							,url: "http://127.0.0.1:" + context.port + "/"
-							,evaluate: function(response) {
-								return response.body.stream.character().asString();
-							}
-						});
-						test(response == "Hello, World!");
-					} else {
-						test(skip("No Tomcat"));
-					}
-				]]></script>
 				<script type="application/x.jsapi#tests" jsapi:id="Parameters"><![CDATA[
 					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 						var client = new module.Client();
@@ -780,47 +906,6 @@ END LICENSE
 						verify(redirected,"redirected").is(true);
 					} else {
 						test(skip("No Tomcat, or WebView present"));
-					}
-				]]></script>
-				<script type="application/x.jsapi#tests" jsapi:id="spi"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
-						var client = new module.Client({
-							spi: function(original) {
-								return function(p) {
-									var buffer = new context.io.Buffer();
-									//	TODO	below was buffer.writeText("Hello, Dude!"), which counterintuitively, silently
-									//			failed; consider alternatives for rhino/io
-									buffer.writeText().write("Hello, Dude!");
-									buffer.close();
-									return {
-										status: {
-											code: 200,
-											reason: "OK"
-										},
-										headers: [
-											{ name: "Content-Type", value: "text/plain" }
-										],
-										stream: buffer.readBinary()
-									}
-								}
-							}
-						});
-						var redirected = false;
-						servlet.set(function(request,response) {
-							response.setContentType("text/plain");
-							response.getWriter().print("Hello, World!");
-						});
-						var response = client.request({
-							method: "GET",
-							url: "http://127.0.0.1:" + context.port + "/"
-							,evaluate: function(response) {
-								return response;
-							}
-						});
-						//	TODO	add rhino/io Resource capability
-						verify(response.body.stream.character().asString()).is("Hello, Dude!");
-					} else {
-						test(skip("No Tomcat"));
 					}
 				]]></script>
 			</li>

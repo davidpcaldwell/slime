@@ -11,6 +11,8 @@
 //	Contributor(s):
 //	END LICENSE
 
+var client = ($context.client) ? $context.client : new $context.api.http.Client();
+
 var file = $loader.file("api.js", $context);
 
 var addDefaults = function(p) {
@@ -57,7 +59,7 @@ $exports.gzip = function(p) {
 			if (!pathname.file) {
 				//	TODO	we could check to make sure this URL is http
 				p.on.console("Downloading from " + p.url + " to: " + $context.downloads);
-				var response = new $context.api.http.Client().request({
+				var response = client.request({
 					url: p.url
 				});
 				pathname.write(response.body.stream, { append: false });
@@ -76,6 +78,7 @@ var api = $loader.file("api.js", {
 });
 
 var apache = $loader.file("apache.js", {
+	client: client,
 	api: api
 });
 

@@ -13,6 +13,10 @@
 window.onload = function() {
 	//	TODO	Perhaps verify div class="object" li elements have div class="name"
 	//	TODO	verify the "has properties" after div class="object"
+	
+	var getJsapiAttribute = function(element,name) {
+		return element.getAttribute("jsapi:" + name);
+	}
 
 	var Markup = function Markup(base) {
 		var getDescendants = function(under,filter) {
@@ -108,6 +112,11 @@ window.onload = function() {
 						return line;
 					}
 				});
+				var id = getJsapiAttribute(element,"id");
+				if (id) {
+					//	TODO	develop better way to display this, perhaps outside the script element?
+					fixed.splice(0,0,"//\t" + id);
+				}
 				element.innerHTML = fixed.join("\n");
 				console.log(JSON.stringify(element.innerHTML));
 			});

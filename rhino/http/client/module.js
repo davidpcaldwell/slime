@@ -310,12 +310,23 @@ var Client = function(configuration) {
 
 		var myspi = (configuration && configuration.spi) ? configuration.spi(spi) : spi;
 
+		var proxy = (function() {
+			if (p.proxy) return p.proxy;
+			if (configuration && configuration.proxy) {
+				if (typeof(configuration.proxy) == "function") {
+					return configuration.proxy(p);
+				} else if (typeof(configuration.proxy) == "object") {
+					return configuration.proxy;
+				}
+			}
+		})();
+		
 		var response = myspi({
 			method: method,
 			url: url,
 			headers: headers,
 			body: p.body,
-			proxy: p.proxy,
+			proxy: proxy,
 			timeout: p.timeout
 		},cookies);
 

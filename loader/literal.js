@@ -374,6 +374,8 @@
 						if (!m.descendants) m.descendants = function() { return false; };
 						var rv = [];
 						list(this,m,{ path: [] },function(entry) {
+							//	TODO	switch to 'name' property
+							var path = entry.path;
 							if (entry.loader) {
 								rv.push({ path: entry.path, loader: new Child(entry.path) });
 							} else if (entry.resource) {
