@@ -343,7 +343,11 @@
 						var parameter = (p.child) ? p.child(prefix) : {
 							get: function(path) {
 								return argument.get(prefix + path);
-							}
+							},
+							list: (p.list) ? function(wasprefix) {
+								var nowprefix = (wasprefix) ? wasprefix + "/" + prefix : prefix;
+								return p.list(nowprefix);
+							} : null
 						};
 						return new parent.constructor(parameter);
 					}
@@ -354,14 +358,20 @@
 				var list = function(loader,m,context,callback) {
 					var all = loader.source.list();
 					for (var i=0; i<all.length; i++) {
+						var path = context.path.slice();
+						var name = all[i].path;
+						path.push(name);
 						if (m.filter(all[i])) {
-							callback(all[i]);
+							var arg = {};
+							for (var x in all[i]) {
+								arg[x] = all[i][x];
+							}
+							arg.path = path.join("/");
+							callback(arg);
 						}
 						if (all[i].loader) {
 							if (m.descendants(all[i])) {
-								var path = context.path.slice();
-								path.push(all[i].path);
-								list(new Child(all[i].path),m,{ path: path },callback);
+								list(new Child(name),m,{ path: path },callback);
 							}
 						}
 					}
@@ -375,7 +385,6 @@
 						var rv = [];
 						list(this,m,{ path: [] },function(entry) {
 							//	TODO	switch to 'name' property
-							var path = entry.path;
 							if (entry.loader) {
 								rv.push({ path: entry.path, loader: new Child(entry.path) });
 							} else if (entry.resource) {

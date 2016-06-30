@@ -415,7 +415,7 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
-		<div class="type" jsapi:id="Loader">
+		<div class="type" jsapi:id="types.Loader">
 			<a class="type" name="types.Loader">Loader</a>
 			<span jsapi:id="topdescription">A <i>Loader</i> loads and executes JavaScript code from a specific source.</span>
 			<div class="type">
@@ -687,25 +687,6 @@ END LICENSE
 						});
 					}
 				</script>
-				<script type="application/x.jsapi#initialize">
-					var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
-						$slime: {
-							getCode: function(path) {
-								return $jsapi.loader.string(path);
-							},
-							getCoffeeScript: function() {
-								return null;
-							}
-						},
-						$engine: void(0)
-					}) : null;
-					scope.api = $exports;
-				</script>
-				<script type="application/x.jsapi#tests">
-					if (api) {
-						verify(api).$api.is.type("object");
-					}
-				</script>
 			</div>
 		</div>
 
@@ -762,7 +743,7 @@ END LICENSE
 					<span>See <a href="#Loader.file">Loader.file()</a>.</span>
 				</div>
 			</li>
-			<li class="constructor">
+			<li class="constructor" jsapi:id="Loader">
 				<div class="name"><a name="exports.Loader">Loader</a></div>
 				<span>Creates a <a href="#types.Loader">Loader</a>.</span>
 				<div class="arguments">
@@ -848,8 +829,6 @@ END LICENSE
 										<span class="type">__TYPE__</span>
 										<span>__DESCRIPTION__</span>
 									</div>
-									<script type="application/x.jsapi#tests">
-									</script>
 								</li>
 								<!--
 								<li class="function">
@@ -900,6 +879,49 @@ END LICENSE
 				<div class="instances">
 					<div class="label">Instances</div>
 					<span class="type"><a href="#types.Loader">Loader</a></span>
+				</div>
+				<div jsapi:id="tests">
+					<script type="application/x.jsapi#initialize">
+						var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
+							$slime: {
+								getCode: function(path) {
+									return $jsapi.loader.string(path);
+								},
+								getCoffeeScript: function() {
+									return null;
+								}
+							},
+							$engine: void(0)
+						}) : null;
+						scope.api = $exports;
+					</script>
+					<script type="application/x.jsapi#tests">
+						if (api) {
+							var loader = new api.Loader({
+								get: function(path) {
+									if (path == "a") {
+										return {
+											string: "a"
+										}
+									} else if (path == "b/c") {
+										return {
+											string: "c"
+										}
+									}
+								},
+								list: function(prefix) {
+									if (prefix == "b") return [ { path: "c", resource: true } ];
+									return [ { path: "a", resource: true }, { path: "b", loader: true } ]
+								}
+							});
+							var listing = loader.list({ descendants: function() { return true; } } );
+							verify(listing).length.is(3);
+							verify(listing)[0].path.length.is(1);
+							verify(listing)[0].path.is("a");
+							verify(listing)[1].path.is("b");
+							verify(listing)[2].path.is("b/c");
+						}
+					</script>
 				</div>
 			</li>
 			<li class="function" jsapi:id="namespace">
