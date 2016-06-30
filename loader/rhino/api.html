@@ -127,6 +127,10 @@ END LICENSE
 								</span>
 							</div>
 						</li>
+						<li class="deprecated function">
+							<div class="name">resource</div>
+							<span>Equivalent to <code>get()</code>.</span>
+						</li>
 					</ul>
 					<script type="application/x.jsapi#tests">
 						var $rhino = jsh.$jsapi.$rhino;
@@ -156,7 +160,7 @@ END LICENSE
 				<div class="name"><a name="exports.Loader">Loader</a></div>
 				<div>
 					Creates a SLIME <a href="../api.html#types.Loader">Loader</a>. Has the same API as the platform
-					<code>Loader</code> constructor, with additional features.
+					<a href="../api.html#exports.Loader"><code>Loader</code></a> constructor, with additional features.
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
@@ -179,6 +183,63 @@ END LICENSE
 											An object representing resources and Java classes that can be loaded by this
 											Loader.
 										</span>
+									</li>
+								</ul>
+								-OR-
+								<span>An object that can return resources given paths.</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="object">
+										<div class="name">resources</div>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="function">
+												<div class="name">get</div>
+												<span>
+													Returns the resource at the given path.
+												</span>
+												<div class="arguments">
+													<div class="label">Arguments</div>
+													<ol>
+														<li class="value">
+															<span class="type">string</span>
+															<span>A path.</span>
+														</li>
+
+													</ol>
+												</div>
+												<div class="returns">
+													<div class="label">Returns</div>
+													<span class="type"><a href="#types.Resource">Resource</a></span>
+													<span>
+														The resource at the given path, or <code>null</code> if no resource is
+														located at the given path.
+													</span>
+												</div>
+											</li>
+										</ul>
+									</li>
+									<li class="function">
+										<div class="name">type</div>
+										<span>
+											(optional)
+											A method that will be invoked (with the loader itself as <code>this</code>) to
+											supply a MIME type for resources loaded by this loader.
+										</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+												<li class="value">
+													<span class="type">string</span>
+													<span>A path.</span>
+												</li>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">MIME <a href="../../loader/mime.api.html#types.type">type</a></span>
+											<span>A MIME type to use for the resource given at the given path.</span>
+										</div>
 									</li>
 								</ul>
 							</li>

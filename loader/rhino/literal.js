@@ -75,7 +75,7 @@
 			if (_modified) this.modified = _modified.getTime();
 		}
 
-		return function(p) {
+		var rv = function(p) {
 			var Code = Packages.inonit.script.engine.Code;
 			if (p._unpacked) {
 				p._code = Code.unpacked(p._unpacked);
@@ -151,7 +151,9 @@
 					return p.get(path);
 				});
 			}
-		}
+		};
+		rv.series = was.series;
+		return rv;
 	})(loader.Loader);
 
 	loader.classpath = new function() {

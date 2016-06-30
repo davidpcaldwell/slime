@@ -11,10 +11,8 @@
 //	Contributor(s):
 //	END LICENSE
 
-var client = new jsh.http.Client();
-
 var getMirror = function() {
-	return client.request({
+	return $context.client.request({
 		url: "http://www.apache.org/dyn/closer.cgi?asjson=1",
 		evaluate: function(response) {
 			var json = eval("(" + response.body.stream.character().asString() + ")");
@@ -26,7 +24,7 @@ var getMirror = function() {
 $exports.get = function(path) {
 	var url = getMirror() + path;
 	jsh.shell.echo("Downloading from " + url + " ...");
-	return client.request({
+	return $context.client.request({
 		url: url
 	});
 };

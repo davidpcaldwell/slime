@@ -408,6 +408,22 @@
 			addTopMethod.call(this,"file");
 
 			this.Loader = Loader;
+			this.Loader.series = function(list) {
+				var sources = [];
+				for (var i=0; i<list.length; i++) {
+					sources[i] = list[i].source;
+				}
+				var source = new function() {
+					this.get = function(path) {
+						for (var i=0; i<sources.length; i++) {
+							var rv = sources[i].get(path);
+							if (rv) return rv;
+						}
+						return null;
+					}
+				}
+				return new Loader(source);
+			}
 
 			this.namespace = function(string) {
 				//	This construct returns the top-level global object, e.g., window in the browser

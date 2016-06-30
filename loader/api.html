@@ -880,8 +880,41 @@ END LICENSE
 					<div class="label">Instances</div>
 					<span class="type"><a href="#types.Loader">Loader</a></span>
 				</div>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="experimental function">
+						<div class="name">series</div>
+						<span>
+							A loader that uses a series of loaders to resolve resources. For a given path, each loader is searched
+							in turn until a resource is found.
+						</span>
+						<div>
+							The created loaders currently have the following limitations:
+							<!--	TODO	address them	-->
+							<ul>
+								<li>They are not enumerable</li>
+								<li>They do not respect the <code>.child</code> implementations of their elements</li>
+								<li>They do not provide a sensible <code>.toString</code> implementation.</li>
+							</ul>
+						</div>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">Array</span>
+									<span>A list of <code>Loader</code>s</span>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">Loader</span>
+							<span>A loader that looks up resources in the given list of underlying loaders.</span>
+						</div>
+					</li>
+				</ul>
 				<div jsapi:id="tests">
-					<script type="application/x.jsapi#initialize">
+					<script type="application/x.jsapi#initialize"><![CDATA[
 						var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
 							$slime: {
 								getCode: function(path) {
@@ -894,7 +927,56 @@ END LICENSE
 							$engine: void(0)
 						}) : null;
 						scope.api = $exports;
-					</script>
+						scope.Mock = function recurse() {
+							var contents = {};
+							
+							this.add = function(path,value) {
+								var tokens = path.split("/");
+								if (tokens.length == 1) {
+									if (typeof(value) == "string") {
+										value = { string: value };
+									}
+									contents[path] = { resource: value };
+								} else {
+									if (!contents[tokens[0]]) {
+										contents[tokens[0]] = { child: new recurse() };
+									}
+									contents[tokens[0]].child.add(tokens.slice(1).join("/"), value);
+								}
+							}
+							
+							this.loader = new $exports.Loader({
+								get: function(path) {
+									var tokens = path.split("/");
+									if (tokens.length == 1) {
+										return (contents[path]) ? contents[path].resource : null;
+									} else {
+										if (contents[tokens[0]]) {
+											var loader = contents[tokens[0]].child.loader;
+											if (!loader) {
+												throw new Error("No loader at " + tokens[0] + " for " + path);
+											}
+											if (!loader.get) throw new Error("No loader.get in " + Object.keys(loader));
+											return loader.get(tokens.slice(1).join("/"));
+										}
+										return null;
+									}
+								},
+								list: function(prefix) {
+									if (prefix) {
+										var tokens = prefix.split("/");
+										return contents[tokens[0]].child.loader.source.list(tokens.slice(1).join("/"));
+									} else {
+										var rv = [];
+										for (var x in contents) {
+											var item = { path: x, resource: Boolean(contents[x].resource), loader: Boolean(contents[x].child) };
+											rv.push(item);
+										}
+									}
+								}
+							});
+						}
+					]]></script>
 					<script type="application/x.jsapi#tests">
 						if (api) {
 							var loader = new api.Loader({
@@ -920,6 +1002,18 @@ END LICENSE
 							verify(listing)[0].path.is("a");
 							verify(listing)[1].path.is("b");
 							verify(listing)[2].path.is("b/c");
+						}
+					</script>
+					<script type="application/x.jsapi#tests">
+						if (api) {
+							var mock1 = new Mock();
+							mock1.add("a", "sa");
+							var mock2 = new Mock();
+							mock2.add("b/c", "sb/c");
+							var series = api.Loader.series([mock1.loader,mock2.loader]);
+							verify(series).get("foo").is(null);
+							verify(series).get("a").string.is("sa");
+							verify(series).get("b/c").string.is("sb/c");
 						}
 					</script>
 				</div>

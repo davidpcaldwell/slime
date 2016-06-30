@@ -124,9 +124,11 @@ $exports.OutputStream = OutputStream;
 $exports.Resource = Resource;
 
 var Loader = function(underlying) {
-	return function(p) {
+	var rv = function(p) {
 		return underlying.apply(this,arguments);
 	};
+	rv.series = underlying.series;
+	return rv;
 };
 
 $exports.Loader = Loader($context.$rhino.Loader);
