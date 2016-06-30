@@ -805,7 +805,7 @@ END LICENSE
 							}
 						}
 					});
-					var api = loader.resource("api.html");
+					var api = loader.get("api.html");
 					test(api.type.toString() == "text/html");
 
 					var loaderModule = loader.module("test/Loader.js");

@@ -146,11 +146,11 @@
 				};
 			}
 			was.apply(this,arguments);
-			if (true || p._source || p.resources) {
-				this.resource = loader.$api.deprecate(function(path) {
-					return p.get(path);
-				});
-			}
+//			if (true || p._source || p.resources) {
+//				this.resource = loader.$api.deprecate(function(path) {
+//					return p.get(path);
+//				});
+//			}
 		};
 		rv.series = was.series;
 		return rv;

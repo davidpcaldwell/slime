@@ -65,7 +65,7 @@ plugin({
 															status: {
 																code: 200
 															},
-															body: (body) ? loader.resource(path) : HEAD
+															body: (body) ? loader.get(path) : HEAD
 														}
 													} else if (pathname.directory) {
 														//Packages.java.lang.System.err.println("Directory: " + pathname);

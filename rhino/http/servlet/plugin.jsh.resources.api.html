@@ -256,7 +256,7 @@ END LICENSE
 			verify(one).loader.list({ path: "WEB-INF/" })[1].is("mozilla/");
 			verify(one).loader.list({ path: "WEB-INF/" })[2].is("test/");
 			verify(one).loader.file("WEB-INF/test/1.file.js").is.not.equalTo(null);
-			verify(one).loader.resource("WEB-INF/test/1.txt").read(String).is("1");
+			verify(one).loader.get("WEB-INF/test/1.txt").read(String).is("1");
 		</script>
 		<script type="application/x.jsapi#tests">
 			verify(code,"code").Resources().is.not.equalTo(3);

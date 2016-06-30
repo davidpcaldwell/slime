@@ -216,7 +216,7 @@ plugin({
 						"/*": {
 							load: function(scope) {
 								scope.$exports.handle = function(request) {
-									var resource = loader.resource(request.path);
+									var resource = loader.get(request.path);
 									if (resource) {
 										return {
 											status: {

@@ -11,5 +11,5 @@
 //	END LICENSE
 
 $exports.resource = function(path) {
-	return $loader.resource(path);
+	return $loader.get(path);
 }

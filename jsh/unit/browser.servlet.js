@@ -154,7 +154,7 @@ $exports.handle = function(request) {
 	};
 
 	var handle = function(request) {
-		var resource = httpd.loader.resource(request.path);
+		var resource = httpd.loader.get(request.path);
 		jsh.shell.echo("browser.modules.js mapping " + request.path + " = " + resource);
 		if (resource) {
 			var type;
