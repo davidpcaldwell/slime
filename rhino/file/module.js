@@ -192,7 +192,7 @@ $exports.Loader = function(p) {
 			return "rhino/file Loader: directory=" + p.directory;
 		};
 		
-		var USE_NEW_LOADER = false;
+		var USE_NEW_LOADER = Packages.java.lang.System.getProperty("jsh.tmp.file.USE_NEW_LOADER");
 		var getFile = function(path) {
 			var file = p.directory.getFile(path);
 			//	TODO	could we modify this so that file supported Resource?

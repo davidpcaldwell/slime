@@ -146,7 +146,7 @@
 				};
 			}
 			was.apply(this,arguments);
-			if (p._source || p.resources) {
+			if (true || p._source || p.resources) {
 				this.resource = loader.$api.deprecate(function(path) {
 					return p.get(path);
 				});
