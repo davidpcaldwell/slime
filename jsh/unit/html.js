@@ -187,7 +187,7 @@ var Scope = function(suite,environment) {
 		var parse = function(path) {
 			var index = path.lastIndexOf("/");
 			var directory = path.substring(0,index);
-			var basename = path.substring(index);
+			var basename = path.substring(index+1);
 			return {
 				directory: directory,
 				basename: basename

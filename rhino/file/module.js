@@ -191,31 +191,61 @@ $exports.Loader = function(p) {
 		p.toString = function() {
 			return "rhino/file Loader: directory=" + p.directory;
 		};
-		p.resources = new function() {
-			this.toString = function() {
-				return "rhino/file Loader: directory=" + p.directory;
-			};
-
-			this.get = function(path) {
-				if (!p.directory) return null;
-				var file = p.directory.getFile(path);
-				//	TODO	could we modify this so that file supported Resource?
-				if (file) {
-					return /*new $context.api.io.Resource(*/{
-						name: p.directory.toString() + path,
-						type: p.type(file),
-						length: file.resource.length,
-						modified: file.modified,
-						read: {
-							binary: function() {
-								return file.read($context.api.io.Streams.binary);
-							}
+		
+		var USE_NEW_LOADER = false;
+		var getFile = function(path) {
+			var file = p.directory.getFile(path);
+			//	TODO	could we modify this so that file supported Resource?
+			if (file) {
+				return new $context.$rhino.io.Resource({
+					name: p.directory.toString() + path,
+					type: p.type(file),
+					length: file.resource.length,
+					modified: file.modified,
+					getInputStream: (USE_NEW_LOADER) ? function() {
+						return file.read($context.api.io.Streams.binary).java.adapt();
+					} : void(0),
+					read: {
+						binary: function() {
+							return file.read($context.api.io.Streams.binary);
 						}
-					}/*)*/;
-				}
-				return null;
+					}
+				});
 			}
-		};
+			return null;
+		}
+		if (USE_NEW_LOADER) {
+			p.get = function(path) {
+				if (!p.directory) return null;
+				return getFile(path);
+			}
+		} else {
+			p.resources = new function() {
+				this.toString = function() {
+					return "rhino/file Loader: directory=" + p.directory;
+				};
+
+				this.get = function(path) {
+					if (!p.directory) return null;
+					return getFile(path);
+	//				var file = p.directory.getFile(path);
+	//				if (file) {
+	//					return /*new $context.api.io.Resource(*/{
+	//						name: p.directory.toString() + path,
+	//						type: p.type(file),
+	//						length: file.resource.length,
+	//						modified: file.modified,
+	//						read: {
+	//							binary: function() {
+	//								return file.read($context.api.io.Streams.binary);
+	//							}
+	//						}
+	//					}/*)*/;
+	//				}
+	//				return null;
+				}
+			};
+		}
 		p.list = function() {
 			if (!p.directory) return [];
 			return p.directory.list().map(function(node) {

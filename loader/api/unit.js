@@ -825,6 +825,9 @@ $exports.Scenario = {};
 					}
 				} else {
 					var child = parts[path[0]];
+					if (!child) {
+						throw new Error("No child named " + path[0] + " when trying to find " + path.join("/") + "; parts are " + Object.keys(parts));
+					}
 					var result = child.run({
 						scope: copy(scope),
 						path: path.slice(1)

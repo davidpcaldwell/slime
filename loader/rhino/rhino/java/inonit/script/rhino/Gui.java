@@ -21,8 +21,30 @@ public class Gui {
 
 	private static class SwingGui extends Engine.RhinoDebugger.Ui {
 		private org.mozilla.javascript.tools.debugger.SwingGui delegate;
+		
+		private void workAroundOsxSwingSlowness() {
+			try {
+				for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+					if ("Nimbus".equals(info.getName())) {
+						javax.swing.UIManager.setLookAndFeel(info.getClassName());
+						break;
+					}
+				}
+			} catch (ClassNotFoundException e) {
+
+			} catch (InstantiationException e) {
+
+			} catch (IllegalAccessException e) {
+
+			} catch (javax.swing.UnsupportedLookAndFeelException e) {
+
+			}			
+		}
 
 		SwingGui(Dim dim, String title) {
+			if (System.getProperty("os.name").equals("Mac OS X")) {
+				workAroundOsxSwingSlowness();
+			}
 			this.delegate = new org.mozilla.javascript.tools.debugger.SwingGui(dim, title);
 			java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 			java.awt.Dimension size = new java.awt.Dimension((int)screenSize.getWidth() * 3/4, (int)screenSize.getHeight() * 3/4);

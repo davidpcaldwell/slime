@@ -24,11 +24,22 @@ var parameters = jsh.script.getopts({
 	}
 });
 
-var suite = new jsh.unit.Suite(new jsh.unit.part.Html({
+var definition = new jsh.unit.part.Html({
 	name: "jsh Unit Tests",
-	pathname: jsh.script.file.parent.getRelativePath("api.html"),
-	unit: parameters.options.unit
-}));
+	pathname: jsh.script.file.parent.getRelativePath("api.html")
+});
+
+var find = function(definition,name,path) {
+	if (!path) path = [];
+	if (definition.name == name) return path;
+	for (var x in definition.parts) {
+		var found = find(definition.parts[x],name,path.concat([x]));
+		if (found) return found;
+	}
+	return null;
+}
+
+var suite = new jsh.unit.Suite(definition);
 
 jsh.unit.interface.create(suite, new function() {
 	if (parameters.options.view == "chrome") {
@@ -38,5 +49,8 @@ jsh.unit.interface.create(suite, new function() {
 		};
 	} else {
 		this.view = parameters.options.view;
+	}
+	if (parameters.options.unit) {
+		this.path = find(definition,parameters.options.unit);
 	}
 });
