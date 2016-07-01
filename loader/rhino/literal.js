@@ -55,6 +55,7 @@
 			return loader.mime.Type.fromName(path);
 		}
 
+		//	Convert a Java inonit.script.engine.Code.Source.File to a resource
 		var Resource = function(_file,path) {
 			var parameter = {
 				type: getTypeFromPath(path),

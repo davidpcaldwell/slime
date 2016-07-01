@@ -13,6 +13,8 @@
 load("nashorn:mozilla_compat.js");
 
 (function() {
+	//	TODO	replace $getLoaderCode and $getCoffeeScript with $loader.getLoaderCode and $loader.getCoffeeScript to match
+	//			Rhino embedding and remove pointless transformation
 	var hasNashornErrorHack = (function() {
 		if (Packages.java.lang.System.getenv("DISABLE_NASHORN_ERROR_HACK")) return false;
 		//	TODO	this flaw has apparently been fixed in post-8u40 versions of Nashorn
@@ -162,7 +164,7 @@ load("nashorn:mozilla_compat.js");
 		var fixedScope = toScope(notNull(scope));
 		var fixedTarget = notNull(target);
 		var implementation = loaders.compile;
-		if (!implementation) throw new Error("Unknown mode: " + mode);
+		if (!implementation) throw new Error("Unknown mode: " + implementation);
 		return implementation(name,code,fixedScope,fixedTarget);
 	};
 

@@ -14,97 +14,193 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>Rhino loader</title>
+	<title>Java SLIME loader</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
+	<h1>Overview</h1>
+	<p>
+		The Java SLIME loader supports a Java-based SLIME embedding, and extends the loader to support Java-specific functions.
+	</p>
 	<div>
-		The Rhino SLIME loader contains a bundle of Java and JavaScript code that is knitted together at runtime. Users of the Rhino
-		loader can create one inside a Java host object and provide it to scripts. Inside the Java host object, an instance of
-		<code>inonit.script.rhino.Engine</code> must be created, and then
-		<code>inonit.script.rhino.Loader.load(inonit.script.rhino.Engine,inonit.script.rhino.Loader)</code> must be invoked
-		with an instance of <code>Loader</code> that knows how to locate the platform loader code (loader/literal.js) and the
-		Rhino loader script (loader/rhino/literal.js).
-	</div>
-	<div>
-		<h1>Exports</h1>
-		<div class="type">
-			<a class="type" name="types.script">script</a>
-			<span class="type">supports SLIME <a href="../api.html#types.script">script</a></span>
-			<span>
-				An object describing a script. If the <code>_in</code> property is present, it represents an input stream from
-				which the code can be read (and will supply the value for the <code>code</code> property).
-			</span>
+		<h2>Embedding</h2>
+		<p>
+			The Java SLIME loader comes with two embeddings: one for the Rhino JavaScript engine provided by Mozilla, and one for
+			the Nashorn engine included with Java 8 and up. The embeddings are expressions that evaluate to an object. They provide
+			different scope variables for implementing the embedding.
+		</p>
+		<div>
+			<h3>Rhino</h3>
+			<p>
+				The following scope variables provide the interface to the Rhino embedding:
+			</p>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="value">
-					<div class="name">_in</div>
-					<span class="type">JavaClass java.io.InputStream</span>
-					<span>An input stream from which the file can be read.</span>
+				<li class="object">
+					<div class="name">$loader</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">getLoaderCode</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">string</span>
+										<span>The path, relative to <code>loader/</code>, to source files from the SLIME loader.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">string</span>
+								<span>The source code at the given location.</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">getCoffeeScript</div>
+							<span>A function that provides access to CoffeeScript, if available.</span>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">string</span>
+								<span>The source code for CoffeeScript, or <code>null</code> if it is not present.</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+				<li class="object">
+					<div class="name">$rhino</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">script</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">getClasspath</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">JavaClass inonit.script.engine.Loader.Classes.Interface</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">getDebugger</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
 				</li>
 			</ul>
 		</div>
+		<div>
+			<h3>Nashorn</h3>
+			<p>
+				The following scope variables provide the interface to the Nashorn embedding:
+			</p>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">$classpath</div>
+					<span class="type">JavaClass inonit.script.engine.Loader.Classes.Interface</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="experimental function">
+					<div class="name">$getLoaderCode</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="experimental function">
+					<div class="name">$getCoffeeScript</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+			<p>
+				The embedder currently must also provide the Nashorn global values <code>Java</code>, <code>Packages</code> and 
+				<code>load</code> in the scope.
+			</p>
+		</div>
+	</div>
+	<div>
+		<script type="application/x.jsapi#initialize">
+			scope.module = jsh.$jsapi.$rhino;
+		</script>
+		<h1>Properties</h1>
+		<p>
+			The embedding for either engine creates an object which consists of the <a href="../api.html">SLIME loader</a>
+			augmented by a common set of Java-specific properties. The Java properties added are:
+		</p>
+		<div class="label">has properties:</div>
 		<ul>
-			<li class="function" jsapi:id="run">
-				<div class="name">run</div>
-				<span jsapi:id="description">
-					The platform loader's <a href="../api.html#exports.run"><code>run</code></a> method. Note that this version
-					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
-				</span>
+			<li class="object">
+				<div class="name">java</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
 			</li>
-			<li class="function" jsapi:id="file">
-				<div class="name">file</div>
-				<span>
-					The platform loader's <a href="../api.html#exports.file"><code>file</code></a> method.  Note that this version
-					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
-				</span>
-			</li>
-			<!--
-			<li class="function" jsapi:id="module">
-				<div class="name">module</div>
-				<span jsapi:id="description" jsapi:reference="getApi('../api.html').getElement('global/module/description')">Invokes the platform loader's <code>module</code> method.</span>
-				<div jsapi:id="description2" jsapi:reference="getApi('../api.html').getElement('Loader/module/description2')"></div>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<div>
-								The first argument to the platform loader <a href="../api.html#exports.module">module</a> method, or an object with
-								the following type:
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="value">
-										<div class="name">_code</div>
-										<span class="type">JavaClass inonit.script.engine.Code</span>
-										<span>An object describing how to load scripts and/or Java classes from this module.</span>
-									</li>
-									<li class="value">
-										<!-|-	TODO	what if this path contains a /? Where is base for loader? Where should it be?	-|->
-										<div class="name">main</div>
-										<span class="type">string</span>
-										<span>The path to the main file within this module.</span>
-									</li>
-								</ul>
-							</div>
-						</li>
-						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../api.html').getElement('Loader/module/arguments[1]')">
-							<span>The second argument to the platform loader's <code>module</code> method.</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../api.html').getElement('Loader/module/returns')">
-					<div class="label">Returns</div>
-					<span>The return value of the platform loader's <code>module</code> method.</span>
+			<li class="object" jsapi:id="io.api.html">
+				<div class="name">io</div>
+				<div jsapi:reference="getApi('io.api.html').getElement('exports')">
+					<span>See <a href="io.api.html">detailed documentation</a>.</span>
 				</div>
 			</li>
-			-->
 			<li class="constructor">
 				<div class="type">
 					<a class="type" name="types.Loader">Loader</a>
 					<span class="type">supports SLIME <a href="../api.html#types.Loader">Loader</a></span>
+					<!--	TODO	not actually a separate type; tests should be collapsed into Loader constructor	-->
 					<span>A SLIME Loader that additionally supports retrieving Java byte streams for resources.</span>
 					<div class="label">has properties:</div>
+					<!--
 					<ul>
 						<li class="function">
 							<div class="name">_stream</div>
@@ -132,6 +228,7 @@ END LICENSE
 							<span>Equivalent to <code>get()</code>.</span>
 						</li>
 					</ul>
+					-->
 					<script type="application/x.jsapi#tests">
 						var $rhino = jsh.$jsapi.$rhino;
 						verify($rhino,"$rhino").is.type("object");
@@ -159,8 +256,9 @@ END LICENSE
 				</div>
 				<div class="name"><a name="exports.Loader">Loader</a></div>
 				<div>
-					Creates a SLIME <a href="../api.html#types.Loader">Loader</a>. Has the same API as the platform
-					<a href="../api.html#exports.Loader"><code>Loader</code></a> constructor, with additional features.
+					<span>
+						Extends the SLIME <a href="../api.html#types.Loader">Loader</a> constructor to allow additional types.
+					</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
@@ -210,7 +308,7 @@ END LICENSE
 												</div>
 												<div class="returns">
 													<div class="label">Returns</div>
-													<span class="type"><a href="#types.Resource">Resource</a></span>
+													<span class="type"><a href="#types.resource">resource</a></span>
 													<span>
 														The resource at the given path, or <code>null</code> if no resource is
 														located at the given path.
@@ -237,7 +335,7 @@ END LICENSE
 										</div>
 										<div class="returns">
 											<div class="label">Returns</div>
-											<span class="type">MIME <a href="../../loader/mime.api.html#types.type">type</a></span>
+											<span class="type">MIME <a href="../../loader/api.html#types.mime.Type">type</a></span>
 											<span>A MIME type to use for the resource given at the given path.</span>
 										</div>
 									</li>
@@ -249,11 +347,7 @@ END LICENSE
 				<div class="instances">
 					<div class="label">Instances</div>
 					<span>
-						<span class="type">SLIME <a href="#types.Loader">Loader</a></span>, which may be a
-						<span class="type">Java <a href="#types.Loader">Loader</a></span>,
-						depending on the arguments. If a <code>_source</code> or <code>_code</code> property is specified, returns
-						a Java Loader with
-						additional properties. Otherwise returns a SLIME Loader without them.
+						<span class="type">SLIME <a href="#types.Loader">Loader</a></span>
 					</span>
 				</div>
 				<script type="application/x.jsapi#initialize">
@@ -263,14 +357,50 @@ END LICENSE
 				</script>
 				<div jsapi:reference="getApi('../api.html').getElement('types.Loader/tests')">
 				</div>
-				<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')">
+				<div jsapi:reference="getApi('../api.html').getElement('global/Loader/tests')">
 				</div>
+			</li>
+			<li class="object">
+				<div class="name">classpath</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
 			</li>
 			<li class="function" jsapi:id="namespace" jsapi:reference="getApi('../api.html').getElement('global/namespace')">
 				<div class="name">namespace</div>
 				<span>The platform loader's <a href="../api.html#exports.namespace"><code>namespace</code></a> method.</span>
 			</li>
+			<li class="function" jsapi:id="run">
+				<div class="name">run</div>
+				<span jsapi:id="description">
+					The platform loader's <a href="../api.html#exports.run"><code>run</code></a> method. Note that this version
+					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
+				</span>
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name">file</div>
+				<span>
+					The platform loader's <a href="../api.html#exports.file"><code>file</code></a> method.  Note that this version
+					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
+				</span>
+			</li>
 		</ul>
+		<div>
+			If the underlying engine is Rhino, the following additional properties are added:
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">getDebugger</div>
+					<span>__DESCRIPTION__</span>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+		</div>
 	</div>
 </body>
 </html>

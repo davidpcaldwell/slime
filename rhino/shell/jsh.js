@@ -66,7 +66,7 @@ $exports.echo = function(message,mode) {
 	} else if (mode.stream) {
 		console = streamToConsole(mode.stream,arguments.callee.String);
 	} else {
-		console = streamToConsole($context.api.io.Streams.stdout,arguments.callee.String);
+		console = streamToConsole($context.stdio.output,arguments.callee.String);
 	}
 
 	console(message);

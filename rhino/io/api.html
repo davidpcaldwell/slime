@@ -20,6 +20,13 @@ END LICENSE
 </head>
 <body>
 	<div>
+		Much of the content of the <code>rhino/io</code> module has been moved to the
+		<a href="../../loader/rhino/api.html">Java SLIME loader</a>, which supplies the
+		<code>Reader</code>, <code>Writer</code>, <code>OutputStream</code>, <code>Resource</code>, and <code>Loader</code>
+		exports.
+		<!--	TODO	clean up the linking	-->
+	</div>
+	<div>
 		<h1>Context</h1>
 		<div class="label">has properties:</div>
 		<ul>
@@ -76,671 +83,58 @@ END LICENSE
 	</script>
 	<div>
 		<h1>Exports</h1>
-		<div class="type">
-			<a class="type" name="types.Resource">Resource</a>
-			<span>An object from which input may be possible and to which output may be possible.</span>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="value">
-					<div class="name">type</div>
-					<span class="type">MIME <a href="mime.api.html#types.type">type</a></span>
-					<span>
-						(optional)
-						Contains the MIME type of the data that can be read from this resource, if known.
-					</span>
-				</li>
-				<li class="function">
-					<div class="name">read</div>
-					<span>Provides the content of this resource, or a stream from which to read it.</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">Streams.binary, Streams.text, the String function, or the XML function</span>
-								<span>A constant value indicating the type desired.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type"><a href="#types.binput">byte input stream</a></span>,
-						<span class="type"><a href="#types.binput">character input stream</a></span>,
-						<span class="type">String</span>,
-						or <span class="type">XML</span>
-						<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
-					</div>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">binary</div>
-							<span>
-								(if content can be read as a byte stream)
-								Reads the content of this resource as a byte stream.
-							</span>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.binput">byte input stream</a></span>
-								<span>A stream that can provide the content of this resource.</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">text</div>
-							<span>
-								(if content can be read as a character stream)
-								Reads the content of this resource as a character stream.
-							</span>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.cinput">character input stream</a></span>
-								<span>A stream that can provide the content of this resource.</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">lines</div>
-							<span>
-								(if content can be read as a character stream)
-								Iterates through the lines in this stream, with semantics equivalent to the
-								<code>readLines</code> method defined by
-								<a href="#types.cinput">character input stream</a>.
-							</span>
-							<script type="application/x.jsapi#tests">
-								var string = "Hello\nWorld";
-								var buffer = new module.Buffer();
-								buffer.writeBinary().character().write(string);
-								buffer.close();
-								var resource = buffer.readBinary().cache();
-								var lines = [];
-								resource.read.lines(function(item) {
-									lines.push(item);
-								}, { ending: "\n" });
-								test(lines[0] == "Hello");
-								test(lines[1] == "World");
-							</script>
-							<!--	TODO	document the below ability	-->
-							<script type="application/x.jsapi#tests" jsapi:id="java.util.Properties">
-								var buffer = new module.Buffer();
-
-								var p = new Packages.java.util.Properties();
-								p.put("yes", "i do");
-								p.put("laptop", "inonit");
-								p.put("laptop.manufacturer", "dell");
-								p.store(buffer.writeBinary().java.adapt(), "No comment!");
-								buffer.close();
-
-								var resource = new (buffer.readBinary()).Resource(new module.mime.Type("text","plain"));
-
-								var props = resource.read(Packages.java.util.Properties);
-								test( props.get("yes") == "i do" );
-								test( props.get("laptop") == "inonit" );
-								test( props.get("laptop.manufacturer") == "dell" );
-							</script>
-						</li>
-					</ul>
-				</li>
-				<li class="function">
-					<div class="name">write</div>
-					<span>
-						(optional: if resource is writable)
-						Writes content to this resource, or returns a stream to which content can be written to write content to
-						this resource.
-					</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">Streams.binary or Streams.text</span>,
-								<span class="type">string</span>,
-								or <span class="type">xml</span>
-								<span>
-									If the given value is a <code>string</code> or <code>xml</code>, writes the given value
-									to the resource. If the given value is <code>Streams.binary</code> or
-									<code>Streams.text</code>, opens a stream of the appropriate type for writing to the given
-									resource.
-								</span>
-							</li>
-							<li class="value">
-								<span class="type">object</span>
-								<span><a name="Resource.write.arguments[1]">
-									An argument that can be used to configure the write operation; its semantics depend on
-									the underlying implementation.
-								</a></span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">(varies)</span>
-						<span>
-							If <code>arguments[0]</code> specifies a stream to open, returns that stream; otherwise, returns
-							<code>undefined</code>.
-						</span>
-					</div>
-				</li>
-			</ul>
-		</div>
 		<ul>
 			<li class="constructor">
-				<div class="name">Resource</div>
-				<span>Creates a <a href="#types.Resource">Resource</a>.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<span>An object providing an implementation for this resource.</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">type</div>
-									<span class="type">MIME <a href="mime.api.html#types.type">type</a></span>
-									<span>
-										(optional)
-										The MIME type of this resource.
-									</span>
-								</li>
-								<li class="object">
-									<div class="name">read</div>
-									<span>An object providing an implementation for reading this resource.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">binary</div>
-											<span>Returns a byte stream representing this resource.</span>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.binput">byte input stream</a></span>
-												<span>A stream for reading this resource.</span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">text</div>
-											<span>Returns a character stream representing this resource.</span>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.cinput">character input stream</a></span>
-												<span>A stream for reading this resource.</span>
-											</div>
-										</li>
-									</ul>
-								</li>
-								<li class="object">
-									<div class="name">write</div>
-									<span>An object providing an implementation for writing to this resource.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">binary</div>
-											<span>Returns a byte stream for writing to this resource.</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">object</span>
-														<span>
-															See <a href="#Resource.write.arguments[1]">the second argument</a> to
-															Resource.write().
-														</span>
-													</li>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.boutput">byte output stream</a></span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">text</div>
-											<span>Returns a character stream for writing to this resource.</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">object</span>
-														<span>
-															See <a href="#Resource.write.arguments[1]">the second argument</a> to
-															Resource.write().
-														</span>
-													</li>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.coutput">character output stream</a></span>
-											</div>
-										</li>
-
-									</ul>
-								</li>
-							</ul>
-						</li>
-					</ol>
-				</div>
+				<div class="name">InputStream</div>
+				<span>Extends the Java SLIME loader <a href="../../loader/rhino/io.api.html">InputStream</a> constructor.</span>
 				<div class="instances">
 					<div class="label">Instances</div>
-					<span class="type"><a href="#types.Resource">Resource</a></span>
-				</div>
-			</li>
-
-			<li class="constructor">
-				<div class="name">Buffer</div>
-				<span>Creates a buffer to which bytes can be written, and later read.</span>
-				<div class="instances">
-					<div class="label">Instances</div>
+					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
-							<div class="name">close</div>
-							<span>
-								Closes the buffer so that no additional bytes can be written to it.  Until the
-								buffer is closed, an attempt to read from it cannot reach the end of the stream, but
-								will instead block waiting for more input.
-							</span>
-						</li>
-						<li class="function">
-							<div class="name">writeBinary</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.boutput">byte output stream</a></span>
-								<span>A stream which inserts bytes written to it into this buffer.</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">writeText</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.boutput">character output stream</a></span>
-								<span>A stream which inserts characters written to it into this buffer.</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">readBinary</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.binput">byte input stream</a></span>
-								<span>A stream from which the bytes in this buffer may be read.</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">readText</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.cinput">character input stream</a></span>
-								<span>A stream from which the characters in this buffer may be read.</span>
-							</div>
-						</li>
-					</ul>
-				</div>
-				<script type="application/x.jsapi#tests" jsapi:id="Buffer">
-					var buffer = new module.Buffer();
-					var writer = buffer.writeText();
-					writer.write("Buffer");
-					buffer.close();
-					var resource = buffer.readBinary().cache();
-					test(resource.read(String) == "Buffer");
-					test(resource.read(String) == "Buffer");
-				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="Buffer readLines">
-					var buffer = new module.Buffer();
-					var writer = buffer.writeText();
-					writer.write("Buffer readLines\n");
-
-					var lines = [];
-
-					buffer.readText().readLines(function(s) {
-						lines.push(s);
-						return lines;
-					}, { ending: "\n" });
-
-					test(lines.length == 1);
-
-					buffer.close();
-				</script>
-			</li>
-			<li class="object">
-				<div class="name">Streams</div>
-				<span>Provides operations for processing streams of input or output.</span>
-				<div class="type">
-					<a class="type" name="types.doutput">standard output stream</a>
-					<span class="type">supports <a href="#types.boutput">byte output stream</a>, except close()</span>
-					<span>Represents a standard output stream to which bytes and characters can be written.</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">write</div>
-							<span>Writes a string to the stream and then flushes the stream.</span>
+							<div class="name">asProperties</div>
+							<span>__DESCRIPTION__</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
-									<li class="value">
-										<span class="type">string</span>
-										<span>A string to write to this console.</span>
-									</li>
 								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="constructor">
+							<div class="name">Resource</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="instances">
+								<div class="label">Instances</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
 							</div>
 						</li>
 					</ul>
 				</div>
-				<ul>
-					<li class="object">
-						<div class="name">binary</div>
-						<span>Provides operations for processing byte streams.</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">copy</div>
-								<span>Copies a byte input stream to a byte output stream.</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type"><a href="#types.binput">byte input stream</a></span>
-											<span>A stream from which to copy bytes.</span>
-										</li>
-										<li class="value">
-											<span class="type"><a href="#types.boutput">byte output stream</a></span>
-											<span>A stream to which to copy bytes.</span>
-										</li>
-									</ol>
-								</div>
-								<div class="type">
-									<a class="type" name="types.binput">byte input stream</a>
-									A stream from which bytes may be read.
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											Closes the underlying stream.
-										</li>
-										<li class="function">
-											<div class="name">asProperties</div>
-											<span>Reads a Java properties file into a JavaScript object.</span>
-											<div>
-												Each Java property maps to a property of the returned object.  Properties are nested according to
-												the convention of delimiting property names with the dot (".") character.
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">object</span> An object containing properties corresponding to the properties
-												in the Java properties file.
-											</div>
-											<script type="application/x.jsapi#initialize">
-												var p = new Packages.java.util.Properties();
-												buffer = new scope.module.Buffer();
-												p.put("yes", "i do");
-												p.put("laptop", "inonit");
-												p.put("laptop.manufacturer", "dell");
-												p.store(buffer.writeBinary().java.adapt(), "No comment!");
-												buffer.close();
-												scope.buffer = buffer;
-											</script>
-											<script type="application/x.jsapi#tests" jsapi:id="Properties">
-												var props = buffer.readBinary().asProperties();
-												test( props.yes == "i do" );
-												test( props.laptop == "inonit" );
-												test( props.laptop.manufacturer == "dell" );
-											</script>
-										</li>
-										<li class="function">
-											<div class="name">character</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.cinput">character input stream</a></span>
-												<span>A character input stream that reads this stream.</span>
-											</div>
-										</li>
-										<li class="constructor">
-											<div class="name">Resource</div>
-											<span>Creates a resource that contains the contents of this stream.</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type"><a href="mime.api.html#types.type">type</a></span>
-														<span>The MIME type of the data in this stream.</span>
-													</li>
-												</ol>
-											</div>
-											<div class="instances">
-												<div class="label">Instances</div>
-												<span class="type"><a href="#types.Resource">Resource</a></span>
-											</div>
-										</li>
-										<li class="object">
-											<div class="name">java</div>
-											<span>Operations that bridge to Java constructs.</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="function">
-													<div class="name">adapt</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">JavaClass java.io.InputStream</span>
-														<span>A Java input stream equivalent to this stream.</span>
-													</div>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</div>
-								<div class="type">
-									<a class="type" name="types.boutput">byte output stream</a>
-									<span>A stream to which bytes may be written.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											<span>Closes the underlying stream.</span>
-										</li>
-										<li class="function">
-											<div class="name">character</div>
-											<span>Returns a character output stream that writes to this stream.</span>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.coutput">character output stream</a></span>
-											</div>
-										</li>
-										<li class="object">
-											<div class="name">java</div>
-											<span>Operations that bridge to Java constructs.</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="function">
-													<div class="name">adapt</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">JavaClass java.io.OutputStream</span>
-														<span>A Java OutputStream equivalent to this stream.</span>
-													</div>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</div>
-							</li>
-						</ul>
-					</li>
-					<li class="object">
-						<div class="name">text</div>
-						<span>Provides operations for processing character streams.</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">copy</div>
-								<span>Copies a character input stream to a character output stream.</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type"><a href="#types.cinput">character input stream</a></span>
-											<span>A stream from which to copy characters.</span>
-										</li>
-										<li class="value">
-											<span class="type"><a href="#types.coutput">character output stream</a></span>
-											<span>A stream to which to copy characters.</span>
-										</li>
-									</ol>
-								</div>
-								<div class="type">
-									<a class="type" name="types.cinput">character input stream</a>
-									<span>A stream from which characters may be read.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											<span>Closes the underlying stream.</span>
-										</li>
-										<li class="function">
-											<div class="name">readLines</div>
-											<span>
-												Iterates through the lines in this stream, sending each in succession to a callback function.
-											</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="function">
-														<span>
-															A callback function.
-														</span>
-														<div class="arguments">
-															<div class="label">Arguments</div>
-															<ol>
-																<li><span class="type">string</span> a line read from this stream.</li>
-															</ol>
-														</div>
-														<div class="returns">
-															<div class="label">Returns</div>
-															<span>If anything other than <code>undefined</code> is returned, <code>readLines</code>
-															will terminate reading the stream (and pass the value to <code>onEnd</code>; see the
-															second argument to <code>readLines</code>).</span>
-														</div>
-													</li>
-													<li class="object">
-														<span>(optional) An object representing the mode of operation of this method.</span>
-														<div class="label">has properties:</div>
-														<ul>
-															<li class="value">
-																<div class="name">ending</div>
-																<span class="type">string</span>
-																<span>
-																	(optional) The line terminator to use when parsing the stream.
-																	The underlying platform line terminator will be used if not
-																	specified.
-																</span>
-															</li>
-															<li class="function">
-																<div class="name">onEnd</div>
-																<span>
-																	(optional) A function that will be invoked when line processing terminates. The
-																	function will be invoked with this stream as <code>this</code>. The default
-																	implementation closes the stream.
-																</span>
-																<div class="arguments">
-																	<div class="label">Arguments</div>
-																	<ol>
-																		<li>
-																			(optional) The value returned from the line processing function, if
-																			processing terminated because that function returned a value (see
-																			the first argument of <code>readLines</code>).
-																		</li>
-																	</ol>
-																</div>
-															</li>
-														</ul>
-													</li>
-												</ol>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">asString</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">string</span>
-												<span>The entire content of this stream as a single string.</span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">asXml</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type">XMLList</span>
-												<span>The entire content of this stream as a single <code>XMLList</code>.</span>
-											</div>
-										</li>
-										<li class="object">
-											<div class="name">java</div>
-											<span>Operations bridging to Java constructs.</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="function">
-													<div class="name">adapt</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">JavaClass java.io.Reader</span>
-														<span>A Java Reader equivalent to this stream.</span>
-													</div>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</div>
-								<div class="type">
-									<a class="type" name="types.coutput">character output stream</a>
-									<span>A stream to which characters can be written.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">close</div>
-											<span>Closes the underlying stream.</span>
-										</li>
-										<li class="function">
-											<div class="name">write</div>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">string</span> <span>A string to write to the stream.</span>
-													</li>
-												</ol>
-											</div>
-										</li>
-										<li class="object">
-											<div class="name">java</div>
-											<span>Operations that bridge to Java constructs.</span>
-											<div class="label">has properties:</div>
-											<ul>
-												<li class="function">
-													<div class="name">adapt</div>
-													<div class="returns">
-														<div class="label">Returns</div>
-														<span class="type">JavaClass java.io.Writer</span>
-														<span>A Java Writer equivalent to this character output stream.</span>
-													</div>
-												</li>
-											</ul>
-										</li>
-									</ul>
-								</div>
-							</li>
-						</ul>
-					</li>
-					<li class="value">
-						<div class="name">stdout</div>
-						<span class="type">
-							<a href="#types.soutput">standard output stream</a>
-						</span>
-						<span>The standard output stream.</span>
-					</li>
-					<li class="value">
-						<div class="name">stderr</div>
-						<span class="type">
-							<a href="#types.soutput">standard output stream</a>
-						</span>
-						<span>The standard error stream.</span>
-					</li>
-				</ul>
+			</li>
+			<li class="constructor">
+				<div class="name">Buffer</div>
+				<span>
+					Extends the Java SLIME loader <a href="../../loader/rhino/io.api.html">Buffer</a> constructor to produce
+					<code>Buffer</code> objects that use <code>InputStream</code> objects from this module.
+				</span>
 			</li>
 			<li class="constructor">
 				<div class="name">Loader</div>
-				<span>Invokes the Java <a href="../../loader/rhino/api.html#exports.Loader">Loader</a> constructor.</span>
+				<span>
+					Invokes the Java SLIME loader <a href="../../loader/rhino/api.html#exports.Loader">Loader</a> constructor.
+				</span>
 				<script type="application/x.jsapi#tests">
 					var loader = new module.Loader({
 						resources: {
@@ -847,6 +241,63 @@ END LICENSE
 				</ul>
 			</li>
 		</ul>
+		<!--	TODO	below tests are intertwined with this module despite mostly pertaining to Java SLIME loader; refactor	-->
+		<script type="application/x.jsapi#tests">
+			var string = "Hello\nWorld";
+			var buffer = new module.Buffer();
+			buffer.writeBinary().character().write(string);
+			buffer.close();
+			var resource = buffer.readBinary().cache();
+			var lines = [];
+			resource.read.lines(function(item) {
+				lines.push(item);
+			}, { ending: "\n" });
+			test(lines[0] == "Hello");
+			test(lines[1] == "World");
+		</script>
+		<script type="application/x.jsapi#tests" jsapi:id="Buffer">
+			var buffer = new module.Buffer();
+			var writer = buffer.writeText();
+			writer.write("Buffer");
+			buffer.close();
+			var resource = buffer.readBinary().cache();
+			test(resource.read(String) == "Buffer");
+			test(resource.read(String) == "Buffer");
+		</script>
+		<script type="application/x.jsapi#initialize">
+			var p = new Packages.java.util.Properties();
+			buffer = new scope.module.Buffer();
+			p.put("yes", "i do");
+			p.put("laptop", "inonit");
+			p.put("laptop.manufacturer", "dell");
+			p.store(buffer.writeBinary().java.adapt(), "No comment!");
+			buffer.close();
+			scope.buffer = buffer;
+		</script>
+		<script type="application/x.jsapi#tests" jsapi:id="Properties">
+			var props = buffer.readBinary().asProperties();
+			test( props.yes == "i do" );
+			test( props.laptop == "inonit" );
+			test( props.laptop.manufacturer == "dell" );
+		</script>
+		<!--	TODO	document the below ability	-->
+		<script type="application/x.jsapi#tests" jsapi:id="java.util.Properties">
+			var buffer = new module.Buffer();
+
+			var p = new Packages.java.util.Properties();
+			p.put("yes", "i do");
+			p.put("laptop", "inonit");
+			p.put("laptop.manufacturer", "dell");
+			p.store(buffer.writeBinary().java.adapt(), "No comment!");
+			buffer.close();
+
+			var resource = new (buffer.readBinary()).Resource(new context.$rhino.mime.Type("text","plain"));
+
+			var props = resource.read(Packages.java.util.Properties);
+			test( props.get("yes") == "i do" );
+			test( props.get("laptop") == "inonit" );
+			test( props.get("laptop.manufacturer") == "dell" );
+		</script>
 	</div>
 </body>
 </html>

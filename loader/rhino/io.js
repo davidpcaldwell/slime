@@ -225,6 +225,7 @@ var Streams = new function() {
 	}
 };
 
+//	TODO	probably should allow name property to be passed in and then passed through
 var Resource = function(p) {
 	var binary = (function() {
 		if (p.read && p.read.binary) {
