@@ -19,6 +19,42 @@ END LICENSE
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
+	<div>
+		<h1>Context</h1>
+		<div class="label">has properties:</div>
+		<ul>
+			<li class="value">
+				<div class="name">_streams</div>
+				<span class="type">JavaClass inonit.script.runtime.io.Streams</span>
+				<span>(optional) An instance of <code>inonit.script.runtime.io.Streams</code>.</span>
+			</li>
+			<li class="value">
+				<div class="name">$rhino</div>
+				<span class="type">__TYPE__</span>
+				<span>__DESCRIPTION__</span>
+			</li>
+			<li class="object">
+				<div class="name">api</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">js</div>
+						<span>A js/object-compatible module.</span>
+					</li>
+					<li class="value">
+						<div class="name">java</div>
+						<span>A rhino/host-compatible module.</span>
+					</li>
+				</ul>
+			</li>
+			<li class="value">
+				<div class="name">nojavamail</div>
+				<span class="type">boolean</span>
+				<span>__DESCRIPTION__</span>
+			</li>
+		</ul>
+	</div>
 	<script type="application/x.jsapi#initialize">
 		var context = new function() {
 			var java = $jsapi.loader.module("../../rhino/host/", {
@@ -26,90 +62,18 @@ END LICENSE
 			});
 			if (!java) throw new Error("Not found: rhino/host/");
 
-			this.api = {
-				js:  $jsapi.loader.module("../../js/object/", { globals: true }),
-				java: java,
-				mime: jsh.$jsapi.mime
-			};
-
-			this.$java = new Packages.inonit.script.runtime.io.Streams();
+			this._streams = new Packages.inonit.script.runtime.io.Streams();
 
 			this.$rhino = jsh.$jsapi.$rhino;
+			
+			this.api = {
+				js:  $jsapi.loader.module("../../js/object/", { globals: true }),
+				java: java
+			};
 		};
 		scope.context = context;
 		scope.module = $jsapi.loader.module("module.js", context);
 	</script>
-	<div>
-		<h1>Context</h1>
-		<div class="label">has properties:</div>
-		<ul>
-			<li class="object">
-				<div class="name">api</div>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">java</div>
-						<span>A rhino/host-compatible module.</span>
-					</li>
-					<li class="value">
-						<div class="name">mime</div>
-						<span>A SLIME MIME API-compatible module.</span>
-					</li>
-				</ul>
-			</li>
-			<li class="value">
-				<div class="name">$rhino</div>
-				<span class="type">__TYPE__</span>
-				<span>__DESCRIPTION__</span>
-			</li>
-			<li class="value">
-				<div class="name">nojavamail</div>
-				<span class="type">boolean</span>
-				<span>__DESCRIPTION__</span>
-			</li>
-			<li class="value">
-				<div class="name">$java</div>
-				<span class="type">JavaClass inonit.script.runtime.io.Streams</span>
-				<span>(optional) An instance of <code>inonit.script.runtime.io.Streams</code>.</span>
-			</li>
-			<li class="object">
-				<div class="name">stdio</div>
-				<span>(optional)</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">$out</div>
-						<span class="type">JavaClass java.io.OutputStream</span>
-						<span>An output stream to use to create <code>Streams.stdout</code></span>
-					</li>
-					<li class="value">
-						<div class="name">$err</div>
-						<span class="type">JavaClass java.io.OutputStream</span>
-						<span>An output stream to use to create <code>Streams.stderr</code></span>
-					</li>
-				</ul>
-			</li>
-		</ul>
-		<script type="application/x.jsapi#context">
-			new function() {
-				var java = $jsapi.loader.module("../../rhino/host/", {
-					$rhino: jsh.$jsapi.$rhino
-				});
-				if (!java) throw new Error("Not found: rhino/host/");
-
-				this.api = {
-					js:  $jsapi.loader.module("../../js/object/", { globals: true }),
-					java: java,
-					mime: jsh.$jsapi.mime
-				};
-
-				this.$java = new Packages.inonit.script.runtime.io.Streams();
-
-				this.$rhino = jsh.$jsapi.$rhino;
-			}
-		</script>
-	</div>
 	<div>
 		<h1>Exports</h1>
 		<div class="type">
@@ -203,7 +167,7 @@ END LICENSE
 								p.store(buffer.writeBinary().java.adapt(), "No comment!");
 								buffer.close();
 
-								var resource = new (buffer.readBinary()).Resource(new context.api.mime.Type("text","plain"));
+								var resource = new (buffer.readBinary()).Resource(new module.mime.Type("text","plain"));
 
 								var props = resource.read(Packages.java.util.Properties);
 								test( props.get("yes") == "i do" );

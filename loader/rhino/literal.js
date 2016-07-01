@@ -49,7 +49,6 @@
 			java: loader.java
 		}
 	});
-//	loader.io = eval(String($javahost.getLoaderCode("rhino/io.js")));
 
 	loader.Loader = (function(was) {
 		var getTypeFromPath = function(path) {

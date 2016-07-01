@@ -21,6 +21,7 @@ END LICENSE
 		<script src="api/api.js"></script>
 	</head>
 	<body>
+		<h1>$api</h1>
 		<div jsapi:id="top">
 			<script type="application/x.jsapi#initialize">
 				var $slime = {
@@ -31,7 +32,6 @@ END LICENSE
 				scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });
 				scope.api.loadedByJsapi = true;
 			</script>
-			<h1>$api</h1>
 			<div jsapi:id="summary">
 				The <code>$api</code> object is provided to all code loaded by the platform loader. It provides basic JavaScript
 				language functionality.

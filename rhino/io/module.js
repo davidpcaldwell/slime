@@ -11,7 +11,7 @@
 //	END LICENSE
 
 //	TODO	rename this
-var _java = ($context.$java) ? $context.$java : new Packages.inonit.script.runtime.io.Streams();
+var _java = ($context._streams) ? $context._streams : new Packages.inonit.script.runtime.io.Streams();
 
 var Resource = $context.$rhino.io.Resource;
 var InputStream = function(peer) {
@@ -57,23 +57,26 @@ var Writer = $context.$rhino.io.Writer;
 var Buffer = $context.$rhino.io.Buffer;
 
 $exports.Streams = $context.$rhino.io.Streams;
-if ($context.stdio) {
-	(function() {
-		var StandardOutputStream = function(_peer) {
-			var rv = new OutputStream(_peer);
-			rv.write = function(message) {
-				var _writer = new Packages.java.io.OutputStreamWriter(_peer);
-				_writer.write(message);
-				_writer.flush();
-			};
-			delete rv.close;
-			return rv;
-		}
 
-		this.stderr = StandardOutputStream($context.stdio.$err);
-		this.stdout = StandardOutputStream($context.stdio.$out);
-	}).call($exports.Streams);
-}
+(function addDeprecatedProperties() {
+	var StandardOutputStream = function(_peer) {
+		var rv = new OutputStream(_peer);
+		rv.write = function(message) {
+			var _writer = new Packages.java.io.OutputStreamWriter(_peer);
+			_writer.write(message);
+			_writer.flush();
+		};
+		delete rv.close;
+		return rv;
+	}
+
+	if ($context.$rhino.getStdio) {
+		this.stderr = StandardOutputStream($context.$rhino.getStdio().getStandardError());
+		this.stdout = StandardOutputStream($context.$rhino.getStdio().getStandardOutput());
+		$api.deprecate(this,"stderr");
+		$api.deprecate(this,"stdout");
+	}
+}).call($exports.Streams);
 
 $exports.Buffer = function() {
 	Buffer.apply(this,arguments);

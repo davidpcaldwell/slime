@@ -26,8 +26,7 @@
 			$exports.execute = (function() {
 				if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
 				return function(/*script,scope,target*/) {
-					return (function() {
-						//	$platform and $api are in scope
+					(function() {
 						with( arguments[1] ) {
 							eval(arguments[0]);
 						}
@@ -74,11 +73,8 @@
 					};
 				}
 
-				try {
-					if (typeof($engine) != "undefined") {
-						this.Object.defineProperty.setReadOnly = $engine.Object.defineProperty.setReadOnly;
-					}
-				} catch (e) {
+				if (typeof($engine) != "undefined" && $engine.Object && $engine.Object.defineProperty && $engine.Object.defineProperty.setReadOnly) {
+					this.Object.defineProperty.setReadOnly = $engine.Object.defineProperty.setReadOnly;
 				}
 			}).call($exports);
 
@@ -402,6 +398,8 @@
 				};
 			};
 
+			this.mime = mime;
+
 			addTopMethod.call(this,"run");
 
 			//	TODO	For file, what should we do about 'this' and why?
@@ -457,8 +455,6 @@
 			//	TODO	also used by client.html unit tests
 			//	used to allow implementations to set warnings for deprecate and experimental
 			this.$api = $api;
-
-			this.mime = mime;
 		}).call(this);
 	};
 })()
