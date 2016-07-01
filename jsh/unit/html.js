@@ -261,7 +261,7 @@ var Scope = function(suite,environment) {
 			//			tests themselves.
 			var pageEnvironment = jsh.js.Object.set({}, environment, { file: apifile });
 			var subscope = new Scope(new Suite(suite.getRelativePath(path)),pageEnvironment);
-			var rv = tests.getSuite(subscope);
+			var rv = tests.getSuiteDescriptor(subscope);
 			return rv;
 		};
 

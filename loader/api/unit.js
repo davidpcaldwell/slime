@@ -706,7 +706,7 @@ $exports.Scenario = {};
 				verify.suite = $api.deprecate(function(o) {
 					var suite = new $exports.Suite(o);
 					var fire = (function(e) {
-						this.fire(e.type,e.detail);
+						this.scope.fire(e.type,e.detail);
 					}).bind(this);
 					suite.listeners.add("scenario",fire);
 					suite.listeners.add("test",fire);
@@ -719,7 +719,7 @@ $exports.Scenario = {};
 						}
 					});
 					var fire = (function(e) {
-						this.fire(e.type,e.detail);
+						this.scope.fire(e.type,e.detail);
 					}).bind(this);
 					suite.listeners.add("scenario",fire);
 					suite.listeners.add("test",fire);

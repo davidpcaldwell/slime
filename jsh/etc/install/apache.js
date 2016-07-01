@@ -43,5 +43,18 @@ $exports.download = function(p) {
 };
 
 $exports.find = function(p) {
-	
+	var name = p.path.split("/").slice(-1)[0];
+	if ($context.downloads) {
+		if ($context.downloads.getFile(name)) {
+			return $context.downloads.getFile(name);
+		}
+	}
+	var remote = new $context.client.Loader(getMirror());
+	var resource = remote.get(p.path);
+	if ($context.downloads) {
+		$context.downloads.getRelativePath(name).write(resource.read.binary(), { append: false });
+		return $context.downloads.getFile(name);
+	} else {
+		throw new Error("Unimplemented.");
+	}
 }

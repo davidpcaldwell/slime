@@ -77,9 +77,12 @@ var api = $loader.file("api.js", {
 	downloads: $context.downloads
 });
 
+api.file = $context.api.file;
+
 var apache = $loader.file("apache.js", {
 	client: client,
-	api: api
+	api: api,
+	downloads: $context.downloads
 });
 
 $exports.apache = apache;

@@ -285,23 +285,35 @@ END LICENSE
 						verify(api).apache.is.type("object");
 						verify(api).apache.evaluate.property("download").is.type("function");
 						verify(mock).is.type("object");
-						var client = new jsh.http.Client();
+						
 						var PROXY = {
 							http: {
 								host: "127.0.0.1",
 								port: mock.port
 							}
 						};
-						var closer = client.request({
-							proxy: PROXY,
-							url: "http://www.apache.org/dyn/closer.cgi"
+						
+						var mockdownloads = $jsapi.file.newTemporaryDirectory();
+						var mockclient = new jsh.http.Client({
+							proxy: PROXY
 						});
-						jsh.shell.console(closer.body.stream.character().asString());
-						var page = client.request({
-							proxy: PROXY,
-							url: "http://apache.inonit.com/api.html"							
+						var mockapi = $jsapi.loader.module("module.js", {
+							client: mockclient,
+							api: {
+								shell: jsh.shell,
+								http: jsh.http
+							},
+							downloads: mockdownloads							
 						});
-						jsh.shell.console(page.body.stream.character().asString());
+						
+						var GET_API_HTML = function() { return this.getFile("api.html") };
+						var EQUALS = function(string) { return function() { return this.read(String) == string; } };
+						verify(mockdownloads).evaluate(GET_API_HTML).is(null);
+						var file = mockapi.apache.find({ path: "api.html" });
+						var string = $jsapi.loader.string("api.html");
+						verify(file).evaluate(EQUALS(string)).is(true);
+						verify(mockdownloads).evaluate(GET_API_HTML).is.not(null);
+						verify(mockdownloads).getFile("api.html").evaluate(EQUALS(string)).is(true);
 					</script>
 				</li>
 			</ul>

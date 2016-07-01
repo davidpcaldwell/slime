@@ -420,7 +420,10 @@ var Client = function(configuration) {
 							url: url
 						});
 						if (response.status.code == 200) {
+							var length = response.headers.get("Content-Length");
+							var len = (length) ? Number(length) : null;
 							return new $context.api.io.Resource({
+								length: len,
 								read: {
 									binary: function() {
 										return response.body.stream;

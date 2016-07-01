@@ -252,6 +252,10 @@ var Resource = function(p) {
 		//	TODO	may want to do some sort of "cast" here
 		this.type = p.type;
 	}
+	
+	if (p.name) {
+		this.name = p.name;
+	}
 
 	var global = (function() { return this; })();
 
@@ -326,7 +330,7 @@ var Resource = function(p) {
 
 	if (typeof(p.length) == "number") {
 		this.length = p.length;
-	} else if (binary) {
+	} else if (typeof(p.length) == "undefined" && binary) {
 		Object.defineProperty(this, "length", {
 			get: function() {
 				//	TODO	use something from $api
