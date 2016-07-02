@@ -17,7 +17,7 @@ $set(function(p) {
 	});
 	var servlet = (function() {
 		if (p.servlet.pathname && p.servlet.pathname.file) {
-			return { $loader: new jsh.file.Loader({ directory: p.servlet.parent }), path: p.servlet.pathname.basename };
+			return { $loader: new jsh.file.Loader({ directory: p.servlet.pathname.file.parent }), path: p.servlet.pathname.basename };
 		} else if (p.servlet.$loader) {
 			return { $loader: p.servlet.$loader, path: p.servlet.path }
 		} else if (p.servlet.resource) {
