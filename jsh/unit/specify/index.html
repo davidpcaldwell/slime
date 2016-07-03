@@ -2,8 +2,18 @@
 <html>
 	<head>
 		<title>Specification Editor</title>
+		<script>
+			window.addEventListener('load', function() {
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET","pathname",false);
+				xhr.send();
+				debugger;
+				document.getElementById("target").src = window.location + "filesystem/" + xhr.responseText;				
+			});
+		</script>
 	</head>
 	<body>
 		<div>Your specification</div>
+		<iframe id="target"></iframe>
 	</body>
 </html>
