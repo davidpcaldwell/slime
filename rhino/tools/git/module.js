@@ -411,7 +411,7 @@ var LocalRepository = function(o) {
 }
 
 $exports.Repository = function(p) {
-	if (p.local) {
+	if (p.local || p.directory) {
 		return new LocalRepository(p);
 	} else if (p.remote) {
 		return new RemoteRepository(p);
@@ -422,4 +422,4 @@ $exports.Repository = function(p) {
 
 $exports.init = function(p) {
 	return installation.init(p);
-}
+};
