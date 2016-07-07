@@ -16,8 +16,16 @@
 				xhr.open("GET","../../../../",false);
 				xhr.send();
 				var settings = JSON.parse(xhr.responseText);
-				document.getElementById("target").src = window.location + "../../../../filesystem/" + settings.api.substring(1);
-				debugger;
+				document.getElementById("target").src = window.location + "../../../../../../filesystem/" + settings.api.substring(1);
+
+				var base = inonit.loader.base.split("/").slice(0,-3).join("/") + "/";
+
+				if (settings.debug) {
+					var loader = new inonit.loader.Loader(base);
+					loader.run("slime/jsh/unit/specify/index.html.test.js", {
+						$loader: new loader.Child("slime/")
+					});
+				}
 			});
 		</script>
 	</head>

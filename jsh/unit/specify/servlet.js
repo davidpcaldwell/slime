@@ -36,9 +36,10 @@ $exports.handle = function(request) {
 			body: $loader.get(request.path)
 		}
 	}
+
 	var slimeMatcher = /^slime\/(.*)/;
 	var slimeMatch = slimeMatcher.exec(request.path);
-	if (slimeMatcher) {
+	if (slimeMatch) {
 		var rv = slime.get(slimeMatch[1]);
 		if (rv) {
 			return {
@@ -51,6 +52,7 @@ $exports.handle = function(request) {
 			}
 		}		
 	}
+
 	var filesystem = /^filesystem\/(.*)/
 	var match = filesystem.exec(request.path);
 	if (match) {

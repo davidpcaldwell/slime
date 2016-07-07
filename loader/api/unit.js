@@ -739,9 +739,11 @@ $exports.Scenario = {};
 				}
 			}
 
+			var c = context;
 			if (!next) {
 				return part.after(vscope.success,local);
 			} else {
+				part.after(vscope.success,local);
 //				next(part.after(vscope.success,local));
 			}
 		}
