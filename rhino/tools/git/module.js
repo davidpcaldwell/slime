@@ -49,14 +49,8 @@ var git = function(p) {
 	return installation.git(p);
 };
 
-var RemoteRepository = function(o) {
-	this.toString = function() {
-		return "git remote: " + o.remote;
-	}
-
+var Repository = function(o) {
 	var environment = (o && o.environment) ? o.environment : {};
-
-	this.reference = o.remote;
 
 	this.clone = function(p) {
 		if (!p.to) {
@@ -69,10 +63,20 @@ var RemoteRepository = function(o) {
 			environment: jsh.js.Object.set({}, jsh.shell.environment, environment)
 		});
 		return new LocalRepository({ local: p.to.directory });
+	}	
+};
+
+var RemoteRepository = function(o) {
+	Repository.call(this,o);
+	this.toString = function() {
+		return "git remote: " + o.remote;
 	}
+
+	this.reference = o.remote;
 };
 
 var LocalRepository = function(o) {
+	Repository.call(this,o);
 	var directory = (function() {
 		if (o.directory) return o.directory;
 		if (o.local) return $api.deprecate(function() {
@@ -407,7 +411,7 @@ var LocalRepository = function(o) {
 }
 
 $exports.Repository = function(p) {
-	if (p.local) {
+	if (p.local || p.directory) {
 		return new LocalRepository(p);
 	} else if (p.remote) {
 		return new RemoteRepository(p);
@@ -418,4 +422,4 @@ $exports.Repository = function(p) {
 
 $exports.init = function(p) {
 	return installation.init(p);
-}
+};

@@ -18,5 +18,12 @@ plugin({
 		global.git = $loader.module("module.js", {
 			program: jsh.shell.PATH.getCommand("git")
 		});
+		global.git.jsh = {};
+		global.git.jsh.credentialHelper = [
+			jsh.shell.java.jrunscript.toString(),
+			jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+			"jsh",
+			jsh.shell.jsh.src.getRelativePath("rhino/tools/git/credential-helper.jsh.js")
+		].join(" ")
 	}
 })

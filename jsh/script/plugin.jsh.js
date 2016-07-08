@@ -46,9 +46,9 @@ plugin({
 			arguments: jsh.java.Array.adapt($jsh.getInvocation().getArguments()).map(function(s) { return String(s); }),
 		}, source));
 		jsh.shell.getopts = $api.deprecate(jsh.script.getopts);
-		jsh.script.Application.run = function(descriptor) {
+		jsh.script.Application.run = function(descriptor,args) {
 			try {
-				return new jsh.script.Application(descriptor).run.apply(null, jsh.script.arguments);
+				return new jsh.script.Application(descriptor).run.apply(null, (args) ? args : jsh.script.arguments);
 			} catch (e) {
 				if (e.usage) {
 					jsh.shell.echo("Usage: " + jsh.script.file + " <command> [arguments]");

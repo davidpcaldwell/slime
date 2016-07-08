@@ -77,12 +77,62 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
+			<script type="application/x.jsapi#initialize">
+				scope.remotes = $jsapi.file.newTemporaryDirectory();
+				//	TODO	provide $jsapi accessor for this
+				var port = jsh.ip.getEphemeralPort().number;
+				var process;
+				var lock = new jsh.java.Thread.Monitor();
+				jsh.java.Thread.start(function() {
+					jsh.shell.run({
+						command: "git",
+						arguments: [
+							"daemon",
+							"--port=" + port,
+							"--base-path=" + scope.remotes,
+							"--export-all"
+						],
+						on: {
+							start: function(e) {
+								lock.Waiter({
+									until: function() { 
+										return true;
+									},
+									then: function() {
+										jsh.shell.console("started process");
+										process = e;
+									}
+								})()
+							}
+						}
+					})
+				});
+				lock.Waiter({
+					until: function() {
+						return process;
+					},
+					then: function() {						
+					}
+				})();
+				scope.daemon = {
+					process: process,
+					port: port
+				};
+				jsh.shell.console("daemon = " + scope.daemon);
+			</script>
+			<script type="application/x.jsapi#destroy">
+				jsh.shell.console("destroying daemon");
+				scope.daemon.process.kill();
+			</script>
 			<div class="type">
 				<a class="type" name="types.Repository">Repository</a>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
 				<ul>
 				</ul>
+				<script type="application/x.jsapi#tests">
+					verify("Repository").is("Repository");
+				</script>
 			</div>
 			<div class="type">
 				<a class="type" name="types.RemoteRepository">__NAME__</a>
@@ -90,6 +140,23 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<ul>
 				</ul>
+				<script type="application/x.jsapi#initialize">
+					var dir = scope.remotes.getRelativePath("RemoteRepository").createDirectory();
+					dir.getRelativePath("a").write("a", { append: false });
+					var host = module.init({ pathname: dir.pathname });
+					host.add({ path: "a" });
+					host.commit({
+						all: true,
+						message: "RemoteRepository a"
+					});
+					var remote = new module.Repository({ remote: "git://127.0.0.1:" + scope.daemon.port + "/RemoteRepository" });
+					scope.remote = remote;
+				</script>
+				<script type="application/x.jsapi#tests">
+					var to = $jsapi.file.newTemporaryDirectory().pathname;
+					remote.clone({ to: to });
+					verify(to).directory.getFile("a").read(String).is("a");
+				</script>
 			</div>
 			<div class="type">
 				<a class="type" name="types.LocalRepository">LocalRepository</a>
