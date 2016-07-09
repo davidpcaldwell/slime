@@ -76,16 +76,34 @@ $loader.run("jsh/unit/browser/webview.js", {}, {
 	}
 });
 
+var initial = new unit.Scenario();
+initial.test({
+	check: function(verify) {
+		verify(document).getElementById("target").contentDocument.title.is("__TITLE__");
+		verify(document).getElementById("title").innerHTML.is("__TITLE__");		
+	}
+});
+
+var title = new unit.Scenario();
+title.test({
+	check: function(verify) {
+		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
+	}	
+});
+title.test({
+	setup: function() {
+		unit.fire.click(document.getElementById("title"));
+	},
+	check: function(verify) {
+		verify(document).getElementById("title").inonit.inline.is(true);
+	}
+});
+
 var suite = new api.Suite({
 	name: "Suite",
 	parts: {
-		all: {
-			execute: function(scope,verify) {
-				verify(1).is(1);
-				verify(document).getElementById("target").contentDocument.title.is("__TITLE__");
-				verify(document).getElementById("title").innerHTML.is("__TITLE__");
-			}
-		}
+		initial: initial,
+		title: title
 	}
 });
 

@@ -9,6 +9,7 @@
 		<script>
 			window.addEventListener('load', function() {
 				//	TODO	CORS
+				//	TODO	template loaded for missing content contains SLIME license
 				document.domain = document.domain;
 
 				var xhr = new XMLHttpRequest();
@@ -37,9 +38,50 @@
 					document.getElementById("title").innerHTML = content.title;
 				});
 
+				var inline = function(callback) {
+					var element = this;
+					if (this.inonit && this.inonit.inline) return;
+					var html = this.innerHTML;
+					this.innerHTML = "";
+					var input = document.createElement("input");
+					input.value = html;
+					this.appendChild(input);
+					input.addEventListener("keydown", function(e) {
+						if (e.keyIdentifier == "Enter") {
+							element.innerHTML = this.value;
+							element.inonit = null;
+							if (callback) callback();
+						}
+					});
+					this.inonit = { inline: true };
+				};
+
 				document.getElementById("target").addEventListener("load", function(e) {
 					resize();
 					title();
+
+					document.getElementById("title").addEventListener("click", function(e) {
+						if (false) {
+							//	TODO	why does this not work?
+							this.contentEditable = "true";
+						} else {
+							var self = this;
+							inline.call(this,function() {
+								var content = document.getElementById("target").contentDocument;
+								var title = content.getElementsByTagName("title");
+								if (title.length == 0) {
+									//	TODO	probably add one
+									throw new Error("No title element in content");
+								} else {
+									title[0].innerHTML = self.innerHTML;
+								}
+							});
+						}
+					});
+
+					this.contentDocument.addEventListener("click", function(e) {
+						debugger;
+					});
 				});
 
 				document.getElementById("target").src = window.location + "../../../../../../filesystem/" + settings.api.substring(1);
@@ -58,7 +100,7 @@
 	<body>
 		<div>Your specification</div>
 		<div>
-			<h1 id="title"></h1>
+			<div id="title"></div>
 			<iframe id="target"></iframe>
 		</div>
 	</body>
