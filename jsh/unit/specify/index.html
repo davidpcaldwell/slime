@@ -8,6 +8,9 @@
 		<script src="../../../loader/browser/client.js"></script>
 		<script>
 			window.addEventListener('load', function() {
+				//	TODO	CORS
+				document.domain = document.domain;
+
 				var xhr = new XMLHttpRequest();
 				xhr.open("GET","../../../../$reload",false);
 				xhr.send();
@@ -16,6 +19,8 @@
 				xhr.open("GET","../../../../",false);
 				xhr.send();
 				var settings = JSON.parse(xhr.responseText);
+				document.getElementById("target").addEventListener("load", function(e) {
+				});
 				document.getElementById("target").src = window.location + "../../../../../../filesystem/" + settings.api.substring(1);
 
 				var base = inonit.loader.base.split("/").slice(0,-3).join("/") + "/";

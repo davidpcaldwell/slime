@@ -82,6 +82,7 @@ var suite = new api.Suite({
 		all: {
 			execute: function(scope,verify) {
 				verify(1).is(1);
+				verify(document).getElementById("target").contentDocument.title.is("__TITLE__");
 			}
 		}
 	}
