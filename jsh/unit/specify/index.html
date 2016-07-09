@@ -19,8 +19,29 @@
 				xhr.open("GET","../../../../",false);
 				xhr.send();
 				var settings = JSON.parse(xhr.responseText);
-				document.getElementById("target").addEventListener("load", function(e) {
+
+				var react = function(f) {
+					return function() {
+						var iframe = document.getElementById("target");
+						var content = iframe.contentDocument;
+						f(iframe,content);
+					};
+				}
+
+				var resize = react(function(iframe,content) {
+					//	TODO	does not work
+					iframe.height = content.height;
 				});
+
+				var title = react(function(iframe,content) {
+					document.getElementById("title").innerHTML = content.title;
+				});
+
+				document.getElementById("target").addEventListener("load", function(e) {
+					resize();
+					title();
+				});
+
 				document.getElementById("target").src = window.location + "../../../../../../filesystem/" + settings.api.substring(1);
 
 				var base = inonit.loader.base.split("/").slice(0,-3).join("/") + "/";
@@ -36,6 +57,9 @@
 	</head>
 	<body>
 		<div>Your specification</div>
-		<iframe id="target"></iframe>
+		<div>
+			<h1 id="title"></h1>
+			<iframe id="target"></iframe>
+		</div>
 	</body>
 </html>
