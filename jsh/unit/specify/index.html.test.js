@@ -91,11 +91,28 @@ title.test({
 	}	
 });
 title.test({
-	setup: function() {
+	run: function() {
 		unit.fire.click(document.getElementById("title"));
 	},
 	check: function(verify) {
 		verify(document).getElementById("title").inonit.inline.is(true);
+	}
+});
+title.test({
+	setup: function() {
+		document.getElementById("title").getElementsByTagName("input")[0].value = "";
+	},
+	run: function() {
+		document.getElementById("title").getElementsByTagName("input")[0].value = "foo";
+		unit.fire.keydown(document.getElementById("title").getElementsByTagName("input")[0], {
+			key: "Enter"
+		});
+	},
+	check: function(verify) {
+		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
+		verify(document).getElementById("title").innerHTML.is("foo");
+		verify(document).getElementById("target").contentDocument.title.is("foo");
+		verify(document).getElementById("target").contentDocument.getElementsByTagName("title")[0].innerHTML.is("foo");
 	}
 });
 

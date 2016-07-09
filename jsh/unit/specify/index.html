@@ -47,7 +47,7 @@
 					input.value = html;
 					this.appendChild(input);
 					input.addEventListener("keydown", function(e) {
-						if (e.keyIdentifier == "Enter") {
+						if (e.key == "Enter") {
 							element.innerHTML = this.value;
 							element.inonit = null;
 							if (callback) callback();
