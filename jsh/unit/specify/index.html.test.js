@@ -95,16 +95,16 @@ title.test({
 		unit.fire.click(document.getElementById("title"));
 	},
 	check: function(verify) {
-		verify(document).getElementById("title").inonit.inline.is(true);
+		verify(document).getElementById("title").contentEditable.is("true");
 	}
 });
 title.test({
 	setup: function() {
-		document.getElementById("title").getElementsByTagName("input")[0].value = "";
+		document.getElementById("title").innerHTML = "";
 	},
 	run: function() {
-		document.getElementById("title").getElementsByTagName("input")[0].value = "foo";
-		unit.fire.keydown(document.getElementById("title").getElementsByTagName("input")[0], {
+		document.getElementById("title").innerHTML = "foo";
+		unit.fire.keydown(document.getElementById("title"), {
 			key: "Enter"
 		});
 	},
