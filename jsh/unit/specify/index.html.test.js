@@ -123,11 +123,39 @@ selection.target(new function() {
 		this.description = content.getElementsByTagName("div")[0];
 		this.contextHeader = content.getElementsByTagName("h1")[0];
 		this.exportsHeader = content.getElementsByTagName("h1")[1];
+	};
+
+	this.isSelected = function(element) {
+		//	TODO	DRY violation
+		var dummy = document.createElement("div");
+		dummy.style.backgroundColor = "#c0c0ff";
+		return element.style.backgroundColor == dummy.style.backgroundColor;
 	}
 });
 selection.test({
 	check: function(verify) {
+		var page = this;
 		verify(this).content.description.innerHTML.is("__DESCRIPTION__");
+		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(false);
+	}
+});
+selection.test({
+	run: function() {
+		unit.fire.click(this.content.description);
+	},
+	check: function(verify) {
+		var page = this;
+		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(true);
+	}
+});
+selection.test({
+	run: function() {
+		unit.fire.click(this.content.contextHeader);
+	},
+	check: function(verify) {
+		var page = this;
+		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(false);
+		verify(this).content.contextHeader.evaluate(function() { return page.isSelected(this); }).is(true);
 	}
 });
 
