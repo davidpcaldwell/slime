@@ -31,6 +31,31 @@ window.addEventListener('load', function() {
 
     window.contenteditable = true;
 
+    var selection = (function() {
+        var state = new function() {
+            var current;
+
+            this.is = function(element) {
+            	return current && current.element == element;
+            }
+            
+            this.select = function(element) {
+				if (current) current.deselect();
+				current = new function() {
+					this.element = element;
+
+					var was = element.style.backgroundColor;
+					element.style.backgroundColor = "#c0c0ff";
+					
+					this.deselect = function() {
+						element.style.backgroundColor = was;
+					}
+				};
+            };
+        };
+        return state;
+    })();
+
     var inline = function(callback) {
         var element = this;
 
@@ -67,13 +92,14 @@ window.addEventListener('load', function() {
         resize();
         title();
 
+        var content = document.getElementById("target").contentDocument;
+
         document.getElementById("title").addEventListener("click", function(e) {
             if (false) {
                 this.contentEditable = "true";
             } else {
                 var self = this;
                 inline.call(this,function() {
-                    var content = document.getElementById("target").contentDocument;
                     var title = content.getElementsByTagName("title");
                     if (title.length == 0) {
                         //	TODO	probably add one
@@ -86,18 +112,21 @@ window.addEventListener('load', function() {
         });
 
         this.contentDocument.addEventListener("click", function(e) {
-            debugger;
+			if (!selection.is(e.target)) {
+				selection.select(e.target);
+			}
         });
+        
+
+		var base = inonit.loader.base.split("/").slice(0,-3).join("/") + "/";
+
+		if (settings.debug) {
+			var loader = new inonit.loader.Loader(base);
+			loader.run("slime/jsh/unit/specify/index.html.test.js", {
+				$loader: new loader.Child("slime/")
+			});
+		}
     });
 
     document.getElementById("target").src = window.location + "../../../../../../filesystem/" + settings.api.substring(1);
-
-    var base = inonit.loader.base.split("/").slice(0,-3).join("/") + "/";
-
-    if (settings.debug) {
-        var loader = new inonit.loader.Loader(base);
-        loader.run("slime/jsh/unit/specify/index.html.test.js", {
-            $loader: new loader.Child("slime/")
-        });
-    }
 });

@@ -116,11 +116,27 @@ title.test({
 	}
 });
 
+var selection = new unit.Scenario();
+selection.target(new function() {
+	this.content = new function() {
+		var content = document.getElementById("target").contentDocument;
+		this.description = content.getElementsByTagName("div")[0];
+		this.contextHeader = content.getElementsByTagName("h1")[0];
+		this.exportsHeader = content.getElementsByTagName("h1")[1];
+	}
+});
+selection.test({
+	check: function(verify) {
+		verify(this).content.description.innerHTML.is("__DESCRIPTION__");
+	}
+});
+
 var suite = new api.Suite({
 	name: "Suite",
 	parts: {
 		initial: initial,
-		title: title
+		title: title,
+		selection: selection
 	}
 });
 
