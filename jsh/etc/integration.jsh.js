@@ -15,7 +15,7 @@ if (jsh.test && jsh.test.requireBuiltShell) {
 }
 var parameters = jsh.script.getopts({
 	options: {
-		src: jsh.script.file.getRelativePath("../.."),
+		src: jsh.script.file.parent.parent.parent.pathname,
 		rhino: jsh.file.Pathname,
 		part: String,
 		view: "console"
@@ -33,6 +33,23 @@ var CATALINA_HOME = (function() {
 })();
 
 var src = parameters.options.src.directory;
+var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
+
+var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
+
+//	TODO	this next line should go elsewhere
+var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
+
+var compileAddClasses = jsh.js.constant(function() {
+	var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	jsh.shell.console("Compiling AddClasses ...");
+	jsh.java.tools.javac({
+		destination: classes.pathname,
+		sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/test/addClasses/java")]),
+		arguments: [src.getRelativePath("jsh/test/addClasses/java/test/AddClasses.java")]
+	});
+	return classes;
+});
 
 var scenario = new jsh.unit.Suite({
 	name: "jsh Integration Tests"
@@ -42,8 +59,23 @@ scenario.part("jsh.shell", jsh.unit.part.Html({
 	pathname: src.getRelativePath("rhino/shell/test/plugin.jsh.integration.api.html")
 }));
 
-//	TODO	this next line should go elsewhere
-var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
+scenario.part("jsh.loader.java", {
+	execute: function(scope,verify) {
+		var result = jsh.shell.jsh({
+			fork: true,
+			script: src.getFile("jsh/test/addClasses/addClasses.jsh.js"),
+			arguments: ["-classes",compileAddClasses()]
+		});
+		verify(result).status.is(0);
+	}
+});
+
+scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
+	src: src,
+	RHINO_LIBRARIES: RHINO_LIBRARIES,
+	LINE_SEPARATOR: LINE_SEPARATOR,
+	getClasses: compileAddClasses
+}));
 
 var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
@@ -153,30 +185,6 @@ ScriptVerifier({
 		verify(json)[0].is("jsh");
 	}
 });
-
-var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
-
-var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
-
-var compileAddClasses = jsh.js.constant(function() {
-	var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
-	jsh.shell.console("Compiling AddClasses ...");
-	debugger;
-	jsh.shell.console("jsh.java.tools.javac = " + jsh.java.tools.javac);
-	jsh.java.tools.javac({
-		destination: classes.pathname,
-		sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/test/addClasses/java")]),
-		arguments: [src.getRelativePath("jsh/test/addClasses/java/test/AddClasses.java")]
-	});
-	return classes;
-});
-
-scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
-	src: src,
-	RHINO_LIBRARIES: RHINO_LIBRARIES,
-	LINE_SEPARATOR: LINE_SEPARATOR,
-	getClasses: compileAddClasses
-}));
 
 if (CATALINA_HOME) {
 	ScriptVerifier({
@@ -535,46 +543,6 @@ if (CATALINA_HOME) {
 	}
 } else {
 	console("No CATALINA_HOME: not running httpd integration tests.");
-}
-
-//console("Compiling AddClasses to: " + classes);
-//jsh.shell.console("Compiling AddClasses ...");
-//platform.jdk.compile(compileOptions.concat([
-//	"-d", classes.getCanonicalPath(),
-//	"-sourcepath", [
-//		String(new File(SLIME_SRC,"jsh/test/addClasses/java").getCanonicalPath())
-//	].join(colon),
-//	String(new File(SLIME_SRC,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
-//]));
-
-run(LAUNCHER_COMMAND.concat(
-	[
-		String(new File(SLIME_SRC,"jsh/test/addClasses/addClasses.jsh.js").getCanonicalPath())
-		,"-classes",getJshPathname(classes)
-	]
-));
-
-console("Packaging addClasses/addClasses.jsh.js");
-var packagedAddClasses = jshPackage({
-	script: "addClasses/addClasses.jsh.js"
-});
-if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
-	console("Running " + packagedAddClasses + " ...");
-	runPackaged(
-		packagedAddClasses.getCanonicalPath(),
-		"-classes",getJshPathname(classes),
-		(function() {
-			var rv = {};
-			for (var x in mode) {
-				rv[x] = mode[x];
-			}
-			for (var x in mode.env) {
-				rv.env[x] = mode.env[x];
-			}
-			delete rv.env.JSH_PLUGINS;
-			return rv;
-		})()
-	);
 }
 
 var packaged_helper = jshPackage({

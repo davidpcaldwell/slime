@@ -3,7 +3,8 @@ var packaged = {
 		var TEST = src.getSubdirectory("jsh/test/packaged");
 		var invocation = [];
 	//	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
-		invocation.push("-script",TEST.getFile(p.script));
+		var script = (typeof(p.script) == "string") ? TEST.getFile(p.script) : p.script;
+		invocation.push("-script",script);
 		if (p.modules) {
 			p.modules.forEach(function(module) {
 				if (typeof(module) == "string") {
@@ -28,7 +29,7 @@ var packaged = {
 			});
 		}
 		var packaged = jsh.shell.TMPDIR.createTemporary({ directory: true });
-		var to = packaged.getRelativePath(p.script.split("/").slice(-1)[0] + ".jar");
+		var to = packaged.getRelativePath(script.pathname.basename + ".jar");
 		invocation.push("-to",to);
 		if (!RHINO_LIBRARIES) invocation.push("-norhino");
 		Packages.java.lang.System.err.println("arguments = " + invocation);
@@ -163,6 +164,18 @@ $set({
 						check(verify,result);
 					}
 				};
+			}
+		},
+		classpath: {
+			execute: function(scope,verify) {
+				var jar = packaged.build({
+					script: "../addClasses/addClasses.jsh.js"
+				});
+				var result = jsh.shell.java({
+					jar: jar,
+					arguments: ["-classes",getClasses()]
+				});
+				verify(result).status.is(0);
 			}
 		}
 	}
