@@ -76,14 +76,95 @@ $loader.run("jsh/unit/browser/webview.js", {}, {
 	}
 });
 
+var initial = new unit.Scenario();
+initial.test({
+	check: function(verify) {
+		verify(document).getElementById("target").contentDocument.title.is("__TITLE__");
+		verify(document).getElementById("title").innerHTML.is("__TITLE__");		
+	}
+});
+
+var title = new unit.Scenario();
+title.test({
+	check: function(verify) {
+		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
+	}	
+});
+title.test({
+	run: function() {
+		unit.fire.click(document.getElementById("title"));
+	},
+	check: function(verify) {
+		verify(document).getElementById("title").contentEditable.is("true");
+	}
+});
+title.test({
+	setup: function() {
+		document.getElementById("title").innerHTML = "";
+	},
+	run: function() {
+		document.getElementById("title").innerHTML = "foo";
+		unit.fire.keydown(document.getElementById("title"), {
+			key: "Enter"
+		});
+	},
+	check: function(verify) {
+		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
+		verify(document).getElementById("title").innerHTML.is("foo");
+		verify(document).getElementById("target").contentDocument.title.is("foo");
+		verify(document).getElementById("target").contentDocument.getElementsByTagName("title")[0].innerHTML.is("foo");
+	}
+});
+
+var selection = new unit.Scenario();
+selection.target(new function() {
+	this.content = new function() {
+		var content = document.getElementById("target").contentDocument;
+		this.description = content.getElementsByTagName("div")[0];
+		this.contextHeader = content.getElementsByTagName("h1")[0];
+		this.exportsHeader = content.getElementsByTagName("h1")[1];
+	};
+
+	this.isSelected = function(element) {
+		//	TODO	DRY violation
+		var dummy = document.createElement("div");
+		dummy.style.backgroundColor = "#c0c0ff";
+		return element.style.backgroundColor == dummy.style.backgroundColor;
+	}
+});
+selection.test({
+	check: function(verify) {
+		var page = this;
+		verify(this).content.description.innerHTML.is("__DESCRIPTION__");
+		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(false);
+	}
+});
+selection.test({
+	run: function() {
+		unit.fire.click(this.content.description);
+	},
+	check: function(verify) {
+		var page = this;
+		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(true);
+	}
+});
+selection.test({
+	run: function() {
+		unit.fire.click(this.content.contextHeader);
+	},
+	check: function(verify) {
+		var page = this;
+		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(false);
+		verify(this).content.contextHeader.evaluate(function() { return page.isSelected(this); }).is(true);
+	}
+});
+
 var suite = new api.Suite({
 	name: "Suite",
 	parts: {
-		all: {
-			execute: function(scope,verify) {
-				verify(1).is(1);
-			}
-		}
+		initial: initial,
+		title: title,
+		selection: selection
 	}
 });
 

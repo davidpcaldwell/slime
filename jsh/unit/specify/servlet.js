@@ -64,7 +64,11 @@ $exports.handle = function(request) {
 			};
 		} else {
 			return {
-				status: { code: 404 }
+				status: { code: 200 },
+				body: {
+					type: "text/html",
+					string: $parameters.slime.getFile("loader/api/api.template.html").read(String)
+				}
 			}
 		}
 	}
