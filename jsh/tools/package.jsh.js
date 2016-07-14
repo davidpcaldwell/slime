@@ -16,8 +16,7 @@ if (!jsh.shell.jsh.home) {
 
 var parameters = jsh.script.getopts({
 	options: {
-		jsh: (jsh.shell.jsh.home) ? jsh.script.getRelativePath("..") : jsh.file.Pathname
-		,script: jsh.file.Pathname
+		script: jsh.file.Pathname
 		//	module format is name=pathname
 		,module: jsh.script.getopts.ARRAY(String)
 		//	file format is topath=pathname
@@ -62,7 +61,9 @@ var to = (function() {
 	return jsh.file.filesystems.os.Pathname(String(jsh.shell.properties.object.java.io.tmpdir)).directory.createTemporary({ directory: true });
 })();
 
-var JSH = parameters.options.jsh.directory;
+var JSH = jsh.shell.jsh.home;
+
+jsh.shell.console("Using built shell at " + JSH + " to package.");
 
 if (UNZIP_RHINO_WHEN_PACKAGING) {
 	jsh.file.unzip({ zip: jsh.shell.jsh.lib.getFile("js.jar"), to: to });
