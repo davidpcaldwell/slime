@@ -10,7 +10,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (jsh.script.file.pathname.basename == "packaged.jsh.js") {
+if (jsh.script.script) {
 	jsh.loader.plugins(jsh.script.file.getRelativePath("a"));
 }
 $api.debug.disableBreakOnExceptionsFor(function(x) {

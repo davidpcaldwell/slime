@@ -93,17 +93,6 @@ ScriptVerifier({
 	}
 });
 ScriptVerifier({
-	path: "plugins/packaged.jsh.js",
-	environment: {
-		LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
-	},
-	execute: function(verify) {
-		var output = this.stdio.output.split(LINE_SEPARATOR);
-		verify(output)[0].is("a: Hello, World!");
-		verify(output)[1].is("[global] a: Hello, World!");
-	}
-});
-ScriptVerifier({
 	path: "jsh.shell/echo.jsh.js",
 	execute: function(verify) {
 		var output = this.stdio.output.split(LINE_SEPARATOR);
@@ -170,7 +159,8 @@ var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packag
 var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
 scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
 	src: src,
-	RHINO_LIBRARIES: RHINO_LIBRARIES
+	RHINO_LIBRARIES: RHINO_LIBRARIES,
+	LINE_SEPARATOR: LINE_SEPARATOR
 }));
 
 if (CATALINA_HOME) {
@@ -582,23 +572,6 @@ testCommandOutput(packaged_helper, function(options) {
 		,""
 	])
 }, { env: { JSH_PLUGINS: null } });
-
-var packaged_plugins = jshPackage({
-	script: "plugins/packaged.jsh.js",
-	plugins: ["plugins/a"]
-});
-testCommandOutput(packaged_plugins, function(options) {
-	checkOutput(options,[
-		"a: Hello, World!",
-		"[global] a: Hello, World!",
-		""
-	]);
-}, {
-	env: {
-		JSH_PLUGINS: null
-		,LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
-	}
-});
 
 testCommandOutput("jsh.file/Searchpath.jsh.js", function(options) {
 });

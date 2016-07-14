@@ -24,7 +24,7 @@ var packaged = {
 		}
 		if (p.plugins) {
 			p.plugins.forEach(function(plugin) {
-				invocation.push("-plugin", TEST.getFile(plugin));
+				invocation.push("-plugin", TEST.getRelativePath(plugin));
 			});
 		}
 		var packaged = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -117,6 +117,52 @@ $set({
 						}				
 					}
 				}
+			}
+		},
+		plugins: {
+			parts: new function() {
+				var check = function(verify,result) {
+					var lines = function() { return this.output.split(LINE_SEPARATOR); };
+					verify(result).status.is(0);
+					verify(result).stdio.evaluate(lines)[0].is("a: Hello, World!");
+					verify(result).stdio.evaluate(lines)[1].is("[global] a: Hello, World!");
+				}
+				
+				this.compatibility = {
+					execute: function(scope,verify) {
+						var result = jsh.shell.jsh({
+							fork: true,
+							script: src.getFile("jsh/test/packaged/plugins.jsh.js"),
+							environment: {
+								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"								
+							},
+							stdio: {
+								output: String
+							}
+						});
+						check(verify,result);
+					}
+				};
+				
+				this.implementation = {
+					execute: function(scope,verify) {
+						var packaged_plugins = packaged.build({
+							script: "plugins.jsh.js",
+							plugins: ["a"]
+						});
+						var result = jsh.shell.java({
+							jar: packaged_plugins,
+							environment: {
+								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"								
+							},
+							stdio: {
+								output: String
+							}
+						});
+						verify(jsh.shell).environment.evaluate.property("JSH_PLUGINS").is.type("undefined");
+						check(verify,result);
+					}
+				};
 			}
 		}
 	}
