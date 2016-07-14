@@ -200,6 +200,10 @@ var global = new function() {
 			global.listeners.add("log", function(e) {
 				_callbacks.log(e.detail.success, e.detail.message);
 			});
+			global.target(target);
+			for (var i=0; i<tests.length; i++) {
+				global.test(tests[i]);
+			}
 			global.run();
 		}
 	};

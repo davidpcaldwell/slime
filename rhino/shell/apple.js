@@ -183,7 +183,7 @@ $exports.bundle.osx = function(p) {
 				return false;
 			}
 		});
-		contents.getRelativePath("Info.plist").write(new $exports.Plist(info).serialize({ pretty: { current: "\n", indent: "    " } }));
+		contents.getRelativePath("Info.plist").write(new $exports.plist.xml.encode(info).serialize({ pretty: { current: "\n", indent: "    " } }));
 		if (p.command) {
 			var path = "MacOS/" + info.CFBundleExecutable;
 			contents.getRelativePath(path).write("#!/bin/bash\n" + p.command, { append: false, recursive: true });
