@@ -87,12 +87,6 @@ if (CATALINA_HOME) {
 }
 
 ScriptVerifier({
-	path: "packaged-path.jsh.js",
-	execute: function(verify) {
-		verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("Success: packaged-path.jsh.js");
-	}
-});
-ScriptVerifier({
 	path: "$api-deprecate-properties.jsh.js",
 	execute: function(verify) {
 		verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("o.f.property = foo");
@@ -577,17 +571,6 @@ if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
 		})()
 	);
 }
-
-console("Packaging packaged-path.jsh.js");
-var packagedPackaged2 = jshPackage({
-	script: "packaged-path.jsh.js",
-	modules: [ { from: "packaged-path/path/", to: "path" } ],
-	files: [ { from: "packaged-path/file.js", to: "file.js" }]
-});
-console("Running " + packagedPackaged2 + " ...");
-testCommandOutput(packagedPackaged2, function(options) {
-	checkOutput(options,["Success: packaged-path.jsh.js.jar",""]);
-}, { env: { JSH_PLUGINS: null } });
 
 var packaged_helper = jshPackage({
 	script: "cygwin/helper.jsh.js"

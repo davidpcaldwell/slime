@@ -9,18 +9,16 @@ var packaged = {
 				if (typeof(module) == "string") {
 					invocation.push("-module", module + "=" + TEST.getRelativePath(module));
 				} else if (module.from && module.to) {
-					throw new Error("No");
-					invocation.push("-module", module.to + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + module.from)));
+					invocation.push("-module", module.to + "=" + TEST.getRelativePath(module.from));
 				}
 			});
 		}
 		if (p.files) {
 			p.files.forEach(function(file) {
 				if (typeof(file) == "string") {
-					invocation.push("-file", file + "=" + TEST.getFile(file));
+					invocation.push("-file", file + "=" + TEST.getRelativePath(file));
 				} else if (file.from && file.to) {
-					throw new Error("no");
-					invocation.push("-file", file.to + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + file.from)));
+					invocation.push("-file", file.to + "=" + TEST.getRelativePath(file.from));
 				}
 			});
 		}
@@ -50,9 +48,12 @@ var packaged = {
 	}
 }
 
-var jsonScript = {
-	stdio: {
-		output: String
+//	TODO	add feature to jsh.shell that handles JSON output automatically (like String output)
+var jsonOutput = {
+	stdio: function() {
+		return {
+			output: String
+		}
 	},
 	evaluate: function(result) {
 		if (result.status == 0) {
@@ -60,7 +61,7 @@ var jsonScript = {
 		}
 		return result;
 	}
-}
+};
 
 $set({
 	parts: {
@@ -72,8 +73,8 @@ $set({
 						var result = jsh.shell.jsh({
 							fork: true,
 							script: script,
-							stdio: jsonScript.stdio,
-							evaluate: jsonScript.evaluate
+							stdio: jsonOutput.stdio(),
+							evaluate: jsonOutput.evaluate
 						});
 						verify(result).status.is(0);
 						verify(result).output.file.foo.is("bar");
@@ -84,29 +85,35 @@ $set({
 					execute: function(scope,verify) {
 						if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
 							Packages.java.lang.System.err.println("Packaging loader.jsh.js ...");
-							var packagedPackaged = packaged.build({
+							var jar = packaged.build({
 								script: "loader.jsh.js",
-								modules: [ "module/" ],
-								files: ["file.js"]
-							});				
-							jsh.shell.console("Running " + packagedPackaged + " ...");
-							var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+								modules: [ { from: "module", to: "module" }, { from: "module", to: "path/module" }],
+								files: [ { from: "file.js", to: "file.js" }, { from: "file.js", to: "path/file.js" }]
+							});
+							jsh.shell.console("Running " + jar + " ...");
 							var result = jsh.shell.java({
-								jar: packagedPackaged,
-								arguments: ["-classes",classes],
-								stdio: {
-									output: String
-								},
-								evaluate: function(result) {
-									if (result.status == 0) {
-										result.output = JSON.parse(result.stdio.output);
-									}
-									return result;
-								}
+								jar: jar,
+								stdio: jsonOutput.stdio(),
+								evaluate: jsonOutput.evaluate
 							});
 							verify(result).status.is(0);
 							verify(result).output.file.foo.is("bar");
 							verify(result).output.module.foo.is("baz");
+							verify(result).output.path.file.foo.is("bar");
+							verify(result).output.path.module.foo.is("baz");
+							
+//							var withPath = packaged.build({
+//								script: "loader.jsh.js",
+//								modules: [ { from: "module", to: "path/module" } ],
+//								files: [ { from: "file.js", to: "path/file.js" } ]
+//							});
+//							var withPathResult = jsh.shell.java({
+//								jar: withPath,
+//								arguments: [],
+//								stdio: jsonOutput.stdio(),
+//								evaluate: jsonOutput.evaluate
+//							});
+//							verify(withPathResult).status.is(0);
 						}				
 					}
 				}
