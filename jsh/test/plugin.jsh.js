@@ -133,7 +133,11 @@ plugin({
 //				} else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 //					args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
 //				}
-				var SLIME = (p && p.src) ? p.src : jsh.script.file.parent.parent.parent;
+				var SLIME = (function(p) {
+					if (p && p.src) return p.src;
+					if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getSubdirectory("src");
+					return jsh.shell.jsh.src;
+				})(p);
 				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
 				args.push("jsh");
 				args.push(SLIME.getRelativePath("jsh/etc/build.jsh.js"));

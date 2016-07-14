@@ -10,17 +10,19 @@
 //	Contributor(s):
 //	END LICENSE
 
-if (jsh.test && jsh.test.requireBuiltShell) {
-	jsh.test.requireBuiltShell();
-}
 var parameters = jsh.script.getopts({
 	options: {
 		src: jsh.script.file.parent.parent.parent.pathname,
 		rhino: jsh.file.Pathname,
 		part: String,
-		view: "console"
+		view: "console",
+		"test:unbuilt": false
 	}
 });
+
+if (jsh.test && jsh.test.requireBuiltShell && !parameters.options["test:unbuilt"]) {
+	jsh.test.requireBuiltShell();
+}
 
 //	Built shells do not contain these plugins
 jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("loader/api"));

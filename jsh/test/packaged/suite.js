@@ -53,8 +53,11 @@ var packaged = {
 		if (!RHINO_LIBRARIES) invocation.push("-norhino");
 		Packages.java.lang.System.err.println("arguments = " + invocation);
 		//	TODO	uses jsh.shell.jsh.home; should use version that is compatible with unbuilt shell
+		var shell = (p.unbuilt) ? jsh.shell.jsh.home.getSubdirectory("src") : jsh.shell.jsh.home;
+		jsh.shell.console("Packaging using shell " + shell);
 		jsh.shell.jsh({
 			fork: true,
+			shell: shell,
 			script: jsh.shell.jsh.home.getFile("tools/package.jsh.js"),
 			arguments: invocation
 		});
@@ -83,8 +86,8 @@ var packaged = {
 $set({
 	parts: {
 		loader: {
-			parts: {
-				compatibility: {
+			parts: new function() {
+				this.compatibility = {
 					execute: function(scope,verify) {
 						var script = src.getFile("jsh/test/packaged/loader.jsh.js");
 						var result = jsh.shell.jsh({
@@ -97,41 +100,40 @@ $set({
 						verify(result).output.file.foo.is("bar");
 						verify(result).output.module.foo.is("baz");
 					}
-				},
-				implementation: {
+				};
+				
+				var test = function(unbuilt,verify) {
+					if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
+						Packages.java.lang.System.err.println("Packaging loader.jsh.js ...");
+						var jar = packaged.build({
+							unbuilt: unbuilt,
+							script: "loader.jsh.js",
+							modules: [ { from: "module", to: "module" }, { from: "module", to: "path/module" }],
+							files: [ { from: "file.js", to: "file.js" }, { from: "file.js", to: "path/file.js" }]
+						});
+						jsh.shell.console("Running " + jar.jar + " ...");
+						var result = jsh.shell.java({
+							jar: jar.jar,
+							stdio: jsonOutput.stdio(),
+							evaluate: jsonOutput.evaluate
+						});
+						verify(result).status.is(0);
+						verify(result).output.file.foo.is("bar");
+						verify(result).output.module.foo.is("baz");
+						verify(result).output.path.file.foo.is("bar");
+						verify(result).output.path.module.foo.is("baz");
+					}
+				}
+				
+				this.implementation = {
 					execute: function(scope,verify) {
-						if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
-							Packages.java.lang.System.err.println("Packaging loader.jsh.js ...");
-							var jar = packaged.build({
-								script: "loader.jsh.js",
-								modules: [ { from: "module", to: "module" }, { from: "module", to: "path/module" }],
-								files: [ { from: "file.js", to: "file.js" }, { from: "file.js", to: "path/file.js" }]
-							});
-							jsh.shell.console("Running " + jar + " ...");
-							var result = jsh.shell.java({
-								jar: jar.jar,
-								stdio: jsonOutput.stdio(),
-								evaluate: jsonOutput.evaluate
-							});
-							verify(result).status.is(0);
-							verify(result).output.file.foo.is("bar");
-							verify(result).output.module.foo.is("baz");
-							verify(result).output.path.file.foo.is("bar");
-							verify(result).output.path.module.foo.is("baz");
-							
-//							var withPath = packaged.build({
-//								script: "loader.jsh.js",
-//								modules: [ { from: "module", to: "path/module" } ],
-//								files: [ { from: "file.js", to: "path/file.js" } ]
-//							});
-//							var withPathResult = jsh.shell.java({
-//								jar: withPath,
-//								arguments: [],
-//								stdio: jsonOutput.stdio(),
-//								evaluate: jsonOutput.evaluate
-//							});
-//							verify(withPathResult).status.is(0);
-						}				
+						test(false,verify);
+					}
+				};
+				
+				this.unbuilt = {
+					execute: function(scope,verify) {
+						test(true,verify);
 					}
 				}
 			}
