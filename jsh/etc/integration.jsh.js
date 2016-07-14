@@ -157,10 +157,25 @@ ScriptVerifier({
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
 var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
+
+var compileAddClasses = jsh.js.constant(function() {
+	var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+	jsh.shell.console("Compiling AddClasses ...");
+	debugger;
+	jsh.shell.console("jsh.java.tools.javac = " + jsh.java.tools.javac);
+	jsh.java.tools.javac({
+		destination: classes.pathname,
+		sourcepath: jsh.file.Searchpath([src.getRelativePath("jsh/test/addClasses/java")]),
+		arguments: [src.getRelativePath("jsh/test/addClasses/java/test/AddClasses.java")]
+	});
+	return classes;
+});
+
 scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
 	src: src,
 	RHINO_LIBRARIES: RHINO_LIBRARIES,
-	LINE_SEPARATOR: LINE_SEPARATOR
+	LINE_SEPARATOR: LINE_SEPARATOR,
+	getClasses: compileAddClasses
 }));
 
 if (CATALINA_HOME) {
@@ -487,8 +502,7 @@ var legacy = function() {
 testCommandOutput("loader/child.jsh.js", function(options) {
 });
 
-var classes = platform.io.createTemporaryDirectory();
-classes.mkdirs();
+var classes = compileAddClasses().pathname.java.adapt();
 
 if (CATALINA_HOME) {
 	console("Running httpd integration tests with CATALINA_HOME = " + CATALINA_HOME);
@@ -523,14 +537,15 @@ if (CATALINA_HOME) {
 	console("No CATALINA_HOME: not running httpd integration tests.");
 }
 
-console("Compiling AddClasses to: " + classes);
-platform.jdk.compile(compileOptions.concat([
-	"-d", classes.getCanonicalPath(),
-	"-sourcepath", [
-		String(new File(SLIME_SRC,"jsh/test/addClasses/java").getCanonicalPath())
-	].join(colon),
-	String(new File(SLIME_SRC,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
-]));
+//console("Compiling AddClasses to: " + classes);
+//jsh.shell.console("Compiling AddClasses ...");
+//platform.jdk.compile(compileOptions.concat([
+//	"-d", classes.getCanonicalPath(),
+//	"-sourcepath", [
+//		String(new File(SLIME_SRC,"jsh/test/addClasses/java").getCanonicalPath())
+//	].join(colon),
+//	String(new File(SLIME_SRC,"jsh/test/addClasses/java/test/AddClasses.java").getCanonicalPath())
+//]));
 
 run(LAUNCHER_COMMAND.concat(
 	[
