@@ -29,13 +29,13 @@ jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("jsh/uni
 var CATALINA_HOME = (function() {
 	if (jsh.shell.environment.JSH_BUILD_TOMCAT_HOME) return jsh.file.Pathname(jsh.shell.environment.JSH_BUILD_TOMCAT_HOME).directory;
 	if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
-	if (jsh.shell.jsh.home.getSubdirectory("lib/tomcat")) return jsh.shell.jsh.home.getSubdirectory("lib/tomcat");
+	if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
 })();
 
 var src = parameters.options.src.directory;
 var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
 
-var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
+var RHINO_LIBRARIES = (jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.lib.getRelativePath("js.jar").java.adapt()] : null;
 
 //	TODO	this next line should go elsewhere
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
@@ -325,27 +325,6 @@ var run = function(command,mymode) {
 	}
 }
 
-var PACKAGED_LAUNCHER = (function() {
-	var command = [];
-	command.push(getPath(JAVA_HOME,"bin/java"));
-	command.push("-jar");
-	return command;
-})();
-
-var runPackaged = function() {
-	var command = PACKAGED_LAUNCHER.slice(0);
-	for (var i=0; i<arguments.length-1; i++) {
-		command.push(arguments[i]);
-	}
-	var mode;
-	if (typeof(arguments[arguments.length-1]) == "string") {
-		command.push(arguments[arguments.length-1]);
-	} else {
-		mode = arguments[arguments.length-1];
-	}
-	run(command,mode);
-}
-
 var testCommandOutput = function(path,tester,p) {
 	if (!p) p = {};
 	var env = (function() {
@@ -367,12 +346,21 @@ var testCommandOutput = function(path,tester,p) {
 	})();
 	var launcher;
 	var command;
+
+	var PACKAGED_LAUNCHER = (function() {
+		var command = [];
+		command.push(getPath(JAVA_HOME,"bin/java"));
+		command.push("-jar");
+		return command;
+	})();
+
 	if (typeof(path) == "string") {
 		command = [
 			String(new File(SLIME_SRC,"jsh/test/" + path).getCanonicalPath())
 		];
 		launcher = LAUNCHER_COMMAND;
 	} else {
+		throw new Error();
 		command = [
 			String(path.getCanonicalPath())
 		];
@@ -419,58 +407,6 @@ var checkOutput = function(options,messages) {
 		throw new Error("Output wrong: it is [" + options.output + "] when expected was [" + expected + "]");
 	}
 }
-
-var getJshPathname = function(file) {
-	var rv = String(file.getCanonicalPath());
-	if (platform.cygwin) {
-		rv = platform.cygwin.cygpath.unix(rv);
-	}
-	return rv;
-}
-
-var jshPackage = function(p) {
-	var invocation = [];
-//	var invocation = [ getJshPathname(new File(JSH_HOME,"tools/package.jsh.js")) ];
-	invocation.push("-script",getJshPathname(new File(SLIME_SRC,"jsh/test/" + p.script)));
-	if (p.modules) {
-		p.modules.forEach(function(module) {
-			if (typeof(module) == "string") {
-				invocation.push("-module", module + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + module)));
-			} else if (module.from && module.to) {
-				invocation.push("-module", module.to + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + module.from)));
-			}
-		});
-	}
-	if (p.files) {
-		p.files.forEach(function(file) {
-			if (typeof(file) == "string") {
-				invocation.push("-file", file + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + file)));
-			} else if (file.from && file.to) {
-				invocation.push("-file", file.to + "=" + getJshPathname(new File(SLIME_SRC,"jsh/test/" + file.from)));
-			}
-		});
-	}
-	if (p.plugins) {
-		p.plugins.forEach(function(plugin) {
-			invocation.push("-plugin", getJshPathname(new File(SLIME_SRC,"jsh/test/" + plugin)));
-		});
-	}
-	var packaged = platform.io.createTemporaryDirectory();
-	packaged.mkdirs();
-	var to = new File(packaged,p.script.split("/").slice(-1)[0] + ".jar");
-	invocation.push("-to",getJshPathname(to));
-	if (!RHINO_LIBRARIES) invocation.push("-norhino");
-	jsh.shell.jsh({
-		fork: true,
-		script: jsh.shell.jsh.home.getFile("tools/package.jsh.js"),
-		arguments: invocation
-	});
-//	run(LAUNCHER_COMMAND.concat(invocation));
-	if (!to.getCanonicalFile().exists()) {
-		throw new Error("Packaged file not created: " + to.getCanonicalFile() + " class=" + to.getClass() + " using " + LAUNCHER_COMMAND.concat(invocation).join(" "));
-	}
-	return to;
-};
 
 var legacy = function() {
 
