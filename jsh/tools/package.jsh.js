@@ -60,10 +60,11 @@ var to = (function() {
 var JSH = parameters.options.jsh.directory;
 
 if (UNZIP_RHINO_WHEN_PACKAGING) {
-	jsh.file.unzip({ zip: JSH.getFile("lib/js.jar"), to: to });
+	jsh.file.unzip({ zip: jsh.shell.jsh.lib.getFile("js.jar"), to: to });
 }
 if (!parameters.options.norhino) {
-	to.getRelativePath("$jsh/rhino.jar").write(JSH.getFile("lib/js.jar").read(jsh.file.Streams.binary), { recursive: true });
+	jsh.shell.console("lib = " + jsh.shell.jsh.lib);
+	to.getRelativePath("$jsh/rhino.jar").write(jsh.shell.jsh.lib.getFile("js.jar").read(jsh.file.Streams.binary), { recursive: true });
 }
 
 jsh.file.unzip({ zip: JSH.getFile("jsh.jar"), to: to });
