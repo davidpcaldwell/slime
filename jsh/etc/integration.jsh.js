@@ -86,31 +86,6 @@ if (CATALINA_HOME) {
 	});
 }
 
-//	TODO	Convert to jsh/test plugin API designed for this purpose
-scenario.scenario("packaged-lite", (function() {
-	var script = jsh.script.file.getRelativePath("../test/packaged.jsh.js").file;
-	return {
-		create: function() {
-			this.name = script.toString();
-
-			this.execute = function(scope,verify) {
-				//	TODO	this next line should go elsewhere
-				var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
-				jsh.shell.jsh({
-					fork: true,
-					script: script,
-					stdio: {
-						output: String
-					},
-					evaluate: function(result) {
-						verify(result.stdio.output.split(LINE_SEPARATOR))[0].is("Loaded both.");
-					}
-				});
-			}
-		}
-	}
-})());
-
 ScriptVerifier({
 	path: "packaged-path.jsh.js",
 	execute: function(verify) {
@@ -199,7 +174,7 @@ ScriptVerifier({
 var RHINO_LIBRARIES = (jsh.shell.jsh.home.getFile("lib/js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.home.getRelativePath("lib/js.jar").java.adapt()] : null;
 
 var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
-scenario.part("packaged", LOADER.value("jsh/test/launcher/packaged/suite.js", {
+scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
 	src: src,
 	RHINO_LIBRARIES: RHINO_LIBRARIES
 }));

@@ -10,14 +10,12 @@
 //	Contributor(s):
 //	END LICENSE
 
-var file = jsh.script.loader.file("packaged.file.js");
-if (file.foo != "bar") {
-	throw new Error("Failed to load file.");
-}
-
-//	TODO	would there be a way to make jsh.script.loader.module("packaged") work? It would be intuitive
-var module = jsh.script.loader.module("packaged/");
-if (module.foo != "baz") {
-	throw new Error("Failed to load module.");
-}
-jsh.shell.echo("Loaded both.");
+jsh.shell.echo(JSON.stringify({
+	file: {
+		foo: jsh.script.loader.file("file.js").foo
+	},
+	module: {
+		//	TODO	would there be a way to make jsh.script.loader.module("packaged") work? It would be intuitive
+		foo: jsh.script.loader.module("module/").foo
+	}
+}));
