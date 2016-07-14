@@ -11,5 +11,8 @@
 //	END LICENSE
 
 debugger;
-jsh.shell.echo(jsh.script.file);
-jsh.shell.echo(jsh.script.file.pathname.file);
+jsh.shell.echo(JSON.stringify({
+	file: jsh.script.file.toString(),
+	resolved: jsh.script.file.pathname.file.toString()
+}));
+

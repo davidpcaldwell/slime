@@ -510,8 +510,6 @@ var legacy = function() {
 testCommandOutput("loader/child.jsh.js", function(options) {
 });
 
-var classes = compileAddClasses().pathname.java.adapt();
-
 if (CATALINA_HOME) {
 	console("Running httpd integration tests with CATALINA_HOME = " + CATALINA_HOME);
 	var mymode = {};
@@ -544,17 +542,6 @@ if (CATALINA_HOME) {
 } else {
 	console("No CATALINA_HOME: not running httpd integration tests.");
 }
-
-var packaged_helper = jshPackage({
-	script: "cygwin/helper.jsh.js"
-});
-testCommandOutput(packaged_helper, function(options) {
-	checkOutput(options,[
-		getJshPathname(packaged_helper)
-		,getJshPathname(packaged_helper)
-		,""
-	])
-}, { env: { JSH_PLUGINS: null } });
 
 testCommandOutput("jsh.file/Searchpath.jsh.js", function(options) {
 });

@@ -1,3 +1,22 @@
+//	TODO	add feature to jsh.shell that handles JSON output automatically (like String output)
+var jsonOutput = {
+	stdio: function() {
+		return {
+			output: String
+		}
+	},
+	evaluate: function(result) {
+		if (result.status == 0) {
+			try {
+				result.output = JSON.parse(result.stdio.output);
+			} catch (e) {
+				jsh.shell.console("Could not parse: " + result.stdio.output);
+			}
+		}
+		return result;
+	}
+};
+
 var packaged = {
 	build: function(p) {
 		var TEST = src.getSubdirectory("jsh/test/packaged");
@@ -42,27 +61,24 @@ var packaged = {
 		if (!to.file) {
 			throw new Error("Packaged file not created: " + to + " class=" + to + " using " + jsh.shell.jsh.home + " and " + jsh.script.file);
 		}
-		return to.file;
-	},
-	run: function(p) {
-
+		//	TODO	refactor to return object with a run() method that allows jsonOutput to be easily used as well
+		return {
+			jar: to.file,
+			run: function(p) {
+				var argument = {
+					jar: to.file
+				};
+				if (p.json) {
+					argument.stdio = jsonOutput.stdio();
+					argument.evaluate = jsonOutput.evaluate;
+					delete p.json;
+				}
+				jsh.js.Object.set(argument,p);
+				return jsh.shell.java(argument);
+			}
+		}
 	}
 }
-
-//	TODO	add feature to jsh.shell that handles JSON output automatically (like String output)
-var jsonOutput = {
-	stdio: function() {
-		return {
-			output: String
-		}
-	},
-	evaluate: function(result) {
-		if (result.status == 0) {
-			result.output = JSON.parse(result.stdio.output);
-		}
-		return result;
-	}
-};
 
 $set({
 	parts: {
@@ -93,7 +109,7 @@ $set({
 							});
 							jsh.shell.console("Running " + jar + " ...");
 							var result = jsh.shell.java({
-								jar: jar,
+								jar: jar.jar,
 								stdio: jsonOutput.stdio(),
 								evaluate: jsonOutput.evaluate
 							});
@@ -152,7 +168,7 @@ $set({
 							plugins: ["a"]
 						});
 						var result = jsh.shell.java({
-							jar: packaged_plugins,
+							jar: packaged_plugins.jar,
 							environment: {
 								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"								
 							},
@@ -172,10 +188,21 @@ $set({
 					script: "../addClasses/addClasses.jsh.js"
 				});
 				var result = jsh.shell.java({
-					jar: jar,
+					jar: jar.jar,
 					arguments: ["-classes",getClasses()]
 				});
 				verify(result).status.is(0);
+			}
+		},
+		"jsh.script.file": {
+			execute: function(scope,verify) {
+				var jar = packaged.build({
+					script: "jsh.script.file.jsh.js"
+				});
+				var result = jar.run({ json: true });
+				verify(result).status.is(0);
+				verify(result).output.file.is(jar.jar.toString());
+				verify(result).output.resolved.is(jar.jar.toString());
 			}
 		}
 	}
