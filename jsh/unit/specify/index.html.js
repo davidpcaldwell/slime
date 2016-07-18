@@ -20,11 +20,6 @@ window.addEventListener('load', function() {
         };
     }
 
-    var resize = react(function(iframe,content) {
-        //	TODO	does not work
-        iframe.height = content.height;
-    });
-
     var title = react(function(iframe,content) {
         document.getElementById("title").innerHTML = content.title;
     });
@@ -89,7 +84,6 @@ window.addEventListener('load', function() {
     };
 
     document.getElementById("target").addEventListener("load", function(e) {
-        resize();
         title();
 
         var content = document.getElementById("target").contentDocument;

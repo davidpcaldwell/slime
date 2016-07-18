@@ -80,7 +80,9 @@ var initial = new unit.Scenario();
 initial.test({
 	check: function(verify) {
 		verify(document).getElementById("target").contentDocument.title.is("__TITLE__");
-		verify(document).getElementById("title").innerHTML.is("__TITLE__");		
+		verify(document).getElementById("title").innerHTML.is("__TITLE__");
+		//	Make sure license comment is stripped from API template
+		verify(document).getElementById("target").contentDocument.childNodes[0].nodeType.is.not(8);
 	}
 });
 

@@ -63,11 +63,15 @@ $exports.handle = function(request) {
 				body: rv
 			};
 		} else {
+			var document = new jsh.document.Document({ string: $parameters.slime.getFile("loader/api/api.template.html").read(String) });
+			if (document.children[0].comment) {
+				document.children.splice(0,1);
+			}
 			return {
 				status: { code: 200 },
 				body: {
 					type: "text/html",
-					string: $parameters.slime.getFile("loader/api/api.template.html").read(String)
+					string: document.toString()
 				}
 			}
 		}
