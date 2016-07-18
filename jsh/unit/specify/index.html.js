@@ -1,6 +1,5 @@
 window.addEventListener('load', function() {
     //	TODO	CORS
-    //	TODO	template loaded for missing content contains SLIME license
     document.domain = document.domain;
 
     var xhr = new XMLHttpRequest();
@@ -56,12 +55,15 @@ window.addEventListener('load', function() {
 
         var listener = function(e) {
             if (e.key == "Enter") {
+                this.removeEventListener("keydown", arguments.callee);
                 if (this.contentEditable == "true") {
                     //  TODO    should restore to previous value, not false
                     this.contentEditable = "false";
-                } else {
+                } else if (!window.contenteditable) {
                     element.innerHTML = this.value;
                     element.inonit = null;
+                } else {
+                	throw new Error();
                 }
                 if (callback) callback();
             }

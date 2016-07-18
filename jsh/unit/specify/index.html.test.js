@@ -101,10 +101,8 @@ title.test({
 	}
 });
 title.test({
-	setup: function() {
-		document.getElementById("title").innerHTML = "";
-	},
 	run: function() {
+		unit.fire.click(document.getElementById("title"));
 		document.getElementById("title").innerHTML = "foo";
 		unit.fire.keydown(document.getElementById("title"), {
 			key: "Enter"
@@ -115,6 +113,21 @@ title.test({
 		verify(document).getElementById("title").innerHTML.is("foo");
 		verify(document).getElementById("target").contentDocument.title.is("foo");
 		verify(document).getElementById("target").contentDocument.getElementsByTagName("title")[0].innerHTML.is("foo");
+	}
+});
+title.test({
+	run: function() {
+		unit.fire.click(document.getElementById("title"));
+		document.getElementById("title").innerHTML = "bar";
+		unit.fire.keydown(document.getElementById("title"), {
+			key: "Enter"
+		});
+	},
+	check: function(verify) {
+		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
+		verify(document).getElementById("title").innerHTML.is("bar");
+		verify(document).getElementById("target").contentDocument.title.is("bar");
+		verify(document).getElementById("target").contentDocument.getElementsByTagName("title")[0].innerHTML.is("bar");
 	}
 });
 
