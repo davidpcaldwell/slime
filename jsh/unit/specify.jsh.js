@@ -3,7 +3,8 @@ var parameters = jsh.script.getopts({
 		api: jsh.file.Pathname,
 		port: Number,
 		"chrome:profile": jsh.file.Pathname,
-		debug: false
+		debug: false,
+		"test:proxy": String
 	}
 });
 
@@ -38,6 +39,14 @@ jsh.ui.browser({
 	},
 	browser: function(p) {
 		return chrome.run({
+			arguments: (function() {
+				var rv = [];
+				if (parameters.options["test:proxy"]) {
+					rv.push("--proxy-pac-url=" + parameters.options["test:proxy"]);
+				}
+				debugger;
+				return rv;
+			})(),
 			app: p.url
 		});
 	},

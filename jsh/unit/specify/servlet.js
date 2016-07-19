@@ -2,6 +2,25 @@ var slime = new jsh.file.Loader({ directory: $parameters.slime });
 var loader = new jsh.file.Loader({ directory: jsh.file.Pathname("/").directory });
 
 $exports.handle = function(request) {
+	var host = request.headers.value("Host");
+	if (host == "bb.githack.com") {
+		var matcher = /davidpcaldwell\/slime\/raw\/tip\/(.*)$/;
+		var match = matcher.exec(request.path);
+		if (match) {
+			var resource = slime.get(match[1]);
+			if (resource) {
+				return {
+					status: { code: 200 },
+					body: resource
+				}
+			} else {
+				return { status: { code: 404 } };
+			}
+		} else {
+			return { status: { code: 404 } };
+		}
+	}
+
 	if (request.path == "") {
 		return {
 			status: { code: 200 },
