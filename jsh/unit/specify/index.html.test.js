@@ -87,28 +87,41 @@ initial.test({
 });
 
 var title = new unit.Scenario();
-title.test({
-	check: function(verify) {
-		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
-	}	
+title.target({
+	titleRow: function() {
+		var tbody = document.getElementById("head").getElementsByTagName("table")[0].getElementsByTagName("tbody")[0];
+		var titleRow = tbody.rows[0];
+		return titleRow;
+	},
+	titleSpan: function() {
+		return this.titleRow().cells[1].children[0];		
+	}
 });
 title.test({
-	run: function() {
-		unit.fire.click(document.getElementById("title"));
-	},
 	check: function(verify) {
-		verify(document).getElementById("title").contentEditable.is("true");
+		verify(this).titleRow().tagName.is("TR");
+		verify(this).titleSpan().tagName.is("SPAN");
 	}
 });
 title.test({
 	run: function() {
-		unit.fire.click(document.getElementById("title"));
-		document.getElementById("title").innerHTML = "foo";
-		unit.fire.keydown(document.getElementById("title"), {
+		unit.fire.click(this.titleSpan());
+	},
+	check: function(verify) {
+		verify(this).titleSpan().contentEditable.is("true");
+	}
+});
+title.test({
+	run: function() {
+		unit.fire.click(this.titleSpan());
+		this.titleSpan().innerHTML = "foo";
+		unit.fire.keydown(this.titleSpan(), {
 			key: "Enter"
 		});
 	},
 	check: function(verify) {
+		verify(this).titleSpan().evaluate.property("inonit").is.equalTo(null);
+		verify(this).titleSpan().innerHTML.is("foo");
 		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
 		verify(document).getElementById("title").innerHTML.is("foo");
 		verify(document).getElementById("target").contentDocument.title.is("foo");
@@ -117,13 +130,15 @@ title.test({
 });
 title.test({
 	run: function() {
-		unit.fire.click(document.getElementById("title"));
-		document.getElementById("title").innerHTML = "bar";
-		unit.fire.keydown(document.getElementById("title"), {
+		unit.fire.click(this.titleSpan());
+		this.titleSpan().innerHTML = "bar";
+		unit.fire.keydown(this.titleSpan(), {
 			key: "Enter"
 		});
 	},
 	check: function(verify) {
+		verify(this).titleSpan().evaluate.property("inonit").is.equalTo(null);
+		verify(this).titleSpan().innerHTML.is("bar");
 		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
 		verify(document).getElementById("title").innerHTML.is("bar");
 		verify(document).getElementById("target").contentDocument.title.is("bar");
