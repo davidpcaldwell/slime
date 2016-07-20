@@ -897,6 +897,23 @@ os.resolve(function() {
 											verify(bundle).info.CFBundleIdentifier.is("com.bitbucket.davidpcaldwell.slime");
 											verify(bundle).info.CFBundleVersion.is("1");
 											verify(bundle).info.CFBundleExecutable.is("program");
+											verify(bundle).directory.getFile("Contents/MacOS/program").is.type("object");
+											verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("null");
+											
+											bundle.info.CFBundleExecutable = "string";
+											verify(bundle).info.CFBundleExecutable.is("string");
+											
+											bundle.info.CFBundleExecutable = {
+												name: "executable",
+												command: "pwd"
+											};
+											verify(bundle).directory.getFile("Contents/MacOS/program").is.type("null");
+											verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("object");
+											verify(bundle).directory.evaluate(function() {
+												var file = this.getFile("Contents/MacOS/executable");
+												if (!file) return null;
+												return { string: file.read(String) };
+											}).is.type("object");
 										</script>
 									</li>
 								</ul>

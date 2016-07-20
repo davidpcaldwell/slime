@@ -108,6 +108,19 @@ $exports.plist = new function() {
 
 $exports.osx = {};
 $exports.osx.ApplicationBundle = function(p) {
+	var setExecutable = function(base,object,info) {
+		var name = (object.name) ? object.name : "script"
+		base.getRelativePath("Contents/MacOS/" + name).write([
+			"#!/bin/bash",
+			object.command
+		].join("\n"), { append: false, recursive: true });
+		$context.api.shell.run({
+			command: "chmod",
+			arguments: ["+x", base.getRelativePath("Contents/MacOS/" + name)]
+		});
+		info.CFBundleExecutable = name;
+	}
+	
 	if (p.pathname && p.info) {
 		//	TODO	allow createDirectory arguments to be configurable
 		var base = p.pathname.createDirectory({
@@ -128,18 +141,8 @@ $exports.osx.ApplicationBundle = function(p) {
 		if (!info.CFBundleSignature) info.CFBundleSignature = "????";
 		info.CFBundlePackageType = "APPL"
 		if (typeof(info.CFBundleExecutable) == "object") {
-			//	TODO	consider allowing name property to rename the executable from "script"
 			if (info.CFBundleExecutable.command) {
-				var name = (info.CFBundleExecutable.name) ? info.CFBundleExecutable.name : "script"
-				base.getRelativePath("Contents/MacOS/" + name).write([
-					"#!/bin/bash",
-					info.CFBundleExecutable.command
-				].join("\n"), { append: false, recursive: true });
-				$context.api.shell.run({
-					command: "chmod",
-					arguments: ["+x", base.getRelativePath("Contents/MacOS/" + name)]
-				});
-				info.CFBundleExecutable = name;
+				setExecutable(base,info.CFBundleExecutable,info);
 			}
 		}
 
@@ -172,20 +175,55 @@ $exports.osx.ApplicationBundle = function(p) {
 			enumerable: true
 		});
 		
-		var plist = $exports.plist.xml.decode(
-			$context.api.xml.parseFile(p.directory.getFile("Contents/Info.plist"))
-		);
-
+		var plist;
+		
+		var read = function() {
+			return $exports.plist.xml.decode(
+				$context.api.xml.parseFile(p.directory.getFile("Contents/Info.plist"))
+			);			
+		};
+		
+		var write = function(plist) {
+			var document = $exports.plist.xml.encode(plist);
+			p.directory.getRelativePath("Contents/Info.plist").write(document.toString(), { append: false });
+			plist = read();
+		};
+		
+		plist = read();
+		
 		var getter = function(name) {
 			return function() {
-				return plist[name];
+				return read()[name];
 			}
 		};
+		
+		var setter = function(name) {
+			if (name == "CFBundleExecutable") {
+				return function(v) {					
+					var plist = read();
+					var was = p.directory.getFile("Contents/MacOS/" + plist[name]);
+					if (was) was.remove();
+					if (typeof(v) == "string") {
+						plist[name] = v;
+						write(plist);
+					} else if (typeof(v) == "object") {
+						setExecutable(p.directory,v,plist);
+						write(plist);
+					} else {
+						throw new Error();
+					}
+				}
+			}
+		}
 
+		//	TODO	cannot add new written properties to info using this API, and do not have catchall without ECMA 6 proxies, so
+		//			probably should make these enumerated rather than a loop, and then provide a method to explicitly add a
+		//			new property
 		for (var x in plist) {
 			if (typeof(plist[x]) == "string") {
 				Object.defineProperty(info,x,{
 					get: getter(x),
+					set: setter(x),
 					enumerable: true
 				});
 			}
