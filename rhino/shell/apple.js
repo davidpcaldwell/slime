@@ -171,6 +171,16 @@ $exports.osx.ApplicationBundle = function(p) {
 			value: info,
 			enumerable: true
 		});
+		
+		var plist = $exports.plist.xml.decode(
+			$context.api.xml.parseFile(p.directory.getFile("Contents/Info.plist"))
+		);
+		Object.defineProperty(info,"CFBundleName",{
+			get: function() {
+				return plist.CFBundleName;
+			},
+			enumerable: true
+		});
 	}
 }
 

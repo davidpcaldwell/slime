@@ -59,7 +59,14 @@ END LICENSE
 						java: host,
 						io: jsh.io,
 						file: file,
-						document: $jsapi.loader.module("../../js/document/")
+						document: $jsapi.loader.module("../../js/document/"),
+						xml: {
+							parseFile: function(file) {
+								return new jsh.document.Document({
+									string: file.read(String)
+								});
+							}
+						}					
 					},
 					_environment: Packages.inonit.system.OperatingSystem.Environment.SYSTEM,
 					_properties: Packages.java.lang.System.getProperties()

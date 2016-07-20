@@ -12,7 +12,7 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.document && jsh.js.web && jsh.java && jsh.io && jsh.file;
+		return jsh.js && jsh.document && jsh.js.document && jsh.js.web && jsh.java && jsh.io && jsh.file;
 	},
 	load: function() {
 		var $shell = $loader.module("module.js", {
@@ -21,7 +21,12 @@ plugin({
 				java: jsh.java,
 				io: jsh.io,
 				file: jsh.file,
-				document: jsh.js.document
+				document: jsh.js.document,
+				xml: {
+					parseFile: function(file) {
+						return new jsh.document.Document({ string: file.read(String) });
+					}
+				}
 			},
 			_properties: $jsh.getSystemProperties(),
 			_environment: $jsh.getEnvironment()

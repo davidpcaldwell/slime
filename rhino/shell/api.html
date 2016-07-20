@@ -27,6 +27,10 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
+						<div class="name">js</div>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
 						<div class="name">java</div>
 						<span>The <a href="../host/api.html">rhino/host</a> module.</span>
 					</li>
@@ -37,6 +41,35 @@ END LICENSE
 					<li class="value">
 						<div class="name">file</div>
 						<span>The <a href="../file/api.html">rhino/file</a> module.</span>
+					</li>
+					<li class="value">
+						<div class="name">document</div>
+						<span>The <a href="../../js/document/api.html">js/document</a> module.</span>
+					</li>
+					<li class="object">
+						<div class="name">xml</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">parseFile</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">file</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">document</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</li>
@@ -102,7 +135,12 @@ END LICENSE
 						}
 					}
 				}),
-				document: $jsapi.loader.module("../../js/document/")
+				document: $jsapi.loader.module("../../js/document/"),
+				xml: {
+					parseFile: function(file) {
+						return new jsh.document.Document({ string: file.read(String) });
+					}
+				}
 			};
 			this._properties = Packages.java.lang.System.getProperties();
 			this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
@@ -855,6 +893,7 @@ os.resolve(function() {
 											verify(bundle).info.is.type("object");
 											bundle.info = "foo";
 											verify(bundle).info.is.type("object");
+											verify(bundle).info.CFBundleName.is("name");
 										</script>
 									</li>
 								</ul>
