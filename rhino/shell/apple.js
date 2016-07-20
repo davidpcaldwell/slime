@@ -234,7 +234,8 @@ $exports.osx.ApplicationBundle = function(p) {
 //	Bundle programming guide
 //	https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/Introduction/Introduction.html
 $exports.bundle = {};
-$exports.bundle.osx = function(p) {
+$api.deprecate($exports,"bundle");
+$exports.bundle.osx = $api.deprecate(function(p) {
 	var info = $context.api.js.Object.set({}, p.info);
 
 	if (p.command) {
@@ -250,7 +251,7 @@ $exports.bundle.osx = function(p) {
 				return false;
 			}
 		});
-		contents.getRelativePath("Info.plist").write(new $exports.Plist(info).serialize({ pretty: { current: "\n", indent: "    " } }));
+		contents.getRelativePath("Info.plist").write($exports.plist.xml.encode(info).serialize({ pretty: { current: "\n", indent: "    " } }));
 		if (p.command) {
 			var path = "MacOS/" + info.CFBundleExecutable;
 			contents.getRelativePath(path).write("#!/bin/bash\n" + p.command, { append: false, recursive: true });
@@ -268,5 +269,4 @@ $exports.bundle.osx = function(p) {
 			}
 		}
 	}
-};
-
+});
