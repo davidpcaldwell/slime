@@ -894,6 +894,9 @@ os.resolve(function() {
 											bundle.info = "foo";
 											verify(bundle).info.is.type("object");
 											verify(bundle).info.CFBundleName.is("name");
+											verify(bundle).info.CFBundleIdentifier.is("com.bitbucket.davidpcaldwell.slime");
+											verify(bundle).info.CFBundleVersion.is("1");
+											verify(bundle).info.CFBundleExecutable.is("program");
 										</script>
 									</li>
 								</ul>
