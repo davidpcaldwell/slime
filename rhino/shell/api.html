@@ -875,6 +875,8 @@ os.resolve(function() {
 											<span>__DESCRIPTION__</span>
 										</div>
 										<script type="application/x.jsapi#tests">
+											var tmpfile = $jsapi.file.newTemporaryDirectory().getRelativePath("tmp.icns");
+											tmpfile.write("ICONS", { append: false });
 											var tmp = $jsapi.file.newTemporaryDirectory().pathname;
 											tmp.directory.remove();
 											var bundle = new module.system.apple.osx.ApplicationBundle({
@@ -886,6 +888,9 @@ os.resolve(function() {
 													CFBundleExecutable: {
 														name: "program",
 														command: "ls"
+													},
+													CFBundleIconFile: {
+														file: tmpfile.file
 													}
 												}
 											});
@@ -899,6 +904,7 @@ os.resolve(function() {
 											verify(bundle).info.CFBundleExecutable.is("program");
 											verify(bundle).directory.getFile("Contents/MacOS/program").is.type("object");
 											verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("null");
+											verify(bundle).directory.getFile("Contents/Resources/tmp.icns").is.type("object");
 											
 											bundle.info.CFBundleExecutable = "string";
 											verify(bundle).info.CFBundleExecutable.is("string");

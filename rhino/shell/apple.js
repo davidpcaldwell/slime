@@ -148,7 +148,7 @@ $exports.osx.ApplicationBundle = function(p) {
 
 		if (typeof(info.CFBundleIconFile) == "object") {
 			if (info.CFBundleIconFile.file) {
-				var resources = base.getRelativePath("Resources").createDirectory({
+				var resources = base.getRelativePath("Contents/Resources").createDirectory({
 					ifExists: function() {
 						return false;
 					}
