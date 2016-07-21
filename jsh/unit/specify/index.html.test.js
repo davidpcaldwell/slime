@@ -76,6 +76,52 @@ $loader.run("jsh/unit/browser/webview.js", {}, {
 	}
 });
 
+//	TODO	should be able to refactor this into a specification file, or at least a test file paired with
+//			the API, perhaps
+var whitespace = new unit.Scenario();
+whitespace.target(inonit.loader.loader.value("whitespace.js"));
+whitespace.test(new function() {
+	this.check = function(verify) {
+		verify(this).evaluate.property("before").is.type("function");
+		verify(this).before("\t\ta").is("\t\t");
+		verify(this).before("\t\t").is("\t\t");
+		verify(this).before("a").is("");
+		verify(this).before("").is("");
+
+		verify(this).after("\t\tb").is("");
+		verify(this).after("\t\tb\t").is("\t");
+		verify(this).after("b\t").is("\t");
+		verify(this).after("b").is("");
+		verify(this).after("").is("");
+		verify(this).after("a\t\tb\t").is("\t");
+
+		var is = function(s) {
+			return function() {
+				return this.is(s);
+			}
+		};
+
+		verify(this).evaluate(is("")).is(true);
+		verify(this).evaluate(is(" ")).is(true);
+		verify(this).evaluate(is("\t")).is(true);
+		verify(this).evaluate(is("a")).is(false);
+		verify(this).evaluate(is(" a")).is(false);
+		verify(this).evaluate(is("a ")).is(false);
+		verify(this).evaluate(is(" a ")).is(false);
+
+		verify(this).common(["\t\ta", "\ta"]).is("\t");
+		verify(this).common(["\t\ta", "\t    a"]).is("\t");
+		verify(this).common(["\t\ta", "a"]).is("");
+		verify(this).common(["", "\t\ta", "\ta", "\tb", "\t"]).is("\t");
+	}
+});
+
+var page = new function() {
+	this.getHeadRows = function() {
+		return document.getElementById("head").getElementsByTagName("table")[0].getElementsByTagName("tbody")[0].rows;
+	}
+}
+
 var initial = new unit.Scenario();
 initial.test({
 	check: function(verify) {
@@ -146,6 +192,39 @@ title.test({
 	}
 });
 
+var comment = new unit.Scenario();
+comment.target(new function() {
+	var comment = function(row) {
+		row.getTextArea = function() {
+			return this.cells[1].getElementsByTagName("textarea")[0];
+		}
+		return row;
+	};
+
+	this.getApiLocationComment = function() {
+		return comment(page.getHeadRows()[1]);
+	}
+
+	this.getApiProtocolComment = function() {
+		return comment(page.getHeadRows()[2]);
+	}
+});
+comment.test({
+	check: function(verify) {
+		verify(this).getApiLocationComment().cells[0].innerHTML.is("(comment)");
+		var propertyStartsWith = function(name,prefix) {
+			return function() {
+				return this[name].substring(0,prefix.length) == prefix;
+			};
+		}
+		verify(this).getApiLocationComment().getTextArea().evaluate(propertyStartsWith("value","TODO")).is(true);
+		var lines = this.getApiProtocolComment().getTextArea().value.split("\n");
+		verify(lines).length.is(2);
+		verify(lines).evaluate(propertyStartsWith(0,"These")).is(true);
+		verify(lines).evaluate(propertyStartsWith(1,"work")).is(true);
+	}
+});
+
 var selection = new unit.Scenario();
 selection.target(new function() {
 	this.content = new function() {
@@ -192,8 +271,10 @@ selection.test({
 var suite = new api.Suite({
 	name: "Suite",
 	parts: {
+		whitespace: whitespace,
 		initial: initial,
 		title: title,
+		comment: comment,
 		selection: selection
 	}
 });

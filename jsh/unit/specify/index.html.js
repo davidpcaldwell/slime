@@ -11,6 +11,8 @@ window.addEventListener('load', function() {
     xhr.send();
     var settings = JSON.parse(xhr.responseText);
 
+    var whitespace = inonit.loader.loader.value("whitespace.js");
+
     var react = function(f) {
         return function() {
             var iframe = document.getElementById("target");
@@ -115,7 +117,6 @@ window.addEventListener('load', function() {
 				document.getElementById("title").innerHTML = span.innerHTML;
 				var title = document.getElementById("target").contentDocument.getElementsByTagName("title")[0];
 				title.innerHTML = span.innerHTML;
-				debugger;
 			});
 		});
 
@@ -126,9 +127,122 @@ window.addEventListener('load', function() {
 
 		var handleComment = handleRow(function(child,label,editor) {
 			label.innerHTML = "(comment)";
-			var commentSpan = document.createElement("span");
-			commentSpan.appendChild(document.createTextNode(child.data));
-			editor.appendChild(commentSpan);			
+
+			var CommentData = function(parent,target) {
+				var startIndent = (function(child) {
+					var previous = child.previousSibling;
+					if (!previous) return "";
+					if (previous.nodeName != "#text") return "";
+					var tokens = previous.data.split("\n");
+					if (tokens.length == 1) return whitespace.before(previous.data);
+					return tokens[tokens.length-1];
+				})(child);
+
+				var multiline = function(data) {
+					return data.split("\n").filter(function(line) {
+						return !whitespace.is(line);
+					}).length > 1;					
+				};
+
+				var TAB_WIDTH = 4;
+
+				var endIndent = (function(child) {
+					var tokens = child.data.split("\n");
+					if (tokens.length == 1) {
+						return whitespace.after(child.data);
+					} else {
+						return whitespace.before(tokens[tokens.length-1]);
+					}
+				})(child);
+
+				//	TODO	may want to reverse this thinking: use standard editor width (132?) and reduce by
+				//			the width of the indent?
+				var maxWidth = function(content) {
+					var indent = 0;
+// 					for (var i=0; i<content.indent.length; i++) {
+// 						if (content.indent.substring(i,i+1) == "\t") {
+// 							indent += TAB_WIDTH;
+// 						} else {
+// 							indent++;
+// 						}
+// 					};
+					var rv = 0;
+					content.lines.forEach(function(line) {
+						if ((indent + line.length) > rv) {
+							rv = indent + line.length;
+						}
+					});
+					return rv;
+				}
+
+				var toEditor = function(data) {
+					var content = whitespace.content(data);
+					return content.lines.join("\n");
+				};
+
+				var fromEditor = function(data,value) {
+					var content = whitespace.content(data);
+					var lines = value.split("\n");
+					var rv = [];
+					rv.push.apply(rv,before);
+					rv.push.apply(rv,lines.map(function(line) {
+						return content.indent + line;
+					}));
+					rv.push.apply(rv,after);
+					return rv.join("\n");
+				}
+
+				var commentSpan = document.createElement("span");
+				commentSpan.appendChild(document.createTextNode(child.data));
+				var commentInput = document.createElement("textarea");
+				var content = whitespace.content(child.data);
+				var width = maxWidth(content);
+				commentInput.cols = (width > 80) ? width : 80;
+				commentInput.rows = (content.lines.length > 1) ? content.lines.length : 1;
+				commentInput.style.fontFamily = "monospace";
+				commentInput.style.tabSize = TAB_WIDTH;
+				commentInput.value = toEditor(child.data);
+
+				var defaults = {
+					span: {
+						display: window.getComputedStyle(commentSpan).display
+					},
+					input: {
+						display: window.getComputedStyle(commentInput).display
+					}
+				};
+
+				var show = {
+					entered: function() {
+						commentSpan.style.display = defaults.span.display;
+						commentInput.style.display = "none";
+					}
+				};
+
+				var edit = {
+					entered: function() {
+						commentSpan.style.display = "none";
+						commentInput.style.display = defaults.input.display;
+					}
+				}
+				var state;
+
+				var update = function(to) {
+					state = to;
+					state.entered();
+				}
+
+				update(show);
+
+				commentSpan.addEventListener("click", function(e) {
+					update(edit);
+				});
+
+				parent.appendChild(commentSpan);
+				parent.appendChild(commentInput);				
+			};
+
+			CommentData(editor,child);
 		});
 
 		var handleOther = handleRow(function(child,label,editor) {
