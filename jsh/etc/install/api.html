@@ -76,8 +76,12 @@ END LICENSE
 			scope.harness.tar = tmpdest.getFile("directory.tar.gz");
 			scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
 
-			var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
-			scope.server = server;
+			if (jsh.httpd.Tomcat) {
+				var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
+				scope.server = server;
+			} else {
+				scope.server = null;
+			}
 		</script>
 		<div>
 			<h1>Exports</h1>
@@ -214,7 +218,7 @@ END LICENSE
 						})();
 
 						//	Test a downloaded file
-						(function() {
+						if (server) (function() {
 							var tmp = tmpdir();
 							verify(downloads).getFile("directory.tar.gz").is(null);
 							api.gzip({
@@ -228,53 +232,57 @@ END LICENSE
 						//	TODO	ensure when a copy has already been downloaded, the cached version is used
 					</script>
 					<script type="application/x.jsapi#destroy">
-						scope.server.stop();
+						if (scope.server) scope.server.stop();
 					</script>
 				</li>
 				<li class="object">
 					<script type="application/x.jsapi#initialize">
-						var mock = new jsh.httpd.Tomcat();
-						mock.map({
-							path: "/",
-							servlets: {
-								"/*": {
-									load: function(scope) {
-										Packages.java.lang.System.err.println("custom servlet loading ...");
-										scope.$exports.handle = function(request) {
-											Packages.java.lang.System.err.println("Got request ...");
-											var host = request.headers.value("host");
-											Packages.java.lang.System.err.println("host = " + host);
-											if (host == "www.apache.org") {
-												if (request.path == "dyn/closer.cgi") {
+						if (jsh.httpd.Tomcat) {
+							var mock = new jsh.httpd.Tomcat();
+							mock.map({
+								path: "/",
+								servlets: {
+									"/*": {
+										load: function(scope) {
+											Packages.java.lang.System.err.println("custom servlet loading ...");
+											scope.$exports.handle = function(request) {
+												Packages.java.lang.System.err.println("Got request ...");
+												var host = request.headers.value("host");
+												Packages.java.lang.System.err.println("host = " + host);
+												if (host == "www.apache.org") {
+													if (request.path == "dyn/closer.cgi") {
+														return {
+															status: { code: 200 },
+															body: {
+																type: "application/json",
+																string: JSON.stringify({
+																	preferred: "http://apache.inonit.com/"
+																})															
+															}
+														};
+													}
+												}
+												if (host == "apache.inonit.com") {
 													return {
 														status: { code: 200 },
-														body: {
-															type: "application/json",
-															string: JSON.stringify({
-																preferred: "http://apache.inonit.com/"
-															})															
-														}
+														body: $jsapi.loader.get(request.path)
 													};
 												}
-											}
-											if (host == "apache.inonit.com") {
-												return {
-													status: { code: 200 },
-													body: $jsapi.loader.get(request.path)
-												};
-											}
-										};
-										Packages.java.lang.System.err.println("custom servlet loaded.");										
+											};
+											Packages.java.lang.System.err.println("custom servlet loaded.");										
+										}
 									}
-								}
-							},
-							resources: null
-						});
-						mock.start();
-						scope.mock = mock;
+								},
+								resources: null
+							});
+							mock.start();
+							scope.mock = mock;
+						} else {
+							scope.mock = null;
+						}
 					</script>
 					<script type="application/x.jsapi#destroy">
-						scope.mock.stop();
+						if (scope.mock) scope.mock.stop();
 					</script>
 					<div class="name">apache</div>
 					<span>__DESCRIPTION__</span>
@@ -282,38 +290,40 @@ END LICENSE
 					<ul>
 					</ul>
 					<script type="application/x.jsapi#tests">
-						verify(api).apache.is.type("object");
-						verify(api).apache.evaluate.property("download").is.type("function");
-						verify(mock).is.type("object");
-						
-						var PROXY = {
-							http: {
-								host: "127.0.0.1",
-								port: mock.port
-							}
-						};
-						
-						var mockdownloads = $jsapi.file.newTemporaryDirectory();
-						var mockclient = new jsh.http.Client({
-							proxy: PROXY
-						});
-						var mockapi = $jsapi.loader.module("module.js", {
-							client: mockclient,
-							api: {
-								shell: jsh.shell,
-								http: jsh.http
-							},
-							downloads: mockdownloads							
-						});
-						
-						var GET_API_HTML = function() { return this.getFile("api.html") };
-						var EQUALS = function(string) { return function() { return this.read(String) == string; } };
-						verify(mockdownloads).evaluate(GET_API_HTML).is(null);
-						var file = mockapi.apache.find({ path: "api.html" });
-						var string = $jsapi.loader.string("api.html");
-						verify(file).evaluate(EQUALS(string)).is(true);
-						verify(mockdownloads).evaluate(GET_API_HTML).is.not(null);
-						verify(mockdownloads).getFile("api.html").evaluate(EQUALS(string)).is(true);
+						if (jsh.httpd.Tomcat) {
+							verify(api).apache.is.type("object");
+							verify(api).apache.evaluate.property("download").is.type("function");
+							verify(mock).is.type("object");
+
+							var PROXY = {
+								http: {
+									host: "127.0.0.1",
+									port: mock.port
+								}
+							};
+
+							var mockdownloads = $jsapi.file.newTemporaryDirectory();
+							var mockclient = new jsh.http.Client({
+								proxy: PROXY
+							});
+							var mockapi = $jsapi.loader.module("module.js", {
+								client: mockclient,
+								api: {
+									shell: jsh.shell,
+									http: jsh.http
+								},
+								downloads: mockdownloads							
+							});
+
+							var GET_API_HTML = function() { return this.getFile("api.html") };
+							var EQUALS = function(string) { return function() { return this.read(String) == string; } };
+							verify(mockdownloads).evaluate(GET_API_HTML).is(null);
+							var file = mockapi.apache.find({ path: "api.html" });
+							var string = $jsapi.loader.string("api.html");
+							verify(file).evaluate(EQUALS(string)).is(true);
+							verify(mockdownloads).evaluate(GET_API_HTML).is.not(null);
+							verify(mockdownloads).getFile("api.html").evaluate(EQUALS(string)).is(true);
+						}
 					</script>
 				</li>
 			</ul>
