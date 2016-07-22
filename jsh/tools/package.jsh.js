@@ -10,10 +10,13 @@
 //	Contributor(s):
 //	END LICENSE
 
+if (!jsh.shell.jsh.home) {
+	jsh.test.requireBuiltShell();
+}
+
 var parameters = jsh.script.getopts({
 	options: {
-		jsh: jsh.script.getRelativePath("..")
-		,script: jsh.file.Pathname
+		script: jsh.file.Pathname
 		//	module format is name=pathname
 		,module: jsh.script.getopts.ARRAY(String)
 		//	file format is topath=pathname
@@ -36,6 +39,7 @@ if (!parameters.options.script) {
 	jsh.shell.echo("Required: -script <pathname>");
 	jsh.shell.exit(1);
 }
+
 if (!parameters.options.script.file) {
 	jsh.shell.echo("Not found: -script " + parameters.options.script);
 	jsh.shell.exit(1);
@@ -57,13 +61,15 @@ var to = (function() {
 	return jsh.file.filesystems.os.Pathname(String(jsh.shell.properties.object.java.io.tmpdir)).directory.createTemporary({ directory: true });
 })();
 
-var JSH = parameters.options.jsh.directory;
+var JSH = jsh.shell.jsh.home;
+
+jsh.shell.console("Using built shell at " + JSH + " to package.");
 
 if (UNZIP_RHINO_WHEN_PACKAGING) {
-	jsh.file.unzip({ zip: JSH.getFile("lib/js.jar"), to: to });
+	jsh.file.unzip({ zip: jsh.shell.jsh.lib.getFile("js.jar"), to: to });
 }
 if (!parameters.options.norhino) {
-	to.getRelativePath("$jsh/rhino.jar").write(JSH.getFile("lib/js.jar").read(jsh.file.Streams.binary), { recursive: true });
+	to.getRelativePath("$jsh/rhino.jar").write(jsh.shell.jsh.lib.getFile("js.jar").read(jsh.file.Streams.binary), { recursive: true });
 }
 
 jsh.file.unzip({ zip: JSH.getFile("jsh.jar"), to: to });

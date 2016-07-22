@@ -10,4 +10,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-$exports.bar = "baz";
+debugger;
+jsh.shell.echo(JSON.stringify({
+	file: jsh.script.file.toString(),
+	resolved: jsh.script.file.pathname.file.toString()
+}));
+

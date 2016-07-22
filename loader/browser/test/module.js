@@ -430,7 +430,7 @@ $exports.fire = new function() {
 
 		this.create = function() {
 			if (document.createEvent) {
-				var rv = document.createEvent("KeyboardEvent");
+				var rv = new KeyboardEvent(name,this);
 				var v = this;
 				var modifiers = [];
 				if (this.ctrlKey) modifiers.push("Control");

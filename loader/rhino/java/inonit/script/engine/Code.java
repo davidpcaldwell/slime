@@ -926,12 +926,16 @@ public abstract class Code {
 
 			public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
-				if (location == StandardLocation.CLASS_PATH) {
-					int lastPeriod = file.getName().lastIndexOf(".");
-					if (lastPeriod == -1) throw new RuntimeException("No period: " + file.getName());
-					String rv = file.getName().substring(0,lastPeriod).replace(java.io.File.separator, ".");
-					return rv;
-				}
+				if (location == StandardLocation.CLASS_PATH) return delegate.inferBinaryName(location, file);
+//				if (location == StandardLocation.CLASS_PATH) {
+//					System.err.println("inferbinaryname " + location + " " + file);
+//					int lastPeriod = file.getName().lastIndexOf(".");
+//					if (lastPeriod == -1) throw new RuntimeException("No period: " + file.getName());
+//					String rv = file.getName().substring(0,lastPeriod).replace(java.io.File.separator, ".");
+//					System.err.println("inferbinaryname " + location + " " + file + " " + rv);
+//					System.err.println("delegate " + location + " " + file + " " + delegate.inferBinaryName(location, file));
+//					return rv;
+//				}
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
@@ -1038,7 +1042,7 @@ public abstract class Code {
 							);
 							boolean success = task.call();
 							if (!success) {
-								throw new RuntimeException("Failure");
+								throw new RuntimeException("Failure: sourceFile=" + sourceFile + " jfo=" + jfo);
 							}
 						}
 					}

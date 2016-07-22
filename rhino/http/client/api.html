@@ -544,29 +544,31 @@ END LICENSE
 										<span>The proxy server to use for the given request.</span>
 									</div>
 									<script type="application/x.jsapi#tests">
-										servlet.set(function(_request,_response) {
-											_response.getWriter().print(_request.getHeader("host"));
-										});
-										var lastArgument;
-										var client = new module.Client({
-											proxy: function(request) {
-												lastArgument = request;
-												return {
-													http: {
-														host: "127.0.0.1",
-														port: context.port
+										if (!context.notomcat) {
+											servlet.set(function(_request,_response) {
+												_response.getWriter().print(_request.getHeader("host"));
+											});
+											var lastArgument;
+											var client = new module.Client({
+												proxy: function(request) {
+													lastArgument = request;
+													return {
+														http: {
+															host: "127.0.0.1",
+															port: context.port
+														}
 													}
 												}
-											}
-										});
-										var host = client.request({
-											url: "http://foo.bar/baz",
-											evaluate: function(response) {
-												return response.body.stream.character().asString();
-											}
-										});
-										verify(lastArgument).url.is("http://foo.bar/baz");
-										verify(host).is("foo.bar");
+											});
+											var host = client.request({
+												url: "http://foo.bar/baz",
+												evaluate: function(response) {
+													return response.body.stream.character().asString();
+												}
+											});
+											verify(lastArgument).url.is("http://foo.bar/baz");
+											verify(host).is("foo.bar");
+										}
 									</script>
 								</li>
 								<li class="value">
@@ -576,22 +578,24 @@ END LICENSE
 										(optional) 
 										A proxy server to use for all requests.
 									</span>
-									<script type="application/x.jsapi#tests">										
-										var all = new module.Client({
-											proxy: {
-												http: {
-													host: "127.0.0.1",
-													port: context.port
+									<script type="application/x.jsapi#tests">
+										if (!context.notomcat) {
+											var all = new module.Client({
+												proxy: {
+													http: {
+														host: "127.0.0.1",
+														port: context.port
+													}
 												}
-											}
-										});
-										var host2 = all.request({
-											url: "http://foo.bar.baz/",
-											evaluate: function(response) {
-												return response.body.stream.character().asString();
-											}											
-										});
-										verify(host2).is("foo.bar.baz");
+											});
+											var host2 = all.request({
+												url: "http://foo.bar.baz/",
+												evaluate: function(response) {
+													return response.body.stream.character().asString();
+												}											
+											});
+											verify(host2).is("foo.bar.baz");
+										}
 									</script>
 								</li>
 							</ul>

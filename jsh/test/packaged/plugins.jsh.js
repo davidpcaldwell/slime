@@ -10,14 +10,11 @@
 //	Contributor(s):
 //	END LICENSE
 
-var file = jsh.script.loader.file("packaged.file.js");
-if (file.foo != "bar") {
-	throw new Error("Failed to load file.");
+if (jsh.script.script) {
+	jsh.loader.plugins(jsh.script.file.getRelativePath("a"));
 }
-
-//	TODO	would there be a way to make jsh.script.loader.module("packaged") work? It would be intuitive
-var module = jsh.script.loader.module("packaged/");
-if (module.foo != "baz") {
-	throw new Error("Failed to load module.");
-}
-jsh.shell.echo("Loaded both.");
+$api.debug.disableBreakOnExceptionsFor(function(x) {
+});
+var client = new jsh.http.Client();
+jsh.a.log("Hello, World!");
+a.log("Hello, World!");

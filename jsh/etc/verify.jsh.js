@@ -103,6 +103,7 @@ parameters.options.java.forEach(function(jre) {
 						unit: jsh.unit.Suite.Fork({
 							name: "Unit tests",
 							run: jsh.shell.jsh,
+							vmarguments: ["-Xms1024m"],
 							shell: SLIME,
 							script: SLIME.getFile("jsh/etc/unit.jsh.js"),
 							arguments: ["-view", "stdio"],

@@ -13,8 +13,6 @@
 
 var client = ($context.client) ? $context.client : new $context.api.http.Client();
 
-var file = $loader.file("api.js", $context);
-
 var addDefaults = function(p) {
 	if (!p.on) p.on = {};
 	if (!p.on.console) p.on.console = function(){};
@@ -74,6 +72,10 @@ $exports.gzip = function(p) {
 };
 
 var api = $loader.file("api.js", {
+	api: {
+		http: $context.api.http,
+		shell: $context.api.shell
+	},
 	downloads: $context.downloads
 });
 

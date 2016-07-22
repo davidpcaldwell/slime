@@ -16,10 +16,15 @@
 //			be used for unbuilt shells? Or perhaps for built shells, it should overwrite jsh.jar?
 var parameters = jsh.script.getopts({
 	options: {
-		local: jsh.file.Pathname
+		local: jsh.file.Pathname,
+		replace: false
 	}
 });
 
+if (jsh.shell.jsh.lib.getFile("js.jar") && !parameters.options.replace) {
+	jsh.shell.console("Rhino already installed at " + jsh.shell.jsh.lib.getFile("js.jar"));
+	jsh.shell.exit(0);
+}
 jsh.shell.echo("Installing Rhino ...");
 var operation = "copy";
 if (!parameters.options.local) {

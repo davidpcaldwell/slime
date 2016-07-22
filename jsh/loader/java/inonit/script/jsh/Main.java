@@ -371,7 +371,7 @@ public class Main {
 			final Shell.Installation.Extensions plugins = Shell.Installation.Extensions.create(new Shell.Installation.Extensions[] {
 				unpackaged.getModules(),
 				unpackaged.getShellPlugins(),
-				Plugins.create(new File(new File(System.getProperty("user.home")), ".jsh/plugins"))
+				Plugins.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
 			});
 			return Shell.Installation.create(
 				unpackaged.getLoader(),
@@ -473,7 +473,6 @@ public class Main {
 			if (System.getProperty("jsh.shell.plugins") != null) {
 				return Location.create(System.getProperty("jsh.shell.plugins")).plugins();
 			}
-			//	TODO	this is basically a dummy file that contains no plugins, to make the calling code simpler
 			return Plugins.EMPTY;
 		}
 	}

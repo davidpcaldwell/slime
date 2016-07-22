@@ -269,9 +269,16 @@ os.resolve(function() {
 									<script type="application/x.jsapi#tests">
 										var name = module.os.resolve({
 											"Mac OS X": "-Mac OS X",
-											"Linux": "-Linux"
+											"Linux": "-Linux",
+											"Windows": "-Windows"
 										});
-										verify(name).is("-" + module.os.name);
+										if (module.os.name == "Windows 7") {
+											verify(name).is("-Windows");
+										} else if (module.os.name == "Mac OS X") {
+											verify(name).is("-Mac OS X");
+										} else if (module.os.name == "Linux") {
+											verify(name).is("-Linux")
+										}
 									</script>
 								</li>
 							</ol>
@@ -470,11 +477,12 @@ os.resolve(function() {
 												}
 											});
 										};
-										result = runLines("Hello, World!\nLine 2");
+										var nl = jsh.shell.os.newline;
+										result = runLines("Hello, World!" + nl + "Line 2");
 										verify(result).stdio.output.length.is(2);
 										verify(result).stdio.output[0].is("Hello, World!");
 										verify(result).stdio.output[1].is("Line 2");
-										result = runLines("Hello, World!\nLine 2\n");
+										result = runLines("Hello, World!" + nl + "Line 2" + nl);
 										verify(result).stdio.output.length.is(3);
 										verify(result).stdio.output[0].is("Hello, World!");
 										verify(result).stdio.output[1].is("Line 2");

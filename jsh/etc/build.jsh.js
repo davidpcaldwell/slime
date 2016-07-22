@@ -52,7 +52,6 @@ var parameters = jsh.script.getopts({
 
 jsh.script.loader = new jsh.script.Loader("../../");
 
-jsh.shell.echo("jsh.script.url = " + jsh.script.url);
 var jrunscript = (function() {
 	var THIS = {
 	};

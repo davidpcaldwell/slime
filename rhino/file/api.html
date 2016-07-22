@@ -1155,7 +1155,7 @@ END LICENSE
 				this.dir = scope.newTemporaryDirectory(this.filesystem);
 				this.module = { Streams: scope.context.$Context.api.io.Streams };
 			}
-			if (!_context.dir) throw "Missing context.dir";
+			if (!_context.dir) throw new Error("Missing context.dir");
 			var filesystem = _context.filesystem;
 
 			var dir = _context.dir.getRelativePath("filetests").createDirectory();

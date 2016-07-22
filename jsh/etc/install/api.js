@@ -13,10 +13,8 @@
 
 var downloads = (function() {
 	if ($context.downloads) return $context.downloads;
-	if (Packages.java.lang.System.getProperty("jsh.build.downloads")) return jsh.file.Pathname(String(Packages.java.lang.System.getProperty("jsh.build.downloads"))).directory;
-	return (jsh.shell.environment.JSH_BUILD_DOWNLOADS) ? jsh.file.Pathname(jsh.shell.environment.JSH_BUILD_DOWNLOADS).directory : null;
 })();
-var client = new jsh.http.Client();
+var client = new $context.api.http.Client();
 
 $exports.downloads = downloads;
 
@@ -24,9 +22,9 @@ $exports.download = function(p) {
 	var name = (p.name) ? p.name : p.url.split("/").slice(-1)[0];
 	var rv;
 	if (!downloads || !downloads.getFile(name)) {
-		var tmp = jsh.shell.TMPDIR.createTemporary({ suffix: ".download" });
+		var tmp = $context.api.shell.TMPDIR.createTemporary({ suffix: ".download" });
 		tmp.remove();
-		jsh.shell.echo("Downloading from " + p.url);
+		$context.api.shell.echo("Downloading from " + p.url);
 		var response = client.request({
 			url: p.url
 		});
@@ -41,7 +39,7 @@ $exports.download = function(p) {
 			return tmp;
 		}
 	} else {
-		jsh.shell.echo("Using cached file: " + downloads.getFile(name));
+		$context.api.shell.echo("Using cached file: " + downloads.getFile(name));
 		return downloads.getFile(name);
 	}
 }

@@ -93,7 +93,11 @@ $exports.Console = function(o) {
 			if (e.cause == e) {
 				throw new Error("Bug in setting cause");
 			}
-			printError(e.cause);
+			if (jsh.java.isJavaObject(e.cause)) {
+				printError({ javaException: e.cause });
+			} else {
+				printError(e.cause);
+			}
 		}
 		if (e.getStackTrace) {
 			var trace = e.getStackTrace();

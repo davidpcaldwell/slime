@@ -357,12 +357,15 @@ $exports.os = new function() {
 	this.name = $exports.properties.get("os.name");
 	this.arch = $exports.properties.get("os.arch");
 	this.version = $exports.properties.get("os.version");
+	this.newline = $exports.properties.get("line.separator");
 
 	this.resolve = function(p) {
 		if (typeof(p) == "function") {
 			return p.call(this);
 		} else if (typeof(p) == "object") {
-			return p[this.name];
+			if (p[this.name]) return p[this.name];
+			if (/^Windows/.test(this.name) && p.Windows) return p.Windows;
+			if ( (this.name == "Linux" || this.name == "Mac OS X") && p.UNIX ) return p.UNIX;
 		}
 	}
 };

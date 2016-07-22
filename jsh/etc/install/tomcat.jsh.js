@@ -26,9 +26,9 @@ var getLatestVersion = function() {
 	} catch (e) {
 		jsh.shell.echo("Could not get latest Tomcat 7 version from tomcat.apache.org (offline?) ...");
 		//	TODO	probably should implement some sort of jsh.shell.user.downloads
-		if (jsh.shell.environment.JSH_BUILD_DOWNLOADS) {
-			jsh.shell.echo("Checking downloads at " + jsh.shell.environment.JSH_BUILD_DOWNLOADS + " ...");
-			var downloads = jsh.file.Pathname(jsh.shell.environment.JSH_BUILD_DOWNLOADS).directory;
+		if (jsh.shell.user.downloads) {
+			jsh.shell.echo("Checking downloads at " + jsh.shell.user.downloads + " ...");
+			var downloads = jsh.shell.user.downloads;
 			var pattern = arguments.callee.pattern;
 			var local = downloads.list().filter(function(node) {
 				return !node.directory && pattern.test(node.pathname.basename);
@@ -64,7 +64,8 @@ getLatestVersion.pattern = /^apache-tomcat-(\d+)\.(\d+)\.(\d+)\.zip$/;
 var parameters = jsh.script.getopts({
 	options: {
 		version: String,
-		local: jsh.file.Pathname
+		local: jsh.file.Pathname,
+		replace: false
 	}
 });
 
@@ -78,10 +79,9 @@ if (!parameters.options.local) {
 		jsh.shell.exit(1);
 	}
 
-	var api = jsh.script.loader.file("api.js");
-	var apache = jsh.script.loader.file("apache.js", { api: api });
-
-	var zip = apache.download({
+	jsh.loader.plugins(jsh.script.file.parent.pathname);
+	
+	var zip = jsh.tools.install.apache.find({
 		path: "tomcat/tomcat-7/v" + parameters.options.version + "/bin/apache-tomcat-" + parameters.options.version + ".zip"
 	});
 	parameters.options.local = zip.pathname;
@@ -99,6 +99,10 @@ if (!parameters.options.local) {
 			jsh.shell.exit(1);
 		}
 	}
+}
+if (jsh.shell.jsh.lib.getSubdirectory("tomcat") && !parameters.options.replace) {
+	jsh.shell.console("Tomcat already installed at " + jsh.shell.jsh.lib.getSubdirectory("tomcat"));
+	jsh.shell.exit(0);
 }
 var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 jsh.shell.echo("Unzipping to: " + to);

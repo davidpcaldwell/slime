@@ -85,6 +85,7 @@ plugin({
 			var parameters = jsh.script.getopts({
 				options: {
 					scenario: false,
+					part: String,
 					view: "console"
 				},
 				unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
@@ -95,7 +96,8 @@ plugin({
 					name: jsh.script.file.pathname.basename
 				});
 				o.scenario.call(scenario,getopts);
-				jsh.unit.interface.create(scenario, { view: parameters.options.view });
+				var path = (parameters.options.part) ? parameters.options.part.split("/") : void(0);
+				jsh.unit.interface.create(scenario, { view: parameters.options.view, path: path });
 			} else {
 				o.run(getopts);
 			}
@@ -133,7 +135,11 @@ plugin({
 //				} else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 //					args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
 //				}
-				var SLIME = (p && p.src) ? p.src : jsh.script.file.parent.parent.parent;
+				var SLIME = (function(p) {
+					if (p && p.src) return p.src;
+					if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getSubdirectory("src");
+					return jsh.shell.jsh.src;
+				})(p);
 				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
 				args.push("jsh");
 				args.push(SLIME.getRelativePath("jsh/etc/build.jsh.js"));
