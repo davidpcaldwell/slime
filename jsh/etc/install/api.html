@@ -66,15 +66,18 @@ END LICENSE
 
 			var tmpdest = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-			jsh.shell.run({
-				command: "tar",
-				arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
-				directory: tmpdir
-			});
-
 			scope.harness = {};
-			scope.harness.tar = tmpdest.getFile("directory.tar.gz");
-			scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+
+			if (jsh.shell.PATH.getCommand("tar")) {
+				jsh.shell.run({
+					command: "tar",
+					arguments: ["czvf", tmpdest.getRelativePath("directory.tar.gz"), "directory"],
+					directory: tmpdir
+				});
+
+				scope.harness.tar = tmpdest.getFile("directory.tar.gz");
+				scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
+			}
 
 			if (jsh.httpd.Tomcat) {
 				var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
@@ -188,7 +191,7 @@ END LICENSE
 						verify(api).is.type("object");
 						verify(api).evaluate(function() { return this.gzip; }).is.type("function");
 					</script>
-					<script type="application/x.jsapi#tests">
+					<script type="application/x.jsapi#tests"><![CDATA[
 						var tmpdir = function() {
 							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 							tmp.directory.remove();
@@ -198,27 +201,29 @@ END LICENSE
 						var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						tmp.directory.remove();
 
-						api.gzip({
-							file: harness.tar,
-							to: tmp
-						});
-
-						verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
-
-						//	Test a file with different download name can also be expanded, using getDestinationPath()
-						(function() {
-							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-							tmp.directory.remove();
+						if (harness.tar) {
 							api.gzip({
-								file: harness.renamed,
-								to: tmp,
-								getDestinationPath: function() { return "directory"; }
+								file: harness.tar,
+								to: tmp
 							});
+
 							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
-						})();
+
+							//	Test a file with different download name can also be expanded, using getDestinationPath()
+							(function() {
+								var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+								tmp.directory.remove();
+								api.gzip({
+									file: harness.renamed,
+									to: tmp,
+									getDestinationPath: function() { return "directory"; }
+								});
+								verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
+							})();
+						}
 
 						//	Test a downloaded file
-						if (server) (function() {
+						if (server && harness.tar) (function() {
 							var tmp = tmpdir();
 							verify(downloads).getFile("directory.tar.gz").is(null);
 							api.gzip({
@@ -230,7 +235,7 @@ END LICENSE
 						})();
 						
 						//	TODO	ensure when a copy has already been downloaded, the cached version is used
-					</script>
+					]]></script>
 					<script type="application/x.jsapi#destroy">
 						if (scope.server) scope.server.stop();
 					</script>

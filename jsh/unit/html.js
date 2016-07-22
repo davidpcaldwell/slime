@@ -286,13 +286,28 @@ var Scope = function(suite,environment) {
 		java: {
 			loader: jsh.$jsapi.java,
 			io: {
-				newTemporaryDirectory: function() {
-					var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
-					var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
-					var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
-					dir.mkdirs();
-					return dir;
-				}
+				newTemporaryDirectory: (function() {
+					var tmpdir;
+					
+					var tmppath = function() {
+						var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
+						var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
+						var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
+						dir.mkdirs();
+						return dir;
+					};
+					
+					return function() {
+						if (!tmpdir) tmpdir = tmppath();
+						var rv = Packages.java.io.File.createTempFile("tmpdir-",".tmp",tmpdir);
+						rv["delete"]();
+						var success = rv.mkdirs();
+						if (!success) {
+							throw new Error("Failed to create " + rv);
+						}
+						return rv;
+					};
+				})()
 			}
 		}
 	};

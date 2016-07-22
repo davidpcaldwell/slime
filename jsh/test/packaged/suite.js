@@ -169,11 +169,18 @@ $set({
 							script: "plugins.jsh.js",
 							plugins: ["a"]
 						});
+						var windows = {};
+						//	TODO	these are case-insensitive on Windows, so this may not work
+						["TMP","TEMP","USERPROFILE"].forEach(function(name) {
+							if (jsh.shell.environment[name]) {
+								windows[name] = jsh.shell.environment[name];
+							}
+						});
 						var result = jsh.shell.java({
 							jar: packaged_plugins.jar,
-							environment: {
+							environment: jsh.js.Object.set({}, {
 								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"								
-							},
+							}, (/^Windows/.test(jsh.shell.os.name)) ? windows : {}),
 							stdio: {
 								output: String
 							}

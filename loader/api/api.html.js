@@ -53,13 +53,16 @@ var run = function() {
 			}
 		}
 	} catch (e) {
-		var cause = {};
-		for (var x in e) {
-			cause[x] = e[x];
-		}
-		e.cause = cause;
-		e.code = arguments[0];
-		throw e;
+		//	TODO	perhaps should define a custom error type here? $api does not currently allow this, but js/object does, so
+		//			should move that into $api
+		//	TODO	in any case, this design is dubious; creating "cause" at all seems primarily designed to support Java
+		//			exceptions; otherwise we could just add the 'code' property to the existing Error
+		//	If this is primarily to support Java exceptions, we are relying on the coincidence that the 'message' property can be
+		//	used to invoke Java getMessage(), and we should test it with Nashorn
+		var error = new Error(e.message);
+		error.cause = e;
+		error.code = arguments[0];
+		throw error;
 	}
 }
 

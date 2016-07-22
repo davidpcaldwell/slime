@@ -97,6 +97,7 @@ var ScriptVerifier = function(o) {
 				arguments: (o.arguments) ? o.arguments : [],
 				stdio: {
 					output: String,
+					error: o.error,
 					input: (o.input) ? o.input : null
 				},
 				environment: (o.environment) ? o.environment : jsh.shell.environment,
@@ -116,6 +117,7 @@ if (CATALINA_HOME) {
 		environment: jsh.js.Object.set({}, jsh.shell.environment, (false) ? {
 			JSH_DEBUG_SCRIPT: "rhino"
 		} : {}),
+		error: null,
 		execute: function(verify) {
 			verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("true");
 			verify(this.stdio.output.split(LINE_SEPARATOR))[1].is("true");

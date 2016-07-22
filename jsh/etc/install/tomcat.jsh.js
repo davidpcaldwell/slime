@@ -64,7 +64,8 @@ getLatestVersion.pattern = /^apache-tomcat-(\d+)\.(\d+)\.(\d+)\.zip$/;
 var parameters = jsh.script.getopts({
 	options: {
 		version: String,
-		local: jsh.file.Pathname
+		local: jsh.file.Pathname,
+		replace: false
 	}
 });
 
@@ -98,6 +99,10 @@ if (!parameters.options.local) {
 			jsh.shell.exit(1);
 		}
 	}
+}
+if (jsh.shell.jsh.lib.getSubdirectory("tomcat") && !parameters.options.replace) {
+	jsh.shell.console("Tomcat already installed at " + jsh.shell.jsh.lib.getSubdirectory("tomcat"));
+	jsh.shell.exit(0);
 }
 var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 jsh.shell.echo("Unzipping to: " + to);

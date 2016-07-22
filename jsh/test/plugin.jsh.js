@@ -85,6 +85,7 @@ plugin({
 			var parameters = jsh.script.getopts({
 				options: {
 					scenario: false,
+					part: String,
 					view: "console"
 				},
 				unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
@@ -95,7 +96,8 @@ plugin({
 					name: jsh.script.file.pathname.basename
 				});
 				o.scenario.call(scenario,getopts);
-				jsh.unit.interface.create(scenario, { view: parameters.options.view });
+				var path = (parameters.options.part) ? parameters.options.part.split("/") : void(0);
+				jsh.unit.interface.create(scenario, { view: parameters.options.view, path: path });
 			} else {
 				o.run(getopts);
 			}
