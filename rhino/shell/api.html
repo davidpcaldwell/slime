@@ -27,6 +27,10 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
+						<div class="name">js</div>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
 						<div class="name">java</div>
 						<span>The <a href="../host/api.html">rhino/host</a> module.</span>
 					</li>
@@ -37,6 +41,35 @@ END LICENSE
 					<li class="value">
 						<div class="name">file</div>
 						<span>The <a href="../file/api.html">rhino/file</a> module.</span>
+					</li>
+					<li class="value">
+						<div class="name">document</div>
+						<span>The <a href="../../js/document/api.html">js/document</a> module.</span>
+					</li>
+					<li class="object">
+						<div class="name">xml</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">parseFile</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">file</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">document</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</li>
@@ -102,7 +135,12 @@ END LICENSE
 						}
 					}
 				}),
-				document: $jsapi.loader.module("../../js/document/")
+				document: $jsapi.loader.module("../../js/document/"),
+				xml: {
+					parseFile: function(file) {
+						return new jsh.document.Document({ string: file.read(String) });
+					}
+				}
 			};
 			this._properties = Packages.java.lang.System.getProperties();
 			this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
@@ -125,7 +163,7 @@ END LICENSE
 		</script>
 		<h1>Exports</h1>
 		<ul>
-			<div class="type">
+			<div class="type" jsapi:id="types.stdio">
 				<a class="type" name="types.stdio">stdio</a>
 				<span>The standard I/O streams for a process.</span>
 				<div class="label">has properties:</div>
@@ -147,6 +185,172 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
+			<li class="object" jsapi:id="os">
+				<div class="name">os</div>
+				<span>An object representing the current operating system.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">name</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">arch</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">version</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="function">
+						<div class="name">resolve</div>
+						<span>
+							A function allowing operating system-specific code to be easily specified. Can be invoked with code
+							like:
+							<pre>
+os.resolve(function() {
+	if (this.name == "Linux") {
+		return /* Linux-specific value */;
+	} else {
+		//	...
+	}
+});
+							</pre>
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="function">
+									<span>
+										A function that resolves OS-specific code. It is invoked with the <code>os</code> object
+										representing the current operating system as <code>this</code> and can return a value
+										accordingly.
+									</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+											<li class="value">
+												<span class="type">object</span>
+												<span>The <code>os</code> property</span>
+											</li>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">(any)</span>
+										<span>A value for the current operating system.</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										var withColon = module.os.resolve(function() {
+											return {
+												name: ":" + this.name,
+												arch: ":" + this.arch,
+												version: ":" + this.version
+											}
+										});
+										verify(withColon).name.is(":" + module.os.name);
+										verify(withColon).arch.is(":" + module.os.arch);
+										verify(withColon).version.is(":" + module.os.version);
+									</script>
+								</li>
+							</ol>
+							- OR -
+							<ol>
+								<li class="value">
+									<span class="type">object</span>
+									<span>
+										An object with values representing the names of operating systems. The value of the
+										named property of the object corresponding to the current operating system will be
+										returned.
+									</span>
+									<script type="application/x.jsapi#tests">
+										var name = module.os.resolve({
+											"Mac OS X": "-Mac OS X",
+											"Linux": "-Linux",
+											"Windows": "-Windows"
+										});
+										if (module.os.name == "Windows 7") {
+											verify(name).is("-Windows");
+										} else if (module.os.name == "Mac OS X") {
+											verify(name).is("-Mac OS X");
+										} else if (module.os.name == "Linux") {
+											verify(name).is("-Linux")
+										}
+									</script>
+								</li>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="value" jsapi:id="environment">
+				<div class="name">environment</div>
+				<span class="type">object</span>
+				<span>
+					An object describing the operating system process environment under which this script was executed. Each
+					variable defined in the environment is represented as a property in this object, with its name being the name
+					of the property and its value being the value of that property. This object uses JavaScript semantics, and
+					thus this object has case-sensitive names. In the event that the underlying operating system has
+					environment variables that are <em>not</em> case-sensitive, all properties of this object will have
+					UPPERCASE names.
+				</span>
+				<script type="application/x.jsapi#tests">
+					var environment = module.environment;
+
+					test( typeof(environment.PATH) != "undefined" );
+					test( typeof(environment.ZZFF) == "undefined" );
+				</script>
+			</li>
+			<li class="value" jsapi:id="properties">
+				<div class="name">properties</div>
+				<span>
+					<b>(experimental)</b>
+					An object that attempts to allow the use of JavaScript semantics to access Java system properties. For example,
+					the <code>java.home</code> system property is referenced as <code>properties.java.home</code>. This value can be
+					examined using <code>String(properties.java.home)</code> to obtain its value as a <code>string</code>.
+				</span>
+			</li>
+			<li class="value" jsapi:id="TMPDIR">
+				<div class="name">TMPDIR</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<span>A temporary directory that may be used by this shell.</span>
+			</li>
+			<li class="value" jsapi:id="HOME">
+				<div class="name">HOME</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<span>The home directory of the user executing this shell.</span>
+			</li>
+			<li class="value" jsapi:id="PWD">
+				<div class="name">PWD</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+				<!--	TODO	can this be changed while the shell is running?	-->
+				<span>The current working directory.</span>
+			</li>
+			<li class="value" jsapi:id="PATH">
+				<div class="name">PATH</div>
+				<span class="type"><a href="../../rhino/file/api.html#types.searchpath">searchpath</a></span>
+				<span>__DESCRIPTION__</span>
+			</li>
+			<li class="object" jsapi:id="user">
+				<div class="name">user</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">downloads</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
+						<span>__DESCRIPTION__</span>
+					</li>
+				</ul>
+			</li>
 			<li class="function" jsapi:id="run">
 				<div class="name"><a id="exports.run">run</a></div>
 				<!--	TODO	document the 'on' property	-->
@@ -435,180 +639,82 @@ END LICENSE
 					</span>
 				</div>
 			</li>
-			<li class="object" jsapi:id="os">
-				<div class="name">os</div>
-				<span>An object representing the current operating system.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-					<li class="value">
-						<div class="name">arch</div>
-						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-					<li class="value">
-						<div class="name">version</div>
-						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-					<li class="function">
-						<div class="name">resolve</div>
-						<span>
-							A function allowing operating system-specific code to be easily specified. Can be invoked with code
-							like:
-							<pre>
-os.resolve(function() {
-	if (this.name == "Linux") {
-		return /* Linux-specific value */;
-	} else {
-		//	...
-	}
-});
-							</pre>
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="function">
-									<span>
-										A function that resolves OS-specific code. It is invoked with the <code>os</code> object
-										representing the current operating system as <code>this</code> and can return a value
-										accordingly.
-									</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">object</span>
-												<span>The <code>os</code> property</span>
-											</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">(any)</span>
-										<span>A value for the current operating system.</span>
-									</div>
-									<script type="application/x.jsapi#tests">
-										var withColon = module.os.resolve(function() {
-											return {
-												name: ":" + this.name,
-												arch: ":" + this.arch,
-												version: ":" + this.version
-											}
-										});
-										verify(withColon).name.is(":" + module.os.name);
-										verify(withColon).arch.is(":" + module.os.arch);
-										verify(withColon).version.is(":" + module.os.version);
-									</script>
-								</li>
-							</ol>
-							- OR -
-							<ol>
+			<li class="function" jsapi:id="java">
+				<div class="name">java</div>
+				<span>Launches a Java program.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="object">
+							<span>
+								An argument with the same specification as that for <code>shell</code>, with the following
+								differences:
+							</span>
+							<div class="label">has properties:</div>
+							<ul>
 								<li class="value">
-									<span class="type">object</span>
-									<span>
-										An object with values representing the names of operating systems. The value of the
-										named property of the object corresponding to the current operating system will be
-										returned.
-									</span>
-									<script type="application/x.jsapi#tests">
-										var name = module.os.resolve({
-											"Mac OS X": "-Mac OS X",
-											"Linux": "-Linux",
-											"Windows": "-Windows"
-										});
-										if (module.os.name == "Windows 7") {
-											verify(name).is("-Windows");
-										} else if (module.os.name == "Mac OS X") {
-											verify(name).is("-Mac OS X");
-										} else if (module.os.name == "Linux") {
-											verify(name).is("-Linux")
-										}
-									</script>
+									<div class="name">classpath</div>
+									<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
+									<span>The classpath to pass to the Java process.</span>
 								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-				</ul>
-			</li>
-			<li class="value" jsapi:id="environment">
-				<div class="name">environment</div>
-				<span class="type">object</span>
-				<span>
-					An object describing the operating system process environment under which this script was executed. Each
-					variable defined in the environment is represented as a property in this object, with its name being the name
-					of the property and its value being the value of that property. This object uses JavaScript semantics, and
-					thus this object has case-sensitive names. In the event that the underlying operating system has
-					environment variables that are <em>not</em> case-sensitive, all properties of this object will have
-					UPPERCASE names.
-				</span>
+								<li class="value">
+									<div class="name">main</div>
+									<span class="type">string</span>
+									<span>The name of the main class to execute.</span>
+								</li>
+							</ul>
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					<span class="type">(any)</span>
+					<span>The return value of the <code>evaluate</code> property of the argument.</span>
+				</div>
 				<script type="application/x.jsapi#tests">
-					var environment = module.environment;
-
-					test( typeof(environment.PATH) != "undefined" );
-					test( typeof(environment.ZZFF) == "undefined" );
+					debugger;
+					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.java.tools.javac({
+						destination: to.pathname,
+						arguments: [$jsapi.loader.getRelativePath("test/java/inonit/jsh/test/Program.java")]
+					});
+					var buffer = new jsh.io.Buffer();
+					var output = module.java({
+						classpath: jsh.file.Searchpath([to.pathname]),
+						main: "inonit.jsh.test.Program",
+						stdout: buffer.writeBinary(),
+						evaluate: function(result) {
+							buffer.close();
+							return buffer.readText().asString();
+						}
+					});
+					test(output == "Hello");
 				</script>
-			</li>
-			<li class="value" jsapi:id="properties">
-				<div class="name">properties</div>
-				<span>
-					<b>(experimental)</b>
-					An object that attempts to allow the use of JavaScript semantics to access Java system properties. For example,
-					the <code>java.home</code> system property is referenced as <code>properties.java.home</code>. This value can be
-					examined using <code>String(properties.java.home)</code> to obtain its value as a <code>string</code>.
-				</span>
-			</li>
-			<li class="value" jsapi:id="TMPDIR">
-				<div class="name">TMPDIR</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<span>A temporary directory that may be used by this shell.</span>
-			</li>
-			<li class="value" jsapi:id="HOME">
-				<div class="name">HOME</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<span>The home directory of the user executing this shell.</span>
-			</li>
-			<li class="value" jsapi:id="PWD">
-				<div class="name">PWD</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<!--	TODO	can this be changed while the shell is running?	-->
-				<span>The current working directory.</span>
-			</li>
-			<li class="value" jsapi:id="PATH">
-				<div class="name">PATH</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.searchpath">searchpath</a></span>
-				<span>__DESCRIPTION__</span>
-			</li>
-			<li class="object">
-				<div class="name">user</div>
-				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
-						<div class="name">downloads</div>
+						<div class="name">home</div>
 						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>__DESCRIPTION__</span>
+						<span>The home directory of the Java installation used to run this shell.</span>
+						<script type="application/x.jsapi#tests">
+							test(Boolean(module.java.home));
+						</script>
+					</li>
+					<li class="value">
+						<div class="name">launcher</div>
+						<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
+						<span>The Java launcher program, that is, the executable used to launch Java programs.</span>
 					</li>
 				</ul>
 			</li>
-			<li class="object">
+			<li class="object" jsapi:id="browser">
 				<div class="name">browser</div>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
 				<ul>
 				</ul>
 			</li>
-			<li class="object">
+			<li class="object" jsapi:id="system">
 				<div class="name">system</div>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
@@ -776,78 +882,62 @@ os.resolve(function() {
 											<span class="type">__TYPE__</span>
 											<span>__DESCRIPTION__</span>
 										</div>
+										<script type="application/x.jsapi#tests">
+											if (module.system.apple.osx.ApplicationBundle) {
+												var tmpfile = $jsapi.file.newTemporaryDirectory().getRelativePath("tmp.icns");
+												tmpfile.write("ICONS", { append: false });
+												var tmp = $jsapi.file.newTemporaryDirectory().pathname;
+												tmp.directory.remove();
+												var bundle = new module.system.apple.osx.ApplicationBundle({
+													pathname: tmp,
+													info: {
+														CFBundleName: "name",
+														CFBundleIdentifier: "com.bitbucket.davidpcaldwell.slime",
+														CFBundleVersion: "1",
+														CFBundleExecutable: {
+															name: "program",
+															command: "ls"
+														},
+														CFBundleIconFile: {
+															file: tmpfile.file
+														}
+													}
+												});
+												verify(bundle).directory.toString().is(tmp.directory.toString());
+												verify(bundle).info.is.type("object");
+												bundle.info = "foo";
+												verify(bundle).info.is.type("object");
+												verify(bundle).info.CFBundleName.is("name");
+												verify(bundle).info.CFBundleIdentifier.is("com.bitbucket.davidpcaldwell.slime");
+												verify(bundle).info.CFBundleVersion.is("1");
+												verify(bundle).info.CFBundleExecutable.is("program");
+												verify(bundle).directory.getFile("Contents/MacOS/program").is.type("object");
+												verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("null");
+												verify(bundle).directory.getFile("Contents/Resources/tmp.icns").is.type("object");
+
+												bundle.info.CFBundleExecutable = "string";
+												verify(bundle).info.CFBundleExecutable.is("string");
+
+												bundle.info.CFBundleExecutable = {
+													name: "executable",
+													command: "pwd"
+												};
+												verify(bundle).directory.getFile("Contents/MacOS/program").is.type("null");
+												verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("object");
+												verify(bundle).directory.evaluate(function() {
+													var file = this.getFile("Contents/MacOS/executable");
+													if (!file) return null;
+													return { string: file.read(String) };
+												}).is.type("object");
+											} else {
+												var message = "ApplicationBundle not available on this system";
+												verify(message).is(message);
+											}
+										</script>
 									</li>
 								</ul>
 							</li>
 						</ul>
-					</li>
-				</ul>
-			</li>
-			<li class="function" jsapi:id="java">
-				<div class="name">java</div>
-				<span>Launches a Java program.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<span>
-								An argument with the same specification as that for <code>shell</code>, with the following
-								differences:
-							</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">classpath</div>
-									<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
-									<span>The classpath to pass to the Java process.</span>
-								</li>
-								<li class="value">
-									<div class="name">main</div>
-									<span class="type">string</span>
-									<span>The name of the main class to execute.</span>
-								</li>
-							</ul>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">(any)</span>
-					<span>The return value of the <code>evaluate</code> property of the argument.</span>
-				</div>
-				<script type="application/x.jsapi#tests">
-					debugger;
-					var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					jsh.java.tools.javac({
-						destination: to.pathname,
-						arguments: [$jsapi.loader.getRelativePath("test/java/inonit/jsh/test/Program.java")]
-					});
-					var buffer = new jsh.io.Buffer();
-					var output = module.java({
-						classpath: jsh.file.Searchpath([to.pathname]),
-						main: "inonit.jsh.test.Program",
-						stdout: buffer.writeBinary(),
-						evaluate: function(result) {
-							buffer.close();
-							return buffer.readText().asString();
-						}
-					});
-					test(output == "Hello");
-				</script>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">home</div>
-						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>The home directory of the Java installation used to run this shell.</span>
-						<script type="application/x.jsapi#tests">
-							test(Boolean(module.java.home));
-						</script>
-					</li>
-					<li class="value">
-						<div class="name">launcher</div>
-						<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
-						<span>The Java launcher program, that is, the executable used to launch Java programs.</span>
 					</li>
 				</ul>
 			</li>

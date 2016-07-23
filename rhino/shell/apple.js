@@ -107,32 +107,13 @@ $exports.plist = new function() {
 };
 
 $exports.osx = {};
-$exports.osx.ApplicationBundle = function(p) {
-	//	TODO	allow createDirectory arguments to be configurable
-	var base = p.pathname.createDirectory({
-//		ifExists: function(dir) {
-//			return false;
-//		}
-		recursive: true
-	});
-
-	base.getRelativePath("Contents/MacOS").createDirectory({
-		ifExists: function(dir) {
-			return false;
-		},
-		recursive: true
-	});
-
-	var info = $context.api.js.Object.set({}, p.info);
-	if (!info.CFBundleSignature) info.CFBundleSignature = "????";
-	info.CFBundlePackageType = "APPL"
-	if (typeof(info.CFBundleExecutable) == "object") {
-		//	TODO	consider allowing name property to rename the executable from "script"
-		if (info.CFBundleExecutable.command) {
-			var name = (info.CFBundleExecutable.name) ? info.CFBundleExecutable.name : "script"
+if ($context.api.shell.PATH.getCommand("chmod")) {
+	$exports.osx.ApplicationBundle = function(p) {
+		var setExecutable = function(base,object,info) {
+			var name = (object.name) ? object.name : "script"
 			base.getRelativePath("Contents/MacOS/" + name).write([
 				"#!/bin/bash",
-				info.CFBundleExecutable.command
+				object.command
 			].join("\n"), { append: false, recursive: true });
 			$context.api.shell.run({
 				command: "chmod",
@@ -140,66 +121,156 @@ $exports.osx.ApplicationBundle = function(p) {
 			});
 			info.CFBundleExecutable = name;
 		}
-	}
 
-	if (typeof(info.CFBundleIconFile) == "object") {
-		if (info.CFBundleIconFile.file) {
-			var resources = base.getRelativePath("Resources").createDirectory({
-				ifExists: function() {
+		if (p.pathname && p.info) {
+			//	TODO	allow createDirectory arguments to be configurable
+			var base = p.pathname.createDirectory({
+		//		ifExists: function(dir) {
+		//			return false;
+		//		}
+				recursive: true
+			});
+
+			base.getRelativePath("Contents/MacOS").createDirectory({
+				ifExists: function(dir) {
 					return false;
-				}
+				},
+				recursive: true
 			});
-			info.CFBundleIconFile.file.copy(resources, {
-				filter: function(entry,exists) {
-					return true;
+
+			var info = $context.api.js.Object.set({}, p.info);
+			if (!info.CFBundleSignature) info.CFBundleSignature = "????";
+			info.CFBundlePackageType = "APPL"
+			if (typeof(info.CFBundleExecutable) == "object") {
+				if (info.CFBundleExecutable.command) {
+					setExecutable(base,info.CFBundleExecutable,info);
 				}
+			}
+
+			if (typeof(info.CFBundleIconFile) == "object") {
+				if (info.CFBundleIconFile.file) {
+					var resources = base.getRelativePath("Contents/Resources").createDirectory({
+						ifExists: function() {
+							return false;
+						}
+					});
+					info.CFBundleIconFile.file.copy(resources, {
+						filter: function(entry,exists) {
+							return true;
+						}
+					});
+					info.CFBundleIconFile = info.CFBundleIconFile.file.pathname.basename;
+				}
+			}
+
+			var plist = $exports.plist.xml.encode(info);
+			base.getRelativePath("Contents/Info.plist").write(plist.toString(), { append: false });
+			return new $exports.osx.ApplicationBundle({ directory: base });
+		} else {
+			this.directory = p.directory;
+
+			var info = {};
+
+			Object.defineProperty(this,"info",{
+				value: info,
+				enumerable: true
 			});
-			info.CFBundleIconFile = info.CFBundleIconFile.file.pathname.basename;
+
+			var plist;
+
+			var read = function() {
+				return $exports.plist.xml.decode(
+					$context.api.xml.parseFile(p.directory.getFile("Contents/Info.plist"))
+				);			
+			};
+
+			var write = function(plist) {
+				var document = $exports.plist.xml.encode(plist);
+				p.directory.getRelativePath("Contents/Info.plist").write(document.toString(), { append: false });
+				plist = read();
+			};
+
+			plist = read();
+
+			var getter = function(name) {
+				return function() {
+					return read()[name];
+				}
+			};
+
+			var setter = function(name) {
+				if (name == "CFBundleExecutable") {
+					return function(v) {					
+						var plist = read();
+						var was = p.directory.getFile("Contents/MacOS/" + plist[name]);
+						if (was) was.remove();
+						if (typeof(v) == "string") {
+							plist[name] = v;
+							write(plist);
+						} else if (typeof(v) == "object") {
+							setExecutable(p.directory,v,plist);
+							write(plist);
+						} else {
+							throw new Error();
+						}
+					}
+				}
+			}
+
+			//	TODO	cannot add new written properties to info using this API, and do not have catchall without ECMA 6 proxies, so
+			//			probably should make these enumerated rather than a loop, and then provide a method to explicitly add a
+			//			new property
+			for (var x in plist) {
+				if (typeof(plist[x]) == "string") {
+					Object.defineProperty(info,x,{
+						get: getter(x),
+						set: setter(x),
+						enumerable: true
+					});
+				}
+			}
 		}
 	}
-
-	var plist = $exports.plist.xml.encode(info);
-	base.getRelativePath("Contents/Info.plist").write(plist.toString(), { append: false });
-
-	this.directory = base;
 }
 
 //	Bundle programming guide
 //	https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/Introduction/Introduction.html
 $exports.bundle = {};
-$exports.bundle.osx = function(p) {
-	var info = $context.api.js.Object.set({}, p.info);
+$api.deprecate($exports,"bundle");
+if ($context.api.shell.PATH.getCommand("chmod")) {
+	$exports.bundle.osx = $api.deprecate(function(p) {
+		var info = $context.api.js.Object.set({}, p.info);
 
-	if (p.command) {
-		this.command = p.command;
-		if (!info.CFBundleExecutable) {
-			info.CFBundleExecutable = "script";
-		}
-	}
-
-	this.write = function(to) {
-		var contents = to.getRelativePath("Contents").createDirectory({
-			ifExists: function(dir) {
-				return false;
-			}
-		});
-		contents.getRelativePath("Info.plist").write(new $exports.plist.xml.encode(info).serialize({ pretty: { current: "\n", indent: "    " } }));
 		if (p.command) {
-			var path = "MacOS/" + info.CFBundleExecutable;
-			contents.getRelativePath(path).write("#!/bin/bash\n" + p.command, { append: false, recursive: true });
-			if ($context.api.shell.shell.length == 1) {
-				$context.api.shell.shell({
-					command: "chmod",
-					arguments: ["+x", contents.getRelativePath(path)]
-				});
-			} else {
-				//	jsh 0.0.4.7 compatibility
-				$context.api.shell.shell(
-					"chmod",
-					["+x", contents.getRelativePath(path)]
-				);
+			this.command = p.command;
+			if (!info.CFBundleExecutable) {
+				info.CFBundleExecutable = "script";
 			}
 		}
-	}
-};
 
+		this.write = function(to) {
+			var contents = to.getRelativePath("Contents").createDirectory({
+				ifExists: function(dir) {
+					return false;
+				}
+			});
+			contents.getRelativePath("Info.plist").write($exports.plist.xml.encode(info).serialize({ pretty: { current: "\n", indent: "    " } }));
+			if (p.command) {
+				var path = "MacOS/" + info.CFBundleExecutable;
+				contents.getRelativePath(path).write("#!/bin/bash\n" + p.command, { append: false, recursive: true });
+				if ($context.api.shell.shell.length == 1) {
+					$context.api.shell.shell({
+						command: "chmod",
+						arguments: ["+x", contents.getRelativePath(path)]
+					});
+				} else {
+					//	jsh 0.0.4.7 compatibility
+					$context.api.shell.shell(
+						"chmod",
+						["+x", contents.getRelativePath(path)]
+					);
+				}
+			}
+		}
+	});
+}
