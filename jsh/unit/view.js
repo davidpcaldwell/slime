@@ -96,6 +96,7 @@ $exports.Console = function(o) {
 			if (jsh.java.isJavaObject(e.cause)) {
 				printError({ javaException: e.cause });
 			} else {
+				console.println("Caused by:");
 				printError(e.cause);
 			}
 		}

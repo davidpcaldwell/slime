@@ -1206,14 +1206,15 @@ END LICENSE
 				return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
 			});
 			var created = inPlace();
-			test( created.parent.toString() == dir.toString() );
+			verify(created).parent.toString().is(dir.toString());
+//			test( created.parent.toString() == dir.toString() );
 			var timestamp = created.modified;
 
 			try {
-				var created = inPlace();
-				test( false );
+				created = inPlace();
+				verify(false,"threw exception").is(true);
 			} catch (e) {
-				test( true );
+				verify(true,"threw exception").is(true);
 			}
 
 			var created = inPlace( function() { return false; } );

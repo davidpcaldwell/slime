@@ -338,7 +338,8 @@ var Resource = function(p) {
 					arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
 				}
 				return arguments.callee.called.returns;
-			}
+			},
+			enumerable: true
 		});
 	}
 

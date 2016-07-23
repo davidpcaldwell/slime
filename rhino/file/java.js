@@ -148,7 +148,12 @@ $exports.FilesystemProvider = function(_peer) {
 	}
 
 	this.getLastModified = function(peer) {
-		return new Date( peer.getHostFile().lastModified() );
+		var modified = peer.getHostFile().lastModified();
+		if (typeof(modified) == "object") {
+			//	Nashorn treats it as object
+			modified = Number(String(modified));
+		}
+		return new Date( modified );
 	}
 
 	this.setLastModified = function(peer,date) {

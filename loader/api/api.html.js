@@ -59,10 +59,19 @@ var run = function() {
 		//			exceptions; otherwise we could just add the 'code' property to the existing Error
 		//	If this is primarily to support Java exceptions, we are relying on the coincidence that the 'message' property can be
 		//	used to invoke Java getMessage(), and we should test it with Nashorn
-		var error = new Error(e.message);
-		error.cause = e;
-		error.code = arguments[0];
-		throw error;
+		if (e.type) {
+			e.code = arguments[0];
+		}
+		throw e;
+//		if (!e.type) {
+//			var error = new Error(e.message);
+//			error.cause = e;
+//			error.code = arguments[0];
+//			throw error;
+//		} else {
+//			e.code = arguments[0];
+//			throw e;
+//		}
 	}
 }
 

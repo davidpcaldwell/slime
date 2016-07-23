@@ -767,7 +767,12 @@ END LICENSE
 								if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 									var client = new module.Client();
 									servlet.set(function(request,response) {
-										verify(request).getMethod().toUpperCase().evaluate(function() { return String(this) }).is("GET");
+										//	Nashorn does not allow request.getMethod() to be accessed through verify()
+										var getRequestMethod = function() {
+											return String(this._request.getMethod().toUpperCase());
+										}
+										verify({ _request: request }).evaluate(getRequestMethod).is("GET");
+//										verify(request).getMethod().toUpperCase().evaluate(function() { return String(this) }).is("GET");
 										response.getWriter().print("Hello, World!");
 									});
 									var response = client.request({

@@ -385,6 +385,10 @@ var Pathname = function(parameters) {
 		this.directory = false;
 
 		var length = pathname.java.adapt().length();
+		if (typeof(length) == "object") {
+			//	Nashorn treats it as object
+			length = Number(String(length));
+		}
 		var resource = new $context.Resource({
 			read: {
 				binary: function() {
