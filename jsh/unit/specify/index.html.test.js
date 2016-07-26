@@ -194,9 +194,23 @@ title.test({
 
 var comment = new unit.Scenario();
 comment.target(new function() {
+	this.getTargetComments = function() {
+		var content = document.getElementById("target").contentDocument;
+		var rv = [];
+		for (var i=0; i<content.head.childNodes.length; i++) {
+			if (content.head.childNodes[i].nodeType == 8) {
+				rv.push(content.head.childNodes[i]);
+			}
+		}
+		return rv;
+	}
+
 	var comment = function(row) {
 		row.getTextArea = function() {
 			return this.cells[1].getElementsByTagName("textarea")[0];
+		};
+		row.getSpan = function() {
+			return this.cells[1].getElementsByTagName("span")[0];			
 		}
 		return row;
 	};
@@ -212,16 +226,46 @@ comment.target(new function() {
 comment.test({
 	check: function(verify) {
 		verify(this).getApiLocationComment().cells[0].innerHTML.is("(comment)");
+
+		verify(this).getApiLocationComment().getTextArea().style.display.is("none");
+
 		var propertyStartsWith = function(name,prefix) {
-			return function() {
+			var rv = function() {
 				return this[name].substring(0,prefix.length) == prefix;
 			};
-		}
+			rv.toString = function() {
+				return "propertyStartsWith('" + prefix + "')";
+			}
+			return rv;
+		};
 		verify(this).getApiLocationComment().getTextArea().evaluate(propertyStartsWith("value","TODO")).is(true);
 		var lines = this.getApiProtocolComment().getTextArea().value.split("\n");
 		verify(lines).length.is(2);
-		verify(lines).evaluate(propertyStartsWith(0,"These")).is(true);
-		verify(lines).evaluate(propertyStartsWith(1,"work")).is(true);
+		verify(lines,"lines").evaluate(propertyStartsWith(0,"These")).is(true);
+		verify(lines,"lines").evaluate(propertyStartsWith(1,"work")).is(true);
+	}
+});
+comment.test({
+	run: function() {
+		unit.fire.click(this.getApiLocationComment().getSpan());
+	},
+	check: function(verify) {
+		verify(this).getApiLocationComment().getTextArea().style.display.is.not("none");		
+	}
+});
+comment.test({
+	run: function() {
+		this.getApiLocationComment().getTextArea().value = "foo";
+		unit.fire.keypress(this.getApiLocationComment().getTextArea(), {
+			key: "Enter",
+			ctrlKey: true
+		});
+	},
+	check: function(verify) {
+		verify(this).getApiLocationComment().getSpan().innerHTML.is("\tfoo\t");
+		var comments = this.getTargetComments();
+		verify(comments)[0].data.is("\tfoo\t");
+		verify(this).getApiLocationComment().getTextArea().style.display.is("none");
 	}
 });
 
