@@ -44,6 +44,10 @@ $set(function(p) {
 	};
 
 	var console = (p.console) ? p.console : new function() {
+		this.toString = function() {
+			return "Default console: " + this.log;
+		};
+		
 		this.log = function() {
 			$context.log.INFO("window.console.log: " + Array.prototype.slice.call(arguments).join("|"));
 		}
@@ -161,6 +165,11 @@ $set(function(p) {
 	}
 
 	return function() {
+		var _console = new JavaAdapter(
+			Packages.inonit.javafx.webview.Console,
+			console
+		);
+
 		var browser = (p.browser) ? p.browser : new Packages.javafx.scene.web.WebView();
 
 		if (typeof(p.zoom) != "undefined") {
@@ -229,10 +238,6 @@ $set(function(p) {
 					this.changed = function(observableValue,oldState,newState) {
 						if (String(newState.toString()) == "RUNNING") {
 							var window = engine.executeScript("window");
-							var _console = new JavaAdapter(
-								Packages.inonit.javafx.webview.Console,
-								console
-							);
 							if (typeof(window.setMember) == "function") {
 								//	Rhino sees window as netscape.javascript.JSObject
 								window.setMember("console", _console);

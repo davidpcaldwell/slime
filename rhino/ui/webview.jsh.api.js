@@ -98,8 +98,16 @@ $set(function(p) {
 				},
 				//	TODO	configurable
 				console: (p.console) ? p.console : new function() {
+					this.toString = function() {
+						if (this.delegee) {
+							return "WebView console: " + this.delegee.log;
+						} else {
+							return "WebView console: " + this.log;
+						}
+					};
+					
 					this.log = function() {
-						jsh.shell.echo("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
+						jsh.shell.console("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
 					}
 				},
 				popup: function(_popup) {

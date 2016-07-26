@@ -65,7 +65,8 @@ $exports.log.initialize = function(o) {
 					var parameters = (_record.getParameters()) ? $context.api.java.Array.adapt(_record.getParameters()) : null;
 					var record = {
 						level: {
-							name: String(_record.getLevel().getName())
+							name: String(_record.getLevel().getName()),
+							number: Number(_record.getLevel().intValue())
 						},
 						logger: {
 							name: String(_record.getLoggerName())
