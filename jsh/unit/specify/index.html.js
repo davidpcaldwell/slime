@@ -184,13 +184,14 @@ window.addEventListener('load', function() {
 					var content = whitespace.content(data);
 					var lines = value.split("\n");
 					var rv = [];
-					rv.push.apply(rv,before);
+					rv.push.apply(rv,content.before);
 					rv.push.apply(rv,lines.map(function(line) {
 						return content.indent + line;
 					}));
-					rv.push.apply(rv,after);
+					rv[rv.length-1] += endIndent;
+					rv.push.apply(rv,content.after);
 					return rv.join("\n");
-				}
+				};
 
 				var commentSpan = document.createElement("span");
 				commentSpan.appendChild(document.createTextNode(child.data));
@@ -236,6 +237,17 @@ window.addEventListener('load', function() {
 
 				commentSpan.addEventListener("click", function(e) {
 					update(edit);
+				});
+
+				commentInput.addEventListener("keypress", function(e) {
+					if (e.key == "Enter" && e.ctrlKey) {
+						e.preventDefault();
+						e.stopPropagation();
+						var data = fromEditor(child.data,this.value);
+						commentSpan.innerHTML = data;
+						child.data = data;
+						update(show);
+					}
 				});
 
 				parent.appendChild(commentSpan);
