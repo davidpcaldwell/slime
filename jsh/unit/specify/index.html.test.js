@@ -348,7 +348,7 @@ scripts.test(new function() {
 	};
 });
 scripts.test(new function() {
-	var foo = document.origin + "/foo.css";
+	var foo = document.origin + "/foo.js";
 
 	this.run = function() {
 		unit.fire.click(this.getScriptRows()[0].getSpan());
