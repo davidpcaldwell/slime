@@ -157,6 +157,14 @@ window.addEventListener('load', function() {
 				}
 			});
 
+			elements.edit.addEventListener("keydown", function(e) {
+				if (e.key == "Escape") {
+					e.stopPropagation();
+					p.reset.call(elements);
+					update(show);
+				}
+			});
+
 			parent.appendChild(elements.show);
 			parent.appendChild(elements.edit);			
 		}
@@ -182,6 +190,7 @@ window.addEventListener('load', function() {
 				})(),
 				edit: (function() {
 					var rv = document.createElement("input");
+					rv.style.width = "100%";
 					rv.value = value;
 					return rv;
 				})()
@@ -197,6 +206,9 @@ window.addEventListener('load', function() {
 					child.href = this.edit.value;
 					this.show.innerHTML = "";
 					this.show.appendChild(document.createTextNode(child.href));
+				},
+				reset: function() {
+					this.edit.value = child.href;
 				}
 			});
 		});
@@ -212,6 +224,9 @@ window.addEventListener('load', function() {
 						child.src = this.edit.value;
 						this.show.innerHTML = "";
 						this.show.appendChild(document.createTextNode(child.src));
+					},
+					reset: function() {
+						this.edit.value = child.src;
 					}
 				});
 			} else {

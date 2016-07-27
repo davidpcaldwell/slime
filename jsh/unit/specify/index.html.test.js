@@ -363,6 +363,25 @@ scripts.test(new function() {
 		verify(this).getScriptRows()[0].getSpan().innerHTML.is(foo);
 		verify(this).getTargetScripts()[0].src.is(foo);
 	}
+});
+scripts.test(new function() {
+	var foo = document.origin + "/foo.js";
+	var bar = document.origin + "/bar.js";
+
+	this.run = function() {
+		unit.fire.click(this.getScriptRows()[0].getSpan());
+		this.getScriptRows()[0].getInput().value = bar;
+		unit.fire.keydown(this.getScriptRows()[0].getInput(), {
+			key: "Escape"
+		});		
+	}
+
+	this.check = function(verify) {
+		verify(this).getScriptRows()[0].getInput().value.is(foo);
+		verify(this).getScriptRows()[0].getSpan().innerHTML.is(foo);
+		verify(this).getTargetScripts()[0].src.is(foo);
+		verify(this).getScriptRows()[0].getInput().style.display.is("none");
+	};
 })
 
 var selection = new unit.Scenario();
