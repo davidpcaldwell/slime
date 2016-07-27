@@ -108,29 +108,7 @@ window.addEventListener('load', function() {
     		}
     	};
 
-		var handleTitle = handleRow(function(child,label,editor) {
-			label.innerHTML = "title";
-			var span = document.createElement("span");
-			span.innerHTML = child.innerHTML;
-			editor.appendChild(span);
-			inline.call(span,function() {
-				document.getElementById("title").innerHTML = span.innerHTML;
-				var title = document.getElementById("target").contentDocument.getElementsByTagName("title")[0];
-				title.innerHTML = span.innerHTML;
-			});
-		});
-
-		var handleLink = handleRow(function(child,label,editor) {
-			label.innerHTML = child.tagName + " rel=" + child.rel;
-			editor.appendChild(document.createTextNode(child.href));
-		});
-
-		var handleElement = handleRow(function(child,label,editor) {
-			label.innerHTML = child.tagName;
-			editor.appendChild(document.createTextNode(child.outerHTML));			
-		});
-
-		var editable = function(p) {
+		var formEditable = function(p) {
 			var parent = p.parent;
 			var elements = p.elements;
 
@@ -174,7 +152,7 @@ window.addEventListener('load', function() {
 				if (e.key == "Enter" && e.ctrlKey) {
 					e.preventDefault();
 					e.stopPropagation();
-					p.update();
+					p.update.call(elements);
 					update(show);
 				}
 			});
@@ -182,6 +160,47 @@ window.addEventListener('load', function() {
 			parent.appendChild(elements.show);
 			parent.appendChild(elements.edit);			
 		}
+
+		var handleTitle = handleRow(function(child,label,editor) {
+			label.innerHTML = "title";
+			var span = document.createElement("span");
+			span.innerHTML = child.innerHTML;
+			editor.appendChild(span);
+			inline.call(span,function() {
+				document.getElementById("title").innerHTML = span.innerHTML;
+				var title = document.getElementById("target").contentDocument.getElementsByTagName("title")[0];
+				title.innerHTML = span.innerHTML;
+			});
+		});
+
+		var handleLink = handleRow(function(child,label,editor) {
+			label.innerHTML = "link " + "(" + child.rel + ")";
+			formEditable({
+				parent: editor,
+				elements: {
+					show: (function() {
+						var rv = document.createElement("span");
+						rv.appendChild(document.createTextNode(child.href));
+						return rv;
+					})(),
+					edit: (function() {
+						var rv = document.createElement("input");
+						rv.value = child.href;
+						return rv;
+					})()
+				},
+				update: function() {
+					child.href = this.edit.value;
+					this.show.innerHTML = "";
+					this.show.appendChild(document.createTextNode(child.href));
+				}
+			});
+		});
+
+		var handleElement = handleRow(function(child,label,editor) {
+			label.innerHTML = child.tagName;
+			editor.appendChild(document.createTextNode(child.outerHTML));			
+		});
 
 		var handleComment = handleRow(function(child,label,editor) {
 			label.innerHTML = "(comment)";
@@ -272,7 +291,7 @@ window.addEventListener('load', function() {
 					edit: commentInput
 				};
 
-				editable({
+				formEditable({
 					parent: parent,
 					elements: elements,
 					update: function() {

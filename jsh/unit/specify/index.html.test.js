@@ -270,6 +270,37 @@ comment.test({
 	}
 });
 
+var link = new unit.Scenario();
+link.target(new function() {
+	var LinkEditor = function(element) {
+		element.getInput = function() {
+			return this.getElementsByTagName("input")[0];
+		};
+		element.getSpan = function() {
+			return this.getElementsByTagName("span")[0];
+		}
+		return element;
+	};
+
+	this.getApiCssRow = function() {
+		return LinkEditor(page.getHeadRows()[3]);
+	}
+});
+link.test(new function() {
+	var githack = "http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css";
+
+	this.check = function(verify) {
+		verify(this).getApiCssRow().cells[0].innerHTML.is("link (stylesheet)");
+		verify(this).getApiCssRow().getSpan().innerHTML.is(githack);
+		verify(this).getApiCssRow().getInput().value.is(githack);
+	}
+});
+link.test({
+	run: function() {
+
+	}
+})
+
 var selection = new unit.Scenario();
 selection.target(new function() {
 	this.content = new function() {
@@ -320,6 +351,7 @@ var suite = new api.Suite({
 		initial: initial,
 		title: title,
 		comment: comment,
+		link: link,
 		selection: selection
 	}
 });
