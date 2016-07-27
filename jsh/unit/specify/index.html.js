@@ -197,6 +197,12 @@ window.addEventListener('load', function() {
 			});
 		});
 
+		var handleScript = handleRow(function(child,label,editor) {
+			var type = (child.src) ? "external" : "inline";
+			label.innerHTML = "script (" + type + ")";
+			editor.appendChild(document.createTextNode(child.outerHTML));			
+		})
+
 		var handleElement = handleRow(function(child,label,editor) {
 			label.innerHTML = child.tagName;
 			editor.appendChild(document.createTextNode(child.outerHTML));			
@@ -321,6 +327,8 @@ window.addEventListener('load', function() {
 					handler = handleTitle;
 				} else if (child.tagName == "LINK") {
 					handler = handleLink;
+				} else if (child.tagName == "SCRIPT") {
+					handler = handleScript;
 				} else {
 					handler = handleElement;
 				}

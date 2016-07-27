@@ -318,6 +318,23 @@ link.test(new function() {
 	}
 });
 
+var scripts = new unit.Scenario();
+scripts.target(new function() {
+	var ScriptEditor = function(element) {
+		return element;
+	}
+
+	this.getScriptRows = function() {
+		return [page.getHeadRows()[4],page.getHeadRows()[5]].map(ScriptEditor);
+	}
+});
+scripts.test(new function() {
+	this.check = function(verify) {
+		verify(this).getScriptRows()[0].cells[0].innerHTML.is("script (external)")
+		verify(this).getScriptRows()[1].cells[0].innerHTML.is("script (inline)")
+	}
+})
+
 var selection = new unit.Scenario();
 selection.target(new function() {
 	this.content = new function() {
@@ -369,6 +386,7 @@ var suite = new api.Suite({
 		title: title,
 		comment: comment,
 		link: link,
+		scripts: scripts,
 		selection: selection
 	}
 });
