@@ -120,10 +120,68 @@ window.addEventListener('load', function() {
 			});
 		});
 
+		var handleLink = handleRow(function(child,label,editor) {
+			label.innerHTML = child.tagName + " rel=" + child.rel;
+			editor.appendChild(document.createTextNode(child.href));
+		});
+
 		var handleElement = handleRow(function(child,label,editor) {
 			label.innerHTML = child.tagName;
 			editor.appendChild(document.createTextNode(child.outerHTML));			
 		});
+
+		var editable = function(p) {
+			var parent = p.parent;
+			var elements = p.elements;
+
+			var defaults = {
+				show: {
+					display: window.getComputedStyle(elements.show).display
+				},
+				edit: {
+					display: window.getComputedStyle(elements.edit).display
+				}
+			};
+
+			var show = {
+				entered: function() {
+					elements.show.style.display = defaults.show.display;
+					elements.edit.style.display = "none";
+				}
+			};
+
+			var edit = {
+				entered: function() {
+					elements.show.style.display = "none";
+					elements.edit.style.display = defaults.edit.display;
+					elements.edit.focus();
+				}
+			}
+			var state;
+
+			var update = function(to) {
+				state = to;
+				state.entered();
+			}
+
+			update(show);
+
+			elements.show.addEventListener("click", function(e) {
+				update(edit);
+			});
+
+			elements.edit.addEventListener("keypress", function(e) {
+				if (e.key == "Enter" && e.ctrlKey) {
+					e.preventDefault();
+					e.stopPropagation();
+					p.update();
+					update(show);
+				}
+			});
+
+			parent.appendChild(elements.show);
+			parent.appendChild(elements.edit);			
+		}
 
 		var handleComment = handleRow(function(child,label,editor) {
 			label.innerHTML = "(comment)";
@@ -209,55 +267,20 @@ window.addEventListener('load', function() {
 				commentInput.style.tabSize = TAB_WIDTH;
 				commentInput.value = toEditor(child.data);
 
-				var defaults = {
-					span: {
-						display: window.getComputedStyle(commentSpan).display
-					},
-					input: {
-						display: window.getComputedStyle(commentInput).display
-					}
+				var elements = {
+					show: commentSpan,
+					edit: commentInput
 				};
 
-				var show = {
-					entered: function() {
-						commentSpan.style.display = defaults.span.display;
-						commentInput.style.display = "none";
-					}
-				};
-
-				var edit = {
-					entered: function() {
-						commentSpan.style.display = "none";
-						commentInput.style.display = defaults.input.display;
-						commentInput.focus();
-					}
-				}
-				var state;
-
-				var update = function(to) {
-					state = to;
-					state.entered();
-				}
-
-				update(show);
-
-				commentSpan.addEventListener("click", function(e) {
-					update(edit);
-				});
-
-				commentInput.addEventListener("keypress", function(e) {
-					if (e.key == "Enter" && e.ctrlKey) {
-						e.preventDefault();
-						e.stopPropagation();
-						var data = fromEditor(child.data,this.value);
+				editable({
+					parent: parent,
+					elements: elements,
+					update: function() {
+						var data = fromEditor(child.data,commentInput.value);
 						commentSpan.innerHTML = data;
-						child.data = data;
-						update(show);
+						child.data = data;						
 					}
 				});
-
-				parent.appendChild(commentSpan);
-				parent.appendChild(commentInput);				
 			};
 
 			CommentData(editor,child);
@@ -277,6 +300,8 @@ window.addEventListener('load', function() {
     		if (child.nodeType === 1) {
 				if (child.tagName == "TITLE") {
 					handler = handleTitle;
+				} else if (child.tagName == "LINK") {
+					handler = handleLink;
 				} else {
 					handler = handleElement;
 				}
