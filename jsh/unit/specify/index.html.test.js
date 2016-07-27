@@ -284,6 +284,11 @@ link.target(new function() {
 
 	this.getApiCssRow = function() {
 		return LinkEditor(page.getHeadRows()[3]);
+	};
+
+	this.getTargetLink = function() {
+		//	TODO	relies on only one link, but fine for now
+		return document.getElementById("target").contentDocument.getElementsByTagName("link")[0];
 	}
 });
 link.test(new function() {
@@ -295,11 +300,23 @@ link.test(new function() {
 		verify(this).getApiCssRow().getInput().value.is(githack);
 	}
 });
-link.test({
-	run: function() {
+link.test(new function() {
+	var foo = document.origin + "/foo.css";
 
+	this.run = function() {
+		unit.fire.click(this.getApiCssRow().getInput());
+		this.getApiCssRow().getInput().value = foo;
+		unit.fire.keypress(this.getApiCssRow().getInput(), {
+			key: "Enter",
+			ctrlKey: true
+		});
+	};
+
+	this.check = function(verify) {
+		verify(this).getApiCssRow().getSpan().innerHTML.is(foo);
+		verify(this).getTargetLink().href.is(foo);
 	}
-})
+});
 
 var selection = new unit.Scenario();
 selection.target(new function() {
