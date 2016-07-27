@@ -173,22 +173,26 @@ window.addEventListener('load', function() {
 			});
 		});
 
+		var stringInputElements = function(value) {
+			return {
+				show: (function() {
+					var rv = document.createElement("span");
+					rv.appendChild(document.createTextNode(value));
+					return rv;
+				})(),
+				edit: (function() {
+					var rv = document.createElement("input");
+					rv.value = value;
+					return rv;
+				})()
+			}
+		};
+
 		var handleLink = handleRow(function(child,label,editor) {
 			label.innerHTML = "link " + "(" + child.rel + ")";
 			formEditable({
 				parent: editor,
-				elements: {
-					show: (function() {
-						var rv = document.createElement("span");
-						rv.appendChild(document.createTextNode(child.href));
-						return rv;
-					})(),
-					edit: (function() {
-						var rv = document.createElement("input");
-						rv.value = child.href;
-						return rv;
-					})()
-				},
+				elements: stringInputElements(child.href),
 				update: function() {
 					child.href = this.edit.value;
 					this.show.innerHTML = "";
@@ -200,7 +204,19 @@ window.addEventListener('load', function() {
 		var handleScript = handleRow(function(child,label,editor) {
 			var type = (child.src) ? "external" : "inline";
 			label.innerHTML = "script (" + type + ")";
-			editor.appendChild(document.createTextNode(child.outerHTML));			
+			if (type == "external") {
+				formEditable({
+					parent: editor,
+					elements: stringInputElements(child.src),
+					update: function() {
+						child.src = this.edit.value;
+						this.show.innerHTML = "";
+						this.show.appendChild(document.createTextNode(child.src));
+					}
+				});
+			} else {
+				editor.appendChild(document.createTextNode(child.outerHTML));
+			}
 		})
 
 		var handleElement = handleRow(function(child,label,editor) {

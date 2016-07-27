@@ -321,17 +321,47 @@ link.test(new function() {
 var scripts = new unit.Scenario();
 scripts.target(new function() {
 	var ScriptEditor = function(element) {
+		element.getSpan = function() {
+			return this.cells[1].getElementsByTagName("span")[0];
+		}
+		element.getInput = function() {
+			return this.cells[1].getElementsByTagName("input")[0];
+		}
 		return element;
 	}
 
 	this.getScriptRows = function() {
 		return [page.getHeadRows()[4],page.getHeadRows()[5]].map(ScriptEditor);
+	};
+
+	this.getTargetScripts = function() {
+		return document.getElementById("target").contentDocument.getElementsByTagName("script");
 	}
 });
 scripts.test(new function() {
+	var githack = "http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js";
+
 	this.check = function(verify) {
-		verify(this).getScriptRows()[0].cells[0].innerHTML.is("script (external)")
-		verify(this).getScriptRows()[1].cells[0].innerHTML.is("script (inline)")
+		verify(this).getScriptRows()[0].cells[0].innerHTML.is("script (external)");
+		verify(this).getScriptRows()[1].cells[0].innerHTML.is("script (inline)");
+		verify(this).getScriptRows()[0].getSpan().innerHTML.is(githack);
+	};
+});
+scripts.test(new function() {
+	var foo = document.origin + "/foo.css";
+
+	this.run = function() {
+		unit.fire.click(this.getScriptRows()[0].getSpan());
+		this.getScriptRows()[0].getInput().value = foo;
+		unit.fire.keypress(this.getScriptRows()[0].getInput(), {
+			key: "Enter",
+			ctrlKey: true
+		});
+	};
+
+	this.check = function(verify) {
+		verify(this).getScriptRows()[0].getSpan().innerHTML.is(foo);
+		verify(this).getTargetScripts()[0].src.is(foo);
 	}
 })
 
