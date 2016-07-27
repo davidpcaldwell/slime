@@ -250,7 +250,8 @@ comment.test({
 		unit.fire.click(this.getApiLocationComment().getSpan());
 	},
 	check: function(verify) {
-		verify(this).getApiLocationComment().getTextArea().style.display.is.not("none");		
+		verify(this).getApiLocationComment().getTextArea().style.display.is.not("none");
+		verify(document).activeElement.is(this.getApiLocationComment().getTextArea());
 	}
 });
 comment.test({

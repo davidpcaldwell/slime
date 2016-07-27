@@ -194,6 +194,11 @@ window.addEventListener('load', function() {
 				};
 
 				var commentSpan = document.createElement("span");
+				//	TODO	may want to figure out a way to display these with whitespace, in case the
+				//			comment itself is formatted
+				//	commentSpan.style.fontFamily = "monospace";
+				//	commentSpan.style.whiteSpace = "pre";
+				//	commentSpan.style.tabSize = 4;
 				commentSpan.appendChild(document.createTextNode(child.data));
 				var commentInput = document.createElement("textarea");
 				var content = whitespace.content(child.data);
@@ -224,6 +229,7 @@ window.addEventListener('load', function() {
 					entered: function() {
 						commentSpan.style.display = "none";
 						commentInput.style.display = defaults.input.display;
+						commentInput.focus();
 					}
 				}
 				var state;
