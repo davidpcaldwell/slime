@@ -110,6 +110,22 @@ var ScriptVerifier = function(o) {
 };
 
 if (CATALINA_HOME) {
+	BROWSER_UNIT_TEST_ISSUE_FIXED = false;
+	if (BROWSER_UNIT_TEST_ISSUE_FIXED) scenario.part("unit.browser", new function() {
+		this.name = "browser unit testing",
+		this.execute = function(scope,verify) {
+			jsh.shell.jsh({
+				fork: true,
+				script: src.getFile("loader/api/test/browser.jsh.js"),
+				evaluate: function(result) {
+					verify(result).status.is(0);
+				}
+			})
+		}
+	});
+}
+
+if (CATALINA_HOME) {
 	ScriptVerifier({
 		name: "remote",
 		path: "launcher/remote.jsh.js",

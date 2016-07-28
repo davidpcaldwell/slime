@@ -125,6 +125,7 @@ var Set = function(p) {
 			}
 		} else {
 			if (p.events) p.events.fire("end", (index > 0) ? success : true);
+			if (p.scope.fire) p.scope.fire("end", { success: (index > 0) ? success : true });
 			if (next) next();
 		}
 	}
