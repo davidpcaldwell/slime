@@ -80,7 +80,7 @@ if (!parameters.options.local) {
 	}
 
 	jsh.loader.plugins(jsh.script.file.parent.pathname);
-	
+
 	var zip = jsh.tools.install.apache.find({
 		path: "tomcat/tomcat-7/v" + parameters.options.version + "/bin/apache-tomcat-" + parameters.options.version + ".zip"
 	});

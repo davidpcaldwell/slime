@@ -288,7 +288,7 @@ var Scope = function(suite,environment) {
 			io: {
 				newTemporaryDirectory: (function() {
 					var tmpdir;
-					
+
 					var tmppath = function() {
 						var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
 						var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
@@ -296,7 +296,7 @@ var Scope = function(suite,environment) {
 						dir.mkdirs();
 						return dir;
 					};
-					
+
 					return function() {
 						if (!tmpdir) tmpdir = tmppath();
 						var rv = Packages.java.io.File.createTempFile("tmpdir-",".tmp",tmpdir);

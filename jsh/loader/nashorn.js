@@ -12,7 +12,7 @@
 
 $jsh.setHost((function() {
 	var $loader = eval($jsh.getBootstrapCode());
-	
+
 	//	TODO	the below, with scripts and rv, looks funny; does it load the same code twice? Why? Should either fix or provide
 	//			explanation
 

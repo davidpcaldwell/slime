@@ -191,7 +191,7 @@ $exports.Loader = function(p) {
 		p.toString = function() {
 			return "rhino/file Loader: directory=" + p.directory;
 		};
-		
+
 		var USE_NEW_LOADER = true;
 		var getFile = function(path) {
 			var file = p.directory.getFile(path);

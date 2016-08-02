@@ -80,8 +80,10 @@ var toNode = function(_node) {
 			publicId: toJs(_node.getPublicId()),
 			systemId: toJs(_node.getSystemId())
 		});
+	} else if (_node.getNodeType() == Packages.org.w3c.dom.Node.PROCESSING_INSTRUCTION_NODE) {
+		rv = new $context.pure.ProcessingInstruction({ instruction: { target: String(_node.getTarget()), data: String(_node.getData()) }});
 	} else {
-		throw new Error("Unknown node type: " + _node);
+		throw new Error("Unknown node type: " + _node + " type=" + _node.getNodeType());
 	}
 	var _children = _node.getChildNodes();
 	for (var i=0; i<_children.getLength(); i++) {

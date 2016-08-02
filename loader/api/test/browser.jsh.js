@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME loader infrastructure.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
@@ -58,7 +71,7 @@ tomcat.map({
 
 tomcat.start();
 
-var chrome = new jsh.shell.browser.chrome.User({ 
+var chrome = new jsh.shell.browser.chrome.User({
 	directory: parameters.options["chrome:profile"].createDirectory({
 		ifExists: function(dir) {
 			return false;
@@ -91,25 +104,25 @@ if (parameters.options.interactive) {
 			})();
 		}
 	};
-	
+
 	chrome.launch({
 		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/test/browser.html?unit.run",
 		on: on
 	});
-	
+
 	new lock.Waiter({
 		until: function() { return Boolean(opened); },
 		then: function() {
-			jsh.shell.console("opened = " + opened);			
+			jsh.shell.console("opened = " + opened);
 		}
 	})();
-	
+
 	new lock.Waiter({
 		until: function() { return typeof(result.success) != "undefined" },
-		then: function() {	
+		then: function() {
 		}
 	})();
-	
+
 	jsh.shell.console("result.success = " + result.success);
 	opened.close();
 	if (result.success === false) {

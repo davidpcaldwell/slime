@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 window.addEventListener('load', function() {
     //	TODO	CORS
     document.domain = document.domain;
@@ -34,7 +47,7 @@ window.addEventListener('load', function() {
             this.is = function(element) {
             	return current && current.element == element;
             }
-            
+
             this.select = function(element) {
 				if (current) current.deselect();
 				current = new function() {
@@ -42,7 +55,7 @@ window.addEventListener('load', function() {
 
 					var was = element.style.backgroundColor;
 					element.style.backgroundColor = "#c0c0ff";
-					
+
 					this.deselect = function() {
 						element.style.backgroundColor = was;
 					}
@@ -87,7 +100,7 @@ window.addEventListener('load', function() {
 				this.appendChild(input);
 				input.addEventListener("keydown", listener);
 				this.inonit = { inline: true };
-			}	
+			}
         });
     };
 
@@ -166,7 +179,7 @@ window.addEventListener('load', function() {
 			});
 
 			parent.appendChild(elements.show);
-			parent.appendChild(elements.edit);			
+			parent.appendChild(elements.edit);
 		}
 
 		var handleTitle = handleRow(function(child,label,editor) {
@@ -236,7 +249,7 @@ window.addEventListener('load', function() {
 
 		var handleElement = handleRow(function(child,label,editor) {
 			label.innerHTML = child.tagName;
-			editor.appendChild(document.createTextNode(child.outerHTML));			
+			editor.appendChild(document.createTextNode(child.outerHTML));
 		});
 
 		var handleComment = handleRow(function(child,label,editor) {
@@ -255,7 +268,7 @@ window.addEventListener('load', function() {
 				var multiline = function(data) {
 					return data.split("\n").filter(function(line) {
 						return !whitespace.is(line);
-					}).length > 1;					
+					}).length > 1;
 				};
 
 				var TAB_WIDTH = 4;
@@ -334,7 +347,7 @@ window.addEventListener('load', function() {
 					update: function() {
 						var data = fromEditor(child.data,commentInput.value);
 						commentSpan.innerHTML = data;
-						child.data = data;						
+						child.data = data;
 					}
 				});
 			};
@@ -345,7 +358,7 @@ window.addEventListener('load', function() {
 		var handleOther = handleRow(function(child,label,editor) {
 			debugger;
 			label.innerHTML = child.nodeType;
-			editor.appendChild(document.createTextNode("(unknown)"));			
+			editor.appendChild(document.createTextNode("(unknown)"));
 		});
 
     	for (var i=0; i<head.childNodes.length; i++) {

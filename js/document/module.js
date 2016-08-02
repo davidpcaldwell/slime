@@ -181,6 +181,15 @@ var Cdata = function(p) {
 	};
 };
 
+var ProcessingInstruction = function(p) {
+	this.target = p.instruction.target;
+	this.data = p.instruction.data;
+
+	this.serialize = function(m) {
+		return "<?" + this.target + " " + this.data + "?>";
+	}
+}
+
 var Element = function(p) {
 	Node.call(this,p);
 	//	optionally adds children upon construction
@@ -512,6 +521,7 @@ $exports.Element = Element;
 $exports.Text = Text;
 $exports.Cdata = Cdata;
 $exports.Comment = Comment;
+$exports.ProcessingInstruction = ProcessingInstruction;
 
 $exports.filter = function(p) {
 	if (typeof(p) == "object" && typeof(p.elements) == "string") {

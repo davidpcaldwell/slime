@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 //	TODO	add feature to jsh.shell that handles JSON output automatically (like String output)
 var jsonOutput = {
 	stdio: function() {
@@ -101,7 +114,7 @@ $set({
 						verify(result).output.module.foo.is("baz");
 					}
 				};
-				
+
 				var test = function(unbuilt,verify) {
 					if (!jsh.shell.environment.SKIP_PACKAGED_APPLICATIONS) {
 						Packages.java.lang.System.err.println("Packaging loader.jsh.js ...");
@@ -124,13 +137,13 @@ $set({
 						verify(result).output.path.module.foo.is("baz");
 					}
 				}
-				
+
 				this.implementation = {
 					execute: function(scope,verify) {
 						test(false,verify);
 					}
 				};
-				
+
 				this.unbuilt = {
 					execute: function(scope,verify) {
 						test(true,verify);
@@ -146,14 +159,14 @@ $set({
 					verify(result).stdio.evaluate(lines)[0].is("a: Hello, World!");
 					verify(result).stdio.evaluate(lines)[1].is("[global] a: Hello, World!");
 				}
-				
+
 				this.compatibility = {
 					execute: function(scope,verify) {
 						var result = jsh.shell.jsh({
 							fork: true,
 							script: src.getFile("jsh/test/packaged/plugins.jsh.js"),
 							environment: {
-								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"								
+								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
 							},
 							stdio: {
 								output: String
@@ -162,7 +175,7 @@ $set({
 						check(verify,result);
 					}
 				};
-				
+
 				this.implementation = {
 					execute: function(scope,verify) {
 						var packaged_plugins = packaged.build({
@@ -179,7 +192,7 @@ $set({
 						var result = jsh.shell.java({
 							jar: packaged_plugins.jar,
 							environment: jsh.js.Object.set({}, {
-								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"								
+								LOAD_JSH_PLUGIN_TEST_PLUGIN: "true"
 							}, (/^Windows/.test(jsh.shell.os.name)) ? windows : {}),
 							stdio: {
 								output: String

@@ -47,7 +47,7 @@ $set(function(p) {
 		this.toString = function() {
 			return "Default console: " + this.log;
 		};
-		
+
 		this.log = function() {
 			$context.log.INFO("window.console.log: " + Array.prototype.slice.call(arguments).join("|"));
 		}

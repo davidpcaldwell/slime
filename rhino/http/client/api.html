@@ -575,7 +575,7 @@ END LICENSE
 									<div class="name">proxy</div>
 									<span class="type"><a href="#types.proxy">proxy</a></span>
 									<span>
-										(optional) 
+										(optional)
 										A proxy server to use for all requests.
 									</span>
 									<script type="application/x.jsapi#tests">
@@ -592,7 +592,7 @@ END LICENSE
 												url: "http://foo.bar.baz/",
 												evaluate: function(response) {
 													return response.body.stream.character().asString();
-												}											
+											}
 											});
 											verify(host2).is("foo.bar.baz");
 										}

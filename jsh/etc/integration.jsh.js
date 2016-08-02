@@ -237,7 +237,7 @@ var legacy = function() {
 	var File = Packages.java.io.File;
 
 	var JSH_HOME = jsh.shell.jsh.home.pathname.java.adapt();
-	
+
 	var getPath = function(basedir,relative) {
 		var jfile = new File(basedir,relative);
 		var rv = String(jfile.getCanonicalPath());

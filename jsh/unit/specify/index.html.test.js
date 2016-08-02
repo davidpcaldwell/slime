@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 var api = $loader.file("loader/api/unit.js");
 var unit = $loader.module("loader/browser/test/module.js", {
 	api: {
@@ -140,7 +153,7 @@ title.target({
 		return titleRow;
 	},
 	titleSpan: function() {
-		return this.titleRow().cells[1].children[0];		
+		return this.titleRow().cells[1].children[0];
 	}
 });
 title.test({
@@ -210,7 +223,7 @@ comment.target(new function() {
 			return this.cells[1].getElementsByTagName("textarea")[0];
 		};
 		row.getSpan = function() {
-			return this.cells[1].getElementsByTagName("span")[0];			
+			return this.cells[1].getElementsByTagName("span")[0];
 		}
 		return row;
 	};
@@ -373,7 +386,7 @@ scripts.test(new function() {
 		this.getScriptRows()[0].getInput().value = bar;
 		unit.fire.keydown(this.getScriptRows()[0].getInput(), {
 			key: "Escape"
-		});		
+		});
 	}
 
 	this.check = function(verify) {

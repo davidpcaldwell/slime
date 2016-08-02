@@ -105,7 +105,7 @@ $set(function(p) {
 							return "WebView console: " + this.log;
 						}
 					};
-					
+
 					this.log = function() {
 						jsh.shell.console("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
 					}

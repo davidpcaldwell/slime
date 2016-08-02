@@ -320,7 +320,7 @@ var Client = function(configuration) {
 				}
 			}
 		})();
-		
+
 		var response = myspi({
 			method: method,
 			url: url,

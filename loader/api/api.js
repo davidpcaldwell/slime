@@ -13,7 +13,7 @@
 window.onload = function() {
 	//	TODO	Perhaps verify div class="object" li elements have div class="name"
 	//	TODO	verify the "has properties" after div class="object"
-	
+
 	var getJsapiAttribute = function(element,name) {
 		return element.getAttribute("jsapi:" + name);
 	}

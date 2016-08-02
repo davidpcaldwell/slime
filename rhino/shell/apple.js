@@ -181,7 +181,7 @@ if ($context.api.shell.PATH.getCommand("chmod")) {
 			var read = function() {
 				return $exports.plist.xml.decode(
 					$context.api.xml.parseFile(p.directory.getFile("Contents/Info.plist"))
-				);			
+				);
 			};
 
 			var write = function(plist) {
@@ -200,7 +200,7 @@ if ($context.api.shell.PATH.getCommand("chmod")) {
 
 			var setter = function(name) {
 				if (name == "CFBundleExecutable") {
-					return function(v) {					
+					return function(v) {
 						var plist = read();
 						var was = p.directory.getFile("Contents/MacOS/" + plist[name]);
 						if (was) was.remove();

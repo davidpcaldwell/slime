@@ -21,7 +21,7 @@ public class Gui {
 
 	private static class SwingGui extends Engine.RhinoDebugger.Ui {
 		private org.mozilla.javascript.tools.debugger.SwingGui delegate;
-		
+
 		private void workAroundOsxSwingSlowness() {
 			try {
 				for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -38,7 +38,7 @@ public class Gui {
 
 			} catch (javax.swing.UnsupportedLookAndFeelException e) {
 
-			}			
+			}
 		}
 
 		SwingGui(Dim dim, String title) {
