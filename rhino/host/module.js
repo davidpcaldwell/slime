@@ -567,10 +567,10 @@ $exports.Thread.map = function(array,mapper,target,p) {
 			if (toThrow) {
 				throw toThrow;
 			}
-		}		
+		}
 	};
 	for (var i=0; i<array.length; i++) {
-		threads.push(jsh.java.Thread.start({ 
+		threads.push(jsh.java.Thread.start({
 			call: computation(i),
 			on: {
 				//	TODO	can the below callback structure be combined with the Tell construct?
@@ -583,7 +583,7 @@ $exports.Thread.map = function(array,mapper,target,p) {
 				result: (function(index) {
 					return function(rv) {
 						p.callback({ completed: completed, running: running, index: index, returned: rv });
-					}					
+					}
 				})(i)
 			}
 		}));

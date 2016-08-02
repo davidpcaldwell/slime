@@ -252,7 +252,7 @@ var Resource = function(p) {
 		//	TODO	may want to do some sort of "cast" here
 		this.type = p.type;
 	}
-	
+
 	if (p.name) {
 		this.name = p.name;
 	}

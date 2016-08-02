@@ -224,7 +224,7 @@ END LICENSE
 							verify(downloads).getFile("directory.tar.gz").is.not(null);
 							verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
 						})();
-						
+
 						//	TODO	ensure when a copy has already been downloaded, the cached version is used
 					</script>
 					<script type="application/x.jsapi#destroy">
@@ -252,7 +252,7 @@ END LICENSE
 															type: "application/json",
 															string: JSON.stringify({
 																preferred: "http://apache.inonit.com/"
-															})															
+															})
 														}
 													};
 												}
@@ -264,7 +264,7 @@ END LICENSE
 												};
 											}
 										};
-										Packages.java.lang.System.err.println("custom servlet loaded.");										
+										Packages.java.lang.System.err.println("custom servlet loaded.");
 									}
 								}
 							},
@@ -285,14 +285,14 @@ END LICENSE
 						verify(api).apache.is.type("object");
 						verify(api).apache.evaluate.property("download").is.type("function");
 						verify(mock).is.type("object");
-						
+
 						var PROXY = {
 							http: {
 								host: "127.0.0.1",
 								port: mock.port
 							}
 						};
-						
+
 						var mockdownloads = $jsapi.file.newTemporaryDirectory();
 						var mockclient = new jsh.http.Client({
 							proxy: PROXY
@@ -303,9 +303,9 @@ END LICENSE
 								shell: jsh.shell,
 								http: jsh.http
 							},
-							downloads: mockdownloads							
+							downloads: mockdownloads
 						});
-						
+
 						var GET_API_HTML = function() { return this.getFile("api.html") };
 						var EQUALS = function(string) { return function() { return this.read(String) == string; } };
 						verify(mockdownloads).evaluate(GET_API_HTML).is(null);

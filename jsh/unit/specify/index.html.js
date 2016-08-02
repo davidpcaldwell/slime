@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 window.addEventListener('load', function() {
     //	TODO	CORS
     //	TODO	template loaded for missing content contains SLIME license
@@ -38,7 +51,7 @@ window.addEventListener('load', function() {
             this.is = function(element) {
             	return current && current.element == element;
             }
-            
+
             this.select = function(element) {
 				if (current) current.deselect();
 				current = new function() {
@@ -46,7 +59,7 @@ window.addEventListener('load', function() {
 
 					var was = element.style.backgroundColor;
 					element.style.backgroundColor = "#c0c0ff";
-					
+
 					this.deselect = function() {
 						element.style.backgroundColor = was;
 					}
@@ -116,7 +129,7 @@ window.addEventListener('load', function() {
 				selection.select(e.target);
 			}
         });
-        
+
 
 		var base = inonit.loader.base.split("/").slice(0,-3).join("/") + "/";
 
