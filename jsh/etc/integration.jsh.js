@@ -209,6 +209,13 @@ ScriptVerifier({
 	}
 });
 
+ScriptVerifier({
+	path: "loader/child.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
+
 if (CATALINA_HOME) {
 	ScriptVerifier({
 		path: "jsh.httpd/httpd.jsh.js",
@@ -429,9 +436,6 @@ var legacy = function() {
 			]
 		), mymode);
 	})();
-
-	testCommandOutput("loader/child.jsh.js", function(options) {
-	});
 
 	if (CATALINA_HOME) {
 		console("Running httpd integration tests with CATALINA_HOME = " + CATALINA_HOME);
