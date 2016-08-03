@@ -251,6 +251,27 @@ if (CATALINA_HOME) {
 	jsh.shell.console("No CATALINA_HOME: not running httpd integration tests.");
 }
 
+//		var tmp = platform.io.createTemporaryDirectory();
+//		run(LAUNCHER_COMMAND.concat([
+//			getSourceFilePath("jsh/tools/slime.jsh.js"),
+//			"-from", getPath(SLIME_SRC,"loader/rhino/test/data/1"),
+//			"-to", getPath(tmp,"1.slime"),
+//			//	TODO	the below should match the version from the build
+//			"-version", "1.6"
+//		]));
+
+ScriptVerifier({
+	path: "../tools/slime.jsh.js",
+	arguments: [
+		"-from", src.getRelativePath("loader/rhino/test/data/1"),
+		"-to", jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("1.slime"),
+		"-version", "1.6"
+	],
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
+
 var legacy = function() {
 	//	TODO	remove the below dependency
 	//			appears to define 'console'
@@ -427,22 +448,7 @@ var legacy = function() {
 			mymode.env[x] = mode.env[x];
 		}
 
-		mymode.env.JSH_JAVA_LOGGING_PROPERTIES = String(new File(SLIME_SRC,"jsh/test/integration.logging.properties").getCanonicalPath());
-		jsh.shell.echo("JSH_ENGINE = " + jsh.shell.environment.JSH_ENGINE);
-		run(LAUNCHER_COMMAND.concat([
-			getSourceFilePath("jsh/test/jsh.shell/properties.jsh.js")
-		]), mymode);
-
-		delete mymode.env.JSH_JAVA_LOGGING_PROPERTIES;
 		var tmp = platform.io.createTemporaryDirectory();
-		run(LAUNCHER_COMMAND.concat([
-			getSourceFilePath("jsh/tools/slime.jsh.js"),
-			"-from", getPath(SLIME_SRC,"loader/rhino/test/data/1"),
-			"-to", getPath(tmp,"1.slime"),
-			//	TODO	the below should match the version from the build
-			"-version", "1.6"
-		]));
-
 		mymode.env.MODULES = tmp.getCanonicalPath();
 	//	mymode.env.PATH = String(Packages.java.lang.System.getenv("PATH"));
 		run(LAUNCHER_COMMAND.concat(
