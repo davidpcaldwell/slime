@@ -743,8 +743,7 @@ $exports.Scenario = {};
 			if (!next) {
 				return part.after(vscope.success,local);
 			} else {
-				part.after(vscope.success,local);
-//				next(part.after(vscope.success,local));
+				next(part.after(vscope.success,local));
 			}
 		}
 
@@ -804,6 +803,7 @@ $exports.Scenario = {};
 						var index = 0;
 						var proceed = function recurse(result) {
 							if (index == keys.length) {
+								if (!result) success = false;
 								next(result);
 							} else {
 								var x = keys[index++];
@@ -812,7 +812,6 @@ $exports.Scenario = {};
 									scope: subscope,
 									path: []
 								},recurse);
-								if (!subscope.success) success = false;
 							}
 						};
 						proceed();

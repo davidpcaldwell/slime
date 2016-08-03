@@ -110,17 +110,32 @@ var ScriptVerifier = function(o) {
 };
 
 if (CATALINA_HOME) {
-	BROWSER_UNIT_TEST_ISSUE_FIXED = true;
-	if (BROWSER_UNIT_TEST_ISSUE_FIXED) scenario.part("unit.browser", new function() {
-		this.name = "browser unit testing",
-		this.execute = function(scope,verify) {
-			jsh.shell.jsh({
-				fork: true,
-				script: src.getFile("loader/api/test/browser.jsh.js"),
-				evaluate: function(result) {
-					verify(result).status.is(0);
+	scenario.part("unit.browser", {
+		name: "loader/browser/test",
+		parts: {
+			failure: {
+				execute: function(scope,verify) {
+					jsh.shell.jsh({
+						fork: true,
+						script: src.getFile("loader/api/test/browser.jsh.js"),
+						evaluate: function(result) {
+							verify(result).status.is(0);
+						}
+					})					
 				}
-			})
+			},
+			success: {
+				execute: function(scope,verify) {
+					jsh.shell.jsh({
+						fork: true,
+						script: src.getFile("loader/api/test/browser.jsh.js"),
+						arguments: ["-success"],
+						evaluate: function(result) {
+							verify(result).status.is(0);
+						}
+					})
+				}
+			}
 		}
 	});
 }
