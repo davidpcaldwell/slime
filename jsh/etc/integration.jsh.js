@@ -110,7 +110,7 @@ var ScriptVerifier = function(o) {
 };
 
 if (CATALINA_HOME) {
-	BROWSER_UNIT_TEST_ISSUE_FIXED = false;
+	BROWSER_UNIT_TEST_ISSUE_FIXED = true;
 	if (BROWSER_UNIT_TEST_ISSUE_FIXED) scenario.part("unit.browser", new function() {
 		this.name = "browser unit testing",
 		this.execute = function(scope,verify) {

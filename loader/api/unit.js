@@ -802,15 +802,17 @@ $exports.Scenario = {};
 							keys.push(x);
 						}
 						var index = 0;
-						var proceed = function recurse(success) {
+						var proceed = function recurse(result) {
 							if (index == keys.length) {
-								next(success);
+								next(result);
 							} else {
 								var x = keys[index++];
+								var subscope = copy(scope);
 								parts[x].run({
-									scope: copy(scope),
+									scope: subscope,
 									path: []
 								},recurse);
+								if (!subscope.success) success = false;
 							}
 						};
 						proceed();

@@ -19,7 +19,7 @@ END LICENSE
 		<script src="../../../loader/browser/client.js"></script>
 		<script>
 			window.addEventListener("load", function(e) {
-				$loader = new inonit.loader.Loader("../../../");
+				$loader = new inonit.loader.Loader(window.location.href.split("/").slice(0,-4).join("/") + "/");
 				var api = $loader.file("loader/api/unit.js");
 				var unit = $loader.module("loader/browser/test/module.js", {
 					api: {
