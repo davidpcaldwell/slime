@@ -272,6 +272,13 @@ ScriptVerifier({
 	}
 });
 
+ScriptVerifier({
+	path: "jsh.file/Searchpath.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
+
 var legacy = function() {
 	//	TODO	remove the below dependency
 	//			appears to define 'console'
@@ -490,9 +497,6 @@ var legacy = function() {
 	} else {
 		console("No CATALINA_HOME: not running httpd integration tests.");
 	}
-
-	testCommandOutput("jsh.file/Searchpath.jsh.js", function(options) {
-	});
 
 	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
 		return options.output == "Hello, World!" && options.err == "Hello, tty!";
