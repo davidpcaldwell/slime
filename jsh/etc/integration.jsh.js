@@ -385,6 +385,50 @@ if (CATALINA_HOME) {
 	});
 }
 
+scenario.part("coffeescript", {
+	execute: function(scope,verify) {
+		if (COFFEESCRIPT) {
+			jsh.shell.echo("Testing CoffeeScript ...");
+			var hello = jsh.shell.jsh({
+				fork: true,
+				script: jsh.script.file.getRelativePath("../test/coffee/hello.jsh.coffee").file,
+				stdio: {
+					output: String
+				}
+	//				,evaluate: function(result) {
+	//					if (result.status == 0) {
+	//						if (result.stdio.output == ["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+	//							jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+	//							jsh.shell.echo();
+	//						} else {
+	//							throw new Error("Output was [" + result.stdio.output + "]");
+	//						}
+	//					} else {
+	//						throw new Error("Status: " + result.status);
+	//					}
+	//				}
+				});
+				verify(hello).status.is(0);
+				verify(hello).stdio.output.is(["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator"))));
+				var loader = jsh.shell.jsh({
+					fork: true,
+					script: jsh.script.file.getRelativePath("../test/coffee/loader.jsh.js").file
+	//				,evaluate: function(result) {
+	//					if (result.status == 0) {
+	//						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+	//						jsh.shell.echo();
+	//					} else {
+	//						throw new Error("Status: " + result.status + " for " + result.command + " " + result.arguments.join(" "));
+	//					}
+	//				}
+			});
+			verify(loader).status.is(0);
+		} else {
+			verify("No CoffeeScript").is("No CoffeeScript");
+		}
+	}
+});
+
 var legacy = function() {
 	//	TODO	remove the below dependency
 	//			appears to define 'console'
@@ -441,43 +485,43 @@ var legacy = function() {
 		mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
 	}
 
-	if (COFFEESCRIPT && !jsh.shell.environment.SKIP_COFFEESCRIPT) {
-		jsh.shell.echo("Testing CoffeeScript ...");
-		jsh.shell.jsh({
-			fork: true,
-			script: jsh.script.file.getRelativePath("../test/coffee/hello.jsh.coffee").file,
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				if (result.status == 0) {
-					if (result.stdio.output == ["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
-						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-						jsh.shell.echo();
-					} else {
-						throw new Error("Output was [" + result.stdio.output + "]");
-					}
-				} else {
-					throw new Error("Status: " + result.status);
-				}
-			}
-		});
-		jsh.shell.jsh({
-			fork: true,
-			script: jsh.script.file.getRelativePath("../test/coffee/loader.jsh.js").file,
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				if (result.status == 0) {
-					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-					jsh.shell.echo();
-				} else {
-					throw new Error("Status: " + result.status + " for " + result.command + " " + result.arguments.join(" "));
-				}
-			}
-		});
-	}
+//	if (COFFEESCRIPT && !jsh.shell.environment.SKIP_COFFEESCRIPT) {
+//		jsh.shell.echo("Testing CoffeeScript ...");
+//		jsh.shell.jsh({
+//			fork: true,
+//			script: jsh.script.file.getRelativePath("../test/coffee/hello.jsh.coffee").file,
+//			stdio: {
+//				output: String
+//			},
+//			evaluate: function(result) {
+//				if (result.status == 0) {
+//					if (result.stdio.output == ["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+//						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+//						jsh.shell.echo();
+//					} else {
+//						throw new Error("Output was [" + result.stdio.output + "]");
+//					}
+//				} else {
+//					throw new Error("Status: " + result.status);
+//				}
+//			}
+//		});
+//		jsh.shell.jsh({
+//			fork: true,
+//			script: jsh.script.file.getRelativePath("../test/coffee/loader.jsh.js").file,
+//			stdio: {
+//				output: String
+//			},
+//			evaluate: function(result) {
+//				if (result.status == 0) {
+//					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+//					jsh.shell.echo();
+//				} else {
+//					throw new Error("Status: " + result.status + " for " + result.command + " " + result.arguments.join(" "));
+//				}
+//			}
+//		});
+//	}
 
 	var nativeLauncher = jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh");
 	//	Windows sees JavaScript files as potential commands, through the PATHEXT variable
