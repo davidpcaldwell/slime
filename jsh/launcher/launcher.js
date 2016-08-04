@@ -18,7 +18,7 @@
 //	OLDER JAVA
 //
 //	To backport to 1.4 or lower, some mechanism would be needed to enumerate the environment variables. At one time this was done
-//	with usr/bin/env on UNIX and was not done at all on Windows (except Cygwin; see below).
+//	with /usr/bin/env on UNIX and was not done at all on Windows (except Cygwin; see below).
 //
 //	OLDER RHINO
 //
@@ -80,8 +80,6 @@
 
 //	TODO	can this be run with Java 6/7 jrunscript?
 //
-//	TODO	convert jsh build script to a jsh script that runs in an unbuilt shell
-//
 //	TODO	create semi-automated verify process that includes non-automatable features (like debugger)
 //
 //	TODO	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
@@ -114,8 +112,9 @@
 try {
 	var $api = this.$api;
 	if (!this.$api.slime) {
+		//	TODO	unclear where / whether this is used; if it is clearer, then document the use in the internal.api.html
+		//			documentation
 		var slime = $api.script.resolve("slime.js");
-//		Packages.java.lang.System.err.println("slime.js = " + slime);
 		slime.load();
 		$api.log("Loaded slime.js: src=" + $api.slime.src);
 	}

@@ -11,12 +11,9 @@
 //	Contributor(s):
 //	END LICENSE
 
-//	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
-//Packages.java.lang.System.err.println("slime.js: start");
 var $api = this.$api;
-//Packages.java.lang.System.out.println("$api.io = " + $api.io);
-//Packages.java.lang.System.out.println("$api = " + Object.keys($api));
-//Packages.java.lang.System.err.println("slime.js: $api = " + this.$api);
+
+//	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
 if (typeof(Packages.inonit.script.runtime.io.Streams) == "function") {
 	$api.io.copy = function(i,o) {
 		if (!arguments.callee.delegate) {
@@ -45,33 +42,27 @@ if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 
 $api.slime = (function(was) {
 	var rv;
-//	Packages.java.lang.System.err.println("Assigning $api.slime");
 	if (was && was.built) {
 		rv = was;
-//		Packages.java.lang.System.err.println("Assigning $api.slime built");
 		rv.launcher = new function() {
 			this.getClasses = function() {
 				return new Packages.java.io.File($api.script.file.getParentFile(), "jsh.jar");
 			};
 		}
-//		Packages.java.lang.System.err.println("Assigned rv.launcher");
 	} else {
-//		Packages.java.lang.System.err.println("Assigning $api.slime not built");
 		rv = {};
 
-		var script = $api.script;
-		var isSourceFile = script.file && String(script.file.getParentFile().getName()) == "launcher";
-		var isHttp = script.url && /^http/.test(String(script.url.getProtocol()));
-//		Packages.java.lang.System.err.println("script = " + script + " isSourceFile= " + isSourceFile + " isHttp=" + isHttp);
+		var isSourceFile = $api.script.file && String($api.script.file.getParentFile().getName()) == "launcher";
+		var isHttp = $api.script.url && /^http/.test(String($api.script.url.getProtocol()));
 		if (isSourceFile || isHttp) {
 			rv.src = new function() {
-				if (script.file) {
+				if ($api.script.file) {
 					this.toString = function() {
-						return script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().toString();
+						return $api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().toString();
 					};
 
 					var File = function(path) {
-						return new Packages.java.io.File(script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
+						return new Packages.java.io.File($api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
 					}
 
 					this.File = function(path) {
@@ -79,7 +70,7 @@ $api.slime = (function(was) {
 					}
 
 					this.getFile = function(path) {
-						return script.resolve("../../" + path).file;
+						return $api.script.resolve("../../" + path).file;
 					}
 
 					this.getSourceFilesUnder = function getSourceFilesUnder(dir,rv) {
@@ -105,7 +96,7 @@ $api.slime = (function(was) {
 						return rv;
 					};
 				} else {
-					var base = new Packages.java.net.URL(script.url, "../../");
+					var base = new Packages.java.net.URL($api.script.url, "../../");
 
 					this.toString = function() {
 						return base.toExternalForm();
@@ -127,26 +118,23 @@ $api.slime = (function(was) {
 
 					this.getSourceFilesUnder = function(path) {
 						var under = new Packages.java.net.URL(base, path);
-//						Packages.java.lang.System.err.println("getSourceFilesUnder: " + under);
 						var rv = [];
 						getSourceFilesUnder(under,rv);
-//						Packages.java.lang.System.err.println(rv.join("\n"));
 						return rv;
 					}
 				}
 
 				this.getPath = function(path) {
 					$api.debug("getPath: " + path);
-					return script.resolve("../../" + path).toString();
+					return $api.script.resolve("../../" + path).toString();
 				}
 			};
 		}
 
 		rv.launcher = new function() {
+			//	Exposed because it is used by jsh build script
 			this.compile = function(p) {
 				var to = (p && p.to) ? p.to : $api.io.tmpdir();
-//				Packages.java.lang.System.err.println("to = " + to);
-//				Packages.java.lang.System.err.println("rhino/system/java = " + rv.src.getPath("rhino/system/java"));
 				var args = [
 					"-Xlint:deprecation",
 					"-Xlint:unchecked",
@@ -154,16 +142,8 @@ $api.slime = (function(was) {
 					"-sourcepath", rv.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + rv.src.getPath("jsh/launcher/java"),
 					rv.src.getPath("jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
 				];
-				args.push.apply(args,rv.src.getSourceFilesUnder(rv.src.getFile("rhino/system/java")))
-//				Packages.java.lang.System.err.println("args = " + args.join(" "));
+				args.push.apply(args,rv.src.getSourceFilesUnder(rv.src.getFile("rhino/system/java")));
 				$api.java.install.compile(args);
-//				$api.java.install.compile([
-//					"-Xlint:deprecation",
-//					"-Xlint:unchecked",
-//					"-d", to,
-//					"-sourcepath", rv.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + rv.src.getPath("jsh/launcher/java"),
-//					rv.src.getPath("jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
-//				]);
 				if (!p || !p.to) return to;
 			};
 
@@ -173,7 +153,6 @@ $api.slime = (function(was) {
 		}
 	}
 
-//	Packages.java.lang.System.err.println("Assigning .setting");
 	rv.setting = function(name) {
 		if (Packages.java.lang.System.getProperty(name) !== null) {
 			return String(Packages.java.lang.System.getProperty(name));
@@ -185,7 +164,6 @@ $api.slime = (function(was) {
 		return null;
 	};
 
-//	Packages.java.lang.System.err.println("Assigning .settings");
 	rv.settings = new function() {
 		var all = {};
 		var PASS = function(value) {
@@ -363,8 +341,6 @@ $api.slime = (function(was) {
 			}
 		}
 	};
-
-//	Packages.java.lang.System.err.println("Returning ...");
 
 	return rv;
 })($api.slime);

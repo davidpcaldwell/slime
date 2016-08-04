@@ -320,7 +320,6 @@ var modules = (function createModules() {
 	console("Creating bundled modules ...")
 	//	TODO	remove or modify this; appears to redefine the slime global object
 	var slime = jsh.script.loader.file("jsh/tools/slime.js").slime;
-	//load(String($api.slime.src.getFile("jsh/tools/slime.js").getCanonicalPath()));
 	var MODULE_CLASSPATH = (function() {
 		var files = [];
 		if (build.rhino) {

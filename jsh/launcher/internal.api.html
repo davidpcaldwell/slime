@@ -20,24 +20,108 @@ END LICENSE
 </head>
 <body>
 	<div>
-		<h1><a href="../../rhino/jrunscript/api.html">api.js</a></h1>
-	</div>
-	<div>
 		<div>
-			The <code>jsh</code> launcher starts a <code>jsh</code> shell that runs a main script.
+			The <code>jsh</code> launcher is a <code>jrunscript</code> script that starts an engine-specific
+			Java program that is capable of creating a <code>jsh</code> shell and executing the indicated script inside it.
 		</div>
 		<div>
-			A shell may be <i>built</i> or <i>unbuilt</i>. An unbuilt shell is run directly from the SLIME source code, while a
-			built shell is produced via the <code>jsh</code> installer.
+			A shell installation may be <i>built</i> or <i>unbuilt</i>. An unbuilt shell is run directly from the SLIME source code,
+			while a built shell is a directory structure produced via the <code>jsh</code> installer.
 		</div>
 		<div>
 			The launcher consists of the following components:
 		</div>
 	</div>
 	<div>
-		<h1>Bootstrap launcher</h1>
+		<h1>Settings</h1>
+		<table>
+			<thead>
+				<tr>
+					<td>Name</td>
+					<td>Description</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>jsh.debug.launcher</td>
+					<td>
+						Turns on debugging output in the <code>jsh</code> launcher script.
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div>
+		<h1><a href="../../rhino/jrunscript/api.html"><code>rhino/jrunscript/api.js</code></a></h1>
 		<div>
-			The bootstrap launcher prepares the Java launcher for execution.
+			Creates <code>$api</code> as a property of <code>this</code> (the global object).
+		</div>
+	</div>
+	<div>
+		<h1>Bootstrap launcher (<code>jsh/launcher/main.js</code>)</h1>
+		<div>
+			The bootstrap launcher prepares a Java command to launch the engine-specific shell for execution.
+		</div>
+		<div>
+			<h2><code>slime.js</code></h2>
+			<div>
+				This script, also apparently used in the <code>jsh</code> build process, creates an <code>$api.slime</code> object
+				providing SLIME-specific functionality.
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="object">
+						<div class="name">src</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+						</ul>
+					</li>
+					<li class="object">
+						<div class="name">launcher</div>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="function">
+								<div class="name">getClasses</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div>
+			<h2><code>launcher.js</code></h2>
+			<div>
+				Creates an <code>$api.jsh</code> object.
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">exit</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="returns">
+							<div class="label">Returns</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</div>
 		</div>
 		<div>
 			<h2>Responsibilities</h2>
@@ -119,6 +203,7 @@ END LICENSE
 							launcher script will be executed in the Rhino debugger.
 						</td>
 					</tr>
+				</tbody>
 			</table>
 			<h2>Responsibilities</h2>
 			<!--	See Main.java	-->
