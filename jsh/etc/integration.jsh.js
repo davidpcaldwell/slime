@@ -328,6 +328,54 @@ ScriptVerifier({
 	}
 });
 
+//	jsh.shell.run({
+//		command: LAUNCHER_COMMAND[0],
+//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/loader.jsh.js")),
+//		stdio: {
+//			output: String
+//		},
+//		evaluate: function(result) {
+//			if (result.status == 0) {
+//				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+//				jsh.shell.echo();
+//			} else {
+//				throw new Error("Status: " + result.status);
+//			}
+//		}
+//	});
+//
+
+ScriptVerifier({
+	path: "jsh.script/loader.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
+
+scenario.part("rhino.optimization", {
+	execute: function(scope,verify) {
+		[-1,0,1].forEach(function(level) {
+			jsh.shell.jsh({
+				fork: true,
+				script: src.getFile("jsh/test/rhino-optimization.jsh.js"),
+				stdio: {
+					output: String
+				},
+				environment: jsh.js.Object.set({}, jsh.shell.environment, {
+					JSH_ENGINE: "rhino",
+					JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
+				}),
+				evaluate: function(result) {
+					jsh.shell.echo("Output: [" + result.stdio.output + "]");
+					var optimization = Number(result.stdio.output);
+					verify(result).status.is(0);
+					verify(optimization).is(level);
+				}
+			});			
+		});
+	}
+});
+
 var legacy = function() {
 	//	TODO	remove the below dependency
 	//			appears to define 'console'
@@ -382,49 +430,6 @@ var legacy = function() {
 	mode.env.JSH_PLUGINS = String(new File(JSH_HOME, "plugins").getCanonicalPath());
 	if (debug.on) {
 		mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
-	}
-
-	jsh.shell.run({
-		command: LAUNCHER_COMMAND[0],
-		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/loader.jsh.js")),
-		stdio: {
-			output: String
-		},
-		evaluate: function(result) {
-			if (result.status == 0) {
-				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-				jsh.shell.echo();
-			} else {
-				throw new Error("Status: " + result.status);
-			}
-		}
-	});
-
-	if (RHINO_LIBRARIES) {
-		jsh.shell.echo("Testing Rhino optimization ...");
-		(function(level) {
-			jsh.shell.jsh({
-				fork: true,
-				script: jsh.script.file.getRelativePath("../test/rhino-optimization.jsh.js").file,
-				stdio: {
-					output: String
-				},
-				environment: jsh.js.Object.set({}, jsh.shell.environment, {
-					JSH_ENGINE: "rhino",
-					JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
-				}),
-				evaluate: function(result) {
-					jsh.shell.echo("Output: [" + result.stdio.output + "]");
-					var optimization = Number(result.stdio.output);
-					if (result.status == 0 && optimization == level) {
-						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-						jsh.shell.echo();
-					} else {
-						throw new Error("Status: " + result.status + " optimization " + optimization);
-					}
-				}
-			});
-		})(1);
 	}
 
 	if (CATALINA_HOME) {
