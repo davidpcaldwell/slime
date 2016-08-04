@@ -316,6 +316,18 @@ ScriptVerifier({
 	}
 });
 
+//	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
+//		return options.output == "Hello, World!" && options.err == "Hello, tty!";
+//	});
+ScriptVerifier({
+	path: "jsh.shell/stdio.1.jsh.js",
+	error: String,
+	execute: function(verify) {
+		verify(this).stdio.output.is("Hello, World!");
+		verify(this).stdio.error.is("Hello, tty!");
+	}
+});
+
 var legacy = function() {
 	//	TODO	remove the below dependency
 	//			appears to define 'console'
@@ -333,12 +345,6 @@ var legacy = function() {
 		}
 		return rv;
 	};
-
-	var getSourceFilePath = function(relative) {
-		return getPath(SLIME_SRC, relative);
-	}
-
-	var SLIME_SRC = parameters.options.src.java.adapt();
 
 	var LAUNCHER_COMMAND;
 	if (!LAUNCHER_COMMAND) {
@@ -377,160 +383,6 @@ var legacy = function() {
 	if (debug.on) {
 		mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
 	}
-
-	var runCommand = function() {
-		var p = {
-			arguments: []
-		};
-		for (var i=0; i<arguments.length; i++) {
-			if (i == 0) {
-				p.command = arguments[i];
-			} else if (i == arguments.length-1 && typeof(arguments[i]) == "object") {
-				var mode = arguments[i];
-				if (mode.env) {
-					p.environment = mode.env;
-				}
-				if (typeof(mode.output) == "string") {
-					if (!p.stdio) p.stdio = {};
-					p.stdio.output = String;
-				}
-				if (typeof(mode.err) == "string") {
-					if (!p.stdio) p.stdio = {};
-					p.stdio.error = String;
-				}
-				if (typeof(mode.input) != "undefined") {
-					p.stdio.input = jsh.io.java.adapt(mode.input);
-				}
-			} else {
-				p.arguments.push(arguments[i]);
-			}
-		}
-		p.evaluate = function(result) {
-			if (typeof(mode.output) == "string") {
-				mode.output += result.stdio.output;
-			}
-			if (typeof(mode.err) == "string") {
-				mode.err += result.stdio.error;
-			}
-			return result.status;
-		};
-		return jsh.shell.run(p);
-	}
-
-	var run = function(command,mymode) {
-		if (!mymode) mymode = mode;
-		var options = mymode;
-		console(command.join(" "));
-		var status = runCommand.apply(this,command.concat(mymode));
-	//	Packages.java.lang.System.err.println("env: " + JSON.stringify(env, void(0), "    "));
-	//	Packages.java.lang.System.err.println("input: " + options.input);
-	//	Packages.java.lang.System.err.println("Output: " + options.output);
-	//	Packages.java.lang.System.err.println("Error: " + options.err);
-		if (status != 0) {
-			throw new Error("Failed with status: " + status + ": " + command.join(" "));
-		} else {
-			console("Passed: " + command.join(" "));
-		}
-	}
-
-	var testCommandOutput = function(path,tester,p) {
-		if (!p) p = {};
-		var env = (function() {
-			if (!p.env) return mode.env;
-			var rv = {};
-			for (var x in mode.env) {
-				rv[x] = mode.env[x];
-			}
-			for (var x in p.env) {
-				if (typeof(p.env[x]) != "undefined") {
-					if (p.env[x] === null) {
-						delete rv[x];
-					} else {
-						rv[x] = p.env[x];
-					}
-				}
-			}
-			return rv;
-		})();
-		var command = [
-			String(new File(SLIME_SRC,"jsh/test/" + path).getCanonicalPath())
-		];
-		var launcher = LAUNCHER_COMMAND;
-		if (p.arguments) {
-			command = command.concat(p.arguments);
-		}
-		debug("Environment: " + JSON.stringify(env));
-		var options = {
-			output: "",
-			err: "",
-			env: env
-		};
-		if (p.stdin) {
-			options.input = p.stdin;
-		}
-
-		console(launcher.concat(command).join(" "));
-		var status = runCommand.apply(this,launcher.concat(command).concat([options]));
-		if (status != 0) {
-			Packages.java.lang.System.err.println("env: " + JSON.stringify(env, void(0), "    "));
-			Packages.java.lang.System.err.println("input: " + options.input);
-			Packages.java.lang.System.err.println("Output: " + options.output);
-			Packages.java.lang.System.err.println("Error: " + options.err);
-			throw new Error("Failed with exit status " + status + ": " + launcher.concat(command).join(" ") + " with options: " + options);
-		}
-		tester(options);
-		console("");
-		console("Passed: " + command.join(" "));
-		console("");
-	};
-
-	(function() {
-		var mymode = {
-			env: {}
-		};
-		for (var x in mode.env) {
-			mymode.env[x] = mode.env[x];
-		}
-
-		var tmp = platform.io.createTemporaryDirectory();
-	})();
-
-	if (CATALINA_HOME) {
-		console("Running httpd integration tests with CATALINA_HOME = " + CATALINA_HOME);
-		var mymode = {};
-		for (var x in mode) {
-			if (x == "env") {
-				if (!mymode.env) mymode.env = {};
-				for (var y in mode.env) {
-					mymode.env[y] = mode.env[y];
-				}
-			} else {
-				mymode[x] = mode[x];
-			}
-		}
-		mymode.env.CATALINA_HOME = CATALINA_HOME.pathname.toString();
-		run(LAUNCHER_COMMAND.concat(
-			[
-				String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath())
-			]
-		),mymode);
-		if (COFFEESCRIPT) {
-			console("Running httpd CoffeeScript integration tests with CoffeeScript = " + COFFEESCRIPT);
-			run(LAUNCHER_COMMAND.concat(
-				[
-					String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath()),
-					"-suite", "coffee",
-					"-coffeescript", COFFEESCRIPT
-				]
-			),mymode);
-		}
-	} else {
-		console("No CATALINA_HOME: not running httpd integration tests.");
-	}
-
-	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
-		return options.output == "Hello, World!" && options.err == "Hello, tty!";
-	});
 
 	jsh.shell.run({
 		command: LAUNCHER_COMMAND[0],
