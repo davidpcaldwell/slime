@@ -166,20 +166,12 @@ $api.slime = (function(was) {
 
 	rv.settings = new function() {
 		var all = {};
-		var PASS = function(value) {
-			return value;
-		};
 
-		var CONTAINER = {
-		};
-		var LAUNCHER = {
-		};
-		var LOADER = {
-		};
-		var BOTH = {
-			launcher: PASS,
-			loader: PASS
-		};
+		//	TODO	if these are actually indistinguishable, then below we are apparently using them as outdated documentation.
+		//			Refactor until it makes sense.
+		var LAUNCHER = {};
+		var LOADER = {};
+		var BOTH = {};
 
 		var map = function(name,type) {
 			var specified = (rv.setting(name) === null) ? void(0) : rv.setting(name);

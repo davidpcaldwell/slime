@@ -112,8 +112,8 @@
 try {
 	var $api = this.$api;
 	if (!this.$api.slime) {
-		//	TODO	unclear where / whether this is used; if it is clearer, then document the use in the internal.api.html
-		//			documentation
+		//	This can occur when the script is called from a packaged script
+		//	TODO	figure out how and why, and whether the packaged script should invoke slime.js itself instead
 		var slime = $api.script.resolve("slime.js");
 		slime.load();
 		$api.log("Loaded slime.js: src=" + $api.slime.src);
