@@ -376,6 +376,15 @@ scenario.part("rhino.optimization", {
 	}
 });
 
+if (CATALINA_HOME) {
+	ScriptVerifier({
+		path: "jsh.script/http.jsh.js",
+		execute: function(verify) {
+			verify(this).status.is(0);
+		}
+	});
+}
+
 var legacy = function() {
 	//	TODO	remove the below dependency
 	//			appears to define 'console'
@@ -430,25 +439,6 @@ var legacy = function() {
 	mode.env.JSH_PLUGINS = String(new File(JSH_HOME, "plugins").getCanonicalPath());
 	if (debug.on) {
 		mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
-	}
-
-	if (CATALINA_HOME) {
-		jsh.shell.echo("Testing launching script by URL ...");
-		jsh.shell.jsh({
-			fork: true,
-			script: jsh.script.file.getRelativePath("../test/jsh.script/http.jsh.js"),
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				if (result.status == 0) {
-					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-					jsh.shell.echo();
-				} else {
-					throw new Error("Status: " + result.status);
-				}
-			}
-		});
 	}
 
 	if (COFFEESCRIPT && !jsh.shell.environment.SKIP_COFFEESCRIPT) {
