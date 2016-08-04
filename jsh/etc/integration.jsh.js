@@ -260,20 +260,57 @@ if (CATALINA_HOME) {
 //			"-version", "1.6"
 //		]));
 
+scenario.part(".slime", {
+	execute: function(scope,verify) {
+		var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		var builder = jsh.shell.jsh({
+			fork: true,
+			script: src.getFile("jsh/tools/slime.jsh.js"),
+			arguments: [
+				"-from", src.getRelativePath("loader/rhino/test/data/1"),
+				"-to", tmp.getRelativePath("1.slime"),
+				"-version", "1.6"				
+			]
+		});
+		verify(builder).status.is(0);
+		var loader = jsh.shell.jsh({
+			fork: true,
+			script: src.getFile("jsh/test/loader/2.jsh.js"),
+			environment: {
+				MODULES: tmp.toString(),
+				PATH: jsh.shell.environment.PATH
+			}
+		});
+		verify(loader).status.is(0);
+	}
+});
+
 ScriptVerifier({
-	path: "../tools/slime.jsh.js",
-	arguments: [
-		"-from", src.getRelativePath("loader/rhino/test/data/1"),
-		"-to", jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("1.slime"),
-		"-version", "1.6"
-	],
+	path: "jsh.file/Searchpath.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
+
+//	jsh.shell.run({
+//		command: LAUNCHER_COMMAND[0],
+//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
+//	});
+//
+//	jsh.shell.run({
+//		command: LAUNCHER_COMMAND[0],
+//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
+//	});
+
+ScriptVerifier({
+	path: "jsh.shell/jsh.shell.jsh.jsh.js",
 	execute: function(verify) {
 		verify(this).status.is(0);
 	}
 });
 
 ScriptVerifier({
-	path: "jsh.file/Searchpath.jsh.js",
+	path: "jsh.shell/exit.jsh.js",
 	execute: function(verify) {
 		verify(this).status.is(0);
 	}
@@ -456,13 +493,6 @@ var legacy = function() {
 		}
 
 		var tmp = platform.io.createTemporaryDirectory();
-		mymode.env.MODULES = tmp.getCanonicalPath();
-	//	mymode.env.PATH = String(Packages.java.lang.System.getenv("PATH"));
-		run(LAUNCHER_COMMAND.concat(
-			[
-				String(new File(SLIME_SRC,"jsh/test/loader/2.jsh.js").getCanonicalPath())
-			]
-		), mymode);
 	})();
 
 	if (CATALINA_HOME) {
@@ -516,16 +546,6 @@ var legacy = function() {
 				throw new Error("Status: " + result.status);
 			}
 		}
-	});
-
-	jsh.shell.run({
-		command: LAUNCHER_COMMAND[0],
-		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
-	});
-
-	jsh.shell.run({
-		command: LAUNCHER_COMMAND[0],
-		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
 	});
 
 	if (RHINO_LIBRARIES) {
