@@ -397,11 +397,6 @@ try {
 				}
 			};
 
-			var Unbuilt = function(src) {
-				//	TODO	the below is now wrong; is this not exercised now except for packaged applications?
-				return new $api.jsh.Unbuilt(src,getRhinoClasspath());
-			};
-
 			var Built = function(home) {
 				return new $api.jsh.Built(home);
 			};
@@ -418,7 +413,7 @@ try {
 					$api.debug("Setting built shell: " + String(peer.getHome().getCanonicalPath()));
 					return new Built(peer.getHome());
 				} else {
-					return new Unbuilt(new Packages.java.io.File($api.slime.setting("jsh.shell.src")));
+					throw new Error("Should be unreachable; unbuilt shells do not populate jsh.launcher.shell");
 				}
 			})(peer);
 
