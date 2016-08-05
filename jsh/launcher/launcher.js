@@ -386,7 +386,7 @@ try {
 		};
 	};
 
-	if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell")) {
+	if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell") && Packages.java.lang.System.getProperties().get("jsh.launcher.shell").getPackaged()) {
 		$api.jsh.shell = new (function(peer) {
 			var getRhinoClasspath = function() {
 				var classpath = peer.getRhinoClasspath();
@@ -397,10 +397,6 @@ try {
 				}
 			};
 
-			var Built = function(home) {
-				return new $api.jsh.Built(home);
-			};
-
 			var Packaged = function(file) {
 				return new $api.jsh.Packaged(file);
 			};
@@ -409,11 +405,8 @@ try {
 				if (peer.getPackaged()) {
 					$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
 					return new Packaged(peer.getPackaged());
-				} else if (peer.getHome()) {
-					$api.debug("Setting built shell: " + String(peer.getHome().getCanonicalPath()));
-					return new Built(peer.getHome());
 				} else {
-					throw new Error("Should be unreachable; unbuilt shells do not populate jsh.launcher.shell");
+					throw new Error("No getPackaged() in " + peer);
 				}
 			})(peer);
 
@@ -442,9 +435,7 @@ try {
 				return rv;
 			};
 		})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
-	}
-
-	if ($api.jsh.shell && $api.jsh.shell.packaged) {
+		
 		if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
 			$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
 			//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a
