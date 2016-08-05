@@ -96,8 +96,10 @@ var shell = (function() {
 	if ($api.script.resolve("jsh.jar")) {
 		return new $api.jsh.Built($api.script.file.getParentFile());
 	} else {
-		var HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.home"));
-		$api.slime.settings["default"]("jsh.shell.lib", String(new Packages.java.io.File(HOME, ".inonit/jsh/lib")));
+		$api.slime.settings["default"](
+			"jsh.shell.lib",
+			String(new Packages.java.io.File($api.shell.HOME, ".inonit/jsh/lib"))
+		);
 		return new $api.jsh.Unbuilt();
 	}
 })();

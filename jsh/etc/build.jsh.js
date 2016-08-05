@@ -210,7 +210,7 @@ jrunscript.launcher.buildLoader = function(rhino) {
 		});
 		return _urls;
 	})() : null;
-	var unbuilt = new jrunscript.$api.jsh.Unbuilt(_rhino);
+	var unbuilt = new jrunscript.$api.jsh.Unbuilt({ rhino: _rhino });
 	return unbuilt.compileLoader({ source: JAVA_VERSION, target: JAVA_VERSION });
 }
 

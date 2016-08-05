@@ -219,7 +219,8 @@ try {
 
 	$api.script.resolve("javac.js").load();
 
-	$api.jsh.Unbuilt = function(rhino) {
+	$api.jsh.Unbuilt = function(p) {
+		//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
 		this.toString = function() {
 			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
 		}
@@ -228,6 +229,8 @@ try {
 		if (!lib.exists()) {
 			lib.mkdirs();
 		}
+		
+		var rhino = (p && p.rhino) ? p.rhino : null;
 
 		if (!rhino) {
 			if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
@@ -386,6 +389,8 @@ try {
 		};
 	};
 
+	//	TODO	it seems like the below should migrate to main.js where similar code is already present, and packaged applications
+	//			should launch that script
 	if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell") && Packages.java.lang.System.getProperties().get("jsh.launcher.shell").getPackaged()) {
 		$api.jsh.shell = new (function(peer) {
 			var getRhinoClasspath = function() {
@@ -397,14 +402,10 @@ try {
 				}
 			};
 
-			var Packaged = function(file) {
-				return new $api.jsh.Packaged(file);
-			};
-
 			var shell = (function(peer) {
 				if (peer.getPackaged()) {
 					$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
-					return new Packaged(peer.getPackaged());
+					return new $api.jsh.Packaged(peer.getPackaged());
 				} else {
 					throw new Error("No getPackaged() in " + peer);
 				}
