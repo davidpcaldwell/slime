@@ -87,6 +87,10 @@ public class Shell {
 	public Code.Source getJshLoader() {
 		return configuration.getInstallation().getJshLoader();
 	}
+	
+	public Code.Source getLibraries() {
+		return configuration.getInstallation().getLibraries();
+	}
 
 	public Code.Source.File getLibrary(String path) {
 		Code.Source plugins = configuration.getInstallation().getExtensions().getLibraries();
@@ -197,24 +201,9 @@ public class Shell {
 	}
 
 	public static abstract class Installation {
-		public static Installation create(final Code.Source platform, final Code.Source jsh, final Extensions extensions) {
-			return new Installation() {
-				@Override public Code.Source getPlatformLoader() {
-					return platform;
-				}
-
-				@Override public Code.Source getJshLoader() {
-					return jsh;
-				}
-
-				@Override public Extensions getExtensions() {
-					return extensions;
-				}
-			};
-		}
-
 		public abstract Code.Source getPlatformLoader();
 		public abstract Code.Source getJshLoader();
+		public abstract Code.Source getLibraries();
 		public abstract Extensions getExtensions();
 
 		public static abstract class Extensions {
