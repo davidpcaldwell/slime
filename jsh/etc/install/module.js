@@ -18,23 +18,41 @@ var addDefaults = function(p) {
 	if (!p.on.console) p.on.console = function(){};
 }
 
-var installLocalGzip = function(p) {
+var algorithms = {
+	gzip: new function() {
+		var tar = $context.api.shell.PATH.getCommand("tar");
+		
+		this.getDestinationPath = function(basename) {
+			var TGZ = /(.*)\.tgz$/;
+			var TARGZ = /(.*)\.tar\.gz$/;
+			if (TGZ.test(basename)) return TGZ.exec(basename)[1];
+			if (TARGZ.test(basename)) return TARGZ.exec(basename)[1];
+			//	TODO	list directory and take only option if there is only one and it is a directory?
+			throw new Error("Cannot determine destination path for " + p.file);			
+		};
+		
+		if (tar) {
+			this.extract = function(file,to) {
+				$context.api.shell.run({
+					command: $context.api.shell.PATH.getCommand("tar"),
+					arguments: ["xf", file.pathname],
+					directory: to
+				});			
+			}
+		}
+	}
+};
+
+var installLocalArchive = function(p,algorithm) {
 	var untardir = $context.api.shell.TMPDIR.createTemporary({ directory: true });
 	p.on.console("Extracting " + p.file + " to " + untardir);
-	$context.api.shell.run({
-		command: $context.api.shell.PATH.getCommand("tar"),
-		arguments: ["xf", p.file.pathname],
-		directory: untardir
-	});
+	algorithm.extract(p.file,untardir);
 	var unzippedDestination = (function() {
-		var basename = p.file.pathname.basename;
 		if (p.getDestinationPath) {
 			return p.getDestinationPath(p.file);
 		}
-		var TGZ = /(.*)\.tgz$/;
-		var TARGZ = /(.*)\.tar\.gz$/;
-		if (TGZ.test(basename)) return TGZ.exec(basename)[1];
-		if (TARGZ.test(basename)) return TARGZ.exec(basename)[1];
+		var path = algorithm.getDestinationPath(p.file.pathname.basename);
+		if (path) return path;
 		//	TODO	list directory and take only option if there is only one and it is a directory?
 		throw new Error("Cannot determine destination path for " + p.file);
 	})();
@@ -48,7 +66,7 @@ var installLocalGzip = function(p) {
 	return p.to.directory;
 };
 
-$exports.gzip = function(p) {
+var archive = function(p,algorithm) {
 	addDefaults(p);
 	if (!p.file) {
 		if (p.url) {
@@ -68,8 +86,14 @@ $exports.gzip = function(p) {
 			p.file = pathname.file;
 		}
 	}
-	return installLocalGzip(p);
+	return installLocalArchive(p,algorithm);
 };
+
+if (algorithms.gzip.extract) {
+	$exports.gzip = function(p) {
+		archive(p,algorithms.gzip);
+	};
+}
 
 var api = $loader.file("api.js", {
 	api: {
