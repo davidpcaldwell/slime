@@ -28,7 +28,7 @@ var algorithms = {
 			if (TGZ.test(basename)) return TGZ.exec(basename)[1];
 			if (TARGZ.test(basename)) return TARGZ.exec(basename)[1];
 			//	TODO	list directory and take only option if there is only one and it is a directory?
-			throw new Error("Cannot determine destination path for " + p.file);			
+			throw new Error("Cannot determine destination path for " + basename);			
 		};
 		
 		if (tar) {
@@ -39,6 +39,21 @@ var algorithms = {
 					directory: to
 				});			
 			}
+		}
+	},
+	zip: new function() {
+		this.getDestinationPath = function(basename) {
+			var ZIP = /(.*)\.zip$/;
+			if (ZIP.test(basename)) return ZIP.exec(basename)[1];
+			//	TODO	list directory and take only option if there is only one and it is a directory?
+			throw new Error("Cannot determine destination path for " + basename);						
+		};
+		
+		this.extract = function(file,to) {
+			$context.api.file.unzip({
+				zip: file,
+				to: to
+			});
 		}
 	}
 };
@@ -66,7 +81,7 @@ var installLocalArchive = function(p,algorithm) {
 	return p.to.directory;
 };
 
-var archive = function(p,algorithm) {
+var install = function(p,algorithm) {
 	addDefaults(p);
 	if (!p.file) {
 		if (p.url) {
@@ -91,8 +106,12 @@ var archive = function(p,algorithm) {
 
 if (algorithms.gzip.extract) {
 	$exports.gzip = function(p) {
-		archive(p,algorithms.gzip);
+		install(p,algorithms.gzip);
 	};
+}
+
+$exports.zip = function(p) {
+	install(p,algorithms.zip);
 }
 
 var api = $loader.file("api.js", {
