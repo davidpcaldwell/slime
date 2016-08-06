@@ -12,11 +12,14 @@
 
 plugin({
 	isReady: function() {
-		return jsh.js && jsh.js.document;
+		return jsh.js && jsh.js.document && jsh.java;
 	},
 	load: function() {
 		jsh.document = $loader.module("module.js", {
-			pure: jsh.js.document
+			pure: jsh.js.document,
+			api: {
+				java: jsh.java
+			}
 		});
 	}
 });
