@@ -8,6 +8,7 @@ var Jsoup = function(p) {
 	_doc.outputSettings().syntax(Packages.org.jsoup.nodes.Document.OutputSettings.Syntax.xml);
 	_doc.outputSettings().escapeMode(Packages.org.jsoup.nodes.Entities.EscapeMode.xhtml);
 	_doc.outputSettings().charset("UTF-8");
+	//	TODO	technically this is not XHTML because the DOCTYPE is wrong
 	var rv = String(_doc.toString());
 	return rv;
 }
