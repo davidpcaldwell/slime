@@ -1,5 +1,4 @@
 var Jsoup = function(p) {
-	Packages.java.lang.System.err.println("JSOUP!");
 	var _doc = Packages.org.jsoup.Jsoup.parse(p.string);
 	var _scripts = _doc.getElementsByTag("script");
 	for (var i=0; i<_scripts.size(); i++) {
