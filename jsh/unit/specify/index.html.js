@@ -252,16 +252,21 @@ window.addEventListener('load', function() {
 							return rv;
 						})(),
 						edit: (function() {
+							//	TODO	this should be combined with the comment editing logic
 							var rv = document.createElement("textarea");
-							rv.value = child.data;
+							rv.cols = 80;
+							rv.rows = 4;
+							rv.style.fontFamily = "monospace";
+							rv.style.tabSize = 4;
+							rv.value = child.innerHTML;
 							return rv;
 						})()
 					},
 					update: function() {
-						child.data = this.edit.value;
+						child.innerHTML = this.edit.value;
 					},
 					reset: function() {
-						this.edit.value = child.data;
+						this.edit.value = child.innerHTML;
 					}
 				});
 			}

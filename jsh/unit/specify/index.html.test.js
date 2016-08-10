@@ -365,7 +365,7 @@ scripts.target(new function() {
 	var InlineEditor = function(element) {
 		Editor(element);
 		element.getEditor = function() {
-			return this.cells[1].getElementsByTagName("textarea");
+			return this.cells[1].getElementsByTagName("textarea")[0];
 		};
 		return element;
 	}
@@ -429,6 +429,28 @@ scripts.test(new function() {
 scripts.test(new function() {
 	this.check = function(verify) {
 		verify(this).getScriptRows()[1].getSpan().innerHTML.is("[code]");
+	}
+});
+scripts.test(new function() {
+	this.run = function() {
+		unit.fire.click(this.getScriptRows()[1].getSpan());
+	};
+
+	this.check = function(verify) {
+		verify(this).getScriptRows()[1].getSpan().style.display.is("none");
+		verify(this).getScriptRows()[1].getEditor().style.display.is.not("none");
+	}
+});
+scripts.test(new function() {
+	this.run = function() {
+		unit.fire.keydown(this.getScriptRows()[1].getEditor(), {
+			key: "Escape"
+		});
+	};
+
+	this.check = function(verify) {
+		verify(this).getScriptRows()[1].getSpan().style.display.is.not("none");
+		verify(this).getScriptRows()[1].getEditor().style.display.is("none");
 	}
 });
 
