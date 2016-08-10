@@ -243,7 +243,27 @@ window.addEventListener('load', function() {
 					}
 				});
 			} else {
-				editor.appendChild(document.createTextNode(child.outerHTML));
+				formEditable({
+					parent: editor,
+					elements: {
+						show: (function() {
+							var rv = document.createElement("span");
+							rv.appendChild(document.createTextNode("[code]"));
+							return rv;
+						})(),
+						edit: (function() {
+							var rv = document.createElement("textarea");
+							rv.value = child.data;
+							return rv;
+						})()
+					},
+					update: function() {
+						child.data = this.edit.value;
+					},
+					reset: function() {
+						this.edit.value = child.data;
+					}
+				});
 			}
 		})
 

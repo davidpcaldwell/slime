@@ -348,18 +348,33 @@ link.test(new function() {
 
 var scripts = new unit.Scenario();
 scripts.target(new function() {
-	var ScriptEditor = function(element) {
+	var Editor = function(element) {
 		element.getSpan = function() {
 			return this.cells[1].getElementsByTagName("span")[0];
 		}
+	}
+
+	var ExternalEditor = function(element) {
+		Editor(element);
 		element.getInput = function() {
 			return this.cells[1].getElementsByTagName("input")[0];
 		}
 		return element;
+	};
+
+	var InlineEditor = function(element) {
+		Editor(element);
+		element.getEditor = function() {
+			return this.cells[1].getElementsByTagName("textarea");
+		};
+		return element;
 	}
 
 	this.getScriptRows = function() {
-		return [page.getHeadRows()[4],page.getHeadRows()[5]].map(ScriptEditor);
+		return [
+			ExternalEditor(page.getHeadRows()[4]),
+			InlineEditor(page.getHeadRows()[5])
+		];
 	};
 
 	this.getTargetScripts = function() {
@@ -410,7 +425,12 @@ scripts.test(new function() {
 		verify(this).getTargetScripts()[0].src.is(foo);
 		verify(this).getScriptRows()[0].getInput().style.display.is("none");
 	};
-})
+});
+scripts.test(new function() {
+	this.check = function(verify) {
+		verify(this).getScriptRows()[1].getSpan().innerHTML.is("[code]");
+	}
+});
 
 var selection = new unit.Scenario();
 selection.target(new function() {
