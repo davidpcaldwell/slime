@@ -226,12 +226,12 @@ window.addEventListener('load', function() {
 			});
 		});
 
-		var toEditor = function(data) {
-			var content = whitespace.content(data);
-			return content.lines.join("\n");
-		};
+		var indentedEditor = function(child,editor,context) {
+			var toEditor = function(data) {
+				var content = whitespace.content(data);
+				return content.lines.join("\n");
+			};
 
-		var getEndIndent = function(context,child) {
 			var endIndent = (function(child) {
 				var tokens = context.get().split("\n");
 				if (tokens.length == 1) {
@@ -240,24 +240,20 @@ window.addEventListener('load', function() {
 					return whitespace.before(tokens[tokens.length-1]);
 				}
 			})(child);
-			return endIndent;			
-		}
+			
+			var fromEditor = function(data,value) {
+				var content = whitespace.content(data);
+				var lines = value.split("\n");
+				var rv = [];
+				rv.push.apply(rv,content.before);
+				rv.push.apply(rv,lines.map(function(line) {
+					return content.indent + line;
+				}));
+				rv[rv.length-1] += endIndent;
+				rv.push.apply(rv,content.after);
+				return rv.join("\n");
+			};
 
-
-		var fromEditor = function(data,value,endIndent) {
-			var content = whitespace.content(data);
-			var lines = value.split("\n");
-			var rv = [];
-			rv.push.apply(rv,content.before);
-			rv.push.apply(rv,lines.map(function(line) {
-				return content.indent + line;
-			}));
-			rv[rv.length-1] += endIndent;
-			rv.push.apply(rv,content.after);
-			return rv.join("\n");
-		};
-
-		var indentedEditor = function(child,editor,context) {
 			var CommentData = function(parent,target) {
 				var startIndent = (function(child) {
 					var previous = child.previousSibling;
@@ -321,7 +317,7 @@ window.addEventListener('load', function() {
 					parent: parent,
 					elements: elements,
 					update: function() {
-						var data = fromEditor(context.get(),this.edit.value,getEndIndent(context,child));
+						var data = fromEditor(context.get(),this.edit.value);
 						context.update.call(this,data);
 					},
 					reset: function() {
