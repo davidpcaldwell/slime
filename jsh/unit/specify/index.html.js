@@ -170,18 +170,6 @@ window.addEventListener('load', function() {
 			parent.appendChild(elements.edit);
 		}
 
-		var handleTitle = handleRow(function(child,label,editor) {
-			label.innerHTML = "title";
-			var span = document.createElement("span");
-			span.innerHTML = child.innerHTML;
-			editor.appendChild(span);
-			inline.call(span,function() {
-				document.getElementById("title").innerHTML = span.innerHTML;
-				var title = document.getElementById("target").contentDocument.getElementsByTagName("title")[0];
-				title.innerHTML = span.innerHTML;
-			});
-		});
-
 		var stringInputElements = function(value) {
 			return {
 				show: (function() {
@@ -197,6 +185,32 @@ window.addEventListener('load', function() {
 				})()
 			}
 		};
+
+		var handleTitle = handleRow(function(child,label,editor) {
+			label.innerHTML = "title";
+			formEditable({
+				parent: editor,
+				elements: stringInputElements(child.innerHTML),
+				update: function() {
+					child.innerHTML = this.edit.value;
+					this.show.innerHTML = "";
+					this.show.appendChild(document.createTextNode(child.innerHTML));
+					document.getElementById("title").innerHTML = this.edit.value;
+					document.getElementById("target").contentDocument.title = this.edit.value;
+				},
+				reset: function() {
+					this.edit.value = child.innerHTML;
+				}
+			});
+// 			var span = document.createElement("span");
+// 			span.innerHTML = child.innerHTML;
+// 			editor.appendChild(span);
+// 			inline.call(span,function() {
+// 				document.getElementById("title").innerHTML = span.innerHTML;
+// 				var title = .getElementsByTagName("title")[0];
+// 				title.innerHTML = span.innerHTML;
+// 			});
+		});
 
 		var handleLink = handleRow(function(child,label,editor) {
 			label.innerHTML = "link " + "(" + child.rel + ")";

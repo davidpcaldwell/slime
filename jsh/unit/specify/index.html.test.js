@@ -147,40 +147,46 @@ initial.test({
 
 var title = new unit.Scenario();
 title.target({
-	titleRow: function() {
+	row: function() {
 		var tbody = document.getElementById("head").getElementsByTagName("table")[0].getElementsByTagName("tbody")[0];
 		var titleRow = tbody.rows[0];
 		return titleRow;
 	},
-	titleSpan: function() {
-		return this.titleRow().cells[1].children[0];
+	span: function() {
+		return this.row().getElementsByTagName("span")[0];
+	},
+	input: function() {
+		return this.row().getElementsByTagName("input")[0];
 	}
 });
 title.test({
 	check: function(verify) {
-		verify(this).titleRow().tagName.is("TR");
-		verify(this).titleSpan().tagName.is("SPAN");
+		verify(this).row().tagName.is("TR");
+		verify(this).span().tagName.is("SPAN");
+		verify(this).span().innerHTML.is("__TITLE__");
 	}
 });
 title.test({
 	run: function() {
-		unit.fire.click(this.titleSpan());
+		unit.fire.click(this.span());
 	},
 	check: function(verify) {
-		verify(this).titleSpan().contentEditable.is("true");
+		verify(this).span().style.display.is("none");
+		verify(this).input().style.display.is.not("none");
 	}
 });
 title.test({
 	run: function() {
-		unit.fire.click(this.titleSpan());
-		this.titleSpan().innerHTML = "foo";
-		unit.fire.keydown(this.titleSpan(), {
-			key: "Enter"
+		unit.fire.click(this.span());
+		this.input().value = "foo";
+		unit.fire.keypress(this.input(), {
+			key: "Enter",
+			ctrlKey: true
 		});
 	},
 	check: function(verify) {
-		verify(this).titleSpan().evaluate.property("inonit").is.equalTo(null);
-		verify(this).titleSpan().innerHTML.is("foo");
+		verify(this).span().evaluate.property("inonit").is.equalTo(null);
+		verify(this).span().innerHTML.is("foo");
 		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
 		verify(document).getElementById("title").innerHTML.is("foo");
 		verify(document).getElementById("target").contentDocument.title.is("foo");
@@ -189,15 +195,16 @@ title.test({
 });
 title.test({
 	run: function() {
-		unit.fire.click(this.titleSpan());
-		this.titleSpan().innerHTML = "bar";
-		unit.fire.keydown(this.titleSpan(), {
-			key: "Enter"
+		unit.fire.click(this.span());
+		this.input().value = "bar";
+		unit.fire.keypress(this.input(), {
+			key: "Enter",
+			ctrlKey: true
 		});
 	},
 	check: function(verify) {
-		verify(this).titleSpan().evaluate.property("inonit").is.equalTo(null);
-		verify(this).titleSpan().innerHTML.is("bar");
+		verify(this).span().evaluate.property("inonit").is.equalTo(null);
+		verify(this).span().innerHTML.is("bar");
 		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
 		verify(document).getElementById("title").innerHTML.is("bar");
 		verify(document).getElementById("target").contentDocument.title.is("bar");
