@@ -26,18 +26,6 @@ window.addEventListener('load', function() {
 
     var whitespace = inonit.loader.loader.value("whitespace.js");
 
-    var react = function(f) {
-        return function() {
-            var iframe = document.getElementById("target");
-            var content = iframe.contentDocument;
-            f(iframe,content);
-        };
-    }
-
-    var title = react(function(iframe,content) {
-        document.getElementById("title").innerHTML = content.title;
-    });
-
 	var editable = typeof(document.createElement("span").contentEditable) != "undefined";
 
     var selection = (function() {
@@ -418,9 +406,10 @@ window.addEventListener('load', function() {
     		}
     		handler(child);
     	}
-        title();
 
         var content = document.getElementById("target").contentDocument;
+
+		document.getElementById("title").innerHTML = content.title;
 
         this.contentDocument.addEventListener("click", function(e) {
 			if (!selection.is(e.target)) {
