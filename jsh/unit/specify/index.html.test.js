@@ -456,6 +456,17 @@ scripts.test(new function() {
 		verify(this).getScriptRows()[1].getEditor().style.display.is("none");
 	}
 });
+scripts.test(new function() {
+	this.run = function() {
+		unit.fire.click(this.getScriptRows()[1].getSpan());
+	};
+
+	this.check = function(verify) {
+		var code = this.getScriptRows()[1].getEditor().value.split("\n");
+		verify(code,"code").length.is(2);
+		verify(code,"code")[0].is("//\tTODO\tCORS");
+	}
+})
 
 var selection = new unit.Scenario();
 selection.target(new function() {

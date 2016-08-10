@@ -353,10 +353,10 @@ window.addEventListener('load', function() {
 						return child.innerHTML;
 					},
 					update: function(data) {
-						child.innerHTML = this.edit.value;
+						child.innerHTML = data;
 					},
-					reset: function() {
-						this.edit.value = child.innerHTML;
+					reset: function(data) {
+						this.edit.value = data;
 					}
 				});
 			}
