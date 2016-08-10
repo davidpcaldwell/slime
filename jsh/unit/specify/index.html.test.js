@@ -439,6 +439,9 @@ scripts.test(new function() {
 	this.check = function(verify) {
 		verify(this).getScriptRows()[1].getSpan().style.display.is("none");
 		verify(this).getScriptRows()[1].getEditor().style.display.is.not("none");
+		var code = this.getScriptRows()[1].getEditor().value.split("\n");
+		verify(code,"code").length.is(2);
+		verify(code,"code")[0].is("//\tTODO\tCORS");
 	}
 });
 scripts.test(new function() {
