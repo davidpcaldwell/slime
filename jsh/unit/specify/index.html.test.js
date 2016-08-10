@@ -473,7 +473,14 @@ scripts.test(new function() {
 		verify(code,"code").length.is(2);
 		verify(code,"code")[0].is("//\tTODO\tCORS");
 	}
-})
+});
+scripts.test(new function() {
+	this.run = function() {
+		unit.fire.keydown(this.getScriptRows()[1].getEditor(), {
+			key: "Escape"
+		});
+	};
+});
 
 var selection = new unit.Scenario();
 selection.target(new function() {
@@ -484,18 +491,24 @@ selection.target(new function() {
 		this.exportsHeader = content.getElementsByTagName("h1")[1];
 	};
 
-	this.isSelected = function(element) {
+	var isSelected = function(element) {
 		//	TODO	DRY violation
 		var dummy = document.createElement("div");
 		dummy.style.backgroundColor = "#c0c0ff";
 		return element.style.backgroundColor == dummy.style.backgroundColor;
 	}
+	
+	var target = this;
+
+	this.isSelected = function() {
+		return isSelected(this);
+	};
 });
 selection.test({
 	check: function(verify) {
 		var page = this;
 		verify(this).content.description.innerHTML.is("__DESCRIPTION__");
-		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(false);
+		verify(this).content.description.evaluate(this.isSelected).is(false);
 	}
 });
 selection.test({
@@ -504,7 +517,7 @@ selection.test({
 	},
 	check: function(verify) {
 		var page = this;
-		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(true);
+		verify(this).content.description.evaluate(this.isSelected).is(true);
 	}
 });
 selection.test({
@@ -513,8 +526,8 @@ selection.test({
 	},
 	check: function(verify) {
 		var page = this;
-		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(false);
-		verify(this).content.contextHeader.evaluate(function() { return page.isSelected(this); }).is(true);
+		verify(this).content.description.evaluate(this.isSelected).is(false);
+		verify(this).content.contextHeader.evaluate(this.isSelected).is(true);
 	}
 });
 
