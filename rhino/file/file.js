@@ -333,6 +333,13 @@ var Pathname = function(parameters) {
 				});
 				if (b) {
 					topathname.write( file.resource.read($context.Streams.binary), { append: false } );
+					var _from = file.pathname.java.adapt().toPath();
+					var _to = topathname.java.adapt().toPath();
+					var _Files = Packages.java.nio.file.Files;
+					if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+						var _fpermissions = _Files.getPosixFilePermissions(_from);
+						_Files.setPosixFilePermissions(_to, _fpermissions);
+					}
 					return topathname.file;
 				}
 			}

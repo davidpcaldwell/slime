@@ -824,6 +824,32 @@ END LICENSE
 											test(d4_copy3.getFile("f3").read(String) == "f3");
 											test(d4_copy3.getFile("d5/f4").read(String) == "f4");
 										</script>
+										<script type="application/x.jsapi#tests">
+											if (jsh.shell.PATH.getCommand("chmod")) {
+												var tmpdir = $jsapi.file.newTemporaryDirectory();
+												tmpdir.getRelativePath("a").write("", { append: false });
+												jsh.shell.run({
+													command: "chmod",
+													arguments: ["+x", tmpdir.getRelativePath("a")]
+												});
+
+												var _getPermissions = function(file) {
+													var _nio = file.pathname.java.adapt().toPath();
+													var _permissions = Packages.java.nio.file.Files.getPosixFilePermissions(_nio);
+													return _permissions;
+												};
+
+												var _permissions = _getPermissions(tmpdir.getFile("a"));
+												var permissionsString = String(_permissions);
+												verify(permissionsString).is(permissionsString);
+
+												verify(_permissions.contains(java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)).is(true);
+
+												tmpdir.getFile("a").copy(tmpdir.getRelativePath("b"));
+												var _p2 = _getPermissions(tmpdir.getFile("b"));
+												verify(_p2.contains(java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)).is(true);
+											}
+										</script>
 									</li>
 									<li class="object">
 										<span>(optional) An object whose properties specify the operation of this method.</span>
