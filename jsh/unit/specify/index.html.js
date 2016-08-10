@@ -348,6 +348,9 @@ window.addEventListener('load', function() {
 						var data = fromEditor(child.data,commentInput.value);
 						commentSpan.innerHTML = data;
 						child.data = data;
+					},
+					reset: function() {
+						commentInput.value = toEditor(child.data);
 					}
 				});
 			};

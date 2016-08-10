@@ -282,6 +282,21 @@ comment.test({
 		verify(this).getApiLocationComment().getTextArea().style.display.is("none");
 	}
 });
+comment.test({
+	run: function() {
+		unit.fire.click(this.getApiLocationComment().getSpan());
+		this.getApiLocationComment().getTextArea().value = "bar";
+		unit.fire.keydown(this.getApiLocationComment().getTextArea(), {
+			key: "Escape"
+		});
+	},
+	check: function(verify) {
+		verify(this).getApiLocationComment().getTextArea().style.display.is("none");
+		verify(this).getApiLocationComment().getSpan().innerHTML.is("\tfoo\t");
+		//	TODO	the below is probably wrong for now; trailing whitespace not stripped. Should probably change that.
+		verify(this).getApiLocationComment().getTextArea().value.is("foo\t");
+	}
+});
 
 var link = new unit.Scenario();
 link.target(new function() {
