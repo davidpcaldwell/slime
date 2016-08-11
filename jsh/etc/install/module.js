@@ -81,8 +81,7 @@ var installLocalArchive = function(p,algorithm) {
 	return p.to.directory;
 };
 
-var install = function(p,algorithm) {
-	addDefaults(p);
+var get = function(p) {
 	if (!p.file) {
 		if (p.url) {
 			var basename = p.url.split("/").slice(-1)[0];
@@ -101,6 +100,12 @@ var install = function(p,algorithm) {
 			p.file = pathname.file;
 		}
 	}
+	return p;
+};
+
+var install = function(p,algorithm) {
+	addDefaults(p);
+	get(p);
 	return installLocalArchive(p,algorithm);
 };
 
@@ -112,6 +117,12 @@ if (algorithms.gzip.extract) {
 
 $exports.zip = function(p) {
 	install(p,algorithms.zip);
+};
+
+$exports.get = function(p) {
+	addDefaults(p);
+	get(p);
+	return p.file;
 }
 
 var api = $loader.file("api.js", {

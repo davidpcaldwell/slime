@@ -20,14 +20,23 @@ var parameters = jsh.script.getopts({
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
+if (!parameters.options["profiler:output"]) {
+	parameters.options["profiler:output"] = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("profile.html");
+}
+
 var profiler = jsh.shell.TMPDIR.createTemporary({ prefix: "profiler.", suffix: ".jar" });
+
 jsh.shell.jsh({
 	fork: true,
 	script: jsh.shell.jsh.src.getFile("rhino/tools/profiler/build.jsh.js"),
-	arguments: [
-		"-javassist", parameters.options["profiler:javassist"],
-		"-to", profiler
-	]
+	arguments: (function() {
+		var rv = [];
+		if (parameters.options["profiler:javassist"]) {
+			rv.push("-javassist", parameters.options["profiler:javassist"]);
+		}
+		rv.push("-to", profiler);
+		return rv;
+	})()
 });
 
 var configuration = [];
