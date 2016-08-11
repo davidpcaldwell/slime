@@ -124,6 +124,20 @@ $exports.Document = function(p) {
 	}
 };
 
+var html = $loader.module("parser.js", {
+	api: {
+		java: $context.api.java
+	}
+});
+
+$exports.Document.Html = function(p) {
+	var parameter = {};
+	if (p.string) {
+		parameter.string = html.xhtml({ string: p.string });
+	}
+	return new $exports.Document(parameter);
+};
+
 ["Doctype","Element","Text","Cdata","Comment","filter"].forEach(function(name) {
 	$exports[name] = $context.pure[name]
 });
