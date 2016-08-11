@@ -354,6 +354,19 @@
 			return rv;
 		};
 	};
+	
+	$exports.Function.singleton = function(f) {
+		var memo;
+		
+		return function() {
+			if (!memo) {
+				memo = {
+					result: f()
+				}
+			}
+			return memo.result;
+		};
+	};
 
 	$exports.Constructor = {};
 

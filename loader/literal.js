@@ -405,6 +405,8 @@
 			//	TODO	For file, what should we do about 'this' and why?
 			addTopMethod.call(this,"file");
 
+			addTopMethod.call(this,"value");
+
 			this.Loader = Loader;
 			this.Loader.series = function(list) {
 				var sources = [];

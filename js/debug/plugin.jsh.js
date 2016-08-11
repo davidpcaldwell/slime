@@ -12,7 +12,7 @@
 
 plugin({
 	isReady: function() {
-		return Boolean(jsh.js) && Boolean(jsh.java);
+		return Boolean(jsh.js) && jsh.hasOwnProperty("java");
 	},
 	load: function() {
 		jsh.debug = $loader.module("module.js", $loader.file("context.java.js"));

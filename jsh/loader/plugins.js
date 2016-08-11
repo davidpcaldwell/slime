@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-new (function() {
+$set(new (function() {
 	var load = function(p) {
 		var scope = {};
 		//	TODO	$host is currently *automatically* in scope for these plugins, but that is probably not as it should be; see
@@ -133,4 +133,4 @@ new (function() {
 	this.load = function(loader) {
 		run(scan(loader));
 	}
-})()
+})());

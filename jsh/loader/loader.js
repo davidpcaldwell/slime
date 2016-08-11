@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-(function() {
+$set((function() {
 	//	TODO	naming conventions are inconsistent in this stuff; look at how there are addClasses methods and classpath.add().
 	//			generally speaking, should probably match the rhinoLoader API across all of these representations of it
 
@@ -132,4 +132,4 @@
 			return $host.namespace(name);
 		}
 	}
-})()
+})());

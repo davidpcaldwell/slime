@@ -13,10 +13,19 @@
 
 plugin({
 	load: function() {
-		jsh.java = $loader.module("module.js", {
-			globals: true,
-			$rhino: $jsh,
-			$java: $jsh.java
-		});
+		Object.defineProperty(
+			jsh,
+			"java",
+			{
+				get: $api.Function.singleton(function() {
+					return $loader.module("module.js", {
+						globals: true,
+						$rhino: $jsh,
+						$java: $jsh.java
+					});					
+				}),
+				enumerable: true
+			}
+		);
 	}
 })

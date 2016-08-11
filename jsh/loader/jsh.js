@@ -66,7 +66,7 @@ this.jsh = new function() {
 
 			this.getLoaderScript = function(path) {
 				return {
-					name: path,
+					name: "[jsh]/" + path,
 					string: getLoaderCode(path)
 				};
 			};
@@ -100,13 +100,21 @@ this.jsh = new function() {
 
 	//	TODO	is there a way to use the custom script executor to do these rather than eval()?
 
-	var loader = (function(jsh) {
-		return eval($host.loader.getLoaderScript("loader.js").string);
-	})(this);
-
-	var plugins = (function(jsh) {
-		return eval($host.loader.getLoaderScript("plugins.js").string);
-	})(this);
+	var loader = $host.value(
+		$host.loader.getLoaderScript("loader.js"),
+		{
+			$host: $host
+		}
+	);
+	
+	var plugins = $host.value(
+		$host.loader.getLoaderScript("plugins.js"),
+		{
+			$host: $host,
+			jsh: this,
+			loader: loader
+		}
+	);
 
 	this.loader = new function() {
 		this.run = loader.run;
