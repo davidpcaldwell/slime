@@ -532,7 +532,61 @@ END LICENSE
 										<span>Matches elements with the given local name.</span>
 									</li>
 								</ul>
+								- OR -
+								<ul>
+									<li class="value">
+										<div class="name">attribute</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">value</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
 							</div>
+							<script type="application/x.jsapi#tests">
+								var elements = [
+									new module.Element({
+										type: { name: "a" },
+										attributes: [{ name: "a", value: "a" }]
+									}),												
+									new module.Element({
+										type: { name: "a" },
+										attributes: [{ name: "b", value: "c" },{ name: "a", value: "b" }]
+									}),
+									new module.Element({
+										type: { name: "a" },
+										attributes: [{ name: "b", value: "d" }]
+									})	
+								];
+								var document = new module.Document({
+									children: [
+										new module.Element({
+											type: { name: "root" },
+											children: elements
+										})
+									]
+								});
+								var root = document.document.getElement();
+								(function() {
+									var filtered = root.children.filter(module.filter({ attribute: "a" }));
+									verify(filtered).length.is(2);
+									verify(filtered)[0].is(elements[0]);
+									verify(filtered)[1].is(elements[1]);
+								})();
+								(function() {
+									var filtered = root.children.filter(module.filter({ attribute: "a", value: "a" }));
+									verify(filtered).length.is(1);
+									verify(filtered)[0].is(elements[0]);
+								})();
+								(function() {
+									var filtered = root.children.filter(module.filter({ attribute: "b", value: "d" }));
+									verify(filtered).length.is(1);
+									verify(filtered)[0].is(elements[2]);
+								})();
+							</script>
 						</li>
 					</ol>
 				</div>
