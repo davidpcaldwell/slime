@@ -17,6 +17,9 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (!jsh.tools || !jsh.tools.install) {
+	jsh.loader.plugins(jsh.shell.jsh.home.getSubdirectory("src").getRelativePath("jsh/etc/install"));
+}
 if (!parameters.options.javassist) {
 	parameters.options.javassist = jsh.tools.install.get({ url: "https://github.com/jboss-javassist/javassist/releases/download/rel_3_20_0_ga/javassist.jar" }).pathname;
 }
