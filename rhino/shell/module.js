@@ -540,9 +540,27 @@ $exports.java = function(p) {
 	//	user.dir is $exports.PWD
 
 	//	TODO	Document
-	this.launcher = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("java");
+	var self = this;
 
-	this.jrunscript = $context.api.file.Searchpath([this.home.getRelativePath("bin"),this.home.getRelativePath("../bin")]).getCommand("jrunscript");
+	Object.defineProperty(
+		this, "launcher",
+		{
+			get: $api.Function.singleton(function() {
+				return $context.api.file.Searchpath([self.home.getRelativePath("bin")]).getCommand("java");
+			})
+		}
+	);
+//	this.launcher = $context.api.file.Searchpath([this.home.getRelativePath("bin")]).getCommand("java");
+
+	Object.defineProperty(
+		this, "jrunscript",
+		{
+			get: $api.Function.singleton(function() {
+				return $context.api.file.Searchpath([self.home.getRelativePath("bin"),self.home.getRelativePath("../bin")]).getCommand("jrunscript");
+			})
+		}
+	)
+//	this.jrunscript = $context.api.file.Searchpath([this.home.getRelativePath("bin"),this.home.getRelativePath("../bin")]).getCommand("jrunscript");
 }).call($exports.java);
 
 $exports.jrunscript = function(p) {
