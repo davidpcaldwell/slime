@@ -405,31 +405,48 @@ $loader.run("os.js", {
 	$exports: $exports.os
 });
 
-$exports.browser = {};
-$loader.run("browsers.js", {
-	$context: {
-		os: $exports.os,
-		HOME: $exports.HOME,
-		TMPDIR: $exports.TMPDIR,
-		run: $exports.run,
-		api: {
-			js: $context.api.js,
-			java: $context.api.java,
-			file: $context.api.file
-		}
-	},
-	$exports: $exports.browser
-});
+Object.defineProperty(
+	$exports,
+	"browser",
+	{
+		get: $api.Function.singleton(function() {
+			var rv = {};
+			$loader.run("browsers.js", {
+				$context: {
+					os: $exports.os,
+					HOME: $exports.HOME,
+					TMPDIR: $exports.TMPDIR,
+					run: $exports.run,
+					api: {
+						js: $context.api.js,
+						java: $context.api.java,
+						file: $context.api.file
+					}
+				},
+				$exports: rv
+			});
+			return rv;
+		})
+	}
+);
 
 $exports.system = {};
-$exports.system.apple = $loader.file("apple.js", {
-	api: {
-		document: $context.api.document,
-		js: $context.api.js,
-		shell: $exports,
-		xml: $context.api.xml
+Object.defineProperty(
+	$exports.system,
+	"apple",
+	{
+		get: $api.Function.singleton(function() {
+			return $loader.file("apple.js", {
+				api: {
+					document: $context.api.document,
+					js: $context.api.js,
+					shell: $exports,
+					xml: $context.api.xml
+				}
+			});
+		})
 	}
-});
+)
 
 var addPropertyArgumentsTo = function(jargs,properties) {
 	if (properties) {
