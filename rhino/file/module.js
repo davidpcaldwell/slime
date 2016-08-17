@@ -192,7 +192,6 @@ $exports.Loader = function(p) {
 			return "rhino/file Loader: directory=" + p.directory;
 		};
 
-		var USE_NEW_LOADER = true;
 		var getFile = function(path) {
 			var file = p.directory.getFile(path);
 			//	TODO	could we modify this so that file supported Resource?
@@ -202,9 +201,9 @@ $exports.Loader = function(p) {
 					type: p.type(file),
 					length: file.resource.length,
 					modified: file.modified,
-					getInputStream: (USE_NEW_LOADER) ? function() {
+					getInputStream: function() {
 						return file.read($context.api.io.Streams.binary).java.adapt();
-					} : void(0),
+					},
 					read: {
 						binary: function() {
 							return file.read($context.api.io.Streams.binary);
@@ -214,37 +213,9 @@ $exports.Loader = function(p) {
 			}
 			return null;
 		}
-		if (USE_NEW_LOADER) {
-			p.get = function(path) {
-				if (!p.directory) return null;
-				return getFile(path);
-			}
-		} else {
-			p.resources = new function() {
-				this.toString = function() {
-					return "rhino/file Loader: directory=" + p.directory;
-				};
-
-				this.get = function(path) {
-					if (!p.directory) return null;
-					return getFile(path);
-	//				var file = p.directory.getFile(path);
-	//				if (file) {
-	//					return /*new $context.api.io.Resource(*/{
-	//						name: p.directory.toString() + path,
-	//						type: p.type(file),
-	//						length: file.resource.length,
-	//						modified: file.modified,
-	//						read: {
-	//							binary: function() {
-	//								return file.read($context.api.io.Streams.binary);
-	//							}
-	//						}
-	//					}/*)*/;
-	//				}
-	//				return null;
-				}
-			};
+		p.get = function(path) {
+			if (!p.directory) return null;
+			return getFile(path);
 		}
 		p.list = function() {
 			if (!p.directory) return [];
