@@ -371,7 +371,6 @@ SLIME.getSubdirectory("jsh/tools").copy(destination.shell.getRelativePath("tools
 console("Creating install scripts ...");
 var ETC = destination.shell.getRelativePath("etc").createDirectory();
 SLIME.getFile("jsh/etc/install.jsh.js").copy(ETC);
-SLIME.getSubdirectory("jsh/etc/install").copy(ETC);
 
 (function copySource() {
 	console("Bundling source code ...");

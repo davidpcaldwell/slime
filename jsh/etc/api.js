@@ -12,9 +12,12 @@
 
 (function() {
 	//	Used by:
-	//		jsh/test/browser.jsh.js
-	//		jsh/test/suite.jsh.js
+	//		jsh/etc/browser.jsh.js: to determine what to test
+	//			things with api or test
+	//			things with browser.api or browser.test
 	//		jsh/etc/build.jsh.js: to determine what modules to build
+	//			things with jsh.module or (.api|.test) and .module are built
+	//			things with jsh.module.javac or (.api|.test) and module.javac are compiled
 	var components = new function() {
 		var byEnvironment = {
 			browser: [],
