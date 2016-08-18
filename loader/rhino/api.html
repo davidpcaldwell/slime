@@ -170,8 +170,11 @@ END LICENSE
 		</div>
 	</div>
 	<div>
+		<div jsapi:reference="getApi('../api.html').getElement('initialize')">
+		</div>
 		<script type="application/x.jsapi#initialize">
 			scope.module = jsh.$jsapi.$rhino;
+			scope.$slime = jsh.$jsapi.$rhino;
 		</script>
 		<h1>Properties</h1>
 		<p>
@@ -180,6 +183,27 @@ END LICENSE
 		</p>
 		<div class="label">has properties:</div>
 		<ul>
+			<li class="object" jsapi:id="mime">
+				<div class="name">mime</div>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor" jsapi:reference="getApi('../api.html').getElement('global/mime/Type')">
+						<div class="name">Type</div>
+						<span>__DESCRIPTION__</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+				</ul>
+			</li>
 			<li class="object">
 				<div class="name">java</div>
 				<span>__DESCRIPTION__</span>

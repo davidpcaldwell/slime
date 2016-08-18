@@ -39,6 +39,16 @@
 		return eval(String($javahost.getLoaderCode("literal.js")));
 	})();
 
+	loader.mime = (function(was) {
+		var guess_URLConnection = function(p) {
+			var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
+			if (!_rv) return function(){}();
+			return was.Type.parse(String(_rv));
+		};
+
+		return was;
+	})(loader.mime);
+
 	loader.java = loader.file({ name: "rhino/java.js", string: String($javahost.getLoaderCode("rhino/java.js")) }, {
 		$rhino: loader,
 		liveconnect: liveconnect

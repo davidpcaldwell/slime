@@ -197,6 +197,22 @@ END LICENSE
 				<a href="#types.Loader">Loader</a> implementation and then using the <code>module()</code> method of the
 				<code>Loader</code>.
 			</p>
+			<div jsapi:id="initialize">
+				<script type="application/x.jsapi#initialize">
+					var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
+						$slime: {
+							getCode: function(path) {
+								return $jsapi.loader.string(path);
+							},
+							getCoffeeScript: function() {
+								return null;
+							}
+						},
+						$engine: void(0)
+					}) : null;
+					scope.$slime = $exports;
+				</script>
+			</div>
 			<div class="label">has properties:</div>
 			<div class="type" jsapi:id="types.Loader">
 				<a class="type" name="types.Loader">Loader</a>
@@ -505,8 +521,22 @@ END LICENSE
 					</script>
 				</div>
 			</div>
+			<script type="application/x.jsapi#initialize">
+				var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
+					$slime: {
+						getCode: function(path) {
+							return $jsapi.loader.string(path);
+						},
+						getCoffeeScript: function() {
+							return null;
+						}
+					},
+					$engine: void(0)
+				}) : null;
+				scope.$slime = $exports;
+			</script>
 			<ul jsapi:id="global">
-				<li class="object">
+				<li class="object" jsapi:id="mime">
 					<div class="name">mime</div>
 					<span>__DESCRIPTION__</span>
 					<div class="type">
@@ -514,11 +544,53 @@ END LICENSE
 						<span>__DESCRIPTION__</span>
 						<div class="label">has properties:</div>
 						<ul>
+							<li class="function">
+								<div class="name">getMedia</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">getSubtype</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
+							<li class="function">
+								<div class="name">getParameters</div>
+								<span>__DESCRIPTION__</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+								</div>
+							</li>
 						</ul>
 					</div>
 					<div class="label">has properties:</div>
 					<ul>
-						<li class="constructor">
+						<li class="constructor" jsapi:id="Type">
 							<div class="name">Type</div>
 							<span>__DESCRIPTION__</span>
 							<div class="arguments">
@@ -528,9 +600,45 @@ END LICENSE
 							</div>
 							<div class="instances">
 								<div class="label">Instances</div>
-								<span class="type">__TYPE__</span>
+								<span class="type"><a href="#types.mime.Type">mime.Type</a></span>
 								<span>__DESCRIPTION__</span>
 							</div>
+							<div class="label">has properties:</div>
+							<ul>
+								<li class="function">
+									<div class="name">parse</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+								</li>
+								<li class="function">
+									<div class="name">fromName</div>
+									<span>__DESCRIPTION__</span>
+									<div class="arguments">
+										<div class="label">Arguments</div>
+										<ol>
+										</ol>
+									</div>
+									<div class="returns">
+										<div class="label">Returns</div>
+										<span class="type">__TYPE__</span>
+										<span>__DESCRIPTION__</span>
+									</div>
+									<script type="application/x.jsapi#tests">
+										if ($slime) {
+											verify($slime.mime.Type.fromName("foo.js").toString()).is("application/javascript");
+										}
+									</script>
+								</li>
+							</ul>
 						</li>
 					</ul>
 				</li>

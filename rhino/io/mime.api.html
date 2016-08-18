@@ -65,6 +65,9 @@ END LICENSE
 	</div>
 	<div>
 		<h1>Exports</h1>
+		<script type="application/x.jsapi#initialize">
+			scope.$slime = jsh.$jsapi.$rhino;
+		</script>
 		<div class="type">
 			<a class="type" name="types.entity">entity</a>
 			<span>A MIME entity, as defined by <a href="http://tools.ietf.org/html/rfc2045#section-2.4">RFC 2045 section 2.4</a>.</span>
@@ -116,6 +119,20 @@ END LICENSE
 			</ul>
 		</div>
 		<ul>
+			<li class="constructor" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('mime')">
+				<div class="name">__NAME__</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+			</li>
 			<li class="constructor">
 				<div class="name">Multipart</div>
 				<span>Creates a <a href="api.html#types.Resource">Resource</a> representing a MIME multipart message.</span>

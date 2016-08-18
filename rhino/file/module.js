@@ -227,37 +227,10 @@ $exports.Loader = function(p) {
 			if (!p.directory) return { directory: null };
 			return { directory: p.directory.getSubdirectory(prefix) };
 		}
-//		p.Loader = function(prefix) {
-//			//	Would like to decorate argument here, but instead will need to replace whole loader because of current
-//			//	loader structure
-//			return new $exports.Loader({ directory: p.directory.getSubdirectory(prefix) });
-//		}
 	} else if (typeof(arguments[0]) == "object" && arguments[0].hasOwnProperty("directory") && typeof(arguments[0].directory) == "undefined") {
 		throw new Error("'directory' property must not be undefined.");
 	}
 	$context.api.io.Loader.apply(this,arguments);
-//	if (arguments[0].directory) {
-//		var directory = arguments[0].directory;
-//		this.list = function(m) {
-//			return directory.list().map(function(node) {
-//				if (node.directory) {
-//					return { path: node.pathname.basename, loader: new $exports.Loader({ directory: node }) };
-//				} else {
-//					return {
-//						path: node.pathname.basename,
-//						resource: new $context.api.io.Resource({
-//							type: p.type(node),
-//							read: {
-//								binary: function() {
-//									return node.read($context.api.io.Streams.binary);
-//								}
-//							}
-//						})
-//					};
-//				}
-//			});
-//		};
-//	}
 };
 
 //	Possibly used for initial attempt to produce HTTP filesystem, for example
