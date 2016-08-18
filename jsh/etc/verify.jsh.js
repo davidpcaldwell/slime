@@ -160,7 +160,7 @@ if (parameters.options.browser) {
 			run: jsh.shell.jsh,
 			name: "Browser tests",
 	//		command: jsh.shell.java.jrunscript,
-			script: parameters.options.slime.directory.getFile("jsh/etc/browser.jsh.js"),
+			script: parameters.options.slime.directory.getFile("loader/browser/etc/unit.jsh.js"),
 			arguments: [
 	//			jsh.shell.jsh.home.getRelativePath("jsh.js"),
 //				parameters.options.slime.directory.getRelativePath("jsh/test/browser.jsh.js").toString(),

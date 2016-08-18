@@ -2,23 +2,30 @@
 //	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
 //	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
-//	The Original Code is the jsh JavaScript/Java shell.
+//
+//	The Original Code is the SLIME loader for web browsers.
 //
 //	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
-//	Portions created by the Initial Developer are Copyright (C) 2014 the Initial Developer. All Rights Reserved.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
 //
 //	Contributor(s):
 //	END LICENSE
 
-var api = eval(jsh.script.file.getRelativePath("../etc/api.js").file.read(String));
-var all = api.environment("browser").filter(function(declaration) {
-	return declaration.api || declaration.test;
+var apis = [
+	"loader/browser/",
+	"loader/api/",
+	"loader/api/unit.js",
+	"loader/api/test/data/1/",
+	"js/object/",
+	"js/object/Error.js",
+	"js/document/",
+	"js/web/"
+];
+
+var SRC = jsh.script.file.parent.parent.parent.parent;
+var pathnames = apis.map(function(path) {
+	return SRC.getRelativePath(path);
 });
-var SRC = jsh.script.file.parent.parent.parent;
-var pathnames = all.map(function(declaration) {
-	return SRC.getRelativePath(declaration.path);
-});
-jsh.shell.echo(pathnames);
 jsh.shell.jsh({
 	fork: true,
 	script: SRC.getFile("jsh/unit/browser.jsh.js"),
