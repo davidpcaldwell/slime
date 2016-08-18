@@ -81,12 +81,16 @@ $exports.Modules = function(slime,pathnames) {
 
 				this.run = function() {
 					tomcat.run();
+				};
+				
+				this.stop = function() {
+					tomcat.stop();
 				}
 			};
 		};
 
 		var browseTestPage = function(p) {
-			var opened = p.browser.browse(p.tomcat.url(p.url));
+			var opened = p.browser.browse(p.tomcat.url(p.url),p.done);
 			if (!p.interactive) {
 				var output = p.client.request({
 					url: p.tomcat.url(successUrl.split("/").slice(0,-1).join("/") + "/console")
@@ -114,7 +118,11 @@ $exports.Modules = function(slime,pathnames) {
 
 		var tomcat = startServer(p);
 		jsh.shell.echo("Browsing test page ... " + tomcat.url(p.url));
-		var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client() }, p));
+		var done = (p.interactive) ? function() {
+			jsh.shell.console("Stopping Tomcat ...");
+			tomcat.stop();
+		} : null;
+		var result = browseTestPage(jsh.js.Object.set({}, { tomcat: tomcat, client: new jsh.http.Client(), done: done }, p));
 		if (p.interactive) {
 			tomcat.run();
 		} else {
@@ -318,7 +326,7 @@ $exports.Chrome = function(p) {
 		directory: user
 	});
 
-	this.browse = function(uri) {
+	this.browse = function(uri,done) {
 		var lock = new jsh.java.Thread.Monitor();
 		var opened;
 		browser.launch({
@@ -337,6 +345,9 @@ $exports.Chrome = function(p) {
 							}
 						}
 					})();
+				},
+				close: function() {
+					if (done) done.call(opened);
 				}
 			}
 		});
