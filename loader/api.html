@@ -197,22 +197,21 @@ END LICENSE
 				<a href="#types.Loader">Loader</a> implementation and then using the <code>module()</code> method of the
 				<code>Loader</code>.
 			</p>
-			<div jsapi:id="initialize">
-				<script type="application/x.jsapi#initialize">
-					var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
-						$slime: {
-							getCode: function(path) {
-								return $jsapi.loader.string(path);
-							},
-							getCoffeeScript: function() {
-								return null;
-							}
+			<script type="application/x.jsapi#initialize">
+				var context = $jsapi.loader.eval("literal.js", {
+					$slime: {
+						getCode: function(path) {
+							return $jsapi.loader.string(path);
 						},
-						$engine: void(0)
-					}) : null;
-					scope.$slime = $exports;
-				</script>
-			</div>
+						getCoffeeScript: function() {
+							return null;
+						}
+					},
+					$engine: void(0)
+				});
+				var $exports = (this != this.window) ? context : context;
+				scope.api = $exports;
+			</script>
 			<div class="label">has properties:</div>
 			<div class="type" jsapi:id="types.Loader">
 				<a class="type" name="types.Loader">Loader</a>
@@ -521,20 +520,6 @@ END LICENSE
 					</script>
 				</div>
 			</div>
-			<script type="application/x.jsapi#initialize">
-				var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
-					$slime: {
-						getCode: function(path) {
-							return $jsapi.loader.string(path);
-						},
-						getCoffeeScript: function() {
-							return null;
-						}
-					},
-					$engine: void(0)
-				}) : null;
-				scope.$slime = $exports;
-			</script>
 			<ul jsapi:id="global">
 				<li class="object" jsapi:id="mime">
 					<div class="name">mime</div>
@@ -633,9 +618,7 @@ END LICENSE
 										<span>__DESCRIPTION__</span>
 									</div>
 									<script type="application/x.jsapi#tests">
-										if ($slime) {
-											verify($slime.mime.Type.fromName("foo.js").toString()).is("application/javascript");
-										}
+										verify(api.mime.Type.fromName("foo.js").toString()).is("application/javascript");
 									</script>
 								</li>
 							</ul>
