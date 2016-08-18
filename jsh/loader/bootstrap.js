@@ -16,8 +16,8 @@ new (function() {
 	};
 
 	this.getCoffeeScript = function() {
-		var _library = $jsh.getLibrary("coffee-script.js");
-		if (!_library) return null;
-		return $jsh.getStreams().readString(_library.getReader());
+		var _file = $jsh.getLibraries().getFile("coffee-script.js");
+		if (!_file) return null;
+		return $jsh.getStreams().readString(_file.getReader());
 	}
 });

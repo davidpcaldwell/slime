@@ -152,6 +152,8 @@ for (var i=0; i<files.length; i++) {
 			original = "the SLIME loader infrastructure";
 		} else if (startsWith("rhino/io/")(relative)) {
 			original = "the rhino/io SLIME module";
+		} else if (startsWith("rhino/document/")(relative)) {
+			original = "the SLIME Java Document API";
 		} else if (startsWith("rhino/mail/")(relative)) {
 			original = "the SLIME JavaMail interface";
 		} else if (startsWith("rhino/file/")(relative)) {

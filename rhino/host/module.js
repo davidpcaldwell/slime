@@ -103,7 +103,9 @@ $exports.Properties.adapt = function($properties) {
 }
 
 var errors = new function() {
-	var instance = new Packages.inonit.script.runtime.Throwables();
+	var instance = (function _Throwables() {
+		return new Packages.inonit.script.runtime.Throwables();
+	})();
 
 	this.fail = function(message) {
 		instance.fail(message);

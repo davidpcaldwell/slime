@@ -38,9 +38,9 @@ $exports.zip = function(p) {
 	} else if (p.from.pathname && p.from.pathname.directory) {
 		from = fromDirectory(p.from);
 	} else if (p.from instanceof $context.Pathname && p.from.file) {
-		throw "Unimplemented: from file";
+		throw new Error("Unimplemented: from file");
 	} else {
-		throw "Unimplemented: from " + p.from;
+		throw new Error("Unimplemented: from " + p.from);
 	}
 
 	var _getInputStream = function(item) {

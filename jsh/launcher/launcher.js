@@ -18,7 +18,7 @@
 //	OLDER JAVA
 //
 //	To backport to 1.4 or lower, some mechanism would be needed to enumerate the environment variables. At one time this was done
-//	with usr/bin/env on UNIX and was not done at all on Windows (except Cygwin; see below).
+//	with /usr/bin/env on UNIX and was not done at all on Windows (except Cygwin; see below).
 //
 //	OLDER RHINO
 //
@@ -80,8 +80,6 @@
 
 //	TODO	can this be run with Java 6/7 jrunscript?
 //
-//	TODO	convert jsh build script to a jsh script that runs in an unbuilt shell
-//
 //	TODO	create semi-automated verify process that includes non-automatable features (like debugger)
 //
 //	TODO	Prefer the client VM unless -server is specified (and do not redundantly specify -client)
@@ -114,8 +112,9 @@
 try {
 	var $api = this.$api;
 	if (!this.$api.slime) {
+		//	This can occur when the script is called from a packaged script
+		//	TODO	figure out how and why, and whether the packaged script should invoke slime.js itself instead
 		var slime = $api.script.resolve("slime.js");
-//		Packages.java.lang.System.err.println("slime.js = " + slime);
 		slime.load();
 		$api.log("Loaded slime.js: src=" + $api.slime.src);
 	}
@@ -220,7 +219,8 @@ try {
 
 	$api.script.resolve("javac.js").load();
 
-	$api.jsh.Unbuilt = function(rhino) {
+	$api.jsh.Unbuilt = function(p) {
+		//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
 		this.toString = function() {
 			return "Unbuilt: src=" + $api.slime.src + " rhino=" + this.rhino;
 		}
@@ -229,6 +229,8 @@ try {
 		if (!lib.exists()) {
 			lib.mkdirs();
 		}
+
+		var rhino = (p && p.rhino) ? p.rhino : null;
 
 		if (!rhino) {
 			if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
@@ -387,7 +389,9 @@ try {
 		};
 	};
 
-	if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell")) {
+	//	TODO	it seems like the below should migrate to main.js where similar code is already present, and packaged applications
+	//			should launch that script
+	if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell") && Packages.java.lang.System.getProperties().get("jsh.launcher.shell").getPackaged()) {
 		$api.jsh.shell = new (function(peer) {
 			var getRhinoClasspath = function() {
 				var classpath = peer.getRhinoClasspath();
@@ -398,28 +402,12 @@ try {
 				}
 			};
 
-			var Unbuilt = function(src) {
-				//	TODO	the below is now wrong; is this not exercised now except for packaged applications?
-				return new $api.jsh.Unbuilt(src,getRhinoClasspath());
-			};
-
-			var Built = function(home) {
-				return new $api.jsh.Built(home);
-			};
-
-			var Packaged = function(file) {
-				return new $api.jsh.Packaged(file);
-			};
-
 			var shell = (function(peer) {
 				if (peer.getPackaged()) {
 					$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
-					return new Packaged(peer.getPackaged());
-				} else if (peer.getHome()) {
-					$api.debug("Setting built shell: " + String(peer.getHome().getCanonicalPath()));
-					return new Built(peer.getHome());
+					return new $api.jsh.Packaged(peer.getPackaged());
 				} else {
-					return new Unbuilt(new Packages.java.io.File($api.slime.setting("jsh.shell.src")));
+					throw new Error("No getPackaged() in " + peer);
 				}
 			})(peer);
 
@@ -448,9 +436,7 @@ try {
 				return rv;
 			};
 		})(Packages.java.lang.System.getProperties().get("jsh.launcher.shell"));
-	}
 
-	if ($api.jsh.shell && $api.jsh.shell.packaged) {
 		if ($api.arguments.length == 0 && !$api.jsh.shell.packaged) {
 			$api.console("Usage: " + $api.script.file + " <script-path> [arguments]");
 			//	TODO	should replace the below with a mechanism that uses setExitStatus, adding setExitStatus for Rhino throwing a

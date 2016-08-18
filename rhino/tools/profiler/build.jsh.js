@@ -17,15 +17,11 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (!jsh.tools || !jsh.tools.install) {
+	jsh.loader.plugins(jsh.shell.jsh.home.getSubdirectory("src").getRelativePath("jsh/etc/install"));
+}
 if (!parameters.options.javassist) {
-	jsh.shell.echo("Downloading Javassist ...");
-	parameters.options.javassist = jsh.shell.TMPDIR.createTemporary({ prefix: "javassist", suffix: ".jar" }).pathname;
-	parameters.options.javassist.write(
-		new jsh.http.Client().request({
-			url: "https://github.com/jboss-javassist/javassist/releases/download/rel_3_20_0_ga/javassist.jar"
-		}).body.stream,
-		{ append: false }
-	);
+	parameters.options.javassist = jsh.tools.install.get({ url: "https://github.com/jboss-javassist/javassist/releases/download/rel_3_20_0_ga/javassist.jar" }).pathname;
 }
 
 if (!parameters.options.to) {
@@ -84,4 +80,4 @@ jsh.shell.shell(
 	}
 );
 
-jsh.shell.echo("Created JAR at " + parameters.options.to);
+jsh.shell.console("Created JAR at " + parameters.options.to);

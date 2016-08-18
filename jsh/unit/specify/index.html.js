@@ -26,18 +26,6 @@ window.addEventListener('load', function() {
 
     var whitespace = inonit.loader.loader.value("whitespace.js");
 
-    var react = function(f) {
-        return function() {
-            var iframe = document.getElementById("target");
-            var content = iframe.contentDocument;
-            f(iframe,content);
-        };
-    }
-
-    var title = react(function(iframe,content) {
-        document.getElementById("title").innerHTML = content.title;
-    });
-
 	var editable = typeof(document.createElement("span").contentEditable) != "undefined";
 
     var selection = (function() {
@@ -182,18 +170,6 @@ window.addEventListener('load', function() {
 			parent.appendChild(elements.edit);
 		}
 
-		var handleTitle = handleRow(function(child,label,editor) {
-			label.innerHTML = "title";
-			var span = document.createElement("span");
-			span.innerHTML = child.innerHTML;
-			editor.appendChild(span);
-			inline.call(span,function() {
-				document.getElementById("title").innerHTML = span.innerHTML;
-				var title = document.getElementById("target").contentDocument.getElementsByTagName("title")[0];
-				title.innerHTML = span.innerHTML;
-			});
-		});
-
 		var stringInputElements = function(value) {
 			return {
 				show: (function() {
@@ -209,6 +185,32 @@ window.addEventListener('load', function() {
 				})()
 			}
 		};
+
+		var handleTitle = handleRow(function(child,label,editor) {
+			label.innerHTML = "title";
+			formEditable({
+				parent: editor,
+				elements: stringInputElements(child.innerHTML),
+				update: function() {
+					child.innerHTML = this.edit.value;
+					this.show.innerHTML = "";
+					this.show.appendChild(document.createTextNode(child.innerHTML));
+					document.getElementById("title").innerHTML = this.edit.value;
+					document.getElementById("target").contentDocument.title = this.edit.value;
+				},
+				reset: function() {
+					this.edit.value = child.innerHTML;
+				}
+			});
+// 			var span = document.createElement("span");
+// 			span.innerHTML = child.innerHTML;
+// 			editor.appendChild(span);
+// 			inline.call(span,function() {
+// 				document.getElementById("title").innerHTML = span.innerHTML;
+// 				var title = .getElementsByTagName("title")[0];
+// 				title.innerHTML = span.innerHTML;
+// 			});
+		});
 
 		var handleLink = handleRow(function(child,label,editor) {
 			label.innerHTML = "link " + "(" + child.rel + ")";
@@ -226,34 +228,33 @@ window.addEventListener('load', function() {
 			});
 		});
 
-		var handleScript = handleRow(function(child,label,editor) {
-			var type = (child.src) ? "external" : "inline";
-			label.innerHTML = "script (" + type + ")";
-			if (type == "external") {
-				formEditable({
-					parent: editor,
-					elements: stringInputElements(child.src),
-					update: function() {
-						child.src = this.edit.value;
-						this.show.innerHTML = "";
-						this.show.appendChild(document.createTextNode(child.src));
-					},
-					reset: function() {
-						this.edit.value = child.src;
-					}
-				});
-			} else {
-				editor.appendChild(document.createTextNode(child.outerHTML));
-			}
-		})
+		var indentedEditor = function(child,editor,context) {
+			var toEditor = function(data) {
+				var content = whitespace.content(data);
+				return content.lines.join("\n");
+			};
 
-		var handleElement = handleRow(function(child,label,editor) {
-			label.innerHTML = child.tagName;
-			editor.appendChild(document.createTextNode(child.outerHTML));
-		});
+			var endIndent = (function(child) {
+				var tokens = context.get().split("\n");
+				if (tokens.length == 1) {
+					return whitespace.after(context.get());
+				} else {
+					return whitespace.before(tokens[tokens.length-1]);
+				}
+			})(child);
 
-		var handleComment = handleRow(function(child,label,editor) {
-			label.innerHTML = "(comment)";
+			var fromEditor = function(data,value) {
+				var content = whitespace.content(data);
+				var lines = value.split("\n");
+				var rv = [];
+				rv.push.apply(rv,content.before);
+				rv.push.apply(rv,lines.map(function(line) {
+					return content.indent + line;
+				}));
+				rv[rv.length-1] += endIndent;
+				rv.push.apply(rv,content.after);
+				return rv.join("\n");
+			};
 
 			var CommentData = function(parent,target) {
 				var startIndent = (function(child) {
@@ -272,15 +273,6 @@ window.addEventListener('load', function() {
 				};
 
 				var TAB_WIDTH = 4;
-
-				var endIndent = (function(child) {
-					var tokens = child.data.split("\n");
-					if (tokens.length == 1) {
-						return whitespace.after(child.data);
-					} else {
-						return whitespace.before(tokens[tokens.length-1]);
-					}
-				})(child);
 
 				//	TODO	may want to reverse this thinking: use standard editor width (132?) and reduce by
 				//			the width of the indent?
@@ -302,39 +294,21 @@ window.addEventListener('load', function() {
 					return rv;
 				}
 
-				var toEditor = function(data) {
-					var content = whitespace.content(data);
-					return content.lines.join("\n");
-				};
-
-				var fromEditor = function(data,value) {
-					var content = whitespace.content(data);
-					var lines = value.split("\n");
-					var rv = [];
-					rv.push.apply(rv,content.before);
-					rv.push.apply(rv,lines.map(function(line) {
-						return content.indent + line;
-					}));
-					rv[rv.length-1] += endIndent;
-					rv.push.apply(rv,content.after);
-					return rv.join("\n");
-				};
-
 				var commentSpan = document.createElement("span");
 				//	TODO	may want to figure out a way to display these with whitespace, in case the
 				//			comment itself is formatted
 				//	commentSpan.style.fontFamily = "monospace";
 				//	commentSpan.style.whiteSpace = "pre";
 				//	commentSpan.style.tabSize = 4;
-				commentSpan.appendChild(document.createTextNode(child.data));
+				commentSpan.appendChild(document.createTextNode(context.span));
 				var commentInput = document.createElement("textarea");
-				var content = whitespace.content(child.data);
+				var content = whitespace.content(context.get());
 				var width = maxWidth(content);
 				commentInput.cols = (width > 80) ? width : 80;
 				commentInput.rows = (content.lines.length > 1) ? content.lines.length : 1;
 				commentInput.style.fontFamily = "monospace";
 				commentInput.style.tabSize = TAB_WIDTH;
-				commentInput.value = toEditor(child.data);
+				commentInput.value = toEditor(context.get());
 
 				var elements = {
 					show: commentSpan,
@@ -345,14 +319,71 @@ window.addEventListener('load', function() {
 					parent: parent,
 					elements: elements,
 					update: function() {
-						var data = fromEditor(child.data,commentInput.value);
-						commentSpan.innerHTML = data;
-						child.data = data;
+						var data = fromEditor(context.get(),this.edit.value);
+						context.update.call(this,data);
+					},
+					reset: function() {
+						var data = toEditor(context.get());
+						context.reset.call(this,data);
 					}
 				});
 			};
 
 			CommentData(editor,child);
+		}
+
+		var handleScript = handleRow(function(child,label,editor) {
+			var type = (child.src) ? "external" : "inline";
+			label.innerHTML = "script (" + type + ")";
+			if (type == "external") {
+				formEditable({
+					parent: editor,
+					elements: stringInputElements(child.src),
+					update: function() {
+						child.src = this.edit.value;
+						this.show.innerHTML = "";
+						this.show.appendChild(document.createTextNode(child.src));
+					},
+					reset: function() {
+						this.edit.value = child.src;
+					}
+				});
+			} else {
+				indentedEditor(child,editor,{
+					span: "[code]",
+					get: function() {
+						return child.innerHTML;
+					},
+					update: function(data) {
+						child.innerHTML = data;
+					},
+					reset: function(data) {
+						this.edit.value = data;
+					}
+				});
+			}
+		})
+
+		var handleElement = handleRow(function(child,label,editor) {
+			label.innerHTML = child.tagName;
+			editor.appendChild(document.createTextNode(child.outerHTML));
+		});
+
+		var handleComment = handleRow(function(child,label,editor) {
+			label.innerHTML = "(comment)";
+			indentedEditor(child,editor,{
+				span: child.data,
+				get: function() {
+					return child.data;
+				},
+				update: function(data) {
+					this.show.innerHTML = data;
+					child.data = data;
+				},
+				reset: function(data) {
+					this.edit.value = data;
+				}
+			});
 		});
 
 		var handleOther = handleRow(function(child,label,editor) {
@@ -389,9 +420,10 @@ window.addEventListener('load', function() {
     		}
     		handler(child);
     	}
-        title();
 
         var content = document.getElementById("target").contentDocument;
+
+		document.getElementById("title").innerHTML = content.title;
 
         this.contentDocument.addEventListener("click", function(e) {
 			if (!selection.is(e.target)) {

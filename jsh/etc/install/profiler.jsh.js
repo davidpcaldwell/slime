@@ -13,7 +13,7 @@
 
 var parameters = jsh.script.getopts({
 	options: {
-		javassist: String,
+		javassist: jsh.file.Pathname,
 		src: jsh.shell.jsh.home.getRelativePath("src")
 	}
 });

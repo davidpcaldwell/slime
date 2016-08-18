@@ -15,7 +15,8 @@ var parameters = jsh.script.getopts({
 	options: {
 		interactive: false,
 		"chrome:profile": jsh.file.Pathname,
-		port: Number
+		port: Number,
+		success: false
 	}
 });
 
@@ -81,7 +82,7 @@ var chrome = new jsh.shell.browser.chrome.User({
 
 if (parameters.options.interactive) {
 	chrome.run({
-		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/test/browser.html"
+		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/test/browser.html" + ((parameters.options.success) ? "?success" : "")
 	});
 } else {
 	var opened;
@@ -106,7 +107,7 @@ if (parameters.options.interactive) {
 	};
 
 	chrome.launch({
-		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/test/browser.html?unit.run",
+		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
 		on: on
 	});
 
@@ -125,11 +126,11 @@ if (parameters.options.interactive) {
 
 	jsh.shell.console("result.success = " + result.success);
 	opened.close();
-	if (result.success === false) {
-		jsh.shell.console("Success.");
+	if (result.success === parameters.options.success) {
+		jsh.shell.console("Success: " + result.success);
 		jsh.shell.exit(0);
 	} else {
-		jsh.shell.console("Failure.");
+		jsh.shell.console("Failure: result=" + result.success + ", not " + parameters.options.success);
 		jsh.shell.exit(1);
 	}
 }

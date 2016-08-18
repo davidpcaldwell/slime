@@ -107,6 +107,9 @@ if (MODULES && browsers.length) {
 //				})
 //			});
 		});
+		if (parameters.options.interactive) {
+			jsh.shell.exit(0);
+		}
 		var rv = scenario.run();
 		if (rv) {
 			jsh.shell.echo("Tests in all browsers: " + "[" + browsers.map(function(browser) { return browser.name; }).join(", ") + "]" + " succeeded.");

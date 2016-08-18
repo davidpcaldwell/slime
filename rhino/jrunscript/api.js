@@ -894,6 +894,7 @@
 		}
 		return rv;
 	})();
+	$api.shell.HOME = new Packages.java.io.File(Packages.java.lang.System.getProperty("user.home"));
 	$api.shell.exec = function(p) {
 		//	The jrunscript built-in exec() does not return an exit code (despite the documentation claiming it does), and does not allow
 		//	manipulation of the environment or stdio streams

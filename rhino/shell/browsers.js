@@ -198,6 +198,9 @@ var Chrome = function(b) {
 					}
 				}
 			});
+			if (m.on && m.on.close) {
+				m.on.close.call(m);
+			}
 		}
 
 		//	TODO	Presumably only works on OS X

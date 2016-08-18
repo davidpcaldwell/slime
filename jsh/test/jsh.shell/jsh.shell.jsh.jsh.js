@@ -14,14 +14,9 @@
 //	build a shell
 var build = jsh.shell.TMPDIR.createTemporary({ directory: true });
 var src = jsh.script.file.parent.parent.parent.parent;
-var unbuilt = src.getFile("jsh/etc/unbuilt.rhino.js");
 jsh.shell.echo("Building shell ...");
 jsh.shell.jrunscript({
-	arguments: [src.getFile("rhino/jrunscript/api.js"), unbuilt, "build", build],
-	environment: jsh.js.Object.set({}, jsh.shell.environment, {
-		JSH_BUILD_NOTEST: "true",
-		JSH_BUILD_NODOC: "true"
-	})
+	arguments: [src.getFile("rhino/jrunscript/api.js"), "jsh", src.getRelativePath("jsh/etc/build.jsh.js"), "-notest", "-nodoc", build.toString()]
 });
 var script = src.getFile("jsh/test/jsh.shell/properties.jsh.js");
 jsh.shell.echo("Built shell: " + build);

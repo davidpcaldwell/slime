@@ -147,40 +147,46 @@ initial.test({
 
 var title = new unit.Scenario();
 title.target({
-	titleRow: function() {
+	row: function() {
 		var tbody = document.getElementById("head").getElementsByTagName("table")[0].getElementsByTagName("tbody")[0];
 		var titleRow = tbody.rows[0];
 		return titleRow;
 	},
-	titleSpan: function() {
-		return this.titleRow().cells[1].children[0];
+	span: function() {
+		return this.row().getElementsByTagName("span")[0];
+	},
+	input: function() {
+		return this.row().getElementsByTagName("input")[0];
 	}
 });
 title.test({
 	check: function(verify) {
-		verify(this).titleRow().tagName.is("TR");
-		verify(this).titleSpan().tagName.is("SPAN");
+		verify(this).row().tagName.is("TR");
+		verify(this).span().tagName.is("SPAN");
+		verify(this).span().innerHTML.is("__TITLE__");
 	}
 });
 title.test({
 	run: function() {
-		unit.fire.click(this.titleSpan());
+		unit.fire.click(this.span());
 	},
 	check: function(verify) {
-		verify(this).titleSpan().contentEditable.is("true");
+		verify(this).span().style.display.is("none");
+		verify(this).input().style.display.is.not("none");
 	}
 });
 title.test({
 	run: function() {
-		unit.fire.click(this.titleSpan());
-		this.titleSpan().innerHTML = "foo";
-		unit.fire.keydown(this.titleSpan(), {
-			key: "Enter"
+		unit.fire.click(this.span());
+		this.input().value = "foo";
+		unit.fire.keypress(this.input(), {
+			key: "Enter",
+			ctrlKey: true
 		});
 	},
 	check: function(verify) {
-		verify(this).titleSpan().evaluate.property("inonit").is.equalTo(null);
-		verify(this).titleSpan().innerHTML.is("foo");
+		verify(this).span().evaluate.property("inonit").is.equalTo(null);
+		verify(this).span().innerHTML.is("foo");
 		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
 		verify(document).getElementById("title").innerHTML.is("foo");
 		verify(document).getElementById("target").contentDocument.title.is("foo");
@@ -189,15 +195,16 @@ title.test({
 });
 title.test({
 	run: function() {
-		unit.fire.click(this.titleSpan());
-		this.titleSpan().innerHTML = "bar";
-		unit.fire.keydown(this.titleSpan(), {
-			key: "Enter"
+		unit.fire.click(this.span());
+		this.input().value = "bar";
+		unit.fire.keypress(this.input(), {
+			key: "Enter",
+			ctrlKey: true
 		});
 	},
 	check: function(verify) {
-		verify(this).titleSpan().evaluate.property("inonit").is.equalTo(null);
-		verify(this).titleSpan().innerHTML.is("bar");
+		verify(this).span().evaluate.property("inonit").is.equalTo(null);
+		verify(this).span().innerHTML.is("bar");
 		verify(document).getElementById("title").evaluate.property("inonit").is.equalTo(null);
 		verify(document).getElementById("title").innerHTML.is("bar");
 		verify(document).getElementById("target").contentDocument.title.is("bar");
@@ -282,6 +289,21 @@ comment.test({
 		verify(this).getApiLocationComment().getTextArea().style.display.is("none");
 	}
 });
+comment.test({
+	run: function() {
+		unit.fire.click(this.getApiLocationComment().getSpan());
+		this.getApiLocationComment().getTextArea().value = "bar";
+		unit.fire.keydown(this.getApiLocationComment().getTextArea(), {
+			key: "Escape"
+		});
+	},
+	check: function(verify) {
+		verify(this).getApiLocationComment().getTextArea().style.display.is("none");
+		verify(this).getApiLocationComment().getSpan().innerHTML.is("\tfoo\t");
+		//	TODO	the below is probably wrong for now; trailing whitespace not stripped. Should probably change that.
+		verify(this).getApiLocationComment().getTextArea().value.is("foo\t");
+	}
+});
 
 var link = new unit.Scenario();
 link.target(new function() {
@@ -333,18 +355,33 @@ link.test(new function() {
 
 var scripts = new unit.Scenario();
 scripts.target(new function() {
-	var ScriptEditor = function(element) {
+	var Editor = function(element) {
 		element.getSpan = function() {
 			return this.cells[1].getElementsByTagName("span")[0];
 		}
+	}
+
+	var ExternalEditor = function(element) {
+		Editor(element);
 		element.getInput = function() {
 			return this.cells[1].getElementsByTagName("input")[0];
 		}
 		return element;
+	};
+
+	var InlineEditor = function(element) {
+		Editor(element);
+		element.getEditor = function() {
+			return this.cells[1].getElementsByTagName("textarea")[0];
+		};
+		return element;
 	}
 
 	this.getScriptRows = function() {
-		return [page.getHeadRows()[4],page.getHeadRows()[5]].map(ScriptEditor);
+		return [
+			ExternalEditor(page.getHeadRows()[4]),
+			InlineEditor(page.getHeadRows()[5])
+		];
 	};
 
 	this.getTargetScripts = function() {
@@ -395,7 +432,55 @@ scripts.test(new function() {
 		verify(this).getTargetScripts()[0].src.is(foo);
 		verify(this).getScriptRows()[0].getInput().style.display.is("none");
 	};
-})
+});
+scripts.test(new function() {
+	this.check = function(verify) {
+		verify(this).getScriptRows()[1].getSpan().innerHTML.is("[code]");
+	}
+});
+scripts.test(new function() {
+	this.run = function() {
+		unit.fire.click(this.getScriptRows()[1].getSpan());
+	};
+
+	this.check = function(verify) {
+		verify(this).getScriptRows()[1].getSpan().style.display.is("none");
+		verify(this).getScriptRows()[1].getEditor().style.display.is.not("none");
+		var code = this.getScriptRows()[1].getEditor().value.split("\n");
+		verify(code,"code").length.is(2);
+		verify(code,"code")[0].is("//\tTODO\tCORS");
+	}
+});
+scripts.test(new function() {
+	this.run = function() {
+		unit.fire.keydown(this.getScriptRows()[1].getEditor(), {
+			key: "Escape"
+		});
+	};
+
+	this.check = function(verify) {
+		verify(this).getScriptRows()[1].getSpan().style.display.is.not("none");
+		verify(this).getScriptRows()[1].getEditor().style.display.is("none");
+	}
+});
+scripts.test(new function() {
+	this.run = function() {
+		unit.fire.click(this.getScriptRows()[1].getSpan());
+	};
+
+	this.check = function(verify) {
+		var code = this.getScriptRows()[1].getEditor().value.split("\n");
+		verify(code,"code").length.is(2);
+		verify(code,"code")[0].is("//\tTODO\tCORS");
+	}
+});
+scripts.test(new function() {
+	this.run = function() {
+		unit.fire.keydown(this.getScriptRows()[1].getEditor(), {
+			key: "Escape"
+		});
+	};
+});
 
 var selection = new unit.Scenario();
 selection.target(new function() {
@@ -406,18 +491,24 @@ selection.target(new function() {
 		this.exportsHeader = content.getElementsByTagName("h1")[1];
 	};
 
-	this.isSelected = function(element) {
+	var isSelected = function(element) {
 		//	TODO	DRY violation
 		var dummy = document.createElement("div");
 		dummy.style.backgroundColor = "#c0c0ff";
 		return element.style.backgroundColor == dummy.style.backgroundColor;
 	}
+
+	var target = this;
+
+	this.isSelected = function() {
+		return isSelected(this);
+	};
 });
 selection.test({
 	check: function(verify) {
 		var page = this;
 		verify(this).content.description.innerHTML.is("__DESCRIPTION__");
-		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(false);
+		verify(this).content.description.evaluate(this.isSelected).is(false);
 	}
 });
 selection.test({
@@ -426,7 +517,7 @@ selection.test({
 	},
 	check: function(verify) {
 		var page = this;
-		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(true);
+		verify(this).content.description.evaluate(this.isSelected).is(true);
 	}
 });
 selection.test({
@@ -435,8 +526,8 @@ selection.test({
 	},
 	check: function(verify) {
 		var page = this;
-		verify(this).content.description.evaluate(function() { return page.isSelected(this); }).is(false);
-		verify(this).content.contextHeader.evaluate(function() { return page.isSelected(this); }).is(true);
+		verify(this).content.description.evaluate(this.isSelected).is(false);
+		verify(this).content.contextHeader.evaluate(this.isSelected).is(true);
 	}
 });
 

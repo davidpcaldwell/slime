@@ -743,8 +743,7 @@ $exports.Scenario = {};
 			if (!next) {
 				return part.after(vscope.success,local);
 			} else {
-				part.after(vscope.success,local);
-//				next(part.after(vscope.success,local));
+				next(part.after(vscope.success,local));
 			}
 		}
 
@@ -802,13 +801,15 @@ $exports.Scenario = {};
 							keys.push(x);
 						}
 						var index = 0;
-						var proceed = function recurse(success) {
+						var proceed = function recurse(result) {
 							if (index == keys.length) {
-								next(success);
+								if (!result) success = false;
+								next(result);
 							} else {
 								var x = keys[index++];
+								var subscope = copy(scope);
 								parts[x].run({
-									scope: copy(scope),
+									scope: subscope,
 									path: []
 								},recurse);
 							}

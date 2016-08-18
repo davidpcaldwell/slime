@@ -55,7 +55,8 @@ END LICENSE
 			scope.api = $jsapi.loader.module("module.js", {
 				api: {
 					shell: jsh.shell,
-					http: jsh.http
+					http: jsh.http,
+					file: jsh.file
 				},
 				downloads: scope.downloads
 			});
@@ -79,19 +80,34 @@ END LICENSE
 				scope.harness.renamed = scope.harness.tar.copy(tmpdest.getRelativePath("renamed.tar.gz"));
 			}
 
+			jsh.file.zip({
+				from: tmpdir,
+				to: tmpdest.getRelativePath("directory.zip")
+			});
+			scope.harness.zip = tmpdest.getFile("directory.zip");
+
 			if (jsh.httpd.Tomcat) {
 				var server = jsh.httpd.Tomcat.serve({ directory: tmpdest });
 				scope.server = server;
 			} else {
 				scope.server = null;
 			}
+
+			scope.tmpdir = function() {
+				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+				tmp.directory.remove();
+				return tmp;
+			};
 		</script>
 		<div>
 			<h1>Exports</h1>
 			<ul>
 				<li class="function">
 					<div class="name">gzip</div>
-					<span>Installs a <code>gzip</code>ped <code>tar</code> file.</span>
+					<span>
+						(conditional; requires <code>tar</code> to be in the <code>PATH</code>)
+						Installs a <code>gzip</code>ped <code>tar</code> file.
+					</span>
 					<div>
 						This method can process both local and remote files. For remote files, it is assumed that the filename of
 						the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
@@ -189,15 +205,11 @@ END LICENSE
 					</div>
 					<script type="application/x.jsapi#tests" jsapi:id="present">
 						verify(api).is.type("object");
-						verify(api).evaluate(function() { return this.gzip; }).is.type("function");
+						if (jsh.shell.PATH.getCommand("tar")) {
+							verify(api).evaluate(function() { return this.gzip; }).is.type("function");
+						}
 					</script>
 					<script type="application/x.jsapi#tests"><![CDATA[
-						var tmpdir = function() {
-							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-							tmp.directory.remove();
-							return tmp;
-						};
-
 						var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						tmp.directory.remove();
 
@@ -236,8 +248,33 @@ END LICENSE
 
 						//	TODO	ensure when a copy has already been downloaded, the cached version is used
 					]]></script>
-					<script type="application/x.jsapi#destroy">
-						if (scope.server) scope.server.stop();
+				</li>
+				<li class="function">
+					<div class="name">zip</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						if (server) {
+							(function() {
+								var tmp = tmpdir();
+								verify(downloads).getFile("directory.zip").is(null);
+								api.zip({
+									url: "http://127.0.0.1:" + server.port + "/directory.zip",
+									to: tmp
+								});
+								verify(downloads).getFile("directory.zip").is.not(null);
+								verify(tmp).directory.getFile("file").evaluate(function() { return this.read(String); }).is("text");
+							})();
+						}
 					</script>
 				</li>
 				<li class="object">
@@ -293,6 +330,34 @@ END LICENSE
 					<span>__DESCRIPTION__</span>
 					<div class="label">has properties:</div>
 					<ul>
+						<li class="function">
+							<div class="name">find</div>
+							<span>
+								Locates a distribution from Apache, either in a local cache, or from an Apache mirror, and
+								returns a local file containing the distribution (downloading it if necessary).
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">path</div>
+												<span class="type">string</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="../../../rhino/file/api.html">file</a></span>
+								<span>A local file containing the content from Apache.</span>
+							</div>
+						</li>
 					</ul>
 					<script type="application/x.jsapi#tests">
 						if (jsh.httpd.Tomcat) {
@@ -333,5 +398,8 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
+		<script type="application/x.jsapi#destroy">
+			if (scope.server) scope.server.stop();
+		</script>
 	</body>
 </html>

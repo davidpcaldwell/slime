@@ -16,12 +16,15 @@ var parameters = jsh.script.getopts({
 		rhino: jsh.file.Pathname,
 		part: String,
 		view: "console",
-		"test:unbuilt": false
+		"test:unbuilt": false,
+		executable: false
 	}
 });
 
 if (jsh.test && jsh.test.requireBuiltShell && !parameters.options["test:unbuilt"]) {
-	jsh.test.requireBuiltShell();
+	jsh.test.requireBuiltShell({
+		executable: parameters.options.executable
+	});
 }
 
 //	Built shells do not contain these plugins
@@ -110,17 +113,32 @@ var ScriptVerifier = function(o) {
 };
 
 if (CATALINA_HOME) {
-	BROWSER_UNIT_TEST_ISSUE_FIXED = false;
-	if (BROWSER_UNIT_TEST_ISSUE_FIXED) scenario.part("unit.browser", new function() {
-		this.name = "browser unit testing",
-		this.execute = function(scope,verify) {
-			jsh.shell.jsh({
-				fork: true,
-				script: src.getFile("loader/api/test/browser.jsh.js"),
-				evaluate: function(result) {
-					verify(result).status.is(0);
+	scenario.part("unit.browser", {
+		name: "loader/browser/test",
+		parts: {
+			failure: {
+				execute: function(scope,verify) {
+					jsh.shell.jsh({
+						fork: true,
+						script: src.getFile("loader/api/test/browser.jsh.js"),
+						evaluate: function(result) {
+							verify(result).status.is(0);
+						}
+					})
 				}
-			})
+			},
+			success: {
+				execute: function(scope,verify) {
+					jsh.shell.jsh({
+						fork: true,
+						script: src.getFile("loader/api/test/browser.jsh.js"),
+						arguments: ["-success"],
+						evaluate: function(result) {
+							verify(result).status.is(0);
+						}
+					})
+				}
+			}
 		}
 	});
 }
@@ -209,6 +227,13 @@ ScriptVerifier({
 	}
 });
 
+ScriptVerifier({
+	path: "loader/child.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
+
 if (CATALINA_HOME) {
 	ScriptVerifier({
 		path: "jsh.httpd/httpd.jsh.js",
@@ -229,282 +254,113 @@ if (CATALINA_HOME) {
 	jsh.shell.console("No CATALINA_HOME: not running httpd integration tests.");
 }
 
-var legacy = function() {
-	//	TODO	remove the below dependency
-	//			appears to define 'console'
-	eval(jsh.script.file.parent.getFile("integration.api.rhino.js").read(String));
+//		var tmp = platform.io.createTemporaryDirectory();
+//		run(LAUNCHER_COMMAND.concat([
+//			getSourceFilePath("jsh/tools/slime.jsh.js"),
+//			"-from", getPath(SLIME_SRC,"loader/rhino/test/data/1"),
+//			"-to", getPath(tmp,"1.slime"),
+//			//	TODO	the below should match the version from the build
+//			"-version", "1.6"
+//		]));
 
-	var File = Packages.java.io.File;
-
-	var JSH_HOME = jsh.shell.jsh.home.pathname.java.adapt();
-
-	var getPath = function(basedir,relative) {
-		var jfile = new File(basedir,relative);
-		var rv = String(jfile.getCanonicalPath());
-		if (platform.cygwin) {
-			rv = platform.cygwin.cygpath.unix(rv);
-		}
-		return rv;
-	};
-
-	var getSourceFilePath = function(relative) {
-		return getPath(SLIME_SRC, relative);
-	}
-
-	var SLIME_SRC = parameters.options.src.java.adapt();
-
-	var LAUNCHER_COMMAND;
-	if (!LAUNCHER_COMMAND) {
-		var vmargs = [];
-		//	TODO	this hard-coding of -client is not optimal but better than nothing
-		vmargs.push("-client");
-		if (getSystemProperty("jsh.suite.profile")) {
-			vmargs = ["-javaagent:" + getPath(JSH_HOME, "tools/profiler.jar")]
-		}
-		LAUNCHER_COMMAND = [
-			getPath(JAVA_HOME,"bin/java")
-		].concat(vmargs).concat([
-			"-jar",String(new Packages.java.io.File(JSH_HOME,"jsh.jar").getCanonicalPath())
-		]);
-	}
-
-	var compileOptions;
-	if (!compileOptions) {
-		compileOptions = ["-g", "-nowarn"];
-	}
-
-	var mode = {};
-	mode.env = {};
-	for (var x in env) {
-		if (!/^JSH_/.test(x)) {
-			mode.env[x] = env[x];
-		}
-	}
-	if (env.JSH_ENGINE) {
-		mode.env.JSH_ENGINE = env.JSH_ENGINE;
-	}
-	if (env.JSH_SHELL_CONTAINER) {
-		mode.env.JSH_SHELL_CONTAINER = env.JSH_SHELL_CONTAINER;
-	}
-	mode.env.JSH_PLUGINS = String(new File(JSH_HOME, "plugins").getCanonicalPath());
-	if (debug.on) {
-		mode.env.JSH_SCRIPT_DEBUGGER = "rhino";
-	}
-
-	var runCommand = function() {
-		var p = {
-			arguments: []
-		};
-		for (var i=0; i<arguments.length; i++) {
-			if (i == 0) {
-				p.command = arguments[i];
-			} else if (i == arguments.length-1 && typeof(arguments[i]) == "object") {
-				var mode = arguments[i];
-				if (mode.env) {
-					p.environment = mode.env;
-				}
-				if (typeof(mode.output) == "string") {
-					if (!p.stdio) p.stdio = {};
-					p.stdio.output = String;
-				}
-				if (typeof(mode.err) == "string") {
-					if (!p.stdio) p.stdio = {};
-					p.stdio.error = String;
-				}
-				if (typeof(mode.input) != "undefined") {
-					p.stdio.input = jsh.io.java.adapt(mode.input);
-				}
-			} else {
-				p.arguments.push(arguments[i]);
-			}
-		}
-		p.evaluate = function(result) {
-			if (typeof(mode.output) == "string") {
-				mode.output += result.stdio.output;
-			}
-			if (typeof(mode.err) == "string") {
-				mode.err += result.stdio.error;
-			}
-			return result.status;
-		};
-		return jsh.shell.run(p);
-	}
-
-	var run = function(command,mymode) {
-		if (!mymode) mymode = mode;
-		var options = mymode;
-		console(command.join(" "));
-		var status = runCommand.apply(this,command.concat(mymode));
-	//	Packages.java.lang.System.err.println("env: " + JSON.stringify(env, void(0), "    "));
-	//	Packages.java.lang.System.err.println("input: " + options.input);
-	//	Packages.java.lang.System.err.println("Output: " + options.output);
-	//	Packages.java.lang.System.err.println("Error: " + options.err);
-		if (status != 0) {
-			throw new Error("Failed with status: " + status + ": " + command.join(" "));
-		} else {
-			console("Passed: " + command.join(" "));
-		}
-	}
-
-	var testCommandOutput = function(path,tester,p) {
-		if (!p) p = {};
-		var env = (function() {
-			if (!p.env) return mode.env;
-			var rv = {};
-			for (var x in mode.env) {
-				rv[x] = mode.env[x];
-			}
-			for (var x in p.env) {
-				if (typeof(p.env[x]) != "undefined") {
-					if (p.env[x] === null) {
-						delete rv[x];
-					} else {
-						rv[x] = p.env[x];
-					}
-				}
-			}
-			return rv;
-		})();
-		var command = [
-			String(new File(SLIME_SRC,"jsh/test/" + path).getCanonicalPath())
-		];
-		var launcher = LAUNCHER_COMMAND;
-		if (p.arguments) {
-			command = command.concat(p.arguments);
-		}
-		debug("Environment: " + JSON.stringify(env));
-		var options = {
-			output: "",
-			err: "",
-			env: env
-		};
-		if (p.stdin) {
-			options.input = p.stdin;
-		}
-
-		console(launcher.concat(command).join(" "));
-		var status = runCommand.apply(this,launcher.concat(command).concat([options]));
-		if (status != 0) {
-			Packages.java.lang.System.err.println("env: " + JSON.stringify(env, void(0), "    "));
-			Packages.java.lang.System.err.println("input: " + options.input);
-			Packages.java.lang.System.err.println("Output: " + options.output);
-			Packages.java.lang.System.err.println("Error: " + options.err);
-			throw new Error("Failed with exit status " + status + ": " + launcher.concat(command).join(" ") + " with options: " + options);
-		}
-		tester(options);
-		console("");
-		console("Passed: " + command.join(" "));
-		console("");
-	};
-
-	(function() {
-		var mymode = {
-			env: {}
-		};
-		for (var x in mode.env) {
-			mymode.env[x] = mode.env[x];
-		}
-
-		mymode.env.JSH_JAVA_LOGGING_PROPERTIES = String(new File(SLIME_SRC,"jsh/test/integration.logging.properties").getCanonicalPath());
-		jsh.shell.echo("JSH_ENGINE = " + jsh.shell.environment.JSH_ENGINE);
-		run(LAUNCHER_COMMAND.concat([
-			getSourceFilePath("jsh/test/jsh.shell/properties.jsh.js")
-		]), mymode);
-
-		delete mymode.env.JSH_JAVA_LOGGING_PROPERTIES;
-		var tmp = platform.io.createTemporaryDirectory();
-		run(LAUNCHER_COMMAND.concat([
-			getSourceFilePath("jsh/tools/slime.jsh.js"),
-			"-from", getPath(SLIME_SRC,"loader/rhino/test/data/1"),
-			"-to", getPath(tmp,"1.slime"),
-			//	TODO	the below should match the version from the build
-			"-version", "1.6"
-		]));
-
-		mymode.env.MODULES = tmp.getCanonicalPath();
-	//	mymode.env.PATH = String(Packages.java.lang.System.getenv("PATH"));
-		run(LAUNCHER_COMMAND.concat(
-			[
-				String(new File(SLIME_SRC,"jsh/test/loader/2.jsh.js").getCanonicalPath())
+scenario.part(".slime", {
+	execute: function(scope,verify) {
+		var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+		var builder = jsh.shell.jsh({
+			fork: true,
+			script: src.getFile("jsh/tools/slime.jsh.js"),
+			arguments: [
+				"-from", src.getRelativePath("loader/rhino/test/data/1"),
+				"-to", tmp.getRelativePath("1.slime"),
+				"-version", "1.6"
 			]
-		), mymode);
-	})();
-
-	testCommandOutput("loader/child.jsh.js", function(options) {
-	});
-
-	if (CATALINA_HOME) {
-		console("Running httpd integration tests with CATALINA_HOME = " + CATALINA_HOME);
-		var mymode = {};
-		for (var x in mode) {
-			if (x == "env") {
-				if (!mymode.env) mymode.env = {};
-				for (var y in mode.env) {
-					mymode.env[y] = mode.env[y];
-				}
-			} else {
-				mymode[x] = mode[x];
+		});
+		verify(builder).status.is(0);
+		var loader = jsh.shell.jsh({
+			fork: true,
+			script: src.getFile("jsh/test/loader/2.jsh.js"),
+			environment: {
+				MODULES: tmp.toString(),
+				PATH: jsh.shell.environment.PATH
 			}
-		}
-		mymode.env.CATALINA_HOME = CATALINA_HOME.pathname.toString();
-		run(LAUNCHER_COMMAND.concat(
-			[
-				String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath())
-			]
-		),mymode);
-		if (COFFEESCRIPT) {
-			console("Running httpd CoffeeScript integration tests with CoffeeScript = " + COFFEESCRIPT);
-			run(LAUNCHER_COMMAND.concat(
-				[
-					String(new File(SLIME_SRC,"jsh/test/jsh.httpd/httpd.jsh.js").getCanonicalPath()),
-					"-suite", "coffee",
-					"-coffeescript", COFFEESCRIPT
-				]
-			),mymode);
-		}
-	} else {
-		console("No CATALINA_HOME: not running httpd integration tests.");
+		});
+		verify(loader).status.is(0);
 	}
+});
 
-	testCommandOutput("jsh.file/Searchpath.jsh.js", function(options) {
-	});
+ScriptVerifier({
+	path: "jsh.file/Searchpath.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
 
-	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
-		return options.output == "Hello, World!" && options.err == "Hello, tty!";
-	});
+//	jsh.shell.run({
+//		command: LAUNCHER_COMMAND[0],
+//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
+//	});
+//
+//	jsh.shell.run({
+//		command: LAUNCHER_COMMAND[0],
+//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
+//	});
 
-	jsh.shell.run({
-		command: LAUNCHER_COMMAND[0],
-		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/loader.jsh.js")),
-		stdio: {
-			output: String
-		},
-		evaluate: function(result) {
-			if (result.status == 0) {
-				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-				jsh.shell.echo();
-			} else {
-				throw new Error("Status: " + result.status);
-			}
-		}
-	});
+ScriptVerifier({
+	path: "jsh.shell/jsh.shell.jsh.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
 
-	jsh.shell.run({
-		command: LAUNCHER_COMMAND[0],
-		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/jsh.shell.jsh.jsh.js"))
-	});
+ScriptVerifier({
+	path: "jsh.shell/exit.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
 
-	jsh.shell.run({
-		command: LAUNCHER_COMMAND[0],
-		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
-	});
+//	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
+//		return options.output == "Hello, World!" && options.err == "Hello, tty!";
+//	});
+ScriptVerifier({
+	path: "jsh.shell/stdio.1.jsh.js",
+	error: String,
+	execute: function(verify) {
+		verify(this).stdio.output.is("Hello, World!");
+		verify(this).stdio.error.is("Hello, tty!");
+	}
+});
 
-	if (RHINO_LIBRARIES) {
-		jsh.shell.echo("Testing Rhino optimization ...");
-		(function(level) {
+//	jsh.shell.run({
+//		command: LAUNCHER_COMMAND[0],
+//		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.script/loader.jsh.js")),
+//		stdio: {
+//			output: String
+//		},
+//		evaluate: function(result) {
+//			if (result.status == 0) {
+//				jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+//				jsh.shell.echo();
+//			} else {
+//				throw new Error("Status: " + result.status);
+//			}
+//		}
+//	});
+//
+
+ScriptVerifier({
+	path: "jsh.script/loader.jsh.js",
+	execute: function(verify) {
+		verify(this).status.is(0);
+	}
+});
+
+scenario.part("rhino.optimization", {
+	execute: function(scope,verify) {
+		[-1,0,1].forEach(function(level) {
 			jsh.shell.jsh({
 				fork: true,
-				script: jsh.script.file.getRelativePath("../test/rhino-optimization.jsh.js").file,
+				script: src.getFile("jsh/test/rhino-optimization.jsh.js"),
 				stdio: {
 					output: String
 				},
@@ -515,187 +371,127 @@ var legacy = function() {
 				evaluate: function(result) {
 					jsh.shell.echo("Output: [" + result.stdio.output + "]");
 					var optimization = Number(result.stdio.output);
-					if (result.status == 0 && optimization == level) {
-						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-						jsh.shell.echo();
-					} else {
-						throw new Error("Status: " + result.status + " optimization " + optimization);
-					}
+					verify(result).status.is(0);
+					verify(optimization).is(level);
 				}
 			});
-		})(1);
-	}
-
-	if (CATALINA_HOME) {
-		jsh.shell.echo("Testing launching script by URL ...");
-		jsh.shell.jsh({
-			fork: true,
-			script: jsh.script.file.getRelativePath("../test/jsh.script/http.jsh.js"),
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				if (result.status == 0) {
-					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-					jsh.shell.echo();
-				} else {
-					throw new Error("Status: " + result.status);
-				}
-			}
 		});
 	}
+});
 
-	if (COFFEESCRIPT && !jsh.shell.environment.SKIP_COFFEESCRIPT) {
-		jsh.shell.echo("Testing CoffeeScript ...");
-		jsh.shell.jsh({
-			fork: true,
-			script: jsh.script.file.getRelativePath("../test/coffee/hello.jsh.coffee").file,
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				if (result.status == 0) {
-					if (result.stdio.output == ["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
-						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-						jsh.shell.echo();
-					} else {
-						throw new Error("Output was [" + result.stdio.output + "]");
-					}
-				} else {
-					throw new Error("Status: " + result.status);
+if (CATALINA_HOME) {
+	ScriptVerifier({
+		path: "jsh.script/http.jsh.js",
+		execute: function(verify) {
+			verify(this).status.is(0);
+		}
+	});
+}
+
+scenario.part("coffeescript", {
+	execute: function(scope,verify) {
+		if (COFFEESCRIPT) {
+			jsh.shell.echo("Testing CoffeeScript ...");
+			var hello = jsh.shell.jsh({
+				fork: true,
+				script: jsh.script.file.getRelativePath("../test/coffee/hello.jsh.coffee").file,
+				stdio: {
+					output: String
 				}
-			}
-		});
-		jsh.shell.jsh({
-			fork: true,
-			script: jsh.script.file.getRelativePath("../test/coffee/loader.jsh.js").file,
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				if (result.status == 0) {
-					jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-					jsh.shell.echo();
-				} else {
-					throw new Error("Status: " + result.status + " for " + result.command + " " + result.arguments.join(" "));
-				}
-			}
-		});
+	//				,evaluate: function(result) {
+	//					if (result.status == 0) {
+	//						if (result.stdio.output == ["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
+	//							jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+	//							jsh.shell.echo();
+	//						} else {
+	//							throw new Error("Output was [" + result.stdio.output + "]");
+	//						}
+	//					} else {
+	//						throw new Error("Status: " + result.status);
+	//					}
+	//				}
+				});
+				verify(hello).status.is(0);
+				verify(hello).stdio.output.is(["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator"))));
+				var loader = jsh.shell.jsh({
+					fork: true,
+					script: jsh.script.file.getRelativePath("../test/coffee/loader.jsh.js").file
+	//				,evaluate: function(result) {
+	//					if (result.status == 0) {
+	//						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
+	//						jsh.shell.echo();
+	//					} else {
+	//						throw new Error("Status: " + result.status + " for " + result.command + " " + result.arguments.join(" "));
+	//					}
+	//				}
+			});
+			verify(loader).status.is(0);
+		} else {
+			verify("No CoffeeScript").is("No CoffeeScript");
+		}
 	}
+});
 
-	var nativeLauncher = jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh");
-	//	Windows sees JavaScript files as potential commands, through the PATHEXT variable
-	if (nativeLauncher && !/\.js/.test(nativeLauncher.pathname.basename)) {
-		Packages.java.lang.System.err.println("Testing native launcher: " + nativeLauncher + " ...");
-		jsh.shell.run({
-			command: nativeLauncher,
-			arguments: [jsh.script.file.getRelativePath("../test/jsh.shell/echo.jsh.js")],
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				if (result.status == 0) {
-					if (result.stdio.output == ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
-						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-						jsh.shell.echo();
-					} else {
-						throw new Error("Wrong output: [" + result.stdio.output + "]");
-					}
-				} else {
-					throw new Error("Exit status: [" + result.status + "]");
+scenario.part("executable", new function() {
+	var executable = (jsh.shell.jsh.home) ? jsh.file.Searchpath([jsh.shell.jsh.home.pathname]).getCommand("jsh") : null;
+	if (executable) {
+		this.parts = new function() {
+			var echo = src.getRelativePath("jsh/test/jsh.shell/echo.jsh.js");
+			var output = ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")));
+
+			this.absolute = {
+				execute: function(scope,verify) {
+					var result = jsh.shell.run({
+						command: executable,
+						arguments: [echo],
+						stdio: {
+							output: String
+						}
+					});
+					verify(result).status.is(0);
+					verify(result).stdio.output.is(output);
+				}
+			};
+
+			this.relative = {
+				execute: function(scope,verify) {
+					var result = jsh.shell.run({
+						command: "./jsh",
+						arguments: [echo],
+						stdio: {
+							output: String
+						},
+						directory: jsh.shell.jsh.home
+					});
+					verify(result).status.is(0);
+					verify(result).stdio.output.is(output);
+				}
+			};
+
+			this.PATH = {
+				execute: function(scope,verify) {
+					var PATH = (function() {
+						var rv = jsh.file.Searchpath(jsh.shell.PATH.pathnames);
+						rv.pathnames.push(jsh.shell.jsh.home.pathname);
+						jsh.shell.console("PATH=" + rv);
+						return rv.toString();
+					})();
+					var result = jsh.shell.run({
+						command: "env",
+						arguments: ["PATH=" + PATH, "jsh", echo],
+						stdio: {
+							output: String
+						}
+					});
+					verify(result).status.is(0);
+					verify(result).stdio.output.is(output);
 				}
 			}
-		});
-
-		jsh.shell.run({
-			command: "./jsh",
-			arguments: [jsh.script.file.getRelativePath("../test/jsh.shell/echo.jsh.js")],
-			stdio: {
-				output: String
-			},
-			directory: jsh.shell.jsh.home,
-			evaluate: function(result) {
-				if (result.status == 0) {
-					if (result.stdio.output == ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
-						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-						jsh.shell.echo();
-					} else {
-						throw new Error("Wrong output: [" + result.stdio.output + "]");
-					}
-				} else {
-					throw new Error("Exit status: [" + result.status + "]");
-				}
-			}
-		});
-
-		var environment = jsh.js.Object.set({}, jsh.shell.environment);
-		var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames);
-		PATH.pathnames.push(jsh.shell.jsh.home.pathname);
-		var jshInPathCommand = {
-			command: "jsh",
-			arguments: [jsh.script.file.getRelativePath("../test/jsh.shell/echo.jsh.js")],
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				if (result.error) {
-					jsh.shell.echo("error: " + result.error);
-					jsh.shell.echo("error keys: " + Object.keys(result.error));
-				}
-				if (result.status == 0) {
-					if (result.stdio.output == ["true",""].join(String(Packages.java.lang.System.getProperty("line.separator")))) {
-						jsh.shell.echo("Passed: " + result.command + " " + result.arguments.join(" "));
-						jsh.shell.echo();
-					} else {
-						throw new Error("Wrong output: [" + result.stdio.output + "]");
-					}
-				} else {
-					throw new Error("Exit status: [" + result.status + "]");
-				}
-			}
-		};
-		var addShellToPath = (function() {
-			if (false) {
-				//	For some reason this does not work in Java; supplying the PATH to the subprocess does not mean that it will be
-				//	used for resolving the given command
-				return function(command,PATH) {
-					var environment = jsh.js.Objet.set({}, jsh.shell.environment);
-					environment.PATH = PATH.toString();
-					command.environment = environment;
-				};
-			} else {
-				return function(command,PATH) {
-					//	TODO	should we quote this? What about spaces?
-					command.arguments.unshift("PATH=" + PATH.toString(),command.command);
-					command.command = "env";
-				};
-			}
-		})();
-		addShellToPath(jshInPathCommand,PATH);
-		jsh.shell.run(jshInPathCommand);
-	}
-};
-
-scenario.part("legacy", new function() {
-	this.name = "Legacy tests";
-
-	this.execute = function(scope,verify) {
-		verify.test(function() {
-			caught = false;
-			try {
-				legacy();
-			} catch (e) {
-				caught = e;
-			}
-			if (caught.printStackTrace) {
-				caught.printStackTrace();
-			}
-			return {
-				success: !caught,
-				message: "caught error: " + caught,
-				error: caught
-			}
-		});
+		}
+	} else {
+		this.execute = function(scope,verify) {
+			verify("No executable").is("No executable");
+		}
 	}
 });
 

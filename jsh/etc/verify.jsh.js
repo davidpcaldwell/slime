@@ -114,7 +114,14 @@ parameters.options.java.forEach(function(jre) {
 							run: jsh.shell.jsh,
 							shell: SLIME,
 							script: SLIME.getFile("jsh/etc/integration.jsh.js"),
-							arguments: ["-view","stdio"],
+							arguments: (function() {
+								var rv = [];
+								if (jsh.shell.os.name == "Mac OS X") {
+									rv.push("-executable");
+								}
+								rv.push("-view","stdio");
+								return rv;
+							})(),
 							environment: environment
 						})
 					}

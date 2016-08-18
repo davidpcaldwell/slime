@@ -529,4 +529,13 @@ $exports.filter = function(p) {
 			return node && node.element && node.element.type.name == p.elements;
 		};
 	}
+	if (typeof(p) == "object" && typeof(p.attribute) != "undefined") {
+		return function(node) {
+			if (typeof(p.value) != "undefined") {
+				return node.element && node.element.attributes.get(p.attribute) == p.value;
+			} else {
+				return node.element && node.element.attributes.get(p.attribute) != null;
+			}
+		}
+	}
 };

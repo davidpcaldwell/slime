@@ -11,19 +11,4 @@
 //	Contributor(s):
 //	END LICENSE
 
-plugin({
-	isReady: function() {
-		return jsh.http && jsh.shell;
-	},
-	load: function() {
-		if (!jsh.tools) jsh.tools = {};
-		jsh.tools.install = $loader.module("module.js", {
-			api: {
-				shell: jsh.shell,
-				http: jsh.http,
-				file: jsh.file
-			},
-			downloads: jsh.shell.user.downloads
-		});
-	}
-});
+jsh.shell.echo(jsh.shell.jsh.home);

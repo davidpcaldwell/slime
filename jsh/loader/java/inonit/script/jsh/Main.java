@@ -334,7 +334,7 @@ public class Main {
 		}
 
 		Shell.Installation installation() {
-			Plugins plugins = null;
+			final Plugins plugins;
 			try {
 				plugins = Plugins.create(getPackagedPluginsDirectory());
 			} catch (IOException e) {
@@ -343,7 +343,24 @@ public class Main {
 			//	TODO	better hierarchy would probably be $jsh/loader/slime and $jsh/loader/jsh
 			final Code.Source platform = Code.Source.system("$jsh/loader/");
 			final Code.Source jsh = Code.Source.system("$jsh/");
-			return Shell.Installation.create(platform, jsh, plugins);
+			return new Shell.Installation() {
+				@Override public Code.Source getPlatformLoader() {
+					return platform;
+				}
+
+				@Override public Code.Source getJshLoader() {
+					return jsh;
+				}
+
+				@Override public Code.Source getLibraries() {
+					//	TODO	This is obviously wrong and we ought to be able to package libraries
+					return Code.Source.NULL;
+				}
+
+				@Override public Shell.Installation.Extensions getExtensions() {
+					return plugins;
+				}
+			};
 		}
 
 		Shell.Invocation invocation(final String[] arguments) {
@@ -362,22 +379,34 @@ public class Main {
 	private static abstract class Unpackaged extends Configuration {
 		abstract Code.Source getLoader();
 		abstract Code.Source getJsh();
+		abstract Code.Source getLibraries();
 		abstract Plugins getModules();
 		abstract Plugins getShellPlugins();
 
 		final Shell.Installation installation() throws IOException {
-			Unpackaged unpackaged = this;
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
 			final Shell.Installation.Extensions plugins = Shell.Installation.Extensions.create(new Shell.Installation.Extensions[] {
-				unpackaged.getModules(),
-				unpackaged.getShellPlugins(),
+				this.getModules(),
+				this.getShellPlugins(),
 				Plugins.create(new File(new File(System.getProperty("user.home")), ".inonit/jsh/plugins"))
 			});
-			return Shell.Installation.create(
-				unpackaged.getLoader(),
-				unpackaged.getJsh(),
-				plugins
-			);
+			return new Shell.Installation() {
+				@Override public Code.Source getPlatformLoader() {
+					return Unpackaged.this.getLoader();
+				}
+
+				@Override public Code.Source getJshLoader() {
+					return Unpackaged.this.getJsh();
+				}
+
+				@Override public Code.Source getLibraries() {
+					return Unpackaged.this.getLibraries();
+				}
+
+				@Override public Shell.Installation.Extensions getExtensions() {
+					return plugins;
+				}
+			};
 		}
 
 		Shell.Invocation invocation(String[] arguments) throws Shell.Invocation.CheckedException {
@@ -465,6 +494,11 @@ public class Main {
 			return this.src.resolve("jsh/loader/").source();
 		}
 
+		Code.Source getLibraries() {
+			File file = new java.io.File(System.getProperty("jsh.shell.lib"));
+			return Code.Source.create(file);
+		}
+
 		Plugins getModules() {
 			return this.src.plugins();
 		}
@@ -494,6 +528,10 @@ public class Main {
 
 		Code.Source getJsh() {
 			return Code.Source.create(new File(getScripts(), "jsh"));
+		}
+
+		Code.Source getLibraries() {
+			return Code.Source.create(new File(this.home, "lib"));
 		}
 
 		Plugins getModules() {
