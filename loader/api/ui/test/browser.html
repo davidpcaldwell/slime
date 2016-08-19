@@ -16,13 +16,10 @@ END LICENSE
 <html>
 	<head>
 		<title>TODO supply a title</title>
-		<script src="../../../loader/browser/client.js"></script>
+		<script src="../../../../loader/browser/client.js"></script>
 		<script>
 			window.addEventListener("load", function(e) {
-				$loader = new inonit.loader.Loader(window.location.href.split("/").slice(0,-4).join("/") + "/");
-				var ui = $loader.value("loader/api/ui/loader.js", {
-					$loader: $loader
-				})();
+				var ui = new inonit.loader.Loader(inonit.loader.base).value("api/ui/loader.js")();
 
 				var scenario = new ui.unit.Scenario();
 

@@ -12,6 +12,7 @@
 //	END LICENSE
 
 $set(function() {
+    var $loader = new inonit.loader.Loader(inonit.loader.base + "../");
     var api = $loader.file("loader/api/unit.js");
     var unit = $loader.module("loader/browser/test/module.js", {
         api: {
@@ -42,7 +43,7 @@ $set(function() {
     var styles = document.createElement("link");
     styles.setAttribute("rel", "stylesheet");
     styles.setAttribute("type", "text/css");
-    styles.setAttribute("href", "../../../jsh/unit/browser/ui.css");
+    styles.setAttribute("href", inonit.loader.base + "../" + "jsh/unit/browser/ui.css");
     document.head.insertBefore(styles, null);
 
     $loader.run("jsh/unit/browser/webview.js", {}, {

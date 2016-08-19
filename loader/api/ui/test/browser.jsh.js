@@ -25,7 +25,7 @@ if (!parameters.options["chrome:profile"]) {
 }
 parameters.options["chrome:profile"].directory.getRelativePath("First Run").write("", { append: false });
 
-var SLIME = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent.parent });
+var SLIME = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent.parent.parent });
 
 var lock = new jsh.java.Thread.Monitor();
 var result = {
@@ -48,7 +48,7 @@ tomcat.map({
 		"/*": {
 			load: function(scope) {
 				scope.$exports.handle = function(request) {
-					if (request.path == "loader/api/test/result") {
+					if (request.path == "loader/api/ui/test/result") {
 						var json = request.body.stream.character().asString();
 						jsh.shell.console("Got " + json);
 						result.received(JSON.parse(json));
@@ -82,7 +82,7 @@ var chrome = new jsh.shell.browser.chrome.User({
 
 if (parameters.options.interactive) {
 	chrome.run({
-		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/test/browser.html" + ((parameters.options.success) ? "?success" : "")
+		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
 	});
 } else {
 	var opened;
@@ -107,7 +107,7 @@ if (parameters.options.interactive) {
 	};
 
 	chrome.launch({
-		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
+		uri: "http://127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
 		on: on
 	});
 

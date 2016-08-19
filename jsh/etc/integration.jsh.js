@@ -120,7 +120,7 @@ if (CATALINA_HOME) {
 				execute: function(scope,verify) {
 					jsh.shell.jsh({
 						fork: true,
-						script: src.getFile("loader/api/test/browser.jsh.js"),
+						script: src.getFile("loader/api/ui/test/browser.jsh.js"),
 						evaluate: function(result) {
 							verify(result).status.is(0);
 						}
@@ -131,7 +131,7 @@ if (CATALINA_HOME) {
 				execute: function(scope,verify) {
 					jsh.shell.jsh({
 						fork: true,
-						script: src.getFile("loader/api/test/browser.jsh.js"),
+						script: src.getFile("loader/api/ui/test/browser.jsh.js"),
 						arguments: ["-success"],
 						evaluate: function(result) {
 							verify(result).status.is(0);
