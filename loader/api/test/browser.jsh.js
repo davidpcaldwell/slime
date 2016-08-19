@@ -21,9 +21,9 @@ var parameters = jsh.script.getopts({
 });
 
 if (!parameters.options["chrome:profile"]) {
-	parameters.options["chrome:profile"] = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname
-	parameters.options["chrome:profile"].directory.getRelativePath("First Run").write("", { append: false });
+	parameters.options["chrome:profile"] = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 }
+parameters.options["chrome:profile"].directory.getRelativePath("First Run").write("", { append: false });
 
 var SLIME = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent.parent });
 
