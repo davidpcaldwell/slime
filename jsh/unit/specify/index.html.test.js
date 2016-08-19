@@ -19,7 +19,7 @@ var unit = $loader.module("loader/browser/test/module.js", {
 });
 var ui = {
 	document: (function() {
-		var resource = $loader.get("jsh/unit/browser/ui.html");
+		var resource = $loader.get("loader/api/ui/ui.html");
 		var doc = document.implementation.createHTMLDocument("");
 		doc.documentElement.innerHTML = resource.string;
 		return doc;
@@ -44,7 +44,7 @@ styles.setAttribute("type", "text/css");
 styles.setAttribute("href", "../browser/ui.css");
 document.head.insertBefore(styles, null);
 
-$loader.run("jsh/unit/browser/webview.js", {}, {
+$loader.run("loader/api/ui/webview.js", {}, {
 	section: new function() {
 		var onclick;
 

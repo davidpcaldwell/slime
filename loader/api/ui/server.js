@@ -12,7 +12,7 @@
 //	END LICENSE
 
 $exports.handle = function(request) {
-	var qualifier = /^jsh\/unit\/browser\/(.*)/;
+	var qualifier = /^loader\/api\/ui\/(.*)/;
 	if (qualifier.exec(request.path)) {
 		request.path = qualifier.exec(request.path)[1];
 	}

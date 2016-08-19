@@ -247,12 +247,14 @@ plugin({
 				}
 			});
 
+			var loader = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
+
 			server.map({
 				path: "",
 				servlets: {
 					"/*": {
 						load: function(scope) {
-							var server = $loader.module("browser/server.js", {
+							var server = loader.module("loader/api/ui/server.js", {
 								suite: p.suite,
 								messages: get
 							});
@@ -279,7 +281,7 @@ plugin({
 		jsh.unit.interface.Chrome = function(p) {
 			//	expects suite, port, profile, page properties
 			var rv = new Chrome(jsh.js.Object.set({}, p, {
-				page: "jsh/unit/browser/ui.html"
+				page: "loader/api/ui/ui.html"
 			}));
 			rv.listen(p.suite);
 			return rv;

@@ -21,7 +21,7 @@ $set(function() {
     });
     var ui = {
         document: (function() {
-            var resource = $loader.get("jsh/unit/browser/ui.html");
+            var resource = $loader.get("loader/api/ui/ui.html");
             var doc = document.implementation.createHTMLDocument("");
             doc.documentElement.innerHTML = resource.string;
             return doc;
@@ -43,10 +43,10 @@ $set(function() {
     var styles = document.createElement("link");
     styles.setAttribute("rel", "stylesheet");
     styles.setAttribute("type", "text/css");
-    styles.setAttribute("href", inonit.loader.base + "../" + "jsh/unit/browser/ui.css");
+    styles.setAttribute("href", inonit.loader.base + "../" + "loader/api/ui/ui.css");
     document.head.insertBefore(styles, null);
 
-    $loader.run("jsh/unit/browser/webview.js", {}, {
+    $loader.run("loader/api/ui/webview.js", {}, {
         section: new function() {
             var onclick;
 
