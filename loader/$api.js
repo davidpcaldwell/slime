@@ -298,6 +298,21 @@
 			}
 		};
 	};
+	
+	$exports.Filter = function(f) {
+	};
+	$exports.Filter.and = function() {
+		var functions = arguments;
+		return function() {
+			for (var i=0; i<functions.length; i++) {
+				if (!functions[i].apply(this,arguments)) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
 	$exports.Method = {};
 	$exports.Method.property = function() {
 		var name = arguments;
@@ -309,6 +324,7 @@
 			return rv;
 		}
 	};
+	
 	$exports.Function.conditional = function(test,yes,no) {
 		return function() {
 			var condition = test.apply(this,arguments);
