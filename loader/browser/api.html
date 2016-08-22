@@ -16,8 +16,8 @@ END LICENSE
 	<head>
 		<title>SLIME: browser</title>
 		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-		<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
-		<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+		<link href="../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../loader/api/api.js"></script>
 	</head>
 	<body>
 		<div>__DESCRIPTION__</div>
@@ -71,7 +71,21 @@ END LICENSE
 			</ul>
 		</div>
 		<div>
-			<h1>Exports</h1>
+			<h1>Scope</h1>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="object">
+					<div class="name">$api</div>
+					<!--
+						TODO	get tests for $api working in browser
+						<div jsapi:reference="getApi('../$api.api.html').getElement('top')">See <a href="../$api.api.html">detailed documentation</a>.</div>
+					-->
+					<div>See <a href="../$api.api.html">detailed documentation</a>.</div>
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h1>Properties</h1>
 			<ul>
 				<li class="constructor">
 					<div class="name">Loader</div>
@@ -88,7 +102,6 @@ END LICENSE
 					</div>
 					<script type="application/x.jsapi#initialize">
 						scope.api = inonit.loader;
-						debugger;
 					</script>
 					<div jsapi:reference="getApi('../api.html').getElement('global/Loader/tests')"
 				</li>

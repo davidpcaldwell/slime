@@ -66,6 +66,9 @@ END LICENSE
 					<td><a href="../../loader/$api.api.html">$api</a></td>
 					<td>
 						JavaScript utilities
+						<script jsapi:id="$api" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../loader/$api.api.html"));
+						</script>
 						<!--	testing is covered by loader/api.html	-->
 					</td>
 				</tr>
@@ -73,7 +76,7 @@ END LICENSE
 					<td><a href="../../jsh/loader/loader.api.html">jsh.loader</a></td>
 					<td>
 						jsh loader
-						<script jsapi:id="loader" type="application/x.jsapi#tests">
+						<script jsapi:id="jsh.loader" type="application/x.jsapi#tests">
 							verify.suite($jsapi.loader.suite("../../jsh/loader/loader.api.html"));
 						</script>
 					</td>

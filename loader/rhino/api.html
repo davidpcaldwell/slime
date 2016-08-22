@@ -189,18 +189,36 @@ END LICENSE
 				</script>
 				<ul>
 					<li class="constructor" jsapi:reference="getApi('../api.html').getElement('global/mime/Type')">
-						<div class="name">Type</div>
+					</li>
+					<li class="function">
+						<div class="name">Type.java.URLConnection</div>
 						<span>__DESCRIPTION__</span>
 						<div class="arguments">
 							<div class="label">Arguments</div>
 							<ol>
+								<li class="object">
+									<div class="name">__NAME__</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">name</div>
+											<span class="type">string</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+									</ul>
+								</li>
 							</ol>
 						</div>
-						<div class="instances">
-							<div class="label">Instances</div>
+						<div class="returns">
+							<div class="label">Returns</div>
 							<span class="type">__TYPE__</span>
 							<span>__DESCRIPTION__</span>
 						</div>
+						<script type="application/x.jsapi#tests">
+							var xmlType = api.mime.Type.java.URLConnection({ name: "foo.xml" });
+							verify(xmlType).evaluate(function() { return this.is("application/xml"); }).is(true);
+						</script>
 					</li>
 				</ul>
 			</li>
@@ -379,11 +397,11 @@ END LICENSE
 						return $jsapi.loader.module("../" + path, context);
 					}
 				</script>
+				<div jsapi:reference="getApi('../api.html').getElement('types.Loader/tests')">
+				</div>
 				<script type="application/x.jsapi#initialize">
 					scope.api = jsh.$jsapi.$rhino;
 				</script>
-				<div jsapi:reference="getApi('../api.html').getElement('types.Loader/tests')">
-				</div>
 				<div jsapi:reference="getApi('../api.html').getElement('global/Loader/tests')">
 				</div>
 			</li>

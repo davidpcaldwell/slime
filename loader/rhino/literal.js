@@ -46,6 +46,11 @@
 			return was.Type.parse(String(_rv));
 		};
 
+		was.Type.java = {};
+		was.Type.java.URLConnection = function(p) {
+			return guess_URLConnection(p);
+		};
+
 		return was;
 	})(loader.mime);
 
