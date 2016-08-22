@@ -12,6 +12,7 @@
 //	END LICENSE
 
 var apis = [
+	"loader/$api.js",
 	"loader/browser/",
 	"loader/api/",
 	"loader/api/unit.js",

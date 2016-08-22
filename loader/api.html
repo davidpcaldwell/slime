@@ -429,93 +429,86 @@ END LICENSE
 					</li>
 				</ul>
 				<div jsapi:id="tests">
-					<script type="application/x.jsapi#initialize"><![CDATA[
-						if (scope.loadTestModule) {
-							var Tests = function(p) {
-								var a = function(scope) {
-									if (!scope.verify) throw new Error("No scope.verify; scope keys = " + Object.keys(scope));
-									if (!p.loadTestModule) throw new Error("No p.loadTestModule");
-									var module = scope.verify(p.loadTestModule("test/data/a/", {
-										d: 1970
-									}), "test/data/a");
-									module.a.is(3);
-									module.b.is(4);
-									module.c.is(5);
-									module.d.is(1970);
-									module.e.is(4);
-									module.f.is(6);
-									module.fThis.is("fThis");
-									module.mThis.is("mThis");
-									module.value.is(5);
-									module.vThis.thisName.is("vThis:4");
-								};
+					<script type="application/x.jsapi#tests"><![CDATA[
+						var Tests = function(p) {
+							var a = function(scope) {
+								if (!scope.verify) throw new Error("No scope.verify; scope keys = " + Object.keys(scope));
+								if (!p.loadTestModule) throw new Error("No p.loadTestModule");
+								var module = scope.verify(p.loadTestModule("test/data/a/", {
+									d: 1970
+								}), "test/data/a");
+								module.a.is(3);
+								module.b.is(4);
+								module.c.is(5);
+								module.d.is(1970);
+								module.e.is(4);
+								module.f.is(6);
+								module.fThis.is("fThis");
+								module.mThis.is("mThis");
+								module.value.is(5);
+								module.vThis.thisName.is("vThis:4");
+							};
 
-								var b = function(scope) {
-									var module = scope.verify(p.loadTestModule("test/data/b/", {
-									}), "test/data/b");
-									module.submodule.message.is("ititit");
-								}
+							var b = function(scope) {
+								var module = scope.verify(p.loadTestModule("test/data/b/", {
+								}), "test/data/b");
+								module.submodule.message.is("ititit");
+							}
 
-								var c = function(scope) {
-									var module = scope.verify(p.loadTestModule("test/data/c/main.js", {
-									}), "test/data/c/main");
-									module.value.is(13);
-									module.other.is(42);
-								};
+							var c = function(scope) {
+								var module = scope.verify(p.loadTestModule("test/data/c/main.js", {
+								}), "test/data/c/main");
+								module.value.is(13);
+								module.other.is(42);
+							};
 
-								var rhino = function(scope) {
-									var module = scope.verify(p.loadTestModule("rhino/test/data/1/", {
-									}), "rhino/test/data/1");
-									var $java = (function() {
-										if (this.jsh && this.jsh.java && this.jsh.java.getClass) return this.jsh.java.getClass("slime.Data");
-										try {
-											Packages.java.lang.Class.forName("slime.Data");
-											return true;
-										} catch (e) {
-											return false;
-										}
-									})();
-									if ($java) {
-										module.data.is("From Java");
-									} else {
-										module.data.is("No Java");
+							var rhino = function(scope) {
+								var module = scope.verify(p.loadTestModule("rhino/test/data/1/", {
+								}), "rhino/test/data/1");
+								var $java = (function() {
+									if (this.jsh && this.jsh.java && this.jsh.java.getClass) return this.jsh.java.getClass("slime.Data");
+									try {
+										Packages.java.lang.Class.forName("slime.Data");
+										return true;
+									} catch (e) {
+										return false;
 									}
-								};
-
-								var coffee = function(scope) {
-									//	TODO	for some reason these (at least sometimes) do not run in browser
-									if ($jsapi.loader.coffee) {
-										var loader = $jsapi.loader.module("test/data/coffee/loader.js");
-										var coffee = $jsapi.loader.module("test/data/coffee/module.coffee");
-										scope.verify(coffee,"coffee").a.is(2);
-										scope.verify(coffee,"coffee").file.b.is(3);
-										scope.verify(loader,"loader").file.b.is(3);
-										var file = $jsapi.loader.file("test/data/coffee/file.coffee");
-										scope.verify(file,"file").b.is(3);
-									} else {
-										scope.verify("No CoffeeScript").is("No CoffeeScript");
-									}
-								}
-
-								this.run = function(scope) {
-									a(scope);
-									b(scope);
-									c(scope);
-									rhino(scope);
-									coffee(scope);
+								})();
+								if ($java) {
+									module.data.is("From Java");
+								} else {
+									module.data.is("No Java");
 								}
 							};
-							scope.tests = new Tests(scope);
-						}
+
+							var coffee = function(scope) {
+								//	TODO	for some reason these (at least sometimes) do not run in browser
+								if ($jsapi.loader.coffee) {
+									var loader = $jsapi.loader.module("test/data/coffee/loader.js");
+									var coffee = $jsapi.loader.module("test/data/coffee/module.coffee");
+									scope.verify(coffee,"coffee").a.is(2);
+									scope.verify(coffee,"coffee").file.b.is(3);
+									scope.verify(loader,"loader").file.b.is(3);
+									var file = $jsapi.loader.file("test/data/coffee/file.coffee");
+									scope.verify(file,"file").b.is(3);
+								} else {
+									scope.verify("No CoffeeScript").is("No CoffeeScript");
+								}
+							}
+
+							this.run = function(scope) {
+								a(scope);
+								b(scope);
+								c(scope);
+								rhino(scope);
+								coffee(scope);
+							}
+						};
+						new Tests(scope).run({
+							test: test,
+							verify: verify
+						});
 					]]></script>
-					<script type="application/x.jsapi#tests">
-						if (scope.tests) {
-							scope.tests.run({
-								test: test,
-								verify: verify
-							});
-						}
-					</script>
 				</div>
 			</div>
 			<ul jsapi:id="global">
