@@ -379,6 +379,9 @@ END LICENSE
 						return $jsapi.loader.module("../" + path, context);
 					}
 				</script>
+				<script type="application/x.jsapi#initialize">
+					scope.api = jsh.$jsapi.$rhino;
+				</script>
 				<div jsapi:reference="getApi('../api.html').getElement('types.Loader/tests')">
 				</div>
 				<div jsapi:reference="getApi('../api.html').getElement('global/Loader/tests')">

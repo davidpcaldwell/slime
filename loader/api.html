@@ -847,31 +847,6 @@ END LICENSE
 					</ul>
 					<div jsapi:id="tests">
 						<script type="application/x.jsapi#initialize"><![CDATA[
-//							var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
-//								$slime: {
-//									getCode: function(path) {
-//										return $jsapi.loader.string(path);
-//									},
-//									getCoffeeScript: function() {
-//										return null;
-//									}
-//								},
-//								$engine: void(0)
-//							}) : null;
-//							scope.api = $exports;
-							if (!scope.api) {
-								scope.api = $jsapi.loader.eval("literal.js", {
-									$slime: {
-										getCode: function(path) {
-											return $jsapi.loader.string(path);
-										},
-										getCoffeeScript: function() {
-											return null;
-										}
-									},
-									$engine: void(0)
-								});
-							}
 							scope.Mock = function recurse() {
 								var contents = {};
 
@@ -923,43 +898,39 @@ END LICENSE
 							}
 						]]></script>
 						<script type="application/x.jsapi#tests">
-//							if (api) {
-								var loader = new api.Loader({
-									get: function(path) {
-										if (path == "a") {
-											return {
-												string: "a"
-											}
-										} else if (path == "b/c") {
-											return {
-												string: "c"
-											}
+							var loader = new api.Loader({
+								get: function(path) {
+									if (path == "a") {
+										return {
+											string: "a"
 										}
-									},
-									list: function(prefix) {
-										if (prefix == "b") return [ { path: "c", resource: true } ];
-										return [ { path: "a", resource: true }, { path: "b", loader: true } ]
+									} else if (path == "b/c") {
+										return {
+											string: "c"
+										}
 									}
-								});
-								var listing = loader.list({ descendants: function() { return true; } } );
-								verify(listing).length.is(3);
-								verify(listing)[0].path.length.is(1);
-								verify(listing)[0].path.is("a");
-								verify(listing)[1].path.is("b");
-								verify(listing)[2].path.is("b/c");
-//							}
+								},
+								list: function(prefix) {
+									if (prefix == "b") return [ { path: "c", resource: true } ];
+									return [ { path: "a", resource: true }, { path: "b", loader: true } ]
+								}
+							});
+							var listing = loader.list({ descendants: function() { return true; } } );
+							verify(listing).length.is(3);
+							verify(listing)[0].path.length.is(1);
+							verify(listing)[0].path.is("a");
+							verify(listing)[1].path.is("b");
+							verify(listing)[2].path.is("b/c");
 						</script>
 						<script type="application/x.jsapi#tests">
-//							if (api) {
-								var mock1 = new Mock();
-								mock1.add("a", "sa");
-								var mock2 = new Mock();
-								mock2.add("b/c", "sb/c");
-								var series = api.Loader.series([mock1.loader,mock2.loader]);
-								verify(series).get("foo").is(null);
-								verify(series).get("a").string.is("sa");
-								verify(series).get("b/c").string.is("sb/c");
-//							}
+							var mock1 = new Mock();
+							mock1.add("a", "sa");
+							var mock2 = new Mock();
+							mock2.add("b/c", "sb/c");
+							var series = api.Loader.series([mock1.loader,mock2.loader]);
+							verify(series).get("foo").is(null);
+							verify(series).get("a").string.is("sa");
+							verify(series).get("b/c").string.is("sb/c");
 						</script>
 					</div>
 				</li>
