@@ -199,7 +199,8 @@
 				})(p);
 			}
 			platform.Loader.apply(this,arguments);
-		}
+		};
+		Loader.series = platform.Loader.series;
 
 		var loader = new Loader("");
 

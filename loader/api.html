@@ -847,18 +847,31 @@ END LICENSE
 					</ul>
 					<div jsapi:id="tests">
 						<script type="application/x.jsapi#initialize"><![CDATA[
-							var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
-								$slime: {
-									getCode: function(path) {
-										return $jsapi.loader.string(path);
+//							var $exports = (this != this.window) ? $jsapi.loader.eval("literal.js", {
+//								$slime: {
+//									getCode: function(path) {
+//										return $jsapi.loader.string(path);
+//									},
+//									getCoffeeScript: function() {
+//										return null;
+//									}
+//								},
+//								$engine: void(0)
+//							}) : null;
+//							scope.api = $exports;
+							if (!scope.api) {
+								scope.api = $jsapi.loader.eval("literal.js", {
+									$slime: {
+										getCode: function(path) {
+											return $jsapi.loader.string(path);
+										},
+										getCoffeeScript: function() {
+											return null;
+										}
 									},
-									getCoffeeScript: function() {
-										return null;
-									}
-								},
-								$engine: void(0)
-							}) : null;
-							scope.api = $exports;
+									$engine: void(0)
+								});
+							}
 							scope.Mock = function recurse() {
 								var contents = {};
 
@@ -877,7 +890,7 @@ END LICENSE
 									}
 								}
 
-								this.loader = new $exports.Loader({
+								this.loader = new api.Loader({
 									get: function(path) {
 										var tokens = path.split("/");
 										if (tokens.length == 1) {
