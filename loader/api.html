@@ -910,7 +910,7 @@ END LICENSE
 							}
 						]]></script>
 						<script type="application/x.jsapi#tests">
-							if (api) {
+//							if (api) {
 								var loader = new api.Loader({
 									get: function(path) {
 										if (path == "a") {
@@ -934,10 +934,10 @@ END LICENSE
 								verify(listing)[0].path.is("a");
 								verify(listing)[1].path.is("b");
 								verify(listing)[2].path.is("b/c");
-							}
+//							}
 						</script>
 						<script type="application/x.jsapi#tests">
-							if (api) {
+//							if (api) {
 								var mock1 = new Mock();
 								mock1.add("a", "sa");
 								var mock2 = new Mock();
@@ -946,7 +946,7 @@ END LICENSE
 								verify(series).get("foo").is(null);
 								verify(series).get("a").string.is("sa");
 								verify(series).get("b/c").string.is("sb/c");
-							}
+//							}
 						</script>
 					</div>
 				</li>
