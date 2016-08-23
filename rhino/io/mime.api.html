@@ -118,21 +118,12 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
+		<script type="application/x.jsapi#initialize">
+			scope.api = jsh.io;
+		</script>
+		<ul jsapi:reference="getApi('../../loader/rhino/api.html').getElement('mime/top')">
+		</ul>
 		<ul>
-			<li class="constructor" jsapi:reference="getApi('../../loader/rhino/api.html').getElement('mime')">
-				<div class="name">__NAME__</div>
-				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-					</ol>
-				</div>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-				</div>
-			</li>
 			<li class="constructor">
 				<div class="name">Multipart</div>
 				<span>Creates a <a href="api.html#types.Resource">Resource</a> representing a MIME multipart message.</span>

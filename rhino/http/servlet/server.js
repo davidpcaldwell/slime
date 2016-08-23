@@ -126,11 +126,25 @@ $exports.Servlet = function(delegate) {
 					//	Documented to accept loader/mime.api.html Type and string
 					_response.setContentType(String(response.body.type));
 				}
-				if (response.body && response.body.length) {
-					//	Documented to accept loader/mime.api.html Type and string
+				if (response.body && typeof(response.body.length) == "number") {
 					_response.setContentLength(String(response.body.length));
 				}
-				if (response.body && response.body.string && !response.body.stream && (!(response.body.read && response.body.read.binary))) {
+				if (response.body && response.body.modified instanceof Date) {
+					//	TODO	basically untested
+					_response.setDateHeader("Last-Modified", response.body.modified.getTime());
+					var ifModifiedSince = _request.getDateHeader("If-Modified-Since");
+					if (ifModifiedSince != -1) {
+						if (response.body.modified.getTime() <= ifModifiedSince) {
+							_response.setStatus(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_MODIFIED);
+							return;
+						}
+					}
+				}
+				if (response.body && response.body.read && response.body.read.binary) {
+					var _stream = response.body.read.binary().java.adapt();
+					_streams.copy(_stream,_response.getOutputStream());
+					_stream.close();
+				} else if (response.body && response.body.string && !response.body.stream && (!(response.body.read && response.body.read.binary))) {
 					//	Wrap in java.lang.String because Nashorn string type does not unambiguously match .write() signature
 					_response.getWriter().write(new Packages.java.lang.String(response.body.string));
 //				} else if (response.body && response.body.read && response.body.read.text) {
@@ -141,10 +155,6 @@ $exports.Servlet = function(delegate) {
 					_streams.copy(response.body.stream.java.adapt(),_response.getOutputStream());
 					//	TODO	next line may be redundant; should check Java API
 					response.body.stream.java.adapt().close();
-				} else if (response.body && response.body.read && response.body.read.binary) {
-					var _stream = response.body.read.binary().java.adapt();
-					_streams.copy(_stream,_response.getOutputStream());
-					_stream.close();
 				}
 			} else {
 				throw new TypeError("Servlet response is not of a known type.");

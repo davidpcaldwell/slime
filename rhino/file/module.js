@@ -185,7 +185,7 @@ $exports.Loader = function(p) {
 	}
 	if (arguments[0].directory || arguments[0].directory === null) {
 		if (!arguments[0].type) arguments[0].type = function(path) {
-			return $context.api.io.mime.Type.guess({ name: path });
+			return $context.api.io.mime.Type.fromName({ name: path });
 		}
 		p = arguments[0];
 		p.toString = function() {

@@ -187,7 +187,7 @@ END LICENSE
 				<script type="application/x.jsapi#initialize">
 					scope.api = jsh.$jsapi.$rhino;
 				</script>
-				<ul>
+				<ul jsapi:id="top">
 					<li class="constructor" jsapi:reference="getApi('../api.html').getElement('global/mime/Type')">
 					</li>
 					<li class="function">
@@ -216,7 +216,7 @@ END LICENSE
 							<span>__DESCRIPTION__</span>
 						</div>
 						<script type="application/x.jsapi#tests">
-							var xmlType = api.mime.Type.java.URLConnection({ name: "foo.xml" });
+							var xmlType = api.mime.Type.fromName({ name: "foo.xml" });
 							verify(xmlType).evaluate(function() { return this.is("application/xml"); }).is(true);
 						</script>
 					</li>
@@ -235,8 +235,8 @@ END LICENSE
 					<span>See <a href="io.api.html">detailed documentation</a>.</span>
 				</div>
 			</li>
-			<li class="constructor">
-				<div class="type">
+			<li jsapi:id="Loader" class="constructor">
+				<div jsapi:id="type" class="type">
 					<a class="type" name="types.Loader">Loader</a>
 					<span class="type">supports SLIME <a href="../api.html#types.Loader">Loader</a></span>
 					<!--	TODO	not actually a separate type; tests should be collapsed into Loader constructor	-->
@@ -271,30 +271,35 @@ END LICENSE
 						</li>
 					</ul>
 					-->
-					<script type="application/x.jsapi#tests">
-						var $rhino = jsh.$jsapi.$rhino;
-						verify($rhino,"$rhino").is.type("object");
-						verify($rhino).evaluate.property("Loader").is.type("function");
-						var tmpdir = $jsapi.file.newTemporaryDirectory();
-						tmpdir.getRelativePath("dir").createDirectory();
-						tmpdir.getRelativePath("file").write("contents", { append: false });
-						tmpdir.getRelativePath("dir/under").write("inside", { append: false });
+					<div jsapi:id="tests">
+						<script type="application/x.jsapi#tests">
+							var $rhino = jsh.$jsapi.$rhino;
+							verify($rhino,"$rhino").is.type("object");
+							verify($rhino).evaluate.property("Loader").is.type("function");
+							var tmpdir = $jsapi.file.newTemporaryDirectory();
+							tmpdir.getRelativePath("dir").createDirectory();
+							tmpdir.getRelativePath("file").write("contents", { append: false });
+							tmpdir.getRelativePath("dir/under").write("inside", { append: false });
 
-						var _source = Packages.inonit.script.engine.Code.Source.create(tmpdir.pathname.java.adapt());
-						var loader = new $rhino.Loader({
-							_source: _source
-						});
-						verify(loader).get("file").is.not(null);
-						verify(loader).get("dir/under").is.not(null);
-						verify(loader).get("foo").is(null);
-						verify(loader).evaluate.property("list").is.type("function");
+							var _source = Packages.inonit.script.engine.Code.Source.create(tmpdir.pathname.java.adapt());
+							var loader = new $rhino.Loader({
+								_source: _source
+							});
+							verify(loader).get("file").is.not(null);
+							var file = loader.get("file");
+							verify(file).modified.is.type("object");
+							verify(file).modified.evaluate(function() { return this instanceof Date; }).is(true);
+							verify(loader).get("dir/under").is.not(null);
+							verify(loader).get("foo").is(null);
+							verify(loader).evaluate.property("list").is.type("function");
 
-						var list = loader.list();
-						verify(loader).list().length.is(2);
-						var child = new loader.Child("dir/");
-						verify(child).evaluate.property("list").is.type("function");
-						verify(child).list().length.is(1);
-					</script>
+							var list = loader.list();
+							verify(loader).list().length.is(2);
+							var child = new loader.Child("dir/");
+							verify(child).evaluate.property("list").is.type("function");
+							verify(child).list().length.is(1);
+						</script>
+					</div>
 				</div>
 				<div class="name"><a name="exports.Loader">Loader</a></div>
 				<div>

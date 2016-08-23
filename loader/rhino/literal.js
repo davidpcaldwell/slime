@@ -46,10 +46,18 @@
 			return was.Type.parse(String(_rv));
 		};
 
-		was.Type.java = {};
-		was.Type.java.URLConnection = function(p) {
-			return guess_URLConnection(p);
-		};
+		was.Type.fromName = (function(was) {
+			var rv = function(p) {
+				var rv = was.apply(this,arguments);
+				if (typeof(rv) != "undefined") return rv;
+				rv = guess_URLConnection(p);
+				return rv;
+			};
+			rv.slime = was;
+			rv.java = {};
+			rv.java.URLConnection = guess_URLConnection;
+			return rv;
+		})(was.Type.fromName);
 
 		return was;
 	})(loader.mime);
@@ -87,7 +95,7 @@
 			loader.io.Resource.call(this,parameter);
 			this.name = String(_file.getSourceName());
 			var _modified = _file.getLastModified();
-			if (_modified) this.modified = _modified.getTime();
+			if (_modified) this.modified = new Date( Number(_modified.getTime()) );
 		}
 
 		var rv = function(p) {

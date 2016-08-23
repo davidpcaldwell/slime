@@ -18,7 +18,24 @@ window.onload = function() {
 		return element.getAttribute("jsapi:" + name);
 	}
 
-	var Markup = function Markup(base) {
+	var getBase = function(url) {
+		return url.split("/").slice(0,-1).join("/") + "/";
+	}
+
+	var canonicalize = function(base,relative) {
+		var tokens = (base + relative).split("/");
+		var elements = [];
+		for (var i=0; i<tokens.length; i++) {
+			if (tokens[i] == "..") {
+				elements.splice(elements.length-1,1);
+			} else {
+				elements.push(tokens[i]);
+			}
+		}
+		return elements.join("/");
+	}
+
+	var Markup = function Markup(c) {
 		var getDescendants = function(under,filter) {
 			var rv = [];
 			var all = under.getElementsByTagName("*");
@@ -31,7 +48,7 @@ window.onload = function() {
 		}
 
 		var getElements = function(filter) {
-			return getDescendants(base,filter);
+			return getDescendants(c.node,filter);
 		}
 
 		var fixFunctionDivs = function(className,heading) {
@@ -142,29 +159,33 @@ window.onload = function() {
 			});
 			for (var i=0; i<references.length; i++) {
 				var code = references[i].getAttribute("jsapi:reference");
-				var getApi = function(path) {
+				var getApi = function(relative) {
 					var xhr = new XMLHttpRequest();
-					xhr.open("GET", path, false);
+					xhr.open("GET", c.base + relative, false);
 					xhr.send(null);
 					var dom = document.implementation.createHTMLDocument("title");
 					dom.documentElement.innerHTML = xhr.responseText;
-					console.log("Response to " + path + " is " + dom);
+					console.log("Response to " + relative + " is " + dom);
 					return {
 						getElement: function(path) {
-							var base = dom.documentElement;
+							var node = dom.documentElement;
 							var tokens = path.split("/");
 							for (var i=0; i<tokens.length; i++) {
-								base = getNamedChild(base,tokens[i]);
-								if (!base) break;
+								node = getNamedChild(node,tokens[i]);
+								if (!node) break;
 							}
-							return base;
+							var base = getBase(canonicalize(c.base,relative));
+							return {
+								base: base,
+								node: node
+							};
 						}
 					}
 				};
 				var found = eval(code);
 				console.log("Found",found);
-				references[i].innerHTML = found.innerHTML;
-				new Markup(references[i]).fix();
+				references[i].innerHTML = found.node.innerHTML;
+				new Markup({ node: references[i], base: found.base }).fix();
 			}
 		}
 
@@ -178,5 +199,5 @@ window.onload = function() {
 		}
 	};
 
-	new Markup(document).fix();
+	new Markup({ node: document, base: getBase(window.location.href) }).fix();
 }

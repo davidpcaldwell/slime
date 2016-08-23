@@ -73,6 +73,14 @@ END LICENSE
 				verify(api).length.is.not.equalTo(null);
 				verify(api).length.is.type("number");
 			</script>
+			<script type="application/x.jsapi#tests">
+				var api = loader.get("api.html");
+				verify(api).type.evaluate(function() { return this.is("text/html") }).is(true);
+			</script>
+			<script type="application/x.jsapi#tests">
+				var api = loader.get("api.html");
+				verify(api).modified.is.type("object");
+			</script>
 		</li>
 	</ul>
 </body>
