@@ -112,14 +112,15 @@ END LICENSE
 		</div>
 		<div class="type">
 			<a class="type" name="types.response">response</a>
-			<span>A response to be sent to a client in response to a request.</span>
+			<p>A response to be sent to a client in response to a request.</p>
+			<p>
+				The content of the body must be specified in some way. Using a resource causes the type and content to be
+				specified; note that using a Java <a href="../../../loader/rhino/api.html#types.resource">resource</a>
+				automatically provides other capabilities (<code>Last-Modified</code> and <code>Content-Length</code>
+				headers).
+			</p>
 			<div class="type">
 				<a class="type" name="types.body">body</a>
-				<span>
-					The body must specify its content in some way; either a
-					<code>string</code> property specifying the content as a string or a <code>stream</code> property from
-					which the content can be read must be present.
-				</span>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
@@ -137,7 +138,10 @@ END LICENSE
 					<li class="value">
 						<div class="name">stream</div>
 						<span class="type"><a href="../../../rhino/io/api.html#types.binput">binary input stream</a></span>
-						<span>(optional) A stream from which the message body to send to the client may be read.</span>
+						<span>
+							(optional; ignored if <code>string</code> is present)
+							A stream from which the message body to send to the client may be read.
+						</span>
 					</li>
 				</ul>
 			</div>
@@ -162,7 +166,9 @@ END LICENSE
 				</li>
 				<li class="value">
 					<div class="name">body</div>
-					<span class="type"><a href="../../io/api.html#types.Resource">Resource</a></span>
+					<span class="type">
+						<a href="../../../loader/api.html#types.Loader.resource">resource</a>
+					</span>
 					-or-
 					<span class="type"><a href="#types.body">body</a></span>
 					<span>

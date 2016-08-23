@@ -144,13 +144,14 @@ $exports.Servlet = function(delegate) {
 					var _stream = response.body.read.binary().java.adapt();
 					_streams.copy(_stream,_response.getOutputStream());
 					_stream.close();
-				} else if (response.body && response.body.string && !response.body.stream && (!(response.body.read && response.body.read.binary))) {
-					//	Wrap in java.lang.String because Nashorn string type does not unambiguously match .write() signature
-					_response.getWriter().write(new Packages.java.lang.String(response.body.string));
 //				} else if (response.body && response.body.read && response.body.read.text) {
 //					var _stream = response.body.read.text().java.adapt();
 //					_streams.copy(_stream, _response.getWriter());
 //					_stream.close();
+				//	TODO	Not sure whether this if-else chain could open stream multiple times
+				} else if (response.body && !response.body.stream && response.body.string) {
+					//	Wrap in java.lang.String because Nashorn string type does not unambiguously match .write() signature
+					_response.getWriter().write(new Packages.java.lang.String(response.body.string));
 				} else if (response.body && response.body.stream) {
 					_streams.copy(response.body.stream.java.adapt(),_response.getOutputStream());
 					//	TODO	next line may be redundant; should check Java API
