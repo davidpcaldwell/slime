@@ -275,6 +275,29 @@ END LICENSE
 					</li>
 				</ul>
 			</li>
+			<li class="constructor">
+				<div class="name">Form</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var one = new module.Form({
+						query: "foo=bar&a=b"
+					});
+					verify(one).controls[0].name.is("foo");
+					verify(one).controls[0].value.is("bar");
+					verify(one).controls[1].name.is("a");
+					verify(one).controls[1].value.is("b");
+				</script>
+			</li>
 		</ul>
 	</div>
 </body>

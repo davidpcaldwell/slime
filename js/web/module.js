@@ -161,3 +161,19 @@ $exports.Url.query.parse = function(string) {
 		});
 	})(string);
 };
+
+$exports.Form = function(p) {
+	var controls;
+
+	if (p.query) {
+		controls = p.query.split("&").map(function(control) {
+			var tokens = control.split("=");
+			return {
+				name: $context.escaper.decode(tokens[0]),
+				value: $context.escaper.decode(tokens[1])
+			};
+		});
+	}
+
+	this.controls = controls;
+};
