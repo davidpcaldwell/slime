@@ -290,12 +290,18 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					var one = new module.Form({
-						query: "foo=bar&a=b"
+						urlencoded: "foo=bar&a=b"
 					});
 					verify(one).controls[0].name.is("foo");
 					verify(one).controls[0].value.is("bar");
 					verify(one).controls[1].name.is("a");
 					verify(one).controls[1].value.is("b");
+
+					var controls = [{ name: "foo", value: "baz" }, { name: "c", value: "d" }];
+					var two = new module.Form({
+						controls: controls
+					});
+					verify(two).getUrlencoded().is("foo=baz&c=d");
 				]]></script>
 			</li>
 		</ul>

@@ -165,15 +165,23 @@ $exports.Url.query.parse = function(string) {
 $exports.Form = function(p) {
 	var controls;
 
-	if (p.query) {
-		controls = p.query.split("&").map(function(control) {
+	if (p.urlencoded) {
+		controls = p.urlencoded.split("&").map(function(control) {
 			var tokens = control.split("=");
 			return {
 				name: $context.escaper.decode(tokens[0]),
 				value: $context.escaper.decode(tokens[1])
 			};
 		});
+	} else if (p.controls && p.controls instanceof Array) {
+		controls = p.controls;
 	}
 
 	this.controls = controls;
+
+	this.getUrlencoded = function() {
+		return controls.map(function(item) {
+			return $context.escaper.encode(item.name) + "=" + $context.escaper.encode(item.value);
+		}).join("&");
+	}
 };

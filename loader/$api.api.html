@@ -453,6 +453,24 @@ END LICENSE
 				<li class="object">
 					<div class="name">Object</div>
 					<span>__DESCRIPTION__</span>
+					<div class="type">
+						<a class="type" name="types.property">property</a>
+						<span>__DESCRIPTION__</span>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">name</div>
+								<span class="type">string</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">value</div>
+								<span class="type">(any)</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+						</ul>
+					</div>
+
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
@@ -476,6 +494,24 @@ END LICENSE
 								};
 								verify(api.Object.property.call(test,"name","length")).is("value".length);
 							</script>
+						</li>
+						<li class="function">
+							<div class="name">properties</div>
+							<span>Returns the list of properties for an object.</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">Array of <a href="#types.property">property</a></span>
+								<span>__DESCRIPTION__</span>
+							</div>
 						</li>
 					</ul>
 				</li>

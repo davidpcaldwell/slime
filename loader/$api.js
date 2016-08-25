@@ -512,6 +512,19 @@
 		}
 		return rv;
 	};
+	$exports.Object.properties = function(o) {
+		//	Returns an array consisting of:
+		//	name:
+		//	value:
+		//		See http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1 property accessors
+		//		Name 'value' comes because these are defined in terms of [[GetValue]]
+		var rv = [];
+		for (var x in o) {
+			//	TODO	could use Object.defineProperty to defer evaluation of o[x]
+			rv.push({ name: x, value: o[x] });
+		}
+		return rv;
+	};
 
 	$exports.Value = function(v,name) {
 		return new function() {
