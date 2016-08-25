@@ -288,7 +288,7 @@ END LICENSE
 					<span class="type">__TYPE__</span>
 					<span>__DESCRIPTION__</span>
 				</div>
-				<script type="application/x.jsapi#tests">
+				<script type="application/x.jsapi#tests"><![CDATA[
 					var one = new module.Form({
 						query: "foo=bar&a=b"
 					});
@@ -296,7 +296,7 @@ END LICENSE
 					verify(one).controls[0].value.is("bar");
 					verify(one).controls[1].name.is("a");
 					verify(one).controls[1].value.is("b");
-				</script>
+				]]></script>
 			</li>
 		</ul>
 	</div>
