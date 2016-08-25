@@ -311,6 +311,12 @@
 			}
 			return true;
 		}
+	};
+	$exports.Filter.not = function(f) {
+		return function(v) {
+			var b = Boolean(f(v));
+			return !b;
+		}
 	}
 
 	$exports.Method = {};
