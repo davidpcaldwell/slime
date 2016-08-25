@@ -450,7 +450,7 @@ END LICENSE
 						verify(abc2.c).is(3);
 					</script>
 				</li>
-				<li class="object">
+				<li class="function">
 					<div class="name">Object</div>
 					<span>__DESCRIPTION__</span>
 					<div class="type">
@@ -471,6 +471,33 @@ END LICENSE
 						</ul>
 					</div>
 
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">properties</div>
+										<span class="type">Array of <a href="#types.property">property</a></span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var properties = [{ name: "foo", value: "bar" }, { name: "a", value: "b" }];
+						var object = api.Object({ properties: properties });
+						verify(object).foo.is("bar");
+						verify(object).a.is("b");
+					</script>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">

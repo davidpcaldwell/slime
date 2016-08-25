@@ -504,7 +504,15 @@
 //			if (typeof(this.arguments[p.index]) != "string") throw new TypeError(reference + " must be a string, not " + typeof(this.arguments[p.index]));
 //		};
 //	};
-	$exports.Object = {};
+	$exports.Object = function(p) {
+		var rv = {};
+		if (p.properties) {
+			for (var i=0; i<p.properties.length; i++) {
+				rv[p.properties[i].name] = p.properties[i].value;
+			}
+		}
+		return rv;
+	};
 	$exports.Object.property = function() {
 		var rv = this;
 		for (var i=0; i<arguments.length; i++) {

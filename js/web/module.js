@@ -163,6 +163,7 @@ $exports.Url.query.parse = function(string) {
 };
 
 $exports.Form = function(p) {
+	//	See https://www.w3.org/TR/REC-html40/interact/forms.html#h-17.13.4
 	var controls;
 
 	if (p.urlencoded) {
