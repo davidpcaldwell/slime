@@ -87,8 +87,9 @@ plugin({
 				var api = {
 					js: jsh.js,
 					java: jsh.java,
-					io: jsh.io
-				}
+					io: jsh.io,
+					web: jsh.js.web
+				};
 				var server = $loader.module("server.js", {
 					api: api
 				});

@@ -83,10 +83,37 @@ END LICENSE
 						HTTP server environments, this path does not contain a leading <code>/</code>.
 					</span>
 				</li>
-				<li class="value">
+				<li class="object">
+					<div class="name">query</div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">string</div>
+							<span class="type">string</span>
+							<span>The query string of the requested URL.</span>
+						</li>
+						<li class="function">
+							<div class="name">form</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">Array of <a href="#types.pair">pair</a></span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</li>
+				<li class="value deprecated">
 					<div class="name">parameters</div>
 					<span class="type">Array of <a href="#types.pair">pair</a></span>
 					<span>
+						<strong>Replaced by <code>query.form()</code></strong>
 						The query string parameters provided as part of this request. Note that these parameters do <em>not</em>
 						include form data provided as part of a <code>POST</code> request.
 					</span>
@@ -109,6 +136,68 @@ END LICENSE
 					</ul>
 				</li>
 			</ul>
+			<script type="application/x.jsapi#tests"><![CDATA[
+				var echo = function(request) {
+					var response = {
+						source: {
+							ip: request.source.ip
+						},
+						method: request.method,
+						path: request.path
+					};
+					if (request.query) {
+						response.query = {
+							string: request.query.string,
+							form: request.query.form()
+						}
+					}
+					return {
+						status: { code: 200 },
+						body: {
+							type: "application/json",
+							string: JSON.stringify(response,void(0),"\t")
+						}
+					};
+				};
+
+				if (jsh.httpd.Tomcat) {
+					var server = new jsh.httpd.Tomcat();
+					server.map({
+						path: "",
+						servlets: {
+							"/*": {
+								load: function(scope) {
+									scope.$exports.handle = echo;
+								}
+							}
+						}
+					});
+					server.start();
+
+					try {
+						var client = new jsh.http.Client();
+						var response = client.request({
+							url: "http://127.0.0.1:" + server.port + "/aPath?aName=aValue",
+							evaluate: function(response) {
+								if (response.status.code != 200) {
+									throw new Error("Response code: " + response.status.code);
+								}
+								return JSON.parse(response.body.stream.character().asString());
+							}
+						});
+						verify(response).source.ip.is("127.0.0.1");
+						verify(response).method.is("GET");
+						verify(response).path.is("aPath");
+						verify(response).query.string.is("aName=aValue");
+						verify(response).query.form[0].name.is("aName");
+						verify(response).query.form[0].value.is("aValue");
+					} catch (e) {
+						throw e;
+					} finally {
+						server.stop();
+					}
+				}
+			]]></script>
 		</div>
 		<div class="type">
 			<a class="type" name="types.response">response</a>

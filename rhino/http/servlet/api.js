@@ -78,7 +78,6 @@ var bootstrap = (function() {
 		rv.js = loader.module("WEB-INF/slime/js/object/", {
 			globals: true
 		});
-		rv.js.web = loader.module("WEB-INF/slime/js/web/", loader.file("WEB-INF/slime/js/web/context.java.js"));
 		rv.java = loader.module("WEB-INF/slime/rhino/host/", {
 			globals: true,
 			$rhino: $loader,
@@ -98,6 +97,9 @@ var bootstrap = (function() {
 				java: rv.java
 			}
 		});
+		var web = loader.module("WEB-INF/slime/js/web/", loader.file("WEB-INF/slime/js/web/context.java.js"));
+		rv.js.web = web;
+		rv.web = web;
 		rv.loader = {
 			paths: function(prefix) {
 				return $servlet.getResourcePaths(prefix);
