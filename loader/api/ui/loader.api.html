@@ -1,0 +1,62 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the SLIME loader infrastructure.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>SLIME browser testing loader</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../../loader/api/api.js"></script>
+	</head>
+	<body>
+		<div>
+			Can be loaded via:
+			<div><code>var ui = new inonit.loader.Loader(inonit.loader.base).value("api/ui/loader.js")();</code></div>
+			<div>
+				which would yield <code>ui.api</code>, <code>ui.unit</code>, and <code>ui.suite</code> (see below).
+			</div>
+		</div>
+		<div>
+			<h1>Exports</h1>
+			<ul>
+				<li class="value">
+					<div class="name">api</div>
+					<span class="type"><a href="../unit.api.html">SLIME unit test API</a></span>
+					<span></span>
+				</li>
+				<li class="value">
+					<div class="name">unit</div>
+					<span class="type"><a href="../../../loader/browser/test/api.html">SLIME browser testing API</a></span>
+					<span></span>
+				</li>
+				<li class="function">
+					<div class="name">suite</div>
+					<span>
+						Sets the given suite to be the unit testing target suite, and if <code>unit.run</code> is part of the
+						query string, executes it.
+					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="value">
+								<span class="type"><a href="../unit.api.html#types.Suite">Suite</a></span>
+								<span>A suite to run.</span>
+							</li>
+						</ol>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>
