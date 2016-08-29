@@ -742,8 +742,10 @@ $exports.Scenario = {};
 			var c = context;
 			if (!next) {
 				return part.after(vscope.success,local);
-			} else {
+			} else if (!part.find("next")) {
 				next(part.after(vscope.success,local));
+			} else {
+				part.find("next")(next);
 			}
 		}
 
@@ -840,7 +842,7 @@ $exports.Scenario = {};
 					}
 				}
 			}
-			return part.after(success,scope);
+			if (!next) return part.after(success,scope);
 		}
 
 		this.scenario = $api.deprecate(function(id,p) {

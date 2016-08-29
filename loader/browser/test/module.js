@@ -111,7 +111,7 @@ var Set = function(p) {
 
 	var proceed = function() {
 		evaluateTests(index-1);
-		fire(next);
+		fire();
 	}
 
 	var fire = function() {
@@ -243,6 +243,16 @@ var global = new function() {
 			suite.run({},function(success) {
 				console.log("success = " + success);
 				_callbacks.end(success);
+				//	TODO	this should not have to be hacked in manually
+				_callbacks.event({
+					type: "scenario",
+					detail: {
+						end: true,
+						success: success
+					},
+					path: [],
+					timestamp: new Date()
+				});
 				//	Stop asynchronous events from being delivered
 				window.XMLHttpRequest.asynchrony.next(null);
 			});

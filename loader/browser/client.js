@@ -196,7 +196,7 @@
 							return { name: path, path: prefix+path, string: code };
 						}
 					}
-				})(p);
+				})(canonicalize(p));
 			}
 			platform.Loader.apply(this,arguments);
 		};

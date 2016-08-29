@@ -90,6 +90,7 @@ $set(function() {
                     };
 
                     this.end = function(b) {
+                        debugger;
                     }
                 })
             };
