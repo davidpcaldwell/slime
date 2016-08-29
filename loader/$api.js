@@ -303,6 +303,9 @@
 	};
 	$exports.Filter.and = function() {
 		var functions = arguments;
+		for (var i=0; i<functions.length; i++) {
+			if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
+		}
 		return function() {
 			for (var i=0; i<functions.length; i++) {
 				if (!functions[i].apply(this,arguments)) {
@@ -310,6 +313,12 @@
 				}
 			}
 			return true;
+		}
+	};
+	$exports.Filter.not = function(f) {
+		return function(v) {
+			var b = Boolean(f(v));
+			return !b;
 		}
 	}
 
