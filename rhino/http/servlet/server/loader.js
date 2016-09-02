@@ -90,7 +90,7 @@ $exports.Handler.HostRedirect = function(p) {
 	var redirect = function(url,parameters) {
 		//	TODO	this is terrible, ignores parameters
 		return {
-			status: { code: 307 },
+			status: { code: 301 },
 			headers: [
 				{ name: "Location", value: url.toString() }
 			]
