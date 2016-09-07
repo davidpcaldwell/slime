@@ -82,16 +82,15 @@ public abstract class Filesystem {
 			}
 			return s;
 		}
-
-		public final String canonicalize(String string, String separator) {
-			String was = string;
+		
+		private java.util.ArrayList<String> tokens(String string, String separator) {
 			java.util.ArrayList<String> rv = new java.util.ArrayList<String>();
-			while(string.length() > 0) {
+			while(string != null) {
 				int index = string.indexOf(separator);
 				String token;
 				if (index == -1) {
 					token = string;
-					string = "";
+					string = null;
 				} else {
 					token = string.substring(0,index);
 					string = string.substring(index+1);
@@ -105,29 +104,16 @@ public abstract class Filesystem {
 					rv.add(token);
 				}
 			}
-			String s = "";
-			for (int i=0; i<rv.size(); i++) {
-				if (i > 0) s += separator;
-				s += rv.get(i);
-			}
-//			System.err.println("was = " + was + " now = " + s);
-			return s;
+			return rv;
+		}
+
+		public final String canonicalize(String string, String separator) {
+			java.util.ArrayList<String> tokens = tokens(string,separator);
+			return join(tokens,separator);
 		}
 
 		public final String getParentPath(String string, String separator) {
-			java.util.ArrayList<String> tokens = new java.util.ArrayList<String>();
-			while(string.length() > 0) {
-				int index = string.indexOf(separator);
-				String token;
-				if (index == -1) {
-					token = string;
-					string = "";
-				} else {
-					token = string.substring(0,index);
-					string = string.substring(index+1);
-				}
-				tokens.add(token);
-			}
+			java.util.ArrayList<String> tokens = tokens(string,separator);
 			tokens.remove(tokens.size()-1);
 			if (tokens.size() == 1) {
 				if (separator.equals("/")) {

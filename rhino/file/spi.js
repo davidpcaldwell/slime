@@ -41,7 +41,6 @@ $exports.getParentPath = function(path,separator) {
 	}
 };
 
-
 if (true && typeof(Packages.inonit.script.runtime.io.Filesystem.Optimizations) == "function") {
 	var _spi = Packages.inonit.script.runtime.io.Filesystem.Optimizations.INSTANCE;
 	$exports.canonicalize = function(string,separator) {
