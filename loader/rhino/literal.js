@@ -36,7 +36,10 @@
 				return null;
 			}
 		}
-		return eval(String($javahost.getLoaderCode("literal.js")));
+		return $javahost.script("[slime]/loader/literal.js",String($javahost.getLoaderCode("literal.js")),{
+			$engine: $engine,
+			$slime: $slime
+		},null);
 	})();
 
 	loader.mime = (function(was) {

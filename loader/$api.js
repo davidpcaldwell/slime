@@ -14,7 +14,7 @@
 	var $exports = {};
 
 	var flag = function() {
-		var rv = function(object,property) {
+		var rv = function flagger(object,property) {
 			var reason = arguments.callee;
 
 			var warning = function(o) {
@@ -150,7 +150,7 @@
 				};
 			}
 
-			return function(){}();
+			return void(0);
 		}
 		return rv;
 	}

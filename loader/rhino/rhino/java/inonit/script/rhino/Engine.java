@@ -1126,6 +1126,7 @@ public class Engine {
 					//	and we cannot set a separate scope that acts as the provider of scope variables and 'this' object that will be set for a particular
 					//	script. Our API specifies, however, that we can do this. So we do a source-level transformation to make it possible.
 					if (compile) {
+						//	TODO	this does not seem to work if a target is supplied; seems to return null
 						return script.exec(context, scope);
 					} else {
 						return context.evaluateString(scope, code, id, 1, null);

@@ -26,9 +26,9 @@
 			$exports.execute = (function() {
 				if (typeof($engine) != "undefined" && $engine.execute) return $engine.execute;
 				return function(/*script,scope,target*/) {
-					(function() {
+					return (function() {
 						with( arguments[1] ) {
-							eval(arguments[0]);
+							return eval(arguments[0]);
 						}
 					}).call(
 						arguments[2],
@@ -90,7 +90,7 @@
 			return $exports;
 		})();
 
-		var $api = eval($slime.getCode("$api.js"));
+		var $api = $platform.execute({ name: "[slime]/loader/$api.js", code: $slime.getCode("$api.js") }, { $platform: $platform, $slime: $slime }, null);
 
 		var $coffee = (function() {
 			var coffeeScript = $slime.getCoffeeScript();
