@@ -25,8 +25,11 @@ END LICENSE
 		<div jsapi:id="top">
 			<script type="application/x.jsapi#initialize">
 				var $slime = {
-					getCode: function(path) {
-						return $jsapi.loader.string(path);
+					getLoaderScript: function(path) {
+						return {
+							name: path,
+							code: $jsapi.loader.string(path)
+						}
 					}
 				};
 				scope.api = $jsapi.loader.eval("$api.js", { $platform: $platform, $slime: $slime });

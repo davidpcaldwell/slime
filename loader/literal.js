@@ -90,7 +90,7 @@
 			return $exports;
 		})();
 
-		var $api = $platform.execute({ name: "[slime]/loader/$api.js", code: $slime.getCode("$api.js") }, { $platform: $platform, $slime: $slime }, null);
+		var $api = $platform.execute( $slime.getLoaderScript("$api.js"), { $platform: $platform, $slime: $slime }, null);
 
 		var $coffee = (function() {
 			var coffeeScript = $slime.getCoffeeScript();

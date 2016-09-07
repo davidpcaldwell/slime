@@ -626,9 +626,11 @@
 		return rv;
 	};
 
+	//	TODO	probably can do better than using eval() here now
 	$exports.threads = (function($context) {
 		var $exports = {};
-		eval($slime.getCode("threads.js"));
+		$platform.execute($slime.getLoaderScript("threads.js"), { $context: $context, $exports: $exports }, null);
+//		eval($slime.getLoaderScript("threads.js").code);
 		return $exports;
 	})($exports);
 
