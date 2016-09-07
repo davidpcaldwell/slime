@@ -42,11 +42,13 @@ var Zone = function(peer) {
 		calendar.set(Calendar.MILLISECOND, milliseconds);
 		return Number(calendar.getTimeInMillis());
 	}
-}
+};
 
-for (var i=0; i<jstrings.length; i++) {
-	$exports.zones[String(jstrings[i])] = new Zone(TimeZone.getTimeZone(jstrings[i]));
-}
+(function createZones() {
+	for (var i=0; i<jstrings.length; i++) {
+		$exports.zones[String(jstrings[i])] = new Zone(TimeZone.getTimeZone(jstrings[i]));
+	}
+})();
 
 $exports.java = {
 	TimeZone: TimeZone,

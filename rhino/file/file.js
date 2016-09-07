@@ -93,7 +93,7 @@ var Pathname = function Pathname(parameters) {
 	var write = function(dataOrType,mode) {
 		if (!mode) mode = {};
 
-		var prepareWrite = function(mode) {
+		var prepareWrite = function prepareWrite(mode) {
 			$api.deprecate(mode,"overwrite");
 			//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
 			//			create it, but not one where we are willing to create its directory but not parent directories.  Is that OK?
@@ -200,7 +200,7 @@ var Pathname = function Pathname(parameters) {
 		}
 	}
 
-	var Node = function(pathname,prefix,_peer) {
+	var Node = function Node(pathname,prefix,_peer) {
 		if (!_peer) {
 			_peer = peer;
 		}
@@ -387,17 +387,12 @@ var Pathname = function Pathname(parameters) {
 		this.directory = null;
 	}
 
-	var File = function(pathname,peer) {
+	var File = function File(pathname,peer) {
 		Node.call(this,pathname,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
 		this.directory = false;
 
-		var length = pathname.java.adapt().length();
-		if (typeof(length) == "object") {
-			//	Nashorn treats it as object
-			length = Number(String(length));
-		}
-		var resource = new $context.Resource({
+		var rdata = {
 			read: {
 				binary: function() {
 					return $filesystem.read.binary(peer);
@@ -405,9 +400,19 @@ var Pathname = function Pathname(parameters) {
 				text: function() {
 					return $filesystem.read.character(peer);
 				}
-			},
-			length: length
+			}
+		};
+		Object.defineProperty(rdata,"length",{
+			get: function() {
+				var length = pathname.java.adapt().length();
+				if (typeof(length) == "object") {
+					//	Nashorn treats it as object
+					length = Number(String(length));
+				}
+				return length;
+			}
 		});
+		var resource = new $context.Resource(rdata);
 
 		this.resource = resource;
 

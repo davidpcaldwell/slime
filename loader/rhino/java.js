@@ -48,7 +48,7 @@ $exports.isJavaType = function(javaclass) {
 		}
 	}
 
-	var $isJavaType = function(javaclass,object) {
+	var $isJavaType = function isJavaType(javaclass,object) {
 		var className = getJavaClassName(javaclass);
 		if (className == null) throw new TypeError("Not a class: " + javaclass);
 		if (!isJavaObject(object)) return false;
