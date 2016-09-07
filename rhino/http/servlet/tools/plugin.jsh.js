@@ -60,7 +60,7 @@ plugin({
 			if (!SLIME) {
 				SLIME = jsh.shell.jsh.home.getSubdirectory("src");
 			}
-			(function() {
+			(function compileSlimeCodeToWebapp() {
 				var SERVLET = SLIME.getSubdirectory("rhino/http/servlet");
 				//	Compile the servlet to WEB-INF/classes
 				var classpath = jsh.file.Searchpath([]);
@@ -112,7 +112,7 @@ plugin({
 				});
 			})();
 
-			(function() {
+			(function copySlimeCodeToWebapp() {
 				SLIME.getSubdirectory("loader").list().forEach(function(node) {
 					//	TODO	dangerous as we move more code into the loader; was just literal.js and api.js
 					if (!node.directory) {

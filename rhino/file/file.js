@@ -23,15 +23,16 @@ var firstDefined = function(object/*, names */) {
 	return function(){}();
 }
 
-var Pathname = function(parameters) {
+var Pathname = function Pathname(parameters) {
 	if (!parameters) {
 		fail("Missing argument to new Pathname()");
 	}
 
-	$api.deprecate(parameters,"$filesystem");
-	$api.deprecate(parameters,"$path");
-	$api.deprecate(parameters,"$peer");
-	$api.deprecate(parameters,"path");
+	//	Removing these deprecated properties significantly improves performance under Rhino when dealing with many files
+//	$api.deprecate(parameters,"$filesystem");
+//	$api.deprecate(parameters,"$path");
+//	$api.deprecate(parameters,"$peer");
+//	$api.deprecate(parameters,"path");
 
 	var $filesystem = firstDefined(parameters,"filesystem","$filesystem");
 	if (!$filesystem.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
