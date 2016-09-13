@@ -1,0 +1,158 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+The Original Code is the rhino/shell SLIME module.
+
+The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>jsh browsers</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="../../../loader/api/api.js"></script>
+	</head>
+	<body>
+		<div>
+			The browsers API is currently implemented as a <code>jsh</code> plugin, and must be loaded manually in other
+			environments.
+		</div>
+		<div>
+			<h1>Context</h1>
+			<ul>
+			</ul>
+		</div>
+		<script type="application/x.jsapi#initialize">
+			if (jsh.httpd) {
+				scope.api = $jsapi.loader.module("module.js", {
+					api: {
+						httpd: jsh.httpd
+					}
+				});
+			}
+		</script>
+		<div>
+			<h1>Exports</h1>
+			<ul>
+				<li class="constructor">
+					<div class="name">Proxy</div>
+					<span>Creates a <dfn>proxy auto-config file</dfn>.</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">code</div>
+										<span class="type">string</span>
+										<span>
+											(optional)
+											JavaScript code specifying a
+											<a href="https://web.archive.org/web/20070602031929/http://wp.netscape.com/eng/mozilla/2.0/relnotes/demo/proxy-live.html">proxy auto-config file</a>.
+										</span>
+									</li>
+									<li class="value">
+										<div class="name">port</div>
+										<span class="type">number</span>
+										<span>
+											(optional; required if <code>code</code> is unspecified)
+											Indicates that a <code>.pac</code> file should be generated that proxies all traffic
+											to the given port on localhost.
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<div class="label">has properties:</div>
+						<ul>
+							<li class="value">
+								<div class="name">code</div>
+								<span class="type">string</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="value">
+								<div class="name">response</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</li>
+							<li class="constructor">
+								<div class="name">Server</div>
+								<span>Creates a server that will serve the proxy auto-config file.</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+									</ol>
+								</div>
+								<div class="instances">
+									<div class="label">Instances</div>
+									<span class="type">__TYPE__</span>
+									<span>__DESCRIPTION__</span>
+									<ul>
+										<li class="function">
+											<div class="name">start</div>
+											<span>Starts the server.</span>
+										</li>
+										<li class="function">
+											<div class="name">stop</div>
+											<span>Stops the server.</span>
+										</li>
+										<li class="value">
+											<div class="name">url</div>
+											<span class="type">__TYPE__</span>
+											<span>The URL from which the proxy auto-config file will be served.</span>
+										</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<script type="application/x.jsapi#tests">
+						if (api) {
+							var port = jsh.ip.tcp.getEphemeralPortNumber();
+							verify(port,"port").is(port); // this is just explication for the tests
+							var proxy = new api.ProxyConfiguration.Server({ port: port });
+							proxy.start();
+							var client = new jsh.http.Client();
+							var response = client.request({
+								url: proxy.url,
+								evaluate: function(response) {
+									return { string: response.body.stream.character().asString() };
+								}
+							});
+							verify(response).string.is.type("string");
+							verify(response).string.is(response.string);
+							verify(response).evaluate(function() { return this.string.indexOf(String(port)) }).is.not(-1);
+							proxy.stop();
+
+							var code = $jsapi.loader.get("proxy.pac.js").read(String);
+							var pacProxy = new api.ProxyConfiguration({ pac: code });
+							var server = new pacProxy.Server();
+							server.start();
+							var servedCode = client.request({
+								url: server.url,
+								evaluate: function(response) {
+									return { string: response.body.stream.character().asString() };
+								}
+							});
+							verify(servedCode).string.is(code);
+							verify(pacProxy).code.is(code);
+							server.stop();
+						}
+					</script>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>
