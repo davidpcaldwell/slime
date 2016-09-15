@@ -17,6 +17,11 @@ var Chrome = function(b) {
 	}
 
 	this.User = function(u) {
+		//	This Stack Overflow question:
+		//	http://superuser.com/questions/240522/how-can-i-use-a-proxy-in-a-single-chrome-profile
+		//
+		//	... seems to indicate that proxy settings are per-user rather than (for example) per-profile. Did not attempt to
+		//	verify this but going to rely on it for the API.
 		var Data = function(p) {
 			var read = function(path) {
 				return eval("(" + p.base.getFile(path).read(String) + ")");
@@ -47,8 +52,15 @@ var Chrome = function(b) {
 			}
 		};
 
+		var pacserver;
+
 		var addProfileArguments = function(args,m) {
 			if (u.directory) args.push("--user-data-dir=" + u.directory);
+			if (u.proxy) {
+				pacserver = new u.proxy.Server();
+				pacserver.start();
+				args.push("--proxy-pac-url=" + pacserver.url);
+			}
 			if (m.profile) args.push("--profile-directory=" + m.profile);
 			if (m.incognito) args.push("--incognito");
 		};
@@ -200,6 +212,9 @@ var Chrome = function(b) {
 			});
 			if (m.on && m.on.close) {
 				m.on.close.call(m);
+			}
+			if (pacserver) {
+				pacserver.stop();
 			}
 		}
 
