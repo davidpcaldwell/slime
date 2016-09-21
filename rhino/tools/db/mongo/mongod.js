@@ -34,12 +34,36 @@ $exports.Server = function(p) {
 		options.push("-dbpath", p.dbpath.pathname.toString());
 	}
 	var daemon;
+	var started = false;
+	var lock = new jsh.java.Thread.Monitor();
 
 	jsh.java.Thread.start({
 		call: function() {
-			jsh.shell.shell({
+			jsh.shell.run({
 				command: $context.install.getFile("bin/mongod"),
 				arguments: options,
+				stdio: {
+					output: {
+						line: function(s) {
+							jsh.shell.console("[mongo:stdout] " + s);
+							if (/\[initandlisten\] waiting for connections/.test(s)) {
+								new lock.Waiter({
+									until: function() {
+										return true;
+									},
+									then: function() {
+										started = true;
+									}
+								})();
+							}
+						}
+					},
+					error: {
+						line: function(s) {
+							jsh.shell.console("[mongo:stderr] " + s);
+						}
+					}
+				},
 				on: {
 					start: function(process) {
 						daemon = process;
@@ -48,6 +72,14 @@ $exports.Server = function(p) {
 			});
 		}
 	});
+
+	new lock.Waiter({
+		until: function() {
+			return started;
+		},
+		then: function() {
+		}
+	})();
 
 	this.stop = function() {
 		daemon.kill();

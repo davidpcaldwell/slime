@@ -45,8 +45,7 @@ END LICENSE
 				var data = $jsapi.file.newTemporaryDirectory();
 				jsh.shell.echo("Mongo install at " + $jsapi.environment.mongo.install + " starting on port " + port + " with dbpath " + data);
 				scope.mongod = new server.Server({ port: port, dbpath: data });
-				//	TODO	want to get rid of this; need to do some thread synchronization in the daemon implementation
-				Packages.java.lang.Thread.sleep(5000);
+				jsh.shell.console("Mongo started.");
 				scope.port = port;
 			} else {
 				jsh.shell.echo("No Mongo install: $jsapi.environment keys = " + Object.keys($jsapi.environment));
