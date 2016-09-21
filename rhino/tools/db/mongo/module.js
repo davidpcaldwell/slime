@@ -138,19 +138,19 @@ var Collection = function(_db,name) {
 	}
 };
 
-//	Corresponds to the Mongo shell db object
+//	Corresponds to the Mongo shell 'db' object
 //	TODO	Mongo shell also allows db.<collection name> but we would need a custom host object to do that consistently
 //	TODO	as partial solution for the above, could iterate over names on connection and only reflect local changes to names
 var Database = function(_db) {
 	this.name = String(_db.getName());
 
-	this.collections = function() {
+	this.getCollectionNames = function() {
 		var _names = _db.getCollectionNames();
 		var rv = [];
 		var _iterator = _names.iterator();
 		while(_iterator.hasNext()) {
 			rv.push(
-				new Collection(_db,String(_iterator.next()))
+				String(_iterator.next())
 			);
 		}
 		return rv;

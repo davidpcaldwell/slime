@@ -134,24 +134,33 @@ END LICENSE
 						//	Collection need not exist in order to be retrieved
 						var collection = db.getCollection("collection");
 						verify(collection).is.type("object");
-						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(false);
+
+						var hasCollectionNamed = function(name) {
+							var rv = function() {
+								return this.getCollectionNames().indexOf(name) != -1;
+							}
+							rv.toString = function() { return "hasCollectionNamed(" + name + ")"; };
+							return rv;
+						};
+
+						verify(db).evaluate(hasCollectionNamed("collection")).is(false);
 
 						var created = db.createCollection("collection");
 						verify(created).is.type("object");
-						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(false);
+						verify(db).evaluate(hasCollectionNamed("collection")).is(false);
 
 						var again = db.createCollection("collection");
 						verify(again).is.type("object");
-						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(false);
+						verify(db).evaluate(hasCollectionNamed("collection")).is(false);
 
 						//	Querying a collection does not create it
 						var count = db.getCollection("collection").count();
 						verify(count).is(0);
-						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(false);
+						verify(db).evaluate(hasCollectionNamed("collection")).is(false);
 
 						//	Inserting a document into a collection creates it
 						db.getCollection("collection").insert({ foo: "bar" });
-						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(true);
+						verify(db).evaluate(hasCollectionNamed("collection")).is(true);
 					</script>
 				</li>
 			</ul>
