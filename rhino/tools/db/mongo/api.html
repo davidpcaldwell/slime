@@ -15,10 +15,10 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
+	<title>Mongo driver</title>
 	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-	<link rel="stylesheet" type="text/css" href="../../slime/loader/api/api.css" />
-	<script src="../../slime/loader/api/api.js"></script>
+	<link rel="stylesheet" type="text/css" href="../../../../loader/api/api.css" />
+	<script src="../../../../loader/api/api.js"></script>
 </head>
 <body>
 	<div>__DESCRIPTION__</div>
@@ -39,20 +39,57 @@ END LICENSE
 	<div>
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			if ($jsapi.environment.mongo && $jsapi.environment.mongo.install) {
-				var port = $jsapi.loader.module("../../slime/rhino/ip/").tcp.getEphemeralPortNumber();
+				var port = jsh.loader.module(jsh.shell.jsh.src.getRelativePath("rhino/ip/")).tcp.getEphemeralPortNumber();
+				jsh.shell.console("install = " + $jsapi.environment.mongo.install);
 				var server = $jsapi.loader.module("mongod.js", { install: jsh.file.Pathname($jsapi.environment.mongo.install).directory });
 				var data = $jsapi.file.newTemporaryDirectory();
 				jsh.shell.echo("Mongo install at " + $jsapi.environment.mongo.install + " starting on port " + port + " with dbpath " + data);
 				scope.mongod = new server.Server({ port: port, dbpath: data });
 				//	TODO	want to get rid of this; need to do some thread synchronization in the daemon implementation
 				Packages.java.lang.Thread.sleep(5000);
+				scope.port = port;
 			} else {
 				jsh.shell.echo("No Mongo install: $jsapi.environment keys = " + Object.keys($jsapi.environment));
 				if ($jsapi.environment.mongo) {
 					jsh.shell.echo("install=" + $jsapi.environment.mongo.install);
 				}
 			}
+			var api = $jsapi.loader.module("module.js", {
+				api: {
+					java: jsh.java
+				}
+			});
+			scope.api = api;
+
+			scope.arrayHasObjectNamed = function(name) {
+				var rv = function() {
+					for (var i=0; i<this.length; i++) {
+						if (this[i].name == name) return true;
+					}
+					return false;
+				}
+				rv.toString = function() { return "arrayHasObjectNamed(" + name + ")"; }
+				return rv;
+			};
 		]]></script>
+		<div class="type">
+			<a class="type" name="types.address">address</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="value">
+					<div class="name">host</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+				<li class="value">
+					<div class="name">port</div>
+					<span class="type">number</span>
+					<span>__DESCRIPTION__</span>
+				</li>
+			</ul>
+		</div>
+
 		<div class="type">
 			<a class="type" name="types.cursor">cursor</a>
 			<span>__DESCRIPTION__</span>
@@ -67,8 +104,150 @@ END LICENSE
 			<ul>
 			</ul>
 		</div>
+		<div class="type">
+			<script type="application/x.jsapi#initialize">
+				var client = new api.Client({
+					host: "127.0.0.1",
+					port: port
+				});
+				scope.db = client.connect({
+					database: "slime"
+				});
+			</script>
+			<a class="type" name="types.database">database</a>
+			<span>__DESCRIPTION__</span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">createCollection</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						//	Collection need not exist in order to be retrieved
+						var collection = db.getCollection("collection");
+						verify(collection).is.type("object");
+						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(false);
+
+						var created = db.createCollection("collection");
+						verify(created).is.type("object");
+						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(false);
+
+						var again = db.createCollection("collection");
+						verify(again).is.type("object");
+						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(false);
+
+						//	Querying a collection does not create it
+						var count = db.getCollection("collection").count();
+						verify(count).is(0);
+						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(false);
+
+						//	Inserting a document into a collection creates it
+						db.getCollection("collection").insert({ foo: "bar" });
+						verify(db).collections().evaluate(arrayHasObjectNamed("collection")).is(true);
+					</script>
+				</li>
+			</ul>
+			<script type="application/x.jsapi#destroy">
+				scope.db.dropDatabase();
+			</script>
+		</div>
+
 		<h1>Exports</h1>
 		<ul>
+			<li class="constructor">
+				<div class="name">Client</div>
+				<span>__DESCRIPTION__</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="#types.address">address</a></span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ol>
+				</div>
+				<div class="instances">
+					<div class="label">Instances</div>
+					<span class="type">__TYPE__</span>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">databases</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">Array of <a href="#types.database">database</a></span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+						<li class="function">
+							<div class="name">connect</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="object">
+										<span>__DESCRIPTION__</span>
+										<div class="label">has properties:</div>
+										<ul>
+											<li class="value">
+												<div class="name">database</div>
+												<span class="type">string</span>
+												<span>__DESCRIPTION__</span>
+											</li>
+										</ul>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type"><a href="#types.database">database</a></span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					var client = new api.Client({
+						host: "127.0.0.1",
+						port: port
+					});
+					verify(client).is.type("object");
+
+					verify(client).databases().evaluate(arrayHasObjectNamed("slime")).is(false);
+
+					//	You can "connect" to a database that does not exist
+					var db = client.connect({
+						database: "slime"
+					});
+					verify(db).is.type("object");
+					//	But that does not make it exist
+					verify(client).databases().evaluate(arrayHasObjectNamed("slime")).is(false);
+
+					//	Even creating a collection inside it does not cause it to exist
+					var bar = db.createCollection("bar");
+					verify(client).databases().evaluate(arrayHasObjectNamed("slime")).is(false);
+
+					//	Issuing a query, even though it does not write, creates the database
+					var x = bar.count();
+					verify(client).databases().evaluate(arrayHasObjectNamed("slime")).is(true);
+				]]></script>
+			</li>
 		</ul>
 		<script type="application/x.jsapi#destroy">
 			if (scope.mongod) {
@@ -76,6 +255,42 @@ END LICENSE
 				mongod.stop();
 				jsh.shell.echo("Stopped.");
 			}
+		</script>
+		<script type="application/x.jsapi#tests">
+//	OLD version below
+//var parameters = jsh.script.getopts({
+//	options: {
+//		install: jsh.file.Pathname
+//	}
+//})
+//
+//jsh.loader.plugins(jsh.script.file.parent.pathname);
+//
+//var MONGO = parameters.options.mongo.directory;
+//
+//var mongod = jsh.script.loader.file("mongod.js", {
+//	install: MONGO
+//});
+//
+//var _socket = new Packages.java.net.ServerSocket(0);
+//var port = _socket.getLocalPort();
+//_socket.close();
+//jsh.shell.echo("port = " + port);
+//var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+//var mongod = new mongod.Server({
+//	port: port,
+//	dbpath: TMP
+//});
+//jsh.shell.echo("Waiting 15s...");
+//try {
+//	Packages.java.lang.Thread.sleep(15000);
+//} catch (e) {
+//	jsh.shell.echo("Caught: " + e);
+//}
+//jsh.shell.echo("Killing mongod ...");
+//mongod.stop();
+//jsh.shell.echo("Killed.");
+//debugger;
 		</script>
 	</div>
 </body>

@@ -12,6 +12,7 @@
 //	END LICENSE
 
 var _wrap = function(o) {
+	if (!o) return null;
 	var _rv = new Packages.com.mongodb.BasicDBObject();
 	for (var x in o) {
 		if (typeof(o[x]) != "undefined") {
@@ -99,6 +100,8 @@ var Cursor = function(_collection,criteria,projection) {
 };
 
 var Collection = function(_db,name) {
+	this.name = name;
+
 	this.find = function(criteria,projection) {
 		return new Cursor(_db.getCollection(name),criteria,projection);
 	};
@@ -139,12 +142,25 @@ var Collection = function(_db,name) {
 //	TODO	Mongo shell also allows db.<collection name> but we would need a custom host object to do that consistently
 //	TODO	as partial solution for the above, could iterate over names on connection and only reflect local changes to names
 var Database = function(_db) {
+	this.name = String(_db.getName());
+
+	this.collections = function() {
+		var _names = _db.getCollectionNames();
+		var rv = [];
+		var _iterator = _names.iterator();
+		while(_iterator.hasNext()) {
+			rv.push(
+				new Collection(_db,String(_iterator.next()))
+			);
+		}
+		return rv;
+	}
+
 	this.getCollection = function(name) {
 		return new Collection(_db,name);
 	};
 
 	this.createCollection = function(name,options) {
-		if (arguments.length < 2) options = {};
 		_db.createCollection(name,_wrap(options));
 		return new Collection(_db,name);
 	}
@@ -189,6 +205,17 @@ $exports.Client = function(p) {
 	var mongoClient = new Packages.com.mongodb.MongoClient(_argument, _options.build());
 
 	return new function() {
+		this.databases = function() {
+			var _names = mongoClient.getDatabaseNames();
+			var rv = [];
+			for (var i=0; i<_names.size(); i++) {
+				rv.push(
+					new Database( mongoClient.getDB(_names.get(i)) )
+				);
+			}
+			return rv;
+		};
+
 		this.connect = function(p) {
 			if (p.database) {
 				var _db = mongoClient.getDB(p.database);
