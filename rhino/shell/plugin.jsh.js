@@ -26,7 +26,8 @@ plugin({
 					parseFile: function(file) {
 						return new jsh.document.Document({ string: file.read(String) });
 					}
-				}
+				},
+				httpd: jsh.httpd
 			},
 			_properties: $jsh.getSystemProperties(),
 			_environment: $jsh.getEnvironment()
@@ -76,18 +77,18 @@ plugin({
 	}
 });
 
-plugin({
-	isReady: function() {
-		return jsh.httpd;
-	},
-	load: function() {
-		var api = $loader.module("browser/module.js", {
-			api: {
-				httpd: jsh.httpd
-			}
-		});
-		for (var x in api) {
-			jsh.shell.browser[x] = api[x];
-		}
-	}
-});
+//plugin({
+//	isReady: function() {
+//		return jsh.httpd;
+//	},
+//	load: function() {
+//		var api = $loader.module("browser/module.js", {
+//			api: {
+//				httpd: jsh.httpd
+//			}
+//		});
+//		for (var x in api) {
+//			jsh.shell.browser[x] = api[x];
+//		}
+//	}
+//});

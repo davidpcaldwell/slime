@@ -123,7 +123,7 @@ var Chrome = function(b) {
 			var disableGpu = (function() {
 				if (typeof(m.disableGpu) != "undefined") return m.disableGpu;
 				//	TODO	document this
-				return jsh.shell.environment.JSH_HOST_RHINO_SHELL_BROWSERS_CHROME_DISABLE_GPU;
+				return $context.environment.JSH_HOST_RHINO_SHELL_BROWSERS_CHROME_DISABLE_GPU;
 			})();
 			if (disableGpu) {
 				args.push("--disable-gpu");

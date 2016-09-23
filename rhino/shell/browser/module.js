@@ -11,6 +11,9 @@
 //	Contributor(s):
 //	END LICENSE
 
+//	TODO	tighten dependencies?
+$exports.chrome = $loader.file("chrome.js", $context).chrome;
+
 $exports.ProxyConfiguration = function(o) {
 	var pac = (function() {
 		if (o && o.code) return o.code;
@@ -30,7 +33,7 @@ $exports.ProxyConfiguration = function(o) {
 	return {
 		Server: function() {
 			//	TODO	should allow omission of empty argument
-			var pacserver = new jsh.httpd.Tomcat({});
+			var pacserver = new $context.api.httpd.Tomcat({});
 			var url = "http://127.0.0.1:" + pacserver.port + "/proxy.pac";
 			pacserver.map({
 				path: "/",

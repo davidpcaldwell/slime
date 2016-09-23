@@ -15,15 +15,14 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
-		<title>jsh browsers</title>
-		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<title>SLIME browser control</title>
 		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
 		<script src="../../../loader/api/api.js"></script>
 	</head>
 	<body>
 		<div>
-			The browsers API is currently implemented as a <code>jsh</code> plugin, and must be loaded manually in other
-			environments.
+			The browser control API allows the control of (currently) the Chrome browser, as well as providing other
+			browser-related constructs.
 		</div>
 		<div>
 			<h1>Context</h1>
@@ -34,8 +33,14 @@ END LICENSE
 			if (jsh.httpd) {
 				scope.api = $jsapi.loader.module("module.js", {
 					api: {
-						httpd: jsh.httpd
-					}
+						httpd: jsh.httpd,
+						file: jsh.file,
+						js: jsh.js
+					},
+					os: {
+						name: jsh.shell.os.name
+					},
+					HOME: jsh.shell.HOME
 				});
 			}
 		</script>
