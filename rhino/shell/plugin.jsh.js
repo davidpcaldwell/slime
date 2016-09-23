@@ -26,8 +26,7 @@ plugin({
 					parseFile: function(file) {
 						return new jsh.document.Document({ string: file.read(String) });
 					}
-				},
-				httpd: jsh.httpd
+				}
 			},
 			_properties: $jsh.getSystemProperties(),
 			_environment: $jsh.getEnvironment()
@@ -76,3 +75,12 @@ plugin({
 		jsh.shell = $shell;
 	}
 });
+
+plugin({
+	isReady: function() {
+		return jsh.shell && jsh.httpd;
+	},
+	load: function() {
+		jsh.shell.browser.inject({ httpd: jsh.httpd });
+	}
+})

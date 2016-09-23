@@ -11,6 +11,10 @@
 //	Contributor(s):
 //	END LICENSE
 
+$exports.inject = function(p) {
+	$context.api.httpd = p.httpd;
+}
+
 //	TODO	tighten dependencies?
 $exports.chrome = $loader.file("chrome.js", $context).chrome;
 
