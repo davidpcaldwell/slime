@@ -46,6 +46,81 @@ END LICENSE
 		</script>
 		<div>
 			<h1>Exports</h1>
+			<div class="type">
+				<a class="type" name="types.Chrome">Chrome</a>
+				<span>A Google Chrome installation.</span>
+				<div class="type">
+					<a class="type" name="types.Chrome.Instance">Instance</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">run</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<div class="name">uri</div>
+										<span class="type">string</span>
+										<span>The URI of a page to open.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Instance</div>
+						<span>
+							A Chrome instance, consisting of the Chrome software and a user data directory.
+							Note that this is not a user <em>profile</em>; a user 
+							directory <strong>contains</strong> user profiles.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>Configuration information for the instance to create.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">directory</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">proxy</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<!--	Undocumented / used internally: 'install' property	-->
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type"><a href="#types.Chrome.Instance">Instance</a></span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="value">
+						<div class="name">instance</div>
+						<span class="type">__TYPE__</span>
+						<span>The default Chrome instance.</span>
+					</li>
+				</ul>
+			</div>
+
 			<ul>
 				<li class="constructor">
 					<div class="name">ProxyConfiguration</div>
@@ -156,6 +231,14 @@ END LICENSE
 							server.stop();
 						}
 					</script>
+				</li>
+				<li class="value">
+					<div class="name">chrome</div>
+					<span class="type"><a href="#types.Chrome">Chrome</a></span>
+					<span>
+						(conditional)
+						The Google Chrome browser installed at the default location (currently on Mac OS X and Linux).
+					</span>
 				</li>
 			</ul>
 		</div>
