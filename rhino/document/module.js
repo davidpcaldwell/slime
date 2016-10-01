@@ -137,6 +137,15 @@ $exports.Document.Html = function(p) {
 	}
 	return new $exports.Document(parameter);
 };
+Object.defineProperty(
+	$exports.Document.Html,
+	"$reload",
+	{
+		value: function() {
+			html.reload();
+		}
+	}
+);
 
 ["Doctype","Element","Text","Cdata","Comment","filter"].forEach(function(name) {
 	$exports[name] = $context.pure[name]
