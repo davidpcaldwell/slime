@@ -74,4 +74,13 @@ plugin({
 		);
 		jsh.shell = $shell;
 	}
+});
+
+plugin({
+	isReady: function() {
+		return jsh.shell && jsh.httpd;
+	},
+	load: function() {
+		jsh.shell.browser.inject({ httpd: jsh.httpd });
+	}
 })

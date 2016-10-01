@@ -14,7 +14,7 @@
 	var $exports = {};
 
 	var flag = function() {
-		var rv = function(object,property) {
+		var rv = function flagger(object,property) {
 			var reason = arguments.callee;
 
 			var warning = function(o) {
@@ -150,7 +150,7 @@
 				};
 			}
 
-			return function(){}();
+			return void(0);
 		}
 		return rv;
 	}
@@ -626,9 +626,11 @@
 		return rv;
 	};
 
+	//	TODO	probably can do better than using eval() here now
 	$exports.threads = (function($context) {
 		var $exports = {};
-		eval($slime.getCode("threads.js"));
+		$platform.execute($slime.getLoaderScript("threads.js"), { $context: $context, $exports: $exports }, null);
+//		eval($slime.getLoaderScript("threads.js").code);
 		return $exports;
 	})($exports);
 

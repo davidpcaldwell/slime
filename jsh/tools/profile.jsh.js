@@ -16,7 +16,8 @@ var parameters = jsh.script.getopts({
 		"profiler:javassist": jsh.file.Pathname,
 		"profiler:output": jsh.file.Pathname,
 		"profiler:exclude": jsh.script.getopts.ARRAY(String),
-		"profiler:built": false
+		"profiler:built": false,
+		"profiler:nobrowser": false
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
@@ -90,7 +91,7 @@ if (!parameters.options["profiler:built"]) {
 	});
 }
 
-if (parameters.options["profiler:output"] && jsh.shell.browser.chrome) {
+if (parameters.options["profiler:output"] && jsh.shell.browser.chrome && !parameters.options["profiler:nobrowser"]) {
 	jsh.shell.browser.chrome.user.open( { uri: String(parameters.options["profiler:output"].java.adapt().toURL().toExternalForm()) } );
 }
 

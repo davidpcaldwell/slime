@@ -75,16 +75,16 @@ END LICENSE
 					var withHidden = { is: "hey", evaluate: "dude" };
 					v(withHidden,"withHidden").evaluate.property("is").is("hey");
 					v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
-					
+
 					var methodThrows = {
 						method: function() {
 							throw new Error("Wrong again, knave!")
 						},
 						works: function() {
-							
+
 						}
 					};
-					
+
 					v(methodThrows).evaluate(function() { return this.method(); }).threw.type(Error);
 					v(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
 				</script>

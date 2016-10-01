@@ -93,27 +93,17 @@ $exports.FilesystemProvider = function(_peer) {
 
 	this.isRootPath = isRootPath;
 
-	this.getParent = function(peer) {
+	var newpath = function(path) {
+		return $context.spi.getParentPath(path,separators.pathname);
+	};
+
+	this.getParent = function getParent(peer) {
 		//	TODO	Skeptical of this implementation; had to make changes when implementing for HTTP filesystem
 		var path = String( peer.getScriptPath() );
 		if (this.isRootPath(path)) {
 			return null;
 		} else {
-			//	TODO	Factor these implementations out by filesystem
-			var newpath = function() {
-				var tokens = path.split(separators.pathname);
-				tokens.pop();
-				if (tokens.length == 1) {
-					if (separators.pathname == "/") {
-						return "/";
-					} else {
-						return tokens[0] + separators.pathname;
-					}
-				} else {
-					return tokens.join(separators.pathname);
-				}
-			}
-			return this.newPathname(newpath());
+			return this.newPathname(newpath(path));
 		}
 	}
 

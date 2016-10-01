@@ -165,8 +165,11 @@
 
 		var platform = (function() {
 			var $slime = {
-				getCode: function(path) {
-					return fetcher.getCode(bootstrap.getRelativePath(path));
+				getLoaderScript: function(path) {
+					return {
+						name: bootstrap.getRelativePath(path),
+						code: fetcher.getCode(bootstrap.getRelativePath(path))
+					}
 				},
 				getCoffeeScript: function() {
 					return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
@@ -196,7 +199,7 @@
 							return { name: path, path: prefix+path, string: code };
 						}
 					}
-				})(p);
+				})(canonicalize(p));
 			}
 			platform.Loader.apply(this,arguments);
 		};

@@ -71,6 +71,62 @@ public abstract class Filesystem {
 		return getLineSeparatorImpl();
 	}
 
+	public static class Optimizations {
+		public static Optimizations INSTANCE = new Optimizations();
+
+		private String join(java.util.List<String> rv, String separator) {
+			String s = "";
+			for (int i=0; i<rv.size(); i++) {
+				if (i > 0) s += separator;
+				s += rv.get(i);
+			}
+			return s;
+		}
+
+		private java.util.ArrayList<String> tokens(String string, String separator) {
+			java.util.ArrayList<String> rv = new java.util.ArrayList<String>();
+			while(string != null) {
+				int index = string.indexOf(separator);
+				String token;
+				if (index == -1) {
+					token = string;
+					string = null;
+				} else {
+					token = string.substring(0,index);
+					string = string.substring(index+1);
+				}
+				if (token.equals(".")) {
+					//	do nothing
+				} else if (token.equals("..")) {
+					//	what if rv.size() is 0
+					rv.remove(rv.size()-1);
+				} else {
+					rv.add(token);
+				}
+			}
+			return rv;
+		}
+
+		public final String canonicalize(String string, String separator) {
+			java.util.ArrayList<String> tokens = tokens(string,separator);
+			return join(tokens,separator);
+		}
+
+		public final String getParentPath(String string, String separator) {
+			java.util.ArrayList<String> tokens = tokens(string,separator);
+			tokens.remove(tokens.size()-1);
+			if (tokens.size() == 1) {
+				if (separator.equals("/")) {
+					return "/";
+				} else {
+					return tokens.get(0) + separator;
+				}
+			} else {
+				return join(tokens,separator);
+			}
+		}
+	}
+
 	public static abstract class Node {
 		public abstract String getScriptPath() throws IOException;
 		public abstract File getHostFile() throws IOException;

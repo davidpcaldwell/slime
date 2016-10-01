@@ -189,7 +189,8 @@ var Streams = new function() {
 			var isJavaType = $context.api.java.isJavaType;
 			var _r = (function() {
 				if (isJavaType(Packages.java.io.InputStream)(from)) return from;
-				if (from.java && from.java.adapt && isJavaType(Packages.java.io.InputStream)(from.java.adapt())) return from.java.adapt();
+				var adapt = (from.java && from.java.adapt) ? from.java.adapt() : null;
+				if (adapt && isJavaType(Packages.java.io.InputStream)(adapt)) return adapt;
 			})();
 			var _w = (function() {
 				if (isJavaType(Packages.java.io.OutputStream)(to)) return to;
@@ -226,7 +227,7 @@ var Streams = new function() {
 };
 
 //	TODO	probably should allow name property to be passed in and then passed through
-var Resource = function(p) {
+var Resource = function Resource(p) {
 	var binary = (function() {
 		if (p.read && p.read.binary) {
 			return function() {
@@ -248,10 +249,19 @@ var Resource = function(p) {
 		}
 	})();
 
-	if (p.type) {
+	if (p.hasOwnProperty("type")) {
 		//	TODO	may want to do some sort of "cast" here
-		this.type = p.type;
+		Object.defineProperty(this, "type", {
+			get: $api.Function.singleton(function() {
+				return p.type;
+			}),
+			enumerable: true
+		});
 	}
+
+//	if (p.type) {
+//		this.type = p.type;
+//	}
 
 	if (p.name) {
 		this.name = p.name;
@@ -328,23 +338,43 @@ var Resource = function(p) {
 		};
 	}
 
-	if (typeof(p.length) == "number") {
-		this.length = p.length;
-	} else if (typeof(p.length) == "undefined" && binary) {
-		Object.defineProperty(this, "length", {
-			get: function() {
-				//	TODO	use something from $api
-				if (!arguments.callee.called) {
-					arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
+	if (p.hasOwnProperty("length")) {
+		Object.defineProperty(this,"length",{
+			get: $api.Function.singleton(function() {
+				if (typeof(p.length) == "number") {
+					return p.length;
+				} else if (typeof(p.length) == "undefined" && binary) {
+					return _java.readBytes(binary().java.adapt()).length;
 				}
-				return arguments.callee.called.returns;
-			},
+			}),
+			enumerable: true
+		})
+	}
+//	if (typeof(p.length) == "number") {
+//		this.length = p.length;
+//	} else if (typeof(p.length) == "undefined" && binary) {
+//		Object.defineProperty(this, "length", {
+//			get: function() {
+//				//	TODO	use something from $api
+//				if (!arguments.callee.called) {
+//					arguments.callee.called = { returns: _java.readBytes(binary().java.adapt()).length };
+//				}
+//				return arguments.callee.called.returns;
+//			},
+//			enumerable: true
+//		});
+//	}
+
+//	if (typeof(p.modified) == "object") {
+//		this.modified = p.modified;
+//	}
+	if (p.hasOwnProperty("modified")) {
+		Object.defineProperty(this,"modified",{
+			get: $api.Function.singleton(function() {
+				return p.modified;
+			}),
 			enumerable: true
 		});
-	}
-
-	if (typeof(p.modified) == "object") {
-		this.modified = p.modified;
 	}
 
 	if (p.write) {

@@ -27,8 +27,11 @@
 			if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
 		})();
 		var $slime = {
-			getCode: function(path) {
-				return String($javahost.getLoaderCode(path));
+			getLoaderScript: function(path) {
+				return {
+					name: "[slime]/loader/" + path,
+					code: String($javahost.getLoaderCode(path))
+				};
 			},
 			getCoffeeScript: function(path) {
 				var _code = $javahost.getCoffeeScript();
@@ -36,7 +39,10 @@
 				return null;
 			}
 		}
-		return eval(String($javahost.getLoaderCode("literal.js")));
+		return $javahost.script("[slime]/loader/literal.js",String($javahost.getLoaderCode("literal.js")),{
+			$engine: $engine,
+			$slime: $slime
+		},null);
 	})();
 
 	loader.mime = (function(was) {

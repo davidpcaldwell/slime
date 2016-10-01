@@ -410,22 +410,19 @@ Object.defineProperty(
 	"browser",
 	{
 		get: $api.Function.singleton(function() {
-			var rv = {};
-			$loader.run("browsers.js", {
-				$context: {
-					os: $exports.os,
-					HOME: $exports.HOME,
-					TMPDIR: $exports.TMPDIR,
-					run: $exports.run,
-					api: {
-						js: $context.api.js,
-						java: $context.api.java,
-						file: $context.api.file
-					}
-				},
-				$exports: rv
+			return $loader.module("browser/module.js", {
+				os: $exports.os,
+				HOME: $exports.HOME,
+				TMPDIR: $exports.TMPDIR,
+				run: $exports.run,
+				environment: $exports.environment,
+				api: {
+					js: $context.api.js,
+					java: $context.api.java,
+					file: $context.api.file,
+					httpd: $context.api.httpd
+				}
 			});
-			return rv;
 		})
 	}
 );

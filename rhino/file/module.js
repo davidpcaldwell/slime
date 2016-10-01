@@ -192,15 +192,13 @@ $exports.Loader = function(p) {
 			return "rhino/file Loader: directory=" + p.directory;
 		};
 
-		var getFile = function(path) {
+		var getFile = function getFile(path) {
 			var file = p.directory.getFile(path);
 			//	TODO	could we modify this so that file supported Resource?
 			if (file) {
-				return new $context.$rhino.io.Resource({
+				var data = {
 					name: p.directory.toString() + path,
 					type: p.type(file),
-					length: file.resource.length,
-					modified: file.modified,
 					getInputStream: function() {
 						return file.read($context.api.io.Streams.binary).java.adapt();
 					},
@@ -209,7 +207,20 @@ $exports.Loader = function(p) {
 							return file.read($context.api.io.Streams.binary);
 						}
 					}
+				};
+				Object.defineProperty(data,"length",{
+					get: function() {
+						return file.resource.length;
+					}
 				});
+				Object.defineProperty(data,"modified",{
+					get: function() {
+						return file.modified;
+					}
+				});
+//					length: file.resource.length,
+//					modified: file.modified,
+				return new $context.$rhino.io.Resource(data);
 			}
 			return null;
 		}

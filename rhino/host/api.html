@@ -554,8 +554,11 @@ END LICENSE
 							var module = scope.module;
 							var $$api = $jsapi.loader.eval("../../loader/$api.js", {
 								$slime: {
-									getCode: function(path) {
-										return $jsapi.loader.string("../../loader/" + path);
+									getLoaderScript: function(path) {
+										return {
+											name: path,
+											code: $jsapi.loader.string("../../loader/" + path)
+										}
 									}
 								}
 							});

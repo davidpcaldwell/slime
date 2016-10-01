@@ -25,3 +25,28 @@ $exports.canonicalize = function(string,separator) {
 	}
 	return rv.join(separator);
 };
+
+//	TODO	Factor these implementations out by filesystem
+$exports.getParentPath = function(path,separator) {
+	var tokens = path.split(separator);
+	tokens.pop();
+	if (tokens.length == 1) {
+		if (separator == "/") {
+			return "/";
+		} else {
+			return tokens[0] + separator;
+		}
+	} else {
+		return tokens.join(separator);
+	}
+};
+
+if (true && typeof(Packages.inonit.script.runtime.io.Filesystem.Optimizations) == "function") {
+	var _spi = Packages.inonit.script.runtime.io.Filesystem.Optimizations.INSTANCE;
+	$exports.canonicalize = function(string,separator) {
+		return String(_spi.canonicalize(string,separator));
+	}
+	$exports.getParentPath = function(string,separator) {
+		return String(_spi.getParentPath(string,separator));
+	}
+}

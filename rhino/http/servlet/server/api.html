@@ -144,7 +144,7 @@ END LICENSE
 									path: "",
 									headers: new Headers("foo.com")
 								});
-								verify(response).status.code.is(307);
+								verify(response).status.code.is(301);
 								verify(response).headers[0].name.is("Location");
 								verify(response).headers[0].value.is("http://www.foo.com/");
 
@@ -153,7 +153,7 @@ END LICENSE
 									path: "foo",
 									headers: new Headers("foo.com")
 								});
-								verify(r2).status.code.is(307);
+								verify(r2).status.code.is(301);
 								verify(r2).headers[0].name.is("Location");
 								verify(r2).headers[0].value.is("http://www.foo.com/foo");
 							</script>

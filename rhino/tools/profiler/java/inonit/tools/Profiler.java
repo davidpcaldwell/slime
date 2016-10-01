@@ -428,6 +428,15 @@ public class Profiler {
 			return "\"" + literal + "\"";
 		}
 
+		private boolean isNashornScriptFunction(javassist.CtClass type) {
+			try {
+				javassist.CtClass sf = classes.get("jdk.nashorn.internal.runtime.ScriptFunction");
+				return type.subclassOf(sf);
+			} catch (javassist.NotFoundException e) {
+				return false;
+			}
+		}
+
 		public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, java.security.ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
 			if (protectionDomain == null) return null;
 			//	Remove other classes loaded by the agent, but if we make this capable of being loaded separately, this may need to
@@ -462,7 +471,8 @@ public class Profiler {
 								arguments = "(" + quote(b.getDeclaringClass().getName()) + "," + quote(b.getName()) + "," + quote(b.getSignature()) + "," + "$0" + ")";
 							}
 							if (b.getParameterTypes().length > 0) {
-								if (b.getParameterTypes()[0].subclassOf(classes.get("jdk.nashorn.internal.runtime.ScriptFunction"))) {
+//								if (b.getParameterTypes()[0].subclassOf(classes.get("jdk.nashorn.internal.runtime.ScriptFunction"))) {
+								if (isNashornScriptFunction(b.getParameterTypes()[0])) {
 									arguments = "($1.toString(), $1)";
 								}
 							}
