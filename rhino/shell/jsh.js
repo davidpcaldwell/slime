@@ -395,6 +395,8 @@ $exports.jsh = function(p) {
 //					}
 //				}
 
+				var specified = $exports.run.stdio(p);
+
 				var stdio = new JavaAdapter(
 					Packages.inonit.script.jsh.Shell.Environment.Stdio,
 					new function() {
@@ -406,7 +408,7 @@ $exports.jsh = function(p) {
 							return (value) ? value.java.adapt() : otherwise;
 						}
 
-						var stdio = (p.stdio) ? p.stdio : {};
+						var stdio = specified;
 
 						var _stdin = ifNonNull(Packages.java.io.InputStream, stream(stdio,"input"), Streams.Null.INPUT_STREAM);
 						var _stdout = ifNonNull(Packages.java.io.OutputStream, stream(stdio,"output"), Streams.Null.OUTPUT_STREAM);
