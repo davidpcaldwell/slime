@@ -49,6 +49,7 @@ window.addEventListener('load', function() {
 					}
 				};
 				var status = document.getElementById("status");
+				status.innerHTML = "";
 				var node = element;
 				//	TODO	the below heuristic may not be foolproof for all documents
 				while(node.tagName != "HTML") {

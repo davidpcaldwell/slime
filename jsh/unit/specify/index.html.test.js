@@ -534,6 +534,7 @@ selection.test({
 		var page = this;
 		verify(this).content.description.evaluate(this.isSelected).is(false);
 		verify(this).content.contextHeader.evaluate(this.isSelected).is(true);
+		verify(this).status.children.length.is(3);
 	}
 });
 
