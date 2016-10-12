@@ -41,7 +41,7 @@ document.body.insertBefore(suite, document.body.childNodes[0]);
 var styles = document.createElement("link");
 styles.setAttribute("rel", "stylesheet");
 styles.setAttribute("type", "text/css");
-styles.setAttribute("href", "../browser/ui.css");
+styles.setAttribute("href", "../../../loader/api/ui/ui.css");
 document.head.insertBefore(styles, null);
 
 $loader.run("loader/api/ui/webview.js", {}, {
@@ -491,12 +491,14 @@ selection.target(new function() {
 		this.exportsHeader = content.getElementsByTagName("h1")[1];
 	};
 
+	this.status = document.getElementById("status");
+	
 	var isSelected = function(element) {
 		//	TODO	DRY violation
 		var dummy = document.createElement("div");
 		dummy.style.backgroundColor = "#c0c0ff";
 		return element.style.backgroundColor == dummy.style.backgroundColor;
-	}
+	};
 
 	var target = this;
 
@@ -509,6 +511,7 @@ selection.test({
 		var page = this;
 		verify(this).content.description.innerHTML.is("__DESCRIPTION__");
 		verify(this).content.description.evaluate(this.isSelected).is(false);
+		verify(this).status.children.length.is(0);
 	}
 });
 selection.test({
@@ -518,6 +521,9 @@ selection.test({
 	check: function(verify) {
 		var page = this;
 		verify(this).content.description.evaluate(this.isSelected).is(true);
+		verify(this).status.children.length.is(2);
+		verify(this).status.children[0].innerHTML.is("BODY");
+		verify(this).status.children[1].innerHTML.is("DIV");
 	}
 });
 selection.test({

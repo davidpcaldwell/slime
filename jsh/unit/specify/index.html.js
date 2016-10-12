@@ -48,6 +48,16 @@ window.addEventListener('load', function() {
 						element.style.backgroundColor = was;
 					}
 				};
+				var status = document.getElementById("status");
+				var node = element;
+				//	TODO	the below heuristic may not be foolproof for all documents
+				while(node.tagName != "HTML") {
+					var child = document.createElement("span");
+					child.className = "path";
+					child.innerHTML = node.tagName;
+					status.insertBefore(child,status.children[0]);
+					node = node.parentNode;
+				}
             };
         };
         return state;
