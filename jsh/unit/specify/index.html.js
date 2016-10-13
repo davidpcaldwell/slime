@@ -36,6 +36,13 @@ window.addEventListener('load', function() {
             	return current && current.element == element;
             }
 
+            this.up = function() {
+            	if (current) {
+            		current.deselect();
+            		this.select(current.element.parentNode);
+            	}
+            }
+
             this.select = function(element) {
 				if (current) current.deselect();
 				current = new function() {
@@ -440,6 +447,16 @@ window.addEventListener('load', function() {
 			if (!selection.is(e.target)) {
 				selection.select(e.target);
 			}
+        });
+
+        this.contentDocument.documentElement.addEventListener("keydown", function(e) {
+        	if (e.key == "ArrowLeft") {
+				selection.up();
+        	} else if (e.key == "ArrowRight") {
+				debugger;
+        	} else {
+				debugger;
+        	}
         });
 
 		var base = inonit.loader.base.split("/").slice(0,-3).join("/") + "/";

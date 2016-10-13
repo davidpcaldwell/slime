@@ -487,7 +487,12 @@ selection.target(new function() {
 	this.content = new function() {
 		var content = document.getElementById("target").contentDocument;
 		this.description = content.getElementsByTagName("div")[0];
-		this.contextHeader = content.getElementsByTagName("h1")[0];
+		this.context = {
+			div: content.getElementsByTagName("div")[1],
+			header: content.getElementsByTagName("h1")[0],
+			ul: content.getElementsByTagName("ul")[0]
+		}
+		this.contextHeader = this.context.header;
 		this.exportsHeader = content.getElementsByTagName("h1")[1];
 	};
 
@@ -537,6 +542,17 @@ selection.test({
 		verify(this).status.children.length.is(3);
 	}
 });
+selection.test({
+	run: function() {
+		unit.fire.keydown(this.content.context.header, { key: "ArrowLeft" });
+	},
+	check: function(verify) {
+		verify(this).status.children.length.is(2);
+		verify(this).content.context.header.evaluate(this.isSelected).is(false);
+		verify(this).content.context.div.evaluate(this.isSelected).is(true);
+	}
+});
+
 
 var suite = new api.Suite({
 	name: "Suite",
