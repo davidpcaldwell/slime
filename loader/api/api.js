@@ -189,11 +189,28 @@ window.onload = function() {
 			}
 		}
 
+		var fixCdata = function() {
+			var elements = document.getElementsByTagName("*");
+			for (var i=0; i<elements.length; i++) {
+				var children = elements[i].childNodes;
+				for (var j=0; j<children.length; j++) {
+					if (children[j].nodeType == 4) {
+						debugger;
+					} else if (children[j].nodeType == children[j].COMMENT_NODE && children[j].data.substring(0,7) == "[CDATA[") {
+						var data = children[j].data;
+						var text = document.createTextNode(data.substring(7,data.length-"]]".length));
+						elements[i].replaceChild(text,children[j]);
+					}
+				}
+			}			
+		}
+
 		this.fix = function() {
 			fixFunctionDivs("arguments", "Arguments");
 			fixFunctionDivs("returns", "Returns");
 			fixFunctionDivs("instances", "Instances");
 			fixScriptElements();
+			fixCdata();
 
 			resolveReferences();
 		}
