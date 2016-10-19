@@ -198,7 +198,7 @@ window.onload = function() {
 						debugger;
 					} else if (children[j].nodeType == children[j].COMMENT_NODE && children[j].data.substring(0,7) == "[CDATA[") {
 						var data = children[j].data;
-						var text = document.createTextNode(data.substring(7,data.length-"]]".length));
+						var text = document.createTextNode("<![CDATA[" + data.substring(7,data.length-"]]".length) + "]]");
 						elements[i].replaceChild(text,children[j]);
 					}
 				}
