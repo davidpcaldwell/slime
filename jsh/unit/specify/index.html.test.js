@@ -41,7 +41,7 @@ document.body.insertBefore(suite, document.body.childNodes[0]);
 var styles = document.createElement("link");
 styles.setAttribute("rel", "stylesheet");
 styles.setAttribute("type", "text/css");
-styles.setAttribute("href", "../browser/ui.css");
+styles.setAttribute("href", "../../../loader/api/ui/ui.css");
 document.head.insertBefore(styles, null);
 
 $loader.run("loader/api/ui/webview.js", {}, {
@@ -487,16 +487,23 @@ selection.target(new function() {
 	this.content = new function() {
 		var content = document.getElementById("target").contentDocument;
 		this.description = content.getElementsByTagName("div")[0];
-		this.contextHeader = content.getElementsByTagName("h1")[0];
+		this.context = {
+			div: content.getElementsByTagName("div")[1],
+			header: content.getElementsByTagName("h1")[0],
+			ul: content.getElementsByTagName("ul")[0]
+		}
+		this.contextHeader = this.context.header;
 		this.exportsHeader = content.getElementsByTagName("h1")[1];
 	};
 
+	this.status = document.getElementById("status");
+	
 	var isSelected = function(element) {
 		//	TODO	DRY violation
 		var dummy = document.createElement("div");
 		dummy.style.backgroundColor = "#c0c0ff";
 		return element.style.backgroundColor == dummy.style.backgroundColor;
-	}
+	};
 
 	var target = this;
 
@@ -509,6 +516,7 @@ selection.test({
 		var page = this;
 		verify(this).content.description.innerHTML.is("__DESCRIPTION__");
 		verify(this).content.description.evaluate(this.isSelected).is(false);
+		verify(this).status.children.length.is(0);
 	}
 });
 selection.test({
@@ -518,6 +526,9 @@ selection.test({
 	check: function(verify) {
 		var page = this;
 		verify(this).content.description.evaluate(this.isSelected).is(true);
+		verify(this).status.children.length.is(2);
+		verify(this).status.children[0].innerHTML.is("BODY");
+		verify(this).status.children[1].innerHTML.is("DIV");
 	}
 });
 selection.test({
@@ -528,8 +539,20 @@ selection.test({
 		var page = this;
 		verify(this).content.description.evaluate(this.isSelected).is(false);
 		verify(this).content.contextHeader.evaluate(this.isSelected).is(true);
+		verify(this).status.children.length.is(3);
 	}
 });
+selection.test({
+	run: function() {
+		unit.fire.keydown(this.content.context.header, { key: "ArrowLeft" });
+	},
+	check: function(verify) {
+		verify(this).status.children.length.is(2);
+		verify(this).content.context.header.evaluate(this.isSelected).is(false);
+		verify(this).content.context.div.evaluate(this.isSelected).is(true);
+	}
+});
+
 
 var suite = new api.Suite({
 	name: "Suite",
