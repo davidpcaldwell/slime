@@ -157,7 +157,32 @@
 
 	var deprecate = flag();
 	var experimental = flag();
+	
+	var once = function() {
+		return (function(was) {
+			var called;
 
+			return function() {
+				if (!called) {
+					called = true;
+					return was.apply(this,arguments);
+				}
+			}
+		})(inonit.loader.$api.deprecate.warning);
+	}
+
+	$exports.warning = {
+		once: function(warning) {
+			var called;
+
+			return function() {
+				if (!called) {
+					called = true;
+					return warning.apply(this,arguments);
+				}
+			}			
+		}
+	}
 	$exports.deprecate = deprecate;
 	$exports.experimental = experimental;
 
