@@ -78,16 +78,9 @@ plugin({
 
 plugin({
 	isReady: function() {
-		return jsh.httpd;
+		return jsh.shell && jsh.httpd;
 	},
 	load: function() {
-		var api = $loader.module("browser/module.js", {
-			api: {
-				httpd: jsh.httpd
-			}
-		});
-		for (var x in api) {
-			jsh.shell.browser[x] = api[x];
-		}
+		jsh.shell.browser.inject({ httpd: jsh.httpd });
 	}
-});
+})

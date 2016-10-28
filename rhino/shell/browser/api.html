@@ -15,15 +15,14 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
-		<title>jsh browsers</title>
-		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<title>SLIME browser control</title>
 		<link href="../../../loader/api/api.css" rel="stylesheet" type="text/css" />
 		<script src="../../../loader/api/api.js"></script>
 	</head>
 	<body>
 		<div>
-			The browsers API is currently implemented as a <code>jsh</code> plugin, and must be loaded manually in other
-			environments.
+			The browser control API allows the control of (currently) the Chrome browser, as well as providing other
+			browser-related constructs.
 		</div>
 		<div>
 			<h1>Context</h1>
@@ -33,7 +32,17 @@ END LICENSE
 		<script type="application/x.jsapi#initialize">
 			if (jsh.httpd) {
 				scope.api = $jsapi.loader.module("module.js", {
+					os: {
+						name: jsh.shell.os.name
+					},
+					HOME: jsh.shell.HOME,
+					TMPDIR: jsh.shell.TMPDIR,
+					run: jsh.shell.run,
+					environment: {},
 					api: {
+						js: jsh.js,
+						java: jsh.java,
+						file: jsh.file,
 						httpd: jsh.httpd
 					}
 				});
@@ -41,6 +50,128 @@ END LICENSE
 		</script>
 		<div>
 			<h1>Exports</h1>
+			<div class="type">
+				<a class="type" name="types.ProxyConfiguration">ProxyConfiguration</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="value">
+						<div class="name">code</div>
+						<span class="type">string</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="value">
+						<div class="name">response</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</li>
+					<li class="constructor">
+						<div class="name">Server</div>
+						<span>Creates a server that will serve the proxy auto-config file.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+							<ul>
+								<li class="function">
+									<div class="name">start</div>
+									<span>Starts the server.</span>
+								</li>
+								<li class="function">
+									<div class="name">stop</div>
+									<span>Stops the server.</span>
+								</li>
+								<li class="value">
+									<div class="name">url</div>
+									<span class="type">__TYPE__</span>
+									<span>The URL from which the proxy auto-config file will be served.</span>
+								</li>
+							</ul>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<div class="type">
+				<a class="type" name="types.Chrome">Chrome</a>
+				<span>A Google Chrome installation.</span>
+				<div class="type">
+					<a class="type" name="types.Chrome.Instance">Instance</a>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="function">
+							<div class="name">run</div>
+							<span>__DESCRIPTION__</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<div class="name">uri</div>
+										<span class="type">string</span>
+										<span>The URI of a page to open.</span>
+									</li>
+								</ol>
+							</div>
+							<div class="returns">
+								<div class="label">Returns</div>
+								<span class="type">__TYPE__</span>
+								<span>__DESCRIPTION__</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="constructor">
+						<div class="name">Instance</div>
+						<span>
+							A Chrome instance, consisting of the Chrome software and a user data directory.
+							Note that this is not a user <em>profile</em>; a user
+							directory <strong>contains</strong> user profiles.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="object">
+									<span>Configuration information for the instance to create.</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">directory</div>
+											<span class="type"><a href="../../../rhino/file/api.html#types.directory">directory</a></span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li class="value">
+											<div class="name">proxy</div>
+											<span class="type"><a href="#types.ProxyConfiguration">ProxyConfiguration</a></span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<!--	Undocumented / used internally: 'install' property	-->
+									</ul>
+								</li>
+							</ol>
+						</div>
+						<div class="instances">
+							<div class="label">Instances</div>
+							<span class="type"><a href="#types.Chrome.Instance">Instance</a></span>
+							<span>__DESCRIPTION__</span>
+						</div>
+					</li>
+					<li class="value">
+						<div class="name">instance</div>
+						<span class="type">__TYPE__</span>
+						<span>The default Chrome instance.</span>
+					</li>
+				</ul>
+			</div>
+
 			<ul>
 				<li class="constructor">
 					<div class="name">ProxyConfiguration</div>
@@ -75,48 +206,7 @@ END LICENSE
 					</div>
 					<div class="instances">
 						<div class="label">Instances</div>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="value">
-								<div class="name">code</div>
-								<span class="type">string</span>
-								<span>__DESCRIPTION__</span>
-							</li>
-							<li class="value">
-								<div class="name">response</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</li>
-							<li class="constructor">
-								<div class="name">Server</div>
-								<span>Creates a server that will serve the proxy auto-config file.</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-									</ol>
-								</div>
-								<div class="instances">
-									<div class="label">Instances</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-									<ul>
-										<li class="function">
-											<div class="name">start</div>
-											<span>Starts the server.</span>
-										</li>
-										<li class="function">
-											<div class="name">stop</div>
-											<span>Stops the server.</span>
-										</li>
-										<li class="value">
-											<div class="name">url</div>
-											<span class="type">__TYPE__</span>
-											<span>The URL from which the proxy auto-config file will be served.</span>
-										</li>
-									</ul>
-								</div>
-							</li>
-						</ul>
+						<span class="type"><a href="#types.ProxyConfiguration">ProxyConfiguration</a></span>
 					</div>
 					<script type="application/x.jsapi#tests">
 						if (api) {
@@ -150,6 +240,91 @@ END LICENSE
 							verify(pacProxy).code.is(code);
 							server.stop();
 						}
+					</script>
+				</li>
+				<li class="value">
+					<div class="name">chrome</div>
+					<span class="type"><a href="#types.Chrome">Chrome</a></span>
+					<span>
+						(conditional)
+						The Google Chrome browser installed at the default location (currently on Mac OS X and Linux).
+					</span>
+					<script type="application/x.jsapi#tests">
+						jsh.shell.console("Creating Tomcat.");
+
+						var tomcat = new jsh.httpd.Tomcat();
+						var browser;
+
+						var requested;
+						var lock = new jsh.java.Thread.Monitor();
+
+						tomcat.map({
+							path: "",
+							servlets: {
+								"/*": {
+									load: function(scope) {
+										scope.$exports.handle = function(request) {
+											jsh.shell.console("Got request");
+											requested = request;
+											jsh.shell.console("Releasing lock for request");
+											new lock.Waiter({
+												until: function() {
+													return true;
+												},
+												then: function() {
+												}
+											})();
+											jsh.shell.console("Released lock for request");
+										}
+									}
+								}
+							}
+						});
+
+						tomcat.start();
+
+						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						TMP.getRelativePath("First Run").write("", { append: false });
+
+						var instance = new api.chrome.Instance({
+							directory: TMP,
+							proxy: new api.ProxyConfiguration({
+								port: tomcat.port
+							})
+						});
+
+						jsh.shell.console("Launching page ...");
+						jsh.java.Thread.start(function() {
+							jsh.shell.console("Creating browser ...");
+							try {
+								instance.run({
+									uri: "http://slime-test/",
+									on: {
+										start: function(p) {
+											jsh.shell.console("Got callback for browser process");
+											browser = p;
+										}
+									}
+								});
+								jsh.shell.console("Browser terminated.");
+							} catch (e) {
+								jsh.shell.console("Error creating browser: " + e);
+							}
+						})
+
+						new lock.Waiter({
+							until: function() {
+								return requested;
+							},
+							then: function() {
+								tomcat.stop();
+								browser.kill();
+							}
+						})();
+
+						verify(requested).is.type("object");
+						var headers = $api.Object({ properties: requested.headers });
+						verify(headers).host.is("slime-test");
 					</script>
 				</li>
 			</ul>

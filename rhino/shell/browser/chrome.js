@@ -16,7 +16,13 @@ var Chrome = function(b) {
 		return "Google Chrome: " + b.program + " user=" + b.user;
 	}
 
-	this.User = function(u) {
+	//	Used to be called "User" but "Instance" seems a better name (so as not to be confused with a
+	//	"profile" (which is called a "person" by Chrome, although it used to be called a "user"). The term "install"
+	//	wouldn't be perfect because then one Chrome codebase could be multiple "installs" (user data directories).
+	//
+	//	See https://www.chromium.org/user-experience/user-data-directory
+	//	See https://www.chromium.org/user-experience/multi-profiles
+	this.Instance = function(u) {
 		//	This Stack Overflow question:
 		//	http://superuser.com/questions/240522/how-can-i-use-a-proxy-in-a-single-chrome-profile
 		//
@@ -123,7 +129,7 @@ var Chrome = function(b) {
 			var disableGpu = (function() {
 				if (typeof(m.disableGpu) != "undefined") return m.disableGpu;
 				//	TODO	document this
-				return jsh.shell.environment.JSH_HOST_RHINO_SHELL_BROWSERS_CHROME_DISABLE_GPU;
+				return $context.environment.JSH_HOST_RHINO_SHELL_BROWSERS_CHROME_DISABLE_GPU;
 			})();
 			if (disableGpu) {
 				args.push("--disable-gpu");
@@ -302,12 +308,15 @@ var Chrome = function(b) {
 			};
 		}
 	};
+	this.User = $api.deprecate(this.Instance);
 
 	if (b.user) {
-		this.user = new this.User({
+		this.instance = new this.Instance({
 			directory: b.user,
 			install: true
 		});
+		this.user = this.instance;
+		$api.deprecate(this,"user");
 	}
 }
 

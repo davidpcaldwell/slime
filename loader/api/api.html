@@ -14,13 +14,13 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>Interface specification</title>
+	<title>SLIME HTML definitions</title>
 	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css"></link>
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 	<style type="text/css">
 		div.template {
 			padding: 1em;
-			background: #c0c080;
+			background: #e0e0c0;
 		}
 
 		div.template span.heading {
@@ -112,29 +112,13 @@ END LICENSE
 	<div>
 		<h1>Using in projects</h1>
 		<div>
-			The <code>api.html</code> format provides for specification via literate testing: it combines the concept of
+			The HTML definition format provides for specification via literate testing: it combines the concept of
 			documentation (written as HTML) with the tests necessary to test an interface (represented as inline JavaScript).
 		</div>
 		<div>
 			The display format relies on styling and associated scripting contained in two related files:
 			<a href="api.css">api.css</a> and <a href="api.js">api.js</a>.
 		</div>
-		<div>
-			<h2><code>update.jsh.js</code></h2>
-			<div>
-				The <code>update.jsh.js</code> tool provides the ability to inline a version of these associated files. It scans
-				a directory for <code>api.html</code> files and replaces links to <code>api.css</code> and <code>api.js</code> with
-				the code from the SLIME installation from which the tool is run.
-			</div>
-			<div>
-				<h3>Command-line arguments</h3>
-				<ul>
-					<li><code>-base <i>pathname</i></code></li>
-					<li><code>-preview</code>: Emits information to the console rather than writing it to the filesystem.</li>
-				</ul>
-			</div>
-		</div>
-		<!--	TODO	discuss linking to bitbucket	-->
 	</div>
 	<div>
 		<h1>Notation</h1>
@@ -501,6 +485,12 @@ END LICENSE
 									</span>
 								</li>
 							</ul>
+							<!--	TODO	not sure what test would be good for coffee property	-->
+							<script type="application/x.jsapi#tests">
+								verify($jsapi).is.type("object");
+								verify($jsapi).loader.evaluate.property("module").is.type("function");
+								verify($jsapi).loader.evaluate.property("file").is.type("function");
+							</script>
 						</li>
 						<!--	TODO	disableBreakOnExceptions?	-->
 					</ul>
@@ -514,8 +504,19 @@ END LICENSE
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
+							<div class="name">verify</div>
+							<span>See <a href="unit.api.html">documentation</a>.</span>
+							<script type="application/x.jsapi#tests">
+								verify(verify,"verify").is.type("function");
+							</script>
+						</li>
+						<li class="deprecated function">
+							<!--	TODO	Defined in api.html.js; this is actually verify.test	-->
 							<div class="name">test</div>
-							<span>Evaluates a test.</span>
+							<span>
+								<strong>Deprecated. Replaced by <code>verify</code>.</strong>
+								Evaluates a test.
+							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
@@ -566,46 +567,9 @@ END LICENSE
 									</li>
 								</ol>
 							</div>
-						</li>
-						<li class="function">
-							<div class="name">scenario</div>
-							<span>
-								Invokes a <i>scenario</i>: an object representing a set of tests, with an interface that supports
-								initialization and cleanup.
-							</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="object">
-										<span>An object implementing the test scenario.</span>
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="function">
-												<div class="name">initialize</div>
-												<span>(optional) Invoked before the scenario executes.</span>
-											</li>
-											<li class="function">
-												<div class="name">execute</div>
-												<span>Implements this test scenario.</span>
-												<div class="arguments">
-													<div class="label">Arguments</div>
-													<ol>
-														<li class="value">
-															<span class="type"><a href="#types.scope">scope</a></span>
-															<span>A test scope.</span>
-														</li>
-													</ol>
-												</div>
-											</li>
-											<li class="function">
-												<div class="name">destroy</div>
-												<span>(optional) Invoked after the scenario executes.</span>
-											</li>
-										</ul>
-									</li>
-
-								</ol>
-							</div>
+							<script type="application/x.jsapi#tests">
+								verify(test,"test").is.type("function");
+							</script>
 						</li>
 					</ul>
 				</div>
@@ -627,6 +591,22 @@ END LICENSE
 			Tests can also be invoked programmatically.
 			See <a href="unit.api.html">detailed documentation</a>.
 		</div>
+		<div>
+			<h2><code>update.jsh.js</code></h2>
+			<div>
+				The <code>update.jsh.js</code> tool provides the ability to inline a version of these associated files. It scans
+				a directory for <code>api.html</code> files and replaces links to <code>api.css</code> and <code>api.js</code> with
+				the code from the SLIME installation from which the tool is run.
+			</div>
+			<div>
+				<h3>Command-line arguments</h3>
+				<ul>
+					<li><code>-base <i>pathname</i></code></li>
+					<li><code>-preview</code>: Emits information to the console rather than writing it to the filesystem.</li>
+				</ul>
+			</div>
+		</div>
+		<!--	TODO	discuss linking to bitbucket	-->
 	</div>
 </body>
 </html>

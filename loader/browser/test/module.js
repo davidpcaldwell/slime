@@ -360,6 +360,7 @@ $exports.nugget = new function() {
 $exports.fire = new function() {
 	var Event = function(name,canBubble,cancelable) {
 		this.name = name;
+		this.bubbles = canBubble;
 		this.canBubble = canBubble;
 		this.cancelable = cancelable;
 
