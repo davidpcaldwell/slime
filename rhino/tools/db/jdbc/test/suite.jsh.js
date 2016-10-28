@@ -46,54 +46,12 @@ var module = (function() {
 	return loader.module("module.js", context);
 })();
 
-var blob = function(schema,test) {
-	var table = schema.getTable({ name: "DATA" });
-	test(table != null);
-	var bytes = [0,1,2,3,4,5,6,7,8,9];
-	var _array = jsh.java.Array.create({
-		type: Packages.java.lang.Byte.TYPE,
-		array: bytes.map(function(js) {
-			return new Packages.java.lang.Byte(js);
-		})
-	});
-	var stream = jsh.io.java.adapt(new Packages.java.io.ByteArrayInputStream(_array));
-
-	var inserted = false;
-	schema.perform(function(context) {
-		table.insert({
-			a: 1,
-			b: stream
-		});
-		inserted = true;
-	});
-	test(inserted);
-
-	var completed = false;
-	schema.perform(function(context) {
-		var rows = context.createQuery({ sql: "SELECT * FROM DATA" }).toArray();
-		test(rows.length == 1);
-		test(rows[0].a == 1);
-		if (rows[0].a) {
-			//	TODO	add test for reading inserted blob
-			var _bytes = new Packages.inonit.script.runtime.io.Streams().readBytes(rows[0].b.java.adapt());
-			for (var i=0; i<_bytes.length; i++) {
-				test(_bytes[i] == bytes[i]);
-			}
-		} else {
-			test(false);
-		}
-		completed = true;
-	});
-	test(completed);
-};
-
 var suite = new jsh.unit.Suite({
 	parts: {
 		derby: new jsh.unit.part.Html({
 			pathname: jsh.script.file.parent.parent.getRelativePath("derby/api.html"),
 			environment: {
-				module: module.derby,
-				blob: blob
+				module: module.derby
 			}
 		})
 	}
@@ -167,16 +125,6 @@ if (parameters.options["mysql:server"]) {
 		server = null;
 	});
 
-//	var count = 0;
-//	while(!PID.file && server !== null) {
-//		jsh.shell.console("Checking for PID at " + PID);
-//		count++;
-//		Packages.java.lang.Thread.sleep(500);
-//		if (count >= 900 * 1000 / 500) {
-//			throw new Error("Did not start");
-//		}
-//	}
-
 	jsh.shell.console("Started mysqld thread.");
 	new started.Waiter({
 		until: function() {
@@ -214,8 +162,7 @@ if (parameters.options["mysql:server"]) {
 					port: port,
 					user: "root",
 					password: null
-				},
-				blob: blob
+				}
 			}
 		}));
 	}

@@ -64,8 +64,8 @@ END LICENSE
 			};
 			scope.module = $jsapi.loader.module("module.js", context);
 		]]></script>
-		<div jsapi:id="blob">
-			<script type="application/x.jsapi#initialize"><![CDATA[
+		<div>
+			<script jsapi:id="blob" type="application/x.jsapi#initialize"><![CDATA[
 				scope.blob = function(schema,test) {
 					var table = schema.getTable({ name: "DATA" });
 					test(table != null);

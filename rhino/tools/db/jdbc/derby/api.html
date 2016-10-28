@@ -47,7 +47,7 @@ END LICENSE
 //		};
 //		scope.module = $jsapi.loader.module("module.js", context);
 		scope.module = $jsapi.environment.module;
-		scope.blob = $jsapi.environment.blob;
+//		scope.blob = $jsapi.environment.blob;
 	</script>
 	<div>
 		<script type="application/x.jsapi#context">
@@ -303,8 +303,8 @@ END LICENSE
 			</script>
 		</div>
 		<div jsapi:id="blob">
-			<div jsapi:reference="getApi('../api.html').getElement('blob')">
-			</div>
+			<script type="application/x.jsapi#initialize" jsapi:reference="getApi('../api.html').getElement('blob')">
+			</script>
 			<script type="application/x.jsapi#tests">
 				var catalog = new module.Catalog({
 					pathname: dir.getRelativePath("blob"),
