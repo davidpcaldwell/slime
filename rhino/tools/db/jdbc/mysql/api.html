@@ -60,6 +60,7 @@ END LICENSE
 		<ul>
 		</ul>
 		<script type="application/x.jsapi#initialize">
+			scope.module = $jsapi.environment.module;
 			scope.database = new module.Database({
 				host: $jsapi.environment.mysql.host,
 				port: $jsapi.environment.mysql.port,

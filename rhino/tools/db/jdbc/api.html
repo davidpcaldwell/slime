@@ -44,6 +44,26 @@ END LICENSE
 				}
 			})()
 		</script>
+		<script type="application/x.jsapi#initialize"><![CDATA[
+			if (jsh.shell.java.home.getSubdirectory("db")) {
+				jsh.loader.java.add(jsh.shell.java.home.getRelativePath("db/lib/derby.jar"));
+			} else if (jsh.shell.java.home.getRelativePath("../db")) {
+				jsh.loader.java.add(jsh.shell.java.home.getRelativePath("../db/lib/derby.jar"));
+			}
+			var context = new function() {
+				this.getJavaClass = function(name) {
+					return jsh.java.getClass(name);
+				}
+
+				this.api = {
+					js: jsh.js,
+					java: jsh.java,
+					io: jsh.io,
+					debug: jsh.debug
+				};
+			};
+			scope.module = $jsapi.loader.module("module.js", context);
+		]]></script>
 		<div jsapi:id="blob">
 			<script type="application/x.jsapi#initialize"><![CDATA[
 				scope.blob = function(schema,test) {
@@ -90,13 +110,14 @@ END LICENSE
 		</div>
 		<script type="application/x.jsapi#tests">
 			if (module.derby) {
-				verify.suite($jsapi.loader.scenario("derby/", { module: module.derby }));
+				jsh.shell.console("Running Derby ...");
+				verify.suite($jsapi.loader.suite("derby/", { module: module.derby }));
 			} else {
 				jsh.shell.echo("Skipping Derby; jsh.shell.java.home = " + jsh.shell.java.home);
 			}
 			if (module.mysql) {
 				if ($jsapi.environment.mysql) {
-					verify.suite($jsapi.loader.scenario("mysql/", { module: module.mysql }));
+					verify.suite($jsapi.loader.suite("mysql/", { module: module.mysql }));
 				} else {
 					jsh.shell.echo("Skipping MySQL: no configuration specified.");
 				}
