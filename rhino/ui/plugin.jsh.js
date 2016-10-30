@@ -59,7 +59,7 @@ plugin({
 		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java;
 	},
 	load: function() {
-		$loader.run("webview.jsh.api.js", {
+		$loader.run("browser.js", {
 			$loader: $loader,
 			$set: function(v) {
 				jsh.ui.browser = v;
