@@ -11,7 +11,7 @@
 //	Contributor(s):
 //	END LICENSE
 
-$set(function(p) {
+var Server = function(p) {
 	var server = new jsh.httpd.Tomcat({
 		port: (p.port) ? p.port : void(0)
 	});
@@ -60,6 +60,11 @@ $set(function(p) {
 		},
 		resources: p.resources
 	});
+	return server;
+}
+
+var Application = function(p) {
+	var server = Server(p);
 	server.start();
 
 	var stopTomcat = new JavaAdapter(
@@ -156,4 +161,6 @@ $set(function(p) {
 	return {
 		port: server.port
 	};
-});
+};
+
+$set(Application);
