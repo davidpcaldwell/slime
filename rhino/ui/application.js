@@ -77,6 +77,9 @@ var Application = function(p) {
 	);
 
 	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopTomcat));
+	
+	//	TODO	proxy handling
+	//	if p.host is provided, create proxy settings for that port and change the url property below? Or should that be p.browser.host?
 
 	var url = "http://127.0.0.1:" + server.port + "/" + ((p.path) ? p.path : "");
 	if (!p.browser) {
@@ -86,7 +89,16 @@ var Application = function(p) {
 			console: p.console
 		}
 	}
-	if (typeof(p.browser) == "object") {
+	if (typeof(p.browser) == "function") {
+		p.browser = (function(implementation) {
+			return {
+				run: function(p) {
+					implementation(p);
+				}
+			}
+		})(p.browser);
+	}
+	if (typeof(p.browser.run) != "function") {
 		var addTitleListener = function() {
 			this.listeners.add("title", function(e) {
 				this._frame.setTitle(e.detail.after);
@@ -153,7 +165,7 @@ var Application = function(p) {
 			}
 		};
 		jsh.java.Thread.start(function() {
-			p.browser({ url: url });
+			p.browser.run({ url: url });
 			on.close();
 		});
 	}
