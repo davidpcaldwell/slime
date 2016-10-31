@@ -89,7 +89,7 @@ END LICENSE
 								</li>
 								<li class="value">
 									<div class="name">resources</div>
-									<span class="type"><a href="../http/servlet/plugin.jsh.resources.api.html">Resources</a></span>
+									<span class="type">Loader</span>
 									<span>The resources available to the server resource loader.<!--	TODO	hyperlink?	--></span>
 								</li>
 								<li class="value">
@@ -147,34 +147,37 @@ END LICENSE
 										</ul>
 									</div>
 									- OR -
-									<div>
-										<span class="type">function</span>
-										<span>
-											A function that opens a web browser window to a given URL and blocks until the
-											browser is closed.
-										</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="object">
-													<span>__DESCRIPTION__</span>
-													<div class="label">has properties:</div>
-													<ul>
-														<li class="value">
-															<div class="name">url</div>
-															<span class="type">string</span>
-															<span>__DESCRIPTION__</span>
-														</li>
-													</ul>
-												</li>
-											</ol>
-										</div>
-										<div class="returns">
-											<div class="label">Returns</div>
-											<span class="type">__TYPE__</span>
-											<span>__DESCRIPTION__</span>
-										</div>
-									</div>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="function">
+											<div class="name">run</div>
+											<span>
+												A function that opens a web browser window to a given URL and blocks until the
+												browser is closed.
+											</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="object">
+														<span>__DESCRIPTION__</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">url</div>
+																<span class="type">string</span>
+																<span>__DESCRIPTION__</span>
+															</li>
+														</ul>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">__TYPE__</span>
+												<span>__DESCRIPTION__</span>
+											</div>
+										</li>
+									</ul>
 								</li>
 							</ul>
 						</li>
@@ -195,8 +198,122 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
+				<script type="application/x.jsapi#initialize">
+
+					$jsapi.loader.run("application.js", {
+						$loader: $jsapi.loader,
+						jsh: jsh,
+						$set: function(v) {
+							scope.api = v;
+						}
+					});
+				</script>
 				<script type="application/x.jsapi#tests">
 					verify("hello").is("hello");
+
+					var browser = new function() {
+						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						TMP.getRelativePath("First Run").write("", { append: false });
+
+						var process;
+						var lock = new jsh.java.Thread.Monitor();
+
+						this.start = function(p) {
+							var instance = new jsh.shell.browser.chrome.Instance({ directory: TMP });
+
+							jsh.java.Thread.start(function() {
+								instance.run({
+									uri: p.url,
+									on: {
+										start: function(argument) {
+											process = new function() {
+												this.close = function() {
+													argument.kill();
+												}
+											};
+											new lock.Waiter({
+												until: function() {
+													return true;
+												},
+												then: function() {
+												}
+											})();
+										}
+									}
+								});
+								finished = true;
+								new lock.Waiter({
+									until: function() {
+										return true;
+									},
+									then: function() {
+									}
+								})();
+							});
+							return new lock.Waiter({
+								until: function() {
+									return process;
+								},
+								then: function() {
+									return process;
+								}
+							})();
+						}
+
+						this.run = function() {
+							return new lock.Waiter({
+								until: function() {
+									return finished;
+								},
+								then: function() {
+								}
+							})();
+						};
+					};
+
+					var firstRequest;
+					var slock = new jsh.java.Thread.Monitor();
+
+					var argument = new function() {
+						this.servlet = {
+							load: function(scope) {
+								scope.$exports.handle = function(request) {
+									jsh.shell.console("Got request " + request.method + " " + request.path);
+									new slock.Waiter({
+										until: function() {
+											return true;
+										},
+										then: function() {
+											if (!firstRequest) firstRequest = request;
+										}
+									})();
+								}
+							}
+						};
+
+						this.on = {
+							close: function() {
+								jsh.shell.console("Closed browser.");
+							}
+						};
+
+						this.browser = browser;
+					};
+
+					var application = api(argument);
+
+					new slock.Waiter({
+						until: function() {
+							return firstRequest;
+						},
+						then: function() {
+							application.browser.close();
+							application.server.stop();
+						}
+					})()
+
+					verify(firstRequest).method.is("GET");
+					verify(firstRequest).path.is("");
 				</script>
 			</li>
 		</ul>

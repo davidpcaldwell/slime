@@ -27,6 +27,8 @@ var Server = function(p) {
 			var prefix = p.servlet.resource.split("/").slice(0,-1).join("/");
 			if (prefix) prefix += "/";
 			return { $loader: new p.resources.loader.Child(prefix), path: p.servlet.resource.substring(prefix.length) };
+		} else {
+			return {};
 		}
 	})();
 	server.map({
@@ -36,7 +38,11 @@ var Server = function(p) {
 				$loader: servlet.$loader,
 				parameters: p.parameters,
 				load: function(scope) {
-					servlet.$loader.run(servlet.path, scope);
+					if (p.servlet.load) {
+						p.servlet.load.apply(this,arguments);
+					} else {
+						servlet.$loader.run(servlet.path, scope);
+					}
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {
@@ -97,6 +103,7 @@ var Application = function(p) {
 			}
 		})(p.browser);
 	}
+	var browser;
 	if (typeof(p.browser.run) != "function") {
 		var addTitleListener = function() {
 			this.listeners.add("title", function(e) {
@@ -163,14 +170,24 @@ var Application = function(p) {
 				Packages.java.lang.System.exit(0);
 			}
 		};
-		jsh.java.Thread.start(function() {
-			p.browser.run({ url: url });
-			on.close();
-		});
+		if (p.browser.start) {
+			browser = p.browser.start({ url: url });
+			jsh.java.Thread.start(function() {
+				p.browser.run();
+				on.close();
+			});
+		} else {
+			jsh.java.Thread.start(function() {
+				p.browser.run({ url: url });
+				on.close();
+			});
+		}
 	}
 
 	return {
-		port: server.port
+		port: server.port,
+		server: server,
+		browser: browser
 	};
 };
 
