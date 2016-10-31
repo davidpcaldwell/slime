@@ -55,15 +55,6 @@ END LICENSE
 					</span>
 				</li>
 				<li class="value">
-					<div class="name">$loader</div>
-					<span class="type"><a href="../../loader/api.html">Loader</a></span>
-					<span>
-						(optional)
-						<!--	TODO	specify default. Seems to be derived from file property if that is present. What if it
-										is not?	-->
-						A <code>Loader</code> which will be provided to the servlet as <code>$loader</code>.</span>
-				</li>
-				<li class="value">
 					<div class="name">file</div>
 					<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
 					<span>
@@ -90,6 +81,18 @@ END LICENSE
 							</li>
 						</ol>
 					</div>
+				</li>
+				<li class="value">
+					<div class="name">$loader</div>
+					<span class="type"><a href="../../loader/api.html">Loader</a></span>
+					<span>
+						(optional)
+						<!--	TODO	specify default. Seems to be derived from file property if that is present. What if it
+										is not?	-->
+						A <code>Loader</code> which will be provided to the servlet as <code>$loader</code>. If the implementation
+						is specified via <code>file</code>, the default value of this property is a loader that loads code from
+						that file's directory.
+					</span>
 				</li>
 			</ul>
 		</div>
