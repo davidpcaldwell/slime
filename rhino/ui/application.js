@@ -16,8 +16,11 @@ var Server = function(p) {
 		port: (p.port) ? p.port : void(0)
 	});
 	var servlet = (function() {
-		if (p.servlet.pathname && p.servlet.pathname.file) {
-			return { $loader: new jsh.file.Loader({ directory: p.servlet.pathname.file.parent }), path: p.servlet.pathname.basename };
+		if (p.servlet.pathname && p.servlet.directory === false) {
+			p.servlet = { file: p.servlet };
+		}
+		if (p.servlet.file) {
+			return { $loader: new jsh.file.Loader({ directory: p.servlet.file.parent }), path: p.servlet.file.pathname.basename };
 		} else if (p.servlet.$loader) {
 			return { $loader: p.servlet.$loader, path: p.servlet.path }
 		} else if (p.servlet.resource) {
@@ -30,7 +33,6 @@ var Server = function(p) {
 		path: "",
 		servlets: {
 			"/*": {
-//				file: p.servlet,
 				$loader: servlet.$loader,
 				parameters: p.parameters,
 				load: function(scope) {
@@ -38,7 +40,7 @@ var Server = function(p) {
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {
-								var code = $loader.resource("webview.initialize.js").read(String);
+								var code = $loader.get("webview.initialize.js").read(String);
 								return {
 									status: {
 										code: 200
