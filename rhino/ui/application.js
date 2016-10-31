@@ -34,9 +34,6 @@ var Server = function(p) {
 				$loader: servlet.$loader,
 				parameters: p.parameters,
 				load: function(scope) {
-					if (p.servlet.scope) {
-						p.servlet.scope.call(scope);
-					}
 					servlet.$loader.run(servlet.path, scope);
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
