@@ -115,8 +115,6 @@ plugin({
 									this.init = function() {
 										var apiScope = {
 											$host: new function() {
-												if (m.resources && !m.resources.loader) throw new Error("No m.resources.loader");
-
 												this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
 
 												this.loaders = {
@@ -131,7 +129,13 @@ plugin({
 															});
 														}
 													})(),
-													container: (m.resources) ? m.resources.loader : null
+													container: (function() {
+														if (!m.resources) return null;
+														if (m.resources.get && m.resources.child) return m.resources;
+														if (m.resources.loader) return $api.deprecate(function() {
+															return m.resources.loader;
+														})();
+													})()
 												};
 
 												this.getCode = function(scope) {

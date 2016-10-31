@@ -11,13 +11,16 @@
 //	Contributor(s):
 //	END LICENSE
 
-$set(function(p) {
+var Server = function(p) {
 	var server = new jsh.httpd.Tomcat({
 		port: (p.port) ? p.port : void(0)
 	});
 	var servlet = (function() {
-		if (p.servlet.pathname && p.servlet.pathname.file) {
-			return { $loader: new jsh.file.Loader({ directory: p.servlet.pathname.file.parent }), path: p.servlet.pathname.basename };
+		if (p.servlet.pathname && p.servlet.directory === false) {
+			p.servlet = { file: p.servlet };
+		}
+		if (p.servlet.file) {
+			return { $loader: new jsh.file.Loader({ directory: p.servlet.file.parent }), path: p.servlet.file.pathname.basename };
 		} else if (p.servlet.$loader) {
 			return { $loader: p.servlet.$loader, path: p.servlet.path }
 		} else if (p.servlet.resource) {
@@ -30,18 +33,14 @@ $set(function(p) {
 		path: "",
 		servlets: {
 			"/*": {
-//				file: p.servlet,
 				$loader: servlet.$loader,
 				parameters: p.parameters,
 				load: function(scope) {
-					if (p.servlet.scope) {
-						p.servlet.scope.call(scope);
-					}
 					servlet.$loader.run(servlet.path, scope);
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {
-								var code = $loader.resource("webview.initialize.js").read(String);
+								var code = $loader.get("webview.initialize.js").read(String);
 								return {
 									status: {
 										code: 200
@@ -60,6 +59,11 @@ $set(function(p) {
 		},
 		resources: p.resources
 	});
+	return server;
+}
+
+var Application = function(p) {
+	var server = Server(p);
 	server.start();
 
 	var stopTomcat = new JavaAdapter(
@@ -73,6 +77,9 @@ $set(function(p) {
 
 	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopTomcat));
 
+	//	TODO	proxy handling
+	//	if p.host is provided, create proxy settings for that port and change the url property below? Or should that be p.browser.host?
+
 	var url = "http://127.0.0.1:" + server.port + "/" + ((p.path) ? p.path : "");
 	if (!p.browser) {
 		//	TODO	add deprecation warning for this
@@ -81,7 +88,16 @@ $set(function(p) {
 			console: p.console
 		}
 	}
-	if (typeof(p.browser) == "object") {
+	if (typeof(p.browser) == "function") {
+		p.browser = (function(implementation) {
+			return {
+				run: function(p) {
+					implementation(p);
+				}
+			}
+		})(p.browser);
+	}
+	if (typeof(p.browser.run) != "function") {
 		var addTitleListener = function() {
 			this.listeners.add("title", function(e) {
 				this._frame.setTitle(e.detail.after);
@@ -148,7 +164,7 @@ $set(function(p) {
 			}
 		};
 		jsh.java.Thread.start(function() {
-			p.browser({ url: url });
+			p.browser.run({ url: url });
 			on.close();
 		});
 	}
@@ -156,4 +172,6 @@ $set(function(p) {
 	return {
 		port: server.port
 	};
-});
+};
+
+$set(Application);

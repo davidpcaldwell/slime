@@ -55,15 +55,6 @@ END LICENSE
 					</span>
 				</li>
 				<li class="value">
-					<div class="name">$loader</div>
-					<span class="type"><a href="../../loader/api.html">Loader</a></span>
-					<span>
-						(optional)
-						<!--	TODO	specify default. Seems to be derived from file property if that is present. What if it
-										is not?	-->
-						A <code>Loader</code> which will be provided to the servlet as <code>$loader</code>.</span>
-				</li>
-				<li class="value">
 					<div class="name">file</div>
 					<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
 					<span>
@@ -90,6 +81,18 @@ END LICENSE
 							</li>
 						</ol>
 					</div>
+				</li>
+				<li class="value">
+					<div class="name">$loader</div>
+					<span class="type"><a href="../../loader/api.html">Loader</a></span>
+					<span>
+						(optional)
+						<!--	TODO	specify default. Seems to be derived from file property if that is present. What if it
+										is not?	-->
+						A <code>Loader</code> which will be provided to the servlet as <code>$loader</code>. If the implementation
+						is specified via <code>file</code>, the default value of this property is a loader that loads code from
+						that file's directory.
+					</span>
 				</li>
 			</ul>
 		</div>
@@ -127,15 +130,22 @@ END LICENSE
 										<span>The path at which to deploy the webapp specified by the given argument, including the leading <code>/</code>.</span>
 									</li>
 									<li class="value">
+										<div class="name">resources</div>
+										<div>
+											<span class="type">Loader</span>
+											<span>A loader that loads Java web application resources by path.</span>
+										</div>
+										<div class="deprecated">
+											- OR -
+											<span class="type"><a href="plugin.jsh.resources.api.html#types.Resources">Resources</a></span>
+											<span>The resources to provide to the servlets.</span>
+										</div>
+									</li>
+									<li class="value">
 										<div class="name">servlets</div>
 										<span class="type">object</span> with property values of type <span class="type"><a href="#types.servlet">servlet</a></span>
 										<!--	TODO	add reference to URL patterns from servlet specification	-->
 										<span>An object whose property names are interpreted as URL patterns and property values are interpreted as servlet declarations.</span>
-									</li>
-									<li class="value">
-										<div class="name">resources</div>
-										<span class="type"><a href="plugin.jsh.resources.api.html#types.Resources">Resources</a></span>
-										<span>The resources to provide to the servlets.</span>
 									</li>
 									<!--
 									TODO	disabled because it does not work

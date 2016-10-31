@@ -59,11 +59,12 @@ plugin({
 		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java;
 	},
 	load: function() {
-		$loader.run("webview.jsh.api.js", {
+		$loader.run("application.js", {
 			$loader: $loader,
 			$set: function(v) {
-				jsh.ui.browser = v;
 				jsh.ui.javafx.WebView.application = $api.deprecate(v);
+				jsh.ui.browser = $api.deprecate(v);
+				jsh.ui.application = v;
 			}
 		});
 	}

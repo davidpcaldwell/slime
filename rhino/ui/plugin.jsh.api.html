@@ -112,7 +112,7 @@ END LICENSE
 										<!--	TODO	console; after documenting here, also update webview.window.api.html
 														documentation
 										-->
-										<!--	TODO	popup: used by webview.jsh.api.js to implement popups by opening another
+										<!--	TODO	popup: used by application.js to implement popups by opening another
 														frame.
 										-->
 										<!--	TODO	initialize: used to, for example, set title listener	-->
@@ -140,8 +140,43 @@ END LICENSE
 				</ul>
 			</li>
 			<li class="function">
-				<div class="name"><a id="exports.javafx.Webview.application"><!-- TODO remove when deprecated function removed; search for usages --></a><a id="#exports.browser">browser</a></div>
+				<div class="name">
+					<a id="exports.javafx.Webview.application"><!-- TODO remove when deprecated function removed; search for usages --></a>
+					<a id="exports.browser"><!-- TODO remove when deprecated function removed; search for usages --></a>
+					<a id="exports.application">application</a></div>
 				<span>__DESCRIPTION__</span>
+				<div class="type">
+					<a class="type" name="types.application.servlet">servlet</a>
+					<span>A <a href="../http/servlet/api.html#servlet">servlet</a> <!-- TODO check link --> to run.</span>
+					<div>
+						<span class="type"><a href="../file/api.html#types.file">file</a></span>
+						<span>A file containing the servlet implementation code.</span>
+					</div>
+					- OR -
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">resource</div>
+							<span class="type">string</span>
+							<span>A resource path at which the servlet implementation code can be found.</span>
+						</li>
+					</ul>
+					- OR -
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">$loader</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">$path</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+					</ul>
+				</div>
+
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -155,8 +190,13 @@ END LICENSE
 									See <a href="../../rhino/http/servlet/plugin.jsh.api.html#$exports.Tomcat">Tomcat</a>.
 								</li>
 								<li class="value">
+									<div class="name">resources</div>
+									<span class="type"><a href="../http/servlet/plugin.jsh.resources.api.html">Resources</a></span>
+									<span>The resources available to the server resource loader.<!--	TODO	hyperlink?	--></span>
+								</li>
+								<li class="value">
 									<div class="name">servlet</div>
-									<span class="type"><a href="../file/api.html#types.file">file</a></span>
+									<span class="type"><a href="#types.application.servlet">servlet</a></span>
 									<span>A <a href="../http/servlet/api.html#servlet">servlet</a> <!-- TODO check link --> to run.</span>
 								</li>
 								<li class="value">
@@ -165,11 +205,6 @@ END LICENSE
 									<span>
 										An object to supply to the servlet as its <code>$parameters</code> object.
 									</span>
-								</li>
-								<li class="value">
-									<div class="name">resources</div>
-									<span class="type"><a href="../http/servlet/plugin.jsh.resources.api.html">Resources</a></span>
-									<span>The resources available to the server resource loader.<!--	TODO	hyperlink?	--></span>
 								</li>
 								<li class="value">
 									<div class="name">path</div>
