@@ -201,7 +201,7 @@ END LICENSE
 				<script type="application/x.jsapi#initialize">
 					scope.api = $jsapi.loader.file("application.js");
 
-					scope.TestChrome = function() {
+					scope.TestChrome = function(p) {
 						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						TMP.getRelativePath("First Run").write("", { append: false });
 
@@ -209,7 +209,7 @@ END LICENSE
 						var lock = new jsh.java.Thread.Monitor();
 
 						this.start = function(p) {
-							var instance = new jsh.shell.browser.chrome.Instance({ directory: TMP });
+							var instance = new jsh.shell.browser.chrome.Instance({ directory: TMP, proxy: p.proxy });
 
 							jsh.java.Thread.start(function() {
 								instance.run({
@@ -313,8 +313,6 @@ END LICENSE
 						}
 					};
 
-					var first = singleRequestApplication();
-
 					var getHeader = function(name) {
 						return function() {
 							for (var i=0; i<this.headers.length; i++) {
@@ -326,9 +324,17 @@ END LICENSE
 						}
 					};
 
+					var first = singleRequestApplication();
 					verify(first).request.method.is("GET");
 					verify(first).request.path.is("");
 					verify(first).request.evaluate(getHeader("host")).is("127.0.0.1:" + first.application.server.port);
+
+					var second = singleRequestApplication(function() {
+						this.browser.host = "foo";
+					});
+					verify(second).request.method.is("GET");
+					verify(second).request.path.is("");
+					verify(second).request.evaluate(getHeader("host")).is("foo");
 				]]></script>
 			</li>
 		</ul>

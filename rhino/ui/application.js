@@ -84,7 +84,12 @@ var Application = function(p) {
 			}
 		})(p.browser);
 	}
-	var url = "http://127.0.0.1:" + server.port + "/" + ((p.path) ? p.path : "");
+	var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
+	var url = "http://" + authority + "/" + ((p.path) ? p.path : "");
+	var proxy;
+	if (p.browser.host) {
+		proxy = new jsh.shell.browser.ProxyConfiguration({ port: server.port });
+	}
 	var browser;
 	if (typeof(p.browser.run) != "function") {
 		var addTitleListener = function() {
@@ -153,14 +158,14 @@ var Application = function(p) {
 			}
 		};
 		if (p.browser.start) {
-			browser = p.browser.start({ url: url });
+			browser = p.browser.start({ url: url, proxy: proxy });
 			jsh.java.Thread.start(function() {
 				p.browser.run();
 				on.close();
 			});
 		} else {
 			jsh.java.Thread.start(function() {
-				p.browser.run({ url: url });
+				p.browser.run({ url: url, proxy: proxy });
 				on.close();
 			});
 		}
