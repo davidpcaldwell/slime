@@ -254,13 +254,13 @@ plugin({
 				servlets: {
 					"/*": {
 						load: function(scope) {
+							scope.$loader = $loader;
 							var server = loader.module("loader/api/ui/server.js", {
 								suite: p.suite,
 								messages: get
 							});
 							scope.$exports.handle = server.handle;
 						},
-						$loader: $loader,
 						parameters: {}
 					}
 				},
