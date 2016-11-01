@@ -15,45 +15,15 @@ var Server = function(p) {
 	var server = new jsh.httpd.Tomcat({
 		port: (p.port) ? p.port : void(0)
 	});
-//	var servlet = (function(resources,servlet) {
-//		if (servlet.pathname && servlet.directory === false) {
-//			servlet = { file: servlet };
-//		}
-//
-//		var byLoader = function($loader,path) {
-//			return function(scope) {
-//				$loader.run(path, scope);
-//			}
-//		}
-//
-//		if (servlet.file) {
-//			servlet = byLoader(new jsh.file.Loader({ directory: servlet.file.parent }), servlet.file.pathname.basename);
-//		} else if (servlet.$loader) {
-//			servlet.load = byLoader(servlet.$loader,servlet.path);
-//		} else if (servlet.resource) {
-//			var prefix = servlet.resource.split("/").slice(0,-1).join("/");
-//			if (prefix) prefix += "/";
-//			servlet.load = byLoader(new resources.Child(prefix), servlet.resource.substring(prefix.length));
-//		} else if (servlet.load) {
-//		}
-//		return servlet;
-//	})();
 	var servlet = jsh.httpd.spi.argument(p.resources,p.servlet);
 	server.map({
 		path: "",
 		servlets: {
 			"/*": {
-//				$loader: servlet.$loader,
 				parameters: p.parameters,
 				load: function(scope) {
 					scope.$loader = servlet.$loader;
 					servlet.load.apply(this,arguments);
-//					if (p.servlet.load) {
-//						p.servlet.load.apply(this,arguments);
-//					} else {
-//						throw new Error("No load method");
-////						servlet.$loader.run(servlet.path, scope);
-//					}
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {
@@ -97,13 +67,13 @@ var Application = function(p) {
 	//	TODO	proxy handling
 	//	if p.host is provided, create proxy settings for that port and change the url property below? Or should that be p.browser.host?
 
-	var url = "http://127.0.0.1:" + server.port + "/" + ((p.path) ? p.path : "");
 	if (!p.browser) {
-		//	TODO	add deprecation warning for this
-		p.browser = {
-			zoom: p.zoom,
-			console: p.console
-		}
+		$api.deprecate(function() {
+			p.browser = {
+				zoom: p.zoom,
+				console: p.console
+			}
+		})()
 	}
 	if (typeof(p.browser) == "function") {
 		p.browser = (function(implementation) {
@@ -114,6 +84,7 @@ var Application = function(p) {
 			}
 		})(p.browser);
 	}
+	var url = "http://127.0.0.1:" + server.port + "/" + ((p.path) ? p.path : "");
 	var browser;
 	if (typeof(p.browser.run) != "function") {
 		var addTitleListener = function() {
@@ -202,4 +173,4 @@ var Application = function(p) {
 	};
 };
 
-$set(Application);
+$exports.Application = Application;

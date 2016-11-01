@@ -59,13 +59,11 @@ plugin({
 		return jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java;
 	},
 	load: function() {
-		$loader.run("application.js", {
-			$loader: $loader,
-			$set: function(v) {
-				jsh.ui.javafx.WebView.application = $api.deprecate(v);
-				jsh.ui.browser = $api.deprecate(v);
-				jsh.ui.application = v;
-			}
-		});
+		var api = $loader.file("application.js");
+		(function(v) {
+			jsh.ui.javafx.WebView.application = $api.deprecate(v);
+			jsh.ui.browser = $api.deprecate(v);
+			jsh.ui.application = v;
+		})(api.Application);
 	}
 })

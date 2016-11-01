@@ -199,19 +199,9 @@ END LICENSE
 					</ul>
 				</div>
 				<script type="application/x.jsapi#initialize">
+					scope.api = $jsapi.loader.file("application.js");
 
-					$jsapi.loader.run("application.js", {
-						$loader: $jsapi.loader,
-						jsh: jsh,
-						$set: function(v) {
-							scope.api = v;
-						}
-					});
-				</script>
-				<script type="application/x.jsapi#tests">
-					verify("hello").is("hello");
-
-					var browser = new function() {
+					scope.TestChrome = function() {
 						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						TMP.getRelativePath("First Run").write("", { append: false });
 
@@ -270,6 +260,9 @@ END LICENSE
 							})();
 						};
 					};
+				</script>
+				<script type="application/x.jsapi#tests"><![CDATA[
+					verify("hello").is("hello");
 
 					var firstRequest;
 					var slock = new jsh.java.Thread.Monitor();
@@ -297,10 +290,10 @@ END LICENSE
 							}
 						};
 
-						this.browser = browser;
+						this.browser = new TestChrome();
 					};
 
-					var application = api(argument);
+					var application = api.Application(argument);
 
 					new slock.Waiter({
 						until: function() {
@@ -310,11 +303,23 @@ END LICENSE
 							application.browser.close();
 							application.server.stop();
 						}
-					})()
+					})();
+
+					var getHeader = function(name) {
+						return function() {
+							for (var i=0; i<this.headers.length; i++) {
+								if (this.headers[i].name.toLowerCase() == name) {
+									return this.headers[i].value;
+								}
+							}
+							return null;
+						}
+					};
 
 					verify(firstRequest).method.is("GET");
 					verify(firstRequest).path.is("");
-				</script>
+					verify(firstRequest).evaluate(getHeader("host")).is("127.0.0.1:" + application.server.port);
+				]]></script>
 			</li>
 		</ul>
 	</div>
