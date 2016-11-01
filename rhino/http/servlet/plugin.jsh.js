@@ -46,16 +46,18 @@ plugin({
 				}
 			};
 
-			var returning = function(o) {
-				var getResourceLoader = function(resources) {
-					if (!resources) return null;
-					if (resources.get && resources.child) return resources;
-					if (resources.loader) return $api.deprecate(function() {
-						return resources.loader;
-					})();
-				}
+			var getResourceLoader = function(resources) {
+				if (!resources) return null;
+				if (resources.get && resources.Child) return resources;
+				if (resources.loader) return $api.deprecate(function() {
+					return resources.loader;
+				})();
+			};
 
-				o.resources = getResourceLoader(resources);
+			resources = getResourceLoader(resources);
+
+			var returning = function(o) {
+				o.resources = resources;
 				return o;
 			};
 
