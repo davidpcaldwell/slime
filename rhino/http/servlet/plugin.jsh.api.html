@@ -58,14 +58,14 @@ END LICENSE
 					<div class="name">file</div>
 					<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
 					<span>
-						<span>(optional; either <code>file</code> or <code>load</code> is required)</span>
+						<span>(optional)</span>
 						The file providing the implementation of the servlet.
 					</span>
 				</li>
 				<li class="function">
 					<div class="name">load</div>
 					<span>
-						<span>(optional; either <code>file</code> or <code>load</code> is required)</span>
+						<span>(required; <code>file</code> and <code>resource</code> provide default implementations)</span>
 						A function providing the implementation of the servlet.
 					</span>
 					<div class="arguments">
@@ -86,7 +86,7 @@ END LICENSE
 					<div class="name">$loader</div>
 					<span class="type"><a href="../../loader/api.html">Loader</a></span>
 					<span>
-						(optional)
+						(optional; <code>file</code> and <code>resource</code> provide default implementations)
 						<!--	TODO	specify default. Seems to be derived from file property if that is present. What if it
 										is not?	-->
 						A <code>Loader</code> which will be provided to the servlet as <code>$loader</code>. If the implementation

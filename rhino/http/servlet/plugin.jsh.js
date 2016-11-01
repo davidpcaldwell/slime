@@ -35,6 +35,7 @@ plugin({
 
 		jsh.httpd.spi = {};
 		jsh.httpd.spi.argument = function(resources,servlet) {
+			if (servlet.$loader) throw new Error("servlet.$loader provided");
 			if (servlet.pathname && servlet.directory === false) {
 				servlet = { file: servlet };
 			}

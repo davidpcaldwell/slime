@@ -43,9 +43,10 @@ var Server = function(p) {
 		path: "",
 		servlets: {
 			"/*": {
-				$loader: servlet.$loader,
+//				$loader: servlet.$loader,
 				parameters: p.parameters,
 				load: function(scope) {
+					scope.$loader = servlet.$loader;
 					servlet.load.apply(this,arguments);
 //					if (p.servlet.load) {
 //						p.servlet.load.apply(this,arguments);
