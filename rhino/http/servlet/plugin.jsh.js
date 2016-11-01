@@ -63,11 +63,11 @@ plugin({
 					$loader: servlet.$loader,
 					load: servlet.load
 				});
-			} else if (servlet.$loader && servlet.path) {
-				return returning({
-					$loader: servlet.$loader,
-					load: byLoader(servlet.$loader,servlet.path)
-				});
+//			} else if (servlet.$loader && servlet.path) {
+//				return returning({
+//					$loader: servlet.$loader,
+//					load: byLoader(servlet.$loader,servlet.path)
+//				});
 			} else if (servlet.file) {
 				return returning({
 					$loader: new jsh.file.Loader({
@@ -81,9 +81,10 @@ plugin({
 			} else if (servlet.resource) {
 				var prefix = servlet.resource.split("/").slice(0,-1).join("/");
 				if (prefix) prefix += "/";
+				var $loader = new resources.Child(prefix);
 				return returning({
-					$loader: servlet.$loader,
-					load: byLoader(new resources.Child(prefix), servlet.resource.substring(prefix.length))
+					$loader: $loader,
+					load: byLoader($loader, servlet.resource.substring(prefix.length))
 				});
 			} else {
 				throw new Error("Bad argument.");
