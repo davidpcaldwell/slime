@@ -264,46 +264,56 @@ END LICENSE
 				<script type="application/x.jsapi#tests"><![CDATA[
 					verify("hello").is("hello");
 
-					var firstRequest;
-					var slock = new jsh.java.Thread.Monitor();
+					var singleRequestApplication = function(decorator) {
+						var firstRequest;
+						var slock = new jsh.java.Thread.Monitor();
 
-					var argument = new function() {
-						this.servlet = {
-							load: function(scope) {
-								scope.$exports.handle = function(request) {
-									jsh.shell.console("Got request " + request.method + " " + request.path);
-									new slock.Waiter({
-										until: function() {
-											return true;
-										},
-										then: function() {
-											if (!firstRequest) firstRequest = request;
-										}
-									})();
+						var argument = new function() {
+							this.servlet = {
+								load: function(scope) {
+									scope.$exports.handle = function(request) {
+										new slock.Waiter({
+											until: function() {
+												return true;
+											},
+											then: function() {
+												if (!firstRequest) firstRequest = request;
+											}
+										})();
+									}
 								}
-							}
+							};
+
+							this.on = {
+								close: function() {
+									jsh.shell.console("Closed browser.");
+								}
+							};
+
+							this.browser = new TestChrome();
 						};
 
-						this.on = {
-							close: function() {
-								jsh.shell.console("Closed browser.");
-							}
-						};
+						if (decorator) decorator.call(argument);
 
-						this.browser = new TestChrome();
+						var application = api.Application(argument);
+
+						new slock.Waiter({
+							until: function() {
+								return firstRequest;
+							},
+							then: function() {
+								application.browser.close();
+								application.server.stop();
+							}
+						})();
+
+						return {
+							application: application,
+							request: firstRequest
+						}
 					};
 
-					var application = api.Application(argument);
-
-					new slock.Waiter({
-						until: function() {
-							return firstRequest;
-						},
-						then: function() {
-							application.browser.close();
-							application.server.stop();
-						}
-					})();
+					var first = singleRequestApplication();
 
 					var getHeader = function(name) {
 						return function() {
@@ -316,9 +326,9 @@ END LICENSE
 						}
 					};
 
-					verify(firstRequest).method.is("GET");
-					verify(firstRequest).path.is("");
-					verify(firstRequest).evaluate(getHeader("host")).is("127.0.0.1:" + application.server.port);
+					verify(first).request.method.is("GET");
+					verify(first).request.path.is("");
+					verify(first).request.evaluate(getHeader("host")).is("127.0.0.1:" + first.application.server.port);
 				]]></script>
 			</li>
 		</ul>
