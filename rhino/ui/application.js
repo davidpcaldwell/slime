@@ -15,32 +15,30 @@ var Server = function(p) {
 	var server = new jsh.httpd.Tomcat({
 		port: (p.port) ? p.port : void(0)
 	});
-	var servlet = (function() {
-		if (p.servlet.pathname && p.servlet.directory === false) {
-			p.servlet = { file: p.servlet };
-		}
-
-		var byLoader = function($loader,path) {
-			return function(scope) {
-				$loader.run(path, scope);
-			}
-		}
-
-		if (p.servlet.file) {
-			p.servlet.load = byLoader(new jsh.file.Loader({ directory: p.servlet.file.parent }), p.servlet.file.pathname.basename);
-//			return { $loader: new jsh.file.Loader({ directory: p.servlet.file.parent }), path: p.servlet.file.pathname.basename };
-		} else if (p.servlet.$loader) {
-			p.servlet.load = byLoader(p.servlet.$loader,p.servlet.path);
-//			return { $loader: p.servlet.$loader, path: p.servlet.path }
-		} else if (p.servlet.resource) {
-			var prefix = p.servlet.resource.split("/").slice(0,-1).join("/");
-			if (prefix) prefix += "/";
-			p.servlet.load = byLoader(new p.resources.loader.Child(prefix), p.servlet.resource.substring(prefix.length));
-//			return { $loader: new p.resources.loader.Child(prefix), path: p.servlet.resource.substring(prefix.length) };
-		} else if (p.servlet.load) {
-		}
-		return p.servlet;
-	})();
+//	var servlet = (function(resources,servlet) {
+//		if (servlet.pathname && servlet.directory === false) {
+//			servlet = { file: servlet };
+//		}
+//
+//		var byLoader = function($loader,path) {
+//			return function(scope) {
+//				$loader.run(path, scope);
+//			}
+//		}
+//
+//		if (servlet.file) {
+//			servlet = byLoader(new jsh.file.Loader({ directory: servlet.file.parent }), servlet.file.pathname.basename);
+//		} else if (servlet.$loader) {
+//			servlet.load = byLoader(servlet.$loader,servlet.path);
+//		} else if (servlet.resource) {
+//			var prefix = servlet.resource.split("/").slice(0,-1).join("/");
+//			if (prefix) prefix += "/";
+//			servlet.load = byLoader(new resources.Child(prefix), servlet.resource.substring(prefix.length));
+//		} else if (servlet.load) {
+//		}
+//		return servlet;
+//	})();
+	var servlet = jsh.httpd.spi.argument(p.resources,p.servlet);
 	server.map({
 		path: "",
 		servlets: {
@@ -48,12 +46,13 @@ var Server = function(p) {
 				$loader: servlet.$loader,
 				parameters: p.parameters,
 				load: function(scope) {
-					if (p.servlet.load) {
-						p.servlet.load.apply(this,arguments);
-					} else {
-						throw new Error("No load method");
-//						servlet.$loader.run(servlet.path, scope);
-					}
+					servlet.load.apply(this,arguments);
+//					if (p.servlet.load) {
+//						p.servlet.load.apply(this,arguments);
+//					} else {
+//						throw new Error("No load method");
+////						servlet.$loader.run(servlet.path, scope);
+//					}
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
 							if (request.path == "webview.initialize.js") {
@@ -74,7 +73,7 @@ var Server = function(p) {
 				}
 			}
 		},
-		resources: p.resources
+		resources: servlet.resources
 	});
 	return server;
 }
