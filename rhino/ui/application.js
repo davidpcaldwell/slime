@@ -19,17 +19,27 @@ var Server = function(p) {
 		if (p.servlet.pathname && p.servlet.directory === false) {
 			p.servlet = { file: p.servlet };
 		}
+
+		var byLoader = function($loader,path) {
+			return function(scope) {
+				$loader.run(path, scope);
+			}
+		}
+
 		if (p.servlet.file) {
-			return { $loader: new jsh.file.Loader({ directory: p.servlet.file.parent }), path: p.servlet.file.pathname.basename };
+			p.servlet.load = byLoader(new jsh.file.Loader({ directory: p.servlet.file.parent }), p.servlet.file.pathname.basename);
+//			return { $loader: new jsh.file.Loader({ directory: p.servlet.file.parent }), path: p.servlet.file.pathname.basename };
 		} else if (p.servlet.$loader) {
-			return { $loader: p.servlet.$loader, path: p.servlet.path }
+			p.servlet.load = byLoader(p.servlet.$loader,p.servlet.path);
+//			return { $loader: p.servlet.$loader, path: p.servlet.path }
 		} else if (p.servlet.resource) {
 			var prefix = p.servlet.resource.split("/").slice(0,-1).join("/");
 			if (prefix) prefix += "/";
-			return { $loader: new p.resources.loader.Child(prefix), path: p.servlet.resource.substring(prefix.length) };
-		} else {
-			return {};
+			p.servlet.load = byLoader(new p.resources.loader.Child(prefix), p.servlet.resource.substring(prefix.length));
+//			return { $loader: new p.resources.loader.Child(prefix), path: p.servlet.resource.substring(prefix.length) };
+		} else if (p.servlet.load) {
 		}
+		return p.servlet;
 	})();
 	server.map({
 		path: "",
@@ -41,7 +51,8 @@ var Server = function(p) {
 					if (p.servlet.load) {
 						p.servlet.load.apply(this,arguments);
 					} else {
-						servlet.$loader.run(servlet.path, scope);
+						throw new Error("No load method");
+//						servlet.$loader.run(servlet.path, scope);
 					}
 					scope.$exports.handle = (function(declared) {
 						return function(request) {
