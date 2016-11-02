@@ -53,17 +53,7 @@ jsh.script.Application.run({
 					servlet: servlet,
 					browser: {
 						host: parameters.options.host,
-						run: function(p) {
-							var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-							TMP.getRelativePath("First Run").write("", { append: false });
-							var instance = new jsh.shell.browser.chrome.Instance({
-								directory: TMP,
-								proxy: p.proxy
-							});
-							jsh.shell.console("Running Chrome instance ...");
-							//	TODO 'browser' mode
-							instance.run({ uri: p.url });
-						}
+						chrome: {}
 					}
 				});
 			}

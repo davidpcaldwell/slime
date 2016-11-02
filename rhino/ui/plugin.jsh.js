@@ -65,5 +65,6 @@ plugin({
 			jsh.ui.browser = $api.deprecate(v);
 			jsh.ui.application = v;
 		})(api.Application);
+		jsh.ui.Chrome = api.Chrome;
 	}
 })

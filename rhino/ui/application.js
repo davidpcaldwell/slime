@@ -47,7 +47,70 @@ var Server = function(p) {
 		resources: servlet.resources
 	});
 	return server;
-}
+};
+
+var Chrome = function(o) {
+	if (!o) o = {};
+	var directory = (o.directory) ? o.directory : jsh.shell.TMPDIR.createTemporary({ directory: true });
+	directory.getRelativePath("First Run").write("", { append: false });
+
+	return function(p) {
+		var lock = new jsh.java.Thread.Monitor();
+
+		var notify = function() {
+			new lock.Waiter({
+				until: function() {
+					return true;
+				},
+				then: function() {
+				}
+			})();
+		}
+
+		var instance = new jsh.shell.browser.chrome.Instance({ directory: directory, proxy: p.proxy });
+
+		var process;
+		var finished = false;
+
+		jsh.java.Thread.start(function() {
+			var argument = {
+				on: {
+					start: function(argument) {
+						process = new function() {
+							this.close = function() {
+								argument.kill();
+							};
+
+							this.run = function() {
+								return new lock.Waiter({
+									until: function() {
+										return finished;
+									},
+									then: function() {
+									}
+								})();
+							};
+						};
+						notify();
+					}
+				}
+			};
+			argument.uri = p.url;
+			instance.run(argument);
+			finished = true;
+			notify();
+		});
+
+		return new lock.Waiter({
+			until: function() {
+				return process;
+			},
+			then: function() {
+				return process;
+			}
+		})();
+	}
+};
 
 var Application = function(p) {
 	var server = Server(p);
@@ -182,6 +245,9 @@ var Application = function(p) {
 			Packages.java.lang.System.exit(0);
 		}
 	};
+	if (p.browser.chrome) {
+		p.browser.create = Chrome(p.browser.chrome);
+	}
 	if (p.browser.create) {
 		browser = p.browser.create({ url: url, proxy: proxy });
 		jsh.java.Thread.start(function() {

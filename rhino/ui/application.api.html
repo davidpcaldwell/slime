@@ -200,68 +200,6 @@ END LICENSE
 				</div>
 				<script type="application/x.jsapi#initialize">
 					scope.api = $jsapi.loader.file("application.js");
-
-					scope.TestChrome = function(p) {
-						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						TMP.getRelativePath("First Run").write("", { append: false });
-
-						this.create = function(p) {
-							var lock = new jsh.java.Thread.Monitor();
-
-							var process;
-							var finished = false;
-							var instance = new jsh.shell.browser.chrome.Instance({ directory: TMP, proxy: p.proxy });
-
-							jsh.java.Thread.start(function() {
-								instance.run({
-									uri: p.url,
-									on: {
-										start: function(argument) {
-											process = new function() {
-												this.close = function() {
-													argument.kill();
-												};
-
-												this.run = function() {
-													return new lock.Waiter({
-														until: function() {
-															return finished;
-														},
-														then: function() {
-														}
-													})();
-												};
-											};
-											new lock.Waiter({
-												until: function() {
-													return true;
-												},
-												then: function() {
-												}
-											})();
-										}
-									}
-								});
-								finished = true;
-								new lock.Waiter({
-									until: function() {
-										return true;
-									},
-									then: function() {
-									}
-								})();
-							});
-
-							return new lock.Waiter({
-								until: function() {
-									return process;
-								},
-								then: function() {
-									return process;
-								}
-							})();
-						}
-					};
 				</script>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					verify("hello").is("hello");
@@ -292,7 +230,9 @@ END LICENSE
 								}
 							};
 
-							this.browser = new TestChrome();
+							this.browser = {
+								chrome: {}
+							};
 						};
 
 						if (decorator) decorator.call(argument);
