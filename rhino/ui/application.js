@@ -182,10 +182,10 @@ var Application = function(p) {
 			Packages.java.lang.System.exit(0);
 		}
 	};
-	if (p.browser.start) {
-		browser = p.browser.start({ url: url, proxy: proxy });
+	if (p.browser.create) {
+		browser = p.browser.create({ url: url, proxy: proxy });
 		jsh.java.Thread.start(function() {
-			p.browser.run();
+			browser.run();
 			on.close();
 		});
 	} else {

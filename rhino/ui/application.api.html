@@ -205,10 +205,11 @@ END LICENSE
 						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						TMP.getRelativePath("First Run").write("", { append: false });
 
-						var process;
-						var lock = new jsh.java.Thread.Monitor();
+						this.create = function(p) {
+							var lock = new jsh.java.Thread.Monitor();
 
-						this.start = function(p) {
+							var process;
+							var finished = false;
 							var instance = new jsh.shell.browser.chrome.Instance({ directory: TMP, proxy: p.proxy });
 
 							jsh.java.Thread.start(function() {
@@ -219,7 +220,17 @@ END LICENSE
 											process = new function() {
 												this.close = function() {
 													argument.kill();
-												}
+												};
+
+												this.run = function() {
+													return new lock.Waiter({
+														until: function() {
+															return finished;
+														},
+														then: function() {
+														}
+													})();
+												};
 											};
 											new lock.Waiter({
 												until: function() {
@@ -240,6 +251,7 @@ END LICENSE
 									}
 								})();
 							});
+
 							return new lock.Waiter({
 								until: function() {
 									return process;
@@ -249,16 +261,6 @@ END LICENSE
 								}
 							})();
 						}
-
-						this.run = function() {
-							return new lock.Waiter({
-								until: function() {
-									return finished;
-								},
-								then: function() {
-								}
-							})();
-						};
 					};
 				</script>
 				<script type="application/x.jsapi#tests"><![CDATA[
