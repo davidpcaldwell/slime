@@ -95,7 +95,11 @@ var Chrome = function(o) {
 					}
 				}
 			};
-			argument.uri = p.url;
+			if (o.browser) {
+				argument.uri = p.url;
+			} else {
+				argument.app = p.url;
+			}
 			instance.run(argument);
 			finished = true;
 			notify();
