@@ -106,10 +106,10 @@ var Application = function(p) {
 				jsh.ui.javafx.launch({
 					title: "WebView",	//	TODO	default
 					Scene: jsh.ui.javafx.WebView({
-						page: { url: url },
+						page: { url: p.url },
 						//	TODO	configurable
 						alert: function(s) {
-							jsh.shell.echo("ALERT: " + s);
+							jsh.shell.console("ALERT: " + s);
 						},
 						//	TODO	configurable
 						console: (p.console) ? p.console : new function() {
@@ -127,7 +127,7 @@ var Application = function(p) {
 						},
 						popup: function(_popup) {
 							if (!_popup) _popup = this._popup;
-							jsh.shell.echo("Creating popup " + _popup + " ...");
+							jsh.shell.console("Creating popup " + _popup + " ...");
 							var browser = new Packages.javafx.scene.web.WebView();
 							//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
 							//			object and calling back into the application layer with it already configured with things like the
@@ -152,15 +152,21 @@ var Application = function(p) {
 						initialize: function() {
 							addTitleListener.call(this);
 						},
-						zoom: p.zoom
+						zoom: settings.browser.zoom
 					}),
 					on: {
 						close: function(p) {
-							closed = true;
+							new lock.Waiter({
+								until: function() {
+									return true;
+								},
+								then: function() {
+									closed = true;
+								}
+							})();
 						}
 					}
 				});
-				jsh.shell.console("Launched.");
 				new lock.Waiter({
 					until: function() {
 						return closed;
@@ -170,24 +176,23 @@ var Application = function(p) {
 				})();
 			}
 		})(p);
-	} else {
-		var on = (p.on) ? p.on : {
-			close: function() {
-				Packages.java.lang.System.exit(0);
-			}
-		};
-		if (p.browser.start) {
-			browser = p.browser.start({ url: url, proxy: proxy });
-			jsh.java.Thread.start(function() {
-				p.browser.run();
-				on.close();
-			});
-		} else {
-			jsh.java.Thread.start(function() {
-				p.browser.run({ url: url, proxy: proxy });
-				on.close();
-			});
+	}
+	var on = (p.on) ? p.on : {
+		close: function() {
+			Packages.java.lang.System.exit(0);
 		}
+	};
+	if (p.browser.start) {
+		browser = p.browser.start({ url: url, proxy: proxy });
+		jsh.java.Thread.start(function() {
+			p.browser.run();
+			on.close();
+		});
+	} else {
+		jsh.java.Thread.start(function() {
+			p.browser.run({ url: url, proxy: proxy });
+			on.close();
+		});
 	}
 
 	return {

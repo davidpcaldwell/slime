@@ -68,23 +68,21 @@ jsh.script.Application.run({
 				});
 			}
 		}
-//		,
-//		javafx: {
-//			getopts: {
-//				options: {
-//					zoom: Number
-//				}
-//			},
-//			run: function(parameters) {
-//				jsh.ui.application({
-//					servlet: servlet,
-//					browser: {
-//						run: function(p) {
-//
-//						}
-//					}
-//				})
-//			}
-//		}
+		,
+		javafx: {
+			getopts: {
+				options: {
+					zoom: Number
+				}
+			},
+			run: function(parameters) {
+				jsh.ui.application({
+					servlet: servlet,
+					browser: {
+						zoom: parameters.options.zoom
+					}
+				})
+			}
+		}
 	}
 })
