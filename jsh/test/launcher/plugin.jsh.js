@@ -93,21 +93,24 @@ plugin({
 										}
 									}
 									var tokenized = request.path.split("/");
-									if (tokenized.slice(0,2).join("/") == "api/1.0") {
+									if (tokenized.slice(0,3).join("/") == "api/1.0/repositories" || tokenized[2] == "raw") {
+										var user;
+										var repository;
+										if (tokenized.slice(0,3).join("/") == "api/1.0/repositories") {
+											tokenized.shift();
+											tokenized.shift();
+											tokenized.shift();
+										}
+										user = tokenized[0];
+										repository = tokenized[1];
 										tokenized.shift();
 										tokenized.shift();
-										if (tokenized[0] == "repositories") {
-											tokenized.shift();
-											var user = tokenized[0];
-											var repository = tokenized[1];
-											tokenized.shift();
-											tokenized.shift();
-											if (o.src[user] && o.src[user][repository]) {
-												var body = (request.method == "GET");
-												return new Sourceroot(o.src[user][repository]).get(body, tokenized);
-											} else {
-												throw new Error("No definition for repository " + user + "/" + repository);
-											}
+										if (o.src[user] && o.src[user][repository]) {
+											var body = (request.method == "GET");
+											jsh.shell.console("tokenized = " + tokenized);
+											return new Sourceroot(o.src[user][repository]).get(body, tokenized);
+										} else {
+											throw new Error("No definition for repository " + user + "/" + repository);
 										}
 									} else if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]] && tokenized[2] == "get") {
 										var SRC = o.src[tokenized[0]][tokenized[1]];
@@ -203,6 +206,8 @@ plugin({
 				}
 			});
 			return new function() {
+				this.port = tomcat.port;
+				
 				this.client = client;
 
 				this.jsh = function(o) {
