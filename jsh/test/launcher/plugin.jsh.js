@@ -21,7 +21,6 @@ plugin({
 		jsh.test.launcher.MockRemote = function(o) {
 			if (!o) o = {};
 			var tomcat = new jsh.httpd.Tomcat({});
-			var SRC = o.src;
 			tomcat.map({
 				//	TODO	works with or without leading slash; document this and write a test
 				path: "",
@@ -29,15 +28,11 @@ plugin({
 					"/*": {
 						//	TODO	document load method
 						load: function(scope) {
-							var loader = new jsh.file.Loader({ directory: SRC });
 							scope.$exports.handle = function(request) {
 								if (o.trace) {
-									Packages.java.lang.System.err.println("Request: " + request.method + " " + request.path);
+									Packages.java.lang.System.err.println("Request: " + request.method + " " + request.headers.value("host") + " " + request.path);
 								}
 								if (request.headers.value("host") == "bitbucket.org") {
-									if (o.trace) {
-										Packages.java.lang.System.err.println("Request: " + request.method + " " + request.path);
-									}
 									if (request.path == "") {
 										return {
 											status: {
@@ -107,14 +102,15 @@ plugin({
 											var repository = tokenized[1];
 											tokenized.shift();
 											tokenized.shift();
-											if (user == "davidpcaldwell") {
-												if (repository == "slime") {
-													var body = (request.method == "GET");
-													return new Sourceroot(SRC).get(body, tokenized);
-												}
+											if (o.src[user] && o.src[user][repository]) {
+												var body = (request.method == "GET");
+												return new Sourceroot(o.src[user][repository]).get(body, tokenized);
+											} else {
+												throw new Error("No definition for repository " + user + "/" + repository);
 											}
 										}
-									} else if (tokenized[0] == "davidpcaldwell" && tokenized[1] == "slime" && tokenized[2] == "get") {
+									} else if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]] && tokenized[2] == "get") {
+										var SRC = o.src[tokenized[0]][tokenized[1]];
 										if (tokenized[3] == "local.zip") {
 											try {
 												var buffer = new jsh.io.Buffer();
@@ -175,6 +171,7 @@ plugin({
 										status: { code: 500 }
 									};
 								} else {
+									throw new Error("request.path = " + request.path);
 									var resource = loader.resource(request.path);
 									if (resource) {
 										return {
