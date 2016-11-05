@@ -253,11 +253,13 @@ var Application = function(p) {
 		browser = p.browser.create({ url: url, proxy: proxy });
 		jsh.java.Thread.start(function() {
 			browser.run();
+			server.stop();
 			on.close();
 		});
 	} else {
 		jsh.java.Thread.start(function() {
 			p.browser.run({ url: url, proxy: proxy });
+			server.stop();
 			on.close();
 		});
 	}
