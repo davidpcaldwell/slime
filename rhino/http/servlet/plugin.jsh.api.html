@@ -54,42 +54,48 @@ END LICENSE
 						parameters, and hence may only have string values.
 					</span>
 				</li>
-				<li class="value">
-					<div class="name">$loader</div>
-					<span class="type"><a href="../../loader/api.html">Loader</a></span>
-					<span>
-						(optional)
-						<!--	TODO	specify default. Seems to be derived from file property if that is present. What if it
-										is not?	-->
-						A <code>Loader</code> which will be provided to the servlet as <code>$loader</code>.</span>
-				</li>
-				<li class="value">
-					<div class="name">file</div>
-					<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
-					<span>
-						<span>(optional; either <code>file</code> or <code>load</code> is required)</span>
-						The file providing the implementation of the servlet.
-					</span>
-				</li>
-				<li class="function">
-					<div class="name">load</div>
-					<span>
-						<span>(optional; either <code>file</code> or <code>load</code> is required)</span>
-						A function providing the implementation of the servlet.
-					</span>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">object</span>
-								<span>
-									An object with properties representing the scope variables of the servlet, including the scope
-									variables specified by <a href="api.html">SLIME servlets</a> as well as the
-									<code>$exports</code> object to which the servlet provides its implementation.
-								</span>
-							</li>
-						</ol>
-					</div>
+				<li>
+					One of:
+					<ul>
+						<li class="value">
+							<div class="name">file</div>
+							<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
+							<span>
+								The file providing the implementation of the servlet. The servlet will be supplied with a
+								<code>$loader</code> variable that can load resources from its parent directory.
+							</span>
+						</li>
+						<li class="value">
+							<div class="name">resource</div>
+							<span class="type">string</span>
+							<span>
+								The path within the applications resource loader at which the servlet can be found. The servlet
+								will be supplied with a <code>$loader</code> that can load resources from the servlet's parent
+								path; see the <a href="api.html">SLIME servlet documentation</a>.
+							</span>
+						</li>
+						<li class="function">
+							<div class="name">load</div>
+							<span>
+								A function providing the implementation of the servlet. The servlet will not be provided with a
+								<code>$loader</code> by default, although one can be supplied by adding it to the scope argument.
+							</span>
+							<div class="arguments">
+								<div class="label">Arguments</div>
+								<ol>
+									<li class="value">
+										<span class="type">object</span>
+										<span>
+											An object with properties representing the scope variables of the servlet, including the scope
+											variables (other than <code>$loader</code>; see above) specified by
+											<a href="api.html">SLIME servlets</a> as well as the <code>$exports</code> object to
+											which the servlet provides its implementation.
+										</span>
+									</li>
+								</ol>
+							</div>
+						</li>
+					</ul>
 				</li>
 			</ul>
 		</div>
@@ -127,15 +133,22 @@ END LICENSE
 										<span>The path at which to deploy the webapp specified by the given argument, including the leading <code>/</code>.</span>
 									</li>
 									<li class="value">
+										<div class="name">resources</div>
+										<div>
+											<span class="type">Loader</span>
+											<span>A loader that loads Java web application resources by path.</span>
+										</div>
+										<div class="deprecated">
+											- OR -
+											<span class="type"><a href="plugin.jsh.resources.api.html#types.Resources">Resources</a></span>
+											<span>The resources to provide to the servlets.</span>
+										</div>
+									</li>
+									<li class="value">
 										<div class="name">servlets</div>
 										<span class="type">object</span> with property values of type <span class="type"><a href="#types.servlet">servlet</a></span>
 										<!--	TODO	add reference to URL patterns from servlet specification	-->
 										<span>An object whose property names are interpreted as URL patterns and property values are interpreted as servlet declarations.</span>
-									</li>
-									<li class="value">
-										<div class="name">resources</div>
-										<span class="type"><a href="plugin.jsh.resources.api.html#types.Resources">Resources</a></span>
-										<span>The resources to provide to the servlets.</span>
 									</li>
 									<!--
 									TODO	disabled because it does not work

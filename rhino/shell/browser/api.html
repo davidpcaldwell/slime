@@ -133,7 +133,7 @@ END LICENSE
 						<div class="name">Instance</div>
 						<span>
 							A Chrome instance, consisting of the Chrome software and a user data directory.
-							Note that this is not a user <em>profile</em>; a user 
+							Note that this is not a user <em>profile</em>; a user
 							directory <strong>contains</strong> user profiles.
 						</span>
 						<div class="arguments">
@@ -251,13 +251,13 @@ END LICENSE
 					</span>
 					<script type="application/x.jsapi#tests">
 						jsh.shell.console("Creating Tomcat.");
-						
+
 						var tomcat = new jsh.httpd.Tomcat();
 						var browser;
-						
+
 						var requested;
 						var lock = new jsh.java.Thread.Monitor();
-						
+
 						tomcat.map({
 							path: "",
 							servlets: {
@@ -280,12 +280,12 @@ END LICENSE
 								}
 							}
 						});
-						
+
 						tomcat.start();
-						
+
 						var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						TMP.getRelativePath("First Run").write("", { append: false });
-						
+
 						var instance = new api.chrome.Instance({
 							directory: TMP,
 							proxy: new api.ProxyConfiguration({
@@ -311,7 +311,7 @@ END LICENSE
 								jsh.shell.console("Error creating browser: " + e);
 							}
 						})
-						
+
 						new lock.Waiter({
 							until: function() {
 								return requested;
@@ -321,7 +321,7 @@ END LICENSE
 								browser.kill();
 							}
 						})();
-						
+
 						verify(requested).is.type("object");
 						var headers = $api.Object({ properties: requested.headers });
 						verify(headers).host.is("slime-test");

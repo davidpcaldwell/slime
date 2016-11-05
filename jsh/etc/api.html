@@ -246,9 +246,12 @@ END LICENSE
 			</thead>
 			<tbody>
 				<tr>
-					<td><a href="../../rhino/ui/api.html">jsh.ui</a></td>
+					<td><a href="../../rhino/ui/plugin.jsh.api.html">jsh.ui</a></td>
 					<td>
 						User interfaces
+						<script jsapi:id="jsh.ui" type="application/x.jsapi#tests">
+							verify.suite($jsapi.loader.suite("../../rhino/ui/plugin.jsh.api.html"));
+						</script>
 					</td>
 				</tr>
 			</tbody>

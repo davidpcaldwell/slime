@@ -19,7 +19,7 @@ var Chrome = function(b) {
 	//	Used to be called "User" but "Instance" seems a better name (so as not to be confused with a
 	//	"profile" (which is called a "person" by Chrome, although it used to be called a "user"). The term "install"
 	//	wouldn't be perfect because then one Chrome codebase could be multiple "installs" (user data directories).
-	//	
+	//
 	//	See https://www.chromium.org/user-experience/user-data-directory
 	//	See https://www.chromium.org/user-experience/multi-profiles
 	this.Instance = function(u) {

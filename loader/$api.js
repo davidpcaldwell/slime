@@ -157,7 +157,7 @@
 
 	var deprecate = flag();
 	var experimental = flag();
-	
+
 	var once = function() {
 		return (function(was) {
 			var called;
@@ -180,7 +180,7 @@
 					called = true;
 					return warning.apply(this,arguments);
 				}
-			}			
+			}
 		}
 	}
 	$exports.deprecate = deprecate;
@@ -338,6 +338,20 @@
 				}
 			}
 			return true;
+		}
+	};
+	$exports.Filter.or = function() {
+		var functions = arguments;
+		for (var i=0; i<functions.length; i++) {
+			if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
+		}
+		return function() {
+			for (var i=0; i<functions.length; i++) {
+				if (functions[i].apply(this,arguments)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	};
 	$exports.Filter.not = function(f) {

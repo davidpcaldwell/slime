@@ -497,7 +497,7 @@ selection.target(new function() {
 	};
 
 	this.status = document.getElementById("status");
-	
+
 	var isSelected = function(element) {
 		//	TODO	DRY violation
 		var dummy = document.createElement("div");

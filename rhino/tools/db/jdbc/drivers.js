@@ -941,7 +941,7 @@ var Schema = function(c) {
 
 	this.getTable = function(p) {
 //		var tables = this.getTables();
-		var name = new Identifier({ string: p.name });
+		var name = new Identifier(p.name);
 		var candidateTables = c.dataSource.createMetadataQuery( function(metadata) {
 			//	TODO	this would not work in a multi-catalog database; would need to also filter on catalog
 			return metadata.getTables(null,c.name.toString(),name.toString(),null)

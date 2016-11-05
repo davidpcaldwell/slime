@@ -202,7 +202,7 @@ window.onload = function() {
 						elements[i].replaceChild(text,children[j]);
 					}
 				}
-			}			
+			}
 		}
 
 		this.fix = function() {

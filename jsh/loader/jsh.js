@@ -146,6 +146,10 @@ this.jsh = new function() {
 				}
 				loader.classpath.add(pathname.java.adapt());
 			};
+
+			this.getClass = function(name) {
+				return loader.classpath.get(name);
+			}
 		};
 
 		this.plugins = function(from) {
