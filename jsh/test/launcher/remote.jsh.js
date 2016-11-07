@@ -51,7 +51,11 @@ if (parameters.options.jrunscript.length) {
 	jsh.shell.exit(0);
 } else {
 	var mock = new jsh.test.launcher.MockRemote({
-		src: SRC,
+		src: {
+			davidpcaldwell: {
+				slime: SRC
+			}
+		},
 		trace: parameters.options["trace:server"]
 	});
 	if (parameters.options.script) {
