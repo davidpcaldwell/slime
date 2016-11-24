@@ -299,7 +299,7 @@ END LICENSE
 																type: "application/json",
 																string: JSON.stringify({
 																	preferred: "http://apache.inonit.com/"
-															})
+																})
 															}
 														};
 													}
@@ -311,7 +311,7 @@ END LICENSE
 													};
 												}
 											};
-										Packages.java.lang.System.err.println("custom servlet loaded.");
+											Packages.java.lang.System.err.println("custom servlet loaded.");
 										}
 									}
 								},
@@ -362,7 +362,7 @@ END LICENSE
 					<script type="application/x.jsapi#tests">
 						if (jsh.httpd.Tomcat) {
 							verify(api).apache.is.type("object");
-							verify(api).apache.evaluate.property("download").is.type("function");
+							verify(api).apache.evaluate.property("find").is.type("function");
 							verify(mock).is.type("object");
 
 							var PROXY = {

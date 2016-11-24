@@ -84,13 +84,14 @@ var installLocalArchive = function(p,algorithm) {
 var get = function(p) {
 	if (!p.file) {
 		if (p.url) {
-			var basename = p.url.split("/").slice(-1)[0];
-			var pathname = $context.downloads.getRelativePath(basename);
+			if (!p.name) p.name = p.url.split("/").slice(-1)[0];
+			var pathname = $context.downloads.getRelativePath(p.name);
 			if (!pathname.file) {
 				//	TODO	we could check to make sure this URL is http
-				p.on.console("Downloading from " + p.url + " to: " + $context.downloads);
+				var url = p.url;
+				p.on.console("Downloading from " + url + " to: " + $context.downloads);
 				var response = client.request({
-					url: p.url
+					url: url
 				});
 				pathname.write(response.body.stream, { append: false });
 				p.on.console("Wrote to: " + $context.downloads);
@@ -137,8 +138,7 @@ api.file = $context.api.file;
 
 var apache = $loader.file("apache.js", {
 	client: client,
-	api: api,
-	downloads: $context.downloads
+	get: $exports.get
 });
 
 $exports.apache = apache;
