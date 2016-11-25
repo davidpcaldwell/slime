@@ -13,11 +13,6 @@
 
 var client = ($context.client) ? $context.client : new $context.api.http.Client();
 
-var addDefaults = function(p) {
-	if (!p.on) p.on = {};
-	if (!p.on.console) p.on.console = function(){};
-}
-
 var algorithms = {
 	gzip: new function() {
 		var tar = $context.api.shell.PATH.getCommand("tar");
@@ -58,9 +53,16 @@ var algorithms = {
 	}
 };
 
-var installLocalArchive = function(p,algorithm) {
+var listener = function(on) {
+	if (!on) on = {};
+	if (!on.console) on.console = function(s) {};
+	return on;
+}
+
+var installLocalArchive = function(p,on) {
+	var algorithm = p.format;
 	var untardir = $context.api.shell.TMPDIR.createTemporary({ directory: true });
-	p.on.console("Extracting " + p.file + " to " + untardir);
+	on.console("Extracting " + p.file + " to " + untardir);
 	algorithm.extract(p.file,untardir);
 	var unzippedDestination = (function() {
 		if (p.getDestinationPath) {
@@ -71,9 +73,9 @@ var installLocalArchive = function(p,algorithm) {
 		//	TODO	list directory and take only option if there is only one and it is a directory?
 		throw new Error("Cannot determine destination path for " + p.file);
 	})();
-	p.on.console("Assuming destination directory created was " + unzippedDestination);
+	on.console("Assuming destination directory created was " + unzippedDestination);
 	var unzippedTo = untardir.getSubdirectory(unzippedDestination);
-	p.on.console("Directory is: " + unzippedTo);
+	on.console("Directory is: " + unzippedTo);
 	unzippedTo.move(p.to, {
 		overwrite: false,
 		recursive: true
@@ -81,7 +83,7 @@ var installLocalArchive = function(p,algorithm) {
 	return p.to.directory;
 };
 
-var get = function(p) {
+var get = function(p,on) {
 	if (!p.file) {
 		if (p.url) {
 			//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked
@@ -91,14 +93,14 @@ var get = function(p) {
 			if (!pathname.file) {
 				//	TODO	we could check to make sure this URL is http
 				//	Only access url property once because in Apache case it is actually a getter that can return different values
-				p.on.console("Downloading from " + find() + " to: " + $context.downloads);
+				on.console("Downloading from " + find() + " to: " + $context.downloads);
 				var response = client.request({
 					url: find()
 				});
 				pathname.write(response.body.stream, { append: false });
-				p.on.console("Wrote to: " + $context.downloads);
+				on.console("Wrote to: " + $context.downloads);
 			} else {
-				p.on.console("Found " + pathname.file + "; using cached version.");
+				on.console("Found " + pathname.file + "; using cached version.");
 			}
 			p.file = pathname.file;
 		}
@@ -106,37 +108,41 @@ var get = function(p) {
 	return p;
 };
 
-var install = function(p,algorithm) {
-	addDefaults(p);
-	get(p);
-	return installLocalArchive(p,algorithm);
+var install = function(p,on) {
+	get(p,on);
+	return installLocalArchive(p,on);
 };
 
-if (algorithms.gzip.extract) {
-	$exports.gzip = function(p) {
-		install(p,algorithms.gzip);
-	};
-}
-
-$exports.zip = function(p) {
-	install(p,algorithms.zip);
-};
-
-$exports.get = function(p) {
-	addDefaults(p);
-	get(p);
+$exports.get = function(p,on) {
+	on = listener(on);
+	get(p,on);
 	return p.file;
 }
 
-var api = $loader.file("api.js", {
-	api: {
-		http: $context.api.http,
-		shell: $context.api.shell
-	},
-	downloads: $context.downloads
-});
+$exports.format = {
+	zip: algorithms.zip
+};
 
-api.file = $context.api.file;
+if (algorithms.gzip.extract) {
+	$exports.format.gzip = algorithms.gzip;
+}
+
+$exports.install = function(p,on) {
+	on = listener(on);
+	install(p,on);
+}
+
+if (algorithms.gzip.extract) {
+	$exports.gzip = $api.deprecate(function(p,on) {
+		p.format = algorithms.gzip;
+		$exports.install(p,on);
+	});
+}
+
+$exports.zip = $api.deprecate(function(p,on) {
+	p.format = algorithms.zip;
+	$exports.install(p,on);
+});
 
 var apache = $loader.file("apache.js", {
 	client: client,
