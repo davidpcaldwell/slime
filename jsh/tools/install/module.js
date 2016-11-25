@@ -84,14 +84,16 @@ var installLocalArchive = function(p,algorithm) {
 var get = function(p) {
 	if (!p.file) {
 		if (p.url) {
-			if (!p.name) p.name = p.url.split("/").slice(-1)[0];
+			//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked
+			var find = (typeof(p.url) == "function") ? $api.Function.singleton(p.url) : function() { return p.url; };
+			if (!p.name) p.name = find().split("/").slice(-1)[0];
 			var pathname = $context.downloads.getRelativePath(p.name);
 			if (!pathname.file) {
 				//	TODO	we could check to make sure this URL is http
-				var url = p.url;
-				p.on.console("Downloading from " + url + " to: " + $context.downloads);
+				//	Only access url property once because in Apache case it is actually a getter that can return different values
+				p.on.console("Downloading from " + find() + " to: " + $context.downloads);
 				var response = client.request({
-					url: url
+					url: find()
 				});
 				pathname.write(response.body.stream, { append: false });
 				p.on.console("Wrote to: " + $context.downloads);

@@ -23,12 +23,10 @@ var getMirror = function() {
 
 $exports.find = function(p) {
 	var argument = {
-		name: p.path.split("/").slice(-1)[0]
-	};
-	Object.defineProperty(argument,"url",{
-		get: function() {
+		name: p.path.split("/").slice(-1)[0],
+		url: function() {
 			return getMirror() + p.path
 		}
-	});
+	};
 	return $context.get(argument);
 }
