@@ -52,6 +52,18 @@ END LICENSE
 		</div>
 		<script type="application/x.jsapi#initialize">
 			scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+			scope.module = function(p) {
+				return $jsapi.loader.module("module.js", {
+					api: {
+						shell: jsh.shell,
+						http: jsh.http,
+						file: jsh.file
+					},
+					downloads: p.downloads
+				});
+			};
+			
 			scope.api = $jsapi.loader.module("module.js", {
 				api: {
 					shell: jsh.shell,
@@ -134,6 +146,33 @@ END LICENSE
 				</ul>
 			</div>
 			<ul>
+				<li class="function">
+					<div class="name">get</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var api = module({ downloads: downloads });
+						var file = api.get({
+							url: "http://127.0.0.1:" + server.port + "/directory.tar.gz"
+						});
+						var TOSTRING = function() {
+							return { string: this.toString() };
+						};
+						verify(file).is.type("object");
+						verify(downloads).getFile("directory.tar.gz").is.not(null);
+						verify(downloads).getFile("directory.tar.gz").evaluate(TOSTRING).string.is(file.toString());
+					</script>
+				</li>
 				<li class="object">
 					<div class="name"><a id="$exports.format">format</a></div>
 					<span>__DESCRIPTION__</span>
