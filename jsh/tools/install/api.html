@@ -162,15 +162,30 @@ END LICENSE
 					<script type="application/x.jsapi#tests">
 						var downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						var api = module({ downloads: downloads });
+						var messages = [];
 						var file = api.get({
 							url: "http://127.0.0.1:" + server.port + "/directory.tar.gz"
+						}, {
+							console: function(e) {
+								messages.push(e);
+							}
 						});
 						var TOSTRING = function() {
 							return { string: this.toString() };
 						};
+						var messageStartsWith = function(string) {
+							return function() {
+								return Boolean(this.detail.message.substring(0,string.length) == string);
+							}
+						};
 						verify(file).is.type("object");
 						verify(downloads).getFile("directory.tar.gz").is.not(null);
 						verify(downloads).getFile("directory.tar.gz").evaluate(TOSTRING).string.is(file.toString());
+						verify(messages,"messages").is(messages);
+						verify(messages).length.is(2);
+						verify(messages)[0].evaluate(messageStartsWith("Downloading")).is(true);
+						verify(messages)[0].evaluate(messageStartsWith("Found")).is(false);
+						verify(messages)[1].evaluate(messageStartsWith("Wrote")).is(true);
 					</script>
 				</li>
 				<li class="object">

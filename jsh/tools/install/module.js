@@ -98,6 +98,18 @@ var installLocalArchive = function(p,listeners) {
 	return p.to.directory;
 };
 
+var listening = function(f) {
+	return function(p,on) {
+		var listeners = new Listeners({ on: on });
+		listeners.add();
+		try {
+			return f(p,listeners);
+		} finally {
+			listeners.remove();
+		}
+	}
+}
+
 var get = function(p,listeners) {
 	if (!p.file) {
 		if (p.url) {
@@ -128,10 +140,10 @@ var install = function(p,listeners) {
 	return installLocalArchive(p,listeners);
 };
 
-$exports.get = function(p,on) {
-	get(p,new Listeners(on));
+$exports.get = listening(function(p,listeners) {
+	get(p,listeners);
 	return p.file;
-}
+});
 
 $exports.format = {
 	zip: algorithms.zip
