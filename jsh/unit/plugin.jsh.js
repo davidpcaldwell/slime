@@ -219,7 +219,7 @@ plugin({
 			if (!fr.file) {
 				fr.write("", { append: false });
 			}
-			var browser = new jsh.shell.browser.chrome.User({ directory: directory });
+			var browser = new jsh.shell.browser.chrome.Instance({ directory: directory });
 			var server = new jsh.httpd.Tomcat({
 				port: p.port
 			});

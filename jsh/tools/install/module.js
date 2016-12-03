@@ -153,9 +153,9 @@ if (algorithms.gzip.extract) {
 	$exports.format.gzip = algorithms.gzip;
 }
 
-$exports.install = function(p,on) {
-	install(p,new Listeners(on));
-}
+$exports.install = listening(function(p,listeners) {
+	install(p,listeners);
+});
 
 if (algorithms.gzip.extract) {
 	$exports.gzip = $api.deprecate(function(p,on) {

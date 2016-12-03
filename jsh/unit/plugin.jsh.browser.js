@@ -322,7 +322,7 @@ $exports.Chrome = function(p) {
 		user.getRelativePath("First Run").write("", { append: false });
 	}
 	//	ignoring p.program
-	var browser = new jsh.shell.browser.chrome.User({
+	var browser = new jsh.shell.browser.chrome.Instance({
 		directory: user
 	});
 
