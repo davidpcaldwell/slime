@@ -274,27 +274,25 @@ var Client = function(configuration) {
 	this.request = function(p) {
 		var method = (p.method) ? p.method.toUpperCase() : "GET";
 		var url = (function() {
-			var rv;
-			if (typeof(p.url) == "string") {
-				rv = $context.api.web.Url.parse(p.url);
-			} else {
-				rv = p.url;
-			}
-			if (p.params && !p.parameters) {
+			var rv = p.url;
+			if (typeof(rv) == "string") rv = $context.api.web.Url.parse(rv);
+			if (p.params || p.parameters) {
 				$api.deprecate(function() {
-					p.parameters = p.params;
-					delete p.params;
-				})();
-			}
-			if (p.parameters) {
-				var string = $context.api.web.Url.query(new Parameters(p.parameters));
-				if (string) {
-					if (rv.query) {
-						rv.query += "&" + string;
-					} else {
-						rv.query = string;
+					//	First deal with really old "params" version
+					if (p.params && !p.parameters) {
+						p.parameters = p.params;
+						delete p.params;
 					}
-				}
+					//	Then deal with slightly less old "parameters" version
+					var string = $context.api.web.Url.query(new Parameters(p.parameters));
+					if (string) {
+						if (rv.query) {
+							rv.query += "&" + string;
+						} else {
+							rv.query = string;
+						}
+					}					
+				})();
 			}
 			return rv;
 		})();

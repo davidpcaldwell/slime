@@ -636,6 +636,13 @@ END LICENSE
 							<span>
 								Issues a request to a server and returns that server's response, after following any redirects.
 							</span>
+							<div class="type">
+								<a class="type" name="types.request.url">url</a>
+								<span>
+									A string or a <code>js/web</code> <a href="../../../js/web/api.html">Url</a> object representing
+									a web URL.
+								</span>
+							</div>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
@@ -657,10 +664,10 @@ END LICENSE
 											<li class="value">
 												<!--	TODO	merge with same notion from client side?	-->
 												<div class="name">url</div>
-												<span class="type"><a href="../../../js/web/api.html">Url</a></span>
+												<span class="type"><a href="#types.request.url">url</a></span>
 												<span>The URL to which to issue the request.</span>
 											</li>
-											<li class="value">
+											<li class="deprecated value">
 												<div class="name">parameters</div>
 												<span class="type"><a href="#types.parameters">parameters</a></span>
 												<span>
@@ -797,7 +804,6 @@ END LICENSE
 											return String(this._request.getMethod().toUpperCase());
 										}
 										verify({ _request: request }).evaluate(getRequestMethod).is("GET");
-//										verify(request).getMethod().toUpperCase().evaluate(function() { return String(this) }).is("GET");
 										response.getWriter().print("Hello, World!");
 									});
 									var response = client.request({
@@ -808,6 +814,14 @@ END LICENSE
 										}
 									});
 									verify(response).is("Hello, World!");
+									
+									var byUrlObject = client.request({
+										url: jsh.js.web.Url.parse("http://127.0.0.1:" + context.port + "/")
+										,evaluate: function(response) {
+											return response.body.stream.character().asString();
+										}
+									});
+									verify(byUrlObject,"byUrlObject").is("Hello, World!");
 								} else {
 									skip(verify);
 								}
@@ -844,13 +858,9 @@ END LICENSE
 									}
 									servlet.set(function(request,response) {
 										var cookies = getServerRequestCookies(request);
-			//							verify(request,"second servlet request").getCookies().length.is(1);
 										verify(cookies,"second servlet request cookies").length.is(1);
 										verify(cookies,"cookies")[0].name.is("cname");
 										verify(cookies,"cookies")[0].value.is("cvalue");
-			//							test(Boolean(request.getCookies()) && request.getCookies().length == 1);
-			//							test(Boolean(request.getCookies()) && request.getCookies()[0].getName() == "cname");
-			//							test(Boolean(request.getCookies()) && request.getCookies()[0].getValue() == "cvalue");
 									});
 									client.request({
 										method: "GET"
@@ -897,7 +907,7 @@ END LICENSE
 									skip(verify, "No Tomcat, or WebView present");
 								}
 							]]></script>
-							<script type="application/x.jsapi#tests" jsapi:id="Parameters"><![CDATA[
+							<script type="application/x.jsapi#tests" jsapi:id="urlWithQueryString"><![CDATA[
 								if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
 									var client = new module.Client();
 									servlet.set(function(request,response) {
