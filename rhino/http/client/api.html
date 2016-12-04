@@ -602,6 +602,31 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
+				<script type="application/x.jsapi#initialize">
+					scope.Cookie = Packages.javax.servlet.http.Cookie;
+					scope.skip = function(verify) {
+						if (typeof(verify) == "string") {
+							jsh.shell.console("DEPRECATED: skip(string) in api.html");
+							return {
+								success: true,
+								messages: {
+									success: "SKIP: " + message
+								}
+							}							
+						}
+						if (!message) message = "Skipping: no Tomcat";
+						verify(message).is(message);
+					};
+					scope.getServerRequestCookies = function(request) {
+						if (request.getCookies() === null) return [];
+						return jsh.java.Array.adapt(request.getCookies()).filter(function(_cookie) {
+							return _cookie.getName() != "JSESSIONID";
+						}).map(function(_cookie) {
+							return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
+						});
+					};
+					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
+				</script>
 				<div class="instances">
 					<div class="label">Instances</div>
 					<div class="label">has properties:</div>
@@ -784,7 +809,111 @@ END LICENSE
 									});
 									verify(response).is("Hello, World!");
 								} else {
-									test(skip("No Tomcat"));
+									skip(verify);
+								}
+							]]></script>
+							<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
+								if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
+									var client = new module.Client();
+									servlet.set(function(request,response) {
+										jsh.shell.echo("Received request; verify = " + verify);
+										jsh.shell.echo("request.getCookies() = " + request.getCookies());
+										//	TODO	for some reason with Nashorn, the verify() version of this statement does not work
+										test(request.getCookies() === null);
+										//verify(request,"initial servlet request").getCookies().is(null);
+										jsh.shell.echo("Cookie = " + Cookie);
+										jsh.shell.echo("response.addCookie = " + response.addCookie);
+										response.addCookie(new Cookie("cname", "cvalue"));
+										jsh.shell.echo("addCookie returned");
+										response.setContentType("text/plain");
+										jsh.shell.echo("setContentType returned");
+										response.getWriter().print("Hello, World!");
+										jsh.shell.echo("getWriter().print returned");
+										jsh.shell.echo("Reached end of set()");
+									});
+									var response = client.request({
+										method: "GET"
+										,url: "http://127.0.0.1:" + context.port + "/"
+									});
+									var type = response.body.type.toString();
+									verify(type).is.not(null);
+									verify(type.split(";"))[0].is.not(null);
+									verify(response,"initial response").body.evaluate(function() { return this.type.toString().split(";")[0] }).is("text/plain");
+									if (response.body.type.toString().substring(0,"text/html".length) == "text/html") {
+										jsh.shell.echo("HTML response: " + response.body.stream.character().asString());
+									}
+									servlet.set(function(request,response) {
+										var cookies = getServerRequestCookies(request);
+			//							verify(request,"second servlet request").getCookies().length.is(1);
+										verify(cookies,"second servlet request cookies").length.is(1);
+										verify(cookies,"cookies")[0].name.is("cname");
+										verify(cookies,"cookies")[0].value.is("cvalue");
+			//							test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+			//							test(Boolean(request.getCookies()) && request.getCookies()[0].getName() == "cname");
+			//							test(Boolean(request.getCookies()) && request.getCookies()[0].getValue() == "cvalue");
+									});
+									client.request({
+										method: "GET"
+										,url: "http://127.0.0.1:" + context.port + "/"
+									});
+								} else {
+									skip(verify, "No Tomcat, or WebView present");
+								}
+							]]></script>
+							<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
+								if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
+									var client = new module.Client();
+									var redirected = false;
+									servlet.set(function(request,response) {
+										jsh.shell.echo("getting cookies " + request.getCookies());
+										var cookies = getServerRequestCookies(request);
+										jsh.shell.echo("cookies: " + JSON.stringify(cookies));
+										if (request.getRequestURI() == "/") {
+											verify(cookies).length.is(0);
+											response.addCookie(new Cookie("rname", "rvalue"));
+											response.sendRedirect("./redirected");
+										} else if (request.getRequestURI() == "/redirected") {
+											redirected = true;
+											verify(cookies).length.is(1);
+			//								test(Boolean(request.getCookies()) && request.getCookies().length == 1);
+											response.setContentType("text/plain");
+											response.getWriter().print("Redirected!");
+										} else {
+											debugger;
+											test(false, "Wrong URL: " + request.getRequestURI());
+										}
+									});
+									var response = client.request({
+										method: "GET",
+										url: "http://127.0.0.1:" + context.port + "/"
+										,evaluate: function(response) {
+											jsh.shell.echo("response = " + response.status.code);
+											jsh.shell.echo("error = ")
+											return response;
+										}
+									});
+									verify(redirected,"redirected").is(true);
+								} else {
+									skip(verify, "No Tomcat, or WebView present");
+								}
+							]]></script>
+							<script type="application/x.jsapi#tests" jsapi:id="Parameters"><![CDATA[
+								if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+									var client = new module.Client();
+									servlet.set(function(request,response) {
+										response.getWriter().print(request.getRequestURL()+"?"+request.getQueryString());
+									});
+									var url = "http://127.0.0.1:" + context.port + "/hello?world=earth";
+									var response = client.request({
+										method: "GET"
+										,url: url
+										,evaluate: function(response) {
+											return response.body.stream.character().asString();
+										}
+									});
+									verify(response).is(url);
+								} else {
+									skip(verify);
 								}
 							]]></script>
 						</li>
@@ -808,133 +937,6 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-				<script type="application/x.jsapi#initialize">
-					scope.Cookie = Packages.javax.servlet.http.Cookie;
-					scope.skip = function(verify) {
-						verify("Skipping: no Tomcat").is("Skipping: no Tomcat");
-					};
-					scope.skip = function(message) {
-						return {
-							success: true,
-							messages: {
-								success: "SKIP: " + message
-							}
-						}
-					};
-					scope.getServerRequestCookies = function(request) {
-						if (request.getCookies() === null) return [];
-						return jsh.java.Array.adapt(request.getCookies()).filter(function(_cookie) {
-							return _cookie.getName() != "JSESSIONID";
-						}).map(function(_cookie) {
-							return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
-						});
-					};
-					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
-				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="Parameters"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
-						var client = new module.Client();
-						servlet.set(function(request,response) {
-							response.getWriter().print(request.getRequestURL()+"?"+request.getQueryString());
-						});
-						var url = "http://127.0.0.1:" + context.port + "/hello?world=earth";
-						var response = client.request({
-							method: "GET"
-							,url: url
-							,evaluate: function(response) {
-								return response.body.stream.character().asString();
-							}
-						});
-						verify(response).is(url);
-					} else {
-						test(skip("No Tomcat"));
-					}
-				]]></script>
-				<script type="application/x.jsapi#tests" jsapi:id="Cookie"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
-						var client = new module.Client();
-						servlet.set(function(request,response) {
-							jsh.shell.echo("Received request; verify = " + verify);
-							jsh.shell.echo("request.getCookies() = " + request.getCookies());
-							//	TODO	for some reason with Nashorn, the verify() version of this statement does not work
-							test(request.getCookies() === null);
-							//verify(request,"initial servlet request").getCookies().is(null);
-							jsh.shell.echo("Cookie = " + Cookie);
-							jsh.shell.echo("response.addCookie = " + response.addCookie);
-							response.addCookie(new Cookie("cname", "cvalue"));
-							jsh.shell.echo("addCookie returned");
-							response.setContentType("text/plain");
-							jsh.shell.echo("setContentType returned");
-							response.getWriter().print("Hello, World!");
-							jsh.shell.echo("getWriter().print returned");
-							jsh.shell.echo("Reached end of set()");
-						});
-						var response = client.request({
-							method: "GET"
-							,url: "http://127.0.0.1:" + context.port + "/"
-						});
-						var type = response.body.type.toString();
-						verify(type).is.not(null);
-						verify(type.split(";"))[0].is.not(null);
-						verify(response,"initial response").body.evaluate(function() { return this.type.toString().split(";")[0] }).is("text/plain");
-						if (response.body.type.toString().substring(0,"text/html".length) == "text/html") {
-							jsh.shell.echo("HTML response: " + response.body.stream.character().asString());
-						}
-						servlet.set(function(request,response) {
-							var cookies = getServerRequestCookies(request);
-//							verify(request,"second servlet request").getCookies().length.is(1);
-							verify(cookies,"second servlet request cookies").length.is(1);
-							verify(cookies,"cookies")[0].name.is("cname");
-							verify(cookies,"cookies")[0].value.is("cvalue");
-//							test(Boolean(request.getCookies()) && request.getCookies().length == 1);
-//							test(Boolean(request.getCookies()) && request.getCookies()[0].getName() == "cname");
-//							test(Boolean(request.getCookies()) && request.getCookies()[0].getValue() == "cvalue");
-						});
-						client.request({
-							method: "GET"
-							,url: "http://127.0.0.1:" + context.port + "/"
-						});
-					} else {
-						test(skip("No Tomcat, or WebView present"));
-					}
-				]]></script>
-				<script type="application/x.jsapi#tests" jsapi:id="Redirect"><![CDATA[
-					if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat && !hasDefaultCookieHandler) {
-						var client = new module.Client();
-						var redirected = false;
-						servlet.set(function(request,response) {
-							jsh.shell.echo("getting cookies " + request.getCookies());
-							var cookies = getServerRequestCookies(request);
-							jsh.shell.echo("cookies: " + JSON.stringify(cookies));
-							if (request.getRequestURI() == "/") {
-								verify(cookies).length.is(0);
-								response.addCookie(new Cookie("rname", "rvalue"));
-								response.sendRedirect("./redirected");
-							} else if (request.getRequestURI() == "/redirected") {
-								redirected = true;
-								verify(cookies).length.is(1);
-//								test(Boolean(request.getCookies()) && request.getCookies().length == 1);
-								response.setContentType("text/plain");
-								response.getWriter().print("Redirected!");
-							} else {
-								debugger;
-								test(false, "Wrong URL: " + request.getRequestURI());
-							}
-						});
-						var response = client.request({
-							method: "GET",
-							url: "http://127.0.0.1:" + context.port + "/"
-							,evaluate: function(response) {
-								jsh.shell.echo("response = " + response.status.code);
-								jsh.shell.echo("error = ")
-								return response;
-							}
-						});
-						verify(redirected,"redirected").is(true);
-					} else {
-						test(skip("No Tomcat, or WebView present"));
-					}
-				]]></script>
 			</li>
 			<!--
 				TODO	Better API would have Form object that could be translated into query string and body, and probably

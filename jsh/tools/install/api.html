@@ -148,16 +148,41 @@ END LICENSE
 			<ul>
 				<li class="function">
 					<div class="name">get</div>
-					<span>__DESCRIPTION__</span>
+					<span>
+						Provides a file containing an installer. The source of the file is specified by the argument passed to
+						the method.
+					</span>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									
+								</ul>
+							</li>
+							<li class="object">
+								<span>A handler object for events sent during the method's execution.</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">console</div>
+										<span>__DESCRIPTION__</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+									</li>
+								</ul>
+							</li>
 						</ol>
 					</div>
 					<div class="returns">
 						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
+						<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+						<span>A file containing the installer.</span>
 					</div>
 					<script type="application/x.jsapi#tests">
 						var downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
