@@ -228,7 +228,7 @@ var Resources = function(mapping,old) {
 	};
 
 	var OldLoader = function(prefix) {
-		if (Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) {
+		if (true || Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) {
 			var implementation = new jsh.io.Loader({
 				get: function(path) {
 					return loader.get(path);
