@@ -232,12 +232,13 @@ var Resources = function(mapping,old) {
 			var implementation = new jsh.io.Loader({
 				get: function(path) {
 					return loader.get(path);
-				},
-				list: function() {
-					return loader.list.apply(loader,arguments);
 				}
 			});
-			return new implementation.Child(prefix);
+			var rv = new implementation.Child(prefix);
+			rv.list = function(p) {
+				return loader.list.call(loader,prefix+p.path);
+			};
+			return rv;
 		} else {
 			var rv = new jsh.io.Loader({
 				resources: new function() {
