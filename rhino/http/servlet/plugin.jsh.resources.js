@@ -228,7 +228,8 @@ var Resources = function(mapping,old) {
 	};
 
 	var OldLoader = function(prefix) {
-		if (true || Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) {
+		var USE_NEW_SLIME_LOADER = true;
+		if (USE_NEW_SLIME_LOADER) {
 			var implementation = new jsh.io.Loader({
 				get: function(path) {
 					return loader.get(path);
@@ -240,6 +241,7 @@ var Resources = function(mapping,old) {
 			};
 			return rv;
 		} else {
+			//	TODO	deprecated, leaving code here for a little while to see if there are regressions
 			var rv = new jsh.io.Loader({
 				resources: new function() {
 					this.get = function(path) {

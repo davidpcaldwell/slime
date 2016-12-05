@@ -148,33 +148,35 @@
 			} else if (p.resources) {
 				if (Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) throw new Error();
 				//	TODO	would be nice to get rid of this, but it is used in rhino/http/servlet, it appears
-				p.get = function(path) {
-					var resource = p.resources.get(String(path));
-					if (!resource) return null;
-					var rv = new loader.io.Resource(resource);
-					if (!rv.name) {
-						rv.name = p.resources.toString() + "!" + String(path);
-					}
-					if (!rv.type) {
-						rv.type = getTypeFromPath(path);
-					}
-//					rv.java = {
-//						InputStream: function() {
-//							return resource.read.binary().java.adapt()
-//						}
-//					};
-//					rv.resource = rv;
-					return rv;
-				};
-				if (!p.child) p.child = function(prefix) {
-					return {
-						resources: {
-							get: function(path) {
-								return p.resources.get(prefix + path);
+				$api.deprecate(function() {
+					p.get = function(path) {
+						var resource = p.resources.get(String(path));
+						if (!resource) return null;
+						var rv = new loader.io.Resource(resource);
+						if (!rv.name) {
+							rv.name = p.resources.toString() + "!" + String(path);
+						}
+						if (!rv.type) {
+							rv.type = getTypeFromPath(path);
+						}
+	//					rv.java = {
+	//						InputStream: function() {
+	//							return resource.read.binary().java.adapt()
+	//						}
+	//					};
+	//					rv.resource = rv;
+						return rv;
+					};
+					if (!p.child) p.child = function(prefix) {
+						return {
+							resources: {
+								get: function(path) {
+									return p.resources.get(prefix + path);
+								}
 							}
 						}
-					}
-				};
+					};
+				})();
 			}
 			was.apply(this,arguments);
 //			if (true || p._source || p.resources) {
