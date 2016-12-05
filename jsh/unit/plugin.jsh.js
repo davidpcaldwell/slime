@@ -247,7 +247,8 @@ plugin({
 				}
 			});
 
-			var loader = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
+			var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.shell.jsh.home.getSubdirectory("src");
+			var loader = new jsh.file.Loader({ directory: src });
 
 			server.map({
 				path: "",
