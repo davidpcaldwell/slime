@@ -138,43 +138,45 @@ END LICENSE
 				<div jsapi:reference="getApi('../../loader/rhino/api.html').getElement('Loader/type/tests')">
 				</div>
 				<script type="application/x.jsapi#tests">
-					var loader = new module.Loader({
-						resources: {
-							get: function(path) {
-								var file = $jsapi.loader.getRelativePath(path).file;
-								if (!file) return null;
-								var type = (function() {
-									if (/\.jsh\.js$/.test(path)) {
-										return new module.mime.Type("application", "x.jsh");
-									} else if (/\.js$/.test(path)) {
-										return new module.mime.Type("application", "javascript");
-									} else if (/\.html$/.test(path)) {
-										return new module.mime.Type("text", "html");
-									} else {
-										return new module.mime.Type("application", "octet-stream");
-									}
-								})();
-								return {
-									type: type,
-									read: {
-										binary: function() {
-											return file.read(jsh.io.Streams.binary);
+					if (false) {
+						var loader = new module.Loader({
+							resources: {
+								get: function(path) {
+									var file = $jsapi.loader.getRelativePath(path).file;
+									if (!file) return null;
+									var type = (function() {
+										if (/\.jsh\.js$/.test(path)) {
+											return new module.mime.Type("application", "x.jsh");
+										} else if (/\.js$/.test(path)) {
+											return new module.mime.Type("application", "javascript");
+										} else if (/\.html$/.test(path)) {
+											return new module.mime.Type("text", "html");
+										} else {
+											return new module.mime.Type("application", "octet-stream");
 										}
-									}
-								};
+									})();
+									return {
+										type: type,
+										read: {
+											binary: function() {
+												return file.read(jsh.io.Streams.binary);
+											}
+										}
+									};
+								}
 							}
-						}
-					});
-					var api = loader.get("api.html");
-					test(api.type.toString() == "text/html");
+						});
+						var api = loader.get("api.html");
+						test(api.type.toString() == "text/html");
 
-					var loaderModule = loader.module("test/Loader.js");
-					test(loaderModule.file.foo == "bar");
-					test(loaderModule.resource("Loader.js") != null);
-					test(loaderModule.resource("test/Loader.js") == null);
-					test(loaderModule.grandchildResource("file.js") != null);
-					test(loaderModule.grandchildResource("Loader/file.js") == null);
-					test(loaderModule.grandchildResource("test/Loader/file.js") == null);
+						var loaderModule = loader.module("test/Loader.js");
+						test(loaderModule.file.foo == "bar");
+						test(loaderModule.resource("Loader.js") != null);
+						test(loaderModule.resource("test/Loader.js") == null);
+						test(loaderModule.grandchildResource("file.js") != null);
+						test(loaderModule.grandchildResource("Loader/file.js") == null);
+						test(loaderModule.grandchildResource("test/Loader/file.js") == null);
+					}
 				</script>
 				<script type="application/x.jsapi#tests">
 					var sources = new function() {

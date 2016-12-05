@@ -228,27 +228,39 @@ var Resources = function(mapping,old) {
 	};
 
 	var OldLoader = function(prefix) {
-		var rv = new jsh.io.Loader({
-			resources: new function() {
-				this.get = function(path) {
-					return loader.get(prefix+path);
-				};
-			},
-			Loader: function(subprefix) {
-				var rv = new OldLoader(prefix + subprefix);
-				rv.list = function(p) {
-					return loader.list(prefix + subprefix + p.path);
+		if (Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) {
+			var implementation = new jsh.io.Loader({
+				get: function(path) {
+					return loader.get(path);
+				},
+				list: function() {
+					return loader.list.apply(loader,arguments);
 				}
-				return rv;
+			});
+			return new implementation.Child(prefix);
+		} else {
+			var rv = new jsh.io.Loader({
+				resources: new function() {
+					this.get = function(path) {
+						return loader.get(prefix+path);
+					};
+				},
+				Loader: function(subprefix) {
+					var rv = new OldLoader(prefix + subprefix);
+					rv.list = function(p) {
+						return loader.list(prefix + subprefix + p.path);
+					}
+					return rv;
+				}
+			});
+			rv.toString = function() {
+				return "plugin.jsh.resources.js OldLoader: prefix=" + prefix + " loader=" + loader;
 			}
-		});
-		rv.toString = function() {
-			return "plugin.jsh.resources.js OldLoader: prefix=" + prefix + " loader=" + loader;
+			rv.list = function(p) {
+				return loader.list(prefix+p.path);
+			};
+			return rv;
 		}
-		rv.list = function(p) {
-			return loader.list(prefix+p.path);
-		};
-		return rv;
 	};
 
 	var NewLoader = function(p) {
