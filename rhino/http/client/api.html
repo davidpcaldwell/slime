@@ -612,7 +612,7 @@ END LICENSE
 								messages: {
 									success: "SKIP: " + message
 								}
-							}							
+							}
 						}
 						if (!message) message = "Skipping: no Tomcat";
 						verify(message).is(message);
@@ -814,7 +814,7 @@ END LICENSE
 										}
 									});
 									verify(response).is("Hello, World!");
-									
+
 									var byUrlObject = client.request({
 										url: jsh.js.web.Url.parse("http://127.0.0.1:" + context.port + "/")
 										,evaluate: function(response) {

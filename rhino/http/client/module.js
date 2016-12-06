@@ -291,7 +291,7 @@ var Client = function(configuration) {
 						} else {
 							rv.query = string;
 						}
-					}					
+					}
 				})();
 			}
 			return rv;

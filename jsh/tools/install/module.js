@@ -16,19 +16,19 @@ var Listeners = function(p) {
 	var source = (p.source) ? p.source : {};
 	var events = $api.Events({ source: source });
 	var on = (p.on) ? p.on : {};
-	
+
 	this.add = function() {
 		for (var x in on) {
 			source.listeners.add(x,on[x]);
 		}
 	};
-	
+
 	this.remove = function() {
 		for (var x in on) {
 			source.listeners.remove(x,on[x]);
 		}
 	};
-	
+
 	this.events = events;
 };
 
