@@ -119,6 +119,75 @@ END LICENSE
 										<a href="api.html">Frame</a>.
 									</span>
 								</li>
+								<li class="object">
+									<div class="name">browser</div>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">host</div>
+											<span class="type">string</span>
+											<span>
+												A host name to use when running the application. The name will be used as the
+												authority section of the client-side URL; the value <code>host</code> will produce
+												a URL like <code>http://host/<i>page</i></code>. The browser will also be provided
+												with proxy settings routing all requests to the local port on which the server
+												is running.
+											</span>
+										</li>
+										<li class="value">
+											<div class="name">on</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</li>
+										<li>
+											One of:
+											<div>
+												For JavaFX browser
+												<ul>
+													<li class="value">
+														<div class="name">zoom</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</li>
+													<li class="value">
+														<div class="name">console</div>
+														<span class="type">__TYPE__</span>
+														<span>__DESCRIPTION__</span>
+													</li>
+												</ul>
+											</div>
+											- OR -
+											<div>
+												For Google Chrome
+												<ul>
+													<li class="object">
+														<div class="name">chrome</div>
+														<span>__DESCRIPTION__</span>
+														<div class="label">has properties:</div>
+														<ul>
+															<li class="value">
+																<div class="name">directory</div>
+																<span class="type">__TYPE__</span>
+																<span>__DESCRIPTION__</span>
+															</li>
+															<li class="value">
+																<div class="name">browser</div>
+																<span class="type">boolean</span>
+																<span>
+																	(optional; <code>false</code> if omitted)
+																	If <code>true</code> renders the user interface as a regular web
+																	browser (with tabs, address bar, and so forth). Otherwise, runs
+																	the browser in "app mode."
+																</span>
+															</li>
+														</ul>
+													</li>
+												</ul>
+											</div>
+										</li>
+									</ul>
+								</li>
 								<li class="value">
 									<div class="name">browser</div>
 									<div>
@@ -136,11 +205,6 @@ END LICENSE
 											</li>
 											<li class="value">
 												<div class="name">zoom</div>
-												<span class="type">__TYPE__</span>
-												<span>__DESCRIPTION__</span>
-											</li>
-											<li class="value">
-												<div class="name">on</div>
 												<span class="type">__TYPE__</span>
 												<span>__DESCRIPTION__</span>
 											</li>
