@@ -131,9 +131,6 @@ var Application = function(p) {
 
 	Packages.java.lang.Runtime.getRuntime().addShutdownHook(new Packages.java.lang.Thread(stopTomcat));
 
-	//	TODO	proxy handling
-	//	if p.host is provided, create proxy settings for that port and change the url property below? Or should that be p.browser.host?
-
 	if (!p.browser) {
 		$api.deprecate(function() {
 			p.browser = {
@@ -143,7 +140,7 @@ var Application = function(p) {
 		})()
 	}
 	if (typeof(p.browser) == "function") {
-		p.browser = (function(implementation) {
+		p.browser = $api.deprecate(function(implementation) {
 			return {
 				run: function(p) {
 					implementation(p);
@@ -179,7 +176,7 @@ var Application = function(p) {
 							jsh.shell.console("ALERT: " + s);
 						},
 						//	TODO	configurable
-						console: (p.console) ? p.console : new function() {
+						console: (settings.browser.console) ? settings.browser.console : new function() {
 							this.toString = function() {
 								if (this.delegee) {
 									return "WebView console: " + this.delegee.log;
@@ -256,11 +253,13 @@ var Application = function(p) {
 		browser = p.browser.create({ url: url, proxy: proxy });
 		jsh.java.Thread.start(function() {
 			browser.run();
+			server.stop();
 			on.close();
 		});
 	} else {
 		jsh.java.Thread.start(function() {
 			p.browser.run({ url: url, proxy: proxy });
+			server.stop();
 			on.close();
 		});
 	}
