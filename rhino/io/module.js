@@ -49,17 +49,11 @@ var InputStream = function(peer) {
 
 };
 
-var OutputStream = $context.$rhino.io.OutputStream;
-
-var Reader = $context.$rhino.io.Reader;
-var Writer = $context.$rhino.io.Writer;
-var Buffer = $context.$rhino.io.Buffer;
-
 $exports.Streams = $context.$rhino.io.Streams;
 
 (function addDeprecatedProperties() {
 	var StandardOutputStream = function(_peer) {
-		var rv = new OutputStream(_peer);
+		var rv = new $context.$rhino.io.OutputStream(_peer);
 		rv.write = function(message) {
 			var _writer = new Packages.java.io.OutputStreamWriter(_peer);
 			_writer.write(message);
@@ -78,7 +72,7 @@ $exports.Streams = $context.$rhino.io.Streams;
 }).call($exports.Streams);
 
 $exports.Buffer = function() {
-	Buffer.apply(this,arguments);
+	$context.$rhino.io.Buffer.apply(this,arguments);
 
 	this.readBinary = (function(was) {
 		return function() {
@@ -87,24 +81,19 @@ $exports.Buffer = function() {
 		};
 	})(this.readBinary);
 };
-$exports.Streams.binary.Buffer = $exports.Buffer;
+//$exports.Streams.binary.Buffer = $exports.Buffer;
 
-//	TODO	It may be that the following exports are not necessary and can actually all be accessed through java.adapt
-//$exports.Reader = Reader;
-//$exports.Writer = Writer;
-//$exports.InputStream = InputStream;
-//$exports.OutputStream = OutputStream;
 $exports.Resource = $context.$rhino.io.Resource;
 
-var Loader = function(underlying) {
-	var rv = function(p) {
-		return underlying.apply(this,arguments);
-	};
-	rv.series = underlying.series;
-	return rv;
-};
+//var Loader = function(underlying) {
+//	var rv = function(p) {
+//		return underlying.apply(this,arguments);
+//	};
+//	rv.series = underlying.series;
+//	return rv;
+//};
 
-$exports.Loader = Loader($context.$rhino.Loader);
+$exports.Loader = $context.$rhino.Loader;
 
 $exports.java = new function() {
 	this.adapt = function(object) {
@@ -112,11 +101,11 @@ $exports.java = new function() {
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
 			return new InputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new OutputStream(object);
+			return new $context.$rhino.io.OutputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
-			return new Reader(object);
+			return new $context.$rhino.io.Reader(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
-			return new Writer(object);
+			return new $context.$rhino.io.Writer(object);
 		} else {
 			var type = (function() {
 				if (object.getClass) {

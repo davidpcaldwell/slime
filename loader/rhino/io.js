@@ -206,7 +206,7 @@ var Streams = new function() {
 			}
 		}
 
-		this.Buffer = $api.deprecate(Buffer);
+//		this.Buffer = $api.deprecate(Buffer);
 	}
 
 	this.text = new function() {
