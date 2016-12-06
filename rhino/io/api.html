@@ -83,45 +83,44 @@ END LICENSE
 	</script>
 	<div>
 		<h1>Exports</h1>
-		<ul>
-			<li class="constructor">
-				<div class="name">InputStream</div>
-				<span>Extends the Java SLIME loader <a href="../../loader/rhino/io.api.html">InputStream</a> constructor.</span>
-				<div class="instances">
-					<div class="label">Instances</div>
+		<div class="type">
+			<a class="type" id="types.InputStream">InputStream</a>
+			<span class="type">supports <a href="../../loader/rhino/io.api.html">InputStream</a></span>
+			<div class="label">has properties:</div>
+			<ul>
+				<li class="function">
+					<div class="name">asProperties</div>
 					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">asProperties</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-						<li class="constructor">
-							<div class="name">Resource</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="instances">
-								<div class="label">Instances</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-					</ul>
-				</div>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+				<li class="constructor">
+					<div class="name">Resource</div>
+					<span>__DESCRIPTION__</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+						</ol>
+					</div>
+					<div class="instances">
+						<div class="label">Instances</div>
+						<span class="type">__TYPE__</span>
+						<span>__DESCRIPTION__</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+
+		<ul>
+			<li class="object" jsapi:reference="getApi('../../loader/rhino/io.api.html').getElement('exports/Streams')">
 			</li>
 			<li class="constructor">
 				<div class="name">Buffer</div>
@@ -129,6 +128,8 @@ END LICENSE
 					Extends the Java SLIME loader <a href="../../loader/rhino/io.api.html">Buffer</a> constructor to produce
 					<code>Buffer</code> objects that use <code>InputStream</code> objects from this module.
 				</span>
+			</li>
+			<li class="constructor" jsapi:reference="getApi('../../loader/rhino/io.api.html').getElement('exports/Resource')">
 			</li>
 			<li class="constructor">
 				<div class="name">Loader</div>
@@ -200,11 +201,6 @@ END LICENSE
 					verify(child).evaluate(function() { return this.run; }).is.not.equalTo(null);
 				</script>
 			</li>
-			<li class="value">
-				<div class="name">mime</div>
-				<span class="type">object</span>
-				<span>See <a href="mime.api.html">detailed documentation</a>.</span>
-			</li>
 			<li class="object">
 				<div class="name">java</div>
 				<div class="label">has properties:</div>
@@ -243,6 +239,11 @@ END LICENSE
 						</script>
 					</li>
 				</ul>
+			</li>
+			<li class="value">
+				<div class="name">mime</div>
+				<span class="type">object</span>
+				<span>See <a href="mime.api.html">detailed documentation</a>.</span>
 			</li>
 		</ul>
 		<!--	TODO	below tests are intertwined with this module despite mostly pertaining to Java SLIME loader; refactor	-->

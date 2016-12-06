@@ -13,7 +13,6 @@
 //	TODO	rename this
 var _java = ($context._streams) ? $context._streams : new Packages.inonit.script.runtime.io.Streams();
 
-var Resource = $context.$rhino.io.Resource;
 var InputStream = function(peer) {
 	$context.$rhino.io.InputStream.apply(this,arguments);
 
@@ -26,7 +25,7 @@ var InputStream = function(peer) {
 
 	this.Resource = function(type) {
 		var _bytes = _java.readBytes(peer);
-		return new Resource(new function() {
+		return new $context.$rhino.io.Resource(new function() {
 			this.type = type;
 
 			this.read = new function() {
@@ -39,7 +38,7 @@ var InputStream = function(peer) {
 
 	this.cache = $api.deprecate(function() {
 		var $bytes = _java.readBytes(peer);
-		return new Resource(new function() {
+		return new $context.$rhino.io.Resource(new function() {
 			this.read = new function() {
 				this.binary = function() {
 					return new InputStream(new Packages.java.io.ByteArrayInputStream($bytes));
@@ -90,6 +89,23 @@ $exports.Buffer = function() {
 };
 $exports.Streams.binary.Buffer = $exports.Buffer;
 
+//	TODO	It may be that the following exports are not necessary and can actually all be accessed through java.adapt
+//$exports.Reader = Reader;
+//$exports.Writer = Writer;
+//$exports.InputStream = InputStream;
+//$exports.OutputStream = OutputStream;
+$exports.Resource = $context.$rhino.io.Resource;
+
+var Loader = function(underlying) {
+	var rv = function(p) {
+		return underlying.apply(this,arguments);
+	};
+	rv.series = underlying.series;
+	return rv;
+};
+
+$exports.Loader = Loader($context.$rhino.Loader);
+
 $exports.java = new function() {
 	this.adapt = function(object) {
 		if (false) {
@@ -118,23 +134,6 @@ $exports.java = new function() {
 		}
 	};
 }
-
-//	TODO	It may be that the following exports are not necessary and can actually all be accessed through java.adapt
-$exports.Reader = Reader;
-$exports.Writer = Writer;
-$exports.InputStream = InputStream;
-$exports.OutputStream = OutputStream;
-$exports.Resource = Resource;
-
-var Loader = function(underlying) {
-	var rv = function(p) {
-		return underlying.apply(this,arguments);
-	};
-	rv.series = underlying.series;
-	return rv;
-};
-
-$exports.Loader = Loader($context.$rhino.Loader);
 
 $exports.mime = $loader.file("mime.js", {
 	_streams: _java,
