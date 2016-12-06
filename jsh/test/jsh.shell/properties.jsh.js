@@ -12,7 +12,7 @@
 
 var log = function(string) {
 	jsh.shell.echo(string, {
-		stream: jsh.io.Streams.stderr
+		stream: jsh.shell.stdio.error
 	});
 }
 

@@ -46,30 +46,29 @@ var InputStream = function(peer) {
 			}
 		});
 	});
-
 };
 
 $exports.Streams = $context.$rhino.io.Streams;
 
-(function addDeprecatedProperties() {
-	var StandardOutputStream = function(_peer) {
-		var rv = new $context.$rhino.io.OutputStream(_peer);
-		rv.write = function(message) {
-			var _writer = new Packages.java.io.OutputStreamWriter(_peer);
-			_writer.write(message);
-			_writer.flush();
-		};
-		delete rv.close;
-		return rv;
-	}
-
-	if ($context.$rhino.getStdio) {
-		this.stderr = StandardOutputStream($context.$rhino.getStdio().getStandardError());
-		this.stdout = StandardOutputStream($context.$rhino.getStdio().getStandardOutput());
-		$api.deprecate(this,"stderr");
-		$api.deprecate(this,"stdout");
-	}
-}).call($exports.Streams);
+//(function addDeprecatedProperties() {
+//	var StandardOutputStream = function(_peer) {
+//		var rv = new $context.$rhino.io.OutputStream(_peer);
+//		rv.write = function(message) {
+//			var _writer = new Packages.java.io.OutputStreamWriter(_peer);
+//			_writer.write(message);
+//			_writer.flush();
+//		};
+//		delete rv.close;
+//		return rv;
+//	}
+//
+//	if ($context.$rhino.getStdio) {
+//		this.stderr = StandardOutputStream($context.$rhino.getStdio().getStandardError());
+//		this.stdout = StandardOutputStream($context.$rhino.getStdio().getStandardOutput());
+//		$api.deprecate(this,"stderr");
+//		$api.deprecate(this,"stdout");
+//	}
+//}).call($exports.Streams);
 
 $exports.Buffer = function() {
 	$context.$rhino.io.Buffer.apply(this,arguments);
@@ -81,17 +80,8 @@ $exports.Buffer = function() {
 		};
 	})(this.readBinary);
 };
-//$exports.Streams.binary.Buffer = $exports.Buffer;
 
 $exports.Resource = $context.$rhino.io.Resource;
-
-//var Loader = function(underlying) {
-//	var rv = function(p) {
-//		return underlying.apply(this,arguments);
-//	};
-//	rv.series = underlying.series;
-//	return rv;
-//};
 
 $exports.Loader = $context.$rhino.Loader;
 
