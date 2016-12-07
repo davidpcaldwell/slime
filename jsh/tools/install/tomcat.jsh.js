@@ -69,6 +69,11 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (jsh.shell.jsh.lib.getSubdirectory("tomcat") && !parameters.options.replace) {
+	jsh.shell.console("Tomcat already installed at " + jsh.shell.jsh.lib.getSubdirectory("tomcat"));
+	jsh.shell.exit(0);
+}
+
 if (!parameters.options.local) {
 	if (!parameters.options.version) {
 		parameters.options.version = getLatestVersion();
@@ -100,10 +105,7 @@ if (!parameters.options.local) {
 		}
 	}
 }
-if (jsh.shell.jsh.lib.getSubdirectory("tomcat") && !parameters.options.replace) {
-	jsh.shell.console("Tomcat already installed at " + jsh.shell.jsh.lib.getSubdirectory("tomcat"));
-	jsh.shell.exit(0);
-}
+
 var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 jsh.shell.echo("Unzipping to: " + to);
 jsh.file.unzip({
