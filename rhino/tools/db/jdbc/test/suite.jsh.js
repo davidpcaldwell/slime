@@ -58,6 +58,7 @@ var suite = new jsh.unit.Suite({
 });
 
 if (parameters.options["mysql:server"]) {
+	//	TODO	switch to use mysql/server.js
 	var MYSQL = parameters.options["mysql:server"].directory;
 	var DATA = jsh.shell.TMPDIR.createTemporary({ directory: true });
 	var PID = jsh.shell.TMPDIR.createTemporary();

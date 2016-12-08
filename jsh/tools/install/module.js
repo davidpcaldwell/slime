@@ -154,7 +154,7 @@ if (algorithms.gzip.extract) {
 }
 
 $exports.install = listening(function(p,listeners) {
-	install(p,listeners);
+	return install(p,listeners);
 });
 
 if (algorithms.gzip.extract) {
