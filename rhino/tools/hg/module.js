@@ -495,18 +495,23 @@ var Installation = function(environment) {
 
 		this.subrepositories = function() {
 			var file = dir.getFile(".hgsub");
+			//	TODO	or empty array?
 			if (!file) return null;
-			var hgsub = new $exports.Hgrc({ file: file });
+			var hgsub = new $exports.Hgrc({ file: file/*, section: "" */ });
 			var list = hgsub.get();
 			var rv = [];
 			for (var x in list) {
 				if (/^subpaths\./.test(x)) {
 				} else {
-					rv.push(new Recurse(dir.getSubdirectory(x)));
+					var sub = dir.getSubdirectory(x);
+					if (!sub) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(list));
+					rv.push(new Recurse(sub));
 				}
 			}
 			return rv;
-		}
+		};
+
+		this.getSubrepositories = $api.deprecate(this.subrepositories);
 
 		this.status = function(p) {
 			var subrepositories = (function(dir,p) {
@@ -708,25 +713,6 @@ var Installation = function(environment) {
 
 		this.shell = function(p) {
 			return shell($context.api.js.Object.set({}, { repository: this }, p));
-		}
-
-		//	TODO	it is unclear what various forms of the .hgsub entry format are allowed, and how they work. So not documenting this
-		//			API
-		this.getSubrepositories = function() {
-			if (!dir.getFile(".hgsub")) return [];
-			var hgsub = new $exports.Hgrc({ file: dir.getFile(".hgsub"), section: "" });
-			var entries = hgsub.get();
-			var rv = [];
-			for (var x in entries) {
-				if (/^subpaths\./.test(x)) {
-					//	ignore
-				} else {
-					var sub = dir.getSubdirectory(x);
-					if (!sub) throw new Error("No subdirectory " + x + " entries=" + JSON.stringify(entries));
-					rv.push(new LocalRepository(dir.getSubdirectory(x)));
-				}
-			}
-			return rv;
 		}
 	};
 
