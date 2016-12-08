@@ -203,7 +203,8 @@ public abstract class Code {
 				};
 			}
 			
-			static File create(final Java.Compiled compiled) {
+			private static File adapt(final Java.Classes.Compiled compiled) {
+				if (compiled == null) return null;
 				return new Code.Source.File() {
 					@Override public Code.Source.URI getURI() {
 						return Code.Source.URI.create(compiled.toUri());
@@ -647,10 +648,10 @@ public abstract class Code {
 			return jfm;
 		}
 		
-		private Source.File toSourceFile(Java.Compiled compiled) {
-			if (compiled == null) return null;
-			return Source.File.create(compiled);
-		}
+//		private Source.File toSourceFile(Java.Classes.Compiled compiled) {
+//			if (compiled == null) return null;
+//			return Source.File.create(compiled);
+//		}
 
 		@Override public Source.File getFile(String path) throws IOException {
 			if (path.startsWith("org/apache/")) return null;
@@ -688,7 +689,7 @@ public abstract class Code {
 						}
 					}
 				}
-				cache.put(path, toSourceFile(compiled.getCompiledClass(className.replace("/","."))));
+				cache.put(path, Source.File.adapt(compiled.getCompiledClass(className.replace("/","."))));
 			}
 			return cache.get(path);
 		}

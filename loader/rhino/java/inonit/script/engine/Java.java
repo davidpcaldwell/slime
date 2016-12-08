@@ -18,8 +18,8 @@ public class Java {
 	}
 
 	private static List<URL> getClassLoaderUrls() {
-		if (Code.class.getClassLoader() instanceof URLClassLoader) {
-			return Arrays.asList( ((URLClassLoader)Code.class.getClassLoader()).getURLs() );
+		if (Java.class.getClassLoader() instanceof URLClassLoader) {
+			return Arrays.asList( ((URLClassLoader)Java.class.getClassLoader()).getURLs() );
 		} else {
 			return new ArrayList<URL>();
 		}
@@ -30,22 +30,24 @@ public class Java {
 		abstract Compiled getCompiledClass(String className);
 		
 		final JavaFileManager getJavaFileManager() {
-			return createJavaFileManager(this, getClassLoaderUrls(), compiler());
+			return createJavaFileManager(this);
 		}
 		
 		static Classes memory() {
 			return new MemoryClasses();
 		}
+		
+		static abstract class Compiled implements JavaFileObject {
+			abstract byte[] getBytes();
+		}
 	}
 	
-	static abstract class Compiled implements JavaFileObject {
-		abstract byte[] getBytes();
-	}
-	
-	private static JavaFileManager createJavaFileManager(final Java.Classes compiled, final List<URL> urls, final JavaCompiler javac) {
+	private static JavaFileManager createJavaFileManager(final Java.Classes compiled) {
 		final boolean USE_STANDARD_FILE_MANAGER_TO_LIST_CLASSPATH = true;
-
-//		final List<URL> urls = getClassLoaderUrls();
+		
+		final List<URL> urls = getClassLoaderUrls();
+		
+		final JavaCompiler javac = compiler();
 
 		final ClassLoader classpath = new ClassLoader() {
 			protected Class findClass(String name) throws ClassNotFoundException{
