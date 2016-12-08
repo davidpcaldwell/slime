@@ -32,6 +32,10 @@ public abstract class Code {
 					throw new RuntimeException(e);
 				}
 			}
+			
+			static URI create(java.net.URI delegate) {
+				return new URI(delegate);
+			}
 
 			public static URI create(URL url) {
 				try {
@@ -197,6 +201,32 @@ public abstract class Code {
 						return new ByteArrayInputStream(bytes);
 					}
 				};
+			}
+			
+			static File create(final Java.Compiled compiled) {
+				return new Code.Source.File() {
+					@Override public Code.Source.URI getURI() {
+						return Code.Source.URI.create(compiled.toUri());
+					}
+
+					@Override public String getSourceName() {
+						return null;
+					}
+
+					@Override public InputStream getInputStream() {
+						return new ByteArrayInputStream(compiled.getBytes());
+					}
+
+					@Override public Long getLength() {
+						//	TODO	length of array
+						return null;
+					}
+
+					@Override public Date getLastModified() {
+						//	TODO	might as well store
+						return null;
+					}
+				};				
 			}
 		}
 
@@ -523,115 +553,6 @@ public abstract class Code {
 		return javac;
 	}
 
-	private static class MemoryJavaClasses {
-		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
-
-		private class OutputClass implements JavaFileObject {
-			private String name;
-			private ByteArrayOutputStream out;
-
-			OutputClass(String name) {
-				this.name = name;
-			}
-
-			public Kind getKind() {
-				return Kind.CLASS;
-			}
-
-			public boolean isNameCompatible(String simpleName, Kind kind) {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public NestingKind getNestingKind() {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public Modifier getAccessLevel() {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public URI toUri() {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public String getName() {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public InputStream openInputStream() throws IOException {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public OutputStream openOutputStream() throws IOException {
-				out = new ByteArrayOutputStream();
-				return out;
-			}
-
-			public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public Writer openWriter() throws IOException {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public long getLastModified() {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-			}
-
-			public boolean delete() {
-				classes.put(name, null);
-				return true;
-			}
-
-		}
-
-		JavaFileObject forOutput(String className) {
-			//System.err.println("forOutput: " + className);
-			if (false && classes.get(className) != null) {
-				throw new UnsupportedOperationException("Duplicate!");
-			}
-			classes.put(className, new OutputClass(className));
-			return classes.get(className);
-		}
-
-		Source.File getCompiledClass(String className) {
-			//System.err.println("getCompiledClass: " + className);
-			if (classes.get(className) != null) {
-				final OutputClass oc = classes.get(className);
-				return new Source.File() {
-					@Override public Source.URI getURI() {
-						return new Source.URI(oc.toUri());
-					}
-
-					@Override public String getSourceName() {
-						return null;
-					}
-
-					@Override public InputStream getInputStream() {
-						return new ByteArrayInputStream(oc.out.toByteArray());
-					}
-
-					@Override public Long getLength() {
-						//	TODO	length of array
-						return null;
-					}
-
-					@Override public Date getLastModified() {
-						//	TODO	might as well store
-						return null;
-					}
-				};
-			} else {
-				return null;
-			}
-		}
-	}
-
 	private static class SourceFileObject implements JavaFileObject {
 		private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 
@@ -897,7 +818,7 @@ public abstract class Code {
 		}
 	}
 
-	private static JavaFileManager createJavaFileManager(final MemoryJavaClasses compiled) {
+	private static JavaFileManager createJavaFileManager(final Java.Classes compiled) {
 		final boolean USE_STANDARD_FILE_MANAGER_TO_LIST_CLASSPATH = true;
 
 		final List<URL> urls = getClassLoaderUrls();
@@ -994,7 +915,7 @@ public abstract class Code {
 			this.delegate = delegate;
 		}
 
-		private MemoryJavaClasses compiled = new MemoryJavaClasses();
+		private Java.Classes compiled = Java.Classes.memory();
 		private javax.tools.JavaFileManager jfm;
 
 		private HashMap<String,Source.File> cache = new HashMap<String,Source.File>();
@@ -1013,6 +934,11 @@ public abstract class Code {
 				jfm = Code.createJavaFileManager(compiled);
 			}
 			return jfm;
+		}
+		
+		private Source.File getSourceFile(Java.Compiled compiled) {
+			if (compiled == null) return null;
+			return Source.File.create(compiled);
 		}
 
 		@Override public Source.File getFile(String path) throws IOException {
@@ -1051,7 +977,7 @@ public abstract class Code {
 						}
 					}
 				}
-				cache.put(path, compiled.getCompiledClass(className.replace("/",".")));
+				cache.put(path, getSourceFile(compiled.getCompiledClass(className.replace("/","."))));
 			}
 			return cache.get(path);
 		}
