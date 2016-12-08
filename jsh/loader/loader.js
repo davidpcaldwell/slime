@@ -39,6 +39,7 @@ $set((function() {
 			_log(_logger, _level, "Access to deprecated property %s of object %s", String(o.property), String(o.object));
 		}
 		if (_logger.isLoggable(_traceLevel)) {
+			//	TODO	disable break on error
 			_log(_logger, _traceLevel, "Stack trace of deprecated usage:\n%s", String(new Error().stack));
 		}
 		debugger;

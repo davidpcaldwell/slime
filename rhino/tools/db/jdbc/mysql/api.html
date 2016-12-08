@@ -15,10 +15,9 @@ END LICENSE
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 <head>
-	<title>__TITLE__</title>
-	<!--	TODO	change these to use local copies of these files at the appropriate location	-->
-	<link href="http://slime.googlecode.com/hg/loader/api/api.css" rel="stylesheet" type="text/css" />
-	<script src="http://slime.googlecode.com/hg/loader/api/api.js"></script>
+	<title>SLIME MySQL</title>
+	<link href="../../../../../loader/api/api.css" rel="stylesheet" type="text/css" />
+	<script src="../../../../../loader/api/api.js"></script>
 </head>
 <body>
 	<div>__DESCRIPTION__</div>
@@ -60,6 +59,7 @@ END LICENSE
 		<ul>
 		</ul>
 		<script type="application/x.jsapi#initialize">
+			scope.module = $jsapi.environment.module;
 			scope.database = new module.Database({
 				host: $jsapi.environment.mysql.host,
 				port: $jsapi.environment.mysql.port,
@@ -99,8 +99,8 @@ END LICENSE
 			}
 		]]></script>
 		<div jsapi:id="blob">
-			<div jsapi:reference="getApi('../api.html').getElement('blob')">
-			</div>
+			<script type="application/x.jsapi#initialize" jsapi:reference="getApi('../api.html').getElement('blob')">
+			</script>
 			<script type="application/x.jsapi#tests">
 				var catalog = database.getCatalog({ name: "test" });
 				jsh.shell.echo("catalog = " + catalog);

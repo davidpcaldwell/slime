@@ -33,6 +33,68 @@ plugin({
 		jsh.httpd.nugget = {};
 		jsh.httpd.nugget.getMimeType = getMimeType;
 
+		jsh.httpd.spi = {};
+		jsh.httpd.spi.argument = function(resources,servlet) {
+			if (servlet.$loader) throw new Error("servlet.$loader provided");
+			if (servlet.pathname && servlet.directory === false) {
+				servlet = { file: servlet };
+			}
+
+			var byLoader = function($loader,path) {
+				return function(scope) {
+					$loader.run(path, scope);
+				}
+			};
+
+			var getResourceLoader = function(resources) {
+				if (!resources) return null;
+				if (resources.get && resources.Child) return resources;
+				if (resources.loader) return $api.deprecate(function() {
+					return resources.loader;
+				})();
+			};
+
+			resources = getResourceLoader(resources);
+
+			var returning = function(o) {
+				o.resources = resources;
+				return o;
+			};
+
+			if (servlet.load) {
+				return returning({
+					$loader: servlet.$loader,
+					load: servlet.load
+				});
+//			} else if (servlet.$loader && servlet.path) {
+//				return returning({
+//					$loader: servlet.$loader,
+//					load: byLoader(servlet.$loader,servlet.path)
+//				});
+			} else if (servlet.file) {
+				return returning({
+					$loader: new jsh.file.Loader({
+						directory: servlet.file.parent,
+						type: getMimeType
+					}),
+					load: function(scope) {
+						jsh.loader.run(servlet.file.pathname, scope);
+					}
+				});
+			} else if (servlet.resource) {
+				var prefix = servlet.resource.split("/").slice(0,-1).join("/");
+				if (prefix) prefix += "/";
+				var $loader = new resources.Child(prefix);
+				return returning({
+					$loader: $loader,
+					load: byLoader($loader, servlet.resource.substring(prefix.length))
+				});
+			} else {
+				throw new Error("Bad argument.");
+			}
+		};
+
+
 		$loader.run("plugin.jsh.resources.js", {
 			jsh: jsh,
 			$context: {
@@ -102,6 +164,7 @@ plugin({
 							//	TODO	below may not work if more than one servlet; value changes during loop and may be picked up
 							//			by servlets earlier in loop
 							var servletDeclaration = m.servlets[pattern];
+							var servletImplementation = jsh.httpd.spi.argument(m.resources,servletDeclaration);
 		//					if (!servletDeclaration.file) {
 		//						throw new Error("Incorrect launch.");
 		//					}
@@ -115,31 +178,16 @@ plugin({
 									this.init = function() {
 										var apiScope = {
 											$host: new function() {
-												if (m.resources && !m.resources.loader) throw new Error("No m.resources.loader");
-
 												this.parameters = (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
 
 												this.loaders = {
 													api: new $loader.Child("server/"),
-													script: (function() {
-														if (servletDeclaration.$loader) {
-															return servletDeclaration.$loader;
-														} else if (servletDeclaration.file) {
-															return new jsh.file.Loader({
-																directory: servletDeclaration.file.parent,
-																type: getMimeType
-															});
-														}
-													})(),
-													container: (m.resources) ? m.resources.loader : null
+													script: servletImplementation.$loader,
+													container: servletImplementation.resources
 												};
 
 												this.getCode = function(scope) {
-													if (servletDeclaration.load) {
-														servletDeclaration.load(scope);
-													} else {
-														jsh.loader.run(servletDeclaration.file.pathname, scope);
-													}
+													servletImplementation.load(scope);
 												}
 
 												this.$java = $jsh;

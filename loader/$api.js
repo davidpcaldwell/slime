@@ -158,6 +158,31 @@
 	var deprecate = flag();
 	var experimental = flag();
 
+	var once = function() {
+		return (function(was) {
+			var called;
+
+			return function() {
+				if (!called) {
+					called = true;
+					return was.apply(this,arguments);
+				}
+			}
+		})(inonit.loader.$api.deprecate.warning);
+	}
+
+	$exports.warning = {
+		once: function(warning) {
+			var called;
+
+			return function() {
+				if (!called) {
+					called = true;
+					return warning.apply(this,arguments);
+				}
+			}
+		}
+	}
 	$exports.deprecate = deprecate;
 	$exports.experimental = experimental;
 
@@ -313,6 +338,20 @@
 				}
 			}
 			return true;
+		}
+	};
+	$exports.Filter.or = function() {
+		var functions = arguments;
+		for (var i=0; i<functions.length; i++) {
+			if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
+		}
+		return function() {
+			for (var i=0; i<functions.length; i++) {
+				if (functions[i].apply(this,arguments)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	};
 	$exports.Filter.not = function(f) {

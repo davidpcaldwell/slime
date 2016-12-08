@@ -13,7 +13,6 @@
 //	TODO	rename this
 var _java = ($context._streams) ? $context._streams : new Packages.inonit.script.runtime.io.Streams();
 
-var Resource = $context.$rhino.io.Resource;
 var InputStream = function(peer) {
 	$context.$rhino.io.InputStream.apply(this,arguments);
 
@@ -24,9 +23,10 @@ var InputStream = function(peer) {
 		return $context.api.java.Properties.adapt(properties);
 	}
 
+	//	TODO	push back into loader/rhino
 	this.Resource = function(type) {
 		var _bytes = _java.readBytes(peer);
-		return new Resource(new function() {
+		return new $context.$rhino.io.Resource(new function() {
 			this.type = type;
 
 			this.read = new function() {
@@ -39,7 +39,7 @@ var InputStream = function(peer) {
 
 	this.cache = $api.deprecate(function() {
 		var $bytes = _java.readBytes(peer);
-		return new Resource(new function() {
+		return new $context.$rhino.io.Resource(new function() {
 			this.read = new function() {
 				this.binary = function() {
 					return new InputStream(new Packages.java.io.ByteArrayInputStream($bytes));
@@ -47,39 +47,12 @@ var InputStream = function(peer) {
 			}
 		});
 	});
-
 };
-
-var OutputStream = $context.$rhino.io.OutputStream;
-
-var Reader = $context.$rhino.io.Reader;
-var Writer = $context.$rhino.io.Writer;
-var Buffer = $context.$rhino.io.Buffer;
 
 $exports.Streams = $context.$rhino.io.Streams;
 
-(function addDeprecatedProperties() {
-	var StandardOutputStream = function(_peer) {
-		var rv = new OutputStream(_peer);
-		rv.write = function(message) {
-			var _writer = new Packages.java.io.OutputStreamWriter(_peer);
-			_writer.write(message);
-			_writer.flush();
-		};
-		delete rv.close;
-		return rv;
-	}
-
-	if ($context.$rhino.getStdio) {
-		this.stderr = StandardOutputStream($context.$rhino.getStdio().getStandardError());
-		this.stdout = StandardOutputStream($context.$rhino.getStdio().getStandardOutput());
-		$api.deprecate(this,"stderr");
-		$api.deprecate(this,"stdout");
-	}
-}).call($exports.Streams);
-
 $exports.Buffer = function() {
-	Buffer.apply(this,arguments);
+	$context.$rhino.io.Buffer.apply(this,arguments);
 
 	this.readBinary = (function(was) {
 		return function() {
@@ -88,7 +61,10 @@ $exports.Buffer = function() {
 		};
 	})(this.readBinary);
 };
-$exports.Streams.binary.Buffer = $exports.Buffer;
+
+$exports.Resource = $context.$rhino.io.Resource;
+
+$exports.Loader = $context.$rhino.Loader;
 
 $exports.java = new function() {
 	this.adapt = function(object) {
@@ -96,11 +72,11 @@ $exports.java = new function() {
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.InputStream)(object)) {
 			return new InputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.OutputStream)(object)) {
-			return new OutputStream(object);
+			return new $context.$rhino.io.OutputStream(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Reader)(object)) {
-			return new Reader(object);
+			return new $context.$rhino.io.Reader(object);
 		} else if ($context.api.java.isJavaObject(object) && $context.api.java.isJavaType(Packages.java.io.Writer)(object)) {
-			return new Writer(object);
+			return new $context.$rhino.io.Writer(object);
 		} else {
 			var type = (function() {
 				if (object.getClass) {
@@ -118,23 +94,6 @@ $exports.java = new function() {
 		}
 	};
 }
-
-//	TODO	It may be that the following exports are not necessary and can actually all be accessed through java.adapt
-$exports.Reader = Reader;
-$exports.Writer = Writer;
-$exports.InputStream = InputStream;
-$exports.OutputStream = OutputStream;
-$exports.Resource = Resource;
-
-var Loader = function(underlying) {
-	var rv = function(p) {
-		return underlying.apply(this,arguments);
-	};
-	rv.series = underlying.series;
-	return rv;
-};
-
-$exports.Loader = Loader($context.$rhino.Loader);
 
 $exports.mime = $loader.file("mime.js", {
 	_streams: _java,

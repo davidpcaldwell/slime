@@ -88,12 +88,12 @@ var LocalRepository = function(o) {
 	$api.deprecate(this,"base");
 
 	this.toString = function() {
-		return "git local: " + o.local;
+		return "git local: " + directory;
 	};
 
 	["getRelativePath","getFile","getSubdirectory"].forEach(function(method) {
 		this[method] = function() {
-			return o.local[method].apply(o.local,arguments);
+			return directory[method].apply(directory,arguments);
 		}
 	},this);
 

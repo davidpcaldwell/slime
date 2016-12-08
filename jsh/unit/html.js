@@ -279,9 +279,9 @@ var Scope = function(suite,environment) {
 			}
 		},
 		file: {
-			newTemporaryDirectory: function() {
+			newTemporaryDirectory: $api.deprecate(function() {
 				return jsh.shell.TMPDIR.createTemporary({ directory: true });
-			}
+			})
 		},
 		java: {
 			loader: jsh.$jsapi.java,

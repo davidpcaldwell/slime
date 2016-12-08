@@ -21,40 +21,12 @@ var getMirror = function() {
 	});
 }
 
-$exports.get = function(path) {
-	var url = getMirror() + path;
-	jsh.shell.echo("Downloading from " + url + " ...");
-	return $context.client.request({
-		url: url
-	});
-};
-
-$exports.download = function(p) {
-	var name = p.path.split("/").slice(-1)[0];
-	if ($context.api.downloads && $context.api.downloads.getFile(name)) {
-		return $context.api.download({
-			name: name
-		});
-	} else {
-		return $context.api.download({
-			url: getMirror() + p.path
-		});
-	}
-};
-
 $exports.find = function(p) {
-	var name = p.path.split("/").slice(-1)[0];
-	if ($context.downloads) {
-		if ($context.downloads.getFile(name)) {
-			return $context.downloads.getFile(name);
+	var argument = {
+		name: p.path.split("/").slice(-1)[0],
+		url: function() {
+			return getMirror() + p.path
 		}
-	}
-	var remote = new $context.client.Loader(getMirror());
-	var resource = remote.get(p.path);
-	if ($context.downloads) {
-		$context.downloads.getRelativePath(name).write(resource.read.binary(), { append: false });
-		return $context.downloads.getFile(name);
-	} else {
-		throw new Error("Unimplemented.");
-	}
+	};
+	return $context.get(argument);
 }

@@ -219,7 +219,7 @@ plugin({
 			if (!fr.file) {
 				fr.write("", { append: false });
 			}
-			var browser = new jsh.shell.browser.chrome.User({ directory: directory });
+			var browser = new jsh.shell.browser.chrome.Instance({ directory: directory });
 			var server = new jsh.httpd.Tomcat({
 				port: p.port
 			});
@@ -247,20 +247,21 @@ plugin({
 				}
 			});
 
-			var loader = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
+			var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.shell.jsh.home.getSubdirectory("src");
+			var loader = new jsh.file.Loader({ directory: src });
 
 			server.map({
 				path: "",
 				servlets: {
 					"/*": {
 						load: function(scope) {
+							scope.$loader = $loader;
 							var server = loader.module("loader/api/ui/server.js", {
 								suite: p.suite,
 								messages: get
 							});
 							scope.$exports.handle = server.handle;
 						},
-						$loader: $loader,
 						parameters: {}
 					}
 				},

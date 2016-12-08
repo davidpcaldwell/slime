@@ -52,6 +52,18 @@ END LICENSE
 		</div>
 		<script type="application/x.jsapi#initialize">
 			scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+			scope.module = function(p) {
+				return $jsapi.loader.module("module.js", {
+					api: {
+						shell: jsh.shell,
+						http: jsh.http,
+						file: jsh.file
+					},
+					downloads: p.downloads
+				});
+			};
+
 			scope.api = $jsapi.loader.module("module.js", {
 				api: {
 					shell: jsh.shell,
@@ -101,13 +113,128 @@ END LICENSE
 		</script>
 		<div>
 			<h1>Exports</h1>
+			<div class="type">
+				<a class="type" name="types.installation">installation</a>
+				<span>Specifies software to be installed (including where to obtain it and how it is structured) and a destination
+					to which to install it.
+				</span>
+				<div class="label">has properties:</div>
+				<ul>
+				</ul>
+			</div>
+			<div class="type">
+				<a class="type" name="types.listener">listener</a>
+				<span>__DESCRIPTION__</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">console</div>
+						<span>
+							(optional)
+							A callback invoked with messages suitable for display on the console.
+						</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type">string</span>
+									<span>A message.</span>
+								</li>
+							</ol>
+						</div>
+					</li>
+				</ul>
+			</div>
 			<ul>
 				<li class="function">
-					<div class="name">gzip</div>
+					<div class="name">get</div>
 					<span>
-						(conditional; requires <code>tar</code> to be in the <code>PATH</code>)
-						Installs a <code>gzip</code>ped <code>tar</code> file.
+						Provides a file containing an installer. The source of the file is specified by the argument passed to
+						the method.
 					</span>
+					<div class="arguments">
+						<div class="label">Arguments</div>
+						<ol>
+							<li class="object">
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+
+								</ul>
+							</li>
+							<li class="object">
+								<span>A handler object for events sent during the method's execution.</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">console</div>
+										<span>__DESCRIPTION__</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+									</li>
+								</ul>
+							</li>
+						</ol>
+					</div>
+					<div class="returns">
+						<div class="label">Returns</div>
+						<span class="type"><a href="../../../rhino/file/api.html#types.file">file</a></span>
+						<span>A file containing the installer.</span>
+					</div>
+					<script type="application/x.jsapi#tests">
+						var downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var api = module({ downloads: downloads });
+						var messages = [];
+						var file = api.get({
+							url: "http://127.0.0.1:" + server.port + "/directory.tar.gz"
+						}, {
+							console: function(e) {
+								messages.push(e);
+							}
+						});
+						var TOSTRING = function() {
+							return { string: this.toString() };
+						};
+						var messageStartsWith = function(string) {
+							return function() {
+								return Boolean(this.detail.message.substring(0,string.length) == string);
+							}
+						};
+						verify(file).is.type("object");
+						verify(downloads).getFile("directory.tar.gz").is.not(null);
+						verify(downloads).getFile("directory.tar.gz").evaluate(TOSTRING).string.is(file.toString());
+						verify(messages,"messages").is(messages);
+						verify(messages).length.is(2);
+						verify(messages)[0].evaluate(messageStartsWith("Downloading")).is(true);
+						verify(messages)[0].evaluate(messageStartsWith("Found")).is(false);
+						verify(messages)[1].evaluate(messageStartsWith("Wrote")).is(true);
+					</script>
+				</li>
+				<li class="object">
+					<div class="name"><a id="$exports.format">format</a></div>
+					<span>__DESCRIPTION__</span>
+					<div class="label">has properties:</div>
+					<ul>
+						<li class="value">
+							<div class="name">zip</div>
+							<span class="type">__TYPE__</span>
+							<span>__DESCRIPTION__</span>
+						</li>
+						<li class="value">
+							<div class="name">gzip</div>
+							<span class="type">__TYPE__</span>
+							<span>
+								(conditional; requires <code>tar</code> to be in the <code>PATH</code>)
+								A <code>gzip</code>ped <code>tar</code> file.
+							</span>
+						</li>
+					</ul>
+				</li>
+				<li class="function">
+					<div class="name">install</div>
 					<div>
 						This method can process both local and remote files. For remote files, it is assumed that the filename of
 						the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
@@ -144,6 +271,11 @@ END LICENSE
 										</span>
 									</li>
 									<li class="value">
+										<div class="name">format</div>
+										<span class="type">__TYPE__</span>
+										<span>One of the values from <a href="$exports.format"><code>format</code></a>.</span>
+									</li>
+									<li class="value">
 										<div class="name">to</div>
 										<span class="type"><a href="platform/slim/slime/rhino/file/api.html#types.Pathname">Pathname</a></span>
 										<span>
@@ -171,30 +303,11 @@ END LICENSE
 											<span>A path within the archive to treat as the installation.</span>
 										</div>
 									</li>
-									<li class="object">
-										<div class="name">on</div>
-										<span>(optional)</span>
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="function">
-												<div class="name">console</div>
-												<span>
-													(optional)
-													A callback invoked with messages suitable for display on the console.
-												</span>
-												<div class="arguments">
-													<div class="label">Arguments</div>
-													<ol>
-														<li class="value">
-															<span class="type">string</span>
-															<span>A message.</span>
-														</li>
-													</ol>
-												</div>
-											</li>
-										</ul>
-									</li>
 								</ul>
+							</li>
+							<li class="value">
+								<span class="type"><a href="#types.listener">listener</a></span>
+								<span>A listener that will be informed about events during the installation.</span>
 							</li>
 						</ol>
 					</div>
@@ -206,6 +319,7 @@ END LICENSE
 					<script type="application/x.jsapi#tests" jsapi:id="present">
 						verify(api).is.type("object");
 						if (jsh.shell.PATH.getCommand("tar")) {
+							verify(api).evaluate(function() { return this.format.gzip; }).is.type("object");
 							verify(api).evaluate(function() { return this.gzip; }).is.type("function");
 						}
 					</script>
@@ -214,8 +328,9 @@ END LICENSE
 						tmp.directory.remove();
 
 						if (harness.tar) {
-							api.gzip({
+							api.install({
 								file: harness.tar,
+								format: api.format.gzip,
 								to: tmp
 							});
 
@@ -225,8 +340,9 @@ END LICENSE
 							(function() {
 								var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 								tmp.directory.remove();
-								api.gzip({
+								api.install({
 									file: harness.renamed,
+									format: api.format.gzip,
 									to: tmp,
 									getDestinationPath: function() { return "directory"; }
 								});
@@ -238,8 +354,9 @@ END LICENSE
 						if (server && harness.tar) (function() {
 							var tmp = tmpdir();
 							verify(downloads).getFile("directory.tar.gz").is(null);
-							api.gzip({
+							api.install({
 								url: "http://127.0.0.1:" + server.port + "/directory.tar.gz",
+								format: api.format.gzip,
 								to: tmp
 							});
 							verify(downloads).getFile("directory.tar.gz").is.not(null);
@@ -267,8 +384,9 @@ END LICENSE
 							(function() {
 								var tmp = tmpdir();
 								verify(downloads).getFile("directory.zip").is(null);
-								api.zip({
+								api.install({
 									url: "http://127.0.0.1:" + server.port + "/directory.zip",
+									format: api.format.zip,
 									to: tmp
 								});
 								verify(downloads).getFile("directory.zip").is.not(null);
@@ -299,7 +417,7 @@ END LICENSE
 																type: "application/json",
 																string: JSON.stringify({
 																	preferred: "http://apache.inonit.com/"
-															})
+																})
 															}
 														};
 													}
@@ -311,7 +429,7 @@ END LICENSE
 													};
 												}
 											};
-										Packages.java.lang.System.err.println("custom servlet loaded.");
+											Packages.java.lang.System.err.println("custom servlet loaded.");
 										}
 									}
 								},
@@ -362,7 +480,7 @@ END LICENSE
 					<script type="application/x.jsapi#tests">
 						if (jsh.httpd.Tomcat) {
 							verify(api).apache.is.type("object");
-							verify(api).apache.evaluate.property("download").is.type("function");
+							verify(api).apache.evaluate.property("find").is.type("function");
 							verify(mock).is.type("object");
 
 							var PROXY = {

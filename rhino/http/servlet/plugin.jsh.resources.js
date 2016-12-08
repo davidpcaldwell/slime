@@ -228,27 +228,42 @@ var Resources = function(mapping,old) {
 	};
 
 	var OldLoader = function(prefix) {
-		var rv = new jsh.io.Loader({
-			resources: new function() {
-				this.get = function(path) {
-					return loader.get(prefix+path);
-				};
-			},
-			Loader: function(subprefix) {
-				var rv = new OldLoader(prefix + subprefix);
-				rv.list = function(p) {
-					return loader.list(prefix + subprefix + p.path);
+		var USE_NEW_SLIME_LOADER = true;
+		if (USE_NEW_SLIME_LOADER) {
+			var implementation = new jsh.io.Loader({
+				get: function(path) {
+					return loader.get(path);
 				}
-				return rv;
+			});
+			var rv = new implementation.Child(prefix);
+			rv.list = function(p) {
+				return loader.list.call(loader,prefix+p.path);
+			};
+			return rv;
+		} else {
+			//	TODO	deprecated, leaving code here for a little while to see if there are regressions
+			var rv = new jsh.io.Loader({
+				resources: new function() {
+					this.get = function(path) {
+						return loader.get(prefix+path);
+					};
+				},
+				Loader: function(subprefix) {
+					var rv = new OldLoader(prefix + subprefix);
+					rv.list = function(p) {
+						return loader.list(prefix + subprefix + p.path);
+					}
+					return rv;
+				}
+			});
+			rv.toString = function() {
+				return "plugin.jsh.resources.js OldLoader: prefix=" + prefix + " loader=" + loader;
 			}
-		});
-		rv.toString = function() {
-			return "plugin.jsh.resources.js OldLoader: prefix=" + prefix + " loader=" + loader;
+			rv.list = function(p) {
+				return loader.list(prefix+p.path);
+			};
+			return rv;
 		}
-		rv.list = function(p) {
-			return loader.list(prefix+p.path);
-		};
-		return rv;
 	};
 
 	var NewLoader = function(p) {
