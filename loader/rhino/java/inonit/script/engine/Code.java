@@ -699,11 +699,11 @@ public abstract class Code {
 			return null;
 		}
 
-		private Classes classes = new Classes() {
-			@Override public URL getResource(String path) {
-				return null;
-			}
-		};
+//		private Classes classes = new Classes() {
+//			@Override public URL getResource(String path) {
+//				return null;
+//			}
+//		};
 
 		@Override public Classes getClasses() {
 			return null;
