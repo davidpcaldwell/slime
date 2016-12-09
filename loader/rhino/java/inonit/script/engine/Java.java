@@ -34,7 +34,7 @@ public class Java {
 		}
 		
 		static Classes memory() {
-			return new MemoryClasses();
+			return new MemoryClasses(Compiled.Store.memory());
 		}
 		
 		static abstract class Compiled implements JavaFileObject {
@@ -237,8 +237,13 @@ public class Java {
 	private static class MemoryClasses extends Classes {
 		private static final boolean USE_OLD_CACHE = true;
 		
-		private Compiled.Store store = Compiled.Store.memory();
 		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
+		
+		private Compiled.Store store;
+		
+		MemoryClasses(Compiled.Store store) {
+			this.store = store;
+		}
 
 		JavaFileObject forOutput(String className) {
 			if (USE_OLD_CACHE) {
