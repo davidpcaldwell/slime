@@ -627,7 +627,7 @@ public abstract class Code {
 			this.delegate = delegate;
 		}
 
-		private Java.Classes compiled = Java.Classes.memory();
+		private Java.Classes compiled = Java.Classes.create(Java.Classes.Compiled.Store.memory());
 		private javax.tools.JavaFileManager jfm;
 
 		private HashMap<String,Source.File> cache = new HashMap<String,Source.File>();

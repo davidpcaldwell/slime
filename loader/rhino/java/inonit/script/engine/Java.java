@@ -33,8 +33,8 @@ public class Java {
 			return createJavaFileManager(this);
 		}
 		
-		static Classes memory() {
-			return new MemoryClasses(Compiled.Store.memory());
+		static Classes create(Compiled.Store store) {
+			return new MemoryClasses(store);
 		}
 		
 		static abstract class Compiled implements JavaFileObject {
