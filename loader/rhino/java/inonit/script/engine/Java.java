@@ -235,20 +235,26 @@ public class Java {
 	}
 
 	private static class MemoryClasses extends Classes {
+		private static final boolean USE_OLD_CACHE = true;
+		
 		private Compiled.Store store = Compiled.Store.memory();
 		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
 
 		JavaFileObject forOutput(String className) {
-			//System.err.println("forOutput: " + className);
-			if (false && classes.get(className) != null) {
-				throw new UnsupportedOperationException("Duplicate!");
+			if (USE_OLD_CACHE) {
+				classes.put(className, new OutputClass(store,className));
+				return classes.get(className);
+			} else {
+				return new OutputClass(store,className);
 			}
-			classes.put(className, new OutputClass(store,className));
-			return classes.get(className);
 		}
 		
 		Compiled getCompiledClass(String className) {
-			return classes.get(className);
+			if (USE_OLD_CACHE) {
+				return classes.get(className);
+			} else {
+				return new OutputClass(store,className);
+			}
 		}
 
 //		Code.Source.File getCompiledClass(String className) {
