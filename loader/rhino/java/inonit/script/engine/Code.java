@@ -671,6 +671,9 @@ public abstract class Code {
 				String sourceName = className + ".java";
 				if (sourceName.indexOf("$") != -1) {
 					//	do nothing
+					//	TODO	should we not strip off the inner class name, and compile the outer class? I am assuming that
+					//			given that this code appears to have been working, we never load an inner class before loading
+					//			the outer class under normal Java operation
 				} else {
 					Source.File sourceFile = delegate.getFile("java/" + sourceName);
 					if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
@@ -693,6 +696,8 @@ public abstract class Code {
 						}
 					}
 				}
+				//	TODO	passing null as the location to the Java file manager here is sort of ludicrous, but we are restricting
+				//			the use of that object and have written it for private use, so for the moment, it appears to work
 				cache.put(path, Source.File.adapt(jfm.getJavaFileForInput(null, className.replace("/","."), null)));
 			}
 			return cache.get(path);
