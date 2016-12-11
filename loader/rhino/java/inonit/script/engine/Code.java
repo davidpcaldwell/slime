@@ -693,7 +693,7 @@ public abstract class Code {
 						}
 					}
 				}
-				cache.put(path, Source.File.adapt(compiled.getCompiledClass(className.replace("/","."))));
+				cache.put(path, Source.File.adapt(compiled.getJavaFileManager().getJavaFileForInput(null, className.replace("/","."), null)));
 			}
 			return cache.get(path);
 		}

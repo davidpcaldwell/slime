@@ -36,14 +36,14 @@ public class Java {
 			this.jfm = new MyJavaFileManager(store);
 		}
 		
-		//	TODO	it seems plausible this could be folded into the JavaFileManager implementation via getFileForInput or something
-		JavaFileObject getCompiledClass(String className) {
-			try {
-				return jfm.getJavaFileForInput(null, className, null);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+//		//	TODO	it seems plausible this could be folded into the JavaFileManager implementation via getFileForInput or something
+//		JavaFileObject getCompiledClass(String className) {
+//			try {
+//				return jfm.getJavaFileForInput(null, className, null);
+//			} catch (IOException e) {
+//				throw new RuntimeException(e);
+//			}
+//		}
 	
 		final JavaFileManager getJavaFileManager() {
 			return jfm;
