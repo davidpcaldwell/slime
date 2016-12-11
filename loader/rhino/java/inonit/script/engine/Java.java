@@ -18,19 +18,23 @@ public class Java {
 	}
 
 	static class Classes {
-		static Classes create(Store store) {
-			return new Classes(store);
+//		static Classes create(Store store) {
+//			return new Classes(store);
+//		}
+		
+		static JavaFileManager create(Store store) {
+			return new Classes(store).getJavaFileManager();
 		}
 
 		private MyJavaFileManager jfm;
 		
-		private JavaFileObject forOutput(String className) {
-			try {
-				return jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, className, null, null);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+//		private JavaFileObject forOutput(String className) {
+//			try {
+//				return jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, className, null, null);
+//			} catch (IOException e) {
+//				throw new RuntimeException(e);
+//			}
+//		}
 		
 		private Classes(Store store) {
 			this.jfm = new MyJavaFileManager(store);
@@ -45,7 +49,7 @@ public class Java {
 //			}
 //		}
 	
-		final JavaFileManager getJavaFileManager() {
+		private JavaFileManager getJavaFileManager() {
 			return jfm;
 		}
 		

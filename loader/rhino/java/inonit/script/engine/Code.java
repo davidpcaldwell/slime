@@ -631,8 +631,8 @@ public abstract class Code {
 			this.delegate = delegate;
 		}
 
-		private Java.Classes compiled = Java.Classes.create(Java.Classes.Store.memory());
-		private javax.tools.JavaFileManager jfm;
+		private javax.tools.JavaFileManager jfm = Java.Classes.create(Java.Classes.Store.memory());
+//		private javax.tools.JavaFileManager jfm;
 
 		private HashMap<String,Source.File> cache = new HashMap<String,Source.File>();
 
@@ -645,12 +645,12 @@ public abstract class Code {
 			}
 		}
 
-		private JavaFileManager resolveJavaFileManager() {
-			if (jfm == null) {
-				jfm = compiled.getJavaFileManager();
-			}
-			return jfm;
-		}
+//		private JavaFileManager resolveJavaFileManager() {
+//			if (jfm == null) {
+//				jfm = compiled.getJavaFileManager();
+//			}
+//			return jfm;
+//		}
 		
 //		private Source.File toSourceFile(Java.Classes.Compiled compiled) {
 //			if (compiled == null) return null;
@@ -681,7 +681,7 @@ public abstract class Code {
 						//System.err.println("Compiling: " + jfo);
 						javax.tools.JavaCompiler.CompilationTask task = Java.compiler().getTask(
 							null,
-							resolveJavaFileManager(),
+							jfm,
 							null,
 							Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
 							null,
@@ -693,7 +693,7 @@ public abstract class Code {
 						}
 					}
 				}
-				cache.put(path, Source.File.adapt(compiled.getJavaFileManager().getJavaFileForInput(null, className.replace("/","."), null)));
+				cache.put(path, Source.File.adapt(jfm.getJavaFileForInput(null, className.replace("/","."), null)));
 			}
 			return cache.get(path);
 		}
