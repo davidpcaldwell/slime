@@ -17,26 +17,109 @@ public class Java {
 		return javac;
 	}
 
-	private static List<URL> getClassLoaderUrls() {
-		if (Java.class.getClassLoader() instanceof URLClassLoader) {
-			return Arrays.asList( ((URLClassLoader)Java.class.getClassLoader()).getURLs() );
-		} else {
-			return new ArrayList<URL>();
+	static class Classes {
+		private JavaFileObject forOutput(String className) {
+			if (USE_OLD_CACHE) {
+				classes.put(className, new OutputClass(store,className));
+				return classes.get(className);
+			} else {
+				return new OutputClass(store,className);
+			}
 		}
-	}
-
-	static abstract class Classes {
-		abstract JavaFileObject forOutput(String className);
-		abstract Compiled getCompiledClass(String className);
 		
+		Compiled getCompiledClass(String className) {
+			if (USE_OLD_CACHE) {
+				return classes.get(className);
+			} else {
+				return new OutputClass(store,className);
+			}
+		}
+	
 		final JavaFileManager getJavaFileManager() {
 			return new MyJavaFileManager(this);
 		}
 		
 		static Classes create(Store store) {
-			return new MemoryClasses(store);
+			return new Classes(store);
 		}
 			
+		private static final boolean USE_OLD_CACHE = true;
+		
+		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
+		
+		private Store store;
+		
+		private Classes(Store store) {
+			this.store = store;
+		}
+		
+		private static class OutputClass extends Classes.Compiled {
+			private Classes.Store store;
+			private String name;
+
+			OutputClass(Classes.Store store, String name) {
+				this.store = store;
+				this.name = name;
+			}
+
+			public Kind getKind() {
+				return Kind.CLASS;
+			}
+
+			public boolean isNameCompatible(String simpleName, Kind kind) {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public NestingKind getNestingKind() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Modifier getAccessLevel() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public URI toUri() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public String getName() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public InputStream openInputStream() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public OutputStream openOutputStream() throws IOException {
+				return store.createOutputStream(name);
+			}
+
+			public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public Writer openWriter() throws IOException {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public long getLastModified() {
+				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			public boolean delete() {
+				store.remove(name);
+				return true;
+			}
+
+			byte[] getBytes() {
+				return store.read(name);
+			}
+		}
+
 		static abstract class Store {
 			abstract OutputStream createOutputStream(String name);
 			abstract byte[] read(String name);
@@ -70,35 +153,6 @@ public class Java {
 		}
 	}
 	
-	private static class MemoryClasses extends Classes {
-		private static final boolean USE_OLD_CACHE = true;
-		
-		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
-		
-		private Store store;
-		
-		MemoryClasses(Store store) {
-			this.store = store;
-		}
-
-		JavaFileObject forOutput(String className) {
-			if (USE_OLD_CACHE) {
-				classes.put(className, new OutputClass(store,className));
-				return classes.get(className);
-			} else {
-				return new OutputClass(store,className);
-			}
-		}
-		
-		Compiled getCompiledClass(String className) {
-			if (USE_OLD_CACHE) {
-				return classes.get(className);
-			} else {
-				return new OutputClass(store,className);
-			}
-		}
-	}
-
 	private static class MyJavaFileManager implements JavaFileManager {
 		private ClassLoader classpath = new ClassLoader() {
 			protected Class findClass(String name) throws ClassNotFoundException{
@@ -178,77 +232,5 @@ public class Java {
 		public int isSupportedOption(String option) {
 			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 		}		
-	}
-	
-	private static class OutputClass extends Classes.Compiled {
-		private Classes.Store store;
-		private String name;
-//		private ByteArrayOutputStream out;
-
-		OutputClass(Classes.Store store, String name) {
-			this.store = store;
-			this.name = name;
-		}
-
-		public Kind getKind() {
-			return Kind.CLASS;
-		}
-
-		public boolean isNameCompatible(String simpleName, Kind kind) {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public NestingKind getNestingKind() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public Modifier getAccessLevel() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public URI toUri() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public String getName() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public InputStream openInputStream() throws IOException {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public OutputStream openOutputStream() throws IOException {
-			return store.createOutputStream(name);
-//			out = new ByteArrayOutputStream();
-//			return out;
-		}
-
-		public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public Writer openWriter() throws IOException {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public long getLastModified() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public boolean delete() {
-			store.remove(name);
-//			classes.put(name, null);
-			return true;
-		}
-
-		byte[] getBytes() {
-			return store.read(name);
-//			return out.toByteArray();
-		}
 	}
 }
