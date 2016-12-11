@@ -203,7 +203,7 @@ public abstract class Code {
 				};
 			}
 			
-			private static File adapt(final Java.Classes.Compiled compiled) {
+			private static File adapt(final JavaFileObject compiled) {
 				if (compiled == null) return null;
 				return new Code.Source.File() {
 					@Override public Code.Source.URI getURI() {
@@ -215,7 +215,11 @@ public abstract class Code {
 					}
 
 					@Override public InputStream getInputStream() {
-						return new ByteArrayInputStream(compiled.getBytes());
+						try {
+							return compiled.openInputStream();
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
 					}
 
 					@Override public Long getLength() {

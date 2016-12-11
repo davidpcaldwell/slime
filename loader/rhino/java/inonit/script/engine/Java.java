@@ -18,6 +18,16 @@ public class Java {
 	}
 
 	static class Classes {
+		static Classes create(Store store) {
+			return new Classes(store);
+		}
+
+		private static final boolean USE_OLD_CACHE = true;
+		
+		private Store store;
+		
+		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
+		
 		private JavaFileObject forOutput(String className) {
 			if (USE_OLD_CACHE) {
 				classes.put(className, new OutputClass(store,className));
@@ -27,7 +37,12 @@ public class Java {
 			}
 		}
 		
-		Compiled getCompiledClass(String className) {
+		private Classes(Store store) {
+			this.store = store;
+		}
+		
+		//	TODO	it seems plausible this could be folded into the JavaFileManager implementation via getFileForInput or something
+		JavaFileObject getCompiledClass(String className) {
 			if (USE_OLD_CACHE) {
 				return classes.get(className);
 			} else {
@@ -39,21 +54,7 @@ public class Java {
 			return new MyJavaFileManager(this);
 		}
 		
-		static Classes create(Store store) {
-			return new Classes(store);
-		}
-			
-		private static final boolean USE_OLD_CACHE = true;
-		
-		private Map<String,OutputClass> classes = new HashMap<String,OutputClass>();
-		
-		private Store store;
-		
-		private Classes(Store store) {
-			this.store = store;
-		}
-		
-		private static class OutputClass extends Classes.Compiled {
+		private static class OutputClass implements JavaFileObject {
 			private Classes.Store store;
 			private String name;
 
@@ -87,7 +88,7 @@ public class Java {
 			}
 
 			public InputStream openInputStream() throws IOException {
-				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				return new ByteArrayInputStream(store.read(name));
 			}
 
 			public OutputStream openOutputStream() throws IOException {
@@ -113,10 +114,6 @@ public class Java {
 			public boolean delete() {
 				store.remove(name);
 				return true;
-			}
-
-			byte[] getBytes() {
-				return store.read(name);
 			}
 		}
 
