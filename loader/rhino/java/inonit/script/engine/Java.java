@@ -163,25 +163,104 @@ public class Java {
 	static Code.Source compiling(Code.Source code, Store store) {
 		return new SourceDirectoryClassesSource(code, store);
 	}
+	
+	private static class InMemoryWritableFile extends Code.Source.File {
+		private MyOutputStream out;
+		private Date modified;
+		
+		private class MyOutputStream extends OutputStream {
+			private ByteArrayOutputStream delegate = new ByteArrayOutputStream();
+			
+			@Override
+			public void close() throws IOException {
+				delegate.close();
+				modified = new Date();
+			}
+
+			@Override
+			public void flush() throws IOException {
+				delegate.flush();
+			}
+
+			@Override
+			public void write(byte[] b, int off, int len) throws IOException {
+				delegate.write(b, off, len); //To change body of generated methods, choose Tools | Templates.
+			}
+
+			@Override
+			public void write(int b) throws IOException {
+				delegate.write(b);
+			}
+
+			@Override
+			public void write(byte[] b) throws IOException {
+				delegate.write(b); //To change body of generated methods, choose Tools | Templates.
+			}
+			
+			ByteArrayOutputStream delegate() {
+				return delegate;
+			}
+		}
+		
+		OutputStream createOutputStream() {
+			modified = null;
+			this.out = new MyOutputStream();
+			return this.out;
+		}
+
+		@Override
+		public Code.Source.URI getURI() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		@Override
+		public String getSourceName() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		@Override
+		public InputStream getInputStream() {
+			if (modified == null) throw new IllegalStateException("Stream is currently being written.");
+			return new ByteArrayInputStream(this.out.delegate().toByteArray());
+		}
+
+		@Override
+		public Long getLength() {
+			if (modified == null) throw new IllegalStateException("Stream is currently being written.");
+			return new Long(this.out.delegate().toByteArray().length);
+		}
+
+		@Override
+		public Date getLastModified() {
+			if (modified == null) throw new IllegalStateException("Stream is currently being written.");
+			return modified;
+		}
+	} 
 
 	static abstract class Store {
 		abstract OutputStream createOutputStream(String name);
-		abstract byte[] read(String name);
+		abstract Code.Source.File read(String name);
 		abstract void remove(String name);
-
-		static Store memory() {					
+		
+		static Store memory() {
 			return new Store() {
-				private HashMap<String,ByteArrayOutputStream> map = new HashMap<String,ByteArrayOutputStream>();
+				private HashMap<String,InMemoryWritableFile> map = new HashMap<String,InMemoryWritableFile>();
+				
+				private InMemoryWritableFile create(String name) {
+					InMemoryWritableFile rv = map.get(name);
+					if (map.get(name) == null) {
+						map.put(name, new InMemoryWritableFile());
+					}
+					return map.get(name);
+				}
 
 				@Override OutputStream createOutputStream(String name) {
-					ByteArrayOutputStream rv = new ByteArrayOutputStream();
-					map.put(name,rv);
-					return rv;
+					return create(name).createOutputStream();
 				}
 
 				@Override
-				byte[] read(String name) {
-					return map.get(name).toByteArray();
+				Code.Source.File read(String name) {
+					return map.get(name);
 				}
 
 				@Override
@@ -379,7 +458,7 @@ public class Java {
 				}
 
 				public InputStream openInputStream() throws IOException {
-					return new ByteArrayInputStream(store.read(name));
+					return store.read(name).getInputStream();
 				}
 
 				public OutputStream openOutputStream() throws IOException {
