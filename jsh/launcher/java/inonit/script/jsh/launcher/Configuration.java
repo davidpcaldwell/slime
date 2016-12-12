@@ -46,17 +46,7 @@ abstract class Configuration {
 		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
 			shell = Shell.packaged(launcherFile);
 		} else {
-			if (true) throw new RuntimeException("jsh launcher used for non-packaged application");
-			java.io.File JSH_HOME = null;
-			if (launcherFile.getName().equals("jsh.jar")) {
-				JSH_HOME = launcherFile.getParentFile();
-			}
-			shell = (JSH_HOME != null) ? Shell.built(JSH_HOME) : Shell.unbuilt(configuration.src());
-			if (configuration.rhino() != null) {
-				//	TODO	provide more flexible parsing of rhino argument; multiple elements, allow URL rather than pathname
-				shell.setRhinoClasspath(new URL[] { new File(configuration.rhino()).toURI().toURL() });
-			}
-			//	TODO	This might miss some exotic situations, like loading this class in its own classloader
+			throw new RuntimeException("jsh launcher used for non-packaged application");
 		}
 		return shell;
 	}

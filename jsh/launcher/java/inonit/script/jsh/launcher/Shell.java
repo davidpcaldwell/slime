@@ -42,15 +42,6 @@ public abstract class Shell {
 		return new PackagedShell(file);
 	}
 
-	static Shell built(File home) throws IOException {
-		return new BuiltShell(home);
-	}
-
-	static Shell unbuilt(String src) {
-		File sourceroot = new File(src);
-		return new UnbuiltShell(sourceroot);
-	}
-
 	private static class PackagedShell extends Shell {
 		private File file;
 
@@ -109,97 +100,4 @@ public abstract class Shell {
 			return file;
 		}
 	}
-
-	private static abstract class UnpackagedShell extends Shell {
-		private String colon = java.io.File.pathSeparator;
-		private ClassLoader rhinoClassLoader;
-
-		final ClassLoader getRhinoClassLoader() throws IOException {
-			if (rhinoClassLoader == null) {
-				URL[] JSH_RHINO_CLASSPATH = getRhinoClasspath();
-				if (JSH_RHINO_CLASSPATH == null) {
-					rhinoClassLoader = new java.net.URLClassLoader(new java.net.URL[0]);
-				} else {
-					rhinoClassLoader = new java.net.URLClassLoader(JSH_RHINO_CLASSPATH);
-				}
-			}
-			return rhinoClassLoader;
-		}
-
-		abstract URL[] getDefaultRhinoClasspath();
-
-		public File getPackaged() {
-			return null;
-		}
-	}
-
-	private static class UnbuiltShell extends UnpackagedShell {
-		private File sourceroot;
-
-		UnbuiltShell(File sourceroot) {
-			this.sourceroot = sourceroot;
-		}
-
-		public String toString() {
-			return "Unbuilt: sourceroot=" + sourceroot + " rhino=" + getRhinoClasspath();
-		}
-
-		URL getJrunscriptApi() throws IOException {
-			if (sourceroot == null) return null;
-			return new File(sourceroot, "rhino/jrunscript/api.js").getCanonicalFile().toURI().toURL();
-		}
-
-		URL getLauncherScript() throws IOException {
-			if (sourceroot == null) return null;
-			return new File(sourceroot, "jsh/launcher/launcher.js").getCanonicalFile().toURI().toURL();
-		}
-
-		URL[] getDefaultRhinoClasspath() {
-			return null;
-		}
-
-		public File getHome() {
-			return null;
-		}
-	}
-
-	private static class BuiltShell extends UnpackagedShell {
-		private java.io.File HOME;
-		private URL[] rhino;
-		private URL jrunscript;
-		private URL launcher;
-
-		BuiltShell(java.io.File HOME) throws java.io.IOException, MalformedURLException {
-			this.HOME = HOME.getCanonicalFile();
-			File rhino = new java.io.File(this.HOME, "lib/js.jar");
-			if (rhino.exists()) {
-				this.rhino = new URL[] { rhino.toURI().toURL() };
-			} else {
-				this.rhino = new URL[0];
-			}
-			this.jrunscript = new java.io.File(this.HOME, "jsh.js").toURI().toURL();
-			this.launcher = new java.io.File(this.HOME, "launcher.js").toURI().toURL();
-		}
-
-		public String toString() {
-			return "BuiltShell: HOME=" + HOME;
-		}
-
-		URL getJrunscriptApi() {
-			return jrunscript;
-		}
-
-		URL getLauncherScript() {
-			return launcher;
-		}
-
-		URL[] getDefaultRhinoClasspath() {
-			return rhino;
-		}
-
-		public File getHome() {
-			return HOME;
-		}
-	}
-
 }

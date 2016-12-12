@@ -29,7 +29,6 @@ public abstract class Engine {
 	abstract Integer run(URL script, String[] args) throws IOException, ScriptException;
 
 	static class Nashorn extends Engine {
-
 		private ScriptEngineManager factory;
 
 		Nashorn(ScriptEngineManager factory) {
