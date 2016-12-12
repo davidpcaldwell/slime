@@ -192,7 +192,7 @@ public class Java {
 		}
 	}
 
-	static class Classes {
+	private static class Classes {
 		private static Classes create(Store store) {
 			return new Classes(store);
 		}
