@@ -517,29 +517,28 @@ public abstract class Code {
 			}
 		};
 	}
-
+	
 	private static class Unpacked extends Code {
-		private URL url;
+		private String toString;
 		private Source source;
 		private Source classes;
 
-		Unpacked(URL url) {
-			this.url = url;
-			this.source = Source.create(url);
-			this.classes = Java.compiling(source, Java.Store.memory());
+		Unpacked(String toString, Source source, Java.Store store) {
+			this.toString = toString;
+			this.source = source;
+			this.classes = Java.compiling(source, store);
 		}
-
+		
 		public String toString() {
-			return getClass().getName() + " url=" + url.toExternalForm();
+			return getClass().getName() + " [" + toString + "]";
 		}
-
+		
 		public Source getScripts() {
 			return source;
 		}
-
+		
 		public Source getClasses() {
-			boolean COMPILE_IN_MEMORY = true;
-			return (COMPILE_IN_MEMORY) ? classes : Source.NULL;
+			return classes;
 		}
 	}
 
@@ -547,32 +546,17 @@ public abstract class Code {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(base + " is not a directory.");
 		}
-		return new Code() {
-			private Source source = Source.create(base);
-			private Source classes = Java.compiling(source, Java.Store.memory());
-
-			public String toString() {
-				try {
-					String rv = getClass().getName() + ": base=" + base.getCanonicalPath();
-					return rv;
-				} catch (IOException e) {
-					return getClass().getName() + ": " + base.getAbsolutePath() + " [error getting canonical]";
-				}
-			}
-
-			public Source getScripts() {
-				return source;
-			}
-
-			public Source getClasses() {
-				boolean COMPILE_IN_MEMORY = true;
-				return (COMPILE_IN_MEMORY) ? classes : Source.NULL;
-			}
-		};
+		String path = null;
+		try {
+			path = base.getCanonicalPath();
+		} catch (IOException e) {
+			path = base.getAbsolutePath();
+		}
+		return new Unpacked("file=" + path, Source.create(base), Java.Store.memory());
 	}
 
 	public static Code unpacked(final URL base) {
-		return new Unpacked(base);
+		return new Unpacked("url=" + base.toExternalForm(), Source.create(base), Java.Store.memory());
 	}
 
 	public static Code jar(final File jar) {
