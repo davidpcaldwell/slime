@@ -92,6 +92,78 @@ public class Java {
 		}
 	}
 
+	private static class SourceDirectoryClassesSource extends Code.Source {
+		private Code.Source delegate;
+		private Java.Classes classes;
+
+		SourceDirectoryClassesSource(Code.Source delegate, Classes.Store store) {
+			this.delegate = delegate;
+			this.classes = Classes.create(store);
+		}
+
+//		private Java.Classes classes = Java.Classes.create(Java.Classes.Store.memory());
+
+		private HashMap<String,Code.Source.File> cache = new HashMap<String,Code.Source.File>();
+
+		private boolean hasClass(String name) {
+			try {
+				Class c = Java.class.getClassLoader().loadClass(name);
+				return c != null;
+			} catch (ClassNotFoundException e) {
+				return false;
+			}
+		}
+
+		@Override public Code.Source.File getFile(String path) throws IOException {
+			if (path.startsWith("org/apache/")) return null;
+			if (path.startsWith("javax/")) return null;
+//				String[] tokens = path.split("\\/");
+//				String basename = tokens[tokens.length-1];
+//				if (basename.indexOf("$") != -1) {
+//					return null;
+//				}
+			if (cache.get(path) == null) {
+				//	System.err.println("Looking up class " + path + " for " + source);
+				String className = path.substring(0,path.length()-".class".length());
+				String sourceName = className + ".java";
+				if (sourceName.indexOf("$") != -1) {
+					//	do nothing
+					//	TODO	should we not strip off the inner class name, and compile the outer class? I am assuming that
+					//			given that this code appears to have been working, we never load an inner class before loading
+					//			the outer class under normal Java operation
+				} else {
+					Code.Source.File sourceFile = delegate.getFile("java/" + sourceName);
+					if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
+						sourceFile = delegate.getFile("rhino/java/" + sourceName);
+					}
+					if (sourceFile != null) {
+//						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
+						//System.err.println("Compiling: " + jfo);
+						boolean success = classes.compile(sourceFile);
+						if (!success) {
+							throw new RuntimeException("Failure: sourceFile=" + sourceFile);
+						}
+					}
+				}
+				cache.put(path, classes.getFile(className.replace("/",".")));
+			}
+			return cache.get(path);
+		}
+
+		public Enumerator getEnumerator() {
+			//	TODO	this probably can be implemented
+			return null;
+		}
+
+		@Override public Code.Classes getClasses() {
+			return null;
+		}
+	}
+	
+	static Code.Source compiling(Code.Source code, Classes.Store store) {
+		return new SourceDirectoryClassesSource(code, store);
+	}
+
 	static class Classes {
 		static Classes create(Store store) {
 			return new Classes(store);

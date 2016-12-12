@@ -549,78 +549,6 @@ public abstract class Code {
 		};
 	}
 
-	private static class SourceDirectoryClassesSource extends Source {
-		private Source delegate;
-
-		SourceDirectoryClassesSource(Source delegate) {
-			this.delegate = delegate;
-		}
-
-		private Java.Classes classes = Java.Classes.create(Java.Classes.Store.memory());
-
-		private HashMap<String,Source.File> cache = new HashMap<String,Source.File>();
-
-		private boolean hasClass(String name) {
-			try {
-				Class c = Code.class.getClassLoader().loadClass(name);
-				return c != null;
-			} catch (ClassNotFoundException e) {
-				return false;
-			}
-		}
-
-		@Override public Source.File getFile(String path) throws IOException {
-			if (path.startsWith("org/apache/")) return null;
-			if (path.startsWith("javax/")) return null;
-//				String[] tokens = path.split("\\/");
-//				String basename = tokens[tokens.length-1];
-//				if (basename.indexOf("$") != -1) {
-//					return null;
-//				}
-			if (cache.get(path) == null) {
-				//	System.err.println("Looking up class " + path + " for " + source);
-				String className = path.substring(0,path.length()-".class".length());
-				String sourceName = className + ".java";
-				if (sourceName.indexOf("$") != -1) {
-					//	do nothing
-					//	TODO	should we not strip off the inner class name, and compile the outer class? I am assuming that
-					//			given that this code appears to have been working, we never load an inner class before loading
-					//			the outer class under normal Java operation
-				} else {
-					Source.File sourceFile = delegate.getFile("java/" + sourceName);
-					if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
-						sourceFile = delegate.getFile("rhino/java/" + sourceName);
-					}
-					if (sourceFile != null) {
-//						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
-						//System.err.println("Compiling: " + jfo);
-						boolean success = classes.compile(sourceFile);
-						if (!success) {
-							throw new RuntimeException("Failure: sourceFile=" + sourceFile);
-						}
-					}
-				}
-				cache.put(path, classes.getFile(className.replace("/",".")));
-			}
-			return cache.get(path);
-		}
-
-		public Enumerator getEnumerator() {
-			//	TODO	this probably can be implemented
-			return null;
-		}
-
-//		private Classes classes = new Classes() {
-//			@Override public URL getResource(String path) {
-//				return null;
-//			}
-//		};
-
-		@Override public Classes getClasses() {
-			return null;
-		}
-	}
-
 	private static class Unpacked extends Code {
 		private URL url;
 		private Source source;
@@ -629,7 +557,7 @@ public abstract class Code {
 		Unpacked(URL url) {
 			this.url = url;
 			this.source = Source.create(url);
-			this.classes = new SourceDirectoryClassesSource(source);
+			this.classes = Java.compiling(source, Java.Classes.Store.memory());
 		}
 
 		public String toString() {
@@ -652,7 +580,7 @@ public abstract class Code {
 		}
 		return new Code() {
 			private Source source = Source.create(base);
-			private Source classes = new SourceDirectoryClassesSource(source);
+			private Source classes = Java.compiling(source, Java.Classes.Store.memory());
 
 			public String toString() {
 				try {
