@@ -549,81 +549,6 @@ public abstract class Code {
 		};
 	}
 
-	private static class SourceFileObject implements JavaFileObject {
-		private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
-
-		private Source.File delegate;
-
-		SourceFileObject(Source.File delegate) {
-			this.delegate = delegate;
-		}
-
-		@Override public String toString() {
-			return "SourceFileObject:" + " uri=" + toUri() + " name=" + getName();
-		}
-
-		public Kind getKind() {
-			return Kind.SOURCE;
-		}
-
-		public boolean isNameCompatible(String simpleName, Kind kind) {
-			//	TODO	line below is suspicious, should try removing it
-			if (simpleName.equals("package-info")) return false;
-			if (kind == JavaFileObject.Kind.SOURCE) {
-				String slashed = delegate.getSourceName().replace("\\", "/");
-				String basename = slashed.substring(slashed.lastIndexOf("/")+1);
-				String className = basename.substring(0,basename.length()-".java".length());
-				return className.equals(simpleName);
-			}
-			throw new UnsupportedOperationException("simpleName = " + simpleName + " kind=" + kind);
-		}
-
-		public NestingKind getNestingKind() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public Modifier getAccessLevel() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public URI toUri() {
-			return delegate.getURI().adapt();
-		}
-
-		public String getName() {
-			//	Specification does not specify but a relative path would be a good idea
-			return delegate.getSourceName();
-		}
-
-		public InputStream openInputStream() throws IOException {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public OutputStream openOutputStream() throws IOException {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-			return streams.readString(delegate.getInputStream());
-		}
-
-		public Writer openWriter() throws IOException {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public long getLastModified() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-
-		public boolean delete() {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-		}
-	}
-
 	private static class SourceDirectoryClassesSource extends Source {
 		private Source delegate;
 
@@ -631,8 +556,6 @@ public abstract class Code {
 			this.delegate = delegate;
 		}
 
-//		private javax.tools.JavaFileManager jfm = Java.Classes.create(Java.Classes.Store.memory());
-//		private javax.tools.JavaFileManager jfm;
 		private Java.Classes classes = Java.Classes.create(Java.Classes.Store.memory());
 
 		private HashMap<String,Source.File> cache = new HashMap<String,Source.File>();
@@ -645,18 +568,6 @@ public abstract class Code {
 				return false;
 			}
 		}
-
-//		private JavaFileManager resolveJavaFileManager() {
-//			if (jfm == null) {
-//				jfm = compiled.getJavaFileManager();
-//			}
-//			return jfm;
-//		}
-		
-//		private Source.File toSourceFile(Java.Classes.Compiled compiled) {
-//			if (compiled == null) return null;
-//			return Source.File.create(compiled);
-//		}
 
 		@Override public Source.File getFile(String path) throws IOException {
 			if (path.startsWith("org/apache/")) return null;
@@ -681,20 +592,11 @@ public abstract class Code {
 						sourceFile = delegate.getFile("rhino/java/" + sourceName);
 					}
 					if (sourceFile != null) {
-						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
+//						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
 						//System.err.println("Compiling: " + jfo);
-						boolean success = classes.compile(jfo);
-//						javax.tools.JavaCompiler.CompilationTask task = Java.compiler().getTask(
-//							null,
-//							jfm,
-//							null,
-//							Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
-//							null,
-//							Arrays.asList(new JavaFileObject[] { jfo })
-//						);
-//						boolean success = task.call();
+						boolean success = classes.compile(sourceFile);
 						if (!success) {
-							throw new RuntimeException("Failure: sourceFile=" + sourceFile + " jfo=" + jfo);
+							throw new RuntimeException("Failure: sourceFile=" + sourceFile);
 						}
 					}
 				}

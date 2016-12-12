@@ -17,6 +17,81 @@ public class Java {
 		return javac;
 	}
 
+	private static class SourceFileObject implements JavaFileObject {
+		private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
+
+		private Code.Source.File delegate;
+
+		SourceFileObject(Code.Source.File delegate) {
+			this.delegate = delegate;
+		}
+
+		@Override public String toString() {
+			return "SourceFileObject:" + " uri=" + toUri() + " name=" + getName();
+		}
+
+		public Kind getKind() {
+			return Kind.SOURCE;
+		}
+
+		public boolean isNameCompatible(String simpleName, Kind kind) {
+			//	TODO	line below is suspicious, should try removing it
+			if (simpleName.equals("package-info")) return false;
+			if (kind == JavaFileObject.Kind.SOURCE) {
+				String slashed = delegate.getSourceName().replace("\\", "/");
+				String basename = slashed.substring(slashed.lastIndexOf("/")+1);
+				String className = basename.substring(0,basename.length()-".java".length());
+				return className.equals(simpleName);
+			}
+			throw new UnsupportedOperationException("simpleName = " + simpleName + " kind=" + kind);
+		}
+
+		public NestingKind getNestingKind() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public Modifier getAccessLevel() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public URI toUri() {
+			return delegate.getURI().adapt();
+		}
+
+		public String getName() {
+			//	Specification does not specify but a relative path would be a good idea
+			return delegate.getSourceName();
+		}
+
+		public InputStream openInputStream() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public OutputStream openOutputStream() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+			return streams.readString(delegate.getInputStream());
+		}
+
+		public Writer openWriter() throws IOException {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public long getLastModified() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+
+		public boolean delete() {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		}
+	}
+
 	static class Classes {
 		static Classes create(Store store) {
 			return new Classes(store);
@@ -34,7 +109,7 @@ public class Java {
 			return jfo.toCodeSourceFile();
 		}
 		
-		boolean compile(JavaFileObject jfo) {
+		private boolean compile(JavaFileObject jfo) {
 			javax.tools.JavaCompiler.CompilationTask task = Java.compiler().getTask(
 				null,
 				jfm,
@@ -45,6 +120,10 @@ public class Java {
 			);
 			boolean success = task.call();
 			return success;
+		}
+		
+		boolean compile(Code.Source.File javaSource) {
+			return compile(new SourceFileObject(javaSource));
 		}
 		
 		static abstract class Store {
