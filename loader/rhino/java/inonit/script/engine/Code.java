@@ -203,36 +203,36 @@ public abstract class Code {
 				};
 			}
 			
-			private static File adapt(final JavaFileObject compiled) {
-				if (compiled == null) return null;
-				return new Code.Source.File() {
-					@Override public Code.Source.URI getURI() {
-						return Code.Source.URI.create(compiled.toUri());
-					}
-
-					@Override public String getSourceName() {
-						return null;
-					}
-
-					@Override public InputStream getInputStream() {
-						try {
-							return compiled.openInputStream();
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-
-					@Override public Long getLength() {
-						//	TODO	length of array
-						return null;
-					}
-
-					@Override public Date getLastModified() {
-						//	TODO	might as well store
-						return null;
-					}
-				};				
-			}
+//			private static File adapt(final JavaFileObject compiled) {
+//				if (compiled == null) return null;
+//				return new Code.Source.File() {
+//					@Override public Code.Source.URI getURI() {
+//						return Code.Source.URI.create(compiled.toUri());
+//					}
+//
+//					@Override public String getSourceName() {
+//						return null;
+//					}
+//
+//					@Override public InputStream getInputStream() {
+//						try {
+//							return compiled.openInputStream();
+//						} catch (IOException e) {
+//							throw new RuntimeException(e);
+//						}
+//					}
+//
+//					@Override public Long getLength() {
+//						//	TODO	length of array
+//						return null;
+//					}
+//
+//					@Override public Date getLastModified() {
+//						//	TODO	might as well store
+//						return null;
+//					}
+//				};				
+//			}
 		}
 
 		public static Source NULL = new Source() {
@@ -631,8 +631,9 @@ public abstract class Code {
 			this.delegate = delegate;
 		}
 
-		private javax.tools.JavaFileManager jfm = Java.Classes.create(Java.Classes.Store.memory());
+//		private javax.tools.JavaFileManager jfm = Java.Classes.create(Java.Classes.Store.memory());
 //		private javax.tools.JavaFileManager jfm;
+		private Java.Classes classes = Java.Classes.create(Java.Classes.Store.memory());
 
 		private HashMap<String,Source.File> cache = new HashMap<String,Source.File>();
 
@@ -682,23 +683,22 @@ public abstract class Code {
 					if (sourceFile != null) {
 						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
 						//System.err.println("Compiling: " + jfo);
-						javax.tools.JavaCompiler.CompilationTask task = Java.compiler().getTask(
-							null,
-							jfm,
-							null,
-							Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
-							null,
-							Arrays.asList(new JavaFileObject[] { jfo })
-						);
-						boolean success = task.call();
+						boolean success = classes.compile(jfo);
+//						javax.tools.JavaCompiler.CompilationTask task = Java.compiler().getTask(
+//							null,
+//							jfm,
+//							null,
+//							Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
+//							null,
+//							Arrays.asList(new JavaFileObject[] { jfo })
+//						);
+//						boolean success = task.call();
 						if (!success) {
 							throw new RuntimeException("Failure: sourceFile=" + sourceFile + " jfo=" + jfo);
 						}
 					}
 				}
-				//	TODO	passing null as the location to the Java file manager here is sort of ludicrous, but we are restricting
-				//			the use of that object and have written it for private use, so for the moment, it appears to work
-				cache.put(path, Source.File.adapt(jfm.getJavaFileForInput(null, className.replace("/","."), null)));
+				cache.put(path, classes.getFile(className.replace("/",".")));
 			}
 			return cache.get(path);
 		}

@@ -18,11 +18,34 @@ public class Java {
 	}
 
 	static class Classes {
-		static JavaFileManager create(Store store) {
-			return new MyJavaFileManager(store);
+		static Classes create(Store store) {
+			return new Classes(store);
 		}
 		
-		private Classes() {}
+		private MyJavaFileManager jfm;
+		
+		private Classes(Store store) {
+			this.jfm = new MyJavaFileManager(store);
+		}
+		
+		Code.Source.File getFile(String name) {
+			MyJavaFileManager.OutputClass jfo = this.jfm.getJavaFileForInput(null, name, null);
+			if (jfo == null) return null;
+			return jfo.toCodeSourceFile();
+		}
+		
+		boolean compile(JavaFileObject jfo) {
+			javax.tools.JavaCompiler.CompilationTask task = Java.compiler().getTask(
+				null,
+				jfm,
+				null,
+				Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
+				null,
+				Arrays.asList(new JavaFileObject[] { jfo })
+			);
+			boolean success = task.call();
+			return success;
+		}
 		
 		static abstract class Store {
 			abstract OutputStream createOutputStream(String name);
@@ -105,7 +128,7 @@ public class Java {
 				throw new UnsupportedOperationException("Not supported yet: " + location.getName());
 			}
 
-			public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
+			public OutputClass getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) {
 				if (location == null) {
 					return map.get(className);
 				}
@@ -147,6 +170,37 @@ public class Java {
 				OutputClass(Classes.Store store, String name) {
 					this.store = store;
 					this.name = name;
+				}
+				
+				Code.Source.File toCodeSourceFile() {
+					final OutputClass compiled = this;
+					return new Code.Source.File() {
+						@Override public Code.Source.URI getURI() {
+							return Code.Source.URI.create(compiled.toUri());
+						}
+
+						@Override public String getSourceName() {
+							return null;
+						}
+
+						@Override public InputStream getInputStream() {
+							try {
+								return compiled.openInputStream();
+							} catch (IOException e) {
+								throw new RuntimeException(e);
+							}
+						}
+
+						@Override public Long getLength() {
+							//	TODO	length of array
+							return null;
+						}
+
+						@Override public Date getLastModified() {
+							//	TODO	might as well store
+							return null;
+						}
+					};
 				}
 
 				public Kind getKind() {
