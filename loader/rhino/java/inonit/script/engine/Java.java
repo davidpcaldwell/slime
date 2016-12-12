@@ -96,7 +96,7 @@ public class Java {
 		private Code.Source delegate;
 		private Java.Classes classes;
 
-		SourceDirectoryClassesSource(Code.Source delegate, Classes.Store store) {
+		SourceDirectoryClassesSource(Code.Source delegate, Store store) {
 			this.delegate = delegate;
 			this.classes = Classes.create(store);
 		}
@@ -160,12 +160,40 @@ public class Java {
 		}
 	}
 	
-	static Code.Source compiling(Code.Source code, Classes.Store store) {
+	static Code.Source compiling(Code.Source code, Store store) {
 		return new SourceDirectoryClassesSource(code, store);
 	}
 
+	static abstract class Store {
+		abstract OutputStream createOutputStream(String name);
+		abstract byte[] read(String name);
+		abstract void remove(String name);
+
+		static Store memory() {					
+			return new Store() {
+				private HashMap<String,ByteArrayOutputStream> map = new HashMap<String,ByteArrayOutputStream>();
+
+				@Override OutputStream createOutputStream(String name) {
+					ByteArrayOutputStream rv = new ByteArrayOutputStream();
+					map.put(name,rv);
+					return rv;
+				}
+
+				@Override
+				byte[] read(String name) {
+					return map.get(name).toByteArray();
+				}
+
+				@Override
+				void remove(String name) {
+					map.remove(name);
+				}
+			};
+		}
+	}
+
 	static class Classes {
-		static Classes create(Store store) {
+		private static Classes create(Store store) {
 			return new Classes(store);
 		}
 		
@@ -175,7 +203,7 @@ public class Java {
 			this.jfm = new MyJavaFileManager(store);
 		}
 		
-		Code.Source.File getFile(String name) {
+		private Code.Source.File getFile(String name) {
 			MyJavaFileManager.OutputClass jfo = this.jfm.getJavaFileForInput(null, name, null);
 			if (jfo == null) return null;
 			return jfo.toCodeSourceFile();
@@ -194,38 +222,10 @@ public class Java {
 			return success;
 		}
 		
-		boolean compile(Code.Source.File javaSource) {
+		private boolean compile(Code.Source.File javaSource) {
 			return compile(new SourceFileObject(javaSource));
 		}
 		
-		static abstract class Store {
-			abstract OutputStream createOutputStream(String name);
-			abstract byte[] read(String name);
-			abstract void remove(String name);
-
-			static Store memory() {					
-				return new Store() {
-					private HashMap<String,ByteArrayOutputStream> map = new HashMap<String,ByteArrayOutputStream>();
-
-					@Override OutputStream createOutputStream(String name) {
-						ByteArrayOutputStream rv = new ByteArrayOutputStream();
-						map.put(name,rv);
-						return rv;
-					}
-
-					@Override
-					byte[] read(String name) {
-						return map.get(name).toByteArray();
-					}
-
-					@Override
-					void remove(String name) {
-						map.remove(name);
-					}
-				};
-			}
-		}
-
 		private static class MyJavaFileManager implements JavaFileManager {
 			private ClassLoader classpath = new ClassLoader() {
 				protected Class findClass(String name) throws ClassNotFoundException{
@@ -235,12 +235,12 @@ public class Java {
 
 			private javax.tools.JavaFileManager delegate = compiler().getStandardFileManager(null, null, null);
 
-			private Java.Classes.Store store;
+			private Java.Store store;
 
 			private Map<String,OutputClass> map = new HashMap<String,OutputClass>();
 
 
-			MyJavaFileManager(Java.Classes.Store store) {
+			MyJavaFileManager(Java.Store store) {
 				this.store = store;
 			}
 
@@ -315,10 +315,10 @@ public class Java {
 			}
 
 			private static class OutputClass implements JavaFileObject {
-				private Classes.Store store;
+				private Store store;
 				private String name;
 
-				OutputClass(Classes.Store store, String name) {
+				OutputClass(Store store, String name) {
 					this.store = store;
 					this.name = name;
 				}

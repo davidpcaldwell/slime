@@ -557,7 +557,7 @@ public abstract class Code {
 		Unpacked(URL url) {
 			this.url = url;
 			this.source = Source.create(url);
-			this.classes = Java.compiling(source, Java.Classes.Store.memory());
+			this.classes = Java.compiling(source, Java.Store.memory());
 		}
 
 		public String toString() {
@@ -580,7 +580,7 @@ public abstract class Code {
 		}
 		return new Code() {
 			private Source source = Source.create(base);
-			private Source classes = Java.compiling(source, Java.Classes.Store.memory());
+			private Source classes = Java.compiling(source, Java.Store.memory());
 
 			public String toString() {
 				try {
