@@ -10,7 +10,7 @@ import javax.tools.*;
 public class Java {
 	private static javax.tools.JavaCompiler javac;
 
-	static javax.tools.JavaCompiler compiler() {
+	private static javax.tools.JavaCompiler compiler() {
 		if (javac == null) {
 			javac = javax.tools.ToolProvider.getSystemJavaCompiler();
 		}
@@ -289,7 +289,7 @@ public class Java {
 		}
 		
 		private boolean compile(JavaFileObject jfo) {
-			javax.tools.JavaCompiler.CompilationTask task = Java.compiler().getTask(
+			javax.tools.JavaCompiler.CompilationTask task = compiler().getTask(
 				null,
 				jfm,
 				null,

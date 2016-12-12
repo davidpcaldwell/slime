@@ -202,37 +202,6 @@ public abstract class Code {
 					}
 				};
 			}
-			
-//			private static File adapt(final JavaFileObject compiled) {
-//				if (compiled == null) return null;
-//				return new Code.Source.File() {
-//					@Override public Code.Source.URI getURI() {
-//						return Code.Source.URI.create(compiled.toUri());
-//					}
-//
-//					@Override public String getSourceName() {
-//						return null;
-//					}
-//
-//					@Override public InputStream getInputStream() {
-//						try {
-//							return compiled.openInputStream();
-//						} catch (IOException e) {
-//							throw new RuntimeException(e);
-//						}
-//					}
-//
-//					@Override public Long getLength() {
-//						//	TODO	length of array
-//						return null;
-//					}
-//
-//					@Override public Date getLastModified() {
-//						//	TODO	might as well store
-//						return null;
-//					}
-//				};				
-//			}
 		}
 
 		public static Source NULL = new Source() {
