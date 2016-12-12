@@ -33,43 +33,24 @@ abstract class Configuration {
 		}
 	}
 
-	private Shell createShell() throws IOException {
-		Configuration configuration = this;
-		java.net.URI codeLocation = getMainClassSource();
-		File launcherFile = null;
-		if (codeLocation.getScheme().equals("file")) {
-			launcherFile = new File(codeLocation);
-		} else {
-			throw new RuntimeException("Unreachable: code source = " + codeLocation);
-		}
-		Shell shell = null;
-		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
-			shell = Shell.packaged(launcherFile);
-		} else {
-			throw new RuntimeException("jsh launcher used for non-packaged application");
-		}
-		return shell;
-	}
-
-	private Shell shell;
+	private Shell _shell;
 
 	private Shell shell() throws IOException {
-		if (shell == null) {
-			shell = createShell();
+		if (_shell == null) {
+			_shell = Shell.packaged(new File(getMainClassSource()));
 		}
-		return shell;
+		return _shell;
 	}
 
 	private Map<String,Engine> engineMap() throws IOException {
-		Shell shell = shell();
 		Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
 		ScriptEngineManager factory = new ScriptEngineManager();
 		if (factory.getEngineByName("nashorn") != null) {
 			INSTANCES.put("nashorn", new Engine.Nashorn(factory));
 		}
 		try {
-			shell.getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
-			INSTANCES.put("rhino", new Engine.Rhino(shell.getRhinoClassLoader(), this.debug()));
+			shell().getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
+			INSTANCES.put("rhino", new Engine.Rhino(shell().getRhinoClassLoader(), this.debug()));
 		} catch (ClassNotFoundException e) {
 		}
 		return INSTANCES;
@@ -77,8 +58,7 @@ abstract class Configuration {
 
 	private Engine getEngine() throws IOException {
 		String JSH_ENGINE = engine();
-		Configuration configuration = this;
-		Map<String,Engine> engines = configuration.engineMap();
+		Map<String,Engine> engines = engineMap();
 		if (JSH_ENGINE != null) {
 			Engine specified = engines.get(JSH_ENGINE);
 			if (specified != null) {
@@ -90,16 +70,6 @@ abstract class Configuration {
 			if (engines.get(e) != null) return engines.get(e);
 		}
 		throw new RuntimeException("No JavaScript execution engine found.");
-	}
-
-	final ArrayList<String> engines() throws IOException {
-		final Configuration configuration = this;
-		Set<Map.Entry<String,Engine>> entries = configuration.engineMap().entrySet();
-		ArrayList<String> rv = new ArrayList<String>();
-		for (Map.Entry<String,Engine> entry : entries) {
-			rv.add(entry.getKey());
-		}
-		return rv;
 	}
 
 	final Main.Invocation.Configuration invocation() throws IOException {

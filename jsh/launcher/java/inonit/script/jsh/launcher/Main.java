@@ -133,22 +133,10 @@ public class Main {
 				return getSetting("jsh.engine.rhino.classpath");
 			}
 		};
-		if (args.length == 1 && args[0].equals("-engines")) {
-			List<String> engines = configuration.engines();
-			System.out.print("[");
-			for (int i=0; i<engines.size(); i++) {
-				if (i > 0) {
-					System.out.print(",");
-				}
-				System.out.print("\"" + engines.get(i) + "\"");
-			}
-			System.out.print("]");
-		} else {
-			LOG.log(Level.FINEST, "Launcher Main executing ...");
-			main.run(
-				configuration,
-				args
-			);
-		}
+		LOG.log(Level.FINEST, "Launcher Main executing ...");
+		main.run(
+			configuration,
+			args
+		);
 	}
 }
