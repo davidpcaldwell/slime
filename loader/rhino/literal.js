@@ -148,7 +148,7 @@
 			} else if (p.resources) {
 				if (Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) throw new Error();
 				//	TODO	would be nice to get rid of this, but it is used in rhino/http/servlet, it appears
-				$api.deprecate(function() {
+				loader.$api.deprecate(function() {
 					p.get = function(path) {
 						var resource = p.resources.get(String(path));
 						if (!resource) return null;

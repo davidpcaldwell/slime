@@ -46,6 +46,7 @@ abstract class Configuration {
 		if (ClassLoader.getSystemResource("main.jsh.js") != null) {
 			shell = Shell.packaged(launcherFile);
 		} else {
+			if (true) throw new RuntimeException("jsh launcher used for non-packaged application");
 			java.io.File JSH_HOME = null;
 			if (launcherFile.getName().equals("jsh.jar")) {
 				JSH_HOME = launcherFile.getParentFile();

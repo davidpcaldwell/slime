@@ -67,22 +67,81 @@ END LICENSE
 			<div>
 				This script, also apparently used in the <code>jsh</code> build process, creates an <code>$api.slime</code> object
 				providing SLIME-specific functionality.
-				<div class="label">has properties:</div>
 				<ul>
 					<li class="object">
-						<div class="name">src</div>
+						<div class="name">$api.slime</div>
 						<span>__DESCRIPTION__</span>
 						<div class="label">has properties:</div>
 						<ul>
+							<li class="object">
+								<div class="name">src</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+								</ul>
+							</li>
+							<li class="object">
+								<div class="name">launcher</div>
+								<span>__DESCRIPTION__</span>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="function">
+										<div class="name">getClasses</div>
+										<span>__DESCRIPTION__</span>
+										<div class="arguments">
+											<div class="label">Arguments</div>
+											<ol>
+											</ol>
+										</div>
+										<div class="returns">
+											<div class="label">Returns</div>
+											<span class="type">__TYPE__</span>
+											<span>__DESCRIPTION__</span>
+										</div>
+									</li>
+								</ul>
+							</li>
+							<li class="function">
+								<div class="name">setting</div>
+								<span>
+									Returns a string representing the explicit value of a named setting; uses first system properties
+									and then environment variables to locate the value.
+								</span>
+								<div class="arguments">
+									<div class="label">Arguments</div>
+									<ol>
+										<li class="value">
+											<span class="type">string</span>
+											<span>The period-delimited name of a setting.</span>
+										</li>
+									</ol>
+								</div>
+								<div class="returns">
+									<div class="label">Returns</div>
+									<span class="type">string</span>
+									<span>
+										The string value of the setting, or <code>null</code> if the setting was not explicitly
+										provided.
+									</span>
+								</div>
+							</li>
 						</ul>
 					</li>
+				</ul>
+			</div>
+		</div>
+		<div>
+			<h2><code>launcher.js</code></h2>
+			<div>
+				Creates an <code>$api.jsh</code> object.
+				<ul>
 					<li class="object">
-						<div class="name">launcher</div>
+						<div class="name">$api.jsh</div>
 						<span>__DESCRIPTION__</span>
 						<div class="label">has properties:</div>
 						<ul>
 							<li class="function">
-								<div class="name">getClasses</div>
+								<div class="name">exit</div>
 								<span>__DESCRIPTION__</span>
 								<div class="arguments">
 									<div class="label">Arguments</div>
@@ -95,54 +154,54 @@ END LICENSE
 									<span>__DESCRIPTION__</span>
 								</div>
 							</li>
+							<li class="object">
+								<div class="name">engines</div>
+								<span>__DESCRIPTION__</span>
+								<div class="type">
+									<a class="type" name="types.engine">engine</a>
+									<span>__DESCRIPTION__</span>
+									<div class="label">has properties:</div>
+									<ul>
+										<li class="value">
+											<div class="name">main</div>
+											<span class="type">string</span>
+											<span>The name of the <code>jsh</code> main class for this engine.</span>
+										</li>
+										<li class="function">
+											<div class="name">resolve</div>
+											<span>__DESCRIPTION__</span>
+											<div class="arguments">
+												<div class="label">Arguments</div>
+												<ol>
+													<li class="value">
+														<span class="type">object</span>
+														<span>An object with a property for each engine.</span>
+													</li>
+												</ol>
+											</div>
+											<div class="returns">
+												<div class="label">Returns</div>
+												<span class="type">(any)</span>
+												<span>The value of the property for this engine.</span>
+											</div>
+										</li>
+									</ul>
+								</div>
+								<div class="label">has properties:</div>
+								<ul>
+									<li class="value">
+										<div class="name">rhino</div>
+										<span class="type"><a href="#types.engine">engine</a></span>
+										<span>__DESCRIPTION__</span>
+									</li>
+									<li class="value">
+										<div class="name">nashorn</div>
+										<span class="type"><a href="#types.engine">engine</a></span>
+										<span>__DESCRIPTION__</span>
+									</li>
+								</ul>
+							</li>
 						</ul>
-					</li>
-					<li class="function">
-						<div class="name">setting</div>
-						<span>
-							Returns a string representing the explicit value of a named setting; uses first system properties
-							and then environment variables to locate the value.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>The period-delimited name of a setting.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">string</span>
-							<span>
-								The string value of the setting, or <code>null</code> if the setting was not explicitly
-								provided.
-							</span>
-						</div>
-					</li>
-				</ul>
-			</div>
-		</div>
-		<div>
-			<h2><code>launcher.js</code></h2>
-			<div>
-				Creates an <code>$api.jsh</code> object.
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">exit</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
 					</li>
 				</ul>
 			</div>

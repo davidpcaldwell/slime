@@ -16,12 +16,17 @@ var parameters = jsh.script.getopts({
 	}
 });
 
+if (jsh.test) jsh.test.requireBuiltShell({
+	executable: false
+});
+
 var tomcat = new jsh.httpd.Tomcat({});
+jsh.shell.console("parent: " + jsh.script.file.parent.parent.parent.parent.toString());
 tomcat.map({
 	path: "/",
 	servlets: {
 		"/*": {
-			file: jsh.script.file.getRelativePath("file.servlet.js").file,
+			file: jsh.script.file.parent.getFile("file.servlet.js"),
 			parameters: {
 				base: jsh.script.file.parent.parent.parent.parent.toString()
 			}
@@ -37,10 +42,11 @@ var url = "http://127.0.0.1:" + tomcat.port + "/jsh/test/jsh.script/loader.jsh.j
 var code = client.request({
 	url: url
 });
-jsh.shell.echo(code.body.stream.character().asString());
-jsh.shell.run({
-	command: jsh.shell.java.launcher,
-	arguments: ["-jar", jsh.shell.jsh.home.getRelativePath("jsh.jar")].concat(url),
+jsh.shell.console("Script text:");
+jsh.shell.console(code.body.stream.character().asString());
+jsh.shell.jsh({
+	shell: jsh.shell.jsh.home,
+	script: url,
 	environment: jsh.js.Object.set({}, jsh.shell.environment, {
 		JSH_SCRIPT_DEBUGGER: (parameters.options.debug) ? "rhino" : "none"
 	})
