@@ -13,8 +13,6 @@
 //	Script to launch a script in an unbuilt jsh. Should be invoked via the jsh/etc/unbuilt.rhino.js tool; see that tool for
 //	details
 
-var env = $api.shell.environment;
-
 if (!$api.slime) {
 	if ($api.script.url) {
 		//	Load as-is, I guess?
@@ -38,7 +36,9 @@ $api.debug("Bootstrap script: " + $api.script);
 var command = new $api.java.Command();
 //	TODO	for now, we always launch a separate VM to execute the shell, but we should work toward the possibility of using a
 //			classloader when it is possible
-command.fork();
+if (!$api.shell.environment.JSH_TEST_LAUNCHER_NOFORK) {
+	command.fork();
+}
 //var container = new function() {
 //	//	TODO	jsh.tmpdir is not correctly passed to launcher in the forking scenario
 //
@@ -175,6 +175,7 @@ if ( profilerMatcher.test(scriptDebugger)) {
 (function() {
 	var container = $api.slime.settings.getContainerArguments();
 	for (var i=0; i<container.length; i++) {
+		$api.debug("container " + container[i]);
 		command.vm(container[i]);
 	}
 })();
@@ -226,6 +227,6 @@ for (var i=0; i<passthrough.length; i++) {
 }
 
 $api.debug("command = " + command);
-var status = command.run({ input: Packages.java.lang.System["in"] });
+var status = command.run();
 //	This basically hard-codes the exit at the VM level, meaning this script cannot be embedded.
 Packages.java.lang.System.exit(status);

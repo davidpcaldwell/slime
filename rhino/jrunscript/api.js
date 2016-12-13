@@ -25,6 +25,18 @@
 	var $arguments = (this.$api && this.$api.arguments) ? this.$api.arguments : null;
 	var $api = {};
 
+	$api.debug = function(message) {
+		if (arguments.callee.on) Packages.java.lang.System.err.println(message);
+	};
+
+	$api.console = function(message) {
+		Packages.java.lang.System.err.println(message);
+	}
+
+	$api.log = function(message) {
+		Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
+	}
+
 	var $engine = (function(global) {
 		var Nashorn = function() {
 			this.toString = function() {
@@ -605,6 +617,8 @@
 		launchers.Vm = function(home) {
 			if (!home) home = $api.java.install;
 			return function(mode) {
+				if (!mode) mode = {};
+				if (!mode.input) mode.input = Packages.java.lang.System["in"];
 				$api.debug("Invoking launcher");
 				var tokens = [home.launcher];
 				tokens.push.apply(tokens,vmArguments);
@@ -638,50 +652,53 @@
 				return $api.engine.runCommand.apply(null,tokens);
 			}
 		};
-		launchers.ClassLoader = function(mode) {
-			for (var x in properties) {
-				if (properties[x]) {
-					Packages.java.lang.System.setProperty(x, properties[x]);
+		launchers.ClassLoader = function() {
+			return function(mode) {
+				$api.debug("Running in ClassLoader ...");
+				for (var x in properties) {
+					if (properties[x]) {
+						Packages.java.lang.System.setProperty(x, properties[x]);
+					}
 				}
-			}
-			var ClassLoader = function(elements) {
-				var _urls = new $api.java.Array({ type: Packages.java.net.URL, length: elements.length });
-				for (var i=0; i<elements.length; i++) {
-					_urls[i] = new Packages.java.io.File(elements[i]).toURI().toURL();
-					//debug("classpath: " + elements[i]);
+				var ClassLoader = function(elements) {
+					var _urls = new $api.java.Array({ type: Packages.java.net.URL, length: elements.length });
+					for (var i=0; i<elements.length; i++) {
+						_urls[i] = new Packages.java.io.File(elements[i]).toURI().toURL();
+						//debug("classpath: " + elements[i]);
+					}
+					var _classloader = new Packages.java.net.URLClassLoader(_urls);
+					return _classloader;
 				}
-				var _classloader = new Packages.java.net.URLClassLoader(_urls);
-				return _classloader;
-			}
-			var _classloader = new ClassLoader(classpath);
-			var _main = _classloader.loadClass(main);
-//			var _class = _classloader.loadClass(main);
-//			var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
-//			var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
+				var _classloader = new ClassLoader(classpath);
+				var _main = _classloader.loadClass(main);
+	//			var _class = _classloader.loadClass(main);
+	//			var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
+	//			var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
 
-			var loaderArguments = [];
-//			if (script && typeof(script.path) != "undefined") {
-//				loaderArguments.push(script.path);
-//			} else if (script && typeof(script) == "string") {
-//				loaderArguments.push(script);
-//			}
-			loaderArguments.push.apply(loaderArguments,mainArguments);
+				var loaderArguments = [];
+	//			if (script && typeof(script.path) != "undefined") {
+	//				loaderArguments.push(script.path);
+	//			} else if (script && typeof(script) == "string") {
+	//				loaderArguments.push(script);
+	//			}
+				loaderArguments.push.apply(loaderArguments,mainArguments);
 
-			var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
-			for (var i=0; i<loaderArguments.length; i++) {
-				_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
-			}
+				var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
+				for (var i=0; i<loaderArguments.length; i++) {
+					_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
+				}
 
-			var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
-			var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 1 });
-			_invokeArguments[0] = _arguments;
-			_argumentTypes[0] = _arguments.getClass();
-			var _method = _main.getMethod("main",_argumentTypes);
-			try {
-				_method.invoke(null,_invokeArguments);
-				return 0;
-			} catch (e) {
-				return 1;
+				var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
+				var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 1 });
+				_invokeArguments[0] = _arguments;
+				_argumentTypes[0] = _arguments.getClass();
+				var _method = _main.getMethod("main",_argumentTypes);
+				try {
+					_method.invoke(null,_invokeArguments);
+					return 0;
+				} catch (e) {
+					return 1;
+				}
 			}
 		}
 
@@ -709,11 +726,13 @@
 		}
 
 		this.home = function(home) {
+			$api.debug("Running in VM because of home() ...");
 			launcher = new launchers.Vm(home);
 		}
 
 		this.vm = function(argument) {
 			if (launcher == launchers.ClassLoader) {
+				$api.debug("Running in VM because of VM argument " + argument + " ...");
 				launcher = new launchers.Vm();
 			}
 			vmArguments.push(argument);
@@ -738,12 +757,14 @@
 		}
 
 		this.fork = function() {
+			$api.debug("Running in VM because of fork() ...");
 			launcher = new launchers.Vm();
 		}
 
 		this.run = function(mode) {
 			$api.debug("Running");
 			if (mode && launcher == launchers.ClassLoader) {
+				$api.debug("Running in VM because of run(mode) ...");
 				launcher = new launchers.Vm();
 			}
 			$api.debug("launcher = " + launcher);

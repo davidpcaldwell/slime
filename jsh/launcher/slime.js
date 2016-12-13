@@ -23,18 +23,6 @@ if (typeof(Packages.inonit.script.runtime.io.Streams) == "function") {
 	};
 }
 
-$api.debug = function(message) {
-	if (arguments.callee.on) Packages.java.lang.System.err.println(message);
-};
-
-$api.console = function(message) {
-	Packages.java.lang.System.err.println(message);
-}
-
-$api.log = function(message) {
-	Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
-}
-
 if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 	//	TODO	hard-coded assumption that this is file
 	$api.rhino.classpath = new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
