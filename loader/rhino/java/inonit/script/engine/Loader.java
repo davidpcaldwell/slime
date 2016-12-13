@@ -48,7 +48,6 @@ public abstract class Loader {
 		public abstract ClassLoader getApplicationClassLoader();
 		public abstract Interface getInterface();
 
-
 		public static Classes create(Configuration configuration) {
 			if (configuration.canCreateClassLoaders()) {
 				final ClassLoaderImpl loaderClasses = ClassLoaderImpl.create(configuration.getApplicationClassLoader());
@@ -74,25 +73,17 @@ public abstract class Loader {
 				};
 			}
 		}
-	}
 
-	private static abstract class ClassLoaderImpl extends ClassLoader {
-		static ClassLoaderImpl create(ClassLoader delegate) {
-			LOG.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
-			return new New(delegate);
-		}
+		private static class ClassLoaderImpl extends ClassLoader {
+			static ClassLoaderImpl create(ClassLoader delegate) {
+				LOG.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
+				return new ClassLoaderImpl(delegate);
+			}
 
-		abstract Classes.Interface toInterface();
-
-		ClassLoaderImpl(ClassLoader delegate) {
-			super(delegate);
-		}
-
-		private static class New extends ClassLoaderImpl {
 			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
 
-			New(ClassLoader delegate) {
+			private ClassLoaderImpl(ClassLoader delegate) {
 				super(delegate);
 			}
 
@@ -170,7 +161,7 @@ public abstract class Loader {
 			Classes.Interface toInterface() {
 				return new Classes.Interface() {
 					@Override public String toString() {
-						return "Loader.Classes.Interface for: " + New.this.toString();
+						return "Loader.Classes.Interface for: " + ClassLoaderImpl.this.toString();
 					}
 
 					@Override public void append(Code.Source code) {
@@ -181,7 +172,7 @@ public abstract class Loader {
 
 					@Override public Class getClass(String name) {
 						try {
-							return New.this.loadClass(name);
+							return ClassLoaderImpl.this.loadClass(name);
 						} catch (ClassNotFoundException e) {
 							return null;
 						}

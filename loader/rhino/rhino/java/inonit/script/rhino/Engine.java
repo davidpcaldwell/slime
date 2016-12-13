@@ -487,6 +487,10 @@ public class Engine {
 		final Loader.Classes.Interface getClasspath() {
 			return factory.getClasspath();
 		}
+		
+		public final ClassLoader getCompilationClassLoader() {
+			return factory.getCompilationClassLoader();
+		}
 
 //		final Loader.Classes getLoaderClasses() {
 //			return factory.getLoaderClasses();
@@ -528,6 +532,11 @@ public class Engine {
 			private synchronized ClassLoader getContextApplicationClassLoader() {
 				initializeClassLoaders();
 				return this.classes.getApplicationClassLoader();
+			}
+			
+			final ClassLoader getCompilationClassLoader() {
+				initializeClassLoaders();
+				return this.classes.getApplicationClassLoader();				
 			}
 
 			final Loader.Classes.Interface getClasspath() {

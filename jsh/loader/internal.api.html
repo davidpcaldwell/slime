@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+	<head>
+		<title>jsh Loader implementation</title>
+		<!--	TODO	change these to use local copies of these files at the appropriate location	-->
+		<!--
+			These files are specified using http: rather than https: because githack.com will redirect them to https:, but http: will
+			work when using an HTTP proxy to serve local copies of the files without needing to run https: locally
+		-->
+		<link href="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css" rel="stylesheet" type="text/css" />
+		<script src="http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js"></script>
+		<script>
+			//	TODO	CORS
+			document.domain = document.domain;
+		</script>
+	</head>
+	<body>
+		<div>
+			The <code>jsh</code> <dfn>loader</dfn> is a subsystem that can run in its own VM or within an isolated classloader, and
+			which implements the execution of a script. It has two implementations: a Rhino implementation 
+			(<code>inonit.script.jsh.Rhino</code>) and a Nashorn implementation (<code>inonit.script.jsh.Nashorn</code>); the
+			entry point is chosen and executed by the launcher subsystem.
+		</div>
+		<div>
+			<h1>Rhino</h1>
+		</div>
+		<div>
+			<h1>Context</h1>
+			<ul>
+			</ul>
+		</div>
+		<div>
+			<h1>Exports</h1>
+			<ul>
+			</ul>
+		</div>
+	</body>
+</html>
