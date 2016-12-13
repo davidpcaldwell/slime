@@ -19,9 +19,9 @@ import java.util.logging.*;
 import org.mozilla.javascript.*;
 
 import inonit.script.runtime.io.*;
-import inonit.system.*;
 import inonit.script.engine.*;
 import inonit.script.rhino.*;
+import java.util.concurrent.Executors;
 
 public class Rhino {
 	private static final Logger LOG = Logger.getLogger(Rhino.class.getName());
@@ -162,26 +162,17 @@ public class Rhino {
 
 	private Configuration rhino;
 
-	private Rhino() {
+	private Rhino(Shell shell) {
+		this.shell = shell;
+		this.rhino = Configuration.main(shell.getEnvironment());
 	}
 
 	private Integer run() throws Shell.Invocation.CheckedException {
-		this.rhino = Configuration.main(shell.getEnvironment());
-
-		Integer rv = Rhino.execute(
-			shell,
-			this.rhino
-		);
-
-		return rv;
-	}
-
-	//	TODO	try to remove dependencies on inonit.script.rhino.*;
-
-	public static Integer execute(Shell shell, Rhino.Configuration rhino) throws Shell.Invocation.CheckedException {
 		rhino.initialize(shell.getEnvironment());
 		return Rhino.execute(shell, rhino, new Interface(shell, rhino));
 	}
+
+	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
 	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Shell.Invocation.CheckedException {
 		try {
@@ -201,10 +192,6 @@ public class Rhino {
 			$rhino.destroy();
 		}
 	}
-
-//	public static Scriptable load(Installation installation, Shell.Environment configuration, Rhino.Configuration rhino, Invocation invocation) {
-//		return Host.create(installation, configuration, rhino, invocation).load();
-//	}
 
 	static class ExitError extends Error {
 		private int status;
@@ -284,45 +271,29 @@ public class Rhino {
 			}
 		}
 	}
-
-//	private static void exit(int status) {
-//		System.exit(status);
-//	}
-
-	private class Run implements Runnable {
-		public Integer call() throws Shell.Invocation.CheckedException {
+	
+	private class Run implements java.util.concurrent.Callable<Integer> {
+		public Integer call() throws Exception {
 			return Rhino.this.run();
-		}
-
-		private Integer result;
-		private Throwable threw;
-
-		public Integer result() throws Throwable {
-			if (threw != null) throw threw;
-			return result;
-		}
-
-		public void run() {
-			try {
-				result = call();
-			} catch (Throwable e) {
-				threw = e;
-			}
 		}
 	}
 
 	public static class EngineImpl extends Main.Engine {
 		private static void run(Shell.Container context, Shell shell) {
-			Rhino main = new Rhino();
-			main.shell = shell;
+			Rhino main = new Rhino(shell);
 			try {
-	//			Integer status = java.util.concurrent.Executors.newCachedThreadPool().submit(main.new Run()).get();
-				Run run = main.new Run();
-				Thread thread = new Thread(run);
-				thread.setName("Loader");
-				thread.start();
-				thread.join();
-				Integer status = run.result();
+				java.util.concurrent.ExecutorService service = java.util.concurrent.Executors.newSingleThreadExecutor();
+				java.util.concurrent.Future<Integer> future = service.submit(main.new Run());
+				Integer status = future.get();
+				service.shutdown();
+//						.submit(main.new Run()).get();
+	//			Run run = main.new Run();
+				
+	//			Thread thread = new Thread(run);
+	//			thread.setName("Loader");
+	//			thread.start();
+	//			thread.join();
+	//			Integer status = run.result();
 	//			Integer status = main.run();
 				LOG.log(Level.INFO, "Exiting normally with status %d.", status);
 				if (status != null) {
@@ -340,10 +311,10 @@ public class Rhino {
 					main.rhino.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}
-			} catch (Shell.Invocation.CheckedException e) {
-				LOG.log(Level.INFO, "Exiting with checked exception.", e);
-				System.err.println(e.getMessage());
-				context.exit(1);
+//			} catch (Shell.Invocation.CheckedException e) {
+//				LOG.log(Level.INFO, "Exiting with checked exception.", e);
+//				System.err.println(e.getMessage());
+//				context.exit(1);
 			} catch (Throwable t) {
 				LOG.log(Level.SEVERE, "Exiting with throwable.", t);
 				Throwable target = t;
