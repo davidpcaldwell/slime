@@ -271,6 +271,7 @@ $api.slime = (function(was) {
 			all[name]["default"] = value;
 		}
 
+		//	Added to VM arguments for loader VM
 		this.getContainerArguments = function() {
 			var rv = [];
 			for (var x in all) {
@@ -279,7 +280,7 @@ $api.slime = (function(was) {
 					if (all[x].type.container) {
 						rv = rv.concat(all[x].type.container(value));
 					} else {
-						rv.push("-D" + x + "=" + value);
+//						rv.push("-D" + x + "=" + value);
 					}
 				}
 			}

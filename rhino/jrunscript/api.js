@@ -652,53 +652,58 @@
 				return $api.engine.runCommand.apply(null,tokens);
 			}
 		};
-		launchers.ClassLoader = function() {
-			return function(mode) {
-				$api.debug("Running in ClassLoader ...");
-				for (var x in properties) {
-					if (properties[x]) {
-						Packages.java.lang.System.setProperty(x, properties[x]);
-					}
+		launchers.ClassLoader = function(mode) {
+			$api.debug("Running in ClassLoader ...");
+			for (var x in properties) {
+				if (properties[x]) {
+					Packages.java.lang.System.setProperty(x, properties[x]);
 				}
-				var ClassLoader = function(elements) {
-					var _urls = new $api.java.Array({ type: Packages.java.net.URL, length: elements.length });
-					for (var i=0; i<elements.length; i++) {
-						_urls[i] = new Packages.java.io.File(elements[i]).toURI().toURL();
-						//debug("classpath: " + elements[i]);
-					}
-					var _classloader = new Packages.java.net.URLClassLoader(_urls);
-					return _classloader;
+			}
+			var ClassLoader = function(elements) {
+				var _urls = new $api.java.Array({ type: Packages.java.net.URL, length: elements.length });
+				for (var i=0; i<elements.length; i++) {
+					//_urls[i] = new Packages.java.io.File(elements[i]).toURI().toURL();
+					_urls[i] = elements[i];
+					//debug("classpath: " + elements[i]);
 				}
-				var _classloader = new ClassLoader(classpath);
-				var _main = _classloader.loadClass(main);
-	//			var _class = _classloader.loadClass(main);
-	//			var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
-	//			var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
+				var _classloader = new Packages.java.net.URLClassLoader(_urls);
+				return _classloader;
+			}
+			$api.debug("ClassLoader classpath=" + classpath);
+			var _classloader = new ClassLoader(classpath);
+			$api.debug("ClassLoader _classloader=" + _classloader);
+			var _main = _classloader.loadClass(main);
+			$api.debug("main: " + _main);
+//			var _class = _classloader.loadClass(main);
+//			var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
+//			var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
 
-				var loaderArguments = [];
-	//			if (script && typeof(script.path) != "undefined") {
-	//				loaderArguments.push(script.path);
-	//			} else if (script && typeof(script) == "string") {
-	//				loaderArguments.push(script);
-	//			}
-				loaderArguments.push.apply(loaderArguments,mainArguments);
+			var loaderArguments = [];
+//			if (script && typeof(script.path) != "undefined") {
+//				loaderArguments.push(script.path);
+//			} else if (script && typeof(script) == "string") {
+//				loaderArguments.push(script);
+//			}
+			loaderArguments.push.apply(loaderArguments,mainArguments);
 
-				var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
-				for (var i=0; i<loaderArguments.length; i++) {
-					_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
-				}
+			var _arguments = new $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
+			for (var i=0; i<loaderArguments.length; i++) {
+				_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
+			}
 
-				var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
-				var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 1 });
-				_invokeArguments[0] = _arguments;
-				_argumentTypes[0] = _arguments.getClass();
-				var _method = _main.getMethod("main",_argumentTypes);
-				try {
-					_method.invoke(null,_invokeArguments);
-					return 0;
-				} catch (e) {
-					return 1;
-				}
+			var _argumentTypes = new $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
+			var _invokeArguments = new $api.java.Array({ type: Packages.java.lang.Object, length: 1 });
+			_invokeArguments[0] = _arguments;
+			_argumentTypes[0] = _arguments.getClass();
+			var _method = _main.getMethod("main",_argumentTypes);
+			$api.debug("Invoking " + _method + " ...");
+			try {
+				_method.invoke(null,_invokeArguments);
+				$api.debug("Returned.");
+				return 0;
+			} catch (e) {
+				$api.debug("Returned with error.");
+				return 1;
 			}
 		}
 
