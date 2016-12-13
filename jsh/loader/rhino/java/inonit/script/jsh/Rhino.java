@@ -26,6 +26,73 @@ import java.util.concurrent.Executors;
 public class Rhino {
 	private static final Logger LOG = Logger.getLogger(Rhino.class.getName());
 
+	public static class Interface {
+		private Shell shell;
+		private Configuration rhino;
+		private Engine.Debugger debugger;
+		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
+
+		Interface(Shell shell, Rhino.Configuration rhino) {
+			this.shell = shell;
+			this.rhino = rhino;
+			this.debugger = rhino.getEngine().getDebugger();
+		}
+
+		private Interface(Shell shell, Rhino.Configuration rhino, Engine.Debugger debugger) {
+			this.shell = shell;
+			this.rhino = rhino;
+			this.debugger = debugger;
+		}
+
+		//	TODO	can this level of indirection surrounding debugger be removed?
+
+		public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
+			return rhino.getEngine().script(name, code, scope, target);
+		}
+
+		public Loader.Classes.Interface getClasspath() {
+			return rhino.getEngine().getClasspath();
+		}
+
+		public Engine.Debugger getDebugger() {
+			return debugger;
+		}
+
+		public void exit(int status) {
+			debugger.setBreakOnExceptions(false);
+			throw new ExitError(status);
+		}
+
+		private Interface subinterface() {
+			//	TODO	provide separate classloader for child script
+			return new Interface(shell,rhino,debugger);
+		}
+
+		public int jsh(final Shell.Environment configuration, final Shell.Invocation invocation) throws IOException, Shell.Invocation.CheckedException {
+			boolean breakOnExceptions = debugger.isBreakOnExceptions();
+			Shell subshell = shell.subshell(configuration, invocation);
+			Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
+			debugger.setBreakOnExceptions(breakOnExceptions);
+			if (rv == null) return 0;
+			return rv.intValue();
+		}
+
+		public void addFinalizer(Runnable finalizer) {
+			finalizers.add(finalizer);
+		}
+
+		public void destroy() {
+			for (int i=0; i<finalizers.size(); i++) {
+				try {
+					finalizers.get(i).run();
+				} catch (Throwable t) {
+					//	TODO	log something about the exception
+					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
+				}
+			}
+		}
+	}
+	
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
 		private Interface $rhino;
@@ -39,7 +106,7 @@ public class Rhino {
 
 		private Engine.Program program = new Engine.Program();
 
-		@Override public void host(String name, Object value) {
+		@Override public void setGlobalProperty(String name, Object value) {
 			Engine.Program.Variable variable = Engine.Program.Variable.create(
 				name,
 				Engine.Program.Variable.Value.create(value)
@@ -50,8 +117,8 @@ public class Rhino {
 			program.set(variable);
 		}
 
-		@Override public void addEngine() {
-			host("$rhino", $rhino);
+		@Override public void setJshHostProperty() {
+			setGlobalProperty("$rhino", $rhino);
 			try {
 				Code.Source.File file = this.getJshLoader().getFile("rhino.js");
 				if (file == null) {
@@ -205,73 +272,6 @@ public class Rhino {
 		}
 	}
 
-	public static class Interface {
-		private Shell shell;
-		private Configuration rhino;
-		private Engine.Debugger debugger;
-		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
-
-		Interface(Shell shell, Rhino.Configuration rhino) {
-			this.shell = shell;
-			this.rhino = rhino;
-			this.debugger = rhino.getEngine().getDebugger();
-		}
-
-		private Interface(Shell shell, Rhino.Configuration rhino, Engine.Debugger debugger) {
-			this.shell = shell;
-			this.rhino = rhino;
-			this.debugger = debugger;
-		}
-
-		//	TODO	can this level of indirection surrounding debugger be removed?
-
-		public Scriptable script(String name, String code, Scriptable scope, Scriptable target) throws IOException {
-			return rhino.getEngine().script(name, code, scope, target);
-		}
-
-		public Loader.Classes.Interface getClasspath() {
-			return rhino.getEngine().getClasspath();
-		}
-
-		public Engine.Debugger getDebugger() {
-			return debugger;
-		}
-
-		public void exit(int status) {
-			debugger.setBreakOnExceptions(false);
-			throw new ExitError(status);
-		}
-
-		private Interface subinterface() {
-			//	TODO	provide separate classloader for child script
-			return new Interface(shell,rhino,debugger);
-		}
-
-		public int jsh(final Shell.Environment configuration, final Shell.Invocation invocation) throws IOException, Shell.Invocation.CheckedException {
-			boolean breakOnExceptions = debugger.isBreakOnExceptions();
-			Shell subshell = shell.subshell(configuration, invocation);
-			Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
-			debugger.setBreakOnExceptions(breakOnExceptions);
-			if (rv == null) return 0;
-			return rv.intValue();
-		}
-
-		public void addFinalizer(Runnable finalizer) {
-			finalizers.add(finalizer);
-		}
-
-		public void destroy() {
-			for (int i=0; i<finalizers.size(); i++) {
-				try {
-					finalizers.get(i).run();
-				} catch (Throwable t) {
-					//	TODO	log something about the exception
-					rhino.getLog().println("Error running finalizer: " + finalizers.get(i));
-				}
-			}
-		}
-	}
-	
 	private class Run implements java.util.concurrent.Callable<Integer> {
 		public Integer call() throws Exception {
 			return Rhino.this.run();
@@ -286,15 +286,6 @@ public class Rhino {
 				java.util.concurrent.Future<Integer> future = service.submit(main.new Run());
 				Integer status = future.get();
 				service.shutdown();
-//						.submit(main.new Run()).get();
-	//			Run run = main.new Run();
-				
-	//			Thread thread = new Thread(run);
-	//			thread.setName("Loader");
-	//			thread.start();
-	//			thread.join();
-	//			Integer status = run.result();
-	//			Integer status = main.run();
 				LOG.log(Level.INFO, "Exiting normally with status %d.", status);
 				if (status != null) {
 					context.exit(status.intValue());
@@ -311,10 +302,6 @@ public class Rhino {
 					main.rhino.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}
-//			} catch (Shell.Invocation.CheckedException e) {
-//				LOG.log(Level.INFO, "Exiting with checked exception.", e);
-//				System.err.println(e.getMessage());
-//				context.exit(1);
 			} catch (Throwable t) {
 				LOG.log(Level.SEVERE, "Exiting with throwable.", t);
 				Throwable target = t;

@@ -370,16 +370,38 @@ public class Shell {
 			return shell.getJshLoader();
 		}
 
-		protected abstract void host(String name, Object value);
-		protected abstract void addEngine();
+		/**
+		 *	Should set a property on the global object. Used to set the <code>$jsh</code> property to the Shell object.
+		 *	@param name The name of the property to set
+		 *	@param value The value to which to set it
+		 */
+		protected abstract void setGlobalProperty(String name, Object value);
+		
+		/**
+		 *	Must invoke <code>$jsh.setHost(o)</code> where o is a JavaScript object that will be provided to the <code>jsh.js</code>
+		 *	script via <code>$jsh.host()</code>
+		 */
+		//	TODO	not quite DRY; all implementations must invoke $jsh.setHost; would be better if this somehow eval-ed and did
+		//			that itself
+		protected abstract void setJshHostProperty();
+
+		/**
+		 *	Executes the given script in the global scope.
+		 *	@param script The script to execute.
+		 */
 		protected abstract void script(Code.Source.File script);
+		
+		/**
+		 *	Executes the main script, returning its exit status.
+		 *	@return The exit status of the main program.
+		 */
 		protected abstract Integer run();
 
 		public final Integer execute() {
 			LOG.log(Level.INFO, "Executing shell with %s", this);
 			final Execution execution = this;
-			this.host("$jsh", shell);
-			execution.addEngine();
+			this.setGlobalProperty("$jsh", shell);
+			execution.setJshHostProperty();
 			try {
 				execution.script(shell.getJshLoader().getFile("jsh.js"));
 			} catch (IOException e) {

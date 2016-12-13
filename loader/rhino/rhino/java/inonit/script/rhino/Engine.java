@@ -488,14 +488,6 @@ public class Engine {
 			return factory.getClasspath();
 		}
 		
-		public final ClassLoader getCompilationClassLoader() {
-			return factory.getCompilationClassLoader();
-		}
-
-//		final Loader.Classes getLoaderClasses() {
-//			return factory.getLoaderClasses();
-//		}
-
 		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
 			dim.attachTo(factory);
 		}

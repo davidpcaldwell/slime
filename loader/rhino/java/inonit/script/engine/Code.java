@@ -522,11 +522,16 @@ public abstract class Code {
 		private String toString;
 		private Source source;
 		private Source classes;
+		
+		private ClassLoader dependencies(Loader.Classes.Interface loader) {
+			if (loader == null) return null;
+			return loader.dependencies();
+		}
 
-		Unpacked(String toString, Source source, Java.Store store) {
+		Unpacked(String toString, Source source, Java.Store store, Loader.Classes.Interface loader) {
 			this.toString = toString;
 			this.source = source;
-			this.classes = Java.compiling(source, store);
+			this.classes = Java.compiling(source, store, dependencies(loader));
 		}
 		
 		public String toString() {
@@ -542,7 +547,7 @@ public abstract class Code {
 		}
 	}
 
-	public static Code unpacked(final File base) {
+	public static Code unpacked(final File base, Loader.Classes.Interface loader) {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(base + " is not a directory.");
 		}
@@ -552,11 +557,21 @@ public abstract class Code {
 		} catch (IOException e) {
 			path = base.getAbsolutePath();
 		}
-		return new Unpacked("file=" + path, Source.create(base), Java.Store.memory());
+		return new Unpacked("file=" + path, Source.create(base), Java.Store.memory(), loader);
 	}
 
+	public static Code unpacked(final URL base, Loader.Classes.Interface loader) {
+		return new Unpacked("url=" + base.toExternalForm(), Source.create(base), Java.Store.memory(), loader);
+	}
+	
+	//	TODO	remove
+	public static Code unpacked(final File base) {
+		return unpacked(base, null);
+	}
+
+	//	TODO	remove
 	public static Code unpacked(final URL base) {
-		return new Unpacked("url=" + base.toExternalForm(), Source.create(base), Java.Store.memory());
+		return unpacked(base, null);
 	}
 
 	public static Code jar(final File jar) {

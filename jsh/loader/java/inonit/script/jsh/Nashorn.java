@@ -77,12 +77,12 @@ public class Nashorn extends Main.Engine {
 			this.top = top;
 		}
 
-		@Override public void host(String name, Object value) {
+		@Override public void setGlobalProperty(String name, Object value) {
 			host.set(name, value);
 		}
 
-		@Override public void addEngine() {
-			host("$nashorn", new Host() {
+		@Override public void setJshHostProperty() {
+			setGlobalProperty("$nashorn", new Host() {
 				@Override public Loader.Classes.Interface getClasspath() {
 					return host.getClasspath();
 				}

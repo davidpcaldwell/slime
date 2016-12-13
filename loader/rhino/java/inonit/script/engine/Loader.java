@@ -43,6 +43,8 @@ public abstract class Loader {
 			public final void append(Code code) {
 				append(code.getClasses());
 			}
+			
+			abstract ClassLoader dependencies();
 		}
 
 		public abstract ClassLoader getApplicationClassLoader();
@@ -176,6 +178,10 @@ public abstract class Loader {
 						} catch (ClassNotFoundException e) {
 							return null;
 						}
+					}
+					
+					ClassLoader dependencies() {
+						return ClassLoaderImpl.this;
 					}
 				};
 			}

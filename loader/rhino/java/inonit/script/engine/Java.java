@@ -96,9 +96,9 @@ public class Java {
 		private Code.Source delegate;
 		private Java.Classes classes;
 
-		SourceDirectoryClassesSource(Code.Source delegate, Store store) {
+		SourceDirectoryClassesSource(Code.Source delegate, Store store, ClassLoader dependencies) {
 			this.delegate = delegate;
-			this.classes = Classes.create(store);
+			this.classes = Classes.create(store, dependencies);
 		}
 
 //		private Java.Classes classes = Java.Classes.create(Java.Classes.Store.memory());
@@ -160,8 +160,8 @@ public class Java {
 		}
 	}
 	
-	static Code.Source compiling(Code.Source code, Store store) {
-		return new SourceDirectoryClassesSource(code, store);
+	static Code.Source compiling(Code.Source code, Store store, ClassLoader dependencies) {
+		return new SourceDirectoryClassesSource(code, store, dependencies);
 	}
 	
 	private static class InMemoryWritableFile extends Code.Source.File {
@@ -272,14 +272,14 @@ public class Java {
 	}
 
 	private static class Classes {
-		private static Classes create(Store store) {
-			return new Classes(store);
+		private static Classes create(Store store, ClassLoader dependencies) {
+			return new Classes(store, dependencies);
 		}
 		
 		private MyJavaFileManager jfm;
 		
-		private Classes(Store store) {
-			this.jfm = new MyJavaFileManager(store);
+		private Classes(Store store, ClassLoader dependencies) {
+			this.jfm = new MyJavaFileManager(store, dependencies);
 		}
 		
 		private Code.Source.File getFile(String name) {
@@ -306,21 +306,20 @@ public class Java {
 		}
 		
 		private static class MyJavaFileManager implements JavaFileManager {
-			private ClassLoader classpath = new ClassLoader() {
-				protected Class findClass(String name) throws ClassNotFoundException{
-					throw new ClassNotFoundException(name);
-				}
-			};
-
 			private javax.tools.JavaFileManager delegate = compiler().getStandardFileManager(null, null, null);
 
 			private Java.Store store;
+			private ClassLoader classpath;
 
 			private Map<String,OutputClass> map = new HashMap<String,OutputClass>();
 
-
-			MyJavaFileManager(Java.Store store) {
+			MyJavaFileManager(Java.Store store, ClassLoader dependencies) {
 				this.store = store;
+				this.classpath = new ClassLoader(dependencies) {
+					protected Class findClass(String name) throws ClassNotFoundException{
+						throw new ClassNotFoundException(name);
+					}					
+				};
 			}
 
 			public ClassLoader getClassLoader(JavaFileManager.Location location) {
