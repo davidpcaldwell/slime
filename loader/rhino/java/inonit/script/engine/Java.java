@@ -352,9 +352,8 @@ public class Java {
 				if (location == StandardLocation.CLASS_PATH) {
 					List<JavaFileObject> rv = new ArrayList<JavaFileObject>();
 					LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
-					if (classpath != null) {
-						Code.Source parent = Loader.Classes.adapt(classpath.classLoader().getParent());
-						LOG.log(MyJavaFileManager.class, Level.FINE, "source=" + classpath.dependencies(), null);
+					Code.Source parent = classpath.parent();
+					if (parent != null) {
 						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + parent, null);
 						String path = packageName.replaceAll("\\.","/");
 						LOG.log(MyJavaFileManager.class, Level.FINE, "path=" + path, null);

@@ -31,7 +31,7 @@ public abstract class Loader {
 		
 		private static HashMap<ClassLoader,Code.Source> cache = new HashMap<ClassLoader,Code.Source>();
 		
-		static Code.Source adapt(ClassLoader parent) {
+		private static Code.Source adapt(ClassLoader parent) {
 			if (parent instanceof URLClassLoader) {
 				List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
 				List<Code.Source> sources = new ArrayList<Code.Source>();
@@ -71,6 +71,15 @@ public abstract class Loader {
 			
 			abstract Code.Source dependencies();
 			abstract ClassLoader classLoader();
+			
+			private Code.Source parent;
+			
+			final Code.Source parent() {
+				if (parent == null) {
+					parent = adapt(classLoader().getParent());
+				}
+				return parent;
+			}
 			
 			public final Code unpacked(File base) {
 				return Code.loadUnpacked(base, this);
