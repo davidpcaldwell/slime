@@ -107,7 +107,7 @@
 		var rv = function(p) {
 			var Code = Packages.inonit.script.engine.Code;
 			if (p._unpacked) {
-				p._code = Code.unpacked(p._unpacked);
+				p._code = $javahost.getClasspath().unpacked(p._unpacked);
 			} else if (p._packed) {
 				p._code = Code.slime(p._packed);
 			}

@@ -547,7 +547,7 @@ public abstract class Code {
 		}
 	}
 
-	public static Code unpacked(final File base, Loader.Classes.Interface loader) {
+	static Code loadUnpacked(final File base, Loader.Classes.Interface loader) {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(base + " is not a directory.");
 		}
@@ -560,18 +560,18 @@ public abstract class Code {
 		return new Unpacked("file=" + path, Source.create(base), Java.Store.memory(), loader);
 	}
 
-	public static Code unpacked(final URL base, Loader.Classes.Interface loader) {
+	static Code loadUnpacked(final URL base, Loader.Classes.Interface loader) {
 		return new Unpacked("url=" + base.toExternalForm(), Source.create(base), Java.Store.memory(), loader);
 	}
 	
 	//	TODO	remove
 	public static Code unpacked(final File base) {
-		return unpacked(base, null);
+		return loadUnpacked(base, null);
 	}
 
 	//	TODO	remove
 	public static Code unpacked(final URL base) {
-		return unpacked(base, null);
+		return loadUnpacked(base, null);
 	}
 
 	public static Code jar(final File jar) {

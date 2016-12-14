@@ -45,6 +45,14 @@ public abstract class Loader {
 			}
 			
 			abstract ClassLoader dependencies();
+			
+			public final Code unpacked(File base) {
+				return Code.loadUnpacked(base, this);
+			}
+			
+			public final Code unpacked(URL base) {
+				return Code.loadUnpacked(base, this);
+			}
 		}
 
 		public abstract ClassLoader getApplicationClassLoader();
