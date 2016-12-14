@@ -87,17 +87,6 @@ if ($api.slime.settings.get("jsh.java.home")) {
 
 $api.script.resolve("launcher.js").load();
 
-//	TODO	for now, we always launch a separate VM to execute the shell, but we are working using JSH_TEST_LAUNCHER_NOFORK
-//			feature flag to get classloader working under Rhino
-var fork = true;
-if ($api.shell.environment.JSH_TEST_LAUNCHER_NOFORK) {
-	fork = $api.jsh.engine.resolve({
-		rhino: false,
-		nashorn: true
-	});
-}
-if (fork) command.fork();
-
 //	If we have a sibling named jsh.jar, we are a built shell
 var shell = (function() {
 	if ($api.script.resolve("jsh.jar")) {
@@ -134,6 +123,18 @@ if (!defaultEngine) {
 	Packages.java.lang.System.exit(1);
 }
 $api.slime.settings["default"]("jsh.engine", defaultEngine);
+//	TODO	for now, we always launch a separate VM to execute the shell, but we are working using JSH_TEST_LAUNCHER_NOFORK
+//			feature flag to get classloader working under Rhino
+var fork = true;
+if ($api.shell.environment.JSH_TEST_LAUNCHER_NOFORK) {
+	$api.debug("Checking fork because of feature flag.");
+	fork = $api.jsh.engines[defaultEngine].resolve({
+		rhino: false,
+		nashorn: true
+	});
+	$api.debug("Fork = " + fork);
+}
+if (fork) command.fork();
 
 if ($api.arguments[0] == "-engines") {
 	var engines = [];
