@@ -50,6 +50,10 @@ if (parameters.options.jrunscript.length) {
 	});
 	jsh.shell.exit(0);
 } else {
+	var properties = {};
+	if (parameters.options.log) {
+		properties["java.util.logging.config.file"] = jsh.script.file.parent.parent.getRelativePath("http.logging.properties");
+	}
 	var mock = new jsh.test.launcher.MockRemote({
 		src: {
 			davidpcaldwell: {
@@ -65,7 +69,7 @@ if (parameters.options.jrunscript.length) {
 			(parameters.options.log) ? { JSH_LOG_JAVA_PROPERTIES: jsh.script.file.parent.parent.getRelativePath("http.logging.properties").toString() } : {}
 		);
 		mock.jsh({
-			vmarguments: (parameters.options.log) ? ["-Djava.util.logging.config.file=" + jsh.script.file.parent.parent.getRelativePath("http.logging.properties")] : [],
+			properties: properties,
 			environment: environment,
 			script: parameters.options.script,
 			arguments: parameters.arguments,
@@ -135,9 +139,10 @@ if (parameters.options.jrunscript.length) {
 	}
 
 	if (tests.file) {
-		jsh.shell.echo("Exceuting file test ...", { stream: jsh.shell.stdio.error });
+		jsh.shell.console("Exceuting file test ...");
 		mock.jsh({
-			script: SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js")
+			script: SRC.getRelativePath("jsh/test/jsh.shell/echo.jsh.js"),
+			properties: properties
 		});
 	}
 

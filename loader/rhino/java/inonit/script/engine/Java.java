@@ -321,12 +321,17 @@ public class Java {
 			private Map<String,OutputClass> map = new HashMap<String,OutputClass>();
 
 			MyJavaFileManager(Java.Store store, Loader.Classes.Interface classpath) {
+				if (classpath == null) throw new RuntimeException();
 				this.store = store;
 				this.classpath = classpath;
 			}
 			
 			private void log(String message) {
 				LOG.log(MyJavaFileManager.class, Level.FINE, message, null);
+			}
+
+			private void log(Level level, String message) {
+				LOG.log(MyJavaFileManager.class, level, message, null);
 			}
 
 			public ClassLoader getClassLoader(JavaFileManager.Location location) {
@@ -336,11 +341,11 @@ public class Java {
 			}
 
 			public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
-				LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) {
+					LOG.log(MyJavaFileManager.class, Level.FINER, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
 					Iterable<JavaFileObject> rv = delegate.list(location, packageName, kinds, recurse);
 					for (JavaFileObject o : rv) {
-						log("list jfo " + o);
+						log(Level.FINER, "list jfo " + o);
 					}
 					return rv;
 				}
@@ -372,6 +377,8 @@ public class Java {
 							rv.add(new InputClass(file, binaryName));
 						}
 						LOG.log(MyJavaFileManager.class, Level.FINE, "path=" + path + " list=" + names, null);
+					} else {
+						LOG.log(MyJavaFileManager.class, Level.FINE, "classpath is null", null);
 					}
 					Iterable<JavaFileObject> standard = delegate.list(location, packageName, kinds, recurse);
 					for (JavaFileObject s : standard) {
@@ -387,7 +394,7 @@ public class Java {
 			public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) {
 					String rv = delegate.inferBinaryName(location, file);
-					log("inferBinaryName location=" + location + " file=" + file + " rv=" + rv);
+					log(Level.FINER, "inferBinaryName location=" + location + " file=" + file + " rv=" + rv);
 					return rv;
 				}
 				//log("inferBinaryName location=" + location + " file object " + file);

@@ -264,7 +264,7 @@ public abstract class Code {
 			return new UrlBased(url, null);
 		}
 		
-		public static Source zip(java.io.File file) {
+		public static Source zip(final java.io.File file) {
 			try {
 				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(new java.io.FileInputStream(file));
 				java.util.zip.ZipEntry entry;
@@ -330,6 +330,8 @@ public abstract class Code {
 					}
 				};
 				return new Code.Source() {
+					@Override public String toString() { return "Code.Source zip=" + file; }
+					
 					@Override
 					public File getFile(String path) throws IOException {
 						LOG.log(Code.Source.class, Level.FINE, "getFile(" + path + ")", null);

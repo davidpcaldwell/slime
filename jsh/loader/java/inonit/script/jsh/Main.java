@@ -202,7 +202,7 @@ public class Main {
 //				}
 //			}
 
-			private void addPlugins(List<Code> plugins, URL url) {
+			private void addPlugins(List<Code> plugins, URL url, Loader.Classes.Interface classpath) {
 				ArrayList<URL> children = new ArrayList<URL>();
 				try {
 					BufferedReader lines = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
@@ -223,16 +223,16 @@ public class Main {
 				}
 				if (children != null) {
 					for (URL child : children) {
-						addPlugins(plugins, child);
+						addPlugins(plugins, child, classpath);
 					}
 				} else {
-					plugins.add(Code.unpacked(url));
+					plugins.add(classpath.unpacked(url));
 				}
 			}
 
 			@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
 				ArrayList<Code> rv = new ArrayList<Code>();
-				addPlugins(rv, url);
+				addPlugins(rv, url, classpath);
 				return rv;
 			}
 
