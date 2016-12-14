@@ -125,15 +125,21 @@ if (!defaultEngine) {
 $api.slime.settings["default"]("jsh.engine", defaultEngine);
 //	TODO	for now, we always launch a separate VM to execute the shell, but we are working using JSH_TEST_LAUNCHER_NOFORK
 //			feature flag to get classloader working under Rhino
-var fork = true;
-if ($api.shell.environment.JSH_TEST_LAUNCHER_NOFORK) {
-	$api.debug("Checking fork because of feature flag.");
-	fork = $api.jsh.engines[defaultEngine].resolve({
+var fork = (function() {
+	if (!$api.script.file) return true;
+	return $api.jsh.engines[defaultEngine].resolve({
 		rhino: false,
 		nashorn: true
 	});
-	$api.debug("Fork = " + fork);
-}
+})();
+//if ($api.shell.environment.JSH_TEST_LAUNCHER_NOFORK) {
+//	$api.debug("Checking fork because of feature flag.");
+//	fork = $api.jsh.engines[defaultEngine].resolve({
+//		rhino: false,
+//		nashorn: true
+//	});
+$api.debug("Fork = " + fork);
+//}
 if (fork) command.fork();
 
 if ($api.arguments[0] == "-engines") {
