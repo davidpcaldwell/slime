@@ -3,11 +3,14 @@ package inonit.script.engine;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import javax.lang.model.element.*;
 import javax.tools.*;
 
 public class Java {
+	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
+	
 	private static javax.tools.JavaCompiler javac;
 
 	private static javax.tools.JavaCompiler compiler() {
@@ -328,6 +331,7 @@ public class Java {
 			}
 
 			public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
+				LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
 				if (location == StandardLocation.CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
 				if (location == StandardLocation.SOURCE_PATH) return Arrays.asList(new JavaFileObject[0]);

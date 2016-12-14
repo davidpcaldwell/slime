@@ -674,6 +674,8 @@
 			$api.debug("ClassLoader _classloader=" + _classloader);
 			var _main = _classloader.loadClass(main);
 			$api.debug("main: " + _main);
+			$api.debug("inonit.system.Logging launcher = " + Packages.inonit.system.Logging);
+			$api.debug("inonit.system.Logging loaded = " + _classloader.loadClass("inonit.system.Logging"));
 //			var _class = _classloader.loadClass(main);
 //			var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
 //			var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
