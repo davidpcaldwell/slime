@@ -21,7 +21,6 @@ import org.mozilla.javascript.*;
 import inonit.script.runtime.io.*;
 import inonit.script.engine.*;
 import inonit.script.rhino.*;
-import java.util.concurrent.Executors;
 
 public class Rhino {
 	private static final Logger LOG = Logger.getLogger(Rhino.class.getName());
@@ -71,7 +70,7 @@ public class Rhino {
 		public int jsh(final Shell.Environment configuration, final Shell.Invocation invocation) throws IOException, Shell.Invocation.CheckedException {
 			boolean breakOnExceptions = debugger.isBreakOnExceptions();
 			Shell subshell = shell.subshell(configuration, invocation);
-			Integer rv = Rhino.execute(subshell, this.rhino, subinterface());
+			Integer rv = Rhino.execute(subshell, this.rhino.getEngine(), this.rhino.getLog(), subinterface());
 			debugger.setBreakOnExceptions(breakOnExceptions);
 			if (rv == null) return 0;
 			return rv.intValue();
@@ -96,7 +95,6 @@ public class Rhino {
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
 		private Interface $rhino;
-		private Streams streams = new Streams();
 
 		ExecutionImpl(Shell shell, Engine engine, Interface $rhino) {
 			super(shell);
@@ -236,14 +234,14 @@ public class Rhino {
 
 	private Integer run() throws Shell.Invocation.CheckedException {
 		rhino.initialize(shell.getEnvironment());
-		return Rhino.execute(shell, rhino, new Interface(shell, rhino));
+		return Rhino.execute(shell, rhino.getEngine(), rhino.getLog(), new Interface(shell, rhino));
 	}
 
 	//	TODO	try to remove dependencies on inonit.script.rhino.*;
 
-	private static Integer execute(Shell shell, Configuration rhino, Interface $rhino) throws Shell.Invocation.CheckedException {
+	private static Integer execute(Shell shell, Engine rhino, Engine.Log log, Interface $rhino) throws Shell.Invocation.CheckedException {
 		try {
-			ExecutionImpl execution = new ExecutionImpl(shell, rhino.getEngine(), $rhino);
+			ExecutionImpl execution = new ExecutionImpl(shell, rhino, $rhino);
 			Integer ignore = execution.execute();
 			return null;
 		} catch (ExitError e) {
@@ -252,8 +250,8 @@ public class Rhino {
 			LOG.log(Level.INFO, "Engine.Errors thrown.", e);
 			Engine.Errors.ScriptError[] errors = e.getErrors();
 			LOG.log(Level.FINER, "Engine.Errors length: %d", errors.length);
-			LOG.log(Level.FINE, "Logging errors to %s.", rhino.getLog());
-			e.dump(rhino.getLog(), "[jsh] ");
+			LOG.log(Level.FINE, "Logging errors to %s.", log);
+			e.dump(log, "[jsh] ");
 			return -1;
 		} finally {
 			$rhino.destroy();
