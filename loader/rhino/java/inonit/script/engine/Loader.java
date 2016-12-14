@@ -44,7 +44,8 @@ public abstract class Loader {
 				append(code.getClasses());
 			}
 			
-			abstract ClassLoader dependencies();
+			abstract Code.Source dependencies();
+			abstract ClassLoader classLoader();
 			
 			public final Code unpacked(File base) {
 				return Code.loadUnpacked(base, this);
@@ -66,7 +67,11 @@ public abstract class Loader {
 				}
 
 				@Override
-				ClassLoader dependencies() {
+				Code.Source dependencies() {
+					return Code.Source.NULL;
+				}
+				
+				ClassLoader classLoader() {
 					return null;
 				}
 			};
@@ -184,31 +189,39 @@ public abstract class Loader {
 				}
 				return rv.elements();
 			}
+			
+			private Classes.Interface api = new Classes.Interface() {
+				private Code.Source dependencies = Code.Source.create(locations);
+				
+				@Override public String toString() {
+					return "Loader.Classes.Interface for: " + ClassLoaderImpl.this.toString();
+				}
+
+				@Override public void append(Code.Source code) {
+					synchronized(locations) {
+						locations.add(code);
+					}
+				}
+
+				@Override public Class getClass(String name) {
+					try {
+						return ClassLoaderImpl.this.loadClass(name);
+					} catch (ClassNotFoundException e) {
+						return null;
+					}
+				}
+
+				Code.Source dependencies() {
+					return dependencies;
+				}
+				
+				ClassLoader classLoader() {
+					return ClassLoaderImpl.this;
+				}
+			};
 
 			Classes.Interface toInterface() {
-				return new Classes.Interface() {
-					@Override public String toString() {
-						return "Loader.Classes.Interface for: " + ClassLoaderImpl.this.toString();
-					}
-
-					@Override public void append(Code.Source code) {
-						synchronized(locations) {
-							locations.add(code);
-						}
-					}
-
-					@Override public Class getClass(String name) {
-						try {
-							return ClassLoaderImpl.this.loadClass(name);
-						} catch (ClassNotFoundException e) {
-							return null;
-						}
-					}
-					
-					ClassLoader dependencies() {
-						return ClassLoaderImpl.this;
-					}
-				};
+				return api;
 			}
 		}
 	}

@@ -523,15 +523,10 @@ public abstract class Code {
 		private Source source;
 		private Source classes;
 		
-		private ClassLoader dependencies(Loader.Classes.Interface loader) {
-			if (loader == null) return null;
-			return loader.dependencies();
-		}
-
 		Unpacked(String toString, Source source, Java.Store store, Loader.Classes.Interface loader) {
 			this.toString = toString;
 			this.source = source;
-			this.classes = Java.compiling(source, store, dependencies(loader));
+			this.classes = Java.compiling(source, store, loader);
 		}
 		
 		public String toString() {

@@ -99,7 +99,7 @@ public class Java {
 		private Code.Source delegate;
 		private Java.Classes classes;
 
-		SourceDirectoryClassesSource(Code.Source delegate, Store store, ClassLoader dependencies) {
+		SourceDirectoryClassesSource(Code.Source delegate, Store store, Loader.Classes.Interface dependencies) {
 			this.delegate = delegate;
 			this.classes = Classes.create(store, dependencies);
 		}
@@ -163,7 +163,7 @@ public class Java {
 		}
 	}
 	
-	static Code.Source compiling(Code.Source code, Store store, ClassLoader dependencies) {
+	static Code.Source compiling(Code.Source code, Store store, Loader.Classes.Interface dependencies) {
 		return new SourceDirectoryClassesSource(code, store, dependencies);
 	}
 	
@@ -275,13 +275,13 @@ public class Java {
 	}
 
 	private static class Classes {
-		private static Classes create(Store store, ClassLoader dependencies) {
+		private static Classes create(Store store, Loader.Classes.Interface dependencies) {
 			return new Classes(store, dependencies);
 		}
 		
 		private MyJavaFileManager jfm;
 		
-		private Classes(Store store, ClassLoader dependencies) {
+		private Classes(Store store, Loader.Classes.Interface dependencies) {
 			this.jfm = new MyJavaFileManager(store, dependencies);
 		}
 		
@@ -312,28 +312,27 @@ public class Java {
 			private javax.tools.JavaFileManager delegate = compiler().getStandardFileManager(null, null, null);
 
 			private Java.Store store;
-			private ClassLoader classpath;
+			private Loader.Classes.Interface classpath;
 
 			private Map<String,OutputClass> map = new HashMap<String,OutputClass>();
 
-			MyJavaFileManager(Java.Store store, ClassLoader dependencies) {
+			MyJavaFileManager(Java.Store store, Loader.Classes.Interface classpath) {
 				this.store = store;
-				this.classpath = new ClassLoader(dependencies) {
-					protected Class findClass(String name) throws ClassNotFoundException{
-						throw new ClassNotFoundException(name);
-					}					
-				};
+				this.classpath = classpath;
 			}
 
 			public ClassLoader getClassLoader(JavaFileManager.Location location) {
-				if (location == StandardLocation.CLASS_PATH) return classpath;
+				if (location == StandardLocation.CLASS_PATH) return (classpath == null) ? null : classpath.classLoader();
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
 				LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
-				if (location == StandardLocation.CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
+				if (location == StandardLocation.CLASS_PATH) {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
+					return delegate.list(location, packageName, kinds, recurse);
+				}
 				if (location == StandardLocation.SOURCE_PATH) return Arrays.asList(new JavaFileObject[0]);
 				if (true) throw new RuntimeException("No list() implementation for " + location);
 				return Arrays.asList(new JavaFileObject[0]);

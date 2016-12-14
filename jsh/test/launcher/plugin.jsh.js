@@ -107,7 +107,7 @@ plugin({
 										tokenized.shift();
 										if (o.src[user] && o.src[user][repository]) {
 											var body = (request.method == "GET");
-											jsh.shell.console("tokenized = " + tokenized);
+											//jsh.shell.console("tokenized = " + tokenized);
 											return new Sourceroot(o.src[user][repository]).get(body, tokenized);
 										} else {
 											throw new Error("No definition for repository " + user + "/" + repository);
