@@ -252,6 +252,14 @@ public abstract class Code {
 		}
 
 		public static Source create(final java.net.URL url) {
+			if (url.getProtocol().equals("file")) {
+				try {
+					java.io.File file = new java.io.File(url.toURI());
+					return create(file);
+				} catch (java.net.URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+			}
 			return new UrlBased(url, null);
 		}
 
@@ -261,6 +269,30 @@ public abstract class Code {
 			} catch (java.net.MalformedURLException e) {
 				throw new RuntimeException(e);
 			}
+		}
+		
+		private static Enumerator enumerator(List<Source> sources) {
+			final List<Enumerator> enumerators = new ArrayList<Enumerator>();
+			for (Source s : sources) {
+				Enumerator e = s.getEnumerator();
+				if (e == null) return null;
+				enumerators.add(e);
+			}
+			return new Enumerator() {
+				@Override
+				public String[] list(String prefix) {
+					HashSet<String> strings = new HashSet<String>();
+					for (Enumerator e : enumerators) {
+						String[] s = e.list(prefix);
+						if (s != null) {
+							for (String string : s) {
+								strings.add(string);
+							}
+						}
+					}
+					return strings.toArray(new String[0]);
+				}
+			};
 		}
 
 		public static Source create(final List<Source> delegates) {
@@ -275,8 +307,25 @@ public abstract class Code {
 					return null;
 				}
 			};
+			
+			final Enumerator enumerator = enumerator(delegates);
 
 			return new Source() {
+				@Override public String toString() {
+					String rv = "Code.Source: [";
+					boolean first = true;
+					for (Source s : delegates) {
+						if (!first) {
+							rv += ",";
+						} else {
+							first = false;
+						}
+						rv += s.toString();
+					}
+					rv += "]";
+					return rv;
+				}
+				
 				@Override public File getFile(String path) throws IOException {
 					for (Source delegate : delegates) {
 						if (delegate.getFile(path) != null) {
@@ -292,7 +341,7 @@ public abstract class Code {
 
 				@Override public Enumerator getEnumerator() {
 					//	TODO	implement
-					return null;
+					return enumerator;
 				}
 			};
 		}
@@ -306,11 +355,13 @@ public abstract class Code {
 						if (rv.isDirectory()) {
 							return rv;
 						}
-						throw new RuntimeException("Not found or not directory: " + rv);
+						//	Not found or not directory
+						return null;
 					}
 
 					@Override public String[] list(String prefix) {
 						java.io.File dir = getDirectory(prefix);
+						if (dir == null) return null;
 						java.io.File[] files = dir.listFiles();
 						ArrayList<String> rv = new ArrayList<String>();
 						for (java.io.File file : files) {

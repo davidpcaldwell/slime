@@ -47,6 +47,20 @@ public abstract class Loader {
 			abstract Code.Source dependencies();
 			abstract ClassLoader classLoader();
 			
+			final Code.Source parent() {
+				ClassLoader parent = classLoader().getParent();
+				if (parent instanceof URLClassLoader) {
+					List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
+					List<Code.Source> sources = new ArrayList<Code.Source>();
+					for (URL url : urls) {
+						sources.add(Code.Source.create(url));
+					}
+					return Code.Source.create(sources);
+				} else {
+					return null;
+				}
+			}
+			
 			public final Code unpacked(File base) {
 				return Code.loadUnpacked(base, this);
 			}
@@ -80,7 +94,7 @@ public abstract class Loader {
 		public abstract ClassLoader getApplicationClassLoader();
 		public abstract Interface getInterface();
 
-		public static Classes create(Configuration configuration) {
+		public static Classes create(final Configuration configuration) {
 			if (configuration.canCreateClassLoaders()) {
 				final ClassLoaderImpl loaderClasses = ClassLoaderImpl.create(configuration.getApplicationClassLoader());
 				return new Classes() {

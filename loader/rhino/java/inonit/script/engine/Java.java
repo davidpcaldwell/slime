@@ -103,6 +103,10 @@ public class Java {
 			this.delegate = delegate;
 			this.classes = Classes.create(store, dependencies);
 		}
+		
+		public String toString() {
+			return "SourceDirectoryClassesSource: src=" + delegate;
+		}
 
 //		private Java.Classes classes = Java.Classes.create(Java.Classes.Store.memory());
 
@@ -330,8 +334,27 @@ public class Java {
 				LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
 				if (location == StandardLocation.CLASS_PATH) {
+					List<JavaFileObject> rv = new ArrayList<JavaFileObject>();
 					LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
-					return delegate.list(location, packageName, kinds, recurse);
+					if (classpath != null) {
+						LOG.log(MyJavaFileManager.class, Level.FINE, "source=" + classpath.dependencies(), null);
+						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + classpath.parent(), null);
+						String path = packageName.replaceAll("\\.","/");
+						LOG.log(MyJavaFileManager.class, Level.FINE, "path=" + path, null);
+						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + classpath.parent(), null);
+						List<String> names = Arrays.asList(classpath.parent().getEnumerator().list(path));
+						for (String name : names) {
+							//	TODO	may not work for empty package
+							Code.Source.File file = classpath.parent().getFile(path + "/" + name);
+							rv.add(new InputClass(file, path + "/" + name));
+						}
+						LOG.log(MyJavaFileManager.class, Level.FINE, "list=" + names, null);
+					}
+					Iterable<JavaFileObject> standard = delegate.list(location, packageName, kinds, recurse);
+					for (JavaFileObject s : standard) {
+						rv.add(s);
+					}
+					return rv;
 				}
 				if (location == StandardLocation.SOURCE_PATH) return Arrays.asList(new JavaFileObject[0]);
 				if (true) throw new RuntimeException("No list() implementation for " + location);
@@ -340,6 +363,9 @@ public class Java {
 
 			public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
 				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
+				if (file instanceof InputClass) {
+					return ((InputClass)file).binaryName();
+				}
 				if (location == StandardLocation.CLASS_PATH) return delegate.inferBinaryName(location, file);
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
@@ -393,6 +419,88 @@ public class Java {
 
 			public int isSupportedOption(String option) {
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			}
+			
+			private static class InputClass implements JavaFileObject {
+				private Code.Source.File file;
+				private String name;
+				
+				InputClass(Code.Source.File file, String name) {
+					this.file = file;
+					this.name = name;
+				}
+				
+				String binaryName() {
+					return name;
+				}
+				
+				public String toString() {
+					return "InputClass: " + file;
+				}
+
+				public Kind getKind() {
+					return Kind.CLASS;
+				}
+
+				public boolean isNameCompatible(String simpleName, Kind kind) {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "isNameCompatible(" + simpleName + "," + kind + ")", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public NestingKind getNestingKind() {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "getNestingKind", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public Modifier getAccessLevel() {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "getAccessLevel", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public URI toUri() {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "toUri", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public String getName() {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "getName", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public InputStream openInputStream() throws IOException {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "openInputStream", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public OutputStream openOutputStream() throws IOException {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "openOutputStream", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "openReader", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "getCharContent", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public Writer openWriter() throws IOException {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "openWriter", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public long getLastModified() {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "getLastModified", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				public boolean delete() {
+					LOG.log(MyJavaFileManager.class, Level.FINE, "delete", null);
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
 			}
 
 			private static class OutputClass implements JavaFileObject {
