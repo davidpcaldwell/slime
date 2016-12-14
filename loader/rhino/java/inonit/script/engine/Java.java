@@ -324,31 +324,54 @@ public class Java {
 				this.store = store;
 				this.classpath = classpath;
 			}
+			
+			private void log(String message) {
+				LOG.log(MyJavaFileManager.class, Level.FINE, message, null);
+			}
 
 			public ClassLoader getClassLoader(JavaFileManager.Location location) {
+				log("getClassLoader");
 				if (location == StandardLocation.CLASS_PATH) return (classpath == null) ? null : classpath.classLoader();
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
 				LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
-				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.list(location, packageName, kinds, recurse);
+				if (location == StandardLocation.PLATFORM_CLASS_PATH) {
+					Iterable<JavaFileObject> rv = delegate.list(location, packageName, kinds, recurse);
+					for (JavaFileObject o : rv) {
+						log("list jfo " + o);
+					}
+					return rv;
+				}
 				if (location == StandardLocation.CLASS_PATH) {
 					List<JavaFileObject> rv = new ArrayList<JavaFileObject>();
 					LOG.log(MyJavaFileManager.class, Level.FINE, "list location=" + location + " packageName=" + packageName + " kinds=" + kinds + " recurse=" + recurse, null);
 					if (classpath != null) {
+						Code.Source parent = Loader.Classes.adapt(classpath.classLoader().getParent());
 						LOG.log(MyJavaFileManager.class, Level.FINE, "source=" + classpath.dependencies(), null);
-						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + classpath.parent(), null);
+						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + parent, null);
 						String path = packageName.replaceAll("\\.","/");
 						LOG.log(MyJavaFileManager.class, Level.FINE, "path=" + path, null);
-						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + classpath.parent(), null);
-						List<String> names = Arrays.asList(classpath.parent().getEnumerator().list(path));
-						for (String name : names) {
-							//	TODO	may not work for empty package
-							Code.Source.File file = classpath.parent().getFile(path + "/" + name);
-							rv.add(new InputClass(file, path + "/" + name));
+						LOG.log(MyJavaFileManager.class, Level.FINE, "parent=" + parent, null);
+						if (parent.getEnumerator() == null) {
+							throw new Error("Parent enumerator is null for " + parent);
 						}
-						LOG.log(MyJavaFileManager.class, Level.FINE, "list=" + names, null);
+						List<String> names = Arrays.asList(parent.getEnumerator().list(path));
+						for (String name : names) {
+							if (name.endsWith("/")) {
+								continue;
+							}
+							//	TODO	may not work for empty package
+							Code.Source.File file = parent.getFile(path + "/" + name);
+							if (name.length() < ".class".length()) {
+								throw new RuntimeException("name is " + name);
+							}
+							String binaryName = (path + "/" + name.substring(0, name.length() - ".class".length()));
+							binaryName = binaryName.replaceAll("\\/", ".");
+							rv.add(new InputClass(file, binaryName));
+						}
+						LOG.log(MyJavaFileManager.class, Level.FINE, "path=" + path + " list=" + names, null);
 					}
 					Iterable<JavaFileObject> standard = delegate.list(location, packageName, kinds, recurse);
 					for (JavaFileObject s : standard) {
@@ -362,23 +385,37 @@ public class Java {
 			}
 
 			public String inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
-				if (location == StandardLocation.PLATFORM_CLASS_PATH) return delegate.inferBinaryName(location, file);
-				if (file instanceof InputClass) {
-					return ((InputClass)file).binaryName();
+				if (location == StandardLocation.PLATFORM_CLASS_PATH) {
+					String rv = delegate.inferBinaryName(location, file);
+					log("inferBinaryName location=" + location + " file=" + file + " rv=" + rv);
+					return rv;
 				}
-				if (location == StandardLocation.CLASS_PATH) return delegate.inferBinaryName(location, file);
+				//log("inferBinaryName location=" + location + " file object " + file);
+				if (file instanceof InputClass) {
+					String rv = ((InputClass)file).binaryName();
+					log("inferBinaryName location=" + location + " file object " + file + " rv=" + rv);
+					return rv;
+				}
+				if (location == StandardLocation.CLASS_PATH) {
+					String rv = delegate.inferBinaryName(location, file);
+					log("inferBinaryName location=" + location + " jfo " + file + " rv=" + rv);
+					return rv;
+				}
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public boolean isSameFile(FileObject a, FileObject b) {
+				log("isSameFile");
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public boolean handleOption(String current, Iterator<String> remaining) {
+				log("handleOption");
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public boolean hasLocation(JavaFileManager.Location location) {
+				log("hasLocation");
 				if (location == StandardLocation.ANNOTATION_PROCESSOR_PATH) return false;
 				if (location == StandardLocation.SOURCE_PATH) return true;
 				//	StandardLocation.NATIVE_HEADER_OUTPUT not defined before Java 8
@@ -387,6 +424,7 @@ public class Java {
 			}
 
 			public OutputClass getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) {
+				LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForInput: location=" + location + " className=" + className + " kind=" + kind, null);
 				if (location == null) {
 					return map.get(className);
 				}
@@ -394,6 +432,7 @@ public class Java {
 			}
 
 			public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
+				LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForOutput: location=" + location + " className=" + className + " kind=" + kind, null);
 				map.put(className, new OutputClass(store,className));
 				return map.get(className);
 	//			if (location == StandardLocation.CLASS_OUTPUT) {
@@ -403,21 +442,26 @@ public class Java {
 			}
 
 			public FileObject getFileForInput(JavaFileManager.Location location, String packageName, String relativeName) throws IOException {
+				LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForInput: location=" + location + " packageName=" + packageName + " relativeName=" + relativeName, null);
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public FileObject getFileForOutput(JavaFileManager.Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
+				log("getFileForOutput");
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public void flush() throws IOException {
+				log("flush");
 			}
 
 			public void close() throws IOException {
+				log("close");
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 
 			public int isSupportedOption(String option) {
+				log("isSupportedOption");
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
 			
@@ -439,6 +483,7 @@ public class Java {
 				}
 
 				public Kind getKind() {
+					LOG.log(InputClass.class, Level.FINE, "getKind", null);
 					return Kind.CLASS;
 				}
 
@@ -469,7 +514,8 @@ public class Java {
 
 				public InputStream openInputStream() throws IOException {
 					LOG.log(MyJavaFileManager.class, Level.FINE, "openInputStream", null);
-					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+					return file.getInputStream();
+//					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 				}
 
 				public OutputStream openOutputStream() throws IOException {

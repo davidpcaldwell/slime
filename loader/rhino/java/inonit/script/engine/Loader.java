@@ -17,9 +17,6 @@ import java.util.*;
 import java.net.*;
 import java.util.logging.*;
 
-import inonit.system.*;
-import inonit.script.engine.*;
-
 public abstract class Loader {
 	private static final Logger LOG = Logger.getLogger(Loader.class.getName());
 
@@ -30,6 +27,34 @@ public abstract class Loader {
 		public static abstract class Configuration {
 			public abstract boolean canCreateClassLoaders();
 			public abstract ClassLoader getApplicationClassLoader();
+		}
+		
+		private static HashMap<ClassLoader,Code.Source> cache = new HashMap<ClassLoader,Code.Source>();
+		
+		static Code.Source adapt(ClassLoader parent) {
+			if (parent instanceof URLClassLoader) {
+				List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
+				List<Code.Source> sources = new ArrayList<Code.Source>();
+				for (URL url : urls) {
+					if (url.getProtocol().equals("file")) {
+						try {
+							File file = new File(url.toURI());
+							if (file.getName().endsWith(".jar")) {
+								sources.add(Code.Source.zip(file));
+							} else {
+								sources.add(Code.Source.create(file));
+							}
+						} catch (java.net.URISyntaxException e) {
+							throw new RuntimeException(e);
+						}
+					} else {
+						sources.add(Code.Source.create(url));
+					}
+				}
+				return Code.Source.create(sources);
+			} else {
+				return null;
+			}
 		}
 
 		public static abstract class Interface {
@@ -46,20 +71,6 @@ public abstract class Loader {
 			
 			abstract Code.Source dependencies();
 			abstract ClassLoader classLoader();
-			
-			final Code.Source parent() {
-				ClassLoader parent = classLoader().getParent();
-				if (parent instanceof URLClassLoader) {
-					List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
-					List<Code.Source> sources = new ArrayList<Code.Source>();
-					for (URL url : urls) {
-						sources.add(Code.Source.create(url));
-					}
-					return Code.Source.create(sources);
-				} else {
-					return null;
-				}
-			}
 			
 			public final Code unpacked(File base) {
 				return Code.loadUnpacked(base, this);

@@ -48,10 +48,14 @@ public class Streams {
 		return Bytes.Splitter.create(one, two);
 	}
 
-	public byte[] readBytes(InputStream in) throws IOException {
+	public byte[] readBytes(InputStream in, boolean closeInputStream) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		copy(in, out);
+		copy(in, out, closeInputStream);
 		return out.toByteArray();
+	}
+	
+	public byte[] readBytes(InputStream in) throws IOException {
+		return readBytes(in,true);
 	}
 
 	public String readString(Reader in) throws IOException {

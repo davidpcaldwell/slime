@@ -15,10 +15,11 @@ package inonit.script.engine;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import javax.lang.model.element.*;
-import javax.tools.*;
+import java.util.logging.*;
 
 public abstract class Code {
+	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
+
 	public static abstract class Classes {
 		public abstract URL getResource(String path);
 	}
@@ -251,18 +252,6 @@ public abstract class Code {
 			return new UrlBased(url, enumerator);
 		}
 
-		public static Source create(final java.net.URL url) {
-			if (url.getProtocol().equals("file")) {
-				try {
-					java.io.File file = new java.io.File(url.toURI());
-					return create(file);
-				} catch (java.net.URISyntaxException e) {
-					throw new RuntimeException(e);
-				}
-			}
-			return new UrlBased(url, null);
-		}
-
 		public static Source create(java.io.File file) {
 			try {
 				return create(file.toURI().toURL(), Enumerator.create(file));
@@ -271,6 +260,100 @@ public abstract class Code {
 			}
 		}
 		
+		public static Source create(final java.net.URL url) {
+			return new UrlBased(url, null);
+		}
+		
+		public static Source zip(java.io.File file) {
+			try {
+				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(new java.io.FileInputStream(file));
+				java.util.zip.ZipEntry entry;
+				final HashMap<String,Source.File> files = new HashMap<String,Source.File>();
+				while( (entry = in.getNextEntry()) != null) {
+					final java.util.zip.ZipEntry ENTRY = entry;
+					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
+					Source.File f = new Source.File() {
+						public String toString() {
+							return getClass().getName() + " length=" + bytes.length;
+						}
+						
+						@Override
+						public URI getURI() {
+							LOG.log(Code.Source.class, Level.FINE, "getURI()", null);
+							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+						}
+
+						@Override
+						public String getSourceName() {
+							LOG.log(Code.Source.class, Level.FINE, "getSourceName()", null);
+							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+						}
+
+						@Override
+						public InputStream getInputStream() {
+							return new ByteArrayInputStream(bytes);
+						}
+
+						@Override
+						public Long getLength() {
+							return new Long(bytes.length);
+						}
+
+						@Override
+						public Date getLastModified() {
+							//	TODO	there is a 1.8 implementation of this in ZipEntry but we won't use it unless we drop support
+							//			for 1.7, otherwise we'll need to implement via reflection
+							return null;
+						}
+					};
+					files.put(entry.getName(), f);
+				}
+				final Enumerator enumerator = new Enumerator() {
+					@Override public String[] list(String prefix) {
+						String start = prefix + "/";
+						ArrayList<String> rv = new ArrayList<String>();
+						for (String key : files.keySet()) {
+							if (key.startsWith(start)) {
+								if (key.endsWith("/")) {
+									//	ignore
+								} else {
+									String suffix = key.substring(start.length());
+									if (suffix.indexOf("/") != -1) {
+										//	subdirectory, ignore
+									} else {
+										rv.add(suffix);
+									}
+								}
+							}
+						}
+						return rv.toArray(new String[0]);
+					}
+				};
+				return new Code.Source() {
+					@Override
+					public File getFile(String path) throws IOException {
+						LOG.log(Code.Source.class, Level.FINE, "getFile(" + path + ")", null);
+						LOG.log(Code.Source.class, Level.FINE, String.valueOf(files.get(path)), null);
+						return files.get(path);
+					}
+
+					@Override
+					public Enumerator getEnumerator() {
+						return enumerator;
+					}
+
+					@Override
+					public Classes getClasses() {
+						LOG.log(Code.Source.class, Level.FINE, "getClasses()", null);
+						//	TODO	think about this
+						return null;
+					}
+				};
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		private static Enumerator enumerator(List<Source> sources) {
 			final List<Enumerator> enumerators = new ArrayList<Enumerator>();
 			for (Source s : sources) {

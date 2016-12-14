@@ -151,6 +151,7 @@ public class Main {
 							//	TODO	probably error message or warning
 						}
 					} else if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+						//	TODO	write a test that ensures this works
 						LOG.log(Level.CONFIG, "Loading Java plugin from " + file + " ...");
 						rv.add(Code.jar(file));
 					} else {
