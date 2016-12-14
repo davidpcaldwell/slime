@@ -77,6 +77,11 @@ public class Nashorn extends Main.Engine {
 			this.top = top;
 		}
 
+		@Override
+		protected Loader.Classes.Interface getClasspath() {
+			return host.getClasspath();
+		}
+
 		@Override public void setGlobalProperty(String name, Object value) {
 			host.set(name, value);
 		}

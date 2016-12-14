@@ -84,7 +84,7 @@ public class Main {
 		}
 
 		static final Plugins EMPTY = new Plugins() {
-			@Override public List<Code> getPlugins() {
+			@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
 				return Arrays.asList(new Code[0]);
 			}
 
@@ -93,11 +93,11 @@ public class Main {
 			}
 		};
 
-		public abstract List<Code> getPlugins();
+		public abstract List<Code> getPlugins(Loader.Classes.Interface classpath);
 		public abstract Code.Source getLibraries();
 
-		final void addPluginsTo(List<Code> rv) {
-			List<Code> plugins = getPlugins();
+		final void addPluginsTo(List<Code> rv, Loader.Classes.Interface classpath) {
+			List<Code> plugins = getPlugins(classpath);
 			for (Code code : plugins) {
 				rv.add(code);
 			}
@@ -123,19 +123,19 @@ public class Main {
 				}
 			}
 
-			private static void addPluginsTo(List<Code> rv, final File file, boolean top) {
+			private static void addPluginsTo(List<Code> rv, final File file, boolean top, Loader.Classes.Interface classpath) {
 				if (file.exists()) {
 					if (file.isDirectory()) {
 						if (new File(file, "plugin.jsh.js").exists()) {
 							//	interpret as unpacked module
 							LOG.log(Level.CONFIG, "Loading unpacked plugin from " + file + " ...");
-							rv.add(Code.unpacked(file));
+							rv.add(classpath.unpacked(file));
 						} else {
 							//	interpret as directory that may contain plugins
 							File[] list = file.listFiles();
 							Arrays.sort(list, new PluginComparator());
 							for (File f : list) {
-								addPluginsTo(rv, f, false);
+								addPluginsTo(rv, f, false, classpath);
 							}
 						}
 					} else if (!file.isDirectory() && file.getName().endsWith(".slime")) {
@@ -164,18 +164,18 @@ public class Main {
 				}
 			}
 
-			static void addPluginsTo(List<Code> rv, File file) {
-				addPluginsTo(rv, file, true);
+			static void addPluginsTo(List<Code> rv, File file, Loader.Classes.Interface classpath) {
+				addPluginsTo(rv, file, true, classpath);
 			}
 
 			public Code.Source getLibraries() {
 				return Code.Source.create(file);
 			}
 
-			public List<Code> getPlugins() {
+			public List<Code> getPlugins(Loader.Classes.Interface classpath) {
 				LOG.log(Level.INFO, "Application: load plugins from " + file);
 				List<Code> rv = new ArrayList<Code>();
-				addPluginsTo(rv, file);
+				addPluginsTo(rv, file, classpath);
 				return rv;
 			}
 		}
@@ -229,7 +229,7 @@ public class Main {
 				}
 			}
 
-			@Override public List<Code> getPlugins() {
+			@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
 				ArrayList<Code> rv = new ArrayList<Code>();
 				addPlugins(rv, url);
 				return rv;

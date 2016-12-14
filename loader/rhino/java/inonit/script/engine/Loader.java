@@ -53,6 +53,23 @@ public abstract class Loader {
 			public final Code unpacked(URL base) {
 				return Code.loadUnpacked(base, this);
 			}
+			
+			public static final Interface NULL = new Interface() {
+				@Override
+				public void append(Code.Source code) {
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				@Override
+				public Class getClass(String name) {
+					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				}
+
+				@Override
+				ClassLoader dependencies() {
+					return null;
+				}
+			};
 		}
 
 		public abstract ClassLoader getApplicationClassLoader();

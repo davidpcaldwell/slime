@@ -32,9 +32,7 @@ public class Rhino {
 		private ArrayList<Runnable> finalizers = new ArrayList<Runnable>();
 
 		Interface(Shell shell, Rhino.Configuration rhino) {
-			this.shell = shell;
-			this.rhino = rhino;
-			this.debugger = rhino.getEngine().getDebugger();
+			this(shell,rhino,rhino.getEngine().getDebugger());
 		}
 
 		private Interface(Shell shell, Rhino.Configuration rhino, Engine.Debugger debugger) {
@@ -103,6 +101,11 @@ public class Rhino {
 		}
 
 		private Engine.Program program = new Engine.Program();
+
+		@Override
+		protected Loader.Classes.Interface getClasspath() {
+			return engine.getClasspath();
+		}
 
 		@Override public void setGlobalProperty(String name, Object value) {
 			Engine.Program.Variable variable = Engine.Program.Variable.create(

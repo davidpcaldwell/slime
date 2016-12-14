@@ -74,6 +74,12 @@ public class Shell {
 
 	private Shell() {
 	}
+	
+	private Loader.Classes.Interface classpath;
+	
+	final void setClasspath(Loader.Classes.Interface classpath) {
+		this.classpath = classpath;
+	}
 
 	//	Used by engine
 	public final String getBootstrapCode() throws IOException {
@@ -102,7 +108,8 @@ public class Shell {
 	}
 
 	public final Code[] getPlugins() {
-		return configuration.getInstallation().getExtensions().getPlugins().toArray(new Code[0]);
+		if (classpath == null) throw new IllegalStateException();
+		return configuration.getInstallation().getExtensions().getPlugins(classpath).toArray(new Code[0]);
 	}
 
 	private Streams streams = new Streams();
@@ -209,10 +216,10 @@ public class Shell {
 		public static abstract class Extensions {
 			static Extensions create(final Extensions[] array) {
 				return new Extensions() {
-					@Override public List<Code> getPlugins() {
+					@Override public List<Code> getPlugins(Loader.Classes.Interface classpath) {
 						List<Code> rv = new ArrayList<Code>();
 						for (Extensions p : array) {
-							rv.addAll(p.getPlugins());
+							rv.addAll(p.getPlugins(classpath));
 						}
 						return rv;
 					}
@@ -227,7 +234,7 @@ public class Shell {
 				};
 			}
 
-			public abstract List<Code> getPlugins();
+			public abstract List<Code> getPlugins(Loader.Classes.Interface classpath);
 			public abstract Code.Source getLibraries();
 		}
 	}
@@ -345,9 +352,15 @@ public class Shell {
 	}
 
 	public static class Interface {
+		private Loader.Classes.Interface classpath;
+		
+		Interface(Loader.Classes.Interface classpath) {
+			this.classpath = classpath;
+		}
+		
 		//	Called by applications to load plugins
 		public Code[] getPlugins(File file) {
-			return Main.Plugins.create(file).getPlugins().toArray(new Code[0]);
+			return Main.Plugins.create(file).getPlugins(classpath).toArray(new Code[0]);
 		}
 
 		public Invocation invocation(File script, String[] arguments) {
@@ -356,7 +369,8 @@ public class Shell {
 	}
 
 	public Interface getInterface() {
-		return new Interface();
+		if (classpath == null) throw new IllegalStateException();
+		return new Interface(classpath);
 	}
 
 	public static abstract class Execution {
@@ -365,6 +379,8 @@ public class Shell {
 		protected Execution(Shell shell) {
 			this.shell = shell;
 		}
+		
+		protected abstract Loader.Classes.Interface getClasspath();
 
 		protected final Code.Source getJshLoader() {
 			return shell.getJshLoader();
@@ -399,6 +415,7 @@ public class Shell {
 
 		public final Integer execute() {
 			LOG.log(Level.INFO, "Executing shell with %s", this);
+			shell.setClasspath(getClasspath());
 			final Execution execution = this;
 			this.setGlobalProperty("$jsh", shell);
 			execution.setJshHostProperty();

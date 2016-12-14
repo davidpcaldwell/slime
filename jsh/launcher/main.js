@@ -34,11 +34,7 @@ $api.debug("Bootstrap script: " + $api.script);
 
 
 var command = new $api.java.Command();
-//	TODO	for now, we always launch a separate VM to execute the shell, but we should work toward the possibility of using a
-//			classloader when it is possible
-if (!$api.shell.environment.JSH_TEST_LAUNCHER_NOFORK) {
-	command.fork();
-}
+
 //var container = new function() {
 //	//	TODO	jsh.tmpdir is not correctly passed to launcher in the forking scenario
 //
@@ -90,6 +86,17 @@ if ($api.slime.settings.get("jsh.java.home")) {
 }
 
 $api.script.resolve("launcher.js").load();
+
+//	TODO	for now, we always launch a separate VM to execute the shell, but we are working using JSH_TEST_LAUNCHER_NOFORK
+//			feature flag to get classloader working under Rhino
+var fork = true;
+if ($api.shell.environment.JSH_TEST_LAUNCHER_NOFORK) {
+	fork = $api.jsh.engine.resolve({
+		rhino: false,
+		nashorn: true
+	});
+}
+if (fork) command.fork();
 
 //	If we have a sibling named jsh.jar, we are a built shell
 var shell = (function() {
