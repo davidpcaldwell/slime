@@ -308,19 +308,12 @@ try {
 		this.shellClasspath = function() {
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
-			var LOADER_CLASSES = $api.io.tmpdir();
+			var setting = $api.slime.settings.get("jsh.shell.classes");
+			var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting) : $api.io.tmpdir();
+			if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
 			if ($api.slime.src.File) {
-				if (false) {
-					var toCompile = $api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/java"));
-					if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("loader/rhino/rhino")));
-					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("rhino/system/java")));
-					toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/java")));
-					if (rhino) toCompile = toCompile.concat($api.slime.src.getSourceFilesUnder(new $api.slime.src.File("jsh/loader/rhino")));
-					var rhinoJavacArguments = (rhino) ? ["-classpath", rhino.local()] : [];
-					$api.java.install.compile([
-						"-Xlint:unchecked",
-						"-d", LOADER_CLASSES
-					].concat(rhinoJavacArguments).concat(toCompile));
+				if (setting && LOADER_CLASSES.exists() && new Packages.java.io.File(LOADER_CLASSES, "inonit/script/engine/Code.class").exists()) {
+					$api.debug("Found already-compiled files.");
 				} else {
 					this.compileLoader({
 						to: LOADER_CLASSES

@@ -213,6 +213,7 @@ $api.slime = (function(was) {
 //		map("jsh.shell.packaged.plugins", BOTH);
 
 		//	TODO	not settled on these names for plugins
+		map("jsh.shell.classes", BOTH);
 		map("jsh.shell.plugins", BOTH);
 		map("jsh.shell.classpath", BOTH);
 		map("jsh.shell.profiler", BOTH);
