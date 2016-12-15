@@ -32,6 +32,56 @@ public abstract class Loader {
 		
 		private static HashMap<ClassLoader,Code.Source> cache = new HashMap<ClassLoader,Code.Source>();
 		
+		public class Interface {
+			private ClassLoaderImpl loader;
+			
+			Interface(ClassLoaderImpl loader) {
+				this.loader = loader;
+			}
+			
+			public final void append(Code.Source code) {
+				loader.append(code);
+			}
+
+			/**
+				Returns class with the given name, or <code>null</code> if there is no such class.
+			*/
+			public final Class getClass(String name) {
+				try {
+					return Classes.this.classLoader().loadClass(name);
+				} catch (ClassNotFoundException e) {
+					return null;
+				}
+			}
+
+			public final void append(Code code) {
+				append(code.getClasses());
+			}
+			
+			public final Code unpacked(File base) {
+				return Classes.this.unpacked(base);
+			}
+			
+			public final Code unpacked(URL base) {
+				return Classes.this.unpacked(base);
+			}
+		}
+
+		abstract ClassLoader classLoader();
+		
+		final Code unpacked(File base) {
+			return Code.loadUnpacked(base, this);
+		}
+
+		final Code unpacked(URL base) {
+			return Code.loadUnpacked(base, this);
+		}
+		
+		public abstract ClassLoader getApplicationClassLoader();
+		public abstract Interface getInterface();
+		
+		private Code.Source parent;
+		
 		private static Code.Source adapt(ClassLoader parent) {
 			if (parent instanceof URLClassLoader) {
 				List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
@@ -58,75 +108,32 @@ public abstract class Loader {
 			}
 		}
 
-		public static abstract class Interface {
-			public abstract void append(Code.Source code);
-
-			abstract Code.Source dependencies();
-			abstract ClassLoader classLoader();
-			
-			/**
-				Returns class with the given name, or <code>null</code> if there is no such class.
-			*/
-			public final Class getClass(String name) {
-				try {
-					return classLoader().loadClass(name);
-				} catch (ClassNotFoundException e) {
-					return null;
-				}
+		final Code.Source parent() {
+			if (parent == null) {
+				parent = adapt(classLoader().getParent());
 			}
-
-
-			public final void append(Code code) {
-				append(code.getClasses());
-			}
-			
-			private Code.Source parent;
-			
-			final Code.Source parent() {
-				if (parent == null) {
-					parent = adapt(classLoader().getParent());
-				}
-				return parent;
-			}
-			
-			public final Code unpacked(File base) {
-				return Code.loadUnpacked(base, this);
-			}
-			
-			public final Code unpacked(URL base) {
-				return Code.loadUnpacked(base, this);
-			}
-			
-			public static final Interface NULL = new Interface() {
-				@Override
-				public void append(Code.Source code) {
-					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-				}
-
-				@Override
-				Code.Source dependencies() {
-					return Code.Source.NULL;
-				}
-				
-				ClassLoader classLoader() {
-					return null;
-				}
-			};
+			return parent;
 		}
-
-		public abstract ClassLoader getApplicationClassLoader();
-		public abstract Interface getInterface();
 
 		public static Classes create(final Configuration configuration) {
 			if (configuration.canCreateClassLoaders()) {
 				final ClassLoaderImpl loaderClasses = ClassLoaderImpl.create(configuration.getApplicationClassLoader());
 				return new Classes() {
+					private Interface api;
+					
 					@Override public ClassLoader getApplicationClassLoader() {
+						return loaderClasses;
+					}
+					
+					ClassLoader classLoader() {
 						return loaderClasses;
 					}
 
 					@Override public Interface getInterface() {
-						return loaderClasses.toInterface();
+						if (api == null) {
+							api = new Interface(loaderClasses);
+						}
+						return api;
 					}
 				};
 			} else {
@@ -135,6 +142,10 @@ public abstract class Loader {
 					@Override public ClassLoader getApplicationClassLoader() {
 						return loader;
 					}
+					
+					ClassLoader classLoader() {
+						return null;
+					}
 
 					@Override public Interface getInterface() {
 						return null;
@@ -142,7 +153,7 @@ public abstract class Loader {
 				};
 			}
 		}
-
+		
 		private static class ClassLoaderImpl extends ClassLoader {
 			static ClassLoaderImpl create(ClassLoader delegate) {
 				LOG.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
@@ -151,6 +162,7 @@ public abstract class Loader {
 
 			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 			private ArrayList<Code.Source> locations = new ArrayList<Code.Source>();
+			private Code.Source dependencies = Code.Source.create(locations);
 
 			private ClassLoaderImpl(ClassLoader delegate) {
 				super(delegate);
@@ -227,30 +239,10 @@ public abstract class Loader {
 				return rv.elements();
 			}
 			
-			private Classes.Interface api = new Classes.Interface() {
-				private Code.Source dependencies = Code.Source.create(locations);
-				
-				@Override public String toString() {
-					return "Loader.Classes.Interface for: " + ClassLoaderImpl.this.toString();
+			void append(Code.Source code) {
+				synchronized(locations) {
+					locations.add(code);
 				}
-
-				@Override public void append(Code.Source code) {
-					synchronized(locations) {
-						locations.add(code);
-					}
-				}
-
-				Code.Source dependencies() {
-					return dependencies;
-				}
-				
-				ClassLoader classLoader() {
-					return ClassLoaderImpl.this;
-				}
-			};
-
-			Classes.Interface toInterface() {
-				return api;
 			}
 		}
 	}

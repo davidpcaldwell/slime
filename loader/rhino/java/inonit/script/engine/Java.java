@@ -99,7 +99,7 @@ public class Java {
 		private Code.Source delegate;
 		private Java.Classes classes;
 
-		SourceDirectoryClassesSource(Code.Source delegate, Store store, Loader.Classes.Interface dependencies) {
+		SourceDirectoryClassesSource(Code.Source delegate, Store store, Loader.Classes dependencies) {
 			this.delegate = delegate;
 			this.classes = Classes.create(store, dependencies);
 		}
@@ -167,7 +167,7 @@ public class Java {
 		}
 	}
 	
-	static Code.Source compiling(Code.Source code, Store store, Loader.Classes.Interface dependencies) {
+	static Code.Source compiling(Code.Source code, Store store, Loader.Classes dependencies) {
 		return new SourceDirectoryClassesSource(code, store, dependencies);
 	}
 	
@@ -279,13 +279,13 @@ public class Java {
 	}
 
 	private static class Classes {
-		private static Classes create(Store store, Loader.Classes.Interface dependencies) {
+		private static Classes create(Store store, Loader.Classes dependencies) {
 			return new Classes(store, dependencies);
 		}
 		
 		private MyJavaFileManager jfm;
 		
-		private Classes(Store store, Loader.Classes.Interface dependencies) {
+		private Classes(Store store, Loader.Classes dependencies) {
 			this.jfm = new MyJavaFileManager(store, dependencies);
 		}
 		
@@ -316,11 +316,11 @@ public class Java {
 			private javax.tools.JavaFileManager delegate = compiler().getStandardFileManager(null, null, null);
 
 			private Java.Store store;
-			private Loader.Classes.Interface classpath;
+			private Loader.Classes classpath;
 
 			private Map<String,OutputClass> map = new HashMap<String,OutputClass>();
 
-			MyJavaFileManager(Java.Store store, Loader.Classes.Interface classpath) {
+			MyJavaFileManager(Java.Store store, Loader.Classes classpath) {
 				if (classpath == null) throw new RuntimeException();
 				this.store = store;
 				this.classpath = classpath;

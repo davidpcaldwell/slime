@@ -659,7 +659,7 @@ public abstract class Code {
 		private Source source;
 		private Source classes;
 		
-		Unpacked(String toString, Source source, Java.Store store, Loader.Classes.Interface loader) {
+		Unpacked(String toString, Source source, Java.Store store, Loader.Classes loader) {
 			this.toString = toString;
 			this.source = source;
 			this.classes = Java.compiling(source, store, loader);
@@ -678,7 +678,7 @@ public abstract class Code {
 		}
 	}
 
-	static Code loadUnpacked(final File base, Loader.Classes.Interface loader) {
+	static Code loadUnpacked(final File base, Loader.Classes loader) {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(base + " is not a directory.");
 		}
@@ -691,7 +691,7 @@ public abstract class Code {
 		return new Unpacked("file=" + path, Source.create(base), Java.Store.memory(), loader);
 	}
 
-	static Code loadUnpacked(final URL base, Loader.Classes.Interface loader) {
+	static Code loadUnpacked(final URL base, Loader.Classes loader) {
 		return new Unpacked("url=" + base.toExternalForm(), Source.create(base), Java.Store.memory(), loader);
 	}
 	
