@@ -276,6 +276,68 @@ public class Java {
 				}
 			};
 		}
+		
+		static Store file(final File file) {
+			return new Store() {
+				private File getClassLocation(String name) {
+					String path = name.replaceAll("\\.", "/") + ".class";
+					return new File(file, path);					
+				}
+				
+				@Override
+				OutputStream createOutputStream(String name) {
+					File destination = getClassLocation(name);
+					destination.getParentFile().mkdirs();
+					try {
+						System.err.println("Writing class to " + destination);
+						return new FileOutputStream(destination);
+					} catch (FileNotFoundException e) {
+						throw new RuntimeException(e);
+					}
+				}
+
+				@Override
+				Code.Source.File read(String name) {
+					final File source = getClassLocation(name);
+					if (!file.exists()) return null;
+					return new Code.Source.File() {
+						@Override
+						public Code.Source.URI getURI() {
+							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+						}
+
+						@Override
+						public String getSourceName() {
+							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+						}
+
+						@Override
+						public InputStream getInputStream() {
+							try {
+								return new FileInputStream(source);
+							} catch (FileNotFoundException e) {
+								throw new RuntimeException(e);
+							}
+						}
+
+						@Override
+						public Long getLength() {
+							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+						}
+
+						@Override
+						public Date getLastModified() {
+							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+						}
+					};
+				}
+
+				@Override
+				void remove(String name) {
+					throw new RuntimeException("remove: " + name);
+				}
+			};
+		}
 	}
 
 	private static class Classes {

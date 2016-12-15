@@ -29,10 +29,10 @@ public abstract class Loader {
 			private Code.Source source;
 			private Code.Source classes;
 
-			Unpacked(String toString, Code.Source source, Java.Store store, Loader.Classes loader) {
+			Unpacked(String toString, Code.Source source, Loader.Classes loader) {
 				this.toString = toString;
 				this.source = source;
-				Code.Source compiling = Java.compiling(source, store, loader);
+				Code.Source compiling = Java.compiling(source, loader.getCompileDestination(), loader);
 				this.classes = compiling;
 			}
 
@@ -49,7 +49,7 @@ public abstract class Loader {
 			}
 		}
 
-		static Code loadUnpacked(final File base, Loader.Classes loader) {
+		private static Code loadUnpacked(final File base, Loader.Classes loader) {
 			if (!base.isDirectory()) {
 				throw new IllegalArgumentException(base + " is not a directory.");
 			}
@@ -59,11 +59,11 @@ public abstract class Loader {
 			} catch (IOException e) {
 				path = base.getAbsolutePath();
 			}
-			return new Unpacked("file=" + path, Code.Source.create(base), Java.Store.memory(), loader);
+			return new Unpacked("file=" + path, Code.Source.create(base), loader);
 		}
 
-		static Code loadUnpacked(final URL base, Loader.Classes loader) {
-			return new Unpacked("url=" + base.toExternalForm(), Code.Source.create(base), Java.Store.memory(), loader);
+		private static Code loadUnpacked(final URL base, Loader.Classes loader) {
+			return new Unpacked("url=" + base.toExternalForm(), Code.Source.create(base), loader);
 		}
 	
 		public static abstract class Configuration {
@@ -108,6 +108,20 @@ public abstract class Loader {
 		}
 
 		abstract File getLocalClassCache();
+		
+		private Java.Store store;
+		
+		final Java.Store getCompileDestination() {
+			if (store == null) {
+				if (getLocalClassCache() == null) {
+					return Java.Store.memory();
+				} else {
+					return Java.Store.file(getLocalClassCache());
+				}
+			}
+			return store;
+		}
+		
 		abstract ClassLoader classLoader();
 		
 		final Code unpacked(File base) {
