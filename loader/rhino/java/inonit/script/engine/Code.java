@@ -695,16 +695,6 @@ public abstract class Code {
 		return new Unpacked("url=" + base.toExternalForm(), Source.create(base), Java.Store.memory(), loader);
 	}
 	
-//	//	TODO	remove
-//	public static Code unpacked(final File base) {
-//		return loadUnpacked(base, null);
-//	}
-//
-//	//	TODO	remove
-//	public static Code unpacked(final URL base) {
-//		return loadUnpacked(base, null);
-//	}
-
 	public static Code jar(final File jar) {
 		return new Code() {
 			public Source getScripts() {

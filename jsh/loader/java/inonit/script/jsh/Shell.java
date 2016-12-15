@@ -269,6 +269,11 @@ public class Shell {
 		public abstract OperatingSystem.Environment getEnvironment();
 		public abstract Stdio getStdio();
 
+		public final File getClassCache() {
+			String value = this.getSystemProperties().getProperty("jsh.shell.classes");
+			return (value == null) ? null : new File(value);
+		}
+		
 		public static abstract class Packaged {
 			public static Packaged create(final Code.Source code, final File file) {
 				return new Packaged() {

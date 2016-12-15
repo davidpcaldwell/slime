@@ -63,7 +63,7 @@ public class Nashorn extends Main.Engine {
 		private inonit.script.nashorn.Host host;
 		private boolean top;
 
-		ExecutionImpl(Shell shell, boolean top) {
+		ExecutionImpl(final Shell shell, boolean top) {
 			super(shell);
 			this.host = inonit.script.nashorn.Host.create(new Loader.Classes.Configuration() {
 				@Override public boolean canCreateClassLoaders() {
@@ -72,6 +72,10 @@ public class Nashorn extends Main.Engine {
 
 				@Override public ClassLoader getApplicationClassLoader() {
 					return Nashorn.class.getClassLoader();
+				}
+				
+				@Override public java.io.File getLocalClassCache() {
+					return shell.getEnvironment().getClassCache();
 				}
 			});
 			this.top = top;

@@ -67,6 +67,10 @@ public class Rhino extends Servlet.ScriptContainer {
 			@Override public int getOptimizationLevel() {
 				return -1;
 			}
+
+			@Override public File getLocalClassCache() {
+				return null;
+			}
 		});
 
 		this.servlet = servlet;

@@ -159,6 +159,10 @@ public class Rhino {
 				@Override public boolean createClassLoader() {
 					return true;
 				}
+				
+				@Override public File getLocalClassCache() {
+					return shell.getClassCache();
+				}
 
 				@Override public int getOptimizationLevel() {
 					return Configuration.this.getOptimizationLevel();

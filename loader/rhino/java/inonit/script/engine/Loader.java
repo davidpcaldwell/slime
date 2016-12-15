@@ -27,6 +27,7 @@ public abstract class Loader {
 		public static abstract class Configuration {
 			public abstract boolean canCreateClassLoaders();
 			public abstract ClassLoader getApplicationClassLoader();
+			public abstract File getLocalClassCache();
 		}
 		
 		private static HashMap<ClassLoader,Code.Source> cache = new HashMap<ClassLoader,Code.Source>();
@@ -60,17 +61,24 @@ public abstract class Loader {
 		public static abstract class Interface {
 			public abstract void append(Code.Source code);
 
+			abstract Code.Source dependencies();
+			abstract ClassLoader classLoader();
+			
 			/**
-				Should return the class with the given name, or <code>null</code> if there is no such class.
+				Returns class with the given name, or <code>null</code> if there is no such class.
 			*/
-			public abstract Class getClass(String name);
+			public final Class getClass(String name) {
+				try {
+					return classLoader().loadClass(name);
+				} catch (ClassNotFoundException e) {
+					return null;
+				}
+			}
+
 
 			public final void append(Code code) {
 				append(code.getClasses());
 			}
-			
-			abstract Code.Source dependencies();
-			abstract ClassLoader classLoader();
 			
 			private Code.Source parent;
 			
@@ -92,11 +100,6 @@ public abstract class Loader {
 			public static final Interface NULL = new Interface() {
 				@Override
 				public void append(Code.Source code) {
-					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-				}
-
-				@Override
-				public Class getClass(String name) {
 					throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 				}
 
@@ -234,14 +237,6 @@ public abstract class Loader {
 				@Override public void append(Code.Source code) {
 					synchronized(locations) {
 						locations.add(code);
-					}
-				}
-
-				@Override public Class getClass(String name) {
-					try {
-						return ClassLoaderImpl.this.loadClass(name);
-					} catch (ClassNotFoundException e) {
-						return null;
 					}
 				}
 

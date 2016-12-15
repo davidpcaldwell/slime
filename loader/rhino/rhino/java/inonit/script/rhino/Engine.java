@@ -461,6 +461,10 @@ public class Engine {
 				return null;
 			}
 
+			@Override public File getLocalClassCache() {
+				return null;
+			}
+
 			@Override public boolean createClassLoader() {
 				return true;
 			}
@@ -476,6 +480,7 @@ public class Engine {
 
 		public abstract boolean createClassLoader();
 		public abstract ClassLoader getApplicationClassLoader();
+		public abstract File getLocalClassCache();
 		public abstract int getOptimizationLevel();
 
 		private ContextFactoryInner factory = new ContextFactoryInner();
@@ -515,6 +520,11 @@ public class Engine {
 
 						@Override public ClassLoader getApplicationClassLoader() {
 							return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
+						}
+
+						@Override
+						public File getLocalClassCache() {
+							return Configuration.this.getLocalClassCache();
 						}
 					});
 					initialized = true;

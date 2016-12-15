@@ -33,6 +33,11 @@ class Nashorn extends Servlet.ScriptContainer {
 			@Override public ClassLoader getApplicationClassLoader() {
 				return Nashorn.class.getClassLoader();
 			}
+
+			@Override
+			public File getLocalClassCache() {
+				return null;
+			}
 		});
 	}
 
