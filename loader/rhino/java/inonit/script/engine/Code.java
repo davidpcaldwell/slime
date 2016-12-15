@@ -654,47 +654,6 @@ public abstract class Code {
 		};
 	}
 	
-	private static class Unpacked extends Code {
-		private String toString;
-		private Source source;
-		private Source classes;
-		
-		Unpacked(String toString, Source source, Java.Store store, Loader.Classes loader) {
-			this.toString = toString;
-			this.source = source;
-			this.classes = Java.compiling(source, store, loader);
-		}
-		
-		public String toString() {
-			return getClass().getName() + " [" + toString + "]";
-		}
-		
-		public Source getScripts() {
-			return source;
-		}
-		
-		public Source getClasses() {
-			return classes;
-		}
-	}
-
-	static Code loadUnpacked(final File base, Loader.Classes loader) {
-		if (!base.isDirectory()) {
-			throw new IllegalArgumentException(base + " is not a directory.");
-		}
-		String path = null;
-		try {
-			path = base.getCanonicalPath();
-		} catch (IOException e) {
-			path = base.getAbsolutePath();
-		}
-		return new Unpacked("file=" + path, Source.create(base), Java.Store.memory(), loader);
-	}
-
-	static Code loadUnpacked(final URL base, Loader.Classes loader) {
-		return new Unpacked("url=" + base.toExternalForm(), Source.create(base), Java.Store.memory(), loader);
-	}
-	
 	public static Code jar(final File jar) {
 		return new Code() {
 			public Source getScripts() {

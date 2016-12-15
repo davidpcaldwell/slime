@@ -24,13 +24,53 @@ public abstract class Loader {
 	public abstract String getLoaderCode(String path) throws IOException;
 
 	public static abstract class Classes {
+		private static class Unpacked extends Code {
+			private String toString;
+			private Code.Source source;
+			private Code.Source classes;
+
+			Unpacked(String toString, Code.Source source, Java.Store store, Loader.Classes loader) {
+				this.toString = toString;
+				this.source = source;
+				Code.Source compiling = Java.compiling(source, store, loader);
+				this.classes = compiling;
+			}
+
+			public String toString() {
+				return getClass().getName() + " [" + toString + "]";
+			}
+
+			public Source getScripts() {
+				return source;
+			}
+
+			public Source getClasses() {
+				return classes;
+			}
+		}
+
+		static Code loadUnpacked(final File base, Loader.Classes loader) {
+			if (!base.isDirectory()) {
+				throw new IllegalArgumentException(base + " is not a directory.");
+			}
+			String path = null;
+			try {
+				path = base.getCanonicalPath();
+			} catch (IOException e) {
+				path = base.getAbsolutePath();
+			}
+			return new Unpacked("file=" + path, Code.Source.create(base), Java.Store.memory(), loader);
+		}
+
+		static Code loadUnpacked(final URL base, Loader.Classes loader) {
+			return new Unpacked("url=" + base.toExternalForm(), Code.Source.create(base), Java.Store.memory(), loader);
+		}
+	
 		public static abstract class Configuration {
 			public abstract boolean canCreateClassLoaders();
 			public abstract ClassLoader getApplicationClassLoader();
 			public abstract File getLocalClassCache();
 		}
-		
-		private static HashMap<ClassLoader,Code.Source> cache = new HashMap<ClassLoader,Code.Source>();
 		
 		public class Interface {
 			private ClassLoaderImpl loader;
@@ -67,14 +107,15 @@ public abstract class Loader {
 			}
 		}
 
+		abstract File getLocalClassCache();
 		abstract ClassLoader classLoader();
 		
 		final Code unpacked(File base) {
-			return Code.loadUnpacked(base, this);
+			return loadUnpacked(base, this);
 		}
 
 		final Code unpacked(URL base) {
-			return Code.loadUnpacked(base, this);
+			return loadUnpacked(base, this);
 		}
 		
 		public abstract ClassLoader getApplicationClassLoader();
@@ -124,6 +165,11 @@ public abstract class Loader {
 					@Override public ClassLoader getApplicationClassLoader() {
 						return loaderClasses;
 					}
+
+					@Override
+					File getLocalClassCache() {
+						return configuration.getLocalClassCache();
+					}
 					
 					ClassLoader classLoader() {
 						return loaderClasses;
@@ -141,6 +187,11 @@ public abstract class Loader {
 				return new Classes() {
 					@Override public ClassLoader getApplicationClassLoader() {
 						return loader;
+					}
+					
+					@Override
+					File getLocalClassCache() {
+						return null;
 					}
 					
 					ClassLoader classLoader() {
