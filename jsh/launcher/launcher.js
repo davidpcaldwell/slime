@@ -309,7 +309,7 @@ try {
 			if (!$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 			var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 			var setting = $api.slime.settings.get("jsh.shell.classes");
-			var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting) : $api.io.tmpdir();
+			var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $api.io.tmpdir();
 			if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
 			if ($api.slime.src.File) {
 				if (setting && LOADER_CLASSES.exists() && new Packages.java.io.File(LOADER_CLASSES, "inonit/script/engine/Code.class").exists()) {

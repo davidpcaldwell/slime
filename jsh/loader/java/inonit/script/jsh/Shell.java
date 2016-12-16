@@ -271,7 +271,7 @@ public class Shell {
 
 		public final File getClassCache() {
 			String value = this.getSystemProperties().getProperty("jsh.shell.classes");
-			return (value == null) ? null : new File(value);
+			return (value == null) ? null : new File(new File(value), "modules");
 		}
 		
 		public static abstract class Packaged {
