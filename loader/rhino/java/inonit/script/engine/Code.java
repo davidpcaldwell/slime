@@ -33,7 +33,7 @@ public abstract class Code {
 					throw new RuntimeException(e);
 				}
 			}
-			
+
 			static URI create(java.net.URI delegate) {
 				return new URI(delegate);
 			}
@@ -259,11 +259,11 @@ public abstract class Code {
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		public static Source create(final java.net.URL url) {
 			return new UrlBased(url, null);
 		}
-		
+
 		public static Source zip(final java.io.File file) {
 			try {
 				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(new java.io.FileInputStream(file));
@@ -276,31 +276,26 @@ public abstract class Code {
 						public String toString() {
 							return getClass().getName() + " length=" + bytes.length;
 						}
-						
-						@Override
-						public URI getURI() {
+
+						@Override public URI getURI() {
 							LOG.log(Code.Source.class, Level.FINE, "getURI()", null);
 							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 						}
 
-						@Override
-						public String getSourceName() {
+						@Override public String getSourceName() {
 							LOG.log(Code.Source.class, Level.FINE, "getSourceName()", null);
 							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 						}
 
-						@Override
-						public InputStream getInputStream() {
+						@Override public InputStream getInputStream() {
 							return new ByteArrayInputStream(bytes);
 						}
 
-						@Override
-						public Long getLength() {
+						@Override public Long getLength() {
 							return new Long(bytes.length);
 						}
 
-						@Override
-						public Date getLastModified() {
+						@Override public Date getLastModified() {
 							//	TODO	there is a 1.8 implementation of this in ZipEntry but we won't use it unless we drop support
 							//			for 1.7, otherwise we'll need to implement via reflection
 							return null;
@@ -331,21 +326,18 @@ public abstract class Code {
 				};
 				return new Code.Source() {
 					@Override public String toString() { return "Code.Source zip=" + file; }
-					
-					@Override
-					public File getFile(String path) throws IOException {
+
+					@Override public File getFile(String path) throws IOException {
 						LOG.log(Code.Source.class, Level.FINE, "getFile(" + path + ")", null);
 						LOG.log(Code.Source.class, Level.FINE, String.valueOf(files.get(path)), null);
 						return files.get(path);
 					}
 
-					@Override
-					public Enumerator getEnumerator() {
+					@Override public Enumerator getEnumerator() {
 						return enumerator;
 					}
 
-					@Override
-					public Classes getClasses() {
+					@Override public Classes getClasses() {
 						LOG.log(Code.Source.class, Level.FINE, "getClasses()", null);
 						//	TODO	think about this
 						return null;
@@ -364,8 +356,7 @@ public abstract class Code {
 				enumerators.add(e);
 			}
 			return new Enumerator() {
-				@Override
-				public String[] list(String prefix) {
+				@Override public String[] list(String prefix) {
 					HashSet<String> strings = new HashSet<String>();
 					for (Enumerator e : enumerators) {
 						String[] s = e.list(prefix);
@@ -392,7 +383,7 @@ public abstract class Code {
 					return null;
 				}
 			};
-			
+
 			final Enumerator enumerator = enumerator(delegates);
 
 			return new Source() {
@@ -410,7 +401,7 @@ public abstract class Code {
 					rv += "]";
 					return rv;
 				}
-				
+
 				@Override public File getFile(String path) throws IOException {
 					for (Source delegate : delegates) {
 						if (delegate.getFile(path) != null) {
@@ -653,7 +644,7 @@ public abstract class Code {
 			}
 		};
 	}
-	
+
 	public static Code jar(final File jar) {
 		return new Code() {
 			public Source getScripts() {

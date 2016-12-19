@@ -16,10 +16,10 @@ var parameters = jsh.script.getopts({
 		"profiler:javassist": jsh.file.Pathname,
 		"profiler:output": jsh.file.Pathname,
 		"profiler:exclude": jsh.script.getopts.ARRAY(String),
-		
+
 		//	Whether to use a built shell
 		"profiler:built": false,
-		
+
 		"profiler:nobrowser": false
 	},
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP

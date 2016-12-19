@@ -89,7 +89,7 @@ public class Rhino {
 			}
 		}
 	}
-	
+
 	private static class ExecutionImpl extends Shell.Execution {
 		private Engine engine;
 		private Interface $rhino;
@@ -102,8 +102,7 @@ public class Rhino {
 
 		private Engine.Program program = new Engine.Program();
 
-		@Override
-		protected Loader.Classes.Interface getClasspath() {
+		@Override protected Loader.Classes.Interface getClasspath() {
 			return engine.getClasspath();
 		}
 
@@ -159,7 +158,7 @@ public class Rhino {
 				@Override public boolean createClassLoader() {
 					return true;
 				}
-				
+
 				@Override public File getLocalClassCache() {
 					return shell.getClassCache();
 				}

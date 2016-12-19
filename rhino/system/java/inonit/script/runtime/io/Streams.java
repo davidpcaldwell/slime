@@ -53,7 +53,7 @@ public class Streams {
 		copy(in, out, closeInputStream);
 		return out.toByteArray();
 	}
-	
+
 	public byte[] readBytes(InputStream in) throws IOException {
 		return readBytes(in,true);
 	}

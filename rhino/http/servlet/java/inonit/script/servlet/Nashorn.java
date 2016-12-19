@@ -34,8 +34,7 @@ class Nashorn extends Servlet.ScriptContainer {
 				return Nashorn.class.getClassLoader();
 			}
 
-			@Override
-			public File getLocalClassCache() {
+			@Override public File getLocalClassCache() {
 				return null;
 			}
 		});

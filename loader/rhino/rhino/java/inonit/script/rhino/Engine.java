@@ -492,7 +492,7 @@ public class Engine {
 		final Loader.Classes.Interface getClasspath() {
 			return factory.getClasspath();
 		}
-		
+
 		void attach(org.mozilla.javascript.tools.debugger.Dim dim) {
 			dim.attachTo(factory);
 		}
@@ -522,8 +522,7 @@ public class Engine {
 							return (Configuration.this.getApplicationClassLoader() == null) ? ContextFactory.class.getClassLoader() : Configuration.this.getApplicationClassLoader();
 						}
 
-						@Override
-						public File getLocalClassCache() {
+						@Override public File getLocalClassCache() {
 							return Configuration.this.getLocalClassCache();
 						}
 					});
@@ -535,10 +534,10 @@ public class Engine {
 				initializeClassLoaders();
 				return this.classes.getApplicationClassLoader();
 			}
-			
+
 			final ClassLoader getCompilationClassLoader() {
 				initializeClassLoaders();
-				return this.classes.getApplicationClassLoader();				
+				return this.classes.getApplicationClassLoader();
 			}
 
 			final Loader.Classes.Interface getClasspath() {

@@ -73,7 +73,7 @@ public class Nashorn extends Main.Engine {
 				@Override public ClassLoader getApplicationClassLoader() {
 					return Nashorn.class.getClassLoader();
 				}
-				
+
 				@Override public java.io.File getLocalClassCache() {
 					return shell.getEnvironment().getClassCache();
 				}
@@ -81,8 +81,7 @@ public class Nashorn extends Main.Engine {
 			this.top = top;
 		}
 
-		@Override
-		protected Loader.Classes.Interface getClasspath() {
+		@Override protected Loader.Classes.Interface getClasspath() {
 			return host.getClasspath();
 		}
 

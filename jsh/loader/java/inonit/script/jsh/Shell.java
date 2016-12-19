@@ -74,9 +74,9 @@ public class Shell {
 
 	private Shell() {
 	}
-	
+
 	private Loader.Classes.Interface classpath;
-	
+
 	final void setClasspath(Loader.Classes.Interface classpath) {
 		this.classpath = classpath;
 	}
@@ -273,7 +273,7 @@ public class Shell {
 			String value = this.getSystemProperties().getProperty("jsh.shell.classes");
 			return (value == null) ? null : new File(new File(value), "modules");
 		}
-		
+
 		public static abstract class Packaged {
 			public static Packaged create(final Code.Source code, final File file) {
 				return new Packaged() {
@@ -358,11 +358,11 @@ public class Shell {
 
 	public static class Interface {
 		private Loader.Classes.Interface classpath;
-		
+
 		Interface(Loader.Classes.Interface classpath) {
 			this.classpath = classpath;
 		}
-		
+
 		//	Called by applications to load plugins
 		public Code[] getPlugins(File file) {
 			return Main.Plugins.create(file).getPlugins(classpath).toArray(new Code[0]);
@@ -384,7 +384,7 @@ public class Shell {
 		protected Execution(Shell shell) {
 			this.shell = shell;
 		}
-		
+
 		protected abstract Loader.Classes.Interface getClasspath();
 
 		protected final Code.Source getJshLoader() {
@@ -397,7 +397,7 @@ public class Shell {
 		 *	@param value The value to which to set it
 		 */
 		protected abstract void setGlobalProperty(String name, Object value);
-		
+
 		/**
 		 *	Must invoke <code>$jsh.setHost(o)</code> where o is a JavaScript object that will be provided to the <code>jsh.js</code>
 		 *	script via <code>$jsh.host()</code>
@@ -411,7 +411,7 @@ public class Shell {
 		 *	@param script The script to execute.
 		 */
 		protected abstract void script(Code.Source.File script);
-		
+
 		/**
 		 *	Executes the main script, returning its exit status.
 		 *	@return The exit status of the main program.

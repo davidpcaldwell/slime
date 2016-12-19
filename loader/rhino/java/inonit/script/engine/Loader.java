@@ -66,20 +66,20 @@ public abstract class Loader {
 		private static Code loadUnpacked(final URL base, Loader.Classes loader) {
 			return new Unpacked("url=" + base.toExternalForm(), Code.Source.create(base), loader);
 		}
-	
+
 		public static abstract class Configuration {
 			public abstract boolean canCreateClassLoaders();
 			public abstract ClassLoader getApplicationClassLoader();
 			public abstract File getLocalClassCache();
 		}
-		
+
 		public class Interface {
 			private ClassLoaderImpl loader;
-			
+
 			Interface(ClassLoaderImpl loader) {
 				this.loader = loader;
 			}
-			
+
 			public final void append(Code.Source code) {
 				loader.append(code);
 			}
@@ -98,20 +98,20 @@ public abstract class Loader {
 			public final void append(Code code) {
 				append(code.getClasses());
 			}
-			
+
 			public final Code unpacked(File base) {
 				return Classes.this.unpacked(base);
 			}
-			
+
 			public final Code unpacked(URL base) {
 				return Classes.this.unpacked(base);
 			}
 		}
 
 		abstract File getLocalClassCache();
-		
+
 		private Java.Store store;
-		
+
 		final Java.Store getCompileDestination() {
 			LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
 			if (store == null) {
@@ -123,9 +123,9 @@ public abstract class Loader {
 			}
 			return store;
 		}
-		
+
 		abstract ClassLoader classLoader();
-		
+
 		final Code unpacked(File base) {
 			return loadUnpacked(base, this);
 		}
@@ -133,12 +133,12 @@ public abstract class Loader {
 		final Code unpacked(URL base) {
 			return loadUnpacked(base, this);
 		}
-		
+
 		public abstract ClassLoader getApplicationClassLoader();
 		public abstract Interface getInterface();
-		
+
 		private Code.Source parent;
-		
+
 		private static Code.Source adapt(ClassLoader parent) {
 			if (parent instanceof URLClassLoader) {
 				List<URL> urls = Arrays.asList(((URLClassLoader)parent).getURLs());
@@ -177,17 +177,16 @@ public abstract class Loader {
 				final ClassLoaderImpl loaderClasses = ClassLoaderImpl.create(configuration.getApplicationClassLoader());
 				return new Classes() {
 					private Interface api;
-					
+
 					@Override public ClassLoader getApplicationClassLoader() {
 						return loaderClasses;
 					}
 
-					@Override
-					File getLocalClassCache() {
+					@Override File getLocalClassCache() {
 						LOG.log(Loader.class, Level.FINE, "Local class cache: " + configuration.getLocalClassCache(), null);
 						return configuration.getLocalClassCache();
 					}
-					
+
 					ClassLoader classLoader() {
 						return loaderClasses;
 					}
@@ -205,13 +204,12 @@ public abstract class Loader {
 					@Override public ClassLoader getApplicationClassLoader() {
 						return loader;
 					}
-					
-					@Override
-					File getLocalClassCache() {
+
+					@Override File getLocalClassCache() {
 						LOG.log(Loader.class, Level.FINE, "Local class cache: null", null);
 						return null;
 					}
-					
+
 					ClassLoader classLoader() {
 						return null;
 					}
@@ -222,7 +220,7 @@ public abstract class Loader {
 				};
 			}
 		}
-		
+
 		private static class ClassLoaderImpl extends ClassLoader {
 			static ClassLoaderImpl create(ClassLoader delegate) {
 				LOGGER.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
@@ -262,7 +260,7 @@ public abstract class Loader {
 				synchronized(locations) {
 					for (Code.Source source : locations) {
 						try {
-							LOGGER.log(Level.FINE, "findClass(" + name + ") using source " + source);							
+							LOGGER.log(Level.FINE, "findClass(" + name + ") using source " + source);
 							Code.Source.File in = source.getFile(path);
 							if (in != null) {
 								if (getPackage(packageName) == null) {
@@ -309,7 +307,7 @@ public abstract class Loader {
 				}
 				return rv.elements();
 			}
-			
+
 			void append(Code.Source code) {
 				synchronized(locations) {
 					locations.add(code);

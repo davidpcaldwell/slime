@@ -1,3 +1,16 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//
+//	The Original Code is the SLIME loader for rhino.
+//
+//	The Initial Developer of the Original Code is David P. Caldwell <david@davidpcaldwell.com>.
+//	Portions created by the Initial Developer are Copyright (C) 2016 the Initial Developer. All Rights Reserved.
+//
+//	Contributor(s):
+//	END LICENSE
+
 package inonit.script.engine;
 
 import java.io.*;
@@ -10,7 +23,7 @@ import javax.tools.*;
 
 public class Java {
 	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
-	
+
 	private static javax.tools.JavaCompiler javac;
 
 	private static javax.tools.JavaCompiler compiler() {
@@ -105,7 +118,7 @@ public class Java {
 			this.store = store;
 			this.classes = Classes.create(store, dependencies);
 		}
-		
+
 		public String toString() {
 			return "SourceDirectoryClassesSource: src=" + delegate;
 		}
@@ -175,83 +188,73 @@ public class Java {
 			return null;
 		}
 	}
-	
+
 	static Code.Source compiling(Code.Source code, Store store, Loader.Classes dependencies) {
 		return new SourceDirectoryClassesSource(code, store, dependencies);
 	}
-	
+
 	private static class InMemoryWritableFile extends Code.Source.File {
 		private MyOutputStream out;
 		private Date modified;
-		
+
 		private class MyOutputStream extends OutputStream {
 			private ByteArrayOutputStream delegate = new ByteArrayOutputStream();
-			
-			@Override
-			public void close() throws IOException {
+
+			@Override public void close() throws IOException {
 				delegate.close();
 				modified = new Date();
 			}
 
-			@Override
-			public void flush() throws IOException {
+			@Override public void flush() throws IOException {
 				delegate.flush();
 			}
 
-			@Override
-			public void write(byte[] b, int off, int len) throws IOException {
+			@Override public void write(byte[] b, int off, int len) throws IOException {
 				delegate.write(b, off, len); //To change body of generated methods, choose Tools | Templates.
 			}
 
-			@Override
-			public void write(int b) throws IOException {
+			@Override public void write(int b) throws IOException {
 				delegate.write(b);
 			}
 
-			@Override
-			public void write(byte[] b) throws IOException {
+			@Override public void write(byte[] b) throws IOException {
 				delegate.write(b); //To change body of generated methods, choose Tools | Templates.
 			}
-			
+
 			ByteArrayOutputStream delegate() {
 				return delegate;
 			}
 		}
-		
+
 		OutputStream createOutputStream() {
 			modified = null;
 			this.out = new MyOutputStream();
 			return this.out;
 		}
 
-		@Override
-		public Code.Source.URI getURI() {
+		@Override public Code.Source.URI getURI() {
 			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 		}
 
-		@Override
-		public String getSourceName() {
+		@Override public String getSourceName() {
 			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 		}
 
-		@Override
-		public InputStream getInputStream() {
+		@Override public InputStream getInputStream() {
 			if (modified == null) throw new IllegalStateException("Stream is currently being written.");
 			return new ByteArrayInputStream(this.out.delegate().toByteArray());
 		}
 
-		@Override
-		public Long getLength() {
+		@Override public Long getLength() {
 			if (modified == null) throw new IllegalStateException("Stream is currently being written.");
 			return new Long(this.out.delegate().toByteArray().length);
 		}
 
-		@Override
-		public Date getLastModified() {
+		@Override public Date getLastModified() {
 			if (modified == null) throw new IllegalStateException("Stream is currently being written.");
 			return modified;
 		}
-	} 
+	}
 
 	static abstract class Store {
 		final String getClassLocationString(String name) {
@@ -259,27 +262,27 @@ public class Java {
 		}
 
 		abstract OutputStream createOutputStreamAt(String name);
-		
+
 		final OutputStream createOutputStream(String className) {
 			return createOutputStreamAt(getClassLocationString(className));
 		}
-		
+
 		abstract Code.Source.File readAt(String name);
-		
+
 		Code.Source.File read(String className) {
 			return readAt(getClassLocationString(className));
 		}
-		
+
 		abstract void removeAt(String location);
-		
+
 		final void remove(String name) {
 			removeAt(getClassLocationString(name));
 		}
-		
+
 		static Store memory() {
 			return new Store() {
 				private HashMap<String,InMemoryWritableFile> map = new HashMap<String,InMemoryWritableFile>();
-				
+
 				private InMemoryWritableFile create(String name) {
 					InMemoryWritableFile rv = map.get(name);
 					if (map.get(name) == null) {
@@ -291,7 +294,7 @@ public class Java {
 				@Override OutputStream createOutputStreamAt(String location) {
 					return create(location).createOutputStream();
 				}
-				
+
 				@Override Code.Source.File readAt(String location) {
 					return map.get(location);
 				}
@@ -301,15 +304,14 @@ public class Java {
 				}
 			};
 		}
-		
+
 		static Store file(final File file) {
 			return new Store() {
 				@Override public String toString() {
 					return "Java.Store: directory = " + file;
 				}
-				
-				@Override
-				OutputStream createOutputStreamAt(String location) {
+
+				@Override OutputStream createOutputStreamAt(String location) {
 					File destination = new File(file, location);
 					destination.getParentFile().mkdirs();
 					try {
@@ -320,24 +322,20 @@ public class Java {
 					}
 				}
 
-				@Override
-				Code.Source.File readAt(String location) {
+				@Override Code.Source.File readAt(String location) {
 					final File source = new File(file, location);
 					LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
 					if (!source.exists()) return null;
 					return new Code.Source.File() {
-						@Override
-						public Code.Source.URI getURI() {
+						@Override public Code.Source.URI getURI() {
 							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 						}
 
-						@Override
-						public String getSourceName() {
+						@Override public String getSourceName() {
 							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 						}
 
-						@Override
-						public InputStream getInputStream() {
+						@Override public InputStream getInputStream() {
 							try {
 								return new FileInputStream(source);
 							} catch (FileNotFoundException e) {
@@ -345,20 +343,17 @@ public class Java {
 							}
 						}
 
-						@Override
-						public Long getLength() {
+						@Override public Long getLength() {
 							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 						}
 
-						@Override
-						public Date getLastModified() {
+						@Override public Date getLastModified() {
 							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 						}
 					};
 				}
 
-				@Override
-				void removeAt(String location) {
+				@Override void removeAt(String location) {
 					File at = new File(file, location);
 					if (at.exists()) at.delete();
 				}
@@ -370,19 +365,19 @@ public class Java {
 		private static Classes create(Store store, Loader.Classes dependencies) {
 			return new Classes(store, dependencies);
 		}
-		
+
 		private MyJavaFileManager jfm;
-		
+
 		private Classes(Store store, Loader.Classes dependencies) {
 			this.jfm = new MyJavaFileManager(store, dependencies);
 		}
-		
+
 		private Code.Source.File getFile(String name) {
 			MyJavaFileManager.OutputClass jfo = this.jfm.getJavaFileForInput(null, name, null);
 			if (jfo == null) return null;
 			return jfo.toCodeSourceFile();
 		}
-		
+
 		private boolean compile(JavaFileObject jfo) {
 			javax.tools.JavaCompiler.CompilationTask task = compiler().getTask(
 				null,
@@ -395,11 +390,11 @@ public class Java {
 			boolean success = task.call();
 			return success;
 		}
-		
+
 		private boolean compile(Code.Source.File javaSource) {
 			return compile(new SourceFileObject(javaSource));
 		}
-		
+
 		private static class MyJavaFileManager implements JavaFileManager {
 			private javax.tools.JavaFileManager delegate = compiler().getStandardFileManager(null, null, null);
 
@@ -413,7 +408,7 @@ public class Java {
 				this.store = store;
 				this.classpath = classpath;
 			}
-			
+
 			private void log(String message) {
 				LOG.log(MyJavaFileManager.class, Level.FINE, message, null);
 			}
@@ -558,20 +553,20 @@ public class Java {
 				log("isSupportedOption");
 				throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 			}
-			
+
 			private static class InputClass implements JavaFileObject {
 				private Code.Source.File file;
 				private String name;
-				
+
 				InputClass(Code.Source.File file, String name) {
 					this.file = file;
 					this.name = name;
 				}
-				
+
 				String binaryName() {
 					return name;
 				}
-				
+
 				public String toString() {
 					return "InputClass: " + file;
 				}
@@ -651,7 +646,7 @@ public class Java {
 					this.store = store;
 					this.name = name;
 				}
-				
+
 				Code.Source.File toCodeSourceFile() {
 					final OutputClass compiled = this;
 					return new Code.Source.File() {
