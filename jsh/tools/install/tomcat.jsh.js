@@ -65,23 +65,28 @@ var parameters = jsh.script.getopts({
 	options: {
 		version: String,
 		local: jsh.file.Pathname,
-		replace: false
+		replace: false,
+		to: jsh.shell.jsh.lib.getRelativePath("tomcat")
 	}
 });
 
 if (!parameters.options.local) {
+	var mirror;
 	if (!parameters.options.version) {
+		//	Check tomcat.apache.org; if unreachable, use latest version in downloads directory
 		parameters.options.version = getLatestVersion();
-	}
-
-	if (!parameters.options.version) {
-		jsh.shell.echo("Could not determine latest Tomcat 7 version; not installing.");
-		jsh.shell.exit(1);
+		if (!parameters.options.version) {
+			jsh.shell.echo("Could not determine latest Tomcat 7 version; not installing.");
+			jsh.shell.exit(1);
+		}
+	} else {
+		mirror = "https://archive.apache.org/dist/";
 	}
 
 	jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 	var zip = jsh.tools.install.apache.find({
+		mirror: mirror,
 		path: "tomcat/tomcat-7/v" + parameters.options.version + "/bin/apache-tomcat-" + parameters.options.version + ".zip"
 	});
 	parameters.options.local = zip.pathname;
@@ -100,8 +105,8 @@ if (!parameters.options.local) {
 		}
 	}
 }
-if (jsh.shell.jsh.lib.getSubdirectory("tomcat") && !parameters.options.replace) {
-	jsh.shell.console("Tomcat already installed at " + jsh.shell.jsh.lib.getSubdirectory("tomcat"));
+if (parameters.options.to.directory && !parameters.options.replace) {
+	jsh.shell.console("Tomcat already installed at " + parameters.options.to.directory);
 	jsh.shell.exit(0);
 }
 var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -110,6 +115,5 @@ jsh.file.unzip({
 	zip: parameters.options.local.file,
 	to: to
 });
-var destination = jsh.shell.jsh.lib.getRelativePath("tomcat");
-jsh.shell.echo("Installing Tomcat at " + destination);
-to.getSubdirectory("apache-tomcat-" + parameters.options.version).move(destination, { overwrite: true });
+jsh.shell.echo("Installing Tomcat at " + parameters.options.to);
+to.getSubdirectory("apache-tomcat-" + parameters.options.version).move(parameters.options.to, { overwrite: true });
