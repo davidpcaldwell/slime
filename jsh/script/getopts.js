@@ -257,5 +257,14 @@ getopts.UNEXPECTED_OPTION_PARSER.INTERPRET = function(rv,name,array) {
 		rv.options[name] = STRING();
 	}
 }
+//	TODO	document the below
+getopts.parser = {
+	Pathname: function(s) {
+		var array = [s];
+		var parser = PATHNAME();
+		var parsed = parser.parser(array);
+		return parsed;
+	}
+}
 
 $exports.getopts = getopts;
