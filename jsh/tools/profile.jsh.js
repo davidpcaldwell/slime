@@ -50,7 +50,7 @@ if (parameters.options["profiler:built"]) {
 if (parameters.options["profiler:built"]) {
 	jsh.shell.jsh({
 		shell: home,
-		script: src.getFile("jsh/etc/install/profiler.jsh.js")
+		script: src.getFile("jsh/tools/install/profiler.jsh.js")
 	});
 } else {
 	jsh.shell.jsh({

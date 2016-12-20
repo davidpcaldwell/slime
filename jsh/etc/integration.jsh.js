@@ -37,7 +37,7 @@ var CATALINA_HOME = (function() {
 	if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
 })();
 
-var COFFEESCRIPT = jsh.shell.jsh.home.getFile("plugins/coffee-script.js");
+var COFFEESCRIPT = (jsh.shell.jsh.home) ? jsh.shell.jsh.home.getFile("plugins/coffee-script.js") : void(0);
 if (!COFFEESCRIPT) {
 	jsh.shell.console("CoffeeScript not present; CoffeeScript tests will be omitted.");
 }
@@ -47,7 +47,7 @@ var LOADER = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.pare
 
 var RHINO_LIBRARIES = (jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.lib.getRelativePath("js.jar").java.adapt()] : null;
 
-//	TODO	this next line should go elsewhere
+//	TODO	there is an undocumented API for this now
 var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
 
 var compileAddClasses = jsh.js.constant(function() {
@@ -90,7 +90,8 @@ scenario.part("packaged", LOADER.value("jsh/test/packaged/suite.js", {
 var ScriptVerifier = function(o) {
 	var script = jsh.script.file.getRelativePath("../test/" + o.path).file;
 	var tokens = [o.path].concat((o.arguments) ? o.arguments : []);
-	scenario.part((o.name) ? o.name : tokens.join(" "), new function() {
+	var parent = (o.parent) ? o.parent : scenario;
+	parent.part((o.name) ? o.name : tokens.join(" "), new function() {
 		this.name = script.toString();
 
 		this.execute = function(scope,verify) {
@@ -159,44 +160,86 @@ if (CATALINA_HOME) {
 	});
 }
 
+(function() {
+	scenario.part("shell", {
+		parts: {}
+	});
+	
+	ScriptVerifier({
+		parent: scenario.parts.shell,
+		path: "jsh.shell/echo.jsh.js",
+		execute: function(verify) {
+			var output = this.stdio.output.split(LINE_SEPARATOR);
+			verify(output)[0].is("true");
+		}
+	});
+	
+	ScriptVerifier({
+		parent: scenario.parts.shell,
+		path: "jsh.shell/properties.jsh.js",
+		execute: function(verify) {
+			var output = this.stdio.output.split(LINE_SEPARATOR);
+			verify(output)[0].is("Passed.");
+		}
+	});
+	
+
+	//	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
+	//		return options.output == "Hello, World!" && options.err == "Hello, tty!";
+	//	});
+	ScriptVerifier({
+		parent: scenario.parts.shell,
+		path: "jsh.shell/stdio.1.jsh.js",
+		error: String,
+		execute: function(verify) {
+			verify(this).stdio.output.is("Hello, World!");
+			verify(this).stdio.error.is("Hello, tty!");
+		}
+	});
+	
+	(function() {
+		var input_abcdefghij = "ABCDEFGHIJ";
+		ScriptVerifier({
+			parent: scenario.parts.shell,
+			path: "jsh.shell/stdio.2.jsh.js",
+			input: input_abcdefghij,
+			execute: function(verify) {
+				verify(this.stdio.output).is(input_abcdefghij);
+			}
+		});
+		ScriptVerifier({
+			parent: scenario.parts.shell,
+			path: "jsh.shell/stdio.3.jsh.js",
+			input: input_abcdefghij,
+			execute: function(verify) {
+				verify(this.stdio.output).is(input_abcdefghij);
+			}
+		});
+	})();
+
+	ScriptVerifier({
+		parent: scenario.parts.shell,
+		path: "jsh.shell/exit.jsh.js",
+		execute: function(verify) {
+			verify(this).status.is(0);
+		}
+	});
+	
+	ScriptVerifier({
+		parent: scenario.parts.shell,
+		path: "jsh.shell/jsh.shell.jsh.jsh.js",
+		execute: function(verify) {
+			verify(this).status.is(0);
+		}
+	});
+})();
+
 ScriptVerifier({
 	path: "$api-deprecate-properties.jsh.js",
 	execute: function(verify) {
 		verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("o.f.property = foo");
 	}
 });
-ScriptVerifier({
-	path: "jsh.shell/echo.jsh.js",
-	execute: function(verify) {
-		var output = this.stdio.output.split(LINE_SEPARATOR);
-		verify(output)[0].is("true");
-	}
-});
-ScriptVerifier({
-	path: "jsh.shell/properties.jsh.js",
-	execute: function(verify) {
-		var output = this.stdio.output.split(LINE_SEPARATOR);
-		verify(output)[0].is("Passed.");
-	}
-});
-
-(function() {
-	var input_abcdefghij = "ABCDEFGHIJ";
-	ScriptVerifier({
-		path: "jsh.shell/stdio.2.jsh.js",
-		input: input_abcdefghij,
-		execute: function(verify) {
-			verify(this.stdio.output).is(input_abcdefghij);
-		}
-	});
-	ScriptVerifier({
-		path: "jsh.shell/stdio.3.jsh.js",
-		input: input_abcdefghij,
-		execute: function(verify) {
-			verify(this.stdio.output).is(input_abcdefghij);
-		}
-	});
-})();
 
 ScriptVerifier({
 	path: "jsh.shell/jsh.home.jsh.js",
@@ -305,31 +348,6 @@ ScriptVerifier({
 //		arguments: LAUNCHER_COMMAND.slice(1).concat(jsh.script.file.getRelativePath("jsh.shell/exit.jsh.js"))
 //	});
 
-ScriptVerifier({
-	path: "jsh.shell/jsh.shell.jsh.jsh.js",
-	execute: function(verify) {
-		verify(this).status.is(0);
-	}
-});
-
-ScriptVerifier({
-	path: "jsh.shell/exit.jsh.js",
-	execute: function(verify) {
-		verify(this).status.is(0);
-	}
-});
-
-//	testCommandOutput("jsh.shell/stdio.1.jsh.js", function(options) {
-//		return options.output == "Hello, World!" && options.err == "Hello, tty!";
-//	});
-ScriptVerifier({
-	path: "jsh.shell/stdio.1.jsh.js",
-	error: String,
-	execute: function(verify) {
-		verify(this).stdio.output.is("Hello, World!");
-		verify(this).stdio.error.is("Hello, tty!");
-	}
-});
 
 //	jsh.shell.run({
 //		command: LAUNCHER_COMMAND[0],
