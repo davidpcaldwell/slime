@@ -22,12 +22,13 @@ var getLatestVersion = function() {
 		var matcher = /\<h3 id=\"(7\..*)\"\>/;
 		var match = matcher.exec(downloadRawHtml);
 		var version = match[1];
+		jsh.shell.console("Latest Tomcat version from tomcat.apache.org is " + version);
 		return version;
 	} catch (e) {
-		jsh.shell.echo("Could not get latest Tomcat 7 version from tomcat.apache.org (offline?) ...");
+		jsh.shell.console("Could not get latest Tomcat 7 version from tomcat.apache.org (offline?) ...");
 		//	TODO	probably should implement some sort of jsh.shell.user.downloads
 		if (jsh.shell.user.downloads) {
-			jsh.shell.echo("Checking downloads at " + jsh.shell.user.downloads + " ...");
+			jsh.shell.console("Checking downloads at " + jsh.shell.user.downloads + " ...");
 			var downloads = jsh.shell.user.downloads;
 			var pattern = arguments.callee.pattern;
 			var local = downloads.list().filter(function(node) {
@@ -46,14 +47,14 @@ var getLatestVersion = function() {
 				}
 
 				local.forEach(function(node) {
-					jsh.shell.echo("Found version " + getVersionString(node));
+					jsh.shell.console("Found version " + getVersionString(node));
 				})
 
 				local.sort(function(a,b) {
 					return getVersion(b) - getVersion(a);
 				});
 
-				jsh.shell.echo("Latest version is " + getVersionString(local[0]));
+				jsh.shell.console("Latest version is " + getVersionString(local[0]));
 				return getVersionString(local[0]);
 			}
 		}
@@ -81,10 +82,11 @@ if (!parameters.options.local) {
 		//	Check tomcat.apache.org; if unreachable, use latest version in downloads directory
 		parameters.options.version = getLatestVersion();
 		if (!parameters.options.version) {
-			jsh.shell.echo("Could not determine latest Tomcat 7 version; not installing.");
+			jsh.shell.console("Could not determine latest Tomcat 7 version; not installing.");
 			jsh.shell.exit(1);
 		}
 	} else {
+		jsh.shell.console("Installing specified version " + parameters.options.version);
 		mirror = "https://archive.apache.org/dist/";
 	}
 
@@ -104,6 +106,7 @@ if (!parameters.options.local) {
 		var match = getLatestVersion.pattern.exec(parameters.options.local.basename);
 		if (match) {
 			parameters.options.version = match[1] + "." + match[2] + "." + match[3];
+			jsh.shell.console("Installing version " + parameters.options.version + " determined from local filename.");
 		} else {
 			jsh.shell.echo("Unable to determine version from filename: " + parameters.options.local);
 			jsh.shell.exit(1);
