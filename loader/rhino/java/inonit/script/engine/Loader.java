@@ -18,7 +18,8 @@ import java.net.*;
 import java.util.logging.*;
 
 public abstract class Loader {
-	private static final Logger LOG = Logger.getLogger(Loader.class.getName());
+//	private static final Logger LOGGER = Logger.getLogger(Loader.class.getName());
+//	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
 
 	public abstract String getCoffeeScript() throws IOException;
 	public abstract String getLoaderCode(String path) throws IOException;
@@ -112,6 +113,7 @@ public abstract class Loader {
 		private Java.Store store;
 		
 		final Java.Store getCompileDestination() {
+//			LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
 			if (store == null) {
 				if (getLocalClassCache() == null) {
 					return Java.Store.memory();
@@ -182,6 +184,7 @@ public abstract class Loader {
 
 					@Override
 					File getLocalClassCache() {
+//						LOG.log(Loader.class, Level.FINE, "Local class cache: " + configuration.getLocalClassCache(), null);
 						return configuration.getLocalClassCache();
 					}
 					
@@ -205,6 +208,7 @@ public abstract class Loader {
 					
 					@Override
 					File getLocalClassCache() {
+//						LOG.log(Loader.class, Level.FINE, "Local class cache: null", null);
 						return null;
 					}
 					
@@ -221,7 +225,7 @@ public abstract class Loader {
 		
 		private static class ClassLoaderImpl extends ClassLoader {
 			static ClassLoaderImpl create(ClassLoader delegate) {
-				LOG.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
+//				LOGGER.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
 				return new ClassLoaderImpl(delegate);
 			}
 
@@ -248,6 +252,7 @@ public abstract class Loader {
 			}
 
 			protected Class findClass(String name) throws ClassNotFoundException {
+//				LOGGER.log(Level.FINE, "findClass(" + name + ")");
 				String path = name.replace('.', '/') + ".class";
 				String[] tokens = name.split("\\.");
 				String packageName = tokens[0];
@@ -257,6 +262,7 @@ public abstract class Loader {
 				synchronized(locations) {
 					for (Code.Source source : locations) {
 						try {
+//							LOGGER.log(Level.FINE, "findClass(" + name + ") using source " + source);							
 							Code.Source.File in = source.getFile(path);
 							if (in != null) {
 								if (getPackage(packageName) == null) {
