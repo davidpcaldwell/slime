@@ -18,8 +18,8 @@ import java.net.*;
 import java.util.logging.*;
 
 public abstract class Loader {
-//	private static final Logger LOGGER = Logger.getLogger(Loader.class.getName());
-//	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
+	private static final Logger LOGGER = Logger.getLogger(Loader.class.getName());
+	private static final inonit.system.Logging LOG = inonit.system.Logging.get();
 
 	public abstract String getCoffeeScript() throws IOException;
 	public abstract String getLoaderCode(String path) throws IOException;
@@ -113,7 +113,7 @@ public abstract class Loader {
 		private Java.Store store;
 		
 		final Java.Store getCompileDestination() {
-//			LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
+			LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
 			if (store == null) {
 				if (getLocalClassCache() == null) {
 					return Java.Store.memory();
@@ -184,7 +184,7 @@ public abstract class Loader {
 
 					@Override
 					File getLocalClassCache() {
-//						LOG.log(Loader.class, Level.FINE, "Local class cache: " + configuration.getLocalClassCache(), null);
+						LOG.log(Loader.class, Level.FINE, "Local class cache: " + configuration.getLocalClassCache(), null);
 						return configuration.getLocalClassCache();
 					}
 					
@@ -208,7 +208,7 @@ public abstract class Loader {
 					
 					@Override
 					File getLocalClassCache() {
-//						LOG.log(Loader.class, Level.FINE, "Local class cache: null", null);
+						LOG.log(Loader.class, Level.FINE, "Local class cache: null", null);
 						return null;
 					}
 					
@@ -225,7 +225,7 @@ public abstract class Loader {
 		
 		private static class ClassLoaderImpl extends ClassLoader {
 			static ClassLoaderImpl create(ClassLoader delegate) {
-//				LOGGER.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
+				LOGGER.log(Level.FINE, "Creating Loader.Classes: parent=%s", delegate);
 				return new ClassLoaderImpl(delegate);
 			}
 

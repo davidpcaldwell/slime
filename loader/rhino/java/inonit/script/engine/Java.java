@@ -97,10 +97,12 @@ public class Java {
 
 	private static class SourceDirectoryClassesSource extends Code.Source {
 		private Code.Source delegate;
+		private Store store;
 		private Java.Classes classes;
 
 		SourceDirectoryClassesSource(Code.Source delegate, Store store, Loader.Classes dependencies) {
 			this.delegate = delegate;
+			this.store = store;
 			this.classes = Classes.create(store, dependencies);
 		}
 		
@@ -122,6 +124,7 @@ public class Java {
 		}
 
 		@Override public Code.Source.File getFile(String path) throws IOException {
+//			LOG.log(Java.class, Level.FINE, "getFile(" + path + ")", null);
 			if (path.startsWith("org/apache/")) return null;
 			if (path.startsWith("javax/")) return null;
 //				String[] tokens = path.split("\\/");
@@ -130,29 +133,35 @@ public class Java {
 //					return null;
 //				}
 			if (cache.get(path) == null) {
-				//	System.err.println("Looking up class " + path + " for " + source);
-				String className = path.substring(0,path.length()-".class".length());
-				String sourceName = className + ".java";
-				if (sourceName.indexOf("$") != -1) {
-					//	do nothing
-					//	TODO	should we not strip off the inner class name, and compile the outer class? I am assuming that
-					//			given that this code appears to have been working, we never load an inner class before loading
-					//			the outer class under normal Java operation
+//				LOG.log(Java.class, Level.FINE, "Reading from " + path + " in store " + store, null);
+				Code.Source.File stored = store.readAt(path);
+				if (stored != null) {
+					cache.put(path, stored);
 				} else {
-					Code.Source.File sourceFile = delegate.getFile("java/" + sourceName);
-					if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
-						sourceFile = delegate.getFile("rhino/java/" + sourceName);
-					}
-					if (sourceFile != null) {
-//						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
-						//System.err.println("Compiling: " + jfo);
-						boolean success = classes.compile(sourceFile);
-						if (!success) {
-							throw new RuntimeException("Failure: sourceFile=" + sourceFile);
+					//	System.err.println("Looking up class " + path + " for " + source);
+					String className = path.substring(0,path.length()-".class".length());
+					String sourceName = className + ".java";
+					if (sourceName.indexOf("$") != -1) {
+						//	do nothing
+						//	TODO	should we not strip off the inner class name, and compile the outer class? I am assuming that
+						//			given that this code appears to have been working, we never load an inner class before loading
+						//			the outer class under normal Java operation
+					} else {
+						Code.Source.File sourceFile = delegate.getFile("java/" + sourceName);
+						if (sourceFile == null && hasClass("org.mozilla.javascript.Context")) {
+							sourceFile = delegate.getFile("rhino/java/" + sourceName);
+						}
+						if (sourceFile != null) {
+	//						javax.tools.JavaFileObject jfo = new SourceFileObject(sourceFile);
+							//System.err.println("Compiling: " + jfo);
+							boolean success = classes.compile(sourceFile);
+							if (!success) {
+								throw new RuntimeException("Failure: sourceFile=" + sourceFile);
+							}
 						}
 					}
+					cache.put(path, classes.getFile(className.replace("/",".")));
 				}
-				cache.put(path, classes.getFile(className.replace("/",".")));
 			}
 			return cache.get(path);
 		}
@@ -245,33 +254,48 @@ public class Java {
 	} 
 
 	static abstract class Store {
-		abstract OutputStream createOutputStream(String name);
-		abstract Code.Source.File read(String name);
-		abstract void remove(String name);
+		final String getClassLocationString(String name) {
+			return name.replaceAll("\\.", "/") + ".class";
+		}
+
+		abstract OutputStream createOutputStreamAt(String name);
+		
+		final OutputStream createOutputStream(String className) {
+			return createOutputStreamAt(getClassLocationString(className));
+		}
+		
+		abstract Code.Source.File readAt(String name);
+		
+		Code.Source.File read(String className) {
+			return readAt(getClassLocationString(className));
+		}
+		
+		abstract void removeAt(String location);
+		
+		final void remove(String name) {
+			removeAt(getClassLocationString(name));
+		}
 		
 		static Store memory() {
 			return new Store() {
 				private HashMap<String,InMemoryWritableFile> map = new HashMap<String,InMemoryWritableFile>();
 				
 				private InMemoryWritableFile create(String name) {
-					InMemoryWritableFile rv = map.get(name);
 					if (map.get(name) == null) {
 						map.put(name, new InMemoryWritableFile());
 					}
 					return map.get(name);
 				}
 
-				@Override OutputStream createOutputStream(String name) {
-					return create(name).createOutputStream();
+				@Override OutputStream createOutputStreamAt(String location) {
+					return create(location).createOutputStream();
+				}
+				
+				@Override Code.Source.File readAt(String location) {
+					return map.get(location);
 				}
 
-				@Override
-				Code.Source.File read(String name) {
-					return map.get(name);
-				}
-
-				@Override
-				void remove(String name) {
+				@Override void removeAt(String name) {
 					map.remove(name);
 				}
 			};
@@ -279,17 +303,16 @@ public class Java {
 		
 		static Store file(final File file) {
 			return new Store() {
-				private File getClassLocation(String name) {
-					String path = name.replaceAll("\\.", "/") + ".class";
-					return new File(file, path);					
+				@Override public String toString() {
+					return "Java.Store: directory = " + file;
 				}
 				
 				@Override
-				OutputStream createOutputStream(String name) {
-					File destination = getClassLocation(name);
+				OutputStream createOutputStreamAt(String location) {
+					File destination = new File(file, location);
 					destination.getParentFile().mkdirs();
 					try {
-						System.err.println("Writing class to " + destination);
+						LOG.log(Java.class, Level.FINE, "Writing class to " + destination, null);
 						return new FileOutputStream(destination);
 					} catch (FileNotFoundException e) {
 						throw new RuntimeException(e);
@@ -297,9 +320,10 @@ public class Java {
 				}
 
 				@Override
-				Code.Source.File read(String name) {
-					final File source = getClassLocation(name);
-					if (!file.exists()) return null;
+				Code.Source.File readAt(String location) {
+					final File source = new File(file, location);
+//					LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
+					if (!source.exists()) return null;
 					return new Code.Source.File() {
 						@Override
 						public Code.Source.URI getURI() {
@@ -333,8 +357,9 @@ public class Java {
 				}
 
 				@Override
-				void remove(String name) {
-					throw new RuntimeException("remove: " + name);
+				void removeAt(String location) {
+					File at = new File(file, location);
+					if (at.exists()) at.delete();
 				}
 			};
 		}
