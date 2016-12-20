@@ -137,7 +137,7 @@ public class Java {
 		}
 
 		@Override public Code.Source.File getFile(String path) throws IOException {
-			LOG.log(Java.class, Level.FINE, "getFile(" + path + ")", null);
+//			LOG.log(Java.class, Level.FINE, "getFile(" + path + ")", null);
 			if (path.startsWith("org/apache/")) return null;
 			if (path.startsWith("javax/")) return null;
 //				String[] tokens = path.split("\\/");
@@ -146,7 +146,7 @@ public class Java {
 //					return null;
 //				}
 			if (cache.get(path) == null) {
-				LOG.log(Java.class, Level.FINE, "Reading from " + path + " in store " + store, null);
+//				LOG.log(Java.class, Level.FINE, "Reading from " + path + " in store " + store, null);
 				Code.Source.File stored = store.readAt(path);
 				if (stored != null) {
 					cache.put(path, stored);
@@ -284,7 +284,6 @@ public class Java {
 				private HashMap<String,InMemoryWritableFile> map = new HashMap<String,InMemoryWritableFile>();
 
 				private InMemoryWritableFile create(String name) {
-					InMemoryWritableFile rv = map.get(name);
 					if (map.get(name) == null) {
 						map.put(name, new InMemoryWritableFile());
 					}
@@ -294,7 +293,7 @@ public class Java {
 				@Override OutputStream createOutputStreamAt(String location) {
 					return create(location).createOutputStream();
 				}
-
+				
 				@Override Code.Source.File readAt(String location) {
 					return map.get(location);
 				}
@@ -324,7 +323,8 @@ public class Java {
 
 				@Override Code.Source.File readAt(String location) {
 					final File source = new File(file, location);
-					LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
+					//LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
+					if (!source.exists()) return null;
 					if (!source.exists()) return null;
 					return new Code.Source.File() {
 						@Override public Code.Source.URI getURI() {
@@ -355,6 +355,7 @@ public class Java {
 
 				@Override void removeAt(String location) {
 					File at = new File(file, location);
+					if (at.exists()) at.delete();
 					if (at.exists()) at.delete();
 				}
 			};
@@ -513,7 +514,7 @@ public class Java {
 			}
 
 			public OutputClass getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) {
-				LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForInput: location=" + location + " className=" + className + " kind=" + kind, null);
+				//LOG.log(MyJavaFileManager.class, Level.FINE, "getJavaFileForInput: location=" + location + " className=" + className + " kind=" + kind, null);
 				if (location == null) {
 					return map.get(className);
 				}

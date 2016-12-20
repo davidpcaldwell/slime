@@ -250,7 +250,7 @@ public abstract class Loader {
 			}
 
 			protected Class findClass(String name) throws ClassNotFoundException {
-				LOGGER.log(Level.FINE, "findClass(" + name + ")");
+				//LOGGER.log(Level.FINE, "findClass(" + name + ")");
 				String path = name.replace('.', '/') + ".class";
 				String[] tokens = name.split("\\.");
 				String packageName = tokens[0];
@@ -260,7 +260,7 @@ public abstract class Loader {
 				synchronized(locations) {
 					for (Code.Source source : locations) {
 						try {
-							LOGGER.log(Level.FINE, "findClass(" + name + ") using source " + source);
+							//LOGGER.log(Level.FINE, "findClass(" + name + ") using source " + source);
 							Code.Source.File in = source.getFile(path);
 							if (in != null) {
 								if (getPackage(packageName) == null) {
