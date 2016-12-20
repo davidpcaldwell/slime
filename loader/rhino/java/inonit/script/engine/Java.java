@@ -293,7 +293,7 @@ public class Java {
 				@Override OutputStream createOutputStreamAt(String location) {
 					return create(location).createOutputStream();
 				}
-				
+
 				@Override Code.Source.File readAt(String location) {
 					return map.get(location);
 				}
