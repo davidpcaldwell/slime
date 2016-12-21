@@ -49,14 +49,16 @@ var distributions = {
 	})
 };
 
+var VersionError = new jsh.js.Error.Type("Mercurial version error");
+
 $exports.distribution = {
 	osx: function(o) {
 		var getDistribution = function(minorVersion) {
 			if (minorVersion < distributions.osx[0].minor) {
-				throw new VersionError("This OS X distribution is too old; upgrade to at least " + distributions.osx[0].version);
+				throw new VersionError("OS X distribution too old; upgrade to at least " + distributions.osx[0].version);
 			}
 			if (minorVersion > distributions.osx[distributions.osx.length-1].minor) {
-				throw new VersionError("Version too high.");
+				return distributions.osx[distributions.osx.length-1];
 			}
 			for (var i=0; i<distributions.osx.length; i++) {
 				if (minorVersion == distributions.osx[i].minor) {

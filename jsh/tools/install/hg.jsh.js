@@ -17,8 +17,13 @@ if (parameters.options.test) {
 				execute: function(scope,verify) {
 					verify(1).is(1);
 					verify(scope).api.is.type("object");
+					
 					var distribution = scope.api.distribution.osx({ os: "10.9.2" });
 					verify(distribution).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-3.4.2-py2.7-macosx10.9.zip");
+					
+					verify(scope.api).evaluate(function() { return this.distribution.osx({ os: "10.3.2" }) }).threw.type(Error);
+					
+					verify(scope.api).distribution.osx({ os: "10.12.2" }).distribution.url.is("https://www.mercurial-scm.org/mac/binaries/Mercurial-4.0.1-macosx10.11.pkg");
 				}
 			}
 		}
