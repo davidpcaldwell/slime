@@ -57,22 +57,36 @@ var installed = (function() {
 	}
 })();
 
-if (jsh.shell.os.name == "Mac OS X") {
-	jsh.shell.console("Running OS X version " + jsh.shell.os.version);
+var api = jsh.script.loader.file("hg.js");
+
+if (jsh.shell.os.name == "Mac OS X") {	
+	jsh.shell.console("Detected OS X " + jsh.shell.os.version);
 	
-	var getDistribution = function(minorVersion) {
-		if (minorVersion < distributions.osx[0].minor) {
-			jsh.shell.console("This OS X distribution is too old; upgrade to at least " + distributions.osx[0].version);
-			jsh.shell.exit(1);
-		}
-		if (minorVersion > distributions.osx[distributions.osx.length-1].minor) {
-			jsh.shell.console("Version too high.");
-			jsh.shell.exit(1);
-		}
+	var distribution = api.distribution.osx({ os: jsh.shell.os.version });
+	
+	if (installed && distribution.hg == installed.version) {
+		jsh.shell.console("Already installed: hg " + installed.version);
+		jsh.shell.exit(0);
+	} else if (installed) {
+		jsh.shell.console("Found version: " + installed.version + "; upgrading to " + distribution.hg);
 	}
 	
-	var minorVersion = Number(jsh.shell.os.version.split(".")[1]);
-	var distribution = getDistribution(minorVersion);
+	jsh.shell.console("Getting " + distribution.distribution.url);
+	var file = jsh.tools.install.get({
+		url: distribution.distribution.url
+	});
+	
+	if (/\.pkg$/.test(file.pathname.basename)) {
+		jsh.shell.console("Install: " + file);
+		jsh.shell.run({
+			command: "open",
+			arguments: [file]
+		});
+		jsh.shell.console("Please execute the graphical installer.");
+		jsh.shell.exit(1);
+	} else {
+		throw new Error("Unimplemented: installation of file type that is not .pkg: " + file);
+	}
+} else {
+	throw new Error("Unimplemented: installation of Mercurial for non-OS X system.");
 }
-
-jsh.shell.console(JSON.stringify(installed));

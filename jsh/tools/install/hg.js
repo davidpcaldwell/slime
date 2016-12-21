@@ -28,7 +28,8 @@ var distributions = {
 		{
 			version: "10.9",
 			distribution: {
-				url: "https://www.mercurial-scm.org/mac/binaries/Mercurial-3.4.2-py2.7-macosx10.9.zip"
+				url: "https://www.mercurial-scm.org/mac/binaries/Mercurial-3.4.2-py2.7-macosx10.9.zip",
+				installer: "mercurial-3.4.2+20150701-py2.7-macosx10.9.mpkg"
 			}
 		},
 		{
@@ -45,6 +46,7 @@ var distributions = {
 		}
 	].map(function(o) {
 		o.minor = Number(o.version.split(".")[1])
+		o.hg = /^(?:.*)Mercurial\-([\d\.]+)-.*/.exec(o.distribution.url)[1];
 		return o;
 	})
 };
