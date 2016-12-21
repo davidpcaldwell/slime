@@ -320,7 +320,7 @@ try {
 					});
 				}
 			} else {
-				Packages.java.lang.System.err.println("Looking for launcher source files under " + $api.slime.src + " ...");
+				$api.log("Looking for launcher source files under " + $api.slime.src + " ...");
 				var toCompile = getLoaderSourceFiles({
 					list: function(string) {
 						return $api.slime.src.getSourceFilesUnder(string);
@@ -328,10 +328,10 @@ try {
 					rhino: rhinoClasspath,
 					on: {
 						start: function(e) {
-							Packages.java.lang.System.err.println("Checking under " + e.path + " (" + e.current + "/" + e.total + ")");
+							$api.log("Checking under " + e.path + " (" + e.current + "/" + e.total + ")");
 						},
 						end: function(e) {
-							Packages.java.lang.System.err.println("Checking under " + e.path + " (" + e.current + "/" + e.total + ")");
+							$api.log("Done checking under " + e.path + " (" + e.current + "/" + e.total + ")");
 						}
 					}
 				});

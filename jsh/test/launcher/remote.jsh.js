@@ -155,7 +155,8 @@ if (parameters.options.jrunscript.length) {
 
 	if (tests.urlproperties) {
 		mock.jsh({
-			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js"
+			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js",
+			properties: properties
 		});
 	}
 

@@ -211,16 +211,12 @@ plugin({
 				this.client = client;
 
 				this.jsh = function(o) {
-					jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
-						properties: jsh.js.Object.set({
-							"http.proxyHost": "127.0.0.1",
-							"http.proxyPort": String(tomcat.port)
-						}, (o.properties) ? o.properties : {}),
+					this.jrunscript({
 						arguments: [
 							"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
 							o.script
 						].concat( (o.arguments) ? o.arguments : [] )
-					}));
+					});
 				}
 
 				this.jrunscript = function(o) {
