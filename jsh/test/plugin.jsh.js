@@ -183,3 +183,205 @@ plugin({
 		}
 	}
 });
+
+plugin({
+	isReady: function() {
+		return jsh.httpd && jsh.http && jsh.file && jsh.io && jsh.shell;
+	},
+	load: function() {
+		if (!jsh.test) jsh.test = {};
+		jsh.test.mock = {};
+		jsh.test.mock.Internet = function(o) {
+			if (!o) o = {};
+			var tomcat = new jsh.httpd.Tomcat({});
+			
+			var handlers = [];
+
+			tomcat.map({
+				//	TODO	works with or without leading slash; document this and write a test
+				path: "",
+				servlets: {
+					"/*": {
+						//	TODO	document load method
+						load: function(scope) {
+							//	TODO	this is duplicative with httpd.Handler.series in a way; similar concept. We would not have access to httpd
+							//			variable is one difference, and the other one is immutable. So leaving both for now. This might also end
+							//			up some sort of variation in $api (although the other variety might as well)
+							scope.$exports.handle = function(request) {
+								if (o.trace) {
+									Packages.java.lang.System.err.println("Request: " + request.method + " " + request.headers.value("host") + " " + request.path);
+								}
+								for (var i=0; i<handlers.length; i++) {
+									var rv = handlers[i](request);
+									if (typeof(rv) != "undefined") return rv;
+								}
+								//	TODO	convert to appropriate 4xx or 5xx response (have not decided)
+								throw new Error("Unhandled: request: host=" + request.headers.value("host") + " path = " + request.path);
+							}
+						}
+					}
+				}
+			});
+
+			this.add = function(handler) {
+				handlers.push(handler);
+			}
+			
+			this.start = function() {
+				tomcat.start();
+			}
+
+			this.port = tomcat.port;
+			
+			this.client = new jsh.http.Client({
+				proxy: {
+					http: {
+						host: "127.0.0.1",
+						port: tomcat.port
+					}
+				}
+			});
+			
+			this.stop = function() {
+				tomcat.stop();
+			};
+		};
+		jsh.test.mock.Internet.bitbucket = function(o) {
+			return function(request) {
+				if (request.headers.value("host") == "bitbucket.org") {
+					if (request.path == "") {
+						return {
+							status: {
+								code: 200
+							},
+							body: {
+								type: "text/javascript",
+								string: "print('Hello, World! from mock Bitbucket')"
+							}
+						}
+					}
+					var Sourceroot = function(root) {
+						var loader = new jsh.file.Loader({ directory: root });
+						var HEAD = null;
+						this.get = function(body,tokens) {
+							var type = tokens.shift();
+							if (type == "raw") {
+								var version = tokens.shift();
+								if (version == "local") {
+									var path = tokens.join("/");
+									var pathname = root.getRelativePath(path);
+									if (pathname.file) {
+										//Packages.java.lang.System.err.println("File: " + pathname);
+										return {
+											status: {
+												code: 200
+											},
+											body: (body) ? loader.get(path) : HEAD
+										}
+									} else if (pathname.directory) {
+										//Packages.java.lang.System.err.println("Directory: " + pathname);
+										return {
+											status: {
+												code: 200
+											},
+											body: (body) ? {
+												type: "text/plain",
+												string: (function() {
+													return pathname.directory.list({ type: pathname.directory.list.ENTRY }).map(function(entry) {
+														//Packages.java.lang.System.err.println("Path: " + entry.path);
+														return entry.path.replace(String(Packages.java.io.File.separator),"/");
+													}).filter(function(path) {
+														return path != ".hg/";
+													}).join("\n");
+												})()
+											} : HEAD
+										}
+									} else {
+										return {
+											status: {
+												code: 404
+											}
+										}
+										//Packages.java.lang.System.err.println("Not found: " + pathname);
+									}
+								}
+							}
+						}
+					}
+					var tokenized = request.path.split("/");
+					if (tokenized.slice(0,3).join("/") == "api/1.0/repositories" || tokenized[2] == "raw") {
+						var user;
+						var repository;
+						if (tokenized.slice(0,3).join("/") == "api/1.0/repositories") {
+							tokenized.shift();
+							tokenized.shift();
+							tokenized.shift();
+						}
+						user = tokenized[0];
+						repository = tokenized[1];
+						tokenized.shift();
+						tokenized.shift();
+						if (o.src[user] && o.src[user][repository]) {
+							var body = (request.method == "GET");
+							//jsh.shell.console("tokenized = " + tokenized);
+							return new Sourceroot(o.src[user][repository]).get(body, tokenized);
+						} else {
+							throw new Error("No definition for repository " + user + "/" + repository);
+						}
+					} else if (o.src[tokenized[0]] && o.src[tokenized[0]][tokenized[1]] && tokenized[2] == "get") {
+						var SRC = o.src[tokenized[0]][tokenized[1]];
+						if (tokenized[3] == "local.zip") {
+							try {
+								var buffer = new jsh.io.Buffer();
+								var to = buffer.writeBinary();
+								var list = SRC.list({
+									filter: function(node) {
+										if (node.pathname.basename == ".hg") return false;
+										return true;
+									},
+									descendants: function(dir) {
+										if (dir.pathname.basename == ".hg") return false;
+										return true;
+									},
+									type: SRC.list.ENTRY
+								});
+								jsh.file.zip({
+									from: list.map(function(entry) {
+										if (entry.node.directory) {
+											var path = (entry.path) ? entry.path.substring(0,entry.path.length-1).replace(/\\/g, "/") : "";
+											return {
+												directory: "slimelocal/" + path
+											}
+										}
+										var rv = {
+											path: "slimelocal/" + entry.path.replace(/\\/g, "/")
+										};
+										Object.defineProperty(rv, "stream", {
+											get: function() {
+												return entry.node.read(jsh.io.Streams.binary);
+											}
+										});
+										return rv;
+									}),
+									to: to
+								});
+								buffer.close();
+								return {
+									status: { code: 200 },
+									body: {
+										type: "application/zip",
+										stream: buffer.readBinary()
+									}
+								};
+							} catch (e) {
+								jsh.shell.console("Error: " + e);
+								jsh.shell.console("Stack: " + e.stack);
+								throw e;
+							}
+						}
+					}
+				}
+			};
+		}
+	}
+})

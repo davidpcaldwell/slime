@@ -152,10 +152,12 @@ if (CATALINA_HOME) {
 		environment: jsh.js.Object.set({}, jsh.shell.environment, (false) ? {
 			JSH_DEBUG_SCRIPT: "rhino"
 		} : {}),
-		error: null,
+//		error: null,
 		execute: function(verify) {
-			verify(this.stdio.output.split(LINE_SEPARATOR))[0].is("true");
-			verify(this.stdio.output.split(LINE_SEPARATOR))[1].is("true");
+			var lines = this.stdio.output.split(LINE_SEPARATOR);
+			verify(lines.join("|")).is(lines.join("|"));
+			verify(lines)[0].is("true");
+			verify(lines)[1].is("true");
 		}
 	});
 }
