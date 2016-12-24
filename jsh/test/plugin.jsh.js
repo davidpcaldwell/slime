@@ -261,7 +261,7 @@ plugin({
 						}
 					}
 					var Sourceroot = function(root) {
-						var loader = new jsh.file.Loader({ directory: root });
+						var loader = new jsh.file.Loader({ directory: root.directory });
 						var HEAD = null;
 						this.get = function(body,tokens) {
 							var type = tokens.shift();
@@ -269,7 +269,7 @@ plugin({
 								var version = tokens.shift();
 								if (version == "local") {
 									var path = tokens.join("/");
-									var pathname = root.getRelativePath(path);
+									var pathname = root.directory.getRelativePath(path);
 									if (pathname.file) {
 										//Packages.java.lang.System.err.println("File: " + pathname);
 										return {
@@ -334,7 +334,7 @@ plugin({
 							try {
 								var buffer = new jsh.io.Buffer();
 								var to = buffer.writeBinary();
-								var list = SRC.list({
+								var list = SRC.directory.list({
 									filter: function(node) {
 										if (node.pathname.basename == ".hg") return false;
 										return true;
