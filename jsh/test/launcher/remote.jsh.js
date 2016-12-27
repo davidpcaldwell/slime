@@ -25,6 +25,7 @@ var parameters = jsh.script.getopts({
 	unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 });
 
+jsh.loader.plugins(jsh.script.file.parent.parent.pathname);
 jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 var SRC = jsh.script.file.parent.parent.parent.parent;
@@ -57,11 +58,14 @@ if (parameters.options.jrunscript.length) {
 	var mock = new jsh.test.launcher.MockRemote({
 		src: {
 			davidpcaldwell: {
-				slime: SRC
+				slime: {
+					directory: SRC
+				}
 			}
 		},
 		trace: parameters.options["trace:server"]
 	});
+	jsh.shell.console("Mock port is " + mock.port);
 	if (parameters.options.script) {
 		var environment = jsh.js.Object.set(
 			{},
@@ -155,7 +159,8 @@ if (parameters.options.jrunscript.length) {
 
 	if (tests.urlproperties) {
 		mock.jsh({
-			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js"
+			script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/jsh.shell/properties.jsh.js",
+			properties: properties
 		});
 	}
 

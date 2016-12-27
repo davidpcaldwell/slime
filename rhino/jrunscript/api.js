@@ -428,7 +428,7 @@
 					try {
 						var protocol = String(p.url.getProtocol());
 						if (protocol == "http" || protocol == "https") {
-							Packages.java.lang.System.err.println("Connecting to " + url + " ...");
+							$api.log("Connecting to " + url + " ...");
 						}
 						var connection = url.openConnection();
 //						Packages.java.lang.System.err.println("url: " + url + " connection = " + connection);
@@ -463,7 +463,7 @@
 					} else {
 						var protocol = String(p.url.getProtocol());
 						if (protocol == "http" || protocol == "https") {
-							Packages.java.lang.System.err.println("Reading from " + p.url + " ...");
+							$api.log("Reading from " + p.url + " ...");
 						}
 						var reader = new Packages.java.io.InputStreamReader(p.connection.getInputStream());
 						var buffer = new Packages.java.lang.StringBuilder();
@@ -474,7 +474,7 @@
 						p.connection.getInputStream().close();
 						var code = String(buffer.toString());
 						if (protocol == "http" || protocol == "https") {
-							Packages.java.lang.System.err.println("Loaded [" + p.url + "].");
+							$api.log("Loaded [" + p.url + "].");
 						}
 //						Packages.java.lang.System.err.println("Loading: " + this);
 						var name = this.toString();
