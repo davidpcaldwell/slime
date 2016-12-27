@@ -23,6 +23,16 @@ var Chrome = function(b) {
 	//	See https://www.chromium.org/user-experience/user-data-directory
 	//	See https://www.chromium.org/user-experience/multi-profiles
 	this.Instance = function(u) {
+		if (u.location) {
+			u.directory = u.location.createDirectory({
+				ifExists: function(dir) {
+					return false;
+				}
+			});
+			if (!u.directory.getFile("First Run")) {
+				u.directory.getFile("First Run").write("", { append: false });
+			}
+		}
 		//	This Stack Overflow question:
 		//	http://superuser.com/questions/240522/how-can-i-use-a-proxy-in-a-single-chrome-profile
 		//
